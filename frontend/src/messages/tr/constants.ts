@@ -25,7 +25,7 @@ const constants = {
     },
     operations: {
       label: "Red Kuyruğu",
-      subtitle: "MEDULA red kuyruğu ve operasyonel takip iş akışları.",
+      subtitle: "MEDULA red kuyruğu ve takip.",
     },
     referenceTools: {
       label: "Referans Araçları",

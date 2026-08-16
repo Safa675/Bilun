@@ -3,15 +3,17 @@ import React from "react";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { SUTComplianceDashboard } from "./SUTComplianceDashboard";
 
+const searchGet = vi.fn<(key: string) => string | null>(() => null);
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/sut",
+  usePathname: () => "/",
   useRouter: () => ({
     replace: vi.fn(),
     push: vi.fn(),
   }),
   useSearchParams: () => ({
-    get: (k: string) => (k === "compTab" ? "materials" : null),
-    toString: () => "compTab=materials",
+    get: (key: string) => searchGet(key),
+    toString: () => "",
   }),
 }));
 
@@ -24,7 +26,8 @@ vi.mock("@/lib/api/sut", () => ({
 }));
 
 describe("SUTComplianceDashboard", () => {
-  it("renders 8 compliance subtabs correctly with default English locale", () => {
+  it("renders only live exemption and surcharge subtabs", () => {
+    searchGet.mockImplementation(() => null);
     const html = renderToStaticMarkupWithLocale(
       <SUTComplianceDashboard
         cohortPatientIds={new Set()}
@@ -32,19 +35,18 @@ describe("SUTComplianceDashboard", () => {
       />,
     );
 
-    expect(html).toContain("SUT Mevzuat ve Fatura Uyumluluk Merkezi");
-    expect(html).toContain("8 Boyutlu Denetim Aktif");
     expect(html).toContain("Copay Exemptions");
     expect(html).toContain("Surcharge Compliance");
-    expect(html).toContain("Materials, UTS &amp; Pre-Auth");
-    expect(html).toContain("Payment Method &amp; DRG Packages");
-    expect(html).toContain("Surgical &amp; Session Modifiers");
-    expect(html).toContain("Diagnostics &amp; Lab Errors");
-    expect(html).toContain("Pre-Flight Docs &amp; FI");
-    expect(html).toContain("MEDULA Rejection Playbook");
+    expect(html).not.toContain("8 Boyutlu Denetim Aktif");
+    expect(html).not.toContain("SUT Mevzuat ve Fatura Uyumluluk Merkezi");
+    expect(html).not.toContain("Materials, UTS &amp; Pre-Auth");
+    expect(html).not.toContain("MEDULA Rejection Playbook");
+    expect(html).not.toContain("%98,4");
+    expect(html).not.toContain("121.714");
   });
 
-  it("renders 8 compliance subtabs correctly with Turkish locale", () => {
+  it("renders live subtabs in Turkish", () => {
+    searchGet.mockImplementation(() => null);
     const html = renderToStaticMarkupWithLocale(
       <SUTComplianceDashboard
         cohortPatientIds={new Set()}
@@ -55,15 +57,12 @@ describe("SUTComplianceDashboard", () => {
 
     expect(html).toContain("Katılım Payı Muafiyetleri");
     expect(html).toContain("İlave Ücret &amp; Tavan Sınırı");
-    expect(html).toContain("Tıbbi Malzeme, ÜTS &amp; Ön Onay");
-    expect(html).toContain("Fatura Yöntemi &amp; DRG Paket");
-    expect(html).toContain("Cerrahi &amp; Seans Katsayıları");
-    expect(html).toContain("Laboratuvar &amp; Tetkik Hataları");
-    expect(html).toContain("Gönderim Evrakları &amp; FI");
-    expect(html).toContain("MEDULA Red Kılavuzu");
+    expect(html).not.toContain("Tıbbi Malzeme");
+    expect(html).not.toContain("MEDULA Red Kılavuzu");
   });
 
-  it("renders the active materials module when compTab=materials", () => {
+  it("falls back to exemptions when compTab is an unknown demo id", () => {
+    searchGet.mockImplementation((key: string) => (key === "compTab" ? "materials" : null));
     const html = renderToStaticMarkupWithLocale(
       <SUTComplianceDashboard
         cohortPatientIds={new Set()}
@@ -71,10 +70,8 @@ describe("SUTComplianceDashboard", () => {
       />,
     );
 
-    expect(html).toContain("Toplam Tıbbi Malzeme Riski");
-    expect(html).toContain("Ön Onay Eksikliği");
-    expect(html).toContain("OP1266");
-    expect(html).toContain("ÜTS Bildirim Eksik");
-    expect(html).toContain("Pakete Dahil Sarf");
+    expect(html).toContain("Copay Exemptions");
+    expect(html).not.toContain("OP1266");
+    expect(html).not.toContain("Toplam Tıbbi Malzeme Riski");
   });
 });

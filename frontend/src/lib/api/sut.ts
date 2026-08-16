@@ -298,6 +298,7 @@ export async function getMedulaRejectionQueue(
     sonuc_kodu?: string;
     medula_stage?: string;
     rebill_permitted?: boolean;
+    playbook_matched?: boolean;
     q?: string;
   },
   options?: RequestInit,
@@ -309,6 +310,9 @@ export async function getMedulaRejectionQueue(
   if (params?.medula_stage) query.set("medula_stage", params.medula_stage);
   if (params?.rebill_permitted !== undefined) {
     query.set("rebill_permitted", String(params.rebill_permitted));
+  }
+  if (params?.playbook_matched !== undefined) {
+    query.set("playbook_matched", String(params.playbook_matched));
   }
   if (params?.q) query.set("q", params.q);
   const queryString = query.toString();

@@ -1117,5 +1117,7 @@ class MedulaRejectionQueueResponse(BaseModel):
     total: int = 0
     page: int = 1
     page_size: int = 50
+    facets: dict[str, list[str]] = Field(default_factory=dict)
+    stats: dict[str, int] = Field(default_factory=dict)
 
     model_config = ConfigDict(extra="allow")

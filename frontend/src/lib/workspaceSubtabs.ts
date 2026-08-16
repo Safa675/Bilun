@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  AlertOctagon,
   BookOpen,
   Boxes,
   BriefcaseMedical,
@@ -14,8 +13,8 @@ import {
   FlaskConical,
   FolderTree,
   PackageSearch,
+  PieChart,
   Pill,
-  Scissors,
   ScrollText,
   ShieldAlert,
   ShieldCheck,
@@ -75,50 +74,25 @@ export const BILLING_SUB_ICONS: Record<BillingToolSubSection, LucideIcon> = {
   lab_prices: FlaskConical,
 };
 
-export type ComplianceSubSection =
-  | "exemptions"
-  | "surcharge"
-  | "materials"
-  | "payment_methods"
-  | "surgical_sessions"
-  | "diagnostics_lab"
-  | "pre_flight_docs"
-  | "medula_rejections";
+export type ComplianceSubSection = "exemptions" | "surcharge";
 
 export const COMPLIANCE_SUB_IDS: readonly ComplianceSubSection[] = [
   "exemptions",
   "surcharge",
-  "materials",
-  "payment_methods",
-  "surgical_sessions",
-  "diagnostics_lab",
-  "pre_flight_docs",
-  "medula_rejections",
 ] as const;
 
 export const COMPLIANCE_SUB_KEY = {
   exemptions: "exemptions",
   surcharge: "surcharge",
-  materials: "materials",
-  payment_methods: "paymentMethods",
-  surgical_sessions: "surgicalSessions",
-  diagnostics_lab: "diagnosticsLab",
-  pre_flight_docs: "preFlightDocs",
-  medula_rejections: "medulaRejections",
 } as const satisfies Record<ComplianceSubSection, string>;
 
 export const COMPLIANCE_SUB_ICONS: Record<ComplianceSubSection, LucideIcon> = {
   exemptions: ShieldCheck,
   surcharge: ShieldAlert,
-  materials: PackageSearch,
-  payment_methods: Boxes,
-  surgical_sessions: Scissors,
-  diagnostics_lab: FlaskConical,
-  pre_flight_docs: FileCheck2,
-  medula_rejections: AlertOctagon,
 };
 
 export type RuleDatabaseSubSection =
+  | "coverage"
   | "rules"
   | "sections"
   | "clauses"
@@ -126,6 +100,7 @@ export type RuleDatabaseSubSection =
   | "deferrals";
 
 export const RULE_DATABASE_SUB_IDS: readonly RuleDatabaseSubSection[] = [
+  "coverage",
   "rules",
   "sections",
   "clauses",
@@ -134,6 +109,7 @@ export const RULE_DATABASE_SUB_IDS: readonly RuleDatabaseSubSection[] = [
 ] as const;
 
 export const RULE_DATABASE_SUB_ICONS: Record<RuleDatabaseSubSection, LucideIcon> = {
+  coverage: PieChart,
   rules: BookOpen,
   sections: FolderTree,
   clauses: ScrollText,
@@ -219,7 +195,7 @@ export function resolveTabInfo(
     const sub: RuleDatabaseSubSection =
       rawSub && (RULE_DATABASE_SUB_IDS as readonly string[]).includes(rawSub)
         ? (rawSub as RuleDatabaseSubSection)
-        : "rules";
+        : "coverage";
     const subLabel = t(`sections.ruleDatabase.tabs.${sub}`);
     const Icon = RULE_DATABASE_SUB_ICONS[sub];
 

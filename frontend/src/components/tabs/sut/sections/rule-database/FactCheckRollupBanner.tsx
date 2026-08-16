@@ -25,6 +25,7 @@ export function FactCheckRollupBanner({ rollup }: { rollup: FactCheckRollup }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
         className="flex w-full items-center justify-between text-left"
       >
         <div>

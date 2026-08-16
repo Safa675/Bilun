@@ -1,7 +1,7 @@
 # Plan: SUT Uyumluluk (Compliance) Sekmesi Kapsamlı Yeniden Tasarım Planı (Comprehensive SUT Compliance Taxonomy Redesign)
 
 **Date:** 2026-08-16  
-**Status:** Architectural Plan & Implementation Roadmap (Ready for Review)  
+**Status:** SUPERSEDED — do not implement. Replacement: `plans/frontend/compliance-honesty-and-coverage-split-plan.md`. The 8-pillar shell shipped demo modules and fake KPIs; the replacement rolls live `finding_type: compliance` surfaces instead of finishing this taxonomy with `DEMO_*` data.  
 **Target:** `frontend/src/components/tabs/SUTCompliance.tsx`, `frontend/src/components/tabs/sut/compliance/`, `frontend/src/lib/workspaceSubtabs.ts`, `src/bilun/domain/optimization/`, `src/bilun/api/routes/optimization.py`
 
 ---

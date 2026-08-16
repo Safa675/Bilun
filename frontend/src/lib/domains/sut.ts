@@ -1126,6 +1126,15 @@ export interface MedulaRejectionQueueResponse extends SUTDataSourceCarrier {
   total: number;
   page: number;
   page_size: number;
+  facets?: {
+    sonuc_kodu?: string[];
+    medula_stage?: string[];
+  };
+  stats?: {
+    n_events?: number;
+    n_matched?: number;
+    n_rebill_permitted?: number;
+  };
 }
 
 export interface MedulaRejectionIngestStatus {

@@ -2,19 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Surface, Eyebrow, Stat, Chip, Button, buttonActiveClass, DataTable } from "@/components/primitives";
+import { ArrowRight } from "lucide-react";
+import { Surface, Stat, Chip, Button, buttonActiveClass, DataTable } from "@/components/primitives";
 import { buildSutBillingHref } from "@/lib/constants";
 import { getPatientAlerts } from "@/lib/api/sut";
 import type { PatientAlertsResponse, PatientAlertsStatus } from "@/lib/domains/sut";
 import { fmtNum } from "../../shared";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
-import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export interface CopayExemptionComplianceProps {
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }
+
+const PATIENT_LINK_CLASS =
+  "font-semibold text-[var(--text-primary)] hover:text-[var(--gold-hover)]";
 
 export function CopayExemptionCompliance({
   cohortPatientIds,
@@ -50,8 +53,8 @@ export function CopayExemptionCompliance({
     };
   }, [status]);
 
-  const filteredPatients = (data?.patients ?? []).filter((p) =>
-    !cohortFilterActive || cohortPatientIds.has(p.patient_id),
+  const filteredPatients = (data?.patients ?? []).filter(
+    (p) => !cohortFilterActive || cohortPatientIds.has(p.patient_id),
   );
 
   const exemptCount = (data?.patients ?? []).filter((p) => p.copay_exemption?.exempt).length;
@@ -59,41 +62,14 @@ export function CopayExemptionCompliance({
 
   return (
     <div className="space-y-5">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Stat
-            label="Muafiyet Uygunluğu"
-            value={fmtNum(exemptCount)}
-            hint={`Toplam ${fmtNum(totalCount)} hastadan`}
-          />
-        </Surface>
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Eyebrow>SUT Mevzuat Dayanağı</Eyebrow>
-          <div className="flex items-center gap-2 pt-1">
-            <Chip variant="neutral">SUT §1.8.5</Chip>
-            <Chip variant="success">EK-1A Listesi</Chip>
-            <Chip variant="neutral">Acil Muafiyet</Chip>
-          </div>
-          <p className="pt-2 text-xs text-[var(--text-tertiary)]">
-            Kanser, kronik neoplazmlar ve acil haller katılım payından %100 muaftır.
-          </p>
-        </Surface>
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Eyebrow>MEDULA Otomasyon Durumu</Eyebrow>
-          <div className="flex items-center gap-2 pt-1">
-            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-sm font-medium text-[var(--text-primary)]">
-              katilimPayindanMuaf=E
-            </span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Uygun tanılı hastalarda MEDULA muafiyet bayrağı teyit edilmelidir.
-          </p>
-        </Surface>
-      </div>
+      <Surface variant="base" padding="md">
+        <Stat
+          label="Muafiyet uygunluğu"
+          value={fmtNum(exemptCount)}
+          hint={`Toplam ${fmtNum(totalCount)} hastadan`}
+        />
+      </Surface>
 
-      {/* Filter Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -111,7 +87,7 @@ export function CopayExemptionCompliance({
           onClick={() => setStatus("exempt")}
           className={cn("gap-1.5", status === "exempt" && buttonActiveClass)}
         >
-          Muaf Olanlar ({fmtNum(exemptCount)})
+          Muaf olanlar ({fmtNum(exemptCount)})
         </Button>
         <Button
           type="button"
@@ -120,11 +96,10 @@ export function CopayExemptionCompliance({
           onClick={() => setStatus("not_exempt")}
           className={cn("gap-1.5", status === "not_exempt" && buttonActiveClass)}
         >
-          Muaf Olmayanlar ({fmtNum(totalCount - exemptCount)})
+          Muaf olmayanlar ({fmtNum(totalCount - exemptCount)})
         </Button>
       </div>
 
-      {/* Patients Table */}
       {loading ? (
         <SutAlertTableSkeleton />
       ) : (
@@ -132,17 +107,17 @@ export function CopayExemptionCompliance({
           <thead>
             <tr>
               <th>Hasta ID</th>
-              <th>Tanı Sayısı & ICD Bölümleri</th>
-              <th>Muafiyet Durumu</th>
-              <th>Eşleşen Tanılar (EK-1A / Acil)</th>
-              <th>Önerilen Aksiyon</th>
+              <th>Tanı sayısı & ICD bölümleri</th>
+              <th>Muafiyet durumu</th>
+              <th>Eşleşen tanılar (EK-1A / acil)</th>
+              <th>Önerilen aksiyon</th>
               <th className="text-right">İncele</th>
             </tr>
           </thead>
           <tbody>
             {filteredPatients.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-[var(--text-tertiary)]">
+                <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
                   Seçili filtre için hasta kaydı bulunamadı.
                 </td>
               </tr>
@@ -153,21 +128,18 @@ export function CopayExemptionCompliance({
                 return (
                   <tr key={p.patient_id}>
                     <td>
-                      <Link
-                        href={buildSutBillingHref(p.patient_id)}
-                        className="font-semibold text-slate-950 hover:text-[var(--gold-hover)]"
-                      >
+                      <Link href={buildSutBillingHref(p.patient_id)} className={PATIENT_LINK_CLASS}>
                         {p.patient_id}
                       </Link>
                     </td>
                     <td className="text-[var(--text-secondary)]">
-                      {p.n_diagnoses} Tanı · {p.icd10_chapters?.join(", ") || "—"}
+                      {p.n_diagnoses} tanı · {p.icd10_chapters?.join(", ") || "—"}
                     </td>
                     <td>
                       {isExempt ? (
                         <Chip variant="success">Muaf (EK-1A)</Chip>
                       ) : (
-                        <Chip variant="neutral">Standart Katılım</Chip>
+                        <Chip variant="neutral">Standart katılım</Chip>
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
@@ -176,24 +148,20 @@ export function CopayExemptionCompliance({
                           {qualifyingDx.map((q) => `${q.icd10} (${q.disease})`).join(", ")}
                         </span>
                       ) : (
-                        <span className="text-[var(--text-tertiary)]">—</span>
+                        <span className="text-[var(--text-muted)]">—</span>
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
-                      {isExempt ? (
-                        <span className="text-emerald-600 font-medium">
-                          Fatura öncesi muafiyet bayrağı uygulayın
-                        </span>
-                      ) : (
-                        "Standart katılım payı tahsilatı"
-                      )}
+                      {isExempt
+                        ? "Fatura öncesi muafiyet bayrağı uygulayın"
+                        : "Standart katılım payı tahsilatı"}
                     </td>
                     <td className="text-right">
                       <Link
                         href={buildSutBillingHref(p.patient_id)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                       >
-                        Faturaya Git <ArrowRight className="h-3 w-3" />
+                        Faturaya git <ArrowRight className="h-3 w-3" />
                       </Link>
                     </td>
                   </tr>

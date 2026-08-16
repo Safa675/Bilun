@@ -47,7 +47,7 @@ const chat = {
     revenue:
       "Summarize revenue recovery for the filtered cohort. Highlight recoverable totals, top patients, and where exactness limitations block action. Reply in English.",
     operations:
-      "Summarize MEDULA claims operations and rejection queues. Highlight pending rejections, error code categories, and recommended corrective actions before resubmission. Reply in English.",
+      "Summarize the MEDULA rejection queue. Highlight pending rejections, error-code categories, and corrective steps before resubmission. Reply in English.",
     referenceTools:
       "Explain which gazette reference tools are available and when a billing officer should use each lookup. Reply in English.",
     ruleDatabase:

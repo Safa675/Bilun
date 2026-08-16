@@ -57,8 +57,8 @@ export const SUT_HOME_TABS: SutHomeTabMeta[] = [
   },
   {
     id: "operations",
-    label: "Operations",
-    subtitle: "MEDULA rejection queue and operational follow-up workflows.",
+    label: "Rejection Queue",
+    subtitle: "MEDULA rejection queue and follow-up.",
   },
   {
     id: "reference-tools",

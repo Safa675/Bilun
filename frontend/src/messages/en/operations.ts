@@ -1,7 +1,6 @@
 const operations = {
   queue: {
     title: "MEDULA rejection queue",
-    subtitle: "Reactive triage for claims rejected by MEDULA. Operational guidance only — not included in SGK uplift.",
     empty: {
       noIngest: "MEDULA rejection ingest is not enabled for this cohort.",
       noEvents: "No MEDULA rejection records found.",
@@ -13,7 +12,6 @@ const operations = {
       stage: "Stage",
       resultCode: "Result code",
       message: "MEDULA message",
-      procedure: "Procedure",
       relatedLine: "Related line",
       playbook: "Playbook",
       rebill: "Rebill permitted",
@@ -27,15 +25,23 @@ const operations = {
     filters: {
       resultCode: "Result code",
       stage: "Stage",
+      all: "All",
       matchedOnly: "Only matched templates",
       rebillPermittedOnly: "Only rebill permitted",
       searchPlaceholder: "Search patient or claim",
+    },
+    kpis: {
+      total: "Total rejections",
+      matched: "Playbook matched",
+      rebillable: "Rebill permitted",
     },
     values: {
       yes: "Yes",
       no: "No",
       noTemplate: "No template",
     },
+    correctiveSteps: "Corrective steps",
+    noCorrectiveSteps: "No corrective steps for this record.",
   },
 } as const;
 

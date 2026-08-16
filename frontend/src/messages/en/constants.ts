@@ -24,8 +24,8 @@ const constants = {
       subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
     },
     operations: {
-      label: "Operations",
-      subtitle: "MEDULA rejection queue and operational follow-up workflows.",
+      label: "Rejection Queue",
+      subtitle: "MEDULA rejection queue and follow-up.",
     },
     referenceTools: {
       label: "Reference Tools",

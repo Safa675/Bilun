@@ -86,6 +86,7 @@ const sections = {
       partialEngineSubsections: "§4.2 alt bölüm kodlama %",
     },
     tabs: {
+      coverage: "Kapsam",
       rules: "Kurallar",
       sections: "Bölümler",
       clauses: "Hükümler",

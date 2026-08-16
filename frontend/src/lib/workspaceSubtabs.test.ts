@@ -42,13 +42,8 @@ const mockT = (key: string) => {
 
     "optimizer.tabs.exemptions": "Katılım Payı Muafiyetleri",
     "optimizer.tabs.surcharge": "İlave Ücret & Tavan Sınırı",
-    "optimizer.tabs.materials": "Tıbbi Malzeme, ÜTS & Ön Onay",
-    "optimizer.tabs.paymentMethods": "Fatura Yöntemi & DRG Paket",
-    "optimizer.tabs.surgicalSessions": "Cerrahi & Seans Katsayıları",
-    "optimizer.tabs.diagnosticsLab": "Laboratuvar & Tetkik Hataları",
-    "optimizer.tabs.preFlightDocs": "Gönderim Evrakları & FI",
-    "optimizer.tabs.medulaRejections": "MEDULA Red Kılavuzu",
 
+    "sections.ruleDatabase.tabs.coverage": "Kapsam",
     "sections.ruleDatabase.tabs.rules": "Kurallar",
     "sections.ruleDatabase.tabs.sections": "Bölümler",
     "sections.ruleDatabase.tabs.clauses": "Hükümler",
@@ -130,35 +125,27 @@ describe("resolveTabInfo", () => {
       expect(info.subtab).toBe("surcharge");
     });
 
-    it("resolves materials (Tıbbi Malzeme, ÜTS & Ön Onay) when compTab=materials", () => {
+    it("falls back to exemptions when compTab is an unknown value", () => {
       const tab = makeTab("section", "compliance", "tab=compliance&compTab=materials");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Tıbbi Malzeme, ÜTS & Ön Onay");
-      expect(info.fullTitle).toBe("Uyumluluk · Tıbbi Malzeme, ÜTS & Ön Onay");
-      expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.materials);
-      expect(info.subtab).toBe("materials");
-    });
-
-    it("resolves payment_methods (Fatura Yöntemi & DRG Paket) when compTab=payment_methods", () => {
-      const tab = makeTab("section", "compliance", "tab=compliance&compTab=payment_methods");
-      const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Fatura Yöntemi & DRG Paket");
-      expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.payment_methods);
-      expect(info.subtab).toBe("payment_methods");
-    });
-
-    it("resolves pre_flight_docs (Gönderim Evrakları & FI) when compTab=pre_flight_docs", () => {
-      const tab = makeTab("section", "compliance", "tab=compliance&compTab=pre_flight_docs");
-      const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Gönderim Evrakları & FI");
-      expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.pre_flight_docs);
-      expect(info.subtab).toBe("pre_flight_docs");
+      expect(info.label).toBe("Katılım Payı Muafiyetleri");
+      expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.exemptions);
+      expect(info.subtab).toBe("exemptions");
     });
   });
 
   describe("Rule Database subtabs", () => {
-    it("defaults to rules (Kurallar)", () => {
+    it("defaults to coverage (Kapsam)", () => {
       const tab = makeTab("section", "rule-database");
+      const info = resolveTabInfo(tab, mockT);
+      expect(info.label).toBe("Kapsam");
+      expect(info.fullTitle).toBe("Kural Veritabanı · Kapsam");
+      expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.coverage);
+      expect(info.subtab).toBe("coverage");
+    });
+
+    it("resolves rules (Kurallar) when rdTab=rules", () => {
+      const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=rules");
       const info = resolveTabInfo(tab, mockT);
       expect(info.label).toBe("Kurallar");
       expect(info.fullTitle).toBe("Kural Veritabanı · Kurallar");
