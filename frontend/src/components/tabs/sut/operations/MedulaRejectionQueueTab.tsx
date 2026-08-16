@@ -133,13 +133,6 @@ export default function MedulaRejectionQueueTab() {
   return (
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
-        <Eyebrow>{t("operations.queue.title")}</Eyebrow>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          {t("operations.queue.subtitle")}
-        </p>
-      </Surface>
-
-      <Surface variant="base" padding="lg">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">

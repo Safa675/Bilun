@@ -32,11 +32,25 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-LLM_ENDPOINT = os.getenv(
-    "LLM_ENDPOINT",
-    os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1/chat/completions"),
-)
-MODEL = os.getenv("LLM_MODEL", "deepseek/deepseek-v4-flash-0731")
+def _get_llm_endpoint() -> str:
+    endpoint = os.getenv("LLM_ENDPOINT", "").strip()
+    if endpoint:
+        return endpoint
+    base_url = os.getenv("LLM_BASE_URL", "").strip()
+    if base_url:
+        base_url = base_url.rstrip("/")
+        if base_url.endswith("/chat/completions"):
+            return base_url
+        return f"{base_url}/chat/completions"
+    return "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+
+
+def _get_model() -> str:
+    return os.getenv("LLM_MODEL", "").strip() or "deepseek-v4-flash-0731"
+
+
+LLM_ENDPOINT = _get_llm_endpoint()
+MODEL = _get_model()
 
 
 def _get_api_key() -> str | None:
@@ -187,7 +201,7 @@ async def _call_llm_non_streaming(
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
-                LLM_ENDPOINT,
+                _get_llm_endpoint(),
                 headers=_build_headers(),
                 json=payload,
             )
@@ -228,7 +242,7 @@ async def _stream_text_from_llm(
         async with httpx.AsyncClient(timeout=120.0) as client:
             async with client.stream(
                 "POST",
-                LLM_ENDPOINT,
+                _get_llm_endpoint(),
                 headers=_build_headers(),
                 json=payload,
             ) as response:
@@ -254,7 +268,10 @@ async def _stream_text_from_llm(
                         break
                     try:
                         chunk = json.loads(data)
-                        delta = chunk["choices"][0]["delta"]
+                        choices = chunk.get("choices")
+                        if not choices:
+                            continue
+                        delta = choices[0].get("delta", {})
                         content = delta.get("content")
                         reasoning = delta.get("reasoning") or delta.get("reasoning_content")
                         if reasoning:
@@ -339,16 +356,17 @@ async def stream_chat_response_with_tools(
     )
     tools = get_tool_schemas(user_role=user_role)
     tool_session = ToolSession()
+    model = _get_model()
 
     base_payload = {
-        "model": MODEL,
+        "model": model,
         "temperature": 0.4,
         "max_tokens": 4096,
     }
 
     logger.info(
         "LLM REQUEST WITH TOOLS | model=%s | msgs=%d | tools=%d | context_chars=%d",
-        MODEL,
+        model,
         len(full_messages),
         len(tools),
         len(runtime_context),
@@ -508,9 +526,10 @@ async def stream_chat_response(
         user_role=user_role if user_role == "dev" else "billing_officer",
         ui_locale=ui_locale,
     )
+    model = _get_model()
     logger.info(
         "LLM REQUEST | model=%s | msgs=%d | context_chars=%d",
-        MODEL,
+        model,
         len(full_messages),
         len(runtime_context),
     )
@@ -522,7 +541,7 @@ async def stream_chat_response(
         "X-Title": "BILUN",
     }
     payload = {
-        "model": MODEL,
+        "model": model,
         "messages": full_messages,
         "max_tokens": 4096,
         "temperature": 0.4,
@@ -538,7 +557,7 @@ async def stream_chat_response(
         async with httpx.AsyncClient(timeout=120.0) as client:
             async with client.stream(
                 "POST",
-                LLM_ENDPOINT,
+                _get_llm_endpoint(),
                 headers=headers,
                 json=payload,
             ) as response:
@@ -561,7 +580,10 @@ async def stream_chat_response(
                         break
                     try:
                         chunk = json.loads(data)
-                        delta = chunk["choices"][0]["delta"]
+                        choices = chunk.get("choices")
+                        if not choices:
+                            continue
+                        delta = choices[0].get("delta", {})
                         content = delta.get("content")
                         reasoning = delta.get("reasoning") or delta.get("reasoning_content")
                         if reasoning:

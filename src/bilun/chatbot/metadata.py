@@ -21,11 +21,14 @@ def _read_active_gazette_version() -> str | None:
     """
     try:
         df = pd.read_parquet(_MANIFEST_PATH)
-        latest = df["effective_date"].max()
-        if pd.isna(latest):
+        if "effective_date" not in df.columns:
             return None
-        return str(latest)
-    except (FileNotFoundError, OSError, KeyError, ValueError):
+        dates = df["effective_date"].dropna().astype(str)
+        if dates.empty:
+            return None
+        latest = dates.max()
+        return str(latest) if latest else None
+    except Exception:
         return None
 
 

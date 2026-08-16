@@ -52,7 +52,7 @@ export const SUT_HOME_TABS: SutHomeTabMeta[] = [
   },
   {
     id: "revenue",
-    label: "Revenue",
+    label: "Revenue Dashboard",
     subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
   },
   {

@@ -1,11 +1,17 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Hasta bazında uyumluluk uyarıları: katılım payı muafiyeti (EK-1A ve diğer gerekçeler) ve fark ücreti yasağı (EK-2G, §1.9.3). Kesin işlem satırı olmayan kontroller açıkça Kullanılamıyor olarak işaretlenir.",
+      "Tüm SUT uyumluluk boyutları genelinde kohort denetim merkezi: muafiyetler, ilave ücret tavanı, tıbbi malzeme ön onay/ÜTS, DRG paket yöntemleri, cerrahi seans katsayıları, laboratuvar/Tablo 15, gönderim evrakları ve MEDULA red riskleri.",
     revenueDescription:
       "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
-    exemptions: "Katılım payı muafiyetleri",
-    surcharge: "Fark ücreti uyumu",
+    exemptions: "Katılım Payı Muafiyetleri",
+    surcharge: "İlave Ücret & Tavan Sınırı",
+    materials: "Tıbbi Malzeme, ÜTS & Ön Onay",
+    paymentMethods: "Fatura Yöntemi & DRG Paket",
+    surgicalSessions: "Cerrahi & Seans Katsayıları",
+    diagnosticsLab: "Laboratuvar & Tetkik Hataları",
+    preFlightDocs: "Gönderim Evrakları & FI",
+    medulaRejections: "MEDULA Red Kılavuzu",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -31,8 +37,14 @@ const optimizer = {
     noMatching: "Mevcut sorgu için eşleşen hasta yok.",
   },
   categories: {
-    exemptions: "Katılım payı muafiyetleri",
-    surcharge: "Fark ücreti uyumu",
+    exemptions: "Katılım Payı Muafiyetleri",
+    surcharge: "İlave Ücret & Tavan Sınırı",
+    materials: "Tıbbi Malzeme, ÜTS & Ön Onay",
+    paymentMethods: "Fatura Yöntemi & DRG Paket",
+    surgicalSessions: "Cerrahi & Seans Katsayıları",
+    diagnosticsLab: "Laboratuvar & Tetkik Hataları",
+    preFlightDocs: "Gönderim Evrakları & FI",
+    medulaRejections: "MEDULA Red Kılavuzu",
   },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",

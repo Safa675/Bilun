@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  AlertOctagon,
   BookOpen,
   Boxes,
   BriefcaseMedical,
@@ -14,6 +15,7 @@ import {
   FolderTree,
   PackageSearch,
   Pill,
+  Scissors,
   ScrollText,
   ShieldAlert,
   ShieldCheck,
@@ -73,16 +75,47 @@ export const BILLING_SUB_ICONS: Record<BillingToolSubSection, LucideIcon> = {
   lab_prices: FlaskConical,
 };
 
-export type ComplianceSubSection = "exemptions" | "surcharge";
+export type ComplianceSubSection =
+  | "exemptions"
+  | "surcharge"
+  | "materials"
+  | "payment_methods"
+  | "surgical_sessions"
+  | "diagnostics_lab"
+  | "pre_flight_docs"
+  | "medula_rejections";
 
 export const COMPLIANCE_SUB_IDS: readonly ComplianceSubSection[] = [
   "exemptions",
   "surcharge",
+  "materials",
+  "payment_methods",
+  "surgical_sessions",
+  "diagnostics_lab",
+  "pre_flight_docs",
+  "medula_rejections",
 ] as const;
+
+export const COMPLIANCE_SUB_KEY = {
+  exemptions: "exemptions",
+  surcharge: "surcharge",
+  materials: "materials",
+  payment_methods: "paymentMethods",
+  surgical_sessions: "surgicalSessions",
+  diagnostics_lab: "diagnosticsLab",
+  pre_flight_docs: "preFlightDocs",
+  medula_rejections: "medulaRejections",
+} as const satisfies Record<ComplianceSubSection, string>;
 
 export const COMPLIANCE_SUB_ICONS: Record<ComplianceSubSection, LucideIcon> = {
   exemptions: ShieldCheck,
   surcharge: ShieldAlert,
+  materials: PackageSearch,
+  payment_methods: Boxes,
+  surgical_sessions: Scissors,
+  diagnostics_lab: FlaskConical,
+  pre_flight_docs: FileCheck2,
+  medula_rejections: AlertOctagon,
 };
 
 export type RuleDatabaseSubSection =
@@ -167,8 +200,10 @@ export function resolveTabInfo(
   if (tab.refId === "compliance") {
     const rawSub = params.get("compTab") || params.get("subtab");
     const sub: ComplianceSubSection =
-      rawSub === "surcharge" ? "surcharge" : "exemptions";
-    const subLabel = t(`optimizer.tabs.${sub}`);
+      rawSub && (COMPLIANCE_SUB_IDS as readonly string[]).includes(rawSub)
+        ? (rawSub as ComplianceSubSection)
+        : "exemptions";
+    const subLabel = t(`optimizer.tabs.${COMPLIANCE_SUB_KEY[sub]}`);
     const Icon = COMPLIANCE_SUB_ICONS[sub];
 
     return {

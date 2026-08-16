@@ -7,6 +7,15 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-08-16 — Maintain Bilun's native design system; eliminate AI-sloppy redundant banners and cluttered cards
+
+**Pattern:** Generated UI components with verbose explanatory subtitles and redundant header cards ("MEDULA red kuyruğu — reaktif acil ayıklama...", chat banner placeholders, ad-hoc cards) which felt "AI sloppy" and deviated from Bilun's clean, premium, minimal aesthetic.
+
+**Rule:** 
+1. **Strictly adhere to Bilun's design tokens and primitives:** Use `Surface`, `Eyebrow`, `Stat`, `DataTable`, `Chip`, and `Button` with clean spacing (`gap-4`, `space-y-5`, `p-0`), subtle borders (`var(--border-subtle)`), tabular numerics, and muted uppercase tracking. Avoid bloated custom cards or decorative fluff.
+2. **Never render redundant explanatory banners:** Omit unnecessary descriptive subtitles like "MEDULA tarafından reddedilen talepler için reaktif acil ayıklama..." or wordy workspace banners when the table/filters are self-explanatory.
+3. **Respect core terminology changes:** When renaming navigational tabs (e.g., "Operasyonlar" → "Red Kuyruğu"), propagate cleanly across translations (`constants.homeTabs.operations.label`) and remove any lingering legacy headers or redundant chat prompts.
+
 ## 2026-08-15 — A lazy module-level loader that publishes its "loaded" flag BEFORE populating the cache races under ThreadPoolExecutor; a memoizing resolver then freezes the poisoned empty result forever
 
 **Pattern:** `rules_catalog._load_coverage()` set `_coverage_loaded = True` *before* assigning `_coverage_cache`. Cohort billing reports run on a `ThreadPoolExecutor` (`cohort_runner.map_parallel`), so a worker racing the first load saw `loaded=True` with a still-`None` frame, `get_clause` returned nothing, and the new `resolve_clause_key` — decorated with `lru_cache` — cached the empty `clause_key` for the process lifetime. Symptom: unit tests green (single-threaded first call loads cleanly) but the LIVE cache rebuild emitted `clause_ref.clause_key == ""` for exactly the coordinates resolved early in each worker, while later coordinates resolved fine. Tests did not catch it because they never reproduce the concurrent first-load.
