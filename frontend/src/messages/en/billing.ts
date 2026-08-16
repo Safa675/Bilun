@@ -435,7 +435,7 @@ const billing = {
     },
     "revenue": {
       "title": "Revenue Optimization & Entitlement",
-      "shortTitle": "Revenue",
+      "shortTitle": "Revenue Dashboard",
       "description": "Income the hospital legally earned but did not reflect on the claim.",
       "kpiRecoverable": "Recoverable SGK uplift",
       "kpiOpportunities": "Revenue opportunities"

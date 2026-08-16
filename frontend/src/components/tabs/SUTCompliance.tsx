@@ -5,7 +5,7 @@ import { getSutPatients } from "@/lib/api/sut";
 import type { PatientMeta } from "@/lib/domains/patient";
 import CohortFilterBar from "@/components/cohort/CohortFilterBar";
 import { useCohortPatientIds } from "@/hooks/useCohortFilter";
-import { SUTComplianceTab } from "./sut/optimizer/SUTOptimizerTab";
+import { SUTComplianceDashboard } from "./sut/compliance/SUTComplianceDashboard";
 
 export default function SUTCompliance() {
   const [patientMeta, setPatientMeta] = useState<PatientMeta[]>([]);
@@ -33,7 +33,7 @@ export default function SUTCompliance() {
         totalCount={patientMeta.length}
         patients={patientMeta}
       />
-      <SUTComplianceTab
+      <SUTComplianceDashboard
         cohortPatientIds={cohort.ids}
         cohortFilterActive={cohort.isActive}
       />

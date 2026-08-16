@@ -9,7 +9,7 @@ const home = {
     "jumpInto": "Or jump straight into",
     "tabPatients": "Patients",
     "tabCompliance": "Compliance",
-    "tabRevenue": "Revenue",
+    "tabRevenue": "Revenue Dashboard",
     "howItWorks": "How it works",
     "relativeTime": {
       "justNow": "just now",

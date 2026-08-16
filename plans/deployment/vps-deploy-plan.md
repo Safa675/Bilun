@@ -58,7 +58,7 @@ land on `/login` unless they have the session cookie.
    ```
    Copy the three output lines — you'll paste them into `.env` on the VPS.
 
-5. **Get your LLM_API_KEY** (OpenRouter) — reuse the one from your local `.env`.
+5. **Get your LLM_API_KEY** (Alibaba Token Plan / OpenAI-compatible) — reuse the one from your local `.env`.
 
 ---
 

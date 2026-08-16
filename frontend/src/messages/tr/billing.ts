@@ -435,7 +435,7 @@ const billing = {
     },
     "revenue": {
       "title": "Gelir Optimizasyonu & Hak Kazanım",
-      "shortTitle": "Gelir",
+      "shortTitle": "Gelir Dashboard",
       "description": "Hastanenin yasal olarak hak ettiği ama faturaya yansıtmadığı gelirler.",
       "kpiRecoverable": "Kurtarılabilir SGK artışı",
       "kpiOpportunities": "Gelir fırsatı"

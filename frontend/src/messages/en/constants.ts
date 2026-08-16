@@ -20,7 +20,7 @@ const constants = {
       subtitle: "What's wrong? EK-1A exemptions and surcharge flags (EK-2G).",
     },
     revenue: {
-      label: "Revenue",
+      label: "Revenue Dashboard",
       subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
     },
     operations: {

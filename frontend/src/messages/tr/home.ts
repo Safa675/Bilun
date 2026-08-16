@@ -9,7 +9,7 @@ const home = {
     "jumpInto": "Veya doğrudan şuraya gidin",
     "tabPatients": "Hastalar",
     "tabCompliance": "Uyumluluk",
-    "tabRevenue": "Gelir",
+    "tabRevenue": "Gelir Dashboard",
     "howItWorks": "Nasıl çalışır",
     "relativeTime": {
       "justNow": "az önce",

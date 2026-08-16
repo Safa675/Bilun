@@ -20,11 +20,11 @@ const constants = {
       subtitle: "Ne yanlış? EK-1A muafiyetleri ve fark ücreti bayrakları (EK-2G).",
     },
     revenue: {
-      label: "Gelir",
+      label: "Gelir Dashboard",
       subtitle: "Para nerede? Geri kazanım toplamları, öncelikli hastalar, DRG ve ilaç denetimleri.",
     },
     operations: {
-      label: "Operasyonlar",
+      label: "Red Kuyruğu",
       subtitle: "MEDULA red kuyruğu ve operasyonel takip iş akışları.",
     },
     referenceTools: {

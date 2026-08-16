@@ -1,11 +1,17 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Per-patient compliance alerts: copay exemptions (EK-1A and other grounds) and surcharge prohibitions (EK-2G, §1.9.3). Checks that need exact procedure lines show an explicit Unavailable state.",
+      "Full SUT compliance audit across all 8 dimensions: copay exemptions, surcharge ceilings, medical materials pre-auth/UTS, DRG package strategies, surgical session modifiers, lab/Table 15, pre-flight documentation, and MEDULA rejection playbooks.",
     revenueDescription:
       "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
+    materials: "Materials, UTS & Pre-Auth",
+    paymentMethods: "Payment Method & DRG Packages",
+    surgicalSessions: "Surgical & Session Modifiers",
+    diagnosticsLab: "Diagnostics & Lab Errors",
+    preFlightDocs: "Pre-Flight Docs & FI",
+    medulaRejections: "MEDULA Rejection Playbook",
     categoriesAria: "Compliance alert categories",
   },
   filters: {
@@ -32,6 +38,12 @@ const optimizer = {
   categories: {
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
+    materials: "Materials, UTS & Pre-Auth",
+    paymentMethods: "Payment Method & DRG Packages",
+    surgicalSessions: "Surgical & Session Modifiers",
+    diagnosticsLab: "Diagnostics & Lab Errors",
+    preFlightDocs: "Pre-Flight Docs & FI",
+    medulaRejections: "MEDULA Rejection Playbook",
   },
   errors: {
     loadAlerts: "Failed to load patient alerts",
