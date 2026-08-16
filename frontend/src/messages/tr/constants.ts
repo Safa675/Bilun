@@ -17,7 +17,7 @@ const constants = {
     },
     compliance: {
       label: "Uyumluluk",
-      subtitle: "Ne yanlış? EK-1A muafiyetleri ve fark ücreti bayrakları (EK-2G).",
+      subtitle: "Ne yanlış? Canlı kohort bulguları: muafiyet, ilave ücret, malzeme, endikasyon, lab, ödeme.",
     },
     revenue: {
       label: "Gelir Dashboard",

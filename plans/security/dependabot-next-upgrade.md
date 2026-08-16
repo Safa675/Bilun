@@ -34,7 +34,7 @@ Clear all 25 open Dependabot alerts in `frontend/package-lock.json` by bumping `
   - Hit `/api/...` through the rewrite → expect backend response (smuggling fix doesn't change legitimate proxying)
 - [ ] **Commit** with message documenting: which CVEs were closed, which were skipped as not-applicable (with one-line reasons per AGENTS.md §11), and the devDep hygiene bumps
 - [ ] **CI check**: confirm all CI jobs green on the branch before considering merge (per AGENTS.md §10)
-- [ ] **PR review gate**: after CI green, read bot (`pr_agent`) + any human review comments; classify each as (a) real bug / (b) clarity / (c) low-value; fix (a) before merging (per AGENTS.md §11)
+- [ ] **PR review gate**: after CI green, read Copilot + any human review comments; classify each as (a) real bug / (b) clarity / (c) low-value; fix (a) before merging (per AGENTS.md §11)
 - [ ] **Merge** to main; deploy.yml auto-detects the lockfile change and rebuilds on the VPS
 
 ### Out of Scope

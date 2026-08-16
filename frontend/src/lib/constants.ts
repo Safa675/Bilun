@@ -48,7 +48,7 @@ export const SUT_HOME_TABS: SutHomeTabMeta[] = [
   {
     id: "compliance",
     label: "Compliance",
-    subtitle: "What's wrong? EK-1A exemptions and surcharge flags (EK-2G).",
+    subtitle: "What's wrong? Live cohort findings: exemptions, surcharge, materials, indication, lab, payment.",
   },
   {
     id: "revenue",

@@ -1,11 +1,16 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Kohort uyumluluk uyarıları: katılım payı muafiyetleri (EK-1A) ve ilave ücret bayrakları (EK-2G).",
+      "Kohort uyumluluk uyarıları: katılım payı muafiyetleri, ilave ücret, EK-2C-1 oranları, malzeme, endikasyon, lab ve ödeme yöntemi.",
     revenueDescription:
       "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
     exemptions: "Katılım Payı Muafiyetleri",
     surcharge: "İlave Ücret & Tavan Sınırı",
+    copay_rates: "Katılım oranı",
+    materials: "Tıbbi malzeme",
+    drug_indication: "İlaç endikasyon",
+    lab: "Laboratuvar",
+    payment_methods: "Ödeme yöntemi",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -33,6 +38,7 @@ const optimizer = {
   categories: {
     exemptions: "Katılım Payı Muafiyetleri",
     surcharge: "İlave Ücret & Tavan Sınırı",
+    copay_rates: "Katılım oranı",
   },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",
@@ -185,6 +191,23 @@ const optimizer = {
     exactClaimInputsRequired: "Kesin talep girdileri gerekli",
     billedMinusExpectedPayable:
       "Faturalanan eksi beklenen ödenecek (EK-1A muaf reçete katkı payı hariç — katkı payı tasarrufuna bakın)",
+  },
+  complianceIndex: {
+    findings: "Bulgular",
+    patientsWithFindings: "Bulgulu hasta",
+    billedAtRisk: "Risk altındaki tutar",
+    medulaRejections: "MEDULA redleri",
+    medulaHint: "Red kuyruğu",
+    indexUnavailable: "Uyumluluk indeksi bu cache'de yok. Analitik cache'i yeniden oluşturun.",
+    noFindings: "Bu filtre için uyumluluk bulgusu yok.",
+    patientId: "Hasta ID",
+    claim: "Fatura",
+    code: "Kod",
+    kind: "Tür",
+    billed: "Tutar",
+    sutSection: "SUT",
+    inspect: "İncele",
+    openBill: "Faturaya git",
   },
   savingsCategory: {
     sgk_uplift: "SGK artışı",
