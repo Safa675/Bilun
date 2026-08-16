@@ -37,13 +37,7 @@ const patient = {
   },
   "billingGroups": {
     "overview": "Finansal özet",
-    "overviewDescription": "Aktif kapsam için özet KPI'lar ve önerilen işlemler.",
-    "compliance": "Uyumluluk incelemesi",
-    "complianceDescription": "Katılım payı, ilave ücret ayrımı ve faturalama stratejisi.",
-    "opportunities": "Gelir fırsatları",
-    "opportunitiesDescription": "Seans, DRG, malzeme ve işlem artış tespitleri.",
-    "reference": "Referans ve gönderim",
-    "referenceDescription": "Kontrol listeleri, MEDULA playbook ve ilaç endikasyon incelemesi."
+    "overviewDescription": "Aktif kapsam için özet KPI'lar ve önerilen işlemler."
   },
   "billPicker": {
     "label": "Faturalar",

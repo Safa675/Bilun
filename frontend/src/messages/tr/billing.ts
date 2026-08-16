@@ -34,6 +34,7 @@ const billing = {
     "surface": "Yüzey",
     "claim": "Talep",
     "section": "SUT",
+    "inspectClause": "Fıkrayı incele: {coordinate}",
     "amount": "Tutar",
     "detail": "Not",
     "findingTypes": {
@@ -143,11 +144,6 @@ const billing = {
       "drugProhibitedTooltip": "SUT {coordinate} ve {law} uyarınca ilaçlardan ilave ücret (fark ücreti) alınması kanunen yasaktır.",
       "cancerExemptTooltip": "SUT {coordinate} uyarınca onkolojik tedavilerden (kanser/kemoterapi/radyoterapi) hastadan hiçbir ilave ücret alınamaz.",
       "emergencyExemptTooltip": "SUT {coordinate} uyarınca acil hal kapsamındaki işlemlerden hiçbir ilave ücret alınamaz."
-    },
-    "clauseDrawer": {
-      "title": "SUT fıkra metni",
-      "kicker": "Mevzuat",
-      "ariaLabel": "SUT fıkra metni çekmecesi"
     },
     "groundLabels": {
       "ek1a_muayene": "EK-1A ayaktan muayene",
@@ -426,6 +422,40 @@ const billing = {
     "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir.",
     "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}",
     "recoverableFootnote": "Kurtarılabilir toplamlar yalnızca talep destekli Kurum ödemesi artışını içerir — sezgisel tahminler veya klinik inceleme bayrakları değil."
+  },
+  "views": {
+    "tabListAria": "Fatura inceleme görünümleri",
+    "compliance": {
+      "title": "Uyumluluk & Red Önleme",
+      "shortTitle": "Uyumluluk",
+      "description": "SGK kesinti, red ve usulsüzlük riski taşıyan kalemlerin fatura öncesi ayıklanması.",
+      "kpiRisk": "Toplam denetim riski",
+      "kpiFindings": "Riskli bulgu",
+      "kpiBilledAtRisk": "Riskli faturalanan tutar"
+    },
+    "revenue": {
+      "title": "Gelir Optimizasyonu & Hak Kazanım",
+      "shortTitle": "Gelir",
+      "description": "Hastanenin yasal olarak hak ettiği ama faturaya yansıtmadığı gelirler.",
+      "kpiRecoverable": "Kurtarılabilir SGK artışı",
+      "kpiOpportunities": "Gelir fırsatı"
+    },
+    "audit": {
+      "title": "Gönderim Öncesi Evrak & İnceleme",
+      "shortTitle": "Evrak",
+      "description": "SGK Fatura İnceleme Komisyonu'nun aradığı evrakların gönderim öncesi kontrolü.",
+      "kpiChecklist": "Kontrol maddesi",
+      "kpiErrors": "Hata",
+      "kpiReady": "Hazır dosya",
+      "readyToggle": "Dosya hazır",
+      "readyAria": "{item} — dosya hazır olarak işaretle"
+    },
+    "noItems": "Bu görünümde eylem bulunmuyor."
+  },
+  "clauseDrawer": {
+    "title": "SUT fıkra metni",
+    "kicker": "Mevzuat",
+    "ariaLabel": "SUT fıkra metni çekmecesi"
   }
 } as const;
 

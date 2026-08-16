@@ -9,25 +9,10 @@ import ReportProblemModal from "@/components/feedback/ReportProblemModal";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import {
   BillingSummary,
-  LabOptimizationSection,
-  CopayOptimizationSection,
-  BillingStrategySection,
-  OptionalOverrideSection,
-  SessionUpliftSection,
-  BloodComponentUpliftSection,
-  MaterialUpliftSection,
-  ProcedureAddonUpliftSection,
-  ProcedureCaptureGapSection,
-  DrgPackageAdequacyReviewSection,
-  GazetteRepricingSection,
-  ClaimSubmissionChecklistSection,
-  MedulaRejectionPlaybookSection,
-  DrugIndicationReviewSection,
-  CareSettingReviewSection,
-  DrgUpliftSection,
-  MaterialsPreCheckSection,
   SutOptimizationSection,
 } from "@/components/patient/SutBillingReportSections";
+import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
+import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import BillPicker from "@/components/patient/BillPicker";
 import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
@@ -99,6 +84,7 @@ export function SutPatientPageContent({
   const [claims, setClaims] = useState<PatientClaimSummary[]>([]);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const [clauseKey, setClauseKey] = useState<string | null>(null);
   const [claimDetail, setClaimDetail] = useState<PatientClaimDetail | null>(null);
   const [claimsLoading, setClaimsLoading] = useState(false);
   const [claimsError, setClaimsError] = useState<string | null>(null);
@@ -429,6 +415,14 @@ export function SutPatientPageContent({
     [patientId, router, sectionQuery],
   );
 
+  const handleOpenClause = useCallback((nextClauseKey: string) => {
+    setClauseKey(nextClauseKey);
+  }, []);
+
+  const handleCloseClause = useCallback(() => {
+    setClauseKey(null);
+  }, []);
+
   // Selecting a recommended action highlights matching invoice lines (S1) and
   // persists `?section=` so the URL is shareable and survives reload (S2).
   const handleSelectAction = useCallback(
@@ -631,77 +625,17 @@ export function SutPatientPageContent({
                       title={t("patient.billingGroups.overview")}
                       description={t("patient.billingGroups.overviewDescription")}
                     >
-                      <BillingSummary
-                        billingReport={activeBillingReport}
-                        selectedActionId={selectedActionId}
-                        onSelectAction={handleSelectAction}
-                      />
+                      <BillingSummary billingReport={activeBillingReport} />
                     </BillingReportGroup>
 
-                    <BillingReportGroup
-                      title={t("patient.billingGroups.compliance")}
-                      description={t("patient.billingGroups.complianceDescription")}
-                    >
-                      <LabOptimizationSection labData={activeBillingReport.lab} />
-                      <CopayOptimizationSection copayData={activeBillingReport.copay} />
-                      <BillingStrategySection strategyData={activeBillingReport.billing_strategy} />
-                      <OptionalOverrideSection strategyData={activeBillingReport.billing_strategy} />
-                    </BillingReportGroup>
-
-                    <BillingReportGroup
-                      title={t("patient.billingGroups.opportunities")}
-                      description={t("patient.billingGroups.opportunitiesDescription")}
-                    >
-                      {activeBillingReport.session_uplift && (
-                        <SessionUpliftSection sessionData={activeBillingReport.session_uplift} />
-                      )}
-                      {activeBillingReport.blood_uplift && (
-                        <BloodComponentUpliftSection bloodData={activeBillingReport.blood_uplift} />
-                      )}
-                      {activeBillingReport.material_uplift && (
-                        <MaterialUpliftSection materialData={activeBillingReport.material_uplift} />
-                      )}
-                      {activeBillingReport.procedure_addon_uplift && (
-                        <ProcedureAddonUpliftSection addonData={activeBillingReport.procedure_addon_uplift} />
-                      )}
-                      {activeBillingReport.procedure_capture_gap && (
-                        <ProcedureCaptureGapSection captureData={activeBillingReport.procedure_capture_gap} />
-                      )}
-                      {activeBillingReport.drg_package_adequacy && (
-                        <DrgPackageAdequacyReviewSection reviewData={activeBillingReport.drg_package_adequacy} />
-                      )}
-                      {activeBillingReport.gazette_repricing && (
-                        <GazetteRepricingSection repricingData={activeBillingReport.gazette_repricing} />
-                      )}
-                      {activeBillingReport.drg_uplift && (
-                        <DrgUpliftSection drgData={activeBillingReport.drg_uplift} />
-                      )}
-                      <MaterialsPreCheckSection materialsData={activeBillingReport.materials} />
-                    </BillingReportGroup>
-
-                    <BillingReportGroup
-                      title={t("patient.billingGroups.reference")}
-                      description={t("patient.billingGroups.referenceDescription")}
-                    >
-                      {activeBillingReport.claim_submission_checklist && (
-                        <ClaimSubmissionChecklistSection
-                          checklistData={activeBillingReport.claim_submission_checklist}
-                        />
-                      )}
-                      {activeBillingReport.medula_rejection_playbook && (
-                        <MedulaRejectionPlaybookSection
-                          playbookData={activeBillingReport.medula_rejection_playbook}
-                        />
-                      )}
-                      {activeBillingReport.drug_indication && (
-                        <DrugIndicationReviewSection
-                          reviewData={activeBillingReport.drug_indication}
-                        />
-                      )}
-                      {activeBillingReport.care_setting_review && (
-                        <CareSettingReviewSection reviewData={activeBillingReport.care_setting_review} />
-                      )}
-                    </BillingReportGroup>
+                    <PatientWorkspaceViews
+                      billingReport={activeBillingReport}
+                      patientId={patientId}
+                      selectedActionId={selectedActionId}
+                      onSelectAction={handleSelectAction}
+                      onOpenClause={handleOpenClause}
+                      sectionQuery={sectionQuery}
+                    />
 
                     {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
                     <p className="py-2 text-center text-xs text-[var(--text-muted)]">
@@ -724,6 +658,7 @@ export function SutPatientPageContent({
           onChatStateChange={handleChatStateChange}
         />
       )}
+      <SutClauseDrawer clauseKey={clauseKey} onClose={handleCloseClause} />
       {!embedded && (
         <>
           <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
