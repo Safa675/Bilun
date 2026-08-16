@@ -37,13 +37,7 @@ const patient = {
   },
   "billingGroups": {
     "overview": "Financial overview",
-    "overviewDescription": "Summary KPIs and recommended actions for the active scope.",
-    "compliance": "Compliance review",
-    "complianceDescription": "Copay, surcharge decomposition, and billing strategy.",
-    "opportunities": "Revenue opportunities",
-    "opportunitiesDescription": "Session, DRG, material, and procedure uplift detectors.",
-    "reference": "Reference & submission",
-    "referenceDescription": "Checklists, MEDULA playbook, and drug indication review."
+    "overviewDescription": "Summary KPIs and recommended actions for the active scope."
   },
   "billPicker": {
     "label": "Bills",

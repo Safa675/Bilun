@@ -54,6 +54,7 @@ import {
   recommendedActionAmountParts,
   recommendedActionSurfaceLabel,
   recommendedActionTitle,
+  type FindingType,
   type RecommendedActionItem,
 } from "@/lib/recommendedActions";
 import { theme } from "@/lib/theme";
@@ -162,13 +163,22 @@ export function RecommendedActionsPanel({
   billingReport,
   selectedActionId,
   onSelectAction,
+  findingFilter,
+  onOpenClause,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
+  /** Restrict rows to one finding class (engine view) or show all (overview). */
+  findingFilter?: FindingType;
+  /** When provided, rows with a canonical clause cite render an inspect button. */
+  onOpenClause?: (clauseKey: string) => void;
 }) {
   const t = useT();
-  const actions = getRecommendedActions(billingReport);
+  const allActions = getRecommendedActions(billingReport);
+  const actions = findingFilter
+    ? allActions.filter((action) => getFindingType(action) === findingFilter)
+    : allActions;
 
   if (actions.length === 0) {
     return null;
@@ -198,6 +208,9 @@ export function RecommendedActionsPanel({
             const sectionId = recommendedActionSectionId(action.surface);
             const isActive = action.action_id === selectedActionId;
             const findingType = getFindingType(action);
+            const clauseRef = action.clause_ref ?? null;
+            const clauseKey = clauseRef?.clause_key ?? "";
+            const cite = clauseRef?.clause_coordinate || action.sut_section_id || "";
             // Selection drives invoice-line highlighting (independent of scroll),
             // so every row is clickable; scroll is a bonus when an anchor exists.
             const handleSelect = () => {
@@ -246,7 +259,27 @@ export function RecommendedActionsPanel({
                   </td>
                 )}
                 <td className="text-sm text-[var(--text-secondary)]">
-                  {action.sut_section_id ? formatSutSectionLabel(action.sut_section_id) : "—"}
+                  {cite ? (
+                    onOpenClause && clauseKey ? (
+                      <button
+                        type="button"
+                        aria-label={t("billing.recommendedActions.inspectClause", {
+                          coordinate: cite,
+                        })}
+                        className="underline decoration-dotted underline-offset-2 transition-colors hover:text-[var(--gold-hover)]"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onOpenClause(clauseKey);
+                        }}
+                      >
+                        {formatSutSectionLabel(cite)}
+                      </button>
+                    ) : (
+                      formatSutSectionLabel(cite)
+                    )
+                  ) : (
+                    "—"
+                  )}
                 </td>
                 <td className="num-col tabular-nums text-right text-sm text-[var(--text-primary)]">
                   {amount ? (
@@ -278,12 +311,8 @@ export function RecommendedActionsPanel({
 
 export function BillingSummary({
   billingReport,
-  selectedActionId,
-  onSelectAction,
 }: {
   billingReport: BillingActionReport;
-  selectedActionId?: string | null;
-  onSelectAction?: (action: RecommendedActionItem) => void;
 }) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
@@ -453,11 +482,6 @@ export function BillingSummary({
           fallback={t("billing.summary.totalsUnavailableNotice")}
         />
       )}
-      <RecommendedActionsPanel
-        billingReport={billingReport}
-        selectedActionId={selectedActionId}
-        onSelectAction={onSelectAction}
-      />
     </Surface>
   );
 }

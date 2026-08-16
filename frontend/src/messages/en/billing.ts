@@ -34,6 +34,7 @@ const billing = {
     "surface": "Surface",
     "claim": "Claim",
     "section": "SUT",
+    "inspectClause": "Inspect clause: {coordinate}",
     "amount": "Amount",
     "detail": "Note",
     "findingTypes": {
@@ -143,11 +144,6 @@ const billing = {
       "drugProhibitedTooltip": "Per SUT {coordinate} and {law}, charging surcharges on pharmaceutical drugs is prohibited by law.",
       "cancerExemptTooltip": "Per SUT {coordinate}, no facility surcharges may be charged for oncology treatments.",
       "emergencyExemptTooltip": "Per SUT {coordinate}, no facility surcharges may be charged for emergency services."
-    },
-    "clauseDrawer": {
-      "title": "SUT clause text",
-      "kicker": "Legislation",
-      "ariaLabel": "SUT clause text drawer"
     },
     "groundLabels": {
       "ek1a_muayene": "EK-1A outpatient examination",
@@ -426,6 +422,40 @@ const billing = {
     "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
     "drgSourcedSavings": "Prose-rule violations (sourced): {amount}",
     "recoverableFootnote": "Recoverable totals include only claim-backed Kurum ödemesi uplift — not heuristic estimates or clinical-review flags."
+  },
+  "views": {
+    "tabListAria": "Billing review views",
+    "compliance": {
+      "title": "Compliance & Denial Prevention",
+      "shortTitle": "Compliance",
+      "description": "Pre-submission removal of items that carry SGK deduction, rejection, or irregularity risk.",
+      "kpiRisk": "Total audit exposure",
+      "kpiFindings": "At-risk findings",
+      "kpiBilledAtRisk": "Billed amount at risk"
+    },
+    "revenue": {
+      "title": "Revenue Optimization & Entitlement",
+      "shortTitle": "Revenue",
+      "description": "Income the hospital legally earned but did not reflect on the claim.",
+      "kpiRecoverable": "Recoverable SGK uplift",
+      "kpiOpportunities": "Revenue opportunities"
+    },
+    "audit": {
+      "title": "Pre-Submission Documents & Review",
+      "shortTitle": "Documents",
+      "description": "Pre-flight verification of the records the SGK invoice review commission requires.",
+      "kpiChecklist": "Checklist items",
+      "kpiErrors": "Errors",
+      "kpiReady": "Files ready",
+      "readyToggle": "File ready",
+      "readyAria": "{item} — mark file as ready"
+    },
+    "noItems": "No actions in this view."
+  },
+  "clauseDrawer": {
+    "title": "SUT clause text",
+    "kicker": "Legislation",
+    "ariaLabel": "SUT clause text drawer"
   }
 } as const;
 

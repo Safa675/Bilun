@@ -49,9 +49,6 @@ Uygulama 2026-08-15'te tamamlandı. En kritik bulgu: planın ve clarity planın�
 
 ## Task: Fix Sidebar & Tab Strip Intertwining + Resolve PR Conflicts
 
-### Goal
-Fix the layout bug where the fixed sidebar and sticky workspace tab strip overlap/intertwine due to CSS variable reset in `AppSidebar.tsx`, resolve merge conflicts with `main`, and verify full frontend and backend test suites pass.
-
 ### Subtasks
 - [x] Resolve git merge conflicts with `main` in `WorkspaceTabStrip.tsx` and `tasks/todo.md`
 - [x] Fix `AppSidebar.tsx` layout effect: prevent cleanup from resetting `--shell-sidebar-width` to `0px` when the shell is active
@@ -61,3 +58,36 @@ Fix the layout bug where the fixed sidebar and sticky workspace tab strip overla
 - [x] Verify `npm run build` succeeds cleanly in 2.4s
 - [x] Verify backend checks and parity pass with 0 errors
 - [x] Commit and push changes to `experiment/workspace-shell` to update PR #72
+
+## Task: 3 Görünümlü Modüler Hasta Çalışma Alanı (Three-View Patient Workspace)
+
+### Goal
+Hasta çalışma alanındaki bulguları tek karışık liste yerine 3 rol odaklı görünüme (1: Mevzuat Uyumluluk & Red Önleme, 2: Gelir Optimizasyonu & Hak Kazanım, 3: Gönderim Öncesi Evrak & Denetim) ayıran **frontend-only** mimariyi uygulamak; motor ataması mevcut `getFindingType` sınıflandırmasından (`frontend/src/lib/recommendedActions.ts`) türetilir, backend değişmez. Plan: `plans/patient_workspace_three_engine_modular_architecture_plan.md` (v2, revize edildi).
+
+### Subtasks
+- [x] Plan dokümanını incele ve onayla: `plans/patient_workspace_three_engine_modular_architecture_plan.md` (v2)
+- [x] i18n: `messages/tr/billing.ts` + `en/billing.ts`'e `billing.views.*` anahtarlarını ekle; `patient.ts`'te kullanılmayan `billingGroups.compliance|opportunities|reference` anahtarlarını kaldır
+- [x] `RecommendedActionsPanel`'e opsiyonel `findingFilter` ve `onOpenClause` prop'larını ekle (mevcut davranış/testler korunur)
+- [x] Fıkra çekmecesi: #73'ün kanonik `SutClauseDrawer`'ı (clause_key tabanlı) eylem satırı atıflarına bağlanır
+- [x] `views/PatientWorkspaceViews.tsx` — 3 sekmeli tab konteyneri (primitives/Tabs), badge + KPI tetikleyicileri
+- [x] `views/ComplianceViewSection.tsx` — KPI şeridi + filter: compliance eylem listesi + Lab/Strategy/OptionalOverride/Materials/DrugIndication bölümleri
+- [x] `views/RevenueViewSection.tsx` — KPI şeridi + filter: opportunity eylem listesi + Copay/Session/Blood/Material/Addon/CaptureGap/DrgAdequacy/Gazette/DrgUplift/CareSetting bölümleri
+- [x] `views/AuditViewSection.tsx` — KPI şeridi + filter: informational eylem listesi + kontrol listesi + hazır onay kutuları (localStorage) + MEDULA playbook
+- [x] `page.tsx` entegrasyonu: 3 eski `BillingReportGroup` bloğunu `PatientWorkspaceViews` ile değiştir; çekmece state'ini bağla; Overview/BillingSummary + seçim/vurgu sözleşmesini koru
+- [x] Testler: `PatientWorkspaceViews.test.tsx` + `SutBillingReportSections.test.tsx`'e filter/onOpenClause ek durumları
+- [x] Doğrulama: `npx tsc --noEmit`, `npx vitest run`, hedefli `pytest`; `http://localhost:3000/patient/SENTETIK-HASTA-0001` üzerinde sekme/KPI/çekmece/kalıcılık/vurgu kontrolü
+
+### Out of Scope
+- Backend/API/veri modeli değişikliği (yeni `engine` enum'u dahil).
+- `yatak_puani` / `icu_puani` / `anestezi_puani` / `refakatci` / `yenidogan_yatak` için yeni detay bölümleri.
+- Dosya hazır onayının sunucu tarafında kalıcılığı.
+- `SutPatientWorkspace.tsx` değişikliği.
+- SUT kural motorunun matematiksel hesaplama formülleri.
+
+### Review (2026-08-16)
+- **tsc**: `npx tsc --noEmit` temiz (0 hata).
+- **vitest**: 47 dosya / 248 test geçti (4 yeni test dosyası + 4 yeni panel durumu dahil).
+- **pytest**: `tests/unit/domain/billing` + `tests/unit/domain/claims` → 198 geçti (backend değişmedi).
+- **Tarayıcı (headless Playwright, 16/16)**: 3 sekme (badge'ler 18/4/4 canlı veriden), KPI'lar ₺121.714,71 / ₺23.192,18, hazır onay localStorage kalıcılığı (yenileme sonrası korunuyor), fıkra çekmecesi gerçek fıkra metniyle açılıyor, Escape ile kapanıyor. Bilinen tek 404 `/api/frontend-config` (önceden var olan backend eksiği; `ConfigProvider` fallback'e düşüyor).
+- **Kullanıcı geri bildirimi (uygulandı)**: "Finansal özet"teki eski master "Önerilen işlemler" tablosu (26 satır, tüm bulgular) kaldırıldı; her bulgu yalnızca ait olduğu görünümde filtrelenmiş olarak listeleniyor (sayfada tek eylem tablosu — doğrulandı). `BillingSummary` artık yalnızca KPI toplamları; ilgili iki test `RecommendedActionsPanel` üzerinden yeniden yazıldı.
+- **Not**: Canlı backend'in bellek içi veriseti disktekine göre 2 ek copay satırı içeriyor (26 aksiyon); KPI'lar bu yüzden canlı veriden hesaplanıyor, sabit değil.

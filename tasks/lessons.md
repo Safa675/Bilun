@@ -633,3 +633,21 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 3. Monitor success by the target directory growing (`du -s` deltas), not by whether the process is alive (the error dialog also keeps it alive) or by exit code (the FMX teardown GPF poisons it).
 4. Treat post-extraction Delphi exit errors as cosmetic; validate by launching the installed game.
 5. Cleanup hygiene: `pkill -f "Setup.exe"` from a bash tool kills the tool's own shell (the pattern matches its own cmdline) — use `pkill -f '[S]etup\.exe'` bracket form or Proton's `wineserver -k` with WINEPREFIX.
+
+## 2026-08-16 — Quoted env values break hand-rolled dotenv parsers
+
+**Pattern:** Verifying the patient workspace with a headless Playwright script, I minted a `bilun:session` HMAC token in Node by reading `BILUN_SESSION_SECRET` from `frontend/.env.local` and parsing with a regex — no quote handling. Next.js and the backend both load these files dotenv-style (stripping surrounding quotes), so my token's secret was 66 chars (quotes included) while both servers used 64. Every request 401'd / redirected to /login, and a cross-language HMAC check against Python "proved" the signatures differed even though the files were byte-identical. Cost ~3 debugging rounds before comparing secret *lengths*.
+
+**Rule:** When a script reads `.env*` values directly, replicate dotenv semantics exactly: `.trim()` **and** strip surrounding `"`/`'`. When HMAC/secret mismatches appear across languages, compare `len(secret)` and hex digests before comparing the derived signatures. And never trust a comparison built through shell `echo`/`sed` pipelines without exporting every variable — `os.environ.get("X", "")` silently compares against `""`.
+
+## 2026-08-16 — Live backend caches the dataset; plan KPIs must be validated against the API
+
+**Pattern:** The plan's KPI numbers for SENTETIK-HASTA-0001 (26 findings, 4 revenue opportunities) disagreed with a fresh `compute_patient_billing_report` run from disk (24 findings, 2 opportunities). Both were "right": the long-running uvicorn caches the synthetic dataset in memory, and the on-disk cohort had since changed (2 copay exemption rows). Treating the plan's numbers as wrong and the disk numbers as right — then hardcoding the disk numbers into verification assertions — produced false test failures; the live UI (badges 18/4/4) was correct all along.
+
+**Rule:** Before disputing or hardcoding any plan/UI KPI, query the *live* API (with a valid session cookie) and classify the live payload. Verification assertions for live apps should be computed from the live response, not from an offline recomputation or a plan document.
+
+## 2026-08-16 — `git reset --hard` silently discarded uncommitted adaptation edits
+
+**Pattern:** Preparing PR #74, I created the feature branch, then ran `git reset --hard origin/main` on main to restore it — while uncommitted adaptation edits (import fixes, i18n key moves, test fixtures) sat in the working tree. The reset wiped them; the amended-and-pushed commit was the PRE-adaptation state, so CI's typecheck failed (`SutClauseDrawer has no default export`) even though local `tsc`/`vitest`/browser checks had been green minutes earlier on the adapted tree. All edits had to be re-applied from conversation history.
+
+**Rule:** `git reset --hard` destroys uncommitted work by design. Before any hard reset: `git add -A && git commit` (or stash) the current tree. After ANY reset/checkout that could touch the working tree, re-run the verification suite (tsc + vitest) on the exact commit that will be pushed — never trust a green result from an earlier tree state. CI runs against what is pushed, not what was verified.

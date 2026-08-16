@@ -11,6 +11,7 @@ import {
   MedulaRejectionPlaybookSection,
   DrugIndicationReviewSection,
   OptionalOverrideSection,
+  RecommendedActionsPanel,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -645,9 +646,9 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("C34.9");
   });
 
-  it("lists itemized recommended actions under billing summary", () => {
+  it("lists itemized recommended actions in the actions panel", () => {
     const html = renderToStaticMarkupWithLocale(
-      <BillingSummary
+      <RecommendedActionsPanel
         billingReport={{
           patient_id: "SENTETIK-HASTA-0003",
           claim_id: "F-SENTETIK-HASTA-0003-015",
@@ -699,7 +700,7 @@ describe("DrugIndicationReviewSection", () => {
 
   it("renders material recommended actions with SUT, billed amount, and detail", () => {
     const html = renderToStaticMarkupWithLocale(
-      <BillingSummary
+      <RecommendedActionsPanel
         billingReport={{
           patient_id: "SENTETIK-HASTA-0042",
           claim_id: "F-SENTETIK-HASTA-0042-072",
@@ -735,5 +736,90 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("§3.1.2");
     expect(html).toContain(fmtTRY2Fixture(1250.00));
     expect(html).toContain("EK-3C-1 — pre-auth required");
+  });
+});
+
+describe("RecommendedActionsPanel workspace-view integration", () => {
+  const panelReport = {
+    patient_id: "P-VIEWS",
+    exactness_status: "exact",
+    priority: "low",
+    total_recoverable_try: 150,
+    action_count: 3,
+    recommended_actions: [
+      {
+        action_id: "a1",
+        surface: "materials",
+        kind: "material_pre_auth",
+        finding_type: "compliance",
+        billed_try: 100,
+        sut_section_id: "3.1.2",
+        clause_ref: {
+          clause_key: "3.1.2#abc123",
+          clause_coordinate: "3.1.2",
+          source_type: "sut_clause",
+        },
+        detail: "PRE-AUTH-DETAIL",
+      },
+      {
+        action_id: "a2",
+        surface: "yatak_puani",
+        kind: "yatak_puani_standard_bed",
+        finding_type: "opportunity",
+        sgk_uplift_try: 50,
+        sut_section_id: "2.2.2",
+        detail: "BED-DAY-DETAIL",
+      },
+      {
+        action_id: "a3",
+        surface: "claim_checklist",
+        kind: "documentation_requirement",
+        finding_type: "informational",
+        detail: "CHECKLIST-DETAIL",
+      },
+    ],
+  } as unknown as BillingActionReport;
+
+  it("renders all rows without a finding filter", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={panelReport} />,
+    );
+
+    expect(html).toContain("PRE-AUTH-DETAIL");
+    expect(html).toContain("BED-DAY-DETAIL");
+    expect(html).toContain("CHECKLIST-DETAIL");
+  });
+
+  it("filters rows to one finding class", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={panelReport} findingFilter="compliance" />,
+    );
+
+    expect(html).toContain("PRE-AUTH-DETAIL");
+    expect(html).not.toContain("BED-DAY-DETAIL");
+    expect(html).not.toContain("CHECKLIST-DETAIL");
+  });
+
+  it("renders the SUT section cell as a clause-inspect button when onOpenClause is given", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel
+        billingReport={panelReport}
+        findingFilter="compliance"
+        onOpenClause={() => {}}
+      />,
+    );
+
+    expect(html).toContain('<button');
+    expect(html).toContain('aria-label="Inspect clause: 3.1.2"');
+    expect(html).toContain("§3.1.2");
+  });
+
+  it("keeps the SUT section cell as plain text without onOpenClause", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={panelReport} findingFilter="compliance" />,
+    );
+
+    expect(html).not.toContain('<button');
+    expect(html).toContain("§3.1.2");
   });
 });
