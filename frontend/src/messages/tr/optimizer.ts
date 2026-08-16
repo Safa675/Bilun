@@ -1,17 +1,11 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Tüm SUT uyumluluk boyutları genelinde kohort denetim merkezi: muafiyetler, ilave ücret tavanı, tıbbi malzeme ön onay/ÜTS, DRG paket yöntemleri, cerrahi seans katsayıları, laboratuvar/Tablo 15, gönderim evrakları ve MEDULA red riskleri.",
+      "Kohort uyumluluk uyarıları: katılım payı muafiyetleri (EK-1A) ve ilave ücret bayrakları (EK-2G).",
     revenueDescription:
       "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
     exemptions: "Katılım Payı Muafiyetleri",
     surcharge: "İlave Ücret & Tavan Sınırı",
-    materials: "Tıbbi Malzeme, ÜTS & Ön Onay",
-    paymentMethods: "Fatura Yöntemi & DRG Paket",
-    surgicalSessions: "Cerrahi & Seans Katsayıları",
-    diagnosticsLab: "Laboratuvar & Tetkik Hataları",
-    preFlightDocs: "Gönderim Evrakları & FI",
-    medulaRejections: "MEDULA Red Kılavuzu",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -39,12 +33,6 @@ const optimizer = {
   categories: {
     exemptions: "Katılım Payı Muafiyetleri",
     surcharge: "İlave Ücret & Tavan Sınırı",
-    materials: "Tıbbi Malzeme, ÜTS & Ön Onay",
-    paymentMethods: "Fatura Yöntemi & DRG Paket",
-    surgicalSessions: "Cerrahi & Seans Katsayıları",
-    diagnosticsLab: "Laboratuvar & Tetkik Hataları",
-    preFlightDocs: "Gönderim Evrakları & FI",
-    medulaRejections: "MEDULA Red Kılavuzu",
   },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",

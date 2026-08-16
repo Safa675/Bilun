@@ -86,6 +86,7 @@ const sections = {
       partialEngineSubsections: "§4.2 subsection encoded %",
     },
     tabs: {
+      coverage: "Coverage",
       rules: "Rules",
       sections: "Sections",
       clauses: "Clauses",

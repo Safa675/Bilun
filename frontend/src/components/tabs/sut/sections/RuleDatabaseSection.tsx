@@ -34,7 +34,10 @@ import { ClauseBrowserPanel, ClauseCard } from "./rule-database/ClauseBrowserPan
 import { DeferralBrowserPanel } from "./rule-database/DeferralBrowserPanel";
 import { ProseInventoryPanel } from "./rule-database/ProseInventoryPanel";
 
-import { RULE_DATABASE_SUB_ICONS } from "@/lib/workspaceSubtabs";
+import {
+  RULE_DATABASE_SUB_ICONS,
+  RULE_DATABASE_SUB_IDS,
+} from "@/lib/workspaceSubtabs";
 
 // Re-export so existing imports (e.g. tests) keep resolving from this module.
 export { ClauseCard };
@@ -50,8 +53,11 @@ export function RuleDatabaseSection() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const rawRdTab = searchParams.get("rdTab");
   const [activeTab, setActiveTab] = useState<string>(
-    searchParams.get("rdTab") || "rules",
+    rawRdTab && (RULE_DATABASE_SUB_IDS as readonly string[]).includes(rawRdTab)
+      ? rawRdTab
+      : "coverage",
   );
   const [clauseSearchQ, setClauseSearchQ] = useState<string>(
     searchParams.get("rdSection") || "",
@@ -141,20 +147,15 @@ export function RuleDatabaseSection() {
       padding="none"
     >
       <Surface variant="base" padding="lg" className="space-y-4">
-        {catalog?.coverage_summary && <CoverageSummaryPanel summary={catalog.coverage_summary} />}
-
-        {!artifactsAvailable && (
-          <Surface variant="soft" padding="md">
-            <p className="text-sm text-[var(--text-secondary)]">
-              {t("sections.ruleDatabase.artifactsUnavailable")}
-            </p>
-          </Surface>
-        )}
-
-        {catalog?.fact_check && <FactCheckRollupBanner rollup={catalog.fact_check} />}
-
         <TabsRoot value={activeTab} onValueChange={handleTabChange}>
           <TabsList density="compact">
+            <TabsTrigger
+              value="coverage"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.coverage className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
+              {t("sections.ruleDatabase.tabs.coverage")}
+            </TabsTrigger>
             <TabsTrigger
               value="rules"
               density="compact"
@@ -191,6 +192,22 @@ export function RuleDatabaseSection() {
               {t("sections.ruleDatabase.tabs.deferrals")}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="coverage" forceMount className="data-[state=inactive]:hidden">
+            <div className="space-y-4 pt-4">
+              {!artifactsAvailable && (
+                <Surface variant="soft" padding="md">
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    {t("sections.ruleDatabase.artifactsUnavailable")}
+                  </p>
+                </Surface>
+              )}
+              {catalog?.coverage_summary && (
+                <CoverageSummaryPanel summary={catalog.coverage_summary} />
+              )}
+              {catalog?.fact_check && <FactCheckRollupBanner rollup={catalog.fact_check} />}
+            </div>
+          </TabsContent>
 
           <TabsContent value="rules" forceMount className="data-[state=inactive]:hidden">
             <div className="space-y-4 pt-4">

@@ -72,6 +72,28 @@ def test_queue_filters_by_free_text_query() -> None:
     assert any(r["sonuc_kodu"] == "0612" for r in result["rows"])
 
 
+def test_queue_filters_by_playbook_matched() -> None:
+    from src.bilun.api.routes.medula_rejections import get_medula_rejection_queue
+
+    matched = get_medula_rejection_queue(playbook_matched=True)
+    assert matched["total"] >= 1
+    assert all(r["playbook_matched"] is True for r in matched["rows"])
+
+    unmatched = get_medula_rejection_queue(playbook_matched=False)
+    assert all(r["playbook_matched"] is False for r in unmatched["rows"])
+    assert unmatched["total"] < matched["stats"]["n_events"]
+
+
+def test_queue_exposes_facets_and_unfiltered_stats() -> None:
+    from src.bilun.api.routes.medula_rejections import get_medula_rejection_queue
+
+    result = get_medula_rejection_queue(sonuc_kodu="1688")
+    assert "1688" in result["facets"]["sonuc_kodu"]
+    assert result["facets"]["medula_stage"]
+    assert result["stats"]["n_events"] >= result["total"]
+    assert result["stats"]["n_matched"] >= 1
+
+
 def test_queue_pagination_bounds_rows() -> None:
     from src.bilun.api.routes.medula_rejections import get_medula_rejection_queue
 

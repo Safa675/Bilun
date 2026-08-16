@@ -59,6 +59,19 @@ def _build_queue_row(event, claim, template: dict[str, Any] | None) -> dict[str,
     return row
 
 
+def _facet_values(rows: list[dict[str, Any]], key: str) -> list[str]:
+    values = {str(row.get(key) or "") for row in rows}
+    return sorted(value for value in values if value)
+
+
+def _queue_stats(rows: list[dict[str, Any]]) -> dict[str, int]:
+    return {
+        "n_events": len(rows),
+        "n_matched": sum(1 for row in rows if row.get("playbook_matched")),
+        "n_rebill_permitted": sum(1 for row in rows if row.get("rebill_permitted") is True),
+    }
+
+
 @router.get("/ingest-status")
 def get_medula_rejection_ingest_status() -> dict[str, bool]:
     """Return whether MEDULA rejection event ingest is available."""
@@ -77,6 +90,7 @@ def get_medula_rejection_queue(
     sonuc_kodu: str | None = None,
     medula_stage: str | None = None,
     rebill_permitted: bool | None = None,
+    playbook_matched: bool | None = None,
     q: str | None = None,
 ) -> dict[str, Any]:
     """Return a cohort-level queue of ingested MEDULA rejections.
@@ -85,6 +99,8 @@ def get_medula_rejection_queue(
     exists. The queue is operational guidance only — BILUN does not submit
     rebills to MEDULA.
     """
+    empty_facets = {"sonuc_kodu": [], "medula_stage": []}
+    empty_stats = {"n_events": 0, "n_matched": 0, "n_rebill_permitted": 0}
     dataset = _load_dataset_with_fallback()
     if dataset is None or not dataset.medula_rejection_ingest_available:
         return {
@@ -93,21 +109,33 @@ def get_medula_rejection_queue(
             "total": 0,
             "page": page,
             "page_size": page_size,
+            "facets": empty_facets,
+            "stats": empty_stats,
         }
 
-    rows: list[dict[str, Any]] = []
+    all_rows: list[dict[str, Any]] = []
     for event in dataset.medula_rejection_events.values():
         claim = dataset.claims.get(event.claim_id)
         if claim is None:
             continue
         template = match_playbook_template(event)
-        row = _build_queue_row(event, claim, template)
+        all_rows.append(_build_queue_row(event, claim, template))
 
+    facets = {
+        "sonuc_kodu": _facet_values(all_rows, "sonuc_kodu"),
+        "medula_stage": _facet_values(all_rows, "medula_stage"),
+    }
+    stats = _queue_stats(all_rows)
+
+    rows: list[dict[str, Any]] = []
+    for row in all_rows:
         if sonuc_kodu is not None and _normalize(row["sonuc_kodu"]) != _normalize(sonuc_kodu):
             continue
         if medula_stage is not None and _normalize(row["medula_stage"]) != _normalize(medula_stage):
             continue
         if rebill_permitted is not None and row["rebill_permitted"] != rebill_permitted:
+            continue
+        if playbook_matched is not None and bool(row["playbook_matched"]) != playbook_matched:
             continue
         if q:
             query = _normalize(q)
@@ -143,4 +171,6 @@ def get_medula_rejection_queue(
         "total": total,
         "page": page,
         "page_size": page_size,
+        "facets": facets,
+        "stats": stats,
     }

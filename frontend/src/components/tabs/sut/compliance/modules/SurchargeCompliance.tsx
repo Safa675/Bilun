@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { fmtNum, fmtPctRatio } from "../../shared";
-import { Surface, Eyebrow, Stat, Chip, Button, buttonActiveClass, DataTable } from "@/components/primitives";
+import { Surface, Stat, Chip, Button, buttonActiveClass, DataTable } from "@/components/primitives";
 import { buildSutBillingHref } from "@/lib/constants";
 import { getPatientAlerts } from "@/lib/api/sut";
 import type { PatientAlertsResponse, PatientAlertsStatus } from "@/lib/domains/sut";
@@ -15,6 +15,9 @@ export interface SurchargeComplianceProps {
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }
+
+const PATIENT_LINK_CLASS =
+  "font-semibold text-[var(--text-primary)] hover:text-[var(--gold-hover)]";
 
 export function SurchargeCompliance({
   cohortPatientIds,
@@ -50,8 +53,8 @@ export function SurchargeCompliance({
     };
   }, [status]);
 
-  const filteredPatients = (data?.patients ?? []).filter((p) =>
-    !cohortFilterActive || cohortPatientIds.has(p.patient_id),
+  const filteredPatients = (data?.patients ?? []).filter(
+    (p) => !cohortFilterActive || cohortPatientIds.has(p.patient_id),
   );
 
   const flaggedCount = (data?.patients ?? []).filter(
@@ -61,41 +64,14 @@ export function SurchargeCompliance({
 
   return (
     <div className="space-y-5">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Stat
-            label="İlave Ücret Maruziyet Riski"
-            value={fmtNum(flaggedCount)}
-            hint={`Riskli hasta (Toplam ${fmtNum(totalCount)})`}
-          />
-        </Surface>
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Eyebrow>SUT & Kanun Dayanağı</Eyebrow>
-          <div className="flex items-center gap-2 pt-1">
-            <Chip variant="danger">SUT §1.9</Chip>
-            <Chip variant="neutral">5510 md. 73</Chip>
-            <Chip variant="neutral">%200 Tavan Sınırı</Chip>
-          </div>
-          <p className="pt-2 text-xs text-[var(--text-tertiary)]">
-            Acil, kanser cerrahisi, yoğun bakım, organ nakli ve ilaçlardan ilave ücret alınamaz.
-          </p>
-        </Surface>
-        <Surface variant="base" padding="md" className="space-y-1">
-          <Eyebrow>İlave Ücret Yasağı Kapsamı</Eyebrow>
-          <div className="flex items-center gap-2 pt-1">
-            <span className="inline-flex h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-sm font-medium text-[var(--text-primary)]">
-              İstisnai Sağlık Hizmetleri
-            </span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Tavan aşımı veya yasaklı hizmetlerde fark tahsilatı SGK idari para cezasına tabidir.
-          </p>
-        </Surface>
-      </div>
+      <Surface variant="base" padding="md">
+        <Stat
+          label="İlave ücret maruziyet riski"
+          value={fmtNum(flaggedCount)}
+          hint={`Riskli hasta (toplam ${fmtNum(totalCount)})`}
+        />
+      </Surface>
 
-      {/* Filter Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -113,7 +89,7 @@ export function SurchargeCompliance({
           onClick={() => setStatus("flagged")}
           className={cn("gap-1.5", status === "flagged" && buttonActiveClass)}
         >
-          Riskli / İşaretli ({fmtNum(flaggedCount)})
+          Riskli / işaretli ({fmtNum(flaggedCount)})
         </Button>
         <Button
           type="button"
@@ -126,7 +102,6 @@ export function SurchargeCompliance({
         </Button>
       </div>
 
-      {/* Patients Table */}
       {loading ? (
         <SutAlertTableSkeleton />
       ) : (
@@ -134,17 +109,17 @@ export function SurchargeCompliance({
           <thead>
             <tr>
               <th>Hasta ID</th>
-              <th>İlave Ücret Maruziyet Oranı</th>
-              <th>Uygulanabilir İşlemler</th>
-              <th>En Çok Eşleşen Kurallar</th>
-              <th>Uyumluluk Durumu</th>
+              <th>İlave ücret maruziyet oranı</th>
+              <th>Uygulanabilir işlemler</th>
+              <th>En çok eşleşen kurallar</th>
+              <th>Uyumluluk durumu</th>
               <th className="text-right">İncele</th>
             </tr>
           </thead>
           <tbody>
             {filteredPatients.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-[var(--text-tertiary)]">
+                <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
                   Seçili filtre için hasta kaydı bulunamadı.
                 </td>
               </tr>
@@ -156,29 +131,20 @@ export function SurchargeCompliance({
                 return (
                   <tr key={p.patient_id}>
                     <td>
-                      <Link
-                        href={buildSutBillingHref(p.patient_id)}
-                        className="font-semibold text-slate-950 hover:text-[var(--gold-hover)]"
-                      >
+                      <Link href={buildSutBillingHref(p.patient_id)} className={PATIENT_LINK_CLASS}>
                         {p.patient_id}
                       </Link>
                     </td>
-                    <td>
+                    <td className="tabular-nums text-[var(--text-primary)]">
                       {p.surcharge_exposure?.exposure_rate != null ? (
-                        <span
-                          className={
-                            isFlagged ? "font-semibold text-amber-500" : "text-emerald-500 font-medium"
-                          }
-                        >
-                          {fmtPctRatio(p.surcharge_exposure.exposure_rate)}
-                        </span>
+                        fmtPctRatio(p.surcharge_exposure.exposure_rate)
                       ) : (
-                        <span className="text-[var(--text-tertiary)]">Kullanılamıyor</span>
+                        <span className="text-[var(--text-muted)]">Kullanılamıyor</span>
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
                       {p.surcharge_exposure?.n_applicable != null
-                        ? `${p.surcharge_exposure.n_applicable} İşlem`
+                        ? `${p.surcharge_exposure.n_applicable} işlem`
                         : "—"}
                     </td>
                     <td className="text-[var(--text-secondary)]">
@@ -191,12 +157,12 @@ export function SurchargeCompliance({
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[var(--text-tertiary)]">Kural ihlali yok</span>
+                        <span className="text-[var(--text-muted)]">Kural ihlali yok</span>
                       )}
                     </td>
                     <td>
                       {isFlagged ? (
-                        <Chip variant="warning">İlave Ücret Riski</Chip>
+                        <Chip variant="warning">İlave ücret riski</Chip>
                       ) : (
                         <Chip variant="success">Uyumlu</Chip>
                       )}
@@ -206,7 +172,7 @@ export function SurchargeCompliance({
                         href={buildSutBillingHref(p.patient_id)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                       >
-                        Faturaya Git <ArrowRight className="h-3 w-3" />
+                        Faturaya git <ArrowRight className="h-3 w-3" />
                       </Link>
                     </td>
                   </tr>
