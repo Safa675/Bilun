@@ -17,7 +17,6 @@ from gen.claim_lines import (
     _append_material_prose_demo_line,
     _append_procedure_lines_for_claim,
 )
-from gen.drug_fields import _empty_drug_indication_fields
 from gen.medula_anchor import _inject_medula_anchor_line
 from gen.procedures import (
     _lookup_ek2b_price,
@@ -39,7 +38,6 @@ from gen.specs import (
     PAYMENT_METHOD_COMPLIANCE_DEMO_TAG,
     _CLAIM_READINESS_DEMO_SPECS,
     _COPAY_EXEMPTION_DEMO_SPECS,
-    _DRUG_INDICATION_DEMO_SPECS,
     _MATERIAL_PROSE_DEMO_SPECS,
     _MEDULA_DEMO_SPECS,
 )
@@ -130,7 +128,6 @@ def _generate_claims_and_lines(
             else None
         )
         session_uplift_demo = episode.get("_sgk_session_uplift_demo")
-        drug_indication_demo = episode.get("_sgk_drug_indication_demo")
         material_prose_demo = episode.get("_sgk_material_prose_demo")
         claim_readiness_demo = episode.get("_sgk_claim_readiness_demo")
         payment_method_compliance_demo = episode.get("_payment_method_compliance_demo")
@@ -138,11 +135,6 @@ def _generate_claims_and_lines(
         copay_exemption_spec = (
             _COPAY_EXEMPTION_DEMO_SPECS.get(str(copay_exemption_demo))
             if copay_exemption_demo
-            else None
-        )
-        drug_indication_spec = (
-            _DRUG_INDICATION_DEMO_SPECS.get(str(drug_indication_demo))
-            if drug_indication_demo
             else None
         )
         material_prose_spec = (
@@ -162,8 +154,6 @@ def _generate_claims_and_lines(
             if copay_exemption_spec
             else medula_demo_spec["scenario_tag"]
             if medula_demo_spec
-            else drug_indication_spec["scenario_tag"]
-            if drug_indication_spec
             else material_prose_spec["scenario_tag"]
             if material_prose_spec
             else claim_readiness_spec["scenario_tag"]
@@ -207,7 +197,6 @@ def _generate_claims_and_lines(
             or gazette_repricing_demo
             or medula_playbook_demo
             or session_uplift_demo
-            or drug_indication_demo
             or material_prose_demo
             or claim_readiness_demo
             or payment_method_compliance_demo
@@ -402,60 +391,6 @@ def _generate_claims_and_lines(
             drug_billed, drug_payable = 0.0, 0.0
         else:
             drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
-        if drug_indication_spec:
-            d_line_id = f"ILC-{claim_id}-IND-001"
-            prescription_id = f"REC-{claim_id}-IND-001"
-            unit_price = 12500.0
-            qty = 1
-            billed = _money(unit_price * qty)
-            payable = _money(billed * 0.72)
-            drug_row: dict[str, Any] = {
-                "ilac_satiri_id": d_line_id,
-                "recete_id": prescription_id,
-                "fatura_id": claim_id,
-                "hasta_id": pid,
-                "basvuru_id": eid,
-                "ilac_fatura_tarihi": start_date,
-                "ilac_adi": drug_indication_spec["ilac_adi"],
-                "ilac_kodu": drug_indication_spec["ilac_kodu"],
-                "barkod": drug_indication_spec["barkod"],
-                "esdeger_grup": drug_indication_spec["esdeger_grup"],
-                "adet": qty,
-                "birim_fiyat_try": unit_price,
-                "fatura_tutari_try": billed,
-                "beklenen_odenebilir_tutar_try": payable,
-                "beklenen_indirim_kademesi": 0.28,
-                "beklenen_red_nedeni": drug_indication_spec["beklenen_red_nedeni"],
-                "beklenen_kural_izi": drug_indication_spec["beklenen_kural_izi"],
-                "uzmanlik_kurulu_raporu_var": drug_indication_spec["uzmanlik_kurulu_raporu_var"],
-                **_empty_drug_indication_fields(),
-            }
-            drug_row["uzmanlik_kurulu_raporu_var"] = drug_indication_spec["uzmanlik_kurulu_raporu_var"]
-            for optional_key in ("rapor_suresi_ay", "yatarak_tedavi_ilac", "recete_eden_uzmanlik"):
-                if optional_key in drug_indication_spec:
-                    drug_row[optional_key] = drug_indication_spec[optional_key]
-            ctx.drug_claims.append(drug_row)
-            ctx.expected.append({
-                "beklenen_cikti_id": f"BEK-{d_line_id}",
-                "senaryo_etiketi": drug_indication_spec["scenario_tag"],
-                "hasta_id": pid,
-                "fatura_id": claim_id,
-                "satir_id": d_line_id,
-                "satir_tipi": "ilac",
-                "kural_ailesi": "drug_indication",
-                "beklenen_durum": (
-                    drug_indication_spec["beklenen_kural_izi"].split(":")[-1]
-                    if drug_indication_spec.get("beklenen_kural_izi")
-                    else "odenebilir"
-                ),
-                "beklenen_odenebilir_tutar_try": payable,
-                "beklenen_tasarruf_try": _money(billed - payable),
-                "beklenen_red_nedeni": drug_indication_spec["beklenen_red_nedeni"],
-                "beklenen_kural_izi": drug_indication_spec["beklenen_kural_izi"],
-                "test_notu": "§4.2 drug indication demo drug line",
-            })
-            drug_billed += billed
-            drug_payable += payable
 
         # MEDULA rejection demo: inject the offending anchor line ON TOP of the
         # realistic base bill, then stamp the rejection row pointing at it. The

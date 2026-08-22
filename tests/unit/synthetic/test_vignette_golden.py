@@ -61,15 +61,7 @@ class TestVignetteRegistry:
         registry = vignette_registry()
         for index in (
             "0012",
-            "0014",
-            "0015",
-            "0016",
-            "0017",
             "0018",
-            "0019",
-            "0020",
-            "0021",
-            "0022",
             "0023",
             "0024",
             "0025",

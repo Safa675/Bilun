@@ -262,50 +262,6 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             elif pid == "SENTETIK-HASTA-0013" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "gunubirlik"
                 episode_row["_sgk_session_uplift_demo"] = True
-            elif pid == "SENTETIK-HASTA-0014" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = "bevacizumab_missing_report"
-                episode_row["birincil_icd10"] = "C34.9"
-                episode_row["_all_codes"] = ["C34.9"]
-            elif pid == "SENTETIK-HASTA-0015" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = "nivolumab_indication_mismatch"
-                episode_row["birincil_icd10"] = "J45.9"
-                episode_row["_all_codes"] = ["J45.9"]
-            elif pid == "SENTETIK-HASTA-0016" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = "daratumumab_report_unknown"
-                episode_row["birincil_icd10"] = "C90.0"
-                episode_row["_all_codes"] = ["C90.0"]
-            elif pid == "SENTETIK-HASTA-0017" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = "pembrolizumab_report_ok"
-                episode_row["birincil_icd10"] = "C34.9"
-                episode_row["_all_codes"] = ["C34.9"]
-            elif pid == "SENTETIK-HASTA-0019" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = (
-                    "trastuzumab_report_duration_mismatch"
-                )
-                episode_row["birincil_icd10"] = "C50.9"
-                episode_row["_all_codes"] = ["C50.9"]
-            elif pid == "SENTETIK-HASTA-0020" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = "trabectedin_missing_report"
-                episode_row["birincil_icd10"] = "C49.9"
-                episode_row["_all_codes"] = ["C49.9"]
-            elif pid == "SENTETIK-HASTA-0021" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_material_prose_demo"] = "optical_lens_upgrade"
-                episode_row["servis_adi"] = "goz"
-                episode_row["birincil_icd10"] = "H52.1"
-                episode_row["_all_codes"] = ["H52.1"]
-            elif pid == "SENTETIK-HASTA-0022" and ep_idx == 0:
-                episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_material_prose_demo"] = "hip_graft_no_pay"
-                episode_row["servis_adi"] = "ortopedi"
-                episode_row["birincil_icd10"] = "M16.1"
-                episode_row["_all_codes"] = ["M16.1"]
             elif pid == "SENTETIK-HASTA-0023" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
                 episode_row["_sgk_material_prose_demo"] = "kdv_ceiling_exceeded"

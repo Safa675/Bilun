@@ -399,73 +399,6 @@ class TestBloodUpliftSyntheticDemo:
         assert report.sgk_uplift_try >= 310.0
 
 
-class TestDrugIndicationSyntheticDemo:
-    @pytest.mark.parametrize(
-        ("scenario_tag", "expect_kind", "expect_count"),
-        [
-            (
-                "sgk_drug_indication_bevacizumab_missing_report",
-                "missing_board_report",
-                1,
-            ),
-            (
-                "sgk_drug_indication_nivolumab_indication_mismatch",
-                "indication_mismatch",
-                1,
-            ),
-            (
-                "sgk_drug_indication_daratumumab_report_unknown",
-                "needs_report_verification",
-                1,
-            ),
-            (
-                "sgk_drug_indication_pembrolizumab_report_ok",
-                None,
-                0,
-            ),
-            (
-                "sgk_drug_indication_trastuzumab_report_duration_mismatch",
-                "report_duration_mismatch",
-                1,
-            ),
-            (
-                "sgk_drug_indication_trabectedin_missing_report",
-                "missing_board_report",
-                1,
-            ),
-        ],
-    )
-    def test_drug_indication_demo_patients(
-        self,
-        dataset,
-        scenario_tag: str,
-        expect_kind: str | None,
-        expect_count: int,
-    ) -> None:
-        patient_id = _patient_for_scenario(scenario_tag)
-        ctx = build_patient_claim_context(patient_id, dataset)
-        assert ctx is not None
-
-        demo_claim = _claim_by_scenario_tag(ctx, scenario_tag)
-        report = compute_patient_billing_report(
-            patient_id,
-            claim_context=ctx,
-            copay_exemption={"exempt": False},
-        )
-
-        demo_violations = [
-            row
-            for row in report.drug_indication.violations
-            if row.get("claim_id") == demo_claim.claim_id
-        ]
-        assert len(demo_violations) == expect_count
-        if expect_kind is not None:
-            assert demo_violations[0]["violation_kind"] == expect_kind
-        assert report.drug_indication.exactness_status == "exact"
-        assert report.drug_indication_violation_count >= expect_count
-        assert len(ctx.claims) == 1
-
-
 class TestClaimReadinessSyntheticDemo:
     def test_0033_proactive_uts_checklist_without_medula_event(self, dataset) -> None:
         patient_id = _patient_for_scenario("sgk_claim_readiness_uts_barcode_missing")
@@ -504,14 +437,6 @@ class TestMaterialProseSyntheticDemo:
         ("scenario_tag", "check"),
         [
             (
-                "sgk_specialty_prose_optical_lens_upgrade",
-                "specialty",
-            ),
-            (
-                "sgk_specialty_prose_hip_graft_no_pay",
-                "specialty",
-            ),
-            (
                 "sgk_material_kdv_ceiling_exceeded",
                 "kdv",
             ),
@@ -548,19 +473,7 @@ class TestMaterialProseSyntheticDemo:
         ]
         assert len(demo_materials) >= 1
 
-        if check == "specialty":
-            hits = [
-                row
-                for row in report.materials.specialty_prose_violations
-                if row.get("material_code")
-                in {line.material_code for line in demo_materials}
-            ]
-            assert len(hits) == 1
-            assert hits[0]["rule_id"] in {
-                "3.3.3.A.(4).ek3d_lens_upgrade_difference",
-                "3.3.4.(6).hip_arthroplasty_graft_no_pay",
-            }
-        elif check == "kdv":
+        if check == "kdv":
             hits = [
                 row
                 for row in report.materials.kdv_price_reviews

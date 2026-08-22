@@ -28,8 +28,8 @@ def test_build_cohort_tier_report_default_50_patient_split() -> None:
         dataset_id="sentetik_sut_v2_50_hasta",
     )
     assert report["counts"]["tier_a"] == 9
-    assert report["counts"]["tier_b"] == 24
-    assert report["counts"]["tier_c"] == 17
+    assert report["counts"]["tier_b"] == 16
+    assert report["counts"]["tier_c"] == 25
     assert report["default_landing_patient_id"] == "SENTETIK-HASTA-0003"
     assert report["tier_a"][0]["demo_ready"] is True
     assert all(row["tier"] == "C" for row in report["tier_c"])

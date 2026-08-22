@@ -1,9 +1,9 @@
 # Synthetic demo cohort — Tier A / B / C
 
 **Dataset:** `sentetik_sut_v2_50_hasta`  
-**Generated:** 2026-06-25T16:35:57Z  
+**Generated:** 2026-08-22T11:25:56Z  
 **Seed:** `20260504`  
-**Patients:** 50 (A=9, B=24, C=17)
+**Patients:** 50 (A=9, B=16, C=25)
 
 ## Default demo landing
 
@@ -32,7 +32,7 @@
 | `SENTETIK-HASTA-0029` | `medula_rejection_0704_uts_barcode_missing` | medula_rejection_0704 | — |
 | `SENTETIK-HASTA-0038` | `payment_method_compliance_demo` | compliance_mandatory_itemized | — |
 
-## Tier B — regression pins (24)
+## Tier B — regression pins (16)
 
 | Patient | Scenario | Fault | Notes |
 |---------|----------|-------|-------|
@@ -41,15 +41,7 @@
 | `SENTETIK-HASTA-0007` | `sgk_care_setting_review_gunubirlik` | care_setting_review | — |
 | `SENTETIK-HASTA-0008` | `sgk_procedure_addon_kolonoskopi` | procedure_addon_missing | — |
 | `SENTETIK-HASTA-0012` | `medula_rejection_1688_molecular_microbiology` | medula_rejection_1688 | — |
-| `SENTETIK-HASTA-0014` | `sgk_drug_indication_bevacizumab_missing_report` | drug_indication_missing_report | C34.9 |
-| `SENTETIK-HASTA-0015` | `sgk_drug_indication_nivolumab_indication_mismatch` | drug_indication_mismatch | J45.9 |
-| `SENTETIK-HASTA-0016` | `sgk_drug_indication_daratumumab_report_unknown` | drug_indication_needs_verification | C90.0 |
-| `SENTETIK-HASTA-0017` | `sgk_drug_indication_pembrolizumab_report_ok` | drug_indication_compliant | C34.9 |
 | `SENTETIK-HASTA-0018` | `medula_rejection_0612_board_report_missing` | medula_rejection_0612 | — |
-| `SENTETIK-HASTA-0019` | `sgk_drug_indication_trastuzumab_report_duration_mismatch` | drug_indication_duration_mismatch | C50.9 |
-| `SENTETIK-HASTA-0020` | `sgk_drug_indication_trabectedin_missing_report` | drug_indication_missing_report | C49.9 |
-| `SENTETIK-HASTA-0021` | `sgk_specialty_prose_optical_lens_upgrade` | material_specialty_prose | — |
-| `SENTETIK-HASTA-0022` | `sgk_specialty_prose_hip_graft_no_pay` | material_specialty_prose | — |
 | `SENTETIK-HASTA-0023` | `sgk_material_kdv_ceiling_exceeded` | material_kdv_ceiling | — |
 | `SENTETIK-HASTA-0024` | `sgk_material_bundling_procurement_incomplete` | material_bundling_procurement | — |
 | `SENTETIK-HASTA-0025` | `medula_rejection_1205_service_date_mismatch` | medula_rejection_1205 | — |
@@ -61,6 +53,6 @@
 | `SENTETIK-HASTA-0032` | `medula_rejection_1102_uncontracted_facility` | medula_rejection_1102 | — |
 | `SENTETIK-HASTA-0033` | `sgk_claim_readiness_uts_barcode_missing` | claim_readiness_uts | — |
 
-## Tier C — filler (17)
+## Tier C — filler (25)
 
-`SENTETIK-HASTA-0001`, `SENTETIK-HASTA-0034`, `SENTETIK-HASTA-0035`, `SENTETIK-HASTA-0036`, `SENTETIK-HASTA-0037`, `SENTETIK-HASTA-0039`, `SENTETIK-HASTA-0040`, `SENTETIK-HASTA-0041`, `SENTETIK-HASTA-0042`, `SENTETIK-HASTA-0043`, `SENTETIK-HASTA-0044`, `SENTETIK-HASTA-0045`, `SENTETIK-HASTA-0046`, `SENTETIK-HASTA-0047`, `SENTETIK-HASTA-0048`, `SENTETIK-HASTA-0049`, `SENTETIK-HASTA-0050`
+`SENTETIK-HASTA-0001`, `SENTETIK-HASTA-0014`, `SENTETIK-HASTA-0015`, `SENTETIK-HASTA-0016`, `SENTETIK-HASTA-0017`, `SENTETIK-HASTA-0019`, `SENTETIK-HASTA-0020`, `SENTETIK-HASTA-0021`, `SENTETIK-HASTA-0022`, `SENTETIK-HASTA-0034`, `SENTETIK-HASTA-0035`, `SENTETIK-HASTA-0036`, `SENTETIK-HASTA-0037`, `SENTETIK-HASTA-0039`, `SENTETIK-HASTA-0040`, `SENTETIK-HASTA-0041`, `SENTETIK-HASTA-0042`, `SENTETIK-HASTA-0043`, `SENTETIK-HASTA-0044`, `SENTETIK-HASTA-0045`, `SENTETIK-HASTA-0046`, `SENTETIK-HASTA-0047`, `SENTETIK-HASTA-0048`, `SENTETIK-HASTA-0049`, `SENTETIK-HASTA-0050`

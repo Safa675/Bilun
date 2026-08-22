@@ -26,93 +26,7 @@ COPAY_EXEMPTION_DEMO_PATIENTS: dict[str, str] = {
     "SENTETIK-HASTA-0036": "ek1a_chronic",
 }
 
-_DRUG_INDICATION_DEMO_SPECS: dict[str, dict[str, Any]] = {
-    "bevacizumab_missing_report": {
-        "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",
-        "ilac_adi": "AVASTIN 400 MG IV INFUZYONLUK KONSANTRE COZELTI (BEVACIZUMAB)",
-        "ilac_kodu": "SUT-DEMO-BEV",
-        "barkod": "8690000000001",
-        "esdeger_grup": "DEMO-BEV",
-        "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
-        "beklenen_kural_izi": "4.2.14.C:bevacizumab:missing_board_report",
-        "uzmanlik_kurulu_raporu_var": False,
-    },
-    "nivolumab_indication_mismatch": {
-        "scenario_tag": "sgk_drug_indication_nivolumab_indication_mismatch",
-        "ilac_adi": "OPDIVO 100 MG IV INFUZYONLUK KONSANTRE COZELTI (NIVOLUMAB)",
-        "ilac_kodu": "SUT-DEMO-NIVO",
-        "barkod": "8690000000002",
-        "esdeger_grup": "DEMO-NIVO",
-        "beklenen_red_nedeni": "Endikasyon uyumsuzlugu",
-        "beklenen_kural_izi": "4.2.14.C:nivolumab:indication_mismatch",
-        "uzmanlik_kurulu_raporu_var": True,
-    },
-    "daratumumab_report_unknown": {
-        "scenario_tag": "sgk_drug_indication_daratumumab_report_unknown",
-        "ilac_adi": "DARZALEX 400 MG IV INFUZYONLUK KONSANTRE COZELTI (DARATUMUMAB)",
-        "ilac_kodu": "SUT-DEMO-DARA",
-        "barkod": "8690000000003",
-        "esdeger_grup": "DEMO-DARA",
-        "beklenen_red_nedeni": "Saglik kurulu raporu dogrulanmali",
-        "beklenen_kural_izi": "4.2.14.C:daratumumab:needs_report_verification",
-        "uzmanlik_kurulu_raporu_var": None,
-    },
-    "pembrolizumab_report_ok": {
-        "scenario_tag": "sgk_drug_indication_pembrolizumab_report_ok",
-        "ilac_adi": "KEYTRUDA 100 MG IV INFUZYONLUK KONSANTRE COZELTI (PEMBROLIZUMAB)",
-        "ilac_kodu": "SUT-DEMO-PEM",
-        "barkod": "8690000000004",
-        "esdeger_grup": "DEMO-PEM",
-        "beklenen_red_nedeni": "",
-        "beklenen_kural_izi": "",
-        "uzmanlik_kurulu_raporu_var": True,
-        "yatarak_tedavi_ilac": True,
-    },
-    "trastuzumab_report_duration_mismatch": {
-        "scenario_tag": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
-        "ilac_adi": "HERCEPTIN 440 MG IV INFUZYONLUK KONSANTRE COZELTI (TRASTUZUMAB)",
-        "ilac_kodu": "SUT-DEMO-TRAS",
-        "barkod": "8690000000005",
-        "esdeger_grup": "DEMO-TRAS",
-        "beklenen_red_nedeni": "Saglik kurulu rapor suresi uyumsuz",
-        "beklenen_kural_izi": "4.2.14.C:trastuzumab:report_duration_mismatch",
-        "uzmanlik_kurulu_raporu_var": True,
-        "rapor_suresi_ay": 12,
-        "recete_eden_uzmanlik": "Tıbbi Onkoloji",
-    },
-    "trabectedin_missing_report": {
-        "scenario_tag": "sgk_drug_indication_trabectedin_missing_report",
-        "ilac_adi": "YONDELIS 1 MG IV INFUZYONLUK KONSANTRE COZELTI (TRABECTEDIN)",
-        "ilac_kodu": "SUT-DEMO-TRAB",
-        "barkod": "8690000000006",
-        "esdeger_grup": "DEMO-TRAB",
-        "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
-        "beklenen_kural_izi": "4.2.14.C:trabectedin:missing_board_report",
-        "uzmanlik_kurulu_raporu_var": False,
-    },
-}
-
 _MATERIAL_PROSE_DEMO_SPECS: dict[str, dict[str, Any]] = {
-    "optical_lens_upgrade": {
-        "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
-        "material_code": "SUT-DEMO-OPT",
-        "material_name": "Gözlük camı fark ücreti talebi",
-        "material_type": "goz",
-        "specialty_category": "goz",
-        "unit_price": 450.0,
-        "expected_rule_id": "3.3.3.A.(4).ek3d_lens_upgrade_difference",
-        "specialty_flags": {"optical_lens_upgrade_difference_claim": True},
-    },
-    "hip_graft_no_pay": {
-        "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
-        "material_code": "SUT-DEMO-GRF",
-        "material_name": "Kalça protezi greft malzemesi",
-        "material_type": "ortopedi",
-        "specialty_category": "ortopedi",
-        "unit_price": 3200.0,
-        "expected_rule_id": "3.3.4.(6).hip_arthroplasty_graft_no_pay",
-        "specialty_flags": {"hip_arthroplasty_graft_claim": True},
-    },
     "kdv_ceiling_exceeded": {
         "scenario_tag": "sgk_material_kdv_ceiling_exceeded",
         "material_code": "OP1592",
@@ -280,14 +194,11 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0411",
         "hata_mesaji": "İlaç endikasyon raporu eksik — sağlık kurulu onayı gerekli",
         "medula_asamasi": "fatura_kayit",
-        # Anchor: an oncology drug billed without the mandatory indication report.
+        # Claim-level rejection (drug report missing) — no specific line anchor.
+        # The fake SUT-DEMO-BEV drug anchor was purged; the rejection message
+        # carries the semantics and the playbook matches on sonuc_kodu 0411.
         "anchor": {
-            "type": "drug",
-            "ilac_adi": "BEVACİZUMAB 400 MG FLK",
-            "ilac_kodu": "SUT-DEMO-BEV",
-            "barkod": "8690000000001",
-            "esdeger_grup": "bevasizumab",
-            "uzmanlik_kurulu_raporu_var": False,
+            "type": "claim",
         },
     },
     "0032": {

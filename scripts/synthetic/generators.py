@@ -6,7 +6,6 @@ from gen import (  # noqa: F401
     PAYMENT_METHOD_COMPLIANCE_DEMO_TAG,
     ClaimEpisodeContext,
     _CLAIM_READINESS_DEMO_SPECS,
-    _DRUG_INDICATION_DEMO_SPECS,
     _MEDULA_DEMO_SPECS,
     build_workbook_tables,
 )
@@ -17,7 +16,6 @@ __all__ = [
     "PAYMENT_METHOD_COMPLIANCE_DEMO_TAG",
     "ClaimEpisodeContext",
     "_CLAIM_READINESS_DEMO_SPECS",
-    "_DRUG_INDICATION_DEMO_SPECS",
     "_MEDULA_DEMO_SPECS",
     "build_workbook_tables",
 ]

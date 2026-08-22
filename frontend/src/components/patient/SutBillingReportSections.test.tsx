@@ -509,7 +509,7 @@ describe("SutBillingReportSections honest gaps", () => {
           specialty_prose_violations: [
             {
               rule_id: "3.3.3.A.(4).ek3d_lens_upgrade_difference",
-              material_code: "SUT-DEMO-OPT",
+              material_code: "GZ2035",
               material_name: "Gözlük camı",
               message: "Lens upgrade difference not payable",
               risk_amount: 450,
@@ -530,7 +530,7 @@ describe("SutBillingReportSections honest gaps", () => {
       />,
     );
 
-    expect(html).toContain("SUT-DEMO-OPT");
+    expect(html).toContain("GZ2035");
     expect(html).toContain("OP1592");
     expect(html).toContain("Lens upgrade difference not payable");
   });

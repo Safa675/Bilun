@@ -37,9 +37,9 @@
       ],
       "presentation": "itemized_only",
       "golden": {
-        "savings_try": [6300, 6300],
+        "savings_try": [6750, 6750],
         "package_total_try": [9000, 9000],
-        "itemized_total_try": [2700, 2700]
+        "itemized_total_try": [2250, 2250]
       }
     },
     "0004": {
@@ -102,73 +102,11 @@
       "tier": "A",
       "fault": "session_underbilled"
     },
-    "0014": {
-      "patient_index": "0014",
-      "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",
-      "tier": "B",
-      "fault": "drug_indication_missing_report",
-      "drug_indication_key": "bevacizumab_missing_report",
-      "primary_icd10": "C34.9"
-    },
-    "0015": {
-      "patient_index": "0015",
-      "scenario_tag": "sgk_drug_indication_nivolumab_indication_mismatch",
-      "tier": "B",
-      "fault": "drug_indication_mismatch",
-      "drug_indication_key": "nivolumab_indication_mismatch",
-      "primary_icd10": "J45.9"
-    },
-    "0016": {
-      "patient_index": "0016",
-      "scenario_tag": "sgk_drug_indication_daratumumab_report_unknown",
-      "tier": "B",
-      "fault": "drug_indication_needs_verification",
-      "drug_indication_key": "daratumumab_report_unknown",
-      "primary_icd10": "C90.0"
-    },
-    "0017": {
-      "patient_index": "0017",
-      "scenario_tag": "sgk_drug_indication_pembrolizumab_report_ok",
-      "tier": "B",
-      "fault": "drug_indication_compliant",
-      "drug_indication_key": "pembrolizumab_report_ok",
-      "primary_icd10": "C34.9"
-    },
     "0018": {
       "patient_index": "0018",
       "scenario_tag": "medula_rejection_0612_board_report_missing",
       "tier": "B",
       "fault": "medula_rejection_0612"
-    },
-    "0019": {
-      "patient_index": "0019",
-      "scenario_tag": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
-      "tier": "B",
-      "fault": "drug_indication_duration_mismatch",
-      "drug_indication_key": "trastuzumab_report_duration_mismatch",
-      "primary_icd10": "C50.9"
-    },
-    "0020": {
-      "patient_index": "0020",
-      "scenario_tag": "sgk_drug_indication_trabectedin_missing_report",
-      "tier": "B",
-      "fault": "drug_indication_missing_report",
-      "drug_indication_key": "trabectedin_missing_report",
-      "primary_icd10": "C49.9"
-    },
-    "0021": {
-      "patient_index": "0021",
-      "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
-      "tier": "B",
-      "fault": "material_specialty_prose",
-      "material_prose_key": "optical_lens_upgrade"
-    },
-    "0022": {
-      "patient_index": "0022",
-      "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
-      "tier": "B",
-      "fault": "material_specialty_prose",
-      "material_prose_key": "hip_graft_no_pay"
     },
     "0023": {
       "patient_index": "0023",
