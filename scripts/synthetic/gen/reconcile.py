@@ -1,4 +1,4 @@
-"""Claim header totals, specialty keyword demos, EK-2C-1 reconciliation."""
+"""Claim header totals and EK-2C-1 reconciliation."""
 
 from __future__ import annotations
 
@@ -8,10 +8,6 @@ from typing import Any
 import pandas as pd
 
 from catalog import _money
-from gen.materials_flags import (
-    _default_prose_material_flags,
-    _default_specialty_prose_flags,
-)
 
 def _reconcile_claim_header_totals(
     claims: list[dict[str, Any]],
@@ -20,7 +16,7 @@ def _reconcile_claim_header_totals(
     drug_rows: list[dict[str, Any]],
     expected: list[dict[str, Any]] | None = None,
 ) -> None:
-    """Recompute claim header billed/payable totals from line sums (post L4.4 inject)."""
+    """Recompute claim header billed/payable totals from line sums."""
     billed_by_claim: dict[str, float] = defaultdict(float)
     payable_by_claim: dict[str, float] = defaultdict(float)
 
@@ -53,52 +49,6 @@ def _reconcile_claim_header_totals(
                 "kismi_red" if payable < billed else "odenebilir"
             )
 
-
-def _inject_specialty_keyword_demo_rows(
-    materials: list[dict[str, Any]],
-    claims: list[dict[str, Any]],
-) -> None:
-    """Append billed lines that trigger keyword-only §3.3 rules (no claim flags)."""
-    if not claims:
-        return
-
-    claim = claims[0]
-    claim_id = str(claim.get("fatura_id", ""))
-    patient_id = str(claim.get("hasta_id", ""))
-    service_date = claim.get("fatura_baslangic_tarihi") or claim.get("fatura_tarihi") or "2024-06-01"
-
-    keyword_demos = (
-        ("DEMO-L44-W1", "Transparan film yara örtüsü", 85.0),
-        ("DEMO-L44-W2", "Hidrojel yara nemlendirici", 120.0),
-        ("DEMO-L44-CL1", "Kontakt lens solüsyonu", 35.0),
-        ("DEMO-L44-SS1", "Deri taklidi yedek", 250.0),
-    )
-
-    for idx, (code, name, price) in enumerate(keyword_demos):
-        line_id = f"MLZ-{claim_id}-L44-{idx + 1:02d}"
-        materials.append(
-            {
-                "malzeme_satiri_id": line_id,
-                "fatura_id": claim_id,
-                "islem_satiri_id": f"ISL-{claim_id}-001",
-                "hasta_id": patient_id,
-                "malzeme_tarihi": service_date,
-                "malzeme_kodu": code,
-                "malzeme_adi": name,
-                "malzeme_tipi": "uzmanlik",
-                "uzmanlik_kategorisi": "wound",
-                "adet": 1,
-                "birim_fiyat_try": price,
-                "fatura_tutari_try": price,
-                "beklenen_odenebilir_tutar_try": price,
-                "pakete_dahil_mi": False,
-                "on_onay_gerekli_mi": False,
-                "beklenen_red_nedeni": "",
-                "beklenen_kural_izi": f"L4.4:{code}",
-                **_default_prose_material_flags(),
-                **_default_specialty_prose_flags(),
-            }
-        )
 
 def _build_normalized_ek2c1_copay_rates(ek2c1_df: pd.DataFrame) -> dict[str, float]:
     """EK-2C-1 mandated copay fractions keyed by normalized procedure code."""

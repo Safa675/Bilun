@@ -16,7 +16,6 @@ from gen.orchestrate import _generate_claims_and_lines
 from gen.patients import _assign_scenarios, _generate_patients
 from gen.reconcile import (
     _ensure_ek2c1_violation_demos,
-    _inject_specialty_keyword_demo_rows,
     _reconcile_claim_header_totals,
     _reconcile_ek2c1_procedure_lines,
     _build_normalized_ek2c1_copay_rates,
@@ -66,7 +65,6 @@ def build_workbook_tables(
     )
     _ensure_prose_flag_coverage(materials, inpatient_claim_ids=inpatient_claim_ids)
     _ensure_specialty_flag_coverage(materials, claims=claims)
-    _inject_specialty_keyword_demo_rows(materials, claims)
     ek2c1_copay_rates = _build_normalized_ek2c1_copay_rates(_ek2c1())
     _reconcile_ek2c1_procedure_lines(procedure_rows, ek2c1_copay_rates)
     _ensure_ek2c1_violation_demos(procedure_rows, ek2c1_copay_rates)

@@ -9,7 +9,6 @@ import pandas as pd
 
 from catalog import _money
 from gen.claim_lines import ClaimEpisodeContext
-from gen.drug_fields import _empty_drug_indication_fields
 from gen.materials_flags import _default_prose_material_flags, _default_specialty_prose_flags
 from gen.procedures import _lookup_ek2b_price
 
@@ -25,7 +24,7 @@ def _inject_medula_anchor_line(
     ``ilgili_islem_kodu`` (procedure code, when the anchor is a procedure),
     ``ilgili_islem_satiri_id`` (procedure line id, when the anchor is a
     procedure), ``anchor_billed``, ``anchor_payable`` (the offending line's
-    contribution to fold into the claim totals). For material/drug anchors the
+    contribution to fold into the claim totals). For material anchors the
     legacy procedure-code fields are left blank and the new discriminator fields
     carry the real line id. The offending line is appended ON TOP of the claim's
     realistic base bill.
@@ -198,63 +197,6 @@ def _inject_medula_anchor_line(
         result["related_line_id"] = m_line_id
         result["anchor_billed"] = str(unit_price)
         result["anchor_payable"] = str(unit_price)
-        return result
-
-    if anchor_type == "drug":
-        # An oncology drug billed without the mandatory indication report.
-        unit_price = 12500.0
-        qty = 1
-        billed = _money(unit_price * qty)
-        payable = _money(billed * 0.72)
-        existing_drugs = [r for r in ctx.drug_claims if r.get("fatura_id") == ctx.claim_id]
-        drug_idx = len(existing_drugs) + 1
-        d_line_id = f"ILC-{ctx.claim_id}-{drug_idx:03d}"
-        prescription_id = f"REC-{ctx.claim_id}-{drug_idx:03d}"
-        drug_row: dict[str, Any] = {
-            "ilac_satiri_id": d_line_id,
-            "recete_id": prescription_id,
-            "fatura_id": ctx.claim_id,
-            "hasta_id": ctx.pid,
-            "basvuru_id": ctx.eid,
-            "ilac_fatura_tarihi": ctx.start_date,
-            "ilac_adi": str(anchor.get("ilac_adi") or ""),
-            "ilac_kodu": str(anchor.get("ilac_kodu") or ""),
-            "barkod": str(anchor.get("barkod") or ""),
-            "esdeger_grup": str(anchor.get("esdeger_grup") or ""),
-            "adet": qty,
-            "birim_fiyat_try": unit_price,
-            "fatura_tutari_try": billed,
-            "beklenen_odenebilir_tutar_try": payable,
-            "beklenen_indirim_kademesi": 0.28,
-            "katilim_payi_orani": 0.28,
-            "ilave_ucret_orani": None,
-            "beklenen_red_nedeni": "İlaç endikasyon raporu eksik",
-            "beklenen_kural_izi": f"MEDULA-ANCHOR:drug:{anchor.get('ilac_kodu', '')}",
-            **_empty_drug_indication_fields(),
-        }
-        drug_row["uzmanlik_kurulu_raporu_var"] = bool(anchor.get("uzmanlik_kurulu_raporu_var", False))
-        ctx.drug_claims.append(drug_row)
-        # Drug lines carry a line-level expected output (validator requires one
-        # for every drug_claim_line; mirrors _append_drug_lines_for_claim).
-        ctx.expected.append({
-            "beklenen_cikti_id": f"BEK-{d_line_id}",
-            "senaryo_etiketi": ctx.scenario_tag,
-            "hasta_id": ctx.pid,
-            "fatura_id": ctx.claim_id,
-            "satir_id": d_line_id,
-            "satir_tipi": "ilac",
-            "kural_ailesi": "drug_indication",
-            "beklenen_durum": "endikasyon_raporu_eksik",
-            "beklenen_odenebilir_tutar_try": payable,
-            "beklenen_tasarruf_try": _money(billed - payable),
-            "beklenen_red_nedeni": "İlaç endikasyon raporu eksik",
-            "beklenen_kural_izi": f"MEDULA-ANCHOR:drug:{anchor.get('ilac_kodu', '')}",
-            "test_notu": "MEDULA anchor: oncology drug without indication report",
-        })
-        result["related_line_type"] = "drug"
-        result["related_line_id"] = d_line_id
-        result["anchor_billed"] = str(billed)
-        result["anchor_payable"] = str(payable)
         return result
 
     # Unknown anchor type — claim-level fallback.
