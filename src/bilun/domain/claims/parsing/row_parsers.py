@@ -45,6 +45,8 @@ _MATERIAL_EXPLICIT_FIELDS = frozenset(
         "billed_amount_try",
         "expected_payable_try",
         "is_bundled",
+        "is_ek3b1_bundled",
+        "is_excluded",
         "requires_pre_auth",
         "denial_reason_expected",
         "rule_trace_expected",

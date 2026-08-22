@@ -28,6 +28,7 @@ MIN_LABS = 500
 REQUIRED_SHEETS = [
     "veri_seti_manifestosu",
     "hastalar",
+    "hasta_katilim_payi_profilleri",
     "basvurular",
     "tani_satirlari",
     "fatura_basliklari",
@@ -303,46 +304,17 @@ MATERIAL_PROSE_WORKBOOK_COLUMNS = (
 )
 
 MATERIAL_PROSE_DEMO_PATIENTS: dict[str, str] = {
-    "SENTETIK-HASTA-0021": "sgk_specialty_prose_optical_lens_upgrade",
-    "SENTETIK-HASTA-0022": "sgk_specialty_prose_hip_graft_no_pay",
     "SENTETIK-HASTA-0023": "sgk_material_kdv_ceiling_exceeded",
     "SENTETIK-HASTA-0024": "sgk_material_bundling_procurement_incomplete",
 }
 
 MATERIAL_PROSE_DEMO_MATERIAL_CODES: dict[str, str] = {
-    "SENTETIK-HASTA-0021": "SUT-DEMO-OPT",
-    "SENTETIK-HASTA-0022": "SUT-DEMO-GRF",
     "SENTETIK-HASTA-0023": "OP1592",
     "SENTETIK-HASTA-0024": "OP1000",
 }
 
 MATERIAL_PROSE_DEMO_FLAG_EXPECTATIONS: dict[str, dict[str, object]] = {
-    "SENTETIK-HASTA-0021": {"optical_lens_upgrade_difference_claim": True},
-    "SENTETIK-HASTA-0022": {"hip_arthroplasty_graft_claim": True},
     "SENTETIK-HASTA-0024": {"ihale_ekrani_eksik_mi": True},
-}
-
-DRUG_INDICATION_DEMO_PATIENTS: dict[str, str] = {
-    "SENTETIK-HASTA-0014": "sgk_drug_indication_bevacizumab_missing_report",
-    "SENTETIK-HASTA-0015": "sgk_drug_indication_nivolumab_indication_mismatch",
-    "SENTETIK-HASTA-0016": "sgk_drug_indication_daratumumab_report_unknown",
-    "SENTETIK-HASTA-0017": "sgk_drug_indication_pembrolizumab_report_ok",
-    "SENTETIK-HASTA-0019": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
-    "SENTETIK-HASTA-0020": "sgk_drug_indication_trabectedin_missing_report",
-}
-
-DRUG_INDICATION_DEMO_TIER_B_FIELDS: dict[str, dict[str, object]] = {
-    "SENTETIK-HASTA-0017": {
-        "yatarak_tedavi_ilac": True,
-    },
-    "SENTETIK-HASTA-0019": {
-        "rapor_suresi_ay": 12,
-        "recete_eden_uzmanlik": "Tıbbi Onkoloji",
-        "uzmanlik_kurulu_raporu_var": True,
-    },
-    "SENTETIK-HASTA-0020": {
-        "uzmanlik_kurulu_raporu_var": False,
-    },
 }
 
 PAYMENT_METHOD_COMPLIANCE_DEMO_TAG = "payment_method_compliance_demo"
@@ -717,13 +689,18 @@ def _validate_packaged_claim_mandatory_side_procedures(
             )
 
 
-def _validate_drug_indication_demos(
+def _validate_drug_indication_columns(
     tables: dict[str, pd.DataFrame],
     errors: list[str],
 ) -> None:
+    """Schema check: the §4.2 drug-indication columns must exist on the drug table.
+
+    The former SUT-DEMO drug-indication showcase patients were purged; the rule
+    engine still reads these columns from real drug lines, so only the column
+    invariant is validated here (no per-patient demo pins).
+    """
     drugs = tables.get("ilac_fatura_satirlari")
-    claims = tables.get("fatura_basliklari")
-    if drugs is None or claims is None or drugs.empty or claims.empty:
+    if drugs is None or drugs.empty:
         return
 
     missing_cols = [
@@ -734,43 +711,6 @@ def _validate_drug_indication_demos(
             errors,
             f"ilac_fatura_satirlari missing §4.2 drug indication columns: {missing_cols}",
         )
-        return
-
-    for patient_id, scenario_tag in DRUG_INDICATION_DEMO_PATIENTS.items():
-        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
-        if patient_claims.empty:
-            _error(errors, f"Missing claim for drug indication demo patient {patient_id}")
-            continue
-        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
-        if matching.empty:
-            _error(
-                errors,
-                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
-            )
-        patient_drugs = drugs[_strings(drugs["hasta_id"]) == patient_id]
-        if patient_drugs.empty:
-            _error(errors, f"Patient {patient_id} missing drug claim lines")
-            continue
-
-        demo_drugs = patient_drugs[
-            _strings(patient_drugs["ilac_kodu"]).str.startswith("SUT-DEMO-")
-        ]
-        if demo_drugs.empty:
-            _error(errors, f"Patient {patient_id} missing SUT-DEMO drug indication line")
-            continue
-
-        tier_b_expect = DRUG_INDICATION_DEMO_TIER_B_FIELDS.get(patient_id)
-        if tier_b_expect:
-            drug_row = demo_drugs.iloc[0]
-            for column, expected in tier_b_expect.items():
-                actual = drug_row.get(column)
-                if pd.isna(actual):
-                    actual = None
-                if actual != expected:
-                    _error(
-                        errors,
-                        f"Patient {patient_id} demo drug {column}={actual!r}, expected {expected!r}",
-                    )
 
 
 def _validate_material_prose_demos(
@@ -964,19 +904,23 @@ def _validate_medula_anchor_content(
                     f"uts_kayitli_mi not False",
                 )
     elif sonuc == "0411":
-        # Drug anchor must have uzmanlik_kurulu_raporu_var=False.
-        drugs = tables.get("ilac_fatura_satirlari")
-        if drugs is not None:
-            claim_drugs = drugs[_strings(drugs["hasta_id"]) == patient_id]
-            report_missing = claim_drugs[
-                _strings(claim_drugs["ilac_kodu"]) == str(anchor["ilac_kodu"])
-            ]
-            if report_missing.empty or bool(report_missing.iloc[0].get("uzmanlik_kurulu_raporu_var", True)):
-                _error(
-                    errors,
-                    f"Patient {patient_id} 0411 drug anchor {anchor['ilac_kodu']} missing or "
-                    f"uzmanlik_kurulu_raporu_var not False",
-                )
+        # Drug-report-missing rejection. The fake SUT-DEMO-BEV drug anchor was
+        # purged and the scenario re-anchored to claim-level, so there is no
+        # drug line to validate. Only enforce the drug-content check if a drug
+        # anchor is actually present.
+        if anchor_type == "drug":
+            drugs = tables.get("ilac_fatura_satirlari")
+            if drugs is not None:
+                claim_drugs = drugs[_strings(drugs["hasta_id"]) == patient_id]
+                report_missing = claim_drugs[
+                    _strings(claim_drugs["ilac_kodu"]) == str(anchor["ilac_kodu"])
+                ]
+                if report_missing.empty or bool(report_missing.iloc[0].get("uzmanlik_kurulu_raporu_var", True)):
+                    _error(
+                        errors,
+                        f"Patient {patient_id} 0411 drug anchor {anchor['ilac_kodu']} missing or "
+                        f"uzmanlik_kurulu_raporu_var not False",
+                    )
 
 
 def _assert_procedure_code(
@@ -1098,14 +1042,18 @@ def _validate_vignette_manifest_alignment(
     tables: dict[str, pd.DataFrame],
     errors: list[str],
 ) -> None:
-    """P2: vignette registry and manifest scenario tags stay in sync."""
+    """P2: vignette registry and manifest scenario tags stay in sync.
+
+    Copay-exemption demo patients (e.g. 0034–0036) carry a scenario_tag in the
+    manifest but deliberately have no showcase vignette, so indices without a
+    vignette row are skipped (mirrors test_vignette_golden's tag-match test).
+    """
     registry = vignette_registry()
     manifest = load_demo_manifest()
     scenario_by_index = manifest.get("scenario_by_index") or {}
     for index, expected_tag in scenario_by_index.items():
         vignette = registry.get(str(index))
         if vignette is None:
-            _error(errors, f"Manifest index {index} has no vignette row")
             continue
         if vignette.scenario_tag != expected_tag:
             _error(
@@ -1275,7 +1223,7 @@ def main() -> None:
         _validate_workbook(tables, errors)
         _validate_material_prose_flags(tables, errors)
         _validate_specialty_prose_flags(tables, errors)
-        _validate_drug_indication_demos(tables, errors)
+        _validate_drug_indication_columns(tables, errors)
         _validate_material_prose_demos(tables, errors)
         _validate_medula_playbook_demos(tables, errors)
         _validate_claim_readiness_demos(tables, errors)
