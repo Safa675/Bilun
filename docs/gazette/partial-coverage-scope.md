@@ -13,8 +13,8 @@ Registry `coverage_status` vs dashboard `has_algorithmic_gap` after Wave 2 class
 | `lab_billing` | **implemented** | 0 | Hemogram + capture gap | |
 | `material_bundling_prose` | **implemented** | 0 | 59 JSON rules + L1.4 manifest | Partial corpus honesty in dashboard partial-engines panel |
 | `specialty_materials_prose` | **implemented** | 0 | 49 JSON rules + L4.4 manifest (84 traced) | Separate from EK-3 catalog engine |
-| `drug_indication_prose` | partial | ~3643 | 131 INN + manifest | Tier C deferred; demos **0014–0020** |
-| Material prose demos | — | — | Sprint 2 | **0021–0024** (optik, ortopedi, KDV, ihale) |
+| `drug_indication_prose` | partial | ~3643 | 131 INN + manifest | Tier C deferred; cohort demos purged 2026-08-22 (engine + unit tests remain) |
+| Material prose demos | — | — | Sprint 2 | **0023–0024** (KDV, ihale); optik/ortopedi demos purged 2026-08-22 |
 | MEDULA playbook demos | — | — | Sprint 3 | **10** `sonuc_kodu` templates; patients **0012, 0018, 0025–0032** |
 | Claim readiness demos | — | — | Sprint 4 | **0033** proactive ÜTS checklist (no MEDULA event) |
 

@@ -52,7 +52,7 @@ Tier listeleri `demo_manifest.json` içinde. Vignette `tier` alanı `demo_vignet
 
 ### Tier B (regression) — özet
 
-0004–0008 uplift/review demoları; 0012–0033 sprint pin’leri (MEDULA 0012/0018/0025–0032, ilaç 0014–0020, malzeme 0021–0024, readiness 0033). Tam liste `demo_manifest.json` → `tier_b_patient_indices` ve `scenario_by_index`.
+0004–0008 uplift/review demoları; 0012–0033 sprint pin’leri (MEDULA 0012/0018/0025–0032, malzeme 0023–0024, readiness 0033). Tam liste `demo_manifest.json` → `tier_b_patient_indices` ve `scenario_by_index`.
 
 ---
 
