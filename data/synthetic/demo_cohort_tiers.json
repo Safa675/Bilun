@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-25T16:35:57Z",
+  "generated_at": "2026-08-22T11:25:56Z",
   "dataset_id": "sentetik_sut_v2_50_hasta",
   "seed": 20260504,
   "num_patients": 50,
@@ -12,8 +12,8 @@
   },
   "counts": {
     "tier_a": 9,
-    "tier_b": 24,
-    "tier_c": 17
+    "tier_b": 16,
+    "tier_c": 25
   },
   "tier_a": [
     {
@@ -175,99 +175,11 @@
       "demo_ready": false
     },
     {
-      "patient_id": "SENTETIK-HASTA-0014",
-      "patient_index": "0014",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",
-      "fault": "drug_indication_missing_report",
-      "department": null,
-      "primary_icd10": "C34.9",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0015",
-      "patient_index": "0015",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_nivolumab_indication_mismatch",
-      "fault": "drug_indication_mismatch",
-      "department": null,
-      "primary_icd10": "J45.9",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0016",
-      "patient_index": "0016",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_daratumumab_report_unknown",
-      "fault": "drug_indication_needs_verification",
-      "department": null,
-      "primary_icd10": "C90.0",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0017",
-      "patient_index": "0017",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_pembrolizumab_report_ok",
-      "fault": "drug_indication_compliant",
-      "department": null,
-      "primary_icd10": "C34.9",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
       "patient_id": "SENTETIK-HASTA-0018",
       "patient_index": "0018",
       "tier": "B",
       "scenario_tag": "medula_rejection_0612_board_report_missing",
       "fault": "medula_rejection_0612",
-      "department": null,
-      "primary_icd10": null,
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0019",
-      "patient_index": "0019",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
-      "fault": "drug_indication_duration_mismatch",
-      "department": null,
-      "primary_icd10": "C50.9",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0020",
-      "patient_index": "0020",
-      "tier": "B",
-      "scenario_tag": "sgk_drug_indication_trabectedin_missing_report",
-      "fault": "drug_indication_missing_report",
-      "department": null,
-      "primary_icd10": "C49.9",
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0021",
-      "patient_index": "0021",
-      "tier": "B",
-      "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
-      "fault": "material_specialty_prose",
-      "department": null,
-      "primary_icd10": null,
-      "is_default_landing": false,
-      "demo_ready": false
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0022",
-      "patient_index": "0022",
-      "tier": "B",
-      "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
-      "fault": "material_specialty_prose",
       "department": null,
       "primary_icd10": null,
       "is_default_landing": false,
@@ -397,10 +309,98 @@
       "demo_ready": false
     },
     {
+      "patient_id": "SENTETIK-HASTA-0014",
+      "patient_index": "0014",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0015",
+      "patient_index": "0015",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0016",
+      "patient_index": "0016",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0017",
+      "patient_index": "0017",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0019",
+      "patient_index": "0019",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0020",
+      "patient_index": "0020",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0021",
+      "patient_index": "0021",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0022",
+      "patient_index": "0022",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
       "patient_id": "SENTETIK-HASTA-0034",
       "patient_index": "0034",
       "tier": "C",
-      "scenario_tag": null,
+      "scenario_tag": "copay_exemption_acil_demo",
       "fault": null,
       "department": null,
       "primary_icd10": null,
@@ -411,7 +411,7 @@
       "patient_id": "SENTETIK-HASTA-0035",
       "patient_index": "0035",
       "tier": "C",
-      "scenario_tag": null,
+      "scenario_tag": "copay_exemption_yesil_kart_demo",
       "fault": null,
       "department": null,
       "primary_icd10": null,
@@ -422,7 +422,7 @@
       "patient_id": "SENTETIK-HASTA-0036",
       "patient_index": "0036",
       "tier": "C",
-      "scenario_tag": null,
+      "scenario_tag": "copay_exemption_ek1a_demo",
       "fault": null,
       "department": null,
       "primary_icd10": null,
