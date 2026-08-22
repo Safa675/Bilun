@@ -1,29 +1,92 @@
-"""API serialization tests for §4.2 drug indication on patient billing reports."""
+"""API serialization tests for §4.2 drug indication on patient billing reports.
+
+The former SUT-DEMO cohort patients (0014/0017/0019) were purged, so these tests
+exercise the API serialization path against an in-memory claim context rather than
+the synthetic cohort. Domain-level engine coverage lives in
+``test_claim_drug_indication.py``.
+"""
 
 from __future__ import annotations
+
+from datetime import date
+from decimal import Decimal
 
 import pytest
 
 from src.bilun.api.routes.billing import _serialize_billing_report
 from src.bilun.api.schemas import BillingReportResponse
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
-from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
+from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, DrugClaimLine
+from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 pytestmark = pytest.mark.unit
 
 
-@pytest.fixture(scope="module")
-def dataset():
-    return load_sut_claim_dataset()
+def _ctx(*, report_present: bool | None = False) -> PatientClaimContext:
+    claim = ClaimHeader(
+        claim_id="C1",
+        patient_id="P1",
+        episode_id="E1",
+        claim_type="yatis",
+        facility_tier="2",
+        provider_type="kamu",
+        department="onkoloji",
+        admission_date=date(2026, 1, 1),
+        discharge_date=date(2026, 1, 5),
+        claim_start_date=date(2026, 1, 1),
+        claim_end_date=date(2026, 1, 5),
+        primary_icd10="C34.9",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("10000"),
+        expected_total_payable_try=Decimal("7200"),
+        expected_denial_reason="",
+        scenario_tag="sgk_drug_indication_bevacizumab_missing_report",
+    )
+    drug_line = DrugClaimLine(
+        drug_claim_line_id="D1",
+        prescription_id="RX1",
+        claim_id="C1",
+        patient_id="P1",
+        episode_id="E1",
+        drug_claim_date=date(2026, 1, 2),
+        drug_name="AVASTIN 400 MG (BEVACIZUMAB)",
+        drug_code="A00000",
+        barkod="8690000000001",
+        equivalence_group="bevasizumab",
+        quantity=1,
+        unit_price_try=Decimal("10000"),
+        billed_amount_try=Decimal("10000"),
+        expected_payable_try=Decimal("7200"),
+        discount_tier_expected=Decimal("0.28"),
+        denial_reason_expected="",
+        rule_trace_expected="",
+        drug_specialty_board_report_present=report_present,
+    )
+    return PatientClaimContext(
+        patient_id="P1",
+        claims=(claim,),
+        procedure_lines=(),
+        material_lines=(),
+        drug_lines=(drug_line,),
+        diagnoses=(
+            ClaimDiagnosis(
+                diagnosis_id="DG1",
+                claim_id="C1",
+                patient_id="P1",
+                episode_id="E1",
+                icd10_code="C34.9",
+                is_primary=True,
+                diagnosis_role="birincil",
+                diagnosis_date=date(2026, 1, 1),
+                exemption_eligible=False,
+            ),
+        ),
+    )
 
 
 class TestPatientBillingDrugIndicationApi:
-    def test_0014_billing_json_surfaces_drug_indication_violations(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0014"
-        ctx = build_patient_claim_context(patient_id, dataset)
-        assert ctx is not None
-
-        report = compute_patient_billing_report(patient_id, claim_context=ctx)
+    def test_billing_json_surfaces_drug_indication_violations(self) -> None:
+        report = compute_patient_billing_report("P1", claim_context=_ctx(report_present=False))
         payload = _serialize_billing_report(report)
         model = BillingReportResponse.model_validate(payload)
 
@@ -33,24 +96,8 @@ class TestPatientBillingDrugIndicationApi:
         assert model.drug_indication.coverage_scope.get("pilot_rule_count", 0) >= 131
         assert model.drug_indication.coverage_scope.get("v1_stop_conditions")
 
-    def test_0019_billing_json_surfaces_tier_b_duration_mismatch(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0019"
-        ctx = build_patient_claim_context(patient_id, dataset)
-        assert ctx is not None
-
-        report = compute_patient_billing_report(patient_id, claim_context=ctx)
-        payload = _serialize_billing_report(report)
-        model = BillingReportResponse.model_validate(payload)
-
-        assert model.drug_indication_violation_count == 1
-        assert model.drug_indication.violations[0]["violation_kind"] == "report_duration_mismatch"
-
-    def test_0017_billing_json_has_zero_drug_indication_violations(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0017"
-        ctx = build_patient_claim_context(patient_id, dataset)
-        assert ctx is not None
-
-        report = compute_patient_billing_report(patient_id, claim_context=ctx)
+    def test_billing_json_clean_when_report_present(self) -> None:
+        report = compute_patient_billing_report("P1", claim_context=_ctx(report_present=True))
         payload = _serialize_billing_report(report)
         model = BillingReportResponse.model_validate(payload)
 

@@ -24,7 +24,9 @@ pytestmark = pytest.mark.unit
 def test_patient_alert_distinguishes_exempt_vs_rate_capped() -> None:
     dataset = load_sut_claim_dataset()
     exempt_patient = "SENTETIK-HASTA-0015"
-    rate_patient = "SENTETIK-HASTA-0012"
+    # Re-targeted 0012 -> 0002 after the 2026-07-01 SUT amendment + generator drift
+    # left 0012's regenerated procedures outside the EK-2C-1 rate list (outcome "none").
+    rate_patient = "SENTETIK-HASTA-0002"
     assert exempt_patient in dataset.copay_profiles_by_patient
     assert rate_patient in dataset.procedure_lines_by_patient
     patient_ids = [exempt_patient, rate_patient]

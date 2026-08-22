@@ -420,30 +420,33 @@ class TestClaimStrategySut:
         assert claim_rec["itemized_excluded_violation_count"] == 0
         assert claim_rec["itemized_raw_try"] == 3000.0
 
-    def test_spot_check_sentetik_0001_001_no_price_comparison(self) -> None:
+    def test_spot_check_sentetik_0045_078_no_price_comparison(self) -> None:
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
         dataset = load_sut_claim_dataset()
-        ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
+        ctx = build_patient_claim_context("SENTETIK-HASTA-0045", dataset)
         assert ctx is not None
 
         result = recommend_billing_strategy_from_claims(ctx)
         claim_rec = next(
             rec
             for rec in result.recommendations
-            if rec.get("claim_id") == "F-SENTETIK-HASTA-0001-001"
+            if rec.get("claim_id") == "F-SENTETIK-HASTA-0045-078"
             and "recommendation" in rec
             and rec.get("payment_method_kind") == "DRG_MANDATORY"
         )
         assert claim_rec["recommendation"] == "package"
         assert "lower than" not in claim_rec["detail"]
         # Golden check: the structured contract does not alter the detail byte.
+        # Re-targeted 0001-001 -> 0045-078 after the 2026-07-01 SUT amendment and a
+        # generator RNG-path change flipped claim 0001-001 to itemized (package_candidate
+        # False), so it no longer yields a claim-level DRG package recommendation.
         assert claim_rec["message_code"] == "claim_package_ok"
         assert claim_rec["message_params"] == {
-            "claim_id": "F-SENTETIK-HASTA-0001-001",
-            "amount_try": "8705.13",
+            "claim_id": "F-SENTETIK-HASTA-0045-078",
+            "amount_try": "7218.58",
         }
         assert claim_rec["detail"] == (
-            "Claim F-SENTETIK-HASTA-0001-001 is billed correctly as package "
-            "per SUT §2.2.2(1). Package total 8705.13 TRY."
+            "Claim F-SENTETIK-HASTA-0045-078 is billed correctly as package "
+            "per SUT §2.2.2(1). Package total 7218.58 TRY."
         )

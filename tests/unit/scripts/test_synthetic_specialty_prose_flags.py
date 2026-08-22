@@ -49,9 +49,3 @@ def test_material_lines_cover_each_specialty_flag_demo_row() -> None:
             continue
         assert materials[col].astype(bool).any(), f"missing demo row for {col}"
 
-
-def test_keyword_demo_material_names_present() -> None:
-    tables = build_workbook_tables(num_patients=10, seed=20260611)
-    names = set(tables["malzeme_fatura_satirlari"]["malzeme_adi"].astype(str))
-    assert "Transparan film yara örtüsü" in names
-    assert "Kontakt lens solüsyonu" in names

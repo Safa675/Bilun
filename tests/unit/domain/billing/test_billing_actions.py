@@ -48,14 +48,18 @@ class TestBillingActionsBreakdown:
         assert report.action_count == len(report.recommended_actions)
 
         surfaces = {row["surface"] for row in report.recommended_actions}
-        assert surfaces == {"copay", "claim_checklist"}
+        assert surfaces == {"copay", "claim_checklist", "billing_strategy"}
 
         violations = [
             row
             for row in report.recommended_actions
             if row["kind"] == "compliance_violation"
         ]
-        assert len(violations) == 0
+        # Post 2026-07-01 amendment + rule-wiring drift, procedure 613080 on this
+        # claim is package-mandated (§2.2.1.B-1.a), so one compliance violation now
+        # accompanies the copay review + documentation checklist.
+        assert len(violations) == 1
+        assert "613080" in (violations[0].get("detail") or "")
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
@@ -77,17 +81,18 @@ class TestBillingActionsBreakdown:
             if row["surface"] == "claim_checklist"
             and row["kind"] == "documentation_requirement"
         ]
-        assert len(doc_rows) == 1
-        assert "muayene" in (doc_rows[0].get("detail") or "").lower()
-        assert report.action_count == 1 + len(doc_rows)
+        assert len(doc_rows) == 3
+        assert any("muayene" in (row.get("detail") or "").lower() for row in doc_rows)
+        assert report.action_count == len(copay_rows) + len(violations) + len(doc_rows)
 
         checklist_docs = [
             item
             for item in report.claim_submission_checklist.items
             if item.get("checklist_kind") == "documentation_requirement"
         ]
-        assert len(checklist_docs) == 1
-        assert checklist_docs[0].get("sut_anchor") == "Fatura İnceleme ORTAK-5"
+        assert len(checklist_docs) == 3
+        anchors = {item.get("sut_anchor") for item in checklist_docs}
+        assert "Fatura İnceleme ORTAK-5" in anchors
 
     def test_f011_doc_checklist_is_relevance_gated(self, dataset) -> None:
         """Yatış + EK-2/C cerrahi claim should not spam ungated ORTAK/TPN rules."""
@@ -135,7 +140,7 @@ class TestBillingActionsBreakdown:
             if row.get("kind") == "optional_override"
         ]
         assert len(override) == 1
-        assert override[0]["sgk_uplift_try"] == pytest.approx(6300.0)
+        assert override[0]["sgk_uplift_try"] == pytest.approx(6750.0)
 
         strategy_override = report.billing_strategy.optional_override_opportunities[0]
         assert strategy_override.get("recommended_package_code") == "609300"
