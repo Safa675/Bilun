@@ -269,7 +269,9 @@ def test_gate_b_artifacts_on_disk() -> None:
 
     soft_floor(corpus.height, 100, label="section export height")
     assert manifest["section_clause_total"] == corpus.height
-    assert manifest["tier_a_pending_count"] == 2
+    # C004257 is tier_c_deferred and C004299 non_actionable via
+    # deferral_table.yaml, so no tier-A candidate remains pending.
+    assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == len(

@@ -85,9 +85,11 @@ def test_a1_manifest_structure() -> None:
     encoded = manifest.get("encoded_clause_ids") or []
     assert len(encoded) >= 14
     assert manifest.get("section_id") == "4.2.1"
-    # Tier A pending is 1 (C003658) — the 4201 manifest keeps one candidate
-    # deferred from encoding while it awaits a defining board-report rule.
-    assert manifest.get("tier_a_pending_count", 0) == 1
+    # Tier A/B pending is empty: the last pending candidates (C003658
+    # board-report wait; C003756 / C003834 paediatric ACR continuation) are
+    # carried by deferral_table.yaml as tier_c_deferred.
+    assert manifest.get("tier_a_pending_count", 0) == 0
+    assert manifest.get("tier_b_pending_count", 0) == 0
 
 @pytest.mark.parametrize(
     ("sample",),

@@ -120,7 +120,9 @@ def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:
     encoded = encoded_like_clause_ids(manifest)
     resolved = resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES)
     assert resolved <= encoded
-    assert manifest.get("tier_b_pending_count") == 2
+    # C003756 / C003834 moved from tier_b_pending to tier_c_deferred via
+    # deferral_table.yaml.
+    assert manifest.get("tier_b_pending_count") == 0
 
 def test_w4_in_force_manifest_clause_total() -> None:
     if not _MANIFEST.is_file():
@@ -141,7 +143,9 @@ def test_w4_manifest_trace_completeness() -> None:
     from collections import Counter
 
     status_counts = Counter(t["manifest_status"] for t in traces)
-    assert status_counts["tier_b_pending"] == 2
+    # C003756 / C003834 moved from tier_b_pending to tier_c_deferred via
+    # deferral_table.yaml.
+    assert status_counts["tier_b_pending"] == 0
     assert sum(status_counts.values()) == total
     for trace in traces:
         if trace["manifest_status"] == "tier_c_deferred":
