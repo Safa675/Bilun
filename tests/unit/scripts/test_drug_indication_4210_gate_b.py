@@ -168,7 +168,10 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert _ALL_ENCODED_IDS <= encoded
-    assert manifest["tier_a_pending_count"] == 2
+    # C004257 (platelet-count criterion) is tier_c_deferred and C004299
+    # (amendment marker) is non_actionable via deferral_table.yaml, so no
+    # tier-A/B candidate remains pending.
+    assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)
     assert_manifest_consistent(manifest, frame, rules=rules)
@@ -207,7 +210,16 @@ def test_audit_tier_c_deferred_have_defer_reason() -> None:
         cid = trace["clause_id"]
         status = trace["manifest_status"]
         if cid in gap_ids:
-            assert status in {"encoded", "tier_c_deferred", "tier_b_pending"}
+            # Every gap clause must carry a traced honest status (the audit's
+            # honest set: encoded / tier_c_deferred / non_actionable /
+            # emr_blocked, plus pending buckets).
+            assert status in {
+                "encoded",
+                "tier_c_deferred",
+                "tier_b_pending",
+                "non_actionable",
+                "emr_blocked",
+            }
         if status == "tier_c_deferred":
             assert trace.get("defer_reason")
             assert trace.get("defer_themes") is not None
@@ -257,7 +269,9 @@ def test_gate_b_artifacts_on_disk() -> None:
 
     soft_floor(corpus.height, 100, label="section export height")
     assert manifest["section_clause_total"] == corpus.height
-    assert manifest["tier_a_pending_count"] == 2
+    # C004257 is tier_c_deferred and C004299 non_actionable via
+    # deferral_table.yaml, so no tier-A candidate remains pending.
+    assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == len(

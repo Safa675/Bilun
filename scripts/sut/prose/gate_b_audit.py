@@ -249,7 +249,14 @@ def repair_untraced(
 ) -> tuple[dict[str, Any], int]:
     """Inject tier_c_deferred traces for gap IDs missing honest coverage."""
     statuses = _manifest_status_ids(manifest)
-    honest = statuses["encoded"] | statuses["tier_c_deferred"]
+    # Same honest set as audit_gap_parity: non_actionable / emr_blocked clauses
+    # are already traced honestly and must not be re-repaired as tier_c_deferred.
+    honest = (
+        statuses["encoded"]
+        | statuses["tier_c_deferred"]
+        | statuses["non_actionable"]
+        | statuses["emr_blocked"]
+    )
     pending = statuses["tier_a_pending"] | statuses["tier_b_pending"]
     missing = gap_ids - honest - pending if gap_ids else frozenset()
 

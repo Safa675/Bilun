@@ -98,13 +98,19 @@ def load_deferral_table(
     for entry in entries:
         clause_id = str(entry.get("clause_id") or "").strip()
         coordinate = str(entry.get("clause_coordinate") or "").strip()
-        if not clause_id and coordinate and frame is not None:
+        target_ids: list[str] = []
+        if clause_id:
+            target_ids = [clause_id]
+        elif coordinate and frame is not None:
             try:
+                # encode_eligible_only=False: deferral entries exist precisely for
+                # clauses that are NOT encode-eligible (prose/amendment rows);
+                # requiring eligibility here silently drops their authored status.
                 ids = resolve_gate_b_ref_to_clause_ids(
                     coordinate,
                     frame,
                     in_force_only=True,
-                    encode_eligible_only=True,
+                    encode_eligible_only=False,
                     allow_ambiguous=False,
                 )
             except (
@@ -113,17 +119,32 @@ def load_deferral_table(
                 UnknownClauseCiteError,
             ):
                 continue
-            if len(ids) != 1:
+            if not ids:
                 continue
-            clause_id = ids[0]
-        if not clause_id:
+            if len(ids) > 1:
+                # Identical-content duplicate rows share one clause_key; the
+                # resolver returns all of them by contract ("not ambiguous").
+                # The authored judgment applies to every duplicate row. Any
+                # other multi-match is skipped so a bad cite cannot poison
+                # the whole table.
+                keys = {
+                    str(row.get("clause_key") or "")
+                    for row in frame.filter(
+                        pl.col("clause_id").is_in(list(ids))
+                    ).iter_rows(named=True)
+                }
+                if len(keys) != 1:
+                    continue
+            target_ids = list(ids)
+        if not target_ids:
             continue
-        resolved[clause_id] = {
-            "status": entry.get("status", "tier_c_deferred"),
-            "defer_themes": entry.get("defer_themes", []),
-            "defer_reason": entry.get("defer_reason", ""),
-            "clause_coordinate": coordinate or None,
-        }
+        for target in target_ids:
+            resolved[target] = {
+                "status": entry.get("status", "tier_c_deferred"),
+                "defer_themes": entry.get("defer_themes", []),
+                "defer_reason": entry.get("defer_reason", ""),
+                "clause_coordinate": coordinate or None,
+            }
     if clauses is None:
         _deferral_cache = resolved
     return resolved
