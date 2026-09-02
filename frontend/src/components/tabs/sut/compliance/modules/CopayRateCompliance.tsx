@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import PatientTabLink from "@/components/shell/PatientTabLink";
 import { ArrowRight } from "lucide-react";
 import { fmtNum } from "../../shared";
 import { Surface, Stat, Chip, Button, buttonActiveClass, DataTable } from "@/components/primitives";
@@ -136,9 +136,9 @@ export function CopayRateCompliance({
                 return (
                   <tr key={p.patient_id}>
                     <td>
-                      <Link href={buildSutBillingHref(p.patient_id)} className={PATIENT_LINK_CLASS}>
+                      <PatientTabLink patientId={p.patient_id} href={buildSutBillingHref(p.patient_id)} className={PATIENT_LINK_CLASS}>
                         {p.patient_id}
-                      </Link>
+                      </PatientTabLink>
                     </td>
                     <td className="tabular-nums text-[var(--text-primary)]">
                       {meanRate != null ? `${meanRate}%` : (
@@ -172,12 +172,13 @@ export function CopayRateCompliance({
                       )}
                     </td>
                     <td className="text-right">
-                      <Link
+                      <PatientTabLink
+                        patientId={p.patient_id}
                         href={buildSutBillingHref(p.patient_id, { section: "billing-copay" })}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                       >
                         Faturaya git <ArrowRight className="h-3 w-3" />
-                      </Link>
+                      </PatientTabLink>
                     </td>
                   </tr>
                 );

@@ -10,6 +10,11 @@ import { fmtTRY2, fmtPriorityLabel, fmtLabel, fmtNum } from "@/components/tabs/s
 import { buildSutPatientHref } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
+import { isBackgroundTabPointer } from "@/lib/patientTabOpen";
+import PatientTabLink, {
+  PatientTabContextMenu,
+  useOpenPatientBackground,
+} from "@/components/shell/PatientTabLink";
 
 interface PatientRow {
   patient_id: string;
@@ -133,6 +138,10 @@ export default function PatientInvoiceTable({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const openBackground = useOpenPatientBackground();
+  const [tabMenu, setTabMenu] = useState<{ x: number; y: number; patientId: string } | null>(
+    null,
+  );
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -365,13 +374,38 @@ export default function PatientInvoiceTable({
           </tr>
         </thead>
         <tbody>
-          {pageRows.map((row) => (
+          {pageRows.map((row) => {
+            const href = buildSutPatientHref(row.patient_id);
+            return (
             <tr
               key={row.patient_id}
               className="cursor-pointer hover:bg-[var(--surface-tint)] transition-colors"
-              onClick={() => router.push(buildSutPatientHref(row.patient_id))}
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("a")) return;
+                if (isBackgroundTabPointer(event)) {
+                  event.preventDefault();
+                  openBackground(row.patient_id, href);
+                  return;
+                }
+                router.push(href);
+              }}
+              onAuxClick={(event) => {
+                if (event.button !== 1) return;
+                if ((event.target as HTMLElement).closest("a")) return;
+                event.preventDefault();
+                openBackground(row.patient_id, href);
+              }}
+              onContextMenu={(event) => {
+                if ((event.target as HTMLElement).closest("a")) return;
+                event.preventDefault();
+                setTabMenu({ x: event.clientX, y: event.clientY, patientId: row.patient_id });
+              }}
             >
-              <td className="font-mono text-xs font-medium">{row.patient_id}</td>
+              <td className="font-mono text-xs font-medium">
+                <PatientTabLink patientId={row.patient_id} href={href} className="text-inherit hover:text-[var(--gold-hover)]">
+                  {row.patient_id}
+                </PatientTabLink>
+              </td>
               <td>{row.age ?? "—"}</td>
               <td className="capitalize">{row.sex ?? "—"}</td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
@@ -420,9 +454,20 @@ export default function PatientInvoiceTable({
                 {row.top_action_type ? fmtLabel(row.top_action_type) : "—"}
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </DataTable>
+      {tabMenu ? (
+        <PatientTabContextMenu
+          x={tabMenu.x}
+          y={tabMenu.y}
+          onOpen={() => {
+            openBackground(tabMenu.patientId);
+          }}
+          onDismiss={() => setTabMenu(null)}
+        />
+      ) : null}
 
       {/* Pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">

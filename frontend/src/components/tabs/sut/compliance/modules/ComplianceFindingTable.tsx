@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import PatientTabLink from "@/components/shell/PatientTabLink";
 import { ArrowRight } from "lucide-react";
 import { Chip, DataTable } from "@/components/primitives";
 import { buildSutBillingHref } from "@/lib/constants";
@@ -76,9 +76,9 @@ export function ComplianceFindingTable({
             return (
               <tr key={`${row.patient_id}:${row.action_id}:${row.claim_id}:${rowCode(row)}`}>
                 <td>
-                  <Link href={rowHref(row)} className={PATIENT_LINK_CLASS}>
+                  <PatientTabLink patientId={row.patient_id} href={rowHref(row)} className={PATIENT_LINK_CLASS}>
                     {row.patient_id}
-                  </Link>
+                  </PatientTabLink>
                 </td>
                 <td className="text-[var(--text-secondary)]">{row.claim_id || "—"}</td>
                 <td>
@@ -99,13 +99,14 @@ export function ComplianceFindingTable({
                 </td>
                 <td className="text-[var(--text-secondary)]">{row.sut_section_id || "—"}</td>
                 <td className="text-right">
-                  <Link
+                  <PatientTabLink
+                    patientId={row.patient_id}
                     href={rowHref(row)}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                   >
                     {t("optimizer.complianceIndex.openBill")}{" "}
                     <ArrowRight className="h-3 w-3" />
-                  </Link>
+                  </PatientTabLink>
                 </td>
               </tr>
             );

@@ -8,8 +8,13 @@ import { searchSutPatients } from "@/lib/api/sut";
 import { buildSutPatientHref } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import type { PatientSearchResult } from "@/lib/domains/patient";
+import { isBackgroundTabPointer } from "@/lib/patientTabOpen";
 import { useT } from "@/lib/i18n/useTranslations";
 import { useWorkspaceStoreApi } from "@/stores/workspaceContext";
+import {
+  PatientTabContextMenu,
+  useOpenPatientBackground,
+} from "@/components/shell/PatientTabLink";
 
 /** Ctrl+K patient quick-open: search by id, open result as a tab. */
 export default function WorkspaceQuickOpen() {
@@ -19,9 +24,13 @@ export default function WorkspaceQuickOpen() {
   const store = useWorkspaceStoreApi();
   const open = useStore(store, (state) => state.quickOpen);
   const setQuickOpen = useStore(store, (state) => state.setQuickOpen);
+  const openBackground = useOpenPatientBackground();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PatientSearchResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [tabMenu, setTabMenu] = useState<{ x: number; y: number; patientId: string } | null>(
+    null,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,7 +81,11 @@ export default function WorkspaceQuickOpen() {
 
   const shownResults = query.trim().length === 0 ? [] : results;
 
-  const openPatient = (patientId: string) => {
+  const openPatient = (patientId: string, background = false) => {
+    if (background) {
+      openBackground(patientId);
+      return;
+    }
     setQuickOpen(false);
     router.push(buildSutPatientHref(patientId));
   };
@@ -96,7 +109,7 @@ export default function WorkspaceQuickOpen() {
     if (event.key === "Enter") {
       event.preventDefault();
       const selected = shownResults[activeIndex];
-      if (selected) openPatient(selected.patient_id);
+      if (selected) openPatient(selected.patient_id, event.metaKey || event.ctrlKey);
     }
   };
 
@@ -136,7 +149,23 @@ export default function WorkspaceQuickOpen() {
             <li key={result.patient_id}>
               <button
                 type="button"
-                onClick={() => openPatient(result.patient_id)}
+                onClick={(event) => {
+                  if (isBackgroundTabPointer(event)) {
+                    event.preventDefault();
+                    openPatient(result.patient_id, true);
+                    return;
+                  }
+                  openPatient(result.patient_id);
+                }}
+                onAuxClick={(event) => {
+                  if (event.button !== 1) return;
+                  event.preventDefault();
+                  openPatient(result.patient_id, true);
+                }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setTabMenu({ x: event.clientX, y: event.clientY, patientId: result.patient_id });
+                }}
                 onMouseEnter={() => setActiveIndex(index)}
                 data-quick-open-result={result.patient_id}
                 className={cn(
@@ -160,6 +189,16 @@ export default function WorkspaceQuickOpen() {
           )}
         </ul>
       </div>
+      {tabMenu ? (
+        <PatientTabContextMenu
+          x={tabMenu.x}
+          y={tabMenu.y}
+          onOpen={() => {
+            openPatient(tabMenu.patientId, true);
+          }}
+          onDismiss={() => setTabMenu(null)}
+        />
+      ) : null}
     </>
   );
 }

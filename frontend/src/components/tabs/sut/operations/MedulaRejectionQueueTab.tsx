@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import PatientTabLink from "@/components/shell/PatientTabLink";
 import { useT } from "@/lib/i18n/useTranslations";
 import { fmtDateTime } from "@/lib/i18n/formatters";
 import { translateApiText } from "@/lib/apiMessages";
@@ -293,16 +293,18 @@ export default function MedulaRejectionQueueTab() {
                       }
                     >
                       <td>
-                        <Link
+                        <PatientTabLink
+                          patientId={row.patient_id}
                           href={buildSutPatientHref(row.patient_id)}
                           className={PATIENT_LINK_CLASS}
                           onClick={(event) => event.stopPropagation()}
                         >
                           {row.patient_id}
-                        </Link>
+                        </PatientTabLink>
                       </td>
                       <td>
-                        <Link
+                        <PatientTabLink
+                          patientId={row.patient_id}
                           href={buildSutPatientHref(row.patient_id, {
                             claimId: row.claim_id,
                             section: "medula-playbook",
@@ -311,7 +313,7 @@ export default function MedulaRejectionQueueTab() {
                           onClick={(event) => event.stopPropagation()}
                         >
                           {row.claim_id}
-                        </Link>
+                        </PatientTabLink>
                       </td>
                       <td>{row.rejection_timestamp ? fmtDateTime(row.rejection_timestamp) : "—"}</td>
                       <td>{row.medula_stage ? translateApiText(row.medula_stage) : "—"}</td>
