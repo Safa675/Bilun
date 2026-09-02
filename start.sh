@@ -191,6 +191,9 @@ start_frontend() {
     ensure_node || return 1
     ensure_npm_deps
     log "Starting frontend on port $FRONTEND_PORT..."
+    # Webpack, not default Turbopack: idle `next dev` was filling ~15GB and
+    # exiting (V8 OOM), which looks like the app "closing by itself".
+    export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--max-old-space-size=4096"
     pushd frontend > /dev/null
     npm run dev -- -p "$FRONTEND_PORT"
     popd > /dev/null
@@ -214,6 +217,7 @@ case "${1:-all}" in
             free_bilun_ports frontend
             ensure_npm_deps
             log "Starting frontend on port $FRONTEND_PORT..."
+            export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--max-old-space-size=4096"
             pushd frontend > /dev/null
             npm run dev -- -p "$FRONTEND_PORT" &
             FRONTEND_PID=$!
