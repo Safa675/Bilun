@@ -16,6 +16,8 @@ export interface WorkspaceStore extends WorkspaceSessionState {
   openSplit: (view: WorkspaceView) => void;
   setPaneB: (tabId: string | null) => void;
   closeSplit: () => void;
+  /** Open a tab without activating it (Ctrl-click / Open in new tab). */
+  openBackground: (view: WorkspaceView) => void;
   /** Ctrl+K quick-open palette visibility (UI-only, not persisted). */
   quickOpen: boolean;
   setQuickOpen: (open: boolean) => void;
@@ -33,7 +35,10 @@ export function createWorkspaceStore(
     syncFromRoute: (view) => {
       const { tabs, activeTabId, paneBTabId } = get();
       const next = applyWorkspaceSync(tabs, activeTabId, view, Date.now());
-      const paneBCleared = paneBTabId !== null && next.activeTabId === paneBTabId;
+      const paneBCleared =
+        paneBTabId !== null &&
+        (next.activeTabId === paneBTabId ||
+          !next.tabs.some((tab) => tab.id === paneBTabId));
       if (
         next.tabs === tabs &&
         next.activeTabId === activeTabId &&
@@ -78,6 +83,12 @@ export function createWorkspaceStore(
 
     closeSplit: () => {
       set({ paneBTabId: null });
+    },
+
+    openBackground: (view) => {
+      const { tabs, activeTabId } = get();
+      const next = ensureWorkspaceTab(tabs, activeTabId, view, Date.now());
+      if (next.tabs !== tabs) set({ tabs: next.tabs });
     },
 
     quickOpen: false,

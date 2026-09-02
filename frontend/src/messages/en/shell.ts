@@ -22,8 +22,10 @@ const shell = {
   workspaceTabs: {
     ariaLabel: "Open workspaces",
     close: "Close tab",
-    overflow: "More open tabs",
+    scrollLeft: "Scroll tabs left",
+    scrollRight: "Scroll tabs right",
     openSideBySide: "Open side by side",
+    openInNewTab: "Open in new tab",
     closeSplit: "Close split view",
     swapPanes: "Swap panes",
   },

@@ -24,10 +24,11 @@ export interface WorkspaceView {
   query?: string;
 }
 
-export const WORKSPACE_MAX_TABS = 6;
-/** Inline tabs rendered before the overflow dropdown. */
-export const WORKSPACE_INLINE_TABS = 5;
 export const WORKSPACE_STORAGE_KEY = "bilun:workspace-tabs";
+/** Preferred tab width (`max-w-52` / 13rem). Tabs do not grow past this. */
+export const WORKSPACE_TAB_MAX_PX = 208;
+/** Floor width (`min-w-[4.5rem]`). Further tabs scroll instead of shrinking. */
+export const WORKSPACE_TAB_MIN_PX = 72;
 
 export function workspaceTabId(kind: WorkspaceTabKind, refId: string): string {
   return `${kind}:${refId}`;
@@ -60,7 +61,11 @@ export function workspaceTabHref(
     : buildSutPatientHref(tab.refId);
 }
 
-/** Open/activate the view's tab, enforcing the cap with LRU eviction. */
+/**
+ * Navigate this strip tab like Chrome: if the dest already exists, switch to
+ * it; otherwise replace the active tab in-place. Extra tabs are only added
+ * via background open (Ctrl / middle / “Open in new tab”).
+ */
 export function applyWorkspaceSync(
   tabs: WorkspaceTab[],
   activeTabId: string | null,
@@ -91,42 +96,41 @@ export function applyWorkspaceSync(
       activeTabId: id,
     };
   }
-  let next = [
-    ...tabs,
-    { id, kind: view.kind, refId: view.refId, query: view.query, lastActivatedAt: now },
-  ];
-  if (next.length > WORKSPACE_MAX_TABS) {
-    const lru = [...next]
-      .filter((tab) => tab.id !== id)
-      .sort((a, b) => a.lastActivatedAt - b.lastActivatedAt)[0];
-    next = next.filter((tab) => tab.id !== lru.id);
+  const nextTab: WorkspaceTab = {
+    id,
+    kind: view.kind,
+    refId: view.refId,
+    query: view.query,
+    lastActivatedAt: now,
+  };
+  const activeIndex = activeTabId
+    ? tabs.findIndex((tab) => tab.id === activeTabId)
+    : -1;
+  if (activeIndex >= 0) {
+    const nextTabs = tabs.slice();
+    nextTabs[activeIndex] = nextTab;
+    return { tabs: nextTabs, activeTabId: id };
   }
-  return { tabs: next, activeTabId: id };
+  return { tabs: [...tabs, nextTab], activeTabId: id };
 }
 
-/**
- * Open the view's tab WITHOUT activating it (used for split pane B).
- * Enforces the cap; never evicts the currently active tab or the new one.
- */
+/** Open the view's tab WITHOUT activating it (used for split pane B). */
 export function ensureWorkspaceTab(
   tabs: WorkspaceTab[],
   activeTabId: string | null,
   view: WorkspaceView,
   now: number,
 ): { tabs: WorkspaceTab[]; tabId: string } {
+  void activeTabId;
   const id = workspaceTabId(view.kind, view.refId);
   if (tabs.some((tab) => tab.id === id)) return { tabs, tabId: id };
-  let next = [
-    ...tabs,
-    { id, kind: view.kind, refId: view.refId, query: view.query, lastActivatedAt: now },
-  ];
-  if (next.length > WORKSPACE_MAX_TABS) {
-    const lru = [...next]
-      .filter((tab) => tab.id !== id && tab.id !== activeTabId)
-      .sort((a, b) => a.lastActivatedAt - b.lastActivatedAt)[0];
-    if (lru) next = next.filter((tab) => tab.id !== lru.id);
-  }
-  return { tabs: next, tabId: id };
+  return {
+    tabs: [
+      ...tabs,
+      { id, kind: view.kind, refId: view.refId, query: view.query, lastActivatedAt: now },
+    ],
+    tabId: id,
+  };
 }
 
 /**
@@ -202,7 +206,7 @@ export function readWorkspaceSession(): WorkspaceSessionState | null {
       tabs.some((tab) => tab.id === parsed.paneBTabId && tab.kind === "patient")
         ? parsed.paneBTabId
         : null;
-    return { tabs: tabs.slice(0, WORKSPACE_MAX_TABS), activeTabId, paneBTabId };
+    return { tabs, activeTabId, paneBTabId };
   } catch {
     return null;
   }
