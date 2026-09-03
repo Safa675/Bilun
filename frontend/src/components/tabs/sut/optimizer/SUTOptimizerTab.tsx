@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
-import Link from "next/link";
+import PatientTabLink from "@/components/shell/PatientTabLink";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ShieldAlert,
@@ -543,7 +543,16 @@ function CopayExemptionAlerts({
           <tbody>
             {patients.map((p) => (
               <tr key={p.patient_id}>
-                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
+                <td className="font-mono">
+                  <PatientTabLink
+                    patientId={p.patient_id}
+                    href={buildSutBillingHref(p.patient_id)}
+                    className="font-semibold no-underline transition-colors hover:underline"
+                    style={{ color: ACCENT }}
+                  >
+                    {p.patient_id}
+                  </PatientTabLink>
+                </td>
                 <td className="text-center">
                   {p.copay_exemption.exempt
                     ? <AlertBadge label={getSutAlertBadgeLabel("exempt")} color={theme.accent} />
@@ -669,7 +678,16 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
           <tbody>
             {flattenSurchargeProcedureRows(patients).map(({ patient, rule }, index) => (
               <tr key={`${patient.patient_id}-${rule?.code ?? "none"}-${index}`}>
-                <td className="font-mono" style={{ color: ACCENT }}>{patient.patient_id}</td>
+                <td className="font-mono">
+                  <PatientTabLink
+                    patientId={patient.patient_id}
+                    href={buildSutBillingHref(patient.patient_id)}
+                    className="font-semibold no-underline transition-colors hover:underline"
+                    style={{ color: ACCENT }}
+                  >
+                    {patient.patient_id}
+                  </PatientTabLink>
+                </td>
                 <td className="text-center">
                   {!isExactOutput(patient.surcharge_exposure)
                     ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
@@ -1265,9 +1283,14 @@ function RevenueRecoveryDashboard({
               {displayData.top_patients.map((p, i) => (
                 <tr key={i}>
                   <td className="font-mono text-xs">
-                    <Link href={buildSutBillingHref(p.patient_id)} className="font-semibold no-underline transition-colors hover:underline" style={{ color: ACCENT }}>
+                    <PatientTabLink
+                      patientId={p.patient_id}
+                      href={buildSutBillingHref(p.patient_id)}
+                      className="font-semibold no-underline transition-colors hover:underline"
+                      style={{ color: ACCENT }}
+                    >
                       {p.patient_id}
-                    </Link>
+                    </PatientTabLink>
                   </td>
                   <td className="num-col font-semibold text-[var(--text-primary)]">
                     {fmtTRY(p.total_opportunity_try ?? p.total_recoverable_try)}

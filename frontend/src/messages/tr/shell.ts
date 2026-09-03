@@ -22,8 +22,10 @@ const shell = {
   workspaceTabs: {
     ariaLabel: "Açık çalışma alanları",
     close: "Sekmeyi kapat",
-    overflow: "Diğer açık sekmeler",
+    scrollLeft: "Sekmeleri sola kaydır",
+    scrollRight: "Sekmeleri sağa kaydır",
     openSideBySide: "Yan yana aç",
+    openInNewTab: "Yeni sekmede aç",
     closeSplit: "Bölünmüş görünümü kapat",
     swapPanes: "Bölmeleri değiştir",
   },

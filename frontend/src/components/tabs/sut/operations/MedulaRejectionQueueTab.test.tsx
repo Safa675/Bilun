@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { WorkspaceProvider } from "@/stores/workspaceContext";
 import MedulaRejectionQueueTab from "./MedulaRejectionQueueTab";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 vi.mock("@/lib/api/sut", () => ({
   getMedulaRejectionQueue: vi.fn().mockResolvedValue({
@@ -31,7 +38,11 @@ vi.mock("@/lib/api/sut", () => ({
 
 describe("MedulaRejectionQueueTab", () => {
   it("renders live KPIs and omits leftover triage subtitle", () => {
-    const html = renderToStaticMarkupWithLocale(<MedulaRejectionQueueTab />);
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <MedulaRejectionQueueTab />
+      </WorkspaceProvider>,
+    );
     expect(html).not.toContain("reaktif acil");
     expect(html).not.toContain("Reactive triage");
     expect(html).toContain("Result code");

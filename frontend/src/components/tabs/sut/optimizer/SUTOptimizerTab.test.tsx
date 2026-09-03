@@ -89,6 +89,7 @@ vi.mock("@/components/tabs/sut/shared", () => ({
 
 vi.mock("@/lib/constants", () => ({
   buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
+  buildSutPatientHref: (patientId: string) => `/patient/${patientId}`,
 }));
 
 vi.mock("@/lib/api/sut", () => ({

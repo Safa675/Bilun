@@ -7,6 +7,11 @@ import { cn } from "@/lib/cn";
 import { theme } from "@/lib/theme";
 import type { PatientSearchResponse, PatientSearchResult } from "@/lib/domains/patient";
 import { useT } from "@/lib/i18n/useTranslations";
+import { isBackgroundTabPointer } from "@/lib/patientTabOpen";
+import {
+  PatientTabContextMenu,
+  useOpenPatientBackground,
+} from "@/components/shell/PatientTabLink";
 
 type PatientSearchFn = (
   q: string,
@@ -37,6 +42,10 @@ export default function PatientSearch({
 }: Props) {
   const t = useT();
   const resolvedPlaceholder = placeholder ?? t("cohort.patientSearch.defaultPlaceholder");
+  const openBackground = useOpenPatientBackground();
+  const [tabMenu, setTabMenu] = useState<{ x: number; y: number; patientId: string } | null>(
+    null,
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PatientSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -122,7 +131,12 @@ export default function PatientSearch({
       setHighlightIdx((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter" && highlightIdx >= 0) {
       e.preventDefault();
-      handleSelect(results[highlightIdx].patient_id);
+      const pid = results[highlightIdx].patient_id;
+      if (e.metaKey || e.ctrlKey) {
+        openBackground(pid);
+        return;
+      }
+      handleSelect(pid);
     } else if (e.key === "Escape") {
       setIsOpen(false);
       setHighlightIdx(-1);
@@ -256,7 +270,23 @@ export default function PatientSearch({
                 id={`${id}-option-${idx}`}
                 role="option"
                 aria-selected={highlightIdx === idx}
-                onClick={() => handleSelect(r.patient_id)}
+                onClick={(event) => {
+                  if (isBackgroundTabPointer(event)) {
+                    event.preventDefault();
+                    openBackground(r.patient_id);
+                    return;
+                  }
+                  handleSelect(r.patient_id);
+                }}
+                onAuxClick={(event) => {
+                  if (event.button !== 1) return;
+                  event.preventDefault();
+                  openBackground(r.patient_id);
+                }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setTabMenu({ x: event.clientX, y: event.clientY, patientId: r.patient_id });
+                }}
                 style={{
                   padding: "8px 14px",
                   cursor: "pointer",
@@ -285,6 +315,16 @@ export default function PatientSearch({
             ))}
         </ul>
       )}
+      {tabMenu ? (
+        <PatientTabContextMenu
+          x={tabMenu.x}
+          y={tabMenu.y}
+          onOpen={() => {
+            openBackground(tabMenu.patientId);
+          }}
+          onDismiss={() => setTabMenu(null)}
+        />
+      ) : null}
     </div>
   );
 }

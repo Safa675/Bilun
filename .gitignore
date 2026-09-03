@@ -95,3 +95,4 @@ reports/finans_*
 
 # ZCode session-scratch plans (tool-local, not source)
 .zcode/plans/plan-sess_*
+.dsh/
