@@ -170,6 +170,14 @@ entries:
   defer_reason: 'Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until
     EMR fields support pathway.'
   source_manifest: L4.2_drug_indication_4201_manifest.json
+- clause_coordinate: 4.2.1.C-1.a#20a96605
+  section_id: 4.2.1.C-1
+  status: tier_c_deferred
+  defer_themes:
+  - clinical_pathway
+  defer_reason: 'Deferred — infliximab/sertolizumab/golimumab continuation criteria; awaiting the defining
+    board-report rule before encoding (4201 manifest keeps this Tier A candidate pending).'
+  source_manifest: L4.2_drug_indication_4201_manifest.json
 - clause_coordinate: 4.2.1.C-1.(1)#9bd7ed4f
   section_id: 4.2.1.C-1
   status: tier_c_deferred
@@ -447,6 +455,14 @@ entries:
   source_manifest: L4.2_drug_indication_4201_manifest.json
 - clause_id: C003688
   clause_coordinate: 4.2.1.C-5
+  section_id: 4.2.1.C-5
+  status: tier_c_deferred
+  defer_themes:
+  - clinical_pathway
+  defer_reason: 'Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until
+    EMR fields support pathway.'
+  source_manifest: L4.2_drug_indication_4201_manifest.json
+- clause_coordinate: 4.2.1.C-5.(4)#4804adef
   section_id: 4.2.1.C-5
   status: tier_c_deferred
   defer_themes:
@@ -809,6 +825,14 @@ entries:
 - clause_id: C003782
   clause_coordinate: 4.2.1.C-6
   section_id: 4.2.1.C-6
+  status: tier_c_deferred
+  defer_themes:
+  - clinical_pathway
+  defer_reason: 'Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until
+    EMR fields support pathway.'
+  source_manifest: L4.2_drug_indication_4201_manifest.json
+- clause_coordinate: 4.2.1.C-7.(2)#15be9961
+  section_id: 4.2.1.C-7
   status: tier_c_deferred
   defer_themes:
   - clinical_pathway
@@ -1815,6 +1839,13 @@ entries:
   - clinical_pathway
   defer_reason: 'Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until
     EMR fields support pathway.'
+  source_manifest: L4.2_drug_indication_4210_manifest.json
+- clause_coordinate: 4.2.10.A-3#6638a89a
+  section_id: 4.2.10.A-3
+  status: non_actionable
+  defer_themes: []
+  defer_reason: Non-actionable — structural heading, struck/superseded row, or navigational prose without
+    deontic billing signal.
   source_manifest: L4.2_drug_indication_4210_manifest.json
 - clause_coordinate: 4.2.10.A-1.c#b05c5257
   section_id: 4.2.10.A-1

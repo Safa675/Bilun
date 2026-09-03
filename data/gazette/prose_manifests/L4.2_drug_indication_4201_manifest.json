@@ -204,13 +204,8 @@
     "4.2.1.C-9.b",
     "4.2.1.C-9.c"
   ],
-  "tier_a_pending_clause_ids": [
-    "C003658"
-  ],
-  "tier_b_pending_clause_ids": [
-    "C003756",
-    "C003834"
-  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C003602",
     "C003603",
@@ -238,6 +233,7 @@
     "C003645",
     "C003650",
     "C003655",
+    "C003658",
     "C003659",
     "C003662",
     "C003670",
@@ -276,6 +272,7 @@
     "C003752",
     "C003753",
     "C003754",
+    "C003756",
     "C003757",
     "C003759",
     "C003760",
@@ -312,6 +309,7 @@
     "C003830",
     "C003832",
     "C003833",
+    "C003834",
     "C003836",
     "C003838",
     "C003848",
@@ -369,9 +367,9 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 1,
-  "tier_b_pending_count": 2,
-  "tier_c_deferred_count": 154,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 157,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -788,8 +786,12 @@
       "clause_id": "C003658",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "İnfliksimab"
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "İnfliksimab",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — infliximab/sertolizumab/golimumab continuation criteria; awaiting the defining board-report rule before encoding (4201 manifest keeps this Tier A candidate pending)."
     },
     {
       "clause_id": "C003659",
@@ -1716,8 +1718,12 @@
       "clause_id": "C003756",
       "section_id": "4.2.1.C-5",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır"
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003757",
@@ -2389,8 +2395,12 @@
       "clause_id": "C003834",
       "section_id": "4.2.1.C-7",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır"
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003835",
@@ -3362,7 +3372,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 154,
+  "encode_tier_C_deferred_count": 157,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 43.9
 }

@@ -111,7 +111,8 @@ def _drug_line(
 
 def test_a5_combined_batch_encoded_clause_ids_in_manifest() -> None:
     assert cites_covered_by_encoded(_A5_ALL_GATE_B, _ENCODED)
-    assert _MANIFEST_DATA.get("tier_a_pending_count") == 1
+    # C003658 moved from tier_a_pending to tier_c_deferred via deferral_table.
+    assert _MANIFEST_DATA.get("tier_a_pending_count") == 0
 
 def test_a5_c10_14_batch_rule_count() -> None:
     soft_floor(len(BATCH_A5_C10_14_RULES), 10, label='BATCH_A5_C10_14_RULES')

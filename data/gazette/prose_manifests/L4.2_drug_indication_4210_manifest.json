@@ -44,10 +44,7 @@
     "4.2.10.D-2.(1)",
     "4.2.10.Ç-2.(1)"
   ],
-  "tier_a_pending_clause_ids": [
-    "C004257",
-    "C004299"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C004250",
@@ -56,6 +53,7 @@
     "C004254",
     "C004255",
     "C004256",
+    "C004257",
     "C004258",
     "C004261",
     "C004262",
@@ -164,12 +162,14 @@
     "C004433"
   ],
   "emr_blocked_clause_ids": [],
-  "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 2,
+  "non_actionable_clause_ids": [
+    "C004299"
+  ],
+  "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 112,
+  "tier_c_deferred_count": 113,
   "emr_blocked_count": 0,
-  "non_actionable_count": 0,
+  "non_actionable_count": 1,
   "clause_traces": [
     {
       "clause_id": "C004250",
@@ -251,8 +251,12 @@
       "clause_id": "C004257",
       "section_id": "4.2.10.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Kan trombosit sayısının 50.000 ile 100.000/mm3 olması"
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Kan trombosit sayısının 50.000 ile 100.000/mm3 olması",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C004258",
@@ -658,8 +662,9 @@
       "clause_id": "C004299",
       "section_id": "4.2.10.A-3",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "(Değişik: RG- 21/04/2022- 31816/2-a md. Yürürlük: 29/04/2022)"
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "(Değişik: RG- 21/04/2022- 31816/2-a md. Yürürlük: 29/04/2022)",
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C004301",
@@ -1580,7 +1585,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 112,
+  "encode_tier_C_deferred_count": 113,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 13.0
 }
