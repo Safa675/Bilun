@@ -17,16 +17,12 @@ metadata when those inputs are missing.
 | `get_ek2b_price_for_date(code, procedure_date)` | Dated EK-2B procedure price or puan from the canonical as-of catalog |
 | `get_ek2c_price_for_date(package_code, procedure_date)` | Dated EK-2C package price for a billed package code |
 | `get_price_history(code, catalog)` | Full price history from curated parquet |
-| `list_available_dates(catalog)` | Effective dates available in history parquet |
 
-`temporal.py` holds the active lookup helpers. `keywords.py` exports
-`_ICD10_CHAPTER_KEYWORDS` for EK-2C package-name matching in tooling and
-future grouper research — not for product median pricing.
+`temporal.py` holds the active lookup helpers.
 
 ## Modules
 
 - `temporal.py` — dated EK-2B/EK-2C catalog lookups and history helpers
-- `keywords.py` — `_ICD10_CHAPTER_KEYWORDS` dictionary
 - `material_kdv.py` — EK-3 payable ceiling helpers
 
 ## Dependencies

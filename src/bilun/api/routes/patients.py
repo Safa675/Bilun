@@ -265,7 +265,7 @@ def get_patient_claims(patient_id: str):
     if dataset is None:
         raise ServiceUnavailableError(
             "Exact claim dataset is unavailable. "
-            "Run scripts/bilun/build_sut_claims.py to generate it."
+            "Ensure the SUT claim parquets are present in the configured claims directory."
         )
 
     claims = dataset.claims_by_patient.get(patient_id, ())
@@ -296,7 +296,7 @@ def get_patient_claim_detail(patient_id: str, claim_id: str):
     if dataset is None:
         raise ServiceUnavailableError(
             "Exact claim dataset is unavailable. "
-            "Run scripts/bilun/build_sut_claims.py to generate it."
+            "Ensure the SUT claim parquets are present in the configured claims directory."
         )
 
     claims = dataset.claims_by_patient.get(patient_id, ())

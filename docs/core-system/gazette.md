@@ -111,7 +111,7 @@ Every XLSX file published in Resmi Gazete is converted into a parquet under `raw
 
 ### `snapshots/asof_<DATE>/` — point-in-time bundles
 
-For a given `asof_date`, each annex's latest effective-date parquet is written into a single bundle directory. Used when the downstream consumer needs a consistent-as-of view without the temporal columns. Produced by `scripts/sut/build_asof_snapshot.py`. Current latest snapshot: `asof_2026-01-31/` (~32 parquets).
+For a given `asof_date`, each annex's latest effective-date parquet is written into a single bundle directory. Used when the downstream consumer needs a consistent-as-of view without the temporal columns. Current latest snapshot: `asof_2026-01-31/` (~32 parquets).
 
 ## Version manifest
 

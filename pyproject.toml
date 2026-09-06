@@ -57,7 +57,6 @@ include = ["src", "src.*", "scripts", "scripts.*"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
-addopts = "--ignore=tests/archive"
 markers = [
     "unit: fast unit tests with no external services",
     "smoke: integration/smoke tests that may need a running app or cache",

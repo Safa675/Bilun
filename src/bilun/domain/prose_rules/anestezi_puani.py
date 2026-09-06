@@ -60,10 +60,6 @@ _ANESTEZI_GROUPS: list[tuple[float, float, str, str, float]] = [
 ]
 
 # Upper bound of the standard anesthesia group table. Procedures with a
-# puan above this threshold fall into the "birden fazla ameliyat"
-# (550200-550260) bands which are out of Phase 1 scope — honest skip.
-_TABLE_MAX_PUAN = 5000.0
-
 
 def _resolve_anestezi_group(
     procedure_puan: float,

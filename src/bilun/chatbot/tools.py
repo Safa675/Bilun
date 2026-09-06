@@ -379,8 +379,6 @@ _DEV_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
-TOOL_SCHEMAS: list[dict[str, Any]] = _CORE_TOOL_SCHEMAS
-
 # ── Endpoint allowlist — maps tool name to executor ───────────────────────────
 
 _TOOL_FUNCTION_MAP: dict[str, str] = {
@@ -613,12 +611,26 @@ async def execute_tool_call(
     tool_name: str,
     arguments: dict[str, Any],
     session: ToolSession | None = None,
+    *,
+    user_role: UserRole = "billing_officer",
 ) -> ToolCallResult:
     """Execute a single tool call with validation, timeout, and tracking."""
     if session is None:
         session = ToolSession()
 
     t0 = time.perf_counter()
+
+    if tool_name in _DEV_TOOL_NAMES and user_role != "dev":
+        result = ToolCallResult(
+            tool_name=tool_name,
+            arguments=arguments,
+            success=False,
+            content="",
+            elapsed_ms=(time.perf_counter() - t0) * 1000,
+            error=f"Tool '{tool_name}' requires dev role.",
+        )
+        session.record_result(result)
+        return result
 
     if tool_name not in _TOOL_FUNCTION_MAP:
         result = ToolCallResult(
