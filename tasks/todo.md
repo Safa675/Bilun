@@ -17,8 +17,13 @@ PR 80 ingest is on this branch; encoded YAML/wave keys resolve against the 2026-
 - [x] Recompute w4 tier_b resolved C* set from live YAML cites
 - [x] Decision note for accepted remap tolerances
 - [x] Targeted pytest; `git status` after (pytest can mutate artifacts)
-- [x] Full `tests/unit` (2564 passed)
-- [ ] Commit, push, update PR #84
+- [x] Full `tests/unit` (2564 passed, 9 skipped)
+- [x] Commit, push, update PR #84
+
+### Review
+PR 80 ingest is on this branch. Encoded YAML/wave keys resolve against the 2026-08-29 corpus. Gate B export skips extractor empty-hash out-of-force copies. Historical wave2/r6 manifests remapped by clause_key. `tests/unit`: 2564 passed. Do not merge #80 separately; this PR already contains `5f05d3a4`.
+
+### Out of Scope
 
 ### Out of Scope
 Merging PR 80 itself; encoding unencoded AMENDED coords (2.4.2.B-1.(2), 4.1.4.(4), 4.2.14.B.(1), 4.2.15.D-1.(3)); deferral_table historical stale hashes not on the compile path; synthetic cohort regen.
