@@ -53,9 +53,6 @@ _CLAUSE_REF = non_sut_reference(
 # ---------------------------------------------------------------------------
 
 # R-codes (R00-R99): symptoms, signs and abnormal clinical/laboratory
-# findings — not a definitive diagnosis and therefore never acceptable as a
-# *principal* (birincil) diagnosis on a claim.
-_NEVER_PRINCIPAL_PREFIXES: frozenset[str] = frozenset({"R"})
 
 # Z-code categories that are "history of" (geçmiş hikaye) — a resolved
 # condition, not the active reason for the encounter.

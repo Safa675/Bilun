@@ -25,10 +25,6 @@ _RULE_SET_ID = "drug_indication_prose"
 _PHASE1_TARGET_RULE_COUNT = 78
 _PHASE2_TARGET_RULE_COUNT = 131
 
-# Multi-file indication corpus: §4.2.14.C (oncology) + §4.2.33 (anti-VEGF / ophthalmology).
-# Order matters for provenance reporting only; matcher merges all into one pool.
-_INDICATION_RULE_FILES: tuple[Any, ...] = (_RULES_PATH, _ANTI_VEGF_RULES_PATH)
-
 
 def _has_tier_b_constraints(rule: dict[str, Any]) -> bool:
     return bool(
