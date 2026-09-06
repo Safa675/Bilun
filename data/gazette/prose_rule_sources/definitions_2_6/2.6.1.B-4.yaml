@@ -85,15 +85,15 @@ rules:
   sut_section: 2.6.1.B-4
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C001593
+  - C001597
   - 2.6.1.B-4.a
-  - C001595
-  - C001596
-  - 2.6.1.B-4.b
-  - C001598
   - C001599
   - C001600
-  - C001601
+  - 2.6.1.B-4.b
+  - C001602
+  - C001603
+  - C001604
+  - C001605
   condition:
     definition_scope: Hava/deniz ambulansı uçuş/seyir saati başına TL+KDV tarife
     applies_to: Hava/deniz ambulansı ücretleri
@@ -104,11 +104,11 @@ rules:
       twin_engine_helicopter: 2750
       sea_ambulance: 1500
       jet_aircraft_international: 4000
-    tariff_cap_note: Azami ücretlerdir (ust sinir) — SUT 2.6.1.B-4.(6) C001593
+    tariff_cap_note: Azami ücretlerdir (ust sinir) — SUT 2.6.1.B-4.(6) C001597
   action:
     enforcement: gate
     message_tr: Ambulans ücretleri (gidiş-dönüş, saat başına, KDV hariç) — turbo-prop uçak 2.000 TL, jet 3.500 TL (yurt dışı
       uçuşlar 4.000 TL), tek motorlu helikopter 1.500 TL, çift motorlu helikopter 2.750 TL, deniz ambulansı 1.500 TL üzerinden
       ödenir. Bu tarifeler AZAMİ ücrettir (üst sınır).
-  verification_note: 'MIH-8 dogrulamasi: yurt disi jet 4.000 TL (C001596) ve azami-ucret niteligi (C001593) eklendi'
+  verification_note: 'MIH-8 dogrulamasi: yurt disi jet 4.000 TL (C001600) ve azami-ucret niteligi (C001597) eklendi'
 source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

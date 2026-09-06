@@ -31,4 +31,4 @@ rules:
     denial_tr: fizik tedavi ve rehabilitasyon için SUT 2.4.4.F-1 maddesine uygun sağlık raporu düzenlenmesi gerekmektedir
     severity: error
   gate_b_sources:
-  - C001006
+  - C001010

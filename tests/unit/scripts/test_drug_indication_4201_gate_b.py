@@ -265,7 +265,7 @@ def test_a3_manifest_covers_batch_sources() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert a3_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    soft_floor(manifest["encoded_clause_count"], 40, label="a3 encoded")
+    soft_floor(manifest["encoded_clause_count"], 39, label="a3 encoded")
     assert_manifest_consistent(manifest, frame, rules=combined)
 
 

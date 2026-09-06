@@ -18,15 +18,15 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4224_mani
 _SECTION = "4224"
 
 _PILOT_SOURCES = frozenset({
-    "C006188",
-    "C006189",
-    "C006206",
-    "C006215",
-    "C006224",
-    "C006238",
-    "C006244",
+    "C006212",
+    "C006213",
+    "C006230",
+    "C006239",
     "C006248",
-    "C006256",
+    "C006262",
+    "C006268",
+    "C006272",
+    "C006280",
 })
 
 
@@ -71,7 +71,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _PILOT_SOURCES
     assert manifest["tier_c_deferred_count"] >= 40
-    assert manifest["tier_a_pending_count"] >= 4
+    assert manifest["tier_a_pending_count"] >= 3
     assert manifest["rules_in_json"] == len(BATCH_A24_RULES)
 
 

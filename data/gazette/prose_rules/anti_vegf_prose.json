@@ -195,9 +195,9 @@
         "4.2.33.B.(1)",
         "4.2.33.(10)"
       ],
-      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006556; §4.2.33.B.(1), C006564).",
+      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006582; §4.2.33.B.(1), C006590).",
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Was \"max 2/year\" + \"3-specialist board\" citing only C006564, which actually says \"1 defaya mahsus\" (once-only in the bevacizumab-contraindicated switch). Frequency cap corrected to 4/year per §4.2.33/(10) (C006556). The 3-specialist-board claim remains unverified — needs human check (possibly conflated with the pegaptanib/verteporfin 3-uzman rule)."
+      "content_note": "Was \"max 2/year\" + \"3-specialist board\" citing only C006590, which actually says \"1 defaya mahsus\" (once-only in the bevacizumab-contraindicated switch). Frequency cap corrected to 4/year per §4.2.33/(10) (C006582). The 3-specialist-board claim remains unverified — needs human check (possibly conflated with the pegaptanib/verteporfin 3-uzman rule)."
     },
     {
       "rule_id": "4.2.33.B.ranibizumab_rvdt_loading_protocol",
@@ -216,7 +216,7 @@
       "prescriber_specialties": [
         "göz hastalıkları"
       ],
-      "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi).",
+      "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006506 güncellemesi).",
       "gate_b_sources": [
         "4.2.33.(1)#b0a830ed"
       ],
@@ -366,7 +366,7 @@
       "gate_b_sources": [
         "4.2.33.(1)#b0a830ed"
       ],
-      "message_tr": "Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552)."
+      "message_tr": "Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006578)."
     },
     {
       "rule_id": "4.2.33.D.bevacizumab_dmo",
@@ -419,9 +419,9 @@
         "4.2.33.(1)#b0a830ed",
         "4.2.33.(10)"
       ],
-      "message_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006556).",
+      "message_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006582).",
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Was \"max 2/year\" citing C006526 (no number). Corrected to 4/year per §4.2.33/(10) (C006556)."
+      "content_note": "Was \"max 2/year\" citing C006552 (no number). Corrected to 4/year per §4.2.33/(10) (C006582)."
     },
     {
       "rule_id": "4.2.33.D.ranibizumab_dmo",
@@ -464,7 +464,7 @@
       "prescriber_specialties": [
         "göz hastalıkları"
       ],
-      "message_tr": "Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006575).",
+      "message_tr": "Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006615).",
       "gate_b_sources": [
         "4.2.33.D.(1)"
       ],
@@ -643,9 +643,9 @@
         "4.2.33.Ç.(1)",
         "4.2.33.(10)"
       ],
-      "message_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en fazla 4 (§4.2.33/(10), C006556).",
+      "message_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en fazla 4 (§4.2.33/(10), C006582).",
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Was \"max 2/year\" (unsourced). Corrected to 4/year per §4.2.33/(10) (C006556); the \"1 defaya mahsus\" switch path is from C006570/C006564. Needs human confirmation of the DMÖ-specific sequence."
+      "content_note": "Was \"max 2/year\" (unsourced). Corrected to 4/year per §4.2.33/(10) (C006582); the \"1 defaya mahsus\" switch path is from C006596/C006590. Needs human confirmation of the DMÖ-specific sequence."
     },
     {
       "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf",
@@ -666,7 +666,7 @@
       "prescriber_specialties": [
         "göz hastalıkları"
       ],
-      "message_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006556).",
+      "message_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006582).",
       "gate_b_sources": [
         "4.2.33.(12)",
         "4.2.33.(10)"
@@ -674,7 +674,7 @@
       "max_applications_per_year": 4,
       "min_gap_months_after_antivegf": 1,
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Was \"max 2/year\" citing only C006558 (which states the coverage condition, not a number). Frequency corrected to 4/year per §4.2.33/(10) (C006556); ≥1 month gap after anti-VEGF."
+      "content_note": "Was \"max 2/year\" citing only C006584 (which states the coverage condition, not a number). Frequency corrected to 4/year per §4.2.33/(10) (C006582); ≥1 month gap after anti-VEGF."
     },
     {
       "rule_id": "4.2.33.bevacizumab_maintenance_idame",
@@ -747,7 +747,7 @@
         "4.2.33.c"
       ],
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Deontic \"esastır\" (mandatory) on loading completion for newly-started patients. The sanction arm is C006550/(8)."
+      "content_note": "Deontic \"esastır\" (mandatory) on loading completion for newly-started patients. The sanction arm is C006576/(8)."
     },
     {
       "rule_id": "4.2.33.same_eye_combination_no_pay",

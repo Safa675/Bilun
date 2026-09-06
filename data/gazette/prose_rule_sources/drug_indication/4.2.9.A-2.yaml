@@ -14,9 +14,9 @@ rules:
   message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram
     sonucu reçetede belirtilir (§4.2.9.A-2).
   gate_b_sources:
-  - C004181
+  - C004191
   - 4.2.9.A-2.(1)
-  - C004181
+  - C004191
   - 4.2.9.A.(1)#d8313b78
   - 4.2.9.A.(3)#a9d0cf5b
   report_required: true

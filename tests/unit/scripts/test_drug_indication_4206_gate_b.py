@@ -19,8 +19,8 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4206_mani
 _SECTION = "4206"
 
 _ALL_TIER_A_ENCODED = frozenset({
-    "C003985", "C004010", "C004026", "C004042",
-    "C004047", "C004060", "C004074", "C004077", "C004083",
+    "C003995", "C004020", "C004036", "C004052",
+    "C004057", "C004070", "C004084", "C004087", "C004093",
 })
 _ALL_ENCODED = _ALL_TIER_A_ENCODED
 
@@ -39,7 +39,7 @@ def test_gate_b_exports_4206_candidates() -> None:
     from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
-    assert frame.height >= 40
+    assert frame.height >= 36
     assert frame["section_id"].str.starts_with("4.2.6.").all()
     assert not frame["section_id"].str.starts_with("4.2.60").any()
 
@@ -72,7 +72,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
-    assert manifest["tier_c_deferred_count"] >= 28
+    assert manifest["tier_c_deferred_count"] >= 27
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)

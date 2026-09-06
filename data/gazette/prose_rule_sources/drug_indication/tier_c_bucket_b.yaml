@@ -33,7 +33,7 @@ rules:
   drug_names:
   - genotip 1
   gate_b_sources:
-  - C004964
+  - C004974
   report_required: true
   message_tr: Genotip 1, 2, 4, 5 ve 6 kompanse sirozu olan NS5A inhibitörü veya proteaz inhibitörü tedavisi almamış hastalarda
     toplam 12 hafta;
@@ -50,7 +50,7 @@ rules:
   - hepatit c tedavisi
   - antiviral
   gate_b_sources:
-  - C004966
+  - C004976
   report_required: true
   message_tr: Genotip 1 nonsirotik ya da kompanse sirozu olan daha önceden proteaz inhibitörü kullanmış fakat NS5A inhibitörü
     almamış hastalarda 12 hafta;
@@ -149,7 +149,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C006960
+  - C006986
   report_required: true
   message_tr: kriterlerinden en az birinin sağlandığı vakalarda; üçüncü basamak resmi sağlık hizmeti sunucularında, çocuk
     endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji ve metabolizma
@@ -164,7 +164,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C006962
+  - C006988
   report_required: true
   message_tr: Erken başlangıçlı (1 yaştan önce) morbid obezitesi olan (2 yaşın altında boya göre vücut ağırlığı > %140, 2
     yaş ve üzerinde Vücut Kitle İndeksi Standart Deviasyon Skoru > 3SDS olan) Leptin düzeyinin biyokimyasal olarak <2 ng/ml
@@ -180,7 +180,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C006967
+  - C006993
   report_required: true
   message_tr: kriterlerinden en az birinin sağlandığı vakalarda üçüncü basamak resmi sağlık hizmeti sunucularında, çocuk endokrinoloji
     ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji ve metabolizma uzmanlarınca

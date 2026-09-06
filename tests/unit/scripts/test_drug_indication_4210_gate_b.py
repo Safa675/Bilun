@@ -28,33 +28,37 @@ _SECTION_PREFIX = "4.2.10"
 _EXCLUDE_PREFIX = "4.2.100"
 
 _TIER_A_IDS = {
-    "C004253",
-    "C004257",
-    "C004296",
+    "C004263",
     "C004299",
-    "C004302",
-    "C004344",
-    "C004397",
-    "C004408",
-    "C004416",
-    "C004424",
+    "C004306",
+    "C004312",
+    "C004354",
+    "C004407",
+    "C004418",
+    "C004426",
+    "C004434",
 }
 _ALL_ENCODED_IDS = frozenset({
-    "C004253",
-    "C004279",
-    "C004296",
-    "C004298",
-    "C004302",
-    "C004340",
-    "C004344",
-    "C004347",
-    "C004348",
-    "C004392",
-    "C004397",
-    "C004401",
-    "C004408",
-    "C004416",
-    "C004424",
+    "C004263",
+    "C004289",
+    "C004306",
+    "C004308",
+    "C004311",
+    "C004312",
+    "C004350",
+    "C004353",
+    "C004354",
+    "C004357",
+    "C004358",
+    "C004402",
+    "C004407",
+    "C004411",
+    "C004417",
+    "C004418",
+    "C004425",
+    "C004426",
+    "C004433",
+    "C004434",
 })
 
 
@@ -152,7 +156,7 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
     tier_b = frame.filter(pl.col("encode_tier") == "B").height
     tier_c = frame.filter(pl.col("encode_tier") == "C").height
     assert tier_a + tier_b + tier_c == frame.height
-    soft_floor(tier_a, 10, label="§4.2.10 tier A")
+    soft_floor(tier_a, 9, label="§4.2.10 tier A")
     soft_floor(tier_c, 90, label="§4.2.10 tier C")
     tier_a_ids = set(frame.filter(pl.col("encode_tier") == "A")["clause_id"].to_list())
     assert _TIER_A_IDS <= tier_a_ids

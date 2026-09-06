@@ -24,8 +24,8 @@ rules:
     inadequate_glycemic_control_on_metformin_sulfonylurea: false
   action:
     billable: false
-    denial_tr: empagliflozin+linagliptin kombi; metformin/sülfonilüre + empagliflozin veya linagliptin ile yetersiz glisemik
-      kontrol olmadıkça ödenmez
+    denial_tr: empagliflozin+linagliptin kombi; tip 2 diyabette metformin/sülfonilüre + empagliflozin veya linagliptin ile
+      yetersiz glisemik kontrol olmadıkça ödenmez
     severity: error
   gate_b_sources:
   - 4.2.38.(8)

@@ -31,7 +31,7 @@ rules:
   - 1.9.1.(1)#43cd69a1
   verification_status: ai_generated_pending_review
   content_note: 'Scope rule: extra fee permissible at private/foundation-univ, EXCLUDED for EK-2/A/B/C/Ç bundled items. Extra
-    fees never billable to Kurum (C003399).'
+    fees never billable to Kurum (C003403).'
 - rule_id: 1.9.1.(5).extra_fee_written_consent_mandatory
   sut_section: 1.9.1
   condition:

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.68.neuro.lems_congenital_myasthenic_amifampridine_coverage
   sut_section: 4.2.68
   gate_b_sources:
-  - C007231
+  - C007258
   drug_names:
   - amifampridin
   - amifampridin fosfat

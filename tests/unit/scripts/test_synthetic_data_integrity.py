@@ -34,7 +34,8 @@ def _line_identity_holds(
 
     denominator = 1.0 - copay_rate
     if denominator <= 0:
-        return False
+        # 100% copay: SGK payable is 0; billed is entirely patient-at-risk.
+        return abs(expected_payable) <= tolerance
     sgk_base = expected_payable / denominator
     patient_copay = sgk_base * copay_rate
     surcharge = sgk_base * (surcharge_rate or 0.0)

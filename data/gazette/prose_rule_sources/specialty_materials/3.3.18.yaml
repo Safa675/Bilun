@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.18
   deontic: MUST_BILL
   gate_b_sources:
-  - C003229
+  - C003233
   condition:
     material_name_any:
     - bronş dilatasyon balonu

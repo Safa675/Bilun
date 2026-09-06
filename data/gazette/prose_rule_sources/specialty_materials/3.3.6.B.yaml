@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.6.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C003095
+  - C003099
   condition:
     material_name_any:
     - oksijen konsantratör

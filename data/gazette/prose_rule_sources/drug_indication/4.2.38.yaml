@@ -103,14 +103,16 @@ rules:
   - E11
   pay: false
   action:
-    enforcement: empagliflozin (SGLT2)+linagliptin (DPP-4) kombine; metformin ve/veya sülfonilüre + empagliflozin veya linagliptin
-      ile yetersiz kontrolde endokrinoloji/iç hastalıkları uzmanlarınca veya raporlarıyla tüm hekimlerce reçete; ancak linagliptin+empagliflozin
-      kombinasyonu diğer DPP-4 antagonistleri, SGLT2 inhibitörleri ve GLP-1 analoglarıyla birlikte kullanılırsa ödenmez
+    enforcement: empagliflozin (SGLT2)+linagliptin (DPP-4) kombine; tip 2 diyabette metformin ve/veya sülfonilüre + empagliflozin
+      veya linagliptin ile yetersiz kontrolde endokrinoloji/iç hastalıkları uzmanlarınca veya raporlarıyla tüm hekimlerce
+      reçete; ancak linagliptin+empagliflozin kombinasyonu diğer DPP-4 antagonistleri, SGLT2 inhibitörleri ve GLP-1 analoglarıyla
+      birlikte kullanılırsa ödenmez
     message_tr: Empagliflozin (SGLT2 inhibitörü) ve linagliptin (DPP-4 antagonisti) kombine preperatları; metformin ve/veya
       sülfonilüre ve empagliflozin veya linagliptinden biri ile birlikte kullanılmasına rağmen yeterli glisemik kontrol sağlanamamış
-      hastalarda, endokrinoloji uzman hekimleri ile iç hastalıkları uzman hekimlerince veya bu hekimlerce düzenlenen uzman
-      hekim raporu ile tüm hekimlerce reçete edilebilir; linagliptin ve empagliflozin kombinasyonu diğer DPP-4 antagonistleri,
-      SGLT2 inhibitörleri ve GLP-1 analogları ile birlikte kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.38).
+      tip 2 diyabet hastalarında, endokrinoloji uzman hekimleri ile iç hastalıkları uzman hekimlerince veya bu hekimlerce
+      düzenlenen uzman hekim raporu ile tüm hekimlerce reçete edilebilir; linagliptin ve empagliflozin kombinasyonu diğer
+      DPP-4 antagonistleri, SGLT2 inhibitörleri ve GLP-1 analogları ile birlikte kullanılması halinde bedelleri Kurumca karşılanmaz
+      (§4.2.38).
 - rule_id: 4.2.38.dpp4_gliptin_specialist_report
   sut_section: 4.2.38
   drug_names:

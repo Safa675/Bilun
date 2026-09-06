@@ -28,7 +28,7 @@ rules:
   sut_section: 3.3.33.D
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003427
+  - C003431
   condition:
     brainstem_implant_criteria_kurum_odeme: true
   action:

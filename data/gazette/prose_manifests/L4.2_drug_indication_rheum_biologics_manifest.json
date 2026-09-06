@@ -4,69 +4,69 @@
   "section_id": "",
   "section_clause_total": 63,
   "encoded_clause_ids": [
-    "C003625",
-    "C003648",
-    "C003649",
-    "C003667",
-    "C003668",
-    "C003701",
-    "C003702",
-    "C003710",
-    "C003720",
+    "C003631",
+    "C003654",
+    "C003655",
+    "C003673",
+    "C003674",
+    "C003707",
+    "C003708",
+    "C003716",
     "C003728",
-    "C003738",
-    "C003787",
-    "C003791",
-    "C003794",
-    "C003802",
-    "C003817",
-    "C003848",
+    "C003736",
+    "C003746",
+    "C003797",
+    "C003801",
+    "C003804",
+    "C003812",
+    "C003827",
     "C003858",
-    "C003862",
-    "C003864",
-    "C003875",
-    "C003894",
-    "C003898",
-    "C003902",
-    "C003907",
-    "C003913",
-    "C003918",
-    "C003924",
-    "C003929",
-    "C003940",
-    "C004553",
-    "C004595",
-    "C004596",
-    "C004623",
-    "C004625",
+    "C003868",
+    "C003872",
+    "C003874",
+    "C003885",
+    "C003904",
+    "C003908",
+    "C003912",
+    "C003917",
+    "C003923",
+    "C003928",
+    "C003934",
+    "C003939",
+    "C003950",
+    "C004563",
+    "C004605",
+    "C004606",
     "C004633",
     "C004635",
-    "C004660",
-    "C004664",
-    "C004955",
-    "C004956",
-    "C004957",
-    "C006541",
-    "C006545",
-    "C006592",
-    "C006593",
-    "C006594",
-    "C006614",
+    "C004643",
+    "C004645",
+    "C004670",
+    "C004674",
+    "C004965",
+    "C004966",
+    "C004967",
+    "C006567",
+    "C006571",
+    "C006618",
+    "C006619",
     "C006620",
-    "C006621",
-    "C006630",
-    "C006636",
-    "C006642",
-    "C006691",
-    "C006692",
-    "C006706",
-    "C006712",
-    "C006722",
-    "C006726",
-    "C006730",
+    "C006640",
+    "C006646",
+    "C006647",
+    "C006656",
+    "C006662",
+    "C006668",
+    "C006717",
+    "C006718",
     "C006732",
-    "C006736",
-    "C006743"
+    "C006738",
+    "C006748",
+    "C006752",
+    "C006756",
+    "C006758",
+    "C006762",
+    "C006769"
   ],
   "encoded_clause_count": 63,
   "tier_c_deferred_clause_ids": [],
@@ -81,39 +81,35 @@
   "tier_b_pending_count": 0,
   "clause_traces": [
     {
-      "clause_id": "C003625",
+      "clause_id": "C003631",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003648",
+      "clause_id": "C003654",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003649",
+      "clause_id": "C003655",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003667",
+      "clause_id": "C003673",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003668",
+      "clause_id": "C003674",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003701",
+      "clause_id": "C003707",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003702",
+      "clause_id": "C003708",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003710",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C003720",
+      "clause_id": "C003716",
       "manifest_status": "encoded"
     },
     {
@@ -121,31 +117,31 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003738",
+      "clause_id": "C003736",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003787",
+      "clause_id": "C003746",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003791",
+      "clause_id": "C003797",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003794",
+      "clause_id": "C003801",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003802",
+      "clause_id": "C003804",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003817",
+      "clause_id": "C003812",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003848",
+      "clause_id": "C003827",
       "manifest_status": "encoded"
     },
     {
@@ -153,71 +149,67 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003862",
+      "clause_id": "C003868",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003864",
+      "clause_id": "C003872",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003875",
+      "clause_id": "C003874",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003894",
+      "clause_id": "C003885",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003898",
+      "clause_id": "C003904",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003902",
+      "clause_id": "C003908",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003907",
+      "clause_id": "C003912",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003913",
+      "clause_id": "C003917",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003918",
+      "clause_id": "C003923",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003924",
+      "clause_id": "C003928",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003929",
+      "clause_id": "C003934",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003940",
+      "clause_id": "C003939",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004553",
+      "clause_id": "C003950",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004595",
+      "clause_id": "C004563",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004596",
+      "clause_id": "C004605",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004623",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C004625",
+      "clause_id": "C004606",
       "manifest_status": "encoded"
     },
     {
@@ -229,47 +221,47 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004660",
+      "clause_id": "C004643",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004664",
+      "clause_id": "C004645",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004955",
+      "clause_id": "C004670",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004956",
+      "clause_id": "C004674",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C004957",
+      "clause_id": "C004965",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006541",
+      "clause_id": "C004966",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006545",
+      "clause_id": "C004967",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006592",
+      "clause_id": "C006567",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006593",
+      "clause_id": "C006571",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006594",
+      "clause_id": "C006618",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006614",
+      "clause_id": "C006619",
       "manifest_status": "encoded"
     },
     {
@@ -277,47 +269,35 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006621",
+      "clause_id": "C006640",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006630",
+      "clause_id": "C006646",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006636",
+      "clause_id": "C006647",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006642",
+      "clause_id": "C006656",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006691",
+      "clause_id": "C006662",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006692",
+      "clause_id": "C006668",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006706",
+      "clause_id": "C006717",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006712",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C006722",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C006726",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C006730",
+      "clause_id": "C006718",
       "manifest_status": "encoded"
     },
     {
@@ -325,15 +305,35 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006736",
+      "clause_id": "C006738",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006743",
+      "clause_id": "C006748",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006752",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006756",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006758",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006762",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006769",
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 930,
+  "rules_in_json": 933,
   "encode_tier_C_deferred_count": 0,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,

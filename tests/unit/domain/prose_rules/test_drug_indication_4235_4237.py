@@ -84,7 +84,7 @@ def test_a5_manifest_traces_encoded_clauses() -> None:
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest["encoded_clause_count"] == len(encoded)
     assert encoded == set(manifest.get("encoded_clause_ids") or [])
-    assert "C006756" in encoded
+    assert "C006784" in encoded
     assert manifest["section_id"] == "4.2.35,4.2.37"
 
 @pytest.mark.parametrize(

@@ -95,7 +95,9 @@ def test_authored_cstar_inventory_is_frozen() -> None:
     # C001593 (2.6.1.B-4 ambulance cap note). All new cites verified present in
     # sut_clauses.parquet.
     expected = {
-        "gate_b_sources": 217,
+        # 2026-08-29: two duplicate YAML C003750 cites collapsed to one hashed
+        # twin (4.2.1.C-5.(4)#4804adef) → 217 → 215.
+        "gate_b_sources": 215,
         "deferral": 694,
         "gate_b_sections": 30,
         "wave_config": 15,
@@ -107,7 +109,7 @@ def test_authored_cstar_inventory_is_frozen() -> None:
             f"(new cites need an explicit exception decision)"
         )
     total = sum(len(refs) for refs in per_surface.values())
-    assert total == 957, f"total authored C* moved: {total}"
+    assert total == 955, f"total authored C* moved: {total}"
 
 
 def test_every_remaining_cstar_exists_in_parquet() -> None:
@@ -189,7 +191,9 @@ def test_eligible_cstars_are_identical_duplicates_only() -> None:
     # Updated 2026-08-12 (PR #66, MIH-8 gate verification): +3 unique-content
     # eligible (C000349, C005778, C001593); C007814 removed (was an identical
     # duplicate — the wrong 4.4.1.(12) clause) so identical dropped 31 -> 30.
-    assert len(non_identical) == 235, (
-        f"unique-content eligible C* inventory moved: {len(non_identical)} != 235"
+    # Updated 2026-08-29: positional C* id shift left remaining eligible C*
+    # on distinct in-force fikra/bent rows (249 unique-content + 15 identical).
+    assert len(non_identical) == 249, (
+        f"unique-content eligible C* inventory moved: {len(non_identical)} != 249"
     )
-    assert identical == 30, f"eligible identical-duplicate C* inventory moved: {identical}"
+    assert identical == 15, f"eligible identical-duplicate C* inventory moved: {identical}"

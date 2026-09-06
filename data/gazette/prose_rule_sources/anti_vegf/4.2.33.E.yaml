@@ -11,7 +11,7 @@ rules:
   - göz hastalıkları
   prescriber_specialties:
   - göz hastalıkları
-  message_tr: Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006575).
+  message_tr: Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006615).
   gate_b_sources:
   - 4.2.33.D.(1)
   report_duration_months: 12

@@ -163,7 +163,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     manifest = _build_manifest(frame, combined, effective_date="2026-06-27")
     audit = audit_4227_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["section_4.2.27_clause_total"] == 69
+    assert manifest["section_4.2.27_clause_total"] == 71
     assert audit["untraced_after"] == 0
     assert manifest["tier_c_deferred_count"] >= 40
     assert manifest["section_4.2.9_tier_a_count"] >= 7
@@ -193,5 +193,5 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     assert manifest.is_file()
     payload = json.loads(manifest.read_text(encoding="utf-8"))
     assert payload["rules_in_json"] == len(combined)
-    assert payload["section_4.2.27_clause_total"] == 69
+    assert payload["section_4.2.27_clause_total"] == 71
     assert payload["section_id"] == "4.2.9,4.2.27"

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003376
+  - C003380
   condition:
     cochlear_implant_commission_or_bilateral_criteria: true
   action:

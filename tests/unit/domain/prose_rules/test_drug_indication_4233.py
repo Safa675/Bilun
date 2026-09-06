@@ -99,9 +99,9 @@ def test_a2c_rules_present_in_anti_vegf_json() -> None:
 def test_a2c_manifest_encodes_new_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C006590" in encoded
-    assert "C006591" in encoded
-    assert "C006592" in encoded
+    assert "C006616" in encoded
+    assert "C006617" in encoded
+    assert "C006618" in encoded
     assert manifest["rules_in_json"] >= 27
 
 

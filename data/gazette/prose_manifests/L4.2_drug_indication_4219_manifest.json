@@ -7,9 +7,9 @@
   "section_clause_total": 4,
   "encoded_clause_count": 3,
   "encoded_clause_ids": [
-    "C006126",
-    "C006127",
-    "C006128"
+    "C006150",
+    "C006151",
+    "C006152"
   ],
   "encoded_clause_coordinates": [
     "4.2.19.(1)",
@@ -19,7 +19,7 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
-    "C006125"
+    "C006149"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -30,7 +30,7 @@
   "non_actionable_count": 0,
   "clause_traces": [
     {
-      "clause_id": "C006125",
+      "clause_id": "C006149",
       "section_id": "4.2.19",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -41,7 +41,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C006126",
+      "clause_id": "C006150",
       "section_id": "4.2.19",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -51,7 +51,7 @@
       ]
     },
     {
-      "clause_id": "C006127",
+      "clause_id": "C006151",
       "section_id": "4.2.19",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -61,7 +61,7 @@
       ]
     },
     {
-      "clause_id": "C006128",
+      "clause_id": "C006152",
       "section_id": "4.2.19",
       "encode_tier": "C",
       "manifest_status": "encoded",
