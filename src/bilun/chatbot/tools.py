@@ -379,8 +379,6 @@ _DEV_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
-TOOL_SCHEMAS: list[dict[str, Any]] = _CORE_TOOL_SCHEMAS
-
 # ── Endpoint allowlist — maps tool name to executor ───────────────────────────
 
 _TOOL_FUNCTION_MAP: dict[str, str] = {
