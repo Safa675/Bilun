@@ -1,0 +1,520 @@
+{
+  "old_date": "2026-07-01",
+  "new_date": "2026-08-29",
+  "generated_at": "2026-09-06",
+  "catalogs": [
+    {
+      "annex": "ek2b",
+      "type": "temporal",
+      "old_count": 7301,
+      "new_count": 7317,
+      "new_codes": [
+        "608374",
+        "609231",
+        "619931",
+        "701068",
+        "701121",
+        "701132",
+        "701224",
+        "701227",
+        "701361",
+        "701362",
+        "701363",
+        "701364",
+        "702881",
+        "702882",
+        "800931",
+        "802911"
+      ],
+      "removed_codes": [],
+      "common_codes": 7301,
+      "price_changes": [
+        {
+          "code": "617631",
+          "field": "puan",
+          "old": "9487.437",
+          "new": "9487.44"
+        },
+        {
+          "code": "617632",
+          "field": "puan",
+          "old": "2087.0658",
+          "new": "2087.07"
+        },
+        {
+          "code": "617661",
+          "field": "puan",
+          "old": "28082.9538",
+          "new": "28082.95"
+        }
+      ],
+      "name_changes": [
+        {
+          "code": "550200",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 32561 ve üzeri",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 39001 ve üzeri"
+        },
+        {
+          "code": "550210",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 15401-32560",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 18501-39000"
+        },
+        {
+          "code": "550220",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 7584-15400",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 9001-18500"
+        },
+        {
+          "code": "550230",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 5001-7583",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 6001-9000"
+        },
+        {
+          "code": "550240",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 2501-5000",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 3005-6000"
+        },
+        {
+          "code": "550250",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 943-2500",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 1301-3004"
+        },
+        {
+          "code": "550260",
+          "field": "name",
+          "old": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 0-942",
+          "new": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 0-1300"
+        },
+        {
+          "code": "550339",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 32561 ve üzeri",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 39001 ve üzeri"
+        },
+        {
+          "code": "550341",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 15401-32560",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 18501-39000"
+        },
+        {
+          "code": "550342",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 7584-15400",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4)    hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 9001-18500"
+        },
+        {
+          "code": "550343",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler.Toplam cerrahi puan 5001-7583",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 6001-9000"
+        },
+        {
+          "code": "550344",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler.Toplam cerrahi puan 2501-5000",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 3005-6000"
+        },
+        {
+          "code": "550345",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 943-2500",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 1301-3004"
+        },
+        {
+          "code": "550346",
+          "field": "name",
+          "old": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 0-942",
+          "new": "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) hastalara birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 0-1300"
+        },
+        {
+          "code": "601600",
+          "field": "name",
+          "old": "Rinoplasti komplike olmayan, greft kullanılmaksızın",
+          "new": "Rinoplasti komplike olmayan, greft                                                                                                                                                                                                                                         kullanılmaksızın"
+        },
+        {
+          "code": "619150",
+          "field": "name",
+          "old": "Üreterosel eksizyonu veya insizyonu",
+          "new": "Üreterosel insizyonu"
+        },
+        {
+          "code": "619170",
+          "field": "name",
+          "old": "Üreterosel, endoskopik tedavi",
+          "new": "Üreterosel, endoskopik eksizyonel tedavi"
+        },
+        {
+          "code": "701222",
+          "field": "name",
+          "old": "Endobronşial Ultrasonografi (Tanısal)",
+          "new": "Endobronşiyal Ultrasonografi (EBUS), tanısal"
+        }
+      ]
+    },
+    {
+      "annex": "ek2c",
+      "type": "temporal",
+      "old_count": 2413,
+      "new_count": 2444,
+      "new_codes": [
+        "P603331",
+        "P603332",
+        "P603551",
+        "P603881",
+        "P603951",
+        "P604001",
+        "P608374",
+        "P608481",
+        "P608671",
+        "P608681",
+        "P608991",
+        "P608992",
+        "P609131",
+        "P609231",
+        "P609892",
+        "P609893",
+        "P609894",
+        "P609912",
+        "P609951",
+        "P610231",
+        "P610271",
+        "P610272",
+        "P610273",
+        "P610481",
+        "P610482",
+        "P610483",
+        "P618571",
+        "P618862",
+        "P619931",
+        "P701068",
+        "P701074"
+      ],
+      "removed_codes": [],
+      "common_codes": 2413,
+      "price_changes": [
+        {
+          "code": "P603550",
+          "field": "puan",
+          "old": "155746.1752",
+          "new": "155746.18"
+        }
+      ],
+      "name_changes": []
+    },
+    {
+      "annex": "ek2c_dental",
+      "type": "temporal",
+      "old_count": 214,
+      "new_count": 214,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 214,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek1a chronic exemptions",
+      "type": "snapshot",
+      "row_count": 97,
+      "col_count": 3,
+      "content_hash": "6425c05f9e89",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2a outpatient visits",
+      "type": "snapshot",
+      "row_count": 87,
+      "col_count": 35,
+      "content_hash": "1ca93730cb5f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2c1 copay rates",
+      "type": "snapshot",
+      "row_count": 465,
+      "col_count": 3,
+      "content_hash": "d789a15842f4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2g no surcharge",
+      "type": "snapshot",
+      "row_count": 213,
+      "col_count": 2,
+      "content_hash": "04239511cc0f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3a multibranch materials",
+      "type": "snapshot",
+      "row_count": 401,
+      "col_count": 6,
+      "content_hash": "a807016beca0",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3b1 bundled consumables",
+      "type": "snapshot",
+      "row_count": 54,
+      "col_count": 3,
+      "content_hash": "06c327d22867",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3b2 non reimbursable",
+      "type": "snapshot",
+      "row_count": 13,
+      "col_count": 2,
+      "content_hash": "614f125b7b19",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c1 materials",
+      "type": "snapshot",
+      "row_count": 506,
+      "col_count": 2,
+      "content_hash": "7c2be62edd15",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c2 materials",
+      "type": "snapshot",
+      "row_count": 460,
+      "col_count": 9,
+      "content_hash": "b89df09de8e4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c3 materials",
+      "type": "snapshot",
+      "row_count": 77,
+      "col_count": 9,
+      "content_hash": "2d1ee251f3bd",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c4 materials",
+      "type": "snapshot",
+      "row_count": 99,
+      "col_count": 6,
+      "content_hash": "ffa23f5c3b64",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c5 materials",
+      "type": "snapshot",
+      "row_count": 74,
+      "col_count": 9,
+      "content_hash": "733da2782617",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3d vision materials",
+      "type": "snapshot",
+      "row_count": 83,
+      "col_count": 6,
+      "content_hash": "3834d764a08b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3e1 spine surgery materials",
+      "type": "snapshot",
+      "row_count": 237,
+      "col_count": 6,
+      "content_hash": "2e15a60620d2",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3e2 cranial surgery materials",
+      "type": "snapshot",
+      "row_count": 136,
+      "col_count": 6,
+      "content_hash": "4594c6335277",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f1 arthroplasty materials",
+      "type": "snapshot",
+      "row_count": 337,
+      "col_count": 6,
+      "content_hash": "93ee4404fbf3",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f2 arthroscopy materials",
+      "type": "snapshot",
+      "row_count": 184,
+      "col_count": 6,
+      "content_hash": "e9116f84f606",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f3 tumor resection materials",
+      "type": "snapshot",
+      "row_count": 185,
+      "col_count": 6,
+      "content_hash": "21469ef92ba1",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f4 trauma reconstruction materials",
+      "type": "snapshot",
+      "row_count": 315,
+      "col_count": 6,
+      "content_hash": "061b7d4a76c3",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3g ophthalmology materials",
+      "type": "snapshot",
+      "row_count": 224,
+      "col_count": 6,
+      "content_hash": "b43aa33f753b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3h cardiology materials",
+      "type": "snapshot",
+      "row_count": 275,
+      "col_count": 6,
+      "content_hash": "e14460b4b5e6",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3i cv surgery materials",
+      "type": "snapshot",
+      "row_count": 424,
+      "col_count": 6,
+      "content_hash": "3b62853179c1",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3j ent materials",
+      "type": "snapshot",
+      "row_count": 23,
+      "col_count": 6,
+      "content_hash": "dc4f71a5245d",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3k obgyn materials",
+      "type": "snapshot",
+      "row_count": 21,
+      "col_count": 6,
+      "content_hash": "ebe5e421b9ae",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3l urology materials",
+      "type": "snapshot",
+      "row_count": 83,
+      "col_count": 6,
+      "content_hash": "5e88bd41c86f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3m radiology materials",
+      "type": "snapshot",
+      "row_count": 297,
+      "col_count": 6,
+      "content_hash": "19db42ceb921",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n1 allograft materials",
+      "type": "snapshot",
+      "row_count": 102,
+      "col_count": 6,
+      "content_hash": "051496f20ef8",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n2 xenograft materials",
+      "type": "snapshot",
+      "row_count": 31,
+      "col_count": 6,
+      "content_hash": "88db86c6069f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n3 synthetic graft materials",
+      "type": "snapshot",
+      "row_count": 18,
+      "col_count": 6,
+      "content_hash": "ad57aad06091",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3o hematology oncology materials",
+      "type": "snapshot",
+      "row_count": 21,
+      "col_count": 6,
+      "content_hash": "d63f2fdaec69",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3p nephrology materials",
+      "type": "snapshot",
+      "row_count": 35,
+      "col_count": 6,
+      "content_hash": "39b1ebc4416c",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3r gastroenterology materials",
+      "type": "snapshot",
+      "row_count": 159,
+      "col_count": 6,
+      "content_hash": "287c04b9bad8",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3s pulmonology materials",
+      "type": "snapshot",
+      "row_count": 82,
+      "col_count": 6,
+      "content_hash": "8a6e4a6e0ba2",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3t anesthesiology materials",
+      "type": "snapshot",
+      "row_count": 39,
+      "col_count": 6,
+      "content_hash": "f96b945cd53b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4a drugs",
+      "type": "snapshot",
+      "row_count": 8078,
+      "col_count": 16,
+      "content_hash": "5cb58f21c6e4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4d copay exempt entries",
+      "type": "snapshot",
+      "row_count": 3196,
+      "col_count": 6,
+      "content_hash": "a212ccc178c7",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4d sections",
+      "type": "snapshot",
+      "row_count": 15,
+      "col_count": 3,
+      "content_hash": "2dc791bdb4e6",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    }
+  ]
+}
