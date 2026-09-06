@@ -4,7 +4,7 @@
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
-  "section_clause_total": 42,
+  "section_clause_total": 36,
   "encoded_clause_count": 15,
   "encoded_clause_ids": [
     "C003995",
@@ -41,15 +41,9 @@
     "4.2.6.B.(1)"
   ],
   "tier_a_pending_clause_ids": [],
-  "tier_b_pending_clause_ids": [
-    "C004011"
-  ],
+  "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C003994",
-    "C004007",
-    "C004008",
-    "C004009",
-    "C004010",
     "C004019",
     "C004030",
     "C004032",
@@ -58,7 +52,6 @@
     "C004048",
     "C004049",
     "C004050",
-    "C004055",
     "C004056",
     "C004066",
     "C004068",
@@ -75,8 +68,8 @@
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
-  "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 26,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 21,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -111,57 +104,6 @@
       "linked_rule_ids": [
         "4.2.6.A.max_3_month_supply_daily_dose"
       ]
-    },
-    {
-      "clause_id": "C004007",
-      "section_id": "4.2.6.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004008",
-      "section_id": "4.2.6.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Boy sapması patolojik olan (yani -2",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004009",
-      "section_id": "4.2.6.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004010",
-      "section_id": "4.2.6.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004011",
-      "section_id": "4.2.6.A-1",
-      "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "buyume_hormonu"
     },
     {
       "clause_id": "C004019",
@@ -313,17 +255,6 @@
         "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.adult_somatropin_board_report"
       ]
-    },
-    {
-      "clause_id": "C004055",
-      "section_id": "4.2.6.A-3",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.6.A-3- Turner sendromunda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004056",
@@ -532,7 +463,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 26,
+  "encode_tier_C_deferred_count": 21,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 35.7
+  "encoded_clause_pct": 41.7
 }

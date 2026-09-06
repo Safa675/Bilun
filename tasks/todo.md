@@ -1,7 +1,7 @@
 ## Task: 2026-08-29 SUT rule corpus (PR 80 follow-through)
 
 ### Goal
-PR 80 ingest is on this branch; encoded YAML/wave keys resolve against the 2026-08-29 clause corpus; compile + coverage artifacts are regenerated; the two new grandfathering bents are encoded.
+PR 80 ingest is on this branch; encoded YAML/wave keys resolve against the 2026-08-29 clause corpus; compile + coverage artifacts are regenerated; the two new grandfathering bents are encoded; inventory/coverage goldens match the live 08-29 corpus.
 
 ### Subtasks
 - [x] Remap stale `coord#hash` cites in YAML + `gate_b_wave_config.py` to new hashes (similarity-matched)
@@ -11,9 +11,13 @@ PR 80 ingest is on this branch; encoded YAML/wave keys resolve against the 2026-
 - [x] `compile_rules.py` then `compile_rules.py --check`
 - [x] `build_sut_coverage.py`
 - [x] Changelog
-- [ ] Targeted pytest
-- [ ] Commit, push `cursor/sut-2026-08-29-corpus-bd12`, open PR vs main
-- [ ] Commit, push `cursor/sut-2026-08-29-corpus-bd12`, open PR vs main
+- [x] Recompile §4.2.1 against current coverage so empty-hash `is_in_force=false` ghosts leave traces (pending 16+2)
+- [x] Skip extractor empty-hash out-of-force rows in Gate B export
+- [x] Freeze coverage/C* inventory goldens to live 08-29 counts (215 gaps / 28 deontic / 215 C* / 249+15 eligible)
+- [x] Recompute w4 tier_b resolved C* set from live YAML cites
+- [x] Decision note for accepted remap tolerances
+- [ ] Targeted pytest; `git status` after (pytest can mutate artifacts)
+- [ ] Commit, push, update PR #84
 
 ### Out of Scope
 Merging PR 80 itself; encoding unencoded AMENDED coords (2.4.2.B-1.(2), 4.1.4.(4), 4.2.14.B.(1), 4.2.15.D-1.(3)); deferral_table historical stale hashes not on the compile path; synthetic cohort regen.

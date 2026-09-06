@@ -28,6 +28,8 @@ C* positional ids shifted with the re-extract (`clause_type_overrides.yaml` rema
 
 Unencoded AMENDED coords (`2.4.2.B-1.(2)`, `4.1.4.(4)`, `4.2.14.B.(1)`, `4.2.15.D-1.(3)`) and synthetic cohort regen are out of scope.
 
+Gate B recompile after coverage rebuild dropped extractor empty-hash (`e3b0c442`) out-of-force copies from the pending queue. Inventory goldens: deontic unencoded ≤ 28; authored YAML C* 215; eligible C* 249+15.
+
 ---
 
 ## 2026-06-22 — Aktif SUT 2026.04.08 → 2026.05.23 (konsolide replace)

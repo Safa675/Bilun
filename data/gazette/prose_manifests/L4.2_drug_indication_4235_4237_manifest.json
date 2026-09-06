@@ -4,7 +4,7 @@
   "section_id": "4.2.35,4.2.37",
   "effective_date": "2026-06-27",
   "rules_in_json": 12,
-  "section_clause_total": 31,
+  "section_clause_total": 23,
   "encoded_clause_count": 14,
   "encoded_clause_ids": [
     "C006782",
@@ -42,18 +42,10 @@
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006771",
-    "C006772",
-    "C006773",
-    "C006774",
-    "C006775",
-    "C006776",
     "C006777",
     "C006778",
-    "C006779",
-    "C006780",
     "C006785",
     "C006790",
-    "C006791",
     "C006792",
     "C006802",
     "C006803",
@@ -63,7 +55,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 17,
+  "tier_c_deferred_count": 9,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -73,61 +65,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006772",
-      "section_id": "4.2.35",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Gabapentin",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006773",
-      "section_id": "4.2.35",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Pregabalin (kombinasyonları dahil)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006774",
-      "section_id": "4.2.35",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Duloksetin",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006775",
-      "section_id": "4.2.35",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Alfa lipoik asit (kombinasyonları dahil)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006776",
-      "section_id": "4.2.35",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG-04/05/2013-28637/ 18-d md. Yürürlük: 11/05/2013) Duloksetin",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -150,28 +87,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.35.A – Nöropatik ağrıda ilaç kullanım ilkeleri",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006779",
-      "section_id": "4.2.35.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Gabapentin",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006780",
-      "section_id": "4.2.35.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Pregabalin (kombinasyonları dahil)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -254,17 +169,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006791",
-      "section_id": "4.2.35.B",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Prospektüsünde fibromiyalji endikasyonu olan ilaçlar",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -396,13 +300,13 @@
     }
   ],
   "clause_trace_complete": true,
-  "section_4.2.35_clause_total": 22,
+  "section_4.2.35_clause_total": 14,
   "section_4.2.35_tier_a_count": 2,
-  "section_4.2.35_tier_c_count": 19,
+  "section_4.2.35_tier_c_count": 11,
   "section_4.2.37_clause_total": 9,
   "section_4.2.37_tier_a_count": 3,
   "section_4.2.37_tier_c_count": 6,
-  "encode_tier_C_deferred_count": 17,
+  "encode_tier_C_deferred_count": 9,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 45.2
+  "encoded_clause_pct": 60.9
 }

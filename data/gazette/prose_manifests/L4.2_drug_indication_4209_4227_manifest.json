@@ -4,8 +4,8 @@
   "section_id": "4.2.9,4.2.27",
   "effective_date": "2026-06-29",
   "rules_in_json": 55,
-  "section_clause_total": 116,
-  "encoded_clause_count": 52,
+  "section_clause_total": 115,
+  "encoded_clause_count": 64,
   "encoded_clause_ids": [
     "C004167",
     "C004179",
@@ -47,6 +47,10 @@
     "C006337",
     "C006339",
     "C006340",
+    "C006343",
+    "C006345",
+    "C006346",
+    "C006347",
     "C006351",
     "C006352",
     "C006353",
@@ -58,7 +62,15 @@
     "C006361",
     "C006362",
     "C006364",
-    "C006365"
+    "C006365",
+    "C006376",
+    "C006377",
+    "C006380",
+    "C006382",
+    "C006383",
+    "C006384",
+    "C006387",
+    "C006391"
   ],
   "encoded_clause_coordinates": [
     "4.2.27.A",
@@ -67,6 +79,7 @@
     "4.2.27.A.(3)",
     "4.2.27.A.(4)",
     "4.2.27.A.(6)",
+    "4.2.27.A.(7)",
     "4.2.27.A.a",
     "4.2.27.A.b",
     "4.2.27.B.(1)",
@@ -74,6 +87,10 @@
     "4.2.27.B.(3)",
     "4.2.27.C.(1)",
     "4.2.27.C.(2)",
+    "4.2.27.D.(1)",
+    "4.2.27.D.(2)",
+    "4.2.27.D.(3)",
+    "4.2.27.D.(5)",
     "4.2.27.Ç.(1)",
     "4.2.27.Ç.(2)",
     "4.2.9",
@@ -104,38 +121,16 @@
     "4.2.9.Ç.(6)",
     "4.2.9.Ç.b"
   ],
-  "tier_a_pending_clause_ids": [
-    "C004172",
-    "C004173",
-    "C004175",
-    "C004176",
-    "C006306",
-    "C006308",
-    "C006310",
-    "C006320",
-    "C006329"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [
-    "C004171",
-    "C006298",
-    "C006307",
-    "C006331"
+    "C006298"
   ],
   "tier_c_deferred_clause_ids": [
-    "C004169",
-    "C004170",
-    "C004174",
-    "C004177",
     "C004178",
     "C004183",
     "C004202",
-    "C004209",
-    "C004211",
-    "C004212",
-    "C004214",
     "C004216",
     "C004217",
-    "C004219",
     "C004224",
     "C004225",
     "C004231",
@@ -147,38 +142,46 @@
     "C004244",
     "C004247",
     "C004248",
-    "C004250",
     "C004252",
     "C006299",
-    "C006300",
-    "C006309",
-    "C006311",
-    "C006312",
+    "C006301",
+    "C006302",
     "C006314",
     "C006316",
     "C006317",
     "C006319",
     "C006321",
     "C006326",
-    "C006327",
-    "C006328",
-    "C006330",
     "C006332",
     "C006335",
     "C006338",
     "C006341",
+    "C006342",
+    "C006344",
     "C006348",
     "C006349",
     "C006350",
     "C006356",
     "C006360",
-    "C006363"
+    "C006363",
+    "C006366",
+    "C006367",
+    "C006374",
+    "C006375",
+    "C006378",
+    "C006379",
+    "C006381",
+    "C006385",
+    "C006386",
+    "C006388",
+    "C006389",
+    "C006390"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 9,
-  "tier_b_pending_count": 4,
-  "tier_c_deferred_count": 51,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 1,
+  "tier_c_deferred_count": 50,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -191,85 +194,6 @@
       "linked_rule_ids": [
         "4.2.9.paricalcitol_oral_pd_nephrology_report"
       ]
-    },
-    {
-      "clause_id": "C004169",
-      "section_id": "4.2.9.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.9.A - Eritropoietin ve darbepoetin kullanım ilkeleri",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004170",
-      "section_id": "4.2.9.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004171",
-      "section_id": "4.2.9.A",
-      "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir."
-    },
-    {
-      "clause_id": "C004172",
-      "section_id": "4.2.9.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
-    },
-    {
-      "clause_id": "C004173",
-      "section_id": "4.2.9.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "esa"
-    },
-    {
-      "clause_id": "C004174",
-      "section_id": "4.2.9.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.9.A-1 - Kronik böbrek yetmezliği ile ilişkili anemi endikasyonunda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004175",
-      "section_id": "4.2.9.A-1",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
-    },
-    {
-      "clause_id": "C004176",
-      "section_id": "4.2.9.A-1",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
-    },
-    {
-      "clause_id": "C004177",
-      "section_id": "4.2.9.A-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tedaviye başlama ve idame dozu",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C004178",
@@ -454,50 +378,6 @@
       ]
     },
     {
-      "clause_id": "C004209",
-      "section_id": "4.2.9.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004211",
-      "section_id": "4.2.9.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004212",
-      "section_id": "4.2.9.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C004214",
-      "section_id": "4.2.9.C-2",
-      "encode_tier": "A",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Parikalsitolün oral formları",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C004216",
       "section_id": "4.2.9.C",
       "encode_tier": "C",
@@ -518,17 +398,6 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C004219",
-      "section_id": "4.2.9.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004220",
@@ -712,17 +581,6 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C004250",
-      "section_id": "4.2.9.E",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
       "clause_id": "C004251",
       "section_id": "4.2.9.E",
       "encode_tier": "C",
@@ -813,72 +671,22 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C006300",
+      "clause_id": "C006301",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.27.A - Faktörler",
+      "heuristic_inn": "2.27.A.1- Faktörler",
       "defer_themes": [
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C006306",
-      "section_id": "4.2.27.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Acil müracaatlarda"
-    },
-    {
-      "clause_id": "C006307",
-      "section_id": "4.2.27.A",
-      "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "(Değişik: RG- 25/07/2014-29071 / 34 md. Yürürlük: 07/08/2014 ) Faktör VIIa"
-    },
-    {
-      "clause_id": "C006308",
-      "section_id": "4.2.27.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "koagulasyon_faktoru"
-    },
-    {
-      "clause_id": "C006309",
+      "clause_id": "C006302",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Kombine koagülasyon faktörü/protrombin kompleksi konsantreleri acil durumlarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006310",
-      "section_id": "4.2.27.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Kumarin türevlerinin uygulanmasından kaynaklanan"
-    },
-    {
-      "clause_id": "C006311",
-      "section_id": "4.2.27.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006312",
-      "section_id": "4.2.27.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
+      "heuristic_inn": "(Değişik: RG- 05/08/2015- 29436/ 19 md. Yürürlük: 13/08/2015)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -961,13 +769,6 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C006320",
-      "section_id": "4.2.27.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Faktör VIIa"
-    },
-    {
       "clause_id": "C006321",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
@@ -1030,53 +831,6 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006327",
-      "section_id": "4.2.27.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Acil müracaatlarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006328",
-      "section_id": "4.2.27.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Değişik: RG-16/06/2020-31157/15-a md. Yürürlük: 24/06/2020)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006329",
-      "section_id": "4.2.27.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "1-Kumarin türevlerinin uygulanmasından kaynaklanan"
-    },
-    {
-      "clause_id": "C006330",
-      "section_id": "4.2.27.A",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006331",
-      "section_id": "4.2.27.A",
-      "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "2-Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği"
     },
     {
       "clause_id": "C006332",
@@ -1185,6 +939,69 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006342",
+      "section_id": "4.2.27.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006343",
+      "section_id": "4.2.27.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.A.itt_bypassing_agent_acute_only"
+      ]
+    },
+    {
+      "clause_id": "C006344",
+      "section_id": "4.2.27.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 19/10/2023- 32344/12-b md. Yürürlük: 27/10/2023)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006345",
+      "section_id": "4.2.27.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Von Willebrand Faktör: Hastanın tanısı",
+      "linked_rule_ids": [
+        "4.2.27.vwf_factor_board_report"
+      ]
+    },
+    {
+      "clause_id": "C006346",
+      "section_id": "4.2.27.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "koagulasyon_faktoru",
+      "linked_rule_ids": [
+        "4.2.27.vwf_weekly_unit_cap_board"
+      ]
+    },
+    {
+      "clause_id": "C006347",
+      "section_id": "4.2.27.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "koagulasyon_faktoru",
+      "linked_rule_ids": [
+        "4.2.27.prophylaxis_acute_bleed_3day_report",
+        "4.2.27.vwf_acute_bleed_3day_report"
+      ]
     },
     {
       "clause_id": "C006348",
@@ -1371,16 +1188,228 @@
       "linked_rule_ids": [
         "4.2.27.C.albumin_inpatient_3day_report"
       ]
+    },
+    {
+      "clause_id": "C006366",
+      "section_id": "4.2.27.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006367",
+      "section_id": "4.2.27.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik:RG-09/09/2017- 30175/25-c md.Yürürlük:  23/09/2017)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006374",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.27.D – Eltrombopag (Ek:RG-09/05/2024-32541/13-a md. Yürürlük:17/05/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006375",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006376",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
+    },
+    {
+      "clause_id": "C006377",
+      "section_id": "4.2.27.D",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "1-5 yaş arası pediyatrik popülasyonda başlangıç dozu günde bir kez 25 mg",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
+    },
+    {
+      "clause_id": "C006378",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006379",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006380",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
+    },
+    {
+      "clause_id": "C006381",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006382",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
+    },
+    {
+      "clause_id": "C006383",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
+    },
+    {
+      "clause_id": "C006384",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
+    },
+    {
+      "clause_id": "C006385",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 09/05/2024-32541/13-b md. Yürürlük: 17/05/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006386",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006387",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
+    },
+    {
+      "clause_id": "C006388",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Başlangıç dozu",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006389",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006390",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006391",
+      "section_id": "4.2.27.D",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
     }
   ],
   "clause_trace_complete": true,
-  "section_4.2.9_clause_total": 59,
-  "section_4.2.9_tier_a_count": 13,
-  "section_4.2.9_tier_c_count": 42,
-  "section_4.2.27_clause_total": 57,
-  "section_4.2.27_tier_a_count": 18,
-  "section_4.2.27_tier_c_count": 34,
-  "encode_tier_C_deferred_count": 51,
+  "section_4.2.9_clause_total": 44,
+  "section_4.2.9_tier_a_count": 8,
+  "section_4.2.9_tier_c_count": 33,
+  "section_4.2.27_clause_total": 71,
+  "section_4.2.27_tier_a_count": 16,
+  "section_4.2.27_tier_c_count": 51,
+  "encode_tier_C_deferred_count": 50,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 44.8
+  "encoded_clause_pct": 55.7
 }

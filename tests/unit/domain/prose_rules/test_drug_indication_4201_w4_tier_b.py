@@ -103,14 +103,15 @@ def test_w4_tier_b_batch_rule_count() -> None:
 
 def test_w4_tier_b_gate_b_sources_count() -> None:
     assert resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES) == frozenset({
-        "C003671",
-        "C003692",
-        "C003709",
-        "C003737",
-        "C003750",
-        "C003818",
+        "C003677",
+        "C003698",
+        "C003715",
+        "C003745",
+        "C003760",
+        "C003766",
+        "C003828",
         "C003831",
-        "C003906",
+        "C003916",
     })
 
 def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:

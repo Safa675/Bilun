@@ -29,11 +29,16 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+from scripts.sut.prose.clause_identity import content_hash  # noqa: E402
 from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
     _encode_tier,
     _heuristic_inn,
     infer_defer_themes,
 )
+
+# Extractor hashes empty ``in_force_text`` to sha256("")[:8] and sets
+# ``is_in_force=False``. Those superseded copies are not encode-eligible.
+_EMPTY_CONTENT_HASH = content_hash("")
 
 
 def build_defer_reason(themes: list[str]) -> str:
@@ -392,6 +397,15 @@ def _should_include_row(
     section_id = str(record.get("section_id") or "")
     text = str(record.get("text_tr") or "")
     deontic = str(record.get("deontic_modality") or "")
+
+    # Extractor false-strikes: empty in_force_text → hash e3b0c442 and
+    # is_in_force=False. After a positional C* remap these copies leak into
+    # the pending queue; they are not encode-eligible.
+    if (
+        not bool(record.get("is_in_force"))
+        and str(record.get("content_hash") or "") == _EMPTY_CONTENT_HASH
+    ):
+        return False
 
     # Superseded IDs always excluded
     if _ref_hit(clause_id, clause_key, section.superseded_ids):

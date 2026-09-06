@@ -4,25 +4,50 @@
   "section_id": "4.2.38",
   "effective_date": "2026-06-27",
   "rules_in_json": 8,
-  "section_clause_total": 3,
-  "encoded_clause_count": 1,
+  "section_clause_total": 21,
+  "encoded_clause_count": 9,
   "encoded_clause_ids": [
-    "C006813"
+    "C006813",
+    "C006817",
+    "C006820",
+    "C006825",
+    "C006830",
+    "C006831",
+    "C006835",
+    "C006837",
+    "C006839"
   ],
   "encoded_clause_coordinates": [
-    "4.2.38.(1)"
+    "4.2.38.(1)",
+    "4.2.38.(3)",
+    "4.2.38.(4)",
+    "4.2.38.(6)",
+    "4.2.38.(7)",
+    "4.2.38.(8)",
+    "4.2.38.b",
+    "4.2.38.c"
   ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006811",
-    "C006812"
+    "C006812",
+    "C006814",
+    "C006815",
+    "C006818",
+    "C006824",
+    "C006826",
+    "C006828",
+    "C006832",
+    "C006834",
+    "C006836",
+    "C006838"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 2,
+  "tier_c_deferred_count": 12,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -57,10 +82,200 @@
       "linked_rule_ids": [
         "4.2.38.first_line_oral_antidiabetic"
       ]
+    },
+    {
+      "clause_id": "C006814",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006815",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik:RG-09/09/2017- 30175/31-a md.Yürürlük:  23/09/2017)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006817",
+      "section_id": "4.2.38",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Analog insülinler",
+      "linked_rule_ids": [
+        "4.2.38.analog_insulin_pioglitazone_specialist"
+      ]
+    },
+    {
+      "clause_id": "C006818",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Mülga: RG- 16/03/2023-32134/33 md. Yürürlük: 24/03/2023)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006820",
+      "section_id": "4.2.38",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnsülin degludek+insülin aspart kombinasyonu",
+      "linked_rule_ids": [
+        "4.2.38.degludec_aspart_unstable_glucose_board"
+      ]
+    },
+    {
+      "clause_id": "C006824",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 21/03/2018- 30367/ 28-a md. Yürürlük: 01/04/2018)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006825",
+      "section_id": "4.2.38",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "DPP-4 antagonistleri (sitagliptin",
+      "linked_rule_ids": [
+        "4.2.38.dpp4_gliptin_specialist_report"
+      ]
+    },
+    {
+      "clause_id": "C006826",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 18/06/2016- 29746/ 22 md. Yürürlük: 25/06/2016)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006828",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Eksenatid",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006830",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_basal_insulin_permission"
+      ]
+    },
+    {
+      "clause_id": "C006831",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.38.first_line_oral_antidiabetic"
+      ]
+    },
+    {
+      "clause_id": "C006832",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG-16/06/2020-31157/20-b  md. Yürürlük: 24/06/2020)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006834",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 21/03/2018- 30367/ 28-b md. Yürürlük: 01/04/2018)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006835",
+      "section_id": "4.2.38",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sodyum-glukoz ko-transporter 2 (SGLT2) inhibitörleri (dapagliflozin",
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay"
+      ]
+    },
+    {
+      "clause_id": "C006836",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 09/05/2024-32541/17 md. Yürürlük: 17/05/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006837",
+      "section_id": "4.2.38",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnsülin glarjin",
+      "linked_rule_ids": [
+        "4.2.38.glargine_lixisenatide_obesity_report"
+      ]
+    },
+    {
+      "clause_id": "C006838",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 25/11/2025-33088/11 md. Yürürlük: 03/12/2025)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006839",
+      "section_id": "4.2.38",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay"
+      ]
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 2,
+  "encode_tier_C_deferred_count": 12,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 33.3
+  "encoded_clause_pct": 42.9
 }

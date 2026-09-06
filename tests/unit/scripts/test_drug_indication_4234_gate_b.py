@@ -25,12 +25,12 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4234_mani
 _SECTION = "4234"
 
 _TIER_A_IDS = {
-    "C006690",
-    "C006698",
-    "C006704",
-    "C006710",
-    "C006734",
-    "C006740",
+    "C006716",
+    "C006724",
+    "C006730",
+    "C006736",
+    "C006760",
+    "C006766",
 }
 
 

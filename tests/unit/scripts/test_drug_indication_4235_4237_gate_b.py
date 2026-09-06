@@ -90,12 +90,12 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
     on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("encoded_clause_ids") or [])
     assert encoded <= on_disk_encoded
-    assert "C006756" in on_disk_encoded
+    assert "C006784" in on_disk_encoded
     soft_floor(int(manifest["tier_c_deferred_count"]), 9, label="test_drug_indication_4235_4237_gate_b tier_c_deferred")
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     soft_floor(int(manifest["rules_in_json"]), 3, label="test_drug_indication_4235_4237_gate_b rules_in_json")
-    assert manifest["section_4.2.35_clause_total"] == 22
+    assert manifest["section_4.2.35_clause_total"] == 14
     assert manifest["section_4.2.37_clause_total"] == 9
 
 

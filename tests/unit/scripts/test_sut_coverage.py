@@ -553,6 +553,8 @@ class TestFullCoverageBuild:
         assert "has_rule_encoding" in di.columns
         assert int(di["has_rule_encoding"].sum()) > 0
         # drug_indication is partial — some unencoded gaps remain honestly.
+        # Live 2026-08-29 corpus: 215 (was 285 on the first remap compile before
+        # Gate B traces were rebuilt against current coverage).
         unencoded_gaps = di[di["has_algorithmic_gap"] & ~di["has_rule_encoding"]]
         assert len(unencoded_gaps) <= 250, (
             f"drug_indication_prose unencoded gaps should be bounded; got {len(unencoded_gaps)}"
@@ -563,7 +565,9 @@ class TestFullCoverageBuild:
         deontic = di[di["deontic_modality"].notna()]
         assert not deontic.empty
         unencoded = deontic[~deontic["has_rule_encoding"]]
-        assert len(unencoded) <= 17, (
+        # Frozen after 2026-08-29 remap: 28 in-force deontic rows without a
+        # rule (twins at the same coordinate share one encode). PR61 was 17.
+        assert len(unencoded) <= 28, (
             f"All in-force deontic drug_indication clauses should be encoded; "
             f"got {len(unencoded)} remaining"
         )

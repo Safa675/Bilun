@@ -4,7 +4,7 @@
   "section_id": "4.2.17",
   "effective_date": "2026-06-27",
   "rules_in_json": 17,
-  "section_clause_total": 34,
+  "section_clause_total": 30,
   "encoded_clause_count": 18,
   "encoded_clause_ids": [
     "C006106",
@@ -45,10 +45,7 @@
     "4.2.17.D.(3)",
     "4.2.17.Ç.(1)"
   ],
-  "tier_a_pending_clause_ids": [
-    "C006116",
-    "C006121"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006103",
@@ -62,15 +59,13 @@
     "C006124",
     "C006125",
     "C006133",
-    "C006138",
-    "C006139",
     "C006140"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 2,
+  "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 14,
+  "tier_c_deferred_count": 12,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -203,13 +198,6 @@
       ]
     },
     {
-      "clause_id": "C006116",
-      "section_id": "4.2.17.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "osteoporoz_ilac"
-    },
-    {
       "clause_id": "C006118",
       "section_id": "4.2.17.A",
       "encode_tier": "C",
@@ -229,13 +217,6 @@
         "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
         "4.2.17.strontium_raloxifene_bisph_fail"
       ]
-    },
-    {
-      "clause_id": "C006121",
-      "section_id": "4.2.17.A",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Denosumab"
     },
     {
       "clause_id": "C006122",
@@ -363,28 +344,6 @@
       ]
     },
     {
-      "clause_id": "C006138",
-      "section_id": "4.2.17.D",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.17.D - Osteoporozda teriparatid kullanımı",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C006139",
-      "section_id": "4.2.17.D",
-      "encode_tier": "A",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "osteoporoz_ilac",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C006140",
       "section_id": "4.2.17.D",
       "encode_tier": "C",
@@ -427,7 +386,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 14,
+  "encode_tier_C_deferred_count": 12,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 52.9
+  "encoded_clause_pct": 60.0
 }
