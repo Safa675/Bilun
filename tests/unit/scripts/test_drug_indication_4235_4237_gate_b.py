@@ -41,14 +41,14 @@ def test_gate_b_tier_counts() -> None:
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     tier = frame.group_by("encode_tier").len().sort("encode_tier")
     counts = {row["encode_tier"]: row["len"] for row in tier.iter_rows(named=True)}
-    assert counts == {"A": 5, "B": 1, "C": 25}
+    assert counts == {"A": 5, "B": 1, "C": 17}
 
     s4235 = frame.filter(pl.col("section_id").str.starts_with("4.2.35"))
     s4235_tiers = {
         row["encode_tier"]: row["len"]
         for row in s4235.group_by("encode_tier").len().iter_rows(named=True)
     }
-    assert s4235_tiers == {"A": 2, "B": 1, "C": 19}
+    assert s4235_tiers == {"A": 2, "B": 1, "C": 11}
 
     s4237 = frame.filter(pl.col("section_id").str.starts_with("4.2.37"))
     s4237_tiers = {

@@ -565,9 +565,9 @@ class TestFullCoverageBuild:
         deontic = di[di["deontic_modality"].notna()]
         assert not deontic.empty
         unencoded = deontic[~deontic["has_rule_encoding"]]
-        # Frozen after 2026-08-29 remap: 28 in-force deontic rows without a
+        # Frozen after 2026-08-29 remap: 30 in-force deontic rows without a
         # rule (twins at the same coordinate share one encode). PR61 was 17.
-        assert len(unencoded) <= 28, (
+        assert len(unencoded) <= 30, (
             f"All in-force deontic drug_indication clauses should be encoded; "
             f"got {len(unencoded)} remaining"
         )

@@ -178,7 +178,7 @@ class TestGlobalClauseSearch:
         assert any("azasitidin" in c["text_tr"].lower() for c in clauses)
 
     def test_clause_key_search(self) -> None:
-        clause = rc.get_clause("C003607")
+        clause = rc.get_clause("C003615")
         assert clause is not None
         key = clause["clause_key"]
         clauses, total = rc.list_clauses(q=key)
@@ -217,7 +217,7 @@ class TestGlobalClauseSearch:
         assert all(c["coverage_status"] != "non_algorithmic" for c in filtered)
 
     def test_matched_rules_resolved_to_registry_labels(self) -> None:
-        clause = rc.get_clause("C003607")
+        clause = rc.get_clause("C003615")
         assert clause is not None
         assert "matched_rules" in clause
         # Every resolved entry carries its registry category label.
@@ -226,7 +226,7 @@ class TestGlobalClauseSearch:
             assert "rule_category_tr" in ref
 
     def test_get_clause_returns_dict(self) -> None:
-        clause = rc.get_clause("C003607")
+        clause = rc.get_clause("C003615")
         assert clause is not None
         assert clause["clause_key"] is not None
         assert "text_tr" in clause
@@ -235,7 +235,7 @@ class TestGlobalClauseSearch:
         assert rc.get_clause("DOESNOTEXIST") is None
 
     def test_clause_coordinate_search(self) -> None:
-        clause = rc.get_clause("C003607")
+        clause = rc.get_clause("C003615")
         assert clause is not None
         coord = clause.get("clause_coordinate")
         if not coord:

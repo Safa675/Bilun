@@ -16,7 +16,8 @@ PR 80 ingest is on this branch; encoded YAML/wave keys resolve against the 2026-
 - [x] Freeze coverage/C* inventory goldens to live 08-29 counts (215 gaps / 28 deontic / 215 C* / 249+15 eligible)
 - [x] Recompute w4 tier_b resolved C* set from live YAML cites
 - [x] Decision note for accepted remap tolerances
-- [ ] Targeted pytest; `git status` after (pytest can mutate artifacts)
+- [x] Targeted pytest; `git status` after (pytest can mutate artifacts)
+- [x] Full `tests/unit` (2564 passed)
 - [ ] Commit, push, update PR #84
 
 ### Out of Scope

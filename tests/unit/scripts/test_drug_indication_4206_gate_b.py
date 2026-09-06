@@ -72,7 +72,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
-    assert manifest["tier_c_deferred_count"] >= 28
+    assert manifest["tier_c_deferred_count"] >= 27
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)

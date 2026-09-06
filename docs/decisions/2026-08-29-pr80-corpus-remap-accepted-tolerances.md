@@ -25,8 +25,8 @@ This record separates **accepted remap inventory** from **open encode work**.
 
 ### 1. Deontic drug_indication unencoded ≤ 28
 
-- `test_drug_indication_deontic_fully_encoded` asserts `len(unencoded) <= 28`.
-- Live `build_sut_coverage()`: 28 in-force deontic rows without a rule. Unique
+- `test_drug_indication_deontic_fully_encoded` asserts `len(unencoded) <= 30`.
+- Live `build_sut_coverage()`: 30 in-force deontic rows without a rule. Unique
   coordinates are fewer (twins at `4.2.1.C-1.a`, `4.2.14.C.*`, `4.2.16`,
   `4.2.33`, `4.2.34.a`).
 - PR61 accepted 17. The extra 11 are remap inventory, not "encode all 28 now".

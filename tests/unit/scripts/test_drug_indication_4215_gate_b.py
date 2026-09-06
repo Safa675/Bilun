@@ -97,5 +97,5 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     assert corpus.is_file()
     assert manifest_path.is_file()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["encoded_clause_count"] == 8
+    assert manifest["encoded_clause_count"] == 9
     assert manifest["section_id"] == "4.2.15"
