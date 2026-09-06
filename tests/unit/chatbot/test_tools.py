@@ -6,8 +6,9 @@ import asyncio
 
 import pytest
 
-from src.bilun.chatbot.llm import _extract_tool_calls
+from src.bilun.chatbot.llm import _extract_tool_calls, stream_chat_response_with_tools
 from src.bilun.chatbot.tools import (
+    ToolCallResult,
     ToolSession,
     _normalize_alert_category,
     execute_tool_call,
@@ -306,3 +307,125 @@ def test_validate_claim_rejects_missing_claim_id():
     assert result.success is False
     assert result.error is not None
     assert "claim_id" in result.error
+
+
+@pytest.mark.parametrize(
+    "tool_name,arguments",
+    [
+        ("read_repo_file", {"path": "src/bilun/chatbot/repo_tools.py"}),
+        ("grep_repo", {"pattern": "audit_exposure_try"}),
+    ],
+)
+def test_execute_tool_call_dev_tools_denied_without_dev_role(tool_name, arguments):
+    denied_default = asyncio.run(execute_tool_call(tool_name, arguments, ToolSession()))
+    denied_officer = asyncio.run(
+        execute_tool_call(tool_name, arguments, ToolSession(), user_role="billing_officer")
+    )
+    for result in (denied_default, denied_officer):
+        assert result.success is False
+        assert result.error is not None
+        assert "dev role" in result.error
+
+
+def test_execute_tool_call_read_repo_file_allowed_for_dev():
+    result = asyncio.run(
+        execute_tool_call(
+            "read_repo_file",
+            {
+                "path": "src/bilun/chatbot/repo_tools.py",
+                "start_line": 1,
+                "end_line": 5,
+            },
+            ToolSession(),
+            user_role="dev",
+        )
+    )
+    assert result.success is True
+    assert "1:" in result.content
+    assert "repo_tools" in result.content or "Read-only" in result.content
+
+
+def test_execute_tool_call_grep_repo_allowed_for_dev():
+    result = asyncio.run(
+        execute_tool_call(
+            "grep_repo",
+            {
+                "pattern": "audit_exposure_try",
+                "path_prefix": "src/bilun/domain/billing",
+                "max_matches": 5,
+            },
+            ToolSession(),
+            user_role="dev",
+        )
+    )
+    assert result.success is True
+    assert "audit_exposure_try" in result.content
+
+
+def test_stream_chat_response_with_tools_forwards_user_role(monkeypatch):
+    """Dev schemas are useless unless execute_tool_call gets the same role."""
+    import src.bilun.chatbot.llm as llm_mod
+
+    captured: dict[str, object] = {}
+    llm_calls = {"n": 0}
+
+    async def fake_execute(tool_name, arguments, session=None, *, user_role="billing_officer"):
+        captured["tool_name"] = tool_name
+        captured["user_role"] = user_role
+        return ToolCallResult(
+            tool_name=tool_name,
+            arguments=arguments,
+            success=True,
+            content="ok",
+            elapsed_ms=1.0,
+        )
+
+    async def fake_llm(_payload):
+        llm_calls["n"] += 1
+        if llm_calls["n"] == 1:
+            return {
+                "choices": [
+                    {
+                        "finish_reason": "tool_calls",
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "id": "call_1",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "read_repo_file",
+                                        "arguments": (
+                                            '{"path": "src/bilun/chatbot/repo_tools.py"}'
+                                        ),
+                                    },
+                                }
+                            ]
+                        },
+                    }
+                ]
+            }
+        return {
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": "done"},
+                }
+            ]
+        }
+
+    monkeypatch.setattr(llm_mod, "execute_tool_call", fake_execute)
+    monkeypatch.setattr(llm_mod, "_call_llm_non_streaming", fake_llm)
+
+    async def _collect():
+        chunks = []
+        async for item in stream_chat_response_with_tools(
+            [{"role": "user", "content": "show repo_tools.py"}],
+            user_role="dev",
+        ):
+            chunks.append(item)
+        return chunks
+
+    chunks = asyncio.run(_collect())
+    assert captured["tool_name"] == "read_repo_file"
+    assert captured["user_role"] == "dev"
+    assert any(item == "done" or (isinstance(item, tuple) and item[1] == "done") for item in chunks)
