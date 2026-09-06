@@ -275,7 +275,7 @@ rules:
   message_tr: Emicizumab — 3 ay süreli sağlık kurulu raporu; yalnızca hematoloji uzman reçetesi; ilk 3 aylık tedavi birer
     aylık dozda reçetelenir (§4.2.27.A).
   gate_b_sources:
-  - C006328
+  - C006354
   report_required: true
   report_specialties:
   - hematoloji

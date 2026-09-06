@@ -1140,7 +1140,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001006"
+        "C001010"
       ]
     },
     {
@@ -2189,7 +2189,7 @@
         "message_tr": "uygun şartlarda yapılan işlemin bedeli Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C001375"
+        "C001379"
       ]
     },
     {
@@ -2385,7 +2385,7 @@
         "message_tr": "uygun endikasyon nedeniyle uygulanması halinde bedelleri Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C000937"
+        "C000941"
       ]
     },
     {
@@ -2466,9 +2466,9 @@
         "message_tr": "risk puanına göre düşük risk grubunda %10 azaltma, yüksek risk grubunda %15 artırım uygulanarak ilgili işlem üzerinden karşılanır"
       },
       "gate_b_sources": [
-        "C001147",
-        "C001149",
-        "C001150"
+        "C001151",
+        "C001153",
+        "C001154"
       ]
     },
     {
@@ -2579,7 +2579,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001299"
+        "C001303"
       ]
     },
     {
@@ -3413,7 +3413,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000860"
+        "C000864"
       ]
     },
     {
@@ -3465,7 +3465,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000865"
+        "C000869"
       ]
     },
     {
@@ -3483,7 +3483,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000868"
+        "C000872"
       ]
     },
     {
@@ -3502,7 +3502,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000869"
+        "C000873"
       ]
     },
     {
@@ -3526,7 +3526,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000870"
+        "C000874"
       ]
     },
     {
@@ -3940,7 +3940,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001443"
+        "C001447"
       ]
     }
   ]

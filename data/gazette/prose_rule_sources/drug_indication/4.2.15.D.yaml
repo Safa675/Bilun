@@ -11,19 +11,24 @@ rules:
   - I63
   - I65
   - I66
-  message_tr: Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli, en az biri kardiyoloji veya nöroloji uzman hekimi olan
-    en az üç uzman hekimin bulunduğu 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-1.(2)).
+  message_tr: Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli, en az biri kardiyoloji veya nöroloji uzman hekimi olmak
+    koşuluyla kardiyoloji, iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi, girişimsel radyoloji, beyin ve sinir
+    cerrahisi ve nöroloji uzmanlarından en az üçünün bulunduğu 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-1.(2)).
   gate_b_sources:
   - 4.2.15.D-1.(2)
   report_required: true
   report_specialties:
   - kardiyoloji
   - nöroloji
+  - girişimsel radyoloji
+  - beyin ve sinir cerrahisi
   prescriber_specialties:
   - kardiyoloji
   - iç hastalıkları
   - göğüs hastalıkları
   - kalp damar cerrahisi
   - nöroloji
+  - girişimsel radyoloji
+  - beyin ve sinir cerrahisi
   report_duration_months: 12
 source_note: Exported from drug_indication_prose.json (YAML source migration)

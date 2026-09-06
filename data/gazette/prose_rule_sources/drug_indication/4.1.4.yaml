@@ -81,22 +81,40 @@ rules:
 - rule_id: 4.1.4.topical_antifungal_6month_2box_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - 4.1.4.c#52e18a39
+  - 4.1.4.c#7c13ccb7
   drug_names:
   - topikal antifungal
   prescriber_specialties:
   - dermatoloji
-  - kadın hastalıkları ve doğum
   condition:
     coverage_note: true
     max_boxes_per_dispense: 2
     max_supply_months: 6
   action:
-    enforcement: 'coverage: topical antifungals (same form + active substance) up to 6-month total amount, max 2 boxes per
-      prescription; above the box count or >6-month tx requires prescription by dermatology or (in OBGYN indication) OBGYN
-      specialist, OR a 6-month specialist report enabling any physician to prescribe'
-    message_tr: Aynı farmasötik form ve etkin maddeye sahip topikal antifungallerden toplamda 6 aylık dozda ve bir reçetede
-      en fazla 2 kutu yazılabilir; üst sınırı aşan kullanımda veya 6 aydan uzun sürmesi gereken hallerde dermatoloji veya
-      endikasyona göre kadın hastalıkları ve doğum uzmanınca reçete edilmesi, ya da bu uzmanların 6 ay süreli raporuna istinaden
-      tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.1.4).
+    enforcement: 'coverage: topical antifungals excluding gynecologic antiinfectives/antiseptics (same form + active substance)
+      up to 6-month total amount, max 2 boxes per prescription; above the box count or >6-month tx requires dermatology
+      specialist prescription, OR a 6-month dermatology report enabling any physician to prescribe'
+    message_tr: Aynı farmasötik form ve etkin maddeye sahip topikal antifungallerden (jinekolojik antiinfektifler ve antiseptikler
+      hariç) toplamda 6 aylık dozda ve bir reçetede en fazla 2 kutu yazılabilir; üst sınırı aşan kullanımda veya 6 aydan uzun
+      sürmesi gereken hallerde dermatoloji uzman hekimlerince reçete edilmesi, ya da dermatoloji uzman hekimince düzenlenen
+      6 ay süreli raporuna istinaden tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.1.4).
+- rule_id: 4.1.4.topical_gynecologic_antiinfective_6month_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - 4.1.4.c#7c13ccb7
+  drug_names:
+  - topikal jinekolojik antiinfektif
+  - topikal jinekolojik antiseptik
+  prescriber_specialties:
+  - kadın hastalıkları ve doğum
+  condition:
+    coverage_note: true
+    max_supply_months: 6
+  action:
+    enforcement: 'coverage: topical gynecologic antiinfectives/antiseptics (same form + active substance) up to KÜB posology
+      pack count per Rx; all physicians for 6 months; after 6 months OBGYN specialist'
+    message_tr: Aynı farmasötik form ve etkin maddeye sahip topikal jinekolojik antiinfektifler ve antiseptikler bir reçetede
+      en fazla Kısa Ürün Bilgisindeki pozoloji süresine yetecek sayıda kutu yazılabilir; toplamda 6 aya kadar tüm hekimlerce,
+      6 aylık süre sonunda tedavi gereken durumlarda kadın hastalıkları ve doğum uzman hekimlerince reçete edilmesi halinde
+      bedelleri Kurumca karşılanır (§4.1.4).
 source_note: Exported from drug_indication_prose.json (YAML source migration)

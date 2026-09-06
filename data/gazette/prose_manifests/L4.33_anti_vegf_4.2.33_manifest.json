@@ -7,31 +7,31 @@
   "section_clause_total": 55,
   "encoded_clause_count": 25,
   "encoded_clause_ids": [
-    "C006590",
-    "C006591",
-    "C006592",
-    "C006593",
-    "C006594",
-    "C006612",
-    "C006613",
-    "C006614",
+    "C006616",
     "C006617",
+    "C006618",
+    "C006619",
     "C006620",
-    "C006621",
-    "C006622",
-    "C006623",
-    "C006625",
-    "C006626",
-    "C006628",
-    "C006629",
-    "C006631",
-    "C006632",
-    "C006634",
-    "C006635",
+    "C006638",
     "C006639",
-    "C006642",
+    "C006640",
+    "C006643",
+    "C006646",
     "C006647",
-    "C006650"
+    "C006648",
+    "C006649",
+    "C006651",
+    "C006652",
+    "C006654",
+    "C006655",
+    "C006657",
+    "C006658",
+    "C006660",
+    "C006661",
+    "C006665",
+    "C006668",
+    "C006673",
+    "C006676"
   ],
   "encoded_clause_coordinates": [
     "4.2.33.(1)",
@@ -61,40 +61,40 @@
     "4.2.33.ç"
   ],
   "tier_c_deferred_clause_ids": [
-    "C006588",
-    "C006595",
-    "C006596",
-    "C006601",
-    "C006602",
-    "C006603",
-    "C006604",
-    "C006605",
-    "C006606",
-    "C006607",
-    "C006608",
-    "C006609",
-    "C006610",
-    "C006611",
-    "C006615",
-    "C006618",
+    "C006614",
+    "C006621",
+    "C006622",
+    "C006627",
+    "C006628",
+    "C006629",
+    "C006630",
+    "C006631",
+    "C006632",
+    "C006633",
+    "C006634",
+    "C006635",
+    "C006636",
     "C006637",
-    "C006640",
-    "C006643",
-    "C006645",
-    "C006648"
+    "C006641",
+    "C006644",
+    "C006663",
+    "C006666",
+    "C006669",
+    "C006671",
+    "C006674"
   ],
   "tier_c_deferred_count": 21,
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [
-    "C006519",
-    "C006589",
-    "C006624",
-    "C006627",
-    "C006630",
-    "C006633",
-    "C006636",
-    "C006644",
-    "C006649"
+    "C006545",
+    "C006615",
+    "C006650",
+    "C006653",
+    "C006656",
+    "C006659",
+    "C006662",
+    "C006670",
+    "C006675"
   ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
@@ -104,13 +104,13 @@
   "tier_b_pending_count": 0,
   "clause_traces": [
     {
-      "clause_id": "C006519",
+      "clause_id": "C006545",
       "section_id": "4.2.33",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006588",
+      "clause_id": "C006614",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -119,13 +119,13 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006589",
+      "clause_id": "C006615",
       "section_id": "4.2.33",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006590",
+      "clause_id": "C006616",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -137,7 +137,7 @@
       ]
     },
     {
-      "clause_id": "C006591",
+      "clause_id": "C006617",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -146,7 +146,7 @@
       ]
     },
     {
-      "clause_id": "C006592",
+      "clause_id": "C006618",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -154,7 +154,7 @@
       ]
     },
     {
-      "clause_id": "C006593",
+      "clause_id": "C006619",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -162,7 +162,7 @@
       ]
     },
     {
-      "clause_id": "C006594",
+      "clause_id": "C006620",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -170,7 +170,7 @@
       ]
     },
     {
-      "clause_id": "C006595",
+      "clause_id": "C006621",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -179,7 +179,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
     },
     {
-      "clause_id": "C006596",
+      "clause_id": "C006622",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -188,7 +188,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006601",
+      "clause_id": "C006627",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -197,7 +197,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006602",
+      "clause_id": "C006628",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -206,7 +206,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006603",
+      "clause_id": "C006629",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -215,7 +215,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006604",
+      "clause_id": "C006630",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -224,7 +224,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006605",
+      "clause_id": "C006631",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -233,7 +233,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006606",
+      "clause_id": "C006632",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -242,7 +242,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006607",
+      "clause_id": "C006633",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -251,7 +251,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006608",
+      "clause_id": "C006634",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -260,7 +260,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006609",
+      "clause_id": "C006635",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -269,7 +269,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006610",
+      "clause_id": "C006636",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -278,7 +278,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (prior_therapy)."
     },
     {
-      "clause_id": "C006611",
+      "clause_id": "C006637",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -287,7 +287,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
     },
     {
-      "clause_id": "C006612",
+      "clause_id": "C006638",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -295,7 +295,7 @@
       ]
     },
     {
-      "clause_id": "C006613",
+      "clause_id": "C006639",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -303,7 +303,7 @@
       ]
     },
     {
-      "clause_id": "C006614",
+      "clause_id": "C006640",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -311,7 +311,7 @@
       ]
     },
     {
-      "clause_id": "C006615",
+      "clause_id": "C006641",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -320,7 +320,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006617",
+      "clause_id": "C006643",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -328,7 +328,7 @@
       ]
     },
     {
-      "clause_id": "C006618",
+      "clause_id": "C006644",
       "section_id": "4.2.33",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -337,7 +337,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006620",
+      "clause_id": "C006646",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -349,7 +349,7 @@
       ]
     },
     {
-      "clause_id": "C006621",
+      "clause_id": "C006647",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -357,7 +357,7 @@
       ]
     },
     {
-      "clause_id": "C006622",
+      "clause_id": "C006648",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -365,7 +365,7 @@
       ]
     },
     {
-      "clause_id": "C006623",
+      "clause_id": "C006649",
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -373,13 +373,13 @@
       ]
     },
     {
-      "clause_id": "C006624",
+      "clause_id": "C006650",
       "section_id": "4.2.33.A",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006625",
+      "clause_id": "C006651",
       "section_id": "4.2.33.A",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -389,7 +389,7 @@
       ]
     },
     {
-      "clause_id": "C006626",
+      "clause_id": "C006652",
       "section_id": "4.2.33.A",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -397,13 +397,13 @@
       ]
     },
     {
-      "clause_id": "C006627",
+      "clause_id": "C006653",
       "section_id": "4.2.33.B",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006628",
+      "clause_id": "C006654",
       "section_id": "4.2.33.B",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -412,7 +412,7 @@
       ]
     },
     {
-      "clause_id": "C006629",
+      "clause_id": "C006655",
       "section_id": "4.2.33.B",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -422,13 +422,13 @@
       ]
     },
     {
-      "clause_id": "C006630",
+      "clause_id": "C006656",
       "section_id": "4.2.33.C",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006631",
+      "clause_id": "C006657",
       "section_id": "4.2.33.C",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -436,7 +436,7 @@
       ]
     },
     {
-      "clause_id": "C006632",
+      "clause_id": "C006658",
       "section_id": "4.2.33.C",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -446,13 +446,13 @@
       ]
     },
     {
-      "clause_id": "C006633",
+      "clause_id": "C006659",
       "section_id": "4.2.33.Ç",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006634",
+      "clause_id": "C006660",
       "section_id": "4.2.33.Ç",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -461,7 +461,7 @@
       ]
     },
     {
-      "clause_id": "C006635",
+      "clause_id": "C006661",
       "section_id": "4.2.33.Ç",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -469,13 +469,13 @@
       ]
     },
     {
-      "clause_id": "C006636",
+      "clause_id": "C006662",
       "section_id": "4.2.33.D",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006637",
+      "clause_id": "C006663",
       "section_id": "4.2.33.D",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -484,7 +484,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006639",
+      "clause_id": "C006665",
       "section_id": "4.2.33.D",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -493,7 +493,7 @@
       ]
     },
     {
-      "clause_id": "C006640",
+      "clause_id": "C006666",
       "section_id": "4.2.33.D",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -502,7 +502,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006642",
+      "clause_id": "C006668",
       "section_id": "4.2.33.D",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -510,7 +510,7 @@
       ]
     },
     {
-      "clause_id": "C006643",
+      "clause_id": "C006669",
       "section_id": "4.2.33.D",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -519,13 +519,13 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006644",
+      "clause_id": "C006670",
       "section_id": "4.2.33.E",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006645",
+      "clause_id": "C006671",
       "section_id": "4.2.33.E",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -534,7 +534,7 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006647",
+      "clause_id": "C006673",
       "section_id": "4.2.33.E",
       "manifest_status": "encoded",
       "linked_rule_ids": [
@@ -542,7 +542,7 @@
       ]
     },
     {
-      "clause_id": "C006648",
+      "clause_id": "C006674",
       "section_id": "4.2.33.E",
       "manifest_status": "tier_c_deferred",
       "defer_themes": [
@@ -551,13 +551,13 @@
       "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
-      "clause_id": "C006649",
+      "clause_id": "C006675",
       "section_id": "4.2.33.F",
       "manifest_status": "non_actionable",
       "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
-      "clause_id": "C006650",
+      "clause_id": "C006676",
       "section_id": "4.2.33.F",
       "manifest_status": "encoded",
       "linked_rule_ids": [

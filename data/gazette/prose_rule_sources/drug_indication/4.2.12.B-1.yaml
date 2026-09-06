@@ -27,7 +27,7 @@ rules:
   sut_section: 4.2.12.B-1
   gate_b_sources:
   - 4.2.12.B-1.a
-  - C004533
+  - C004543
   drug_names:
   - intravenöz immünglobulin
   - ivig

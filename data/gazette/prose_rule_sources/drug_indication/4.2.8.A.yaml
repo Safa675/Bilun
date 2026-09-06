@@ -31,7 +31,7 @@ rules:
 - rule_id: 4.2.8.A.adult_malnutrition_1200kcal_3mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004148
+  - C004158
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -54,7 +54,7 @@ rules:
 - rule_id: 4.2.8.A.adult_malnutrition_waived_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - 4.2.8.A.b#62004870
+  - 4.2.8.A.b#2882a47a
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -70,10 +70,11 @@ rules:
     coverage_note: true
   action:
     enforcement: yatan, kanser veya tüp ile (sonda/gastrostomi/jejunostomi/gastrojejunostomi) beslenenlerde malnütrisyon koşulları
-      aranmaz; yatan dışında 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce
+      aranmaz; yatan dışında 6 ay (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuyla tüm hekimlerce
     message_tr: Yatan hastalar, kanser hastaları veya tüp ile beslenen hastalarda (orogastrik/nazogastrik/nazoenterik sonda
       veya gastrostomi/jejunostomi/gastrojejunostomi) yukarıdaki malnütrisyon koşulları aranmaz; yatan hastalar dışında bu
-      durumların belirtildiği 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
+      durumların belirtildiği 6 ay (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuyla tüm hekimlerce reçete edilirse
+      bedeli Kurumca ödenir (§4.2.8.A).
 - rule_id: 4.2.8.A.bcaa_enriched_hepatic_encephalopathy
   sut_section: 4.2.8.A
   gate_b_sources:
@@ -123,7 +124,7 @@ rules:
 - rule_id: 4.2.8.A.malnutrition_waived_conditions_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - 4.2.8.A.b#72dbe183
+  - 4.2.8.A.b#5c30b19e
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -141,12 +142,12 @@ rules:
     coverage_note: true
   action:
     enforcement: yatan, doğuştan metabolik hastalık, kanser, kistik fibrozis, crohn, yanık veya orogastrik/nazogastrik/nazoenterik
-      sonda/gastrostomi/jejunostomi ile beslenenlerde malnütrisyon koşulları aranmaz; yatan dışında 6 ay süreli sağlık kurulu
-      raporuyla tüm hekimlerce
+      sonda/gastrostomi/jejunostomi ile beslenenlerde malnütrisyon koşulları aranmaz; yatan dışında 6 ay (nörolojik hastalıklarda
+      1 yıl) süreli sağlık kurulu raporuyla tüm hekimlerce
     message_tr: Yatan hastalarda, doğuştan metabolik hastalığı olanlarda, kanser, kistikfibrozis, crohn, yanık hastalarında
       veya sonda/gastrostomi/jejunostomi ile beslenenlerde malnütrisyon koşulları aranmaz; yatan hastalar dışında bu durumların
-      belirtildiği uzman hekimlerce düzenlenen 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce reçete edilirse bedeli Kurumca
-      ödenir (§4.2.8.A).
+      belirtildiği uzman hekimlerce düzenlenen 6 ay (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuyla tüm hekimlerce
+      reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
 - rule_id: 4.2.8.A.paediatric_dysphagia_special_enteral_2boxes
   sut_section: 4.2.8.A
   gate_b_sources:

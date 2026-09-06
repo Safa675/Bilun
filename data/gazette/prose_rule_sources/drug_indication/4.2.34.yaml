@@ -115,7 +115,7 @@ rules:
   message_tr: Fingolimod — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
     ve nöroloji reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006698
+  - C006724
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji
@@ -159,7 +159,7 @@ rules:
   message_tr: Natalizumab — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
     ve nöroloji reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006704
+  - C006730
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji

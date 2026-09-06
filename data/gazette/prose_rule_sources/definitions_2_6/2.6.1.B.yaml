@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.1.B.(3).referral_form_vehicle_required
   sut_section: 2.6.1.B
   gate_b_sources:
-  - C001548
+  - C001552
   condition:
     definition_scope: Sevk formunda sevk vasıtasının belirtilmesi zorunluluğu
     applies_to: Sevk formu

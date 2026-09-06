@@ -104,8 +104,7 @@ rules:
   message_tr: Tosilizumab — juvenil artritte tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli ve
     her sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-5 (4)).
   gate_b_sources:
-  - C003750
-  - C003750
+  - 4.2.1.C-5.(4)#4804adef
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -192,10 +191,10 @@ rules:
   - klinik immunoloji
   - çocuk sağlığı
   - çocuk romatoloji
-  message_tr: Tosilizumab — DMARD/anti-TNF yetersiz romatoid artritte methotreksat ile kombine 3 ay süreli sağlık kurulu raporu
-    gerekir (§4.2.1.C-5).
+  message_tr: Tosilizumab — anti-TNF yetersiz (DAS28>5.1) aktif romatoid artritte 3 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-5).
   gate_b_sources:
-  - 4.2.1.C-5.a#9e9d422a
+  - 4.2.1.C-5.a#63f23c5d
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -204,6 +203,39 @@ rules:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
+- rule_id: 4.2.1.tocilizumab_ra_c5_pre_amendment_starter_continuation
+  sut_section: 4.2.1.C-5
+  drug_names:
+  - tosilizumab
+  - tocilizumab
+  - actemra
+  - roactemra
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: (a) bendi 05/09/2026 yürürlük tarihi öncesi ilaca başlamış hastalar devam şartlarını sağlıyorsa bedeli ödenir
+    message_tr: Bu bendi ihdas eden Tebliğ ile (a) bendinde yapılan düzenlemenin yürürlük tarihi (05/09/2026) öncesi ilaca
+      başlamış hastaların yukarıdaki devam şartlarını sağlaması durumunda bedelleri Kurumca karşılanır (§4.2.1.C-5.d).
+  gate_b_sources:
+  - 4.2.1.C-5.d#7199a67d
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
 - rule_id: 4.2.1.tocilizumab_ra_c5_university_das
   sut_section: 4.2.1.C-5
   drug_names:

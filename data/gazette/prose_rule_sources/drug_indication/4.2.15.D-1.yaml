@@ -40,12 +40,16 @@ rules:
   - göğüs hastalıkları
   - kalp damar cerrahisi
   - nöroloji
+  - girişimsel radyoloji
+  - beyin ve sinir cerrahisi
   prescriber_specialties:
   - kardiyoloji
   - iç hastalıkları
   - göğüs hastalıkları
   - kalp damar cerrahisi
   - nöroloji
+  - girişimsel radyoloji
+  - beyin ve sinir cerrahisi
   condition:
     coverage_note: true
   action:
@@ -53,7 +57,8 @@ rules:
       bulunduğu 1 yıl süreli sağlık kurulu raporuyla reçete edilirse ödenir; ilk iki rapor (24 ay) sonrası bu uzmanlarca veya
       aile hekimlerince de rapor düzenlenebilir
     message_tr: Tanımlanan durumların belirtildiği; en az biri kardiyoloji veya nöroloji uzman hekimi olmak koşuluyla kardiyoloji,
-      iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi ve nöroloji uzman hekimlerinden en az üçünün bulunduğu 1 yıl
-      süreli sağlık kurulu raporuyla bu uzmanlarca reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24
-      ay) sonunda sonraki raporlar bu uzmanlarca ve aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-1).
+      iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi, girişimsel radyoloji işlemi yapan radyoloji, beyin ve sinir
+      cerrahisi ve nöroloji uzman hekimlerinden en az üçünün bulunduğu 1 yıl süreli sağlık kurulu raporuyla bu uzmanlarca
+      reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24 ay) sonunda sonraki raporlar bu uzmanlarca ve
+      aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-1).
 source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -4,6 +4,32 @@ Bu dosya, BILUN'un aktif SUT kaynağının hangi tebliği temel aldığını ve 
 
 ---
 
+## 2026-08-29 — Aktif SUT 2026.07.01 → 2026.08.29 (konsolide + kural korpusu)
+
+RG-29/08/2026-33355, yürürlük **05/09/2026**. Kaynak: `2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT`.
+
+### Ingest (PR #80)
+- Branch A katalogları + Branch B `sut_clauses.parquet` (8,388 clause).
+- Clause diff: **8,323 STABLE / 93 AMENDED / 2 NEW / 0 REMOVED**.
+- `ingest_state.json`: `last_ingested_date: 2026-08-29`.
+
+### Encoded-rule follow-through
+Track E hashed `gate_b_sources` fail-loud on amendment. Remapped 12 YAML cites + 5 `gate_b_wave_config.py` keys (similarity-matched to the new hash at the same coordinate).
+
+Substantive YAML updates:
+- **§4.1.4.c**: non-gyn topikal antifungaller dermatoloji-only; yeni jinekolojik antiinfektif/antiseptik kolu (KÜB pozoloji; 6 ay tüm hekimler, sonrası KHD).
+- **§4.2.1.C-3.a / C-5.a**: 3 DMARD × 3 ay önkoşulu mülga; anti-TNF + DAS28>5.1 kaldı. Yeni **C-3.d / C-5.d** grandfathering (05/09/2026 öncesi başlayanlar, devam şartları).
+- **§4.2.8.A.b**: rapor 6 ay, nörolojik hastalıklarda 1 yıl.
+- **§4.2.14.C**: KLL hash remap (monoterapi; nüks 4-kür / BCL2); nilotinib hash remap.
+- **§4.2.15.D-1/D-2**: kurula girişimsel radyoloji (+ D-1: beyin ve sinir cerrahisi).
+- **§4.2.38.(8)**: empagliflozin+linagliptin açıkça tip 2 diyabet.
+
+C* positional ids shifted with the re-extract (`clause_type_overrides.yaml` remapped; YAML `C*` `gate_b_sources` retargeted by clause_key). Stale 07-01 overrides had mis-tagged `4.2.9.A.(1)` as `prose`.
+
+Unencoded AMENDED coords (`2.4.2.B-1.(2)`, `4.1.4.(4)`, `4.2.14.B.(1)`, `4.2.15.D-1.(3)`) and synthetic cohort regen are out of scope.
+
+---
+
 ## 2026-06-22 — Aktif SUT 2026.04.08 → 2026.05.23 (konsolide replace)
 
 ### Yapılan

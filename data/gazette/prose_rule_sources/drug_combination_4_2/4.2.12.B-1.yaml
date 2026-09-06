@@ -15,4 +15,4 @@ rules:
       ödenir
     severity: error
   gate_b_sources:
-  - C004533
+  - C004543

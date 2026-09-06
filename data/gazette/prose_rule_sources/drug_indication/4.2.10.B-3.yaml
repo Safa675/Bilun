@@ -36,7 +36,7 @@ rules:
   message_tr: Fabry hastalığı tedavisi — metabolizma/endokrinoloji uzmanı dahil sağlık kurulu raporu (6 ay) ve uzman reçetesi
     gerekir (§4.2.10.B-3).
   gate_b_sources:
-  - C004343
+  - C004353
   - 4.2.10.B-3.(1)
   report_required: true
   report_specialties:

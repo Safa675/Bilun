@@ -74,7 +74,7 @@ rules:
       verilmeden önce uygulanan tedavi seans kontrolünde dikkate alınır
     severity: error
   gate_b_sources:
-  - C001443
+  - C001447
 - rule_id: 2.4.4.R.(5).inpatient_pulmoner_rehab_fee_for_service
   sut_section: 2.4.4.R
   condition:
