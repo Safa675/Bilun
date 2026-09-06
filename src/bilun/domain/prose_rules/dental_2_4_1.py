@@ -31,8 +31,6 @@ from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "dental_2_4_1.json"
 
-# Conditions that resolve against material-line fields.
-_MAPPABLE = {"material_name_any", "procedure_category", "procedure_category_any"}
 
 # Rule-specific boolean conditions surfaced on the material dict. None of these
 # are first-class fields on ``MaterialClaimLine`` today (they will land as the

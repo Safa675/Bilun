@@ -358,6 +358,14 @@ async def stream_chat_response_with_tools(
     tool_session = ToolSession()
     model = _get_model()
 
+    async def _execute_session_tool(tool_name: str, arguments: dict[str, Any]):
+        return await execute_tool_call(
+            tool_name,
+            arguments,
+            tool_session,
+            user_role=user_role,
+        )
+
     base_payload = {
         "model": model,
         "temperature": 0.4,
@@ -420,10 +428,9 @@ async def stream_chat_response_with_tools(
                 "tool_calls": tool_calls,
             })
             for tc in tool_calls[:3]:
-                result = await execute_tool_call(
+                result = await _execute_session_tool(
                     tc["function"]["name"],
                     json.loads(tc["function"]["arguments"]),
-                    tool_session,
                 )
                 full_messages.append({
                     "role": "tool",
@@ -458,10 +465,9 @@ async def stream_chat_response_with_tools(
                     "tool_call_id": tc.get("id", "unknown"),
                     "content": f"Error: invalid tool call arguments — {exc}",
                 }
-            result = await execute_tool_call(
+            result = await _execute_session_tool(
                 tool_name,
                 arguments,
-                tool_session,
             )
             return tc, {
                 "role": "tool",

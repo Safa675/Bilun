@@ -187,13 +187,3 @@ def get_price_history(
         result = df.filter(pl.col("package_code") == code).sort("effective_date")
 
     return result
-
-
-def list_available_dates(catalog: Literal["ek2b", "ek2c"] = "ek2b") -> list[str]:
-    """List all available effective dates in the catalog history."""
-    if catalog == "ek2b":
-        df = _load_ek2b_history()
-    else:
-        df = _load_ek2c_history()
-
-    return df["effective_date"].unique().sort().to_list()

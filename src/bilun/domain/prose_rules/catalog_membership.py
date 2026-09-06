@@ -39,9 +39,6 @@ _EK2A2_SNAPSHOT_PATH = _LATEST_SNAPSHOT_DIR / "EK-2A-2.parquet"
 _EK2A2_HEADER_SENTINEL = "İŞLEM KODU"
 
 # Raw EK-2/D-3 HBO (hiperbarik oksijen) indication list. The parquet carries
-# the indication name in column 0, the ICD-10 code in column 1 (``Unnamed: 1``),
-# initial sessions in column 2, and max sessions in column 3.
-_EK2D3_RAW_GLOB = "annex=EK-2D-3/**/*.parquet"
 _EK2D3_ICD10_HEADER = "ICD - 10 Tanı Kodları"
 
 # HBO indications that are time-critical EMERGENCIES (acute trauma/poisoning

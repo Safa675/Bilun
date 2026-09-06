@@ -38,8 +38,6 @@ _OPPORTUNITY_TYPE = "laterality_validation"
 _SUT_SECTION_ID = "2.4"
 
 # sagSol sentinels — Medula side indicator.
-_SAG_SOL_RIGHT = "1"   # Sağ (right)
-_SAG_SOL_LEFT = "2"    # Sol (left)
 _SAG_SOL_NONE = "3"    # Ayrım yok (no distinction)
 # "" → missing / not populated.
 
