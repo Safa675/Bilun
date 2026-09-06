@@ -1,6 +1,5 @@
 """
-2026-06 SUT algorithm fact-check audit — frozen rollup migrated from
-``docs/core-system/fact-check/MASTER.md``.
+2026-06 SUT algorithm fact-check audit — frozen rollup.
 
 The audit program is **closed**. This module is the canonical home for:
 - 28 audit unit verdicts (P0.* / L*.* IDs from the fact-check project)
