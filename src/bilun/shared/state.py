@@ -7,7 +7,6 @@ from pathlib import Path
 
 from src.bilun.shared.runtime import get_api_runtime
 from src.bilun.shared.memory import (
-    estimate_object_size_mb as _shared_estimate_object_size_mb,
     memory_snapshot_message as _shared_memory_snapshot_message,
     read_current_rss_mb as _shared_read_current_rss_mb,
 )
@@ -32,7 +31,6 @@ logger = logging.getLogger("bilun")
 
 _runtime = get_api_runtime()
 
-_cache_lock = _runtime.cache_lock
 _chat_rate_window = _runtime.chat_rate_window
 _chat_rate_lock = _runtime.chat_rate_lock
 
@@ -45,10 +43,6 @@ def set_pipeline_mode(mode: str) -> str:
     return _runtime.set_pipeline_mode(mode)
 
 
-def get_request_cache_db_path():
-    return _runtime.request_cache_db_path
-
-
 def _get_cache_con():
     return _runtime.get_cache_con()
 
@@ -56,10 +50,6 @@ def _get_cache_con():
 def _get_cache_reader():
     """Return a request-local reader handle for canonical cache queries."""
     return _runtime.get_cache_reader()
-
-
-def _get_request_cache_con():
-    return _runtime.get_request_cache_con()
 
 
 def _get_active_build_id_or_none(con=None, *, scope: str) -> str | None:
@@ -72,19 +62,6 @@ def _get_active_build_id_or_none(con=None, *, scope: str) -> str | None:
 def _read_current_rss_mb() -> float | None:
     """Backward-compatible wrapper around the shared RSS helper."""
     return _shared_read_current_rss_mb()
-
-
-def _log_rss(stage: str) -> None:
-    rss_mb = _read_current_rss_mb()
-    if rss_mb is None:
-        logger.info("%s | RSS unavailable", stage)
-    else:
-        logger.info("%s | RSS %.1f MB", stage, rss_mb)
-
-
-def _estimate_object_size_mb(obj) -> float | None:
-    """Best-effort object size estimate in MB via the shared observability helper."""
-    return _shared_estimate_object_size_mb(obj)
 
 
 def _memory_snapshot_message(

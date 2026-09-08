@@ -894,11 +894,6 @@ export async function listDeferrals(
   );
 }
 
-export interface SpecialtyMeta {
-  label: string;
-  name: string;
-}
-
 export async function getMaterialsBySpecialty(
   specialty?: string,
   options?: RequestInit,

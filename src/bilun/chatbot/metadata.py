@@ -7,8 +7,6 @@ from typing import Any
 
 import pandas as pd
 
-CHAT_CONTEXT_SCHEMA_VERSION = "2026-05-23"
-
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 _MANIFEST_PATH = _PROJECT_ROOT / "data" / "gazette" / "version_manifest.parquet"
 
@@ -69,28 +67,3 @@ def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]
             "audit_exposure",
         ],
     }
-
-
-def get_missing_context_blocks(
-    active_tab: str,
-    db_context: dict[str, Any] | None = None,
-    model_context: dict[str, Any] | None = None,
-    patient_id: str | None = None,
-) -> list[str]:
-    """Return optional context blocks that are unavailable for the given workspace tab."""
-    db_context = db_context or {}
-    tab = (active_tab or "").lower()
-    missing: list[str] = []
-
-    if "analytics" in tab or "optimizer" in tab:
-        if not any(
-            db_context.get(key)
-            for key in ("optimization_summary", "recovery_summary")
-        ):
-            missing.append("optimization_summary")
-
-    if "patient" in tab or "billing" in tab:
-        if patient_id and not db_context.get("patient_outcome"):
-            missing.append("patient_outcome")
-
-    return missing

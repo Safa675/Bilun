@@ -119,14 +119,6 @@ const api = {
   health: {
     healthy: "Sağlıklı",
   },
-  unknownViolation: "Bilinmeyen ihlal",
-  unknownReason: "Bilinmeyen neden",
-  unknownMethodology: "Yöntem detayları kullanılamıyor",
-  unknownProvenance: "Köken detayları kullanılamıyor",
-  unknownWarning: "Bilinmeyen tutarlılık uyarısı",
-  unknownHealth: "Sağlık detayları kullanılamıyor",
-  unknownApiText: "Detaylar kullanılamıyor",
-  noMessage: "—",
   paymentMethodKind: {
     drg_mandatory: "DRG — zorunlu paket",
     drg_overridable: "DRG — geçersiz kılınabilir",

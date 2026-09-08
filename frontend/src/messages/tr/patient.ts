@@ -28,13 +28,6 @@ const patient = {
     "billCount": "Fatura sayısı",
     "overallPriority": "Genel öncelik"
   },
-  "claimSelector": {
-    "label": "Fatura / Talep",
-    "allClaims": "Tüm talepler",
-    "claimCount": "{count}",
-    "claimSingular": " talep",
-    "claimPlural": " talep"
-  },
   "billingGroups": {
     "overview": "Finansal özet",
     "overviewDescription": "Aktif kapsam için özet KPI'lar ve önerilen işlemler."
@@ -43,7 +36,6 @@ const patient = {
     "label": "Faturalar",
     "allBills": "Tüm faturalar (özet)",
     "recoverable": "kurtarılabilir",
-    "billed": "faturalanan",
     "claimSingular": " fatura",
     "claimPlural": " fatura",
     "billMeta": "{claimType} · {amount}"
@@ -68,23 +60,16 @@ const patient = {
   },
   "claimDetail": {
     "loading": "Talep detayları yükleniyor…",
-    "eyebrow": "Seçili talep",
     "period": "Dönem",
     "totalBilled": "Toplam faturalanan",
     "totalPayable": "Beklenen ödenecek",
-    "lines": "Kalem",
-    "proceduresTitle": "Tedavi işlemleri",
-    "materialsTitle": "Malzemeler",
-    "drugsTitle": "İlaçlar",
     "noProcedures": "Bu talepte tedavi işlemi kalemi yok.",
     "noMaterials": "Bu talepte malzeme kalemi yok.",
     "noDrugs": "Bu talepte ilaç kalemi yok.",
     "date": "Tarih",
     "code": "Kod",
     "name": "Ad",
-    "quantity": "Adet",
-    "billed": "Faturalanan",
-    "payable": "Ödenecek"
+    "quantity": "Adet"
   },
   "workspace": {
     "eyebrow": "SUT hasta çalışma alanı",
@@ -98,7 +83,6 @@ const patient = {
     "primaryFocus": "Birincil odak",
     "focusCopay": "Katılım payı muafiyeti",
     "focusExactness": "Kesinlik incelemesi",
-    "consistencyEyebrow": "Tutarlılık notu",
     "clinicalSnapshotEyebrow": "Klinik ve kural özeti",
     "clinicalSnapshotDescription": "Bu hasta için tanı temelli SUT kural bulguları. Talep kapsamlı optimizasyon için aşağıdan bir fatura seçin.",
     "optimizationTitle": "Optimizasyon özeti",

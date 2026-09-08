@@ -25,12 +25,6 @@ FROM build_pointer_scopes
 WHERE scope = ?
 """
 
-SQL_SELECT_ROW_COUNTS_JSON = """
-SELECT row_counts_json
-FROM build_meta
-WHERE build_id = ?
-"""
-
 
 def normalize_build_scope(scope: str | None) -> str:
     normalized = str(scope or BILUN_BUILD_SCOPE).strip().lower()
@@ -52,6 +46,5 @@ __all__ = [
     "SUPPORTED_BUILD_SCOPES",
     "SQL_SELECT_ACTIVE_BUILD_ID",
     "SQL_SELECT_BUILD_SCOPE_STATUS",
-    "SQL_SELECT_ROW_COUNTS_JSON",
     "normalize_build_scope",
 ]

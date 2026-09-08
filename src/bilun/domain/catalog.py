@@ -274,25 +274,6 @@ def get_katsayi() -> float:
     return resolve_current_katsayi()
 
 
-def get_ek2c_group_price_ranges(
-    visit_date: Any | None = None,
-) -> dict[str, tuple[float, float]]:
-    """
-    Get (min, max) price ranges per EK-2C procedure group.
-
-    Returns:
-        Dict mapping group name -> (min_price, max_price).
-    """
-    catalog = load_sut_catalog(visit_date=visit_date)
-    group_stats = catalog["ek2c"].get("group_stats", {})
-
-    result: dict[str, tuple[float, float]] = {}
-    for grp, stats in group_stats.items():
-        result[grp] = (stats["price_min"], stats["price_max"])
-
-    return result
-
-
 def get_ek2a_visit_prices() -> dict[str, Any]:
     """Get EK-2A outpatient visit pricing data (cached)."""
     return get_cached_ek2a()

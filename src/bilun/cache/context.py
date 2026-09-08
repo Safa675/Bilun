@@ -13,10 +13,7 @@ from src.bilun.cache.patient_slice import (
     _build_diagnoses_by_pid,
     _partition_by_patient,
 )
-from src.bilun.cache.sut_context import (
-    assemble_sut_context,
-    build_sut_patient_alerts_cache,
-)
+from src.bilun.cache.sut_context import assemble_sut_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.domain.claims import (
     SUTDataSourceConfig,
@@ -44,20 +41,6 @@ def _log_memory_snapshot(stage: str, **objects: Any) -> None:
             objects=objects,
             max_objects=6,
         )
-    )
-
-
-def _build_sut_patient_alerts_cache(
-    patient_ids: list[str],
-    diagnoses_by_pid: dict[str, list[str]],
-) -> dict[str, Any]:
-    """Compatibility wrapper with module-level dependency injection hooks."""
-    return build_sut_patient_alerts_cache(
-        patient_ids,
-        diagnoses_by_pid,
-        evaluate_copay_exemption_fn=evaluate_copay_exemption,
-        analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
-        analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
     )
 
 

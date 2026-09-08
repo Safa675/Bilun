@@ -113,19 +113,6 @@ def _patient_alert_summary_exact(summary: dict[str, object], category: str) -> b
     return True
 
 
-def _sanitize_patient_alert_rows(
-    category: str,
-    patients: list[dict[str, object]],
-) -> list[dict[str, object]]:
-    if category == "surcharge":
-        unavailable = unavailable_patient_alert_surcharge()
-        return [{**patient, "surcharge_exposure": unavailable} for patient in patients]
-    if category == "copay_rates":
-        unavailable = unavailable_patient_alert_copay_rate()
-        return [{**patient, "copay_rate_exposure": unavailable} for patient in patients]
-    return patients
-
-
 def _attach_exactness_or_unavailable(
     payload: dict[str, object],
     unavailable: dict[str, object],

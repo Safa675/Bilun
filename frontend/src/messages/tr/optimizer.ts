@@ -58,7 +58,6 @@ const optimizer = {
     noPatientsMatchFilter: "Bu filtreyle eşleşen hasta yok.",
     noBillingData: "Fatura verisi mevcut değil.",
     noBillingDataInFilter: "Mevcut filtrede fatura verisi olan hasta yok.",
-    noMatchingQuery: "Mevcut sorgu için eşleşen hasta yok.",
   },
   loading: {
     revenueRecovery: "Gelir geri kazanım verisi yükleniyor…",
@@ -74,7 +73,6 @@ const optimizer = {
     topPatientsDefault: "En yüksek etkili ilk 10 hasta",
     topPatientsFiltered: "Dilimdeki en yüksek etkili hastalar",
     drgUnbundlingRisk: "DRG paket ayrıştırma riski",
-    drugDiscountAudit: "İlaç indirimi denetimi (EK-4A)",
   },
   methodology: {
     gazetteData: "%100 Tebliğ Verisi",
@@ -92,8 +90,6 @@ const optimizer = {
       "Tek bir fatura birden fazla muafiyet gerekçesini karşılayabilir; bu nedenle kategori toplamları muaf fatura sayısından fazla olabilir. Kronik hastalık muafiyeti hasta özelliği olduğundan, etkilenen hastanın her faturasına uygulanır.",
     surchargeExact:
       "Aktif SUT çalışma zamanı girdilerinden kesin tarihli işlem talep satırları ve açık fark ücreti kural bayrakları kullanılır.",
-    copayRateExact:
-      "§2.2 EK-2C-1 listesindeki işlemler için kesin tarihli talep satırları kullanılır; örtük katılım payı oranı (100 − SGK payı) tebliğdeki oranla karşılaştırılır (§1.8 genel katılım payı değil).",
     revenuePartialExact:
       "Gelir geri kazanımında kesin kategori düzeyinde bulgular var; ancak bazı fatura bölümleri hâlâ kesin girdi gerektirdiği için toplam tutarlar karışık.",
     revenueUnavailable:
@@ -111,13 +107,9 @@ const optimizer = {
     badge: "Kullanılamıyor",
     surchargeCompliance:
       "SUT talep girdilerinde kesin faturalandırılmış işlem kodları ve işlem tarihleri olmadan fark ücreti uyumu kullanılamaz.",
-    copayRateCompliance:
-      "SUT talep girdilerinde kesin faturalandırılmış işlem kodları ve işlem tarihleri olmadan EK-2C-1 katılım payı oranı uyumu kullanılamaz.",
     exactProcedureCodesRequired: "Kesin işlem kodları gerekli",
     drgUnbundling:
       "SUT talep girdilerinde kesin kalemlendirilmiş faturalandırılmış işlem satırları ve paket uygunluk bağlamı olmadan DRG paket ayrıştırma riski kullanılamaz.",
-    drugDiscount:
-      "SUT talep girdilerinde kesin reçetelenmiş ilaç talep satırları ve faturalanan ilaç tutarları olmadan ilaç indirimi doğrulaması kullanılamaz.",
   },
   kpis: {
     totalPatients: "Toplam Hasta",
@@ -139,10 +131,8 @@ const optimizer = {
     clearPatients: "Temiz Hastalar",
     needExactClaimLines: "Kesin talep satırları gerekli",
     noSurchargeFlags: "Fark ücreti bayrağı yok",
-    noCopayRateFlags: "EK-2C-1 işlemi yok",
     patientsFlagged: "İşaretli Hastalar",
     noExactSurchargeFindings: "Henüz kesin fark ücreti bulgusu yok",
-    noExactRateFindings: "Henüz kesin oran bulgusu yok",
     exactClaimLineFindings: "Kesin talep satırı bulguları",
     totalFlags: "Toplam Bayrak",
     countsResumeAfterInputs: "Kesin girdiler gelince sayılar devam eder",
@@ -150,13 +140,8 @@ const optimizer = {
     ruleCalculatedTotal: "Kural hesaplı toplam",
     partialRuleCalculatedTotal: "Kısmi kural hesaplı toplam",
     labSavings: "Laboratuvar Tasarrufu",
-    drugSavings: "İlaç Tasarrufu",
     copaySavings: "Muafiyet farkı (düzeltici)",
     strategySavings: "Strateji Tasarrufu",
-    sessionUplift: "Seans artışı",
-    drgUplift: "DRG artışı",
-    bloodUplift: "Kan artışı",
-    auditExposure: "Denetim riski",
     patientsWithActions: "Eylemli Hastalar",
     optionalOverridePatients: "İsteğe bağlı yöntem hastaları",
     drgUpliftPatients: "DRG artışı hastaları",
@@ -178,19 +163,6 @@ const optimizer = {
     riskyChapters: "Riskli Bölümler",
     requiresDatedPackageContext: "Tarihli paket bağlamı gerekir",
     icd10ChaptersWithRepeatedRisk: "Tekrarlayan riskli ICD-10 bölümleri",
-    uniqueDrugCodes: "Benzersiz İlaç Kodları",
-    catalogOnlyUntilClaimLines: "Talep satırları gelene kadar yalnızca katalog referansı",
-    distinctEk4aCodes: "Taleplerdeki farklı EK-4A kodları",
-    drugClaimLines: "İlaç Talep Satırları",
-    dispensedLineItemsRequired: "Reçetelenmiş kalem satırları gerekli",
-    dispensedLinesValidated: "Reçetelenmiş satırlar doğrulandı",
-    tierMismatches: "Kademe Uyuşmazlıkları",
-    actualClaimAmountsRequired: "Gerçek talep tutarları gerekli",
-    payableVsTierExpectation: "Ödenecek tutar – kademe beklentisi",
-    discountSavings: "İndirim Tasarrufu",
-    exactClaimInputsRequired: "Kesin talep girdileri gerekli",
-    billedMinusExpectedPayable:
-      "Faturalanan eksi beklenen ödenecek (EK-1A muaf reçete katkı payı hariç — katkı payı tasarrufuna bakın)",
   },
   complianceIndex: {
     findings: "Bulgular",
@@ -236,18 +208,10 @@ const optimizer = {
     ek1aDx: "EK-1A tanı",
     topEk1aDiagnosis: "En üst EK-1A tanısı",
     recommendedAction: "Önerilen Eylem",
-    noSurchargeRules: "Farksız Kurallar",
-    topProcedure: "En Üst İşlem",
     procedureCode: "İşlem Kodu",
     procedureName: "İşlem Adı",
     regulatorySource: "Kaynak",
-    sutSection: "SUT",
-    billedRate: "Gözlemlenen katılım payı oranı",
-    mandatedRate: "Tebliğdeki oran",
     surchargeProcedureDetails: "Farksız işlemler (EK-2G)",
-    copayRateProcedureDetails: "EK-2C-1 listedeki işlemler",
-    rateCappedProcs: "EK-2C-1 İşlemleri",
-    meanRate: "Ortalama Oran",
     ruleCalculated: "Kural hesaplı",
     priority: "Öncelik",
     actions: "Eylemler",

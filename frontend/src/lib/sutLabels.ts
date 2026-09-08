@@ -140,5 +140,3 @@ export function getSutDomainLabel(value: string | null | undefined): string {
 export const SUT_ALERT_BADGE_LABELS = enMessages.labels.sut.alertBadge;
 export const SUT_ACTION_LABELS = enMessages.labels.sut.action;
 export const SUT_RISK_BUCKET_LABELS = enMessages.labels.sut.riskBucket;
-export const SUT_RISK_TIER_LABELS = enMessages.labels.sut.riskTier;
-export const SUT_SEVERITY_LABELS = enMessages.labels.sut.severity;

@@ -3,35 +3,6 @@ import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRY2Fixture } from "@/test/fmtMoney";
 import type { BillingActionReport } from "@/lib/domains/sut";
 
-vi.mock("next/link", () => ({
-  default: ({ children }: { children: unknown }) => children,
-}));
-
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ id: "P-001" }),
-  useRouter: () => ({ push: vi.fn() }),
-}));
-
-vi.mock("@/components/ui/PatientSearch", () => ({
-  default: () => null,
-}));
-
-vi.mock("@/components/chat/SutInlineAIPanel", () => ({
-  default: () => null,
-  SUT_INLINE_CHAT_PANEL_WIDTH: 380,
-}));
-
-vi.mock("@/stores/index", () => ({
-  useAiDockPosition: () => "center",
-  useSetAiDockPosition: () => vi.fn(),
-  useSutChatSession: () => ({ messages: [], autoText: "", autoFiredKey: "", briefedContextKeys: [] }),
-  useSetSutChatSession: () => vi.fn(),
-}));
-
-vi.mock("@/components/skeletons/SutSkeletons", () => ({
-  SutBillingReportSkeleton: () => null,
-}));
-
 vi.mock("@/lib/constants", () => ({
   buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
   buildSutHomeHref: () => "/?tab=compliance",

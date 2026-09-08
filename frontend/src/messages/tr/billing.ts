@@ -30,7 +30,6 @@ const billing = {
   },
   "recommendedActions": {
     "listTitle": "Önerilen işlemler — kalem kalem",
-    "empty": "Bu kapsamda sayılan önerilen işlem yok.",
     "surface": "Yüzey",
     "claim": "Talep",
     "section": "SUT",
@@ -97,23 +96,10 @@ const billing = {
     "flag": "Bayrak",
     "savings": "Tasarruf"
   },
-  "drug": {
-    "title": "İlaç optimizasyonu",
-    "unavailable": "İlaç optimizasyon tasarrufları kesin dağıtılmış ilaç talep satırları ve faturalandırılmış ilaç tutarları gerektirir.",
-    "drug": "İlaç",
-    "issue": "Sorun",
-    "alternative": "Alternatif",
-    "savings": "Tasarruf",
-    "tierCorrection": "Kademe düzeltmesi",
-    "tierCorrectionSameDrug": "Aynı ilaçta kademe düzeltmesi",
-    "heuristicInsight": "Katalog içgörüsü",
-    "heuristicFootnote": "Eşdeğer ve pasifleştirilmiş ilaç satırları yalnızca EK-4A katalog içgörüsüdür — kesin dağıtılmış ilaç talep satırları olmadan tasarruf iddia edilmez."
-  },
   "copay": {
     "title": "Katılım payı muafiyeti incelemesi",
     "unavailable": "Hem ziyaret hem reçete talep girdileri kesin olana kadar muafiyet farkı tutarları kullanılamaz.",
     "exempt": "Muaf",
-    "notExempt": "Muaf değil",
     "medulaActionChip": "MEDULA: katilimPayindanMuaf=E",
     "visitSavings": "İşlem muafiyet farkı",
     "rxSavings": "Reçete muafiyet farkı",
@@ -227,7 +213,6 @@ const billing = {
     "amendedPrice": "Tebliğ sonrası liste",
     "payablePerUnit": "Fatura ödenebilir/birim",
     "repricingDelta": "Liste farkı (bilgi)",
-    "sutSection": "SUT bölümü",
     "note": "Not"
   },
   "packageAdequacyReview": {
@@ -242,7 +227,6 @@ const billing = {
     "currentPrice": "Mevcut paket fiyatı",
     "candidatePrice": "Aday liste fiyatı",
     "reviewDelta": "Katalog fiyat farkı",
-    "sutSection": "SUT bölümü",
     "note": "Not"
   },
   "procedureCaptureGap": {
@@ -256,7 +240,6 @@ const billing = {
     "listPrice": "Katalog liste fiyatı",
     "actualBilled": "Fatura tutarı",
     "gap": "Yakalama boşluğu",
-    "sutSection": "SUT bölümü",
     "note": "Not"
   },
   "procedureAddonUplift": {
@@ -330,7 +313,6 @@ const billing = {
     "title": "Seans fiyatlandırma artışı",
     "scopeFootnote": "Fatura tutarları ve SUT puan oranlarından kural hesaplı (aynı hizmet tarihi). Klinik seans/kesi sınırları doğrulanmamıştır — grafik incelemesi satırları SGK artışı başlığına dahil edilmez.",
     "reviewBadge": "Grafik incelemesi",
-    "confirmedTotal": "Onaylı SGK artışı",
     "reviewTotal": "Grafik incelemesi bekleyen",
     "unavailable": "Seans fiyatlandırma artışı için aynı seanstaki kesin işlem satırları gerekir.",
     "claim": "Talep",
@@ -348,8 +330,6 @@ const billing = {
     "claim": "Talep",
     "recommendation": "Öneri",
     "chapter": "Bölüm",
-    "group": "Grup",
-    "strategy": "Strateji",
     "packageTotal": "Paket toplamı",
     "itemizedTotal": "Kalem toplamı",
     "savings": "Tasarruf",
@@ -372,11 +352,7 @@ const billing = {
     "statusReview": "İncele",
     "correctiveSavings": "Düzeltici tasarruf",
     "optionalSavings": "Alternatif yöntem farkı",
-    "complianceViolations": "Ödeme yöntemi uyum sorunları",
-    "procedure": "İşlem",
-    "mandatedMethod": "Zorunlu yöntem",
-    "catalogAsOf": "EK-2B/EK-2C katalog üyeliği {date} tarihi itibarıyla (hizmet tarihi).",
-    "packagePriceHeuristic": "Paket toplamı bölüm DRG medyan tahmini kullanır — talep EK-2/C kod fiyatı değil."
+    "catalogAsOf": "EK-2B/EK-2C katalog üyeliği {date} tarihi itibarıyla (hizmet tarihi)."
   },
   "materials": {
     "title": "Malzeme ön kontrolü",
@@ -387,7 +363,6 @@ const billing = {
     "miatIntervalViolations": "MIAT aralığı — önceki kullanım çok yakın",
     "lastUse": "Son kullanım",
     "bundledSeparate": "Pakete dahil — ayrı faturalandırılmış",
-    "scopeNotice": "Satırlar EK-3B-1 ekinden (54 kalem) veya daha geniş fatura/paket işaretinden gelebilir — satır notuna bakın. SUT §3.1–3.2 tam metin kuralları değil.",
     "advisoryFootnote": "Bu işaretler yalnızca MEDULA öncesi uyumluluk kontrolleridir. SGK ödemesini garanti etmezler.",
     "proseBundling": "§3.1 metin paketleme (kısmi motor)",
     "specialtyProse": "§3.3 uzmanlık eki metin (L4.4)",
@@ -415,18 +390,15 @@ const billing = {
     "cappedProcedures": "{count} tavanlı işlem",
     "noRateCaps": "Oran tavanı uygulanmıyor",
     "drgEyebrow": "DRG ayrıştırma riski",
-    "potentialSavings": "Talep destekli kurtarılabilir: {amount}",
     "recoverableSavings": "Talep destekli kurtarılabilir: {amount}",
     "surchargeUnavailable": "Fark ücreti uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "copayRateUnavailable": "EK-2C-1 katılım payı oranı uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir.",
-    "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}",
-    "recoverableFootnote": "Kurtarılabilir toplamlar yalnızca talep destekli Kurum ödemesi artışını içerir — sezgisel tahminler veya klinik inceleme bayrakları değil."
+    "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
   },
   "views": {
     "tabListAria": "Fatura inceleme görünümleri",
     "compliance": {
-      "title": "Uyumluluk & Red Önleme",
       "shortTitle": "Uyumluluk",
       "description": "SGK kesinti, red ve usulsüzlük riski taşıyan kalemlerin fatura öncesi ayıklanması.",
       "kpiRisk": "Toplam denetim riski",
@@ -434,14 +406,12 @@ const billing = {
       "kpiBilledAtRisk": "Riskli faturalanan tutar"
     },
     "revenue": {
-      "title": "Gelir Optimizasyonu & Hak Kazanım",
       "shortTitle": "Gelir Dashboard",
       "description": "Hastanenin yasal olarak hak ettiği ama faturaya yansıtmadığı gelirler.",
       "kpiRecoverable": "Kurtarılabilir SGK artışı",
       "kpiOpportunities": "Gelir fırsatı"
     },
     "audit": {
-      "title": "Gönderim Öncesi Evrak & İnceleme",
       "shortTitle": "Evrak",
       "description": "SGK Fatura İnceleme Komisyonu'nun aradığı evrakların gönderim öncesi kontrolü.",
       "kpiChecklist": "Kontrol maddesi",

@@ -20,11 +20,6 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _startup_ready: bool | None = None
 
 
-def get_startup_ready() -> bool | None:
-    """Return the startup readiness flag (``None`` if startup never ran)."""
-    return _startup_ready
-
-
 def is_cache_ready() -> bool:
     """True only when startup completed and left a usable active build."""
     return _startup_ready is True

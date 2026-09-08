@@ -78,20 +78,6 @@ def token_bound_substring_match(needle: str, haystack: str) -> bool:
     return all(tok in haystack_tokens for tok in needle_tokens)
 
 
-def turkish_upper(text: str) -> str:
-    """Uppercase a string using Turkish locale rules.
-
-    Replacements run before .upper() so that:
-      "i" -> "İ" (dotted capital I, not ASCII "I")
-      "ı" -> "I" (ASCII capital I, not "İ")
-    Then .upper() handles all remaining characters.
-
-    Note: "İ".upper() == "İ" in Python, so the pre-replacement
-    survives the final .upper() call — this is intentional, not accidental.
-    """
-    return text.replace("i", "\u0130").replace("\u0131", "I").upper()
-
-
 def fuzzy_match_name(
     needle_lower: str,
     candidates: list[tuple[str, Any]],

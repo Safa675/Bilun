@@ -14,10 +14,6 @@ from src.bilun.db import (
     get_active_build_id,
     init_schema as init_cache_schema,
 )
-from src.bilun.db.request_cache import (
-    connect as connect_request_cache_db,
-    init_schema as init_request_cache_schema,
-)
 
 
 logger = logging.getLogger("bilun")
@@ -32,11 +28,9 @@ class BilunRuntimeState:
     pipeline_mode: str
     testing: bool
     canonical_cache_db_path: Path
-    request_cache_db_path: Path
 
     cache_con: Any | None = None
     cache_lock: Lock = field(default_factory=Lock)
-    request_cache_con: Any | None = None
     correlation_cache: Any | None = None
 
     chat_rate_window: dict[str, list[float]] = field(default_factory=dict)
@@ -73,17 +67,6 @@ class BilunRuntimeState:
         """
         return self.get_cache_con().cursor()
 
-    def get_request_cache_con(self):
-        if self.request_cache_con is not None:
-            return self.request_cache_con
-        with self.cache_lock:
-            if self.request_cache_con is None:
-                self.request_cache_con = connect_request_cache_db(
-                    self.request_cache_db_path
-                )
-                init_request_cache_schema(self.request_cache_con)
-        return self.request_cache_con
-
     def get_active_build_id_or_none(
         self,
         con=None,
@@ -113,12 +96,6 @@ def _build_default_runtime() -> BilunRuntimeState:
             os.getenv(
                 "BILUN_CACHE_DB_PATH",
                 str(PROJECT_ROOT / ".cache" / "bilun.duckdb"),
-            )
-        ),
-        request_cache_db_path=Path(
-            os.getenv(
-                "BILUN_REQUEST_CACHE_DB_PATH",
-                str(PROJECT_ROOT / ".cache" / "bilun_request_cache.duckdb"),
             )
         ),
     )

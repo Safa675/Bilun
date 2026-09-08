@@ -57,7 +57,6 @@ const optimizer = {
     noPatientsMatchFilter: "No patients match this filter.",
     noBillingData: "No billing data available.",
     noBillingDataInFilter: "No patients in the current filter have billing data.",
-    noMatchingQuery: "No matching patients for the current query.",
   },
   loading: {
     revenueRecovery: "Loading revenue recovery data...",
@@ -73,7 +72,6 @@ const optimizer = {
     topPatientsDefault: "Top-10 Highest-Impact Patients",
     topPatientsFiltered: "Highest-Impact Patients in Slice",
     drgUnbundlingRisk: "DRG Unbundling Risk",
-    drugDiscountAudit: "Drug Discount Audit (EK-4A)",
   },
   methodology: {
     gazetteData: "100% Gazette Data",
@@ -91,8 +89,6 @@ const optimizer = {
       "A single bill can satisfy multiple exemption grounds, so category totals may exceed the number of exempt bills. Chronic-disease exemption is a patient property, so it applies to every bill of an affected patient.",
     surchargeExact:
       "Uses exact dated procedure claim lines and explicit surcharge rule flags from the active SUT runtime inputs.",
-    copayRateExact:
-      "Uses exact dated claim lines for EK-2C-1 listed procedures (§2.2); compares implied copay % (100 − SGK payable/billed) to the gazette mandated rate — not §1.8 general copay.",
     revenuePartialExact:
       "Revenue recovery contains exact category-level findings, but aggregate totals are mixed because some billing sections still require exact inputs.",
     revenueUnavailable:
@@ -110,13 +106,9 @@ const optimizer = {
     badge: "Unavailable",
     surchargeCompliance:
       "Surcharge compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
-    copayRateCompliance:
-      "EK-2C-1 copay rate compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
     exactProcedureCodesRequired: "Exact procedure codes required",
     drgUnbundling:
       "DRG unbundling risk is unavailable until exact itemized billed procedure lines and package eligibility context are present in the SUT claim inputs.",
-    drugDiscount:
-      "Drug discount validation is unavailable until exact dispensed-drug claim lines and billed drug amounts are present in the SUT claim inputs.",
   },
   kpis: {
     totalPatients: "Total Patients",
@@ -138,10 +130,8 @@ const optimizer = {
     clearPatients: "Clear Patients",
     needExactClaimLines: "Need exact claim lines",
     noSurchargeFlags: "No surcharge flags",
-    noCopayRateFlags: "No EK-2C-1 procedures",
     patientsFlagged: "Patients Flagged",
     noExactSurchargeFindings: "No exact surcharge findings yet",
-    noExactRateFindings: "No exact rate findings yet",
     exactClaimLineFindings: "Exact claim-line findings",
     totalFlags: "Total Flags",
     countsResumeAfterInputs: "Counts resume after exact inputs land",
@@ -149,13 +139,8 @@ const optimizer = {
     ruleCalculatedTotal: "Rule-calculated total",
     partialRuleCalculatedTotal: "Partial rule-calculated total",
     labSavings: "Lab Savings",
-    drugSavings: "Drug Savings",
     copaySavings: "Exemption gap (corrective)",
     strategySavings: "Strategy Savings",
-    sessionUplift: "Session Uplift",
-    drgUplift: "DRG uplift",
-    bloodUplift: "Blood uplift",
-    auditExposure: "Audit Exposure",
     patientsWithActions: "Patients with Actions",
     optionalOverridePatients: "Optional override patients",
     drgUpliftPatients: "DRG uplift patients",
@@ -177,19 +162,6 @@ const optimizer = {
     riskyChapters: "Risky Chapters",
     requiresDatedPackageContext: "Requires dated package context",
     icd10ChaptersWithRepeatedRisk: "ICD-10 chapters with repeated risk",
-    uniqueDrugCodes: "Unique Drug Codes",
-    catalogOnlyUntilClaimLines: "Catalog-only reference until claim lines land",
-    distinctEk4aCodes: "Distinct EK-4A codes in claims",
-    drugClaimLines: "Drug Claim Lines",
-    dispensedLineItemsRequired: "Dispensed line items required",
-    dispensedLinesValidated: "Dispensed lines validated",
-    tierMismatches: "Tier Mismatches",
-    actualClaimAmountsRequired: "Actual claim amounts required",
-    payableVsTierExpectation: "Payable vs tier expectation",
-    discountSavings: "Discount Savings",
-    exactClaimInputsRequired: "Exact claim inputs required",
-    billedMinusExpectedPayable:
-      "Billed minus expected payable (excludes EK-1A-exempt Rx copay — see copay savings)",
   },
   complianceIndex: {
     findings: "Findings",
@@ -235,18 +207,10 @@ const optimizer = {
     ek1aDx: "EK-1A dx",
     topEk1aDiagnosis: "Top EK-1A diagnosis",
     recommendedAction: "Recommended Action",
-    noSurchargeRules: "No-Surcharge Rules",
-    topProcedure: "Top Procedure",
     procedureCode: "Procedure Code",
     procedureName: "Procedure Name",
     regulatorySource: "Source",
-    sutSection: "SUT",
-    billedRate: "Observed copay rate",
-    mandatedRate: "Gazette mandated rate",
     surchargeProcedureDetails: "No-surcharge procedures (EK-2G)",
-    copayRateProcedureDetails: "EK-2C-1 listed procedures",
-    rateCappedProcs: "EK-2C-1 Procs",
-    meanRate: "Mean Rate",
     ruleCalculated: "Rule-calculated",
     priority: "Priority",
     actions: "Actions",

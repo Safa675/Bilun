@@ -68,12 +68,6 @@ def procedure_implied_copay_rate_pct(line: ProcedureClaimLine) -> Decimal:
     )
 
 
-def procedure_rate_pct(line: ProcedureClaimLine) -> Decimal:
-    """Backward-compatible alias for SGK payable share percentage."""
-
-    return procedure_sgk_share_pct(line)
-
-
 def copay_rate_evaluable_line(line: ProcedureClaimLine) -> bool:
     """EK-2C-1 rate/flag checks apply only to billable, non-package lines."""
 

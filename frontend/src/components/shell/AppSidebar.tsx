@@ -3,19 +3,12 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
 import {
-  BookOpen,
-  CircleDollarSign,
   CircleHelp,
-  ClipboardList,
-  Database,
   LogOut,
   MessageSquareWarning,
   PanelLeft,
   PanelLeftClose,
-  ShieldCheck,
-  Users,
 } from "lucide-react";
 import BilunWordmark from "@/components/brand/BilunWordmark";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
@@ -43,6 +36,7 @@ import {
   sidebarWidthPx,
   writeSidebarCollapsed,
 } from "@/lib/shellSidebar";
+import { MAIN_SECTION_ICONS, tabMessageKey } from "@/lib/workspaceSubtabs";
 
 interface AppSidebarProps {
   /** Optional override; defaults to wiring the global `showHowItWorks` store. */
@@ -50,24 +44,9 @@ interface AppSidebarProps {
   className?: string;
 }
 
-export const TAB_ICONS: Record<SutHomeTab, LucideIcon> = {
-  patients: Users,
-  compliance: ShieldCheck,
-  revenue: CircleDollarSign,
-  operations: ClipboardList,
-  "reference-tools": BookOpen,
-  "rule-database": Database,
-};
-
 function useActiveHomeTab(): SutHomeTab {
   const searchParams = useSearchParams();
   return parseSutHomeTab(searchParams.get("tab"));
-}
-
-export function tabMessageKey(tabId: SutHomeTab): string {
-  if (tabId === "reference-tools") return "referenceTools";
-  if (tabId === "rule-database") return "ruleDatabase";
-  return tabId;
 }
 
 export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarProps) {
@@ -264,7 +243,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
         {visibleTabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const key = tabMessageKey(tab.id);
-          const Icon = TAB_ICONS[tab.id];
+          const Icon = MAIN_SECTION_ICONS[tab.id];
           const label = t(`constants.homeTabs.${key}.label`);
           const subtitle = t(`constants.homeTabs.${key}.subtitle`);
           return (
