@@ -16,10 +16,6 @@ const chat = {
     you: "You",
     bilun: "Bilun",
   },
-  approve: {
-    approved: "Approved",
-    approve: "Approve",
-  },
   loading: {
     analyzing: "Bilun is analyzing...",
     thinking: "Thinking",

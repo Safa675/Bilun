@@ -164,10 +164,6 @@ OPTIONAL_CLAIM_TABLES: tuple[ParquetTableSpec, ...] = (
     MEDULA_REJECTION_EVENTS,
 )
 
-CLAIM_PARQUET_TABLES: tuple[ParquetTableSpec, ...] = (
-    *REQUIRED_CLAIM_TABLES,
-    *OPTIONAL_CLAIM_TABLES,
-)
 
 REQUIRED_CLAIM_COLUMNS: dict[str, set[str]] = {
     spec.filename: set(spec.required_columns) for spec in REQUIRED_CLAIM_TABLES

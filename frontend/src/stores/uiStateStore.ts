@@ -1,9 +1,6 @@
 import { createStore } from "zustand";
 import type { StoreApi } from "zustand";
-import {
-  EMPTY_SUT_INLINE_CHAT_STATE,
-  type UIStateStore,
-} from "./storeInterfaces";
+import type { UIStateStore } from "./storeInterfaces";
 
 export function createUIStateStore(): StoreApi<UIStateStore> {
   return createStore<UIStateStore>((set, get) => ({
@@ -30,11 +27,4 @@ export function createUIStateStore(): StoreApi<UIStateStore> {
       set({ sutChatSessions: nextSessions });
     },
   }));
-}
-
-export function getDefaultSutChatState() {
-  return {
-    ...EMPTY_SUT_INLINE_CHAT_STATE,
-    messages: [...EMPTY_SUT_INLINE_CHAT_STATE.messages],
-  };
 }

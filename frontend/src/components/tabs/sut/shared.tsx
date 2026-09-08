@@ -1,28 +1,12 @@
 import { theme } from "@/lib/theme";
-import { ACCENT } from "@/lib/constants";
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { translateMethodology } from "@/lib/apiMessages";
 import { getSutDomainLabel, getSutPriorityLabel, getSutRiskTierLabel } from "../../../lib/sutLabels";
-import { fmtNum as fmtNumLocale, fmtNumber, fmtPct as fmtPctLocale, fmtTRY as fmtTRYLocale, fmtTRY2 as fmtTRYLocale2 } from "@/lib/i18n/formatters";
+import { fmtNum as fmtNumLocale, fmtPct as fmtPctLocale, fmtTRY as fmtTRYLocale, fmtTRY2 as fmtTRYLocale2 } from "@/lib/i18n/formatters";
 import { translate } from "@/lib/i18n/translate";
 import enMessages from "@/messages/en/index";
 import trMessages from "@/messages/tr/index";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
-
-const FACILITY_TIER_OPTIONS = [
-  { value: "1_basamak", key: "1Basamak" },
-  { value: "2_basamak_resmi", key: "2BasamakResmi" },
-  { value: "3_basamak_resmi", key: "3BasamakResmi" },
-  { value: "egitim_arastirma", key: "egitimArastirma" },
-  { value: "universite_devlet", key: "universiteDevlet" },
-  { value: "universite_vakif", key: "universiteVakif" },
-  { value: "2_3_basamak_ozel", key: "2_3BasamakOzel" },
-] as const;
-
-const PATIENT_CATEGORY_OPTIONS = [
-  { value: "diger", key: "diger" },
-  { value: "gelir_aylik_alan", key: "gelirAylikAlan" },
-] as const;
 
 function localizedMessages() {
   return getModuleLocale() === "tr" ? trMessages : enMessages;
@@ -33,11 +17,6 @@ export const ACCENT_LOCAL = theme.accent;
 function unavailableLabel(): string {
   const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
   return translate(messages, "common.unavailable");
-}
-
-function localizedUnknown(): string {
-  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
-  return translate(messages, "common.unknown");
 }
 
 export function fmtTRY(value: number): string {

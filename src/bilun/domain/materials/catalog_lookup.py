@@ -19,10 +19,8 @@ from ..utils import turkish_lower
 
 logger = logging.getLogger("bilun.domain.materials.catalog_lookup")
 
-_CODE_INDEX: dict[str, str] | None = None
 _EK3C_CODE_SET: frozenset[str] | None = None
 _EK3_ALL_CODE_SET: frozenset[str] | None = None
-_EK3_PRICE_INDEX: dict[str, float] | None = None
 
 _SEPARATE_BILLING_ALLOW_MARKERS = (
     "ayrica faturalandirilabilir",

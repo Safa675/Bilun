@@ -30,7 +30,6 @@ const billing = {
   },
   "recommendedActions": {
     "listTitle": "Recommended actions — itemized",
-    "empty": "No counted recommended actions in this scope.",
     "surface": "Surface",
     "claim": "Claim",
     "section": "SUT",
@@ -97,23 +96,10 @@ const billing = {
     "flag": "Flag",
     "savings": "Savings"
   },
-  "drug": {
-    "title": "Drug optimization",
-    "unavailable": "Drug optimization savings require exact dispensed drug claim lines and billed drug amounts.",
-    "drug": "Drug",
-    "issue": "Issue",
-    "alternative": "Alternative",
-    "savings": "Savings",
-    "tierCorrection": "Tier correction",
-    "tierCorrectionSameDrug": "Tier correction on same drug",
-    "heuristicInsight": "Catalog insight",
-    "heuristicFootnote": "Generic and passivated-drug rows are EK-4A catalog insights only — savings are not asserted until exact dispensed drug claim lines are available."
-  },
   "copay": {
     "title": "Copay exemption review",
     "unavailable": "Exemption gap totals remain unavailable until both visit and prescription claim inputs are exact.",
     "exempt": "Exempt",
-    "notExempt": "Not exempt",
     "medulaActionChip": "MEDULA: katilimPayindanMuaf=E",
     "visitSavings": "Procedure exemption gap",
     "rxSavings": "Prescription exemption gap",
@@ -227,7 +213,6 @@ const billing = {
     "amendedPrice": "Post-tebliğ list",
     "payablePerUnit": "Claim payable/unit",
     "repricingDelta": "List delta (informational)",
-    "sutSection": "SUT section",
     "note": "Note"
   },
   "packageAdequacyReview": {
@@ -242,7 +227,6 @@ const billing = {
     "currentPrice": "Current package price",
     "candidatePrice": "Candidate list price",
     "reviewDelta": "Catalog price delta",
-    "sutSection": "SUT section",
     "note": "Note"
   },
   "procedureCaptureGap": {
@@ -256,7 +240,6 @@ const billing = {
     "listPrice": "Catalog list price",
     "actualBilled": "Claim billed",
     "gap": "Capture gap",
-    "sutSection": "SUT section",
     "note": "Note"
   },
   "procedureAddonUplift": {
@@ -330,7 +313,6 @@ const billing = {
     "title": "Session pricing uplift",
     "scopeFootnote": "Rule-calculated from billed amounts and SUT point factors on the same service date. Clinical session and incision boundaries are not verified — rows marked chart review are excluded from the SGK uplift headline.",
     "reviewBadge": "Chart review",
-    "confirmedTotal": "Confirmed SGK uplift",
     "reviewTotal": "Pending chart review",
     "unavailable": "Session pricing uplift requires exact billed procedure lines in the same session.",
     "claim": "Claim",
@@ -348,8 +330,6 @@ const billing = {
     "claim": "Claim",
     "recommendation": "Recommendation",
     "chapter": "Chapter",
-    "group": "Group",
-    "strategy": "Strategy",
     "packageTotal": "Package total",
     "itemizedTotal": "Itemized total",
     "savings": "Savings",
@@ -372,11 +352,7 @@ const billing = {
     "statusReview": "Review",
     "correctiveSavings": "Corrective savings",
     "optionalSavings": "Difference if alternate method chosen",
-    "complianceViolations": "Payment method compliance issues",
-    "procedure": "Procedure",
-    "mandatedMethod": "Mandated method",
-    "catalogAsOf": "EK-2B/EK-2C catalog membership as of {date} (service date).",
-    "packagePriceHeuristic": "Package total uses chapter DRG median estimate — not claim EK-2/C code price."
+    "catalogAsOf": "EK-2B/EK-2C catalog membership as of {date} (service date)."
   },
   "materials": {
     "title": "Materials pre-check",
@@ -387,7 +363,6 @@ const billing = {
     "miatIntervalViolations": "MIAT interval — prior use too soon",
     "lastUse": "Last use",
     "bundledSeparate": "Bundled — billed separately",
-    "scopeNotice": "Rows may come from the EK-3B-1 annex (54 items) or from a broader invoice/package flag — check the note per row. Not full SUT §3.1–3.2 prose.",
     "advisoryFootnote": "These flags are pre-MEDULA compliance checks only. They do not guarantee SGK reimbursement.",
     "proseBundling": "§3.1 prose bundling (partial engine)",
     "specialtyProse": "§3.3 specialty annex prose (L4.4)",
@@ -415,18 +390,15 @@ const billing = {
     "cappedProcedures": "{count} capped procedures",
     "noRateCaps": "No rate caps applicable",
     "drgEyebrow": "DRG unbundling risk",
-    "potentialSavings": "Claim-backed recoverable: {amount}",
     "recoverableSavings": "Claim-backed recoverable: {amount}",
     "surchargeUnavailable": "Surcharge compliance needs exact billed procedure codes and procedure dates.",
     "copayRateUnavailable": "EK-2C-1 copay rate compliance needs exact billed procedure codes and procedure dates.",
     "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
-    "drgSourcedSavings": "Prose-rule violations (sourced): {amount}",
-    "recoverableFootnote": "Recoverable totals include only claim-backed Kurum ödemesi uplift — not heuristic estimates or clinical-review flags."
+    "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"
   },
   "views": {
     "tabListAria": "Billing review views",
     "compliance": {
-      "title": "Compliance & Denial Prevention",
       "shortTitle": "Compliance",
       "description": "Pre-submission removal of items that carry SGK deduction, rejection, or irregularity risk.",
       "kpiRisk": "Total audit exposure",
@@ -434,14 +406,12 @@ const billing = {
       "kpiBilledAtRisk": "Billed amount at risk"
     },
     "revenue": {
-      "title": "Revenue Optimization & Entitlement",
       "shortTitle": "Revenue Dashboard",
       "description": "Income the hospital legally earned but did not reflect on the claim.",
       "kpiRecoverable": "Recoverable SGK uplift",
       "kpiOpportunities": "Revenue opportunities"
     },
     "audit": {
-      "title": "Pre-Submission Documents & Review",
       "shortTitle": "Documents",
       "description": "Pre-flight verification of the records the SGK invoice review commission requires.",
       "kpiChecklist": "Checklist items",

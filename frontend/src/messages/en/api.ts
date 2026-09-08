@@ -118,14 +118,6 @@ const api = {
   health: {
     healthy: "Healthy",
   },
-  unknownViolation: "Unknown violation",
-  unknownReason: "Unknown reason",
-  unknownMethodology: "Methodology details unavailable",
-  unknownProvenance: "Provenance details unavailable",
-  unknownWarning: "Unknown consistency warning",
-  unknownHealth: "Health details unavailable",
-  unknownApiText: "Details unavailable",
-  noMessage: "—",
   paymentMethodKind: {
     drg_mandatory: "DRG — mandatory package",
     drg_overridable: "DRG — overridable",

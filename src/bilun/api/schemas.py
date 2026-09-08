@@ -31,9 +31,6 @@ _STATUSES_REQUIRING_INPUTS = {
 _MISSING_EXACTNESS_METADATA_REASON = (
     "Exactness metadata was not provided by the bilun payload."
 )
-_MISSING_PRICING_METADATA_REASON = (
-    "Pricing exactness metadata was not provided by the bilun payload."
-)
 
 
 def _default_missing_exactness_inputs() -> list[str]:
@@ -881,26 +878,6 @@ class MatchedRuleRef(BaseModel):
 
     rule_id: str
     rule_category_tr: str | None = None
-
-
-class ClauseReferenceResponse(BaseModel):
-    """Structured clause cite carried by billing findings (Track E identity).
-
-    Emitted as ``clause_ref`` inside ``rate_corrections`` rows, waiver rows,
-    and ``recommended_actions`` rows (see ``SutClauseReference`` in
-    ``src/bilun/domain/sut/clause_reference.py``). ``clause_key`` may be
-    empty when the coordinate could not be resolved against the coverage
-    store; ``clause_coordinate`` remains the human-readable cite. Display
-    text is fetched from ``GET /api/rules/clauses/{clause_key}``, never
-    duplicated here.
-    """
-
-    clause_key: str = ""
-    clause_coordinate: str = ""
-    source_type: str = "sut_clause"
-    rule_type: str = ""
-    annex: str = ""
-    statutory_law: str = ""
 
 
 class RuleClause(BaseModel):

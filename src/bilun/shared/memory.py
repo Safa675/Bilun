@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import sys
 from collections.abc import Mapping
 from typing import Any
@@ -152,40 +151,3 @@ def memory_snapshot_message(
     described.sort(key=lambda item: item[0], reverse=True)
     object_part = "; ".join(desc for _, desc in described[:max_objects])
     return f"{stage} | {rss_part} | {object_part}" if object_part else f"{stage} | {rss_part}"
-
-
-def describe_named_objects(
-    named_objects: Mapping[str, Any],
-    *,
-    limit: int = 10,
-) -> list[tuple[str, float | None]]:
-    """Return `(name, size_mb)` pairs sorted by descending known size."""
-    described = [
-        (name, estimate_object_size_mb(obj))
-        for name, obj in named_objects.items()
-    ]
-    described.sort(
-        key=lambda item: (item[1] is not None, item[1] or -1.0),
-        reverse=True,
-    )
-    return described[:limit]
-
-
-def log_named_objects(
-    logger: logging.Logger,
-    label: str,
-    named_objects: Mapping[str, Any],
-    *,
-    limit: int = 10,
-) -> list[tuple[str, float | None]]:
-    """Log RSS plus the largest named objects and return the summary."""
-    described = describe_named_objects(named_objects, limit=limit)
-    logger.info(
-        memory_snapshot_message(
-            label,
-            rss_mb=read_current_rss_mb(),
-            objects=named_objects,
-            max_objects=limit,
-        )
-    )
-    return described

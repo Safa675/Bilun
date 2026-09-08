@@ -95,18 +95,6 @@ export function SutPatientAnalyticsSkeleton({ patientId }: { patientId?: string 
   );
 }
 
-export function SutExposureSkeleton() {
-  return (
-    <Surface variant="base" padding="lg">
-      <SkeletonBars count={2} widths={["24%", "44%"]} />
-      <div className="mt-5">
-        <SkeletonCardGrid count={3} />
-      </div>
-      <div className="mt-5 skeleton skeleton-block h-72" />
-    </Surface>
-  );
-}
-
 export function SutOptimizerShellSkeleton() {
   return (
     <div className="space-y-5">
@@ -155,34 +143,5 @@ export function SutReferenceSectionSkeleton({ title }: { title: string }) {
         <SkeletonTable rows={5} />
       </div>
     </Surface>
-  );
-}
-
-export function SutBillingReportSkeleton({ patientId }: { patientId?: string | null }) {
-  const t = useT();
-  return (
-    <div className="space-y-6">
-      <Surface variant="base" padding="lg">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-          {patientId
-            ? t("common.skeleton.billingReportWithId", { patientId })
-            : t("common.skeleton.billingReport")}
-        </p>
-        <div className="mt-4">
-          <SkeletonBars count={2} widths={["35%", "58%"]} />
-        </div>
-        <div className="mt-5">
-          <SkeletonCardGrid count={3} />
-        </div>
-      </Surface>
-      {Array.from({ length: 3 }).map((_, index) => (
-        <Surface key={index} variant="base" padding="lg">
-          <SkeletonBars count={1} widths={["30%"]} />
-          <div className="mt-4">
-            <SkeletonTable rows={4} />
-          </div>
-        </Surface>
-      ))}
-    </div>
   );
 }

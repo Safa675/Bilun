@@ -107,15 +107,6 @@ _TRAFFIC_CONTEXT_VALUES: frozenset[str] = frozenset(
     }
 )
 
-# ICD-10 transport-accident code ranges (Chapter XIX "External causes").
-# V01–V99 cover all land-transport accidents (the bulk of traffic cases).
-# A handful of W/X/Y second-character codes flag pedestrian / other road
-# accidents where the underlying cause is still a traffic event.
-_TRAFFIC_ICD10_PREFIXES: tuple[str, ...] = (
-    "v01", "v02", "v03", "v04", "v05", "v06", "v09",
-    "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9",  # V10–V99 (any)
-)
-
 
 def _normalize(value: str) -> str:
     """Lower-case + strip helper mirroring copay_exemption_rules."""

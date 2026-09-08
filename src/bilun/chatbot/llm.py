@@ -49,9 +49,6 @@ def _get_model() -> str:
     return os.getenv("LLM_MODEL", "").strip() or "deepseek-v4-flash-0731"
 
 
-LLM_ENDPOINT = _get_llm_endpoint()
-MODEL = _get_model()
-
 
 def _get_api_key() -> str | None:
     return (

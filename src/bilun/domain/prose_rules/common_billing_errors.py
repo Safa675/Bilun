@@ -473,17 +473,6 @@ def _line_billed_as_package(line: ProcedureClaimLine) -> bool:
     return (line.procedure_category or "").casefold() in _PACKAGE_CATEGORIES
 
 
-def _line_billed_as_itemized(line: ProcedureClaimLine) -> bool:
-    """True when a procedure line carries per-visit (Normal Poliklinik) billing.
-
-    The itemized signal is an exam/muayene category billed *not* as a package
-    (i.e. EK-2/A visit-fee billing per §2.2.1.B-1.b).
-    """
-    if _line_billed_as_package(line):
-        return False
-    return (line.procedure_category or "").casefold() in _EXAM_CATEGORIES
-
-
 def detect_vakabasi_wrong_method(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],

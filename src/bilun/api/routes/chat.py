@@ -92,12 +92,6 @@ UserRoleLiteral = Literal["dev", "billing_officer"]
 UiLocaleLiteral = Literal["en", "tr"]
 
 
-def _parse_user_role(value: str | None) -> UserRole:
-    if value == "dev":
-        return "dev"
-    return "billing_officer"
-
-
 class BilunChatMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: str

@@ -38,12 +38,45 @@ def _safe_float(val: Any) -> float | None:
         return None
 
 
+def _is_mulga_parquet(fp: Path) -> bool:
+    """Return True if the parquet filename marks a MÜLGA (repealed) source.
+
+    The converter slugifies the source-workbook stem into the parquet
+    filename (``slugify`` ASCII-folds Ü→U), so repealed sources are
+    written as ``MULGA_...parquet``. The ``__is_mulga`` column is NOT a
+    reliable signal for older partitions (written before the Turkish-fold
+    fix in ``convert_xlsx_to_parquet.is_mulga_path`` — 273 on-disk files
+    carry a stale ``False``), whereas the filename was verified faithful
+    to ``__source_file`` provenance across the whole raw tree. Same
+    substring semantics as ``is_mulga_path`` (ASCII-folded containment).
+    """
+    folded = (
+        fp.name.upper()
+        .replace("Ü", "U")
+        .replace("İ", "I")
+        .replace("Ş", "S")
+        .replace("Ç", "C")
+        .replace("Ğ", "G")
+        .replace("Ö", "O")
+    )
+    return "MULGA" in folded
+
+
 def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
     """Walk annex=<CODE>/ dir tree and return the latest .parquet file found.
 
-    Files are sorted by effective_date (YYYY-MM-DD prefix). Directories
-    with ``effective_date=unknown`` are skipped — they are legacy dumps
-    with different column layouts that produce empty curated output —
+    Files are sorted by effective_date (YYYY-MM-DD prefix). MÜLGA
+    (repealed) candidates are excluded up front: for EK-4/4A/4B/4C the
+    current source converts to ``effective_date=unknown`` (no date in the
+    filename) while every dated partition is a repealed list, so picking
+    ``dated[-1]`` without this filter serves repealed content to live
+    catalogs (ek4a_drugs.parquet -> get_ek4a_drugs API). Annexes whose
+    partitions are *all* MÜLGA keep resolving (MÜLGA pool as fallback)
+    so nothing regresses to None.
+
+    Among the surviving candidates, directories with
+    ``effective_date=unknown`` are skipped — they are legacy dumps with
+    different column layouts that produce empty curated output —
     *unless* the annex has no dated version at all, in which case the
     ``unknown`` partition is a legitimate fallback (e.g. EK-1A, an
     undated single-version .xls annex).
@@ -60,13 +93,16 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
         return ""
 
     all_parquets = list(annex_dir.rglob("*.parquet"))
-    dated = sorted((fp for fp in all_parquets if _date_sort_key(fp)), key=_date_sort_key)
+    # Prefer current (non-MÜLGA) partitions; fall back to MÜLGA only when
+    # an annex has nothing else, preserving resolvability.
+    pool = [fp for fp in all_parquets if not _is_mulga_parquet(fp)] or all_parquets
+    dated = sorted((fp for fp in pool if _date_sort_key(fp)), key=_date_sort_key)
     if dated:
         return dated[-1]
 
     # No dated version: fall back to the unknown partition if one exists
     # (legitimately undated single-version annexes like EK-1A).
-    unknown = [fp for fp in all_parquets if not _date_sort_key(fp)]
+    unknown = [fp for fp in pool if not _date_sort_key(fp)]
     return unknown[-1] if unknown else None
 
 

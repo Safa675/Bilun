@@ -1,6 +1,6 @@
 """
 src/bilun/domain/constants.py
-Paths, code mappings, fallback prices, and tier configurations for the SUT engine.
+Paths, code mappings, and runtime policy for the SUT engine.
 
 No dependencies on other src.sut modules.
 """
@@ -14,13 +14,11 @@ from pathlib import Path
 # ═══════════════════════════════════════════════════════════════════════════
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-_SUT_DATA_DIR = _PROJECT_ROOT / "sut data"
 _DATA_DIR = _PROJECT_ROOT / "data"
 _GAZETTE_DIR = _DATA_DIR / "gazette"
 _GAZETTE_CURATED_DIR = _GAZETTE_DIR / "curated"
 _PROSE_RULES_DIR = _GAZETTE_DIR / "prose_rules"
 PROSE_MANIFESTS_DIR = _GAZETTE_DIR / "prose_manifests"
-PROSE_CORPUS_DIR = _GAZETTE_DIR / "prose_corpus"
 
 # SUT prose corpus — extracted clauses + rule-coverage matrix (rule database)
 SUT_CLAUSES_PATH = _GAZETTE_DIR / "sut_clauses.parquet"
@@ -28,11 +26,6 @@ SUT_CLAUSE_COVERAGE_PATH = _GAZETTE_DIR / "sut_clause_coverage.parquet"
 SUT_REGISTRY_COVERAGE_PATH = _GAZETTE_DIR / "sut_registry_coverage.parquet"
 SUT_COVERAGE_BY_RULE_PATH = _GAZETTE_DIR / "sut_coverage_by_rule.parquet"
 SUT_COVERAGE_BY_SECTION_PATH = _GAZETTE_DIR / "sut_coverage_by_section.parquet"
-
-# Fatura İnceleme Usul ve Esasları — SGK's internal billing audit guideline.
-# NOT SUT. Separate regulatory corpus (dayanak: 5510 md. 63/73).
-# clause_ids are F-prefixed (F000001+) to distinguish from SUT's C-prefix.
-FATURA_INCELEME_CLAUSES_PATH = _GAZETTE_DIR / "fatura_inceleme_clauses.parquet"
 
 # SUT clause embeddings — sidecar vectors for semantic clause retrieval (chatbot)
 SUT_CLAUSE_EMBEDDINGS_PATH = _GAZETTE_DIR / "sut_clause_embeddings.parquet"
@@ -255,161 +248,6 @@ _SUT_CODE_TO_BILUN: dict[str, list[str]] = {}
 for _name, _code in BILUN_TO_SUT_CODE.items():
     _SUT_CODE_TO_BILUN.setdefault(_code, []).append(_name)
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# Fallback prices (used ONLY when gazette catalog fails)
-# ═══════════════════════════════════════════════════════════════════════════
-
-_FALLBACK_LAB_PRICES: dict[str, tuple[float, float]] = {
-    "CRP": (9.86, 9.86),
-    "Lökosit": (19.73, 19.73),
-    "Nötrofil": (19.73, 19.73),
-    "Lenfosit": (19.73, 19.73),
-    "Eozinofil": (19.73, 19.73),
-    "Monosit": (19.73, 19.73),
-    "Bazofil": (19.73, 19.73),
-    "Prokalsitonin": (67.13, 67.13),
-    "Kreatinin": (7.20, 7.20),
-    "Üre": (7.20, 7.20),
-    "GFR": (7.20, 7.20),
-    "Bilirubin": (6.57, 6.57),
-    "ALT": (7.20, 7.20),
-    "AST": (6.57, 6.57),
-    "ALP": (7.20, 7.20),
-    "GGT": (7.20, 7.20),
-    "Hemoglobin": (19.73, 19.73),
-    "Hematokrit": (19.73, 19.73),
-    "Eritrosit": (19.73, 19.73),
-    "Trombosit": (19.73, 19.73),
-    "MCV": (19.73, 19.73),
-    "MCH": (19.73, 19.73),
-    "RDW": (19.73, 19.73),
-    "Glukoz": (6.57, 6.57),
-    "HbA1c": (26.34, 26.34),
-    "Kolesterol": (7.20, 7.20),
-    "Trigliserid": (7.90, 7.90),
-    "LDL": (16.46, 16.46),
-    "HDL": (10.51, 10.51),
-    "Sodyum": (7.20, 7.20),
-    "Potasyum": (7.20, 7.20),
-    "Kalsiyum": (17.09, 17.09),
-    "Albumin": (6.57, 6.57),
-    "Protein": (7.20, 7.20),
-    "TSH": (29.59, 29.59),
-    "T3": (29.59, 29.59),
-    "T4": (29.59, 29.59),
-    "INR": (7.20, 7.20),
-    "PT": (7.20, 7.20),
-    "aPTT": (7.20, 7.20),
-}
-
-_FALLBACK_VISIT_PRICES: dict[str, tuple[float, float]] = {
-    "outpatient": (85.73, 85.73),
-    "inpatient_day": (222.36, 222.36),
-    "icu_day": (742.60, 742.60),
-    "emergency": (85.73, 85.73),
-    "follow_up": (52.48, 52.48),
-}
-
-# Prescription cost tiers
-SUT_RX_PRICES: dict[str, tuple[float, float]] = {
-    "basic": (10.0, 40.0),
-    "moderate": (40.0, 150.0),
-    "specialty": (150.0, 800.0),
-}
-SUT_RX_DEFAULT: tuple[float, float] = (20.0, 80.0)
-
-# Comorbidity-linked procedure cost ranges per episode
-SUT_COMORBIDITY_PROCEDURE_COSTS: dict[str, tuple[float, float]] = {
-    "Hipertansiyon": (100.0, 500.0),
-    "Kalp Damar": (500.0, 5000.0),
-    "Diyabet": (200.0, 1000.0),
-    "Kan Hastalıkları": (300.0, 2000.0),
-    "Kronik Hastalıklar Diğer": (200.0, 1500.0),
-    "Ameliyat Geçmişi": (1000.0, 15000.0),
-}
-
-# ICD-10 Chapter -> EK-2C Group Mapping
-_ICD10_CHAPTER_TO_EK2C_GROUP: dict[str, str] = {
-    "I": "A3",
-    "C": "A3",
-    "J": "B",
-    "K": "B",
-    "G": "A3",
-    "E": "C",
-    "M": "B",
-    "N": "B",
-    "L": "D",
-    "F": "D",
-    "H": "C",
-    "R": "D",
-    "Z": "E",
-    "A": "C",
-    "B": "C",
-    "D": "B",
-    "O": "B",
-    "P": "B",
-    "Q": "A3",
-    "S": "B",
-    "T": "B",
-    "U": "C",
-    "V": "C",
-    "W": "C",
-    "X": "C",
-    "Y": "C",
-}
-
-# ICD-10 chapter descriptions
-_ICD10_CHAPTER_DESC: dict[str, str] = {
-    "A": "Infectious diseases",
-    "B": "Infectious diseases",
-    "C": "Neoplasms",
-    "D": "Blood/immune disorders",
-    "E": "Endocrine/metabolic",
-    "F": "Mental/behavioral",
-    "G": "Nervous system",
-    "H": "Eye/ear",
-    "I": "Circulatory system",
-    "J": "Respiratory system",
-    "K": "Digestive system",
-    "L": "Skin/subcutaneous",
-    "M": "Musculoskeletal",
-    "N": "Genitourinary",
-    "O": "Pregnancy/childbirth",
-    "P": "Perinatal",
-    "Q": "Congenital malformations",
-    "R": "Symptoms/signs",
-    "S": "Injury",
-    "T": "Injury/poisoning",
-    "U": "Special purpose",
-    "V": "External causes",
-    "W": "External causes",
-    "X": "External causes",
-    "Y": "External causes",
-    "Z": "Health encounters",
-}
-
-# Cost tier classification thresholds
-COST_TIERS: list[tuple[float, str, str]] = [
-    (10000, "Very High", "Yüksek maliyet — aktif müdahale beklenir"),
-    (5000, "High", "Yüksek — yakın takip ve bütçe planlaması gerekir"),
-    (2000, "Moderate", "Orta düzey — rutin bakım maliyeti"),
-    (500, "Low", "Düşük — minimal kaynak tüketimi"),
-    (0, "Minimal", "Minimal maliyet — koruyucu sağlık hizmeti"),
-]
-
-# Hospital actual cost multipliers relative to SUT max prices.
-# These are base multipliers; compute_patient_markup() in analytics.py
-# adjusts them per patient based on volume, drug tier, visit mix, and
-# procedure complexity.
-_HOSPITAL_MARKUP: dict[str, float] = {
-    "lab": 1.3,
-    "visit": 1.5,
-    "rx": 1.8,
-    "procedure": 2.0,
-}
-
-_MAX_SINGLE_VISIT_LOS = 90
 
 # Runtime policy: when True, all billing surfaces require SUT claim lines.
 # Missing claim context returns explicit "missing_exact_inputs" instead of

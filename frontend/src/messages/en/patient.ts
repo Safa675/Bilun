@@ -28,13 +28,6 @@ const patient = {
     "billCount": "Bills",
     "overallPriority": "Overall priority"
   },
-  "claimSelector": {
-    "label": "Invoice / Claim",
-    "allClaims": "All claims",
-    "claimCount": "{count}",
-    "claimSingular": " claim",
-    "claimPlural": " claims"
-  },
   "billingGroups": {
     "overview": "Financial overview",
     "overviewDescription": "Summary KPIs and recommended actions for the active scope."
@@ -43,7 +36,6 @@ const patient = {
     "label": "Bills",
     "allBills": "All bills (summary)",
     "recoverable": "recoverable",
-    "billed": "billed",
     "claimSingular": " bill",
     "claimPlural": " bills",
     "billMeta": "{claimType} · {amount}"
@@ -68,23 +60,16 @@ const patient = {
   },
   "claimDetail": {
     "loading": "Loading claim details…",
-    "eyebrow": "Selected claim",
     "period": "Period",
     "totalBilled": "Total billed",
     "totalPayable": "Expected payable",
-    "lines": "Lines",
-    "proceduresTitle": "Procedures",
-    "materialsTitle": "Materials",
-    "drugsTitle": "Drugs",
     "noProcedures": "No procedure lines in this claim.",
     "noMaterials": "No material lines in this claim.",
     "noDrugs": "No drug lines in this claim.",
     "date": "Date",
     "code": "Code",
     "name": "Name",
-    "quantity": "Qty",
-    "billed": "Billed",
-    "payable": "Payable"
+    "quantity": "Qty"
   },
   "workspace": {
     "eyebrow": "SUT patient workspace",
@@ -98,7 +83,6 @@ const patient = {
     "primaryFocus": "Primary focus",
     "focusCopay": "Copay exemption",
     "focusExactness": "Exactness review",
-    "consistencyEyebrow": "Consistency note",
     "clinicalSnapshotEyebrow": "Clinical & rule snapshot",
     "clinicalSnapshotDescription": "Diagnosis-driven SUT rule findings for this patient. Select a bill below for claim-scoped optimization.",
     "optimizationTitle": "Optimization snapshot",

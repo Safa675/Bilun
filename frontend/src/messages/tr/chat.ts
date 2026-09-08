@@ -16,10 +16,6 @@ const chat = {
     you: "Siz",
     bilun: "Bilun",
   },
-  approve: {
-    approved: "Onaylandı",
-    approve: "Onayla",
-  },
   loading: {
     analyzing: "Bilun analiz ediyor...",
     thinking: "Düşünüyor",
