@@ -740,6 +740,12 @@ class DrgUpliftRecommendation(_UpliftBlockMixin):
 
 
 @dataclass
+class ClaimCompliance:
+    findings: list[dict[str, Any]] = field(default_factory=list)
+    evaluations: list[dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass
 class BillingActionReport:
     """Complete billing action report for a single patient."""
 
@@ -796,6 +802,7 @@ class BillingActionReport:
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
+    claim_compliance: ClaimCompliance = field(default_factory=ClaimCompliance)
 
 
 @dataclass

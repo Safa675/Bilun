@@ -1,3 +1,44 @@
+## Task: K21 + K26 reviewer blockers
+
+### Goal
+Prevent late-money inference crashes and show accurate scoped presentation counts while retaining legacy actions and financial totals.
+
+### Subtasks
+- [x] Confirm the three requested fixes and existing test/runtime conventions; review this narrow plan against the request.
+- [x] Use full inference for cohort rows and regress >100 null-money findings before a monetary legacy row, including preserved totals and row money.
+- [x] Count scoped claim findings in patient/claim KPI and tab badge only; regress patient, claim and legacy-only counts.
+- [x] Omit the claim-compliance dashboard badge for old caches and assert rendered absence.
+- [x] Run focused backend/frontend tests, changed-file lint and tsc; record exact outcomes in tasks/k21-k26-result.md.
+
+### Out of Scope
+Pagination redesign, broad refactoring, other detectors, money/action integration, other worktrees, commits, pushes and live changes.
+
+### Review
+46 backend and 18 frontend tests passed; final tsc and Ruff passed. Changed-file ESLint found only the existing PatientWorkspaceViews navigation-effect error; HEAD stdin lint reproduced the same error, and all other touched frontend files passed lint. No suppression or out-of-scope navigation rewrite. Full inference regression demonstrated red before/green after; scoped counts and old-cache badge have rendered assertions. Exact commands, limitations and results recorded in tasks/k21-k26-result.md. No commit/push/live changes.
+
+---
+
+## Task: K21 + K26 reporting reachability
+
+### Goal
+Expose only the existing ICU bundled leakage and missing diagnosis detectors through full-context reporting, cache/API and native compliance UI without any money contribution.
+
+### Subtasks
+- [x] Verify normal ingestion provenance and positive/negative scenarios before wiring detectors.
+- [x] Add backward-compatible availability tracking and a narrow report-owned nonfinancial projection with stable claim/line identities.
+- [x] Connect cache/index/API and native frontend filtering/rendering with patient links.
+- [x] Run real-function ingestion integration tests, financial regressions, frontend tests, typecheck and lint sequentially for pytest.
+- [x] Replace unbounded evaluation rows with a compact summary and closed, bounded details; verify 120-evaluation rendered regression.
+- [x] Inspect artifact drift and record exact evidence in tasks/k21-k26-result.md.
+
+### Out of Scope
+Engine merging, validator changes, other detectors, rule catalogs, shipped data, live services, commits, pushes and PR creation.
+
+### Review
+K21/K26 implemented through normal ingestion/context, report-owned nonfinancial projection, cache/index/API and native UI. Chief independently reported 71 backend tests and 9 frontend tests passing before the final compact-summary change; typecheck and Ruff passed. Final UI verification: dashboard Vitest file 10/10 passed; ESLint passed for the test and table. Large-list regression verifies 120 evaluations, correct counts, closed details bounded to 20 entries, distinct unknown/clean empty states, findings, links and null money. Prior status inspection showed only scoped source/tests/tasks changes, no catalog/generated-data drift; no new broad inspection or backend run in this final finish. Evidence and limitations: tasks/k21-k26-result.md. No commits, pushes or live changes.
+
+---
+
 ## Task: 2026-08-29 SUT rule corpus (PR 80 follow-through)
 
 ### Goal

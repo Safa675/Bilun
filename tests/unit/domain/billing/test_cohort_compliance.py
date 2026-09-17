@@ -112,6 +112,38 @@ def test_optional_override_excluded_mandatory_mapped_to_payment_methods() -> Non
     assert index["by_surface"]["materials"]["n"] == 0
 
 
+def test_late_legacy_money_after_more_than_100_null_findings() -> None:
+    findings = [
+        {
+            "patient_id": "P-NEW",
+            "claim_id": f"C-{i}",
+            "rule_id": "tablo15_8_missing_diagnosis",
+        }
+        for i in range(101)
+    ]
+    legacy = {"P-LEGACY": {"recommended_actions": [_action(billed_try=123.45)]}}
+    baseline = build_cohort_compliance_index(legacy)
+    reports = {"P-NEW": {"claim_compliance": {"findings": findings}}, **legacy}
+
+    index = build_cohort_compliance_index(reports)
+    for result in (index, slice_compliance_index(index)):
+        assert result["n_findings"] == 102
+        assert result["billed_at_risk_try"] == baseline["billed_at_risk_try"] == 123.45
+        assert result["by_surface"]["materials"] == baseline["by_surface"]["materials"]
+        assert result["by_surface"]["claim_compliance"]["billed_try"] is None
+        assert result["rows"][-1] == baseline["rows"][0]
+        assert all(
+            row[field] is None
+            for row in result["rows"][:101]
+            for field in (
+                "amount_try", "billed_try", "payable_try", "savings_try",
+                "recoverable_uplift_try", "compliance_savings_try",
+                "risk_amount_try", "audit_exposure_try",
+            )
+        )
+    assert reports["P-LEGACY"] == legacy["P-LEGACY"]
+
+
 def test_materials_kinds_preserved() -> None:
     reports = {
         "P-MAT": {

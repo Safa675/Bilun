@@ -24,6 +24,7 @@ const INDEX_SURFACES: readonly ComplianceIndexSurface[] = [
   "drug_indication",
   "lab",
   "payment_methods",
+  "claim_compliance",
 ];
 
 export interface SUTComplianceDashboardProps {
@@ -33,6 +34,34 @@ export interface SUTComplianceDashboardProps {
 
 function isIndexSurface(subtab: ComplianceSubSection): subtab is ComplianceIndexSurface {
   return (INDEX_SURFACES as readonly string[]).includes(subtab);
+}
+
+export function ComplianceIndexGroup({
+  index,
+  surface,
+  loading,
+  cohortPatientIds,
+  cohortFilterActive,
+}: SUTComplianceDashboardProps & {
+  index: ComplianceIndexResponse | null;
+  surface: ComplianceIndexSurface;
+  loading: boolean;
+}) {
+  const inCohort = (row: { patient_id: string }) =>
+    !cohortFilterActive || cohortPatientIds.has(row.patient_id);
+  return (
+    <ComplianceFindingTable
+      rows={(index?.rows ?? []).filter((row) => row.surface === surface && inCohort(row))}
+      loading={loading}
+      unavailable={index?.artifacts_available !== true ||
+        (surface === "claim_compliance" && !index?.claim_compliance)}
+      claimCompliance={surface === "claim_compliance"}
+      partialResults={index?.pagination?.has_more === true}
+      evaluations={surface === "claim_compliance"
+        ? index?.claim_compliance?.evaluations.filter(inCohort)
+        : undefined}
+    />
+  );
 }
 
 export function SUTComplianceDashboard({
@@ -61,7 +90,6 @@ export function SUTComplianceDashboard({
 
   useEffect(() => {
     let cancelled = false;
-    setIndexLoading(true);
     getComplianceIndex({ limit: 5000, offset: 0 })
       .then((res) => {
         if (!cancelled) {
@@ -141,11 +169,12 @@ export function SUTComplianceDashboard({
     const counts: Partial<Record<ComplianceSubSection, number>> = { ...alertBadges };
     if (indexAvailable) {
       for (const surface of INDEX_SURFACES) {
+        if (surface === "claim_compliance" && !index?.claim_compliance) continue;
         counts[surface] = filteredIndexRows.filter((row) => row.surface === surface).length;
       }
     }
     return counts;
-  }, [alertBadges, filteredIndexRows, indexAvailable]);
+  }, [alertBadges, filteredIndexRows, indexAvailable, index?.claim_compliance]);
 
   const handleSelectSubtab = (subtab: ComplianceSubSection) => {
     if (!pathname) return;
@@ -206,10 +235,12 @@ export function SUTComplianceDashboard({
           cohortFilterActive={cohortFilterActive}
         />
       ) : isIndexSurface(activeSubtab) ? (
-        <ComplianceFindingTable
-          rows={filteredIndexRows.filter((row) => row.surface === activeSubtab)}
+        <ComplianceIndexGroup
+          index={index}
+          surface={activeSubtab}
           loading={indexLoading}
-          unavailable={!indexAvailable && !indexLoading}
+          cohortPatientIds={cohortPatientIds}
+          cohortFilterActive={cohortFilterActive}
         />
       ) : (
         <CopayExemptionCompliance

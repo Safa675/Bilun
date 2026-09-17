@@ -24,6 +24,7 @@ export const SECTION_VIEW_MAP: Record<string, WorkspaceViewId> = {
   "billing-strategy": "compliance",
   "materials-pre-check": "compliance",
   "drug-indication": "compliance",
+  "claim-compliance": "compliance",
   "billing-copay": "revenue",
   "billing-session-uplift": "revenue",
   "billing-blood-uplift": "revenue",
@@ -51,6 +52,13 @@ export function viewActions(
   const finding = WORKSPACE_VIEW_FINDING[view];
   return getRecommendedActions(report).filter(
     (action) => getFindingType(action) === finding,
+  );
+}
+
+export function scopedClaimComplianceFindings(report: BillingActionReport) {
+  return (report.claim_compliance?.findings ?? []).filter(
+    (row) => row.patient_id === report.patient_id &&
+      (!report.claim_id || row.claim_id === report.claim_id || row.claim_id == null),
   );
 }
 

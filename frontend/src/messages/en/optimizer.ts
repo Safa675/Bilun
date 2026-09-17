@@ -11,6 +11,7 @@ const optimizer = {
     drug_indication: "Drug Indication",
     lab: "Lab",
     payment_methods: "Payment Methods",
+    claim_compliance: "Claim Compliance",
     categoriesAria: "Compliance alert categories",
   },
   filters: {
@@ -218,6 +219,18 @@ const optimizer = {
     showingRange:
       "Showing {start}-{end} of {total} patients on page {page} of {totalPages}",
     patientsWithPct: "{count} patients ({pct})",
+  },
+  claimCompliance: {
+    icu_bundled_leakage_510090: "ICU bundled service billed separately",
+    tablo15_8_missing_diagnosis: "Missing claim diagnosis",
+    unavailable: "Claim compliance unavailable — not evaluated.",
+    missing_inputs: "Not evaluated — missing inputs",
+    evaluated: "Evaluated",
+    evaluationSummary: "Rule evaluations: {evaluated} evaluated · {missing_inputs} missing inputs · {unavailable} unavailable. Evaluated does not mean passed.",
+    evaluationDetails: "Not evaluated — showing {count} of {total}",
+    incompleteFindings: "No findings in the loaded results; compliance cannot be confirmed.",
+    evaluatedNoFindings: "No findings from the evaluated checks; this is not a compliance pass.",
+    partialResults: "Partial results: only the first 5,000 findings are loaded; counts and filters reflect loaded rows.",
   },
   emDash: "—",
 } as const;

@@ -414,13 +414,56 @@ export type ComplianceIndexSurface =
   | "materials"
   | "drug_indication"
   | "lab"
-  | "payment_methods";
+  | "payment_methods"
+  | "claim_compliance";
+
+export type ClaimComplianceRule =
+  | "icu_bundled_leakage_510090"
+  | "tablo15_8_missing_diagnosis";
+
+export interface ClaimComplianceEvaluation {
+  patient_id: string;
+  claim_id: string | null;
+  rule_id: ClaimComplianceRule;
+  status: "evaluated" | "missing_inputs" | "unavailable";
+  missing_inputs: string[];
+}
+
+export interface ClaimComplianceFinding {
+  patient_id: string;
+  claim_id: string;
+  action_id: string;
+  rule_id: ClaimComplianceRule;
+  kind: ClaimComplianceRule;
+  status: "violation";
+  finding_type: "compliance";
+  detail: string;
+  sut_section_id: string;
+  procedure_line_id?: string;
+  procedure_code?: string;
+  procedure_name?: string;
+  amount_try: null;
+  billed_try: null;
+  payable_try: null;
+  savings_try: null;
+  recoverable_uplift_try: null;
+  compliance_savings_try: null;
+  risk_amount_try: null;
+  audit_exposure_try: null;
+}
+
+export interface ClaimCompliance {
+  findings: ClaimComplianceFinding[];
+  evaluations: ClaimComplianceEvaluation[];
+}
 
 export interface ComplianceIndexRow {
   patient_id: string;
   claim_id?: string | null;
   surface: ComplianceIndexSurface;
   source_surface?: string | null;
+  rule_id?: ClaimComplianceRule;
+  procedure_line_id?: string | null;
   kind?: string | null;
   finding_type?: "compliance";
   billed_try?: number | null;
@@ -456,6 +499,7 @@ export interface ComplianceIndexResponse extends SUTDataSourceCarrier {
   by_surface: Record<string, ComplianceIndexSurfaceSummary>;
   rows: ComplianceIndexRow[];
   pagination?: ComplianceIndexPagination;
+  claim_compliance?: { evaluations: ClaimComplianceEvaluation[] } | null;
 }
 
 export interface LabOptimization extends ExactnessState {
@@ -980,6 +1024,7 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   medula_rejection_playbook?: MedulaRejectionPlaybook;
   claim_submission_checklist?: ClaimSubmissionChecklist;
   drug_indication?: DrugIndicationReview;
+  claim_compliance?: ClaimCompliance | null;
   materials: MaterialPreCheck;
   sgk_uplift_try?: number;
   compliance_adjustment_try?: number;

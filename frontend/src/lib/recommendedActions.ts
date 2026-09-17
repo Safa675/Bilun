@@ -179,6 +179,7 @@ const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = {
   medula_playbook: "medula-playbook",
   claim_checklist: "claim-submission-checklist",
   drug_indication: "drug-indication",
+  claim_compliance: "claim-compliance",
   session_uplift: "billing-session-uplift",
   blood_uplift: "billing-blood-uplift",
   material_uplift: "billing-material-uplift",

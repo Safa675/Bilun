@@ -80,6 +80,7 @@ def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
             claim_start_date=required_date(row, "claim_start_date", claim_id, errors),
             claim_end_date=required_date(row, "claim_end_date", claim_id, errors),
             primary_icd10=parse_text(row, "primary_icd10"),
+            primary_icd10_available=isinstance(row.get("primary_icd10"), str),
             package_candidate=parse_bool(row.get("package_candidate")),
             expected_total_billed_try=parse_money(row, "expected_total_billed_try", claim_id, errors),
             expected_total_payable_try=parse_money(row, "expected_total_payable_try", claim_id, errors),
