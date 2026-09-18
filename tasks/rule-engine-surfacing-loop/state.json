@@ -1,0 +1,55 @@
+{
+  "status": "baseline_audit_accepted",
+  "phase": 4,
+  "phase_name": "baseline_and_audit",
+  "migration_scope_status": "pending",
+  "branch": "rule-engine-surfacing-loop",
+  "worktree": "/home/safa/Documents/Bilun/.worktrees/rule-engine-surfacing-loop",
+  "source_revision": "4c9c9d92595959dc12382a3130c6b400fd56c52c",
+  "imported_plan_sha256": "300456a53ccae9093e9c4fa977fe95cb5e26150c01a7b59e79a72f6b00edc138",
+  "committed_plan_sha256": "e37df777e73298bc8637a6f34ff5c6137cbbbeca65c71b9e18f0e8d90ebd85a2",
+  "imported_todo_sha256": "04d0403ca0bf9ed3ff9806fa18067c9bc7f3bb88370f96460d843d54bd2fef70",
+  "artifact_sha256": {
+    "scripts/audits/build_rule_surfacing_inventory.py": "348965f83878a1020d24c8b62e9ea1a4558556ad986d4fdb1c1bd814ceca9ac9",
+    "tests/unit/scripts/test_rule_surfacing_inventory.py": "d055fb34dc50a807b9ffd914707a5e28114b804a2ed6ddcb4ed02939004a4efd",
+    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json": "e9aa46278ecca86fd53554f9650c4fcf7fdb5c19401a4b260fe1308f2096a39e",
+    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md": "4a5e7bfd008f02802935642f0297275a264813cc6c186c40b285d1756c8576d6"
+  },
+  "audit_counts": {
+    "registry_rule_families": 47,
+    "runtime_detectors_adapters": 77,
+    "distinct_emitted_rule_ids_or_kinds": 1935,
+    "patient_visible_findings": 1401,
+    "cohort_visible_findings": 1295,
+    "hidden_runtime_findings": 529,
+    "aggregate_only_findings": 5,
+    "duplicate_surfaced_findings": 1400,
+    "financial_findings": 370,
+    "nonfinancial_findings": 1565,
+    "independent_rerun_relationships": 12,
+    "independent_rerun_overlap_ids_or_kinds": 1291
+  },
+  "acceptance_evidence": [
+    "/home/safa/Documents/Bilun/.venv/bin/python -m pytest -o addopts='' -q tests/unit/scripts/test_rule_surfacing_inventory.py: 12 passed",
+    "python3 scripts/audits/build_rule_surfacing_inventory.py --check: exit 0 with exact counts",
+    "python3 -m compileall for generator and focused test: exit 0",
+    "Independent required-field/count/visibility/rerun-debt reconciliation: exit 0",
+    "git diff --check: exit 0",
+    "Ruff unavailable in repository venv; not claimed as passed"
+  ],
+  "blockers": [],
+  "decisions": [
+    "Chief accepted the audit baseline after rejecting and correcting the first generated version.",
+    "Canonical runtime discovery uses direct imported calls with BillingActionReport as the explicit non-runtime allowlist entry; callable-name prefixes are not used.",
+    "Patient/cohort visibility metadata is explicit but fail-closed against current UI/API/action/deep-link source evidence; the report states the remaining architectural-judgment boundary.",
+    "Independent analyzer-to-adapter execution/equivalence debt is separate from duplicate product surfacing; project_claim_compliance is explicitly flagged as hard-coded two-rule rerun debt.",
+    "Analyze-claim required inputs include claim_context; gate-derived inputs are additive and do not claim dynamic exercise of internal medical preconditions.",
+    "No runtime/UI behavior, pricing formula, production cache, deployment, push, PR, or merge change occurred in phases 0-4."
+  ],
+  "supervisor_interventions": [
+    "Created the isolated worktree outside the Codex workspace sandbox so Git metadata remained writable.",
+    "Atomically materialized generated matrix/report from the Web-authored generator after a provider safety rejection blocked the large patch path.",
+    "Performed independent review, required revisions, and final verification without hand-editing implementation logic."
+  ],
+  "next_action": "Phase B: review the accepted hidden/duplicate/rerun evidence, record an explicit migration scope, and defer any item requiring new product, medical, or financial interpretation before Phase 5 implementation."
+}

@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-19 — Distinguish a proposed-write transport rejection from a native tool failure
+
+**Pattern:** Read-only native Codex commands had completed successfully, but a rejection occurred before a proposed repository write became a native event. I generalized that boundary rejection into a provider/tool failure and stopped, even though the dedicated patch path had not failed.
+
+**Rule:** When a supervisor provides transport-specific recovery instructions, preserve the exact failure boundary. If read-only native calls succeeded and repository writes are required to use `codex_apply_patch`, use that dedicated tool for every modification and stop only if the dedicated patch call itself fails or is rejected. Quote the exact patch-tool result on failure; do not relabel a pre-write rejection as a generic native/provider failure. For large generated artifacts, keep generation read-only and materialize bounded chunks through `codex_apply_patch` rather than switching to shell writers.
+
 ## 2026-09-03 — Local Next "closing by itself" is a Turbopack V8 OOM, not a closed tab or a free port
 
 **Pattern:** The user could not open localhost and said the app kept closing. Port 3000 was empty; backend :8001 was fine. Logs showed `FATAL ERROR: ... JavaScript heap out of memory` at ~15GB after ~15–30 minutes of `next dev` (Turbopack default on Next 16). Restarting with Turbopack just died again. Treating it as a zombie/port issue (or telling them to refresh) wasted a round.

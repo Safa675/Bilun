@@ -1,3 +1,32 @@
+## Task: Rule Engine surfacing audit + generic finding surface (2026-09-18)
+
+### Goal
+Execute `plans/billing/2026-09-18-rule-engine-surfacing-audit-plan.md`: produce exact runtime/visible/hidden/duplicate/financial counts and the complete hidden-rule list before migrating additional existing rules into a generic finding surface.
+
+### Subtasks
+- [x] Freeze audit definitions and baseline: registry family, runtime detector, finding kind, visibility, duplicate, and money semantics.
+- [x] Build a deterministic static inventory of `analyze_claim` and `compute_patient_billing_report` runtime calls and reconcile it with `RULE_REGISTRY` without treating the registry as a dispatcher.
+- [x] Trace every runtime output through report fields, `recommended_actions`, `claim_compliance`, totals, cache/API, and patient/cohort frontend surfaces.
+- [x] Generate the machine-readable coverage matrix plus human audit report with exact counts, hidden list, duplicate groups, and financial/nonfinancial classification.
+- [x] Add an inventory completeness regression so new runtime detectors cannot appear without a surfacing classification.
+- [ ] Review the audit output and lock migration scope before changing runtime/UI behavior.
+- [ ] Define one canonical finding contract and migrate the approved hidden nonfinancial validation wave without one-off per-rule wiring.
+- [ ] Verify patient/cohort reachability, old-cache honesty, stable finding identities, duplicate behavior, and unchanged financial totals for nonfinancial migrations.
+
+### Dispatch scope: baseline audit only (Phases 0-4)
+- [x] Phase 0: freeze taxonomy, source revision, registry breakdown, canonical runtime entrypoints, and product projection entrypoints.
+- [x] Phase 1: generate a deterministic static runtime inventory for `analyze_claim` and `compute_patient_billing_report`, including gated calls and registry/artifact reconciliation.
+- [x] Phase 2: trace every runtime output through report fields, recommended actions, claim compliance, dedicated sections, and monetary totals.
+- [x] Phase 3: trace cache/API plus patient/cohort frontend reachability and deep-link behavior; treat Rule Database as metadata only.
+- [x] Phase 4: generate the exact JSON matrix and Markdown audit report, including hidden findings, duplicate groups, unknown mappings, and separate inventory-level counts.
+- [x] Add and execute completeness tests for canonical runtime calls, the current two-rule claim-compliance allowlist, registry-only classification, and unmapped runtime-call failure.
+- [x] Review the Phase 0-4 diff and executed evidence, create coherent local audit checkpoint commit(s), and stop at `ready_for_review` for Chief acceptance.
+
+### Out of Scope
+New SUT/medical detectors, diagnosis-procedure medical-necessity logic, coverage-status metric manipulation, unrelated pricing/recovery changes, and production deployment/cache rebuild during the audit phases.
+
+---
+
 ## Task: PR87 claim-compliance correctness fixes (2026-09-18)
 
 ### Goal

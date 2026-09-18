@@ -1,0 +1,16 @@
+# Rule Engine Surfacing Loop Journal
+
+- 2026-09-19: Resumed Phase 0 at source `4c9c9d92595959dc12382a3130c6b400fd56c52c` on branch `rule-engine-surfacing-loop`.
+- Imported baseline hashes: plan `300456a53ccae9093e9c4fa977fe95cb5e26150c01a7b59e79a72f6b00edc138`; todo `04d0403ca0bf9ed3ff9806fa18067c9bc7f3bb88370f96460d843d54bd2fef70`.
+- Scope is audit-only phases 0-4. No runtime/UI migration is authorized in this dispatch.
+- Next action: freeze baseline counts and canonical execution/projection entrypoints.
+- 2026-09-19 Chief review revision: replaced runtime callable-name prefix filtering with direct-import discovery and an explicit BillingActionReport non-runtime allowlist; a tmp-path nonstandard assess_future_rule fixture now proves naming-independent discovery and fail-closed mapping.
+- Visible patient/cohort rows now clear hidden_reason; aggregate/hidden/internal rows retain explicit reasons. Analyze-claim rows always include claim_context plus source gate-derived inputs.
+- Added fail-closed patient-report metadata validation: exact discovered-call metadata parity, patient/cohort UI/API source-token checks, recommended-action surface + frontend deep-link checks for duplicate groups, aggregate/not-applicable UI exclusions, and money/inclusion invariants. Evidence files are now specific to the validated metadata rather than a shared broad list.
+- Added machine-readable independent rerun debt: 12 analyzer-to-adapter relationships covering 1291 distinct semantic IDs/kinds. project_claim_compliance is flagged as hard-coded two-rule rerun debt. Duplicate-surface derivation remains based only on explicit visible product-surface duplicate groups.
+- Verification: /home/safa/Documents/Bilun/.venv/bin/python -m pytest -o addopts='' -q tests/unit/scripts/test_rule_surfacing_inventory.py -k 'not committed_outputs' => 11 passed, 1 deselected. Generator build/render assertions passed with unchanged headline counts (47 registry families, 77 runtime detectors/adapters, 1935 distinct emitted IDs/kinds, 1401 patient-visible, 1295 cohort-visible, 529 hidden, 5 aggregate-only, 1400 duplicate-surfaced, 370 financial, 1565 nonfinancial). git diff --check passed before this state refresh.
+- Status is awaiting_generated_artifact_refresh. Large generated report/matrix were intentionally left untouched for Chief's atomic rematerialization; no commit was created.
+- Chief atomically rematerialized both generated artifacts from the Web-authored generator after the provider rejected the large patch path; no implementation logic was hand-edited.
+- Independent verification passed: generator `--check`, 12/12 focused tests, `compileall`, `git diff --check`, required-field/count reconciliation, visible-row hidden-reason check, and 12 rerun-debt relationships covering 1,291 distinct semantic IDs/kinds. Ruff was not installed in the repository environment and is recorded as unavailable rather than passed.
+- Chief accepted the Phase 0-4 baseline audit. No runtime/UI migration has started. The next gate is Phase B evidence review and an explicit migration-scope decision.
+- The imported plan content was preserved semantically; one trailing blank EOF line was normalized after `git diff --cached --check` rejected it. Imported and committed plan hashes are both retained in state.
