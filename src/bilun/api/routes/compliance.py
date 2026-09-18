@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel
 
 from src.bilun.api.schemas import BilunCachePayloadResponse
 from src.bilun.db import read_json_payload as read_cache_json_payload
@@ -28,6 +29,13 @@ _DEFAULT_LIMIT = 500
 _MAX_LIMIT = 5000
 
 
+class ComplianceIndexRequest(BaseModel):
+    surface: str | None = None
+    patient_id: list[str] | None = None
+    limit: int = _DEFAULT_LIMIT
+    offset: int = 0
+
+
 def _pipeline_mode() -> str:
     return get_pipeline_mode()
 
@@ -48,19 +56,12 @@ def _parse_patient_ids(patient_id: list[str] | None) -> frozenset[str] | None:
     return frozenset(parsed) if parsed else None
 
 
-@router.get("/compliance-index", response_model=BilunCachePayloadResponse)
-def get_compliance_index(
+def _compliance_index_response(
     surface: str | None = None,
-    patient_id: Annotated[list[str] | None, Query()] = None,
+    patient_id: list[str] | None = None,
     limit: int = _DEFAULT_LIMIT,
     offset: int = 0,
 ):
-    """Cohort rollup of cached compliance ``recommended_actions``.
-
-    Built at cache time into ``cohort_compliance_index``. Old caches that
-    predate this table return ``artifacts_available: false`` with null
-    counts — never invented zeros.
-    """
     normalized_surface = (surface or "").strip() or None
     if normalized_surface is not None and normalized_surface not in INDEX_SURFACES:
         raise ValidationError(
@@ -125,3 +126,30 @@ def get_compliance_index(
         offset=offset,
     )
     return attach_bilun_data_source(sliced, data_source)
+
+
+@router.get("/compliance-index", response_model=BilunCachePayloadResponse)
+def get_compliance_index(
+    surface: str | None = None,
+    patient_id: Annotated[list[str] | None, Query()] = None,
+    limit: int = _DEFAULT_LIMIT,
+    offset: int = 0,
+):
+    """Cohort rollup of cached compliance ``recommended_actions``.
+
+    Built at cache time into ``cohort_compliance_index``. Old caches that
+    predate this table return ``artifacts_available: false`` with null
+    counts — never invented zeros.
+    """
+    return _compliance_index_response(surface, patient_id, limit, offset)
+
+
+@router.post("/compliance-index", response_model=BilunCachePayloadResponse)
+def post_compliance_index(request: ComplianceIndexRequest):
+    """Body-based equivalent for cohorts too large for a safe GET request line."""
+    return _compliance_index_response(
+        request.surface,
+        request.patient_id,
+        request.limit,
+        request.offset,
+    )

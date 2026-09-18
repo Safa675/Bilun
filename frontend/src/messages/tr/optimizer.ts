@@ -231,7 +231,7 @@ const optimizer = {
     evaluationDetails: "Değerlendirilmedi — {total} kayıttan {count} gösteriliyor",
     incompleteFindings: "Yüklenen sonuçlarda bulgu yok; uyumluluk doğrulanamaz.",
     evaluatedNoFindings: "Değerlendirilen kontrollerde bulgu yok; bu bir uyumluluk onayı değildir.",
-    partialResults: "Kısmi sonuçlar: yalnızca ilk 5.000 bulgu yüklendi; sayılar ve filtreler yüklenen satırları yansıtır.",
+    partialResults: "Daha fazla bulgu var; sonraki sayfayı incelemek için sayfalama kontrollerini kullanın.",
   },
   emDash: "—",
 } as const;

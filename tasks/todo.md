@@ -1,3 +1,27 @@
+## Task: PR87 claim-compliance correctness fixes (2026-09-18)
+
+### Goal
+Implement `plans/billing/2026-09-18-pr87-claim-compliance-fixes-plan.md` on `feat/compliance-k21-k26` so K21/K26 are correct, cohort evaluation payloads are bounded, and claim-compliance findings have their own reachable server-side pagination path.
+
+### Subtasks
+- [x] Enforce same-day K21 semantics and replace the different-day regression.
+- [x] Reconcile K26 diagnosis presence from header plus normalized primary diagnoses while preserving blank-vs-unavailable behavior.
+- [x] Replace unbounded cohort evaluation identities with exact counts plus bounded non-evaluated details and truncation metadata.
+- [x] Fetch and paginate `surface=claim_compliance` independently in the frontend, preserving active patient/cohort filters and total-count badges.
+- [x] Make claim-compliance monetary summary values nullable in TypeScript and render them nonfinancially.
+- [x] Run focused backend/frontend tests, Ruff, TypeScript, changed-file ESLint, then full backend/frontend suites where feasible.
+- [x] Record exact verification outcomes in `tasks/k21-k26-result.md` and complete this review section.
+
+### Out of Scope
+New SUT detectors, monetary integration for claim-compliance, broad compliance redesign, diagnosis-conflict adjudication, production cache rebuild/deploy, pushing or merging the branch.
+
+### Review
+Implemented from plan commit `58f3308a` on `feat/compliance-k21-k26`. K21 now joins bundled services to exact 510090 dates. K26 reconciles a nonblank header diagnosis with normalized primary `ClaimDiagnosis` rows while preserving explicit-blank versus unavailable provenance. Cohort cache data stores per-patient status counts plus at most 20 non-evaluated details; API responses expose exact filtered counts without unbounded successful evaluation identities. Compliance surfaces are fetched and paginated server-side; large patient cohorts fall back to a JSON POST when the GET query would exceed 6,000 characters. Claim-compliance money remains nullable/nonfinancial and old-cache absence stays unavailable.
+
+Final verification on the final tree: focused backend **84 passed**; focused frontend **22 passed**; full backend **2631 passed**; full frontend **266 passed**. Changed-file Ruff, ESLint, TypeScript, and `git diff --check` passed. Independent review first found and drove fixes for stale cohort aggregate state and backend-first rolling-deploy compatibility; the final fresh `codex review --uncommitted` returned **0 findings / patch is correct (0.91 confidence)**. Its read-only sandbox could not run pytest, so the writable-workspace suites above are the execution evidence. No production cache rebuild/deploy, push, merge, or commit was performed.
+
+---
+
 ## Task: K21 + K26 reviewer blockers
 
 ### Goal

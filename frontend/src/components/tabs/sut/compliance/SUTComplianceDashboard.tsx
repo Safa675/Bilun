@@ -26,14 +26,36 @@ const INDEX_SURFACES: readonly ComplianceIndexSurface[] = [
   "payment_methods",
   "claim_compliance",
 ];
+export const COMPLIANCE_INDEX_PAGE_SIZE = 100;
 
 export interface SUTComplianceDashboardProps {
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }
 
+export function selectCurrentComplianceIndex(
+  index: ComplianceIndexResponse | null,
+  resultKey: string,
+  requestKey: string,
+) {
+  return resultKey === requestKey ? index : null;
+}
+
 function isIndexSurface(subtab: ComplianceSubSection): subtab is ComplianceIndexSurface {
   return (INDEX_SURFACES as readonly string[]).includes(subtab);
+}
+
+export function complianceIndexQuery(
+  surface: ComplianceIndexSurface | undefined,
+  patientIds: readonly string[],
+  offset = 0,
+) {
+  return {
+    ...(surface ? { surface } : {}),
+    ...(patientIds.length > 0 ? { patientId: [...patientIds] } : {}),
+    limit: surface ? COMPLIANCE_INDEX_PAGE_SIZE : 1,
+    offset,
+  };
 }
 
 export function ComplianceIndexGroup({
@@ -42,10 +64,12 @@ export function ComplianceIndexGroup({
   loading,
   cohortPatientIds,
   cohortFilterActive,
+  onPageChange,
 }: SUTComplianceDashboardProps & {
   index: ComplianceIndexResponse | null;
   surface: ComplianceIndexSurface;
   loading: boolean;
+  onPageChange?: (offset: number) => void;
 }) {
   const inCohort = (row: { patient_id: string }) =>
     !cohortFilterActive || cohortPatientIds.has(row.patient_id);
@@ -57,9 +81,11 @@ export function ComplianceIndexGroup({
         (surface === "claim_compliance" && !index?.claim_compliance)}
       claimCompliance={surface === "claim_compliance"}
       partialResults={index?.pagination?.has_more === true}
-      evaluations={surface === "claim_compliance"
-        ? index?.claim_compliance?.evaluations.filter(inCohort)
+      claimComplianceSummary={surface === "claim_compliance"
+        ? index?.claim_compliance
         : undefined}
+      pagination={index?.pagination}
+      onPageChange={onPageChange}
     />
   );
 }
@@ -81,32 +107,123 @@ export function SUTComplianceDashboard({
       ? rawSubtab
       : "exemptions";
 
+  const cohortIds = useMemo(
+    () => cohortFilterActive ? [...cohortPatientIds].sort() : [],
+    [cohortFilterActive, cohortPatientIds],
+  );
+  const cohortKey = cohortFilterActive ? cohortIds.join("\u0000") : "*";
+  const aggregateRequestKey = `aggregate|${cohortKey}`;
   const [index, setIndex] = useState<ComplianceIndexResponse | null>(null);
   const [indexLoading, setIndexLoading] = useState(true);
+  const [indexResultKey, setIndexResultKey] = useState(aggregateRequestKey);
+  const [surfaceResult, setSurfaceResult] = useState<{
+    key: string;
+    index: ComplianceIndexResponse | null;
+  }>({ key: "", index: null });
+  const [pageCursor, setPageCursor] = useState({ key: "", offset: 0 });
   const [medulaTotal, setMedulaTotal] = useState<number | null>(null);
   const [alertBadges, setAlertBadges] = useState<
     Partial<Record<"exemptions" | "surcharge" | "copay_rates", number>>
   >({});
 
+  const currentIndex = selectCurrentComplianceIndex(index, indexResultKey, aggregateRequestKey);
+  const currentIndexLoading = indexLoading || indexResultKey !== aggregateRequestKey;
+  const surfaceKey = isIndexSurface(activeSubtab)
+    ? `${activeSubtab}|${cohortKey}`
+    : `none|${cohortKey}`;
+  const surfaceOffset = pageCursor.key === surfaceKey ? pageCursor.offset : 0;
+  const surfaceRequestKey = `${surfaceKey}|${surfaceOffset}`;
+  const emptyFilteredSurface =
+    isIndexSurface(activeSubtab) && cohortFilterActive && cohortIds.length === 0;
+  const emptySurfaceIndex = useMemo<ComplianceIndexResponse | null>(() => {
+    if (!emptyFilteredSurface || !isIndexSurface(activeSubtab)) return null;
+    return {
+      artifacts_available: currentIndex?.artifacts_available === true,
+      n_patients: 0,
+      n_findings: 0,
+      n_patients_with_findings: 0,
+      billed_at_risk_try: activeSubtab === "claim_compliance" ? null : 0,
+      by_surface: {},
+      rows: [],
+      pagination: {
+        total_matching: 0,
+        limit: COMPLIANCE_INDEX_PAGE_SIZE,
+        offset: 0,
+        has_more: false,
+      },
+      claim_compliance: activeSubtab === "claim_compliance" && currentIndex?.claim_compliance
+        ? {
+            counts: { evaluated: 0, missing_inputs: 0, unavailable: 0 },
+            non_evaluated_total: 0,
+            details: [],
+            details_truncated: false,
+          }
+        : activeSubtab === "claim_compliance" ? null : undefined,
+    };
+  }, [activeSubtab, currentIndex?.artifacts_available, currentIndex?.claim_compliance, emptyFilteredSurface]);
+  const surfaceIndex = emptyFilteredSurface
+    ? emptySurfaceIndex
+    : surfaceResult.key === surfaceRequestKey ? surfaceResult.index : null;
+  const surfaceLoading =
+    isIndexSurface(activeSubtab) &&
+    !emptyFilteredSurface &&
+    surfaceResult.key !== surfaceRequestKey;
+
   useEffect(() => {
     let cancelled = false;
-    getComplianceIndex({ limit: 5000, offset: 0 })
+    getComplianceIndex(complianceIndexQuery(undefined, cohortIds))
       .then((res) => {
         if (!cancelled) {
-          setIndex(res);
+          if (cohortFilterActive && cohortIds.length === 0 && res.artifacts_available) {
+            setIndex({
+              ...res,
+              n_patients: 0,
+              n_findings: 0,
+              n_patients_with_findings: 0,
+              billed_at_risk_try: 0,
+              by_surface: Object.fromEntries(INDEX_SURFACES.map((surface) => [
+                surface,
+                { n: 0, billed_try: surface === "claim_compliance" ? null : 0, n_patients: 0 },
+              ])),
+              rows: [],
+            });
+          } else {
+            setIndex(res);
+          }
+          setIndexResultKey(aggregateRequestKey);
           setIndexLoading(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setIndex(null);
+          setIndexResultKey(aggregateRequestKey);
           setIndexLoading(false);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [aggregateRequestKey, cohortFilterActive, cohortIds]);
+
+  useEffect(() => {
+    if (!isIndexSurface(activeSubtab) || emptyFilteredSurface) return;
+    let cancelled = false;
+    getComplianceIndex(complianceIndexQuery(activeSubtab, cohortIds, surfaceOffset))
+      .then((res) => {
+        if (!cancelled) {
+          setSurfaceResult({ key: surfaceRequestKey, index: res });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSurfaceResult({ key: surfaceRequestKey, index: null });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSubtab, cohortIds, emptyFilteredSurface, surfaceOffset, surfaceRequestKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,33 +265,27 @@ export function SUTComplianceDashboard({
     };
   }, [cohortFilterActive, cohortPatientIds]);
 
-  const filteredIndexRows = useMemo(() => {
-    const rows = index?.rows ?? [];
-    if (!cohortFilterActive) return rows;
-    return rows.filter((row) => cohortPatientIds.has(row.patient_id));
-  }, [index, cohortFilterActive, cohortPatientIds]);
-
-  const indexAvailable = index?.artifacts_available === true;
+  const indexAvailable = currentIndex?.artifacts_available === true;
   const headerFindings = indexAvailable
-    ? filteredIndexRows.length
+    ? currentIndex?.n_findings ?? 0
     : null;
   const headerPatients = indexAvailable
-    ? new Set(filteredIndexRows.map((row) => row.patient_id)).size
+    ? currentIndex?.n_patients_with_findings ?? 0
     : null;
   const headerBilled = indexAvailable
-    ? filteredIndexRows.reduce((sum, row) => sum + (row.billed_try ?? 0), 0)
+    ? currentIndex?.billed_at_risk_try ?? 0
     : null;
 
   const badgeCounts = useMemo(() => {
     const counts: Partial<Record<ComplianceSubSection, number>> = { ...alertBadges };
     if (indexAvailable) {
       for (const surface of INDEX_SURFACES) {
-        if (surface === "claim_compliance" && !index?.claim_compliance) continue;
-        counts[surface] = filteredIndexRows.filter((row) => row.surface === surface).length;
+        if (surface === "claim_compliance" && !currentIndex?.claim_compliance) continue;
+        counts[surface] = currentIndex?.by_surface?.[surface]?.n ?? 0;
       }
     }
     return counts;
-  }, [alertBadges, filteredIndexRows, indexAvailable, index?.claim_compliance]);
+  }, [alertBadges, currentIndex?.by_surface, currentIndex?.claim_compliance, indexAvailable]);
 
   const handleSelectSubtab = (subtab: ComplianceSubSection) => {
     if (!pathname) return;
@@ -236,11 +347,12 @@ export function SUTComplianceDashboard({
         />
       ) : isIndexSurface(activeSubtab) ? (
         <ComplianceIndexGroup
-          index={index}
+          index={surfaceIndex}
           surface={activeSubtab}
-          loading={indexLoading}
+          loading={surfaceLoading || currentIndexLoading}
           cohortPatientIds={cohortPatientIds}
           cohortFilterActive={cohortFilterActive}
+          onPageChange={(offset) => setPageCursor({ key: surfaceKey, offset })}
         />
       ) : (
         <CopayExemptionCompliance

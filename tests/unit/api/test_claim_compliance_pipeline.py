@@ -45,11 +45,9 @@ _MONEY_FIELDS = {
     "audit_exposure_try",
 }
 _EXPECTED_FINDINGS = {
-    ("P1", "C-A", ICU_RULE_ID, "A-vent"),
     ("P1", "C-A", ICU_RULE_ID, "A-monitor"),
     ("P1", "C-A", DIAGNOSIS_RULE_ID, None),
     ("P2", "C-G", ICU_RULE_ID, "G-vent"),
-    ("P2", "C-G", DIAGNOSIS_RULE_ID, None),
 }
 
 
@@ -94,13 +92,24 @@ def synthetic_rows():
             if line["claim_id"] == header["claim_id"]
         )
         header["expected_total_payable_try"] = header["expected_total_billed_try"]
-    return headers, lines
+    diagnoses = [{
+        "diagnosis_id": "D-G-primary",
+        "claim_id": "C-G",
+        "patient_id": "P2",
+        "episode_id": "E-C-G",
+        "icd10_code": "J96.0",
+        "is_primary": True,
+        "diagnosis_role": "primary",
+        "diagnosis_date": "2026-01-01",
+        "exemption_eligible": False,
+    }]
+    return headers, lines, diagnoses
 
 
-def _ingest(headers, lines):
+def _ingest(headers, lines, diagnoses=None):
     return SUTClaimDataset.from_rows(
         claim_headers=headers,
-        diagnoses=[],
+        diagnoses=diagnoses or [],
         procedure_lines=lines,
         material_lines=[],
         drug_lines=[],
@@ -196,9 +205,14 @@ def _run_with_spies(dataset, *, bills):
         for scope in scopes
     )
     assert all(
-        c is dataset.claims[c.claim_id]
+        c.claim_id in dataset.claims and c.patient_id == dataset.claims[c.claim_id].patient_id
         for call in diagnosis_spy.call_args_list for c in call.args[0]
     )
+    normalized = [
+        c for call in diagnosis_spy.call_args_list for c in call.args[0]
+        if c.claim_id == "C-G"
+    ]
+    assert normalized and all(c.primary_icd10 == "J96.0" for c in normalized)
     return result
 
 
@@ -294,7 +308,7 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
     assert payload["rows"] == index["rows"]
     rows = [row for row in payload["rows"] if row["surface"] == "claim_compliance"]
     assert {_identity(row) for row in rows} == _EXPECTED_FINDINGS
-    assert len(rows) == len({row["action_id"] for row in rows}) == 5
+    assert len(rows) == len({row["action_id"] for row in rows}) == 3
     _assert_nonfinancial(rows)
     for pid, expected in patients.items():
         response = client.get(f"/api/billing-report/{pid}")
@@ -341,13 +355,19 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
         assert response.status_code == 200
         payload = response.json()
         assert payload["rows"] == expected[offset:offset + 2]
-        assert payload["n_findings"] == 5
+        assert payload["n_findings"] == 3
         assert payload["pagination"] == {
-            "total_matching": 5, "limit": 2, "offset": offset, "has_more": offset < 4,
+            "total_matching": 3, "limit": 2, "offset": offset, "has_more": offset < 2,
         }
         assert payload["billed_at_risk_try"] is None
         assert payload["by_surface"]["claim_compliance"]["billed_try"] is None
-        assert len(payload["claim_compliance"]["evaluations"]) == 14
+        assert payload["claim_compliance"]["counts"] == {
+            "evaluated": 12, "missing_inputs": 2, "unavailable": 0,
+        }
+        assert payload["claim_compliance"]["non_evaluated_total"] == 2
+        assert len(payload["claim_compliance"]["details"]) == 2
+        assert payload["claim_compliance"]["details_truncated"] is False
+        assert payload["claim_compliance"]["evaluations"] == []
         pages.extend(payload["rows"])
     assert pages == expected
     _assert_nonfinancial(pages)
@@ -365,12 +385,38 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
         assert payload["n_patients"] == len(pids)
         assert payload["billed_at_risk_try"] is None
         assert payload["by_surface"]["claim_compliance"]["billed_try"] is None
-        assert payload["claim_compliance"]["evaluations"] == [
-            row for row in index["claim_compliance"]["evaluations"] if row["patient_id"] in pids
-        ]
+        expected_counts = (
+            {"evaluated": 8, "missing_inputs": 2, "unavailable": 0}
+            if pids == {"P1"}
+            else {"evaluated": 4, "missing_inputs": 0, "unavailable": 0}
+            if pids == {"P2"}
+            else {"evaluated": 12, "missing_inputs": 2, "unavailable": 0}
+            if pids == {"P1", "P2"}
+            else {"evaluated": 0, "missing_inputs": 0, "unavailable": 0}
+        )
+        assert payload["claim_compliance"]["counts"] == expected_counts
+        assert all(row["patient_id"] in pids for row in payload["claim_compliance"]["details"])
     payload = client.get("/api/compliance-index", params={"surface": "materials"}).json()
-    assert payload["claim_compliance"]["evaluations"] == []
+    assert payload["claim_compliance"]["counts"] == {
+        "evaluated": 0, "missing_inputs": 0, "unavailable": 0,
+    }
     assert all(row["surface"] == "materials" for row in payload["rows"])
+
+    large_cohort = ["P1", *[f"PX-{i:04d}" for i in range(499)]]
+    response = client.post("/api/compliance-index", json={
+        "surface": "claim_compliance",
+        "patient_id": large_cohort,
+        "limit": 100,
+        "offset": 0,
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["n_patients"] == 500
+    assert payload["n_findings"] == payload["pagination"]["total_matching"] == 2
+    assert {row["patient_id"] for row in payload["rows"]} == {"P1"}
+    assert payload["claim_compliance"]["counts"] == {
+        "evaluated": 8, "missing_inputs": 2, "unavailable": 0,
+    }
     for params in ({"surface": "invalid"}, {"limit": 0}, {"limit": 5001}, {"offset": -1}):
         assert client.get("/api/compliance-index", params=params).status_code == 400
 
@@ -399,8 +445,8 @@ def test_stable_projection_and_unchanged_legacy_finances(computed, synthetic_row
         if surface != "claim_compliance":
             assert index["by_surface"][surface] == baseline_index["by_surface"][surface]
     assert [row for row in index["rows"] if row["surface"] != "claim_compliance"] == baseline_index["rows"]
-    headers, lines = synthetic_rows
-    reordered = _ingest(headers[::-1], lines[::-1])
+    headers, lines, diagnoses = synthetic_rows
+    reordered = _ingest(headers[::-1], lines[::-1], diagnoses[::-1])
     reordered_reports, _ = _run_with_spies(reordered, bills=False)
     reordered_bills = _run_with_spies(reordered, bills=True)
     for actual, repeated in ((reports, reordered_reports), (bills, reordered_bills)):

@@ -479,8 +479,19 @@ export interface ComplianceIndexRow {
 
 export interface ComplianceIndexSurfaceSummary {
   n: number;
-  billed_try: number;
+  billed_try: number | null;
   n_patients?: number;
+}
+
+export interface ClaimComplianceCohortSummary {
+  counts: {
+    evaluated: number;
+    missing_inputs: number;
+    unavailable: number;
+  };
+  non_evaluated_total: number;
+  details: ClaimComplianceEvaluation[];
+  details_truncated: boolean;
 }
 
 export interface ComplianceIndexPagination {
@@ -499,7 +510,7 @@ export interface ComplianceIndexResponse extends SUTDataSourceCarrier {
   by_surface: Record<string, ComplianceIndexSurfaceSummary>;
   rows: ComplianceIndexRow[];
   pagination?: ComplianceIndexPagination;
-  claim_compliance?: { evaluations: ClaimComplianceEvaluation[] } | null;
+  claim_compliance?: ClaimComplianceCohortSummary | null;
 }
 
 export interface LabOptimization extends ExactnessState {
@@ -1233,4 +1244,3 @@ export interface MedulaRejectionQueueResponse extends SUTDataSourceCarrier {
 export interface MedulaRejectionIngestStatus {
   ingest_available: boolean;
 }
-

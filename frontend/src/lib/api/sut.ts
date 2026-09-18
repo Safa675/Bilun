@@ -363,6 +363,7 @@ export async function getComplianceIndex(
   },
   options?: RequestInit,
 ): Promise<ComplianceIndexResponse> {
+  const maxGetQueryLength = 6000;
   const query = new URLSearchParams();
   if (params?.surface) query.set("surface", params.surface);
   if (params?.limit != null) query.set("limit", String(params.limit));
@@ -376,6 +377,23 @@ export async function getComplianceIndex(
     query.append("patient_id", id);
   }
   const queryString = query.toString();
+  if (queryString.length > maxGetQueryLength && patientIds.length > 0) {
+    return postJSON<ComplianceIndexResponse, {
+      surface?: string;
+      patient_id: string[];
+      limit?: number;
+      offset?: number;
+    }>(
+      "/api/compliance-index",
+      {
+        ...(params?.surface ? { surface: params.surface } : {}),
+        patient_id: patientIds,
+        ...(params?.limit != null ? { limit: params.limit } : {}),
+        ...(params?.offset != null ? { offset: params.offset } : {}),
+      },
+      options,
+    );
+  }
   return requestJSON<ComplianceIndexResponse>(
     queryString ? `/api/compliance-index?${queryString}` : "/api/compliance-index",
     options,
@@ -917,5 +935,4 @@ export async function getLabPrices(options?: RequestInit): Promise<{ tests: LabP
     options,
   );
 }
-
 

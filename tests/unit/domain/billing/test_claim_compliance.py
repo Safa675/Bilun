@@ -58,7 +58,24 @@ def _line(line_id, code, claim_id="C1", patient_id="P1", **changes):
     }
 
 
-def _context(headers=None, lines=None, patient_id="P1"):
+def _diagnosis(
+    diagnosis_id="D1", claim_id="C1", patient_id="P1", *,
+    icd10_code="J96.0", is_primary=True,
+):
+    return {
+        "diagnosis_id": diagnosis_id,
+        "claim_id": claim_id,
+        "patient_id": patient_id,
+        "episode_id": f"E-{claim_id}",
+        "icd10_code": icd10_code,
+        "is_primary": is_primary,
+        "diagnosis_role": "primary" if is_primary else "secondary",
+        "diagnosis_date": "2026-01-01",
+        "exemption_eligible": False,
+    }
+
+
+def _context(headers=None, lines=None, patient_id="P1", diagnoses=None):
     headers = [_header()] if headers is None else headers
     lines = [_line("L1", "510090"), _line("L2", "530130")] if lines is None else lines
     headers = [
@@ -75,7 +92,7 @@ def _context(headers=None, lines=None, patient_id="P1"):
     ]
     ds = SUTClaimDataset.from_rows(
         claim_headers=headers,
-        diagnoses=[],
+        diagnoses=[] if diagnoses is None else diagnoses,
         procedure_lines=lines,
         material_lines=[],
         drug_lines=[],
@@ -167,6 +184,42 @@ def test_absent_diagnosis_and_legacy_constructor_are_unknown():
     assert _evaluation(_report(ctx).claim_compliance, "C1", DIAGNOSIS_RULE_ID)["status"] == "missing_inputs"
 
 
+@pytest.mark.parametrize(
+    "header_value,remove_header,diagnoses,expected_status,expected_finding",
+    [
+        ("", False, [_diagnosis()], "evaluated", False),
+        (None, True, [_diagnosis()], "evaluated", False),
+        ("", False, [], "evaluated", True),
+        (None, True, [], "missing_inputs", False),
+        ("J96.0", False, [_diagnosis(icd10_code="A41.9")], "evaluated", False),
+        ("", False, [_diagnosis(is_primary=False)], "evaluated", True),
+        ("", False, [_diagnosis(icd10_code=" ")], "evaluated", True),
+        (None, True, [_diagnosis(icd10_code=" ")], "missing_inputs", False),
+    ],
+)
+def test_k26_reconciles_header_and_normalized_primary_diagnosis(
+    header_value, remove_header, diagnoses, expected_status, expected_finding,
+):
+    header = _header(primary_icd10=header_value)
+    if remove_header:
+        header.pop("primary_icd10")
+    projection = _report(_context([header], diagnoses=diagnoses)).claim_compliance
+    evaluation = _evaluation(projection, "C1", DIAGNOSIS_RULE_ID)
+    assert evaluation["status"] == expected_status
+    assert any(row["rule_id"] == DIAGNOSIS_RULE_ID for row in projection.findings) is expected_finding
+
+
+def test_k26_legacy_nonblank_header_wins_even_when_availability_flag_false():
+    ctx = _context([_header(primary_icd10="J96.0")])
+    ctx = replace(
+        ctx,
+        claims=(replace(ctx.claims[0], primary_icd10_available=False),),
+    )
+    projection = _report(ctx).claim_compliance
+    assert _evaluation(projection, "C1", DIAGNOSIS_RULE_ID)["status"] == "evaluated"
+    assert not any(row["rule_id"] == DIAGNOSIS_RULE_ID for row in projection.findings)
+
+
 @pytest.mark.parametrize("claim_type", ["", None, "unknown", "not_inpatient"])
 def test_unknown_claim_type_never_uses_inpatient_fallback(claim_type):
     projection = _report(_context([_header(claim_type=claim_type)])).claim_compliance
@@ -210,7 +263,7 @@ def test_intermediate_icu_package_exception_preserved(code):
     assert _report(ctx).claim_compliance.findings == []
 
 
-def test_multiple_claims_lines_same_claim_not_same_day_and_once_per_report():
+def test_multiple_claims_same_day_only_other_claim_reordered_and_duplicate_stable():
     ctx = _context(
         [_header("C1"), _header("C2", primary_icd10="J96.0"), _header("C3", primary_icd10=None)],
         [
@@ -231,7 +284,7 @@ def test_multiple_claims_lines_same_claim_not_same_day_and_once_per_report():
     assert {claim.claim_id for claim in diagnosis.call_args.args[0]} == {"C1", "C2"}
     assert len(projection.evaluations) == 6
     assert {(row["claim_id"], row.get("procedure_line_id")) for row in projection.findings} == {
-        ("C1", "L2"), ("C1", "L3"), ("C1", None),
+        ("C1", "L3"), ("C1", None),
     }
     assert _report(ctx.slice_for_claim("C2")).claim_compliance.findings == []
     reordered = replace(ctx, claims=ctx.claims[::-1], procedure_lines=ctx.procedure_lines[::-1])
@@ -270,15 +323,22 @@ def test_empty_headers_are_not_a_clean_pass():
     assert all(row["missing_inputs"] == ["claim_headers"] for row in projection.evaluations)
 
 
-@pytest.mark.parametrize("scope", ["context", "claim", "line", "orphan"])
+@pytest.mark.parametrize(
+    "scope",
+    ["context", "claim", "line", "orphan", "diagnosis_patient", "diagnosis_orphan"],
+)
 def test_patient_and_claim_scope_guard(scope):
-    ctx = _context()
+    ctx = _context(diagnoses=[_diagnosis()]) if scope.startswith("diagnosis") else _context()
     if scope == "context":
         ctx = replace(ctx, patient_id="P2")
     elif scope == "claim":
         ctx = replace(ctx, claims=(replace(ctx.claims[0], patient_id="P2"),))
     elif scope == "line":
         ctx = replace(ctx, procedure_lines=(replace(ctx.procedure_lines[0], patient_id="P2"),))
+    elif scope == "diagnosis_patient":
+        ctx = replace(ctx, diagnoses=(replace(ctx.diagnoses[0], patient_id="P2"),))
+    elif scope == "diagnosis_orphan":
+        ctx = replace(ctx, diagnoses=(replace(ctx.diagnoses[0], claim_id="C2"),))
     else:
         ctx = replace(ctx, procedure_lines=(replace(ctx.procedure_lines[0], claim_id="C2"),))
     with pytest.raises(ValueError, match="Claim compliance"):

@@ -213,3 +213,50 @@ def test_slice_filters_surface_and_patient() -> None:
     assert sliced["rows"][0]["patient_id"] == "P-A"
     assert sliced["pagination"]["total_matching"] == 1
     assert sliced["pagination"]["has_more"] is False
+
+
+def test_claim_compliance_evaluation_summary_is_exact_bounded_and_filterable() -> None:
+    reports = {}
+    for patient_index in range(30):
+        patient_id = f"P-{patient_index:02d}"
+        evaluations = [
+            {
+                "patient_id": patient_id,
+                "claim_id": f"CLEAN-{patient_index:02d}-{claim_index:02d}",
+                "rule_id": "icu_bundled_leakage_510090",
+                "status": "evaluated",
+                "missing_inputs": [],
+            }
+            for claim_index in range(10)
+        ]
+        evaluations.append({
+            "patient_id": patient_id,
+            "claim_id": f"MISSING-{patient_index:02d}",
+            "rule_id": "tablo15_8_missing_diagnosis",
+            "status": "missing_inputs",
+            "missing_inputs": ["primary_icd10"],
+        })
+        reports[patient_id] = {"claim_compliance": {"findings": [], "evaluations": evaluations}}
+
+    index = build_cohort_compliance_index(reports)
+    assert "evaluations" not in index["claim_compliance"]
+
+    sliced = slice_compliance_index(index, surface="claim_compliance", limit=1)
+    summary = sliced["claim_compliance"]
+    assert summary["counts"] == {"evaluated": 300, "missing_inputs": 30, "unavailable": 0}
+    assert summary["non_evaluated_total"] == 30
+    assert len(summary["details"]) <= 20
+    assert summary["details_truncated"] is True
+    assert summary["evaluations"] == []
+    assert not any("CLEAN-" in str(value) for value in summary.values())
+
+    filtered = slice_compliance_index(
+        index,
+        surface="claim_compliance",
+        patient_ids=frozenset({"P-29"}),
+        limit=1,
+    )["claim_compliance"]
+    assert filtered["counts"] == {"evaluated": 10, "missing_inputs": 1, "unavailable": 0}
+    assert filtered["non_evaluated_total"] == 1
+    assert filtered["details_truncated"] is True
+    assert filtered["evaluations"] == []

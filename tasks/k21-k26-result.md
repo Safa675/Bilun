@@ -1,73 +1,50 @@
-# K21 + K26 implementation evidence
+# PR87 claim-compliance correctness fixes — final evidence
 
-## Reviewer follow-up — 2026-09-17
+Date: 2026-09-18
+Branch: `feat/compliance-k21-k26`
+Plan/base commit: `58f3308a477efda747e9dde031fe29a9e6c07846` (`docs(plan): define PR87 compliance correctness fixes`)
 
-Only the two blockers and cheap old-cache badge fix were changed in this pass.
-- Full schema inference at `src/bilun/domain/billing/cohort_compliance.py:189` handles late money and other late non-null fields. Regression at `tests/unit/domain/billing/test_cohort_compliance.py:115` builds 101 null-money findings before a legacy 123.45 TRY row, checks build and slice, unchanged legacy row/surface/aggregate, and all eight new-row money fields null. Before the fix it failed with Polars ComputeError (the first reported late field was `sut_section_id`); afterward it passed.
-- Scoped presentation selector at `frontend/src/lib/workspaceViews.ts:58` is shared by rendered findings and tab count. KPI at `frontend/src/components/patient/views/ComplianceViewSection.tsx:66` and badge at `frontend/src/components/patient/views/PatientWorkspaceViews.tsx:56` now include only the scoped projection findings. Rendered tests assert patient count 4, claim count 3, legacy-only count 1; foreign-patient exclusion, unchanged legacy actions, 123.45 billed risk, 23 uplift and unchanged report payload.
-- Dashboard badge guard at `frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx:172` omits the count key when the old cache lacks the projection. Regression checks the actual strip props have no claim-compliance key, no rendered badge, preserved legacy count 1, and new-cache count 2.
+## Implemented behavior
 
-### Commands and actual outcomes
-All commands used this worktree (frontend commands from `frontend/`); the existing Python environment was used only as a runtime.
-- Red regression: `PYTHONPATH=. /opt/Bilun/.venv/bin/python -m pytest -o addopts='' tests/unit/domain/billing/test_cohort_compliance.py -q` — 1 failed (new ordering regression), 6 passed before fix.
-- Green regression: `PYTHONPATH=. /opt/Bilun/.venv/bin/python -m pytest -o addopts='' tests/unit/domain/billing/test_cohort_compliance.py::test_late_legacy_money_after_more_than_100_null_findings -q` — 1 passed (also rerun successfully).
-- Focused backend: `PYTHONPATH=. /opt/Bilun/.venv/bin/python -m pytest -o addopts='' tests/unit/domain/billing/test_cohort_compliance.py tests/unit/domain/billing/test_claim_compliance.py tests/unit/api/test_claim_compliance_pipeline.py -q` — **46 passed**, 14.81s; one Starlette TestClient deprecation warning.
-- Frontend baseline: `npx --no-install vitest run src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx` — 10 passed.
-- Final frontend: `npx --no-install vitest run src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx src/lib/workspaceViews.test.ts` — **18 passed**, 6.34s.
-- `npx --no-install tsc --noEmit` — passed on final code/tests (earlier `npx tsc --noEmit` also passed).
-- `npx --no-install eslint src/components/patient/views/ComplianceViewSection.tsx src/components/patient/views/PatientWorkspaceViews.tsx src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx src/lib/workspaceViews.ts` — one error only: existing `react-hooks/set-state-in-effect` at `PatientWorkspaceViews.tsx:77`.
-- Baseline proof: `git show HEAD:frontend/src/components/patient/views/PatientWorkspaceViews.tsx | npx --no-install eslint --stdin --stdin-filename src/components/patient/views/PatientWorkspaceViews.tsx` — same error at HEAD line 75. Navigation effect left untouched, not suppressed.
-- `npx --no-install eslint src/components/patient/views/ComplianceViewSection.tsx src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx src/lib/workspaceViews.ts` — passed.
-- `/opt/Bilun/.venv/bin/python -m ruff check src/bilun/domain/billing/cohort_compliance.py tests/unit/domain/billing/test_cohort_compliance.py` — passed.
-- Mistaken `npx vitest run tests/unit/domain/billing` — no test files, exit 1; Python tests were then run with pytest as recorded above.
-- `git diff --check` — passed; final status showed no catalog/generated-data drift relative to session-start paths. Additional modified files this pass: `PatientWorkspaceViews.tsx` and `test_cohort_compliance.py`; remaining edits are within existing scoped files/tracking.
+- **K21 / `icu_bundled_leakage_510090`:** bundled-service findings now require the service `procedure_date` to equal a `510090` date on the same eligible inpatient claim. Different-day services on the same multi-day claim no longer produce a K21 finding; same-day positives, code normalization, keyword fallback, P55200x exclusion, identity, and dedup behavior remain covered.
+- **K26 / `tablo15_8_missing_diagnosis`:** diagnosis presence is reconciled from a nonblank `ClaimHeader.primary_icd10` or a linked normalized primary `ClaimDiagnosis` row. A nonblank legacy/direct header wins even when `primary_icd10_available=False`. Explicit blank header input with no normalized primary is an evaluated violation; omitted/null/NaN provenance with no normalized primary remains `missing_inputs`.
+- **Cohort evaluation payload:** cache data stores exact per-patient status counts plus at most 20 non-evaluated details. Successful evaluated claim identities are not persisted or serialized without bound. API responses expose exact filtered counts, exact non-evaluated totals, bounded details, and `details_truncated`.
+- **Rolling-deploy compatibility:** compact API responses also carry `evaluations: []`. This keeps the pre-change frontend from crashing during backend-first deployment without reintroducing successful evaluation identities.
+- **Reachability/pagination:** active compliance surfaces are fetched independently with server-side `surface`, `patient_id`, `limit`, and `offset`; the table has reachable previous/next controls. KPIs and badges use server summaries rather than current-page row counts.
+- **Large cohort transport:** `getComplianceIndex()` uses GET for normal requests and switches to a JSON POST when the encoded query exceeds 6,000 characters. Measured representative query sizes were about 1,593 bytes (50 IDs), 2,043 (100), 5,043 (250), 10,043 (500), and 20,043 (1,000).
+- **Nonfinancial contract:** claim-compliance `billed_try` is nullable in TypeScript and renders as `—`; the projection remains outside recommended actions and legacy monetary totals.
+- **Old cache behavior:** missing projection data remains unavailable/unknown rather than a clean zero. Legacy caches containing `evaluations` are still read and compacted by the new API path.
 
-Pagination and its >5000 warning remain unchanged. No commit, push, service operation, cache rebuild, or other-worktree edits. No browser/full-suite claim. Full requested changed-file ESLint is not green solely due to the empirically confirmed HEAD navigation-effect error above.
+## Independent-review follow-ups
 
-## Outcome
-Coverage: **2/2 selected detectors connected**, not coverage of all rules. Existing diff remains on `feat/compliance-k21-k26` for Chief. No commit/push/deploy/live-cache work.
+Two review findings were fixed before the final gate:
 
-## Ownership and provenance
-`patient_report.py` owns one narrow `claim_compliance` projection; the validator engine remains separate. Existing detector functions and their legal semantics are unchanged. The projection never enters financial action collection or report totals.
+1. **P2 stale aggregate summary after cohort changes.** The dashboard could briefly pair a new surface request with the previous cohort's aggregate KPIs/badges. Aggregate results are now keyed to the cohort request and stale summaries are hidden while the new request is pending. Regression: `selectCurrentComplianceIndex()` rejects a mismatched request key.
+2. **P1 rolling-deploy compatibility.** An already-open old frontend calls `claim_compliance.evaluations.filter(...)`; dropping the field entirely would crash while the backend is restarted before the frontend. API summaries now return a bounded compatibility field `evaluations: []`.
 
-Normal `SUTClaimDataset.from_rows` parsing/context tests cover ICU/bundled positives, no-leak and P55200x negatives, multiple claims/lines, stable identity/dedup and wrapped-real detector calls once per patient/bill report scope. K26 availability distinguishes explicit blank/whitespace strings from omitted/null/NaN inputs; legacy constructors default to unknown. Unknown care setting and missing procedure context are not evaluated passes; invalid dates are rejected by ingestion. K21 retains its existing same-claim (not date-matching) semantics.
+The final fresh `codex review --uncommitted` returned **0 findings**, `overall_correctness: "patch is correct"`, confidence **0.91**. Its read-only sandbox could not rerun pytest because no writable temporary directory was available; the writable-workspace runs below are the execution evidence.
 
-Temporary DuckDB writers/readers and isolated FastAPI TestClient verify patient/bill reports, compliance index, filtering/pagination, patient scope, null money and legacy financial invariants. Frontend rendered tests verify both findings, native group filtering, patient/claim drill-through and missing/old-cache honesty.
+## Verification on the final tree
 
-## Verification
-- Chief independently reported **71 backend tests**, **9 frontend tests**, typecheck and changed-file lint passing before the final compact-summary change. Exact Chief commands were not supplied.
-- `/opt/Bilun/.venv/bin/python -m ruff check tests/unit/api/test_claim_compliance_pipeline.py`: passed after removing unused `copy.deepcopy`.
-- `PYTHONPATH=. /opt/Bilun/.venv/bin/python -m pytest -o addopts='' tests/unit/api/test_claim_compliance_pipeline.py -q`: **4 passed**, one TestClient deprecation warning (prior finish).
-- Final frontend cwd: `frontend/`.
-- `npx --no-install vitest run src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx -t compact`: **1 passed, 9 skipped**.
-- `npx --no-install vitest run src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx`: **10 passed**, 3.47s.
-- `npx --no-install eslint src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx src/components/tabs/sut/compliance/modules/ComplianceFindingTable.tsx`: passed.
-- Final regression uses 120 evaluations: 80 evaluated, 20 missing-input, 20 unavailable; correct summary, closed details with only 20 entries, unknown empty state distinct from evaluated empty state, findings/links/null money retained.
-
-## Files in scoped diff
 Backend:
-- `src/bilun/domain/claims/models.py`
-- `src/bilun/domain/claims/parsing/row_parsers.py`
-- `src/bilun/domain/billing/types.py`
-- `src/bilun/domain/billing/patient_report.py`
-- `src/bilun/domain/billing/claim_compliance.py`
-- `src/bilun/domain/billing/cohort_compliance.py`
-- `tests/unit/domain/billing/test_claim_compliance.py`
-- `tests/unit/api/test_claim_compliance_pipeline.py`
 
-Frontend:
-- `frontend/src/components/patient/views/ComplianceViewSection.tsx`
-- `frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx`
-- `frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx`
-- `frontend/src/components/tabs/sut/compliance/modules/ComplianceFindingTable.tsx`
-- `frontend/src/lib/domains/sut.ts`
-- `frontend/src/lib/recommendedActions.ts`
-- `frontend/src/lib/workspaceSubtabs.ts`
-- `frontend/src/lib/workspaceViews.ts`
-- `frontend/src/messages/en/optimizer.ts`
-- `frontend/src/messages/tr/optimizer.ts`
+- Focused: `PYTHONPATH=. .venv/bin/python -m pytest -o addopts='' tests/unit/domain/prose_rules/test_icu_bundled_leakage.py tests/unit/domain/billing/test_claim_compliance.py tests/unit/domain/billing/test_cohort_compliance.py tests/unit/api/test_claim_compliance_pipeline.py tests/unit/domain/test_loaders.py -q` → **84 passed**, 1 warning.
+- Full: `PYTHONPATH=. .venv/bin/python -m pytest -o addopts='' tests/unit -q` → **2631 passed**, 3 warnings, 190.84s.
+- Ruff on all changed backend/test files via `/home/safa/miniforge3/bin/ruff check ...` → **passed**.
 
-Tracking: `tasks/todo.md`, `tasks/lessons.md`, `tasks/k21-k26-result.md`.
+Frontend (run from `frontend/`):
 
-## Limitations
-No browser test, production startup, full cache rebuild or whole-suite claim. Typecheck was reported passing before the last UI change; only the requested Vitest file and two-file ESLint were rerun in the final finish. Chief reports three unrelated existing broad frontend lint set-state-in-effect errors in unchanged CopayExemptionCompliance/CopayRateCompliance/SurchargeCompliance; not modified. Existing first-5,000 finding pagination is explicitly labeled partial. Evaluation details intentionally show only the first 20 non-evaluated entries. Prior diff/status inspection found no catalog/generated-data changes; no broad final rescan was run per the narrow finish instruction.
+- Focused: `npx --no-install vitest run src/components/tabs/sut/compliance/SUTComplianceDashboard.test.tsx src/lib/workspaceViews.test.ts src/lib/api/sut.complianceIndex.test.ts` → **3 files, 22 tests passed**.
+- Full: `npx --no-install vitest run` → **51 files, 266 tests passed**.
+- `npx --no-install tsc --noEmit` → **passed**.
+- ESLint on every changed frontend source/test/message file → **passed**.
+
+Hygiene:
+
+- `git diff --check` → **passed** before this evidence-only documentation update and is rerun at final handoff.
+- Test runs produced no unexpected catalog/generated-data drift; final status is limited to the scoped source/tests/tracking files plus the new compliance API test.
+- No production cache rebuild, deploy, service operation, merge, push, commit, or other-worktree edit was performed.
+
+## Merge-gate result
+
+All correctness gates in `plans/billing/2026-09-18-pr87-claim-compliance-fixes-plan.md` are covered by the implementation, tests, static checks, full backend/frontend suites, and the final independent review. Production cache rebuild/deploy remains intentionally out of scope for this implementation pass.

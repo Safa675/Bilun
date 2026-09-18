@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import replace
 from datetime import date
 from typing import Any
 from urllib.parse import quote
@@ -73,6 +74,14 @@ def project_claim_compliance(
             raise ValueError("Claim compliance procedure must belong to a context claim")
         procedures[line.claim_id].append(line)
 
+    normalized_primary_diagnosis: dict[str, str] = {}
+    for diagnosis in ctx.diagnoses:
+        if diagnosis.claim_id not in claim_ids:
+            raise ValueError("Claim compliance diagnosis must belong to a context claim")
+        code = diagnosis.icd10_code.strip()
+        if diagnosis.is_primary and code:
+            normalized_primary_diagnosis.setdefault(diagnosis.claim_id, code)
+
     icu_claims: list[ClaimHeader] = []
     diagnosis_claims: list[ClaimHeader] = []
     for claim in sorted(ctx.claims, key=lambda row: row.claim_id):
@@ -93,12 +102,27 @@ def project_claim_compliance(
         if not missing:
             icu_claims.append(claim)
 
-        missing = [] if claim.primary_icd10_available else ["primary_icd10"]
+        header_diagnosis = (claim.primary_icd10 or "").strip()
+        normalized_diagnosis = normalized_primary_diagnosis.get(claim.claim_id, "")
+        effective_diagnosis = header_diagnosis or normalized_diagnosis
+        missing = (
+            []
+            if effective_diagnosis or claim.primary_icd10_available
+            else ["primary_icd10"]
+        )
         result.evaluations.append(
             _evaluation(patient_id, claim.claim_id, DIAGNOSIS_RULE_ID, missing)
         )
         if not missing:
-            diagnosis_claims.append(claim)
+            diagnosis_claims.append(
+                claim
+                if header_diagnosis or not normalized_diagnosis
+                else replace(
+                    claim,
+                    primary_icd10=normalized_diagnosis,
+                    primary_icd10_available=True,
+                )
+            )
 
     violations = detect_icu_bundled_leakage(
         icu_claims,

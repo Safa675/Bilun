@@ -2,11 +2,22 @@ import { describe, expect, it, vi } from "vitest";
 import React from "react";
 import { WorkspaceProvider } from "@/stores/workspaceContext";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
-import { ComplianceIndexGroup, SUTComplianceDashboard } from "./SUTComplianceDashboard";
+import {
+  COMPLIANCE_INDEX_PAGE_SIZE,
+  ComplianceIndexGroup,
+  SUTComplianceDashboard,
+  complianceIndexQuery,
+  selectCurrentComplianceIndex,
+} from "./SUTComplianceDashboard";
 import ComplianceViewSection from "@/components/patient/views/ComplianceViewSection";
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
 import { ComplianceFindingTable } from "./modules/ComplianceFindingTable";
-import type { BillingActionReport, ClaimCompliance, ComplianceIndexResponse } from "@/lib/domains/sut";
+import type {
+  BillingActionReport,
+  ClaimCompliance,
+  ClaimComplianceCohortSummary,
+  ComplianceIndexResponse,
+} from "@/lib/domains/sut";
 import { recommendedActionSectionId } from "@/lib/recommendedActions";
 import { complianceBilledAtRisk, recoverableUplift, viewActions, viewForSection } from "@/lib/workspaceViews";
 import { ComplianceSubtabStrip } from "./ComplianceSubtabStrip";
@@ -105,19 +116,42 @@ const projection: ClaimCompliance = {
 
 const index: ComplianceIndexResponse = {
   artifacts_available: true, n_patients: 2, n_findings: 3, n_patients_with_findings: 2,
-  billed_at_risk_try: 10, by_surface: {},
+  billed_at_risk_try: 10,
+  by_surface: {
+    materials: { n: 1, billed_try: 10, n_patients: 1 },
+    claim_compliance: { n: 2, billed_try: null, n_patients: 1 },
+  },
   rows: [
     ...projection.findings.map((row) => ({ ...row, surface: "claim_compliance" as const })),
     { patient_id: "OTHER", surface: "materials", detail: "Other surface", billed_try: 10 },
   ],
-  claim_compliance: { evaluations: [
-    ...projection.evaluations,
-    { patient_id: "MISSING", claim_id: null, rule_id: "tablo15_8_missing_diagnosis", status: "missing_inputs", missing_inputs: ["claim_context"] },
-  ] },
+  claim_compliance: {
+    counts: { evaluated: 2, missing_inputs: 1, unavailable: 0 },
+    non_evaluated_total: 1,
+    details: [
+      { patient_id: "MISSING", claim_id: null, rule_id: "tablo15_8_missing_diagnosis", status: "missing_inputs", missing_inputs: ["claim_context"] },
+    ],
+    details_truncated: false,
+  },
 };
 
 function renderGroup(data: ComplianceIndexResponse | null = index, ids = new Set(["P /1"]), surface: "claim_compliance" | "materials" = "claim_compliance") {
-  return renderToStaticMarkupWithLocale(<WorkspaceProvider><ComplianceIndexGroup index={data} surface={surface} loading={false} cohortPatientIds={ids} cohortFilterActive /></WorkspaceProvider>);
+  let scoped = data;
+  if (data === index && surface === "claim_compliance") {
+    const missing = ids.has("MISSING");
+    const evaluated = ids.has("P /1") ? 2 : 0;
+    scoped = {
+      ...index,
+      rows: index.rows.filter((row) => ids.has(row.patient_id)),
+      claim_compliance: {
+        counts: { evaluated, missing_inputs: missing ? 1 : 0, unavailable: 0 },
+        non_evaluated_total: missing ? 1 : 0,
+        details: missing ? index.claim_compliance?.details ?? [] : [],
+        details_truncated: false,
+      },
+    };
+  }
+  return renderToStaticMarkupWithLocale(<WorkspaceProvider><ComplianceIndexGroup index={scoped} surface={surface} loading={false} cohortPatientIds={ids} cohortFilterActive /></WorkspaceProvider>);
 }
 
 function renderPatient(block: ClaimCompliance | null | undefined = projection) {
@@ -161,11 +195,23 @@ describe("claim compliance projection", () => {
       status: i < 80 ? "evaluated" : i % 2 === 0 ? "missing_inputs" : "unavailable",
       missing_inputs: i < 80 ? [] : ["claim_context"],
     }));
+    const summaryFor = (entries: ClaimCompliance["evaluations"]): ClaimComplianceCohortSummary => {
+      const counts = { evaluated: 0, missing_inputs: 0, unavailable: 0 };
+      for (const entry of entries) counts[entry.status] += 1;
+      const details = entries.filter((entry) => entry.status !== "evaluated").slice(0, 20);
+      const nonEvaluated = counts.missing_inputs + counts.unavailable;
+      return {
+        counts,
+        non_evaluated_total: nonEvaluated,
+        details,
+        details_truncated: nonEvaluated > details.length,
+      };
+    };
     const renderTable = (withFindings: boolean, entries = evaluations) => renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
         <ComplianceFindingTable
           rows={withFindings ? index.rows.filter((row) => row.surface === "claim_compliance") : []}
-          evaluations={entries}
+          claimComplianceSummary={summaryFor(entries)}
           loading={false}
           claimCompliance
         />
@@ -245,12 +291,50 @@ describe("claim compliance projection", () => {
   });
 
   it("labels partial results instead of silently treating a capped page as complete", () => {
-    const html = renderGroup({ ...index, pagination: { total_matching: 5001, limit: 5000, offset: 0, has_more: true } });
-    expect(html).toContain("Partial results:");
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceIndexGroup
+          index={{ ...index, pagination: { total_matching: 201, limit: 100, offset: 100, has_more: true } }}
+          surface="claim_compliance"
+          loading={false}
+          cohortPatientIds={new Set(["P /1"])}
+          cohortFilterActive={false}
+          onPageChange={() => undefined}
+        />
+      </WorkspaceProvider>,
+    );
+    expect(html).toContain("More findings are available");
+    expect(html).toContain(">Prev</button>");
+    expect(html).toContain(">Next</button>");
+    expect(html).toContain("101–200 / 201");
   });
 });
 
 describe("SUTComplianceDashboard", () => {
+  it("hides a stale aggregate summary while a different cohort request is pending", () => {
+    expect(selectCurrentComplianceIndex(index, "aggregate|P1", "aggregate|P2")).toBeNull();
+    expect(selectCurrentComplianceIndex(index, "aggregate|P2", "aggregate|P2")).toBe(index);
+  });
+
+  it("uses an independent server-side surface query beyond a 5,000-row mixed window", () => {
+    const earlierRows = Array.from({ length: 5001 }, (_, i) => ({
+      patient_id: `LEGACY-${i}`,
+      surface: "materials" as const,
+    }));
+    const mixedRows = [
+      ...earlierRows,
+      { patient_id: "P1", surface: "claim_compliance" as const },
+    ];
+    expect(mixedRows.slice(0, 5000).some((row) => row.surface === "claim_compliance")).toBe(false);
+    expect(mixedRows.filter((row) => row.surface === "claim_compliance")).toHaveLength(1);
+    expect(complianceIndexQuery("claim_compliance", ["P2", "P1"], COMPLIANCE_INDEX_PAGE_SIZE)).toEqual({
+      surface: "claim_compliance",
+      patientId: ["P2", "P1"],
+      limit: COMPLIANCE_INDEX_PAGE_SIZE,
+      offset: COMPLIANCE_INDEX_PAGE_SIZE,
+    });
+  });
+
   it("omits the new badge count for old caches while preserving legacy counts", () => {
     searchGet.mockImplementation((key) => key === "compTab" ? "claim_compliance" : null);
     for (const available of [false, true]) {

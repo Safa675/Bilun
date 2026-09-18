@@ -1,6 +1,10 @@
 "use client";
 
-import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+import type {
+  BillingActionReport,
+  ClaimComplianceCohortSummary,
+  RecommendedActionItem,
+} from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   DrugIndicationReviewSection,
@@ -47,7 +51,22 @@ export default function ComplianceViewSection({
     source_surface: "claim_compliance",
     billed_try: null,
   }));
-  const evaluations = projection?.evaluations.filter(inScope);
+  const evaluations = projection?.evaluations.filter(inScope) ?? [];
+  const claimComplianceSummary: ClaimComplianceCohortSummary | null = projection
+    ? (() => {
+        const counts = evaluations.reduce(
+          (acc, evaluation) => ({ ...acc, [evaluation.status]: acc[evaluation.status] + 1 }),
+          { evaluated: 0, missing_inputs: 0, unavailable: 0 },
+        );
+        const nonEvaluated = evaluations.filter((evaluation) => evaluation.status !== "evaluated");
+        return {
+          counts,
+          non_evaluated_total: nonEvaluated.length,
+          details: nonEvaluated.slice(0, 20),
+          details_truncated: nonEvaluated.length > 20,
+        };
+      })()
+    : null;
 
   return (
     <div className="space-y-4">
@@ -87,7 +106,7 @@ export default function ComplianceViewSection({
         <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t("optimizer.tabs.claim_compliance")}</h3>
         <ComplianceFindingTable
           rows={projectionRows}
-          evaluations={evaluations}
+          claimComplianceSummary={claimComplianceSummary}
           loading={false}
           unavailable={!projection}
           claimCompliance

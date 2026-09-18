@@ -5,7 +5,12 @@ import { ArrowRight } from "lucide-react";
 import { Chip, DataTable } from "@/components/primitives";
 import { buildSutBillingHref } from "@/lib/constants";
 import { recommendedActionSectionId } from "@/lib/recommendedActions";
-import type { ClaimComplianceEvaluation, ComplianceIndexRow } from "@/lib/domains/sut";
+import type {
+  ClaimComplianceCohortSummary,
+  ClaimComplianceEvaluation,
+  ComplianceIndexPagination,
+  ComplianceIndexRow,
+} from "@/lib/domains/sut";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtTRY2 } from "../../shared";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -35,8 +40,10 @@ export interface ComplianceFindingTableProps {
   loading: boolean;
   unavailable?: boolean;
   claimCompliance?: boolean;
-  evaluations?: ClaimComplianceEvaluation[];
+  claimComplianceSummary?: ClaimComplianceCohortSummary | null;
   partialResults?: boolean;
+  pagination?: ComplianceIndexPagination;
+  onPageChange?: (offset: number) => void;
 }
 
 export function ComplianceFindingTable({
@@ -44,8 +51,10 @@ export function ComplianceFindingTable({
   loading,
   unavailable = false,
   claimCompliance = false,
-  evaluations = [],
+  claimComplianceSummary = null,
   partialResults = false,
+  pagination,
+  onPageChange,
 }: ComplianceFindingTableProps) {
   const t = useT();
 
@@ -53,24 +62,19 @@ export function ComplianceFindingTable({
     return <SutAlertTableSkeleton />;
   }
 
-  const counts = { evaluated: 0, missing_inputs: 0, unavailable: 0 };
-  const detailEvaluations: ClaimComplianceEvaluation[] = [];
-  if (claimCompliance) {
-    for (const evaluation of evaluations) {
-      counts[evaluation.status] += 1;
-      if (evaluation.status !== "evaluated" && detailEvaluations.length < 20) {
-        detailEvaluations.push(evaluation);
-      }
-    }
-  }
-  const nonEvaluatedCount = counts.missing_inputs + counts.unavailable;
+  const counts = claimComplianceSummary?.counts ?? {
+    evaluated: 0, missing_inputs: 0, unavailable: 0,
+  };
+  const detailEvaluations: ClaimComplianceEvaluation[] =
+    claimComplianceSummary?.details ?? [];
+  const nonEvaluatedCount = claimComplianceSummary?.non_evaluated_total ?? 0;
 
   return (
     <div className="space-y-3">
       {partialResults && (
         <p className="text-sm text-[var(--text-muted)]">{t("optimizer.claimCompliance.partialResults")}</p>
       )}
-      {claimCompliance && (unavailable || evaluations.length === 0) && (
+      {claimCompliance && (unavailable || !claimComplianceSummary) && (
         <p className="text-sm text-[var(--text-muted)]">{t("optimizer.claimCompliance.unavailable")}</p>
       )}
       {claimCompliance && (
@@ -116,7 +120,7 @@ export function ComplianceFindingTable({
         {rows.length === 0 ? (
           <tr>
             <td colSpan={7} className="py-8 text-center text-[var(--text-muted)]">
-              {unavailable || (claimCompliance && evaluations.length === 0)
+              {unavailable || (claimCompliance && !claimComplianceSummary)
                 ? t(claimCompliance ? "optimizer.claimCompliance.unavailable" : "optimizer.complianceIndex.indexUnavailable")
                 : partialResults || (claimCompliance && nonEvaluatedCount > 0)
                   ? t("optimizer.claimCompliance.incompleteFindings")
@@ -169,6 +173,29 @@ export function ComplianceFindingTable({
         )}
       </tbody>
     </DataTable>
+      {pagination && onPageChange && (pagination.offset > 0 || pagination.has_more) && (
+        <div className="flex items-center justify-end gap-2 text-xs text-[var(--text-secondary)]">
+          <button
+            type="button"
+            disabled={pagination.offset <= 0}
+            onClick={() => onPageChange(Math.max(0, pagination.offset - pagination.limit))}
+            className="rounded border border-[var(--border-subtle)] px-3 py-1.5 disabled:opacity-40"
+          >
+            {t("optimizer.pagination.prev")}
+          </button>
+          <span className="tabular-nums">
+            {pagination.offset + 1}–{Math.min(pagination.offset + pagination.limit, pagination.total_matching)} / {pagination.total_matching}
+          </span>
+          <button
+            type="button"
+            disabled={!pagination.has_more}
+            onClick={() => onPageChange(pagination.offset + pagination.limit)}
+            className="rounded border border-[var(--border-subtle)] px-3 py-1.5 disabled:opacity-40"
+          >
+            {t("optimizer.pagination.next")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

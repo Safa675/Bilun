@@ -230,7 +230,7 @@ const optimizer = {
     evaluationDetails: "Not evaluated — showing {count} of {total}",
     incompleteFindings: "No findings in the loaded results; compliance cannot be confirmed.",
     evaluatedNoFindings: "No findings from the evaluated checks; this is not a compliance pass.",
-    partialResults: "Partial results: only the first 5,000 findings are loaded; counts and filters reflect loaded rows.",
+    partialResults: "More findings are available; use the pagination controls to review the next page.",
   },
   emDash: "—",
 } as const;
