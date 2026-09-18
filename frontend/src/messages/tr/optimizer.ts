@@ -11,6 +11,7 @@ const optimizer = {
     drug_indication: "İlaç endikasyon",
     lab: "Laboratuvar",
     payment_methods: "Ödeme yöntemi",
+    claim_compliance: "Fatura uyumluluğu",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -219,6 +220,18 @@ const optimizer = {
     showingRange:
       "Sayfa {page} / {totalPages}: {total} hastadan {start}-{end} gösteriliyor",
     patientsWithPct: "{count} hasta ({pct})",
+  },
+  claimCompliance: {
+    icu_bundled_leakage_510090: "Yoğun bakım paketine dahil hizmet ayrı faturalanmış",
+    tablo15_8_missing_diagnosis: "Fatura tanısı eksik",
+    unavailable: "Fatura uyumluluğu kullanılamıyor — değerlendirilmedi.",
+    missing_inputs: "Değerlendirilmedi — eksik girdiler",
+    evaluated: "Değerlendirildi",
+    evaluationSummary: "Kural değerlendirmeleri: {evaluated} değerlendirildi · {missing_inputs} eksik girdi · {unavailable} kullanılamıyor. Değerlendirilmiş olması uygun olduğu anlamına gelmez.",
+    evaluationDetails: "Değerlendirilmedi — {total} kayıttan {count} gösteriliyor",
+    incompleteFindings: "Yüklenen sonuçlarda bulgu yok; uyumluluk doğrulanamaz.",
+    evaluatedNoFindings: "Değerlendirilen kontrollerde bulgu yok; bu bir uyumluluk onayı değildir.",
+    partialResults: "Daha fazla bulgu var; sonraki sayfayı incelemek için sayfalama kontrollerini kullanın.",
   },
   emDash: "—",
 } as const;

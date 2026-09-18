@@ -71,6 +71,10 @@ def test_katsayi_prefers_open_ended_coefficient(monkeypatch, tmp_path):
 def test_gazette_curated_loaders_handle_missing_parquet(monkeypatch, tmp_path):
     import src.bilun.domain.loaders.gazette as gazette
 
+    monkeypatch.setattr(gazette, "_ek2b_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2b_by_asof_cache", {})
+    monkeypatch.setattr(gazette, "_ek2c_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_by_asof_cache", {})
     monkeypatch.setattr(
         gazette,
         "EK2B_CURATED_HISTORY_PATH",

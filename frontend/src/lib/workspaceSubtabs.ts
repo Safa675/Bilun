@@ -82,7 +82,8 @@ export type ComplianceSubSection =
   | "materials"
   | "drug_indication"
   | "lab"
-  | "payment_methods";
+  | "payment_methods"
+  | "claim_compliance";
 
 export const COMPLIANCE_SUB_IDS: readonly ComplianceSubSection[] = [
   "exemptions",
@@ -92,6 +93,7 @@ export const COMPLIANCE_SUB_IDS: readonly ComplianceSubSection[] = [
   "drug_indication",
   "lab",
   "payment_methods",
+  "claim_compliance",
 ] as const;
 
 export const COMPLIANCE_SUB_KEY = {
@@ -102,6 +104,7 @@ export const COMPLIANCE_SUB_KEY = {
   drug_indication: "drug_indication",
   lab: "lab",
   payment_methods: "payment_methods",
+  claim_compliance: "claim_compliance",
 } as const satisfies Record<ComplianceSubSection, string>;
 
 export const COMPLIANCE_SUB_ICONS: Record<ComplianceSubSection, LucideIcon> = {
@@ -112,6 +115,7 @@ export const COMPLIANCE_SUB_ICONS: Record<ComplianceSubSection, LucideIcon> = {
   drug_indication: Pill,
   lab: FlaskConical,
   payment_methods: FileCheck2,
+  claim_compliance: ClipboardList,
 };
 
 export type RuleDatabaseSubSection =

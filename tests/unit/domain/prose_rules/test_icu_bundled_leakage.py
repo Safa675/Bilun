@@ -66,6 +66,7 @@ def _make_proc_line(
     claim_id: str = "C1",
     procedure_code: str = "510090",
     procedure_name: str = "Yogun bakim",
+    procedure_date: date = date(2026, 7, 10),
 ):
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
@@ -74,7 +75,7 @@ def _make_proc_line(
         claim_id=claim_id,
         patient_id="P1",
         episode_id="E1",
-        procedure_date=date(2026, 7, 10),
+        procedure_date=procedure_date,
         procedure_code=procedure_code,
         procedure_name=procedure_name,
         procedure_category="islem",
@@ -146,6 +147,27 @@ def test_510090_plus_oxygen_therapy_violation() -> None:
     v = violations[0]
     assert v["procedure_code"] == "530360"
     assert v["bundled_category"] == "Oksijen tedavisi"
+
+
+def test_510090_bundled_service_on_different_day_no_violation() -> None:
+    from src.bilun.domain.prose_rules.icu_bundled_leakage import (
+        detect_icu_bundled_leakage,
+    )
+
+    header = _make_claim_header()
+    procs = [
+        _make_proc_line(procedure_date=date(2026, 7, 10)),
+        _make_proc_line(
+            procedure_line_id="ISL-2",
+            procedure_code="530360",
+            procedure_name="Oksijen inhalasyon tedavisi, saatlik",
+            procedure_date=date(2026, 7, 12),
+        ),
+    ]
+
+    violations = detect_icu_bundled_leakage([header], procs, claim_ids_with_procs={"C1"})
+
+    assert violations == []
 
 
 def test_510090_plus_nebulizer_violation() -> None:

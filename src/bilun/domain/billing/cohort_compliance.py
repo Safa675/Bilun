@@ -9,6 +9,7 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import quote
 
 import polars as pl
 
@@ -28,7 +29,66 @@ INDEX_SURFACES: tuple[str, ...] = (
     "drug_indication",
     "lab",
     "payment_methods",
+    "claim_compliance",
 )
+
+_CLAIM_COMPLIANCE_RULES = (
+    "icu_bundled_leakage_510090",
+    "tablo15_8_missing_diagnosis",
+)
+_CLAIM_MONEY_FIELDS = (
+    "amount_try", "billed_try", "payable_try", "savings_try",
+    "recoverable_uplift_try", "compliance_savings_try", "risk_amount_try",
+    "audit_exposure_try",
+)
+_CLAIM_EVALUATION_DETAIL_LIMIT = 20
+_CLAIM_EVALUATION_STATUSES = ("evaluated", "missing_inputs", "unavailable")
+
+
+def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, Any]:
+    block = payload.get("claim_compliance")
+    if not isinstance(block, Mapping):
+        block = {}
+    evaluations = [
+        dict(row, surface="claim_compliance")
+        for row in block.get("evaluations") or []
+        if isinstance(row, Mapping)
+        and row.get("rule_id") in _CLAIM_COMPLIANCE_RULES
+        and row.get("patient_id") == patient_id
+    ]
+    for rule_id in _CLAIM_COMPLIANCE_RULES:
+        if not any(row["rule_id"] == rule_id for row in evaluations):
+            evaluations.append({
+                "patient_id": patient_id, "claim_id": None, "rule_id": rule_id,
+                "surface": "claim_compliance", "status": "unavailable",
+                "missing_inputs": ["claim_compliance"],
+            })
+    findings = {}
+    for row in block.get("findings") or []:
+        if not isinstance(row, Mapping):
+            continue
+        rule_id = row.get("rule_id")
+        claim_id = row.get("claim_id")
+        if (
+            rule_id not in _CLAIM_COMPLIANCE_RULES
+            or row.get("patient_id") != patient_id
+            or not claim_id
+        ):
+            continue
+        action_id = "claim_compliance:" + ":".join(
+            quote(str(value), safe="")
+            for value in (rule_id, patient_id, claim_id, row.get("procedure_line_id") or "")
+        )
+        findings.setdefault(action_id, {
+            **{key: row.get(key) for key in (
+                "patient_id", "claim_id", "rule_id", "detail", "sut_section_id",
+                "procedure_line_id", "procedure_code", "procedure_name",
+            )},
+            "action_id": action_id, "kind": rule_id, "status": "violation",
+            "finding_type": "compliance", "surface": "claim_compliance",
+            "source_surface": "claim_compliance", **dict.fromkeys(_CLAIM_MONEY_FIELDS),
+        })
+    return {"findings": list(findings.values()), "evaluations": evaluations}
 
 _DEFAULT_LIMIT = 500
 _MAX_LIMIT = 5000
@@ -53,16 +113,14 @@ def empty_cohort_compliance_index(
             "by_surface": {},
             "rows": [],
             "artifacts_available": False,
+            "claim_compliance": None,
         }
     return {
         "n_patients": int(n_patients or 0),
         "n_findings": 0,
         "n_patients_with_findings": 0,
         "billed_at_risk_try": 0.0,
-        "by_surface": {
-            surface: {"n": 0, "billed_try": 0.0, "n_patients": 0}
-            for surface in INDEX_SURFACES
-        },
+        "by_surface": _zero_by_surface(),
         "rows": [],
         "artifacts_available": True,
     }
@@ -109,9 +167,13 @@ def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, An
     }
 
 
-def _zero_by_surface() -> dict[str, dict[str, float | int]]:
+def _zero_by_surface() -> dict[str, dict[str, float | int | None]]:
     return {
-        surface: {"n": 0, "billed_try": 0.0, "n_patients": 0}
+        surface: {
+            "n": 0,
+            "billed_try": None if surface == "claim_compliance" else 0.0,
+            "n_patients": 0,
+        }
         for surface in INDEX_SURFACES
     }
 
@@ -126,7 +188,7 @@ def _summarize_rows(
         empty["rows"] = []
         return empty
 
-    df = pl.from_dicts(rows)
+    df = pl.from_dicts(rows, infer_schema_length=None)
     billed = pl.col("billed_try").fill_null(0.0)
     billed_at_risk = float(df.select(billed.sum()).item() or 0.0)
     grouped = df.group_by("surface").agg(
@@ -141,7 +203,10 @@ def _summarize_rows(
             continue
         by_surface[surface] = {
             "n": int(rec["n"]),
-            "billed_try": float(_money(rec["billed_try"]) or 0.0),
+            "billed_try": (
+                None if surface == "claim_compliance"
+                else float(_money(rec["billed_try"]) or 0.0)
+            ),
             "n_patients": int(rec["n_patients"]),
         }
     return {
@@ -159,6 +224,8 @@ def build_cohort_compliance_index(reports: Mapping[str, Any]) -> dict[str, Any]:
     """Flatten compliance ``recommended_actions`` from per-patient reports."""
     n_patients = len(reports)
     rows: list[dict[str, Any]] = []
+    counts_by_patient: dict[str, dict[str, int]] = {}
+    evaluation_details: list[dict[str, Any]] = []
     for patient_id, report in reports.items():
         payload = _as_report_dict(report)
         for action in payload.get("recommended_actions") or []:
@@ -167,7 +234,85 @@ def build_cohort_compliance_index(reports: Mapping[str, Any]) -> dict[str, Any]:
             if not _include_action(action):
                 continue
             rows.append(_row_from_action(str(patient_id), action))
-    return _summarize_rows(rows, n_patients=n_patients)
+        projection = _claim_projection(str(patient_id), payload)
+        rows.extend(projection["findings"])
+        counts = dict.fromkeys(_CLAIM_EVALUATION_STATUSES, 0)
+        for evaluation in projection["evaluations"]:
+            status = str(evaluation.get("status") or "unavailable")
+            if status not in counts:
+                status = "unavailable"
+            counts[status] += 1
+            if (
+                status != "evaluated"
+                and len(evaluation_details) < _CLAIM_EVALUATION_DETAIL_LIMIT
+            ):
+                evaluation_details.append(dict(evaluation))
+        counts_by_patient[str(patient_id)] = counts
+    result = _summarize_rows(rows, n_patients=n_patients)
+    result["claim_compliance"] = {
+        "counts_by_patient": counts_by_patient,
+        "details": evaluation_details,
+        "detail_limit": _CLAIM_EVALUATION_DETAIL_LIMIT,
+    }
+    return result
+
+
+def _compact_claim_compliance(
+    projection: Mapping[str, Any],
+    *,
+    patient_ids: frozenset[str] | None,
+    include: bool,
+) -> dict[str, Any]:
+    counts = dict.fromkeys(_CLAIM_EVALUATION_STATUSES, 0)
+    if not include:
+        return {
+            "counts": counts,
+            "non_evaluated_total": 0,
+            "details": [],
+            "details_truncated": False,
+            "evaluations": [],
+        }
+
+    counts_by_patient = projection.get("counts_by_patient")
+    details_source = projection.get("details") or []
+    if isinstance(counts_by_patient, Mapping):
+        for patient_id, patient_counts in counts_by_patient.items():
+            if patient_ids is not None and patient_id not in patient_ids:
+                continue
+            if not isinstance(patient_counts, Mapping):
+                continue
+            for status in _CLAIM_EVALUATION_STATUSES:
+                counts[status] += int(patient_counts.get(status) or 0)
+    else:
+        # Backward compatibility for caches built by the first claim-compliance
+        # implementation. New caches never persist successful evaluation ids.
+        legacy = [
+            dict(row)
+            for row in projection.get("evaluations") or []
+            if isinstance(row, Mapping)
+            and (patient_ids is None or row.get("patient_id") in patient_ids)
+        ]
+        for evaluation in legacy:
+            status = str(evaluation.get("status") or "unavailable")
+            if status not in counts:
+                status = "unavailable"
+            counts[status] += 1
+        details_source = [row for row in legacy if row.get("status") != "evaluated"]
+
+    details = [
+        dict(row)
+        for row in details_source
+        if isinstance(row, Mapping)
+        and (patient_ids is None or row.get("patient_id") in patient_ids)
+    ][:_CLAIM_EVALUATION_DETAIL_LIMIT]
+    non_evaluated_total = counts["missing_inputs"] + counts["unavailable"]
+    return {
+        "counts": counts,
+        "non_evaluated_total": non_evaluated_total,
+        "details": details,
+        "details_truncated": non_evaluated_total > len(details),
+        "evaluations": [],
+    }
 
 
 def slice_compliance_index(
@@ -209,6 +354,17 @@ def slice_compliance_index(
         n_patients = 0
 
     summarized = _summarize_rows(list(rows), n_patients=int(n_patients))
+    if surface == "claim_compliance":
+        summarized["billed_at_risk_try"] = None
+    projection = payload.get("claim_compliance")
+    if isinstance(projection, Mapping):
+        summarized["claim_compliance"] = _compact_claim_compliance(
+            projection,
+            patient_ids=patient_ids,
+            include=surface is None or surface == "claim_compliance",
+        )
+    else:
+        summarized["claim_compliance"] = None
     total_matching = len(rows)
     page = rows[offset : offset + limit] if limit else rows[offset:]
     summarized["rows"] = page

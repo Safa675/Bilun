@@ -40,6 +40,7 @@ class ClaimHeader:
     expected_denial_reason: str
     scenario_tag: str
     occupational_context: str = "none"
+    primary_icd10_available: bool = False
 
 
 @dataclass(frozen=True)

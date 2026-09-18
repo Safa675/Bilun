@@ -67,6 +67,7 @@ def _material_prose_bool_kwargs(row: RowDict) -> dict[str, bool]:
 def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
     try:
         claim_id = parse_text(row, "claim_id")
+        primary_icd10_raw = row.get("primary_icd10")
         return ClaimHeader(
             claim_id=claim_id,
             patient_id=parse_text(row, "patient_id"),
@@ -79,7 +80,12 @@ def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
             discharge_date=optional_date(row, "discharge_date", claim_id, errors),
             claim_start_date=required_date(row, "claim_start_date", claim_id, errors),
             claim_end_date=required_date(row, "claim_end_date", claim_id, errors),
-            primary_icd10=parse_text(row, "primary_icd10"),
+            primary_icd10=(
+                primary_icd10_raw.strip()
+                if isinstance(primary_icd10_raw, str)
+                else ""
+            ),
+            primary_icd10_available=isinstance(primary_icd10_raw, str),
             package_candidate=parse_bool(row.get("package_candidate")),
             expected_total_billed_try=parse_money(row, "expected_total_billed_try", claim_id, errors),
             expected_total_payable_try=parse_money(row, "expected_total_payable_try", claim_id, errors),

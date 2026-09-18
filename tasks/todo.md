@@ -1,3 +1,68 @@
+## Task: PR87 claim-compliance correctness fixes (2026-09-18)
+
+### Goal
+Implement `plans/billing/2026-09-18-pr87-claim-compliance-fixes-plan.md` on `feat/compliance-k21-k26` so K21/K26 are correct, cohort evaluation payloads are bounded, and claim-compliance findings have their own reachable server-side pagination path.
+
+### Subtasks
+- [x] Enforce same-day K21 semantics and replace the different-day regression.
+- [x] Reconcile K26 diagnosis presence from header plus normalized primary diagnoses while preserving blank-vs-unavailable behavior.
+- [x] Replace unbounded cohort evaluation identities with exact counts plus bounded non-evaluated details and truncation metadata.
+- [x] Fetch and paginate `surface=claim_compliance` independently in the frontend, preserving active patient/cohort filters and total-count badges.
+- [x] Make claim-compliance monetary summary values nullable in TypeScript and render them nonfinancially.
+- [x] Run focused backend/frontend tests, Ruff, TypeScript, changed-file ESLint, then full backend/frontend suites where feasible.
+- [x] Record exact verification outcomes in `tasks/k21-k26-result.md` and complete this review section.
+
+### Out of Scope
+New SUT detectors, monetary integration for claim-compliance, broad compliance redesign, diagnosis-conflict adjudication, production cache rebuild/deploy, pushing or merging the branch.
+
+### Review
+Implemented from plan commit `58f3308a` on `feat/compliance-k21-k26`. K21 now joins bundled services to exact 510090 dates. K26 reconciles a nonblank header diagnosis with normalized primary `ClaimDiagnosis` rows while preserving explicit-blank versus unavailable provenance. Cohort cache data stores per-patient status counts plus at most 20 non-evaluated details; API responses expose exact filtered counts without unbounded successful evaluation identities. Compliance surfaces are fetched and paginated server-side; large patient cohorts fall back to a JSON POST when the GET query would exceed 6,000 characters. Claim-compliance money remains nullable/nonfinancial and old-cache absence stays unavailable.
+
+Final verification on the final tree: focused backend **84 passed**; focused frontend **22 passed**; full backend **2631 passed**; full frontend **266 passed**. Changed-file Ruff, ESLint, TypeScript, and `git diff --check` passed. Independent review first found and drove fixes for stale cohort aggregate state and backend-first rolling-deploy compatibility; the final fresh `codex review --uncommitted` returned **0 findings / patch is correct (0.91 confidence)**. Its read-only sandbox could not run pytest, so the writable-workspace suites above are the execution evidence. No production cache rebuild/deploy, push, merge, or commit was performed.
+
+---
+
+## Task: K21 + K26 reviewer blockers
+
+### Goal
+Prevent late-money inference crashes and show accurate scoped presentation counts while retaining legacy actions and financial totals.
+
+### Subtasks
+- [x] Confirm the three requested fixes and existing test/runtime conventions; review this narrow plan against the request.
+- [x] Use full inference for cohort rows and regress >100 null-money findings before a monetary legacy row, including preserved totals and row money.
+- [x] Count scoped claim findings in patient/claim KPI and tab badge only; regress patient, claim and legacy-only counts.
+- [x] Omit the claim-compliance dashboard badge for old caches and assert rendered absence.
+- [x] Run focused backend/frontend tests, changed-file lint and tsc; record exact outcomes in tasks/k21-k26-result.md.
+
+### Out of Scope
+Pagination redesign, broad refactoring, other detectors, money/action integration, other worktrees, commits, pushes and live changes.
+
+### Review
+46 backend and 18 frontend tests passed; final tsc and Ruff passed. Changed-file ESLint found only the existing PatientWorkspaceViews navigation-effect error; HEAD stdin lint reproduced the same error, and all other touched frontend files passed lint. No suppression or out-of-scope navigation rewrite. Full inference regression demonstrated red before/green after; scoped counts and old-cache badge have rendered assertions. Exact commands, limitations and results recorded in tasks/k21-k26-result.md. No commit/push/live changes.
+
+---
+
+## Task: K21 + K26 reporting reachability
+
+### Goal
+Expose only the existing ICU bundled leakage and missing diagnosis detectors through full-context reporting, cache/API and native compliance UI without any money contribution.
+
+### Subtasks
+- [x] Verify normal ingestion provenance and positive/negative scenarios before wiring detectors.
+- [x] Add backward-compatible availability tracking and a narrow report-owned nonfinancial projection with stable claim/line identities.
+- [x] Connect cache/index/API and native frontend filtering/rendering with patient links.
+- [x] Run real-function ingestion integration tests, financial regressions, frontend tests, typecheck and lint sequentially for pytest.
+- [x] Replace unbounded evaluation rows with a compact summary and closed, bounded details; verify 120-evaluation rendered regression.
+- [x] Inspect artifact drift and record exact evidence in tasks/k21-k26-result.md.
+
+### Out of Scope
+Engine merging, validator changes, other detectors, rule catalogs, shipped data, live services, commits, pushes and PR creation.
+
+### Review
+K21/K26 implemented through normal ingestion/context, report-owned nonfinancial projection, cache/index/API and native UI. Chief independently reported 71 backend tests and 9 frontend tests passing before the final compact-summary change; typecheck and Ruff passed. Final UI verification: dashboard Vitest file 10/10 passed; ESLint passed for the test and table. Large-list regression verifies 120 evaluations, correct counts, closed details bounded to 20 entries, distinct unknown/clean empty states, findings, links and null money. Prior status inspection showed only scoped source/tests/tasks changes, no catalog/generated-data drift; no new broad inspection or backend run in this final finish. Evidence and limitations: tasks/k21-k26-result.md. No commits, pushes or live changes.
+
+---
+
 ## Task: 2026-08-29 SUT rule corpus (PR 80 follow-through)
 
 ### Goal

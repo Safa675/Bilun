@@ -37,6 +37,7 @@ mapping of each code to its El Kitabı category).
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
@@ -194,9 +195,9 @@ def detect_icu_bundled_leakage(
     """Detect bundled services billed separately on ICU (510090) days.
 
     For each **inpatient** claim that carries a ``510090`` procedure line,
-    scan the claim's other procedure lines and emit one violation per line
-    whose code (or name) matches a bundled service. A bundled service billed
-    on the same claim as 510090 is double-billing: the 510090 day-rate
+    scan the claim's other procedure lines on the same date and emit one
+    violation per line whose code (or name) matches a bundled service. A
+    bundled service billed on a 510090 date is double-billing: the day-rate
     already pays for ventilation, oxygen, nebulization, suction, and
     monitoring (El Kitabı + SUT §2.4.4.H).
 
@@ -221,8 +222,8 @@ def detect_icu_bundled_leakage(
         for line in procedure_lines:
             procedures_by_claim.setdefault(line.claim_id, []).append(line)
 
-    # Pre-compute which claims (a) are inpatient, (b) carry a 510090 line.
-    icu_day_claims: set[str] = set()
+    # Pre-compute the exact 510090 dates for each eligible inpatient claim.
+    icu_days_by_claim: dict[str, set[date]] = {}
     for claim in claims:
         # Gate on inpatient — ICU is an inpatient-only concept (§2.4.4.H.(3)).
         if infer_care_setting(claim) != "inpatient":
@@ -230,18 +231,22 @@ def detect_icu_bundled_leakage(
         if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
             continue
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
-        if any(
-            _normalize_code(line.procedure_code) == _ICU_DAY_RATE_CODE
+        icu_days = {
+            line.procedure_date
             for line in claim_procs
-        ):
-            icu_day_claims.add(claim.claim_id)
+            if _normalize_code(line.procedure_code) == _ICU_DAY_RATE_CODE
+        }
+        if icu_days:
+            icu_days_by_claim[claim.claim_id] = icu_days
 
     violations: list[dict[str, Any]] = []
-    for claim_id in icu_day_claims:
+    for claim_id, icu_days in icu_days_by_claim.items():
         claim_procs = procedures_by_claim.get(claim_id, [])
         for line in claim_procs:
             # Skip the 510090 line itself.
             if _normalize_code(line.procedure_code) == _ICU_DAY_RATE_CODE:
+                continue
+            if line.procedure_date not in icu_days:
                 continue
             # Skip ICU intermediate-day packages (P552001-008) — those are a
             # separate bundled-service regime audited elsewhere; flagging them
@@ -254,7 +259,7 @@ def detect_icu_bundled_leakage(
 
             category = _bundled_category_for(line.procedure_code, line.procedure_name)
             detail = (
-                f"Yoğun bakım günü (510090, hizmet başı) ile aynı takipte ayrı "
+                f"Yoğun bakım günü (510090, hizmet başı) ile aynı tarihte ayrı "
                 f"faturalandırılan paket hizmet: {line.procedure_code} "
                 f"({line.procedure_name}) — {category}, 510090 içine dahildir "
                 f"ve ayrı faturalanamaz (SUT §2.4.4.H, El Kitabı)."

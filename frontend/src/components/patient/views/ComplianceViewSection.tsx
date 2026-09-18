@@ -1,6 +1,10 @@
 "use client";
 
-import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+import type {
+  BillingActionReport,
+  ClaimComplianceCohortSummary,
+  RecommendedActionItem,
+} from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   DrugIndicationReviewSection,
@@ -11,7 +15,8 @@ import {
 } from "@/components/patient/SutBillingReportSections";
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
-import { complianceBilledAtRisk, viewActions } from "@/lib/workspaceViews";
+import { ComplianceFindingTable } from "@/components/tabs/sut/compliance/modules/ComplianceFindingTable";
+import { complianceBilledAtRisk, scopedClaimComplianceFindings, viewActions } from "@/lib/workspaceViews";
 
 const RISK_COLOR = "#B91C1C";
 
@@ -36,6 +41,32 @@ export default function ComplianceViewSection({
   const viewActionsList = viewActions(billingReport, "compliance");
   const billedAtRisk = complianceBilledAtRisk(billingReport);
   const auditExposure = billingReport.audit_exposure_try ?? 0;
+  const projection = billingReport.claim_compliance;
+  const inScope = (row: { patient_id: string; claim_id?: string | null }) =>
+    row.patient_id === billingReport.patient_id &&
+    (!billingReport.claim_id || row.claim_id === billingReport.claim_id || row.claim_id == null);
+  const projectionRows = scopedClaimComplianceFindings(billingReport).map((row) => ({
+    ...row,
+    surface: "claim_compliance" as const,
+    source_surface: "claim_compliance",
+    billed_try: null,
+  }));
+  const evaluations = projection?.evaluations.filter(inScope) ?? [];
+  const claimComplianceSummary: ClaimComplianceCohortSummary | null = projection
+    ? (() => {
+        const counts = evaluations.reduce(
+          (acc, evaluation) => ({ ...acc, [evaluation.status]: acc[evaluation.status] + 1 }),
+          { evaluated: 0, missing_inputs: 0, unavailable: 0 },
+        );
+        const nonEvaluated = evaluations.filter((evaluation) => evaluation.status !== "evaluated");
+        return {
+          counts,
+          non_evaluated_total: nonEvaluated.length,
+          details: nonEvaluated.slice(0, 20),
+          details_truncated: nonEvaluated.length > 20,
+        };
+      })()
+    : null;
 
   return (
     <div className="space-y-4">
@@ -51,7 +82,7 @@ export default function ComplianceViewSection({
         />
         <KpiCard
           label={t("billing.views.compliance.kpiFindings")}
-          value={fmtNum(viewActionsList.length)}
+          value={fmtNum(viewActionsList.length + projectionRows.length)}
         />
         <KpiCard
           label={t("billing.views.compliance.kpiBilledAtRisk")}
@@ -70,6 +101,17 @@ export default function ComplianceViewSection({
           onOpenClause={onOpenClause}
         />
       )}
+
+      <section id="claim-compliance" className="space-y-3 scroll-mt-24">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t("optimizer.tabs.claim_compliance")}</h3>
+        <ComplianceFindingTable
+          rows={projectionRows}
+          claimComplianceSummary={claimComplianceSummary}
+          loading={false}
+          unavailable={!projection}
+          claimCompliance
+        />
+      </section>
 
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} />

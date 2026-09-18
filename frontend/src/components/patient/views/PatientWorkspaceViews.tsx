@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
 import {
   viewActions,
+  scopedClaimComplianceFindings,
   viewForSection,
   type WorkspaceViewId,
 } from "@/lib/workspaceViews";
@@ -52,7 +53,8 @@ export default function PatientWorkspaceViews({
   const t = useT();
   const [activeView, setActiveView] = useState<WorkspaceViewId>("compliance");
 
-  const complianceCount = viewActions(billingReport, "compliance").length;
+  const complianceCount = viewActions(billingReport, "compliance").length +
+    scopedClaimComplianceFindings(billingReport).length;
   const revenueCount = viewActions(billingReport, "revenue").length;
   const auditCount = viewActions(billingReport, "audit").length;
 
