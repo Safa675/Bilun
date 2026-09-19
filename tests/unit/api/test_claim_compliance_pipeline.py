@@ -395,7 +395,7 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
         assert payload["billed_at_risk_try"] is None
         assert payload["by_surface"]["claim_compliance"]["billed_try"] is None
         assert payload["claim_compliance"]["counts"] == {
-            "evaluated": 12, "missing_inputs": 2, "unavailable": 0,
+            "evaluated": 33, "missing_inputs": 2, "unavailable": 0,
         }
         assert payload["claim_compliance"]["non_evaluated_total"] == 2
         assert len(payload["claim_compliance"]["details"]) == 2
@@ -419,11 +419,11 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
         assert payload["billed_at_risk_try"] is None
         assert payload["by_surface"]["claim_compliance"]["billed_try"] is None
         expected_counts = (
-            {"evaluated": 8, "missing_inputs": 2, "unavailable": 0}
+            {"evaluated": 23, "missing_inputs": 2, "unavailable": 0}
             if pids == {"P1"}
-            else {"evaluated": 4, "missing_inputs": 0, "unavailable": 0}
+            else {"evaluated": 10, "missing_inputs": 0, "unavailable": 0}
             if pids == {"P2"}
-            else {"evaluated": 12, "missing_inputs": 2, "unavailable": 0}
+            else {"evaluated": 33, "missing_inputs": 2, "unavailable": 0}
             if pids == {"P1", "P2"}
             else {"evaluated": 0, "missing_inputs": 0, "unavailable": 0}
         )
@@ -448,7 +448,7 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
     assert payload["n_findings"] == payload["pagination"]["total_matching"] == 2
     assert {row["patient_id"] for row in payload["rows"]} == {"P1"}
     assert payload["claim_compliance"]["counts"] == {
-        "evaluated": 8, "missing_inputs": 2, "unavailable": 0,
+        "evaluated": 23, "missing_inputs": 2, "unavailable": 0,
     }
     for params in ({"surface": "invalid"}, {"limit": 0}, {"limit": 5001}, {"offset": -1}):
         assert client.get("/api/compliance-index", params=params).status_code == 400

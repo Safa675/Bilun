@@ -1,3 +1,26 @@
+## Task: Phase 5 Checkpoint 2 — generic cohort/cache/API projection
+
+### Goal
+Project all five supported canonical nonfinancial `RuleFinding` rules through existing patient/bill cache payloads, the generic cohort compliance index, and existing API routes with stable identity, honest evaluation availability, and unchanged financial totals.
+
+### Subtasks
+- [x] RED→GREEN: add the smallest cohort regression proving a selected Wave A canonical finding was rejected, then remove the K21/K26 product gate with generic fail-closed serialized-contract validation.
+- [x] Remove the rule-ID allowlist and consume canonical serialized findings/evaluations generically without duplicating per-rule mappings, rebuilding finding IDs, or calling detectors.
+- [x] Preserve canonical `finding_id == action_id` and validate patient/claim/line ownership and generic line-kind source identity across patient → cache → cohort → API.
+- [x] Carry canonical finding fields needed by patient/bill/cohort consumers, including identities, detail/source/severity/evaluation metadata, existing display fields, and null money, while collapsing exact duplicates.
+- [x] Aggregate evaluations generically by `(rule_id, claim_id)` so distinct claim evaluations and missing-input statuses are retained; keep missing top-level cache artifacts unavailable rather than fake zero.
+- [x] Extend synthetic cache/API regressions for Wave A visibility, future-rule passthrough, stable line-kind IDs, duplicate collapse, null money/unchanged totals, invalid-row fail-closed behavior, and K21/K26 compatibility.
+- [x] Run required domain/cache/API tests, compile changed Python files, enforce the no-allowlist/no-ID-rebuild invariant, and run `git diff --check`; record exact evidence in the checkpoint journal.
+- [x] Set state to `checkpoint2_accepted` after independent Chief review.
+
+### Out of Scope
+Frontend changes, detector-set expansion or medical logic changes, audit generator/matrix/report changes, pricing formulas or financial semantics, DuckDB schema migration, new API routes, deployment or production-cache work, source dirty work, commits, pushes, PRs, merges, and any rule outside the five canonical rules.
+
+### Review
+Checkpoint 2 is accepted by Chief. `cohort_compliance.py` now projects serialized findings/evaluations generically with no rule-ID allowlist and no finding-ID reconstruction; canonical IDs are copied unchanged, future well-formed rules pass through, exact duplicates collapse deterministically, and evaluations retain distinct `(rule_id, claim_id)` statuses. Existing cache/API routes and payload JSON were reused without schema migration or cache rebuild. Independent verification: `255 passed, 1 warning` for all billing-domain tests plus claim-compliance and compliance-index API suites; financial invariance `4 passed, 1 warning`; compileall, `git diff --check`, and the forbidden-symbol invariant passed. Audit generator/matrix updates remain intentionally deferred to Checkpoint 4; frontend work is authorized next as Checkpoint 3.
+
+---
+
 ## Task: Phase 5 Checkpoint 1 — canonical finding contract + domain plumbing
 
 ### Goal

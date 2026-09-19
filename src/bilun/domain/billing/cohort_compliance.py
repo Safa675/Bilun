@@ -12,7 +12,6 @@ from typing import Any
 
 import polars as pl
 
-from .rule_findings import build_finding_id
 from ..money import money_round_half_up_opt as _money
 
 # Billing surface → Compliance subtab id. Copay exemption rows stay on
@@ -32,9 +31,14 @@ INDEX_SURFACES: tuple[str, ...] = (
     "claim_compliance",
 )
 
-_CLAIM_COMPLIANCE_RULES = (
-    "icu_bundled_leakage_510090",
-    "tablo15_8_missing_diagnosis",
+_CLAIM_LINE_ID_FIELDS: dict[str, str | None] = {
+    "claim": None,
+    "procedure": "procedure_line_id",
+    "drug": "drug_claim_line_id",
+    "material": "material_line_id",
+}
+_CLAIM_LINE_SOURCE_FIELDS = tuple(
+    field for field in _CLAIM_LINE_ID_FIELDS.values() if field is not None
 )
 _CLAIM_MONEY_FIELDS = (
     "amount_try", "billed_try", "payable_try", "savings_try",
@@ -43,75 +47,166 @@ _CLAIM_MONEY_FIELDS = (
 )
 _CLAIM_EVALUATION_DETAIL_LIMIT = 20
 _CLAIM_EVALUATION_STATUSES = ("evaluated", "missing_inputs", "unavailable")
+_CLAIM_EVALUATION_STATUS_MAP = {
+    "evaluated": "evaluated",
+    "missing_input": "missing_inputs",
+    "missing_inputs": "missing_inputs",
+    "unavailable": "unavailable",
+}
+
+
+def _non_empty_string(value: Any) -> str | None:
+    if isinstance(value, str) and value.strip():
+        return value
+    return None
+
+
+def _claim_evaluation(
+    patient_id: str,
+    row: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    rule_id = _non_empty_string(row.get("rule_id"))
+    row_patient_id = _non_empty_string(row.get("patient_id"))
+    claim_id = _non_empty_string(row.get("claim_id"))
+    raw_status = row.get("status")
+    raw_evaluation_status = row.get("evaluation_status")
+    status = (
+        _CLAIM_EVALUATION_STATUS_MAP.get(raw_status)
+        if isinstance(raw_status, str)
+        else None
+    )
+    evaluation_status = (
+        _CLAIM_EVALUATION_STATUS_MAP.get(raw_evaluation_status)
+        if isinstance(raw_evaluation_status, str)
+        else None
+    )
+    has_status = "status" in row
+    has_evaluation_status = "evaluation_status" in row
+    required_inputs = row.get("required_inputs")
+    missing_inputs = row.get("missing_inputs")
+    if (
+        rule_id is None
+        or row_patient_id != patient_id
+        or claim_id is None
+        or (not has_status and not has_evaluation_status)
+        or (has_status and status is None)
+        or (has_evaluation_status and evaluation_status is None)
+        or (
+            has_status
+            and has_evaluation_status
+            and status != evaluation_status
+        )
+        or not isinstance(required_inputs, list)
+        or not all(isinstance(value, str) for value in required_inputs)
+        or not isinstance(missing_inputs, list)
+        or not all(isinstance(value, str) for value in missing_inputs)
+    ):
+        return None
+
+    normalized_status = status if status is not None else evaluation_status
+    if normalized_status is None:
+        return None
+
+    projected = dict(row)
+    projected.update({
+        "patient_id": patient_id,
+        "claim_id": claim_id,
+        "rule_id": rule_id,
+        "status": normalized_status,
+        "evaluation_status": normalized_status,
+    })
+    projected["surface"] = row.get("surface") or "claim_compliance"
+    return projected
+
+
+def _claim_finding(
+    patient_id: str,
+    row: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    finding_id = _non_empty_string(row.get("finding_id"))
+    action_id = row.get("action_id")
+    rule_id = _non_empty_string(row.get("rule_id"))
+    row_patient_id = _non_empty_string(row.get("patient_id"))
+    claim_id = _non_empty_string(row.get("claim_id"))
+    line_kind = _non_empty_string(row.get("line_kind"))
+    if (
+        finding_id is None
+        or action_id != finding_id
+        or rule_id is None
+        or row_patient_id != patient_id
+        or claim_id is None
+        or line_kind not in _CLAIM_LINE_ID_FIELDS
+    ):
+        return None
+
+    line_id_field = _CLAIM_LINE_ID_FIELDS[line_kind]
+    raw_line_id = row.get("line_id")
+    if line_id_field is None:
+        if raw_line_id is not None:
+            return None
+        line_id = None
+    else:
+        line_id = _non_empty_string(raw_line_id)
+        source_line_id = _non_empty_string(row.get(line_id_field))
+        if line_id is None or source_line_id != line_id:
+            return None
+
+    if any(
+        field != line_id_field and row.get(field) is not None
+        for field in _CLAIM_LINE_SOURCE_FIELDS
+    ):
+        return None
+
+    projected = dict(row)
+    projected.update({
+        "patient_id": patient_id,
+        "claim_id": claim_id,
+        "rule_id": rule_id,
+        "finding_id": finding_id,
+        "action_id": finding_id,
+        "line_kind": line_kind,
+        "line_id": line_id,
+    })
+    projected["kind"] = row.get("kind") or rule_id
+    projected["status"] = row.get("status") or "violation"
+    projected["finding_type"] = row.get("finding_type") or "compliance"
+    projected["surface"] = row.get("surface") or "claim_compliance"
+    projected["source_surface"] = row.get("source_surface") or "claim_compliance"
+    for field in _CLAIM_MONEY_FIELDS:
+        projected[field] = None
+    return projected
 
 
 def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, Any]:
     block = payload.get("claim_compliance")
     if not isinstance(block, Mapping):
         block = {}
+    evaluations_by_rule_claim: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in block.get("evaluations") or []:
+        if not isinstance(row, Mapping):
+            continue
+        evaluation = _claim_evaluation(patient_id, row)
+        if evaluation is None:
+            continue
+        key = (evaluation["rule_id"], evaluation["claim_id"])
+        evaluations_by_rule_claim.setdefault(key, evaluation)
     evaluations = [
-        dict(row, surface="claim_compliance")
-        for row in block.get("evaluations") or []
-        if isinstance(row, Mapping)
-        and row.get("rule_id") in _CLAIM_COMPLIANCE_RULES
-        and row.get("patient_id") == patient_id
+        evaluations_by_rule_claim[key]
+        for key in sorted(evaluations_by_rule_claim)
     ]
-    for rule_id in _CLAIM_COMPLIANCE_RULES:
-        if not any(row["rule_id"] == rule_id for row in evaluations):
-            evaluations.append({
-                "patient_id": patient_id, "claim_id": None, "rule_id": rule_id,
-                "surface": "claim_compliance", "status": "unavailable",
-                "missing_inputs": ["claim_compliance"],
-            })
-    findings = {}
+
+    findings: dict[str, dict[str, Any]] = {}
     for row in block.get("findings") or []:
         if not isinstance(row, Mapping):
             continue
-        rule_id = row.get("rule_id")
-        claim_id = row.get("claim_id")
-        if (
-            rule_id not in _CLAIM_COMPLIANCE_RULES
-            or row.get("patient_id") != patient_id
-            or not claim_id
-        ):
+        finding = _claim_finding(patient_id, row)
+        if finding is None:
             continue
-        expected_line_kind = (
-            "procedure"
-            if rule_id == "icu_bundled_leakage_510090"
-            else "claim"
-        )
-        line_kind = row.get("line_kind")
-        line_id = row.get("line_id")
-        if line_kind != expected_line_kind:
-            continue
-        if expected_line_kind == "procedure":
-            if line_id != row.get("procedure_line_id"):
-                continue
-        elif line_id is not None:
-            continue
-        expected_id = build_finding_id(
-            rule_id=str(rule_id),
-            patient_id=patient_id,
-            claim_id=str(claim_id),
-            line_kind=expected_line_kind,
-            line_id=str(line_id) if line_id is not None else None,
-        )
-        finding_id = row.get("finding_id")
-        action_id = row.get("action_id")
-        if finding_id != expected_id or action_id != expected_id:
-            continue
-        findings.setdefault(finding_id, {
-            **{key: row.get(key) for key in (
-                "patient_id", "claim_id", "rule_id", "detail", "sut_section_id",
-                "procedure_line_id", "procedure_code", "procedure_name",
-            )},
-            "finding_id": finding_id, "action_id": action_id,
-            "line_kind": line_kind, "line_id": line_id,
-            "kind": rule_id, "status": "violation",
-            "finding_type": "compliance", "surface": "claim_compliance",
-            "source_surface": "claim_compliance", **dict.fromkeys(_CLAIM_MONEY_FIELDS),
-        })
-    return {"findings": list(findings.values()), "evaluations": evaluations}
+        findings.setdefault(finding["finding_id"], finding)
+    return {
+        "findings": [findings[finding_id] for finding_id in sorted(findings)],
+        "evaluations": evaluations,
+    }
 
 _DEFAULT_LIMIT = 500
 _MAX_LIMIT = 5000
