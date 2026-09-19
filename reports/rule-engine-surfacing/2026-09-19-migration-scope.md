@@ -68,7 +68,7 @@ Positive findings always have `evaluation_status="evaluated"`. Non-finding evalu
 
 For backward compatibility, the canonical `finding_id` uses the already-shipped claim-compliance identity format:
 
-`claim_compliance:<urlquoted rule_id>:<urlquoted patient_id>:<urlquoted claim_id>:<urlquoted line_id-or-empty>`.
+`claim_compliance:<urlquoted rule_id>:<urlquoted patient_id>:<urlquoted claim_id>:<urlquoted line_kind>:<urlquoted line_id-or-empty>`; implementation identity is `(rule_id, patient_id, claim_id, line_kind, line_id)`.
 
 The current projector already uses that encoding at `claim_compliance.py:132-150`. For K21 this preserves the existing procedure-line identity; for claim-level K26 the final component remains empty. For the selected slice:
 

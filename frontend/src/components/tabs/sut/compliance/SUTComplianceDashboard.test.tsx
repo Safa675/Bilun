@@ -189,9 +189,16 @@ function renderGroup(data: ComplianceIndexResponse | null = index, ids = new Set
   return renderToStaticMarkupWithLocale(<WorkspaceProvider><ComplianceIndexGroup index={scoped} surface={surface} loading={false} cohortPatientIds={ids} cohortFilterActive /></WorkspaceProvider>);
 }
 
-function renderPatient(block: ClaimCompliance | null | undefined = projection) {
+function renderPatient(
+  block: ClaimCompliance | null | undefined = projection,
+  selectedFindingId?: string | null,
+) {
   const report = { patient_id: "P /1", claim_id: "C &1", claim_compliance: block, recommended_actions: [] } as unknown as BillingActionReport;
-  return renderToStaticMarkupWithLocale(<WorkspaceProvider><ComplianceViewSection billingReport={report} /></WorkspaceProvider>);
+  return renderToStaticMarkupWithLocale(
+    <WorkspaceProvider>
+      <ComplianceViewSection billingReport={report} selectedFindingId={selectedFindingId} />
+    </WorkspaceProvider>,
+  );
 }
 
 describe("claim compliance projection", () => {
@@ -381,6 +388,22 @@ describe("claim compliance projection", () => {
     expect(html).toContain(`data-finding-id="${canonicalWaveAFinding.finding_id}"`);
     expect(html).toContain("Wave A lab finding");
     expect(html).toContain("detect_unreported_lab_result");
+  });
+
+  it("selects the canonical finding supplied by the patient route and safely ignores unknown ids", () => {
+    const selectedHtml = renderPatient(
+      { findings: [canonicalWaveAFinding], evaluations: [] } as unknown as ClaimCompliance,
+      canonicalWaveAFinding.finding_id,
+    );
+    expect(selectedHtml).toContain(`data-finding-id="${canonicalWaveAFinding.finding_id}"`);
+    expect(selectedHtml).toContain('data-selected="true"');
+
+    const unknownHtml = renderPatient(
+      { findings: [canonicalWaveAFinding], evaluations: [] } as unknown as ClaimCompliance,
+      "missing-canonical-finding",
+    );
+    expect(unknownHtml).toContain("Wave A lab finding");
+    expect(unknownHtml).not.toContain('data-selected="true"');
   });
 
   it("renders old and missing patient context honestly", () => {

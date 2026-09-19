@@ -673,3 +673,23 @@ Phase B proposes exactly three Tablo 15 line-integrity detectors for the first W
 State is `migration_scope_proposed` / `proposed`, phase remains 4, implementation remains `not_started`, and Chief review is the next action. Verification: the accepted starting checkpoint was confirmed as `5122d63472fcc8eb7182e7d45d3daf14c24c7a67`; `jq empty tasks/rule-engine-surfacing-loop/state.json` passed; the committed plan, audit generator, focused audit test, accepted matrix, and accepted audit SHA-256 values recomputed exactly to the hashes retained in state; all accepted audit counts remained unchanged; `git diff --exit-code -- src/bilun frontend tests scripts` passed; `git diff --check` passed; and trailing-whitespace inspection of all four authorized files found no matches. `git status --short` showed only the requested report/state/journal/todo paths. No runtime tests were run because this checkpoint intentionally changes no runtime or test behavior.
 
 Chief review: accepted after independent matrix/source/rerun reconciliation. The next authorized unit is Phase 5 Checkpoint 1 only: canonical finding/evaluation contract and domain plumbing for K21, K26, and the three selected Tablo 15 line-integrity rules.
+## Task: Final VPS correction — finding deep links and missing evaluations
+
+### Goal
+Consume canonical `finding` patient deep links with deterministic generic row highlighting and preserve only legitimate canonical `claim_id=null` unavailable evaluations in cohort counts, with truthful closure metadata and focused GREEN verification.
+
+### Subtasks
+- [x] Reopen the closure state against the current VPS worktree and record the exact migration-scope identity correction before implementation.
+- [x] Add focused frontend RED regressions for route finding-query propagation, canonical finding selection/highlighting, and unknown-finding safe fallback.
+- [x] Add focused backend RED regressions for counting a legitimate null-claim missing-input evaluation and rejecting malformed null-claim evaluations.
+- [x] Run the new frontend and backend regressions and capture the expected RED evidence without changing production behavior first.
+- [x] Parse `finding` in the patient route and pass it through the existing generic patient Compliance view to visibly select/highlight the canonical matching row while preserving legacy `action_id` fallback and safe unknown handling.
+- [x] Update cohort evaluation validation to retain only well-formed null-claim unavailable evaluations with explicit missing-input metadata, without fabricating claim IDs or changing finding identity, deduplication, financial fields, or totals.
+- [x] Run only the affected frontend/backend focused suites, `npx tsc --noEmit`, changed-module/test compileall, `git diff --check`, and invariant scans for financial/rule-allowlist/generated-cache changes.
+- [x] Record exact GREEN results, changed files, remaining blockers, and no-commit/no-push boundary in this plan, the loop journal, and closure state; mark loop complete only after all focused gates are GREEN.
+
+### Out of Scope
+Financial formulas or totals, detector/rule semantics, rule-ID allowlists, canonical finding identity changes, new routes or schemas, broad/full test suites, generated dependency/cache files, production cache rebuilds, deploys, commits, pushes, PRs, merges, and patient data or credentials.
+
+### Review
+Implemented and verified the final VPS correction. Patient URLs now parse and propagate the generic `finding` query through the existing Compliance view; canonical `finding_id` rows visibly highlight, legacy `action_id` remains the fallback, and unknown/missing IDs leave normal rendering unchanged. Cohort validation now preserves only well-formed JSON-null claim evaluations with unavailable status and non-empty required/missing-input metadata, retains deterministic identity semantics without fabricating claims, and keeps financial rows/totals unchanged. Focused backend passed `22 passed, 1 warning`; frontend passed `5 files, 38 tests`; `npx tsc --noEmit`, compileall, Ruff, `git diff --check`, and invariant scans passed. One unrelated HTTP/cache dedup integration test exceeded the bounded 60-second VPS runner timeout; the financial regression passed. No commit, push, PR, merge, deploy, or production cache rebuild occurred.

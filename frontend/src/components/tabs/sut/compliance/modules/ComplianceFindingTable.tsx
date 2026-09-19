@@ -15,7 +15,10 @@ import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtTRY2 } from "../../shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getSutSeverityLabel } from "@/lib/sutLabels";
-import { claimComplianceFindingIdentity } from "@/lib/workspaceViews";
+import {
+  claimComplianceFindingIdentity,
+  isClaimComplianceFindingSelected,
+} from "@/lib/workspaceViews";
 
 const PATIENT_LINK_CLASS =
   "font-semibold text-[var(--text-primary)] hover:text-[var(--gold-hover)]";
@@ -84,6 +87,7 @@ export interface ComplianceFindingTableProps {
   partialResults?: boolean;
   pagination?: ComplianceIndexPagination;
   onPageChange?: (offset: number) => void;
+  selectedFindingId?: string | null;
 }
 
 export function ComplianceFindingTable({
@@ -95,6 +99,7 @@ export function ComplianceFindingTable({
   partialResults = false,
   pagination,
   onPageChange,
+  selectedFindingId,
 }: ComplianceFindingTableProps) {
   const t = useT();
 
@@ -171,11 +176,18 @@ export function ComplianceFindingTable({
           rows.map((row, rowIndex) => {
             const name = rowName(row);
             const findingId = claimComplianceFindingIdentity(row);
+            const selected =
+              claimCompliance && isClaimComplianceFindingSelected(row, selectedFindingId);
             const href = rowHref(row, findingId);
             const source = sourceLabel(row);
             const evaluated = evaluationLabel(t, row.evaluation_status);
             return (
-              <tr key={findingId ?? rowIndex} data-finding-id={findingId ?? undefined}>
+              <tr
+                key={findingId ?? rowIndex}
+                data-finding-id={findingId ?? undefined}
+                data-selected={selected ? "true" : undefined}
+                className={selected ? "bg-[var(--gold-subtle)]" : undefined}
+              >
                 <td>
                   <PatientTabLink patientId={row.patient_id} href={href} className={PATIENT_LINK_CLASS}>
                     {row.patient_id}

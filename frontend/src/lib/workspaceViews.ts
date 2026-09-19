@@ -66,6 +66,15 @@ export function claimComplianceFindingIdentity(
   return row.finding_id ?? row.action_id ?? null;
 }
 
+export function isClaimComplianceFindingSelected(
+  row: Pick<ClaimComplianceFinding, "finding_id" | "action_id">,
+  selectedFindingId: string | null | undefined,
+): boolean {
+  return Boolean(
+    selectedFindingId && claimComplianceFindingIdentity(row) === selectedFindingId,
+  );
+}
+
 export function scopedClaimComplianceFindings(
   report: BillingActionReport,
 ): ClaimComplianceFinding[] {

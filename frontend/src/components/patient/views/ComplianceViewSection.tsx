@@ -32,11 +32,13 @@ export default function ComplianceViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  selectedFindingId,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  selectedFindingId?: string | null;
 }) {
   const t = useT();
   const viewActionsList = viewActions(billingReport, "compliance");
@@ -110,6 +112,7 @@ export default function ComplianceViewSection({
           loading={false}
           unavailable={!projection}
           claimCompliance
+          selectedFindingId={selectedFindingId}
         />
       </section>
 

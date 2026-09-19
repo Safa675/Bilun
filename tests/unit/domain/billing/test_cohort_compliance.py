@@ -410,6 +410,100 @@ def test_claim_compliance_evaluations_are_generic_validated_and_deduped_by_rule_
     assert summary["details"][0]["status"] == "missing_inputs"
 
 
+def test_claim_compliance_preserves_legitimate_null_claim_missing_input_evaluation() -> None:
+    reports = {
+        "P-MISSING-CONTEXT": {
+            "claim_compliance": {
+                "evaluations": [
+                    {
+                        "patient_id": "P-MISSING-CONTEXT",
+                        "claim_id": None,
+                        "rule_id": "future_context_rule",
+                        "status": "missing_inputs",
+                        "evaluation_status": "missing_inputs",
+                        "required_inputs": ["claim_context"],
+                        "missing_inputs": ["claim_context"],
+                    },
+                    {
+                        "patient_id": "P-MISSING-CONTEXT",
+                        "claim_id": "C-AVAILABLE",
+                        "rule_id": "future_context_rule",
+                        "status": "evaluated",
+                        "evaluation_status": "evaluated",
+                        "required_inputs": ["claim_context"],
+                        "missing_inputs": [],
+                    },
+                ]
+            }
+        }
+    }
+
+    summary = slice_compliance_index(
+        build_cohort_compliance_index(reports),
+        surface="claim_compliance",
+    )["claim_compliance"]
+
+    assert summary["counts"] == {
+        "evaluated": 1,
+        "missing_inputs": 1,
+        "unavailable": 0,
+    }
+    assert summary["non_evaluated_total"] == 1
+    assert summary["details"] == [
+        {
+            "patient_id": "P-MISSING-CONTEXT",
+            "claim_id": None,
+            "rule_id": "future_context_rule",
+            "status": "missing_inputs",
+            "evaluation_status": "missing_inputs",
+            "required_inputs": ["claim_context"],
+            "missing_inputs": ["claim_context"],
+            "surface": "claim_compliance",
+        }
+    ]
+
+
+def test_claim_compliance_rejects_malformed_null_claim_evaluation() -> None:
+    reports = {
+        "P-MALFORMED": {
+            "claim_compliance": {
+                "evaluations": [
+                    {
+                        "patient_id": "P-MALFORMED",
+                        "claim_id": None,
+                        "rule_id": "future_context_rule",
+                        "status": "evaluated",
+                        "evaluation_status": "evaluated",
+                        "required_inputs": ["claim_context"],
+                        "missing_inputs": [],
+                    },
+                    {
+                        "patient_id": "P-MALFORMED",
+                        "claim_id": None,
+                        "rule_id": "future_context_rule_without_metadata",
+                        "status": "missing_inputs",
+                        "evaluation_status": "missing_inputs",
+                        "required_inputs": [],
+                        "missing_inputs": [],
+                    },
+                ]
+            }
+        }
+    }
+
+    summary = slice_compliance_index(
+        build_cohort_compliance_index(reports),
+        surface="claim_compliance",
+    )["claim_compliance"]
+
+    assert summary["counts"] == {
+        "evaluated": 0,
+        "missing_inputs": 0,
+        "unavailable": 0,
+    }
+    assert summary["details"] == []
+
+
 def test_k21_k26_claim_contract_compatibility() -> None:
     specs = (
         ("icu_bundled_leakage_510090", "procedure", "PROC-K21", "procedure_line_id"),

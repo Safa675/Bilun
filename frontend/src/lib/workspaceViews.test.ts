@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   claimComplianceFindingIdentity,
+  isClaimComplianceFindingSelected,
   complianceBilledAtRisk,
   recoverableUplift,
   scopedClaimComplianceFindings,
@@ -115,6 +116,17 @@ describe("workspaceViews", () => {
     const findings = scopedClaimComplianceFindings(claimReport);
     expect(findings).toHaveLength(1);
     expect(claimComplianceFindingIdentity(findings[0])).toBe("canonical-wave-a");
+  });
+
+  it("matches canonical finding ids and safely ignores an unknown deep-link id", () => {
+    const row = {
+      finding_id: "canonical-wave-a",
+      action_id: "legacy-alias",
+    };
+
+    expect(isClaimComplianceFindingSelected(row, "canonical-wave-a")).toBe(true);
+    expect(isClaimComplianceFindingSelected(row, "unknown-finding")).toBe(false);
+    expect(isClaimComplianceFindingSelected(row, null)).toBe(false);
   });
 
   it("prefers sgk_uplift_try and falls back to total_recoverable_try", () => {

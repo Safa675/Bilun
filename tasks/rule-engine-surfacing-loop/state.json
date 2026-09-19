@@ -4,7 +4,7 @@
   "phase_name": "loop_complete",
   "migration_scope_status": "accepted",
   "branch": "rule-engine-surfacing-loop",
-  "worktree": "/home/safa/Documents/Bilun/.worktrees/rule-engine-surfacing-loop",
+  "worktree": "/opt/Bilun/.worktrees/rule-engine-surfacing-loop-vps",
   "source_revision": "4c9c9d92595959dc12382a3130c6b400fd56c52c",
   "checkpoint3_commit": "8393e4f5b79da2a30ae82e5f55bc86f0e2d0f3d1",
   "imported_plan_sha256": "300456a53ccae9093e9c4fa977fe95cb5e26150c01a7b59e79a72f6b00edc138",
@@ -68,9 +68,18 @@
     "Final added-line secret/patient-data scan: pass",
     "Final temporary frontend/node_modules symlink: absent",
     "Final blockers: none",
-    "Final delivery boundary: no push, PR, merge, deploy, or production cache rebuild"
+    "Final delivery boundary: no push, PR, merge, deploy, or production cache rebuild",
+    "Final VPS correction RED: backend legitimate-null regression failed while malformed-null regression passed; frontend route/prop/selection regressions failed before implementation.",
+    "Final VPS correction edge RED: same-rule claim-bound plus null-claim evaluation exposed a None/string sort TypeError before the deterministic sort-key fix.",
+    "Final VPS correction GREEN: affected backend cohort/API/financial gate 22 passed, 1 warning in 7.84s; affected frontend 5 files and 38 tests passed; npx tsc --noEmit exit 0.",
+    "Final VPS correction compileall exit 0; Ruff exit 0; git diff --check exit 0; no rule-ID branching/allowlist symbols in changed production path; no generated dependency/cache files; temporary symlinks absent.",
+    "Final VPS correction verification limitation: full test_claim_compliance_pipeline.py and its HTTP/cache dedup test each exceeded a bounded 60-second VPS runner timeout; financial invariance passed and no code failure was observed from the timeout.",
+    "Final VPS correction delivery boundary: no commit, push, PR, merge, deploy, or production cache rebuild occurred."
   ],
   "blockers": [],
+  "verification_limitations": [
+    "The unrelated HTTP/cache dedup integration test test_duplicate_context_lines_do_not_duplicate_cached_findings and the containing test_claim_compliance_pipeline.py file exceeded a bounded 60-second timeout in this VPS runner; the focused changed-path gates and financial regression passed."
+  ],
   "decisions": [
     "Chief accepted the audit baseline after rejecting and correcting the first generated version.",
     "Canonical runtime discovery uses direct imported calls with BillingActionReport as the explicit non-runtime allowlist entry; callable-name prefixes are not used.",
@@ -86,9 +95,9 @@
     "Canonical IDs include rule, patient, claim, line kind, and line identity. Existing K21/K26 cohort rows preserve and validate those IDs without authorizing the three new Wave A rules on cohort surfaces yet.",
     "Checkpoint 2 is accepted: cohort projection is generic and rule-ID agnostic, copies canonical finding identity, preserves distinct rule/claim evaluation statuses, and reuses existing cache/API JSON transport without schema migration.",
     "Checkpoint 4 represents claim-compliance findings through the canonical evaluator and generic projection without a rule-ID allowlist; selected findings remain unpriced with nullable money and excluded from totals.",
-    "Checkpoint 4 is verified and ready for the acceptance commit: whole-file no-allowlist enforcement, qualified-call discovery, evaluator/source contract validation, truthful entrypoint taxonomy, and intentional duplicate behavior are covered by focused regressions; no acceptance commit exists in this worktree.",
+    "Checkpoint 4 is verified historically; the final VPS correction is complete against the current VPS worktree and has no acceptance commit.",
     "Deferred Wave B/C/D and broad prose-family candidates remain outside this loop's approved scope and are not silently marked migrated.",
-    "No push, PR, merge, deploy, or production cache rebuild occurred; no further action is required in this loop. Deferred Wave B/C/D and broad prose-family candidates require separately approved future scope and are not part of this completed loop."
+    "No push, PR, merge, deploy, or production cache rebuild occurred; final VPS correction focused RED/GREEN gates are complete. Deferred Wave B/C/D and broad prose-family candidates remain outside scope."
   ],
   "migration_scope": {
     "proposal_date": "2026-09-19",
@@ -125,7 +134,7 @@
     "implementation_status": "loop_complete",
     "acceptance_status": "loop_complete",
     "accepted_by": "Chief",
-    "authorized_next_checkpoint": "No further action is required in this loop. Deferred Wave B/C/D and broad prose-family candidates require separately approved future scope and are not part of this completed loop."
+    "authorized_next_checkpoint": "No further action is required in this loop; deferred Wave B/C/D and broad prose-family candidates remain outside scope."
   },
   "supervisor_interventions": [
     "Created the isolated worktree outside the Codex workspace sandbox so Git metadata remained writable.",
@@ -136,5 +145,5 @@
     "Rejected the first green Checkpoint 2 patch because a five-rule allowlist and identity reconstruction violated the accepted generic projection contract.",
     "Independently reproduced and corrected evaluation serializer and identity assumptions through bounded Web Extra High xhigh re-dispatches; implementation logic remained Web-authored."
   ],
-  "next_action": "No further action is required in this loop. Deferred Wave B/C/D and broad prose-family candidates require separately approved future scope and are not part of this completed loop."
+  "next_action": "No further action is required in this loop; focused final VPS correction gates are green. Deferred Wave B/C/D and broad prose-family candidates remain outside scope."
 }

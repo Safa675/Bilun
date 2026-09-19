@@ -65,9 +65,12 @@ def _claim_evaluation(
     patient_id: str,
     row: Mapping[str, Any],
 ) -> dict[str, Any] | None:
+    if "claim_id" not in row:
+        return None
     rule_id = _non_empty_string(row.get("rule_id"))
     row_patient_id = _non_empty_string(row.get("patient_id"))
-    claim_id = _non_empty_string(row.get("claim_id"))
+    raw_claim_id = row.get("claim_id")
+    claim_id = _non_empty_string(raw_claim_id) if raw_claim_id is not None else None
     raw_status = row.get("status")
     raw_evaluation_status = row.get("evaluation_status")
     status = (
@@ -87,7 +90,6 @@ def _claim_evaluation(
     if (
         rule_id is None
         or row_patient_id != patient_id
-        or claim_id is None
         or (not has_status and not has_evaluation_status)
         or (has_status and status is None)
         or (has_evaluation_status and evaluation_status is None)
@@ -105,6 +107,14 @@ def _claim_evaluation(
 
     normalized_status = status if status is not None else evaluation_status
     if normalized_status is None:
+        return None
+
+    if claim_id is None and (
+        raw_claim_id is not None
+        or normalized_status not in {"missing_inputs", "unavailable"}
+        or not required_inputs
+        or not missing_inputs
+    ):
         return None
 
     projected = dict(row)
@@ -181,7 +191,7 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
     block = payload.get("claim_compliance")
     if not isinstance(block, Mapping):
         block = {}
-    evaluations_by_rule_claim: dict[tuple[str, str], dict[str, Any]] = {}
+    evaluations_by_rule_claim: dict[tuple[str, str | None], dict[str, Any]] = {}
     for row in block.get("evaluations") or []:
         if not isinstance(row, Mapping):
             continue
@@ -192,7 +202,10 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
         evaluations_by_rule_claim.setdefault(key, evaluation)
     evaluations = [
         evaluations_by_rule_claim[key]
-        for key in sorted(evaluations_by_rule_claim)
+        for key in sorted(
+            evaluations_by_rule_claim,
+            key=lambda item: (item[0], item[1] is not None, item[1] or ""),
+        )
     ]
 
     findings: dict[str, dict[str, Any]] = {}
