@@ -1,3 +1,22 @@
+## Task: Phase 5 Checkpoint 4 — loop-complete closure metadata
+
+### Goal
+Record truthful loop-complete metadata for the verified Checkpoint 4 without modifying production code, tests, generated audit artifacts, plans, or configuration.
+
+### Subtasks
+- [x] Replace pending-commit closure status/phase/status values with truthful `loop_complete` wording.
+- [x] Record the exact final acceptance results, artifact-hash reconciliation, added-line secret/patient-data scan, and temporary symlink check.
+- [x] Preserve empty blockers, explicit exclusions/deferred Wave B/C/D scope, and the no-push/no-merge/no-deploy/no-cache-rebuild boundary.
+- [x] Run JSON parsing and `git diff --check` after the metadata-only update.
+
+### Out of Scope
+Production code, tests, generated audit artifacts, plans, configuration, detector medical semantics, new detector migrations, projection rule-ID allowlists, registry dispatch changes, pricing or financial behavior, production cache rebuilds, commits, pushes, PRs, merges, deployments, and deferred Wave B/C/D or broad prose-family candidates.
+
+### Review
+Loop is complete and verified. Final acceptance evidence is focused inventory `17 passed in 2.53s`; authoritative combined backend `272 passed, 1 warning in 32.46s`; frontend `4 passed files, 29 passed tests`; `npx tsc --noEmit` exit 0; generator `--check` exit 0; compileall exit 0; `git diff --check` exit 0; artifact hash reconciliation pass; added-line secret/patient-data scan pass; and temporary frontend/node_modules symlink absent. Blockers are empty. Deferred Wave B/C/D and broad prose-family candidates remain outside scope and require separately approved future scope. No push, PR, merge, deploy, or production cache rebuild occurred; no commit was created. This loop is ready for the acceptance commit, but no further action is required in this loop.
+
+---
+
 ## Task: Phase 5 Checkpoint 2 — generic cohort/cache/API projection
 
 ### Goal

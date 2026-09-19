@@ -28,14 +28,17 @@ from src.bilun.domain.billing import (
     patient_report,
     rule_findings,
 )
-from src.bilun.domain.billing.claim_compliance import DIAGNOSIS_RULE_ID, ICU_RULE_ID
 from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
 from src.bilun.domain.billing.cohort_runner import (
     compute_all_bill_billing_reports,
     compute_all_billing_reports,
 )
 from src.bilun.domain.billing.types import ClaimCompliance
-from src.bilun.domain.billing.rule_findings import evaluate_rule_findings
+from src.bilun.domain.billing.rule_findings import (
+    DIAGNOSIS_RULE_ID,
+    ICU_RULE_ID,
+    evaluate_rule_findings,
+)
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.patient_context import build_patient_claim_context
 from src.bilun.shared import state

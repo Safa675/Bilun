@@ -9,9 +9,13 @@ Run in verification mode (no writes):
 
     python3 scripts/audits/build_rule_surfacing_inventory.py --check
 
-The committed JSON/Markdown outputs are generated from :func:`build_audit` and
-are checked byte-for-byte by unit tests.  Repository updates are performed by
-the supervising Codex patch tool, not by this script during the audit dispatch.
+Regenerate the committed outputs deterministically:
+
+    python3 scripts/audits/build_rule_surfacing_inventory.py --write
+
+The committed JSON/Markdown outputs are generated from :func:`build_audit`,
+written by the explicit ``--write`` mode, and checked byte-for-byte by unit
+tests.
 """
 
 from __future__ import annotations
@@ -98,24 +102,20 @@ EXPECTED_ANALYZE_CALLS = frozenset(
         "check_treatment_pricing_for_context",
         "detect_conditional_addon_ek2d_opportunities",
         "detect_transplant_package_scope_violations",
-        "detect_icu_bundled_leakage",
+        "evaluate_rule_findings",
         "detect_yatak_icu_overlap",
         "detect_blood_component_isbt128_violations",
         "detect_radiation_oncology_violations",
         "detect_sct_temporal_window_violations_for_context",
-        "detect_missing_diagnosis",
         "detect_duplicate_exam_10day",
         "detect_duplicate_tests",
         "detect_exam_admission_date_mismatch",
-        "detect_missing_drug_barcode",
         "detect_admission_billing_window",
         "detect_vakabasi_wrong_method",
         "detect_normal_poliklinik_wrong_method",
         "detect_green_area_bundled_extras",
-        "detect_unreported_lab_result",
         "detect_inpatient_on_outpatient",
         "detect_donor_prep_as_exam",
-        "detect_material_identity_errors",
         "detect_material_preauth_missing",
         "detect_material_type_missing",
         "detect_drug_quantity_error",
@@ -134,6 +134,7 @@ EXPECTED_ANALYZE_CALLS = frozenset(
 
 EXPECTED_REPORT_CALLS = frozenset(
     {
+        "evaluate_rule_findings",
         "project_claim_compliance",
         "set_missing_inputs_report",
         "finalize_report_totals",
@@ -190,10 +191,6 @@ ARTIFACTS_BY_CALLABLE: dict[str, tuple[str, ...]] = {
 
 
 EQUIVALENT_EMISSIONS: dict[str, tuple[str, ...]] = {
-    "project_claim_compliance": (
-        "detect_icu_bundled_leakage",
-        "detect_missing_diagnosis",
-    ),
     "validate_drug_indication_from_claims": ("check_drug_indication_for_context",),
     "precheck_materials_from_claims": (
         "check_bundling_violations_for_context",
@@ -206,6 +203,14 @@ EQUIVALENT_EMISSIONS: dict[str, tuple[str, ...]] = {
     "recommend_gazette_repricing_from_claims": ("check_gazette_repricing_for_context",),
     "recommend_procedure_addon_uplift_from_claims": ("check_procedure_pairing_for_context",),
     "recommend_material_uplift_from_claims": ("check_material_pairing_for_context",),
+}
+
+
+# A generic projection receives the output of the canonical evaluator. This
+# maps stages, not individual rule IDs; the evaluator's own declared order is
+# the source of truth for emitted findings.
+GENERIC_SURFACE_EMISSION_SOURCES: dict[str, tuple[str, ...]] = {
+    "project_claim_compliance": ("evaluate_rule_findings",),
 }
 
 
@@ -243,6 +248,19 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
 
 
 PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
+    "evaluate_rule_findings": {
+        "surface": "claim_compliance",
+        "finding_type": "compliance",
+        "patient_ui": "ComplianceViewSection#claim-compliance",
+        "cohort_api": "/compliance-index?surface=claim_compliance",
+        "cohort_ui": "SUTComplianceDashboard:claim_compliance",
+        "money": "unpriced_compliance",
+        "money_fields": [],
+        "included": False,
+        "visibility": "patient_and_cohort_visible",
+        "duplicate_group": "claim_compliance:patient+cohort",
+        "duplicate_status": "intentional_cross_view",
+    },
     "project_claim_compliance": {
         "surface": "claim_compliance",
         "finding_type": "compliance",
@@ -554,6 +572,11 @@ def _resolve_imports(path: Path, tree: ast.Module) -> dict[str, str]:
     current: list[str] | None = None
     imports: dict[str, str] = {}
     for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                binding = alias.asname or alias.name.split(".", 1)[0]
+                imports[binding] = alias.name if alias.asname else binding
+            continue
         if not isinstance(node, ast.ImportFrom) or not node.module:
             continue
         if node.level:
@@ -566,6 +589,47 @@ def _resolve_imports(path: Path, tree: ast.Module) -> dict[str, str]:
         for alias in node.names:
             imports[alias.asname or alias.name] = module
     return imports
+
+
+def _resolve_qualified_imports(tree: ast.Module) -> dict[str, str]:
+    imports: dict[str, str] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Import):
+            continue
+        for alias in node.names:
+            binding = alias.asname or alias.name.split(".", 1)[0]
+            imports[binding] = alias.name if alias.asname else binding
+    return imports
+
+
+def _attribute_parts(node: ast.AST) -> list[str] | None:
+    parts: list[str] = []
+    current = node
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+    if not isinstance(current, ast.Name):
+        return None
+    return [current.id, *reversed(parts)]
+
+
+def _call_target(
+    node: ast.AST,
+    imports: dict[str, str],
+    qualified_imports: dict[str, str],
+) -> tuple[str, str] | None:
+    if isinstance(node, ast.Name):
+        module = imports.get(node.id)
+        return (node.id, module) if module is not None else None
+    parts = _attribute_parts(node)
+    if parts is None or len(parts) < 2:
+        return None
+    module = qualified_imports.get(parts[0])
+    if module is None:
+        return None
+    suffix = parts[1:-1]
+    qualified_module = ".".join((module, *suffix)) if suffix else module
+    return parts[-1], qualified_module
 
 
 def _report_targets(node: ast.AST | None) -> list[str]:
@@ -586,7 +650,7 @@ def _ancestor_if_gates(node: ast.AST, parents: dict[ast.AST, ast.AST]) -> tuple[
     current = node
     while current in parents:
         parent = parents[current]
-        if isinstance(parent, ast.If):
+        if isinstance(parent, (ast.If, ast.IfExp)):
             text = ast.unparse(parent.test)
             if text not in gates:
                 gates.append(text)
@@ -614,6 +678,7 @@ def _assignment_report_fields(node: ast.AST, parents: dict[ast.AST, ast.AST]) ->
 def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     imports = _resolve_imports(path, tree)
+    qualified_imports = _resolve_qualified_imports(tree)
     fn = next(
         node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == entrypoint
     )
@@ -624,15 +689,18 @@ def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
 
     grouped: dict[str, dict[str, Any]] = {}
     for node in ast.walk(fn):
-        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+        if not isinstance(node, ast.Call):
             continue
-        name = node.func.id
-        if name not in imports or name in NON_RUNTIME_IMPORTED_CALLS:
+        target = _call_target(node.func, imports, qualified_imports)
+        if target is None:
+            continue
+        name, module = target
+        if name in NON_RUNTIME_IMPORTED_CALLS:
             continue
         row = grouped.setdefault(
             name,
             {
-                "module": imports[name],
+                "module": module,
                 "lines": set(),
                 "gate_paths": set(),
                 "report_fields": set(),
@@ -685,6 +753,182 @@ def _module_constants(tree: ast.Module) -> dict[str, str]:
             if isinstance(target, ast.Name):
                 constants[target.id] = value.value
     return constants
+
+
+_UNRESOLVED_STATIC_VALUE = object()
+
+
+def _resolve_static_value(node: ast.AST, bindings: dict[str, Any]) -> Any:
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.Name):
+        return bindings.get(node.id, _UNRESOLVED_STATIC_VALUE)
+    if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
+        values = [_resolve_static_value(child, bindings) for child in node.elts]
+        if any(value is _UNRESOLVED_STATIC_VALUE for value in values):
+            return _UNRESOLVED_STATIC_VALUE
+        if isinstance(node, ast.Tuple):
+            return tuple(values)
+        if isinstance(node, ast.List):
+            return list(values)
+        return set(values)
+    if isinstance(node, ast.Dict):
+        keys = [_resolve_static_value(child, bindings) for child in node.keys]
+        values = [_resolve_static_value(child, bindings) for child in node.values]
+        if any(value is _UNRESOLVED_STATIC_VALUE for value in (*keys, *values)):
+            return _UNRESOLVED_STATIC_VALUE
+        return dict(zip(keys, values))
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id in {"frozenset", "set"}
+        and len(node.args) == 1
+        and not node.keywords
+    ):
+        value = _resolve_static_value(node.args[0], bindings)
+        if value is _UNRESOLVED_STATIC_VALUE:
+            return _UNRESOLVED_STATIC_VALUE
+        return frozenset(value) if node.func.id == "frozenset" else set(value)
+    return _UNRESOLVED_STATIC_VALUE
+
+
+def _static_module_binding(path: Path, name: str) -> Any:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    bindings: dict[str, Any] = {}
+    for node in tree.body:
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        value = _resolve_static_value(node.value, bindings)
+        if value is _UNRESOLVED_STATIC_VALUE:
+            continue
+        for target in targets:
+            if isinstance(target, ast.Name):
+                bindings[target.id] = value
+    return bindings.get(name, _UNRESOLVED_STATIC_VALUE)
+
+
+def _direct_imported_calls(path: Path, callable_name: str) -> dict[str, str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    imports = _resolve_imports(path, tree)
+    qualified_imports = _resolve_qualified_imports(tree)
+    fn = next(
+        (
+            node
+            for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == callable_name
+        ),
+        None,
+    )
+    if fn is None:
+        raise ValueError(f"runtime callable missing for static contract: {callable_name}")
+    calls: dict[str, str] = {}
+    for node in ast.walk(fn):
+        if not isinstance(node, ast.Call):
+            continue
+        target = _call_target(node.func, imports, qualified_imports)
+        if target is None or target[0] in NON_RUNTIME_IMPORTED_CALLS:
+            continue
+        calls[target[0]] = target[1]
+    return calls
+
+
+def _canonical_evaluator_emissions(module: str, callable_name: str) -> set[str]:
+    if callable_name != "evaluate_rule_findings":
+        return set()
+    path = _module_path(module)
+    if path is None:
+        raise ValueError(f"canonical evaluator module missing: {module}")
+    rule_order = _static_module_binding(path, "_RULE_ORDER")
+    if not isinstance(rule_order, tuple) or not rule_order or not all(
+        isinstance(value, str) and value for value in rule_order
+    ):
+        raise ValueError(
+            "canonical evaluator emission drift: _RULE_ORDER must be a non-empty string tuple"
+        )
+    if len(set(rule_order)) != len(rule_order):
+        raise ValueError("canonical evaluator emission drift: _RULE_ORDER contains duplicates")
+
+    metadata_maps: dict[str, dict[str, Any]] = {}
+    for map_name in ("_REQUIRED_INPUTS", "_LINE_MAPPING", "_SOURCE_ENGINE"):
+        value = _static_module_binding(path, map_name)
+        if not isinstance(value, dict):
+            raise ValueError(
+                f"canonical evaluator metadata drift: required map {map_name} is missing"
+            )
+        if set(value) != set(rule_order):
+            raise ValueError(
+                f"canonical evaluator metadata drift: {map_name} keys do not match _RULE_ORDER"
+            )
+        metadata_maps[map_name] = value
+
+    required_inputs = metadata_maps["_REQUIRED_INPUTS"]
+    if any(
+        not isinstance(inputs, (list, tuple))
+        or not inputs
+        or not all(isinstance(item, str) and item for item in inputs)
+        for inputs in required_inputs.values()
+    ):
+        raise ValueError("canonical evaluator metadata drift: invalid _REQUIRED_INPUTS map")
+
+    line_mapping = metadata_maps["_LINE_MAPPING"]
+    if any(
+        not isinstance(mapping, tuple)
+        or len(mapping) != 2
+        or mapping[0] not in {"procedure", "drug", "material", "claim"}
+        or (mapping[1] is not None and (not isinstance(mapping[1], str) or not mapping[1]))
+        for mapping in line_mapping.values()
+    ):
+        raise ValueError("canonical evaluator metadata drift: invalid _LINE_MAPPING map")
+
+    source_engine = metadata_maps["_SOURCE_ENGINE"]
+    if any(not isinstance(source, str) or not source for source in source_engine.values()):
+        raise ValueError("canonical evaluator metadata drift: invalid _SOURCE_ENGINE map")
+    if len(set(source_engine.values())) != len(source_engine):
+        raise ValueError("canonical evaluator metadata drift: _SOURCE_ENGINE is ambiguous")
+
+    direct_detectors = {
+        name: source_module
+        for name, source_module in _direct_imported_calls(path, callable_name).items()
+        if name.startswith("detect_")
+    }
+    mapped_detectors = set(source_engine.values())
+    if set(direct_detectors) != mapped_detectors:
+        missing = sorted(mapped_detectors - set(direct_detectors))
+        extra = sorted(set(direct_detectors) - mapped_detectors)
+        raise ValueError(
+            "canonical evaluator detector/source mapping drift: "
+            f"missing={missing}, extra={extra}"
+        )
+
+    emitted_by_detector: dict[str, set[str]] = {}
+    for detector_name, source_module in sorted(direct_detectors.items()):
+        emitted = _static_emissions(source_module, detector_name)
+        if not emitted:
+            raise ValueError(
+                "canonical evaluator detector emission drift: "
+                f"{source_module}.{detector_name} has no statically resolved rule ID"
+            )
+        emitted_by_detector[detector_name] = emitted
+        mapped_rule_ids = {
+            rule_id for rule_id, source in source_engine.items() if source == detector_name
+        }
+        if emitted != mapped_rule_ids:
+            raise ValueError(
+                "canonical evaluator detector emission drift: "
+                f"{detector_name} mapped={sorted(mapped_rule_ids)}, "
+                f"emitted={sorted(emitted)}"
+            )
+
+    emitted_union = set().union(*emitted_by_detector.values())
+    if emitted_union != set(rule_order):
+        raise ValueError(
+            "canonical evaluator emission drift: detector union does not match _RULE_ORDER; "
+            f"missing={sorted(set(rule_order) - emitted_union)}, "
+            f"extra={sorted(emitted_union - set(rule_order))}"
+        )
+    return emitted_union
 
 
 def _static_emissions(module: str, callable_name: str) -> set[str]:
@@ -745,44 +989,6 @@ def _artifact_rule_ids(filename: str) -> set[str]:
         for row in rules
         if isinstance(row, dict) and row.get("rule_id")
     }
-
-
-def discover_claim_compliance_rule_ids() -> list[str]:
-    tree = ast.parse(
-        CLAIM_COMPLIANCE_PATH.read_text(encoding="utf-8"),
-        filename=str(CLAIM_COMPLIANCE_PATH),
-    )
-    constants = _module_constants(tree)
-    fn = next(
-        node
-        for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name == "project_claim_compliance"
-    )
-    referenced = {
-        node.id
-        for node in ast.walk(fn)
-        if isinstance(node, ast.Name) and node.id.endswith("RULE_ID")
-    }
-    return sorted({constants[name] for name in referenced if name in constants})
-
-
-def discover_cohort_claim_compliance_rule_ids() -> list[str]:
-    tree = ast.parse(
-        COHORT_COMPLIANCE_PATH.read_text(encoding="utf-8"),
-        filename=str(COHORT_COMPLIANCE_PATH),
-    )
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(
-            isinstance(target, ast.Name) and target.id == "_CLAIM_COMPLIANCE_RULES"
-            for target in node.targets
-        ):
-            continue
-        value = ast.literal_eval(node.value)
-        return sorted(str(item) for item in value)
-    raise ValueError("cohort_compliance._CLAIM_COMPLIANCE_RULES not found")
 
 
 def discover_deep_link_sections() -> dict[str, str]:
@@ -971,6 +1177,12 @@ def validate_explicit_metadata(report_calls: Iterable[RuntimeCall]) -> None:
             value is not None for value in (patient_ui, cohort_api, cohort_ui)
         ):
             raise ValueError(f"{callable_name}: {visibility} row cannot claim patient/cohort UI")
+        if visibility in {"aggregate_only", "hidden_runtime", "not_applicable"} and not str(
+            meta.get("hidden_reason") or ""
+        ).strip():
+            raise ValueError(
+                f"{callable_name}: {visibility} metadata lacks an explicit internal rationale"
+            )
 
         if patient_ui:
             _patient_ui_evidence_paths(str(patient_ui))
@@ -1055,8 +1267,7 @@ def resolve_emissions(
         return []
     seen = _seen | {row.callable}
     values = set(EMISSION_OVERRIDES.get(row.callable, ()))
-    if row.callable == "project_claim_compliance":
-        values.update(discover_claim_compliance_rule_ids())
+    values.update(_canonical_evaluator_emissions(row.module, row.callable))
     artifact_values: set[str] = set()
     for filename in ARTIFACTS_BY_CALLABLE.get(row.callable, ()):
         artifact_values.update(_artifact_rule_ids(filename))
@@ -1064,6 +1275,13 @@ def resolve_emissions(
         values.update(artifact_values)
     else:
         values.update(_static_emissions(row.module, row.callable))
+    for source_name in GENERIC_SURFACE_EMISSION_SOURCES.get(row.callable, ()):
+        source = all_calls.get(source_name)
+        if source is None:
+            raise ValueError(
+                f"generic surface emission source drift: {row.callable}->{source_name}"
+            )
+        values.update(resolve_emissions(source, all_calls, _seen=seen))
     for equivalent in EQUIVALENT_EMISSIONS.get(row.callable, ()):
         other = all_calls.get(equivalent)
         if other is not None:
@@ -1377,23 +1595,7 @@ def _direct_calls_in_callable(row: RuntimeCall) -> set[str]:
     path = _module_path(row.module)
     if path is None:
         raise ValueError(f"runtime module missing for rerun evidence: {row.module}")
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    fn = next(
-        (
-            node
-            for node in tree.body
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and node.name == row.callable
-        ),
-        None,
-    )
-    if fn is None:
-        raise ValueError(f"runtime callable missing for rerun evidence: {row.module}.{row.callable}")
-    return {
-        node.func.id
-        for node in ast.walk(fn)
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-    }
+    return set(_direct_imported_calls(path, row.callable))
 
 
 def _independent_rerun_debt(
@@ -1422,13 +1624,6 @@ def _independent_rerun_debt(
                 )
             all_overlap.update(overlap)
             flags = ["independent_rerun"]
-            if adapter_name == "project_claim_compliance":
-                flags.append("hard_coded_two_rule_projection_rerun")
-                if analyzer_name not in direct_calls:
-                    raise ValueError(
-                        "project_claim_compliance rerun drift: "
-                        f"{analyzer_name} is no longer called directly"
-                    )
             relationships.append(
                 {
                     "analyzer_runtime_id": f"analyze_claim:{analyzer_name}",
@@ -1516,19 +1711,40 @@ def _counts(registry: list[dict[str, Any]], runtime_rows: list[dict[str, Any]], 
     }
 
 
+def _claim_compliance_surface(runtime_calls: list[RuntimeCall]) -> dict[str, Any]:
+    evaluator_runtime_ids = sorted(
+        f"{row.entrypoint}:{row.callable}"
+        for row in runtime_calls
+        if row.callable == "evaluate_rule_findings"
+    )
+    projection_runtime_id = "compute_patient_billing_report:project_claim_compliance"
+    if len(evaluator_runtime_ids) != 2:
+        raise ValueError(
+            "claim-compliance canonical evaluator drift: "
+            f"expected two entrypoint uses, found {evaluator_runtime_ids}"
+        )
+    if not any(
+        f"{row.entrypoint}:{row.callable}" == projection_runtime_id
+        for row in runtime_calls
+    ):
+        raise ValueError("claim-compliance generic projection drift: projector call missing")
+    return {
+        "canonical_evaluator_runtime_ids": evaluator_runtime_ids,
+        "generic_projection_runtime_id": projection_runtime_id,
+        "generic_cohort_projection": f"{_rel(COHORT_COMPLIANCE_PATH)}::_claim_projection",
+        "projection_contract": (
+            "serialized RuleFinding/RuleEvaluation rows are projected generically; "
+            "no rule-ID allowlist controls patient or cohort projection"
+        ),
+    }
+
+
 def build_audit() -> dict[str, Any]:
     analyze = discover_runtime_calls(ENGINE_PATH, "analyze_claim")
     report = discover_runtime_calls(PATIENT_REPORT_PATH, "compute_patient_billing_report")
     assert_known_runtime_calls("analyze_claim", analyze)
     assert_known_runtime_calls("compute_patient_billing_report", report)
     validate_explicit_metadata(report)
-    claim_compliance_rules = discover_claim_compliance_rule_ids()
-    cohort_claim_compliance_rules = discover_cohort_claim_compliance_rule_ids()
-    if claim_compliance_rules != cohort_claim_compliance_rules:
-        raise ValueError(
-            "claim-compliance projection/cohort allowlist drift: "
-            f"projection={claim_compliance_rules}, cohort={cohort_claim_compliance_rules}"
-        )
 
     runtime_calls = sorted([*analyze, *report], key=lambda row: (row.entrypoint, row.callable))
     all_calls = _all_discovered_by_name(runtime_calls)
@@ -1544,7 +1760,7 @@ def build_audit() -> dict[str, Any]:
         status_breakdown[str(entry.get("coverage_status") or "unknown")] += 1
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "audit_date": "2026-09-18",
         "source_revision": "4c9c9d92595959dc12382a3130c6b400fd56c52c",
         "canonical_entrypoints": [
@@ -1556,7 +1772,7 @@ def build_audit() -> dict[str, Any]:
             "src/bilun/domain/billing/claim_compliance.py::project_claim_compliance",
             "src/bilun/domain/billing/cohort_compliance.py::build_cohort_compliance_index",
         ],
-        "claim_compliance_rule_allowlist": claim_compliance_rules,
+        "claim_compliance_surface": _claim_compliance_surface(runtime_calls),
         "locked_definitions": LOCKED_DEFINITIONS,
         "registry_status_breakdown": dict(sorted(status_breakdown.items())),
         "independent_rerun_debt": rerun_debt,
@@ -1595,6 +1811,17 @@ def render_report(audit: dict[str, Any]) -> str:
         f"8. Duplicate-surfaced findings: **{counts['duplicate_surfaced_findings']}**",
         f"9. Financial findings: **{counts['financial_findings']}**",
         f"10. Nonfinancial findings: **{counts['nonfinancial_findings']}**",
+        "",
+        "## Canonical claim-compliance architecture",
+        "",
+        "Canonical evaluator stages: "
+        + _markdown_list(audit["claim_compliance_surface"]["canonical_evaluator_runtime_ids"])
+        + ".",
+        "Generic patient projection: "
+        + f"`{audit['claim_compliance_surface']['generic_projection_runtime_id']}`.",
+        "Generic cohort projection: "
+        + f"`{audit['claim_compliance_surface']['generic_cohort_projection']}`.",
+        audit["claim_compliance_surface"]["projection_contract"] + ".",
         "",
         f"Registry coverage breakdown: `{audit['registry_status_breakdown']}`. Registry rows are metadata and do not satisfy finding visibility.",
         "",
@@ -1801,7 +2028,9 @@ def check_committed_outputs(audit: dict[str, Any]) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--check", action="store_true", help="verify committed outputs without writing")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true", help="verify committed outputs without writing")
+    mode.add_argument("--write", action="store_true", help="write deterministic committed outputs")
     parser.add_argument("--print-json", action="store_true", help="print the generated matrix JSON")
     parser.add_argument("--print-report", action="store_true", help="print the generated Markdown report")
     parser.add_argument("--print-json-chunk", type=int, help="print one zero-based JSON line chunk")
@@ -1832,6 +2061,14 @@ def main() -> int:
             ),
             end="",
         )
+    if args.write:
+        outputs = {
+            MATRIX_PATH: render_matrix_json(audit),
+            REPORT_PATH: render_report(audit),
+        }
+        for path, content in outputs.items():
+            path.write_text(content, encoding="utf-8")
+        print(json.dumps({"written": sorted(_rel(path) for path in outputs), "counts": audit["counts"]}, sort_keys=True))
     if args.check:
         errors = check_committed_outputs(audit)
         if errors:
@@ -1841,6 +2078,7 @@ def main() -> int:
         print(json.dumps(audit["counts"], sort_keys=True))
     if not (
         args.check
+        or args.write
         or args.print_json
         or args.print_report
         or args.print_json_chunk is not None

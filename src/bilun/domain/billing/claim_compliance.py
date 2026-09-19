@@ -4,8 +4,6 @@ from dataclasses import asdict
 from typing import Any
 
 from src.bilun.domain.billing.rule_findings import (
-    DIAGNOSIS_RULE_ID,
-    ICU_RULE_ID,
     RuleEvaluation,
     RuleEvaluationBatch,
     RuleFinding,

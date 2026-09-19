@@ -9,8 +9,9 @@ from urllib.parse import quote
 import pytest
 
 from src.bilun.domain.billing import claim_compliance, patient_report, rule_findings
-from src.bilun.domain.billing.claim_compliance import DIAGNOSIS_RULE_ID, ICU_RULE_ID
 from src.bilun.domain.billing.rule_findings import (
+    DIAGNOSIS_RULE_ID,
+    ICU_RULE_ID,
     RuleEvaluationBatch,
     evaluate_rule_findings,
 )
