@@ -587,3 +587,25 @@ fixed cost, %3-7 vs measured %0.13-1.72) are flagged on-slide, never silently
 picked. Missing artifacts NOT claimed: no patent/EPO search, no LoI, no signed
 pilot contract, empty Maliyet Formu, no university devir protokolü — each slide
 states the honest status instead.
+## Task: Phase B migration scope lock (2026-09-19)
+
+### Goal
+Produce a Chief-reviewable `migration_scope_proposed` decision for the smallest coherent hidden, unpriced compliance migration slice without changing runtime, API, cache, frontend, or test behavior.
+
+### Subtasks
+- [x] Re-read the accepted audit plan, matrix, audit report, state, and journal; derive Wave A candidates only from matrix rows that satisfy every required eligibility condition.
+- [x] Select the smallest coherent first vertical slice and document exact detectors, stable emitted rule IDs/kinds, explicit exclusions, and deferred candidates with reasons.
+- [x] Define the one-evaluation canonical data flow, initial `RuleFinding` contract, identity/serialization rules, and exact implementation/test file map from domain through patient/cohort Compliance UX.
+- [x] Define hard invariants, verification commands, and bounded implementation checkpoints for contract/domain, backend projection/cache/API, frontend surfaces, and CI regression.
+- [x] Write `reports/rule-engine-surfacing/2026-09-19-migration-scope.md` and update state/journal while preserving accepted audit counts, hashes, and checkpoint provenance; leave state at `migration_scope_proposed` with next action Chief review.
+- [x] Verify only the four authorized files changed, JSON remains valid, provenance/counts/hashes are preserved, no runtime behavior changed, and record the review evidence below.
+
+### Out of Scope
+Phase 5 implementation; runtime detector changes; API/cache schema or behavior changes; frontend changes; test behavior changes; financial/revenue migrations; production cache rebuild/deploy; commits, pushes, or merges.
+
+### Review
+Phase B proposes exactly three Tablo 15 line-integrity detectors for the first Wave A vertical: `detect_unreported_lab_result`, `detect_missing_drug_barcode`, and `detect_material_identity_errors`. The decision document derives them from the accepted matrix, records their stable rule/line identities, excludes all verified rerun equivalents and synthetic/financial/aggregate/catalog-only rows, defines the one-evaluation `RuleFinding` architecture, maps implementation/test files, and defers all remaining candidates with reasons.
+
+State is `migration_scope_proposed` / `proposed`, phase remains 4, implementation remains `not_started`, and Chief review is the next action. Verification: the accepted starting checkpoint was confirmed as `5122d63472fcc8eb7182e7d45d3daf14c24c7a67`; `jq empty tasks/rule-engine-surfacing-loop/state.json` passed; the committed plan, audit generator, focused audit test, accepted matrix, and accepted audit SHA-256 values recomputed exactly to the hashes retained in state; all accepted audit counts remained unchanged; `git diff --exit-code -- src/bilun frontend tests scripts` passed; `git diff --check` passed; and trailing-whitespace inspection of all four authorized files found no matches. `git status --short` showed only the requested report/state/journal/todo paths. No runtime tests were run because this checkpoint intentionally changes no runtime or test behavior.
+
+Chief review: accepted after independent matrix/source/rerun reconciliation. The next authorized unit is Phase 5 Checkpoint 1 only: canonical finding/evaluation contract and domain plumbing for K21, K26, and the three selected Tablo 15 line-integrity rules.

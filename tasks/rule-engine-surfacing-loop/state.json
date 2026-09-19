@@ -1,8 +1,8 @@
 {
-  "status": "baseline_audit_accepted",
+  "status": "migration_scope_accepted",
   "phase": 4,
-  "phase_name": "baseline_and_audit",
-  "migration_scope_status": "pending",
+  "phase_name": "migration_scope_locked",
+  "migration_scope_status": "accepted",
   "branch": "rule-engine-surfacing-loop",
   "worktree": "/home/safa/Documents/Bilun/.worktrees/rule-engine-surfacing-loop",
   "source_revision": "4c9c9d92595959dc12382a3130c6b400fd56c52c",
@@ -44,12 +44,53 @@
     "Patient/cohort visibility metadata is explicit but fail-closed against current UI/API/action/deep-link source evidence; the report states the remaining architectural-judgment boundary.",
     "Independent analyzer-to-adapter execution/equivalence debt is separate from duplicate product surfacing; project_claim_compliance is explicitly flagged as hard-coded two-rule rerun debt.",
     "Analyze-claim required inputs include claim_context; gate-derived inputs are additive and do not claim dynamic exercise of internal medical preconditions.",
-    "No runtime/UI behavior, pricing formula, production cache, deployment, push, PR, or merge change occurred in phases 0-4."
+    "No runtime/UI behavior, pricing formula, production cache, deployment, push, PR, or merge change occurred in phases 0-4.",
+    "Phase B proposes a three-detector Tablo 15 line-integrity Wave A slice: detect_unreported_lab_result -> tablo15_10_unreported_lab_result, detect_missing_drug_barcode -> tablo15_20_missing_drug_barcode, and detect_material_identity_errors -> tablo15_5_material_identity_error.",
+    "The proposed first slice excludes synthetic kind:<callable> identities, financial/revenue outputs, aggregate-only outputs, registry/artifact-only rows, and every analyzer row already covered by a verified independent adapter/rerun relationship, including K21/K26.",
+    "The proposed architecture evaluates approved compliance detectors once in a canonical domain stage and reuses the resulting stable RuleFinding identity through patient projection, cache/API, and patient/cohort Compliance surfaces; projection layers may not call analyze_claim or individual detectors.",
+    "The proposed transport is additive inside the existing claim_compliance JSON payload; no new DuckDB table or column is proposed for the first slice. Old caches remain unavailable rather than fake zero."
   ],
+  "migration_scope": {
+    "proposal_date": "2026-09-19",
+    "accepted_starting_checkpoint": "5122d63472fcc8eb7182e7d45d3daf14c24c7a67",
+    "wave": "A",
+    "scope_name": "tablo15_line_integrity",
+    "selected_runtime_ids": [
+      "analyze_claim:detect_unreported_lab_result",
+      "analyze_claim:detect_missing_drug_barcode",
+      "analyze_claim:detect_material_identity_errors"
+    ],
+    "selected_rule_ids": [
+      "tablo15_10_unreported_lab_result",
+      "tablo15_20_missing_drug_barcode",
+      "tablo15_5_material_identity_error"
+    ],
+    "selected_money_semantics": "unpriced_compliance",
+    "canonical_surface": "claim_compliance",
+    "explicit_exclusions": [
+      "synthetic kind:<callable> identities",
+      "financial/revenue outputs",
+      "aggregate-only outputs",
+      "registry/artifact-only rows",
+      "verified independent rerun equivalents, including K21/K26"
+    ],
+    "evidence_files": [
+      "plans/billing/2026-09-18-rule-engine-surfacing-audit-plan.md",
+      "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json",
+      "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md",
+      "tasks/rule-engine-surfacing-loop/state.json",
+      "tasks/rule-engine-surfacing-loop/journal.md",
+      "reports/rule-engine-surfacing/2026-09-19-migration-scope.md"
+    ],
+    "implementation_status": "not_started",
+    "acceptance_status": "chief_accepted",
+    "accepted_by": "Chief",
+    "authorized_next_checkpoint": "Phase 5 checkpoint 1: canonical RuleFinding/RuleEvaluation contract and domain plumbing for K21, K26, tablo15_10, tablo15_20, and tablo15_5"
+  },
   "supervisor_interventions": [
     "Created the isolated worktree outside the Codex workspace sandbox so Git metadata remained writable.",
     "Atomically materialized generated matrix/report from the Web-authored generator after a provider safety rejection blocked the large patch path.",
     "Performed independent review, required revisions, and final verification without hand-editing implementation logic."
   ],
-  "next_action": "Phase B: review the accepted hidden/duplicate/rerun evidence, record an explicit migration scope, and defer any item requiring new product, medical, or financial interpretation before Phase 5 implementation."
+  "next_action": "Begin only Phase 5 checkpoint 1 from the accepted migration scope; Chief must review its diff and tests before backend/cache/API or frontend work."
 }
