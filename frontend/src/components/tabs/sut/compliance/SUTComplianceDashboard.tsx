@@ -273,7 +273,7 @@ export function SUTComplianceDashboard({
     ? currentIndex?.n_patients_with_findings ?? 0
     : null;
   const headerBilled = indexAvailable
-    ? currentIndex?.billed_at_risk_try ?? 0
+    ? currentIndex?.billed_at_risk_try ?? null
     : null;
 
   const badgeCounts = useMemo(() => {

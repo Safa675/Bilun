@@ -3,6 +3,7 @@
 import type {
   BillingActionReport,
   ClaimComplianceCohortSummary,
+  ComplianceIndexRow,
   RecommendedActionItem,
 } from "@/lib/domains/sut";
 import {
@@ -45,11 +46,10 @@ export default function ComplianceViewSection({
   const inScope = (row: { patient_id: string; claim_id?: string | null }) =>
     row.patient_id === billingReport.patient_id &&
     (!billingReport.claim_id || row.claim_id === billingReport.claim_id || row.claim_id == null);
-  const projectionRows = scopedClaimComplianceFindings(billingReport).map((row) => ({
+  const projectionRows: ComplianceIndexRow[] = scopedClaimComplianceFindings(billingReport).map((row) => ({
     ...row,
     surface: "claim_compliance" as const,
     source_surface: "claim_compliance",
-    billed_try: null,
   }));
   const evaluations = projection?.evaluations.filter(inScope) ?? [];
   const claimComplianceSummary: ClaimComplianceCohortSummary | null = projection

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import {
+  claimComplianceFindingIdentity,
   complianceBilledAtRisk,
   recoverableUplift,
+  scopedClaimComplianceFindings,
   viewActions,
   viewForSection,
 } from "@/lib/workspaceViews";
@@ -80,6 +82,39 @@ describe("workspaceViews", () => {
 
   it("sums billed-at-risk amounts for the compliance view", () => {
     expect(complianceBilledAtRisk(report)).toBe(140);
+  });
+
+  it("keeps generic claim-compliance findings scoped and keyed by canonical identity", () => {
+    const claimReport = {
+      patient_id: "P-VIEWS",
+      claim_id: "C-VIEWS",
+      claim_compliance: {
+        findings: [
+          {
+            finding_id: "canonical-wave-a",
+            action_id: "legacy-alias",
+            patient_id: "P-VIEWS",
+            claim_id: "C-VIEWS",
+            rule_id: "future_rule_without_frontend_registration",
+            line_kind: "material",
+            line_id: "M-1",
+          },
+          {
+            finding_id: "foreign-claim",
+            action_id: "foreign-alias",
+            patient_id: "P-VIEWS",
+            claim_id: "OTHER-CLAIM",
+            rule_id: "future_rule_without_frontend_registration",
+            line_kind: "material",
+            line_id: "M-2",
+          },
+        ],
+      },
+    } as unknown as BillingActionReport;
+
+    const findings = scopedClaimComplianceFindings(claimReport);
+    expect(findings).toHaveLength(1);
+    expect(claimComplianceFindingIdentity(findings[0])).toBe("canonical-wave-a");
   });
 
   it("prefers sgk_uplift_try and falls back to total_recoverable_try", () => {

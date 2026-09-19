@@ -16,6 +16,7 @@ import type {
   BillingActionReport,
   ClaimCompliance,
   ClaimComplianceCohortSummary,
+  ComplianceIndexRow,
   ComplianceIndexResponse,
 } from "@/lib/domains/sut";
 import { recommendedActionSectionId } from "@/lib/recommendedActions";
@@ -113,6 +114,40 @@ const projection: ClaimCompliance = {
     status: "evaluated", missing_inputs: [],
   }],
 };
+
+const canonicalWaveAFinding = {
+  finding_id: "claim_compliance:tablo15_10_unreported_lab_result:P%20%2F1:C%20%261:procedure:L-LAB",
+  action_id: "legacy-action-id",
+  patient_id: "P /1",
+  claim_id: "C &1",
+  line_kind: "procedure",
+  line_id: "L-LAB",
+  rule_id: "tablo15_10_unreported_lab_result",
+  kind: "tablo15_10_unreported_lab_result",
+  status: "violation",
+  finding_type: "compliance",
+  severity: "error",
+  detail: "Wave A lab finding",
+  sut_section_id: "Tablo 15.10",
+  regulatory_source: { source_type: "sut", clause: "Tablo 15.10" },
+  source_engine: "detect_unreported_lab_result",
+  evaluation_status: "evaluated",
+  required_inputs: ["claim_headers", "procedure_lines", "lab_billing_status"],
+  missing_inputs: [],
+  surface: "claim_compliance",
+  source_surface: "claim_compliance",
+  procedure_line_id: "L-LAB",
+  procedure_code: "LAB-1",
+  procedure_name: "Synthetic lab line",
+  amount_try: null,
+  billed_try: null,
+  payable_try: null,
+  savings_try: null,
+  recoverable_uplift_try: null,
+  compliance_savings_try: null,
+  risk_amount_try: null,
+  audit_exposure_try: null,
+} as unknown as ClaimCompliance["findings"][number];
 
 const index: ComplianceIndexResponse = {
   artifacts_available: true, n_patients: 2, n_findings: 3, n_patients_with_findings: 2,
@@ -255,6 +290,50 @@ describe("claim compliance projection", () => {
     expect(html).not.toContain("MISSING");
   });
 
+  it("renders a future canonical finding without frontend rule registration", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceFindingTable
+          rows={[canonicalWaveAFinding] as unknown as ComplianceIndexRow[]}
+          loading={false}
+          claimCompliance
+          claimComplianceSummary={{
+            counts: { evaluated: 1, missing_inputs: 0, unavailable: 0 },
+            non_evaluated_total: 0,
+            details: [],
+            details_truncated: false,
+          }}
+        />
+      </WorkspaceProvider>,
+    );
+
+    expect(html).toContain(`data-finding-id="${canonicalWaveAFinding.finding_id}"`);
+    expect(html).toContain("tablo15_10_unreported_lab_result");
+    expect(html).not.toContain("optimizer.claimCompliance.tablo15_10_unreported_lab_result");
+    expect(html).toContain("Wave A lab finding");
+    expect(html).toContain("Error");
+    expect(html).toContain("detect_unreported_lab_result");
+    expect(html).toContain("L-LAB");
+    const canonicalFindingQuery = new URLSearchParams({ finding: canonicalWaveAFinding.finding_id ?? "" }).toString();
+    expect(html.split(`&amp;${canonicalFindingQuery}`).length - 1).toBe(2);
+    expect(html).not.toContain("finding=legacy-action-id");
+    expect(html.match(/text-right tabular-nums text-\[var\(--text-primary\)\]">—/g)).toHaveLength(1);
+  });
+
+  it("uses action_id only for legacy rows when canonical finding_id is absent", () => {
+    const legacyRow = { ...canonicalWaveAFinding, finding_id: undefined, action_id: "legacy-row-id" };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceFindingTable rows={[legacyRow] as unknown as ComplianceIndexRow[]} loading={false} />
+      </WorkspaceProvider>,
+    );
+
+    expect(html).toContain('data-finding-id="legacy-row-id"');
+    const fallbackFindingQuery = new URLSearchParams({ finding: "legacy-row-id" }).toString();
+    expect(html).toContain(`&amp;${fallbackFindingQuery}`);
+    expect(html).not.toContain("finding=claim_compliance%3Atablo15_10_unreported_lab_result");
+  });
+
   it("preserves missing evaluations for patients without findings and respects surfaces", () => {
     const html = renderGroup(index, new Set(["MISSING"]));
     expect(html).toContain("Not evaluated — missing inputs");
@@ -283,6 +362,25 @@ describe("claim compliance projection", () => {
     expect(html).toContain("Detector detail 1");
     expect(html).not.toContain("Foreign claim");
     expect(html).not.toContain("Foreign patient");
+  });
+
+  it("renders generic canonical findings on the existing patient Compliance surface", () => {
+    const html = renderPatient({
+      findings: [canonicalWaveAFinding],
+      evaluations: [{
+        patient_id: "P /1",
+        claim_id: "C &1",
+        rule_id: "tablo15_10_unreported_lab_result",
+        status: "evaluated",
+        evaluation_status: "evaluated",
+        required_inputs: ["claim_headers"],
+        missing_inputs: [],
+      }],
+    } as unknown as ClaimCompliance);
+
+    expect(html).toContain(`data-finding-id="${canonicalWaveAFinding.finding_id}"`);
+    expect(html).toContain("Wave A lab finding");
+    expect(html).toContain("detect_unreported_lab_result");
   });
 
   it("renders old and missing patient context honestly", () => {
