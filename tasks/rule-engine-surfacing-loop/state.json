@@ -1,7 +1,7 @@
 {
-  "status": "migration_scope_accepted",
-  "phase": 4,
-  "phase_name": "migration_scope_locked",
+  "status": "checkpoint1_accepted",
+  "phase": 5,
+  "phase_name": "checkpoint1_accepted",
   "migration_scope_status": "accepted",
   "branch": "rule-engine-surfacing-loop",
   "worktree": "/home/safa/Documents/Bilun/.worktrees/rule-engine-surfacing-loop",
@@ -35,7 +35,11 @@
     "python3 -m compileall for generator and focused test: exit 0",
     "Independent required-field/count/visibility/rerun-debt reconciliation: exit 0",
     "git diff --check: exit 0",
-    "Ruff unavailable in repository venv; not claimed as passed"
+    "Ruff unavailable in repository venv; not claimed as passed",
+    "Checkpoint 1 compileall: exit 0",
+    "Checkpoint 1 focused domain/cohort/API gate: 96 passed, 1 warning",
+    "Checkpoint 1 full billing-domain plus claim-compliance API gate: 244 passed, 1 warning",
+    "Checkpoint 1 git diff --check: exit 0"
   ],
   "blockers": [],
   "decisions": [
@@ -48,7 +52,9 @@
     "Phase B proposes a three-detector Tablo 15 line-integrity Wave A slice: detect_unreported_lab_result -> tablo15_10_unreported_lab_result, detect_missing_drug_barcode -> tablo15_20_missing_drug_barcode, and detect_material_identity_errors -> tablo15_5_material_identity_error.",
     "The proposed first slice excludes synthetic kind:<callable> identities, financial/revenue outputs, aggregate-only outputs, registry/artifact-only rows, and every analyzer row already covered by a verified independent adapter/rerun relationship, including K21/K26.",
     "The proposed architecture evaluates approved compliance detectors once in a canonical domain stage and reuses the resulting stable RuleFinding identity through patient projection, cache/API, and patient/cohort Compliance surfaces; projection layers may not call analyze_claim or individual detectors.",
-    "The proposed transport is additive inside the existing claim_compliance JSON payload; no new DuckDB table or column is proposed for the first slice. Old caches remain unavailable rather than fake zero."
+    "The proposed transport is additive inside the existing claim_compliance JSON payload; no new DuckDB table or column is proposed for the first slice. Old caches remain unavailable rather than fake zero.",
+    "Checkpoint 1 is accepted: five authorized detectors share one canonical evaluation stage; analyze_claim preserves legacy violations; patient projection is pure; nonfinancial findings keep all money fields null.",
+    "Canonical IDs include rule, patient, claim, line kind, and line identity. Existing K21/K26 cohort rows preserve and validate those IDs without authorizing the three new Wave A rules on cohort surfaces yet."
   ],
   "migration_scope": {
     "proposal_date": "2026-09-19",
@@ -82,15 +88,17 @@
       "tasks/rule-engine-surfacing-loop/journal.md",
       "reports/rule-engine-surfacing/2026-09-19-migration-scope.md"
     ],
-    "implementation_status": "not_started",
+    "implementation_status": "checkpoint1_accepted",
     "acceptance_status": "chief_accepted",
     "accepted_by": "Chief",
-    "authorized_next_checkpoint": "Phase 5 checkpoint 1: canonical RuleFinding/RuleEvaluation contract and domain plumbing for K21, K26, tablo15_10, tablo15_20, and tablo15_5"
+    "authorized_next_checkpoint": "Phase 5 checkpoint 2 authorized: cohort/cache/API projection for the three selected Wave A rules"
   },
   "supervisor_interventions": [
     "Created the isolated worktree outside the Codex workspace sandbox so Git metadata remained writable.",
     "Atomically materialized generated matrix/report from the Web-authored generator after a provider safety rejection blocked the large patch path.",
-    "Performed independent review, required revisions, and final verification without hand-editing implementation logic."
+    "Performed independent review, required revisions, and final verification without hand-editing implementation logic.",
+    "Stopped two measured worker-sandbox pytest processes after they remained blocked; fresh external verification passed.",
+    "Required canonical ID propagation for existing K21/K26 cohort rows after independent testing exposed the obsolete four-component cohort serializer."
   ],
-  "next_action": "Begin only Phase 5 checkpoint 1 from the accepted migration scope; Chief must review its diff and tests before backend/cache/API or frontend work."
+  "next_action": "Implement Phase 5 checkpoint 2: generic cohort/cache/API projection for the three selected Wave A rules, with old-cache honesty and unchanged financial totals."
 }

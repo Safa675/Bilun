@@ -8,8 +8,12 @@ from urllib.parse import quote
 
 import pytest
 
-from src.bilun.domain.billing import claim_compliance, patient_report
+from src.bilun.domain.billing import claim_compliance, patient_report, rule_findings
 from src.bilun.domain.billing.claim_compliance import DIAGNOSIS_RULE_ID, ICU_RULE_ID
+from src.bilun.domain.billing.rule_findings import (
+    RuleEvaluationBatch,
+    evaluate_rule_findings,
+)
 from src.bilun.domain.billing.types import ClaimCompliance
 from src.bilun.domain.claims import dataset as dataset_module
 from src.bilun.domain.claims.dataset import SUTClaimDataset
@@ -134,12 +138,18 @@ def test_normal_ingestion_real_detectors_and_worktree_module():
 def test_report_real_detectors_run_once_and_serialize_nonfinancial_findings():
     ctx = _context()
     with (
-        patch.object(claim_compliance, "detect_icu_bundled_leakage", wraps=detect_icu_bundled_leakage) as icu,
-        patch.object(claim_compliance, "detect_missing_diagnosis", wraps=detect_missing_diagnosis) as diagnosis,
+        patch.object(rule_findings, "detect_icu_bundled_leakage", wraps=rule_findings.detect_icu_bundled_leakage) as icu,
+        patch.object(rule_findings, "detect_missing_diagnosis", wraps=rule_findings.detect_missing_diagnosis) as diagnosis,
+        patch.object(rule_findings, "detect_unreported_lab_result", wraps=rule_findings.detect_unreported_lab_result) as lab,
+        patch.object(rule_findings, "detect_missing_drug_barcode", wraps=rule_findings.detect_missing_drug_barcode) as drug,
+        patch.object(rule_findings, "detect_material_identity_errors", wraps=rule_findings.detect_material_identity_errors) as material,
     ):
         report = _report(ctx)
     icu.assert_called_once()
     diagnosis.assert_called_once()
+    lab.assert_called_once()
+    drug.assert_called_once()
+    material.assert_called_once()
     projection = asdict(report)["claim_compliance"]
     assert set(projection) == {"findings", "evaluations"}
     assert len(projection["findings"]) == 2
@@ -250,7 +260,9 @@ def test_missing_date_rejected_at_ingestion_and_sentinel_context_not_evaluated()
         _context(lines=[_line("L1", "510090", procedure_date=None)])
     ctx = _context()
     ctx = replace(ctx, procedure_lines=(ctx.procedure_lines[0], replace(ctx.procedure_lines[1], procedure_date=date.min)))
-    projection = claim_compliance.project_claim_compliance("P1", ctx)
+    projection = claim_compliance.project_claim_compliance(
+        "P1", evaluate_rule_findings("P1", ctx)
+    )
     assert _evaluation(projection, "C1", ICU_RULE_ID)["missing_inputs"] == ["procedure_date"]
     assert not any(row["rule_id"] == ICU_RULE_ID for row in projection.findings)
 
@@ -275,14 +287,14 @@ def test_multiple_claims_same_day_only_other_claim_reordered_and_duplicate_stabl
         ],
     )
     with (
-        patch.object(claim_compliance, "detect_icu_bundled_leakage", wraps=detect_icu_bundled_leakage) as icu,
-        patch.object(claim_compliance, "detect_missing_diagnosis", wraps=detect_missing_diagnosis) as diagnosis,
+        patch.object(rule_findings, "detect_icu_bundled_leakage", wraps=rule_findings.detect_icu_bundled_leakage) as icu,
+        patch.object(rule_findings, "detect_missing_diagnosis", wraps=rule_findings.detect_missing_diagnosis) as diagnosis,
     ):
         projection = _report(ctx).claim_compliance
     icu.assert_called_once()
     diagnosis.assert_called_once()
-    assert {claim.claim_id for claim in diagnosis.call_args.args[0]} == {"C1", "C2"}
-    assert len(projection.evaluations) == 6
+    assert {claim.claim_id for claim in diagnosis.call_args.args[0]} == {"C1", "C2", "C3"}
+    assert len(projection.evaluations) == 15
     assert {(row["claim_id"], row.get("procedure_line_id")) for row in projection.findings} == {
         ("C1", "L3"), ("C1", None),
     }
@@ -290,7 +302,9 @@ def test_multiple_claims_same_day_only_other_claim_reordered_and_duplicate_stabl
     reordered = replace(ctx, claims=ctx.claims[::-1], procedure_lines=ctx.procedure_lines[::-1])
     assert asdict(_report(reordered).claim_compliance) == asdict(projection)
     duplicate = replace(ctx, procedure_lines=ctx.procedure_lines + (ctx.procedure_lines[1],))
-    assert claim_compliance.project_claim_compliance("P1", duplicate).findings == projection.findings
+    assert claim_compliance.project_claim_compliance(
+        "P1", evaluate_rule_findings("P1", duplicate)
+    ).findings == projection.findings
 
 
 def test_identity_escaping_distinguishes_delimiters_and_patients():
@@ -303,7 +317,8 @@ def test_identity_escaping_distinguishes_delimiters_and_patients():
         )
         finding = patient_report.compute_patient_billing_report(patient_id, claim_context=ctx).claim_compliance.findings[0]
         assert finding["action_id"] == "claim_compliance:" + ":".join(
-            quote(value, safe="") for value in (ICU_RULE_ID, patient_id, claim_id, line_id)
+            quote(value, safe="")
+            for value in (ICU_RULE_ID, patient_id, claim_id, "procedure", line_id)
         )
         ids.append(finding["action_id"])
     assert len(set(ids)) == 3
@@ -312,14 +327,16 @@ def test_identity_escaping_distinguishes_delimiters_and_patients():
 def test_missing_full_context_is_explicitly_unavailable():
     projection = _report(None).claim_compliance
     assert projection.findings == []
-    assert len(projection.evaluations) == 2
+    assert len(projection.evaluations) == 5
     assert all(row["claim_id"] is None and row["status"] == "missing_inputs" and row["missing_inputs"] == ["claim_context"] for row in projection.evaluations)
     assert asdict(ClaimCompliance()) == {"findings": [], "evaluations": []}
 
 
 def test_empty_headers_are_not_a_clean_pass():
     ctx = replace(_context(), claims=(), procedure_lines=())
-    projection = claim_compliance.project_claim_compliance("P1", ctx)
+    projection = claim_compliance.project_claim_compliance(
+        "P1", evaluate_rule_findings("P1", ctx)
+    )
     assert all(row["missing_inputs"] == ["claim_headers"] for row in projection.evaluations)
 
 
@@ -350,7 +367,9 @@ def test_legacy_financial_report_unchanged_disabling_only_new_projection(ctx):
     actual = asdict(_report(ctx))
     with patch.object(patient_report, "project_claim_compliance", return_value=ClaimCompliance()) as projection:
         baseline = asdict(_report(ctx))
-    projection.assert_called_once_with("P1", ctx)
+    projection.assert_called_once()
+    assert projection.call_args.args[0] == "P1"
+    assert isinstance(projection.call_args.args[1], RuleEvaluationBatch)
     actual.pop("claim_compliance")
     baseline.pop("claim_compliance")
     assert actual == baseline

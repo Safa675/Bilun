@@ -9,6 +9,7 @@ from src.bilun.domain.billing.cohort_compliance import (
     empty_cohort_compliance_index,
     slice_compliance_index,
 )
+from src.bilun.domain.billing.rule_findings import build_finding_id
 
 pytestmark = pytest.mark.unit
 
@@ -113,14 +114,25 @@ def test_optional_override_excluded_mandatory_mapped_to_payment_methods() -> Non
 
 
 def test_late_legacy_money_after_more_than_100_null_findings() -> None:
-    findings = [
-        {
+    findings = []
+    for i in range(101):
+        claim_id = f"C-{i}"
+        finding_id = build_finding_id(
+            rule_id="tablo15_8_missing_diagnosis",
+            patient_id="P-NEW",
+            claim_id=claim_id,
+            line_kind="claim",
+            line_id=None,
+        )
+        findings.append({
+            "finding_id": finding_id,
+            "action_id": finding_id,
             "patient_id": "P-NEW",
-            "claim_id": f"C-{i}",
+            "claim_id": claim_id,
             "rule_id": "tablo15_8_missing_diagnosis",
-        }
-        for i in range(101)
-    ]
+            "line_kind": "claim",
+            "line_id": None,
+        })
     legacy = {"P-LEGACY": {"recommended_actions": [_action(billed_try=123.45)]}}
     baseline = build_cohort_compliance_index(legacy)
     reports = {"P-NEW": {"claim_compliance": {"findings": findings}}, **legacy}

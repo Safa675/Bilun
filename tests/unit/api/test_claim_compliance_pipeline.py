@@ -22,7 +22,12 @@ from src.bilun.db import (
     upsert_single_json_table,
     write_json_payload_rows,
 )
-from src.bilun.domain.billing import claim_compliance, orchestrator, patient_report
+from src.bilun.domain.billing import (
+    claim_compliance,
+    orchestrator,
+    patient_report,
+    rule_findings,
+)
 from src.bilun.domain.billing.claim_compliance import DIAGNOSIS_RULE_ID, ICU_RULE_ID
 from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
 from src.bilun.domain.billing.cohort_runner import (
@@ -30,6 +35,7 @@ from src.bilun.domain.billing.cohort_runner import (
     compute_all_billing_reports,
 )
 from src.bilun.domain.billing.types import ClaimCompliance
+from src.bilun.domain.billing.rule_findings import evaluate_rule_findings
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.patient_context import build_patient_claim_context
 from src.bilun.shared import state
@@ -143,13 +149,25 @@ def _run_with_spies(dataset, *, bills):
             wraps=claim_compliance.project_claim_compliance,
         ) as projection_spy,
         patch.object(
-            claim_compliance, "detect_icu_bundled_leakage",
-            wraps=claim_compliance.detect_icu_bundled_leakage,
+            rule_findings, "detect_icu_bundled_leakage",
+            wraps=rule_findings.detect_icu_bundled_leakage,
         ) as icu_spy,
         patch.object(
-            claim_compliance, "detect_missing_diagnosis",
-            wraps=claim_compliance.detect_missing_diagnosis,
+            rule_findings, "detect_missing_diagnosis",
+            wraps=rule_findings.detect_missing_diagnosis,
         ) as diagnosis_spy,
+        patch.object(
+            rule_findings, "detect_unreported_lab_result",
+            wraps=rule_findings.detect_unreported_lab_result,
+        ) as lab_spy,
+        patch.object(
+            rule_findings, "detect_missing_drug_barcode",
+            wraps=rule_findings.detect_missing_drug_barcode,
+        ) as drug_spy,
+        patch.object(
+            rule_findings, "detect_material_identity_errors",
+            wraps=rule_findings.detect_material_identity_errors,
+        ) as material_spy,
     ):
         cache = _cache_input(dataset)
         result = (
@@ -162,13 +180,28 @@ def _run_with_spies(dataset, *, bills):
     )
     expected_scopes = Counter(tuple(sorted(c.claim_id for c in scope)) for scope in scopes)
     assert report_spy.call_count == projection_spy.call_count == len(scopes)
-    assert icu_spy.call_count == diagnosis_spy.call_count == len(scopes)
+    assert (
+        icu_spy.call_count
+        == diagnosis_spy.call_count
+        == lab_spy.call_count
+        == drug_spy.call_count
+        == material_spy.call_count
+        == len(scopes)
+    )
     assert Counter(
         tuple(sorted(c.claim_id for c in call.kwargs["claim_context"].claims))
         for call in report_spy.call_args_list
     ) == expected_scopes
     assert Counter(
-        tuple(sorted(c.claim_id for c in call.args[1].claims))
+        tuple(
+            sorted(
+                {
+                    row.claim_id
+                    for row in call.args[1].evaluations
+                    if row.claim_id is not None
+                }
+            )
+        )
         for call in projection_spy.call_args_list
     ) == expected_scopes
     for call in report_spy.call_args_list:
@@ -200,19 +233,11 @@ def _run_with_spies(dataset, *, bills):
     assert Counter(
         tuple(sorted(c.claim_id for c in call.args[0]))
         for call in diagnosis_spy.call_args_list
-    ) == Counter(
-        tuple(sorted(c.claim_id for c in scope if c.primary_icd10_available))
-        for scope in scopes
-    )
+    ) == expected_scopes
     assert all(
         c.claim_id in dataset.claims and c.patient_id == dataset.claims[c.claim_id].patient_id
         for call in diagnosis_spy.call_args_list for c in call.args[0]
     )
-    normalized = [
-        c for call in diagnosis_spy.call_args_list for c in call.args[0]
-        if c.claim_id == "C-G"
-    ]
-    assert normalized and all(c.primary_icd10 == "J96.0" for c in normalized)
     return result
 
 
@@ -289,10 +314,18 @@ def _assert_nonfinancial(rows):
         assert row["kind"] == row["rule_id"]
         assert row["detail"] and row["sut_section_id"]
         assert {key: row[key] for key in _MONEY_FIELDS} == dict.fromkeys(_MONEY_FIELDS)
-        pid, cid, rule, line = _identity(row)
-        assert row["action_id"] == "claim_compliance:" + ":".join(
-            quote(value, safe="") for value in (rule, pid, cid, line or "")
-        )
+        if "finding_id" in row:
+            expected_id = "claim_compliance:" + ":".join(
+                quote(str(value), safe="")
+                for value in (
+                    row["rule_id"],
+                    row["patient_id"],
+                    row["claim_id"],
+                    row["line_kind"],
+                    row.get("line_id") or "",
+                )
+            )
+            assert row["finding_id"] == row["action_id"] == expected_id
 
 
 def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, computed):
@@ -320,7 +353,7 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
             identity for identity in _EXPECTED_FINDINGS if identity[0] == pid
         }
         _assert_nonfinancial(block["findings"])
-        assert len(block["evaluations"]) == 2 * len(dataset.claims_by_patient[pid])
+        assert len(block["evaluations"]) == 5 * len(dataset.claims_by_patient[pid])
         for evaluation in block["evaluations"]:
             assert evaluation["patient_id"] == pid
             missing = evaluation["claim_id"] in {"C-C", "C-D"} and evaluation["rule_id"] == DIAGNOSIS_RULE_ID
@@ -338,7 +371,7 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[:2] == (pid, cid)
         }
-        assert len(block["evaluations"]) == 2
+        assert len(block["evaluations"]) == 5
         assert all((row["patient_id"], row["claim_id"]) == (pid, cid) for row in block["evaluations"])
         _assert_nonfinancial(block["findings"])
     assert client.get("/api/billing-report/P2/bills/C-A").status_code == 404
@@ -467,15 +500,17 @@ def test_duplicate_context_lines_do_not_duplicate_cached_findings(computed, cach
     duplicate = replace(ctx, procedure_lines=ctx.procedure_lines + (dataset.procedure_lines["A-vent"],))
     with (
         patch.object(
-            claim_compliance, "detect_icu_bundled_leakage",
-            wraps=claim_compliance.detect_icu_bundled_leakage,
+            rule_findings, "detect_icu_bundled_leakage",
+            wraps=rule_findings.detect_icu_bundled_leakage,
         ) as icu,
         patch.object(
-            claim_compliance, "detect_missing_diagnosis",
-            wraps=claim_compliance.detect_missing_diagnosis,
+            rule_findings, "detect_missing_diagnosis",
+            wraps=rule_findings.detect_missing_diagnosis,
         ) as diagnosis,
     ):
-        projection = claim_compliance.project_claim_compliance("P1", duplicate)
+        projection = claim_compliance.project_claim_compliance(
+            "P1", evaluate_rule_findings("P1", duplicate)
+        )
     icu.assert_called_once()
     diagnosis.assert_called_once()
     assert sum(line is dataset.procedure_lines["A-vent"] for line in icu.call_args.args[1]) == 2
@@ -483,4 +518,10 @@ def test_duplicate_context_lines_do_not_duplicate_cached_findings(computed, cach
     cached_rows = client.get("/api/compliance-index", params={
         "surface": "claim_compliance", "patient_id": "P1",
     }).json()["rows"]
-    assert [row["action_id"] for row in cached_rows] == [row["action_id"] for row in projection.findings]
+    patient_ids = [row["finding_id"] for row in projection.findings]
+    cached_ids = [row["finding_id"] for row in cached_rows]
+    assert cached_ids == patient_ids
+    assert [row["action_id"] for row in cached_rows] == patient_ids
+    assert all(row["action_id"] == row["finding_id"] for row in cached_rows)
+    assert any(":procedure:" in finding_id for finding_id in cached_ids)
+    assert any(":claim:" in finding_id for finding_id in cached_ids)

@@ -9,10 +9,10 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Mapping
 from typing import Any
-from urllib.parse import quote
 
 import polars as pl
 
+from .rule_findings import build_finding_id
 from ..money import money_round_half_up_opt as _money
 
 # Billing surface → Compliance subtab id. Copay exemption rows stay on
@@ -75,16 +75,39 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
             or not claim_id
         ):
             continue
-        action_id = "claim_compliance:" + ":".join(
-            quote(str(value), safe="")
-            for value in (rule_id, patient_id, claim_id, row.get("procedure_line_id") or "")
+        expected_line_kind = (
+            "procedure"
+            if rule_id == "icu_bundled_leakage_510090"
+            else "claim"
         )
-        findings.setdefault(action_id, {
+        line_kind = row.get("line_kind")
+        line_id = row.get("line_id")
+        if line_kind != expected_line_kind:
+            continue
+        if expected_line_kind == "procedure":
+            if line_id != row.get("procedure_line_id"):
+                continue
+        elif line_id is not None:
+            continue
+        expected_id = build_finding_id(
+            rule_id=str(rule_id),
+            patient_id=patient_id,
+            claim_id=str(claim_id),
+            line_kind=expected_line_kind,
+            line_id=str(line_id) if line_id is not None else None,
+        )
+        finding_id = row.get("finding_id")
+        action_id = row.get("action_id")
+        if finding_id != expected_id or action_id != expected_id:
+            continue
+        findings.setdefault(finding_id, {
             **{key: row.get(key) for key in (
                 "patient_id", "claim_id", "rule_id", "detail", "sut_section_id",
                 "procedure_line_id", "procedure_code", "procedure_name",
             )},
-            "action_id": action_id, "kind": rule_id, "status": "violation",
+            "finding_id": finding_id, "action_id": action_id,
+            "line_kind": line_kind, "line_id": line_id,
+            "kind": rule_id, "status": "violation",
             "finding_type": "compliance", "surface": "claim_compliance",
             "source_surface": "claim_compliance", **dict.fromkeys(_CLAIM_MONEY_FIELDS),
         })

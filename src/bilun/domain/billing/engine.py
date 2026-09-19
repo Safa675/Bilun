@@ -26,6 +26,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.bilun.domain.billing.rule_findings import (
+    DIAGNOSIS_RULE_ID,
+    DRUG_BARCODE_RULE_ID,
+    ICU_RULE_ID,
+    LAB_RULE_ID,
+    MATERIAL_IDENTITY_RULE_ID,
+    evaluate_rule_findings,
+)
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.dental_2_4_1 import (
     check_dental_2_4_1_for_context,
@@ -79,9 +87,6 @@ from src.bilun.domain.prose_rules.traffic_accident_billing import (
 from src.bilun.domain.prose_rules.fatura_inceleme import (
     check_fatura_inceleme_for_context,
 )
-from src.bilun.domain.prose_rules.icu_bundled_leakage import (
-    detect_icu_bundled_leakage,
-)
 from src.bilun.domain.prose_rules.blood_component_isbt128 import (
     detect_blood_component_isbt128_violations,
 )
@@ -97,13 +102,9 @@ from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_exam_admission_date_mismatch,
     detect_green_area_bundled_extras,
     detect_inpatient_on_outpatient,
-    detect_material_identity_errors,
     detect_material_preauth_missing,
     detect_material_type_missing,
-    detect_missing_diagnosis,
-    detect_missing_drug_barcode,
     detect_normal_poliklinik_wrong_method,
-    detect_unreported_lab_result,
     detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.diagnosis_coding_quality import (
@@ -151,6 +152,18 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ``drug_context`` was supplied, mirroring the legacy early-return).
     """
     violations: list[dict[str, Any]] = []
+    canonical_batch = (
+        evaluate_rule_findings(ctx.patient_id, ctx) if ctx.patient_id else None
+    )
+
+    def _canonical_violations(rule_id: str) -> list[dict[str, Any]]:
+        if canonical_batch is None:
+            return []
+        return [
+            row
+            for row in canonical_batch.legacy_violations
+            if row.get("rule_id") == rule_id
+        ]
 
     # 1. EK-3B-1 bundling (consumables billed separately).
     violations.extend(check_bundling_violations_for_context(ctx))
@@ -245,14 +258,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # nebulization/suction/monitoring; separately billed lines are
         # audit-exposure (double-billing) violations. Not an uplift opportunity.
         if ctx.procedure_lines:
-            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
-            violations.extend(
-                detect_icu_bundled_leakage(
-                    list(ctx.claims),
-                    list(ctx.procedure_lines),
-                    claim_ids_with_procs=claim_ids_with_procs,
-                )
-            )
+            violations.extend(_canonical_violations(ICU_RULE_ID))
 
         # 14.6. SUT §2.4.4.H + §2.2.2 — service bed (510010) billed on an ICU
         # discharge/transfer day (510090 last day) is double-billing: the ICU
@@ -302,7 +308,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # 17. Common billing errors (El Kitabı Tablo 15).
         # Phase 1 (top 5): missing diagnosis, duplicate exam, duplicate tests,
         # exam/admission date mismatch, missing drug barcode.
-        violations.extend(detect_missing_diagnosis(list(ctx.claims)))
+        violations.extend(_canonical_violations(DIAGNOSIS_RULE_ID))
         if ctx.procedure_lines:
             violations.extend(
                 detect_duplicate_exam_10day(
@@ -320,9 +326,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
                 )
             )
         if ctx.drug_lines:
-            violations.extend(
-                detect_missing_drug_barcode(list(ctx.claims), ctx.drug_lines)
-            )
+            violations.extend(_canonical_violations(DRUG_BARCODE_RULE_ID))
 
         # Phase 2 (11 more detectors, errors #3/#4/#5/#7/#9/#10/#11/#15/#16/
         # #21/#24). Each is gated on the data it needs.
@@ -347,11 +351,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
                 )
             )
             # #10 — unreported lab result.
-            violations.extend(
-                detect_unreported_lab_result(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(_canonical_violations(LAB_RULE_ID))
             # #21 — inpatient-only service on an outpatient takip.
             violations.extend(
                 detect_inpatient_on_outpatient(
@@ -366,11 +366,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
             )
         if ctx.material_lines:
             # #5 — material identity (SUT/barcode) errors.
-            violations.extend(
-                detect_material_identity_errors(
-                    list(ctx.claims), ctx.material_lines
-                )
-            )
+            violations.extend(_canonical_violations(MATERIAL_IDENTITY_RULE_ID))
             # #15 — material pre-auth missing.
             violations.extend(
                 detect_material_preauth_missing(

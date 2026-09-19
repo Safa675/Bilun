@@ -1,3 +1,25 @@
+## Task: Phase 5 Checkpoint 1 — canonical finding contract + domain plumbing
+
+### Goal
+Implement one canonical nonfinancial rule-finding evaluation path for K21, K26, `tablo15_10`, `tablo15_20`, and `tablo15_5`, preserving legacy analyzer output while making patient claim-compliance projection reuse the precomputed batch.
+
+### Subtasks
+- [x] RED→GREEN: add deterministic claim/procedure/drug/material finding identity and typed `RuleFinding` / `RuleEvaluation` / batch contract.
+- [x] RED→GREEN: add canonical one-pass evaluation for exactly the five authorized detectors, including explicit missing-input evaluations, ownership validation, normalization, de-duplication, deterministic ordering, and null money.
+- [x] RED→GREEN: route `analyze_claim` through the canonical evaluation for the five detectors while preserving legacy flat violations and detector order/fields.
+- [x] RED→GREEN: make `compute_patient_billing_report` evaluate the batch once and make `project_claim_compliance` a pure projection with zero detector/analyzer calls.
+- [x] RED→GREEN: surface the three selected Tablo 15 findings in patient `claim_compliance`, preserving K21/K26 identity/serialization compatibility, duplicate handling, missing context behavior, and unchanged financial totals.
+- [x] Run the required focused suites, compileall, and `git diff --check`; record exact RED/GREEN and final verification evidence in the checkpoint journal.
+- [x] After all tests are green, update checkpoint state and complete this review section with exact changed paths/results.
+
+### Out of Scope
+New Wave A cohort visibility, API/schema/route changes, cache schema changes, frontend work, audit generator/matrix/report changes, pricing/totals semantics, detector medical/regulatory semantics, deployment, production cache rebuild, pushes, merges, and migration of any detector outside the five authorized rules. A minimal existing-K21/K26 cohort compatibility fix was accepted because canonical five-component IDs otherwise regressed across patient and cohort projections.
+
+### Review
+Checkpoint 1 is accepted by Chief. Canonical finding identity includes URL-quoted `line_kind` between `claim_id` and `line_id`; K21/K26 cohort projection preserves and validates that identity without surfacing the three Wave A rules yet. Compileall exited 0; focused domain/cohort/API verification passed `96 passed, 1 warning`; the full billing-domain plus claim-compliance API gate passed `244 passed, 1 warning`; `git diff --check` exited 0. Phase 5 Checkpoint 2 is now authorized; frontend work remains pending its acceptance.
+
+---
+
 ## Task: Rule Engine surfacing audit + generic finding surface (2026-09-18)
 
 ### Goal
