@@ -417,39 +417,72 @@ export type ComplianceIndexSurface =
   | "payment_methods"
   | "claim_compliance";
 
-export type ClaimComplianceRule =
-  | "icu_bundled_leakage_510090"
-  | "tablo15_8_missing_diagnosis";
+export type ClaimComplianceEvaluationStatus =
+  | "evaluated"
+  | "missing_inputs"
+  | "unavailable";
+
+export interface ClaimComplianceMoneyFields {
+  amount_try?: number | null;
+  billed_try?: number | null;
+  payable_try?: number | null;
+  savings_try?: number | null;
+  recoverable_uplift_try?: number | null;
+  compliance_savings_try?: number | null;
+  risk_amount_try?: number | null;
+  audit_exposure_try?: number | null;
+}
 
 export interface ClaimComplianceEvaluation {
   patient_id: string;
   claim_id: string | null;
-  rule_id: ClaimComplianceRule;
-  status: "evaluated" | "missing_inputs" | "unavailable";
+  rule_id: string;
+  status: ClaimComplianceEvaluationStatus;
+  evaluation_status?: ClaimComplianceEvaluationStatus | null;
+  required_inputs?: string[] | null;
   missing_inputs: string[];
 }
 
-export interface ClaimComplianceFinding {
+/**
+ * Serialized canonical claim-compliance finding.
+ *
+ * `finding_id` is optional only for old patient payloads. New payloads carry
+ * the domain-generated id and the equal `action_id` compatibility alias;
+ * consumers must prefer `finding_id` and use `action_id` only as a fallback.
+ */
+export interface ClaimComplianceFinding extends ClaimComplianceMoneyFields {
+  finding_id?: string | null;
+  action_id?: string | null;
   patient_id: string;
-  claim_id: string;
-  action_id: string;
-  rule_id: ClaimComplianceRule;
-  kind: ClaimComplianceRule;
-  status: "violation";
-  finding_type: "compliance";
-  detail: string;
-  sut_section_id: string;
-  procedure_line_id?: string;
-  procedure_code?: string;
-  procedure_name?: string;
-  amount_try: null;
-  billed_try: null;
-  payable_try: null;
-  savings_try: null;
-  recoverable_uplift_try: null;
-  compliance_savings_try: null;
-  risk_amount_try: null;
-  audit_exposure_try: null;
+  claim_id: string | null;
+  line_kind?: string | null;
+  line_id?: string | null;
+  rule_id: string;
+  kind?: string | null;
+  status?: string | null;
+  finding_type?: "compliance";
+  detail?: string | null;
+  severity?: string | null;
+  sut_section_id?: string | null;
+  regulatory_source?: unknown;
+  source_engine?: string | null;
+  evaluation_status?: ClaimComplianceEvaluationStatus | null;
+  required_inputs?: string[] | null;
+  missing_inputs?: string[] | null;
+  surface?: "claim_compliance";
+  source_surface?: string | null;
+  procedure_line_id?: string | null;
+  procedure_code?: string | null;
+  procedure_name?: string | null;
+  lab_billing_status?: string | null;
+  drug_claim_line_id?: string | null;
+  drug_code?: string | null;
+  drug_name?: string | null;
+  material_line_id?: string | null;
+  material_code?: string | null;
+  material_name?: string | null;
+  barcode_sut_mismatch?: boolean | null;
+  titubb_uts_barcode_documentation_missing?: boolean | null;
 }
 
 export interface ClaimCompliance {
@@ -457,24 +490,39 @@ export interface ClaimCompliance {
   evaluations: ClaimComplianceEvaluation[];
 }
 
-export interface ComplianceIndexRow {
+export interface ComplianceIndexRow extends ClaimComplianceMoneyFields {
   patient_id: string;
   claim_id?: string | null;
   surface: ComplianceIndexSurface;
   source_surface?: string | null;
-  rule_id?: ClaimComplianceRule;
+  finding_id?: string | null;
+  action_id?: string | null;
+  rule_id?: string | null;
+  line_kind?: string | null;
+  line_id?: string | null;
   procedure_line_id?: string | null;
   kind?: string | null;
+  status?: string | null;
   finding_type?: "compliance";
-  billed_try?: number | null;
   detail?: string | null;
+  severity?: string | null;
+  regulatory_source?: unknown;
+  source_engine?: string | null;
+  evaluation_status?: ClaimComplianceEvaluationStatus | null;
+  required_inputs?: string[] | null;
+  missing_inputs?: string[] | null;
   procedure_code?: string | null;
   procedure_name?: string | null;
+  lab_billing_status?: string | null;
+  drug_claim_line_id?: string | null;
   material_code?: string | null;
   material_name?: string | null;
   drug_code?: string | null;
+  drug_name?: string | null;
+  material_line_id?: string | null;
+  barcode_sut_mismatch?: boolean | null;
+  titubb_uts_barcode_documentation_missing?: boolean | null;
   sut_section_id?: string | null;
-  action_id?: string | null;
 }
 
 export interface ComplianceIndexSurfaceSummary {

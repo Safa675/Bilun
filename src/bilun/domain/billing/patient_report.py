@@ -23,6 +23,7 @@ from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
 from src.bilun.domain.billing.claim_compliance import project_claim_compliance
+from src.bilun.domain.billing.rule_findings import evaluate_rule_findings
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_drg_package_adequacy import (
     recommend_drg_package_adequacy_from_claims,
@@ -79,7 +80,8 @@ def compute_patient_billing_report(
         BillingActionReport with all algorithm results.
     """
     report = BillingActionReport(patient_id=pid)
-    report.claim_compliance = project_claim_compliance(pid, claim_context)
+    compliance_batch = evaluate_rule_findings(pid, claim_context)
+    report.claim_compliance = project_claim_compliance(pid, compliance_batch)
 
     if claim_context is None:
         if SUT_REQUIRE_CLAIM_LINES:

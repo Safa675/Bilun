@@ -1,4 +1,8 @@
-import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+import type {
+  BillingActionReport,
+  ClaimComplianceFinding,
+  RecommendedActionItem,
+} from "@/lib/domains/sut";
 import { getFindingType, getRecommendedActions } from "@/lib/recommendedActions";
 import type { FindingType } from "@/lib/recommendedActions";
 
@@ -55,7 +59,25 @@ export function viewActions(
   );
 }
 
-export function scopedClaimComplianceFindings(report: BillingActionReport) {
+/** Canonical identity for a claim-compliance finding, with old-payload fallback. */
+export function claimComplianceFindingIdentity(
+  row: Pick<ClaimComplianceFinding, "finding_id" | "action_id">,
+): string | null {
+  return row.finding_id ?? row.action_id ?? null;
+}
+
+export function isClaimComplianceFindingSelected(
+  row: Pick<ClaimComplianceFinding, "finding_id" | "action_id">,
+  selectedFindingId: string | null | undefined,
+): boolean {
+  return Boolean(
+    selectedFindingId && claimComplianceFindingIdentity(row) === selectedFindingId,
+  );
+}
+
+export function scopedClaimComplianceFindings(
+  report: BillingActionReport,
+): ClaimComplianceFinding[] {
   return (report.claim_compliance?.findings ?? []).filter(
     (row) => row.patient_id === report.patient_id &&
       (!report.claim_id || row.claim_id === report.claim_id || row.claim_id == null),

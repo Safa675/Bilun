@@ -1,3 +1,96 @@
+## Task: Phase 5 Checkpoint 4 — loop-complete closure metadata
+
+### Goal
+Record truthful loop-complete metadata for the verified Checkpoint 4 without modifying production code, tests, generated audit artifacts, plans, or configuration.
+
+### Subtasks
+- [x] Replace pending-commit closure status/phase/status values with truthful `loop_complete` wording.
+- [x] Record the exact final acceptance results, artifact-hash reconciliation, added-line secret/patient-data scan, and temporary symlink check.
+- [x] Preserve empty blockers, explicit exclusions/deferred Wave B/C/D scope, and the no-push/no-merge/no-deploy/no-cache-rebuild boundary.
+- [x] Run JSON parsing and `git diff --check` after the metadata-only update.
+
+### Out of Scope
+Production code, tests, generated audit artifacts, plans, configuration, detector medical semantics, new detector migrations, projection rule-ID allowlists, registry dispatch changes, pricing or financial behavior, production cache rebuilds, commits, pushes, PRs, merges, deployments, and deferred Wave B/C/D or broad prose-family candidates.
+
+### Review
+Loop is complete and verified. Final acceptance evidence is focused inventory `17 passed in 2.53s`; authoritative combined backend `272 passed, 1 warning in 32.46s`; frontend `4 passed files, 29 passed tests`; `npx tsc --noEmit` exit 0; generator `--check` exit 0; compileall exit 0; `git diff --check` exit 0; artifact hash reconciliation pass; added-line secret/patient-data scan pass; and temporary frontend/node_modules symlink absent. Blockers are empty. Deferred Wave B/C/D and broad prose-family candidates remain outside scope and require separately approved future scope. No push, PR, merge, deploy, or production cache rebuild occurred; no commit was created. This loop is ready for the acceptance commit, but no further action is required in this loop.
+
+---
+
+## Task: Phase 5 Checkpoint 2 — generic cohort/cache/API projection
+
+### Goal
+Project all five supported canonical nonfinancial `RuleFinding` rules through existing patient/bill cache payloads, the generic cohort compliance index, and existing API routes with stable identity, honest evaluation availability, and unchanged financial totals.
+
+### Subtasks
+- [x] RED→GREEN: add the smallest cohort regression proving a selected Wave A canonical finding was rejected, then remove the K21/K26 product gate with generic fail-closed serialized-contract validation.
+- [x] Remove the rule-ID allowlist and consume canonical serialized findings/evaluations generically without duplicating per-rule mappings, rebuilding finding IDs, or calling detectors.
+- [x] Preserve canonical `finding_id == action_id` and validate patient/claim/line ownership and generic line-kind source identity across patient → cache → cohort → API.
+- [x] Carry canonical finding fields needed by patient/bill/cohort consumers, including identities, detail/source/severity/evaluation metadata, existing display fields, and null money, while collapsing exact duplicates.
+- [x] Aggregate evaluations generically by `(rule_id, claim_id)` so distinct claim evaluations and missing-input statuses are retained; keep missing top-level cache artifacts unavailable rather than fake zero.
+- [x] Extend synthetic cache/API regressions for Wave A visibility, future-rule passthrough, stable line-kind IDs, duplicate collapse, null money/unchanged totals, invalid-row fail-closed behavior, and K21/K26 compatibility.
+- [x] Run required domain/cache/API tests, compile changed Python files, enforce the no-allowlist/no-ID-rebuild invariant, and run `git diff --check`; record exact evidence in the checkpoint journal.
+- [x] Set state to `checkpoint2_accepted` after independent Chief review.
+
+### Out of Scope
+Frontend changes, detector-set expansion or medical logic changes, audit generator/matrix/report changes, pricing formulas or financial semantics, DuckDB schema migration, new API routes, deployment or production-cache work, source dirty work, commits, pushes, PRs, merges, and any rule outside the five canonical rules.
+
+### Review
+Checkpoint 2 is accepted by Chief. `cohort_compliance.py` now projects serialized findings/evaluations generically with no rule-ID allowlist and no finding-ID reconstruction; canonical IDs are copied unchanged, future well-formed rules pass through, exact duplicates collapse deterministically, and evaluations retain distinct `(rule_id, claim_id)` statuses. Existing cache/API routes and payload JSON were reused without schema migration or cache rebuild. Independent verification: `255 passed, 1 warning` for all billing-domain tests plus claim-compliance and compliance-index API suites; financial invariance `4 passed, 1 warning`; compileall, `git diff --check`, and the forbidden-symbol invariant passed. Audit generator/matrix updates remain intentionally deferred to Checkpoint 4; frontend work is authorized next as Checkpoint 3.
+
+---
+
+## Task: Phase 5 Checkpoint 1 — canonical finding contract + domain plumbing
+
+### Goal
+Implement one canonical nonfinancial rule-finding evaluation path for K21, K26, `tablo15_10`, `tablo15_20`, and `tablo15_5`, preserving legacy analyzer output while making patient claim-compliance projection reuse the precomputed batch.
+
+### Subtasks
+- [x] RED→GREEN: add deterministic claim/procedure/drug/material finding identity and typed `RuleFinding` / `RuleEvaluation` / batch contract.
+- [x] RED→GREEN: add canonical one-pass evaluation for exactly the five authorized detectors, including explicit missing-input evaluations, ownership validation, normalization, de-duplication, deterministic ordering, and null money.
+- [x] RED→GREEN: route `analyze_claim` through the canonical evaluation for the five detectors while preserving legacy flat violations and detector order/fields.
+- [x] RED→GREEN: make `compute_patient_billing_report` evaluate the batch once and make `project_claim_compliance` a pure projection with zero detector/analyzer calls.
+- [x] RED→GREEN: surface the three selected Tablo 15 findings in patient `claim_compliance`, preserving K21/K26 identity/serialization compatibility, duplicate handling, missing context behavior, and unchanged financial totals.
+- [x] Run the required focused suites, compileall, and `git diff --check`; record exact RED/GREEN and final verification evidence in the checkpoint journal.
+- [x] After all tests are green, update checkpoint state and complete this review section with exact changed paths/results.
+
+### Out of Scope
+New Wave A cohort visibility, API/schema/route changes, cache schema changes, frontend work, audit generator/matrix/report changes, pricing/totals semantics, detector medical/regulatory semantics, deployment, production cache rebuild, pushes, merges, and migration of any detector outside the five authorized rules. A minimal existing-K21/K26 cohort compatibility fix was accepted because canonical five-component IDs otherwise regressed across patient and cohort projections.
+
+### Review
+Checkpoint 1 is accepted by Chief. Canonical finding identity includes URL-quoted `line_kind` between `claim_id` and `line_id`; K21/K26 cohort projection preserves and validates that identity without surfacing the three Wave A rules yet. Compileall exited 0; focused domain/cohort/API verification passed `96 passed, 1 warning`; the full billing-domain plus claim-compliance API gate passed `244 passed, 1 warning`; `git diff --check` exited 0. Phase 5 Checkpoint 2 is now authorized; frontend work remains pending its acceptance.
+
+---
+
+## Task: Rule Engine surfacing audit + generic finding surface (2026-09-18)
+
+### Goal
+Execute `plans/billing/2026-09-18-rule-engine-surfacing-audit-plan.md`: produce exact runtime/visible/hidden/duplicate/financial counts and the complete hidden-rule list before migrating additional existing rules into a generic finding surface.
+
+### Subtasks
+- [x] Freeze audit definitions and baseline: registry family, runtime detector, finding kind, visibility, duplicate, and money semantics.
+- [x] Build a deterministic static inventory of `analyze_claim` and `compute_patient_billing_report` runtime calls and reconcile it with `RULE_REGISTRY` without treating the registry as a dispatcher.
+- [x] Trace every runtime output through report fields, `recommended_actions`, `claim_compliance`, totals, cache/API, and patient/cohort frontend surfaces.
+- [x] Generate the machine-readable coverage matrix plus human audit report with exact counts, hidden list, duplicate groups, and financial/nonfinancial classification.
+- [x] Add an inventory completeness regression so new runtime detectors cannot appear without a surfacing classification.
+- [ ] Review the audit output and lock migration scope before changing runtime/UI behavior.
+- [ ] Define one canonical finding contract and migrate the approved hidden nonfinancial validation wave without one-off per-rule wiring.
+- [ ] Verify patient/cohort reachability, old-cache honesty, stable finding identities, duplicate behavior, and unchanged financial totals for nonfinancial migrations.
+
+### Dispatch scope: baseline audit only (Phases 0-4)
+- [x] Phase 0: freeze taxonomy, source revision, registry breakdown, canonical runtime entrypoints, and product projection entrypoints.
+- [x] Phase 1: generate a deterministic static runtime inventory for `analyze_claim` and `compute_patient_billing_report`, including gated calls and registry/artifact reconciliation.
+- [x] Phase 2: trace every runtime output through report fields, recommended actions, claim compliance, dedicated sections, and monetary totals.
+- [x] Phase 3: trace cache/API plus patient/cohort frontend reachability and deep-link behavior; treat Rule Database as metadata only.
+- [x] Phase 4: generate the exact JSON matrix and Markdown audit report, including hidden findings, duplicate groups, unknown mappings, and separate inventory-level counts.
+- [x] Add and execute completeness tests for canonical runtime calls, the current two-rule claim-compliance allowlist, registry-only classification, and unmapped runtime-call failure.
+- [x] Review the Phase 0-4 diff and executed evidence, create coherent local audit checkpoint commit(s), and stop at `ready_for_review` for Chief acceptance.
+
+### Out of Scope
+New SUT/medical detectors, diagnosis-procedure medical-necessity logic, coverage-status metric manipulation, unrelated pricing/recovery changes, and production deployment/cache rebuild during the audit phases.
+
+---
+
 ## Task: PR87 claim-compliance correctness fixes (2026-09-18)
 
 ### Goal
@@ -558,3 +651,45 @@ fixed cost, %3-7 vs measured %0.13-1.72) are flagged on-slide, never silently
 picked. Missing artifacts NOT claimed: no patent/EPO search, no LoI, no signed
 pilot contract, empty Maliyet Formu, no university devir protokolü — each slide
 states the honest status instead.
+## Task: Phase B migration scope lock (2026-09-19)
+
+### Goal
+Produce a Chief-reviewable `migration_scope_proposed` decision for the smallest coherent hidden, unpriced compliance migration slice without changing runtime, API, cache, frontend, or test behavior.
+
+### Subtasks
+- [x] Re-read the accepted audit plan, matrix, audit report, state, and journal; derive Wave A candidates only from matrix rows that satisfy every required eligibility condition.
+- [x] Select the smallest coherent first vertical slice and document exact detectors, stable emitted rule IDs/kinds, explicit exclusions, and deferred candidates with reasons.
+- [x] Define the one-evaluation canonical data flow, initial `RuleFinding` contract, identity/serialization rules, and exact implementation/test file map from domain through patient/cohort Compliance UX.
+- [x] Define hard invariants, verification commands, and bounded implementation checkpoints for contract/domain, backend projection/cache/API, frontend surfaces, and CI regression.
+- [x] Write `reports/rule-engine-surfacing/2026-09-19-migration-scope.md` and update state/journal while preserving accepted audit counts, hashes, and checkpoint provenance; leave state at `migration_scope_proposed` with next action Chief review.
+- [x] Verify only the four authorized files changed, JSON remains valid, provenance/counts/hashes are preserved, no runtime behavior changed, and record the review evidence below.
+
+### Out of Scope
+Phase 5 implementation; runtime detector changes; API/cache schema or behavior changes; frontend changes; test behavior changes; financial/revenue migrations; production cache rebuild/deploy; commits, pushes, or merges.
+
+### Review
+Phase B proposes exactly three Tablo 15 line-integrity detectors for the first Wave A vertical: `detect_unreported_lab_result`, `detect_missing_drug_barcode`, and `detect_material_identity_errors`. The decision document derives them from the accepted matrix, records their stable rule/line identities, excludes all verified rerun equivalents and synthetic/financial/aggregate/catalog-only rows, defines the one-evaluation `RuleFinding` architecture, maps implementation/test files, and defers all remaining candidates with reasons.
+
+State is `migration_scope_proposed` / `proposed`, phase remains 4, implementation remains `not_started`, and Chief review is the next action. Verification: the accepted starting checkpoint was confirmed as `5122d63472fcc8eb7182e7d45d3daf14c24c7a67`; `jq empty tasks/rule-engine-surfacing-loop/state.json` passed; the committed plan, audit generator, focused audit test, accepted matrix, and accepted audit SHA-256 values recomputed exactly to the hashes retained in state; all accepted audit counts remained unchanged; `git diff --exit-code -- src/bilun frontend tests scripts` passed; `git diff --check` passed; and trailing-whitespace inspection of all four authorized files found no matches. `git status --short` showed only the requested report/state/journal/todo paths. No runtime tests were run because this checkpoint intentionally changes no runtime or test behavior.
+
+Chief review: accepted after independent matrix/source/rerun reconciliation. The next authorized unit is Phase 5 Checkpoint 1 only: canonical finding/evaluation contract and domain plumbing for K21, K26, and the three selected Tablo 15 line-integrity rules.
+## Task: Final VPS correction — finding deep links and missing evaluations
+
+### Goal
+Consume canonical `finding` patient deep links with deterministic generic row highlighting and preserve only legitimate canonical `claim_id=null` unavailable evaluations in cohort counts, with truthful closure metadata and focused GREEN verification.
+
+### Subtasks
+- [x] Reopen the closure state against the current VPS worktree and record the exact migration-scope identity correction before implementation.
+- [x] Add focused frontend RED regressions for route finding-query propagation, canonical finding selection/highlighting, and unknown-finding safe fallback.
+- [x] Add focused backend RED regressions for counting a legitimate null-claim missing-input evaluation and rejecting malformed null-claim evaluations.
+- [x] Run the new frontend and backend regressions and capture the expected RED evidence without changing production behavior first.
+- [x] Parse `finding` in the patient route and pass it through the existing generic patient Compliance view to visibly select/highlight the canonical matching row while preserving legacy `action_id` fallback and safe unknown handling.
+- [x] Update cohort evaluation validation to retain only well-formed null-claim unavailable evaluations with explicit missing-input metadata, without fabricating claim IDs or changing finding identity, deduplication, financial fields, or totals.
+- [x] Run only the affected frontend/backend focused suites, `npx tsc --noEmit`, changed-module/test compileall, `git diff --check`, and invariant scans for financial/rule-allowlist/generated-cache changes.
+- [x] Record exact GREEN results, changed files, remaining blockers, and no-commit/no-push boundary in this plan, the loop journal, and closure state; mark loop complete only after all focused gates are GREEN.
+
+### Out of Scope
+Financial formulas or totals, detector/rule semantics, rule-ID allowlists, canonical finding identity changes, new routes or schemas, broad/full test suites, generated dependency/cache files, production cache rebuilds, deploys, commits, pushes, PRs, merges, and patient data or credentials.
+
+### Review
+Implemented and verified the final VPS correction. Patient URLs now parse and propagate the generic `finding` query through the existing Compliance view; canonical `finding_id` rows visibly highlight, legacy `action_id` remains the fallback, and unknown/missing IDs leave normal rendering unchanged. Cohort validation now preserves only well-formed JSON-null claim evaluations with unavailable status and non-empty required/missing-input metadata, retains deterministic identity semantics without fabricating claims, and keeps financial rows/totals unchanged. Focused backend passed `22 passed, 1 warning`; frontend passed `5 files, 38 tests`; `npx tsc --noEmit`, compileall, Ruff, `git diff --check`, and invariant scans passed. One unrelated HTTP/cache dedup integration test exceeded the bounded 60-second VPS runner timeout; the financial regression passed. No commit, push, PR, merge, deploy, or production cache rebuild occurred.

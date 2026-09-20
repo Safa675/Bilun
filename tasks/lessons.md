@@ -7,6 +7,24 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-19 — Static surfacing audits must validate source contracts and whole-file invariants
+
+**Pattern:** A static inventory trusted a declared evaluator order without proving that its direct detector calls, source mappings, metadata maps, and emitted IDs agreed; a projection-only symbol check also missed forbidden compatibility imports elsewhere in the source file. The evaluator taxonomy then misclassified the compute-side canonical stage as internal even though it is a surfaced product stage.
+
+**Rule:** For static runtime inventories, inspect the complete source file for forbidden symbols, resolve bare and module-qualified imported calls, and fail closed when direct detector sources, source-to-rule mappings, required metadata maps, and actual emitted IDs do not form an exact contract. Classify each entrypoint separately from its real product surface: a canonical evaluator consumed by a visible generic projector is visible at that product entrypoint, while a validation-root flat result remains hidden.
+
+## 2026-09-19 — Temporary dependency cleanup must use a stable path after `cd`
+
+**Pattern:** A frontend test trap tried to remove `frontend/node_modules` after the shell had changed into `frontend`, so it targeted `frontend/frontend/node_modules` and left the temporary symlink behind.
+
+**Rule:** When a temporary resource is created before changing directories, anchor trap cleanup to the absolute worktree path (or capture the original directory) and verify absence in a separate command before reporting the gate complete.
+
+## 2026-09-19 — Distinguish a proposed-write transport rejection from a native tool failure
+
+**Pattern:** Read-only native Codex commands had completed successfully, but a rejection occurred before a proposed repository write became a native event. I generalized that boundary rejection into a provider/tool failure and stopped, even though the dedicated patch path had not failed.
+
+**Rule:** When a supervisor provides transport-specific recovery instructions, preserve the exact failure boundary. If read-only native calls succeeded and repository writes are required to use `codex_apply_patch`, use that dedicated tool for every modification and stop only if the dedicated patch call itself fails or is rejected. Quote the exact patch-tool result on failure; do not relabel a pre-write rejection as a generic native/provider failure. For large generated artifacts, keep generation read-only and materialize bounded chunks through `codex_apply_patch` rather than switching to shell writers.
+
 ## 2026-09-03 — Local Next "closing by itself" is a Turbopack V8 OOM, not a closed tab or a free port
 
 **Pattern:** The user could not open localhost and said the app kept closing. Port 3000 was empty; backend :8001 was fine. Logs showed `FATAL ERROR: ... JavaScript heap out of memory` at ~15GB after ~15–30 minutes of `next dev` (Turbopack default on Next 16). Restarting with Turbopack just died again. Treating it as a zombie/port issue (or telling them to refresh) wasted a round.

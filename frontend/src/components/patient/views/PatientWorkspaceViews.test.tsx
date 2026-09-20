@@ -3,8 +3,15 @@ import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import PatientWorkspaceViews from "./PatientWorkspaceViews";
 
+const complianceProps = vi.hoisted(() => ({
+  selectedFindingId: undefined as string | null | undefined,
+}));
+
 vi.mock("./ComplianceViewSection", () => ({
-  default: () => <div>MOCK-COMPLIANCE</div>,
+  default: ({ selectedFindingId }: { selectedFindingId?: string | null }) => {
+    complianceProps.selectedFindingId = selectedFindingId;
+    return <div>MOCK-COMPLIANCE</div>;
+  },
 }));
 vi.mock("./RevenueViewSection", () => ({
   default: () => <div>MOCK-REVENUE</div>,
@@ -54,5 +61,19 @@ describe("PatientWorkspaceViews", () => {
     );
 
     expect(html).toContain('aria-label="Billing review views"');
+  });
+
+  it("forwards the patient-route finding query into the Compliance view", () => {
+    renderToStaticMarkupWithLocale(
+      <PatientWorkspaceViews
+        billingReport={report}
+        patientId="P-VIEWS"
+        selectedFindingId="claim_compliance:future-rule:P-VIEWS:C-VIEWS:procedure:L-1"
+      />,
+    );
+
+    expect(complianceProps.selectedFindingId).toBe(
+      "claim_compliance:future-rule:P-VIEWS:C-VIEWS:procedure:L-1",
+    );
   });
 });

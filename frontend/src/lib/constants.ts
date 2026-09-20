@@ -104,19 +104,20 @@ export function buildSutHomeHref(
 
 export function buildSutPatientHref(
   patientId: string,
-  params?: { claimId?: string; section?: string },
+  params?: { claimId?: string; section?: string; findingId?: string },
 ): string {
   const path = `/patient/${encodeURIComponent(patientId)}`;
   const query = new URLSearchParams();
   if (params?.claimId) query.set("claim", params.claimId);
   if (params?.section) query.set("section", params.section);
+  if (params?.findingId) query.set("finding", params.findingId);
   const queryString = query.toString();
   return queryString ? `${path}?${queryString}` : path;
 }
 
 export function buildSutBillingHref(
   patientId: string,
-  params?: { claimId?: string; section?: string },
+  params?: { claimId?: string; section?: string; findingId?: string },
 ): string {
   return buildSutPatientHref(patientId, params);
 }

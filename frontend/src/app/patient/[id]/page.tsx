@@ -30,6 +30,7 @@ import {
   searchSutPatients,
 } from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
+import { parsePatientWorkspaceQuery } from "@/lib/patientRoute";
 import {
   getRecommendedActions,
   recommendedActionLineCodes,
@@ -75,8 +76,11 @@ export function SutPatientPageContent({
   tRef.current = t;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const claimQuery = searchParams.get("claim");
-  const sectionQuery = searchParams.get("section");
+  const {
+    claimId: claimQuery,
+    section: sectionQuery,
+    findingId: findingQuery,
+  } = parsePatientWorkspaceQuery(searchParams);
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
@@ -635,6 +639,7 @@ export function SutPatientPageContent({
                       onSelectAction={handleSelectAction}
                       onOpenClause={handleOpenClause}
                       sectionQuery={sectionQuery}
+                      selectedFindingId={findingQuery}
                     />
 
                     {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
