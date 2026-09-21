@@ -136,4 +136,6 @@ def test_c99_not_covered_returns_indication_mismatch() -> None:
     )
     assert hit is not None
     assert hit["violation_kind"] == "indication_mismatch"
-    assert hit["rule_id"] in _NEW_RULE_IDS
+    assert hit["rule_id"] is None
+    assert hit["selected_rule_id"] is None
+    assert set(hit["eligible_route_rule_ids"]) == _NEW_RULE_IDS
