@@ -82,7 +82,7 @@ describe("workspaceViews", () => {
   });
 
   it("sums billed-at-risk amounts for the compliance view", () => {
-    expect(complianceBilledAtRisk(report)).toBe(140);
+    expect(complianceBilledAtRisk(report)).toBe(100);
   });
 
   it("keeps generic claim-compliance findings scoped and keyed by canonical identity", () => {

@@ -241,6 +241,68 @@ def test_validate_claim_drug_indication_wrong_diagnosis(monkeypatch) -> None:
     assert drug_hits[0].details["violation_kind"] == "indication_mismatch"
 
 
+@pytest.mark.parametrize(
+    ("claim_id", "material_name", "drug_context", "expected_kind", "expected_severity"),
+    [
+        (
+            "PUBLIC-MISMATCH",
+            "Trastuzumab",
+            {
+                "primary_icd10": "J45.9",
+                "prescriber_specialty": "tıbbi onkoloji",
+                "board_report_present": True,
+                "report_duration_months": 3,
+            },
+            "indication_mismatch",
+            "error",
+        ),
+        (
+            "PUBLIC-MISSING",
+            "Trastuzumab",
+            {"primary_icd10": "", "board_report_present": None},
+            "missing_diagnosis",
+            "review",
+        ),
+        (
+            "PUBLIC-REPORT",
+            "AVASTIN 400 MG (BEVACIZUMAB)",
+            {"primary_icd10": "C34.9", "board_report_present": False},
+            "missing_board_report",
+            "error",
+        ),
+    ],
+)
+def test_public_validate_claim_preserves_drug_indication_legacy_contract(
+    monkeypatch,
+    claim_id: str,
+    material_name: str,
+    drug_context: dict[str, object],
+    expected_kind: str,
+    expected_severity: str,
+) -> None:
+    _stub_no_other_violations(monkeypatch)
+    from src.bilun.domain.rule_engine import validate_claim
+
+    result = validate_claim(
+        {
+            "claim_id": claim_id,
+            "materials": [{"name": material_name, "unit_price": 500}],
+            "drug_context": drug_context,
+        }
+    )
+
+    drug_hits = [violation for violation in result.violations if violation.rule == "drug_indication"]
+    assert len(drug_hits) == 1
+    violation = drug_hits[0]
+    assert violation.severity == expected_severity
+    assert violation.material_name == material_name
+    assert violation.message
+    assert violation.savings_try == 0.0
+    assert violation.risk_amount == 0.0
+    assert violation.details["violation_kind"] == expected_kind
+    assert violation.details["finding_id"].startswith("drug_indication:")
+
+
 def test_validate_claim_via_context_does_not_drop_unknown_rule_tags(monkeypatch) -> None:
     """W2.5e (HIGH, Bugbot): the _validate_claim_via_context projection used an
     if/elif chain with no else, so any violation whose rule tag wasn't in
@@ -340,5 +402,4 @@ def test_validate_claim_catch_all_does_not_inflate_savings_with_risk(monkeypatch
     # total_risk_try either (outcome is not no_pay).
     assert result.total_savings_try == 0.0
     assert result.total_risk_try == 0.0
-
 

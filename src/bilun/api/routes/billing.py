@@ -26,6 +26,9 @@ from src.bilun.db import (
     read_json_payload_row as read_cache_json_payload_row,
 )
 from src.bilun.domain.billing import BillingActionReport
+from src.bilun.domain.billing.drug_indication_findings import (
+    normalize_drug_indication_payload,
+)
 from src.bilun.domain.materials import get_all_specialty_materials
 from src.bilun.domain.utils import turkish_lower
 
@@ -105,11 +108,33 @@ def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> d
             )
         drug_indication = payload.get("drug_indication")
         if isinstance(drug_indication, dict):
-            drug_indication["violation_count"] = report.drug_indication.violation_count
-            drug_indication["error_count"] = report.drug_indication.error_count
+            drug_indication["findings"] = [
+                finding.to_dict() for finding in report.drug_indication.findings
+            ]
+            drug_indication["evaluations"] = [
+                evaluation.to_dict()
+                for evaluation in report.drug_indication.evaluations
+            ]
+            normalized_drug_indication = normalize_drug_indication_payload(
+                drug_indication
+            )
+            payload["drug_indication"] = normalized_drug_indication
+            payload["drug_indication_violation_count"] = normalized_drug_indication.get(
+                "violation_count", 0
+            )
         return payload
     if isinstance(report, dict):
-        return report
+        payload = dict(report)
+        drug_indication = payload.get("drug_indication")
+        if isinstance(drug_indication, dict):
+            normalized_drug_indication = normalize_drug_indication_payload(
+                drug_indication
+            )
+            payload["drug_indication"] = normalized_drug_indication
+            payload["drug_indication_violation_count"] = normalized_drug_indication.get(
+                "violation_count", 0
+            )
+        return payload
     raise TypeError(f"Unsupported billing report payload type: {type(report)!r}")
 
 

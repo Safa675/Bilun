@@ -87,7 +87,8 @@ export function scopedClaimComplianceFindings(
 /** Sum of billed amounts at risk across compliance-classified actions. */
 export function complianceBilledAtRisk(report: BillingActionReport): number {
   return viewActions(report, "compliance").reduce(
-    (sum, action) => sum + (action.billed_try ?? 0),
+    (sum, action) =>
+      sum + (action.surface === "drug_indication" ? 0 : action.billed_try ?? 0),
     0,
   );
 }

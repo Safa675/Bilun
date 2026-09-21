@@ -95,31 +95,27 @@ def test_a2_rules_have_gate_b_sources(a2_rule_ids: set[str]) -> None:
         assert sources, f"missing gate_b_sources on {rule_id}"
 
 
-def test_entekavir_missing_board_report_is_error() -> None:
+def test_entekavir_without_route_discriminators_is_ambiguous() -> None:
     hit = evaluate_drug_indication_line(
         drug_line=_drug_line(drug_name="BARACLUDE 0.5 MG (ENTEKAVIR)", report_present=False),
         claim=_claim(primary_icd10="B18.1"),
         diagnoses=[],
     )
     assert hit is not None
-    # The 4213 batch regen added more-specific antiviral rules that can fire
-    # for entekavir + B18.1 + no report. All flag the same missing_board_report
-    # violation; the active rule_id depends on which sub-indication matches.
-    assert hit["rule_id"] in (
-        "4.2.13.hbv_entekavir_board",
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
-        "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
-    )
-    assert hit["violation_kind"] == "missing_board_report"
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["rule_id"] is None
+    assert hit["selected_rule_id"] is None
 
 
-def test_entekavir_with_report_passes() -> None:
+def test_entekavir_report_does_not_invent_a_route() -> None:
     hit = evaluate_drug_indication_line(
         drug_line=_drug_line(drug_name="BARACLUDE 0.5 MG (ENTEKAVIR)", report_present=True),
         claim=_claim(primary_icd10="B18.1"),
         diagnoses=[],
     )
-    assert hit is None
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["selected_rule_id"] is None
 
 
 def test_entekavir_wrong_icd_is_indication_mismatch() -> None:
@@ -210,7 +206,13 @@ def test_golden_a2_samples(sample: dict) -> None:
     else:
         assert hit is not None
         assert hit["violation_kind"] == expected
-        if sample.get("rule_id"):
+        if sample.get("rule_id") and expected in {
+            "indication_mismatch",
+            "ambiguous_route",
+        }:
+            assert hit["rule_id"] is None
+            assert sample["rule_id"] in hit["eligible_route_rule_ids"]
+        elif sample.get("rule_id"):
             # Multiple HBV antiviral rules can fire for the same drug+ICD; accept the
             # sample's expected rule_id OR the known alternates that flag the same violation.
             allowed = {sample["rule_id"]}

@@ -6,7 +6,7 @@
       "report_present": null,
       "prescriber_specialty": null,
       "expect_violation": "needs_report_verification",
-      "rule_id": "4.2.19.migraine.neurology_1yr_report_monthly_dose_coverage"
+      "rule_id": "4.2.19.triptan_neurology_prescriber"
     },
     {
       "drug_name": "IMIGRAN 50 MG (SUMATRIPTAN)",

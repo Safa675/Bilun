@@ -80,6 +80,53 @@ def test_mixed_finding_types_keep_only_compliance() -> None:
     assert "hemogram_bundling" in kinds
 
 
+def test_drug_indication_action_keeps_canonical_identity_and_no_money() -> None:
+    finding_id = "drug_indication:P-DRUG:C-1:D-1:indication_mismatch"
+    index = build_cohort_compliance_index(
+        {
+            "P-DRUG": {
+                "recommended_actions": [
+                    _action(
+                        action_id=finding_id,
+                        surface="drug_indication",
+                        kind="indication_mismatch",
+                        claim_id="C-1",
+                        billed_try=None,
+                        material_code=None,
+                        drug_code="A1",
+                        drug_name="ORENCIA",
+                        drug_claim_line_id="D-1",
+                        finding_id=finding_id,
+                        severity="error",
+                        applicability_status="indication_mismatch",
+                        evaluation_status="evaluated",
+                        observed_icd10_codes=["E66.9"],
+                        matched_icd10_codes=[],
+                        unmatched_icd10_codes=["E66.9"],
+                        eligible_routes=[{"rule_id": "r1", "icd10_codes": ["M06"]}],
+                        recommended_action_tr="Tanı ve raporu kontrol edin.",
+                    )
+                ]
+            }
+        }
+    )
+
+    row = index["rows"][0]
+    assert row["finding_id"] == row["action_id"] == finding_id
+    assert row["drug_claim_line_id"] == "D-1"
+    assert row["observed_icd10_codes"] == ["E66.9"]
+    assert row["eligible_routes"] == [{"rule_id": "r1", "icd10_codes": ["M06"]}]
+    assert row["severity"] == "error"
+    assert row["recommended_action_tr"] == "Tanı ve raporu kontrol edin."
+    assert row["billed_try"] is None
+    assert index["billed_at_risk_try"] == 0.0
+    assert index["by_surface"]["drug_indication"]["billed_try"] is None
+
+    filtered = slice_compliance_index(index, surface="drug_indication")
+    assert filtered["by_surface"]["drug_indication"]["billed_try"] is None
+    assert filtered["billed_at_risk_try"] is None
+
+
 def test_optional_override_excluded_mandatory_mapped_to_payment_methods() -> None:
     reports = {
         "P-PAY": {

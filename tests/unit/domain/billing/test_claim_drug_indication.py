@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from dataclasses import replace
 
 import pytest
 
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
+from src.bilun.domain.billing.drug_indication_findings import (
+    evaluate_drug_indication_findings,
+)
 from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, DrugClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 
@@ -93,6 +97,59 @@ def test_billing_report_clean_when_report_present() -> None:
     assert report.drug_indication_violation_count == 0
 
 
+def test_billing_report_evaluates_drug_indication_once(monkeypatch) -> None:
+    import src.bilun.domain.billing.patient_report as patient_report
+
+    original = patient_report.evaluate_drug_indication_findings
+    calls = 0
+
+    def counted(patient_id, ctx, *, rules=None):
+        nonlocal calls
+        calls += 1
+        return original(patient_id, ctx, rules=rules)
+
+    monkeypatch.setattr(patient_report, "evaluate_drug_indication_findings", counted)
+
+    report = compute_patient_billing_report("P1", claim_context=_ctx(report_present=False))
+
+    assert calls == 1
+    drug_action = next(
+        row for row in report.recommended_actions if row["surface"] == "drug_indication"
+    )
+    assert drug_action["action_id"] == (
+        "drug_indication:P1:C1:D1:missing_board_report"
+    )
+    assert drug_action["sgk_uplift_try"] is None
+    assert drug_action["audit_risk_try"] is None
+    assert drug_action["compliance_savings_try"] is None
+    assert report.sgk_uplift_try == 0.0
+    assert report.compliance_adjustment_try == 0.0
+    assert report.audit_exposure_try == 0.0
+    assert report.total_recoverable_try == 0.0
+
+
+def test_claim_review_accepts_supplied_canonical_batch_without_rerun(monkeypatch) -> None:
+    from src.bilun.domain.billing.claim_drug_indication import (
+        validate_drug_indication_from_claims,
+    )
+
+    ctx = _ctx(report_present=False)
+    batch = evaluate_drug_indication_findings(ctx.patient_id, ctx)
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("projection must not rerun the detector")
+
+    monkeypatch.setattr(
+        "src.bilun.domain.billing.claim_drug_indication.evaluate_drug_indication_findings",
+        fail_if_called,
+    )
+
+    review = validate_drug_indication_from_claims(ctx, evaluation_batch=batch)
+
+    assert review.findings[0].finding_id == batch.findings[0].finding_id
+    assert review.violations[0]["finding_id"] == batch.findings[0].finding_id
+
+
 def test_billing_report_drug_indication_not_applicable_without_drug_lines() -> None:
     ctx = _ctx(report_present=False)
     ctx = PatientClaimContext(
@@ -106,3 +163,25 @@ def test_billing_report_drug_indication_not_applicable_without_drug_lines() -> N
     report = compute_patient_billing_report("P1", claim_context=ctx)
     assert report.drug_indication.exactness_status == "not_applicable"
     assert report.drug_indication_violation_count == 0
+
+
+def test_complete_unencoded_drug_is_manual_review_without_invented_missing_inputs() -> None:
+    ctx = _ctx(report_present=True)
+    unencoded_line = replace(ctx.drug_lines[0], drug_name="UNENCODED MEDICINE")
+    ctx = replace(ctx, drug_lines=(unencoded_line,))
+
+    report = compute_patient_billing_report("P1", claim_context=ctx)
+
+    assert report.drug_indication.findings == []
+    assert report.drug_indication.violations == []
+    assert len(report.drug_indication.evaluations) == 1
+    evaluation = report.drug_indication.evaluations[0]
+    assert evaluation.applicability_status == "not_in_encoded_corpus"
+    assert evaluation.evaluation_status == "unavailable"
+    assert evaluation.missing_inputs == ()
+    assert report.drug_indication.required_inputs_missing == []
+    assert report.drug_indication.unavailable_reason
+    assert not any(
+        action.get("surface") == "drug_indication"
+        for action in report.recommended_actions
+    )

@@ -142,7 +142,7 @@ export function SUTComplianceDashboard({
       n_patients: 0,
       n_findings: 0,
       n_patients_with_findings: 0,
-      billed_at_risk_try: activeSubtab === "claim_compliance" ? null : 0,
+      billed_at_risk_try: activeSubtab === "claim_compliance" || activeSubtab === "drug_indication" ? null : 0,
       by_surface: {},
       rows: [],
       pagination: {
@@ -183,7 +183,11 @@ export function SUTComplianceDashboard({
               billed_at_risk_try: 0,
               by_surface: Object.fromEntries(INDEX_SURFACES.map((surface) => [
                 surface,
-                { n: 0, billed_try: surface === "claim_compliance" ? null : 0, n_patients: 0 },
+                {
+                  n: 0,
+                  billed_try: surface === "claim_compliance" || surface === "drug_indication" ? null : 0,
+                  n_patients: 0,
+                },
               ])),
               rows: [],
             });
@@ -273,7 +277,9 @@ export function SUTComplianceDashboard({
     ? currentIndex?.n_patients_with_findings ?? 0
     : null;
   const headerBilled = indexAvailable
-    ? currentIndex?.billed_at_risk_try ?? null
+    ? isIndexSurface(activeSubtab)
+      ? currentIndex?.by_surface?.[activeSubtab]?.billed_try ?? null
+      : currentIndex?.billed_at_risk_try ?? null
     : null;
 
   const badgeCounts = useMemo(() => {

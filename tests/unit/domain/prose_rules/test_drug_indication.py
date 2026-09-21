@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from dataclasses import replace
+
+import pytest
 
 from src.bilun.domain.billing.claim_drug_indication import validate_drug_indication_from_claims
 from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, DrugClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules import drug_indication as drug_indication_module
 from src.bilun.domain.prose_rules.drug_indication import (
     check_drug_indication_for_context,
     drug_indication_coverage_scope,
@@ -192,6 +196,282 @@ def test_bevacizumab_indication_mismatch_for_non_cancer_icd() -> None:
     )
     assert hit is not None
     assert hit["violation_kind"] == "indication_mismatch"
+
+
+def _orencia_claim(*, primary_icd10: str, primary_available: bool) -> ClaimHeader:
+    return ClaimHeader(
+        claim_id="C-ORENCIA",
+        patient_id="P-ORENCIA",
+        episode_id="E-ORENCIA",
+        claim_type="yatis",
+        facility_tier="2",
+        provider_type="kamu",
+        department="romatoloji",
+        admission_date=date(2026, 1, 1),
+        discharge_date=date(2026, 1, 2),
+        claim_start_date=date(2026, 1, 1),
+        claim_end_date=date(2026, 1, 2),
+        primary_icd10=primary_icd10,
+        package_candidate=False,
+        expected_total_billed_try=Decimal("100"),
+        expected_total_payable_try=Decimal("80"),
+        expected_denial_reason="",
+        scenario_tag="drug-indication-orencia-regression",
+        primary_icd10_available=primary_available,
+    )
+
+
+def _orencia_line(
+    *,
+    report_present: bool | None = False,
+    report_duration_months: int | None = None,
+    prescriber_specialty: str | None = None,
+) -> DrugClaimLine:
+    return _drug_line(
+        drug_name="ORENCIA 125 MG (ABATACEPT)",
+        report_present=report_present,
+        report_duration_months=report_duration_months,
+        prescriber_specialty=prescriber_specialty,
+    )
+
+
+def _diagnosis(*, code: str, claim_id: str = "C-ORENCIA") -> ClaimDiagnosis:
+    return ClaimDiagnosis(
+        diagnosis_id=f"DX-{code}",
+        claim_id=claim_id,
+        patient_id="P-ORENCIA",
+        episode_id="E-ORENCIA",
+        icd10_code=code,
+        is_primary=False,
+        diagnosis_role="ek",
+        diagnosis_date=date(2026, 1, 1),
+        exemption_eligible=False,
+    )
+
+
+def test_orencia_unrelated_complete_diagnosis_is_family_mismatch() -> None:
+    """Generic no-ICD report rules must not mask a true route mismatch."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="E66.9", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "indication_mismatch"
+    assert hit["matched_icd10_codes"] == []
+    assert hit["observed_icd10_codes"] == ["E66.9"]
+    assert {"M05", "M06", "M08"}.issubset(
+        set(hit["eligible_icd10_codes_or_ranges"])
+    )
+
+
+def test_orencia_t13_unrelated_complete_diagnosis_is_family_mismatch() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="T13.2", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "indication_mismatch"
+    assert hit["matched_icd10_codes"] == []
+    assert hit["unmatched_icd10_codes"] == ["T13.2"]
+
+
+def test_orencia_missing_diagnosis_is_manual_review_not_mismatch() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="", primary_available=False),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "missing_diagnosis"
+    assert hit["severity"] == "review"
+
+
+def test_orencia_ra_routes_without_discriminator_are_ambiguous() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="M06.9", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["selected_rule_id"] is None
+
+
+def test_orencia_jia_routes_without_duration_are_ambiguous() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="M08.0", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["selected_rule_id"] is None
+
+
+def test_orencia_ra_route_is_not_invented_from_generic_duration_constraint() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(
+            report_present=True,
+            prescriber_specialty="romatoloji",
+        ),
+        claim=_orencia_claim(primary_icd10="M06.9", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["selected_rule_id"] is None
+
+
+def test_orencia_jia_route_does_not_inherit_adult_generic_rheum_constraint() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(
+            report_present=True,
+            report_duration_months=3,
+            prescriber_specialty="çocuk sağlığı",
+        ),
+        claim=_orencia_claim(primary_icd10="M08.0", primary_available=True),
+        diagnoses=(),
+    )
+
+    assert hit is None
+
+
+def test_orencia_secondary_diagnosis_is_considered_when_primary_is_unrelated() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="E66.9", primary_available=True),
+        diagnoses=(_diagnosis(code="M06.9"),),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["matched_icd10_codes"] == ["M06.9"]
+    assert hit["unmatched_icd10_codes"] == ["E66.9"]
+    assert hit["selected_rule_id"] is None
+
+
+def test_orencia_multiple_matching_routes_require_route_discriminator() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="M06.9", primary_available=True),
+        diagnoses=(_diagnosis(code="M08.0"),),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "ambiguous_route"
+    assert hit["severity"] == "review"
+    assert hit["matched_icd10_codes"] == ["M06.9", "M08.0"]
+
+
+def test_orencia_partial_diagnosis_input_is_manual_review_not_mismatch() -> None:
+    hit = evaluate_drug_indication_line(
+        drug_line=_orencia_line(report_present=False),
+        claim=_orencia_claim(primary_icd10="", primary_available=False),
+        diagnoses=(_diagnosis(code="E66.9"),),
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "missing_diagnosis"
+    assert hit["evaluation_status"] == "missing_inputs"
+    assert "primary_icd10" in hit["missing_inputs"]
+
+
+@pytest.mark.parametrize("primary_icd10", ["M06.9", "M08.0"])
+def test_full_corpus_route_arbitration_never_uses_rule_order(primary_icd10: str) -> None:
+    claim = _orencia_claim(primary_icd10=primary_icd10, primary_available=True)
+    line = _orencia_line(report_present=False)
+    rules = list_drug_indication_rules()
+
+    original = evaluate_drug_indication_line(
+        drug_line=line,
+        claim=claim,
+        diagnoses=(),
+        rules=rules,
+    )
+    reversed_corpus = evaluate_drug_indication_line(
+        drug_line=line,
+        claim=claim,
+        diagnoses=(),
+        rules=list(reversed(rules)),
+    )
+    permuted_corpus = evaluate_drug_indication_line(
+        drug_line=line,
+        claim=claim,
+        diagnoses=(),
+        rules=[*rules[1::2], *rules[::2]],
+    )
+
+    assert original is not None and reversed_corpus is not None and permuted_corpus is not None
+    assert original["violation_kind"] == "ambiguous_route"
+    assert reversed_corpus["violation_kind"] == "ambiguous_route"
+    assert permuted_corpus["violation_kind"] == "ambiguous_route"
+    assert original["selected_rule_id"] is None
+    assert reversed_corpus["selected_rule_id"] is None
+    assert permuted_corpus["selected_rule_id"] is None
+    assert original == reversed_corpus == permuted_corpus
+    assert original["eligible_route_rule_ids"] == reversed_corpus["eligible_route_rule_ids"]
+    assert original["eligible_route_rule_ids"] == permuted_corpus["eligible_route_rule_ids"]
+
+
+def _diagnosis_specific_and_supplemental_families() -> list[str]:
+    by_name: dict[str, tuple[bool, bool]] = {}
+    for rule in list_drug_indication_rules():
+        has_selector = bool(rule.get("icd10_codes") or rule.get("icd10_ranges"))
+        if has_selector and rule.get("pay") is False:
+            continue
+        for raw_name in rule.get("drug_names") or ():
+            name = str(raw_name).strip()
+            if not name:
+                continue
+            specific, supplemental = by_name.get(name, (False, False))
+            by_name[name] = (specific or has_selector, supplemental or not has_selector)
+    return sorted(name for name, (specific, supplemental) in by_name.items() if specific and supplemental)
+
+
+@pytest.mark.parametrize("drug_name", _diagnosis_specific_and_supplemental_families())
+def test_unrelated_complete_diagnoses_cannot_be_shadowed_by_icd_less_rules(
+    drug_name: str,
+) -> None:
+    rules = list_drug_indication_rules()
+    family_rules = [
+        rule
+        for rule in rules
+        if drug_indication_module._drug_name_matches(drug_name, rule.get("drug_names") or [])
+    ]
+    specific_rules = [
+        rule
+        for rule in family_rules
+        if drug_indication_module._rule_has_icd_selector(rule)
+        and rule.get("pay") is not False
+    ]
+    unrelated_code = next(
+        code
+        for code in ("E66.9", "T13.2", "Z99.9", "J45.9", "C34.9")
+        if not any(
+            drug_indication_module._diagnosis_matches_specific_rule([code], rule)
+            for rule in specific_rules
+        )
+    )
+    hit = evaluate_drug_indication_line(
+        drug_line=replace(_orencia_line(report_present=False), drug_name=drug_name),
+        claim=_orencia_claim(primary_icd10=unrelated_code, primary_available=True),
+        diagnoses=(),
+        rules=rules,
+    )
+
+    assert hit is not None
+    assert hit["violation_kind"] == "indication_mismatch"
+    assert hit["applicability_status"] == "indication_mismatch"
+    assert hit["selected_rule_id"] is None
+    assert hit["matched_icd10_codes"] == []
 
 
 # ── §4.2.33 anti-VEGF / ophthalmology indication + dose enforcement ─────────
@@ -500,7 +780,8 @@ def test_atezolizumab_indication_mismatch_for_asthma() -> None:
     )
     assert hit is not None
     assert hit["violation_kind"] == "indication_mismatch"
-    assert hit["rule_id"] == "4.2.14.C.(15).atezolizumab_nsclc_board"
+    assert hit["rule_id"] is None
+    assert hit["selected_rule_id"] is None
 
 
 def test_tier_b_report_duration_match_passes() -> None:

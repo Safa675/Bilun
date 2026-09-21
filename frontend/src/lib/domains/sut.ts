@@ -467,6 +467,7 @@ export interface ClaimComplianceFinding extends ClaimComplianceMoneyFields {
   regulatory_source?: unknown;
   source_engine?: string | null;
   evaluation_status?: ClaimComplianceEvaluationStatus | null;
+  applicability_status?: string | null;
   required_inputs?: string[] | null;
   missing_inputs?: string[] | null;
   surface?: "claim_compliance";
@@ -478,6 +479,15 @@ export interface ClaimComplianceFinding extends ClaimComplianceMoneyFields {
   drug_claim_line_id?: string | null;
   drug_code?: string | null;
   drug_name?: string | null;
+  observed_icd10_codes?: string[] | null;
+  matched_icd10_codes?: string[] | null;
+  unmatched_icd10_codes?: string[] | null;
+  eligible_routes?: DrugIndicationRouteEvidence[] | null;
+  recommended_action_tr?: string | null;
+  eligible_route_count?: number | null;
+  eligible_routes_truncated?: boolean | null;
+  observed_icd10_count?: number | null;
+  observed_icd10_truncated?: boolean | null;
   material_line_id?: string | null;
   material_code?: string | null;
   material_name?: string | null;
@@ -919,18 +929,93 @@ export interface ClaimSubmissionChecklist extends ExactnessState {
   error_count?: number;
 }
 
+export interface DrugIndicationRouteEvidence {
+  rule_id?: string | null;
+  sut_section?: string | null;
+  icd10_codes?: string[];
+  icd10_ranges?: string[];
+  regulatory_summary_tr?: string | null;
+  report_required?: boolean | null;
+  report_duration_months?: number | null;
+  report_specialties?: string[];
+  prescriber_specialties?: string[];
+  indication_label_tr?: string | null;
+  icd10_code_count?: number;
+  icd10_codes_truncated?: boolean;
+  icd10_range_count?: number;
+  icd10_ranges_truncated?: boolean;
+}
+
+export interface DrugIndicationFinding {
+  finding_id?: string | null;
+  patient_id?: string | null;
+  claim_id?: string | null;
+  drug_claim_line_id?: string | null;
+  drug_name?: string | null;
+  drug_code?: string | null;
+  finding_kind?: string | null;
+  severity?: string | null;
+  applicability_status?: string | null;
+  evaluation_status?: string | null;
+  observed_icd10_codes?: string[];
+  matched_icd10_codes?: string[];
+  unmatched_icd10_codes?: string[];
+  eligible_routes?: DrugIndicationRouteEvidence[];
+  selected_rule_id?: string | null;
+  explanation_tr?: string | null;
+  recommended_action_tr?: string | null;
+  required_inputs?: string[];
+  missing_inputs?: string[];
+  eligible_route_count?: number;
+  eligible_routes_truncated?: boolean;
+  observed_icd10_count?: number;
+  observed_icd10_truncated?: boolean;
+}
+
+export interface DrugIndicationLineEvaluation {
+  patient_id?: string | null;
+  claim_id?: string | null;
+  drug_claim_line_id?: string | null;
+  drug_name?: string | null;
+  drug_code?: string | null;
+  applicability_status?: string | null;
+  evaluation_status?: string | null;
+  observed_icd10_codes?: string[];
+  matched_icd10_codes?: string[];
+  unmatched_icd10_codes?: string[];
+  eligible_routes?: DrugIndicationRouteEvidence[];
+  selected_rule_id?: string | null;
+  finding_id?: string | null;
+  finding_kind?: string | null;
+  required_inputs?: string[];
+  missing_inputs?: string[];
+  eligible_route_count?: number;
+  eligible_routes_truncated?: boolean;
+  observed_icd10_count?: number;
+  observed_icd10_truncated?: boolean;
+}
+
 export interface DrugIndicationReview extends ExactnessState {
   violations: Array<{
     drug_claim_line_id?: string;
     claim_id?: string;
     drug_name?: string;
+    drug_code?: string;
     rule_id?: string;
     sut_section?: string;
     primary_icd10?: string;
     violation_kind?: string;
     severity?: string;
     message_tr?: string;
+    finding_id?: string;
+    applicability_status?: string;
+    evaluation_status?: string;
+    observed_icd10_codes?: string[];
+    matched_icd10_codes?: string[];
+    unmatched_icd10_codes?: string[];
   }>;
+  findings?: DrugIndicationFinding[];
+  evaluations?: DrugIndicationLineEvaluation[];
   violation_count?: number;
   error_count?: number;
   coverage_scope?: Record<string, unknown>;
@@ -1050,6 +1135,21 @@ export interface RecommendedActionItem {
   procedure_name?: string | null;
   material_code?: string | null;
   drug_code?: string | null;
+  drug_name?: string | null;
+  drug_claim_line_id?: string | null;
+  finding_id?: string | null;
+  severity?: string | null;
+  applicability_status?: string | null;
+  evaluation_status?: string | null;
+  observed_icd10_codes?: string[] | null;
+  matched_icd10_codes?: string[] | null;
+  unmatched_icd10_codes?: string[] | null;
+  eligible_routes?: DrugIndicationRouteEvidence[] | null;
+  eligible_route_count?: number | null;
+  eligible_routes_truncated?: boolean | null;
+  observed_icd10_count?: number | null;
+  observed_icd10_truncated?: boolean | null;
+  recommended_action_tr?: string | null;
   sgk_uplift_try?: number | null;
   audit_risk_try?: number | null;
   compliance_savings_try?: number | null;

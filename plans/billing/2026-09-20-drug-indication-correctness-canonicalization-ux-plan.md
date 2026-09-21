@@ -2,10 +2,10 @@
 
 > **For the implementer:** Execute this plan on a new feature branch from the current `main` after merged PR #89. Use TDD, preserve financial invariants, and keep generated audit artifacts in a separate final commit so they do not bury the production diff.
 
-**Date:** 2026-09-20  
-**Status:** Ready for implementation  
-**Priority:** Must complete before expanding the next rule-surfacing wave  
-**Depends on:** Merged PR #89 (`feat(compliance): complete generic rule surfacing loop`)  
+**Date:** 2026-09-20
+**Status:** Ready for implementation
+**Priority:** Must complete before expanding the next rule-surfacing wave
+**Depends on:** Merged PR #89 (`feat(compliance): complete generic rule surfacing loop`)
 **Related plans:**
 - `plans/billing/2026-09-18-rule-engine-surfacing-audit-plan.md`
 - `plans/billing/r5-epic-4.2-drug-indication.md`

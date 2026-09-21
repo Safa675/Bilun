@@ -12,11 +12,7 @@ from pathlib import Path
 import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
-from tests.unit._helpers.gate_b_cites import (
-    cite_in_sources,
-    cites_covered_by_encoded,
-    resolve_gate_b_cites_to_clause_ids,
-)
+from tests.unit._helpers.gate_b_cites import cites_covered_by_encoded
 
 from scripts.sut.rule_sources import load_drug_section_rules
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
@@ -127,4 +123,8 @@ def test_a4_c7_golden_samples(sample: dict) -> None:
     else:
         assert hit is not None, sample
         assert hit["violation_kind"] == expected, sample
-        assert hit["rule_id"] == rule_id, sample
+        if expected in {"indication_mismatch", "ambiguous_route"}:
+            assert hit["rule_id"] is None, sample
+            assert rule_id in hit["eligible_route_rule_ids"], sample
+        else:
+            assert hit["rule_id"] == rule_id, sample

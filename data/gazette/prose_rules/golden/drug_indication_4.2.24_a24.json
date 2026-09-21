@@ -29,7 +29,7 @@
       "primary_icd10": "J45.0",
       "report_present": false,
       "prescriber_specialty": "alerji",
-      "expect_violation": "missing_board_report",
+      "expect_violation": "ambiguous_route",
       "rule_id": "4.2.24.montelukast_prescriber_report"
     },
     {
@@ -37,7 +37,7 @@
       "primary_icd10": "J45.0",
       "report_present": true,
       "prescriber_specialty": "alerji",
-      "expect_violation": null,
+      "expect_violation": "ambiguous_route",
       "rule_id": "4.2.24.montelukast_prescriber_report"
     },
     {

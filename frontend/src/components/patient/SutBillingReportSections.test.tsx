@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRY2Fixture } from "@/test/fmtMoney";
-import type { BillingActionReport } from "@/lib/domains/sut";
+import type { BillingActionReport, DrugIndicationFinding } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   BillingSummary,
@@ -619,6 +619,23 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toBe("");
   });
 
+  it("renders nothing for a genuinely not-applicable empty block", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "not_applicable",
+          violations: [],
+          findings: [],
+          evaluations: [],
+          violation_count: 0,
+          error_count: 0,
+        }}
+      />,
+    );
+
+    expect(html).toBe("");
+  });
+
   it("renders violation table when entries exist", () => {
     const html = renderToStaticMarkupWithLocale(
       <DrugIndicationReviewSection
@@ -644,6 +661,197 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("missing_board_report");
     expect(html).toContain("AVASTIN");
     expect(html).toContain("C34.9");
+    expect(html).not.toContain("<details open");
+  });
+
+  it("renders structured findings as an actionable summary with technical disclosure", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "exact",
+          violations: [],
+          findings: [
+            {
+              finding_id: "drug_indication:P1:C1:D1:indication_mismatch",
+              patient_id: "P1",
+              claim_id: "C1",
+              drug_claim_line_id: "D1",
+              drug_name: "ORENCIA 250 MG",
+              finding_kind: "indication_mismatch",
+              severity: "error",
+              applicability_status: "indication_mismatch",
+              evaluation_status: "evaluated",
+              observed_icd10_codes: ["E66.9"],
+              observed_icd10_count: 65,
+              observed_icd10_truncated: true,
+              matched_icd10_codes: [],
+              unmatched_icd10_codes: ["E66.9"],
+              eligible_routes: [
+                {
+                  rule_id: "4.2.1.abatacept_ra_board",
+                  sut_section: "4.2.1",
+                  icd10_codes: ["M05", "M06"],
+                  icd10_code_count: 23,
+                  icd10_codes_truncated: true,
+                  icd10_ranges: ["M08"],
+                  icd10_range_count: 1,
+                  icd10_ranges_truncated: false,
+                  regulatory_summary_tr: "RA/JIA route evidence",
+                },
+              ],
+              explanation_tr: "E66.9 tanısı kodlanmış endikasyon yollarıyla eşleşmedi.",
+              recommended_action_tr: "Tanı kodunu ve sağlık kurulu raporunu doğrulayın.",
+              selected_rule_id: null,
+            },
+          ],
+          violation_count: 1,
+          error_count: 1,
+        }}
+      />,
+      "tr",
+    );
+
+    expect(html).toContain("Tanı–ilaç eşleşmesi bulunamadı");
+    expect(html).toContain("Geri ödeme koşulu doğrulanamadı — MEDULA reddi riski");
+    expect(html).toContain("E66.9");
+    expect(html).toContain("M05, M06, M08");
+    expect(html).toContain("Tanı kodunu ve sağlık kurulu raporunu doğrulayın.");
+    expect(html).toContain("Teknik ayrıntılar");
+    expect(html).toContain("4.2.1.abatacept_ra_board");
+    expect(html).toContain("Gözlenen tanıların yalnızca sınırlı bir önizlemesi gösteriliyor.");
+    expect(html).toContain("Gösterilen yol kodları/aralıkları sınırlı bir önizlemedir");
+    expect(html).toContain("Çok sayıda aday yol bulundu; teknik liste sınırlandı.");
+  });
+
+  it("renders missing diagnosis as unevaluable rather than a confirmed mismatch", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "missing_exact_inputs",
+          violations: [],
+          findings: [
+            {
+              finding_id: "drug_indication:P2:C2:D2:missing_diagnosis",
+              patient_id: "P2",
+              claim_id: "C2",
+              drug_claim_line_id: "D2",
+              drug_name: "ORENCIA 250 MG",
+              finding_kind: "missing_diagnosis",
+              severity: "review",
+              applicability_status: "missing_diagnosis",
+              evaluation_status: "missing_inputs",
+              observed_icd10_codes: [],
+              matched_icd10_codes: [],
+              unmatched_icd10_codes: [],
+              missing_inputs: ["claim_diagnoses", "primary_icd10"],
+              eligible_routes: [
+                {
+                  rule_id: "4.2.1.abatacept_ra_board",
+                  sut_section: "4.2.1",
+                  icd10_codes: ["M05", "M06"],
+                  icd10_ranges: ["M08"],
+                },
+              ],
+              explanation_tr: "Tanı kodu bulunamadığı için endikasyon eşleştirmesi tamamlanamadı.",
+              recommended_action_tr: "Tanı kayıtlarını tamamlayıp yeniden kontrol edin.",
+              selected_rule_id: null,
+            },
+          ],
+          violation_count: 1,
+          error_count: 0,
+        }}
+      />,
+      "tr",
+    );
+
+    expect(html).toContain("Tanı bilgisi eksik");
+    expect(html).toContain("Eksik girdi — manuel doğrulama");
+    expect(html).toContain("Tanı kodu yok");
+    expect(html).toContain("Tanı kayıtlarını tamamlayıp yeniden kontrol edin.");
+    expect(html).not.toContain("Tanı–ilaç eşleşmesi bulunamadı");
+  });
+
+  it("selects exactly the requested canonical finding across drug lines", () => {
+    const finding = {
+      patient_id: "P-DEEP",
+      claim_id: "C-DEEP",
+      drug_name: "ORENCIA",
+      finding_kind: "indication_mismatch",
+      severity: "error",
+      applicability_status: "indication_mismatch",
+      evaluation_status: "evaluated",
+      observed_icd10_codes: ["E66.9"],
+      matched_icd10_codes: [],
+      unmatched_icd10_codes: ["E66.9"],
+      eligible_routes: [],
+      explanation_tr: "İlk bulgu",
+      recommended_action_tr: "Kontrol edin.",
+    } satisfies DrugIndicationFinding;
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        selectedFindingId="drug_indication:P-DEEP:C-DEEP:D2:indication_mismatch"
+        reviewData={{
+          exactness_status: "exact",
+          violations: [],
+          findings: [
+            {
+              ...finding,
+              finding_id: "drug_indication:P-DEEP:C-DEEP:D1:indication_mismatch",
+              drug_claim_line_id: "D1",
+            },
+            {
+              ...finding,
+              finding_id: "drug_indication:P-DEEP:C-DEEP:D2:indication_mismatch",
+              drug_claim_line_id: "D2",
+            },
+          ],
+          violation_count: 2,
+          error_count: 2,
+        }}
+      />,
+    );
+
+    expect(html.match(/data-selected="true"/g)).toHaveLength(1);
+    expect(html).toContain(
+      'data-finding-id="drug_indication:P-DEEP:C-DEEP:D2:indication_mismatch"',
+    );
+  });
+
+  it("renders structured corpus noncoverage without calling it legacy", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "partial_exact",
+          unavailable_reason: "Kodlanmış kural kapsamı dışında.",
+          required_inputs_missing: [],
+          violations: [],
+          findings: [],
+          evaluations: [
+            {
+              patient_id: "P-UNCODED",
+              claim_id: "C-UNCODED",
+              drug_claim_line_id: "D-UNCODED",
+              drug_name: "UNENCODED MEDICINE",
+              applicability_status: "not_in_encoded_corpus",
+              evaluation_status: "unavailable",
+              observed_icd10_codes: ["E66.9"],
+              matched_icd10_codes: [],
+              unmatched_icd10_codes: ["E66.9"],
+              eligible_routes: [],
+              required_inputs: [],
+              missing_inputs: [],
+            },
+          ],
+          violation_count: 0,
+          error_count: 0,
+        }}
+      />,
+      "tr",
+    );
+
+    expect(html).toContain("Kodlanmış kural derlemi bu ilacı değerlendiremiyor");
+    expect(html).toContain("SUT metnini manuel inceleyin");
+    expect(html).not.toContain("Legacy payload");
   });
 
   it("lists itemized recommended actions in the actions panel", () => {

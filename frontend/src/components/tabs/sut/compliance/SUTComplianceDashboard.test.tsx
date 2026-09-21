@@ -24,6 +24,7 @@ import { complianceBilledAtRisk, recoverableUplift, viewActions, viewForSection 
 import { ComplianceSubtabStrip } from "./ComplianceSubtabStrip";
 
 const dashboardState = vi.hoisted(() => ({ index: undefined as ComplianceIndexResponse | undefined }));
+const drugIndicationProps = vi.hoisted(() => ({ selectedFindingId: undefined as string | null | undefined }));
 
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react")>();
@@ -47,7 +48,10 @@ vi.mock("./ComplianceSubtabStrip", async (importOriginal) => {
 
 vi.mock("@/components/patient/SutBillingReportSections", () => ({
   BillingStrategySection: () => null,
-  DrugIndicationReviewSection: () => null,
+  DrugIndicationReviewSection: ({ selectedFindingId }: { selectedFindingId?: string | null }) => {
+    drugIndicationProps.selectedFindingId = selectedFindingId;
+    return null;
+  },
   LabOptimizationSection: () => null,
   MaterialsPreCheckSection: () => null,
   OptionalOverrideSection: () => null,
@@ -202,6 +206,30 @@ function renderPatient(
 }
 
 describe("claim compliance projection", () => {
+  it("forwards exact finding deep links to the Drug Indication section", () => {
+    const findingId = "drug_indication:P /1:C &1:D2:missing_board_report";
+    const report = {
+      patient_id: "P /1",
+      claim_id: "C &1",
+      claim_compliance: null,
+      drug_indication: {
+        exactness_status: "exact",
+        violations: [],
+        findings: [],
+        evaluations: [],
+      },
+      recommended_actions: [],
+    } as unknown as BillingActionReport;
+
+    renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} selectedFindingId={findingId} />
+      </WorkspaceProvider>,
+    );
+
+    expect(drugIndicationProps.selectedFindingId).toBe(findingId);
+  });
+
   it.each([
     [undefined, true, 4],
     ["C &1", true, 3],
@@ -454,6 +482,26 @@ describe("SUTComplianceDashboard", () => {
       limit: COMPLIANCE_INDEX_PAGE_SIZE,
       offset: COMPLIANCE_INDEX_PAGE_SIZE,
     });
+  });
+
+  it("does not format a monetary total for the nonfinancial Drug Indication tab", () => {
+    searchGet.mockImplementation((key) => key === "compTab" ? "drug_indication" : null);
+    dashboardState.index = {
+      ...index,
+      by_surface: {
+        ...index.by_surface,
+        drug_indication: { n: 1, billed_try: null, n_patients: 1 },
+      },
+    };
+
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <SUTComplianceDashboard cohortPatientIds={new Set()} cohortFilterActive={false} />
+      </WorkspaceProvider>,
+    );
+
+    expect(html).toContain("Billed at risk");
+    expect(html).not.toContain("10.00 TRY");
   });
 
   it("omits the new badge count for old caches while preserving legacy counts", () => {
