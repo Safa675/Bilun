@@ -2,8 +2,6 @@
 
 import type {
   BillingActionReport,
-  ClaimComplianceCohortSummary,
-  ComplianceIndexRow,
   RecommendedActionItem,
 } from "@/lib/domains/sut";
 import {
@@ -12,63 +10,66 @@ import {
   LabOptimizationSection,
   MaterialsPreCheckSection,
   OptionalOverrideSection,
-  RecommendedActionsPanel,
 } from "@/components/patient/SutBillingReportSections";
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
-import { ComplianceFindingTable } from "@/components/tabs/sut/compliance/modules/ComplianceFindingTable";
-import { complianceBilledAtRisk, scopedClaimComplianceFindings, viewActions } from "@/lib/workspaceViews";
+import { complianceBilledAtRisk } from "@/lib/workspaceViews";
+import {
+  buildUnifiedComplianceFindings,
+  type UnifiedComplianceFindingRow,
+} from "@/lib/complianceFindings";
+import { buildComplianceCoverage } from "@/lib/complianceCoverage";
+import UnifiedComplianceFindingsTable from "@/components/patient/UnifiedComplianceFindingsTable";
 
 const RISK_COLOR = "#B91C1C";
+
+function ruleLabel(t: ReturnType<typeof useT>, ruleId: string | null | undefined): string {
+  if (!ruleId) return "—";
+  const key = `optimizer.claimCompliance.${ruleId}`;
+  const translated = t(key);
+  return translated === key ? ruleId : translated;
+}
+
+function evaluationLabel(
+  t: ReturnType<typeof useT>,
+  status: string | null | undefined,
+): string | null {
+  if (!status) return null;
+  const key = `optimizer.claimCompliance.${status}`;
+  const translated = t(key);
+  return translated === key ? status : translated;
+}
 
 /**
  * View 1 — Mevzuat Uyumluluk & Red Önleme (Denial Prevention).
  *
- * Groups the surfaces `getFindingType` classifies as `compliance`
- * (lab, billing_strategy, materials, drug_indication) with their KPIs.
+ * Displays a single unified compliance findings table combining compliance
+ * recommended actions and canonical claim compliance findings, with compact
+ * structural coverage summary below.
  */
 export default function ComplianceViewSection({
   billingReport,
+  patientId,
+  unifiedRows,
   selectedActionId,
   onSelectAction,
   onOpenClause,
   selectedFindingId,
 }: {
   billingReport: BillingActionReport;
+  patientId?: string;
+  unifiedRows?: UnifiedComplianceFindingRow[];
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
 }) {
   const t = useT();
-  const viewActionsList = viewActions(billingReport, "compliance");
+  const rows = unifiedRows ?? buildUnifiedComplianceFindings(billingReport, t);
   const billedAtRisk = complianceBilledAtRisk(billingReport);
   const auditExposure = billingReport.audit_exposure_try ?? 0;
-  const projection = billingReport.claim_compliance;
-  const inScope = (row: { patient_id: string; claim_id?: string | null }) =>
-    row.patient_id === billingReport.patient_id &&
-    (!billingReport.claim_id || row.claim_id === billingReport.claim_id || row.claim_id == null);
-  const projectionRows: ComplianceIndexRow[] = scopedClaimComplianceFindings(billingReport).map((row) => ({
-    ...row,
-    surface: "claim_compliance" as const,
-    source_surface: "claim_compliance",
-  }));
-  const evaluations = projection?.evaluations.filter(inScope) ?? [];
-  const claimComplianceSummary: ClaimComplianceCohortSummary | null = projection
-    ? (() => {
-        const counts = evaluations.reduce(
-          (acc, evaluation) => ({ ...acc, [evaluation.status]: acc[evaluation.status] + 1 }),
-          { evaluated: 0, missing_inputs: 0, unavailable: 0 },
-        );
-        const nonEvaluated = evaluations.filter((evaluation) => evaluation.status !== "evaluated");
-        return {
-          counts,
-          non_evaluated_total: nonEvaluated.length,
-          details: nonEvaluated.slice(0, 20),
-          details_truncated: nonEvaluated.length > 20,
-        };
-      })()
-    : null;
+  const effectivePatientId = patientId || billingReport.patient_id;
+  const coverage = buildComplianceCoverage(billingReport, t);
 
   return (
     <div className="space-y-4">
@@ -84,7 +85,7 @@ export default function ComplianceViewSection({
         />
         <KpiCard
           label={t("billing.views.compliance.kpiFindings")}
-          value={fmtNum(viewActionsList.length + projectionRows.length)}
+          value={fmtNum(rows.length)}
         />
         <KpiCard
           label={t("billing.views.compliance.kpiBilledAtRisk")}
@@ -92,28 +93,64 @@ export default function ComplianceViewSection({
         />
       </div>
 
-      {viewActionsList.length === 0 ? (
-        <p className="text-sm text-[var(--text-muted)]">{t("billing.views.noItems")}</p>
-      ) : (
-        <RecommendedActionsPanel
-          billingReport={billingReport}
-          findingFilter="compliance"
-          selectedActionId={selectedActionId}
-          onSelectAction={onSelectAction}
-          onOpenClause={onOpenClause}
-        />
-      )}
+      <UnifiedComplianceFindingsTable
+        rows={rows}
+        patientId={effectivePatientId}
+        selectedActionId={selectedActionId}
+        onSelectAction={onSelectAction}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+      />
 
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t("optimizer.tabs.claim_compliance")}</h3>
-        <ComplianceFindingTable
-          rows={projectionRows}
-          claimComplianceSummary={claimComplianceSummary}
-          loading={false}
-          unavailable={!projection}
-          claimCompliance
-          selectedFindingId={selectedFindingId}
-        />
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+          {t("optimizer.tabs.claim_compliance")}
+        </h3>
+        {!coverage ? (
+          <p className="text-sm text-[var(--text-muted)]">
+            {t("optimizer.claimCompliance.unavailable")}
+          </p>
+        ) : (
+          <div className="space-y-2 text-xs text-[var(--text-secondary)]">
+            <p className="tabular-nums">
+              {coverage.summaryText}
+              {" · "}
+              <span className="text-[var(--text-muted)]">
+                {t("billing.views.compliance.coverageNotice")}
+              </span>
+            </p>
+            {coverage.nonEvaluatedTotal > 0 && (
+              <details className="text-xs text-[var(--text-secondary)]">
+                <summary className="cursor-pointer font-medium hover:text-[var(--text-primary)]">
+                  {t("optimizer.claimCompliance.evaluationDetails", {
+                    count: coverage.details.length,
+                    total: coverage.nonEvaluatedTotal,
+                  })}
+                </summary>
+                <ul className="mt-2 space-y-1 pl-3 border-l border-[var(--border-subtle)]">
+                  {coverage.details.map((evaluation) => (
+                    <li
+                      key={`${evaluation.patient_id}:${evaluation.claim_id}:${evaluation.rule_id}`}
+                    >
+                      <span className="font-mono">{evaluation.claim_id || "—"}</span>
+                      {" · "}
+                      <span>{ruleLabel(t, evaluation.rule_id)}</span>:{" "}
+                      <span>
+                        {evaluationLabel(
+                          t,
+                          evaluation.evaluation_status ?? evaluation.status,
+                        )}
+                      </span>
+                      {evaluation.missing_inputs.length > 0
+                        ? ` (${evaluation.missing_inputs.join(", ")})`
+                        : ""}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        )}
       </section>
 
       <LabOptimizationSection labData={billingReport.lab} />
