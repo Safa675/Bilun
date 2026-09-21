@@ -8,6 +8,7 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  output: "standalone",
   outputFileTracingRoot: REPO_ROOT,
   turbopack: {
     root: REPO_ROOT,
