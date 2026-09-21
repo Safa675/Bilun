@@ -8,6 +8,7 @@ from src.bilun.domain.billing.billing_actions import collect_billing_actions, co
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report
 from src.bilun.domain.billing.types import (
     BillingActionReport,
+    BillingStrategyRecommendation,
     CopayOptimization,
     MaterialPreCheck,
 )
@@ -322,3 +323,74 @@ class TestCopayExemptionActionRows:
         assert row["clause_ref"]["clause_coordinate"] == "1.8.5"
         assert row["finding_type"] == "opportunity"
         assert row["compliance_savings_try"] == pytest.approx(80.0)
+
+
+class TestBillingStrategyCompliantClaimFiltering:
+    def test_already_compliant_package_claim_is_excluded_from_recommended_actions(self) -> None:
+        """Claims already billed correctly as package per SUT §2.2.2(1) with 0 savings
+        should not be emitted into recommended_actions as false 'compliance risks'.
+        """
+        report = BillingActionReport(
+            patient_id="PT-STRATEGY",
+            billing_strategy=BillingStrategyRecommendation(
+                recommendations=[
+                    {
+                        "claim_id": "CLM-OK-1",
+                        "recommendation": "package",
+                        "recommendation_kind": "mandatory_compliance",
+                        "payment_method_kind": "DRG_MANDATORY",
+                        "savings_try": 0.0,
+                        "package_total_try": 47197.95,
+                        "itemized_total_try": 35000.0,
+                        "current_billing": "package",
+                        "detail": "Claim CLM-OK-1 is billed correctly as package per SUT §2.2.2(1).",
+                        "message_code": "claim_package_ok",
+                        "message_params": {"claim_id": "CLM-OK-1", "amount_try": 47197.95},
+                    },
+                    {
+                        "claim_id": "CLM-VIOLATION-1",
+                        "recommendation": "package",
+                        "recommendation_kind": "mandatory_compliance",
+                        "payment_method_kind": "DRG_MANDATORY",
+                        "savings_try": 12000.0,
+                        "package_total_try": 47197.95,
+                        "itemized_total_try": 35000.0,
+                        "current_billing": "itemized",
+                        "detail": "SUT §2.2 mandates package billing for claim CLM-VIOLATION-1.",
+                        "message_code": "claim_mandate_package",
+                        "message_params": {"claim_id": "CLM-VIOLATION-1"},
+                    },
+                ]
+            ),
+        )
+
+        actions = collect_billing_actions(report)
+        assert len(actions) == 1
+        assert actions[0]["claim_id"] == "CLM-VIOLATION-1"
+        assert actions[0]["kind"] == "mandatory_compliance"
+        assert actions[0]["finding_type"] == "compliance"
+        assert actions[0]["sgk_uplift_try"] == 12000.0
+
+    def test_already_compliant_itemized_claim_is_excluded_from_recommended_actions(self) -> None:
+        """Claims already billed correctly as itemized with 0 savings should also be excluded."""
+        report = BillingActionReport(
+            patient_id="PT-STRATEGY-2",
+            billing_strategy=BillingStrategyRecommendation(
+                recommendations=[
+                    {
+                        "claim_id": "CLM-ITEM-OK",
+                        "recommendation": "itemized",
+                        "recommendation_kind": "mandatory_compliance",
+                        "payment_method_kind": "ITEMIZED",
+                        "savings_try": 0.0,
+                        "current_billing": "itemized",
+                        "detail": "Claim CLM-ITEM-OK is billed correctly as itemized per SUT §2.2.",
+                        "message_code": "claim_itemized_ok",
+                    },
+                ]
+            ),
+        )
+
+        actions = collect_billing_actions(report)
+        assert len(actions) == 0
+
