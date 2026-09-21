@@ -693,3 +693,35 @@ Financial formulas or totals, detector/rule semantics, rule-ID allowlists, canon
 
 ### Review
 Implemented and verified the final VPS correction. Patient URLs now parse and propagate the generic `finding` query through the existing Compliance view; canonical `finding_id` rows visibly highlight, legacy `action_id` remains the fallback, and unknown/missing IDs leave normal rendering unchanged. Cohort validation now preserves only well-formed JSON-null claim evaluations with unavailable status and non-empty required/missing-input metadata, retains deterministic identity semantics without fabricating claims, and keeps financial rows/totals unchanged. Focused backend passed `22 passed, 1 warning`; frontend passed `5 files, 38 tests`; `npx tsc --noEmit`, compileall, Ruff, `git diff --check`, and invariant scans passed. One unrelated HTTP/cache dedup integration test exceeded the bounded 60-second VPS runner timeout; the financial regression passed. No commit, push, PR, merge, deploy, or production cache rebuild occurred.
+## Task: Drug indication correctness, canonicalization, and UX — correction pass 1
+
+### Goal
+Resolve the independent-review blockers in the first-pass Drug Indication implementation: make route arbitration semantic and order-independent, restore the public legacy contract, keep live/cache/API/UI projections truthful and consistent, and leave the production correction ready for independent review.
+
+### Subtasks
+- [x] Add RED regressions for reversed/permuted full-corpus M06/M08 arbitration, canonical diagnosis ordering, corpus-derived diagnosis-specific/ICD-less families, public `validate_claim()`, cache/API round-trip counts, legacy normalization, noncoverage, deep-link selection, empty states, nonfinancial summaries, severity/contract fields, truncation metadata, and fail-closed structured validation.
+- [x] Make route arbitration semantic and order-independent; return bounded `ambiguous_route` evidence instead of selecting by corpus order, and prevent ICD-less rules from establishing indication applicability.
+- [x] Restore the complete public `/validate-claim` legacy projection, including `rule`, user-safe message, drug identity, explicit nonfinancial values, and stable canonical identities.
+- [x] Unify live and cached report normalization/serialization and derive missing nested counts from structured findings/legacy violations without disagreement.
+- [x] Add narrowly scoped honest normalization for genuine legacy cache payloads, including old empty/no-result and mixed modern/legacy payloads.
+- [x] Represent `not_in_encoded_corpus` as a distinct bounded evaluation/manual-review state without inventing missing inputs, violations, routes, or financial values.
+- [x] Thread exact `selectedFindingId` deep links through patient Drug Indication cards; add safe exact selection/highlighting and unknown-ID fallback.
+- [x] Fix not-applicable, evaluation-only, noncoverage, and legacy progressive-disclosure UI states.
+- [x] Preserve null/nonfinancial Drug Indication semantics through index, filtering, HTTP, and frontend summary/rendering paths.
+- [x] Carry severity and every retained structured cohort field through action, cache/cohort, API, and frontend contracts; remove any intentionally patient-only fields from cohort output.
+- [x] Add bounded-evidence counts/flags and truthful route/observed-diagnosis truncation disclosures, including available SUT source labels.
+- [x] Tighten structured-entry validation fail-closed while retaining honest legacy parent compatibility, and remove plan trailing whitespace.
+- [x] Run every requested RED/GREEN verification gate, direct original-vs-reversed corpus probe, deferred-path hash check, and changed-file security/artifact scan; record exact results here.
+
+### Out of Scope
+New §4.2 rules or corpus rewrites, broad Wave A/B/C/D expansion, frontend ICD disease dictionaries, financial/recovery semantics, production cache rebuild or deployment, dependency-lock changes, pushes, merges, PRs, and changes to `main`.
+
+### Review — superseded first-pass evidence
+The earlier first-pass review claimed completion, but independent review found blocking gaps in semantic arbitration, public legacy serialization, cached/live normalization, legacy-cache honesty, corpus noncoverage, deep-link consumption, empty-state UX, nonfinancial cohort semantics, projection contracts, truncation disclosure, and structured validation. That review is superseded; no audit checkpoint is claimed here.
+
+### Correction pass status
+Production correction and the post-production audit checkpoint are ready for independent review. The resumed saved worktree established a RED baseline of `28 failed, 124 passed`; after the bounded corrections, the exact requested suite passed `155 passed in 12.66s`, the affected backend corpus/API/cohort/financial suite passed `661 passed, 2 warnings in 67.53s`, and frontend Drug Indication/dashboard/deep-link coverage passed `3 files, 59 tests`. The direct M06.9/M08.0 probe produced byte-identical original/reversed/permuted payloads with honest `ambiguous_route` results and no selected rule.
+
+After production commit `0e709489a54339f9fd4c2d143f0ce30a53ffb94c`, the deferred audit generator/test/matrix/Markdown checkpoint was refreshed with that exact source revision. The explicit noncoverage contract is that present but unencoded drug lines remain `not_in_encoded_corpus` manual-review evaluations, contribute no violation or money, invent no missing input, and make the Drug Indication/report rollup `partial_exact`. The CI repair focused suite passed `46 passed in 49.67s`; the exact backend CI command passed `2771 passed, 9 warnings in 1120.68s`; all 137 generated SUT rule/manifest artifacts were byte-identical; the surfacing generator `--check`, full-source Ruff, changed-file Ruff, and `git diff --check` passed. No merge, deploy, production cache rebuild, branch switch, or `main` change occurred.
+
+---

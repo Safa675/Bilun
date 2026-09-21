@@ -30,6 +30,9 @@ from src.bilun.domain.billing.claim_drg_package_adequacy import (
 )
 from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_claims
 from src.bilun.domain.billing.claim_drug_indication import validate_drug_indication_from_claims
+from src.bilun.domain.billing.drug_indication_findings import (
+    evaluate_drug_indication_findings,
+)
 from src.bilun.domain.billing.claim_gazette_repricing import (
     recommend_gazette_repricing_from_claims,
 )
@@ -91,6 +94,11 @@ def compute_patient_billing_report(
             return report
 
     assert claim_context is not None
+    drug_indication_batch = (
+        evaluate_drug_indication_findings(pid, claim_context)
+        if claim_context.drug_lines
+        else None
+    )
 
     report.lab, report.procedure_capture_gap = compute_lab_and_capture_gap_from_claims(
         claim_context,
@@ -160,7 +168,10 @@ def compute_patient_billing_report(
     report.claim_submission_checklist = recommend_claim_submission_checklist_from_claims(
         claim_context
     )
-    report.drug_indication = validate_drug_indication_from_claims(claim_context)
+    report.drug_indication = validate_drug_indication_from_claims(
+        claim_context,
+        evaluation_batch=drug_indication_batch,
+    )
     report.medula_rejection_ingest_available = (
         claim_context.medula_rejection_ingest_available
     )

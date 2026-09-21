@@ -87,7 +87,7 @@ EXPECTED_ANALYZE_CALLS = frozenset(
         "check_exclusion_violations_for_context",
         "check_material_bundling_for_context",
         "check_specialty_materials_for_context",
-        "check_drug_indication_for_context",
+        "evaluate_drug_indication_findings",
         "check_dental_2_4_1_for_context",
         "check_material_preauth_for_context",
         "check_material_miat_for_context",
@@ -136,6 +136,7 @@ EXPECTED_ANALYZE_CALLS = frozenset(
 EXPECTED_REPORT_CALLS = frozenset(
     {
         "evaluate_rule_findings",
+        "evaluate_drug_indication_findings",
         "project_claim_compliance",
         "set_missing_inputs_report",
         "finalize_report_totals",
@@ -173,7 +174,10 @@ NON_RUNTIME_IMPORTED_CALLS = frozenset({"BillingActionReport"})
 ARTIFACTS_BY_CALLABLE: dict[str, tuple[str, ...]] = {
     "check_material_bundling_for_context": ("material_bundling_prose.json",),
     "check_specialty_materials_for_context": ("specialty_materials_prose.json",),
-    "check_drug_indication_for_context": ("drug_indication_prose.json", "anti_vegf_prose.json"),
+    "evaluate_drug_indication_findings": (
+        "drug_indication_prose.json",
+        "anti_vegf_prose.json",
+    ),
     "check_dental_2_4_1_for_context": ("dental_2_4_1.json",),
     "check_gap_closing_misc_for_context": ("gap_closing_misc.json",),
     "check_gap_closing_treatment_for_context": ("gap_closing_treatment_2.json",),
@@ -192,7 +196,7 @@ ARTIFACTS_BY_CALLABLE: dict[str, tuple[str, ...]] = {
 
 
 EQUIVALENT_EMISSIONS: dict[str, tuple[str, ...]] = {
-    "validate_drug_indication_from_claims": ("check_drug_indication_for_context",),
+    "validate_drug_indication_from_claims": ("evaluate_drug_indication_findings",),
     "precheck_materials_from_claims": (
         "check_bundling_violations_for_context",
         "check_material_bundling_for_context",
@@ -260,6 +264,19 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
         "included": False,
         "visibility": "patient_and_cohort_visible",
         "duplicate_group": "claim_compliance:patient+cohort",
+        "duplicate_status": "intentional_cross_view",
+    },
+    "evaluate_drug_indication_findings": {
+        "surface": "drug_indication",
+        "finding_type": "compliance",
+        "patient_ui": "ComplianceViewSection:DrugIndicationReviewSection",
+        "cohort_api": "/compliance-index?surface=drug_indication",
+        "cohort_ui": "SUTComplianceDashboard:drug_indication",
+        "money": "unpriced_compliance",
+        "money_fields": [],
+        "included": False,
+        "visibility": "patient_and_cohort_visible",
+        "duplicate_group": "drug_indication:recommended_actions+dedicated_section+cohort",
         "duplicate_status": "intentional_cross_view",
     },
     "project_claim_compliance": {
@@ -1612,8 +1629,16 @@ def _independent_rerun_debt(
         adapter_emissions = set(resolve_emissions(adapter, all_calls))
         direct_calls = _direct_calls_in_callable(adapter)
         for analyzer_name in analyzer_names:
-            analyzer = all_calls.get(analyzer_name)
-            if analyzer is None or analyzer.entrypoint != "analyze_claim":
+            analyzer = next(
+                (
+                    row
+                    for row in runtime_calls
+                    if row.entrypoint == "analyze_claim"
+                    and row.callable == analyzer_name
+                ),
+                None,
+            )
+            if analyzer is None:
                 raise ValueError(
                     f"stale independent-rerun analyzer metadata: {adapter_name}->{analyzer_name}"
                 )
@@ -1763,7 +1788,7 @@ def build_audit() -> dict[str, Any]:
     return {
         "schema_version": 3,
         "audit_date": "2026-09-18",
-        "source_revision": "4c9c9d92595959dc12382a3130c6b400fd56c52c",
+        "source_revision": "0e709489a54339f9fd4c2d143f0ce30a53ffb94c",
         "canonical_entrypoints": [
             "src/bilun/domain/billing/engine.py::analyze_claim",
             "src/bilun/domain/billing/patient_report.py::compute_patient_billing_report",

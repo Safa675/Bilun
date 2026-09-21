@@ -121,7 +121,10 @@ export default function ComplianceViewSection({
       <OptionalOverrideSection strategyData={billingReport.billing_strategy} />
       <MaterialsPreCheckSection materialsData={billingReport.materials} />
       {billingReport.drug_indication && (
-        <DrugIndicationReviewSection reviewData={billingReport.drug_indication} />
+        <DrugIndicationReviewSection
+          reviewData={billingReport.drug_indication}
+          selectedFindingId={selectedFindingId}
+        />
       )}
     </div>
   );

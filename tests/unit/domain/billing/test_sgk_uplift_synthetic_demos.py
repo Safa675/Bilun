@@ -261,7 +261,17 @@ class TestMedulaPlaybookSyntheticDemo:
         assert demo_rows[0]["playbook_id"] == playbook_key
         assert demo_rows[0]["included_in_sgk_total"] is False
         assert report.medula_playbook_entry_count == 1
-        assert report.exactness_status == "exact"
+        # These demos use ordinary medicines outside the currently encoded
+        # Drug Indication corpus. Preserve that honest manual-review state in
+        # the report rollup without pretending the present claim inputs are
+        # missing.
+        assert report.exactness_status == "partial_exact"
+        assert report.drug_indication.exactness_status == "partial_exact"
+        assert report.drug_indication.required_inputs_missing == []
+        assert any(
+            evaluation.applicability_status == "not_in_encoded_corpus"
+            for evaluation in report.drug_indication.evaluations
+        )
         assert len(ctx.claims) == 1
 
 
@@ -429,7 +439,13 @@ class TestClaimReadinessSyntheticDemo:
             for row in report.claim_submission_checklist.items
         )
         assert report.medula_playbook_entry_count == 0
-        assert report.exactness_status == "exact"
+        assert report.exactness_status == "partial_exact"
+        assert report.drug_indication.exactness_status == "partial_exact"
+        assert report.drug_indication.required_inputs_missing == []
+        assert any(
+            evaluation.applicability_status == "not_in_encoded_corpus"
+            for evaluation in report.drug_indication.evaluations
+        )
 
 
 class TestMaterialProseSyntheticDemo:

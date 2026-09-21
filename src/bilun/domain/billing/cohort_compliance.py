@@ -53,6 +53,7 @@ _CLAIM_EVALUATION_STATUS_MAP = {
     "missing_inputs": "missing_inputs",
     "unavailable": "unavailable",
 }
+_NONFINANCIAL_SURFACES = frozenset({"claim_compliance", "drug_indication"})
 
 
 def _non_empty_string(value: Any) -> str | None:
@@ -276,9 +277,12 @@ def _include_action(action: Mapping[str, Any]) -> bool:
 
 def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, Any]:
     surface = str(action.get("surface") or "")
-    billed = action.get("billed_try")
-    if billed is None:
+    billed = None if surface in _NONFINANCIAL_SURFACES else action.get("billed_try")
+    if billed is None and surface not in _NONFINANCIAL_SURFACES:
         billed = action.get("compliance_savings_try")
+    finding_id = action.get("finding_id")
+    if finding_id is None and surface == "drug_indication":
+        finding_id = action.get("action_id")
     return {
         "patient_id": patient_id,
         "claim_id": action.get("claim_id"),
@@ -293,6 +297,21 @@ def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, An
         "material_code": action.get("material_code"),
         "material_name": action.get("material_name"),
         "drug_code": action.get("drug_code"),
+        "drug_name": action.get("drug_name"),
+        "drug_claim_line_id": action.get("drug_claim_line_id"),
+        "finding_id": finding_id,
+        "severity": action.get("severity"),
+        "applicability_status": action.get("applicability_status"),
+        "evaluation_status": action.get("evaluation_status"),
+        "observed_icd10_codes": action.get("observed_icd10_codes"),
+        "matched_icd10_codes": action.get("matched_icd10_codes"),
+        "unmatched_icd10_codes": action.get("unmatched_icd10_codes"),
+        "eligible_routes": action.get("eligible_routes"),
+        "eligible_route_count": action.get("eligible_route_count"),
+        "eligible_routes_truncated": action.get("eligible_routes_truncated"),
+        "observed_icd10_count": action.get("observed_icd10_count"),
+        "observed_icd10_truncated": action.get("observed_icd10_truncated"),
+        "recommended_action_tr": action.get("recommended_action_tr"),
         "sut_section_id": action.get("sut_section_id"),
         "action_id": action.get("action_id"),
     }
@@ -302,7 +321,7 @@ def _zero_by_surface() -> dict[str, dict[str, float | int | None]]:
     return {
         surface: {
             "n": 0,
-            "billed_try": None if surface == "claim_compliance" else 0.0,
+            "billed_try": None if surface in _NONFINANCIAL_SURFACES else 0.0,
             "n_patients": 0,
         }
         for surface in INDEX_SURFACES
@@ -335,7 +354,7 @@ def _summarize_rows(
         by_surface[surface] = {
             "n": int(rec["n"]),
             "billed_try": (
-                None if surface == "claim_compliance"
+                None if surface in _NONFINANCIAL_SURFACES
                 else float(_money(rec["billed_try"]) or 0.0)
             ),
             "n_patients": int(rec["n_patients"]),
@@ -485,7 +504,7 @@ def slice_compliance_index(
         n_patients = 0
 
     summarized = _summarize_rows(list(rows), n_patients=int(n_patients))
-    if surface == "claim_compliance":
+    if surface in _NONFINANCIAL_SURFACES:
         summarized["billed_at_risk_try"] = None
     projection = payload.get("claim_compliance")
     if isinstance(projection, Mapping):

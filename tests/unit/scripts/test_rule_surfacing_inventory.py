@@ -131,6 +131,33 @@ def test_canonical_evaluator_contract_matches_direct_sources_and_rule_order() ->
     }
 
 
+def test_drug_indication_canonical_evaluator_is_audited() -> None:
+    audit = _load_script()
+    payload = audit.build_audit()
+    rows = {
+        row["runtime_id"]: row
+        for row in payload["rows"]
+        if row.get("runtime_id")
+    }
+
+    analyzer = rows["analyze_claim:evaluate_drug_indication_findings"]
+    evaluator = rows[
+        "compute_patient_billing_report:evaluate_drug_indication_findings"
+    ]
+    projection = rows[
+        "compute_patient_billing_report:validate_drug_indication_from_claims"
+    ]
+    assert analyzer["visibility_status"] == "hidden_runtime"
+    assert evaluator["visibility_status"] == "patient_and_cohort_visible"
+    assert projection["visibility_status"] == "patient_and_cohort_visible"
+    assert evaluator["money_semantics"] == "unpriced_compliance"
+    assert evaluator["included_in_totals"] is False
+    assert evaluator["emitted_rule_ids_or_kinds"] == projection[
+        "emitted_rule_ids_or_kinds"
+    ]
+    assert evaluator["emitted_rule_ids_or_kinds"]
+
+
 def test_canonical_evaluator_unknown_qualified_detector_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

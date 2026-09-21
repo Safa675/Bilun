@@ -8,9 +8,14 @@ and several pricing endpoints pass through gazette-derived dicts.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import date
 from typing import Literal
 from typing import Any
+
+from src.bilun.domain.billing.drug_indication_findings import (
+    normalize_drug_indication_payload,
+)
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -204,6 +209,8 @@ class BillingExactnessResponse(BaseModel):
             self.exactness_status in _STATUSES_REQUIRING_INPUTS
             and not self.required_inputs_missing
         ):
+            if self.exactness_status == "partial_exact" and self.unavailable_reason:
+                return self
             self.required_inputs_missing = _default_missing_exactness_inputs()
             self.unavailable_reason = (
                 self.unavailable_reason or _MISSING_EXACTNESS_METADATA_REASON
@@ -336,11 +343,92 @@ class MaterialPreCheckResponse(BillingExactnessResponse):
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
 
 
+class DrugIndicationRouteEvidenceResponse(BaseModel):
+    rule_id: str = Field(...)
+    sut_section: str | None = None
+    icd10_codes: list[str] = Field(...)
+    icd10_ranges: list[str] = Field(...)
+    regulatory_summary_tr: str = Field(...)
+    report_required: bool = Field(...)
+    report_duration_months: int | None = Field(...)
+    report_specialties: list[str] = Field(...)
+    prescriber_specialties: list[str] = Field(...)
+    indication_label_tr: str | None = None
+    icd10_code_count: int = Field(...)
+    icd10_codes_truncated: bool = Field(...)
+    icd10_range_count: int = Field(...)
+    icd10_ranges_truncated: bool = Field(...)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class DrugIndicationFindingResponse(BaseModel):
+    finding_id: str = Field(...)
+    patient_id: str = Field(...)
+    claim_id: str = Field(...)
+    drug_claim_line_id: str = Field(...)
+    drug_name: str = Field(...)
+    drug_code: str | None = None
+    finding_kind: str = Field(...)
+    severity: str = Field(...)
+    applicability_status: str = Field(...)
+    evaluation_status: str = Field(...)
+    observed_icd10_codes: list[str] = Field(...)
+    matched_icd10_codes: list[str] = Field(...)
+    unmatched_icd10_codes: list[str] = Field(...)
+    eligible_routes: list[DrugIndicationRouteEvidenceResponse] = Field(...)
+    selected_rule_id: str | None = Field(...)
+    explanation_tr: str = Field(...)
+    recommended_action_tr: str = Field(...)
+    required_inputs: list[str] = Field(...)
+    missing_inputs: list[str] = Field(...)
+    eligible_route_count: int = 0
+    eligible_routes_truncated: bool = False
+    observed_icd10_count: int = 0
+    observed_icd10_truncated: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+
+class DrugIndicationEvaluationResponse(BaseModel):
+    patient_id: str = Field(...)
+    claim_id: str | None = Field(...)
+    drug_claim_line_id: str = Field(...)
+    drug_name: str = Field(...)
+    drug_code: str | None = None
+    applicability_status: str = Field(...)
+    evaluation_status: str = Field(...)
+    observed_icd10_codes: list[str] = Field(...)
+    matched_icd10_codes: list[str] = Field(...)
+    unmatched_icd10_codes: list[str] = Field(...)
+    eligible_routes: list[DrugIndicationRouteEvidenceResponse] = Field(...)
+    selected_rule_id: str | None = None
+    finding_id: str | None = None
+    finding_kind: str | None = None
+    required_inputs: list[str] = Field(...)
+    missing_inputs: list[str] = Field(...)
+    eligible_route_count: int = 0
+    eligible_routes_truncated: bool = False
+    observed_icd10_count: int = 0
+    observed_icd10_truncated: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+
 class DrugIndicationReviewResponse(BillingExactnessResponse):
     violations: list[dict[str, Any]] = Field(default_factory=list)
+    findings: list[DrugIndicationFindingResponse] = Field(default_factory=list)
+    evaluations: list[DrugIndicationEvaluationResponse] = Field(default_factory=list)
     violation_count: int = 0
     error_count: int = 0
     coverage_scope: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_legacy_cache_payload(cls, value: Any) -> Any:
+        if isinstance(value, Mapping):
+            return normalize_drug_indication_payload(value)
+        return value
 
 
 class BilunPatientOutcomeResponse(BaseModel):
@@ -452,6 +540,7 @@ class BillingReportResponse(BaseModel):
 
     @model_validator(mode="after")
     def _validate_exactness_required_inputs(self) -> BillingReportResponse:
+        self.drug_indication_violation_count = self.drug_indication.violation_count
         if (
             self.exactness_status in _STATUSES_REQUIRING_INPUTS
             and not self.required_inputs_missing

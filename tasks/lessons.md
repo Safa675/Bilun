@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-20 — Focused green tests do not prove semantic arbitration or live/cache contract parity
+
+**Pattern:** A first-pass implementation passed its focused suites while independent review exposed order-dependent route selection, an incomplete public legacy projection, cached/live count drift, false exactness in genuine legacy payloads, missing noncoverage states, and UI/projection contract gaps.
+
+**Rule:** For correctness migrations, test the public boundary and the real cache round-trip in addition to private helpers. Reverse/permuted full-corpus inputs, discover corpus-derived shadowing families instead of freezing counts, validate every structured payload fail-closed, and assert that live, cached, API, cohort, and frontend representations preserve the same identity, status, severity, bounded evidence, null-money semantics, and honest uncertainty.
+
 ## 2026-09-19 — Static surfacing audits must validate source contracts and whole-file invariants
 
 **Pattern:** A static inventory trusted a declared evaluator order without proving that its direct detector calls, source mappings, metadata maps, and emitted IDs agreed; a projection-only symbol check also missed forbidden compatibility imports elsewhere in the source file. The evaluator taxonomy then misclassified the compute-side canonical stage as internal even though it is a surfaced product stage.

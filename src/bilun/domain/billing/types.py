@@ -11,6 +11,11 @@ from src.bilun.domain.materials.coverage_scope import material_bundling_coverage
 from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
 from typing import Any
 
+from .drug_indication_findings import (
+    DrugIndicationFinding,
+    DrugIndicationLineEvaluation,
+)
+
 EXACTNESS_STATUS_EXACT = "exact"
 EXACTNESS_STATUS_PARTIAL = "partial_exact"
 EXACTNESS_STATUS_MISSING_INPUTS = "missing_exact_inputs"
@@ -156,6 +161,10 @@ DRUG_INDICATION_REQUIRED_INPUTS = (
 DRUG_INDICATION_UNAVAILABLE_REASON = (
     "Drug indication validation requires exact dispensed drug claim lines with "
     "primary ICD-10 context, which are not available in the active SUT runtime inputs."
+)
+DRUG_INDICATION_CORPUS_UNAVAILABLE_REASON = (
+    "Drug is not covered by the encoded Drug Indication corpus; manual SUT review "
+    "is required and no financial value is inferred."
 )
 
 
@@ -636,6 +645,8 @@ class DrugIndicationReview:
     """§4.2 pilot indication / report checks on exact drug claim lines."""
 
     violations: list[dict[str, Any]] = field(default_factory=list)
+    findings: list[DrugIndicationFinding] = field(default_factory=list)
+    evaluations: list[DrugIndicationLineEvaluation] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     unavailable_reason: str | None = DRUG_INDICATION_UNAVAILABLE_REASON
     required_inputs_missing: list[str] = field(
@@ -646,11 +657,28 @@ class DrugIndicationReview:
 
     @property
     def violation_count(self) -> int:
-        return len(self.violations)
+        return len(self.findings) if self.findings else len(self.violations)
 
     @property
     def error_count(self) -> int:
+        if self.findings:
+            return sum(1 for finding in self.findings if finding.severity == "error")
         return sum(1 for row in self.violations if row.get("severity") == "error")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the same derived-count contract used by the API serializer."""
+        return {
+            "violations": list(self.violations),
+            "findings": [finding.to_dict() for finding in self.findings],
+            "evaluations": [evaluation.to_dict() for evaluation in self.evaluations],
+            "exactness_status": self.exactness_status,
+            "unavailable_reason": self.unavailable_reason,
+            "required_inputs_missing": list(self.required_inputs_missing),
+            "rule_source": self.rule_source,
+            "coverage_scope": dict(self.coverage_scope),
+            "violation_count": self.violation_count,
+            "error_count": self.error_count,
+        }
 
 
 @dataclass

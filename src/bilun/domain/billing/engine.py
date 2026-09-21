@@ -34,6 +34,9 @@ from src.bilun.domain.billing.rule_findings import (
     MATERIAL_IDENTITY_RULE_ID,
     evaluate_rule_findings,
 )
+from src.bilun.domain.billing.drug_indication_findings import (
+    evaluate_drug_indication_findings,
+)
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.dental_2_4_1 import (
     check_dental_2_4_1_for_context,
@@ -46,9 +49,6 @@ from src.bilun.domain.prose_rules.drg_package_adequacy import (
 )
 from src.bilun.domain.prose_rules.drug_combination import (
     check_drug_combination_for_context,
-)
-from src.bilun.domain.prose_rules.drug_indication import (
-    check_drug_indication_for_context,
 )
 from src.bilun.domain.prose_rules.gap_closing import (
     check_gap_closing_misc_for_context,
@@ -155,6 +155,11 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     canonical_batch = (
         evaluate_rule_findings(ctx.patient_id, ctx) if ctx.patient_id else None
     )
+    drug_indication_batch = (
+        evaluate_drug_indication_findings(ctx.patient_id, ctx)
+        if ctx.drug_lines
+        else None
+    )
 
     def _canonical_violations(rule_id: str) -> list[dict[str, Any]]:
         if canonical_batch is None:
@@ -178,8 +183,8 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     violations.extend(check_specialty_materials_for_context(ctx))
 
     # 5. §4.2 drug indication (only when the adapter built drug lines).
-    if ctx.drug_lines:
-        violations.extend(check_drug_indication_for_context(ctx))
+    if drug_indication_batch is not None:
+        violations.extend(drug_indication_batch.legacy_violations)
 
     # 6. §2.4.1 dental prose rules.
     violations.extend(check_dental_2_4_1_for_context(ctx))

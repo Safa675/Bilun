@@ -113,6 +113,21 @@ def _action_row(
     procedure_name: str | None = None,
     material_code: str | None = None,
     drug_code: str | None = None,
+    drug_name: str | None = None,
+    drug_claim_line_id: str | None = None,
+    finding_id: str | None = None,
+    severity: str | None = None,
+    applicability_status: str | None = None,
+    evaluation_status: str | None = None,
+    observed_icd10_codes: list[str] | None = None,
+    matched_icd10_codes: list[str] | None = None,
+    unmatched_icd10_codes: list[str] | None = None,
+    eligible_routes: list[dict[str, Any]] | None = None,
+    eligible_route_count: int | None = None,
+    eligible_routes_truncated: bool | None = None,
+    observed_icd10_count: int | None = None,
+    observed_icd10_truncated: bool | None = None,
+    recommended_action_tr: str | None = None,
     sgk_uplift_try: float | None = None,
     audit_risk_try: float | None = None,
     compliance_savings_try: float | None = None,
@@ -134,6 +149,21 @@ def _action_row(
         "procedure_name": procedure_name,
         "material_code": material_code,
         "drug_code": drug_code,
+        "drug_name": drug_name,
+        "drug_claim_line_id": drug_claim_line_id,
+        "finding_id": finding_id,
+        "severity": severity,
+        "applicability_status": applicability_status,
+        "evaluation_status": evaluation_status,
+        "observed_icd10_codes": observed_icd10_codes,
+        "matched_icd10_codes": matched_icd10_codes,
+        "unmatched_icd10_codes": unmatched_icd10_codes,
+        "eligible_routes": eligible_routes,
+        "eligible_route_count": eligible_route_count,
+        "eligible_routes_truncated": eligible_routes_truncated,
+        "observed_icd10_count": observed_icd10_count,
+        "observed_icd10_truncated": observed_icd10_truncated,
+        "recommended_action_tr": recommended_action_tr,
         "sgk_uplift_try": _money(sgk_uplift_try),
         "audit_risk_try": _money(audit_risk_try),
         "compliance_savings_try": _money(compliance_savings_try),
@@ -340,19 +370,70 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
             )
         )
 
-    for index, row in enumerate(report.drug_indication.violations):
-        actions.append(
-            _action_row(
-                action_id=f"drug_indication:{row.get('claim_id')}:{index}",
-                surface="drug_indication",
-                kind=str(row.get("violation_kind") or "drug_indication"),
-                claim_id=row.get("claim_id"),
-                drug_code=row.get("drug_code") or row.get("inn"),
-                detail=row.get("detail"),
-                sut_section_id=row.get("sut_section_id"),
-                finding_type=_finding_type("drug_indication"),
+    if report.drug_indication.findings:
+        for finding in report.drug_indication.findings:
+            route_section = next(
+                (route.sut_section for route in finding.eligible_routes if route.sut_section),
+                None,
             )
-        )
+            actions.append(
+                _action_row(
+                    action_id=finding.finding_id,
+                    surface="drug_indication",
+                    kind=finding.finding_kind,
+                    claim_id=finding.claim_id,
+                    drug_code=finding.drug_code,
+                    drug_name=finding.drug_name,
+                    drug_claim_line_id=finding.drug_claim_line_id,
+                    finding_id=finding.finding_id,
+                    severity=finding.severity,
+                    applicability_status=finding.applicability_status,
+                    evaluation_status=finding.evaluation_status,
+                    observed_icd10_codes=list(finding.observed_icd10_codes),
+                    matched_icd10_codes=list(finding.matched_icd10_codes),
+                    unmatched_icd10_codes=list(finding.unmatched_icd10_codes),
+                    eligible_routes=[
+                        route.to_dict() for route in finding.eligible_routes
+                    ],
+                    eligible_route_count=finding.eligible_route_count,
+                    eligible_routes_truncated=finding.eligible_routes_truncated,
+                    observed_icd10_count=finding.observed_icd10_count,
+                    observed_icd10_truncated=finding.observed_icd10_truncated,
+                    detail=finding.explanation_tr,
+                    recommended_action_tr=finding.recommended_action_tr,
+                    sut_section_id=route_section,
+                    finding_type=_finding_type("drug_indication"),
+                )
+            )
+    else:
+        for index, row in enumerate(report.drug_indication.violations):
+            actions.append(
+                _action_row(
+                    action_id=row.get("finding_id")
+                    or f"drug_indication:{row.get('claim_id')}:{index}",
+                    surface="drug_indication",
+                    kind=str(row.get("violation_kind") or "drug_indication"),
+                    claim_id=row.get("claim_id"),
+                    drug_code=row.get("drug_code") or row.get("inn"),
+                    drug_name=row.get("drug_name"),
+                    drug_claim_line_id=row.get("drug_claim_line_id"),
+                    finding_id=row.get("finding_id"),
+                    severity=row.get("severity"),
+                    applicability_status=row.get("applicability_status"),
+                    evaluation_status=row.get("evaluation_status"),
+                    observed_icd10_codes=row.get("observed_icd10_codes"),
+                    matched_icd10_codes=row.get("matched_icd10_codes"),
+                    unmatched_icd10_codes=row.get("unmatched_icd10_codes"),
+                    eligible_routes=row.get("eligible_routes"),
+                    eligible_route_count=row.get("eligible_route_count"),
+                    eligible_routes_truncated=row.get("eligible_routes_truncated"),
+                    observed_icd10_count=row.get("observed_icd10_count"),
+                    observed_icd10_truncated=row.get("observed_icd10_truncated"),
+                    detail=row.get("detail") or row.get("message_tr"),
+                    sut_section_id=row.get("sut_section_id") or row.get("sut_section"),
+                    finding_type=_finding_type("drug_indication"),
+                )
+            )
 
     material_lists = (
         ("pre_auth_required", "material_pre_auth"),

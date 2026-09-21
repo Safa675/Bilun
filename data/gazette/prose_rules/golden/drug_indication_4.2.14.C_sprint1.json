@@ -25,7 +25,7 @@
       "drug_name": "VIDAZA 100 MG (AZASITIDIN)",
       "primary_icd10": "D46.9",
       "report_present": true,
-      "expect_violation": "report_duration_mismatch",
+      "expect_violation": "ambiguous_route",
       "drug_report_duration_months": 3,
       "rule_id": "4.2.14.C.azacitidine_mds_4mo_heme"
     }

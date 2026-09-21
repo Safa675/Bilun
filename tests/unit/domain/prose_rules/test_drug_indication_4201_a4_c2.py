@@ -117,4 +117,8 @@ def test_a4_c2_golden_samples(sample: dict) -> None:
     else:
         assert hit is not None, sample
         assert hit["violation_kind"] == expected, sample
-        assert hit["rule_id"] == rule_id, sample
+        if expected in {"indication_mismatch", "ambiguous_route"}:
+            assert hit["rule_id"] is None, sample
+            assert rule_id in hit["eligible_route_rule_ids"], sample
+        else:
+            assert hit["rule_id"] == rule_id, sample

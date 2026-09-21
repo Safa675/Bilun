@@ -58,6 +58,7 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
                 "message": v.message,
                 "savings_try": v.savings_try,
                 "risk_amount": v.risk_amount,
+                "details": v.details,
             }
             for v in result.violations
         ],

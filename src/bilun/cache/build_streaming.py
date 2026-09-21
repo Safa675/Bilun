@@ -12,11 +12,19 @@ from src.bilun.db import write_json_payload_rows_serialized
 
 
 def json_ready(value: Any) -> Any:
+    serializer = getattr(value, "to_dict", None)
+    if callable(serializer):
+        return json_ready(serializer())
     if dataclasses.is_dataclass(value):
-        return dataclasses.asdict(value)
+        return json_ready(
+            {
+                field.name: getattr(value, field.name)
+                for field in dataclasses.fields(value)
+            }
+        )
     if isinstance(value, dict):
         return {str(key): json_ready(item) for key, item in value.items()}
-    if isinstance(value, list):
+    if isinstance(value, (list, tuple)):
         return [json_ready(item) for item in value]
     return value
 
