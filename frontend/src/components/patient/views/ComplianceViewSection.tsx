@@ -93,16 +93,15 @@ export default function ComplianceViewSection({
         />
       </div>
 
-      <UnifiedComplianceFindingsTable
-        rows={rows}
-        patientId={effectivePatientId}
-        selectedActionId={selectedActionId}
-        onSelectAction={onSelectAction}
-        onOpenClause={onOpenClause}
-        selectedFindingId={selectedFindingId}
-      />
-
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
+        <UnifiedComplianceFindingsTable
+          rows={rows}
+          patientId={effectivePatientId}
+          selectedActionId={selectedActionId}
+          onSelectAction={onSelectAction}
+          onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
+        />
         <h3 className="text-sm font-semibold text-[var(--text-primary)]">
           {t("optimizer.tabs.claim_compliance")}
         </h3>

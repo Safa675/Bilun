@@ -112,6 +112,19 @@ function findingSutLabel(finding: ClaimComplianceFinding): string | null {
     .join(" · ") || null;
 }
 
+function nonEmpty(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function uniqueRowId(base: string, counts: Map<string, number>): string {
+  const seen = counts.get(base) ?? 0;
+  counts.set(base, seen + 1);
+  if (seen === 0) return base;
+  return `${base}:${seen}`;
+}
+
 export function buildUnifiedComplianceFindings(
   report: BillingActionReport,
   tOrOptions?: TranslateFn | { t?: TranslateFn },
@@ -123,113 +136,175 @@ export function buildUnifiedComplianceFindings(
   const actions = viewActions(report, "compliance");
   const scopedFindings = scopedClaimComplianceFindings(report);
 
-  // Map canonical finding_id -> scoped finding for O(1) canonical matching.
+  // Map explicit canonical finding_id -> scoped finding for O(1) matching.
   // Deduplication rule: ONLY when both action and finding carry non-empty, equal finding_id.
+  // Legacy action_id is navigation-only and never participates in dedupe.
   const findingMap = new Map<string, ClaimComplianceFinding>();
   for (const finding of scopedFindings) {
-    if (finding.finding_id && finding.finding_id.trim().length > 0) {
-      findingMap.set(finding.finding_id, finding);
+    const explicit = nonEmpty(finding.finding_id);
+    if (explicit && !findingMap.has(explicit)) {
+      findingMap.set(explicit, finding);
+    }
+  }
+
+  // Group actions by explicit canonical finding_id before emitting rows.
+  // Each explicit canonical id emits at most one row; order follows first appearance.
+  type ActionGroup = { explicitId: string | null; items: RecommendedActionItem[] };
+  const groups: ActionGroup[] = [];
+  const groupIndexByExplicit = new Map<string, number>();
+  for (const action of actions) {
+    const explicit = nonEmpty(action.finding_id);
+    if (explicit) {
+      const idx = groupIndexByExplicit.get(explicit);
+      if (idx == null) {
+        groupIndexByExplicit.set(explicit, groups.length);
+        groups.push({ explicitId: explicit, items: [action] });
+      } else {
+        groups[idx].items.push(action);
+      }
+    } else {
+      groups.push({ explicitId: null, items: [action] });
     }
   }
 
   const mergedFindingIds = new Set<string>();
+  const rowIdCounts = new Map<string, number>();
   const rows: UnifiedComplianceFindingRow[] = [];
 
-  // 1. Process actions in viewActions order
-  for (const action of actions) {
-    const canonicalId =
-      action.finding_id && action.finding_id.trim().length > 0
-        ? action.finding_id
-        : null;
-
-    const matchedFinding = canonicalId ? findingMap.get(canonicalId) : undefined;
-    const actionStatus = resolveActionStatus(action, report);
-    const actionSourceLabel = recommendedActionSurfaceLabel(t, action.surface);
-    const amountParts = recommendedActionAmountParts(t, action);
-    const detail =
-      action.detail ||
-      (action.message_code ? translateStructuredApiMessage(t, action) : null) ||
+  // 1. Process grouped actions in viewActions order
+  groups.forEach((group) => {
+    const { explicitId, items } = group;
+    const primary = items[0];
+    const primarySourceLabel = recommendedActionSurfaceLabel(t, primary.surface);
+    const primaryAmountParts = recommendedActionAmountParts(t, primary);
+    const primaryDetail =
+      primary.detail ||
+      (primary.message_code ? translateStructuredApiMessage(t, primary) : null) ||
       null;
 
-    if (matchedFinding && canonicalId) {
-      mergedFindingIds.add(canonicalId);
-      const findingStatus = resolveFindingStatus(matchedFinding);
-      const findingLabel = findingSourceText(t);
-      const combinedStatus: UnifiedComplianceStatus =
-        actionStatus === "confirmed_violation" || findingStatus === "confirmed_violation"
-          ? "confirmed_violation"
-          : "review_risk";
+    if (explicitId) {
+      const matchedFinding = findingMap.get(explicitId);
 
-      const findingCode =
-        matchedFinding.procedure_code ||
-        matchedFinding.material_code ||
-        matchedFinding.drug_code ||
-        matchedFinding.line_id ||
-        null;
+      if (matchedFinding || items.length > 1) {
+        // Grouped canonical row: one row per explicit canonical id.
+        if (matchedFinding) {
+          mergedFindingIds.add(explicitId);
+        }
+        const findingStatus = matchedFinding ? resolveFindingStatus(matchedFinding) : null;
+        const anyActionViolation = items.some(
+          (item) => resolveActionStatus(item, report) === "confirmed_violation",
+        );
+        const combinedStatus: UnifiedComplianceStatus =
+          anyActionViolation || findingStatus === "confirmed_violation"
+            ? "confirmed_violation"
+            : "review_risk";
 
-      const sutLabel =
-        action.clause_ref?.clause_coordinate ||
-        action.sut_section_id ||
-        findingSutLabel(matchedFinding);
+        // Stable-order unique source labels across all grouped actions + canonical once.
+        const sourceLabels: string[] = [];
+        for (const item of items) {
+          const label = recommendedActionSurfaceLabel(t, item.surface);
+          if (!sourceLabels.includes(label)) sourceLabels.push(label);
+        }
+        if (matchedFinding) {
+          const findingLabel = findingSourceText(t);
+          if (!sourceLabels.includes(findingLabel)) sourceLabels.push(findingLabel);
+        }
 
-      let amountVal = amountParts?.value ?? null;
-      let amountLbl = amountParts?.label ?? null;
-      if (amountVal == null && matchedFinding.billed_try != null && matchedFinding.billed_try > 0) {
-        amountVal = matchedFinding.billed_try;
-        amountLbl = t("billing.recommendedActions.amountBilledAtRisk");
+        const findingCode = matchedFinding
+          ? matchedFinding.procedure_code ||
+            matchedFinding.material_code ||
+            matchedFinding.drug_code ||
+            matchedFinding.line_id ||
+            null
+          : null;
+
+        const sutLabel =
+          primary.clause_ref?.clause_coordinate ||
+          primary.sut_section_id ||
+          (matchedFinding ? findingSutLabel(matchedFinding) : null);
+
+        let amountVal = primaryAmountParts?.value ?? null;
+        let amountLbl = primaryAmountParts?.label ?? null;
+        if (amountVal == null && matchedFinding?.billed_try != null) {
+          amountVal = matchedFinding.billed_try;
+          amountLbl = t("billing.recommendedActions.amountBilledAtRisk");
+        }
+
+        rows.push({
+          rowId: uniqueRowId(`merged:${explicitId}`, rowIdCounts),
+          canonicalFindingId: explicitId,
+          sourceKind: "recommended_action",
+          sourceLabels,
+          status: combinedStatus,
+          title: recommendedActionTitle(t, primary),
+          detail: primaryDetail || matchedFinding?.detail || null,
+          claimId: primary.claim_id ?? matchedFinding?.claim_id ?? null,
+          code: recommendedActionPrimaryCode(primary) ?? findingCode,
+          sutLabel,
+          amountValue: amountVal,
+          amountLabel: amountLbl,
+          action: primary,
+          finding: matchedFinding ?? null,
+        });
+        return;
       }
 
+      // Single explicit action without a canonical match: action row carrying
+      // the explicit canonical id for navigation, namespaced separately from merged.
+      const actionStatus = resolveActionStatus(primary, report);
       rows.push({
-        rowId: canonicalId,
-        canonicalFindingId: canonicalId,
+        rowId: uniqueRowId(`action:${nonEmpty(primary.action_id) ?? explicitId}`, rowIdCounts),
+        canonicalFindingId: explicitId,
         sourceKind: "recommended_action",
-        sourceLabels: [actionSourceLabel, findingLabel],
-        status: combinedStatus,
-        title: recommendedActionTitle(t, action),
-        detail: detail || matchedFinding.detail || null,
-        claimId: action.claim_id ?? matchedFinding.claim_id ?? null,
-        code: recommendedActionPrimaryCode(action) ?? findingCode,
-        sutLabel,
-        amountValue: amountVal,
-        amountLabel: amountLbl,
-        action,
-        finding: matchedFinding,
-      });
-    } else {
-      rows.push({
-        rowId: action.action_id,
-        canonicalFindingId: canonicalId,
-        sourceKind: "recommended_action",
-        sourceLabels: [actionSourceLabel],
+        sourceLabels: [primarySourceLabel],
         status: actionStatus,
-        title: recommendedActionTitle(t, action),
-        detail,
-        claimId: action.claim_id ?? null,
-        code: recommendedActionPrimaryCode(action),
-        sutLabel: action.clause_ref?.clause_coordinate || action.sut_section_id || null,
-        amountValue: amountParts?.value ?? null,
-        amountLabel: amountParts?.label ?? null,
-        action,
+        title: recommendedActionTitle(t, primary),
+        detail: primaryDetail,
+        claimId: primary.claim_id ?? null,
+        code: recommendedActionPrimaryCode(primary),
+        sutLabel: primary.clause_ref?.clause_coordinate || primary.sut_section_id || null,
+        amountValue: primaryAmountParts?.value ?? null,
+        amountLabel: primaryAmountParts?.label ?? null,
+        action: primary,
         finding: null,
       });
-    }
-  }
-
-  // 2. Append unmerged canonical findings
-  scopedFindings.forEach((finding, index) => {
-    if (finding.finding_id && mergedFindingIds.has(finding.finding_id)) {
       return;
     }
 
-    const canonicalFindingId =
-      finding.finding_id && finding.finding_id.trim().length > 0
-        ? finding.finding_id
-        : null;
+    // Action without explicit canonical identity.
+    const actionStatus = resolveActionStatus(primary, report);
+    rows.push({
+      rowId: uniqueRowId(`action:${nonEmpty(primary.action_id) ?? `index-${rows.length}`}`, rowIdCounts),
+      canonicalFindingId: null,
+      sourceKind: "recommended_action",
+      sourceLabels: [primarySourceLabel],
+      status: actionStatus,
+      title: recommendedActionTitle(t, primary),
+      detail: primaryDetail,
+      claimId: primary.claim_id ?? null,
+      code: recommendedActionPrimaryCode(primary),
+      sutLabel: primary.clause_ref?.clause_coordinate || primary.sut_section_id || null,
+      amountValue: primaryAmountParts?.value ?? null,
+      amountLabel: primaryAmountParts?.label ?? null,
+      action: primary,
+      finding: null,
+    });
+  });
 
-    const rowId =
-      canonicalFindingId ??
-      finding.action_id ??
-      `claim_compliance:${finding.rule_id}:${index}`;
+  // 2. Append unmerged canonical findings with legacy navigation fallback.
+  scopedFindings.forEach((finding, index) => {
+    const explicit = nonEmpty(finding.finding_id);
+    if (explicit && mergedFindingIds.has(explicit)) {
+      return;
+    }
+
+    // Navigation identity: explicit finding_id preferred, legacy action_id fallback.
+    // The fallback is selection/deep-link only and never used for cross-source dedupe.
+    const navigationId = explicit ?? nonEmpty(finding.action_id);
+
+    const baseRowId = navigationId
+      ? `canonical:${navigationId}`
+      : `canonical:claim_compliance:${finding.rule_id ?? "unknown"}:${index}`;
 
     const status = resolveFindingStatus(finding);
     const findingLabel = findingSourceText(t);
@@ -242,10 +317,8 @@ export function buildUnifiedComplianceFindings(
 
     const sutLabel = findingSutLabel(finding);
 
-    const amountValue =
-      finding.billed_try != null && finding.billed_try > 0
-        ? finding.billed_try
-        : null;
+    // Preserve explicit zero (and any numeric) amounts; only null/undefined is unknown.
+    const amountValue = finding.billed_try != null ? finding.billed_try : null;
 
     const amountLabel =
       amountValue != null
@@ -253,8 +326,8 @@ export function buildUnifiedComplianceFindings(
         : null;
 
     rows.push({
-      rowId,
-      canonicalFindingId,
+      rowId: uniqueRowId(baseRowId, rowIdCounts),
+      canonicalFindingId: navigationId,
       sourceKind: "claim_compliance",
       sourceLabels: [findingLabel],
       status,

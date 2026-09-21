@@ -4,6 +4,7 @@ import { WorkspaceProvider } from "@/stores/workspaceContext";
 import type { RecommendedActionItem, ClaimComplianceFinding } from "@/lib/domains/sut";
 import type { UnifiedComplianceFindingRow } from "@/lib/complianceFindings";
 import UnifiedComplianceFindingsTable, {
+  shouldActivateRowOnKeyDown,
   type UnifiedComplianceFindingsTableProps,
 } from "./UnifiedComplianceFindingsTable";
 
@@ -322,8 +323,90 @@ describe("UnifiedComplianceFindingsTable", () => {
     expect(html).toContain("cursor-pointer");
     expect(html).toContain('data-selected="true"');
     expect(html).toContain(
-      'href="/patient/P-1?claim=C-100&amp;section=billing-strategy&amp;finding=canonical-find-1"',
+      'href="/patient/P-1?claim=C-100&amp;section=claim-compliance&amp;finding=canonical-find-1"',
     );
+  });
+
+  it("renders an Inspect link for legacy action_id fallback canonical identity", () => {
+    const legacyFinding: ClaimComplianceFinding = {
+      ...mockFinding,
+      finding_id: undefined,
+      action_id: "legacy-canonical-1",
+    };
+    const rows: UnifiedComplianceFindingRow[] = [
+      {
+        rowId: "canonical:legacy-canonical-1",
+        canonicalFindingId: "legacy-canonical-1",
+        sourceKind: "claim_compliance",
+        sourceLabels: ["Fatura uyumluluğu"],
+        status: "confirmed_violation",
+        title: "Legacy finding",
+        detail: null,
+        claimId: "C-100",
+        code: "P-1",
+        sutLabel: null,
+        amountValue: null,
+        amountLabel: null,
+        action: null,
+        finding: legacyFinding as ClaimComplianceFinding,
+      },
+    ];
+
+    const html = renderTable({ rows, patientId: "P-1" });
+
+    expect(html).toContain("finding=legacy-canonical-1");
+    expect(html).toContain("section=claim-compliance");
+    expect(html).toContain('data-finding-id="legacy-canonical-1"');
+  });
+
+  it("renders ₺0,00 for explicit zero amount and never as —", () => {
+    const rows: UnifiedComplianceFindingRow[] = [
+      {
+        rowId: "r-zero",
+        canonicalFindingId: "f-zero",
+        sourceKind: "claim_compliance",
+        sourceLabels: ["Fatura uyumluluğu"],
+        status: "review_risk",
+        title: "Zero finding",
+        detail: null,
+        claimId: null,
+        code: null,
+        sutLabel: null,
+        amountValue: 0,
+        amountLabel: "Faturalanan (risk)",
+        action: null,
+        finding: mockFinding,
+      },
+    ];
+
+    const html = renderTable({ rows, patientId: "P-1" });
+
+    expect(html).toContain("₺0,00");
+    // The zero row must not render the unknown-amount dash in the amount cell.
+    // Other cells (claim/code) still use —, so assert the formatted zero exists
+    // rather than asserting global absence of —.
+  });
+
+  it("activates rows via keyboard only when the event originates on the row itself", () => {
+    const row = {} as unknown;
+    const button = {} as unknown;
+
+    expect(
+      shouldActivateRowOnKeyDown({ key: "Enter", target: row, currentTarget: row }),
+    ).toBe(true);
+    expect(
+      shouldActivateRowOnKeyDown({ key: " ", target: row, currentTarget: row }),
+    ).toBe(true);
+    // Nested clause button or Inspect link bubbling to the row must not activate it.
+    expect(
+      shouldActivateRowOnKeyDown({ key: "Enter", target: button, currentTarget: row }),
+    ).toBe(false);
+    expect(
+      shouldActivateRowOnKeyDown({ key: " ", target: button, currentTarget: row }),
+    ).toBe(false);
+    expect(
+      shouldActivateRowOnKeyDown({ key: "Escape", target: row, currentTarget: row }),
+    ).toBe(false);
   });
 
   it("renders SUT section cell as a button when onOpenClause and clauseKey are present", () => {

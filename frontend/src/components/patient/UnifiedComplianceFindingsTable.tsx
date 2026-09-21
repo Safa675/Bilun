@@ -23,6 +23,22 @@ export interface UnifiedComplianceFindingsTableProps {
   selectedFindingId?: string | null;
 }
 
+/**
+ * Row keyboard activation predicate.
+ *
+ * Returns true only when the keyboard event originates on the row itself
+ * (not bubbled from a nested clause button or Inspect link) and the key is
+ * Enter or Space. Keeps native activation of nested controls intact.
+ */
+export function shouldActivateRowOnKeyDown(event: {
+  key: string;
+  target: unknown;
+  currentTarget: unknown;
+}): boolean {
+  if (event.key !== "Enter" && event.key !== " ") return false;
+  return event.target === event.currentTarget;
+}
+
 export default function UnifiedComplianceFindingsTable({
   rows,
   patientId,
@@ -87,12 +103,15 @@ export default function UnifiedComplianceFindingsTable({
             };
 
             const clauseKey = row.action?.clause_ref?.clause_key ?? "";
-            const section =
-              recommendedActionSectionId(row.action?.surface) ?? "claim-compliance";
+            // Canonical Inspect always targets the claim-compliance section;
+            // action row selection keeps its own source-section scroll behavior.
+            const inspectSection = row.canonicalFindingId
+              ? "claim-compliance"
+              : (recommendedActionSectionId(row.action?.surface) ?? "claim-compliance");
 
             const href = buildSutBillingHref(patientId, {
               claimId: row.claimId ?? undefined,
-              section: section ?? undefined,
+              section: inspectSection ?? undefined,
               findingId: row.canonicalFindingId ?? undefined,
             });
 
@@ -108,10 +127,9 @@ export default function UnifiedComplianceFindingsTable({
                 )}
                 onClick={handleRowClick}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleRowClick();
-                  }
+                  if (!shouldActivateRowOnKeyDown(e)) return;
+                  e.preventDefault();
+                  handleRowClick();
                 }}
               >
                 {/* 1. Durum */}

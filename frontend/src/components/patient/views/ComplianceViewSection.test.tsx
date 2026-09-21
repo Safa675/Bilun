@@ -154,4 +154,27 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain('id="billing-strategy"');
     expect(html).toContain('id="materials-pre-check"');
   });
+
+  it("wraps the unified table inside the claim-compliance anchor", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={baseReport} />
+      </WorkspaceProvider>,
+      "tr",
+    );
+
+    const anchorIndex = html.indexOf('id="claim-compliance"');
+    const tableIndex = html.indexOf("<table");
+    const labIndex = html.indexOf('id="billing-lab"');
+
+    expect(anchorIndex).toBeGreaterThanOrEqual(0);
+    expect(tableIndex).toBeGreaterThanOrEqual(0);
+    // The unified table must be inside (or immediately after) the
+    // claim-compliance anchor so ?finding= exact scroll lands on the row,
+    // not on the coverage summary below it.
+    expect(anchorIndex).toBeLessThan(tableIndex);
+    expect(tableIndex).toBeLessThan(labIndex);
+    // Single anchor: no duplicate claim-compliance ids.
+    expect(html.match(/id="claim-compliance"/g)?.length).toBe(1);
+  });
 });
