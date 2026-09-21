@@ -213,6 +213,7 @@ const SURFACE_LABEL_KEYS: Record<string, string> = {
   claim_checklist: "billing.recommendedActions.surfaces.claimChecklist",
   drug_indication: "billing.recommendedActions.surfaces.drugIndication",
   materials: "billing.recommendedActions.surfaces.materials",
+  claim_compliance: "billing.recommendedActions.surfaces.claimCompliance",
   yatak_puani: "billing.recommendedActions.surfaces.yatakPuani",
 };
 
@@ -285,7 +286,7 @@ function isMaterialAnchoredAction(action: RecommendedActionItem): boolean {
   return action.surface === "materials" || action.surface === "material_uplift";
 }
 
-function recommendedActionPrimaryCode(action: RecommendedActionItem): string | null {
+export function recommendedActionPrimaryCode(action: RecommendedActionItem): string | null {
   if (isMaterialAnchoredAction(action)) {
     return action.material_code ?? action.procedure_code ?? action.drug_code ?? null;
   }

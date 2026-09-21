@@ -58,6 +58,7 @@ const billing = {
       "claimChecklist": "Claim checklist",
       "drugIndication": "Drug indication",
       "materials": "Materials pre-check",
+      "claimCompliance": "Claim compliance",
       "yatakPuani": "Bed-day (yatak puanı)"
     },
     "kinds": {
@@ -443,7 +444,25 @@ const billing = {
       "description": "Pre-submission removal of items that carry SGK deduction, rejection, or irregularity risk.",
       "kpiRisk": "Total audit exposure",
       "kpiFindings": "At-risk findings",
-      "kpiBilledAtRisk": "Billed amount at risk"
+      "kpiBilledAtRisk": "Billed amount at risk",
+      "statusConfirmedViolation": "Confirmed violation",
+      "statusReviewRisk": "Risk — review required",
+      "tableTitle": "Compliance findings",
+      "colStatus": "Status",
+      "colSource": "Source",
+      "colFinding": "Finding / required action",
+      "colClaim": "Claim",
+      "colCode": "Code",
+      "colSut": "SUT",
+      "colAmount": "Risk amount",
+      "colInspect": "Inspect",
+      "inspectAction": "Inspect",
+      "openBill": "Open bill",
+      "noFindings": "No compliance findings in this view.",
+      "coverageSummary": "{evaluated} structural controls evaluated · {findings} additional findings",
+      "coverageMissing": " · {count} missing inputs",
+      "coverageUnavailable": " · {count} unavailable",
+      "coverageNotice": "Evaluated does not imply compliant."
     },
     "revenue": {
       "shortTitle": "Revenue Dashboard",

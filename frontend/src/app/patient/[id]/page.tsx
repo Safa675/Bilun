@@ -30,7 +30,10 @@ import {
   searchSutPatients,
 } from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
-import { parsePatientWorkspaceQuery } from "@/lib/patientRoute";
+import {
+  parsePatientWorkspaceQuery,
+  resolvePatientScrollTarget,
+} from "@/lib/patientRoute";
 import {
   getRecommendedActions,
   recommendedActionLineCodes,
@@ -390,14 +393,17 @@ export function SutPatientPageContent({
   }, [selectedAction]);
 
   useEffect(() => {
-    if (!sectionQuery || !activeBillingReport) {
+    if ((!findingQuery && !sectionQuery) || !activeBillingReport) {
       return;
     }
-    const element = document.getElementById(sectionQuery);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [sectionQuery, activeBillingReport]);
+    // Exact finding rows win over section anchors; schedule after the
+    // workspace view switch so the target row is mounted before scrolling.
+    const frame = requestAnimationFrame(() => {
+      const target = resolvePatientScrollTarget(document, findingQuery, sectionQuery);
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [findingQuery, sectionQuery, activeBillingReport]);
   const activeOptimization = isBillScoped ? billOptimization : optimization;
   const selectedClaimSummary = useMemo(
     () => claims.find((claim) => claim.claim_id === selectedClaimId) ?? null,

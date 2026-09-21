@@ -58,6 +58,7 @@ const billing = {
       "claimChecklist": "Talep kontrol listesi",
       "drugIndication": "İlaç endikasyonu",
       "materials": "Malzeme ön kontrol",
+      "claimCompliance": "Fatura uyumluluğu",
       "yatakPuani": "Yatak puanı"
     },
     "kinds": {
@@ -443,7 +444,25 @@ const billing = {
       "description": "SGK kesinti, red ve usulsüzlük riski taşıyan kalemlerin fatura öncesi ayıklanması.",
       "kpiRisk": "Toplam denetim riski",
       "kpiFindings": "Riskli bulgu",
-      "kpiBilledAtRisk": "Riskli faturalanan tutar"
+      "kpiBilledAtRisk": "Riskli faturalanan tutar",
+      "statusConfirmedViolation": "Kesin ihlal",
+      "statusReviewRisk": "Risk — inceleme gerekli",
+      "tableTitle": "Uyumluluk bulguları",
+      "colStatus": "Durum",
+      "colSource": "Kaynak",
+      "colFinding": "Bulgu / yapılması gereken",
+      "colClaim": "Fatura",
+      "colCode": "Kod",
+      "colSut": "SUT",
+      "colAmount": "Risk tutarı",
+      "colInspect": "İncele",
+      "inspectAction": "İncele",
+      "openBill": "Faturaya git",
+      "noFindings": "Bu görünümde uyumluluk bulgusu bulunmuyor.",
+      "coverageSummary": "{evaluated} yapısal kontrol değerlendirildi · {findings} ek bulgu",
+      "coverageMissing": " · {count} eksik girdi",
+      "coverageUnavailable": " · {count} değerlendirilemedi",
+      "coverageNotice": "Değerlendirilmiş olması uygun olduğu anlamına gelmez."
     },
     "revenue": {
       "shortTitle": "Gelir Dashboard",

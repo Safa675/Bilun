@@ -7,10 +7,10 @@ import { useT } from "@/lib/i18n/useTranslations";
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
 import {
   viewActions,
-  scopedClaimComplianceFindings,
   viewForSection,
   type WorkspaceViewId,
 } from "@/lib/workspaceViews";
+import { buildUnifiedComplianceFindings } from "@/lib/complianceFindings";
 import AuditViewSection from "./AuditViewSection";
 import ComplianceViewSection from "./ComplianceViewSection";
 import RevenueViewSection from "./RevenueViewSection";
@@ -55,8 +55,8 @@ export default function PatientWorkspaceViews({
   const t = useT();
   const [activeView, setActiveView] = useState<WorkspaceViewId>("compliance");
 
-  const complianceCount = viewActions(billingReport, "compliance").length +
-    scopedClaimComplianceFindings(billingReport).length;
+  const unifiedComplianceRows = buildUnifiedComplianceFindings(billingReport, t);
+  const complianceCount = unifiedComplianceRows.length;
   const revenueCount = viewActions(billingReport, "revenue").length;
   const auditCount = viewActions(billingReport, "audit").length;
 
@@ -115,6 +115,8 @@ export default function PatientWorkspaceViews({
       <Tabs.Content value="compliance">
         <ComplianceViewSection
           billingReport={billingReport}
+          patientId={patientId}
+          unifiedRows={unifiedComplianceRows}
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
