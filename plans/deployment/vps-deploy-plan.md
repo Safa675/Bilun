@@ -15,15 +15,42 @@ automatic HTTPS via Caddy. Marketing site stays on Vercel at `bilun.tech`.
 ```
 bilun.tech          → Vercel (marketing site, unchanged)
 app.bilun.tech      → VPS (165.245.243.183)
-                        ├── :443  Caddy (TLS terminator + reverse proxy)
-                        ├── :3000 Next.js (product frontend)
+                        ├── :443  Caddy (TLS terminator + reverse proxy + static asset store)
+                        ├── :3000 Next.js (standalone release under /opt/bilun-frontend/current)
                         └── :8001 FastAPI (backend, 127.0.0.1 only)
 ```
 
-Caddy terminates TLS and proxies:
-- `app.bilun.tech/`          → `localhost:3000` (Next.js)
-- `app.bilun.tech/api/*`     → `localhost:8001` (FastAPI)  ← belt-and-suspenders; Next.js also proxies /api
-- `app.bilun.tech/api/auth/*`→ `localhost:8001` (login/logout)
+Caddy terminates TLS and handles:
+- `app.bilun.tech/`                  → `localhost:3000` (Next.js standalone)
+- `app.bilun.tech/_next/static/*`    → `/opt/bilun-frontend/assets/_next/static` (retained cross-release assets)
+- `app.bilun.tech/api/*`             → `localhost:8001` (FastAPI)  ← direct routing avoids double-hop
+- `app.bilun.tech/api/auth/*`        → `localhost:8001` (login/logout)
+
+### Production Filesystem Layout
+
+```text
+/opt/Bilun/                              # source repo & backend runtime
+/opt/bilun-frontend/
+├── builds/                              # disposable detached build workspaces
+├── releases/
+│   └── <full-git-sha>/                  # immutable standalone release bundle
+│       ├── server.js
+│       ├── .next/
+│       ├── public/
+│       └── RELEASE.json
+├── assets/
+│   └── _next/static/                    # union of retained releases' assets
+├── manifests/
+│   └── <full-git-sha>.assets            # asset paths & checksums for safe GC
+├── shared/
+│   └── frontend.env -> /opt/Bilun/.env  # shared runtime environment file
+├── current -> releases/<full-git-sha>/  # atomic symlink to active release
+└── deploy.lock                          # flock mutual exclusion
+```
+
+> **Warning:** `/opt/Bilun` and `/opt/bilun-frontend/current` are production paths.
+> Never run exploratory manual builds or edit files directly inside the active release.
+> Feature development and ad-hoc checks belong in disposable Git worktrees.
 
 The auth gate (built in the prior task) sits in front of everything: visitors
 land on `/login` unless they have the session cookie.
@@ -137,8 +164,56 @@ Push → Vercel auto-deploys → button live on bilun.tech.
 
 ---
 
+## Frontend Release Operations (Atomic Deployments)
+
+### Migrating an existing VPS to atomic releases
+```bash
+sudo bash scripts/deploy/migrate_vps_frontend.sh
+```
+Sets up the `/opt/bilun-frontend` layout, migrates configuration, builds the initial release from HEAD, updates Caddy and systemd, and verifies all assets.
+
+### Deploying a release manually or via automation
+```bash
+# Automated via GitHub Actions (.github/workflows/deploy.yml) or run on VPS:
+scripts/deploy/deploy_frontend.sh --sha <full-git-sha>
+```
+1. Builds release inside an isolated detached worktree.
+2. Spawns private candidate server and verifies all HTML and referenced JS/CSS chunks.
+3. Syncs static assets to `/opt/bilun-frontend/assets/_next/static` with collision detection.
+4. Atomically replaces `/opt/bilun-frontend/current`.
+5. Restarts `bilun-frontend` systemd service.
+6. Verifies loopback and public endpoints.
+7. Automatically rolls back to the previous release if activation or verification fails.
+
+### Manual rollback to a previous release
+```bash
+# Roll back to the immediate previous release:
+sudo bash scripts/deploy/rollback_frontend.sh
+
+# Or roll back to a specific known release SHA:
+sudo bash scripts/deploy/rollback_frontend.sh --to <sha>
+```
+
+### Verifying assets and health
+```bash
+# Verify loopback:
+python3 scripts/deploy/verify_frontend_assets.py "http://127.0.0.1:3000/login"
+
+# Verify public production:
+python3 scripts/deploy/verify_frontend_assets.py "https://app.bilun.tech/login"
+```
+
+### Pruning old releases safely
+```bash
+# Keeps the 3 newest releases + active release, and cleans up unreferenced stale assets:
+sudo bash scripts/deploy/prune_frontend_releases.sh --keep 3
+```
+
+---
+
 ## Verification checklist
 - [ ] `https://app.bilun.tech` shows the login page (no cert warning).
+- [ ] `python3 scripts/deploy/verify_frontend_assets.py https://app.bilun.tech/login` passes 100%.
 - [ ] Wrong password → "Invalid username or password".
 - [ ] Correct password → logged in to the product workspace.
 - [ ] `https://app.bilun.tech/api/patients` without cookie → 401 JSON.
@@ -161,8 +236,7 @@ to start on the long-term server** — moving is cheap.
 ---
 
 ## Out of scope (separate tasks)
-- CI auto-deploy-on-push (GitHub Action → SSH → pull → restart). Doable once
-  the manual flow is proven.
+- CI auto-deploy-on-push for backend: handled via existing `.cache` staging swap.
 - Backups: the `.cache/bilun.duckdb` rebuilds from git, so there's nothing to
   back up except `.env`. Keep `.env` in a password manager, not on the server.
 - Real patient data compliance (KVKK) — only relevant when you load real data;
