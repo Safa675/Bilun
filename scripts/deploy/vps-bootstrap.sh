@@ -83,6 +83,13 @@ ufw allow 443/tcp comment 'HTTPS'
 ufw --force enable >/dev/null
 LOG "ufw active. Only 22/80/443 are exposed."
 
+FRONTEND_DIR="${BILUN_FRONTEND_BASE:-/opt/bilun-frontend}"
+LOG "Creating frontend release directories in $FRONTEND_DIR..."
+mkdir -p "$FRONTEND_DIR"/{builds,releases,staging,manifests,shared,assets/_next/static}
+if [[ -f "$APP_DIR/.env" ]]; then
+  ln -sfn "$APP_DIR/.env" "$FRONTEND_DIR/shared/frontend.env"
+fi
+
 # ── 6. Caddyfile ─────────────────────────────────────────────────────────────
 LOG "Writing /etc/caddy/Caddyfile (domain: $DOMAIN)..."
 cat > /etc/caddy/Caddyfile <<EOF
@@ -97,7 +104,13 @@ $DOMAIN {
         reverse_proxy 127.0.0.1:8001
     }
 
-    # Everything else → Next.js frontend.
+    # Retained static assets across releases
+    handle_path /_next/static/* {
+        root * $FRONTEND_DIR/assets/_next/static
+        file_server
+    }
+
+    # Everything else → Next.js frontend (standalone)
     reverse_proxy 127.0.0.1:3000
 }
 EOF
@@ -130,18 +143,17 @@ EOF
 
 cat > /etc/systemd/system/bilun-frontend.service <<EOF
 [Unit]
-Description=BILUN Next.js frontend
+Description=BILUN Next.js frontend (standalone release)
 After=network.target bilun-backend.service
 
 [Service]
 Type=simple
-WorkingDirectory=$APP_DIR/frontend
+WorkingDirectory=$FRONTEND_DIR/current
 Environment=NODE_ENV=production
-# The Next.js middleware (frontend/src/middleware.ts) needs BILUN_SESSION_SECRET
-# to verify session tokens. Without this, it treats auth as "not configured"
-# and lets everyone through — disagreeing with the backend, which enforces auth.
-EnvironmentFile=$APP_DIR/.env
-ExecStart=$(command -v npx || echo /usr/bin/npx) next start -p 3000
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+EnvironmentFile=$FRONTEND_DIR/shared/frontend.env
+ExecStart=/usr/bin/node $FRONTEND_DIR/current/server.js
 Restart=on-failure
 RestartSec=5
 

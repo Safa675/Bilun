@@ -105,10 +105,10 @@ jobs:
             fi
           fi
 
-          # Rebuild the frontend only if frontend source changed.
-          if [ -n "$FRONTEND_CHANGED" ]; then
-            echo "=== frontend changed — rebuilding ==="
-            (cd frontend && npm run build)
+          # Rebuild and activate frontend atomically outside the live service.
+          if [ -n "$FRONTEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
+            echo "=== frontend changed — executing atomic release deployment ==="
+            scripts/deploy/deploy_frontend.sh --sha "$AFTER" --run-id "${GITHUB_RUN_ID:-$AFTER}"
           fi
 
           # Restart backend. If rule/evaluator data changed, rebuild the cache
@@ -188,10 +188,6 @@ jobs:
             echo "=== restarting backend (load-only) ==="
             systemctl restart bilun-backend
           fi
-          if [ -n "$FRONTEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
-            echo "=== restarting frontend ==="
-            systemctl restart bilun-frontend
-          fi
 
           echo "=== deploy of $AFTER complete ==="
           REMOTE
@@ -200,16 +196,11 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
-          # Give services a moment to come back, then probe health + login.
+          # Give services a moment to settle, then probe health + all login assets.
           sleep 6
           echo "=== /health ==="
           curl -fsS --max-time 15 "https://app.bilun.tech/health" | head -c 400
           echo
-          echo "=== /login (frontend) ==="
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://app.bilun.tech/login")
-          echo "login HTTP $code"
-          if [ "$code" != "200" ]; then
-            echo "::error::Frontend /login did not return 200 after deploy"
-            exit 1
-          fi
+          echo "=== /login (frontend HTML + referenced asset verification) ==="
+          python3 scripts/deploy/verify_frontend_assets.py "https://app.bilun.tech/login"
           echo "=== deploy verified ==="
