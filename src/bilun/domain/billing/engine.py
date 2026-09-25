@@ -54,9 +54,6 @@ from src.bilun.domain.prose_rules.gap_closing import (
     check_gap_closing_misc_for_context,
     check_gap_closing_treatment_for_context,
 )
-from src.bilun.domain.prose_rules.gazette_repricing import (
-    check_gazette_repricing_for_context,
-)
 from src.bilun.domain.prose_rules.material_bundling import (
     check_material_bundling_for_context,
 )
@@ -221,8 +218,6 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         violations.extend(check_drg_package_adequacy_for_context(ctx))
         # §2.2 procedure pairing (missing add-on procedures).
         violations.extend(check_procedure_pairing_for_context(ctx))
-        # §2.2 gazette repricing (stale EK-2B/EK-2C rate after tebliğ).
-        violations.extend(check_gazette_repricing_for_context(ctx))
         # §3.1/§3.3 procedure-to-material pairing uplift (inverse EK-3B-1).
         violations.extend(check_material_pairing_for_context(ctx))
         # §2.4 treatment-pricing prose (partial: 17 of 182 rules fire on

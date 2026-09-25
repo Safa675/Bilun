@@ -35,7 +35,6 @@ const labels = {
       "copay": "Copay exemption",
       "strategy": "Billing strategy",
       "none": "None",
-      "gazette_repricing": "Gazette price review",
       "session_uplift": "Session uplift",
       "drg_uplift": "DRG uplift",
       "yatak_puani": "Bed-day score",
@@ -46,7 +45,6 @@ const labels = {
       "lab": "Laboratory",
       "copay": "Copay exemption",
       "strategy": "Billing strategy",
-      "gazette_repricing": "Gazette price review",
       "session_uplift": "Session uplift",
       "drg_uplift": "DRG uplift",
       "yatak_puani": "Bed-day score"

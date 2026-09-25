@@ -311,13 +311,6 @@ class DrgPackageAdequacyReviewResponse(BillingExactnessResponse):
     review_opportunity_count: int = 0
 
 
-class GazetteRepricingOpportunityResponse(BillingExactnessResponse):
-    opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_repricing_try: float = 0.0
-    confirmed_repricing_try: float = 0.0
-    review_repricing_try: float = 0.0
-
-
 class MedulaRejectionPlaybookResponse(BillingExactnessResponse):
     entries: list[dict[str, Any]] = Field(default_factory=list)
     entry_count: int = 0
@@ -502,9 +495,6 @@ class BillingReportResponse(BaseModel):
     drg_package_adequacy: DrgPackageAdequacyReviewResponse = Field(
         default_factory=DrgPackageAdequacyReviewResponse
     )
-    gazette_repricing: GazetteRepricingOpportunityResponse = Field(
-        default_factory=GazetteRepricingOpportunityResponse
-    )
     medula_rejection_playbook: MedulaRejectionPlaybookResponse = Field(
         default_factory=MedulaRejectionPlaybookResponse
     )
@@ -521,7 +511,6 @@ class BillingReportResponse(BaseModel):
     audit_exposure_try: float = 0.0
     capture_gap_try: float = 0.0
     package_adequacy_review_try: float = 0.0
-    gazette_repricing_try: float = 0.0
     medula_playbook_entry_count: int = 0
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0

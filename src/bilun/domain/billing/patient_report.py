@@ -33,9 +33,6 @@ from src.bilun.domain.billing.claim_drug_indication import validate_drug_indicat
 from src.bilun.domain.billing.drug_indication_findings import (
     evaluate_drug_indication_findings,
 )
-from src.bilun.domain.billing.claim_gazette_repricing import (
-    recommend_gazette_repricing_from_claims,
-)
 from src.bilun.domain.billing.claim_material_uplift import recommend_material_uplift_from_claims
 from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
 from src.bilun.domain.billing.claim_medula_rejection import (
@@ -149,9 +146,6 @@ def compute_patient_billing_report(
             claim_context
         )
         report.drg_package_adequacy = recommend_drg_package_adequacy_from_claims(
-            claim_context
-        )
-        report.gazette_repricing = recommend_gazette_repricing_from_claims(
             claim_context
         )
         report.procedure_addon_uplift = dedupe_addon_against_capture(

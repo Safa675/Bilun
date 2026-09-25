@@ -7,6 +7,18 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-25 — Rule removal needs full CI parity before opening a PR
+
+**Pattern:** I removed a registered pricing rule and its demo, then opened a PR after focused tests and selected artifact checks. I missed a stale row in the committed registry-coverage parquet and hard-coded cohort-tier counts in an unselected test; the full CI backend suite caught both.
+
+**Rule:** Before publishing a rule-removal PR, run the exact CI test command and generated-artifact checks on the final branch, not only focused suites. Explicitly reconcile every derived registry artifact and synthetic cohort count with the removed rule, and disclose any unrun gate before calling the PR verified.
+
+## 2026-09-25 — A review-only label does not rescue a pricing rule without SUT authority
+
+**Pattern:** A post-service price-increase detector had no encoded SUT clause permitting repricing, yet it remained in the optimization engine after automatic rebilling was disabled. It still displayed a monetary "recoverable" amount, so the product suggested value that the service-date tariff could not support.
+
+**Rule:** For SUT-first pricing features, require an amendment-specific effective-date or transition clause that makes the proposed amount payable on the actual service date before surfacing any recoverable amount. If that gate is absent, remove the opportunity across runtime, registry, API, UI, demos, and generated artifacts; a review-only flag or zeroed headline total is insufficient.
+
 ## 2026-09-20 — Focused green tests do not prove semantic arbitration or live/cache contract parity
 
 **Pattern:** A first-pass implementation passed its focused suites while independent review exposed order-dependent route selection, an incomplete public legacy projection, cached/live count drift, false exactness in genuine legacy payloads, missing noncoverage states, and UI/projection contract gaps.

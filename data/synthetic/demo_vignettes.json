@@ -84,12 +84,6 @@
       "tier": "A",
       "fault": "package_underbilled"
     },
-    "0011": {
-      "patient_index": "0011",
-      "scenario_tag": "sgk_gazette_repricing_600150",
-      "tier": "A",
-      "fault": "gazette_stale_price"
-    },
     "0012": {
       "patient_index": "0012",
       "scenario_tag": "medula_rejection_1688_molecular_microbiology",

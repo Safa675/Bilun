@@ -8,8 +8,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from scripts.sut.prose.classify import classify_clause_row, classify_clauses
-from scripts.sut.prose.coverage import build_sut_coverage, build_registry_coverage_summary
+from scripts.sut.prose.classify import classify_clause_row
+from scripts.sut.prose.coverage import build_sut_coverage
 from scripts.sut.prose.rule_registry import RULE_BY_ID
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -110,29 +110,6 @@ class TestClassify:
         result = classify_clause_row(row)
         matched = json.loads(result["matched_rule_ids"])
         assert "drg_package_adequacy" in matched
-
-    def test_gazette_repricing_keyword_match(self) -> None:
-        row = _sample_row(
-            section_id="1.1",
-            section_path="1.1",
-            annex_refs='["EK-2/B"]',
-            text_tr="Bu tebliğ yürürlük tarihinden sonra yeniden faturalandırılabilir.",
-            deontic_modality="MAY_BILL",
-        )
-        result = classify_clause_row(row)
-        matched = json.loads(result["matched_rule_ids"])
-        assert "gazette_repricing" in matched
-
-    def test_gazette_repricing_skips_generic_yururluk(self) -> None:
-        row = _sample_row(
-            section_id="2.2.1",
-            section_path="2.2/2.2.1",
-            text_tr="(1) Bu hüküm yürürlük tarihinde uygulanır.",
-            deontic_modality="MUST_BILL",
-        )
-        result = classify_clause_row(row)
-        matched = json.loads(result["matched_rule_ids"])
-        assert "gazette_repricing" not in matched
 
     def test_bogus_section_path_does_not_match_copay(self) -> None:
         row = _sample_row(
@@ -318,7 +295,7 @@ class TestCoverage:
         assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
         assert coverage.iloc[0]["has_algorithmic_gap"] == False
 
-    def test_section_6_amendment_not_gazette_repricing(self) -> None:
+    def test_section_6_amendment_routes_definitions(self) -> None:
         row = _sample_row(
             section_id="6.3",
             section_path="6.3",
@@ -329,8 +306,6 @@ class TestCoverage:
         )
         result = classify_clause_row(row)
         assert result["primary_rule_id"] == "definitions"
-        matched = json.loads(result["matched_rule_ids"])
-        assert "gazette_repricing" not in matched
 
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
@@ -422,21 +397,6 @@ class TestFullCoverageBuild:
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["drg_package_adequacy"].coverage_status == "implemented"
-
-    def test_gazette_repricing_implemented_has_corpus(self, coverage: pd.DataFrame) -> None:
-        prose_json = _REPO_ROOT / "data/gazette/prose_rules/gazette_repricing_prose.json"
-        manifest_json = (
-            _REPO_ROOT / "data/gazette/prose_manifests/L2.2_gazette_repricing_encoded_manifest.json"
-        )
-        assert prose_json.is_file()
-        assert manifest_json.is_file()
-
-        primary = coverage[coverage["primary_rule_id"] == "gazette_repricing"]
-        assert primary.empty
-
-        from scripts.sut.prose.rule_registry import RULE_BY_ID
-
-        assert RULE_BY_ID["gazette_repricing"].coverage_status == "implemented"
 
     def test_procedure_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/procedure_pairing_prose.json"

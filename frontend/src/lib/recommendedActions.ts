@@ -186,7 +186,6 @@ const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = {
   procedure_addon_uplift: "billing-procedure-addon-uplift",
   procedure_capture_gap: "billing-procedure-capture-gap",
   drg_package_adequacy: "billing-drg-package-adequacy",
-  gazette_repricing: "billing-gazette-repricing",
   drg_uplift: "billing-drg-uplift",
   care_setting_review: "billing-care-setting-review",
 };
@@ -208,7 +207,6 @@ const SURFACE_LABEL_KEYS: Record<string, string> = {
   procedure_addon_uplift: "billing.recommendedActions.surfaces.procedureAddon",
   procedure_capture_gap: "billing.recommendedActions.surfaces.procedureCapture",
   drg_package_adequacy: "billing.recommendedActions.surfaces.drgPackageAdequacy",
-  gazette_repricing: "billing.recommendedActions.surfaces.gazetteRepricing",
   medula_playbook: "billing.recommendedActions.surfaces.medulaPlaybook",
   claim_checklist: "billing.recommendedActions.surfaces.claimChecklist",
   drug_indication: "billing.recommendedActions.surfaces.drugIndication",
@@ -303,7 +301,7 @@ export function recommendedActionPrimaryCode(action: RecommendedActionItem): str
  * - `drug_indication` → drugs (drug_code)
  * - everything else (copay, billing_strategy, *_uplift, care_setting_review,
  *   procedure_addon_uplift, procedure_capture_gap, drg_package_adequacy,
- *   gazette_repricing, medula_playbook, claim_checklist) → procedures
+ *   medula_playbook, claim_checklist) → procedures
  *
  * Surfaces whose action row carries no code (e.g. medula_playbook, copay) yield
  * empty arrays — a graceful no-op, not a highlight.

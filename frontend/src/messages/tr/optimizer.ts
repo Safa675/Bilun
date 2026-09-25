@@ -151,7 +151,6 @@ const optimizer = {
     procedureAddonPatients: "Eksik eklenti hastaları",
     captureGapTotal: "İşlem yakalama farkı (EMR)",
     packageAdequacyReviewTotal: "Paket yeterlilik incelemesi",
-    gazetteRepricingTotal: "Gazete fiyat kontrolü (öngörüsel)",
     medulaPlaybookEntries: "MEDULA rehber kayıtları",
     patientsInCohort: "Kohorttaki Hastalar",
     cohortSizeUntilInputs: "Kesin girdiler gelene kadar yalnızca kohort boyutu",
@@ -199,7 +198,6 @@ const optimizer = {
     strategy: "Strateji artışı",
     capture_gap: "İşlem yakalama farkı",
     package_adequacy_review: "Paket yeterlilik incelemesi",
-    gazette_repricing: "Gazete fiyat kontrolü",
     medula_playbook: "MEDULA rehberi",
   },
   tables: {

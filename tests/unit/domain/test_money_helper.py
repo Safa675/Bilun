@@ -125,7 +125,6 @@ def test_no_local_money_defs_remain_in_billing_modules() -> None:
 
 def test_migrated_modules_import_shared_helper() -> None:
     """Static guard: each formerly-duplicated module must import money_round_half_up."""
-    import re
     from pathlib import Path
 
     files = [
@@ -140,7 +139,6 @@ def test_migrated_modules_import_shared_helper() -> None:
         "src/bilun/domain/prose_rules/procedure_addon_uplift.py",
         "src/bilun/domain/prose_rules/procedure_capture_gap.py",
         "src/bilun/domain/prose_rules/care_setting_review.py",
-        "src/bilun/domain/prose_rules/gazette_repricing.py",
         "src/bilun/domain/prose_rules/session_pricing.py",
         "src/bilun/domain/prose_rules/blood_uplift.py",
         "src/bilun/domain/prose_rules/drg_package_adequacy.py",

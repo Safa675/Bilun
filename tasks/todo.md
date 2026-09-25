@@ -1,3 +1,64 @@
+## Task: Fix PR #94 CI after repricing removal
+
+### Goal
+Make PR #94's backend CI pass by reconciling the committed registry-coverage artifact and cohort-tier test with the retired repricing rule, without changing service-date pricing or unrelated coverage data.
+
+### Subtasks
+- [x] Remove only the obsolete `gazette_repricing` row from `sut_registry_coverage.parquet` and verify every remaining row equals the current registry-derived summary.
+- [x] Update the cohort-tier test to the current 8/16/26 split and assert former demo patient 0011 is no longer Tier A.
+- [x] Run the exact backend CI gates on the final branch: Ruff, full Python test suite, rule compiler artifact check, and manifest parity audit; inspect binary/test diff.
+- [x] Commit and push the fix to PR #94, then confirm the new CI result.
+
+### Out of Scope
+Restoring the repricing algorithm, broad synthetic regeneration, other SUT coverage changes, PR merge, deployment, or production cache rebuild.
+
+### Review
+Local verification passed on the narrow fix: Ruff; full Python suite **2774 passed, 9 warnings**; rule compiler `--check` found **134 byte-identical artifacts**; manifest parity scanned **23 manifests with 0 issues**; targeted registry and cohort-tier suites passed. The parquet change contains only the obsolete registry row removal, with all 46 survivor rows/schema/order unchanged. Full pytest and an interrupted duplicate compiler check temporarily rewrote unrelated drug manifests; their generated changes were cleaned before commit. Fix commit `10d04811` was pushed to PR #94; GitHub CI run `36150469229` completed successfully for backend and frontend.
+
+---
+
+## Task: Publish gazette repricing removal PR
+
+### Goal
+Put the completed and verified removal on a fresh branch from current `origin/main`, then open a reviewable PR containing only that removal.
+
+### Subtasks
+- [x] Confirm the old PR #92 branch is merged and choose a fresh branch from current `origin/main`.
+- [x] Audit and commit the removal patch without unrelated or sensitive additions.
+- [x] Transfer the commit to a fresh `origin/main` branch; resolve any conflicts and verify the resulting diff and focused checks.
+- [x] Push the branch, open and attach a PR, and confirm its commit/file scope.
+
+### Out of Scope
+Merging the PR, deploying, rebuilding production caches, or adding a replacement pricing rule.
+
+### Review
+Opened PR #94 on `fix/remove-unsupported-gazette-repricing` against current `main`; the first PR commit contains only the 70-file repricing-removal patch and no older PR #92 commits. Fresh-branch verification: 104 focused backend tests passed (one existing pytest deprecation warning), 134 remaining rule/manifest artifacts were byte-identical, surfacing audit check and Ruff passed, and the worktree/diff were clean before publication. No deployment, production cache rebuild, or merge was performed.
+
+---
+
+## Task: Remove unsupported post-service gazette repricing rule
+
+### Goal
+Remove the 30-day price-staleness opportunity from Bilun's runtime and product surfaces so no later SUT tariff increase is shown as recoverable for an earlier procedure.
+
+### Subtasks
+- [x] Inventory all runtime, API, frontend, registry, compiler, synthetic, test, and generated references; lock the deletion boundary.
+- [x] Remove the detector, billing adapter, runtime registration, rule metadata, opportunity fields and totals, and API projections without changing service-date price lookups.
+- [x] Remove patient/cohort UI sections, deep links, translations, frontend types and tests for the opportunity.
+- [x] Remove dedicated fixtures, synthetic scenario generation, demos, tests, and generated rule/audit artifacts that specifically advertise repricing.
+- [x] Update current architecture/coverage documentation so it no longer claims this rule is implemented; leave historical plans/reports identifiable as historical when appropriate.
+- [x] Verify no live repricing references remain, run focused backend/frontend checks and relevant generated-artifact checks, and record results.
+
+### Out of Scope
+Changing valid temporal EK-2/B or EK-2/C lookups, adding a replacement pricing detector, editing unrelated SUT rules, regenerating all synthetic cohort data without a dependency need, deployment, or production cache rebuild. PR publication is tracked separately above.
+
+### Review
+Removed the post-service repricing evaluator, billing adapter, API/report/cohort fields, registry/compiler entry, patient and optimizer UI, translations, synthetic demo, and current documentation claims. Historical EK-2/B and EK-2/C service-date price lookups remain. Removed the dedicated rule source/compiled JSON/empty manifest/golden and regenerated the rule-surfacing audit matrix and report. The checked-in synthetic cohort was already out of sync with a pristine-HEAD regeneration, so only retired scenario tags, one demo workbook column, and one obsolete metadata row were mechanically scrubbed from its binary artifacts; all other logical records/cells were verified unchanged.
+
+Verification: backend focused suites 139 passed; synthetic billing 22 passed; frontend focused Vitest 63 passed and `tsc --noEmit` passed; temporal pricing 2 passed; synthetic validator and Tier A assertion passed; rule compiler `--check`, surfacing inventory `--check`, changed-file Ruff, compileall, and `git diff --check` passed. A broader `tests/unit` run reached 231 passed with no failures, then was interrupted because it was still at 7% after two minutes. No deployment or production cache rebuild was performed.
+
+---
+
 ## Task: Phase 5 Checkpoint 4 — loop-complete closure metadata
 
 ### Goal

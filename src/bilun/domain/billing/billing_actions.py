@@ -31,7 +31,6 @@ _OPPORTUNITY_SURFACES: frozenset[str] = frozenset(
         "procedure_addon_uplift",
         "procedure_capture_gap",
         "drg_package_adequacy",
-        "gazette_repricing",
         "care_setting_review",
         "copay",
     }
@@ -313,7 +312,6 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("care_setting_review", report.care_setting_review, "recoverable_uplift_try"),
         ("procedure_addon_uplift", report.procedure_addon_uplift, "recoverable_uplift_try"),
         ("drg_package_adequacy", report.drg_package_adequacy, "recoverable_uplift_try"),
-        ("gazette_repricing", report.gazette_repricing, "recoverable_repricing_try"),
     ):
         opportunities = getattr(block, "opportunities", [])
         for index, row in enumerate(opportunities):

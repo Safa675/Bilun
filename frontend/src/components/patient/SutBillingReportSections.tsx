@@ -337,14 +337,12 @@ export function BillingSummary({
   const auditExposure = billingReport.audit_exposure_try ?? 0;
   const captureGap = billingReport.capture_gap_try ?? 0;
   const packageAdequacyReview = billingReport.package_adequacy_review_try ?? 0;
-  const gazetteRepricing = billingReport.gazette_repricing_try ?? 0;
   const medulaPlaybookCount = billingReport.medula_playbook_entry_count ?? 0;
   const drugIndicationCount = billingReport.drug_indication_violation_count ?? 0;
   const showCompliance = reportHasTotals && complianceAdjustment > 0;
   const showAuditExposure = reportHasTotals && auditExposure > 0;
   const showCaptureGap = reportHasTotals && captureGap > 0;
   const showPackageAdequacy = reportHasTotals && packageAdequacyReview > 0;
-  const showGazetteRepricing = reportHasTotals && gazetteRepricing > 0;
   const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
   const showDrugIndication = drugIndicationCount > 0;
   const extraSummaryStats = [
@@ -352,7 +350,6 @@ export function BillingSummary({
     showAuditExposure,
     showCaptureGap,
     showPackageAdequacy,
-    showGazetteRepricing,
     showMedulaPlaybook,
     showDrugIndication,
     showIlaveInfo,
@@ -412,12 +409,6 @@ export function BillingSummary({
           <Stat
             label={t("billing.summary.packageAdequacyReview")}
             value={fmtTRY2(packageAdequacyReview)}
-          />
-        )}
-        {showGazetteRepricing && (
-          <Stat
-            label={t("billing.summary.gazetteRepricing")}
-            value={fmtTRY2(gazetteRepricing)}
           />
         )}
         {showMedulaPlaybook && (
@@ -1462,103 +1453,6 @@ export function ProcedureAddonUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={addonData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </TableWrap>
-    </BillingSectionShell>
-  );
-}
-
-export function GazetteRepricingSection({
-  repricingData,
-}: {
-  repricingData: NonNullable<BillingActionReport["gazette_repricing"]>;
-}) {
-  const t = useT();
-  const repricingExact = isExactOutput(repricingData);
-  const opportunities = repricingData.opportunities ?? [];
-
-  if (!repricingExact && opportunities.length === 0) {
-    return null;
-  }
-  if (opportunities.length === 0) {
-    return null;
-  }
-
-  const reviewTotal =
-    repricingData.review_repricing_try ?? repricingData.total_repricing_try ?? 0;
-
-  return (
-    <BillingSectionShell
-      id="billing-gazette-repricing"
-      title={t("billing.gazetteRepricing.title")}
-      total={fmtTRY2(reviewTotal)}
-    >
-      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-        {t("billing.gazetteRepricing.scopeFootnote")}
-      </p>
-      {!repricingExact && (
-        <ExactnessNotice block={repricingData} fallback={t("billing.gazetteRepricing.unavailable")} className="mb-4" />
-      )}
-      <TableWrap minWidth={1180}>
-        <thead>
-          <tr>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.claim")}</th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.procedure")}</th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.serviceDate")}</th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.amendmentDate")}</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
-              {t("billing.gazetteRepricing.priceAtService")}
-            </th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
-              {t("billing.gazetteRepricing.amendedPrice")}
-            </th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
-              {t("billing.gazetteRepricing.payablePerUnit")}
-            </th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
-              {t("billing.gazetteRepricing.repricingDelta")}
-            </th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.note")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {opportunities.map((item, index) => (
-            <tr key={`${item.claim_id}-${item.procedure_line_id}-${index}`}>
-              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
-              <td>
-                <div className="font-semibold text-slate-950">
-                  {item.procedure_name ?? item.procedure_code ?? "—"}
-                </div>
-                {item.procedure_code && (
-                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
-                    {item.procedure_code}
-                  </div>
-                )}
-              </td>
-              <td>{item.service_date ? fmtDate(item.service_date) : "—"}</td>
-              <td>{item.amendment_effective_date ? fmtDate(item.amendment_effective_date) : "—"}</td>
-              <td className="num-col tabular-nums text-right">
-                {fmtTRY2OrUnavailable(item.price_at_service_try ?? null)}
-              </td>
-              <td className="num-col tabular-nums text-right">
-                {fmtTRY2OrUnavailable(item.amended_list_price_try ?? null)}
-              </td>
-              <td className="num-col tabular-nums text-right">
-                {fmtTRY2OrUnavailable(item.actual_payable_per_unit_try ?? null)}
-              </td>
-              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2OrUnavailable(item.recoverable_repricing_try ?? null)}
-              </td>
-              <td>
-                <BillingRegulatorySourceCell
-                  ruleSource={repricingData.rule_source}
-                  rowCatalog={item.catalog}
-                />
-              </td>
               <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}

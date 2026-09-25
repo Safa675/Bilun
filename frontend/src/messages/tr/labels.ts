@@ -35,7 +35,6 @@ const labels = {
       "copay": "Katılım payı muafiyeti",
       "strategy": "Fatura stratejisi",
       "none": "Yok",
-      "gazette_repricing": "Gazete fiyat kontrolü",
       "session_uplift": "Seans artışı",
       "drg_uplift": "DRG artışı",
       "yatak_puani": "Yatak puanı",
@@ -46,7 +45,6 @@ const labels = {
       "lab": "Laboratuvar",
       "copay": "Katılım payı muafiyeti",
       "strategy": "Fatura stratejisi",
-      "gazette_repricing": "Gazete fiyat kontrolü",
       "session_uplift": "Seans artışı",
       "drg_uplift": "DRG artışı",
       "yatak_puani": "Yatak puanı"

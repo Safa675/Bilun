@@ -1161,12 +1161,6 @@ function RevenueRecoveryDashboard({
               hasRecoveryBreakdown ? displayData.total_package_adequacy_review ?? 0 : null,
             ),
           },
-          {
-            label: t("optimizer.kpis.gazetteRepricingTotal"),
-            value: fmtTRYOrUnavailable(
-              hasRecoveryBreakdown ? displayData.total_gazette_repricing ?? 0 : null,
-            ),
-          },
           ...(showMedulaPlaybookKpi
             ? [
                 {

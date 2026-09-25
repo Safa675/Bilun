@@ -37,6 +37,5 @@ describe("sutLabels", () => {
   it("maps rule and action type labels in Turkish", () => {
     setModuleLocale("tr");
     expect(getSutDomainLabel("surcharge")).toBe("İlave ücret");
-    expect(getSutDomainLabel("gazette_repricing")).toBe("Gazete fiyat kontrolü");
   });
 });

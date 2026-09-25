@@ -19,7 +19,6 @@ const billing = {
     "auditExposure": "Audit exposure (over-billing risk)",
     "captureGap": "Capture gap (EMR and clinical lab vs claim)",
     "packageAdequacyReview": "Package adequacy review (coding)",
-    "gazetteRepricing": "Gazette price review (prospective)",
     "medulaPlaybook": "MEDULA rebill playbook",
     "drugIndicationReview": "Drug indication review",
     "recommendedActions": "Recommended actions",
@@ -53,7 +52,6 @@ const billing = {
       "procedureAddon": "Procedure add-on",
       "procedureCapture": "Capture gap",
       "drgPackageAdequacy": "Package adequacy",
-      "gazetteRepricing": "Gazette price review",
       "medulaPlaybook": "MEDULA playbook",
       "claimChecklist": "Claim checklist",
       "drugIndication": "Drug indication",
@@ -241,20 +239,6 @@ const billing = {
       "missing_inputs": "Missing input — manual verification",
       "unavailable": "Unavailable — missing data/scope"
     }
-  },
-  "gazetteRepricing": {
-    "title": "Gazette list price review",
-    "scopeFootnote": "Flagged when a tebliğ within 30 days after service raised the EK-2B/EK-2C list price but the claim line still reflects the older rate. Same-period heuristic only — verify MEDULA period closure and invoice cancellation at the billing desk. Not included in SGK uplift totals; no automatic rebill.",
-    "unavailable": "Gazette price review requires exact procedure claim lines with service dates.",
-    "claim": "Claim",
-    "procedure": "Procedure",
-    "serviceDate": "Service date",
-    "amendmentDate": "Tebliğ effective",
-    "priceAtService": "Price at service",
-    "amendedPrice": "Post-tebliğ list",
-    "payablePerUnit": "Claim payable/unit",
-    "repricingDelta": "List delta (informational)",
-    "note": "Note"
   },
   "packageAdequacyReview": {
     "title": "DRG / package code adequacy",

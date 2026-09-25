@@ -45,7 +45,6 @@ Tier listeleri `demo_manifest.json` içinde. Vignette `tier` alanı `demo_vignet
 | 0006 | `sgk_material_uplift_yatis` | Paket dışı malzeme |
 | 0009 | `sgk_procedure_capture_kolonoskopi` | Capture gap |
 | 0010 | `sgk_package_adequacy_undercoded` | Küçük paket |
-| 0011 | `sgk_gazette_repricing_600150` | Eski liste fiyatı |
 | 0013 | `sgk_session_uplift_cerrahi` | Seans under-billed |
 | 0029 | `medula_rejection_0704_uts_barcode_missing` | MEDULA playbook |
 | 0038 | `payment_method_compliance_demo` | Zorunlu paket + DRG_MANDATORY kalem |

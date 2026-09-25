@@ -21,7 +21,7 @@ describe("sutRegulatorySources", () => {
   });
 
   it("prefers per-row catalog hints for billing rows", () => {
-    expect(resolveBillingEkAnnexLabels("EK-2B/EK-2C gazette repricing", "ek2b")).toEqual([
+    expect(resolveBillingEkAnnexLabels("EK-2B/EK-2C catalog prices", "ek2b")).toEqual([
       "EK-2B",
     ]);
     expect(normalizeEkCatalogHint("ek2c")).toBe("EK-2C");

@@ -67,13 +67,6 @@ def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> d
             session["review_opportunity_count"] = (
                 report.session_uplift.review_opportunity_count
             )
-        gazette = payload.get("gazette_repricing")
-        if isinstance(gazette, dict):
-            gazette["total_repricing_try"] = report.gazette_repricing.total_repricing_try
-            gazette["confirmed_repricing_try"] = (
-                report.gazette_repricing.confirmed_repricing_try
-            )
-            gazette["review_repricing_try"] = report.gazette_repricing.review_repricing_try
         drg = payload.get("drg_uplift")
         if isinstance(drg, dict):
             drg["total_uplift_try"] = report.drg_uplift.total_uplift_try

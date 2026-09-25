@@ -125,15 +125,6 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 review_uplift_try=0.0,
             ),
             package_adequacy_review_try=0.0,
-            gazette_repricing=SimpleNamespace(
-                opportunities=[],
-                exactness_status="exact",
-                required_inputs_missing=[],
-                total_repricing_try=0.0,
-                confirmed_repricing_try=0.0,
-                review_repricing_try=0.0,
-            ),
-            gazette_repricing_try=0.0,
             medula_rejection_playbook=SimpleNamespace(
                 entries=[],
                 exactness_status="exact",

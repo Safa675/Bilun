@@ -36,7 +36,6 @@ export const SECTION_VIEW_MAP: Record<string, WorkspaceViewId> = {
   "billing-procedure-addon-uplift": "revenue",
   "billing-procedure-capture-gap": "revenue",
   "billing-drg-package-adequacy": "revenue",
-  "billing-gazette-repricing": "revenue",
   "billing-drg-uplift": "revenue",
   "billing-care-setting-review": "revenue",
   "claim-submission-checklist": "audit",

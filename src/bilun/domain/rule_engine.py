@@ -520,7 +520,7 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
         else:
             # Catch-all: never silently drop a violation from a motor the
             # unified core runs. Before this branch, any rule tag outside the
-            # explicit set above (gap_closing_*, gazette_repricing,
+            # explicit set above (gap_closing_*,
             # material_pairing_uplift, dental_2_4_1, material_preauth_ek3c1,
             # material_miat_ek3c2, drg_package_adequacy, procedure_pairing)
             # was computed by analyze_claim then discarded here, so /validate-claim
@@ -542,8 +542,7 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
                 # headline (savings stays 0 for no_pay).
                 result.total_risk_try = round(result.total_risk_try + risk, 2)
             elif savings:
-                # A genuine recoverable savings (e.g. gazette_repricing
-                # recoverable_repricing_try on a must_bill/review outcome).
+                # A genuine recoverable savings on a must_bill/review outcome.
                 # NOTE: do NOT fold risk into savings — risk_amount on a
                 # non-no_pay outcome is not a savings signal, and folding it
                 # would inflate total_savings_try for review-only findings.

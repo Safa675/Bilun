@@ -44,7 +44,6 @@ def _get_top_action_type(report: BillingActionReport) -> str:
             "strategy": report.billing_strategy.uplift_savings_try,
             "capture_gap": report.capture_gap_try,
             "package_adequacy_review": report.package_adequacy_review_try,
-            "gazette_repricing": report.gazette_repricing_try,
             "medula_playbook": float(report.medula_playbook_entry_count),
             "lab": report.compliance_adjustment_try,
             "copay": float(
@@ -116,7 +115,6 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
         "strategy": float((report.get("billing_strategy") or {}).get("uplift_savings_try") or 0),
         "capture_gap": float(report.get("capture_gap_try") or 0),
         "package_adequacy_review": float(report.get("package_adequacy_review_try") or 0),
-        "gazette_repricing": float(report.get("gazette_repricing_try") or 0),
         "medula_playbook": float(report.get("medula_playbook_entry_count") or 0),
         "lab": float(report.get("compliance_adjustment_try") or 0),
         "copay": gap,

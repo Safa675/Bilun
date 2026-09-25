@@ -19,7 +19,6 @@ const billing = {
     "auditExposure": "Denetim riski (aşırı faturalama)",
     "captureGap": "Yakalama boşluğu (EMR ve klinik lab – fatura)",
     "packageAdequacyReview": "Paket yeterlilik incelemesi (kodlama)",
-    "gazetteRepricing": "Gazete fiyat kontrolü (öngörüsel)",
     "medulaPlaybook": "MEDULA yeniden fatura rehberi",
     "drugIndicationReview": "İlaç endikasyon incelemesi",
     "recommendedActions": "Önerilen işlemler",
@@ -53,7 +52,6 @@ const billing = {
       "procedureAddon": "Prosedür eklentisi",
       "procedureCapture": "Yakalama boşluğu",
       "drgPackageAdequacy": "Paket yeterliliği",
-      "gazetteRepricing": "Gazete fiyat kontrolü",
       "medulaPlaybook": "MEDULA rehberi",
       "claimChecklist": "Talep kontrol listesi",
       "drugIndication": "İlaç endikasyonu",
@@ -241,20 +239,6 @@ const billing = {
       "missing_inputs": "Eksik girdi — manuel doğrulama",
       "unavailable": "Kullanılamıyor — veri/kapsam eksik"
     }
-  },
-  "gazetteRepricing": {
-    "title": "Gazete liste fiyat kontrolü",
-    "scopeFootnote": "Hizmetten sonra en geç 30 gün içinde yürürlüğe giren tebliğ EK-2B/2C liste fiyatını artırdıysa ve fatura satırı eski listeyi yansıtıyorsa manuel inceleme işaretlenir. Yaklaşık aynı fatura dönemi heuristiğidir; MEDULA dönem kapanışı ve fatura iptali fatura masasında doğrulanmalıdır. SGK artış toplamına dahil değildir; otomatik yeniden faturalama önerilmez.",
-    "unavailable": "Gazete fiyat kontrolü için hizmet tarihli kesin işlem satırları gerekir.",
-    "claim": "Fatura",
-    "procedure": "İşlem",
-    "serviceDate": "Hizmet tarihi",
-    "amendmentDate": "Tebliğ tarihi",
-    "priceAtService": "Hizmetteki fiyat",
-    "amendedPrice": "Tebliğ sonrası liste",
-    "payablePerUnit": "Fatura ödenebilir/birim",
-    "repricingDelta": "Liste farkı (bilgi)",
-    "note": "Not"
   },
   "packageAdequacyReview": {
     "title": "DRG / paket kodu yeterliliği",
