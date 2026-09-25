@@ -27,12 +27,17 @@ def test_build_cohort_tier_report_default_50_patient_split() -> None:
         seed=20260504,
         dataset_id="sentetik_sut_v2_50_hasta",
     )
-    assert report["counts"]["tier_a"] == 9
+    assert report["counts"]["tier_a"] == 8
     assert report["counts"]["tier_b"] == 16
-    assert report["counts"]["tier_c"] == 25
+    assert report["counts"]["tier_c"] == 26
     assert report["default_landing_patient_id"] == "SENTETIK-HASTA-0003"
     assert report["tier_a"][0]["demo_ready"] is True
     assert all(row["tier"] == "C" for row in report["tier_c"])
+    former_repricing_demo = next(
+        row for row in report["tier_c"] if row["patient_id"] == "SENTETIK-HASTA-0011"
+    )
+    assert former_repricing_demo["scenario_tag"] is None
+    assert former_repricing_demo["demo_ready"] is False
 
 
 def test_write_cohort_tier_artifacts(tmp_path: Path) -> None:

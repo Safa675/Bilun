@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-25 — Rule removal needs full CI parity before opening a PR
+
+**Pattern:** I removed a registered pricing rule and its demo, then opened a PR after focused tests and selected artifact checks. I missed a stale row in the committed registry-coverage parquet and hard-coded cohort-tier counts in an unselected test; the full CI backend suite caught both.
+
+**Rule:** Before publishing a rule-removal PR, run the exact CI test command and generated-artifact checks on the final branch, not only focused suites. Explicitly reconcile every derived registry artifact and synthetic cohort count with the removed rule, and disclose any unrun gate before calling the PR verified.
+
 ## 2026-09-25 — A review-only label does not rescue a pricing rule without SUT authority
 
 **Pattern:** A post-service price-increase detector had no encoded SUT clause permitting repricing, yet it remained in the optimization engine after automatic rebilling was disabled. It still displayed a monetary "recoverable" amount, so the product suggested value that the service-date tariff could not support.
