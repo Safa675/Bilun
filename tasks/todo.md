@@ -6,14 +6,14 @@ Put the completed and verified removal on a fresh branch from current `origin/ma
 ### Subtasks
 - [x] Confirm the old PR #92 branch is merged and choose a fresh branch from current `origin/main`.
 - [x] Audit and commit the removal patch without unrelated or sensitive additions.
-- [ ] Transfer the commit to a fresh `origin/main` branch; resolve any conflicts and verify the resulting diff and focused checks.
-- [ ] Push the branch, open and attach a PR, and confirm its commit/file scope.
+- [x] Transfer the commit to a fresh `origin/main` branch; resolve any conflicts and verify the resulting diff and focused checks.
+- [x] Push the branch, open and attach a PR, and confirm its commit/file scope.
 
 ### Out of Scope
 Merging the PR, deploying, rebuilding production caches, or adding a replacement pricing rule.
 
 ### Review
-Pending PR publication.
+Opened PR #94 on `fix/remove-unsupported-gazette-repricing` against current `main`; the first PR commit contains only the 70-file repricing-removal patch and no older PR #92 commits. Fresh-branch verification: 104 focused backend tests passed (one existing pytest deprecation warning), 134 remaining rule/manifest artifacts were byte-identical, surfacing audit check and Ruff passed, and the worktree/diff were clean before publication. No deployment, production cache rebuild, or merge was performed.
 
 ---
 
