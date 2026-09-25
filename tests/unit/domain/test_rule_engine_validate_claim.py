@@ -308,7 +308,7 @@ def test_validate_claim_via_context_does_not_drop_unknown_rule_tags(monkeypatch)
     if/elif chain with no else, so any violation whose rule tag wasn't in
     {bundling, exclusion, material_bundling_prose, specialty_materials_prose,
     drug_indication} was silently dropped. analyze_claim now runs motors that
-    emit gap_closing_*, gazette_repricing, material_pairing_uplift,
+    emit gap_closing_*, material_pairing_uplift,
     dental_2_4_1, etc. — those must surface in the ClaimValidationResult, not
     vanish. The catch-all else branch guarantees no motor's output is lost.
     """
@@ -360,8 +360,8 @@ def test_validate_claim_via_context_does_not_drop_unknown_rule_tags(monkeypatch)
 
 def test_validate_claim_catch_all_does_not_inflate_savings_with_risk(monkeypatch) -> None:
     """W2.5m (MEDIUM, Bugbot): the catch-all must not fold risk_amount into
-    total_savings_try for non-no_pay outcomes. A review-only finding (e.g.
-    gazette_repricing with risk_amount set but material_outcome != no_pay)
+    total_savings_try for non-no_pay outcomes. A review-only finding with
+    risk_amount set but material_outcome != no_pay
     previously added (savings or risk) to savings, inflating the headline.
     Now savings and risk are distinct: only genuine savings_try feeds
     total_savings_try.
@@ -371,7 +371,7 @@ def test_validate_claim_catch_all_does_not_inflate_savings_with_risk(monkeypatch
     def fake_analyze_claim(ctx):
         return [
             {
-                "rule": "gazette_repricing",
+                "rule": "material_pairing_uplift",
                 "severity": "warning",
                 "message": "review required",
                 "savings_try": 0.0,
@@ -397,9 +397,8 @@ def test_validate_claim_catch_all_does_not_inflate_savings_with_risk(monkeypatch
     )
 
     # The violation surfaces (not dropped)...
-    assert any(v.rule == "gazette_repricing" for v in result.violations)
+    assert any(v.rule == "material_pairing_uplift" for v in result.violations)
     # ...but its risk does NOT inflate savings, and does NOT aggregate to
     # total_risk_try either (outcome is not no_pay).
     assert result.total_savings_try == 0.0
     assert result.total_risk_try == 0.0
-

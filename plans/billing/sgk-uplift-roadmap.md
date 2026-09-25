@@ -413,22 +413,12 @@ AND no material claim line OR material line billed_amount = 0
 
 ---
 
-### 3.3 Gazette repricing opportunity (prospective)
+### 3.3 Gazette repricing opportunity (retired)
 
-**ROI:** Medium for high-volume codes after tebliğ  
-**Effort:** Medium  
-**Build on:** `optimization/temporal.py`
-
-#### Design
-
-- Cross patient `procedure_claim_lines` service dates with `effective_date` price increases.
-- Flag claims where `expected_payable_try` used stale gazette price post-amendment.
-- Only where rebilling/adjustment is legally permitted (prose gate).
-
-- [x] `gazette_repricing_prose.json` rebill gate + `gazette_repricing.py` detector
-- [x] `gazette_repricing_try` display-only KPI + `GazetteRepricingSection` UI
-- [x] Synthetic **SENTETIK-HASTA-0011** (`sgk_gazette_repricing_600150`)
-- [ ] Full amendment calendar / all EK-2B codes (pilot: post-2026 tebliğ increases only)
+The 30-day post-service price increase heuristic was removed. A later EK-2B/EK-2C
+effective date does not change the tariff applicable on the procedure date, and
+cancelling an invoice does not change that date. Service-date temporal catalog
+lookups remain available for valid pricing checks.
 
 ---
 
@@ -490,7 +480,7 @@ flowchart TD
 | 7 | Procedure pairing add-ons | 2.3 | M–L |
 | 8 | Procedure capture (EMR) | 3.1 | XL |
 | 9 | DRG adequacy review | 3.2 | L |
-| 10 | Gazette repricing ops | 3.3 | M |
+| 10 | Gazette repricing ops (retired) | 3.3 | — |
 | 11 | MEDULA rejection playbook | 3.4 | L |
 
 ---

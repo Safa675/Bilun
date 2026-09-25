@@ -241,14 +241,6 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             elif pid == "SENTETIK-HASTA-0010" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
                 episode_row["_sgk_package_adequacy_demo"] = True
-            elif pid == "SENTETIK-HASTA-0011" and ep_idx == 0:
-                visit_date = "2024-06-01"
-                episode_row["gelis_tipi"] = "poliklinik"
-                episode_row["basvuru_tarihi"] = visit_date
-                episode_row["ilk_tani_tarihi"] = visit_date
-                episode_row["son_tani_tarihi"] = visit_date
-                episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
-                episode_row["_sgk_gazette_repricing_demo"] = True
             elif pid.rsplit("-", 1)[-1] in _MEDULA_DEMO_SPECS and ep_idx == 0:
                 medula_suffix = pid.rsplit("-", 1)[-1]
                 medula_spec = _MEDULA_DEMO_SPECS[medula_suffix]

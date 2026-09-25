@@ -42,7 +42,6 @@ _WAVE2_MANIFESTS: dict[str, str] = {
     "definitions": _DEFINITIONS_2_6_MANIFEST,
     # §2.4 treatment-package pricing (incl. §2.4.4) wave encodes.
     "pricing_ek2b": _TREATMENT_PRICING_2_4_MANIFEST,
-    "gazette_repricing": "L2.2_gazette_repricing_encoded_manifest.json",
     "procedure_pairing": "L2.2_procedure_pairing_encoded_manifest.json",
     "material_pairing": "L3.1_material_pairing_encoded_manifest.json",
     "payment_method_package": _PAYMENT_METHOD_22_MANIFEST,

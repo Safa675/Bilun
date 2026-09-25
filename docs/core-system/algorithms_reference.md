@@ -93,24 +93,24 @@ Runs both annex list rules in sequence and aggregates results into a single `Cla
 
 ---
 
-## Layer 2: Revenue Optimization Rule Engines (21 Billing Blocks)
+## Layer 2: Revenue Optimization Rule Engines (20 Billing Blocks)
 
 These rules operate at the **cohort level** and answer: **How much money is the hospital leaving on the table across all patients?**
 
 They are designed for revenue recovery dashboards — they scan patient populations to find systematic billing opportunities.
 
-The billing report (`BillingActionReport`) is composed of 21 billing blocks, each driven by a
+The billing report (`BillingActionReport`) is composed of 20 billing blocks, each driven by a
 dedicated detector. The canonical list lives in `src/bilun/domain/billing/block_registry.py`
 (`BILLING_BLOCK_SPECS`) — that tuple is the single source of truth and includes: lab optimization,
 copay exemption, billing strategy (package vs itemized), session uplift, DRG uplift, blood
 component uplift, yatak/icu/yenidogan/refakatci/anestezi puanları, material uplift, procedure
-addon uplift, care-setting review, DRG package adequacy, gazette repricing, procedure capture
+addon uplift, care-setting review, DRG package adequacy, procedure capture
 gap, MEDULA rejection playbook, claim submission checklist, and drug indication review.
 
 ### Architecture
 
 ```
-patient ICD-10 diagnoses + claim dataset → 21 billing block detectors → BillingActionReport → cohort summary
+patient ICD-10 diagnoses + claim dataset → 20 billing block detectors → BillingActionReport → cohort summary
 ```
 
 There is a critical runtime concept: **exactness.** Each rule engine declares what inputs it needs. If the data is available (exact claim lines from the hospital's billing system), the output is tagged `exact`. If only gazette catalogs are available without patient-specific claim data, the output is tagged `missing_exact_inputs` and the result is intentionally minimal. This prevents the system from fabricating numbers.

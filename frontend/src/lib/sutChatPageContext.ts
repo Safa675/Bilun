@@ -20,7 +20,6 @@ export interface VisibleBillingSnapshot {
   ilave_ucret_total_try?: number;
   line_decomposition_status?: BillingActionReport["copay"]["line_decomposition_status"];
   package_adequacy_review_try?: number;
-  gazette_repricing_try?: number;
   medula_playbook_entry_count?: number;
   total_recoverable_try: number;
   priority: BillingActionReport["priority"];
@@ -52,7 +51,6 @@ export function buildVisibleBillingSnapshot(
     ilave_ucret_total_try: showIlaveInfo ? report.copay?.ilave_ucret_total_try : undefined,
     line_decomposition_status: report.copay?.line_decomposition_status,
     package_adequacy_review_try: report.package_adequacy_review_try,
-    gazette_repricing_try: report.gazette_repricing_try,
     medula_playbook_entry_count: report.medula_playbook_entry_count,
     total_recoverable_try: report.total_recoverable_try,
     priority: report.priority,

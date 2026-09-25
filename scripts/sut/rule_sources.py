@@ -26,7 +26,6 @@ RULE_FAMILY_YAML_DIRS: dict[str, str] = {
     "drug_indication_prose": "drug_indication",
     "gap_closing_misc": "gap_closing_misc",
     "gap_closing_treatment_2": "gap_closing_treatment_2",
-    "gazette_repricing_prose": "gazette_repricing",
     "material_bundling_prose": "material_bundling",
     "material_pairing_uplift": "material_pairing_uplift",
     "payment_method_2_2": "payment_method_2_2",

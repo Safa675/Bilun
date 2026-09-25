@@ -474,7 +474,6 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
         _yaml_fresh_target("material_bundling_prose", rule_set_id="material_bundling_prose", title=""),
         _yaml_fresh_target("specialty_materials_prose", rule_set_id="specialty_materials_prose", title=""),
         _yaml_fresh_target("copay_general_1_8", rule_set_id="copay_general_1_8", title=""),
-        _yaml_fresh_target("gazette_repricing_prose", rule_set_id="gazette_repricing_prose", title=""),
         _yaml_fresh_target("material_pairing_uplift", rule_set_id="material_pairing_uplift", title=""),
         _yaml_fresh_target("procedure_pairing_prose", rule_set_id="procedure_pairing_prose", title=""),
         _yaml_fresh_target("drg_package_adequacy_prose", rule_set_id="drg_package_adequacy_prose", title=""),

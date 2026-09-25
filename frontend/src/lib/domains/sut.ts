@@ -1022,33 +1022,6 @@ export interface DrugIndicationReview extends ExactnessState {
   rule_source?: string;
 }
 
-export interface GazetteRepricingOpportunity extends ExactnessState {
-  rule_source?: string;
-  opportunities: Array<{
-    claim_id?: string;
-    procedure_line_id?: string;
-    procedure_code?: string;
-    procedure_name?: string;
-    service_date?: string;
-    amendment_effective_date?: string;
-    catalog?: string;
-    quantity?: number;
-    price_at_service_try?: number;
-    amended_list_price_try?: number;
-    actual_payable_per_unit_try?: number;
-    recoverable_repricing_try?: number;
-    recommendation_kind?: string;
-    review_kind?: string;
-    included_in_sgk_total?: boolean;
-    savings_category?: string;
-    sut_section_id?: string;
-    detail?: string;
-  }>;
-  total_repricing_try?: number;
-  confirmed_repricing_try?: number;
-  review_repricing_try?: number;
-}
-
 export interface DrgPackageAdequacyReview extends ExactnessState {
   rule_source?: string;
   opportunities: Array<{
@@ -1179,7 +1152,6 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   procedure_addon_uplift?: ProcedureAddonUplift;
   procedure_capture_gap?: ProcedureCaptureGap;
   drg_package_adequacy?: DrgPackageAdequacyReview;
-  gazette_repricing?: GazetteRepricingOpportunity;
   medula_rejection_playbook?: MedulaRejectionPlaybook;
   claim_submission_checklist?: ClaimSubmissionChecklist;
   drug_indication?: DrugIndicationReview;
@@ -1190,7 +1162,6 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   audit_exposure_try?: number;
   capture_gap_try?: number;
   package_adequacy_review_try?: number;
-  gazette_repricing_try?: number;
   medula_playbook_entry_count?: number;
   claim_submission_checklist_count?: number;
   drug_indication_violation_count?: number;
@@ -1240,7 +1211,6 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   total_audit_exposure?: number;
   total_capture_gap?: number;
   total_package_adequacy_review?: number;
-  total_gazette_repricing?: number;
   total_medula_playbook_entries?: number;
   medula_rejection_ingest_available?: boolean;
   total_material_flags: number;

@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-25 — A review-only label does not rescue a pricing rule without SUT authority
+
+**Pattern:** A post-service price-increase detector had no encoded SUT clause permitting repricing, yet it remained in the optimization engine after automatic rebilling was disabled. It still displayed a monetary "recoverable" amount, so the product suggested value that the service-date tariff could not support.
+
+**Rule:** For SUT-first pricing features, require an amendment-specific effective-date or transition clause that makes the proposed amount payable on the actual service date before surfacing any recoverable amount. If that gate is absent, remove the opportunity across runtime, registry, API, UI, demos, and generated artifacts; a review-only flag or zeroed headline total is insufficient.
+
 ## 2026-09-20 — Focused green tests do not prove semantic arbitration or live/cache contract parity
 
 **Pattern:** A first-pass implementation passed its focused suites while independent review exposed order-dependent route selection, an incomplete public legacy projection, cached/live count drift, false exactness in genuine legacy payloads, missing noncoverage states, and UI/projection contract gaps.

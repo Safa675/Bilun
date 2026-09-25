@@ -58,7 +58,6 @@ def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]
             "procedure_addon_uplift",
             "procedure_capture_gap",
             "drg_package_adequacy",
-            "gazette_repricing",
             "medula_rejection_playbook",
             "claim_submission_checklist",
             "drug_indication",

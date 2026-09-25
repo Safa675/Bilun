@@ -275,33 +275,6 @@ class TestMedulaPlaybookSyntheticDemo:
         assert len(ctx.claims) == 1
 
 
-class TestGazetteRepricingSyntheticDemo:
-    def test_0011_gazette_repricing_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = _patient_for_scenario("sgk_gazette_repricing_600150")
-        ctx = build_patient_claim_context(patient_id, dataset)
-        assert ctx is not None
-
-        demo_claim = _claim_by_scenario_tag(ctx, "sgk_gazette_repricing_600150")
-        report = compute_patient_billing_report(
-            patient_id,
-            claim_context=ctx,
-            copay_exemption={"exempt": False},
-        )
-
-        demo_rows = [
-            row
-            for row in report.gazette_repricing.opportunities
-            if row.get("claim_id") == demo_claim.claim_id
-        ]
-        # The demo claim is dated 2024-06-01; the 2026-01-01 tebliğ is well beyond
-        # the 30-day same-period window.
-        assert demo_rows == []
-        assert report.gazette_repricing_try == 0.0
-        assert report.gazette_repricing.confirmed_repricing_try == 0.0
-        assert report.gazette_repricing.review_repricing_try == 0.0
-        assert len(ctx.claims) == 1
-
-
 class TestPackageAdequacySyntheticDemo:
     def test_0010_package_adequacy_excluded_from_sgk_headline(self, dataset) -> None:
         patient_id = _patient_for_scenario("sgk_package_adequacy_undercoded")

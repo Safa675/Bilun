@@ -23,7 +23,6 @@ from gen.procedures import (
     _pick_blood_uplift_demo_procedures,
     _pick_care_setting_review_demo_procedures,
     _pick_drg_uplift_demo_procedures,
-    _pick_gazette_repricing_demo_procedures,
     _pick_material_uplift_demo_procedures,
     _pick_optional_override_demo_procedures,
     _pick_package_adequacy_demo_procedures,
@@ -120,7 +119,6 @@ def _generate_claims_and_lines(
         procedure_addon_demo = episode.get("_sgk_procedure_addon_demo")
         procedure_capture_demo = episode.get("_sgk_procedure_capture_demo")
         package_adequacy_demo = episode.get("_sgk_package_adequacy_demo")
-        gazette_repricing_demo = episode.get("_sgk_gazette_repricing_demo")
         medula_playbook_demo = episode.get("_sgk_medula_playbook_demo")
         medula_demo_spec = (
             _MEDULA_DEMO_SPECS.get(pid.rsplit("-", 1)[-1])
@@ -160,8 +158,6 @@ def _generate_claims_and_lines(
             if claim_readiness_spec
             else "sgk_session_uplift_cerrahi"
             if session_uplift_demo
-            else "sgk_gazette_repricing_600150"
-            if gazette_repricing_demo
             else "sgk_package_adequacy_undercoded"
             if package_adequacy_demo
             else "sgk_procedure_capture_kolonoskopi"
@@ -194,7 +190,6 @@ def _generate_claims_and_lines(
             or procedure_addon_demo
             or procedure_capture_demo
             or package_adequacy_demo
-            or gazette_repricing_demo
             or medula_playbook_demo
             or session_uplift_demo
             or material_prose_demo
@@ -247,13 +242,6 @@ def _generate_claims_and_lines(
             )
         elif care_setting_demo:
             proc_specs = _pick_care_setting_review_demo_procedures(
-                episode,
-                ek2b_procs=ek2b_procs,
-                ek2c_packages=ek2c_packages,
-                rng=rng,
-            )
-        elif gazette_repricing_demo:
-            proc_specs = _pick_gazette_repricing_demo_procedures(
                 episode,
                 ek2b_procs=ek2b_procs,
                 ek2c_packages=ek2c_packages,

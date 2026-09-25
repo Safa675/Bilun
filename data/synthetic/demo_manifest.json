@@ -5,7 +5,6 @@
     "0006",
     "0009",
     "0010",
-    "0011",
     "0013",
     "0029",
     "0038"
@@ -39,7 +38,6 @@
     "0008": "sgk_procedure_addon_kolonoskopi",
     "0009": "sgk_procedure_capture_kolonoskopi",
     "0010": "sgk_package_adequacy_undercoded",
-    "0011": "sgk_gazette_repricing_600150",
     "0012": "medula_rejection_1688_molecular_microbiology",
     "0013": "sgk_session_uplift_cerrahi",
     "0018": "medula_rejection_0612_board_report_missing",

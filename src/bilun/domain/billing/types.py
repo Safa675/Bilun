@@ -130,15 +130,6 @@ DRG_PACKAGE_ADEQUACY_UNAVAILABLE_REASON = (
     "Package adequacy review requires exact procedure claim lines with package "
     "candidate flags and primary ICD-10."
 )
-GAZETTE_REPRICING_REQUIRED_INPUTS = (
-    "procedure_claim_lines",
-    "procedure_dates",
-    "expected_payable_try",
-)
-GAZETTE_REPRICING_UNAVAILABLE_REASON = (
-    "Gazette repricing review requires exact procedure claim lines with service "
-    "dates and payable amounts."
-)
 MEDULA_PLAYBOOK_REQUIRED_INPUTS = (
     "medula_rejection_events",
 )
@@ -559,42 +550,6 @@ class ProcedureAddonUplift(_UpliftBlockMixin):
 
 
 @dataclass
-class GazetteRepricingOpportunity:
-    """Prospective repricing when a post-service tebliğ raised gazette list prices."""
-
-    opportunities: list[dict[str, Any]] = field(default_factory=list)
-    exactness_status: str = EXACTNESS_STATUS_EXACT
-    unavailable_reason: str | None = None
-    required_inputs_missing: list[str] = field(default_factory=list)
-    rule_source: str = "EK-2B/EK-2C gazette amendment repricing — prospective"
-
-    @property
-    def total_repricing_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_repricing_try") or 0.0)
-                for row in self.opportunities
-            ),
-            2,
-        )
-
-    @property
-    def confirmed_repricing_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_repricing_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def review_repricing_try(self) -> float:
-        return round(self.total_repricing_try - self.confirmed_repricing_try, 2)
-
-
-@dataclass
 class DrgPackageAdequacyReview(_UpliftBlockMixin):
     """Advisory review when billed EK-2/C package may be under-coded."""
 
@@ -803,9 +758,6 @@ class BillingActionReport:
     drg_package_adequacy: DrgPackageAdequacyReview = field(
         default_factory=DrgPackageAdequacyReview
     )
-    gazette_repricing: GazetteRepricingOpportunity = field(
-        default_factory=GazetteRepricingOpportunity
-    )
     medula_rejection_playbook: MedulaRejectionPlaybook = field(
         default_factory=MedulaRejectionPlaybook
     )
@@ -819,7 +771,6 @@ class BillingActionReport:
     audit_exposure_try: float = 0.0
     capture_gap_try: float = 0.0
     package_adequacy_review_try: float = 0.0
-    gazette_repricing_try: float = 0.0
     medula_playbook_entry_count: int = 0
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0
@@ -868,7 +819,6 @@ class CohortRecoverySummary:
     total_audit_exposure: float = 0.0
     total_capture_gap: float = 0.0
     total_package_adequacy_review: float = 0.0
-    total_gazette_repricing: float = 0.0
     total_medula_playbook_entries: int = 0
     medula_rejection_ingest_available: bool = False
     total_material_flags: int = 0

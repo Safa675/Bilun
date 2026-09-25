@@ -4,7 +4,6 @@ Registry `coverage_status` vs dashboard `has_algorithmic_gap` after Wave 2 class
 
 | rule_id | registry | primary gaps | engine | notes |
 |---------|----------|--------------|--------|-------|
-| `gazette_repricing` | **implemented** | 0 | Temporal EK-2B/EK-2C price history + 11-code seed; **30-day same-period heuristic**, review-only (no auto-rebill) | Not clause-keyword driven |
 | `procedure_pairing` | partial | ≤4 | 6 JSON add-on rules | §2.2.2.A scoped |
 | `material_pairing` | partial | 0 | 12 JSON pairing rules | §3.1.1 fallback → `material_bundling_prose` |
 | `medula_rejection_playbook` | partial | 0 | Event + **10** template JSON | §1.7/§5.1 → `provizyon_medula` (non_algorithmic) |

@@ -439,23 +439,6 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         description_tr="EK-2/C paket kodu yeterliliği gözden geçirmesi (pilot JSON kuralları)",
     ),
     RuleRegistryEntry(
-        rule_id="gazette_repricing",
-        rule_category="pricing",
-        rule_category_tr="Tebliğ Sonrası Yeniden Fiyatlama",
-        coverage_status="implemented",
-        domain_modules=(
-            "src/bilun/domain/prose_rules/gazette_repricing.py",
-            "src/bilun/domain/billing/claim_gazette_repricing.py",
-            "data/gazette/prose_rules/gazette_repricing_prose.json",
-            "data/gazette/prose_manifests/L2.2_gazette_repricing_encoded_manifest.json",
-        ),
-        sut_section_prefixes=("1.1", "2.2"),
-        annex_refs=("EK-2/B", "EK-2/C"),
-        keywords=("yeniden faturalandır", "tebliğde değiştirilen", "liste fiyat"),
-        description="Prospective gazette repricing gate (display-only; excluded from SGK headline)",
-        description_tr="Tebliğ sonrası prospektif yeniden fiyatlama kapısı (gösterim amaçlı; SGK toplamına dahil değil)",
-    ),
-    RuleRegistryEntry(
         rule_id="procedure_pairing",
         rule_category="procedure_pairing",
         rule_category_tr="İşlem Eşleştirme (Add-on)",

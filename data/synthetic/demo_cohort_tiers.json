@@ -11,9 +11,9 @@
     "C": "Filler — generic randomized claims for cohort volume and diversity."
   },
   "counts": {
-    "tier_a": 9,
+    "tier_a": 8,
     "tier_b": 16,
-    "tier_c": 25
+    "tier_c": 26
   },
   "tier_a": [
     {
@@ -68,17 +68,6 @@
       "tier": "A",
       "scenario_tag": "sgk_package_adequacy_undercoded",
       "fault": "package_underbilled",
-      "department": null,
-      "primary_icd10": null,
-      "is_default_landing": false,
-      "demo_ready": true
-    },
-    {
-      "patient_id": "SENTETIK-HASTA-0011",
-      "patient_index": "0011",
-      "tier": "A",
-      "scenario_tag": "sgk_gazette_repricing_600150",
-      "fault": "gazette_stale_price",
       "department": null,
       "primary_icd10": null,
       "is_default_landing": false,
@@ -300,6 +289,17 @@
     {
       "patient_id": "SENTETIK-HASTA-0001",
       "patient_index": "0001",
+      "tier": "C",
+      "scenario_tag": null,
+      "fault": null,
+      "department": null,
+      "primary_icd10": null,
+      "is_default_landing": false,
+      "demo_ready": false
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0011",
+      "patient_index": "0011",
       "tier": "C",
       "scenario_tag": null,
       "fault": null,

@@ -7,7 +7,6 @@ import {
   CopayOptimizationSection,
   DrgPackageAdequacyReviewSection,
   DrgUpliftSection,
-  GazetteRepricingSection,
   MaterialUpliftSection,
   ProcedureAddonUpliftSection,
   ProcedureCaptureGapSection,
@@ -24,7 +23,7 @@ const UPLIFT_COLOR = "#2F6E4E";
  * View 2 — Gelir Optimizasyonu & Hak Kazanım (Revenue Recovery).
  *
  * Groups the surfaces `getFindingType` classifies as `opportunity`
- * (copay + all uplift/repricing/care-setting detectors) with their KPIs.
+ * (copay + all uplift/care-setting detectors) with their KPIs.
  */
 export default function RevenueViewSection({
   billingReport,
@@ -89,9 +88,6 @@ export default function RevenueViewSection({
       )}
       {billingReport.drg_package_adequacy && (
         <DrgPackageAdequacyReviewSection reviewData={billingReport.drg_package_adequacy} />
-      )}
-      {billingReport.gazette_repricing && (
-        <GazetteRepricingSection repricingData={billingReport.gazette_repricing} />
       )}
       {billingReport.drg_uplift && <DrgUpliftSection drgData={billingReport.drg_uplift} />}
       {billingReport.care_setting_review && (

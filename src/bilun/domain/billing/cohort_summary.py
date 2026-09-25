@@ -150,7 +150,6 @@ def _savings_by_category(summary: CohortRecoverySummary) -> dict[str, float]:
         "audit_exposure": summary.total_audit_exposure,
         "capture_gap": summary.total_capture_gap,
         "package_adequacy_review": summary.total_package_adequacy_review,
-        "gazette_repricing": summary.total_gazette_repricing,
         "lab": summary.total_compliance_adjustment,
         "copay": summary.total_copay_savings,
         "strategy": summary.total_strategy_uplift,

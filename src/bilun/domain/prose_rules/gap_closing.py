@@ -306,8 +306,7 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     # reading header fields from claims[0] would let a second bill's
     # procedures/drugs/materials contaminate this claim's derived flags
     # (procedure_category_any, payment_method, drug_category, ...). This
-    # mirrors the claim-scoping the gazette_repricing / material_uplift
-    # wrappers apply.
+    # mirrors the claim-scoping the material_uplift wrapper applies.
     claim_id = getattr(header, "claim_id", None)
 
     def _lines_for_claim(attr: str) -> list[Any]:
@@ -516,7 +515,7 @@ def check_gap_closing_misc_for_context(ctx: Any) -> list[dict[str, Any]]:
     and ``build_bill_claim_context``). A whole-patient ``PatientClaimContext``
     carrying multiple claims is never passed here in production; callers that
     need every claim evaluated must iterate ``ctx.claims`` and slice. The
-    gazette_repricing / material_uplift wrappers share this contract.
+    The material_uplift wrapper shares this contract.
     """
     context = _build_gap_closing_context(ctx)
     if not context:

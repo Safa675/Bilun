@@ -343,31 +343,6 @@ def _pick_optional_override_demo_procedures(
     )
 
 
-def _pick_gazette_repricing_demo_procedures(
-    episode: dict,
-    *,
-    ek2b_procs: dict[str, pd.DataFrame],
-    ek2c_packages: dict[str, pd.DataFrame],
-    rng: np.random.Generator,
-) -> list[dict]:
-    """§3.3 demo: 600150 on 2024-06-01 priced at pre-2026 tebliğ gazette rate."""
-    _ = (episode, ek2c_packages, rng)
-    name, _price = _lookup_ek2b_price("600150", ek2b_procs)
-    stale_price = 449.73
-    return [
-        {
-            "code": "600150",
-            "name": name,
-            "price": stale_price,
-            "category": "islem",
-            "included_in_package": False,
-            "billed_override": stale_price,
-            "payable_override": stale_price,
-            "disable_surcharge": True,
-        },
-    ]
-
-
 def _pick_package_adequacy_demo_procedures(
     episode: dict,
     *,
