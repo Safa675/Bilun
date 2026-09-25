@@ -7,13 +7,13 @@ Make PR #94's backend CI pass by reconciling the committed registry-coverage art
 - [x] Remove only the obsolete `gazette_repricing` row from `sut_registry_coverage.parquet` and verify every remaining row equals the current registry-derived summary.
 - [x] Update the cohort-tier test to the current 8/16/26 split and assert former demo patient 0011 is no longer Tier A.
 - [x] Run the exact backend CI gates on the final branch: Ruff, full Python test suite, rule compiler artifact check, and manifest parity audit; inspect binary/test diff.
-- [ ] Commit and push the fix to PR #94, then confirm the new CI result.
+- [x] Commit and push the fix to PR #94, then confirm the new CI result.
 
 ### Out of Scope
 Restoring the repricing algorithm, broad synthetic regeneration, other SUT coverage changes, PR merge, deployment, or production cache rebuild.
 
 ### Review
-Local verification passed on the narrow fix: Ruff; full Python suite **2774 passed, 9 warnings**; rule compiler `--check` found **134 byte-identical artifacts**; manifest parity scanned **23 manifests with 0 issues**; targeted registry and cohort-tier suites passed. The parquet change contains only the obsolete registry row removal, with all 46 survivor rows/schema/order unchanged. Full pytest and an interrupted duplicate compiler check temporarily rewrote unrelated drug manifests; their generated changes were cleaned, and only the intended four files remain modified before commit.
+Local verification passed on the narrow fix: Ruff; full Python suite **2774 passed, 9 warnings**; rule compiler `--check` found **134 byte-identical artifacts**; manifest parity scanned **23 manifests with 0 issues**; targeted registry and cohort-tier suites passed. The parquet change contains only the obsolete registry row removal, with all 46 survivor rows/schema/order unchanged. Full pytest and an interrupted duplicate compiler check temporarily rewrote unrelated drug manifests; their generated changes were cleaned before commit. Fix commit `10d04811` was pushed to PR #94; GitHub CI run `36150469229` completed successfully for backend and frontend.
 
 ---
 
