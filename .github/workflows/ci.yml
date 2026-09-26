@@ -31,8 +31,6 @@ jobs:
         run: ruff check src/ scripts/
 
       - name: Run Python tests
-        env:
-          POLARS_MAX_THREADS: "1"
         run: python -m pytest -q --durations=20
 
       - name: Check generated SUT rule artifacts
