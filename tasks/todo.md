@@ -1,3 +1,40 @@
+## Task: Reduce full-suite runtime without reducing coverage
+
+### Goal
+Publish a reviewed implementation PR that preserves every backend/frontend test and generated SUT artifact while making full-suite local runs faster and measuring the Polars thread setting on GitHub Actions before selecting its final CI value.
+
+### Subtasks
+- [x] Independently review and confirm this plan against the measured three-file prototype and the existing CI gates before implementation.
+- [x] Apply safe C YAML loading with the Python SafeLoader fallback in the rule-source and deferral-table loaders, preserving fresh parsed objects and safe-tag behavior.
+- [x] Resolve the unchanged all-rule source union once in a module-scoped immutable fixture, preserving all manifest cases and assertion expressions.
+- [x] Document `POLARS_MAX_THREADS=1 python -m pytest -q --durations=20` as the standard full-suite local command and add CI duration reporting, leaving the first PR revision's CI thread setting unchanged; add no wrapper, dependency, or pytest bootstrap.
+- [x] Review the final source/configuration diff independently, including loader semantics, fixture lifetime, command argument handling, and CI trial attribution.
+- [x] Run the complete backend suite from an empty worktree-local cache and compare all 2,774 test identities and statuses with the investigation baseline; run Ruff, compiler `--check`, and manifest parity, requiring 134 byte-identical generated artifacts and no tracked data drift.
+- [x] Run all frontend CI gates on the final branch: TypeScript, the complete 320-test Vitest suite, and production build, coordinating heavy local execution with the backend run.
+- [x] Record reproducible local timing, exact validation evidence, independent review, and any limitations in the review section; inspect the final diff and check existing CI before each push.
+- [x] Commit, push the new branch, and open and attach a draft implementation PR after independent diff review and the completed exact-prototype gates; overlap hosted CI with final-branch local confirmation, keeping the PR draft until final local gates and repeated CI validation pass.
+- [x] After the uncapped PR revision is green, add the step-scoped CI thread trial as an environment-only workflow revision; repeat uncapped/capped GitHub Actions attempts with the same source changes, compare full-test and compiler steps, retain the measured CI choice, and record the final result without projecting local speedup onto CI.
+
+### Out of Scope
+Merging or deploying; touching the live database/cache; removing, skipping, narrowing, or weakening tests; xdist; broad resolver, artifact-writer, or cleanup refactors; changing production thread settings; changing generated rules/manifests or clinical/payment semantics.
+
+### Review
+Plan reviewed and confirmed before implementation. Independent review found no correctness issues: the three backend files have AST parity with the measured prototype, parsing retains the safe fallback and fresh objects, and manifest assertions and parameters are unchanged. [PR #95](https://github.com/Safa675/Bilun/pull/95) contains the implementation on `perf/full-suite-runtime`; no merge or deployment is part of this task.
+
+Local gates passed: **2,774 backend tests, zero skips/errors/failures, 9 warnings, 569.13s pytest / 573.18s external**, with exactly the same ordered identities/statuses as the original baseline; Ruff; compiler check **134 artifacts byte-identical** (47.54s); manifest parity **23 manifests, zero issues**; frontend TypeScript, **55 Vitest files / 320 tests**, and production build. The backend began with an absent worktree-local cache, source/configuration hashes stayed stable throughout validation, and the worktree was clean afterward with no generated-data drift. The original local baseline was 1,024.55s; host activity varies, so local percentages are not CI predictions.
+
+Hosted comparison retained identical installed dependencies, Python 3.13.15, runner image, and cache key. Two successful attempts per configuration ran all 2,774 backend tests and reproduced all 134 compiler artifacts:
+
+| Configuration | Python test step (seconds) | Backend job (seconds) | Compiler step (seconds) |
+|---|---|---|---|
+| Original main, `7a6e854f` | 329 / 336 | 404 / 415 | 34 / 38 |
+| Parser/fixture changes, default threads, `782fe49f` | 231 / 167 | 289 / 225 | 19 / 11 |
+| Same source, CI one-thread trial, `61e63746` | 214 / 136 | 270 / 185 | 16 / 10 |
+
+Final decision: retain **default CI threads** and the measured **one-thread local command**. The CI trial's ranges overlap substantially with default-thread runs, and unchanged compiler/startup paths also varied across runner regions; these samples do not establish an isolated CI thread-budget benefit. The parser/fixture improvement is retained, and CI now reports its slowest 20 phases. All existing backend/frontend/compiler/build gates remain enabled. Evidence: [baseline attempts](https://github.com/Safa675/Bilun/actions/runs/36152110893), [default-thread implementation attempts](https://github.com/Safa675/Bilun/actions/runs/36260747322), [one-thread trial attempts](https://github.com/Safa675/Bilun/actions/runs/36261536404). Raw logs, source hashes, case parity, and independent reviews are retained in `/root/artifacts/bilun-test-implementation-2026-09-26`.
+
+---
+
 ## Task: Fix PR #94 CI after repricing removal
 
 ### Goal

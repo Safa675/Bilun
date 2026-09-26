@@ -40,23 +40,11 @@ def _all_drug_manifests() -> list[Path]:
     return sorted(_MANIFEST_DIR.glob("L4.2_drug_indication_*.json"))
 
 
-@pytest.mark.parametrize("manifest_path", _all_drug_manifests())
-def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
-    """Invariant 1: encoded_clause_ids should trace to rule gate_b_sources."""
+@pytest.fixture(scope="module")
+def all_rule_sources() -> frozenset[str]:
+    """Resolve the unchanged all-rule source union once for this module."""
     import polars as pl
 
-    from scripts.sut.prose.clause_identity import resolve_gate_b_sources_to_clause_ids
-
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    section_id = manifest.get("section_id", "")
-    # Parse section prefixes from manifest section_id (e.g. "4.2.13,4.2.16")
-    prefixes = tuple(p.strip() for p in section_id.split(",") if p.strip())
-
-    # Derive expected encoded set from rules matching the manifest's section prefixes.
-    # NOTE: committed manifests predate some rule additions, so the manifest may
-    # have FEWER encoded IDs than the current rules. The invariant we test is
-    # the reverse: every encoded ID in the manifest should trace to a rule.
-    # (Full bidirectional parity requires manifest regeneration.)
     rules_by_section = _load_rules_by_section()
     clauses = pl.read_parquet(_PROJECT_ROOT / "data/gazette/sut_clauses.parquet")
 
@@ -95,9 +83,20 @@ def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
                 out.add(ref)
         return out
 
-    all_rule_sources = _resolved_sources(
-        [rule for rules in rules_by_section.values() for rule in rules]
+    return frozenset(
+        _resolved_sources(
+            [rule for rules in rules_by_section.values() for rule in rules]
+        )
     )
+
+
+@pytest.mark.parametrize("manifest_path", _all_drug_manifests())
+def test_manifest_encoded_set_matches_rule_sources(
+    manifest_path: Path,
+    all_rule_sources: frozenset[str],
+) -> None:
+    """Invariant 1: encoded_clause_ids should trace to rule gate_b_sources."""
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     actual_encoded = set(str(x) for x in (manifest.get("encoded_clause_ids") or []))
     # Manifests still store C*; compare in clause_id space after resolving

@@ -91,7 +91,10 @@ def load_deferral_table(
         resolve_gate_b_ref_to_clause_ids,
     )
 
-    payload = yaml.safe_load(_DEFERRAL_TABLE_PATH.read_text(encoding="utf-8"))
+    payload = yaml.load(
+        _DEFERRAL_TABLE_PATH.read_text(encoding="utf-8"),
+        Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader),
+    )
     entries = payload.get("entries") or []
     frame = clauses
     if frame is None:
