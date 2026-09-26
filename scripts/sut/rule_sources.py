@@ -462,7 +462,10 @@ def load_yaml_rules(path: Path) -> list[dict[str, Any]]:
     """Load rules from a section YAML file."""
     if not path.is_file():
         raise FileNotFoundError(path)
-    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload = yaml.load(
+        path.read_text(encoding="utf-8"),
+        Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader),
+    )
     if not isinstance(payload, dict):
         raise ValueError(f"{path}: YAML root must be a mapping")
     rules = payload.get("rules")

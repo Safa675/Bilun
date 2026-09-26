@@ -92,10 +92,14 @@ Run order: `extract_sut_prose.py` → `build_clause_embeddings.py`. If the sidec
 ## Testing
 
 ```bash
-pytest                  # Unit tests
-pytest --live           # Smoke tests against live server
+POLARS_MAX_THREADS=1 python -m pytest -q --durations=20  # Full backend suite
 cd frontend && npx vitest run  # Frontend tests
 ```
+
+The backend command limits Polars threads for that test process and its subprocesses.
+This reduces thread overhead for the suite's small data operations while retaining
+every test. Production thread settings are unchanged. `--durations=20` reports the
+slowest setup, test, and teardown phases after the run.
 
 ## License
 

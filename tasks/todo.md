@@ -1,3 +1,28 @@
+## Task: Reduce full-suite runtime without reducing coverage
+
+### Goal
+Publish a reviewed implementation PR that preserves every backend/frontend test and generated SUT artifact while making full-suite local runs faster and measuring the Polars thread setting on GitHub Actions before selecting its final CI value.
+
+### Subtasks
+- [x] Independently review and confirm this plan against the measured three-file prototype and the existing CI gates before implementation.
+- [x] Apply safe C YAML loading with the Python SafeLoader fallback in the rule-source and deferral-table loaders, preserving fresh parsed objects and safe-tag behavior.
+- [x] Resolve the unchanged all-rule source union once in a module-scoped immutable fixture, preserving all manifest cases and assertion expressions.
+- [x] Document `POLARS_MAX_THREADS=1 python -m pytest -q --durations=20` as the standard full-suite local command and add CI duration reporting, leaving the first PR revision's CI thread setting unchanged; add no wrapper, dependency, or pytest bootstrap.
+- [x] Review the final source/configuration diff independently, including loader semantics, fixture lifetime, command argument handling, and CI trial attribution.
+- [ ] Run the complete backend suite from an empty worktree-local cache and compare all 2,774 test identities and statuses with the investigation baseline; run Ruff, compiler `--check`, and manifest parity, requiring 134 byte-identical generated artifacts and no tracked data drift.
+- [x] Run all frontend CI gates on the final branch: TypeScript, the complete 320-test Vitest suite, and production build, coordinating heavy local execution with the backend run.
+- [ ] Record reproducible local timing, exact validation evidence, independent review, and any limitations in the review section; inspect the final diff and check existing CI before each push.
+- [ ] Commit, push the new branch, and open and attach a draft implementation PR after independent diff review and the completed exact-prototype gates; overlap hosted CI with final-branch local confirmation, keeping the PR draft until final local gates and repeated CI validation pass.
+- [ ] After the uncapped PR revision is green, add the step-scoped CI thread trial as an environment-only workflow revision; repeat uncapped/capped GitHub Actions attempts with the same source changes, compare full-test and compiler steps, retain the measured CI choice, and record the final result without projecting local speedup onto CI.
+
+### Out of Scope
+Merging or deploying; touching the live database/cache; removing, skipping, narrowing, or weakening tests; xdist; broad resolver, artifact-writer, or cleanup refactors; changing production thread settings; changing generated rules/manifests or clinical/payment semantics.
+
+### Review
+Plan reviewed and confirmed by the root agent before implementation. Independent architecture review confirmed the plan and the three-file backend patch: AST parity with the measured prototype, safe parser fallback and fresh objects, unchanged fixture assertions and parameters. The tested prototype passed all 2,774 backend cases, Ruff, the compiler check (134 byte-identical artifacts), and manifest parity. Final-branch frontend gates pass: TypeScript, 55 Vitest files / 320 tests, and production build. Final-branch backend confirmation is running from a cold isolated cache. Root approved opening the initial PR as a draft while that confirmation runs, based on source AST identity with the fully validated prototype; readiness remains gated on final local checks and repeated CI. Backend implementation and local validation are owned by backend_profile; local-command/CI integration and frontend validation by frontend_ci; independent review by test_architecture; commit, push, PR, and CI timing coordination by the root agent. Evidence is retained outside the repository in `/root/artifacts/bilun-test-implementation-2026-09-26`.
+
+---
+
 ## Task: Fix PR #94 CI after repricing removal
 
 ### Goal

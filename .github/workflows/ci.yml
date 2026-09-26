@@ -31,7 +31,7 @@ jobs:
         run: ruff check src/ scripts/
 
       - name: Run Python tests
-        run: python -m pytest -q
+        run: python -m pytest -q --durations=20
 
       - name: Check generated SUT rule artifacts
         run: python scripts/sut/compile_rules.py --check
