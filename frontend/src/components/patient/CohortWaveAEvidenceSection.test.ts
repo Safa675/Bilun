@@ -61,6 +61,7 @@ describe("cohort Wave A response integrity", () => {
       line_id: "L-1",
       observed_billed_amount_try: 175.25,
       observed_amount_basis: "procedure_claim_line.billed_amount_try" as const,
+      observed_amount_unavailable_reason: null,
     };
     expect(validCohortEvidencePage({ ...page, rows: [sourceRow] }, "financial_rows", 0, ["P-1"], index, true)).toBe(true);
     expect(validCohortEvidencePage({ ...page, rows: [{ ...sourceRow, line_id: null }] }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
