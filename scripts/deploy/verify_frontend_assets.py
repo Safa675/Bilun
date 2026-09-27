@@ -56,9 +56,9 @@ def extract_assets_from_html(html: str) -> list[str]:
     extractor.feed(html)
     found_urls = set(extractor.asset_urls)
 
-    # Next.js App Router flight/RSC payloads in inline scripts often reference static chunks:
-    # e.g. "/_next/static/chunks/27dwgj7lkl2ks.js" or "static/chunks/..."
-    flight_pattern = re.compile(r'["\'](/_next/static/[^"\'\s>]+)["\']')
+    # Flight paths inside nested JavaScript strings may have escaped quotes;
+    # their trailing escape backslashes are syntax, not part of the asset URL.
+    flight_pattern = re.compile(r'["\'](/_next/static/[^\\"\'\s>]+)\\*["\']')
     for match in flight_pattern.findall(html):
         found_urls.add(match)
 

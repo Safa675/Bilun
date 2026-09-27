@@ -19,6 +19,17 @@ from scripts.deploy.verify_frontend_assets import (
 )
 
 
+ESCAPED_FLIGHT_HTML = r'''<html>
+<script src="/_next/static/chunks/main.js"></script>
+<script>self.__next_f.push([1,"4:I[100,[\"/_next/static/chunks/main.js\",\"/_next/static/chunks/flight-only.js\"],\"Entry\"]"])</script>
+</html>'''
+
+MULTIPLY_ESCAPED_FLIGHT_HTML = r'''<html>
+<script src="/_next/static/chunks/main.js"></script>
+<script>self.__next_f.push([1,"x:[\\\"/_next/static/chunks/missing.js\\\"]"])</script>
+</html>'''
+
+
 def test_extract_assets_from_standard_html():
     html = """
     <!DOCTYPE html>
@@ -113,6 +124,59 @@ def test_verify_entrypoint_success(mock_server):
     assert report["assets_total"] == 2
     assert report["assets_passed"] == 2
     assert report["assets_failed"] == 0
+
+
+def test_verify_entrypoint_accepts_escaped_flight_assets(mock_server):
+    MockHandler.routes = {
+        "/login": (200, ESCAPED_FLIGHT_HTML.encode(), "text/html"),
+        "/_next/static/chunks/main.js": (200, b"main();", "application/javascript"),
+        "/_next/static/chunks/flight-only.js": (200, b"flight();", "application/javascript"),
+    }
+
+    success, report = verify_entrypoint(f"{mock_server}/login", timeout=2.0, verbose=False)
+
+    assert success is True
+    assert report["assets_total"] == 2
+    assert report["assets_passed"] == 2
+    assert report["failed_assets"] == []
+    assert {urlparse(asset["url"]).path for asset in report["passed_assets"]} == {
+        "/_next/static/chunks/main.js",
+        "/_next/static/chunks/flight-only.js",
+    }
+
+
+def test_verify_entrypoint_rejects_missing_escaped_flight_asset(mock_server):
+    MockHandler.routes = {
+        "/login": (200, ESCAPED_FLIGHT_HTML.encode(), "text/html"),
+        "/_next/static/chunks/main.js": (200, b"main();", "application/javascript"),
+    }
+
+    success, report = verify_entrypoint(f"{mock_server}/login", timeout=2.0, verbose=False)
+
+    assert success is False
+    assert report["assets_total"] == 2
+    assert report["assets_passed"] == 1
+    assert report["assets_failed"] == 1
+    assert report["failed_assets"][0]["url"] == (
+        f"{mock_server}/_next/static/chunks/flight-only.js"
+    )
+    assert report["failed_assets"][0]["status"] == 404
+
+
+def test_verify_entrypoint_rejects_missing_multiply_escaped_flight_asset(mock_server):
+    MockHandler.routes = {
+        "/login": (200, MULTIPLY_ESCAPED_FLIGHT_HTML.encode(), "text/html"),
+        "/_next/static/chunks/main.js": (200, b"main();", "application/javascript"),
+    }
+
+    success, report = verify_entrypoint(f"{mock_server}/login", timeout=2.0, verbose=False)
+
+    assert success is False
+    assert report["assets_total"] == 2
+    assert report["assets_passed"] == 1
+    assert report["assets_failed"] == 1
+    assert report["failed_assets"][0]["url"] == f"{mock_server}/_next/static/chunks/missing.js"
+    assert report["failed_assets"][0]["status"] == 404
 
 
 def test_verify_entrypoint_incident_regression_chunk_mismatch(mock_server):

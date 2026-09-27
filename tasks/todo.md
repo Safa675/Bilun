@@ -823,3 +823,29 @@ Production correction and the post-production audit checkpoint are ready for ind
 After production commit `0e709489a54339f9fd4c2d143f0ce30a53ffb94c`, the deferred audit generator/test/matrix/Markdown checkpoint was refreshed with that exact source revision. The explicit noncoverage contract is that present but unencoded drug lines remain `not_in_encoded_corpus` manual-review evaluations, contribute no violation or money, invent no missing input, and make the Drug Indication/report rollup `partial_exact`. The CI repair focused suite passed `46 passed in 49.67s`; the exact backend CI command passed `2771 passed, 9 warnings in 1120.68s`; all 137 generated SUT rule/manifest artifacts were byte-identical; the surfacing generator `--check`, full-source Ruff, changed-file Ruff, and `git diff --check` passed. No merge, deploy, production cache rebuild, branch switch, or `main` change occurred.
 
 ---
+## Task: Restore trustworthy frontend asset verification in Deploy
+
+### Goal
+Make the production deployment check find its verifier, accept healthy Next.js assets, reject missing assets, and run only after successful CI on this repository's main push.
+
+### Subtasks
+- [x] Reproduce the missing verifier on the GitHub runner and the escaped-asset false 404s against the live login page.
+- [x] Add a same-repository main-push guard, ensure the VPS deploys only the exact commit whose CI passed, and check out that trusted CI commit on the Deploy runner without persisting checkout credentials.
+- [x] Parse escaped Flight asset paths without retaining the escape backslash; preserve de-duplication and checks for real missing assets.
+- [x] Add a regression using raw escaped Flight HTML and a local mock server, covering valid direct and Flight-only assets plus a genuinely missing asset.
+- [x] Run focused verifier tests, source/workflow checks, and the verifier against the live login page; confirm the expected asset set has no malformed URLs.
+- [x] Review the workflow privilege boundary, final diff, and focused test evidence independently.
+- [x] Commit on an isolated branch, check existing branch CI, push, open a reviewable PR, and verify its backend/frontend CI checks.
+- [x] Record final results and any remaining deployment limitation in this review section.
+
+### Out of Scope
+Additional Wave A detectors or rule migration, changes to production cache or pricing, and unrelated deployment architecture. Merging and production deployment wait for review of this specific PR.
+
+### Review
+Plan independently reviewed and approved before implementation, with a same-repository main-push gate, read-only checkout of the triggering CI SHA, and a remote SHA match before checkout or service work. Evidence: latest failed Deploy run 36263168625 completed the VPS step but could not find `scripts/deploy/verify_frontend_assets.py` in the runner workspace. The existing verifier separately found 16 malformed escaped URLs among 33 extracted live references; the corresponding clean assets returned 200. A diagnostic run found 23 unique healthy assets; this observed count is not a permanent contract. The workflow currently fetches latest main at deploy time, so an older green CI could otherwise ship a newer unverified commit; compare remote main with the triggering successful CI SHA before changing services.
+
+Implementation verification: two escaped-Flight regressions failed against the old parser. Independent review caught a multiply escaped Flight-only path that the first fix still missed; its regression failed before the follow-up correction and passed after it. The focused file now passes 10/10 tests in 3.46 seconds from this worktree. Ruff and `git diff --check` passed. The workflow parsed as YAML, its deploy shell block passed `bash -n`, and targeted assertions checked its guard/checkout/remote-SHA ordering. The corrected verifier checked the live `/login` endpoint: 23/23 local assets returned nonempty HTTP 200 responses with zero malformed backslash URLs. Independent final diff review found no remaining blocker.
+
+[PR #96](https://github.com/Safa675/Bilun/pull/96) contains the code on `fix/deploy-asset-verification`. Existing branch CI had zero runs before the push. Its [first hosted CI run](https://github.com/Safa675/Bilun/actions/runs/36315626985) completed successfully on commit `a55bb2a4` with both backend and frontend jobs green. The actual Deploy workflow can only validate this change after it lands on `main` and that main commit's CI succeeds; production deployment and merge remain outside this PR implementation task.
+
+---
