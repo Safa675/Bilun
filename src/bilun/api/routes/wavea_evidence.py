@@ -143,6 +143,42 @@ def _unavailable(
     )
 
 
+def _bill_report_matches_detail(report: Any, detail: dict[str, Any], patient_id: str, claim_id: str) -> bool:
+    """A bill preview must describe its own exhaustive bill-scope evidence."""
+    if not isinstance(report, dict) or report.get("patient_id") != patient_id or (
+        report.get("claim_id") not in (None, claim_id)
+        or report.get("scope") not in (None, "bill")
+    ):
+        return False
+    counts = detail["counts"]
+    expected_coverage = {
+        "schema_version": detail["schema_version"],
+        "available": detail["available"],
+        "unavailable_reason": detail["unavailable_reason"],
+        "tracked_rule_count": len(counts["by_rule"]),
+        "evaluation_count": counts["evaluation_count"],
+        "by_group": counts["by_group"],
+    }
+    if report.get("wavea_coverage") != expected_coverage:
+        return False
+    for report_key, detail_key in (
+        ("claim_reviews", "reviews"),
+        ("claim_advisories", "advisories"),
+        ("financial_findings", "financial_rows"),
+    ):
+        block = report.get(report_key)
+        source = detail[detail_key]
+        if not isinstance(block, dict) or not isinstance(block.get("rows"), list) or (
+            block.get("available") is not detail["available"]
+            or block.get("unavailable_reason") != detail["unavailable_reason"]
+            or block.get("total_rows") != len(source)
+            or block["rows"] != source[: len(block["rows"])]
+            or block.get("has_more") is not (len(block["rows"]) < len(source))
+        ):
+            return False
+    return True
+
+
 @router.get("/wavea-evidence-index", response_model=BilunCachePayloadResponse)
 def get_wavea_evidence_index(
     patient_id: Annotated[list[str] | None, Query()] = None,
@@ -251,6 +287,7 @@ def _wavea_evidence_index_response(
 @router.get("/wavea-evidence/{patient_id}", response_model=BilunCachePayloadResponse)
 def get_wavea_evidence_detail(
     patient_id: str,
+    scope: str = "patient",
     kind: str = "evaluations",
     claim_id: str | None = None,
     rule_id: str | None = None,
@@ -258,8 +295,12 @@ def get_wavea_evidence_detail(
     limit: int = _DEFAULT_LIMIT,
     offset: int = 0,
 ):
-    """Page the separate patient blob; no evaluator runs on API requests."""
+    """Page stored patient or bill evidence; no evaluator runs on API requests."""
     _validate_page(limit, offset)
+    if scope not in ("patient", "bill"):
+        raise ValidationError("scope must be patient or bill")
+    if scope == "bill" and (claim_id is None or not claim_id.strip()):
+        raise ValidationError("bill scope requires a nonblank claim_id")
     if kind not in _KINDS:
         raise ValidationError(f"kind must be one of: {', '.join(_KINDS)}")
     if evidence_id is not None:
@@ -277,8 +318,10 @@ def get_wavea_evidence_detail(
     patients = index.get("patients")
     if not isinstance(patients, dict) or patient_id not in patients:
         raise PatientNotFound(f"Patient {patient_id} not found in Wave A evidence")
+    bill_key = f"{patient_id}::{claim_id}" if scope == "bill" else None
+    table_name = "wavea_bill_evidence_detail" if scope == "bill" else "wavea_evidence_detail"
     try:
-        detail = read_json_payload_row(reader, "wavea_evidence_detail", build_id, patient_id)
+        detail = read_json_payload_row(reader, table_name, build_id, bill_key or patient_id)
     except Exception:
         detail = None
     if (
@@ -293,18 +336,31 @@ def get_wavea_evidence_detail(
         validate_full_wavea_evidence_detail(detail, patient_id)
     except ValueError:
         return _unavailable(reader, build_id, limit, offset)
-    summary = patients[patient_id]
-    fields = (
-        "by_rule", "by_group", "evaluation_count", "review_count", "advisory_count",
-        "financial_count",
-    )
-    if (
-        not isinstance(summary, dict)
-        or summary.get("available") is not detail.get("available")
-        or not isinstance(summary.get("counts"), dict)
-        or summary["counts"] != {field: detail["counts"][field] for field in fields}
-    ):
-        return _unavailable(reader, build_id, limit, offset)
+    if scope == "bill":
+        inventory = detail["claim_scope_inventory"]
+        if inventory["context_state"] != "available" or [
+            row["claim_id"] for row in inventory["claims"]
+        ] != [claim_id]:
+            return _unavailable(reader, build_id, limit, offset)
+        try:
+            report = read_json_payload_row(reader, "patient_bill_billing_report_rows", build_id, bill_key)
+        except Exception:
+            report = None
+        if not _bill_report_matches_detail(report, detail, patient_id, claim_id):
+            return _unavailable(reader, build_id, limit, offset)
+    else:
+        summary = patients[patient_id]
+        fields = (
+            "by_rule", "by_group", "evaluation_count", "review_count", "advisory_count",
+            "financial_count",
+        )
+        if (
+            not isinstance(summary, dict)
+            or summary.get("available") is not detail.get("available")
+            or not isinstance(summary.get("counts"), dict)
+            or summary["counts"] != {field: detail["counts"][field] for field in fields}
+        ):
+            return _unavailable(reader, build_id, limit, offset)
     source = detail.get(kind)
     if not isinstance(source, list):
         return _unavailable(reader, build_id, limit, offset)
@@ -321,6 +377,8 @@ def get_wavea_evidence_detail(
             "available": detail["available"],
             "unavailable_reason": detail.get("unavailable_reason"),
             "patient_id": patient_id,
+            "scope": scope,
+            "claim_id": claim_id if scope == "bill" else None,
             "kind": kind,
             "patient_counts": detail.get("counts"),
             "rows": rows[offset : offset + limit],

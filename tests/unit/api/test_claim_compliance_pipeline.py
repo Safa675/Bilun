@@ -280,6 +280,7 @@ def cached_pipeline(computed, tmp_path, monkeypatch):
     bill_payloads = {key: billing._serialize_billing_report(value) for key, value in bills.items()}
     index = build_cohort_compliance_index(reports)
     wavea_details = {pid: dict(report.wavea_evidence_detail) for pid, report in reports.items()}
+    wavea_bill_details = {key: dict(report.wavea_evidence_detail) for key, report in bills.items()}
     wavea_index = build_full_wavea_evidence_index(wavea_details)
     db_path = tmp_path / "synthetic-claim-compliance.duckdb"
     con = connect(db_path)
@@ -295,8 +296,11 @@ def cached_pipeline(computed, tmp_path, monkeypatch):
         write_json_payload_rows(con, "patient_bill_billing_report_rows", build_id, bill_payloads)
         for detail in wavea_details.values():
             detail["build_id"] = build_id
+        for detail in wavea_bill_details.values():
+            detail["build_id"] = build_id
         wavea_index["build_id"] = build_id
         write_json_payload_rows(con, "wavea_evidence_detail", build_id, wavea_details)
+        write_json_payload_rows(con, "wavea_bill_evidence_detail", build_id, wavea_bill_details)
         upsert_single_json_table(con, "wavea_evidence_index", build_id, wavea_index)
         upsert_single_json_table(con, "cohort_compliance_index", build_id, index)
         complete_build(
@@ -306,6 +310,7 @@ def cached_pipeline(computed, tmp_path, monkeypatch):
                 "patient_bill_billing_report_rows": len(bills),
                 "cohort_compliance_index": 1,
                 "wavea_evidence_detail": len(wavea_details),
+                "wavea_bill_evidence_detail": len(wavea_bill_details),
                 "wavea_evidence_index": 1,
             }, checksums={},
         )
@@ -351,6 +356,57 @@ def _trusted_v2_test_gate(reader, index, build_id):
     except ValueError:
         return False
     return index["n_patients"] == expected
+
+
+def test_bill_wavea_drilldown_uses_own_cached_scope_and_checks_preview(cached_pipeline, monkeypatch):
+    client, _, _, _ = cached_pipeline
+    monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        assert build_id is not None
+        detail = read_json_payload_row(con, "wavea_bill_evidence_detail", build_id, "P1::C-A")
+        report = read_json_payload_row(con, "patient_bill_billing_report_rows", build_id, "P1::C-A")
+    finally:
+        con.close()
+    assert detail is not None and report is not None
+
+    page = client.get(
+        "/api/wavea-evidence/P1",
+        params={"scope": "bill", "claim_id": "C-A", "limit": 25, "offset": 25},
+    ).json()
+    assert page["available"] is True
+    assert page["scope"] == "bill" and page["claim_id"] == "C-A"
+    assert page["patient_counts"] == detail["counts"]
+    assert page["rows"] == detail["evaluations"][25:50]
+    assert page["pagination"]["total_matching"] == len(detail["evaluations"])
+    assert {row["claim_id"] for row in page["rows"]} == {"C-A"}
+    patient_page = client.get(
+        "/api/wavea-evidence/P1", params={"claim_id": "C-A", "limit": 25, "offset": 25}
+    ).json()
+    assert patient_page["scope"] == "patient"
+    assert patient_page["patient_counts"] != page["patient_counts"]
+    assert client.get("/api/wavea-evidence/P1", params={"scope": "bill"}).status_code == 400
+    assert client.get("/api/wavea-evidence/P1", params={"scope": "other"}).status_code == 400
+    assert client.get(
+        "/api/wavea-evidence/P1", params={"scope": "bill", "claim_id": "other"}
+    ).json()["available"] is False
+
+    original_read = wavea_evidence.read_json_payload_row
+    bad_report = deepcopy(report)
+    bad_report["wavea_coverage"]["evaluation_count"] += 1
+    monkeypatch.setattr(
+        wavea_evidence,
+        "read_json_payload_row",
+        lambda reader, table, active_build, key: bad_report
+        if table == "patient_bill_billing_report_rows"
+        else original_read(reader, table, active_build, key),
+    )
+    corrupted = client.get(
+        "/api/wavea-evidence/P1", params={"scope": "bill", "claim_id": "C-A"}
+    ).json()
+    assert corrupted["available"] is False
+    assert corrupted["counts"] is None
 
 
 def _expected_compliance_counts(
