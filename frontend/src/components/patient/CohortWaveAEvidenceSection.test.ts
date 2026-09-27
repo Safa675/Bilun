@@ -7,6 +7,7 @@ const page: WaveACohortEvidencePage = {
   unavailable_reason: null,
   kind: "financial_rows",
   counts: { matching_rows: 1 },
+  patient_coverage: { selected: 1, available: 1, unavailable: 0 },
   rows: [{
     evidence_id: "wavea_financial:claim_evaluation:one",
     source_evidence_id: "claim_evaluation:one",
@@ -30,6 +31,7 @@ const page: WaveACohortEvidencePage = {
 const index: WaveAEvidenceIndexPage = {
   available: true,
   unavailable_reason: null,
+  patient_coverage: { selected: 1, available: 1, unavailable: 0 },
   counts: {
     by_group: { focused: { evaluated: 1, missing_inputs: 0, unavailable: 0 } },
     evaluation_count: 1,
@@ -44,6 +46,30 @@ const index: WaveAEvidenceIndexPage = {
 describe("cohort Wave A response integrity", () => {
   it("accepts a matching filtered row and exhaustive status summary", () => {
     expect(validCohortEvidencePage(page, "financial_rows", 0, ["P-1"], index, true)).toBe(true);
+  });
+
+  it("retains eligible rows and marks missing claim context in a mixed cohort", () => {
+    const partialPage: WaveACohortEvidencePage = {
+      ...page,
+      unavailable_reason: "some_patients_unavailable",
+      patient_coverage: { selected: 2, available: 1, unavailable: 1 },
+    };
+    const partialIndex: WaveAEvidenceIndexPage = {
+      ...index,
+      unavailable_reason: "some_patients_unavailable",
+      patient_coverage: { selected: 2, available: 1, unavailable: 1 },
+      pagination: { ...index.pagination, total_matching: 2, has_more: true },
+      counts: {
+        ...index.counts!,
+        by_group: { focused: { evaluated: 1, missing_inputs: 1, unavailable: 0 } },
+        evaluation_count: 2,
+      },
+    };
+    expect(validCohortEvidencePage(partialPage, "financial_rows", 0, ["P-1", "P-2"], partialIndex, true)).toBe(true);
+    expect(validCohortEvidencePage({
+      ...partialPage,
+      unavailable_reason: null,
+    }, "financial_rows", 0, ["P-1", "P-2"], partialIndex, true)).toBe(false);
   });
 
   it("rejects a row outside the selected cohort or with a forged canonical ID", () => {

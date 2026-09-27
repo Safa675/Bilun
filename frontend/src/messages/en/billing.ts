@@ -429,6 +429,7 @@ const billing = {
     "coverageTitle": "Wave A evaluation coverage",
     "coverageSummary": "{groups} groups · {evaluated} evaluated · {missing} missing inputs · {unavailable} unavailable",
     "coveragePartial": "Some claim inputs are unavailable; these counts are not clean passes.",
+    "partialCohort": "Claim inputs are unavailable for {count} selected patients. Showing findings from patients with available evidence; missing inputs are not clean passes.",
     "groupDetails": "View group status counts",
     "groupCounts": "{evaluated} evaluated · {missing} missing · {unavailable} unavailable",
     "unavailable": "Wave A evidence is unavailable for this build or claim. No zero finding count is implied.",

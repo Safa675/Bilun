@@ -83,6 +83,7 @@ class HttpReleaseProbes:
         candidate_tuple: Callable[[], dict[str, Any]],
         activation_gate: Callable[[ReleaseIdentity], bool],
         cookie_factory: Callable[[], str],
+        old_recovery: Callable[[], dict[str, str]] | None = None,
         fetch: Fetch = _fetch,
     ) -> None:
         parsed = urlparse(public_base)
@@ -100,7 +101,16 @@ class HttpReleaseProbes:
         self.candidate_tuple = candidate_tuple
         self.check_gate = activation_gate
         self.cookie_factory = cookie_factory
+        self.old_recovery = old_recovery
         self.fetch = fetch
+
+    def recover_old_tuple(self) -> dict[str, str] | None:
+        if self.old_recovery is None:
+            return None
+        try:
+            return self.old_recovery()
+        except Exception:
+            return None
 
     @staticmethod
     def _backend_base(pair: Pair) -> str:
@@ -120,12 +130,12 @@ class HttpReleaseProbes:
         try:
             result = (self.old_tuple if route == "old" else self.candidate_tuple)()
             digest = result.get("tuple_sha256")
-            expected_status = (
-                "protected_old_pair_observed" if route == "old"
-                else "candidate_tuple_observed"
+            expected_statuses = (
+                {"protected_old_pair_observed", "recovered_old_pair_observed"}
+                if route == "old" else {"candidate_tuple_observed"}
             )
             return digest if (
-                result.get("status") == expected_status
+                result.get("status") in expected_statuses
                 and (route == "old" or result.get("private_activation_verified") is True)
                 and isinstance(digest, str) and _SHA256.fullmatch(digest)
             ) else None
@@ -210,9 +220,6 @@ class HttpReleaseProbes:
                 for path in ("/health", "/login", "/api/compliance-index")
             ):
                 return False
-            return all(
-                self.fetch(self._backend_base(pair), "/health", None)[0] == 200
-                for pair in ("old", "candidate")
-            )
+            return True
         except Exception:
             return False

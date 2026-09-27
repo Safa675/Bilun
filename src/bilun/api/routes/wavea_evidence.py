@@ -220,57 +220,60 @@ def _wavea_evidence_index_response(
         return _unavailable(reader, build_id, limit, offset, "requested_patient_not_in_build")
     patient_ids = sorted(pid for pid in patients if selected is None or pid in selected)
     try:
-        incomplete = any(not isinstance(patients[pid], dict) or not patients[pid].get("available") for pid in patient_ids)
-        counts: dict[str, Any] | None = None
-        if not incomplete:
-            by_rule: dict[str, dict[str, int]] = {}
-            by_group: dict[str, dict[str, int]] = {}
-            evaluation_count = review_count = advisory_count = financial_count = 0
-            for pid in patient_ids:
-                patient_counts = patients[pid]["counts"]
-                if not isinstance(patient_counts, dict):
-                    raise ValueError("Malformed Wave A patient counters")
-                for key in (
-                    "evaluation_count", "review_count", "advisory_count", "financial_count"
-                ):
-                    value = patient_counts.get(key)
-                    if type(value) is not int or value < 0:
-                        raise ValueError("Malformed Wave A evidence count")
-                evaluation_count += patient_counts["evaluation_count"]
-                review_count += patient_counts["review_count"]
-                advisory_count += patient_counts["advisory_count"]
-                financial_count += patient_counts["financial_count"]
-                for source_key, target in (("by_group", by_group), ("by_rule", by_rule)):
-                    source = patient_counts.get(source_key)
-                    if not isinstance(source, dict):
-                        raise ValueError("Malformed Wave A counters")
-                    identities = (rule_id,) if source_key == "by_rule" and rule_id is not None else (
-                        () if source_key == "by_rule" else source.keys()
-                    )
-                    for identity in identities:
-                        if identity not in source:
-                            continue
-                        statuses = _status_counts(source[identity])
-                        total = target.setdefault(identity, {status: 0 for status in _STATUSES})
-                        for status in _STATUSES:
-                            total[status] += statuses[status]
-            counts = {
-                "by_group": by_group,
-                "evaluation_count": evaluation_count,
-                "review_count": review_count,
-                "advisory_count": advisory_count,
-                "financial_count": financial_count,
-            }
-            if rule_id is not None:
-                counts["by_rule"] = by_rule
+        unavailable_count = sum(not patients[pid]["available"] for pid in patient_ids)
+        by_rule: dict[str, dict[str, int]] = {}
+        by_group: dict[str, dict[str, int]] = {}
+        evaluation_count = review_count = advisory_count = financial_count = 0
+        for pid in patient_ids:
+            patient_counts = patients[pid]["counts"]
+            if not isinstance(patient_counts, dict):
+                raise ValueError("Malformed Wave A patient counters")
+            for key in (
+                "evaluation_count", "review_count", "advisory_count", "financial_count"
+            ):
+                value = patient_counts.get(key)
+                if type(value) is not int or value < 0:
+                    raise ValueError("Malformed Wave A evidence count")
+            evaluation_count += patient_counts["evaluation_count"]
+            review_count += patient_counts["review_count"]
+            advisory_count += patient_counts["advisory_count"]
+            financial_count += patient_counts["financial_count"]
+            for source_key, target in (("by_group", by_group), ("by_rule", by_rule)):
+                source = patient_counts.get(source_key)
+                if not isinstance(source, dict):
+                    raise ValueError("Malformed Wave A counters")
+                identities = (rule_id,) if source_key == "by_rule" and rule_id is not None else (
+                    () if source_key == "by_rule" else source.keys()
+                )
+                for identity in identities:
+                    if identity not in source:
+                        continue
+                    statuses = _status_counts(source[identity])
+                    total = target.setdefault(identity, {status: 0 for status in _STATUSES})
+                    for status in _STATUSES:
+                        total[status] += statuses[status]
+        counts: dict[str, Any] = {
+            "by_group": by_group,
+            "evaluation_count": evaluation_count,
+            "review_count": review_count,
+            "advisory_count": advisory_count,
+            "financial_count": financial_count,
+        }
+        if rule_id is not None:
+            counts["by_rule"] = by_rule
         page_ids = patient_ids[offset : offset + limit]
         rows = [_compact_patient_row(pid, patients[pid], rule_id) for pid in page_ids]
     except (KeyError, TypeError, ValueError):
         return _unavailable(reader, build_id, limit, offset)
     return attach_bilun_data_source(
         {
-            "available": not incomplete,
-            "unavailable_reason": "some_patients_unavailable" if incomplete else None,
+            "available": True,
+            "unavailable_reason": "some_patients_unavailable" if unavailable_count else None,
+            "patient_coverage": {
+                "selected": len(patient_ids),
+                "available": len(patient_ids) - unavailable_count,
+                "unavailable": unavailable_count,
+            },
             "counts": counts,
             "rows": rows,
             "pagination": {
@@ -442,8 +445,7 @@ def _wavea_evidence_rows_response(
     if selected is not None and not selected <= patients.keys():
         return _unavailable(reader, build_id, limit, offset, "requested_patient_not_in_build")
     selected_ids = set(patients) if selected is None else selected
-    if any(patients[pid]["available"] is not True for pid in selected_ids):
-        return _unavailable(reader, build_id, limit, offset, "some_patients_unavailable")
+    unavailable_count = sum(patients[pid]["available"] is not True for pid in selected_ids)
     prefix = {
         "reviews": "wavea_review:",
         "advisories": "wavea_advisory:",
@@ -460,7 +462,12 @@ def _wavea_evidence_rows_response(
     return attach_bilun_data_source(
         {
             "available": True,
-            "unavailable_reason": None,
+            "unavailable_reason": "some_patients_unavailable" if unavailable_count else None,
+            "patient_coverage": {
+                "selected": len(selected_ids),
+                "available": len(selected_ids) - unavailable_count,
+                "unavailable": unavailable_count,
+            },
             "kind": kind,
             "counts": {"matching_rows": len(rows)},
             "rows": rows[offset : offset + limit],

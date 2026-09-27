@@ -78,11 +78,13 @@ export interface WaveAEvidencePage {
 export interface WaveACohortEvidencePage extends Omit<WaveAEvidencePage, "patient_id"> {
   kind?: "reviews" | "advisories" | "financial_rows";
   counts: { matching_rows: number } | null;
+  patient_coverage?: { selected: number; available: number; unavailable: number };
 }
 
 export interface WaveAEvidenceIndexPage {
   available: boolean;
   unavailable_reason: string | null;
+  patient_coverage?: { selected: number; available: number; unavailable: number };
   counts: {
     by_group: Record<string, WaveAStatusCounts>;
     evaluation_count: number;

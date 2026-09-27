@@ -20,11 +20,18 @@ export function validCohortEvidencePage(
   const pagination = page?.pagination;
   const rows = page?.rows;
   const total = pagination?.total_matching;
+  const coverage = page?.patient_coverage;
   const prefix = kind === "financial_rows" ? "wavea_financial:"
     : kind === "advisories" ? "wavea_advisory:"
     : "wavea_review:";
   if (
     page?.available !== true || page.kind !== kind ||
+    !coverage || !Number.isInteger(coverage.selected) || coverage.selected < 0 ||
+    !Number.isInteger(coverage.available) || coverage.available < 0 ||
+    !Number.isInteger(coverage.unavailable) || coverage.unavailable < 0 ||
+    coverage.available + coverage.unavailable !== coverage.selected ||
+    page.unavailable_reason !== (coverage.unavailable > 0 ? "some_patients_unavailable" : null) ||
+    (selected != null && coverage.selected !== selected.length) ||
     !pagination || pagination.offset !== offset || pagination.limit !== PAGE_SIZE ||
     !Number.isInteger(total) || (total ?? -1) < 0 ||
     page.counts?.matching_rows !== total ||
@@ -44,8 +51,13 @@ export function validCohortEvidencePage(
   ) return false;
   if (!includeCoverage) return true;
   const counts = index?.counts;
+  const indexCoverage = index?.patient_coverage;
   if (
     index?.available !== true || !counts ||
+    !indexCoverage || indexCoverage.selected !== coverage.selected ||
+    indexCoverage.available !== coverage.available ||
+    indexCoverage.unavailable !== coverage.unavailable ||
+    index.unavailable_reason !== page.unavailable_reason ||
     !Number.isInteger(counts.evaluation_count) || counts.evaluation_count < 0 ||
     !Number.isInteger(counts.review_count) || counts.review_count < 0 ||
     !Number.isInteger(counts.advisory_count) || counts.advisory_count < 0 ||
@@ -53,7 +65,7 @@ export function validCohortEvidencePage(
     !counts.by_group || typeof counts.by_group !== "object" ||
     total !== (kind === "financial_rows" ? counts.financial_count
       : kind === "advisories" ? counts.advisory_count : counts.review_count) ||
-    (selected != null && index.pagination.total_matching !== selected.length)
+    index.pagination.total_matching !== coverage.selected
   ) return false;
   return Object.values(counts.by_group).every((group) =>
     group && [group.evaluated, group.missing_inputs, group.unavailable]
@@ -144,12 +156,17 @@ export function CohortWaveAEvidenceSection({
       {includeCoverage && kind === "reviews" && index?.available === true && index.counts && (
         <WaveACoverageSummary coverage={{
           schema_version: "wavea-evidence-v2",
-          available: true,
-          unavailable_reason: null,
+          available: index.patient_coverage?.unavailable === 0,
+          unavailable_reason: index.unavailable_reason,
           tracked_rule_count: 0,
           evaluation_count: index.counts.evaluation_count,
           by_group: index.counts.by_group,
         }} />
+      )}
+      {available && (result.patient_coverage?.unavailable ?? 0) > 0 && (
+        <p className="text-sm text-[var(--text-muted)]">
+          {t("billing.wavea.partialCohort", { count: result.patient_coverage!.unavailable })}
+        </p>
       )}
       {emptySelection ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noSelectedPatients")}</p>

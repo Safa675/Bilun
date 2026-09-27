@@ -47,6 +47,16 @@ def _fixture(tmp_path: Path) -> tuple[probe.CandidateSpec, Path, dict]:
     (backend / "src" / "app.py").write_text("app = 1\n")
     (frontend / ".next" / "static" / "chunks").mkdir(parents=True)
     (frontend / ".next" / "BUILD_ID").write_text("next-build-1\n")
+    (frontend / ".next" / "routes-manifest.json").write_text(json.dumps({
+        "rewrites": {
+            "beforeFiles": [],
+            "afterFiles": [{
+                "source": "/api/:path*",
+                "destination": "http://127.0.0.1:8002/api/:path*",
+            }],
+            "fallback": [],
+        },
+    }))
     (frontend / ".next" / "static" / "chunks" / "app.js").write_text("console.log(1)\n")
     (frontend / "package.json").write_text('{"name":"candidate"}\n')
 
@@ -388,6 +398,20 @@ def test_linked_static_asset_and_changed_build_id_block(tmp_path: Path) -> None:
     (static / "linked.js").symlink_to(static / "chunks" / "app.js")
     with pytest.raises(ValueError, match="static asset is linked"):
         probe._static_assets(spec.frontend_runtime)
+
+
+def test_build_time_rewrite_must_target_the_candidate_backend(tmp_path: Path) -> None:
+    spec, proc_root, health = _fixture(tmp_path)
+    routes = spec.frontend_runtime / ".next" / "routes-manifest.json"
+    raw = json.loads(routes.read_text())
+    raw["rewrites"]["afterFiles"][0]["destination"] = "http://localhost:8001/api/:path*"
+    routes.write_text(json.dumps(raw))
+    changed = replace(
+        spec,
+        frontend_runtime_sha256=_runtime_digest(spec.frontend_runtime, backend=False),
+    )
+    with pytest.raises(ValueError, match="build-time API target differs"):
+        _observe(changed, proc_root, health)
 
 
 @pytest.mark.parametrize(

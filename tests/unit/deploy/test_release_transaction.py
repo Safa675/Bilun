@@ -18,7 +18,9 @@ class FixtureRoute:
     def __init__(self, identity: txn.ReleaseIdentity) -> None:
         self.identity = identity
         self.current: txn.RouteName = "old"
+        self.disk: txn.RouteName = "old"
         self.installs: list[txn.RouteName] = []
+        self.interrupt_before_reload: txn.RouteName | None = None
         self.interrupt_after_install: txn.RouteName | None = None
         self.fail_once: txn.RouteName | None = None
         self.fail_always: txn.RouteName | None = None
@@ -27,12 +29,19 @@ class FixtureRoute:
     def loaded_route_sha256(self) -> str:
         return getattr(self.identity, f"{self.current}_route_sha256")
 
+    def installed_route_sha256(self) -> str:
+        return getattr(self.identity, f"{self.disk}_route_sha256")
+
     def install(self, route: txn.RouteName) -> None:
         self.installs.append(route)
         if self.fail_once == route or self.fail_always == route:
             self.fail_once = None
             raise RuntimeError("Simulated route reload failure")
         if self.noop_install != route:
+            self.disk = route
+            if self.interrupt_before_reload == route:
+                self.interrupt_before_reload = None
+                raise Interrupted
             self.current = route
         if self.interrupt_after_install == route:
             self.interrupt_after_install = None
@@ -48,6 +57,9 @@ class FixtureProbes:
         self.fail_candidate_public = False
         self.fail_old_public_after_restore = False
         self.fail_old_direct = False
+        self.recovery_available = False
+        self.recovered_old_sha: str | None = None
+        self.recovery_calls = 0
 
     def activation_gate(self, identity: txn.ReleaseIdentity) -> bool:
         assert identity == self.identity
@@ -56,6 +68,8 @@ class FixtureProbes:
     def direct_tuple_sha256(self, route: str) -> str | None:
         if route == "old" and self.fail_old_direct:
             return None
+        if route == "old" and self.recovered_old_sha is not None:
+            return self.recovered_old_sha
         return getattr(self.identity, f"{route}_tuple_sha256")
 
     def public_tuple_sha256(self, route: str) -> str | None:
@@ -63,10 +77,24 @@ class FixtureProbes:
             return None
         if route == "old" and self.fail_old_public_after_restore and "old" in self.route.installs:
             return None
+        if route == "old" and self.recovered_old_sha is not None:
+            return self.recovered_old_sha
         return getattr(self.identity, f"{route}_tuple_sha256")
 
     def public_barrier_ready(self) -> bool:
         return self.route.current == "barrier" and not self.fail_barrier
+
+    def recover_old_tuple(self) -> dict[str, str] | None:
+        self.recovery_calls += 1
+        assert self.route.current == self.route.disk == "barrier"
+        if not self.recovery_available:
+            return None
+        self.fail_old_direct = False
+        self.recovered_old_sha = "f" * 64
+        return {
+            "tuple_sha256": self.recovered_old_sha,
+            "artifact_sha256": self.identity.old_recovery_manifest_sha256,
+        }
 
 
 def _identity() -> txn.ReleaseIdentity:
@@ -81,6 +109,7 @@ def _identity() -> txn.ReleaseIdentity:
         old_route_sha256="1" * 64,
         barrier_route_sha256="2" * 64,
         candidate_route_sha256="3" * 64,
+        old_recovery_manifest_sha256="4" * 64,
     )
 
 
@@ -103,7 +132,7 @@ def test_switch_and_explicit_rollback_are_exact_and_journaled(tmp_path: Path) ->
     identity, route, probes, transaction = _fixture(tmp_path)
 
     assert transaction.activate(identity, route, probes) == "active"
-    assert route.current == "candidate"
+    assert route.current == route.disk == "candidate"
     assert route.installs == ["barrier", "candidate"]
     active = _journal(transaction)
     assert active["identity"]["ci_head_sha"] == identity.ci_head_sha
@@ -120,7 +149,7 @@ def test_switch_and_explicit_rollback_are_exact_and_journaled(tmp_path: Path) ->
     assert route.installs == ["barrier", "candidate"]
 
     assert transaction.recover(identity, route, probes, rollback_active=True) == "rolled_back"
-    assert route.current == "old"
+    assert route.current == route.disk == "old"
     assert route.installs[-2:] == ["barrier", "old"]
     assert _journal(transaction)["state"] == "rolled_back"
     assert transaction.recover(identity, route, probes) == "rolled_back"
@@ -145,7 +174,7 @@ def test_drift_after_barrier_restores_verified_old_route(tmp_path: Path) -> None
     with pytest.raises(txn.TransactionError, match="recovery state: rolled_back"):
         transaction.activate(identity, route, probes)
 
-    assert route.installs == ["barrier", "old"]
+    assert route.installs == ["barrier", "barrier", "old"]
     assert route.current == "old"
     assert _journal(transaction)["state"] == "rolled_back"
 
@@ -200,6 +229,43 @@ def test_old_direct_probe_failure_retains_barrier(tmp_path: Path) -> None:
     assert "old" not in route.installs
 
 
+def test_dead_old_listener_recovers_from_protected_pair_under_barrier(tmp_path: Path) -> None:
+    identity, route, probes, transaction = _fixture(tmp_path)
+    assert transaction.activate(identity, route, probes) == "active"
+    probes.fail_old_direct = True
+    probes.recovery_available = True
+
+    assert transaction.recover(identity, route, probes, rollback_active=True) == "rolled_back"
+    assert route.current == route.disk == "old"
+    assert probes.recovery_calls == 1
+    journal = _journal(transaction)
+    assert journal["old_target_tuple_sha256"] == "f" * 64
+    assert journal["old_recovery_artifact_sha256"] == identity.old_recovery_manifest_sha256
+    assert "old_recovered" in [event["state"] for event in journal["history"]]
+    assert transaction.recover(identity, route, probes) == "rolled_back"
+    assert probes.recovery_calls == 1
+
+
+def test_interrupted_protected_restart_resumes_under_barrier(tmp_path: Path) -> None:
+    identity, route, probes, transaction = _fixture(tmp_path)
+    assert transaction.activate(identity, route, probes) == "active"
+    probes.fail_old_direct = True
+    probes.recovery_available = True
+    original = probes.recover_old_tuple
+
+    def interrupted_restart() -> dict[str, str] | None:
+        probes.recover_old_tuple = original
+        raise Interrupted
+
+    probes.recover_old_tuple = interrupted_restart
+    with pytest.raises(Interrupted):
+        transaction.recover(identity, route, probes, rollback_active=True)
+    assert route.current == route.disk == "barrier"
+    assert _journal(transaction)["state"] == "old_recovering"
+    assert transaction.recover(identity, route, probes) == "rolled_back"
+    assert route.current == route.disk == "old"
+
+
 def test_old_reload_callback_returning_without_switch_keeps_barrier(tmp_path: Path) -> None:
     identity, route, probes, transaction = _fixture(tmp_path)
     assert transaction.activate(identity, route, probes) == "active"
@@ -241,8 +307,8 @@ def test_interruption_after_each_durable_journal_boundary_is_recoverable(
     identity, route, probes, transaction = _fixture(tmp_path)
 
     class InterruptedTransaction(txn.ReleaseTransaction):
-        def _record(self, identity, state, route, *, reason=None):
-            super()._record(identity, state, route, reason=reason)
+        def _record(self, identity, state, route, **kwargs):
+            super()._record(identity, state, route, **kwargs)
             if state == interrupted_state:
                 raise Interrupted
 
@@ -273,6 +339,48 @@ def test_interruption_after_route_reload_recovers_via_barrier(
     assert route.current == "old"
 
 
+@pytest.mark.parametrize("interrupted_route", ["barrier", "candidate"])
+def test_crash_after_caddyfile_replace_restores_restart_safe_route(
+    tmp_path: Path, interrupted_route: txn.RouteName
+) -> None:
+    identity, route, probes, transaction = _fixture(tmp_path)
+    route.interrupt_before_reload = interrupted_route
+    with pytest.raises(Interrupted):
+        transaction.activate(identity, route, probes)
+
+    assert route.disk == interrupted_route
+    assert route.current == ("old" if interrupted_route == "barrier" else "barrier")
+    assert transaction.recover(identity, route, probes) == "rolled_back"
+    assert route.current == route.disk == "old"
+    assert transaction.recover(identity, route, probes) == "rolled_back"
+
+
+def test_failed_old_restore_reseals_barrier_on_disk(tmp_path: Path) -> None:
+    identity, route, probes, transaction = _fixture(tmp_path)
+    assert transaction.activate(identity, route, probes) == "active"
+    route.interrupt_before_reload = "old"
+    with pytest.raises(Interrupted):
+        transaction.recover(identity, route, probes, rollback_active=True)
+
+    assert route.current == "barrier"
+    assert route.disk == "old"
+    probes.fail_old_direct = True
+    assert transaction.recover(identity, route, probes) == "blocked"
+    assert route.current == route.disk == "barrier"
+
+
+def test_active_journal_with_disk_drift_rolls_back_instead_of_claiming_active(
+    tmp_path: Path,
+) -> None:
+    identity, route, probes, transaction = _fixture(tmp_path)
+    assert transaction.activate(identity, route, probes) == "active"
+    route.disk = "old"
+
+    assert transaction.recover(identity, route, probes) == "rolled_back"
+    assert route.current == route.disk == "old"
+    assert _journal(transaction)["state"] == "rolled_back"
+
+
 @pytest.mark.parametrize(
     "interrupted_state",
     ["rollback_barrier_installing", "rollback_barrier", "old_installing", "rolled_back"],
@@ -284,8 +392,8 @@ def test_interrupted_rollback_boundary_recovery_rechecks_old_public_tuple(
     assert transaction.activate(identity, route, probes) == "active"
 
     class InterruptedRollback(txn.ReleaseTransaction):
-        def _record(self, identity, state, route, *, reason=None):
-            super()._record(identity, state, route, reason=reason)
+        def _record(self, identity, state, route, **kwargs):
+            super()._record(identity, state, route, **kwargs)
             if state == interrupted_state:
                 raise Interrupted
 

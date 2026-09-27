@@ -22,6 +22,12 @@ from scripts.deploy.http_release_probes import HttpReleaseProbes
 from scripts.deploy.issue_wavea_activation import _github_read_token
 from scripts.deploy.observe_candidate_tuple import CandidateSpec, observe_candidate_tuple
 from scripts.deploy.observe_old_pair import observe_old_pair
+from scripts.deploy.recover_old_pair import (
+    load_old_recovery_spec,
+    observe_recovered_old_pair,
+    recover_old_pair,
+    verify_staged_old_recovery,
+)
 from scripts.deploy.prepare_wavea_routes import _assets
 from scripts.deploy.rehearse_wavea_pair import cookie, environment
 from scripts.deploy.release_sidecar import _load_private_json
@@ -34,7 +40,7 @@ from scripts.deploy.verify_candidate_cache import _stable_file_hash
 from scripts.deploy.verify_github_ci import fetch_successful_release_ci
 from src.bilun.api.wavea_activation import load_startup_activation
 
-ROUTE_MANIFEST_VERSION = "wavea-route-manifest-v1"
+ROUTE_MANIFEST_VERSION = "wavea-route-manifest-v2"
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _CODE_SHA = re.compile(r"[0-9a-f]{40}\Z")
 _CANDIDATE_PATHS = frozenset({
@@ -46,6 +52,7 @@ _PATH_FIELDS = frozenset({
     "sidecar_path", "semantic_report_path", "source_roster_path", "old_snapshot",
     "old_probe_dir", "frontend_current", "caddy_config", "lock_path",
     "journal_path", "old_environment_snapshot", "route_preparation_path",
+    "old_recovery_manifest_path",
 })
 
 
@@ -138,15 +145,27 @@ def _build_transaction(
         expected_digests=route_digests,
         expected_file_digests=file_hashes,
     )
+    recovery_spec = load_old_recovery_spec(
+        paths["old_recovery_manifest_path"], identity.old_recovery_manifest_sha256
+    )
+    if (
+        recovery_spec.snapshot_root != paths["old_snapshot"]
+        or recovery_spec.baseline_build_id != manifest["baseline_build_id"]
+        or recovery_spec.patient_id != manifest["patient_id"]
+    ):
+        raise ValueError("Protected old recovery scope differs from route manifest")
 
     def old_observation() -> dict[str, Any]:
-        return observe_old_pair(
-            baseline_code_sha=manifest["baseline_code_sha"],
-            baseline_build_id=manifest["baseline_build_id"],
-            old_snapshot=paths["old_snapshot"],
-            old_probe_dir=paths["old_probe_dir"],
-            frontend_current=paths["frontend_current"],
-        )
+        try:
+            return observe_old_pair(
+                baseline_code_sha=manifest["baseline_code_sha"],
+                baseline_build_id=manifest["baseline_build_id"],
+                old_snapshot=paths["old_snapshot"],
+                old_probe_dir=paths["old_probe_dir"],
+                frontend_current=paths["frontend_current"],
+            )
+        except (OSError, ValueError):
+            return observe_recovered_old_pair(recovery_spec)
 
     def candidate_observation() -> dict[str, Any]:
         return observe_candidate_tuple(spec)
@@ -173,6 +192,7 @@ def _build_transaction(
         ):
             return False
         driver.verify_sealed_routes()
+        verify_staged_old_recovery(recovery_spec)
         if (
             _stable_file_hash(paths["sidecar_path"]) != identity.manifest_sha256
             or _stable_file_hash(paths["semantic_report_path"])
@@ -217,10 +237,30 @@ def _build_transaction(
     def cookie_factory() -> str:
         return cookie(environment(paths["old_environment_snapshot"]))
 
+    def old_recovery() -> dict[str, str]:
+        recovered = recover_old_pair(
+            recovery_spec,
+            barrier_verified=lambda: (
+                driver.loaded_route_sha256() == identity.barrier_route_sha256
+                and driver.installed_route_sha256() == identity.barrier_route_sha256
+                and probes.public_barrier_ready()
+            ),
+        )
+        if (
+            recovered.get("status") != "recovered_old_pair_observed"
+            or recovered.get("artifact_sha256") != identity.old_recovery_manifest_sha256
+        ):
+            raise ValueError("Protected old recovery identity differs")
+        return {
+            "tuple_sha256": recovered["tuple_sha256"],
+            "artifact_sha256": recovered["artifact_sha256"],
+        }
+
     probes = HttpReleaseProbes(
         public_base=manifest["public_base"], patient_id=manifest["patient_id"],
         old_tuple=old_observation, candidate_tuple=candidate_observation,
         activation_gate=exact_gate, cookie_factory=cookie_factory,
+        old_recovery=old_recovery,
     )
     transaction = ReleaseTransaction(
         lock_path=paths["lock_path"], journal_path=paths["journal_path"]

@@ -855,12 +855,38 @@ def test_wavea_v2_routes_page_stable_evidence_under_test_only_trusted_gate(cache
     assert len(missing_page["rows"]) == 20
     assert all(row["evaluation_status"] == "missing_inputs" for row in missing_page["rows"])
     assert missing_page["patient_counts"]["evaluation_count"] == 528
+    mixed_summary = client.get("/api/wavea-evidence-index").json()
+    assert mixed_summary["available"] is True
+    assert mixed_summary["unavailable_reason"] == "some_patients_unavailable"
+    assert mixed_summary["patient_coverage"] == {
+        "selected": 2, "available": 1, "unavailable": 1,
+    }
+    assert mixed_summary["counts"]["evaluation_count"] == sum(
+        patient["counts"]["evaluation_count"]
+        for patient in missing_index["patients"].values()
+    )
+    assert mixed_summary["rows"][0]["available"] is False
+    mixed_reviews = client.get("/api/wavea-evidence-rows", params={"kind": "reviews"}).json()
+    expected_reviews = [
+        row for row in missing_index["evidence_rows"]
+        if row["evidence_id"].startswith("wavea_review:")
+    ]
+    assert mixed_reviews["available"] is True
+    assert mixed_reviews["unavailable_reason"] == "some_patients_unavailable"
+    assert mixed_reviews["patient_coverage"] == mixed_summary["patient_coverage"]
+    assert mixed_reviews["pagination"]["total_matching"] == len(expected_reviews)
+    assert mixed_reviews["rows"] == expected_reviews[:20]
+    assert all(row["patient_id"] == "P2" for row in mixed_reviews["rows"])
     unavailable_cohort_rows = client.get(
         "/api/wavea-evidence-rows", params={"patient_id": "P1"}
     ).json()
-    assert unavailable_cohort_rows["available"] is False
-    assert unavailable_cohort_rows["counts"] is None
-    assert unavailable_cohort_rows["pagination"]["total_matching"] is None
+    assert unavailable_cohort_rows["available"] is True
+    assert unavailable_cohort_rows["unavailable_reason"] == "some_patients_unavailable"
+    assert unavailable_cohort_rows["patient_coverage"] == {
+        "selected": 1, "available": 0, "unavailable": 1,
+    }
+    assert unavailable_cohort_rows["counts"]["matching_rows"] == 0
+    assert unavailable_cohort_rows["pagination"]["total_matching"] == 0
 
     monkeypatch.setattr(wavea_evidence, "read_json_payload_row", lambda *_args: {"patient_id": "P1"})
     malformed_detail = client.get("/api/wavea-evidence/P1").json()

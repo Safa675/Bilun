@@ -81,8 +81,28 @@ def test_manifest_requires_signed_live_candidate_before_writing(
     monkeypatch.setattr(
         prepare, "observe_old_pair", lambda **_: {
             "status": "protected_old_pair_observed", "tuple_sha256": "c" * 64,
+            "logical_tuple": {
+                "cache_sha256": "1" * 64,
+                "backend_runtime_sha256": "2" * 64,
+                "frontend_runtime_sha256": "3" * 64,
+                "backend_service": {"effective_environment_sha256": "4" * 64},
+                "frontend_service": {"effective_environment_sha256": "4" * 64},
+            },
         },
     )
+    monkeypatch.setattr(
+        prepare, "load_old_recovery_spec", lambda path, sha: SimpleNamespace(
+            snapshot_root=Path(config["old_snapshot"]),
+            baseline_build_id="old-build", patient_id="P1",
+            cache_sha256="1" * 64,
+            backend_runtime_sha256="2" * 64,
+            frontend_runtime_sha256="3" * 64,
+            manifest_sha256=sha,
+        ),
+    )
+    monkeypatch.setattr(prepare, "stage_old_recovery", lambda _: None)
+    monkeypatch.setattr(prepare, "environment", lambda _: {"A": "B"})
+    monkeypatch.setattr(prepare, "env_digest", lambda _: "4" * 64)
     monkeypatch.setattr(prepare, "fetch_successful_release_ci", lambda **_: None)
     monkeypatch.setattr(prepare, "_github_read_token", lambda: "test-token")
     monkeypatch.setattr(prepare, "_stable_file_hash", lambda _: "d" * 64)
@@ -95,7 +115,10 @@ def test_manifest_requires_signed_live_candidate_before_writing(
         ]
         assert manifest["candidate"]["frontend_port"] == 3099
         assert manifest["route_preparation_sha256"] == "8" * 64
-        route = SimpleNamespace(loaded_route_sha256=lambda: identity.old_route_sha256)
+        route = SimpleNamespace(
+            loaded_route_sha256=lambda: identity.old_route_sha256,
+            installed_route_sha256=lambda: identity.old_route_sha256,
+        )
         probes = SimpleNamespace(
             activation_gate=lambda _: True,
             direct_tuple_sha256=lambda name: getattr(identity, f"{name}_tuple_sha256"),

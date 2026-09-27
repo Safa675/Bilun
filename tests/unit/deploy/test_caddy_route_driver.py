@@ -47,12 +47,24 @@ def test_route_switch_reads_loaded_config_and_restores_exact_old_route(tmp_path:
     driver, _, expected, _, _ = _fixture(tmp_path)
     driver.verify_sealed_routes()
     assert driver.loaded_route_sha256() == expected["old"]
+    assert driver.installed_route_sha256() == expected["old"]
     driver.install("barrier")
     assert driver.loaded_route_sha256() == expected["barrier"]
+    assert driver.installed_route_sha256() == expected["barrier"]
     driver.install("candidate")
     assert driver.loaded_route_sha256() == expected["candidate"]
     driver.install("old")
     assert driver.loaded_route_sha256() == expected["old"]
+    assert driver.installed_route_sha256() == expected["old"]
+
+
+def test_disk_route_is_observed_independently_from_loaded_route(tmp_path: Path):
+    driver, files, expected, _, _ = _fixture(tmp_path)
+    driver.config_path.write_bytes(files["candidate"].read_bytes())
+    assert driver.loaded_route_sha256() == expected["old"]
+    assert driver.installed_route_sha256() == expected["candidate"]
+    driver.config_path.write_text("tampered")
+    assert driver.installed_route_sha256() is None
 
 
 def test_tampered_template_never_reloads(tmp_path: Path):

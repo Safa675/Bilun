@@ -48,6 +48,19 @@ def validate_successful_release_ci(
     }
 
 
+def validate_current_main(payload: Any, *, code_sha: str) -> None:
+    """A past successful run cannot authorize a superseded main commit."""
+    if (
+        not _CODE_SHA.fullmatch(code_sha)
+        or not isinstance(payload, dict)
+        or payload.get("ref") != "refs/heads/main"
+        or not isinstance(payload.get("object"), dict)
+        or payload["object"].get("type") != "commit"
+        or payload["object"].get("sha") != code_sha
+    ):
+        raise ValueError("Release CI commit is no longer current main")
+
+
 def fetch_successful_release_ci(
     *, code_sha: str, run_id: str, token: str
 ) -> dict[str, str]:
@@ -58,23 +71,27 @@ def fetch_successful_release_ci(
         raise ValueError("A numeric release CI run ID is required")
     connection = http.client.HTTPSConnection("api.github.com", timeout=15)
     try:
-        connection.request(
-            "GET", f"/repos/{_REPOSITORY}/actions/runs/{run_id}",
-            headers={
+        headers = {
                 "Accept": "application/vnd.github+json",
                 "User-Agent": "Bilun-release-gate",
                 "Authorization": f"Bearer {token}",
-            },
-        )
-        response = connection.getresponse()
-        if response.status != 200:
-            raise ValueError(f"GitHub release CI query failed: HTTP {response.status}")
-        raw = response.read(2_000_001)
-        if len(raw) > 2_000_000:
-            raise ValueError("GitHub release CI response is unexpectedly large")
-        payload = json.loads(raw)
+        }
+
+        def read(path: str) -> Any:
+            connection.request("GET", f"/repos/{_REPOSITORY}/{path}", headers=headers)
+            response = connection.getresponse()
+            if response.status != 200:
+                raise ValueError(f"GitHub release CI query failed: HTTP {response.status}")
+            raw = response.read(2_000_001)
+            if len(raw) > 2_000_000:
+                raise ValueError("GitHub release CI response is unexpectedly large")
+            return json.loads(raw)
+
+        payload = read(f"actions/runs/{run_id}")
+        result = validate_successful_release_ci(payload, code_sha=code_sha, run_id=run_id)
+        validate_current_main(read("git/ref/heads/main"), code_sha=code_sha)
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError("GitHub release CI could not be verified") from exc
     finally:
         connection.close()
-    return validate_successful_release_ci(payload, code_sha=code_sha, run_id=run_id)
+    return result

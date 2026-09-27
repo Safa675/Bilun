@@ -37,10 +37,11 @@ def _manifest(tmp_path: Path) -> dict:
             "old_snapshot", "old_probe_dir", "frontend_current", "caddy_config",
             "lock_path", "journal_path", "old_environment_snapshot",
             "route_preparation_path",
+            "old_recovery_manifest_path",
         )
     }
     return {
-        "schema_version": "wavea-route-manifest-v1", "release": release,
+        "schema_version": "wavea-route-manifest-v2", "release": release,
         "candidate": candidate, "paths": paths,
         "routes": {
             name: {"path": str(tmp_path / f"{name}.caddy"), "file_sha256": "c" * 64}

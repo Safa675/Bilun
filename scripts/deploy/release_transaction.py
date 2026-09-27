@@ -32,6 +32,8 @@ _STATES = frozenset(
         "active",
         "rollback_barrier_installing",
         "rollback_barrier",
+        "old_recovering",
+        "old_recovered",
         "old_installing",
         "rolled_back",
         "blocked",
@@ -59,6 +61,7 @@ class ReleaseIdentity:
     old_route_sha256: str
     barrier_route_sha256: str
     candidate_route_sha256: str
+    old_recovery_manifest_sha256: str
 
     def __post_init__(self) -> None:
         if not _RELEASE_ID.fullmatch(self.release_id):
@@ -75,6 +78,7 @@ class ReleaseIdentity:
             "old_route_sha256",
             "barrier_route_sha256",
             "candidate_route_sha256",
+            "old_recovery_manifest_sha256",
         ):
             if not _SHA256.fullmatch(getattr(self, name)):
                 raise ValueError(f"Invalid {name}")
@@ -95,6 +99,9 @@ class RouteDriver(Protocol):
     def loaded_route_sha256(self) -> str | None:
         """Return the currently serving route digest, not a file's digest."""
 
+    def installed_route_sha256(self) -> str | None:
+        """Return the sealed route saved for a future Caddy restart."""
+
     def install(self, route: RouteName) -> None:
         """Install and reload one already validated route configuration."""
 
@@ -110,7 +117,10 @@ class ReleaseProbes(Protocol):
         """Probe the public route and both service/build/cache identities."""
 
     def public_barrier_ready(self) -> bool:
-        """Verify public API and pages are blocked while loopback stays up."""
+        """Verify public API and pages are blocked, even if a listener died."""
+
+    def recover_old_tuple(self) -> dict[str, str] | None:
+        """Under the barrier, restore and attest the protected old pair."""
 
 
 def _unique_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -162,12 +172,14 @@ class ReleaseTransaction:
             "identity",
             "state",
             "observed_route_sha256",
+            "old_target_tuple_sha256",
+            "old_recovery_artifact_sha256",
             "reason",
             "updated_at_utc",
             "history",
         }:
             raise TransactionError("Release journal has an unexpected schema")
-        if value["schema_version"] != 1 or value["identity"] != asdict(identity):
+        if value["schema_version"] != 2 or value["identity"] != asdict(identity):
             raise TransactionError("Release journal identity differs from requested release")
         if (
             type(value["sequence"]) is not int
@@ -179,6 +191,18 @@ class ReleaseTransaction:
         route = value["observed_route_sha256"]
         if route is not None and (not isinstance(route, str) or not _SHA256.fullmatch(route)):
             raise TransactionError("Release journal route identity is invalid")
+        if (
+            not isinstance(value["old_target_tuple_sha256"], str)
+            or not _SHA256.fullmatch(value["old_target_tuple_sha256"])
+        ):
+            raise TransactionError("Release journal old target identity is invalid")
+        artifact = value["old_recovery_artifact_sha256"]
+        if artifact is not None and (not isinstance(artifact, str) or not _SHA256.fullmatch(artifact)):
+            raise TransactionError("Release journal old recovery artifact is invalid")
+        if artifact is not None and artifact != identity.old_recovery_manifest_sha256:
+            raise TransactionError("Release journal old recovery artifact differs")
+        if (value["old_target_tuple_sha256"] == identity.old_tuple_sha256) != (artifact is None):
+            raise TransactionError("Release journal old target lacks matching recovery evidence")
         if value["reason"] is not None and not isinstance(value["reason"], str):
             raise TransactionError("Release journal reason is invalid")
         if not isinstance(value["updated_at_utc"], str):
@@ -190,6 +214,8 @@ class ReleaseTransaction:
                 "sequence",
                 "state",
                 "observed_route_sha256",
+                "old_target_tuple_sha256",
+                "old_recovery_artifact_sha256",
                 "reason",
                 "updated_at_utc",
             }:
@@ -205,13 +231,28 @@ class ReleaseTransaction:
                     not isinstance(event["observed_route_sha256"], str)
                     or not _SHA256.fullmatch(event["observed_route_sha256"])
                 )
+                or not isinstance(event["old_target_tuple_sha256"], str)
+                or not _SHA256.fullmatch(event["old_target_tuple_sha256"])
+                or event["old_recovery_artifact_sha256"] is not None
+                and (
+                    not isinstance(event["old_recovery_artifact_sha256"], str)
+                    or not _SHA256.fullmatch(event["old_recovery_artifact_sha256"])
+                )
+                or (event["old_target_tuple_sha256"] == identity.old_tuple_sha256)
+                != (event["old_recovery_artifact_sha256"] is None)
+                or event["old_recovery_artifact_sha256"] not in (
+                    None, identity.old_recovery_manifest_sha256
+                )
                 or event["reason"] is not None
                 and not isinstance(event["reason"], str)
             ):
                 raise TransactionError("Release journal event sequence is invalid")
         if any(
             value[key] != value["history"][-1][key]
-            for key in ("sequence", "state", "observed_route_sha256", "reason", "updated_at_utc")
+            for key in (
+                "sequence", "state", "observed_route_sha256", "old_target_tuple_sha256",
+                "old_recovery_artifact_sha256", "reason", "updated_at_utc",
+            )
         ):
             raise TransactionError("Release journal head differs from its last event")
         return value
@@ -223,24 +264,44 @@ class ReleaseTransaction:
         route: RouteDriver,
         *,
         reason: str | None = None,
+        old_target_tuple_sha256: str | None = None,
+        old_recovery_artifact_sha256: str | None = None,
     ) -> None:
         previous = self._read(identity)
         loaded = route.loaded_route_sha256()
         if loaded is not None and not _SHA256.fullmatch(loaded):
             raise TransactionError("Loaded route identity is invalid")
+        old_target = old_target_tuple_sha256 or (
+            identity.old_tuple_sha256 if previous is None
+            else previous["old_target_tuple_sha256"]
+        )
+        artifact = old_recovery_artifact_sha256
+        if artifact is None and previous is not None and old_target == previous["old_target_tuple_sha256"]:
+            artifact = previous["old_recovery_artifact_sha256"]
+        if (
+            not _SHA256.fullmatch(old_target)
+            or (old_target == identity.old_tuple_sha256) != (artifact is None)
+            or artifact is not None and not _SHA256.fullmatch(artifact)
+            or artifact is not None and artifact != identity.old_recovery_manifest_sha256
+        ):
+            raise TransactionError("Old rollback target or recovery evidence is invalid")
         event = {
             "sequence": 1 if previous is None else previous["sequence"] + 1,
             "state": state,
             "observed_route_sha256": loaded,
+            "old_target_tuple_sha256": old_target,
+            "old_recovery_artifact_sha256": artifact,
             "reason": reason,
             "updated_at_utc": datetime.now(UTC).isoformat(),
         }
         journal = {
-            "schema_version": 1,
+            "schema_version": 2,
             "sequence": event["sequence"],
             "identity": asdict(identity),
             "state": state,
             "observed_route_sha256": loaded,
+            "old_target_tuple_sha256": old_target,
+            "old_recovery_artifact_sha256": artifact,
             "reason": reason,
             "updated_at_utc": event["updated_at_utc"],
             "history": ([] if previous is None else previous["history"]) + [event],
@@ -273,12 +334,16 @@ class ReleaseTransaction:
         name: Literal["old", "candidate"],
         *,
         public: bool,
+        expected_tuple: str | None = None,
     ) -> None:
-        expected = getattr(identity, f"{name}_tuple_sha256")
+        expected = expected_tuple or getattr(identity, f"{name}_tuple_sha256")
         observed = probes.public_tuple_sha256(name) if public else probes.direct_tuple_sha256(name)
         if observed != expected:
             raise TransactionError(f"{name} {'public' if public else 'direct'} tuple unverified")
-        if public and route.loaded_route_sha256() != getattr(identity, f"{name}_route_sha256"):
+        if public and (
+            route.loaded_route_sha256() != getattr(identity, f"{name}_route_sha256")
+            or route.installed_route_sha256() != getattr(identity, f"{name}_route_sha256")
+        ):
             raise TransactionError(f"{name} public route unverified")
 
     @staticmethod
@@ -287,6 +352,7 @@ class ReleaseTransaction:
     ) -> None:
         if (
             route.loaded_route_sha256() != identity.barrier_route_sha256
+            or route.installed_route_sha256() != identity.barrier_route_sha256
             or not probes.public_barrier_ready()
         ):
             raise TransactionError("Public maintenance barrier unverified")
@@ -296,14 +362,52 @@ class ReleaseTransaction:
     ) -> str:
         try:
             self._record(identity, "rollback_barrier_installing", route)
-            if route.loaded_route_sha256() != identity.barrier_route_sha256:
-                route.install("barrier")
+            route.install("barrier")
             self._verify_barrier(identity, route, probes)
             self._record(identity, "rollback_barrier", route)
-            self._verify_tuple(identity, route, probes, "old", public=False)
-            self._record(identity, "old_installing", route)
+            previous = self._read(identity)
+            assert previous is not None
+            old_target = previous["old_target_tuple_sha256"]
+            observed_old = probes.direct_tuple_sha256("old")
+            if observed_old == identity.old_tuple_sha256:
+                old_target = identity.old_tuple_sha256
+                old_artifact = None
+            elif observed_old == old_target and previous["old_recovery_artifact_sha256"] is not None:
+                old_artifact = previous["old_recovery_artifact_sha256"]
+            else:
+                self._record(identity, "old_recovering", route)
+                recovered = probes.recover_old_tuple()
+                if (
+                    not isinstance(recovered, dict)
+                    or set(recovered) != {"tuple_sha256", "artifact_sha256"}
+                    or not all(
+                        isinstance(value, str) and _SHA256.fullmatch(value)
+                        for value in recovered.values()
+                    )
+                    or recovered["tuple_sha256"] == identity.old_tuple_sha256
+                    or recovered["artifact_sha256"] != identity.old_recovery_manifest_sha256
+                    or probes.direct_tuple_sha256("old") != recovered["tuple_sha256"]
+                ):
+                    raise TransactionError("Protected old recovery tuple unverified")
+                old_target = recovered["tuple_sha256"]
+                old_artifact = recovered["artifact_sha256"]
+                self._record(
+                    identity, "old_recovered", route,
+                    old_target_tuple_sha256=old_target,
+                    old_recovery_artifact_sha256=old_artifact,
+                )
+            self._verify_tuple(
+                identity, route, probes, "old", public=False, expected_tuple=old_target
+            )
+            self._record(
+                identity, "old_installing", route,
+                old_target_tuple_sha256=old_target,
+                old_recovery_artifact_sha256=old_artifact,
+            )
             route.install("old")
-            self._verify_tuple(identity, route, probes, "old", public=True)
+            self._verify_tuple(
+                identity, route, probes, "old", public=True, expected_tuple=old_target
+            )
             self._record(identity, "rolled_back", route)
             return "rolled_back"
         except Exception:
@@ -312,8 +416,7 @@ class ReleaseTransaction:
             # a blocked outcome; never call that a successful rollback.
             try:
                 self._record(identity, "rollback_barrier_installing", route)
-                if route.loaded_route_sha256() != identity.barrier_route_sha256:
-                    route.install("barrier")
+                route.install("barrier")
                 self._verify_barrier(identity, route, probes)
                 self._record(identity, "blocked", route, reason="old_tuple_or_route_unverified")
             except Exception:
@@ -329,7 +432,10 @@ class ReleaseTransaction:
                     self._verify_tuple(identity, route, probes, "candidate", public=True)
                     return "active"
                 raise TransactionError("Existing transaction requires recovery or a new release")
-            if route.loaded_route_sha256() != identity.old_route_sha256:
+            if (
+                route.loaded_route_sha256() != identity.old_route_sha256
+                or route.installed_route_sha256() != identity.old_route_sha256
+            ):
                 raise TransactionError("Observed old route differs from release manifest")
             if not probes.activation_gate(identity):
                 raise TransactionError("Activation identity gate failed")
@@ -376,7 +482,10 @@ class ReleaseTransaction:
                     pass
             if previous["state"] == "rolled_back" and not rollback_active:
                 try:
-                    self._verify_tuple(identity, route, probes, "old", public=True)
+                    self._verify_tuple(
+                        identity, route, probes, "old", public=True,
+                        expected_tuple=previous["old_target_tuple_sha256"],
+                    )
                     return "rolled_back"
                 except TransactionError:
                     pass
@@ -385,9 +494,10 @@ class ReleaseTransaction:
                 and route.loaded_route_sha256() == identity.old_route_sha256
             ):
                 try:
+                    route.install("old")
                     self._verify_tuple(identity, route, probes, "old", public=True)
                     self._record(identity, "rolled_back", route)
                     return "rolled_back"
-                except TransactionError:
+                except Exception:
                     pass
             return self._rollback_locked(identity, route, probes)

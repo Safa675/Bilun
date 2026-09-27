@@ -21,6 +21,8 @@ from scripts.deploy.observe_candidate_tuple import (
     observe_candidate_tuple,
 )
 from scripts.deploy.observe_old_pair import observe_old_pair
+from scripts.deploy.recover_old_pair import load_old_recovery_spec, stage_old_recovery
+from scripts.deploy.rehearse_wavea_pair import env_digest, environment
 from scripts.deploy.prepare_wavea_routes import _assets
 from scripts.deploy.release_sidecar import _load_private_json
 from scripts.deploy.release_transaction import ReleaseIdentity
@@ -113,6 +115,27 @@ def prepare_wavea_route_manifest(config: dict[str, Any], output: Path) -> dict[s
         old_probe_dir=paths["old_probe_dir"],
         frontend_current=paths["frontend_current"],
     )
+    old_recovery = load_old_recovery_spec(
+        paths["old_recovery_manifest_path"],
+        _stable_file_hash(paths["old_recovery_manifest_path"]),
+    )
+    if (
+        old_recovery.snapshot_root != paths["old_snapshot"]
+        or old_recovery.baseline_build_id != config["baseline_build_id"]
+        or old_recovery.patient_id != config["patient_id"]
+        or old_recovery.cache_sha256 != old["logical_tuple"]["cache_sha256"]
+        or old_recovery.backend_runtime_sha256
+        != old["logical_tuple"]["backend_runtime_sha256"]
+        or old_recovery.frontend_runtime_sha256
+        != old["logical_tuple"]["frontend_runtime_sha256"]
+        or any(
+            env_digest(environment(paths["old_snapshot"] / f"{role}-effective-env.nul"))
+            != old["logical_tuple"][f"{role}_service"]["effective_environment_sha256"]
+            for role in ("backend", "frontend")
+        )
+    ):
+        raise ValueError("Old recovery artifacts differ from serving protected pair")
+    stage_old_recovery(old_recovery)
     if (
         signed.get("private_activation_verified") is not True
         or signed.get("status") != "candidate_tuple_observed"
@@ -134,6 +157,7 @@ def prepare_wavea_route_manifest(config: dict[str, Any], output: Path) -> dict[s
         old_route_sha256=prepared["routes"]["old"]["route_sha256"],
         barrier_route_sha256=prepared["routes"]["barrier"]["route_sha256"],
         candidate_route_sha256=prepared["routes"]["candidate"]["route_sha256"],
+        old_recovery_manifest_sha256=old_recovery.manifest_sha256,
     )
     spec_data = {
         key: str(value) if isinstance(value, Path) else value
@@ -161,6 +185,7 @@ def prepare_wavea_route_manifest(config: dict[str, Any], output: Path) -> dict[s
         if (
             checked_identity != identity
             or route.loaded_route_sha256() != identity.old_route_sha256
+            or route.installed_route_sha256() != identity.old_route_sha256
             or not probes.activation_gate(identity)
             or probes.direct_tuple_sha256("old") != identity.old_tuple_sha256
             or probes.direct_tuple_sha256("candidate") != identity.candidate_tuple_sha256

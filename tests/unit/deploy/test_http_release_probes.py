@@ -8,7 +8,7 @@ from scripts.deploy.http_release_probes import HttpReleaseProbes
 
 
 def test_public_http_probe_checks_pairing_assets_and_barrier() -> None:
-    state = {"route": "old", "corrupt_asset": False, "retain_old": True}
+    state = {"route": "old", "corrupt_asset": False, "retain_old": True, "old_dead": False}
     public = "https://app.bilun.tech"
     assets = {
         pair: [f"/_next/static/{pair}-{number}.js" for number in range(10)]
@@ -24,6 +24,8 @@ def test_public_http_probe_checks_pairing_assets_and_barrier() -> None:
         )
         if pair == "barrier":
             return 503, b"maintenance"
+        if pair == "old" and state["old_dead"] and path == "/health":
+            return 503, b"dead"
         if (
             base == public and pair == "candidate" and path in assets["old"]
             and state["retain_old"]
@@ -65,6 +67,9 @@ def test_public_http_probe_checks_pairing_assets_and_barrier() -> None:
     assert probes.public_tuple_sha256("candidate") is None
     state["route"] = "barrier"
     assert probes.public_barrier_ready() is True
+    state["old_dead"] = True
+    assert probes.public_barrier_ready() is True
+    state["old_dead"] = False
     state["route"] = "candidate"
     assert probes.public_tuple_sha256("candidate") == "b" * 64
     state["retain_old"] = False

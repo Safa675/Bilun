@@ -429,6 +429,7 @@ const billing = {
     "coverageTitle": "Wave A değerlendirme kapsamı",
     "coverageSummary": "{groups} grup · {evaluated} değerlendirildi · {missing} eksik girdi · {unavailable} değerlendirilemedi",
     "coveragePartial": "Bazı fatura girdileri yok; bu sayılar sorunsuz sonuç anlamına gelmez.",
+    "partialCohort": "Seçili {count} hastanın fatura girdileri eksik. Verisi bulunan hastaların bulguları gösteriliyor; eksik girdiler sorunsuz sonuç anlamına gelmez.",
     "groupDetails": "Grup durum sayılarını göster",
     "groupCounts": "{evaluated} değerlendirildi · {missing} eksik · {unavailable} değerlendirilemedi",
     "unavailable": "Wave A kanıtları bu derleme veya fatura için kullanılamıyor. Bu, sıfır bulgu olduğu anlamına gelmez.",

@@ -124,6 +124,19 @@ class CaddyRouteDriver:
         except TransactionError:
             return None
 
+    def installed_route_sha256(self) -> str | None:
+        """Only exact sealed Caddyfile bytes count as a restart-safe route."""
+        try:
+            if self.config_path.is_symlink() or not self.config_path.is_file():
+                return None
+            digest = hashlib.sha256(self.config_path.read_bytes()).hexdigest()
+        except OSError:
+            return None
+        for route, expected in self.expected_file_digests.items():
+            if digest == expected:
+                return self.expected_digests[route]
+        return None
+
     def verify_sealed_routes(self) -> None:
         """Prove all three recovery routes can be loaded before changing Caddy."""
         for route, source in self.route_files.items():

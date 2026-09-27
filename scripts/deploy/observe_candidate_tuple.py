@@ -37,6 +37,32 @@ _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _CODE_SHA = re.compile(r"[0-9a-f]{40}\Z")
 
 
+def _verify_frontend_api_rewrite(runtime: Path, backend_port: int) -> None:
+    """Check the build-time Next rewrite, which runtime env cannot repair."""
+    path = runtime / ".next" / "routes-manifest.json"
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Candidate frontend build-time API routes are missing")
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        rewrites = manifest["rewrites"]
+        entries = [
+            entry for phase in ("beforeFiles", "afterFiles", "fallback")
+            for entry in rewrites[phase]
+        ]
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError("Candidate frontend build-time API routes are malformed") from exc
+    api_rewrites = [
+        entry for entry in entries
+        if isinstance(entry, dict) and entry.get("source") == "/api/:path*"
+    ]
+    if (
+        len(entries) != 1 or len(api_rewrites) != 1
+        or api_rewrites[0].get("destination")
+        != f"http://127.0.0.1:{backend_port}/api/:path*"
+    ):
+        raise ValueError("Candidate frontend build-time API target differs")
+
+
 @dataclass(frozen=True)
 class CandidateSpec:
     code_sha: str
@@ -420,6 +446,7 @@ def observe_candidate_tuple(
         "API_PROXY_TARGET": f"http://127.0.0.1:{spec.backend_port}",
     }:
         raise ValueError("Candidate frontend backend target/environment differs")
+    _verify_frontend_api_rewrite(spec.frontend_runtime, spec.backend_port)
     backend_digest = _runtime_digest(spec.backend_runtime, backend=True)
     frontend_digest = _runtime_digest(spec.frontend_runtime, backend=False)
     if (
