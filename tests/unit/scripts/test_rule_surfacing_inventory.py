@@ -121,6 +121,19 @@ def test_focused_public_gate_rejects_missing_index_validation(
         audit._validate_focused_report_dataflow()
 
 
+def test_focused_public_gate_rejects_missing_signed_activation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    source = audit.WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
+    source = source.replace("activation_for_build(build_id) is not None", "True")
+    fixture = tmp_path / "wavea_gate.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "WAVEA_GATE_API_PATH", fixture)
+    with pytest.raises(ValueError, match="complete-build evidence gate drift"):
+        audit._validate_focused_report_dataflow()
+
+
 def test_focused_public_gate_rejects_missing_patient_cardinality_check(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

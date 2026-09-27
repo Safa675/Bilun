@@ -124,6 +124,20 @@ class CaddyRouteDriver:
         except TransactionError:
             return None
 
+    def verify_sealed_routes(self) -> None:
+        """Prove all three recovery routes can be loaded before changing Caddy."""
+        for route, source in self.route_files.items():
+            if (
+                source.is_symlink() or not source.is_file()
+                or hashlib.sha256(source.read_bytes()).hexdigest()
+                != self.expected_file_digests[route]
+                or _digest(self.adapt(source)) != self.expected_digests[route]
+            ):
+                raise TransactionError(f"Caddy {route} recovery route differs")
+            self.validate(source)
+            if hashlib.sha256(source.read_bytes()).hexdigest() != self.expected_file_digests[route]:
+                raise TransactionError(f"Caddy {route} recovery route changed during validation")
+
     def install(self, route: RouteName) -> None:
         if route not in self.route_files:
             raise TransactionError("Unknown Caddy release route")

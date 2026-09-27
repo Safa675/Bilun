@@ -45,6 +45,7 @@ def _fixture(tmp_path: Path):
 
 def test_route_switch_reads_loaded_config_and_restores_exact_old_route(tmp_path: Path):
     driver, _, expected, _, _ = _fixture(tmp_path)
+    driver.verify_sealed_routes()
     assert driver.loaded_route_sha256() == expected["old"]
     driver.install("barrier")
     assert driver.loaded_route_sha256() == expected["barrier"]
@@ -59,6 +60,14 @@ def test_tampered_template_never_reloads(tmp_path: Path):
     files["candidate"].write_text('{"apps":{"http":{"upstream":3100}}}')
     with pytest.raises(TransactionError, match="bytes differ from release manifest"):
         driver.install("candidate")
+    assert driver.loaded_route_sha256() == expected["old"]
+
+
+def test_unloadable_old_route_blocks_preflight_before_switch(tmp_path: Path):
+    driver, files, expected, _, _ = _fixture(tmp_path)
+    files["old"].write_text('{"apps":{"http":{"upstream":3001}}}')
+    with pytest.raises(TransactionError, match="old recovery route differs"):
+        driver.verify_sealed_routes()
     assert driver.loaded_route_sha256() == expected["old"]
 
 
