@@ -29,6 +29,7 @@ class ServiceObservation:
     unit: str
     active_state: str
     main_pid: int
+    listener_pid: int
     declared_working_directory: Path
     process_working_directory: Path
     process_executable: Path
@@ -141,6 +142,53 @@ def _show_properties(unit: str) -> dict[str, str]:
     return dict(line.split("=", 1) for line in output.splitlines() if "=" in line)
 
 
+def _listener_pid(port: int) -> int:
+    if not 1 <= port <= 65535:
+        raise ValueError(f"Invalid service listener port: {port}")
+    output = _run("ss", "-H", "-ltnp", f"sport = :{port}")
+    rows = [line for line in output.splitlines() if line.strip()]
+    per_row = [{int(value) for value in re.findall(r"\bpid=(\d+)\b", line)} for line in rows]
+    pids = set().union(*per_row) if per_row else set()
+    if len(pids) != 1 or any(row != pids for row in per_row):
+        raise ValueError(f"Port {port} has ambiguous or unidentified listener processes")
+    return pids.pop()
+
+
+def _listener_descends_from_main(proc_root: Path, listener_pid: int, main_pid: int) -> bool:
+    current = listener_pid
+    seen: set[int] = set()
+    while current > 1 and current not in seen:
+        if current == main_pid:
+            return True
+        seen.add(current)
+        status = (proc_root / str(current) / "status").read_text(encoding="utf-8")
+        match = re.search(r"^PPid:\s*(\d+)\s*$", status, flags=re.MULTILINE)
+        if match is None:
+            raise ValueError(f"Cannot establish parent for listener PID {current}")
+        current = int(match.group(1))
+    return False
+
+
+def _process_start_time(proc_root: Path, pid: int) -> datetime:
+    stat = (proc_root / str(pid) / "stat").read_text(encoding="utf-8")
+    tail = stat.rsplit(") ", 1)[-1].split()
+    if len(tail) <= 19:
+        raise ValueError(f"Cannot read process start time for PID {pid}")
+    start_ticks = int(tail[19])
+    boot_line = next(
+        (
+            line
+            for line in (proc_root / "stat").read_text(encoding="utf-8").splitlines()
+            if line.startswith("btime ")
+        ),
+        None,
+    )
+    if boot_line is None:
+        raise ValueError("Cannot read host boot time")
+    boot_seconds = int(boot_line.split()[1])
+    return datetime.fromtimestamp(boot_seconds + start_ticks / os.sysconf("SC_CLK_TCK"), UTC)
+
+
 def _environment_file_paths(raw: str) -> tuple[Path, ...]:
     # systemctl show formats each path as `/path (ignore_errors=no)`.
     paths: list[Path] = []
@@ -151,12 +199,17 @@ def _environment_file_paths(raw: str) -> tuple[Path, ...]:
     return tuple(paths)
 
 
-def observe_service(unit: str, *, proc_root: Path = Path("/proc")) -> ServiceObservation:
+def observe_service(unit: str, port: int, *, proc_root: Path = Path("/proc")) -> ServiceObservation:
     properties = _show_properties(unit)
     pid = int(properties.get("MainPID") or "0")
     if properties.get("ActiveState") != "active" or pid <= 0:
         raise ValueError(f"Service is not active with a main process: {unit}")
-    process = proc_root / str(pid)
+    listener_pid = _listener_pid(port)
+    if not _listener_descends_from_main(proc_root, listener_pid, pid):
+        raise ValueError(
+            f"Port {port} listener PID {listener_pid} is not under {unit} main PID {pid}"
+        )
+    process = proc_root / str(listener_pid)
     declared = Path(properties.get("WorkingDirectory") or "/")
     actual = (process / "cwd").resolve(strict=True)
     executable = (process / "exe").resolve(strict=True)
@@ -179,14 +232,12 @@ def observe_service(unit: str, *, proc_root: Path = Path("/proc")) -> ServiceObs
         }:
             selected[key.decode()] = value.decode("utf-8", errors="replace")
     unit_text = _run("systemctl", "cat", unit)
-    timestamp = properties.get("ExecMainStartTimestamp") or ""
-    if re.search(r"[+-]\d{2}$", timestamp):
-        timestamp += "00"
-    started = datetime.strptime(timestamp, "%a %Y-%m-%d %H:%M:%S %z").astimezone(UTC)
+    started = _process_start_time(proc_root, listener_pid)
     return ServiceObservation(
         unit=unit,
         active_state="active",
         main_pid=pid,
+        listener_pid=listener_pid,
         declared_working_directory=declared,
         process_working_directory=actual,
         process_executable=executable,
@@ -210,10 +261,14 @@ def _public_service(service: ServiceObservation) -> dict[str, Any]:
         "unit": service.unit,
         "active_state": service.active_state,
         "main_pid": service.main_pid,
+        "listener_pid": service.listener_pid,
         "declared_working_directory": str(service.declared_working_directory),
         "process_working_directory": str(service.process_working_directory),
         "process_executable": str(service.process_executable),
         "entrypoint_basename": Path(service.process_argv[0]).name,
+        "process_argv_sha256": hashlib.sha256(
+            b"\0".join(argument.encode("utf-8") for argument in service.process_argv)
+        ).hexdigest(),
         "unit_sha256": service.unit_sha256,
         "unit_fragment": service.unit_fragment,
         "unit_files": [str(path) for path in service.unit_files],
@@ -540,6 +595,20 @@ def _live_health(url: str) -> dict[str, Any]:
         return json.load(response)
 
 
+def _write_report(report: dict[str, Any], output: Path | None) -> None:
+    rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    if output is None:
+        sys.stdout.write(rendered)
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=output.parent, delete=False
+    ) as temporary:
+        temporary.write(rendered)
+        temporary_path = Path(temporary.name)
+    os.replace(temporary_path, output)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -553,39 +622,69 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config-snapshot-dir", type=Path)
     parser.add_argument("--caddy-config", type=Path, default=Path("/etc/caddy/Caddyfile"))
     parser.add_argument("--health-url", default="http://127.0.0.1:8001/health")
+    parser.add_argument("--frontend-port", type=int, default=3000)
+    parser.add_argument("--backend-port", type=int, default=8001)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
+    observations: dict[str, ServiceObservation] = {}
+    observation_blockers: list[str] = []
+    for role, unit, port in (
+        ("frontend", "bilun-frontend", args.frontend_port),
+        ("backend", "bilun-backend", args.backend_port),
+    ):
+        try:
+            observations[role] = observe_service(unit, port)
+        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+            observation_blockers.append(f"{role}_listener_or_unit_unverified: {exc}")
     try:
-        frontend = observe_service("bilun-frontend")
-        backend = observe_service("bilun-backend")
         health = _live_health(args.health_url)
-        report = assess_release_preflight(
-            frontend,
-            backend,
-            health,
-            frontend_current=args.frontend_current,
-            frontend_snapshot=args.frontend_snapshot,
-            backend_snapshot=args.backend_snapshot,
-            cache_snapshot=args.cache_snapshot,
-            frontend_probe=args.frontend_probe,
-            backend_probe=args.backend_probe,
-            config_snapshot_dir=args.config_snapshot_dir,
-            caddy_config=args.caddy_config,
-        )
     except (OSError, ValueError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
-        print(f"Release preflight could not observe the serving tuple: {exc}", file=sys.stderr)
-        return 2
-    rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
-    if args.output is None:
-        sys.stdout.write(rendered)
+        health = {}
+        observation_blockers.append(f"backend_health_unverified: {exc}")
+    if observation_blockers:
+        report = {
+            "schema_version": 1,
+            "captured_at_utc": datetime.now(UTC).isoformat(),
+            "observed": {
+                f"{role}_service": _public_service(service)
+                for role, service in observations.items()
+            },
+            "rollback": {
+                "ready": False,
+                "blockers": observation_blockers,
+                "artifacts": {},
+            },
+        }
     else:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=args.output.parent, delete=False
-        ) as temporary:
-            temporary.write(rendered)
-            temporary_path = Path(temporary.name)
-        os.replace(temporary_path, args.output)
+        try:
+            report = assess_release_preflight(
+                observations["frontend"],
+                observations["backend"],
+                health,
+                frontend_current=args.frontend_current,
+                frontend_snapshot=args.frontend_snapshot,
+                backend_snapshot=args.backend_snapshot,
+                cache_snapshot=args.cache_snapshot,
+                frontend_probe=args.frontend_probe,
+                backend_probe=args.backend_probe,
+                config_snapshot_dir=args.config_snapshot_dir,
+                caddy_config=args.caddy_config,
+            )
+        except (OSError, ValueError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+            report = {
+                "schema_version": 1,
+                "captured_at_utc": datetime.now(UTC).isoformat(),
+                "observed": {
+                    f"{role}_service": _public_service(service)
+                    for role, service in observations.items()
+                },
+                "rollback": {
+                    "ready": False,
+                    "blockers": [f"serving_tuple_observation_unverified: {exc}"],
+                    "artifacts": {},
+                },
+            }
+    _write_report(report, args.output)
     return 0 if report["rollback"]["ready"] else 1
 
 

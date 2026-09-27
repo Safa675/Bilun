@@ -23,6 +23,7 @@ def _service(
         unit=unit,
         active_state="active",
         main_pid=123 if unit == "bilun-frontend" else 456,
+        listener_pid=123 if unit == "bilun-frontend" else 456,
         declared_working_directory=runtime,
         process_working_directory=runtime,
         process_executable=Path(
@@ -447,13 +448,17 @@ def test_observe_service_reads_process_not_checkout_and_filters_secret_environme
     runtime.mkdir()
     executable = tmp_path / "node"
     executable.write_text("node", encoding="utf-8")
-    process = tmp_path / "proc" / "123"
-    process.mkdir(parents=True)
-    (process / "cwd").symlink_to(runtime, target_is_directory=True)
-    (process / "exe").symlink_to(executable)
-    (process / "cmdline").write_bytes(b"node\0server.js\0")
-    (process / "environ").write_bytes(
-        b"SECRET_TOKEN=do-not-report\0BILUN_CACHE_DB_PATH=/tmp/cache.duckdb\0"
+    main = tmp_path / "proc" / "123"
+    main.mkdir(parents=True)
+    (main / "environ").write_bytes(b"BILUN_CACHE_DB_PATH=/tmp/wrong-main-cache.duckdb\0")
+    listener = tmp_path / "proc" / "124"
+    listener.mkdir(parents=True)
+    (listener / "status").write_text("Name:\tnext-server\nPPid:\t123\n", encoding="utf-8")
+    (listener / "cwd").symlink_to(runtime, target_is_directory=True)
+    (listener / "exe").symlink_to(executable)
+    (listener / "cmdline").write_bytes(b"node\0server.js\0")
+    (listener / "environ").write_bytes(
+        b"SECRET_TOKEN=do-not-report\0BILUN_CACHE_DB_PATH=/tmp/listener-cache.duckdb\0"
     )
     monkeypatch.setattr(
         preflight,
@@ -467,12 +472,53 @@ def test_observe_service_reads_process_not_checkout_and_filters_secret_environme
         },
     )
     monkeypatch.setattr(preflight, "_run", lambda *args: "unit text")
+    monkeypatch.setattr(preflight, "_listener_pid", lambda port: 124)
+    monkeypatch.setattr(preflight, "_process_start_time", lambda proc_root, pid: datetime.now(UTC))
 
-    observed = preflight.observe_service("bilun-frontend", proc_root=tmp_path / "proc")
+    observed = preflight.observe_service("bilun-frontend", 3000, proc_root=tmp_path / "proc")
 
+    assert (observed.main_pid, observed.listener_pid) == (123, 124)
     assert observed.process_working_directory == runtime
-    assert observed.selected_environment == {"BILUN_CACHE_DB_PATH": "/tmp/cache.duckdb"}
+    assert observed.selected_environment == {"BILUN_CACHE_DB_PATH": "/tmp/listener-cache.duckdb"}
     assert "do-not-report" not in json.dumps(preflight._public_service(observed))
+
+
+def test_listener_identity_requires_one_pid_under_systemd_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        preflight,
+        "_run",
+        lambda *args: 'LISTEN users:(("next",pid=10,fd=3))\nLISTEN users:(("other",pid=11,fd=4))',
+    )
+    with pytest.raises(ValueError, match="ambiguous or unidentified"):
+        preflight._listener_pid(3000)
+    monkeypatch.setattr(
+        preflight,
+        "_run",
+        lambda *args: 'LISTEN users:(("next",pid=10,fd=3))\nLISTEN no-process-information',
+    )
+    with pytest.raises(ValueError, match="ambiguous or unidentified"):
+        preflight._listener_pid(3000)
+    listener = tmp_path / "proc" / "124"
+    listener.mkdir(parents=True)
+    (listener / "status").write_text("PPid:\t999\n", encoding="utf-8")
+    parent = tmp_path / "proc" / "999"
+    parent.mkdir(parents=True)
+    (parent / "status").write_text("PPid:\t1\n", encoding="utf-8")
+    assert not preflight._listener_descends_from_main(tmp_path / "proc", 124, 123)
+
+
+def test_process_start_time_uses_listener_proc_stat(tmp_path: Path) -> None:
+    proc_root = tmp_path / "proc"
+    process = proc_root / "124"
+    process.mkdir(parents=True)
+    ticks = os.sysconf("SC_CLK_TCK") * 3
+    fields = ["S", *(["0"] * 18), str(ticks)]
+    (process / "stat").write_text(f"124 (next-server (v16)) {' '.join(fields)}\n", encoding="utf-8")
+    (proc_root / "stat").write_text("cpu 0 0 0 0\nbtime 1000\n", encoding="utf-8")
+
+    assert preflight._process_start_time(proc_root, 124) == datetime.fromtimestamp(1003, UTC)
 
 
 def test_cli_writes_blocked_manifest_and_returns_nonzero(
@@ -482,7 +528,7 @@ def test_cli_writes_blocked_manifest_and_returns_nonzero(
     monkeypatch.setattr(
         preflight,
         "observe_service",
-        lambda unit: state["frontend"] if unit == "bilun-frontend" else state["backend"],
+        lambda unit, port: state["frontend"] if unit == "bilun-frontend" else state["backend"],
     )
     monkeypatch.setattr(preflight, "_live_health", lambda url: state["health"])
     output = tmp_path / "report.json"
@@ -495,3 +541,26 @@ def test_cli_writes_blocked_manifest_and_returns_nonzero(
     report = json.loads(output.read_text(encoding="utf-8"))
     assert report["observed"]["frontend"]["current_symlink_stale"] is True
     assert report["rollback"]["ready"] is False
+
+
+def test_cli_keeps_partial_observation_when_listener_cannot_be_proven(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = _fixture(tmp_path, monkeypatch)
+
+    def observe(unit: str, port: int):
+        if unit == "bilun-frontend":
+            raise ValueError("listener is not a descendant of unit")
+        return state["backend"]
+
+    monkeypatch.setattr(preflight, "observe_service", observe)
+    monkeypatch.setattr(preflight, "_live_health", lambda url: state["health"])
+    output = tmp_path / "partial.json"
+
+    status = preflight.main(["--output", str(output)])
+
+    assert status == 1
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["rollback"]["ready"] is False
+    assert "frontend_listener_or_unit_unverified" in report["rollback"]["blockers"][0]
+    assert report["observed"]["backend_service"]["listener_pid"] == 456
