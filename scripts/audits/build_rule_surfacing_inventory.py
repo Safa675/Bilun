@@ -46,6 +46,7 @@ BILLING_ACTIONS_PATH = ROOT / "src/bilun/domain/billing/billing_actions.py"
 BILLING_API_PATH = ROOT / "src/bilun/api/routes/billing.py"
 ALERTS_API_PATH = ROOT / "src/bilun/api/routes/alerts.py"
 COMPLIANCE_API_PATH = ROOT / "src/bilun/api/routes/compliance.py"
+WAVEA_GATE_API_PATH = ROOT / "src/bilun/api/routes/wavea_gate.py"
 PATIENT_SECTIONS_PATH = ROOT / "frontend/src/components/patient/SutBillingReportSections.tsx"
 COMPLIANCE_VIEW_PATH = ROOT / "frontend/src/components/patient/views/ComplianceViewSection.tsx"
 REVENUE_VIEW_PATH = ROOT / "frontend/src/components/patient/views/RevenueViewSection.tsx"
@@ -1116,7 +1117,7 @@ def _validate_focused_report_dataflow() -> None:
     api = BILLING_API_PATH.read_text(encoding="utf-8")
     for token in (
         "def _gate_wavea_evidence(",
-        "complete_evidence_available(index, build_id)",
+        "if not complete_build_evidence_available(reader, index, build_id):",
         "payload = original_five_report_payload(payload)",
         'payload["claim_reviews"]',
         'payload["financial_findings"]',
@@ -1127,13 +1128,25 @@ def _validate_focused_report_dataflow() -> None:
         raise ValueError("focused patient/bill report routes bypass the draft gate")
     cohort_api = COMPLIANCE_API_PATH.read_text(encoding="utf-8")
     for token in (
-        "if not complete_evidence_available(wavea_index, active_build):",
+        "if not complete_build_evidence_available(reader, wavea_index, active_build):",
         "read_cache_json_payload_rows(",
         "patient_id: original_five_report_payload(report)",
         "build_cohort_compliance_index(",
     ):
         if token not in cohort_api:
             raise ValueError("focused cohort compliance draft API gate drift")
+    gate_api = WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
+    for token in (
+        "def complete_build_evidence_available(reader: Any, index: Any, build_id: str) -> bool:",
+        "if not complete_evidence_available(index, build_id):",
+        "counts = declared_build_row_counts(reader, build_id)",
+        'expected = counts.get("patient_billing_report_rows")',
+        'counts.get("wavea_evidence_detail") == expected',
+        'counts.get("wavea_evidence_index") == 1',
+        'index["n_patients"] == expected',
+    ):
+        if token not in gate_api:
+            raise ValueError("focused complete-build evidence gate drift")
     if _static_module_binding(WAVEA_EVIDENCE_PATH, "COMPLETE_EVIDENCE_CAPABILITY") != "complete-25-v1":
         raise ValueError("focused public activation marker drift")
     if '"capability": "draft"' not in WAVEA_EVIDENCE_PATH.read_text(encoding="utf-8"):

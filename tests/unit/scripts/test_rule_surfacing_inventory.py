@@ -95,13 +95,45 @@ def test_focused_public_gate_rejects_missing_index_fail_open(
     audit = _load_script()
     source = audit.COMPLIANCE_API_PATH.read_text(encoding="utf-8")
     source = source.replace(
-        "if not complete_evidence_available(wavea_index, active_build):",
-        "if wavea_index is not None and not complete_evidence_available(wavea_index, active_build):",
+        "if not complete_build_evidence_available(reader, wavea_index, active_build):",
+        "if wavea_index is not None and not complete_build_evidence_available(reader, wavea_index, active_build):",
     )
     fixture = tmp_path / "compliance.py"
     fixture.write_text(source, encoding="utf-8")
     monkeypatch.setattr(audit, "COMPLIANCE_API_PATH", fixture)
     with pytest.raises(ValueError, match="cohort compliance draft API gate drift"):
+        audit._validate_focused_report_dataflow()
+
+
+def test_focused_public_gate_rejects_helper_missing_index_fail_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    source = audit.WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
+    source = source.replace(
+        "if not complete_evidence_available(index, build_id):",
+        "if index is not None and not complete_evidence_available(index, build_id):",
+    )
+    fixture = tmp_path / "wavea_gate.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "WAVEA_GATE_API_PATH", fixture)
+    with pytest.raises(ValueError, match="complete-build evidence gate drift"):
+        audit._validate_focused_report_dataflow()
+
+
+def test_focused_public_gate_rejects_missing_patient_cardinality_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    source = audit.WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
+    source = source.replace(
+        'counts.get("wavea_evidence_detail") == expected',
+        'counts.get("wavea_evidence_detail") >= 0',
+    )
+    fixture = tmp_path / "wavea_gate.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "WAVEA_GATE_API_PATH", fixture)
+    with pytest.raises(ValueError, match="complete-build evidence gate drift"):
         audit._validate_focused_report_dataflow()
 
 
