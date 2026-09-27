@@ -622,8 +622,14 @@ def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkey
     assert summary["counts"]["evaluation_count"] == sum(
         patient["counts"]["evaluation_count"] for patient in index["patients"].values()
     )
+    assert client.post(
+        "/api/wavea-evidence-index", json={"limit": 1}
+    ).json() == summary
     rule_id = next(iter(index["patients"]["P1"]["counts"]["by_rule"]))
     selected = client.get("/api/wavea-evidence-index", params={"rule_id": rule_id}).json()
+    assert client.post(
+        "/api/wavea-evidence-index", json={"rule_id": rule_id}
+    ).json() == selected
     assert selected["counts"]["by_rule"][rule_id] == {
         status: sum(patient["counts"]["by_rule"][rule_id][status]
                     for patient in index["patients"].values())
@@ -634,6 +640,9 @@ def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkey
     assert unknown["available"] is False
     assert unknown["unavailable_reason"] == "requested_patient_not_in_build"
     assert unknown["counts"] is None
+    assert client.post(
+        "/api/wavea-evidence-index", json={"patient_id": ["missing"]}
+    ).json() == unknown
 
     response = client.get("/api/wavea-evidence/P1", params={"limit": 1})
     assert response.status_code == 200
@@ -796,6 +805,10 @@ def test_wavea_routes_share_production_session_gate(cached_pipeline, monkeypatch
             unauthenticated = client.get(path)
             assert unauthenticated.status_code == 401
             assert unauthenticated.json()["detail"] == "Authentication required."
+        for path in ("/api/wavea-evidence-index", "/api/wavea-evidence-rows"):
+            unauthenticated = client.post(path, json={})
+            assert unauthenticated.status_code == 401
+            assert unauthenticated.json()["detail"] == "Authentication required."
         login = client.post(
             "/api/auth/login",
             json={"username": "wavea_tester", "password": "wavea-test-password"},
@@ -804,6 +817,8 @@ def test_wavea_routes_share_production_session_gate(cached_pipeline, monkeypatch
         for path in paths:
             authenticated = client.get(path)
             assert authenticated.status_code == 200
+        for path in ("/api/wavea-evidence-index", "/api/wavea-evidence-rows"):
+            assert client.post(path, json={}).status_code == 200
             assert authenticated.json()["available"] is True
     finally:
         client.close()
@@ -915,6 +930,32 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
             cohort_financial = client.get(
                 "/api/wavea-evidence-rows", params={"kind": "financial_rows", "limit": 1}
             ).json()
+            post_cohort_financial = client.post(
+                "/api/wavea-evidence-rows",
+                json={"kind": "financial_rows", "patient_id": ["P1"], "limit": 1},
+            ).json()
+            get_selected_cohort_financial = client.get(
+                "/api/wavea-evidence-rows",
+                params={"kind": "financial_rows", "patient_id": "P1", "limit": 1},
+            ).json()
+            exact_financial = client.get(
+                "/api/wavea-evidence/P1",
+                params={
+                    "kind": "financial_rows",
+                    "evidence_id": financial["rows"][0]["evidence_id"],
+                },
+            ).json()
+            wrong_evidence_id = client.get(
+                "/api/wavea-evidence/P1",
+                params={"kind": "financial_rows", "evidence_id": "wavea_financial:unknown"},
+            ).json()
+            assert client.get(
+                "/api/wavea-evidence/P1",
+                params={"kind": "reviews", "evidence_id": financial["rows"][0]["evidence_id"]},
+            ).status_code == 400
+            assert client.get(
+                "/api/wavea-evidence/P1", params={"evidence_id": financial["rows"][0]["evidence_id"]}
+            ).status_code == 400
             wrong_claim = client.get(
                 "/api/wavea-evidence-rows", params={"kind": "financial_rows", "claim_id": "other"}
             ).json()
@@ -944,6 +985,12 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
     assert cohort_financial["pagination"]["total_matching"] == 1
     assert cohort_reviews["rows"] == reviews["rows"]
     assert cohort_financial["rows"] == financial["rows"]
+    assert post_cohort_financial == get_selected_cohort_financial
+    assert exact_financial["rows"] == financial["rows"]
+    assert exact_financial["pagination"]["total_matching"] == 1
+    assert wrong_evidence_id["available"] is True
+    assert wrong_evidence_id["rows"] == []
+    assert wrong_evidence_id["pagination"]["total_matching"] == 0
     assert cohort_financial["rows"][0]["confirmed_amount_try"] is None
     assert wrong_claim["pagination"]["total_matching"] == 0
     assert beyond_page["pagination"]["total_matching"] == 1

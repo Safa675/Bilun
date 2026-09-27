@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel
 
 from src.bilun.api.schemas import BilunCachePayloadResponse
 from src.bilun.db import read_json_payload, read_json_payload_row
@@ -28,6 +29,22 @@ _DEFAULT_LIMIT = 20
 _STATUSES = ("evaluated", "missing_inputs", "unavailable")
 _KINDS = ("evaluations", "reviews", "financial_rows")
 _COHORT_ROW_KINDS = ("reviews", "financial_rows")
+
+
+class WaveAEvidenceIndexRequest(BaseModel):
+    patient_id: list[str] | None = None
+    rule_id: str | None = None
+    limit: int = _DEFAULT_LIMIT
+    offset: int = 0
+
+
+class WaveAEvidenceRowsRequest(BaseModel):
+    kind: str = "reviews"
+    patient_id: list[str] | None = None
+    claim_id: str | None = None
+    rule_id: str | None = None
+    limit: int = _DEFAULT_LIMIT
+    offset: int = 0
 
 
 def _validate_page(limit: int, offset: int) -> None:
@@ -133,6 +150,23 @@ def get_wavea_evidence_index(
     offset: int = 0,
 ):
     """Return compact exact cohort counters with bounded patient summaries."""
+    return _wavea_evidence_index_response(patient_id, rule_id, limit, offset)
+
+
+@router.post("/wavea-evidence-index", response_model=BilunCachePayloadResponse)
+def post_wavea_evidence_index(request: WaveAEvidenceIndexRequest):
+    """Body-based equivalent for large selected patient sets."""
+    return _wavea_evidence_index_response(
+        request.patient_id, request.rule_id, request.limit, request.offset
+    )
+
+
+def _wavea_evidence_index_response(
+    patient_id: list[str] | None,
+    rule_id: str | None,
+    limit: int,
+    offset: int,
+) -> dict[str, Any]:
     _validate_page(limit, offset)
     reader, build_id, index = _active_index()
     if not _ready(reader, index, build_id):
@@ -215,6 +249,7 @@ def get_wavea_evidence_detail(
     kind: str = "evaluations",
     claim_id: str | None = None,
     rule_id: str | None = None,
+    evidence_id: str | None = None,
     limit: int = _DEFAULT_LIMIT,
     offset: int = 0,
 ):
@@ -222,6 +257,13 @@ def get_wavea_evidence_detail(
     _validate_page(limit, offset)
     if kind not in _KINDS:
         raise ValidationError(f"kind must be one of: {', '.join(_KINDS)}")
+    if evidence_id is not None:
+        prefix = {
+            "reviews": "wavea_review:",
+            "financial_rows": "wavea_financial:",
+        }.get(kind)
+        if prefix is None or not evidence_id.startswith(prefix) or len(evidence_id) <= len(prefix):
+            raise ValidationError("evidence_id does not match the selected evidence kind")
     reader, build_id, index = _active_index()
     if not _ready(reader, index, build_id):
         return _unavailable(reader, build_id, limit, offset)
@@ -263,6 +305,7 @@ def get_wavea_evidence_detail(
         if isinstance(row, dict)
         and (claim_id is None or row.get("claim_id") == claim_id)
         and (rule_id is None or row.get("rule_id") == rule_id)
+        and (evidence_id is None or row.get("evidence_id") == evidence_id)
     ]
     return attach_bilun_data_source(
         {
@@ -293,6 +336,30 @@ def get_wavea_evidence_rows(
     offset: int = 0,
 ):
     """Page sparse cohort review/financial evidence from the build index."""
+    return _wavea_evidence_rows_response(kind, patient_id, claim_id, rule_id, limit, offset)
+
+
+@router.post("/wavea-evidence-rows", response_model=BilunCachePayloadResponse)
+def post_wavea_evidence_rows(request: WaveAEvidenceRowsRequest):
+    """Body-based equivalent for large selected patient sets."""
+    return _wavea_evidence_rows_response(
+        request.kind,
+        request.patient_id,
+        request.claim_id,
+        request.rule_id,
+        request.limit,
+        request.offset,
+    )
+
+
+def _wavea_evidence_rows_response(
+    kind: str,
+    patient_id: list[str] | None,
+    claim_id: str | None,
+    rule_id: str | None,
+    limit: int,
+    offset: int,
+) -> dict[str, Any]:
     _validate_page(limit, offset)
     if kind not in _COHORT_ROW_KINDS:
         raise ValidationError(f"kind must be one of: {', '.join(_COHORT_ROW_KINDS)}")
