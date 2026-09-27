@@ -17,19 +17,31 @@ concurrency:
 
 jobs:
   deploy:
-    # Only deploy when the triggering CI run SUCCEEDED. (workflow_run fires on
-    # both success and failure; this guard turns failures into a no-op.)
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # workflow_run also fires for PR CI. Only a successful push to this
+    # repository's main branch may receive production credentials.
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
 
     steps:
-      - name: Abort unless invoked from main
-        # workflow_run always runs on the default branch; this is a belt-and-
-        # braces guard against accidental triggers from other contexts.
+      - name: Check out successful CI commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Record successful CI run
         run: |
-          echo "Triggered by CI run #$${{ github.event.workflow_run.id }} (conclusion=${{ github.event.workflow_run.conclusion }})"
-          echo "Ref: ${{ github.event.workflow_run.head_branch }}"
+          echo "Triggered by CI run #${{ github.event.workflow_run.id }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
 
       - name: Configure SSH
         env:
@@ -45,12 +57,14 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "bash -s -- $DEPLOY_SHA" <<'REMOTE'
           set -euo pipefail
           cd /opt/Bilun
+          EXPECTED_SHA="${1:?Missing successful CI commit}"
 
-          echo "=== recording state before pull ==="
+          echo "=== recording state before fetch ==="
           echo "HEAD before: $(git rev-parse --short HEAD)"
 
           # Capture current HEAD so we can detect whether anything actually changed.
@@ -62,20 +76,24 @@ jobs:
           # masking the recovery as a no-op would leave them on the wrong commit.
           BEFORE=$(git rev-parse HEAD)
 
-          # Safety: never depend on which branch the VPS happens to be on.
-          # A leftover local integration branch (e.g. pr-61, no upstream) would
-          # make `git pull --ff-only` fail with "no tracking information" and
-          # silently break every deploy. Reset local main to origin/main and
-          # check it out; -f (force) actually discards stale working-tree changes
-          # (plain -B only resets the branch ref and aborts if tracked files would
-          # be overwritten). NOTE: never add `git clean -fd` here — .env is
-          # gitignored but the deploy script edits it, so a clean would destroy
-          # the production config.
+          # Skip an older green run if main has advanced since its CI completed.
+          # This check happens before checking out code or changing services.
           git fetch origin
-          git checkout -f -B main origin/main
-          git pull --ff-only
+          REMOTE_MAIN=$(git rev-parse refs/remotes/origin/main)
+          if [ "$REMOTE_MAIN" != "$EXPECTED_SHA" ]; then
+            echo "CI commit $EXPECTED_SHA is superseded by origin/main $REMOTE_MAIN — skipping deploy."
+            exit 0
+          fi
+
+          # A leftover local branch must not decide what ships. -f discards
+          # tracked changes; never clean ignored files such as production .env.
+          git checkout -f -B main "$EXPECTED_SHA"
 
           AFTER=$(git rev-parse HEAD)
+          if [ "$AFTER" != "$EXPECTED_SHA" ]; then
+            echo "ERROR: checked out $AFTER instead of successful CI commit $EXPECTED_SHA" >&2
+            exit 1
+          fi
 
           if [ "$BEFORE" = "$AFTER" ]; then
             echo "No new commits since last deploy — nothing to do."
