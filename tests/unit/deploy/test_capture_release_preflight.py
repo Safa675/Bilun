@@ -277,6 +277,23 @@ def test_regular_file_symlink_hashes_external_target_content(tmp_path: Path) -> 
     )
 
 
+def test_backend_runtime_digest_excludes_mutable_linked_worktrees(tmp_path: Path) -> None:
+    live = tmp_path / "live"
+    snapshot = tmp_path / "snapshot"
+    for root in (live, snapshot):
+        (root / "src").mkdir(parents=True)
+        (root / "src" / "app.py").write_text("serve()", encoding="utf-8")
+        (root / ".worktrees").mkdir()
+    (live / ".worktrees" / "new-branch").write_text("changed", encoding="utf-8")
+    assert preflight._runtime_digest(live, backend=True) == preflight._runtime_digest(
+        snapshot, backend=True
+    )
+    (snapshot / "src" / "app.py").write_text("different()", encoding="utf-8")
+    assert preflight._runtime_digest(live, backend=True) != preflight._runtime_digest(
+        snapshot, backend=True
+    )
+
+
 def test_environment_file_changed_after_process_start_blocks_rollback_readiness(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

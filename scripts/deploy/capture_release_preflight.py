@@ -70,7 +70,9 @@ def _runtime_digest(root: Path, *, backend: bool) -> str:
     if not root.is_dir() or root.is_symlink():
         raise ValueError(f"Rollback runtime is not an independent directory: {root}")
     digest = hashlib.sha256()
-    ignored_roots = {".git", ".cache", "frontend"} if backend else {".git"}
+    # Git's linked worktrees are deployment workspaces, not files loaded by
+    # the serving backend. They may change while the old process is running.
+    ignored_roots = {".git", ".cache", ".worktrees", "frontend"} if backend else {".git"}
     seen = 0
     for current, directories, files in os.walk(root, followlinks=False):
         current_path = Path(current)
