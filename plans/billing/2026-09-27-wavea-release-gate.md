@@ -5,6 +5,8 @@ Status: proposed implementation plan; independent review required before product
 Inspected baseline: `bbf9acafc164aa51579e573ea8ac5f5bc1a34ecd`
 Scope: the separate financial display, cache verification, activation, and rollback workstream of Wave A completion. The accepted Wave A detector inventory is owned by the parent implementation plan; this document does not expand that inventory or reinterpret regulatory rules.
 
+**Host-discovery correction (2026-09-27):** the actual `bilun-frontend.service` serves `/opt/Bilun/frontend` through `npx next start`, not the versioned `/opt/bilun-frontend/current` symlink. Their build IDs differ. The activation/rollback implementation must first migrate the service's working directory and command under the tested traffic barrier, record and retain the truly serving previous build, then verify the new server's build ID and asset routing. Merely invoking the existing symlink switch/rollback scripts does not change the current frontend service. Read-only evidence is in `reports/rule-engine-surfacing/2026-09-27-wavea-host-preflight.md`.
+
 ## Goal and acceptance contract
 
 Show sourced financial risk and uplift separately at patient and cohort level, preserving existing financial totals and the nonfinancial Wave A contract. Prepare code, frontend, and a complete cache before one final deployment gate. Prove rollback restores the previous coherent release before activating the new release in production.
