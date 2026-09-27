@@ -34,6 +34,77 @@ def test_all_canonical_runtime_calls_are_captured() -> None:
     audit.assert_known_runtime_calls("compute_patient_billing_report", report)
 
 
+def test_focused_materializer_keeps_all_detector_identities_and_current_emissions() -> None:
+    audit = _load_script()
+    calls = audit._focused_materializer_calls()
+    specs, non_emitting = audit._focused_specs()
+    analyze = audit.discover_runtime_calls(audit.ENGINE_PATH, "analyze_claim")
+    by_name = {row.callable: row for row in analyze}
+    assert len(calls) == len(specs) == 18
+    assert sum(len(rows) for rows in specs.values()) == 32
+    assert len(non_emitting) == 3
+    assert set(calls) <= set(by_name)
+    assert all(by_name[group].module == module for group, module in calls.items())
+    assert all(by_name[group].lines for group in calls)
+    assert audit.resolve_emissions(by_name["detect_admission_billing_window"], by_name) == []
+    assert audit.resolve_emissions(by_name["detect_exam_admission_date_mismatch"], by_name) == []
+    radiation = audit.resolve_emissions(by_name["detect_radiation_oncology_violations"], by_name)
+    assert len(radiation) == 12
+    assert "radiation_oncology.same_day_collapse.hyperthermia" not in radiation
+
+
+def test_focused_materializer_wrong_detector_branch_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    source = audit.FOCUSED_MATERIALIZER_PATH.read_text(encoding="utf-8")
+    source = source.replace(
+        "return detect_duplicate_tests(claims, procedures)",
+        "return detect_duplicate_exam_10day(claims, procedures)",
+    )
+    fixture = tmp_path / "focused_legacy_materializer.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "FOCUSED_MATERIALIZER_PATH", fixture)
+    with pytest.raises(ValueError, match="detector call drift"):
+        audit._focused_materializer_calls()
+
+
+def test_focused_report_visible_projection_dataflow_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    audit._validate_focused_report_dataflow()
+    source = audit.PATIENT_REPORT_PATH.read_text(encoding="utf-8")
+    source = source.replace(
+        "findings=(*compliance_batch.findings, *focused_batch.findings)",
+        "findings=(*compliance_batch.findings,)",
+    )
+    fixture = tmp_path / "patient_report.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "PATIENT_REPORT_PATH", fixture)
+    monkeypatch.setattr(
+        audit, "_module_for_path", lambda path: "src.bilun.domain.billing.patient_report"
+    )
+    with pytest.raises(ValueError, match="findings no longer reaches claim compliance"):
+        audit._validate_focused_report_dataflow()
+
+
+def test_focused_public_gate_rejects_missing_index_fail_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    audit = _load_script()
+    source = audit.COMPLIANCE_API_PATH.read_text(encoding="utf-8")
+    source = source.replace(
+        "if not complete_evidence_available(wavea_index, active_build):",
+        "if wavea_index is not None and not complete_evidence_available(wavea_index, active_build):",
+    )
+    fixture = tmp_path / "compliance.py"
+    fixture.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(audit, "COMPLIANCE_API_PATH", fixture)
+    with pytest.raises(ValueError, match="cohort compliance draft API gate drift"):
+        audit._validate_focused_report_dataflow()
+
+
 def test_generic_claim_compliance_surface_is_rule_id_agnostic() -> None:
     audit = _load_script()
     expected = {
@@ -42,6 +113,13 @@ def test_generic_claim_compliance_surface_is_rule_id_agnostic() -> None:
         "tablo15_10_unreported_lab_result",
         "tablo15_20_missing_drug_barcode",
         "tablo15_5_material_identity_error",
+        "blood_component_isbt128_barcode",
+        "tablo15_11_drug_quantity_error",
+        "tablo15_16_material_type_missing",
+        "tablo15_21_inpatient_on_outpatient",
+        "tablo15_2_duplicate_exam_10day",
+        "tablo15_3_vakabasi_wrong_method",
+        "tablo15_4_normal_poliklinik_wrong_method",
     }
     payload = audit.build_audit()
     surface = payload["claim_compliance_surface"]
@@ -83,13 +161,23 @@ def test_generic_claim_compliance_surface_is_rule_id_agnostic() -> None:
         if row.get("runtime_id") == "compute_patient_billing_report:project_claim_compliance"
     )
     assert set(row["emitted_rule_ids_or_kinds"]) == expected
+    public_expected = {
+        "icu_bundled_leakage_510090",
+        "tablo15_8_missing_diagnosis",
+        "tablo15_10_unreported_lab_result",
+        "tablo15_20_missing_drug_barcode",
+        "tablo15_5_material_identity_error",
+    }
+    assert set(row["public_emitted_rule_ids_or_kinds"]) == public_expected
+    assert len(row["draft_hidden_emitted_rule_ids_or_kinds"]) == 7
+    assert row["public_visibility_gate"] == "complete-25-v1"
     assert row["recommended_action_surface"] == "claim_compliance"
     assert row["visibility_status"] == "patient_and_cohort_visible"
     assert row["money_semantics"] == "unpriced_compliance"
     assert row["money_fields"] == []
     assert row["included_in_totals"] is False
 
-    for rule_id in expected:
+    for rule_id in public_expected:
         semantic = payload["semantic_findings"][rule_id]
         assert semantic["patient_visible"] is True
         assert semantic["cohort_visible"] is True
@@ -115,6 +203,39 @@ def test_generic_claim_compliance_surface_is_rule_id_agnostic() -> None:
     assert rows_by_runtime_id[
         "compute_patient_billing_report:evaluate_rule_findings"
     ]["visibility_status"] == "patient_and_cohort_visible"
+
+
+def test_focused_checkpoint_keeps_draft_review_and_money_hidden() -> None:
+    audit = _load_script()
+    payload = audit.build_audit()
+    focused = payload["focused_wavea_checkpoint"]
+    assert focused["detector_groups"] == 18
+    assert focused["tracked_rule_ids"] == 32
+    assert focused["currently_detector_emittable_rule_ids"] == 29
+    assert len(focused["non_emitting_unavailable_rule_ids"]) == 3
+    assert focused["review_and_financial_evidence_visibility"] == "draft_gate_hidden"
+    assert focused["release_ready"] is False
+    assert payload["counts"]["aggregate_only_findings"] == 5
+
+    rows = {row["runtime_id"]: row for row in payload["rows"] if row.get("runtime_id")}
+    evidence = rows["compute_patient_billing_report:project_focused_evidence"]
+    assert evidence["visibility_status"] == "hidden_runtime"
+    assert evidence["money_semantics"] == "informational"
+    assert evidence["money_fields"] == []
+    assert evidence["included_in_totals"] is False
+    focused_confirmed = payload["semantic_findings"]["blood_component_isbt128_barcode"]
+    assert focused_confirmed["patient_visible"] is False
+    assert focused_confirmed["cohort_visible"] is False
+    assert focused_confirmed["hidden_runtime"] is True
+    raw_radiation = rows["analyze_claim:detect_radiation_oncology_violations"]
+    assert raw_radiation["legacy_monetary_hint_unconfirmed"] is True
+    assert raw_radiation["money_semantics"] == "informational"
+    assert raw_radiation["included_in_totals"] is False
+    radiation = payload["semantic_findings"]["radiation_oncology.course_cap.external_rt_design"]
+    assert radiation["patient_visible"] is False
+    assert radiation["cohort_visible"] is False
+    assert radiation["financial"] is False
+    assert radiation["hidden_runtime"] is True
 
 
 def test_canonical_evaluator_contract_matches_direct_sources_and_rule_order() -> None:
