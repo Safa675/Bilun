@@ -283,6 +283,7 @@ const sections = {
     yes: "Yes",
     no: "No",
     bundledStatus: "Bundled",
+    annexUnconfirmed: "Applicability unconfirmed",
     potentialSaving: "Potential saving: {amount}",
     validatedIn: "Validated in {ms}ms · {summary}",
   },

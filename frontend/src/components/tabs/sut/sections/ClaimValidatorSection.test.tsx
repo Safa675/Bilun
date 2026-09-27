@@ -51,6 +51,21 @@ describe("typed validator result", () => {
     expect(html).not.toContain("Confirmed finding");
   });
 
+  it("keeps unresolved EK-3B applicability as review evidence without legacy denial or savings", () => {
+    const data = { ...result, validation_status: "review_required" as const, advisories: [
+      { evidence_id: "EK3B-UNKNOWN", rule: "bundling", material_name: "Conditional material",
+        message: "Annex applicability unconfirmed", disposition: "review_only",
+        source_status: "unverified" },
+    ] };
+    const html = renderToStaticMarkupWithLocale(<Panel data={data} />);
+    expect(html).toContain("Conditional material");
+    expect(html).toContain("Annex applicability unconfirmed");
+    expect(html).toContain("Review required");
+    expect(html).not.toContain("Legacy false positive");
+    expect(html).not.toContain("123,456");
+    expect(html).not.toContain("Confirmed finding");
+  });
+
   it("uses only the typed finding list for confirmed findings", () => {
     const data = { ...result, validation_status: "violations_found" as const, is_valid: false,
       violations: [{ evidence_id: "F1", rule: "source-proven", material_name: "Exact line",

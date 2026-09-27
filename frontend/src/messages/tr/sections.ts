@@ -283,6 +283,7 @@ const sections = {
     yes: "Evet",
     no: "Hayır",
     bundledStatus: "Paket",
+    annexUnconfirmed: "Uygulanabilirlik doğrulanmadı",
     potentialSaving: "Potansiyel tasarruf: {amount}",
     validatedIn: "{ms}ms içinde doğrulandı · {summary}",
   },
