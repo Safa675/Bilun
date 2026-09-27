@@ -188,6 +188,13 @@ def detect_dental_ga_uplift_violations(
         anesthesia_lines = [
             ln for ln in claim_lines if _is_anesthesia_code(ln.procedure_code)
         ]
+        if anesthesia_lines and not any(
+            ln.billed_amount_try > 0 for ln in anesthesia_lines
+        ):
+            # Zero-charge or credit-only anesthesia rows do not establish
+            # double-billing. Their presence also does not prove that an uplift
+            # was omitted, so do not reroute them to the missing-uplift branch.
+            continue
 
         # GA was performed if (a) an anesthesia 550xxx line is present on the
         # claim, OR (b) any dental line carries a GA procedure_category marker.
