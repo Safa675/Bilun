@@ -77,8 +77,7 @@ def test_prepared_engine_requires_complete_family_mapping_and_preserves_guards()
 
 
 @pytest.mark.parametrize("name,family,reason", [
-    ("Cerrahi steril eldiven", "bundling", "ek3b1_exception_setting_and_exact_line_proof_required"),
-    ("Viskosüplemantasyon ürünleri", "exclusion", "ek3b2_exception_applicability_and_exact_line_proof_required"),
+    ("Bistüri ucu", "bundling", "ek3b1_exception_setting_and_exact_line_proof_required"),
     ("İnflow kateter", "exclusion", "ek3b2_exception_applicability_and_exact_line_proof_required"),
 ])
 def test_annex_observations_require_family_specific_proof_before_compliance(name, family, reason):
@@ -90,3 +89,17 @@ def test_annex_observations_require_family_specific_proof_before_compliance(name
     assert review["reason"] == reason
     assert "risk_amount" not in review
     assert "savings_try" not in review
+
+
+@pytest.mark.parametrize("name,family", [
+    ("Cerrahi steril eldiven", "bundling"),
+    ("Viskosüplemantasyon ürünleri", "exclusion"),
+])
+def test_corrected_annex_predicates_do_not_reappear_as_review_or_legacy_denials(name, family):
+    claim = {"materials": [{"name": name, "billed_amount": 100}]}
+    result = service.validate_claim_v2(claim, supplied_claim=claim)
+    assert not any(row["rule"] == family for row in result["legacy_result"]["violations"])
+    assert not any(row["rule"] == family for row in result["advisories"])
+    # Independent identity requirement remains; it is not the corrected annex predicate.
+    assert any(row.get("details", {}).get("rule_id") == "3.1.1.(11).missing_material_code"
+               for row in result["legacy_result"]["violations"])
