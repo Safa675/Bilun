@@ -110,4 +110,13 @@ describe("typed validator result", () => {
       expect(html).not.toContain("123,456");
     }
   });
+
+  it("keeps the validator usable if a rollback serves the prior v2 API shape", () => {
+    const previous = { ...result } as Partial<SutValidationResult>;
+    delete previous.material_applicability;
+    const html = renderToStaticMarkupWithLocale(<Panel data={previous as SutValidationResult} />);
+    expect(html).toContain("Incomplete checks");
+    expect(html).not.toContain("Material annex assessment");
+    expect(html).not.toContain("Legacy false positive");
+  });
 });

@@ -308,6 +308,8 @@ export function ValidationResultPanel({ result, t }: { result: SutValidationResu
   const confirmed = result.validation_status === "violations_found";
   const incomplete = result.validation_status !== "no_violations_in_evaluated_scope" && !confirmed;
   const statusColor = confirmed ? "#B91C1C" : incomplete ? "#B45309" : theme.accent;
+  // A client retained during rollback can receive the prior v2 API shape.
+  const materialApplicability = result.material_applicability ?? [];
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -332,11 +334,11 @@ export function ValidationResultPanel({ result, t }: { result: SutValidationResu
           </div>
         </Surface>
       )}
-      {result.material_applicability.length > 0 && (
+      {materialApplicability.length > 0 && (
         <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold mb-3">{t("sections.claimValidator.annexAssessment.title")}</h3>
           <div className="space-y-3">
-            {result.material_applicability.map((material) => (
+            {materialApplicability.map((material) => (
               <div key={material.material_id} className="text-xs">
                 <div className="font-medium">{material.material_name || material.material_code || material.material_id}</div>
                 {(["ek3b1", "ek3b2"] as const).map((annex) => (
