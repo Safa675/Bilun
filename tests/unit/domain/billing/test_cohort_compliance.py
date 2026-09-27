@@ -238,7 +238,13 @@ def test_wave_a_lab_finding_projects_through_generic_cohort_surface() -> None:
 
 
 def test_future_rule_finding_projects_without_cohort_rule_registration() -> None:
-    finding_id = "canonical-future-finding-id"
+    finding_id = build_finding_id(
+        rule_id="future_rule_added_after_cohort_code",
+        patient_id="P-FUTURE",
+        claim_id="C-FUTURE",
+        line_kind="procedure",
+        line_id="PROC-FUTURE",
+    )
     reports = {
         "P-FUTURE": {
             "claim_compliance": {
@@ -388,6 +394,7 @@ def test_claim_compliance_dedupes_and_drops_noncanonical_rows() -> None:
         dict(canonical, line_id="DRUG-OTHER"),
         dict(canonical, procedure_line_id="PROC-OTHER"),
         dict(canonical, finding_id=""),
+        dict(canonical, finding_id="claim_compliance:forged", action_id="claim_compliance:forged"),
         dict(canonical, action_id="wrong-action-id"),
     ]
     reports = {
@@ -403,6 +410,37 @@ def test_claim_compliance_dedupes_and_drops_noncanonical_rows() -> None:
 
     assert len(rows) == 1
     assert rows[0]["finding_id"] == rows[0]["action_id"] == finding_id
+
+
+def test_claim_compliance_conflicting_finding_identity_fails_closed() -> None:
+    finding_id = build_finding_id(
+        rule_id="future_rule",
+        patient_id="P-STRICT",
+        claim_id="C-STRICT",
+        line_kind="procedure",
+        line_id="L1",
+    )
+    row = {
+        "finding_id": finding_id,
+        "action_id": finding_id,
+        "patient_id": "P-STRICT",
+        "claim_id": "C-STRICT",
+        "rule_id": "future_rule",
+        "line_kind": "procedure",
+        "line_id": "L1",
+        "procedure_line_id": "L1",
+        "detail": "first observation",
+    }
+    reports = {
+        "P-STRICT": {
+            "claim_compliance": {
+                "findings": [row, dict(row, detail="conflicting observation")]
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="Conflicting claim finding identity"):
+        build_cohort_compliance_index(reports)
 
 
 def test_claim_compliance_evaluations_are_generic_validated_and_deduped_by_rule_and_claim() -> None:

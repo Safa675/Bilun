@@ -12,7 +12,7 @@ from typing import Any
 
 import polars as pl
 
-from .rule_findings import build_evaluation_id
+from .rule_findings import build_evaluation_id, build_finding_id
 from ..money import money_round_half_up_opt as _money
 
 # Billing surface → Compliance subtab id. Copay exemption rows stay on
@@ -202,6 +202,15 @@ def _claim_finding(
         for field in _CLAIM_LINE_SOURCE_FIELDS
     ):
         return None
+    expected_id = build_finding_id(
+        rule_id=rule_id,
+        patient_id=patient_id,
+        claim_id=claim_id,
+        line_kind=line_kind,
+        line_id=line_id,
+    )
+    if finding_id != expected_id:
+        return None
 
     projected = dict(row)
     projected.update({
@@ -268,6 +277,9 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
         finding = _claim_finding(patient_id, row)
         if finding is None:
             continue
+        prior = findings.get(finding["finding_id"])
+        if prior is not None and prior != finding:
+            raise ValueError(f"Conflicting claim finding identity: {finding['finding_id']}")
         findings.setdefault(finding["finding_id"], finding)
     return {
         "findings": [findings[finding_id] for finding_id in sorted(findings)],
