@@ -17,15 +17,18 @@ from src.bilun.domain.billing.broad_rule_materializer import (
 )
 from src.bilun.domain.billing.engine import analyze_claim
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
+from src.bilun.domain.materials.exclusions import (
+    assess_bundled_material,
+    assess_excluded_material,
+)
 from src.bilun.domain.rule_engine import project_claim_validation_rows
 from src.bilun.domain.validation_provenance import build_validation_provenance
 from src.bilun.domain.validation_contract import ValidateClaimV2Response
 from src.bilun.domain.validation_serialization import serialize_legacy_validation_result
 
-# Each historical family needs its own source/input/line proof before admission
-# to Compliance. In particular the annex matchers currently discard explicit
-# exceptions and setting conditions; their separate Q9 correction is a release
-# gate. This map is not an alternative rule matcher or a severity classifier.
+# Each historical family needs its own source/date/input/line proof before
+# admission to Compliance. Corrected annex applicability stays a separate
+# per-material assessment; this map does not reclassify a raw match as proven.
 _LEGACY_REVIEW_GATES = {
     "bundling": "ek3b1_exception_setting_and_exact_line_proof_required",
     "exclusion": "ek3b2_exception_applicability_and_exact_line_proof_required",
@@ -41,9 +44,29 @@ def typed_validation_payload(result: dict[str, Any]) -> dict[str, Any]:
     """Select the public/API and LLM contract, excluding internal raw history."""
     selected = {key: result[key] for key in (
         "contract_version", "request_id", "claim_id", "validation_status", "is_valid",
-        "violations", "advisories", "coverage", "provenance", "summary", "validation_time_ms",
+        "violations", "advisories", "material_applicability", "coverage", "provenance",
+        "summary", "validation_time_ms",
     )}
     return ValidateClaimV2Response.model_validate(selected).model_dump()
+
+
+def _material_applicability(supplied_claim: dict[str, Any], request_id: str) -> list[dict[str, Any]]:
+    """Project only the caller's identity facts through the corrected annex assessors."""
+    rows = []
+    for index, raw in enumerate(supplied_claim.get("materials") or []):
+        name = str(raw.get("name") or "")
+        code = str(raw.get("code") or "").strip() or None
+        bundled = assess_bundled_material(name, material_code=code)
+        excluded = assess_excluded_material(name, material_code=code)
+        rows.append({
+            "material_index": index,
+            "material_id": f"{request_id}:material:{index}",
+            "material_name": name,
+            "material_code": code,
+            "ek3b1": {"matched": bundled.matched, "source_reason": bundled.reason},
+            "ek3b2": {"matched": excluded.matched, "source_reason": excluded.reason},
+        })
+    return rows
 
 
 def validate_claim_v2(
@@ -135,6 +158,7 @@ def validate_claim_v2(
         "is_valid": False if violations else None if advisories or unresolved else True,
         "violations": violations,
         "advisories": advisories,
+        "material_applicability": _material_applicability(supplied_claim, provenance.request_id),
         "coverage": {
             "evaluation_count": len(bundle.evaluations),
             "authored_rule_count": len(broad_ids),

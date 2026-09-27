@@ -36,6 +36,28 @@ class ValidationAdvisory(_ValidationEvidence):
     source_status: Literal["authored_locator_unverified", "historical_match_unverified"]
 
 
+class ValidationAnnexAssessment(_StrictContract):
+    """An annex match, never a reimbursement or payment decision."""
+
+    matched: bool | None
+    source_reason: str | None
+
+    @model_validator(mode="after")
+    def verify_unknown_reason(self):
+        if self.matched is None and not self.source_reason:
+            raise ValueError("Unresolved annex applicability requires a source reason")
+        return self
+
+
+class ValidationMaterialApplicability(_StrictContract):
+    material_index: int = Field(ge=0)
+    material_id: str = Field(min_length=1)
+    material_name: str
+    material_code: str | None
+    ek3b1: ValidationAnnexAssessment
+    ek3b2: ValidationAnnexAssessment
+
+
 class ValidationCoverage(_StrictContract):
     evaluation_count: int = Field(ge=0)
     authored_rule_count: Literal[496]
@@ -70,6 +92,7 @@ class ValidateClaimV2Response(_StrictContract):
     is_valid: bool | None
     violations: list[ValidationFinding]
     advisories: list[ValidationAdvisory]
+    material_applicability: list[ValidationMaterialApplicability]
     coverage: ValidationCoverage
     provenance: ValidationProvenance
     summary: str
@@ -77,6 +100,12 @@ class ValidateClaimV2Response(_StrictContract):
 
     @model_validator(mode="after")
     def verify_status(self):
+        if any(
+            row.material_index != index
+            or row.material_id != f"{self.request_id}:material:{index}"
+            for index, row in enumerate(self.material_applicability)
+        ):
+            raise ValueError("Material applicability must retain request line identity")
         expected = (
             "violations_found" if self.violations else
             "review_required" if self.advisories else

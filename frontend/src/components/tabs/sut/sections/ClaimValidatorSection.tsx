@@ -332,6 +332,32 @@ export function ValidationResultPanel({ result, t }: { result: SutValidationResu
           </div>
         </Surface>
       )}
+      {result.material_applicability.length > 0 && (
+        <Surface variant="base" padding="lg">
+          <h3 className="text-sm font-semibold mb-3">{t("sections.claimValidator.annexAssessment.title")}</h3>
+          <div className="space-y-3">
+            {result.material_applicability.map((material) => (
+              <div key={material.material_id} className="text-xs">
+                <div className="font-medium">{material.material_name || material.material_code || material.material_id}</div>
+                {(["ek3b1", "ek3b2"] as const).map((annex) => (
+                  <div key={annex} style={{ color: "#71717A" }}>
+                    {annex === "ek3b1" ? "EK-3B-1" : "EK-3B-2"}: {t(
+                      material[annex].matched === true
+                        ? "sections.claimValidator.annexAssessment.matched"
+                        : material[annex].matched === false
+                          ? "sections.claimValidator.annexAssessment.notMatched"
+                          : "sections.claimValidator.annexAssessment.unresolved"
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs mt-3" style={{ color: "#71717A" }}>
+            {t("sections.claimValidator.annexAssessment.disclaimer")}
+          </p>
+        </Surface>
+      )}
       <div className="text-xs text-right" style={{ color: "#71717A" }}>
         {t("sections.claimValidator.coverageSummary", {
           checked: result.coverage.evaluation_count,
@@ -342,12 +368,26 @@ export function ValidationResultPanel({ result, t }: { result: SutValidationResu
   );
 }
 
+function unresolvedAnnexReviewKey(evidence: SutValidationEvidence): string | null {
+  if (evidence.disposition !== "review_only" || evidence.source_status !== "historical_match_unverified") {
+    return null;
+  }
+  if (evidence.rule === "bundling" && evidence.reason === "ek3b1_exception_setting_and_exact_line_proof_required") {
+    return "sections.claimValidator.annexReview.ek3b1";
+  }
+  if (evidence.rule === "exclusion" && evidence.reason === "ek3b2_exception_applicability_and_exact_line_proof_required") {
+    return "sections.claimValidator.annexReview.ek3b2";
+  }
+  return null;
+}
+
 function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
   evidence: SutValidationEvidence;
   confirmed?: boolean;
   t: ReturnType<typeof useT>;
 }) {
   const informational = evidence.disposition === "information_only" || evidence.disposition === "permission_or_instruction";
+  const annexReviewKey = unresolvedAnnexReviewKey(evidence);
   return (
     <div className="flex items-start gap-3">
       <Chip variant={confirmed ? "danger" : informational ? "neutral" : "warning"}>
@@ -358,6 +398,11 @@ function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
         <div className="text-xs mt-1" style={{ color: "#71717A" }}>
           {translateValidationMessage(evidence.message)}
         </div>
+        {annexReviewKey && (
+          <div className="text-xs mt-1" style={{ color: "#B45309" }}>
+            {t("sections.claimValidator.annexUnconfirmed")}: {t(annexReviewKey)}
+          </div>
+        )}
       </div>
     </div>
   );

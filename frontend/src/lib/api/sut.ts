@@ -151,6 +151,21 @@ export interface SutValidationEvidence {
   source_status: string;
 }
 
+export interface SutAnnexAssessment {
+  /** Only this annex match; false does not establish payment entitlement. */
+  matched: boolean | null;
+  source_reason: string | null;
+}
+
+export interface SutMaterialApplicability {
+  material_index: number;
+  material_id: string;
+  material_name: string;
+  material_code: string | null;
+  ek3b1: SutAnnexAssessment;
+  ek3b2: SutAnnexAssessment;
+}
+
 export interface SutValidationResult {
   contract_version: 2;
   request_id: string;
@@ -159,6 +174,7 @@ export interface SutValidationResult {
   is_valid: boolean | null;
   violations: SutValidationEvidence[];
   advisories: SutValidationEvidence[];
+  material_applicability: SutMaterialApplicability[];
   coverage: {
     evaluation_count: number;
     unresolved_count: number;

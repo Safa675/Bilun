@@ -284,6 +284,17 @@ const sections = {
     no: "No",
     bundledStatus: "Bundled",
     annexUnconfirmed: "Applicability unconfirmed",
+    annexAssessment: {
+      title: "Material annex assessment",
+      matched: "Annex match",
+      notMatched: "No applicable annex match",
+      unresolved: "Applicability needs review",
+      disclaimer: "An annex match alone does not determine reimbursement or payment.",
+    },
+    annexReview: {
+      ek3b1: "EK-3B-1 setting, exceptions and exact material-line evidence need review.",
+      ek3b2: "EK-3B-2 exceptions, applicability and exact material-line evidence need review.",
+    },
     potentialSaving: "Potential saving: {amount}",
     validatedIn: "Validated in {ms}ms · {summary}",
   },

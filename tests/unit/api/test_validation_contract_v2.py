@@ -106,6 +106,57 @@ def test_default_api_never_publishes_raw_legacy_money_or_denial_payload(client):
     assert "Should not be billed" not in response.text
 
 
+@pytest.mark.parametrize("name,family,reason", [
+    ("Bistüri ucu", "bundling", "ek3b1_exception_setting_and_exact_line_proof_required"),
+    ("İnflow kateter", "exclusion", "ek3b2_exception_applicability_and_exact_line_proof_required"),
+])
+def test_v2_api_carries_unresolved_annex_proof_as_typed_review(client, name, family, reason):
+    _login(client)
+    response = client.post(
+        "/api/validate-claim",
+        json={"claim_id": "C1", "materials": [{"name": name, "billed_amount": 100}]},
+        headers={"X-Bilun-Validation-Contract": "2"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["validation_status"] == "review_required"
+    assert body["is_valid"] is None
+    assert body["violations"] == []
+    review = next(row for row in body["advisories"] if row["rule"] == family)
+    assert review["disposition"] == "review_only"
+    assert review["source_status"] == "historical_match_unverified"
+    assert review["reason"] == reason
+    assert "legacy_result" not in body
+    assert not any(key in review for key in ("savings_try", "risk_amount", "amount_try"))
+
+
+@pytest.mark.parametrize("name,annex,expected,reason", [
+    ("Cerrahi steril eldiven", "ek3b1", False, "surgical_sterile_glove_exception"),
+    ("Nonsteril eldiven", "ek3b1", True, None),
+    ("Viskosüplemantasyon ürünleri", "ek3b2", None, "sut_annex_exception_applicability_required"),
+    ("İnflow kateter", "ek3b2", True, None),
+])
+def test_v2_api_exposes_corrected_material_applicability_without_payment_claim(
+    client, name, annex, expected, reason
+):
+    _login(client)
+    response = client.post(
+        "/api/validate-claim",
+        json={"claim_id": "C1", "materials": [{"name": name, "billed_amount": 100}]},
+        headers={"X-Bilun-Validation-Contract": "2"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["material_applicability"]) == 1
+    material = body["material_applicability"][0]
+    assert material["material_id"] == f'{body["request_id"]}:material:0'
+    assert material["material_index"] == 0
+    assert material["material_name"] == name
+    assert material[annex] == {"matched": expected, "source_reason": reason}
+    assert "is_reimbursable" not in material
+    assert "savings_try" not in material
+
+
 @pytest.fixture
 def typed_payload():
     return validation.validate_claim_endpoint(

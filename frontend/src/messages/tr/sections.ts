@@ -284,6 +284,17 @@ const sections = {
     no: "Hayır",
     bundledStatus: "Paket",
     annexUnconfirmed: "Uygulanabilirlik doğrulanmadı",
+    annexAssessment: {
+      title: "Malzeme ek liste değerlendirmesi",
+      matched: "Ek listede eşleşme",
+      notMatched: "Uygulanabilir ek liste eşleşmesi yok",
+      unresolved: "Uygulanabilirlik incelenmeli",
+      disclaimer: "Ek liste eşleşmesi tek başına geri ödeme veya ödeme kararı değildir.",
+    },
+    annexReview: {
+      ek3b1: "EK-3B-1 hizmet ortamı, istisnaları ve kesin malzeme satırı kanıtı incelenmeli.",
+      ek3b2: "EK-3B-2 istisnaları, uygulanabilirliği ve kesin malzeme satırı kanıtı incelenmeli.",
+    },
     potentialSaving: "Potansiyel tasarruf: {amount}",
     validatedIn: "{ms}ms içinde doğrulandı · {summary}",
   },

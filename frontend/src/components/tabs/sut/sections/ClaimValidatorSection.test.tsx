@@ -9,6 +9,7 @@ const result: SutValidationResult & { legacy_result: SutLegacyValidationResult }
   contract_version: 2, request_id: "request:1", claim_id: "C1",
   validation_status: "partially_evaluated", is_valid: null,
   violations: [], advisories: [],
+  material_applicability: [],
   coverage: { evaluation_count: 496, authored_rule_count: 496, unresolved_count: 496,
     disposition_counts: { missing_inputs: 496 }, scope: "submitted_request_facts_only" },
   provenance: {}, summary: "", validation_time_ms: 1,
@@ -51,19 +52,28 @@ describe("typed validator result", () => {
     expect(html).not.toContain("Confirmed finding");
   });
 
-  it("keeps unresolved EK-3B applicability as review evidence without legacy denial or savings", () => {
+  it.each([
+    ["bundling", "ek3b1_exception_setting_and_exact_line_proof_required", "EK-3B-1"],
+    ["exclusion", "ek3b2_exception_applicability_and_exact_line_proof_required", "EK-3B-2"],
+  ])("shows the real %s typed annex review reason in both languages", (rule, reason, annex) => {
     const data = { ...result, validation_status: "review_required" as const, advisories: [
-      { evidence_id: "EK3B-UNKNOWN", rule: "bundling", material_name: "Conditional material",
-        message: "Annex applicability unconfirmed", disposition: "review_only",
-        source_status: "unverified" },
+      { evidence_id: `C1:${rule}`, rule, material_name: "Conditional material",
+        message: "Historical rule observation requires source and input review.",
+        disposition: "review_only", reason, source_status: "historical_match_unverified" },
     ] };
-    const html = renderToStaticMarkupWithLocale(<Panel data={data} />);
-    expect(html).toContain("Conditional material");
-    expect(html).toContain("Annex applicability unconfirmed");
-    expect(html).toContain("Review required");
-    expect(html).not.toContain("Legacy false positive");
-    expect(html).not.toContain("123,456");
-    expect(html).not.toContain("Confirmed finding");
+    const english = renderToStaticMarkupWithLocale(<Panel data={data} />, "en");
+    const turkish = renderToStaticMarkupWithLocale(<Panel data={data} />, "tr");
+    expect(english).toContain("Conditional material");
+    expect(english).toContain("Applicability unconfirmed");
+    expect(english).toContain(annex);
+    expect(english).toContain("Review required");
+    expect(turkish).toContain("Uygulanabilirlik doğrulanmadı");
+    expect(turkish).toContain(annex);
+    for (const html of [english, turkish]) {
+      expect(html).not.toContain("Legacy false positive");
+      expect(html).not.toContain("123,456");
+      expect(html).not.toContain("Confirmed finding");
+    }
   });
 
   it("uses only the typed finding list for confirmed findings", () => {
@@ -75,5 +85,29 @@ describe("typed validator result", () => {
     expect(html).toContain("Findings confirmed");
     expect(html).toContain("Exact line");
     expect(html).not.toContain("Legacy false positive");
+  });
+
+  it("renders each corrected annex assessment without implying reimbursement", () => {
+    const data = { ...result, material_applicability: [
+      { material_index: 0, material_id: "request:1:material:0", material_name: "Cerrahi steril eldiven",
+        material_code: null, ek3b1: { matched: false, source_reason: "surgical_sterile_glove_exception" },
+        ek3b2: { matched: false, source_reason: null } },
+      { material_index: 1, material_id: "request:1:material:1", material_name: "Viskosüplemantasyon ürünleri",
+        material_code: null, ek3b1: { matched: false, source_reason: null },
+        ek3b2: { matched: null, source_reason: "sut_annex_exception_applicability_required" } },
+    ] };
+    const english = renderToStaticMarkupWithLocale(<Panel data={data} />, "en");
+    const turkish = renderToStaticMarkupWithLocale(<Panel data={data} />, "tr");
+    expect(english).toContain("No applicable annex match");
+    expect(english).toContain("Applicability needs review");
+    expect(english).toContain("does not determine reimbursement");
+    expect(turkish).toContain("Uygulanabilir ek liste eşleşmesi yok");
+    expect(turkish).toContain("geri ödeme veya ödeme kararı değildir");
+    for (const html of [english, turkish]) {
+      expect(html).toContain("EK-3B-1");
+      expect(html).toContain("EK-3B-2");
+      expect(html).not.toContain("Legacy false positive");
+      expect(html).not.toContain("123,456");
+    }
   });
 });
