@@ -835,8 +835,8 @@ Make the production deployment check find its verifier, accept healthy Next.js a
 - [x] Add a regression using raw escaped Flight HTML and a local mock server, covering valid direct and Flight-only assets plus a genuinely missing asset.
 - [x] Run focused verifier tests, source/workflow checks, and the verifier against the live login page; confirm the expected asset set has no malformed URLs.
 - [x] Review the workflow privilege boundary, final diff, and focused test evidence independently.
-- [ ] Commit on an isolated branch, check existing branch CI, push, open a reviewable PR, and verify its backend/frontend CI checks.
-- [ ] Record final results and any remaining deployment limitation in this review section.
+- [x] Commit on an isolated branch, check existing branch CI, push, open a reviewable PR, and verify its backend/frontend CI checks.
+- [x] Record final results and any remaining deployment limitation in this review section.
 
 ### Out of Scope
 Additional Wave A detectors or rule migration, changes to production cache or pricing, and unrelated deployment architecture. Merging and production deployment wait for review of this specific PR.
@@ -844,6 +844,8 @@ Additional Wave A detectors or rule migration, changes to production cache or pr
 ### Review
 Plan independently reviewed and approved before implementation, with a same-repository main-push gate, read-only checkout of the triggering CI SHA, and a remote SHA match before checkout or service work. Evidence: latest failed Deploy run 36263168625 completed the VPS step but could not find `scripts/deploy/verify_frontend_assets.py` in the runner workspace. The existing verifier separately found 16 malformed escaped URLs among 33 extracted live references; the corresponding clean assets returned 200. A diagnostic run found 23 unique healthy assets; this observed count is not a permanent contract. The workflow currently fetches latest main at deploy time, so an older green CI could otherwise ship a newer unverified commit; compare remote main with the triggering successful CI SHA before changing services.
 
-Implementation verification: two escaped-Flight regressions failed against the old parser. Independent review caught a multiply escaped Flight-only path that the first fix still missed; its regression failed before the follow-up correction and passed after it. The focused file now passes 10/10 tests in 3.46 seconds from this worktree. Ruff and `git diff --check` passed. The workflow parsed as YAML, its deploy shell block passed `bash -n`, and targeted assertions checked its guard/checkout/remote-SHA ordering. The corrected verifier checked the live `/login` endpoint: 23/23 local assets returned nonempty HTTP 200 responses with zero malformed backslash URLs. Independent final diff review found no remaining blocker. Hosted PR CI remains pending.
+Implementation verification: two escaped-Flight regressions failed against the old parser. Independent review caught a multiply escaped Flight-only path that the first fix still missed; its regression failed before the follow-up correction and passed after it. The focused file now passes 10/10 tests in 3.46 seconds from this worktree. Ruff and `git diff --check` passed. The workflow parsed as YAML, its deploy shell block passed `bash -n`, and targeted assertions checked its guard/checkout/remote-SHA ordering. The corrected verifier checked the live `/login` endpoint: 23/23 local assets returned nonempty HTTP 200 responses with zero malformed backslash URLs. Independent final diff review found no remaining blocker.
+
+[PR #96](https://github.com/Safa675/Bilun/pull/96) contains the code on `fix/deploy-asset-verification`. Existing branch CI had zero runs before the push. Its [first hosted CI run](https://github.com/Safa675/Bilun/actions/runs/36315626985) completed successfully on commit `a55bb2a4` with both backend and frontend jobs green. The actual Deploy workflow can only validate this change after it lands on `main` and that main commit's CI succeeds; production deployment and merge remain outside this PR implementation task.
 
 ---
