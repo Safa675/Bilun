@@ -87,6 +87,8 @@ Checkpoint commits on the integration branch: `c19293ff` adds seven real line ID
 
 Further reviewed local checkpoints: `9689247f` corrects ICU-overlap charge/evidence attribution; `8acce3ab` adds 42-ID information-only payment traceability metadata; `5af8985a` and `632fc517` remove false #9/#22 date verdicts and add unavailable-status helpers; `e22f0261` corrects donor same-claim evidence; `e0ca7875` aligns radiation review candidates with current EK-2B and leaves excess risk null. Read-only release-host findings are recorded in `reports/rule-engine-surfacing/2026-09-27-wavea-host-preflight.md`. These remain local checkpoints, with no public activation.
 
+`0151aeec` adds an independently reviewed, still unintegrated focused adapter for all 18 groups: 32 tracked identities, 29 presently emittable, source-owned line IDs, quarantined stale #9/#22/hyperthermia rows, explicit missing/unavailable statuses, and no confirmed financial amount. Final focused and existing El Kitabı tests passed 28 cases with Ruff. The public report/cache/UI remain unchanged until the later integration checkpoint.
+
 ---
 
 ## Task: Fix PR #94 CI after repricing removal
