@@ -72,7 +72,7 @@ def _runtime_digest(root: Path, *, backend: bool) -> str:
     digest = hashlib.sha256()
     # Git's linked worktrees are deployment workspaces, not files loaded by
     # the serving backend. They may change while the old process is running.
-    ignored_roots = {".git", ".cache", ".worktrees", "frontend"} if backend else {".git"}
+    ignored_roots = {".git", ".cache", ".worktrees", "frontend", "logs"} if backend else {".git"}
     seen = 0
     for current, directories, files in os.walk(root, followlinks=False):
         current_path = Path(current)

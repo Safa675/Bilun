@@ -156,6 +156,22 @@ def _probes(state: dict, tmp_path: Path) -> tuple[Path, Path]:
     return front_probe, back_probe
 
 
+def test_backend_runtime_digest_excludes_mutable_logs_but_tracks_code(tmp_path: Path) -> None:
+    runtime = tmp_path / "backend"
+    (runtime / "src").mkdir(parents=True)
+    (runtime / "logs").mkdir()
+    source = runtime / "src" / "app.py"
+    source.write_text("app = 1\n", encoding="utf-8")
+    log = runtime / "logs" / "bilun.log"
+    log.write_text("first request\n", encoding="utf-8")
+    original = preflight._runtime_digest(runtime, backend=True)
+
+    log.write_text("second request\n", encoding="utf-8")
+    assert preflight._runtime_digest(runtime, backend=True) == original
+    source.write_text("app = 2\n", encoding="utf-8")
+    assert preflight._runtime_digest(runtime, backend=True) != original
+
+
 def test_stale_current_is_recorded_separately_and_blocks_without_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
