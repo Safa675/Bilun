@@ -9,9 +9,9 @@ from pydantic import BaseModel
 
 from src.bilun.api.schemas import BilunCachePayloadResponse
 from src.bilun.db import read_json_payload, read_json_payload_row
-from src.bilun.domain.billing.wavea_evidence import (
-    EVIDENCE_SCHEMA_VERSION,
-    validate_wavea_evidence_detail,
+from src.bilun.domain.billing.wavea_full_evidence import (
+    FULL_EVIDENCE_SCHEMA_VERSION,
+    validate_full_wavea_evidence_detail,
 )
 from src.bilun.shared.exceptions import PatientNotFound, ServiceUnavailableError, ValidationError
 from src.bilun.shared.state import (
@@ -27,8 +27,8 @@ router = APIRouter(tags=["wavea_evidence"])
 _MAX_LIMIT = 500
 _DEFAULT_LIMIT = 20
 _STATUSES = ("evaluated", "missing_inputs", "unavailable")
-_KINDS = ("evaluations", "reviews", "financial_rows")
-_COHORT_ROW_KINDS = ("reviews", "financial_rows")
+_KINDS = ("evaluations", "reviews", "advisories", "financial_rows")
+_COHORT_ROW_KINDS = ("reviews", "advisories", "financial_rows")
 
 
 class WaveAEvidenceIndexRequest(BaseModel):
@@ -53,10 +53,10 @@ def _validate_page(limit: int, offset: int) -> None:
 
 
 def _selected_patient_ids(values: list[str] | None) -> set[str] | None:
-    if not values:
+    if values is None:
         return None
     selected = {part.strip() for value in values for part in str(value).split(",") if part.strip()}
-    return selected or None
+    return selected
 
 
 def _status_counts(value: Any) -> dict[str, int]:
@@ -90,6 +90,7 @@ def _compact_patient_row(patient_id: str, summary: Any, rule_id: str | None) -> 
         "by_group": counts["by_group"],
         "evaluation_count": counts["evaluation_count"],
         "review_count": counts["review_count"],
+        "advisory_count": counts["advisory_count"],
         "financial_count": counts["financial_count"],
     }
     if rule_id is not None:
@@ -188,17 +189,20 @@ def _wavea_evidence_index_response(
         if not incomplete:
             by_rule: dict[str, dict[str, int]] = {}
             by_group: dict[str, dict[str, int]] = {}
-            evaluation_count = review_count = financial_count = 0
+            evaluation_count = review_count = advisory_count = financial_count = 0
             for pid in patient_ids:
                 patient_counts = patients[pid]["counts"]
                 if not isinstance(patient_counts, dict):
                     raise ValueError("Malformed Wave A patient counters")
-                for key in ("evaluation_count", "review_count", "financial_count"):
+                for key in (
+                    "evaluation_count", "review_count", "advisory_count", "financial_count"
+                ):
                     value = patient_counts.get(key)
                     if type(value) is not int or value < 0:
                         raise ValueError("Malformed Wave A evidence count")
                 evaluation_count += patient_counts["evaluation_count"]
                 review_count += patient_counts["review_count"]
+                advisory_count += patient_counts["advisory_count"]
                 financial_count += patient_counts["financial_count"]
                 for source_key, target in (("by_group", by_group), ("by_rule", by_rule)):
                     source = patient_counts.get(source_key)
@@ -218,6 +222,7 @@ def _wavea_evidence_index_response(
                 "by_group": by_group,
                 "evaluation_count": evaluation_count,
                 "review_count": review_count,
+                "advisory_count": advisory_count,
                 "financial_count": financial_count,
             }
             if rule_id is not None:
@@ -260,6 +265,7 @@ def get_wavea_evidence_detail(
     if evidence_id is not None:
         prefix = {
             "reviews": "wavea_review:",
+            "advisories": "wavea_advisory:",
             "financial_rows": "wavea_financial:",
         }.get(kind)
         if prefix is None or not evidence_id.startswith(prefix) or len(evidence_id) <= len(prefix):
@@ -279,16 +285,19 @@ def get_wavea_evidence_detail(
         not isinstance(detail, dict)
         or detail.get("build_id") != build_id
         or detail.get("patient_id") != patient_id
-        or detail.get("schema_version") != EVIDENCE_SCHEMA_VERSION
+        or detail.get("schema_version") != FULL_EVIDENCE_SCHEMA_VERSION
         or not isinstance(detail.get("counts"), dict)
     ):
         return _unavailable(reader, build_id, limit, offset)
     try:
-        validate_wavea_evidence_detail(detail, patient_id)
+        validate_full_wavea_evidence_detail(detail, patient_id)
     except ValueError:
         return _unavailable(reader, build_id, limit, offset)
     summary = patients[patient_id]
-    fields = ("by_rule", "by_group", "evaluation_count", "review_count", "financial_count")
+    fields = (
+        "by_rule", "by_group", "evaluation_count", "review_count", "advisory_count",
+        "financial_count",
+    )
     if (
         not isinstance(summary, dict)
         or summary.get("available") is not detail.get("available")
@@ -335,7 +344,7 @@ def get_wavea_evidence_rows(
     limit: int = _DEFAULT_LIMIT,
     offset: int = 0,
 ):
-    """Page sparse cohort review/financial evidence from the build index."""
+    """Page sparse cohort review/advisory/financial evidence from the build index."""
     return _wavea_evidence_rows_response(kind, patient_id, claim_id, rule_id, limit, offset)
 
 
@@ -377,7 +386,11 @@ def _wavea_evidence_rows_response(
     selected_ids = set(patients) if selected is None else selected
     if any(patients[pid]["available"] is not True for pid in selected_ids):
         return _unavailable(reader, build_id, limit, offset, "some_patients_unavailable")
-    prefix = "wavea_review:" if kind == "reviews" else "wavea_financial:"
+    prefix = {
+        "reviews": "wavea_review:",
+        "advisories": "wavea_advisory:",
+        "financial_rows": "wavea_financial:",
+    }[kind]
     rows = [
         row
         for row in index["evidence_rows"]

@@ -8,10 +8,11 @@ import hashlib
 import os
 import logging
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 
-from src.bilun.cache.build_streaming import json_ready, stream_payload_table
+from src.bilun.cache.build_streaming import dump_json_compact, json_ready, stream_payload_table
 from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.payloads import (
     build_patient_diagnoses_df,
@@ -32,13 +33,14 @@ from src.bilun.db import (
     source_hash_from_files,
     upsert_single_json_table,
     write_json_payload_rows,
+    write_json_payload_rows_serialized,
     write_patient_alert_tables,
     write_dataframe,
 )
 from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
-from src.bilun.domain.billing.wavea_evidence import (
-    build_wavea_evidence_index,
-    unavailable_evidence_detail,
+from src.bilun.domain.billing.wavea_full_evidence import (
+    build_full_wavea_evidence_index,
+    validate_full_wavea_evidence_detail,
 )
 from src.bilun.domain.claims.provenance import attach_bilun_data_source_metadata
 from src.bilun.domain.claims import SUTDataSourceConfig, resolve_sut_data_source
@@ -175,6 +177,74 @@ def _without_wavea_detail(report: object) -> object:
     return report
 
 
+def _normalize_wavea_bill_detail(bill_key: str, report: object, build_id: str) -> dict[str, Any]:
+    """Validate a bill's own predicate context before storing its evidence."""
+    if not isinstance(bill_key, str) or "::" not in bill_key:
+        raise ValueError("Bill Wave A evidence lacks a composite claim key")
+    patient_id, claim_id = bill_key.split("::", 1)
+    if not patient_id or not claim_id:
+        raise ValueError("Bill Wave A evidence has an empty patient or claim ID")
+    detail = (
+        report.get("wavea_evidence_detail")
+        if isinstance(report, dict)
+        else getattr(report, "wavea_evidence_detail", None)
+    )
+    if detail is None:
+        raise ValueError(f"Bill {bill_key} lacks complete Wave A evidence")
+    normalized = json_ready(detail)
+    validate_full_wavea_evidence_detail(normalized, patient_id)
+    inventory = normalized["claim_scope_inventory"]
+    if inventory["context_state"] != "available" or [
+        row["claim_id"] for row in inventory["claims"]
+    ] != [claim_id]:
+        raise ValueError(f"Bill {bill_key} Wave A scope differs from its claim")
+    normalized["build_id"] = build_id
+    return normalized
+
+
+def _collect_wavea_bill_details(
+    raw_bill_reports: dict[str, object], build_id: str
+) -> dict[str, dict[str, Any]]:
+    """Keep a small caller-facing collector for direct scope tests."""
+    return {
+        bill_key: _normalize_wavea_bill_detail(bill_key, report, build_id)
+        for bill_key, report in raw_bill_reports.items()
+    }
+
+
+def _write_wavea_bill_details(
+    con,
+    raw_bill_reports: dict[str, object],
+    build_id: str,
+    data_source: dict[str, Any],
+    *,
+    batch_size: int = 4,
+) -> int:
+    """Persist exhaustive bill evidence with bounded serialization memory."""
+    if batch_size < 1:
+        raise ValueError("Bill evidence batch_size must be positive")
+    rows: list[tuple[str, str]] = []
+    written = 0
+    for bill_key, report in raw_bill_reports.items():
+        detail = _normalize_wavea_bill_detail(bill_key, report, build_id)
+        rows.append(
+            (
+                bill_key,
+                dump_json_compact(attach_bilun_data_source_metadata(detail, data_source)),
+            )
+        )
+        if len(rows) == batch_size:
+            written += write_json_payload_rows_serialized(
+                con, "wavea_bill_evidence_detail", build_id, rows, append=written > 0
+            )
+            rows = []
+    if rows or not written:
+        written += write_json_payload_rows_serialized(
+            con, "wavea_bill_evidence_detail", build_id, rows, append=written > 0
+        )
+    return written
+
+
 def run_build(args: argparse.Namespace) -> str:
     db_path = Path(args.db_path)
     con = connect(db_path)
@@ -265,19 +335,19 @@ def run_build(args: argparse.Namespace) -> str:
             ),
         )
         raw_billing_reports = ctx.get("billing_reports", {})
-        wavea_details = {
-            patient_id: json_ready(
-                (
-                    report.get("wavea_evidence_detail")
-                    if isinstance(report, dict)
-                    else getattr(report, "wavea_evidence_detail", None)
-                )
-                or unavailable_evidence_detail(patient_id)
+        wavea_details = {}
+        for patient_id, report in raw_billing_reports.items():
+            detail = (
+                report.get("wavea_evidence_detail")
+                if isinstance(report, dict)
+                else getattr(report, "wavea_evidence_detail", None)
             )
-            for patient_id, report in raw_billing_reports.items()
-        }
+            if detail is None:
+                raise ValueError(f"Patient {patient_id} lacks complete Wave A evidence")
+            wavea_details[patient_id] = json_ready(detail)
         for detail in wavea_details.values():
             detail["build_id"] = build.build_id
+        raw_bill_reports = ctx.get("bill_billing_reports", {})
         billing_reports = json_ready(
             {
                 patient_id: _without_wavea_detail(report)
@@ -301,7 +371,7 @@ def run_build(args: argparse.Namespace) -> str:
         bill_billing_reports = json_ready(
             {
                 bill_key: _without_wavea_detail(report)
-                for bill_key, report in ctx.get("bill_billing_reports", {}).items()
+                for bill_key, report in raw_bill_reports.items()
             }
         )
         for report in bill_billing_reports.values():
@@ -347,7 +417,10 @@ def run_build(args: argparse.Namespace) -> str:
                 for patient_id, detail in wavea_details.items()
             },
         )
-        wavea_index = build_wavea_evidence_index(wavea_details)
+        wavea_bill_count = _write_wavea_bill_details(
+            con, raw_bill_reports, build.build_id, sut_data_source_metadata,
+        )
+        wavea_index = build_full_wavea_evidence_index(wavea_details)
         wavea_index["build_id"] = build.build_id
         upsert_single_json_table(
             con,
@@ -423,6 +496,7 @@ def run_build(args: argparse.Namespace) -> str:
             "cohort_recovery_summary": 1,
             "cohort_compliance_index": 1,
             "wavea_evidence_detail": len(wavea_details),
+            "wavea_bill_evidence_detail": wavea_bill_count,
             "wavea_evidence_index": 1,
             "patient_detail_cache": int(detail_rows),
             "patient_outcome_base": int(outcome_rows),

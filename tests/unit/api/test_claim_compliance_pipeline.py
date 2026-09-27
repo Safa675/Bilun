@@ -11,7 +11,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from src.bilun.api.routes import billing, compliance, wavea_evidence
+from src.bilun.api.routes import billing, compliance, wavea_evidence, wavea_gate
 from src.bilun.db import (
     BILUN_BUILD_SCOPE,
     complete_build,
@@ -35,23 +35,23 @@ from src.bilun.domain.billing import (
 from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
 from src.bilun.domain.billing.focused_rule_projection import (
     FOCUSED_RULE_SPECS,
-    project_focused_legacy_rows,
 )
 from src.bilun.domain.billing.cohort_runner import (
     compute_all_bill_billing_reports,
     compute_all_billing_reports,
 )
 from src.bilun.domain.billing.types import ClaimCompliance
+from src.bilun.domain.billing.wavea_full_evidence import (
+    FullWaveAEvidenceProjection,
+    build_full_wavea_evidence_index,
+    validate_full_wavea_evidence_detail,
+    validate_full_wavea_evidence_index,
+)
 from src.bilun.domain.billing.wavea_evidence import (
     COMPLETE_EVIDENCE_CAPABILITY,
     ORIGINAL_FIVE_RULE_IDS,
     WaveAEvidenceBlock,
-    WaveAEvidenceProjection,
-    build_wavea_evidence_index,
     original_five_report_payload,
-    project_focused_evidence,
-    unavailable_evidence_detail,
-    validate_wavea_evidence_detail,
 )
 from src.bilun.domain.billing.rule_findings import (
     DIAGNOSIS_RULE_ID,
@@ -280,8 +280,7 @@ def cached_pipeline(computed, tmp_path, monkeypatch):
     bill_payloads = {key: billing._serialize_billing_report(value) for key, value in bills.items()}
     index = build_cohort_compliance_index(reports)
     wavea_details = {pid: dict(report.wavea_evidence_detail) for pid, report in reports.items()}
-    wavea_index = build_wavea_evidence_index(wavea_details)
-    wavea_index["capability"] = COMPLETE_EVIDENCE_CAPABILITY
+    wavea_index = build_full_wavea_evidence_index(wavea_details)
     db_path = tmp_path / "synthetic-claim-compliance.duckdb"
     con = connect(db_path)
     try:
@@ -342,6 +341,18 @@ def _identity(row):
     return row["patient_id"], row["claim_id"], row["rule_id"], row.get("procedure_line_id")
 
 
+def _trusted_v2_test_gate(reader, index, build_id):
+    """Test route mechanics while production awaits a release attestation."""
+    if not isinstance(index, dict) or index.get("build_id") != build_id:
+        return False
+    try:
+        validate_full_wavea_evidence_index(index)
+        expected = wavea_gate.declared_patient_report_count(reader, build_id)
+    except ValueError:
+        return False
+    return index["n_patients"] == expected
+
+
 def _expected_compliance_counts(
     patient_payloads: dict[str, dict], patient_ids: set[str]
 ) -> dict[str, int]:
@@ -399,13 +410,10 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
             identity for identity in _EXPECTED_FINDINGS if identity[0] == pid
         }
         _assert_nonfinancial(block["findings"])
-        assert len(block["evaluations"]) == (5 + len(_FOCUSED_IDS)) * len(dataset.claims_by_patient[pid])
+        assert len(block["evaluations"]) == 5 * len(dataset.claims_by_patient[pid])
+        assert {row["rule_id"] for row in block["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
         for evaluation in block["evaluations"]:
             assert evaluation["patient_id"] == pid
-            if evaluation["rule_id"] in _FOCUSED_IDS:
-                assert evaluation["status"] == "unavailable"
-                assert evaluation.get("decision") is None
-                continue
             missing = evaluation["claim_id"] in {"C-C", "C-D"} and evaluation["rule_id"] == DIAGNOSIS_RULE_ID
             assert evaluation["status"] == ("missing_inputs" if missing else "evaluated")
             assert evaluation["missing_inputs"] == (["primary_icd10"] if missing else [])
@@ -421,7 +429,7 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[:2] == (pid, cid)
         }
-        assert len(block["evaluations"]) == 5 + len(_FOCUSED_IDS)
+        assert len(block["evaluations"]) == 5
         assert all((row["patient_id"], row["claim_id"]) == (pid, cid) for row in block["evaluations"])
         _assert_nonfinancial(block["findings"])
     assert client.get("/api/billing-report/P2/bills/C-A").status_code == 404
@@ -449,8 +457,8 @@ def test_http_filters_pagination_and_null_money(cached_pipeline):
         assert payload["claim_compliance"]["non_evaluated_total"] == (
             cohort_counts["missing_inputs"] + cohort_counts["unavailable"]
         )
-        assert len(payload["claim_compliance"]["details"]) == 20
-        assert payload["claim_compliance"]["details_truncated"] is True
+        assert len(payload["claim_compliance"]["details"]) == 2
+        assert payload["claim_compliance"]["details_truncated"] is False
         assert payload["claim_compliance"]["evaluations"] == []
         pages.extend(payload["rows"])
     assert pages == expected
@@ -516,7 +524,7 @@ def test_wavea_evidence_hidden_until_completed_build(cached_pipeline):
         assert payload["action_count"] == stored["action_count"]
         assert payload["audit_exposure_try"] == stored["audit_exposure_try"]
         assert payload["sgk_uplift_try"] == stored["sgk_uplift_try"]
-        for field in ("claim_reviews", "financial_findings"):
+        for field in ("claim_reviews", "claim_advisories", "financial_findings"):
             assert payload[field] == {
                 "available": False,
                 "unavailable_reason": "wavea_capability_unavailable",
@@ -557,10 +565,57 @@ def test_wavea_evidence_hidden_until_completed_build(cached_pipeline):
         assert payload["pagination"]["total_matching"] is None
 
 
+def test_v2_capability_string_toggle_cannot_publish_unattested_evidence(cached_pipeline):
+    client, _, _, _ = cached_pipeline
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        index = read_json_payload(con, "wavea_evidence_index", build_id)
+        assert index["capability"] == "draft"
+        index["capability"] = COMPLETE_EVIDENCE_CAPABILITY
+        upsert_single_json_table(con, "wavea_evidence_index", build_id, index)
+    finally:
+        con.close()
+    for path in ("/api/wavea-evidence-index", "/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.json()["available"] is False
+    patient = client.get("/api/billing-report/P1").json()
+    assert patient["claim_advisories"]["available"] is False
+    assert patient["claim_reviews"]["available"] is False
+    assert {row["rule_id"] for row in patient["claim_compliance"]["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
+
+
+def test_v2_explicit_empty_patient_selection_never_expands_to_all(cached_pipeline, monkeypatch):
+    client, _, _, _ = cached_pipeline
+    monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
+    all_index = client.get("/api/wavea-evidence-index").json()
+    assert all_index["pagination"]["total_matching"] == 2
+    for response in (
+        client.get("/api/wavea-evidence-index", params={"patient_id": ""}),
+        client.post("/api/wavea-evidence-index", json={"patient_id": []}),
+    ):
+        payload = response.json()
+        assert payload["available"] is True
+        assert payload["pagination"]["total_matching"] == 0
+        assert payload["counts"]["evaluation_count"] == 0
+        assert payload["rows"] == []
+    all_rows = client.get("/api/wavea-evidence-rows").json()
+    assert all_rows["pagination"]["total_matching"] > 0
+    for response in (
+        client.get("/api/wavea-evidence-rows", params={"patient_id": ""}),
+        client.post("/api/wavea-evidence-rows", json={"patient_id": []}),
+    ):
+        payload = response.json()
+        assert payload["available"] is True
+        assert payload["pagination"]["total_matching"] == 0
+        assert payload["rows"] == []
+
+
 def test_missing_wavea_index_cannot_expose_focused_cohort_counts(cached_pipeline, monkeypatch):
     client, index, patients, _ = cached_pipeline
     assert sum(
-        counts["unavailable"]
+        counts["missing_inputs"]
         for counts in index["claim_compliance"]["counts_by_patient"].values()
     ) > 0
     original_read = compliance.read_cache_json_payload
@@ -598,15 +653,15 @@ def test_missing_wavea_index_cannot_expose_focused_cohort_counts(cached_pipeline
     assert incomplete["rows"] == []
 
 
-def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkeypatch):
+def test_wavea_v2_routes_page_stable_evidence_under_test_only_trusted_gate(cached_pipeline, monkeypatch):
     client, _, _, _ = cached_pipeline
+    monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
+    monkeypatch.setattr(billing, "complete_build_evidence_available", _trusted_v2_test_gate)
     con = connect(state._runtime.canonical_cache_db_path)
     try:
         build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
         assert build_id is not None
         index = read_json_payload(con, "wavea_evidence_index", build_id)
-        index["capability"] = COMPLETE_EVIDENCE_CAPABILITY
-        upsert_single_json_table(con, "wavea_evidence_index", build_id, index)
         detail = read_json_payload_row(con, "wavea_evidence_detail", build_id, "P1")
         detail_p2 = read_json_payload_row(con, "wavea_evidence_detail", build_id, "P2")
     finally:
@@ -655,6 +710,7 @@ def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkey
     assert client.get("/api/wavea-evidence/P999").status_code == 404
     report = client.get("/api/billing-report/P1").json()
     assert report["claim_reviews"]["available"] is True
+    assert report["claim_advisories"]["available"] is True
     assert report["financial_findings"]["available"] is True
     assert "wavea_evidence_detail" not in report
     assert all(
@@ -665,52 +721,51 @@ def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkey
     divergent = deepcopy(detail)
     referenced_ids = {
         row["source_evidence_id"]
-        for row in (*divergent["reviews"], *divergent["financial_rows"])
+        for row in (*divergent["reviews"], *divergent["advisories"], *divergent["financial_rows"])
     }
-    removable = next(
+    changed = next(
         row for row in divergent["evaluations"]
         if row["evaluation_id"] not in referenced_ids
+        and row["rule_id"] in _FOCUSED_IDS
+        and row["evaluation_status"] == "unavailable"
     )
-    divergent["evaluations"].remove(removable)
-    status = removable["evaluation_status"]
-    divergent["counts"]["by_rule"][removable["rule_id"]][status] -= 1
+    changed["evaluation_status"] = "missing_inputs"
+    divergent["counts"]["by_rule"][changed["rule_id"]]["unavailable"] -= 1
+    divergent["counts"]["by_rule"][changed["rule_id"]]["missing_inputs"] += 1
     group = next(
         spec.group for spec in FOCUSED_RULE_SPECS
-        if spec.rule_id == removable["rule_id"]
+        if spec.rule_id == changed["rule_id"]
     )
-    divergent["counts"]["by_group"][group][status] -= 1
-    divergent["counts"]["evaluation_count"] -= 1
-    validate_wavea_evidence_detail(divergent, "P1")
+    divergent["counts"]["by_group"][group]["unavailable"] -= 1
+    divergent["counts"]["by_group"][group]["missing_inputs"] += 1
+    validate_full_wavea_evidence_detail(divergent, "P1")
     monkeypatch.setattr(wavea_evidence, "read_json_payload_row", lambda *_args: divergent)
     index_divergent = client.get("/api/wavea-evidence/P1").json()
     assert index_divergent["available"] is False
     assert index_divergent["counts"] is None
 
-    unavailable_index = build_wavea_evidence_index(
-        {"P1": unavailable_evidence_detail("P1"), "P2": detail_p2}
-    )
-    unavailable_index.update(build_id=build_id, capability=COMPLETE_EVIDENCE_CAPABILITY)
+    missing_detail = deepcopy(patient_report.compute_patient_billing_report("P1", claim_context=None).wavea_evidence_detail)
+    assert missing_detail is not None
+    missing_detail["build_id"] = build_id
+    unavailable_index = build_full_wavea_evidence_index({"P1": missing_detail, "P2": detail_p2})
+    unavailable_index["build_id"] = build_id
     monkeypatch.setattr(wavea_evidence, "read_json_payload_row", lambda *_args: detail)
     monkeypatch.setattr(wavea_evidence, "read_json_payload", lambda *_args: unavailable_index)
     unavailable_patient = client.get("/api/wavea-evidence/P1").json()
     assert unavailable_patient["available"] is False
     assert unavailable_patient["counts"] is None
 
-    missing_detail = project_focused_evidence(
-        "P1", None, project_focused_legacy_rows("P1", None, [])
-    ).detail
-    missing_detail["build_id"] = build_id
-    missing_index = build_wavea_evidence_index({"P1": missing_detail, "P2": detail_p2})
-    missing_index.update(build_id=build_id, capability=COMPLETE_EVIDENCE_CAPABILITY)
+    missing_index = build_full_wavea_evidence_index({"P1": missing_detail, "P2": detail_p2})
+    missing_index["build_id"] = build_id
     monkeypatch.setattr(wavea_evidence, "read_json_payload", lambda *_args: missing_index)
     monkeypatch.setattr(wavea_evidence, "read_json_payload_row", lambda *_args: missing_detail)
     missing_page = client.get("/api/wavea-evidence/P1").json()
     assert missing_page["available"] is False
     assert missing_page["unavailable_reason"] == "claim_context_unavailable"
-    assert missing_page["pagination"]["total_matching"] == len(FOCUSED_RULE_SPECS)
+    assert missing_page["pagination"]["total_matching"] == 528
     assert len(missing_page["rows"]) == 20
     assert all(row["evaluation_status"] == "missing_inputs" for row in missing_page["rows"])
-    assert missing_page["patient_counts"]["evaluation_count"] == len(FOCUSED_RULE_SPECS)
+    assert missing_page["patient_counts"]["evaluation_count"] == 528
     unavailable_cohort_rows = client.get(
         "/api/wavea-evidence-rows", params={"patient_id": "P1"}
     ).json()
@@ -732,14 +787,15 @@ def test_wavea_completed_build_paginates_stable_evidence(cached_pipeline, monkey
     assert inconsistent["available"] is False
     assert inconsistent["counts"] is None
     empty_index["counts"] = {
-        "by_rule": {}, "by_group": {}, "review_count": 0, "financial_count": 0,
+        "by_rule": {}, "by_group": {}, "review_count": 0, "advisory_count": 0,
+        "financial_count": 0,
     }
     forged_zero = client.get("/api/wavea-evidence-index").json()
     assert forged_zero["available"] is False
     assert forged_zero["counts"] is None
 
 
-def test_wavea_completed_empty_build_reports_a_true_zero(tmp_path, monkeypatch):
+def test_wavea_true_empty_v2_build_reports_zero_only_under_test_trusted_gate(tmp_path, monkeypatch):
     db_path = tmp_path / "empty-wavea.duckdb"
     con = connect(db_path)
     try:
@@ -749,8 +805,8 @@ def test_wavea_completed_empty_build_reports_a_true_zero(tmp_path, monkeypatch):
             schema_version="v1", feature_set_version="v1", benchmark_version="v1",
             nlp_version="test", build_scope=BILUN_BUILD_SCOPE,
         )
-        index = build_wavea_evidence_index({})
-        index.update(build_id=build.build_id, capability=COMPLETE_EVIDENCE_CAPABILITY)
+        index = build_full_wavea_evidence_index({})
+        index["build_id"] = build.build_id
         upsert_single_json_table(con, "wavea_evidence_index", build.build_id, index)
         complete_build(
             con, build.build_id,
@@ -768,6 +824,7 @@ def test_wavea_completed_empty_build_reports_a_true_zero(tmp_path, monkeypatch):
         pipeline_mode="persistent", testing=True, canonical_cache_db_path=db_path,
     )
     monkeypatch.setattr(state, "_runtime", runtime)
+    monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
     app = FastAPI()
     app.include_router(wavea_evidence.router, prefix="/api")
     register_exception_handlers(app)
@@ -777,7 +834,7 @@ def test_wavea_completed_empty_build_reports_a_true_zero(tmp_path, monkeypatch):
         assert payload["available"] is True
         assert payload["counts"] == {
             "by_group": {}, "evaluation_count": 0, "review_count": 0,
-            "financial_count": 0,
+            "advisory_count": 0, "financial_count": 0,
         }
         assert payload["pagination"]["total_matching"] == 0
         assert payload["rows"] == []
@@ -819,7 +876,7 @@ def test_wavea_routes_share_production_session_gate(cached_pipeline, monkeypatch
             assert authenticated.status_code == 200
         for path in ("/api/wavea-evidence-index", "/api/wavea-evidence-rows"):
             assert client.post(path, json={}).status_code == 200
-            assert authenticated.json()["available"] is True
+            assert authenticated.json()["available"] is False
     finally:
         client.close()
 
@@ -846,21 +903,30 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
     bill_ctx = ctx.slice_for_claim("C1")
     assert bill_ctx is not None
     bill = patient_report.compute_patient_billing_report("P1", claim_context=bill_ctx)
-    assert (patient.claim_reviews.total_rows, patient.financial_findings.total_rows) == (1, 1)
-    assert patient.claim_reviews.rows[0]["rule_id"] == "tablo15_15_material_preauth_missing"
+    assert patient.claim_reviews.total_rows >= 1
+    assert patient.financial_findings.total_rows == 1
+    assert any(
+        row["rule_id"] == "tablo15_15_material_preauth_missing"
+        for row in patient.claim_reviews.rows
+    )
     assert patient.financial_findings.rows[0]["rule_id"] == "yatak_icu_overlap_510010"
     assert patient.financial_findings.rows[0]["confirmed_amount_try"] is None
-    for field in ("claim_reviews", "financial_findings"):
-        assert patient.__getattribute__(field).rows[0]["source_evidence_id"] == (
-            bill.__getattribute__(field).rows[0]["source_evidence_id"]
-        )
+    for field in ("claim_reviews", "claim_advisories", "financial_findings"):
+        assert patient.__getattribute__(field).rows == bill.__getattribute__(field).rows
 
-    empty = WaveAEvidenceProjection(WaveAEvidenceBlock(), WaveAEvidenceBlock(), {}, {})
-    with patch.object(patient_report, "project_focused_evidence", return_value=empty):
+    empty = FullWaveAEvidenceProjection(
+        WaveAEvidenceBlock(), WaveAEvidenceBlock(), WaveAEvidenceBlock(), {}, {}, ()
+    )
+    with patch.object(patient_report, "project_full_wavea_evidence", return_value=empty), patch.object(
+        patient_report, "validate_full_wavea_evidence_detail"
+    ):
         without_new_evidence = patient_report.compute_patient_billing_report("P1", claim_context=ctx)
     actual = asdict(patient)
     prior = asdict(without_new_evidence)
-    for field in ("claim_reviews", "financial_findings", "wavea_coverage", "wavea_evidence_detail"):
+    for field in (
+        "claim_reviews", "claim_advisories", "financial_findings", "wavea_coverage",
+        "wavea_evidence_detail",
+    ):
         actual.pop(field)
         prior.pop(field)
     assert actual == prior
@@ -877,9 +943,8 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
         build_id = build.build_id
         detail = dict(patient.wavea_evidence_detail)
         detail["build_id"] = build_id
-        index = build_wavea_evidence_index({"P1": detail})
+        index = build_full_wavea_evidence_index({"P1": detail})
         index["build_id"] = build_id
-        index["capability"] = COMPLETE_EVIDENCE_CAPABILITY
         write_json_payload_rows(
             con, "patient_billing_report_rows", build_id,
             {"P1": billing._serialize_billing_report(patient)},
@@ -910,6 +975,8 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
     )
     monkeypatch.setattr(state, "_runtime", runtime)
     monkeypatch.setattr(billing, "PIPELINE_MODE", None)
+    monkeypatch.setattr(billing, "complete_build_evidence_available", _trusted_v2_test_gate)
+    monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
     app = FastAPI()
     app.include_router(billing.router, prefix="/api")
     app.include_router(compliance.router, prefix="/api")
@@ -929,6 +996,12 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
             ).json()
             cohort_financial = client.get(
                 "/api/wavea-evidence-rows", params={"kind": "financial_rows", "limit": 1}
+            ).json()
+            advisories = client.get(
+                "/api/wavea-evidence/P1", params={"kind": "advisories"}
+            ).json()
+            cohort_advisories = client.get(
+                "/api/wavea-evidence-rows", params={"kind": "advisories"}
             ).json()
             post_cohort_financial = client.post(
                 "/api/wavea-evidence-rows",
@@ -972,18 +1045,22 @@ def test_financial_and_review_evidence_survive_report_cache_and_api(tmp_path, mo
     finally:
         if runtime.cache_con is not None:
             runtime.cache_con.close()
-    for field in ("claim_reviews", "financial_findings"):
+    for field in ("claim_reviews", "claim_advisories", "financial_findings"):
         assert patient_payload[field]["rows"] == bill_payload[field]["rows"]
     assert patient_payload["total_recoverable_try"] == prior["total_recoverable_try"]
     assert patient_payload["audit_exposure_try"] == prior["audit_exposure_try"]
     assert patient_payload["recommended_actions"] == prior["recommended_actions"]
-    assert cohort["counts"]["review_count"] == cohort["counts"]["financial_count"] == 1
+    assert cohort["counts"]["review_count"] == patient.claim_reviews.total_rows
+    assert cohort["counts"]["advisory_count"] == patient.claim_advisories.total_rows
+    assert cohort["counts"]["financial_count"] == 1
     assert reviews["rows"][0]["source_evidence_id"] == patient_payload["claim_reviews"]["rows"][0]["source_evidence_id"]
     assert financial["rows"][0]["source_evidence_id"] == patient_payload["financial_findings"]["rows"][0]["source_evidence_id"]
     assert financial["rows"][0]["confirmed_amount_try"] is None
-    assert cohort_reviews["pagination"]["total_matching"] == 1
+    assert cohort_reviews["pagination"]["total_matching"] == patient.claim_reviews.total_rows
+    assert cohort_advisories["pagination"]["total_matching"] == patient.claim_advisories.total_rows
     assert cohort_financial["pagination"]["total_matching"] == 1
-    assert cohort_reviews["rows"] == reviews["rows"]
+    assert cohort_reviews["rows"] == reviews["rows"][:1]
+    assert cohort_advisories["rows"] == advisories["rows"]
     assert cohort_financial["rows"] == financial["rows"]
     assert post_cohort_financial == get_selected_cohort_financial
     assert exact_financial["rows"] == financial["rows"]

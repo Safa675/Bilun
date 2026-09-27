@@ -17,6 +17,7 @@ from src.bilun.domain.billing.focused_rule_projection import (
     FOCUSED_RULE_SPECS,
     FocusedProjectionBatch,
 )
+from src.bilun.domain.billing.wavea_evidence import ORIGINAL_FIVE_RULE_IDS
 from src.bilun.domain.claims.models import (
     ClaimHeader,
     DrugClaimLine,
@@ -277,7 +278,9 @@ def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> N
     assert len({row["evaluation_id"] for row in report.claim_compliance.evaluations}) == len(
         report.claim_compliance.evaluations
     )
-    assert {row["rule_id"] for row in report.claim_compliance.evaluations} >= _RULE_IDS
+    assert {row["rule_id"] for row in report.claim_compliance.evaluations} == ORIGINAL_FIVE_RULE_IDS
+    assert report.wavea_evidence_detail is not None
+    assert {row["rule_id"] for row in report.wavea_evidence_detail["evaluations"]} >= _RULE_IDS
     assert (
         report.sgk_uplift_try,
         report.compliance_adjustment_try,
@@ -291,16 +294,19 @@ def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> N
     ] == [("materials", "material_prose_bundling", "500000", 100.0)]
 
     with patch.object(
-        patient_report,
-        "project_focused_legacy_rows",
-        return_value=FocusedProjectionBatch(),
+        patient_report, "project_focused_legacy_rows", return_value=FocusedProjectionBatch()
+    ), patch.object(
+        patient_report, "validate_full_wavea_evidence_detail"
     ):
+        # This artificial no-focused baseline is intentionally missing the
+        # required 32 authored statuses; only compare its legacy money/actions.
         baseline = patient_report.compute_patient_billing_report("P1", claim_context=ctx)
     actual_dict = asdict(report)
     baseline_dict = asdict(baseline)
     for field in (
         "claim_compliance",
         "claim_reviews",
+        "claim_advisories",
         "financial_findings",
         "wavea_coverage",
         "wavea_evidence_detail",

@@ -532,6 +532,9 @@ class BillingReportResponse(BaseModel):
     claim_reviews: WaveAEvidenceBlockResponse = Field(
         default_factory=WaveAEvidenceBlockResponse
     )
+    claim_advisories: WaveAEvidenceBlockResponse = Field(
+        default_factory=WaveAEvidenceBlockResponse
+    )
     financial_findings: WaveAEvidenceBlockResponse = Field(
         default_factory=WaveAEvidenceBlockResponse
     )

@@ -157,6 +157,7 @@ def _gate_wavea_evidence(
             "rows": [],
             "has_more": False,
         }
+        payload["claim_advisories"] = dict(payload["claim_reviews"])
         payload["financial_findings"] = dict(payload["claim_reviews"])
         payload["wavea_coverage"] = None
     return payload

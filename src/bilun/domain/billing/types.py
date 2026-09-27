@@ -784,6 +784,7 @@ class BillingActionReport:
     required_inputs_missing: list[str] = field(default_factory=list)
     claim_compliance: ClaimCompliance = field(default_factory=ClaimCompliance)
     claim_reviews: WaveAEvidenceBlock = field(default_factory=WaveAEvidenceBlock)
+    claim_advisories: WaveAEvidenceBlock = field(default_factory=WaveAEvidenceBlock)
     financial_findings: WaveAEvidenceBlock = field(default_factory=WaveAEvidenceBlock)
     wavea_coverage: dict[str, Any] | None = None
     # Kept only until cache build writes the separate patient detail table.

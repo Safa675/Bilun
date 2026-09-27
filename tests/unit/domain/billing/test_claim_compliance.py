@@ -17,6 +17,7 @@ from src.bilun.domain.billing.rule_findings import (
     evaluate_rule_findings,
 )
 from src.bilun.domain.billing.types import ClaimCompliance
+from src.bilun.domain.billing.wavea_evidence import ORIGINAL_FIVE_RULE_IDS
 from src.bilun.domain.claims import dataset as dataset_module
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.errors import ClaimValidationError
@@ -168,17 +169,17 @@ def test_report_real_detectors_run_once_and_serialize_nonfinancial_findings():
         assert all(value is None for key, value in finding.items() if key.endswith("_try"))
         assert finding["savings_try"] is None
         assert finding["billed_try"] is None
-    assert len(projection["evaluations"]) == 5 + len(_FOCUSED_IDS)
+    assert len(projection["evaluations"]) == 5
+    assert {row["rule_id"] for row in projection["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
     assert all(
         row["status"] == "evaluated" and row["missing_inputs"] == []
         for row in projection["evaluations"]
         if row["rule_id"] not in _FOCUSED_IDS
     )
-    assert all(
-        row["status"] == "unavailable" and row.get("decision") is None
-        for row in projection["evaluations"]
-        if row["rule_id"] in _FOCUSED_IDS
-    )
+    detail = report.wavea_evidence_detail
+    assert detail is not None
+    assert {row["rule_id"] for row in detail["evaluations"]} >= _FOCUSED_IDS
+    assert len(detail["counts"]["by_rule"]) == 528
     assert not any(row.get("rule_id") in {ICU_RULE_ID, DIAGNOSIS_RULE_ID} for row in report.recommended_actions)
 
 
@@ -316,7 +317,7 @@ def test_multiple_claims_same_day_only_other_claim_reordered_and_duplicate_stabl
     icu.assert_called_once()
     diagnosis.assert_called_once()
     assert {claim.claim_id for claim in diagnosis.call_args.args[0]} == {"C1", "C2", "C3"}
-    assert len(projection.evaluations) == 3 * (5 + len(_FOCUSED_IDS))
+    assert len(projection.evaluations) == 3 * 5
     assert {(row["claim_id"], row.get("procedure_line_id")) for row in projection.findings} == {
         ("C1", "L3"), ("C1", None),
     }
@@ -347,10 +348,14 @@ def test_identity_escaping_distinguishes_delimiters_and_patients():
 
 
 def test_missing_full_context_is_explicitly_unavailable():
-    projection = _report(None).claim_compliance
+    report = _report(None)
+    projection = report.claim_compliance
     assert projection.findings == []
-    assert len(projection.evaluations) == 5 + len(_FOCUSED_IDS)
+    assert len(projection.evaluations) == 5
     assert all(row["claim_id"] is None and row["status"] == "missing_inputs" and row["missing_inputs"] == ["claim_context"] for row in projection.evaluations)
+    assert report.wavea_evidence_detail is not None
+    assert len(report.wavea_evidence_detail["evaluations"]) == 528
+    assert all(row["evaluation_status"] == "missing_inputs" for row in report.wavea_evidence_detail["evaluations"])
     assert asdict(ClaimCompliance()) == {"findings": [], "evaluations": []}
 
 
