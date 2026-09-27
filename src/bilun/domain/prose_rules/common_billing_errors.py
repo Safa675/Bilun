@@ -4,7 +4,8 @@ Each detector encodes one row of "El Kitabı Tablo 15 — 24 Most Common
 Outpatient Billing Errors". Phase 1 covered the 5 highest-frequency errors
 selected by the feasibility study (`/tmp/feasibility/common_errors.md`) as
 buildable now (data already on the claim context), high-frequency in real
-Medula denials, and low effort to implement. Phase 2 adds 11 more.
+Medula denials, and low effort to implement. Phase 2 has 10 active detectors
+and one unavailable timing candidate.
 
 Phase 1 errors covered:
 - **#2** Same-specialty exam within 10 days  → ``detect_duplicate_exam_10day``
@@ -18,7 +19,7 @@ Phase 2 errors covered:
 - **#4** Normal Poliklinik billed where vakabaşı required → ``detect_normal_poliklinik_wrong_method``
 - **#5** Material identity errors (SUT/barcode) → ``detect_material_identity_errors``
 - **#7** Green-area exam + bundled extras → ``detect_green_area_bundled_extras``
-- **#9** Admissions past 60-day billing window → ``detect_admission_billing_window``
+- **#9** Billing-period timing (unavailable from claim dates alone) → ``detect_admission_billing_window``
 - **#10** Incomplete/unreported procedures → ``detect_unreported_lab_result``
 - **#11** Drug quantity (adet) error → ``detect_drug_quantity_error``
 - **#15** Material pre-auth missing → ``detect_material_preauth_missing``
@@ -29,7 +30,7 @@ Phase 2 errors covered:
 Every detector takes plain ``ClaimHeader`` / ``ProcedureClaimLine`` /
 ``DrugClaimLine`` lists plus an optional ``claim_ids_with_procs`` filter set
 (matching the wiring gate used by ``patient_report`` and the other prose-rule
-motors, e.g. ``anestezi_puani``). Each emits violation dicts with a uniform
+motors, e.g. ``anestezi_puani``). Active detectors emit violation dicts with a uniform
 shape: ``type``, ``claim_id``, ``rule_id``, ``detail`` (Turkish),
 ``sut_section_id``, ``savings_category``, ``savings_basis``, ``severity``.
 """
@@ -95,11 +96,6 @@ _PACKAGE_CATEGORIES: frozenset[str] = frozenset({"paket", "vakabasi", "vakabaş�
 # Error #7 — Green-area (yeşil alan) poliklinik exam code. Sourced from
 # copay_line_waivers._GREEN_ZONE_EXAM_CODE (verified canonical constant).
 _GREEN_ZONE_EXAM_CODE = "520021"
-
-# Error #9 — Medula admission→claim billing window. SGK requires a yatış
-# takibi to be submitted within ~60 days of admission; beyond that the claim
-# is statute-barred (zamanaşımı) and rejected at the gateway.
-_ADMISSION_BILLING_WINDOW_DAYS = 60
 
 # Error #10 — lab_billing_status values that mean the result was never
 # reported back, so the test is unbundlable / non-reimbursable. The field
@@ -726,48 +722,15 @@ def detect_admission_billing_window(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #9: Admissions billed past the 60-day SGK billing window.
+    """Legacy Error #9 entry point; no verdict without billing-period closure.
 
-    SGK requires a yatış takibi to be submitted within ~60 days of the
-    admission date; beyond that the claim is statute-barred (zamanaşımı) and
-    rejected. Flags any claim whose ``admission_date`` is more than
-    :data:`_ADMISSION_BILLING_WINDOW_DAYS` days before ``claim_end_date``.
-
-    Pure date arithmetic on existing header fields. Honest skip when either
-    date is missing.
+    El Kitabı Table 15 #9 does not define an admission-to-service-end clock.
+    Current SUT 5.2.1 concerns billing-period closure after service, while
+    ``claim_end_date`` is only the service-range end. Retain the callable but
+    emit no fabricated violations. Primary sources and the unavailable status
+    are documented in ``billing.admission_billing_window``.
     """
-    violations: list[dict[str, Any]] = []
-    for claim in claims:
-        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
-            continue
-        if claim.admission_date is None or claim.claim_end_date is None:
-            continue
-        gap = (claim.claim_end_date - claim.admission_date).days
-        if gap <= _ADMISSION_BILLING_WINDOW_DAYS:
-            continue
-        detail = (
-            f"Takip {claim.claim_id}: yatış tarihi {claim.admission_date} ile takip "
-            f"bitiş {claim.claim_end_date} arası {gap} gün — SGK 60 günlük faturalama "
-            f"süresi aşılmış (zamanaşımı, Tablo 15 #9)."
-        )
-        violations.append(
-            {
-                "type": _OPPORTUNITY_TYPE,
-                "claim_id": claim.claim_id,
-                "rule_id": "tablo15_9_admission_billing_window",
-                "detail": detail,
-                "sut_section_id": _SUT_SECTION_ID,
-                "source_type": _SOURCE_TYPE,
-                "clause_ref": _CLAUSE_REF,
-                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                "savings_basis": SAVINGS_BASIS_SOURCED,
-                "severity": "error",
-                "admission_date": claim.admission_date,
-                "claim_end_date": claim.claim_end_date,
-                "gap_days": gap,
-            }
-        )
-    return violations
+    return []
 
 
 def detect_unreported_lab_result(

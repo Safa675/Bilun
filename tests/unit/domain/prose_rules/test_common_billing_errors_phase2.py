@@ -1,8 +1,7 @@
 """Unit tests for the Phase 2 Tablo 15 common billing error detectors.
 
-One positive (error detected) and one negative (no error) test per detector
-(22 tests total), covering errors #3, #4, #5, #7, #9, #10, #11, #15, #16,
-#21, #24 implemented in ``common_billing_errors`` Phase 2.
+Error #9 retains its legacy callable but cannot emit without a period-closure
+date; the other detectors cover positive and negative cases.
 """
 
 from __future__ import annotations
@@ -387,39 +386,46 @@ def test_green_area_bundled_extras_negative() -> None:
 # ===========================================================================
 
 
-def test_admission_billing_window_positive() -> None:
-    """Admission >60 days before claim end → violation."""
+def test_admission_billing_window_long_stay_is_not_late_submission() -> None:
+    """A 70-day stay says nothing about when its invoice period was closed."""
     claim = _make_claim_header(
         claim_id="C1",
         claim_type="yatis",
         admission=date(2026, 5, 1),
         discharge=date(2026, 7, 10),
-        claim_end=date(2026, 7, 10),  # 70 days after admission
-    )
-
-    violations = detect_admission_billing_window([claim])
-
-    assert len(violations) == 1
-    v = violations[0]
-    assert v["claim_id"] == "C1"
-    assert v["rule_id"] == "tablo15_9_admission_billing_window"
-    assert v["severity"] == "error"
-    assert v["gap_days"] == 70
-
-
-def test_admission_billing_window_negative() -> None:
-    """Admission within 60 days of claim end → no violation."""
-    claim = _make_claim_header(
-        claim_id="C1",
-        claim_type="yatis",
-        admission=date(2026, 6, 20),
-        discharge=date(2026, 7, 10),
-        claim_end=date(2026, 7, 10),  # 20 days after admission
+        claim_end=date(2026, 7, 10),
     )
 
     violations = detect_admission_billing_window([claim])
 
     assert violations == []
+
+
+def test_admission_billing_window_short_stay_cannot_prove_timely_billing() -> None:
+    """A short stay also lacks the period-closure evidence needed to decide."""
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="yatis",
+        admission=date(2026, 6, 20),
+        discharge=date(2026, 7, 10),
+        claim_end=date(2026, 7, 10),
+    )
+
+    violations = detect_admission_billing_window([claim])
+
+    assert violations == []
+
+
+def test_admission_billing_window_outpatient_is_not_admission_based() -> None:
+    """The Ministry handbook's Table 15 row is not an inpatient stay cap."""
+    claim = _make_claim_header(
+        claim_type="poliklinik",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 10),
+        claim_end=date(2026, 7, 10),
+    )
+
+    assert detect_admission_billing_window([claim], claim_ids_with_procs={"C1"}) == []
 
 
 # ===========================================================================

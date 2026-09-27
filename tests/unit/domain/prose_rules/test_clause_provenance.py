@@ -271,9 +271,6 @@ def _all_tablo15_findings() -> list[dict]:
             _proc(claim_id="C1", procedure_line_id="PL-X", procedure_code="401010"),
         ],
     )
-    findings += cbe.detect_admission_billing_window(
-        [_claim(admission=date(2026, 1, 1), discharge=date(2026, 1, 5), claim_end=date(2026, 4, 10))]
-    )
     findings += cbe.detect_unreported_lab_result(
         [], [_proc(lab_billing_status="pending", procedure_category="laboratuvar")]
     )
@@ -291,11 +288,11 @@ def _all_tablo15_findings() -> list[dict]:
     return findings
 
 
-def test_all_16_tablo15_detectors_fire_and_carry_el_kitabi_provenance() -> None:
+def test_all_15_active_tablo15_detectors_carry_el_kitabi_provenance() -> None:
     findings = _all_tablo15_findings()
-    assert len(findings) == 16
+    assert len(findings) == 15
     rule_ids = {f["rule_id"] for f in findings}
-    assert len(rule_ids) == 16  # one distinct rule id per detector
+    assert len(rule_ids) == 15  # one distinct rule id per active detector
     for finding in findings:
         _assert_non_sut_provenance(
             finding,
