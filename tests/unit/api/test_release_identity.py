@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 
+import duckdb
 import pytest
 
 from src.bilun.api import release_identity
@@ -127,6 +128,28 @@ def test_verified_load_requires_complete_build_with_pinned_code_sha(monkeypatch,
     with pytest.raises(SystemExit):
         asyncio.run(startup_mod.startup())
     assert startup_mod.is_cache_ready() is False
+
+
+def test_verified_candidate_request_reader_stays_read_only(monkeypatch, tmp_path) -> None:
+    from src.bilun.shared.runtime import BilunRuntimeState
+
+    db_path = tmp_path / "candidate.duckdb"
+    with duckdb.connect(str(db_path)) as con:
+        con.execute("CREATE TABLE probe (value INTEGER)")
+        con.execute("INSERT INTO probe VALUES (1)")
+    before = db_path.read_bytes()
+    monkeypatch.setenv("BILUN_STARTUP_POLICY", "verified-load-only")
+    runtime = BilunRuntimeState("persistent", False, db_path)
+    try:
+        assert runtime.get_cache_reader().execute("SELECT value FROM probe").fetchone() == (1,)
+        with duckdb.connect(str(db_path), read_only=True) as health:
+            assert health.execute("SELECT value FROM probe").fetchone() == (1,)
+        with pytest.raises(duckdb.Error):
+            runtime.get_cache_reader().execute("CREATE TABLE unexpected (value INTEGER)")
+    finally:
+        if runtime.cache_con is not None:
+            runtime.cache_con.close()
+    assert db_path.read_bytes() == before
 
 
 def test_health_reports_process_pinned_identity_and_cache_capability(monkeypatch, tmp_path) -> None:

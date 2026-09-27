@@ -71,7 +71,11 @@ def original_five_report_payload(payload: dict[str, Any]) -> dict[str, Any]:
         original = dict(block)
         for collection in ("findings", "evaluations"):
             original[collection] = [
-                row
+                (
+                    {key: value for key, value in row.items()
+                     if key not in {"evaluation_id", "line_kind", "line_id"}}
+                    if collection == "evaluations" else row
+                )
                 for row in block.get(collection) or []
                 if isinstance(row, dict) and row.get("rule_id") in ORIGINAL_FIVE_RULE_IDS
             ]

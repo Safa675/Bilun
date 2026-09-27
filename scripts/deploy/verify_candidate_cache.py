@@ -203,8 +203,12 @@ def _scan_table(
                 patient_id = key.split("::", 1)[0]
                 if not isinstance(payload, dict) or payload.get("patient_id") != patient_id:
                     raise ValueError(f"Patient identity mismatch in {table}")
+                # The existing bill report schema carries the patient ID but
+                # has no top-level claim ID. When present, still validate it;
+                # the mandatory bill evidence row validates the claim scope.
                 if table == "patient_bill_billing_report_rows" and (
-                    "::" not in key or payload.get("claim_id") != key.split("::", 1)[1]
+                    "::" not in key
+                    or ("claim_id" in payload and payload["claim_id"] != key.split("::", 1)[1])
                 ):
                     raise ValueError("Bill report claim identity mismatch")
                 if table == "wavea_bill_evidence_detail":

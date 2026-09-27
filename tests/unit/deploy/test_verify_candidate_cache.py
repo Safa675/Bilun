@@ -301,6 +301,20 @@ def test_orphan_bill_and_foreign_build_rows_block(tmp_path: Path):
         _verify(db_path, manifest)
 
 
+def test_bill_report_without_top_level_claim_id_uses_evidence_scope(tmp_path: Path) -> None:
+    db_path, manifest, _ = _cache_fixture(tmp_path)
+    _execute(
+        db_path,
+        "UPDATE patient_bill_billing_report_rows SET payload_json = ? "
+        "WHERE patient_id = 'P1::C-P1'",
+        [json.dumps({"patient_id": "P1", "sgk_uplift_try": 0.0})],
+    )
+
+    report = _verify(db_path, manifest)
+
+    assert report["status"] == "all_rows_structurally_verified"
+
+
 def test_hardlinked_database_cannot_be_called_isolated(tmp_path: Path):
     db_path, manifest, _ = _cache_fixture(tmp_path)
     os.link(db_path, tmp_path / "other-cache.duckdb")

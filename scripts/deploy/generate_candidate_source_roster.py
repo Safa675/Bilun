@@ -400,6 +400,12 @@ def validate_runtime_read_trace(
     absent = {Path(item["path"]).resolve(strict=False) for item in roster["absent_optional_inputs"]}
     candidate_db = candidate_db.resolve(strict=False)
     dependencies = tuple(root.resolve(strict=True) for root in dependency_roots)
+    if _git(checkout, "rev-parse", "HEAD").decode().strip() != roster["code_sha"]:
+        raise ValueError("Traced checkout HEAD differs from source roster")
+    git_roots = tuple(
+        Path(_git(checkout, "rev-parse", option).decode().strip()).resolve(strict=True)
+        for option in ("--absolute-git-dir", "--git-common-dir")
+    )
     if any(
         _relative_to(checkout, root)
         or _relative_to(root, checkout)
@@ -414,6 +420,7 @@ def validate_runtime_read_trace(
         raise ValueError("Runtime read trace is absent or empty")
     trace_sha, _ = _stable_hash(trace)
     observed: set[Path] = set()
+    git_control_reads: dict[Path, str] = {}
     traced_children: set[str] = set()
     exited_children: set[str] = set()
     total_open_rows = 0
@@ -453,6 +460,21 @@ def validate_runtime_read_trace(
         path = observed_path.resolve(strict=False)
         if path == candidate_db or path == candidate_db.with_name(candidate_db.name + ".wal"):
             continue
+        # The builder invokes Git to record its code SHA. Git's control files
+        # are outside the tracked runtime-source roster, so hash exactly the
+        # files it read and independently recheck HEAD. This is still only a
+        # trace parse until the release coordinator binds the invocation.
+        git_control = (
+            path == checkout / ".git"
+            or any(_relative_to(path, root) for root in git_roots)
+            or path.name in {".gitconfig", "gitconfig"}
+        )
+        if git_control:
+            if path.is_file():
+                git_control_reads[path] = _stable_hash(path, independent=False)[0]
+            elif not path.is_dir():
+                raise ValueError(f"Traced Git control path is missing: {path}")
+            continue
         if any(_relative_to(path, root) for root in dependencies):
             continue
         # Any checkout read can change the private build, including a file in
@@ -470,12 +492,23 @@ def validate_runtime_read_trace(
         raise ValueError("Runtime read trace contains no file opens")
     if traced_children != exited_children:
         raise ValueError("Forked or threaded worker is missing a clean trace exit")
+    if _git(checkout, "rev-parse", "HEAD").decode().strip() != roster["code_sha"]:
+        raise ValueError("Traced checkout HEAD changed during validation")
+    if any(
+        _stable_hash(path, independent=False)[0] != digest
+        for path, digest in git_control_reads.items()
+    ):
+        raise ValueError("Traced Git control bytes changed during validation")
     if trace_sha != _stable_hash(trace)[0]:
         raise ValueError("Runtime read trace changed during validation")
     return {
         "trace_parse_ok": True,
         "trace_sha256": trace_sha,
         "observed_rostered_files": len(observed),
+        "git_control_file_count": len(git_control_reads),
+        "git_control_sha256": hashlib.sha256(_canonical(sorted(
+            (str(path), digest) for path, digest in git_control_reads.items()
+        ))).hexdigest(),
         "total_open_rows": total_open_rows,
         "runtime_reads_verified": False,
         "pending_gate": "coordinator_attests_strace_f_yy_exact_candidate_build",

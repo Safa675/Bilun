@@ -17,8 +17,14 @@ from scripts.deploy.generate_candidate_source_roster import (
     main,
     validate_runtime_read_trace,
 )
-from src.bilun.cache.builder import SUT_CLAIM_FILENAMES, SUT_CLEAN_FILENAMES
+from scripts.deploy.verify_same_input import verify_same_input_rosters
+from src.bilun.cache.builder import (
+    SUT_CLAIM_FILENAMES,
+    SUT_CLEAN_FILENAMES,
+    _effective_config_hash,
+)
 from src.bilun.domain.claims.schema import OPTIONAL_CLAIM_TABLES, REQUIRED_CLAIM_TABLES
+from src.bilun.db.hashing import source_hash_from_files
 
 pytestmark = pytest.mark.unit
 
@@ -122,6 +128,78 @@ def test_roster_is_deterministic_and_covers_runtime_loader_files(tmp_path: Path)
     assert _REQUIRED_CLAIM_FILENAMES == SUT_CLAIM_FILENAMES
     assert _REQUIRED_CLAIM_FILENAMES == tuple(spec.filename for spec in REQUIRED_CLAIM_TABLES)
     assert _OPTIONAL_CLAIM_FILENAMES == tuple(spec.filename for spec in OPTIONAL_CLAIM_TABLES)
+
+
+def test_independent_same_input_proof_rejects_changed_bytes_and_stored_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    keys = (
+        "PIPELINE_MODE", "PIPELINE_SUT_MODE", "BILUN_DATA_MODE",
+        "BILUN_CLAIMS_DIR", "BILUN_CLEAN_DIR",
+    )
+    for key in keys:
+        monkeypatch.delenv(key, raising=False)
+    records = []
+    for name in ("old", "new"):
+        root = tmp_path / name
+        root.mkdir()
+        checkout, code_sha, claims, clean = _candidate(root)
+        roster_path = root / "roster.json"
+        roster_path.write_text(json.dumps(_roster((checkout, code_sha, claims, clean))))
+        config_hash = _effective_config_hash(
+            env_keys=list(keys),
+            effective_values={
+                "BILUN_DATA_MODE": "synthetic_demo",
+                "BILUN_CLAIMS_DIR": "data/synthetic/sut/claims",
+                "BILUN_CLEAN_DIR": "data/synthetic/sut/clean",
+            },
+        )
+        source_hash = source_hash_from_files(
+            [clean / name for name in SUT_CLEAN_FILENAMES]
+            + [claims / name for name in SUT_CLAIM_FILENAMES]
+        )
+        records.append((roster_path, {"code_sha": code_sha, "source_hash": source_hash,
+                                      "config_hash": config_hash}, claims))
+
+    old_roster, old_meta, _ = records[0]
+    new_roster, new_meta, new_claims = records[1]
+
+    def prove(candidate_meta: dict[str, str]) -> dict:
+        return verify_same_input_rosters(
+            old_roster, new_roster, baseline_meta=old_meta,
+            candidate_meta=candidate_meta,
+            build_config_environment={key: "" for key in keys},
+        )
+
+    assert prove(new_meta)["input_file_count"] == 10
+    with pytest.raises(ValueError, match="stored source/config identity"):
+        prove({**new_meta, "source_hash": "wrong"})
+    (new_claims / "claim_headers.parquet").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="pinned bytes"):
+        prove(new_meta)
+
+
+def test_trace_records_git_identity_reads_without_accepting_unrostered_sources(
+    tmp_path: Path,
+) -> None:
+    candidate = _candidate(tmp_path)
+    checkout, _, _, _ = candidate
+    git_config = checkout / ".git/config"
+    trace = _trace(
+        tmp_path / "git-strace.log",
+        [
+            f'openat(AT_FDCWD, "config", O_RDONLY) = 3<{git_config}>',
+            "+++ exited with 0 +++",
+        ],
+    )
+
+    report = validate_runtime_read_trace(
+        trace, roster=_roster(candidate),
+        candidate_db=tmp_path / "candidate.duckdb", dependency_roots=(),
+    )
+
+    assert report["git_control_file_count"] == 1
+    assert report["runtime_reads_verified"] is False
 
 
 def test_roster_fails_on_checkout_drift_or_untracked_glob_source(tmp_path: Path):

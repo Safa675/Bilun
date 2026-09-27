@@ -590,3 +590,16 @@ def test_malformed_detail_identity_and_metadata_source_drift_block(tmp_path: Pat
         con.execute("UPDATE build_meta SET source_hash = 'different' WHERE build_id = 'candidate'")
     with pytest.raises(ValueError, match="Same-input baseline and candidate build metadata differ"):
         _verify(baseline, candidate)
+
+
+def test_legacy_financial_number_representation_must_match(tmp_path: Path) -> None:
+    baseline, candidate = _fixture(tmp_path)
+    with duckdb.connect(str(baseline)) as con:
+        con.execute(
+            "UPDATE cohort_optimization_summary SET payload_json = ? WHERE build_id = 'baseline'",
+            [json.dumps({"total_recoverable_try": 12.0})],
+        )
+    _update_json(candidate, "cohort_optimization_summary", {"total_recoverable_try": 12})
+
+    with pytest.raises(ValueError, match="Legacy cohort_optimization_summary payload drift"):
+        _verify(baseline, candidate)

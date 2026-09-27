@@ -460,7 +460,9 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         response = client.get(f"/api/billing-report/{pid}")
         assert response.status_code == 200
         actual = response.json()
-        assert actual["claim_compliance"] == expected["claim_compliance"]
+        assert actual["claim_compliance"] == original_five_report_payload(expected)[
+            "claim_compliance"
+        ]
         block = actual["claim_compliance"]
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[0] == pid
@@ -480,7 +482,9 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         assert response.status_code == 200
         actual = response.json()
         assert (actual["patient_id"], actual["claim_id"], actual["scope"]) == (pid, cid, "bill")
-        assert actual["claim_compliance"] == expected["claim_compliance"]
+        assert actual["claim_compliance"] == original_five_report_payload(expected)[
+            "claim_compliance"
+        ]
         block = actual["claim_compliance"]
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[:2] == (pid, cid)

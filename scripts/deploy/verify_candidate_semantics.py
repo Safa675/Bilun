@@ -17,6 +17,10 @@ from typing import Any
 import duckdb
 
 from scripts.deploy.verify_candidate_cache import _CODE_SHA, _candidate_db_hash, _parse_json
+from scripts.deploy.verify_same_input import (
+    normalize_attested_data_source,
+    verify_same_input_rosters,
+)
 from scripts.deploy.verify_candidate_scopes import (
     verify_pinned_claim_scopes,
     verify_pinned_evidence_lines,
@@ -175,11 +179,32 @@ def _check_legacy_parity(
     baseline_build: str,
     candidate: duckdb.DuckDBPyConnection,
     candidate_build: str,
+    *,
+    same_input: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     old_meta = _build_metadata(baseline, baseline_build)
     new_meta = _build_metadata(candidate, candidate_build)
-    if any(old_meta[key] != new_meta[key] for key in ("source_hash", "config_hash")):
+    if same_input is None and any(
+        old_meta[key] != new_meta[key] for key in ("source_hash", "config_hash")
+    ):
         raise ValueError("Same-input baseline and candidate build metadata differ")
+    if same_input is not None and any(
+        same_input[name][key] != meta[key]
+        for name, meta in (("baseline", old_meta), ("candidate", new_meta))
+        for key in ("source_hash", "config_hash")
+    ):
+        raise ValueError("Same-input proof differs from selected build metadata")
+
+    def comparable(value: Any, build: str) -> Any:
+        return (
+            normalize_attested_data_source(value, same_input["paths"][build])
+            if same_input is not None else value
+        )
+
+    def same_legacy_json(old: Any, new: Any) -> bool:
+        # Python considers 12 == 12.0 and False == 0. Persisted JSON does not:
+        # retain number representation, nulls, and sign of rounded zero.
+        return _digest(old) == _digest(new)
     reports: dict[str, dict[str, Any]] = {}
     table_digests: dict[str, str] = {}
     for table in (*_PATIENT_TABLES, "patient_bill_billing_report_rows"):
@@ -193,22 +218,32 @@ def _check_legacy_parity(
             if any(not _baseline_has_only_original_five(row) for row in old_rows.values()):
                 raise ValueError("Baseline claim compliance is not the original-five contract")
             for key in old_rows:
-                if _legacy_report(old_rows[key]) != _legacy_report(new_rows[key]):
+                if not same_legacy_json(
+                    comparable(_legacy_report(old_rows[key]), "baseline"),
+                    comparable(_legacy_report(new_rows[key]), "candidate"),
+                ):
                     raise ValueError(f"Legacy {table} payload drift: {key}")
             if table == "patient_billing_report_rows":
                 reports = new_rows
-            comparison = {key: _legacy_report(new_rows[key]) for key in sorted(new_rows)}
+            comparison = {
+                key: comparable(_legacy_report(new_rows[key]), "candidate")
+                for key in sorted(new_rows)
+            }
         else:
-            if old_rows != new_rows:
+            if not same_legacy_json(
+                comparable(old_rows, "baseline"), comparable(new_rows, "candidate")
+            ):
                 raise ValueError(f"Legacy {table} payload drift")
-            comparison = new_rows
+            comparison = comparable(new_rows, "candidate")
         table_digests[table] = _digest(comparison)
     for table in _SINGLETON_TABLES:
         old_payload = _singleton(baseline, table, baseline_build)
         new_payload = _singleton(candidate, table, candidate_build)
-        if old_payload != new_payload:
+        if not same_legacy_json(
+            comparable(old_payload, "baseline"), comparable(new_payload, "candidate")
+        ):
             raise ValueError(f"Legacy {table} payload drift")
-        table_digests[table] = _digest(new_payload)
+        table_digests[table] = _digest(comparable(new_payload, "candidate"))
     for table in _ROW_TABLES:
         old_columns = [
             row[1] for row in baseline.execute(f"PRAGMA table_info('{table}')").fetchall()
@@ -220,38 +255,41 @@ def _check_legacy_parity(
             raise ValueError(f"Legacy {table} column roster changed")
         old_rows = _legacy_row_table(baseline, table, baseline_build)
         new_rows = _legacy_row_table(candidate, table, candidate_build)
-        if old_rows != new_rows:
+        if not same_legacy_json(
+            comparable(old_rows, "baseline"), comparable(new_rows, "candidate")
+        ):
             raise ValueError(f"Legacy {table} payload drift")
-        table_digests[table] = _digest(new_rows)
+        table_digests[table] = _digest(comparable(new_rows, "candidate"))
     old_cohort = _singleton(baseline, "cohort_compliance_index", baseline_build)
     new_cohort = _singleton(candidate, "cohort_compliance_index", candidate_build)
     baseline_reports = _payload_rows(baseline, "patient_billing_report_rows", baseline_build)
     expected_old = build_cohort_compliance_index(baseline_reports)
     expected_new = build_cohort_compliance_index(reports)
-    if _without_data_source(old_cohort) != expected_old:
+    if not same_legacy_json(_without_data_source(old_cohort), expected_old):
         raise ValueError("Baseline cohort compliance disagrees with baseline patient rows")
-    if _without_data_source(new_cohort) != expected_new:
+    if not same_legacy_json(_without_data_source(new_cohort), expected_new):
         raise ValueError("Candidate cohort compliance disagrees with candidate patient rows")
-    if (
+    if not same_legacy_json(
         build_cohort_compliance_index(
             {patient_id: _legacy_report(report) for patient_id, report in reports.items()}
-        )
-        != expected_old
+        ), expected_old,
     ):
         raise ValueError("Original-five cohort compliance drifted")
     for key in ("billed_at_risk_try",):
-        if new_cohort.get(key) != old_cohort.get(key):
+        if not same_legacy_json(new_cohort.get(key), old_cohort.get(key)):
             raise ValueError("Existing cohort compliance amount drifted")
     if any(
-        new_cohort.get("by_surface", {}).get(surface, {}).get("billed_try")
-        != values.get("billed_try")
+        not same_legacy_json(
+            new_cohort.get("by_surface", {}).get(surface, {}).get("billed_try"),
+            values.get("billed_try"),
+        )
         for surface, values in old_cohort.get("by_surface", {}).items()
     ):
         raise ValueError("Existing cohort compliance surface amount drifted")
     table_digests["cohort_compliance_original_five"] = _digest(expected_old)
     return {
-        "source_hash": old_meta["source_hash"],
-        "config_hash": old_meta["config_hash"],
+        "source_hash": new_meta["source_hash"],
+        "config_hash": new_meta["config_hash"],
         "candidate_build_id": candidate_build,
         "candidate_code_sha": new_meta["code_sha"],
         "patient_count": len(reports),
@@ -259,6 +297,7 @@ def _check_legacy_parity(
             _payload_rows(candidate, "patient_bill_billing_report_rows", candidate_build)
         ),
         "table_semantic_sha256": table_digests,
+        "financial_rounding_and_null_parity": "verified_all_legacy_rows",
     }, reports
 
 
@@ -484,19 +523,36 @@ def verify_candidate_semantic_checkpoint(
     candidate_db: Path,
     candidate_build_id: str,
     source_roster: Path | None = None,
+    baseline_roster: Path | None = None,
+    build_config_environment: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Compare complete cached datasets while leaving release readiness false."""
     if baseline_db.resolve() == candidate_db.resolve():
         raise ValueError("Baseline and candidate must be independent cache files")
     baseline_sha = _candidate_db_hash(baseline_db)
     candidate_sha = _candidate_db_hash(candidate_db)
+    if (baseline_roster is None) != (build_config_environment is None):
+        raise ValueError("Same-input proof needs baseline roster and build environment")
+    if baseline_roster is not None and source_roster is None:
+        raise ValueError("Same-input proof needs the candidate source roster")
     with duckdb.connect(str(baseline_db), read_only=True) as baseline:
         with duckdb.connect(str(candidate_db), read_only=True) as candidate:
+            same_input = (
+                verify_same_input_rosters(
+                    baseline_roster,
+                    source_roster,
+                    baseline_meta=_build_metadata(baseline, baseline_build_id),
+                    candidate_meta=_build_metadata(candidate, candidate_build_id),
+                    build_config_environment=build_config_environment,
+                )
+                if baseline_roster is not None else None
+            )
             legacy, reports = _check_legacy_parity(
                 baseline,
                 baseline_build_id,
                 candidate,
                 candidate_build_id,
+                same_input=same_input,
             )
             evidence, blockers = _check_evidence(
                 candidate, candidate_build_id, reports, source_roster
@@ -505,13 +561,9 @@ def verify_candidate_semantic_checkpoint(
         raise ValueError("Baseline cache changed during semantic verification")
     if _candidate_db_hash(candidate_db) != candidate_sha:
         raise ValueError("Candidate cache changed during semantic verification")
-    blockers.extend(
-        (
-            "same_input_baseline_byte_attestation_missing",
-            "full_legacy_financial_rounding_review_pending",
-            "candidate_api_browser_and_rollback_rehearsal_pending",
-        )
-    )
+    if same_input is None:
+        blockers.append("same_input_baseline_byte_attestation_missing")
+    blockers.append("candidate_api_browser_and_rollback_rehearsal_pending")
     return {
         "status": "semantic_checkpoint_verified",
         "release_ready": False,
@@ -528,5 +580,6 @@ def verify_candidate_semantic_checkpoint(
             "cache_sha256": candidate_sha,
         },
         "legacy": legacy,
+        "same_input": same_input,
         "wavea_evidence": evidence,
     }
