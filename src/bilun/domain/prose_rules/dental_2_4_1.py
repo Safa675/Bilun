@@ -193,8 +193,8 @@ def check_dental_2_4_1_prose(materials: list[dict[str, Any]]) -> list[dict[str, 
     return violations
 
 
-def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
-    """Run the wireable §2.4.1 dental rules on a ``PatientClaimContext``.
+def _build_dental_materials(ctx: Any) -> list[dict[str, Any]]:
+    """Build the existing dental material rows in exact input-line order.
 
     Mirrors ``material_bundling.check_material_bundling_for_context`` /
     ``specialty_materials.check_specialty_materials_for_context``: build the
@@ -281,4 +281,9 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
             row["material_contains_precious_metal"] = True
         materials.append(row)
 
-    return check_dental_2_4_1_prose(materials)
+    return materials
+
+
+def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Run the original first-winning-rule evaluator on the material bridge."""
+    return check_dental_2_4_1_prose(_build_dental_materials(ctx))
