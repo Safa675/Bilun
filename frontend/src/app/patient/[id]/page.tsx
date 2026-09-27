@@ -42,6 +42,7 @@ import {
 } from "@/lib/recommendedActions";
 import { cn } from "@/lib/cn";
 import { buildPatientWorkspacePageContext } from "@/lib/sutChatPageContext";
+import { matchingBillReport } from "@/lib/scopedPatientReport";
 import { sutPatientChatSessionKey } from "@/lib/sutChatSession";
 import { recordRecent } from "@/lib/recents";
 import type {
@@ -318,6 +319,8 @@ export function SutPatientPageContent({
 
       const controller = new AbortController();
       scopedControllerRef.current = controller;
+      setBillBillingReport(null);
+      setBillOptimization(null);
       setScopedLoading(true);
       setScopedBillingError(null);
       setScopedOptimizationError(null);
@@ -330,21 +333,21 @@ export function SutPatientPageContent({
           return;
         }
 
-        if (billingResult.status === "fulfilled") {
+        if (billingResult.status === "fulfilled" && matchingBillReport(billingResult.value, nextPatientId, claimId)) {
           setBillBillingReport(billingResult.value);
         } else {
           setScopedBillingError(
-            billingResult.reason instanceof Error
+            billingResult.status === "rejected" && billingResult.reason instanceof Error
               ? billingResult.reason.message
               : tRef.current("patient.page.errors.billing"),
           );
         }
 
-        if (optimizationResult.status === "fulfilled") {
+        if (optimizationResult.status === "fulfilled" && matchingBillReport(optimizationResult.value, nextPatientId, claimId)) {
           setBillOptimization(optimizationResult.value);
         } else {
           setScopedOptimizationError(
-            optimizationResult.reason instanceof Error
+            optimizationResult.status === "rejected" && optimizationResult.reason instanceof Error
               ? optimizationResult.reason.message
               : tRef.current("patient.page.errors.optimization"),
           );
@@ -371,7 +374,9 @@ export function SutPatientPageContent({
   }, [loadScopedReports, patientId, selectedClaimId]);
 
   const isBillScoped = selectedClaimId !== null;
-  const activeBillingReport = isBillScoped ? billBillingReport : billingReport;
+  const activeBillingReport = isBillScoped
+    ? matchingBillReport(billBillingReport, patientId, selectedClaimId)
+    : billingReport;
 
   const recommendedActions = useMemo(
     () => (activeBillingReport ? getRecommendedActions(activeBillingReport) : []),
@@ -404,7 +409,9 @@ export function SutPatientPageContent({
     });
     return () => cancelAnimationFrame(frame);
   }, [findingQuery, sectionQuery, activeBillingReport]);
-  const activeOptimization = isBillScoped ? billOptimization : optimization;
+  const activeOptimization = isBillScoped
+    ? matchingBillReport(billOptimization, patientId, selectedClaimId)
+    : optimization;
   const selectedClaimSummary = useMemo(
     () => claims.find((claim) => claim.claim_id === selectedClaimId) ?? null,
     [claims, selectedClaimId],
@@ -477,10 +484,10 @@ export function SutPatientPageContent({
       buildPatientWorkspacePageContext({
         patientId,
         outcome,
-        optimization: activeOptimization ?? optimization,
-        billingReport: activeBillingReport ?? billingReport,
+        optimization: activeOptimization,
+        billingReport: activeBillingReport,
       }),
-    [patientId, outcome, optimization, billingReport, activeOptimization, activeBillingReport],
+    [patientId, outcome, activeOptimization, activeBillingReport],
   );
   const shouldRenderChat = !loading && !allFailed;
   const isDocked = shouldRenderChat && chatDock !== "center";
@@ -568,7 +575,7 @@ export function SutPatientPageContent({
                   patientId={patientId}
                   outcome={outcome}
                   optimization={optimization}
-                  billingReport={activeBillingReport ?? billingReport}
+                  billingReport={activeBillingReport}
                   selectedClaimId={selectedClaimId}
                   claimCount={claims.length > 0 ? claims.length : undefined}
                   selectedClaimSummary={selectedClaimSummary}
@@ -606,6 +613,13 @@ export function SutPatientPageContent({
                   <Surface variant="soft" padding="md" className="space-y-1 text-sm text-[var(--text-secondary)]">
                     {scopedBillingError && <p>{scopedBillingError}</p>}
                     {scopedOptimizationError && <p>{scopedOptimizationError}</p>}
+                  </Surface>
+                )}
+                {isBillScoped && !activeBillingReport && !scopedBillingError && (
+                  <Surface variant="soft" padding="md">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {t("billing.summary.scopedLoading")}
+                    </p>
                   </Surface>
                 )}
                 {!claimsLoading && activeBillingReport && (

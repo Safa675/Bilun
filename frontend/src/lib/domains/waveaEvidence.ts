@@ -25,6 +25,13 @@ export interface WaveAEvidenceRow {
   /** Actual charge on this exact procedure line; separate from estimated risk/uplift. */
   observed_billed_amount_try?: number | null;
   observed_amount_basis?: "procedure_claim_line.billed_amount_try" | null;
+  observed_amount_unavailable_reason?:
+    | "procedure_line_missing"
+    | "procedure_line_ambiguous"
+    | "procedure_line_owner_mismatch"
+    | "procedure_line_charge_invalid"
+    | "procedure_line_charge_not_cent_exact"
+    | null;
   currency?: "TRY";
   headline_relation?: string;
 }

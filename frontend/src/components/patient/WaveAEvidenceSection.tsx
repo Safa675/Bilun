@@ -42,12 +42,20 @@ export function validRowForKind(row: WaveAEvidenceRow, patientId: string, kind: 
   if (row.patient_id !== patientId || row.evidence_id !== evidencePrefix(kind) + row.source_evidence_id) {
     return false;
   }
-  if (row.observed_billed_amount_try != null && (
-    kind !== "financial_rows" || row.line_kind !== "procedure" || !row.line_id ||
-    row.observed_amount_basis !== "procedure_claim_line.billed_amount_try" ||
-    !isCentAmount(row.observed_billed_amount_try)
-  )) return false;
-  if (row.observed_amount_basis != null && row.observed_billed_amount_try == null) return false;
+  const observedFields = ["observed_billed_amount_try", "observed_amount_basis", "observed_amount_unavailable_reason"] as const;
+  if (kind === "financial_rows" && row.line_kind === "procedure") {
+    if (!row.line_id || observedFields.some((field) => !(field in row))) return false;
+    if (row.observed_billed_amount_try == null) {
+      if (row.observed_amount_basis != null || ![
+        "procedure_line_missing", "procedure_line_ambiguous", "procedure_line_owner_mismatch",
+        "procedure_line_charge_invalid", "procedure_line_charge_not_cent_exact",
+      ].includes(row.observed_amount_unavailable_reason ?? "")) return false;
+    } else if (
+      row.observed_amount_basis !== "procedure_claim_line.billed_amount_try" ||
+      row.observed_amount_unavailable_reason != null ||
+      !isCentAmount(row.observed_billed_amount_try)
+    ) return false;
+  } else if (observedFields.some((field) => field in row)) return false;
   if (kind !== "advisories") return true;
   return (row.advisory_kind === "permission" || row.advisory_kind === "information") &&
     row.money_semantics === "unpriced_advisory" &&
@@ -143,11 +151,13 @@ export function WaveAEvidenceRowsTable({
   kind,
   onOpenClause,
   selectedFindingId,
+  selectedClaimId,
 }: {
   rows: WaveAEvidenceRow[];
   kind: WaveAEvidenceKind;
   onOpenClause?: (clauseKey: string) => void;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const financial = kind === "financial_rows";
@@ -170,6 +180,7 @@ export function WaveAEvidenceRowsTable({
           const source = clauseKey(row);
           const authoredReferences = sourceReferences(row);
           const href = buildSutBillingHref(row.patient_id, {
+            claimId: selectedClaimId ?? undefined,
             section,
             findingId: row.evidence_id,
           });
@@ -239,6 +250,12 @@ export function WaveAEvidenceRowsTable({
                       <div className="text-[var(--text-muted)]">{t("billing.wavea.procedureLineBasis")}</div>
                     </div>
                   )}
+                  {row.line_kind === "procedure" && row.observed_billed_amount_try == null &&
+                    row.observed_amount_unavailable_reason && (
+                      <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                        {t("billing.wavea.observedBilledCharge")}: {t(`billing.wavea.${row.observed_amount_unavailable_reason}`)}
+                      </div>
+                    )}
                   <div className="text-xs text-[var(--text-muted)]">
                     {row.headline_relation === "separate_yatak_reconciliation"
                       ? t("billing.wavea.separateReconciliation")
@@ -411,7 +428,7 @@ export function PatientWaveAEvidenceSection({
       ) : displayRows.length === 0 ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noRows")}</p>
       ) : (
-        <WaveAEvidenceRowsTable rows={displayRows} kind={kind} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} />
+        <WaveAEvidenceRowsTable rows={displayRows} kind={kind} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
       )}
       {error && <p role="alert" className="text-sm text-[var(--danger)]">{t("billing.wavea.loadFailed")}</p>}
       {canLoadMore && (

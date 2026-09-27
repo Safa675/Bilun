@@ -27,9 +27,16 @@ const row: WaveAEvidenceRow = {
   financial_kind: "risk",
   confirmed_amount_try: null,
   amount_status: "unavailable",
+  observed_billed_amount_try: null,
+  observed_amount_basis: null,
+  observed_amount_unavailable_reason: "procedure_line_charge_invalid",
   currency: "TRY",
   headline_relation: "separate_yatak_reconciliation",
 };
+const advisoryBase = { ...row };
+delete advisoryBase.observed_billed_amount_try;
+delete advisoryBase.observed_amount_basis;
+delete advisoryBase.observed_amount_unavailable_reason;
 
 function render(block: WaveAEvidenceBlock) {
   return renderToStaticMarkupWithLocale(
@@ -66,6 +73,7 @@ describe("Wave A patient evidence", () => {
         ...row,
         observed_billed_amount_try: 175.25,
         observed_amount_basis: "procedure_claim_line.billed_amount_try",
+        observed_amount_unavailable_reason: null,
       }],
       has_more: false,
     });
@@ -93,10 +101,37 @@ describe("Wave A patient evidence", () => {
         ...row,
         observed_billed_amount_try: 175.255,
         observed_amount_basis: "procedure_claim_line.billed_amount_try",
+        observed_amount_unavailable_reason: null,
       }],
       has_more: false,
     });
     expect(fractionalCent).not.toContain("Observed billed charge");
+  });
+
+  it("explains why a procedure charge cannot be verified, apart from risk", () => {
+    const html = render({ available: true, unavailable_reason: null, total_rows: 1, rows: [row], has_more: false });
+    expect(html).toContain("Observed billed charge");
+    expect(html).toContain("Procedure line charge is missing or invalid");
+    expect(html).toContain("Risk exposure");
+  });
+
+  it("withholds malformed observed-charge states and omits line charges for claim reviews", () => {
+    const malformed = render({
+      available: true, unavailable_reason: null, total_rows: 1,
+      rows: [{ ...row, observed_amount_unavailable_reason: null }], has_more: false,
+    });
+    expect(malformed).toContain("Wave A evidence is unavailable");
+
+    const claimReview: WaveAEvidenceRow = { ...advisoryBase,
+      evidence_id: row.evidence_id, line_kind: "claim", line_id: null,
+      financial_kind: "uplift", money_semantics: "amount_unavailable",
+    };
+    const claimHtml = render({
+      available: true, unavailable_reason: null, total_rows: 1,
+      rows: [claimReview], has_more: false,
+    });
+    expect(claimHtml).toContain("Recoverable uplift candidate");
+    expect(claimHtml).not.toContain("Observed billed charge");
   });
 
   it("shows a sourced, distinct financial candidate without inventing an amount or adding a headline", () => {
@@ -119,6 +154,22 @@ describe("Wave A patient evidence", () => {
     expect(html).not.toContain("claim=C-1");
   });
 
+  it("keeps a selected bill's evidence deep link in that bill's scope", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="financial_rows"
+          block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [row], has_more: false }}
+          selectedClaimId="C-1"
+        />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toContain("claim=C-1");
+    expect(html).toContain("section=wavea-financial");
+  });
+
   it("marks an exact patient deep link for post-mount navigation", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
@@ -136,7 +187,7 @@ describe("Wave A patient evidence", () => {
 
   it("shows information as review-only advisory outside violation and financial totals", () => {
     const advisory = {
-      ...row,
+      ...advisoryBase,
       evidence_id: "wavea_advisory:claim_evaluation:source-1",
       advisory_kind: "information" as const,
       money_semantics: "unpriced_advisory",
@@ -164,7 +215,7 @@ describe("Wave A patient evidence", () => {
 
   it("shows broad authored locators as traceable references without implying verified applicability", () => {
     const advisory = {
-      ...row,
+      ...advisoryBase,
       evidence_id: "wavea_advisory:claim_evaluation:source-1",
       advisory_kind: "information" as const,
       money_semantics: "unpriced_advisory",
@@ -190,7 +241,7 @@ describe("Wave A patient evidence", () => {
 
   it("withholds an advisory whose kind or money semantics is malformed", () => {
     const advisory = {
-      ...row,
+      ...advisoryBase,
       evidence_id: "wavea_advisory:claim_evaluation:source-1",
       money_semantics: "amount_unavailable",
     };
