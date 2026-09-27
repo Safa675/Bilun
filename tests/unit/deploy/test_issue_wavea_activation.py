@@ -41,7 +41,8 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
     baseline.write_bytes(b"baseline bytes")
     old_snapshot = protected / "old-snapshot"
     old_snapshot.mkdir()
-    (old_snapshot / "cache.duckdb").write_bytes(baseline.read_bytes())
+    (old_snapshot / "cache.duckdb").write_bytes(b"serving old bytes")
+    serving_sha = hashlib.sha256((old_snapshot / "cache.duckdb").read_bytes()).hexdigest()
     roster = protected / "roster.json"
     roster.write_bytes(b"source roster")
     code_sha = "a" * 40
@@ -83,6 +84,13 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
     monkeypatch.setattr(issuer, "_load_private_json", read_report)
     monkeypatch.setattr(issuer, "verify_release_sidecar", lambda *_: None)
     monkeypatch.setattr(issuer.duckdb, "connect", lambda *_args, **_kw: _BaselineDB(baseline_sha))
+    monkeypatch.setattr(issuer, "verify_serving_baseline_equivalence", lambda *_args, **_kw: {
+        "status": "serving_baseline_legacy_equivalent",
+        "serving_cache_sha256": serving_sha,
+        "baseline_cache_sha256": hashlib.sha256(baseline.read_bytes()).hexdigest(),
+        "baseline_code_sha": baseline_sha,
+        "patient_count": 50, "bill_count": 94,
+    })
     monkeypatch.setattr(issuer, "verify_candidate_cache", lambda *_args, **_kw: {
         "status": "all_rows_structurally_verified",
         "database_sha256": candidate["cache_sha256"],
@@ -104,7 +112,7 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
     monkeypatch.setattr(issuer, "verify_traced_build_attestation", lambda **_: trace)
     monkeypatch.setattr(issuer, "verify_private_rehearsal", lambda *_args, **_kw: rehearsal)
     monkeypatch.setattr(issuer, "_live_health", lambda *_: {
-        "active_build": "baseline-1", "cache_ready": True,
+        "active_build": "serving-old-1", "cache_ready": True,
     })
     monkeypatch.setattr(issuer, "observe_service", lambda *_args, **_kw: object())
     monkeypatch.setattr(issuer, "assess_release_preflight", lambda *_args, **_kw: {
@@ -114,7 +122,7 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
             "artifacts": {
                 "backend": {"private_probe": {}},
                 "frontend": {"private_probe": {}},
-                "cache": {"active_build": "baseline-1"},
+                "cache": {"active_build": "serving-old-1", "sha256": serving_sha},
                 "service_and_proxy_configuration": {},
             },
         },
@@ -123,6 +131,7 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
         release_id="release-1", ci_run_id="123", github_token="test-token",
         sidecar_path=sidecar_path, baseline_db=baseline,
         baseline_build_id="baseline-1", baseline_code_sha=baseline_sha,
+        serving_old_build_id="serving-old-1",
         baseline_roster_path=protected / "baseline-roster.json",
         old_snapshot=old_snapshot, frontend_current=protected / "current",
         caddy_config=protected / "Caddyfile",

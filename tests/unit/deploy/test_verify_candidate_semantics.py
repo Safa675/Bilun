@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
+import subprocess
+import sys
 from dataclasses import asdict
 from datetime import date
 from pathlib import Path
@@ -15,6 +19,7 @@ import pytest
 from scripts.deploy.verify_candidate_semantics import (
     _check_bounded_block,
     verify_candidate_semantic_checkpoint,
+    verify_serving_baseline_equivalence,
 )
 from src.bilun.cache.build_streaming import json_ready
 from src.bilun.cache.builder import _without_wavea_detail
@@ -156,6 +161,89 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path]:
                 _insert_rows(con, "wavea_evidence_detail", build_id, {"P1": detail})
                 _insert_single(con, "wavea_evidence_index", build_id, index)
     return baseline_path, candidate_path
+
+
+def test_serving_cache_bridge_preserves_distinct_build_identity_and_rejects_drift(
+    tmp_path: Path,
+) -> None:
+    baseline, _ = _fixture(tmp_path)
+    serving = tmp_path / "serving.duckdb"
+    shutil.copy2(baseline, serving)
+    with duckdb.connect(str(serving)) as con:
+        for (table,) in con.execute("SHOW TABLES").fetchall():
+            columns = {row[1] for row in con.execute(f"PRAGMA table_info('{table}')").fetchall()}
+            if "build_id" in columns:
+                con.execute(f'UPDATE "{table}" SET build_id = ? WHERE build_id = ?',
+                            ["serving-old", "baseline"])
+        con.execute(
+            "UPDATE build_meta SET code_sha = ?, source_hash = ? WHERE build_id = ?",
+            ["c" * 40, "historical-source", "serving-old"],
+        )
+    result = verify_serving_baseline_equivalence(
+        serving, serving_build_id="serving-old",
+        baseline_db=baseline, baseline_build_id="baseline",
+    )
+    assert result["status"] == "serving_baseline_legacy_equivalent"
+    assert result["serving_code_sha"] == "c" * 40
+    assert result["baseline_code_sha"] == "a" * 40
+    assert result["patient_count"] == result["bill_count"] == 1
+    assert len(result["table_digests"]) == 16
+
+    with duckdb.connect(str(serving)) as con:
+        raw = con.execute(
+            "SELECT payload_json FROM patient_bill_billing_report_rows WHERE build_id = ?",
+            ["serving-old"],
+        ).fetchone()[0]
+        bill = json.loads(raw)
+        bill["sgk_uplift_try"] = 9.9
+        con.execute(
+            "UPDATE patient_bill_billing_report_rows SET payload_json = ? WHERE build_id = ?",
+            [json.dumps(bill), "serving-old"],
+        )
+    with pytest.raises(ValueError, match="Serving and rebuilt legacy"):
+        verify_serving_baseline_equivalence(
+            serving, serving_build_id="serving-old",
+            baseline_db=baseline, baseline_build_id="baseline",
+        )
+
+
+def test_uncheckpointed_crash_wal_blocks_serving_bridge_and_semantic_proof(
+    tmp_path: Path,
+) -> None:
+    baseline, candidate = _fixture(tmp_path)
+    serving = tmp_path / "serving.duckdb"
+    shutil.copy2(baseline, serving)
+    script = (
+        "import duckdb, os, sys; "
+        "db = duckdb.connect(sys.argv[1]); "
+        "db.execute(\"UPDATE cohort_optimization_summary "
+        "SET payload_json = '{\\\"total_recoverable_try\\\": 999}'\"); "
+        "os._exit(0)"
+    )
+    subprocess.run([sys.executable, "-c", script, str(baseline)], check=True)
+    assert os.path.lexists(str(baseline) + ".wal")
+    with pytest.raises(ValueError, match="WAL sidecar"):
+        verify_serving_baseline_equivalence(
+            serving, serving_build_id="baseline",
+            baseline_db=baseline, baseline_build_id="baseline",
+        )
+    with pytest.raises(ValueError, match="WAL sidecar"):
+        verify_candidate_semantic_checkpoint(
+            baseline, baseline_build_id="baseline",
+            candidate_db=candidate, candidate_build_id="candidate",
+        )
+
+
+def test_broken_wal_symlink_blocks_serving_bridge(tmp_path: Path) -> None:
+    baseline, _ = _fixture(tmp_path)
+    serving = tmp_path / "serving.duckdb"
+    shutil.copy2(baseline, serving)
+    (tmp_path / "baseline.duckdb.wal").symlink_to(tmp_path / "missing-wal")
+    with pytest.raises(ValueError, match="WAL sidecar"):
+        verify_serving_baseline_equivalence(
+            serving, serving_build_id="baseline",
+            baseline_db=baseline, baseline_build_id="baseline",
+        )
 
 
 def _full_projection(ctx):

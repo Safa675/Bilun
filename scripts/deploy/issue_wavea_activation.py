@@ -35,7 +35,10 @@ from scripts.deploy.verify_candidate_cache import (
     _stable_file_hash,
     verify_candidate_cache,
 )
-from scripts.deploy.verify_candidate_semantics import verify_candidate_semantic_checkpoint
+from scripts.deploy.verify_candidate_semantics import (
+    verify_candidate_semantic_checkpoint,
+    verify_serving_baseline_equivalence,
+)
 from scripts.deploy.verify_github_ci import fetch_successful_release_ci
 from scripts.deploy.verify_private_rehearsal import verify_private_rehearsal
 from scripts.deploy.verify_traced_build_attestation import verify_traced_build_attestation
@@ -82,6 +85,7 @@ def issue_wavea_activation(
     baseline_db: Path,
     baseline_build_id: str,
     baseline_code_sha: str,
+    serving_old_build_id: str,
     baseline_roster_path: Path,
     old_snapshot: Path,
     frontend_current: Path,
@@ -119,6 +123,7 @@ def issue_wavea_activation(
     )
     verify_release_sidecar(sidecar_path, expected)
     code_sha = candidate["code_sha"]
+    _candidate_db_hash(baseline_db)
     with duckdb.connect(str(baseline_db), read_only=True) as db:
         rows = db.execute(
             "SELECT code_sha, status, build_scope FROM build_meta WHERE build_id = ?",
@@ -126,6 +131,10 @@ def issue_wavea_activation(
         ).fetchall()
     if len(rows) != 1 or rows[0] != (baseline_code_sha, "complete", "bilun"):
         raise ValueError("Protected corrected baseline identity differs")
+    bridge = verify_serving_baseline_equivalence(
+        old_snapshot / "cache.duckdb", serving_build_id=serving_old_build_id,
+        baseline_db=baseline_db, baseline_build_id=baseline_build_id,
+    )
     structural = verify_candidate_cache(
         candidate_db, build_id=candidate["build_id"], code_sha=code_sha,
         input_manifest=source_roster_path,
@@ -159,6 +168,10 @@ def issue_wavea_activation(
         != candidate["patient_count"]
         or semantic["wavea_evidence"]["bill_evidence_count"]
         != candidate["bill_count"]
+        or bridge.get("status") != "serving_baseline_legacy_equivalent"
+        or bridge.get("baseline_code_sha") != baseline_code_sha
+        or bridge.get("patient_count") != candidate["patient_count"]
+        or bridge.get("bill_count") != candidate["bill_count"]
         or set(semantic["remaining_gates"]) != {
             "candidate_api_browser_and_rollback_rehearsal_pending",
             "independent_release_attestation_missing",
@@ -208,15 +221,14 @@ def issue_wavea_activation(
         rollback.get("blockers") != ["serving_backend_code_sha_unverified"]
         or old_preflight.get("observed", {}).get("backend", {}).get("observed_checkout_head")
         != baseline_code_sha
-        or old_health.get("active_build") != baseline_build_id
+        or old_health.get("active_build") != serving_old_build_id
         or old_health.get("cache_ready") is not True
-        or _candidate_db_hash(baseline_db)
-        != _candidate_db_hash(old_snapshot / "cache.duckdb")
         or not all(
             isinstance(artifacts.get(role), dict)
             for role in ("backend", "frontend", "cache", "service_and_proxy_configuration")
         )
-        or artifacts["cache"].get("active_build") != baseline_build_id
+        or artifacts["cache"].get("active_build") != serving_old_build_id
+        or artifacts["cache"].get("sha256") != bridge["serving_cache_sha256"]
         or not all(
             "private_probe" in artifacts[role]
             for role in ("backend", "frontend")
@@ -236,6 +248,9 @@ def issue_wavea_activation(
     if (
         _load_private_json(sidecar_path, root=sidecar_path.parent)[1] != sidecar_sha
         or _candidate_db_hash(candidate_db) != candidate["cache_sha256"]
+        or _candidate_db_hash(old_snapshot / "cache.duckdb")
+        != bridge["serving_cache_sha256"]
+        or _candidate_db_hash(baseline_db) != bridge["baseline_cache_sha256"]
         or _stable_file_hash(source_roster_path)
         != candidate["source_roster_sha256"]
         or _load_private_json(
@@ -297,7 +312,8 @@ _MANIFEST_PATHS = frozenset({
     "python_executable", "key_path", "receipt_path",
 })
 _MANIFEST_STRINGS = frozenset({
-    "release_id", "ci_run_id", "baseline_build_id", "baseline_code_sha", "data_mode",
+    "release_id", "ci_run_id", "baseline_build_id", "baseline_code_sha",
+    "serving_old_build_id", "data_mode",
 })
 
 
