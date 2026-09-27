@@ -152,11 +152,12 @@ class MaterialClaimLine:
     # broader pricing/package-bundle concept sourced from the CSV column.
     # is_ek3b1_bundled = on the EK-3B-1 bundled-consumables annex (regulatory).
     # is_excluded      = on the EK-3B-2 non-reimbursable annex (regulatory).
-    # Defaults False so existing construction sites don't break; the build-time
+    # Unenriched lines remain unknown; the build-time
     # enricher (dataset_builder._enrich_material_regulatory_flags) populates
     # them. See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.1.
-    is_ek3b1_bundled: bool = False
-    is_excluded: bool = False
+    # None preserves unresolved annex conditions; neither adverse nor payable.
+    is_ek3b1_bundled: bool | None = None
+    is_excluded: bool | None = None
     # W2.2: dental evaluator flags (optional, surfaced from dict input by the
     # adapter when present). Enables rules 2-3 of dental_2_4_1.json.
     medical_necessity_board_report: bool | None = None

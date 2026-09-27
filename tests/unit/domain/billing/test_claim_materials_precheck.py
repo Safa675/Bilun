@@ -6,6 +6,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from src.bilun.domain.claims.models import MaterialClaimLine
+from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 pytestmark = pytest.mark.unit
 
@@ -21,9 +23,7 @@ def _material_line(
     requires_pre_auth: bool = False,
     billed: str = "100",
     material_name: str = "Test material",
-) -> "MaterialClaimLine":
-    from src.bilun.domain.claims.models import MaterialClaimLine
-
+) -> MaterialClaimLine:
     return MaterialClaimLine(
         material_line_id=line_id,
         claim_id=claim_id,
@@ -46,9 +46,7 @@ def _material_line(
     )
 
 
-def _ctx(*lines: "MaterialClaimLine") -> "PatientClaimContext":
-    from src.bilun.domain.claims.patient_context import PatientClaimContext
-
+def _ctx(*lines: MaterialClaimLine) -> PatientClaimContext:
     return PatientClaimContext(
         patient_id="PT1",
         claims=(),
@@ -90,6 +88,7 @@ def test_bundled_note_distinguishes_ek3b1_vs_package_flag(
     ek3b1 = _material_line(
         code="EK3B1",
         line_id="M2",
+        material_name="Bistüri ucu",
         is_bundled=True,
         is_ek3b1_bundled=True,
     )

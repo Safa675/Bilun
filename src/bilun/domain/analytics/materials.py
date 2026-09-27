@@ -22,8 +22,8 @@ class MaterialLinePricing:
     unit_price: float = 0.0
     quantity: int = 1
     total_price: float = 0.0
-    is_reimbursable: bool = True
-    is_bundled: bool = False
+    is_reimbursable: bool | None = None
+    is_bundled: bool | None = None
     source: str = ""
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     notes: str = ""
@@ -52,13 +52,17 @@ def price_material_lines(materials: list[dict[str, Any]]) -> list[MaterialLinePr
         if billed_total <= 0 and billed_unit > 0:
             billed_total = round(billed_unit * qty, 2)
 
-        reimbursable = is_material_reimbursable(name)
-        bundled = is_consumable_bundled(name)
+        reimbursable = is_material_reimbursable(name, material_code=code or None)
+        bundled = is_consumable_bundled(name, material_code=code or None)
 
         notes_parts: list[str] = []
-        if not reimbursable:
+        if reimbursable is None:
+            notes_parts.append("EK-3B-2 exception applicability unavailable")
+        elif not reimbursable:
             notes_parts.append("non-reimbursable (EK-3B)")
-        if bundled:
+        if bundled is None:
+            notes_parts.append("EK-3B-1 applicability unavailable (identity, setting or use)")
+        elif bundled:
             notes_parts.append("bundled into procedure price (EK-3B-1)")
 
         if not code:

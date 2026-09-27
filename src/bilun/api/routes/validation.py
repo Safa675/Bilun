@@ -51,11 +51,11 @@ def validate_claim_legacy_endpoint(req: ClaimValidationRequest):
 
 @router.get("/bundled-consumables", response_model=BundledConsumablesResponse)
 def get_bundled_consumables_endpoint():
-    """
-    List all EK-3B-1 consumables bundled into procedure prices.
+    """List annex source entries, without evaluating a claim's applicability.
 
-    These 54 items cannot be billed separately — they are included
-    in the procedure fee (EK-2B puan).
+    Names retain the annex's setting/use qualifiers and exceptions. Collection
+    keys are historical compatibility names, not confirmed payment decisions.
+    No effective date is asserted from a catalog lacking interval evidence.
     """
     bundled = get_bundled_consumables()
     exclusions = get_non_reimbursable_materials()
@@ -66,7 +66,8 @@ def get_bundled_consumables_endpoint():
             "item_name": item.get("item_name", ""),
             "description": item.get("description", ""),
             "bundled_in": item.get("description", "EK-3B-1"),
-            "effective_date": "2026-01-31",
+            "effective_date": None,
+            "evaluation_status": "not_evaluated",
         }
         for item in bundled
     ]
@@ -74,11 +75,12 @@ def get_bundled_consumables_endpoint():
     # Enrich exclusion categories with fields the frontend expects
     enriched_exclusions = [
         {
-            "section": f"EK-3B Madde {item.get('sira_no', '')}",
+            "section": f"EK-3B-2 Madde {item.get('sira_no', '')}",
             "material_code": None,
             "material_name": item.get("material_name", ""),
             "description": item.get("material_name", ""),
-            "effective_date": "2026-01-31",
+            "effective_date": None,
+            "evaluation_status": "not_evaluated",
         }
         for item in exclusions
     ]

@@ -7,6 +7,10 @@ from __future__ import annotations
 
 import logging
 from functools import lru_cache
+from dataclasses import dataclass
+from types import MappingProxyType
+from collections.abc import Mapping
+from typing import Literal, TYPE_CHECKING
 from typing import Any
 
 import pandas as pd
@@ -78,11 +82,11 @@ def get_bundled_consumables() -> tuple[dict[str, Any], ...]:
         return ()
 
 
-def match_exclusion_entry(
+def _match_exclusion_candidate(
     material_name: str,
     exclusions: list[dict[str, Any]] | None = None,
-) -> dict[str, Any] | None:
-    """Return the EK-3B-2 entry matched by name, or None if reimbursable."""
+) -> tuple[dict[str, Any], str] | None:
+    """Lexical candidate only: this does not decide annex applicability."""
     catalog = exclusions if exclusions is not None else get_non_reimbursable_materials()
     if not catalog:
         return None
@@ -91,16 +95,21 @@ def match_exclusion_entry(
     if not needle:
         return None
 
+    partial = None
     for entry in catalog:
         mat_name = turkish_lower((entry.get("material_name") or "").strip())
         if not mat_name:
             continue
-        # Token-bound match (both directions) — plain `in` substring matched
-        # short catalog entries against unrelated materials ("tel" -> "metal stent").
-        if token_bound_substring_match(needle, mat_name) or token_bound_substring_match(
-            mat_name, needle
-        ):
-            return entry
+        # A full source category inside the billed name can identify its
+        # subtype. The reverse direction only suggests a partial identity:
+        # "kateter" does not establish "İnflow kateter".
+        if token_bound_substring_match(mat_name, needle):
+            return entry, "name_substring"
+        if token_bound_substring_match(needle, mat_name) and partial is None:
+            partial = entry
+
+    if partial is not None:
+        return partial, "name_partial"
 
     fuzzy_candidates = [
         (turkish_lower((e.get("material_name") or "").strip()), e)
@@ -108,55 +117,18 @@ def match_exclusion_entry(
     ]
     fuzzy_candidates = [(n, e) for n, e in fuzzy_candidates if n]
     fuzzy = fuzzy_match_name(needle, fuzzy_candidates, threshold=0.80)
-    return fuzzy[1] if fuzzy else None
+    return (fuzzy[1], "name_fuzzy") if fuzzy else None
 
 
-def is_material_reimbursable(
-    material_name: str,
-    *,
-    material_code: str | None = None,
-) -> bool:
-    """Check whether a material is reimbursable (not on EK-3B-2 list)."""
-    from .catalog_lookup import resolve_material_name_by_code
-
-    lookup_name = material_name
-    if material_code:
-        resolved = resolve_material_name_by_code(material_code)
-        if resolved:
-            lookup_name = resolved
-
-    if match_exclusion_entry(lookup_name) is not None:
-        return False
-    if lookup_name != material_name and match_exclusion_entry(material_name) is not None:
-        return False
-    return True
-
-
-def is_consumable_bundled(item_name: str) -> bool:
-    """Check whether a consumable is bundled into procedure prices (EK-3B-1).
-
-    Args:
-        item_name: Consumable name to check.
-
-    Returns:
-        True if the consumable IS bundled, False if can be billed separately.
-    """
-    return match_bundled_material(item_name) is not None
-
-
-def match_bundled_material(
+def _match_bundled_candidate(
     material_name: str,
     *,
     material_code: str | None = None,
 ) -> tuple[dict[str, Any], str] | None:
-    """Canonical EK-3B-1 bundled-consumable matcher.
+    """Find a lexical EK-3B-1 candidate without certifying applicability.
 
-    Single source of truth for "is this material bundled?" — used by both the
-    runtime ``check_bundling_violations`` (via ``rules/bundling_rules.py``) and
-    the build-time ``MaterialClaimLine.is_bundled`` enricher (Phase 2.1 of the
-    unified-claim-engine roadmap). Returns ``(entry, match_kind)`` so callers
-    can distinguish exact vs fuzzy matches (the runtime check emits
-    ``severity="warning"`` for fuzzy), or ``None`` if not bundled.
+    ``assess_bundled_material`` separately checks setting/use qualifiers and
+    exceptions. Ambiguous and fuzzy candidates cannot become confirmed rows.
 
     Match priority:
     1. ``code_resolved`` — if ``material_code`` resolves to a catalog name via
@@ -192,7 +164,8 @@ def match_bundled_material(
         if resolved:
             matched = _match_bundled_index(resolved, bundled_index)
             if matched is not None:
-                return matched[0], "code_resolved"
+                suffix = matched[1].removeprefix("name_")
+                return matched[0], f"code_resolved_{suffix}" if suffix in {"fuzzy", "ambiguous"} else "code_resolved"
 
     # Tiers 2 & 3 — billed name.
     return _match_bundled_index(material_name, bundled_index)
@@ -204,14 +177,180 @@ def _match_bundled_index(
 ) -> tuple[dict[str, Any], str] | None:
     """Token-bound substring + fuzzy match against a prebuilt bundled index."""
     needle = turkish_lower(needle_name.strip())
+    if "eldiven" in needle:
+        # Explicit nonsterile qualifiers are outside the source's sterile
+        # exception; removing that adjective only assists candidate lookup.
+        for qualifier in ("non-steril", "nonsteril", "steril olmayan"):
+            needle = needle.replace(qualifier, "")
+        needle = " ".join(needle.split())
     if not needle:
         return None
+    matches = []
     for bundled_name, bundled_entry in bundled_index:
+        if needle == bundled_name:
+            return bundled_entry, "name_substring"
         if token_bound_substring_match(needle, bundled_name) or token_bound_substring_match(
             bundled_name, needle
         ):
-            return bundled_entry, "name_substring"
+            matches.append(bundled_entry)
+    if matches:
+        return matches[0], "name_ambiguous" if len(matches) > 1 else "name_substring"
     fuzzy = fuzzy_match_name(needle, bundled_index, threshold=0.80)
     if fuzzy:
         return fuzzy[1], "name_fuzzy"
     return None
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.models import ClaimHeader
+
+
+@dataclass(frozen=True)
+class AnnexAssessment:
+    """One immutable candidate and its independently checked applicability.
+
+    Source: identical July/August 2026 SGK EK-3B workbooks, titled effective
+    03.09.2022. This records annex meaning, not a service-interval attestation or
+    proof that an unlisted product is otherwise payable under SUT.
+    """
+
+    status: Literal["matched", "not_matched", "unavailable"]
+    entry: Mapping[str, Any] | None = None
+    match_kind: str | None = None
+    reason: str | None = None
+
+    @property
+    def matched(self) -> bool | None:
+        return None if self.status == "unavailable" else self.status == "matched"
+
+
+def _assessment(status, candidate=None, reason=None):
+    return AnnexAssessment(
+        status,
+        MappingProxyType(dict(candidate[0])) if candidate else None,
+        candidate[1] if candidate else None,
+        reason,
+    )
+
+
+def _fold(text: str) -> str:
+    return turkish_lower(text).translate(str.maketrans("çğıöşü", "cgiosu"))
+
+
+def care_setting_from_header(header: ClaimHeader | None) -> str | None:
+    """Only actual header setting; the legacy dict adapter invents outpatient."""
+    if header is None or header.scenario_tag == "validate_claim_adapter":
+        return None
+    value = _fold(str(header.claim_type or "").strip())
+    if value in {"yatis", "yatarak", "inpatient"}:
+        return "inpatient"
+    if value in {"ayakta", "poliklinik", "outpatient", "gunubirlik"}:
+        return "outpatient"
+    return None
+
+
+def assess_bundled_material(
+    material_name: str, *, material_code: str | None = None,
+    care_setting: str | None = None, clinical_use: str | None = None,
+) -> AnnexAssessment:
+    if not material_name.strip() and not material_code:
+        return _assessment("unavailable", reason="material_identity_required")
+    if not get_bundled_consumables():
+        return _assessment("unavailable", reason="annex_catalog_unavailable")
+    candidate = _match_bundled_candidate(material_name, material_code=material_code)
+    if candidate is None:
+        return _assessment("not_matched")
+    entry, kind = candidate
+    label = _fold(str(entry.get("item_name") or ""))
+    from .catalog_lookup import resolve_material_name_by_code
+
+    resolved = resolve_material_name_by_code(material_code) if material_code else None
+    name = _fold(" ".join(filter(None, (material_name, resolved))))
+    if "fuzzy" in kind:
+        return _assessment("unavailable", candidate, "annex_material_identity_fuzzy")
+    if "ambiguous" in kind:
+        return _assessment("unavailable", candidate, "annex_material_identity_ambiguous")
+    if care_setting not in {"inpatient", "outpatient"}:
+        care_setting = None
+    # The phrase in the annex names an exception, not a positive glove match.
+    if "eldiven" in label and "steril" in label:
+        nonsterile = any(value in name for value in ("nonsteril", "non-steril", "steril olmayan"))
+        if "steril" in name and not nonsterile:
+            if "cerrahi" in name:
+                return _assessment("not_matched", candidate, "surgical_sterile_glove_exception")
+            return _assessment("unavailable", candidate, "surgical_sterile_glove_identity_required")
+    if "enjektor" in label and "yatarak" in label:
+        if care_setting is None:
+            return _assessment("unavailable", candidate, "inpatient_care_setting_required")
+        if care_setting != "inpatient":
+            return _assessment("not_matched", candidate, "inpatient_only_annex_row")
+    if "kan sekeri" in label and "idrar" in label:
+        blood = "kan seker" in name or "glukoz" in name
+        urine = "idrar" in name
+        if blood == urine:
+            return _assessment("unavailable", candidate, "blood_or_urine_strip_identity_required")
+        if blood and care_setting is None:
+            return _assessment("unavailable", candidate, "inpatient_care_setting_required")
+        if blood and care_setting != "inpatient":
+            return _assessment("not_matched", candidate, "inpatient_only_annex_row")
+    required_use = (
+        "dressing" if "oksijen" in label and "pansuman" in label else
+        "dialysis_bathing" if "diyalizli" in label else
+        "endoscopy" if "endoskobik" in label else None
+    )
+    if required_use is not None and clinical_use != required_use:
+        return _assessment("unavailable", candidate, f"{required_use}_use_evidence_required")
+    return _assessment("matched", candidate)
+
+
+def assess_excluded_material(
+    material_name: str, *, material_code: str | None = None,
+    exclusions: list[dict[str, Any]] | None = None,
+) -> AnnexAssessment:
+    from .catalog_lookup import resolve_material_name_by_code
+
+    if not material_name.strip() and not material_code:
+        return _assessment("unavailable", reason="material_identity_required")
+    if not (exclusions if exclusions is not None else get_non_reimbursable_materials()):
+        return _assessment("unavailable", reason="annex_catalog_unavailable")
+    lookup_name = resolve_material_name_by_code(material_code) if material_code else None
+    candidate = _match_exclusion_candidate(lookup_name or material_name, exclusions)
+    if candidate is None and lookup_name and lookup_name != material_name:
+        candidate = _match_exclusion_candidate(material_name, exclusions)
+    if candidate is None:
+        return _assessment("not_matched")
+    entry, kind = candidate
+    if "fuzzy" in kind:
+        return _assessment("unavailable", candidate, "annex_material_identity_fuzzy")
+    if "viskosuplemantasyon" in _fold(str(entry.get("material_name") or "")):
+        # The claim model does not prove the SUT/annex exception membership.
+        return _assessment("unavailable", candidate, "sut_annex_exception_applicability_required")
+    if kind == "name_partial":
+        return _assessment("unavailable", candidate, "annex_material_identity_partial")
+    return _assessment("matched", candidate)
+
+
+def match_exclusion_entry(material_name: str, exclusions=None) -> dict[str, Any] | None:
+    """Return a confirmed exclusion only; None does not certify reimbursability."""
+    assessment = assess_excluded_material(material_name, exclusions=exclusions)
+    return dict(assessment.entry) if assessment.matched is True else None
+
+
+def match_bundled_material(material_name: str, *, material_code=None, care_setting=None):
+    """Return a resolved EK-3B-1 match; never hide an unknown qualifier as true."""
+    assessment = assess_bundled_material(material_name, material_code=material_code, care_setting=care_setting)
+    return (dict(assessment.entry), assessment.match_kind) if assessment.matched is True else None
+
+
+def is_material_reimbursable(material_name: str, *, material_code: str | None = None) -> bool | None:
+    """Legacy non-exclusion indicator, NOT independent proof of SUT entitlement.
+
+    None means a candidate's exclusion/exception applicability is unresolved.
+    True means only that this EK-3B-2 check did not find a confirmed exclusion.
+    """
+    match = assess_excluded_material(material_name, material_code=material_code).matched
+    return None if match is None else not match
+
+
+def is_consumable_bundled(item_name: str, *, care_setting: str | None = None, material_code: str | None = None) -> bool | None:
+    """True/False/None for EK-3B-1 scope; False is not permission to bill."""
+    return assess_bundled_material(item_name, care_setting=care_setting, material_code=material_code).matched

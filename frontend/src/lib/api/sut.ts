@@ -84,8 +84,8 @@ export interface SutMaterialLine {
   unit_price: number;
   quantity: number;
   total_price: number;
-  is_reimbursable: boolean;
-  is_bundled: boolean;
+  is_reimbursable: boolean | null;
+  is_bundled: boolean | null;
   source: string;
   exactness_status: string;
   notes: string;
@@ -189,7 +189,8 @@ export interface SutBundledItem {
   item_name: string;
   description: string;
   bundled_in: string;
-  effective_date: string;
+  effective_date: string | null;
+  evaluation_status: "not_evaluated";
 }
 
 export interface SutExclusionCategory {
@@ -197,7 +198,8 @@ export interface SutExclusionCategory {
   material_code: string | null;
   material_name: string;
   description: string;
-  effective_date: string;
+  effective_date: string | null;
+  evaluation_status: "not_evaluated";
 }
 
 export interface SutBundledConsumablesResult {

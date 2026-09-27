@@ -319,10 +319,12 @@ const sections = {
   },
   bundledConsumables: {
     kpi: {
-      bundledItems: "Paket Kalemler",
-      exclusionCategories: "Hariç Tutma Kategorileri",
+      bundledItems: "EK-3B-1 Kaynak Kayıtları",
+      exclusionCategories: "EK-3B-2 Kaynak Kayıtları",
     },
-    title: "EK-3B-1 Paket Sarf Malzemeleri",
+    title: "EK-3B-1 Kaynak Kataloğu",
+    sourceNotice: "Kaynak kayıtlar koşul ve istisnalarıyla gösterilir. Ödeme kararı öncesinde tedavi ortamı, klinik kullanım ve uygulanabilir istisnalar doğrulanmalıdır.",
+    notEvaluated: "Fatura değerlendirilmedi",
     filterPlaceholder: "Kalemleri filtrele...",
     filteredCount: "{total} kalemden {shown}",
     loadingTitle: "Paket sarf malzemeleri yükleniyor",
@@ -333,10 +335,10 @@ const sections = {
       number: "#",
       itemName: "Kalem Adı",
       category: "Kategori",
-      effectiveDate: "Yürürlük Tarihi",
+      assessment: "Değerlendirme",
     },
     noFilterMatches: "Filtreyle eşleşen kalem yok.",
-    exclusionCategoriesTitle: "EK-3B Gerçekleştirilmeyen Hariç Tutma Kategorileri",
+    exclusionCategoriesTitle: "EK-3B-2 Kaynak Kataloğu",
   },
   drugCatalog: {
     title: "EK-4A İlaç Gerçekleştirme Kataloğu ({total} ilaç)",
