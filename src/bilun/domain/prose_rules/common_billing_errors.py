@@ -1016,17 +1016,21 @@ def detect_donor_prep_as_exam(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #24: Donor-prep workup billed as a routine exam (muayene).
+    """Error #24: Review an exam line on a donor-preparation follow-up.
 
-    Living-donor transplant preparation visits are a distinct service class
-    (donor hazırlık) and must NOT be billed as a routine poliklinik muayenesi.
-    Flags a procedure line billed as an exam (``procedure_category`` in
-    :data:`_EXAM_CATEGORIES`) when the claim's ``occupational_context`` or the
-    line's ``procedure_category`` signals donor-prep.
-
-    Honest skip when neither the claim nor the line carries a donor-prep signal.
+    El Kitabı §4.2 and Table 15 #24 say no exam is billed on a donor-prep
+    follow-up. A donor context on the header or a *separate* donor-prep line
+    can mark the claim for review; an exam line cannot itself have both exam
+    and donor-prep categories. The authoritative MEDULA ``donorTCKimlikNo``
+    field is not ingested, so this remains a warning rather than a confirmed
+    regulatory finding.
     """
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+    donor_prep_claim_ids = {
+        line.claim_id
+        for line in procedure_lines
+        if (line.procedure_category or "").casefold() in _DONOR_PREP_CATEGORIES
+    }
 
     violations: list[dict[str, Any]] = []
     for line in procedure_lines:
@@ -1035,12 +1039,10 @@ def detect_donor_prep_as_exam(
         if (line.procedure_category or "").casefold() not in _EXAM_CATEGORIES:
             continue
         claim = claims_by_id.get(line.claim_id)
-        ctx = (getattr(claim, "occupational_context", "") or "").casefold() if claim else ""
-        line_cat = (line.procedure_category or "").casefold()
-        is_donor_prep = (
-            ctx in _DONOR_PREP_CONTEXTS or line_cat in _DONOR_PREP_CATEGORIES
-        )
-        if not is_donor_prep:
+        if claim is None:
+            continue
+        ctx = (claim.occupational_context or "").casefold()
+        if ctx not in _DONOR_PREP_CONTEXTS and line.claim_id not in donor_prep_claim_ids:
             continue
         detail = (
             f"Donör/verici hazırlık viziti ({line.procedure_code}) rutin poliklinik "

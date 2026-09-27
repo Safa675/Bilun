@@ -673,3 +673,56 @@ def test_donor_prep_as_exam_negative() -> None:
     violations = detect_donor_prep_as_exam([claim], [line])
 
     assert violations == []
+
+
+def test_donor_prep_category_on_same_claim_flags_only_distinct_exam_line() -> None:
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="poliklinik",
+        admission=None,
+        discharge=None,
+        occupational_context="none",
+    )
+    donor_prep = _make_proc_line(
+        procedure_line_id="PL-DONOR",
+        claim_id="C1",
+        procedure_category="donor_hazirligi",
+    )
+    exam = _make_proc_line(
+        procedure_line_id="PL-EXAM",
+        claim_id="C1",
+        procedure_category="muayene",
+    )
+
+    violations = detect_donor_prep_as_exam([claim], [donor_prep, exam])
+
+    assert len(violations) == 1
+    assert violations[0]["procedure_line_id"] == "PL-EXAM"
+    assert violations[0]["severity"] == "warning"
+    assert violations[0]["occupational_context"] == "none"
+
+
+def test_donor_prep_category_without_exam_is_not_violation() -> None:
+    claim = _make_claim_header(occupational_context="none")
+    donor_prep = _make_proc_line(procedure_category="donor_prep")
+
+    assert detect_donor_prep_as_exam([claim], [donor_prep]) == []
+
+
+def test_donor_prep_category_on_other_claim_does_not_mark_exam() -> None:
+    exam_claim = _make_claim_header(claim_id="C1", occupational_context="none")
+    donor_claim = _make_claim_header(claim_id="C2", occupational_context="none")
+    exam = _make_proc_line(
+        procedure_line_id="PL-EXAM",
+        claim_id="C1",
+        procedure_category="muayene",
+    )
+    donor_prep = _make_proc_line(
+        procedure_line_id="PL-DONOR",
+        claim_id="C2",
+        procedure_category="donor_hazirligi",
+    )
+
+    assert detect_donor_prep_as_exam(
+        [exam_claim, donor_claim], [exam, donor_prep]
+    ) == []
