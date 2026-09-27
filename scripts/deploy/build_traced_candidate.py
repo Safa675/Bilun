@@ -121,6 +121,7 @@ def build_traced_candidate(
     environment = {
         key: value for key, value in os.environ.items()
         if not key.startswith(("BILUN_", "SUT_", "PIPELINE_"))
+        and key not in {"PYTHONPATH", "PYTHONHOME", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM"}
     }
     environment.update(
         {key: "" for key in _CONFIG_KEYS},

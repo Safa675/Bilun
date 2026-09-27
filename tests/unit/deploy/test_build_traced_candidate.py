@@ -20,6 +20,7 @@ def test_failed_traced_process_never_seals_a_candidate(
     checkout, sha, claims, clean = _candidate(tmp_path)
     roster_path = tmp_path / "roster.json"
     roster_path.write_text(json.dumps(_roster((checkout, sha, claims, clean))))
+    monkeypatch.setenv("PYTHONPATH", "/untrusted/source")
     original_run = subprocess.run
     commands = []
 
@@ -45,5 +46,6 @@ def test_failed_traced_process_never_seals_a_candidate(
     assert commands[0][0][:3] == ["strace", "-f", "-yy"]
     assert commands[0][1].get("shell", False) is False
     assert commands[0][1]["env"]["BILUN_DATA_MODE"] == ""
+    assert "PYTHONPATH" not in commands[0][1]["env"]
     assert not db_path.exists()
     assert not report_path.exists()
