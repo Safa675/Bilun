@@ -75,7 +75,12 @@ def _fixture(tmp_path: Path) -> tuple[Path, ReleaseSidecarExpectation, dict]:
     }
     for gate, checks in _GATES.items():
         raw_path = root / f"{gate}-raw.json"
-        _write(raw_path, {"candidate_identity": raw_identity, "status": "verified"})
+        status = {
+            "structural_cache": "all_rows_structurally_verified",
+            "semantic_cache": "semantic_checkpoint_verified",
+        }.get(gate, "verified")
+        _write(raw_path, {"candidate_identity": raw_identity, "status": status,
+                          "passed": True})
         envelope_path = root / f"{gate}.json"
         _write(
             envelope_path,
@@ -152,6 +157,24 @@ def test_raw_report_must_bind_exact_candidate_and_be_present(tmp_path: Path) -> 
     del sidecar["evidence"]["old_rollback"]
     _write(path, sidecar)
     with pytest.raises(ValueError, match="schema, decision, or identity differs"):
+        verify_release_sidecar(path, expected)
+
+
+def test_rehashed_failed_raw_verifier_cannot_claim_pass(tmp_path: Path) -> None:
+    path, expected, sidecar = _fixture(tmp_path)
+    gate_path = Path(sidecar["evidence"]["semantic_cache"]["path"])
+    envelope = json.loads(gate_path.read_text())
+    raw_path = Path(envelope["raw_report_path"])
+    raw = json.loads(raw_path.read_text())
+    raw["status"] = "failed"
+    raw["passed"] = False
+    _write(raw_path, raw)
+    envelope["raw_report_sha256"] = _sha(raw_path)
+    _write(gate_path, envelope)
+    sidecar["evidence"]["semantic_cache"]["sha256"] = _sha(gate_path)
+    _write(path, sidecar)
+
+    with pytest.raises(ValueError, match="raw verifier outcome is not verified"):
         verify_release_sidecar(path, expected)
 
 

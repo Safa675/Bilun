@@ -32,6 +32,18 @@ _GATES: dict[str, frozenset[str]] = {
     "legacy_financial_parity": frozenset({"all_legacy_amounts", "rounding_and_null_parity"}),
     "old_rollback": frozenset({"old_tuple_protected", "private_restart_and_recovery"}),
 }
+# A hash-correct envelope is not evidence that its referenced verifier passed.
+# The first two reports have concrete producer status values; later gates use
+# explicit verified/passed outcomes until their independently reviewed adapters
+# are wired into an activating coordinator.
+_RAW_SUCCESS_STATUS = {
+    "structural_cache": "all_rows_structurally_verified",
+    "semantic_cache": "semantic_checkpoint_verified",
+    "pinned_sources": "verified",
+    "runtime_trace": "verified",
+    "legacy_financial_parity": "verified",
+    "old_rollback": "verified",
+}
 _CANDIDATE_FIELDS = frozenset(
     {
         "build_id",
@@ -226,6 +238,12 @@ def verify_release_sidecar(
             != {key: candidate[key] for key in _RAW_IDENTITY_FIELDS}
         ):
             raise ValueError(f"Release {gate} raw verifier report identity differs")
+        if (
+            raw.get("status") != _RAW_SUCCESS_STATUS[gate]
+            or raw.get("passed") is False
+            or (gate not in {"structural_cache", "semantic_cache"} and raw.get("passed") is not True)
+        ):
+            raise ValueError(f"Release {gate} raw verifier outcome is not verified")
         evidence_hashes[gate] = digest
     if (
         _candidate_db_hash(expected.cache_path) != candidate["cache_sha256"]
