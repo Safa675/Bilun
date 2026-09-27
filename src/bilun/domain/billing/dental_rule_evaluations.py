@@ -190,6 +190,10 @@ def evaluate_dental_rules(
     Zip exact builder rows with actual claim material lines before evaluating.
     Reuse the resulting rows in downstream reports; do not invoke the original
     wrapper again or recover line identity from a possibly repeated name.
+
+    Legacy parity is with each claim-scoped wrapper call. Calling the direct
+    legacy wrapper on an entire patient instead reuses its first claim header
+    for every material; that separate direct-call behavior is unchanged.
     """
     sources = _dental_catalog_sources()
     ruleset = load_dental_2_4_1_rules()

@@ -310,6 +310,41 @@ def test_facility_derivation_uses_each_materials_own_claim(monkeypatch) -> None:
     _assert_raw_parity(batch, ctx)
 
 
+def test_multiclaim_projection_parity_is_with_claim_scoped_legacy_calls(monkeypatch) -> None:
+    # Make a facility condition reachable without adding absent clinical
+    # inputs; the actual bridge and original predicate/serializer stay intact.
+    ruleset = deepcopy(legacy.load_dental_2_4_1_rules())
+    rule_id = "2.4.1.A.(1).public_facility_ek2c_pricing"
+    rule = next(r for r in ruleset["rules"] if r["rule_id"] == rule_id)
+    rule["condition"] = {"procedure_category": "dental_treatment", "facility_type": "private"}
+    monkeypatch.setattr(adapter, "load_dental_2_4_1_rules", lambda: ruleset)
+    monkeypatch.setattr(legacy, "load_dental_2_4_1_rules", lambda: ruleset)
+    ctx = _context()
+    ctx = replace(
+        ctx,
+        procedure_lines=tuple(
+            replace(p, procedure_category="dental_treatment") for p in ctx.procedure_lines
+        ),
+    )
+    # The direct wrapper uses the first header when passed a whole patient;
+    # production bill evaluation passes a claim slice. This adapter preserves
+    # that bill contract, not the direct wrapper's cross-claim header leak.
+    assert len(legacy.check_dental_2_4_1_for_context(ctx)) == 2
+    original = [
+        row
+        for claim_id in dict.fromkeys(m.claim_id for m in ctx.material_lines)
+        for row in legacy.check_dental_2_4_1_for_context(ctx.slice_for_claim(claim_id))
+    ]
+    assert len(original) == 1
+    batch = adapter.evaluate_dental_rules("P1", ctx)
+    assert [r.legacy_row for r in batch.legacy_rows] == original
+    assert _row(batch, rule_id, "M1").decision == "matched"
+    row = _row(batch, rule_id, "M2")
+    assert (row.evaluation_status, row.decision) == ("evaluated", "not_matched")
+    assert not any(r.material_line_id == "M2" for r in batch.matches)
+    _assert_raw_parity(batch, ctx)
+
+
 def test_material_category_fallback_is_retained_when_procedure_is_absent() -> None:
     ctx = _single()
     ctx = replace(
