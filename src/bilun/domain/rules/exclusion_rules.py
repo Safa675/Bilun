@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.materials import get_non_reimbursable_materials
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
-from src.bilun.domain.materials.exclusions import match_exclusion_entry
+from src.bilun.domain.materials.exclusions import match_exclusion_entry, assess_excluded_material
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.patient_context import PatientClaimContext
@@ -99,7 +99,9 @@ def check_exclusion_violations_for_context(ctx: PatientClaimContext) -> list[dic
     """
     violations: list[dict[str, Any]] = []
     for line in ctx.material_lines:
-        if not line.is_excluded:
+        if line.is_excluded is not True:
+            continue
+        if assess_excluded_material(line.material_name, material_code=line.material_code or None).matched is not True:
             continue
         risk = float(line.billed_amount_try)
         violations.append(

@@ -147,6 +147,11 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
         result.required_inputs_missing = []
         return result
 
+    from src.bilun.domain.materials.exclusions import (
+        assess_bundled_material, care_setting_from_header,
+    )
+
+    headers = {row.claim_id: row for row in ctx.claims}
     preauth_codes = {item["sut_code"]: item for item in _get_ek3c1_preauth()}
     miat_catalog = {item["sut_code"]: item for item in _get_ek3c2_miat()}
 
@@ -229,7 +234,14 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
             # is_bundled = broad CSV/pricing package flag; is_ek3b1_bundled =
             # narrow EK-3B-1 annex. Label honestly so UI does not claim EK-3B-1
             # for flag-only rows (Option A — gate still uses is_bundled).
-            if line.is_ek3b1_bundled:
+            header = headers.get(line.claim_id)
+            if header is not None and header.patient_id != line.patient_id:
+                header = None
+            annex = assess_bundled_material(
+                line.material_name, material_code=line.material_code or None,
+                care_setting=care_setting_from_header(header),
+            )
+            if line.is_ek3b1_bundled is True and annex.matched is True:
                 bundled_note = _BUNDLED_EK3B1_NOTE
                 bundled_section = "EK-3B-1"
             else:

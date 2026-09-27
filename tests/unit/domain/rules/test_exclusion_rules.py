@@ -13,20 +13,20 @@ def test_exclusion_by_resolved_code(monkeypatch) -> None:
     monkeypatch.setattr(
         mod,
         "get_non_reimbursable_materials",
-        lambda: [{"material_name": "Viskosüplemantasyon ürünleri (SUT ve eki listelerde belirtilenler hariç)"}],
+        lambda: [{"material_name": "İnflow kateter"}],
     )
     monkeypatch.setattr(
         mod,
         "resolve_material_name_by_code",
         lambda code: (
-            "Viskosüplemantasyon ürünleri (SUT ve eki listelerde belirtilenler hariç)"
-            if code == "VISCO1"
+            "İnflow kateter"
+            if code == "INFLOW1"
             else None
         ),
     )
 
     violations = mod.check_exclusion_violations(
-        [{"name": "Line label", "code": "VISCO1", "unit_price": 100.0, "quantity": 1}],
+        [{"name": "Line label", "code": "INFLOW1", "unit_price": 100.0, "quantity": 1}],
     )
     assert len(violations) == 1
     assert violations[0]["match_kind"] == "code_resolved"

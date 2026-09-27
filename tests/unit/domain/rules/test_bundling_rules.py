@@ -45,7 +45,7 @@ def test_bundling_code_resolved_match_is_error(monkeypatch) -> None:
     assert violations[0]["savings_try"] == 10.0
 
 
-def test_bundling_fuzzy_name_only_is_warning(monkeypatch) -> None:
+def test_bundling_fuzzy_name_only_is_unavailable(monkeypatch) -> None:
     from src.bilun.domain.materials import exclusions as excl
     from src.bilun.domain.rules import bundling_rules as mod
 
@@ -59,6 +59,7 @@ def test_bundling_fuzzy_name_only_is_warning(monkeypatch) -> None:
     violations = mod.check_bundling_violations(
         [{"name": "Eldvn", "unit_price": 5.0, "quantity": 1}],
     )
-    assert len(violations) == 1
-    assert violations[0]["match_kind"] == "name_fuzzy"
-    assert violations[0]["severity"] == "warning"
+    assert violations == []
+    assessment = excl.assess_bundled_material("Eldvn")
+    assert assessment.status == "unavailable"
+    assert assessment.reason == "annex_material_identity_fuzzy"

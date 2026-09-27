@@ -12,7 +12,9 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.materials import get_bundled_consumables
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
-from src.bilun.domain.materials.exclusions import match_bundled_material
+from src.bilun.domain.materials.exclusions import (
+    match_bundled_material, assess_bundled_material, care_setting_from_header,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.patient_context import PatientClaimContext
@@ -27,14 +29,9 @@ def check_bundling_violations(
     """
     Check claim materials for EK-3B-1 bundling violations.
 
-    Match priority:
-      1. SUT material code → catalog name → bundled list (error)
-      2. Exact / substring name match (error)
-      3. Fuzzy name-only match (warning)
-
-    Delegates to the canonical ``match_bundled_material`` so the runtime check
-    and the build-time ``MaterialClaimLine.is_bundled`` enricher share one
-    matcher (Phase 2.1 of the unified-claim-engine roadmap).
+    Code-resolved and lexical candidates must satisfy annex applicability.
+    Ambiguous/fuzzy identities and unknown setting/use qualifiers stay
+    unresolved and produce no confirmed violation or monetary estimate.
     """
     bundled_items = get_bundled_consumables()
     if not bundled_items:
@@ -62,8 +59,7 @@ def check_bundling_violations(
             continue
         entry, match_kind = matched
 
-        # The canonical matcher distinguishes three match kinds; map to the
-        # severity/match_kind this function historically emitted.
+        # Preserve the historical raw payload for confirmed candidates.
         if match_kind == "code_resolved":
             resolved_name = resolve_material_name_by_code(mat_code) if mat_code else mat_name
             _add_bundling_violation(
@@ -76,7 +72,6 @@ def check_bundling_violations(
                 severity="error",
             )
         else:
-            severity = "warning" if match_kind == "name_fuzzy" else "error"
             _add_bundling_violation(
                 violations,
                 entry,
@@ -84,7 +79,7 @@ def check_bundling_violations(
                 billed,
                 procedure_code,
                 match_kind=match_kind,
-                severity=severity,
+                severity="error",
             )
 
     if violations:
@@ -137,17 +132,26 @@ def check_bundling_violations_for_context(ctx: PatientClaimContext) -> list[dict
 
     Reads each MaterialClaimLine's build-time-derived ``is_ek3b1_bundled`` flag
     (populated by ``dataset_builder._enrich_material_regulatory_flags`` from
-    the same ``match_bundled_material`` the dict-based
-    ``check_bundling_violations`` uses). Parity is structural: both paths
-    resolve to the same canonical matcher, so a clause flagged bundled here is
-    exactly the set the dict-based check would flag for the same name+code.
+    the same annex assessment used by the dict-based wrapper). Recheck source
+    applicability with this line's own header; dict-only callers cannot prove
+    setting-dependent matches. Stale flags cannot override an exception.
 
     The violation shape mirrors ``check_bundling_violations`` so the
     ``validate_claim`` adapter (Phase 2.4) can use either path interchangeably.
     """
     violations: list[dict[str, Any]] = []
+    headers = {row.claim_id: row for row in ctx.claims}
     for line in ctx.material_lines:
-        if not line.is_ek3b1_bundled:
+        if line.is_ek3b1_bundled is not True:
+            continue
+        header = headers.get(line.claim_id)
+        if header is not None and header.patient_id != line.patient_id:
+            header = None
+        assessment = assess_bundled_material(
+            line.material_name, material_code=line.material_code or None,
+            care_setting=care_setting_from_header(header),
+        )
+        if assessment.matched is not True:
             continue
         billed = float(line.billed_amount_try)
         violations.append(

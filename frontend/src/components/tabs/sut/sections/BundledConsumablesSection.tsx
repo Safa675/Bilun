@@ -8,7 +8,6 @@ import { ACCENT_LOCAL, fmtNum, KpiCard } from "../shared";
 import { useSutApi } from "../useSutApi";
 import { Chip, DataTable, Surface, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { fmtDate } from "@/lib/i18n/formatters";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
 
@@ -54,6 +53,7 @@ export function BundledConsumablesSection() {
       </div>
 
       <Surface variant="base" padding="lg">
+        <p className="text-sm mb-3" style={{ color: "#71717A" }}>{t("sections.bundledConsumables.sourceNotice")}</p>
         <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>{t("sections.bundledConsumables.title")}</h3>
           <input type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)} className={`${inputClass} max-w-[240px]`} placeholder={t("sections.bundledConsumables.filterPlaceholder")} />
@@ -71,7 +71,7 @@ export function BundledConsumablesSection() {
                 <th className="text-left">{t("sections.bundledConsumables.table.number")}</th>
                 <th className="text-left">{t("sections.bundledConsumables.table.itemName")}</th>
                 <th className="text-left">{t("sections.bundledConsumables.table.category")}</th>
-                <th className="text-left">{t("sections.bundledConsumables.table.effectiveDate")}</th>
+                <th className="text-left">{t("sections.bundledConsumables.table.assessment")}</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +80,7 @@ export function BundledConsumablesSection() {
                   <td className="text-left text-xs tabular-nums" style={{ color: "#A1A1AA" }}>{fmtNum(i + 1)}</td>
                   <td className="text-left text-sm" style={{ color: "#1A1A1A" }}>{item.item_name}</td>
                   <td className="text-left text-xs" style={{ color: "#71717A" }}>{item.bundled_in}</td>
-                  <td className="text-left text-xs font-mono" style={{ color: "#A1A1AA" }}>{item.effective_date ? fmtDate(item.effective_date) : "—"}</td>
+                  <td className="text-left text-xs" style={{ color: "#71717A" }}>{t("sections.bundledConsumables.notEvaluated")}</td>
                 </tr>
               ))}
               {filteredBundled.length === 0 && (
@@ -97,6 +97,7 @@ export function BundledConsumablesSection() {
           {data.exclusion_categories.categories.map((cat, i) => (
             <div key={i} className="rounded-xl p-3" style={{ background: "rgba(180, 83, 9, 0.06)", border: "1px solid rgba(180, 83, 9, 0.18)" }}>
               <div className="text-sm font-semibold" style={{ color: "#1A1A1A" }}>{cat.material_name}</div>
+              <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>{t("sections.bundledConsumables.notEvaluated")}</div>
               <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>{cat.section} &middot; {cat.description}</div>
             </div>
           ))}
