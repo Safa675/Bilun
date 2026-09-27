@@ -23,6 +23,7 @@ key on ``material_name`` and ``procedure_category``.
 from __future__ import annotations
 
 import json
+import re
 import unicodedata
 from functools import lru_cache
 from typing import Any
@@ -97,10 +98,30 @@ def _precious_metal_keywords() -> tuple[str, ...]:
 
 
 def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
+    """Match a named material without treating its explicit absence as presence.
+
+    Negation is local to an occurrence or a joined list of named materials:
+    ``altın ve platin içermeyen`` denies both, while ``altın içermeyen platin
+    içeren`` still supplies affirmative platinum evidence. Other matching and
+    normalization behavior remains the same; this is not a composition parser.
+    """
     normalized = _normalize_tr(material_name)
     if not normalized:
         return False
-    return any(_normalize_tr(kw) in normalized for kw in keywords)
+    terms = [re.escape(_normalize_tr(kw)) for kw in keywords if kw]
+    if not terms:
+        return False
+    # An explicit conjunction joins a negated list; punctuation alone must
+    # not pull an independently named product into a later negative phrase.
+    joined_terms = r"(?:\s*(?:/|\+|\bve\b|\bveya\b)\s*(?:" + "|".join(terms) + r"))*"
+    negation = re.compile(
+        r"(?:s[ıiu]z\b|" + joined_terms + r"\s+(?:icermeyen|icermez)\b)"
+    )
+    return any(
+        not negation.match(normalized, match.end())
+        for term in terms
+        for match in re.finditer(term, normalized)
+    )
 
 
 def _condition_matches(condition: dict[str, Any], mat: dict[str, Any]) -> bool:
