@@ -174,6 +174,99 @@ def _legacy_row_table(con: duckdb.DuckDBPyConnection, table: str, build_id: str)
     return sorted(rows, key=lambda row: _digest(row))
 
 
+def verify_serving_baseline_equivalence(
+    serving_db: Path,
+    *,
+    serving_build_id: str,
+    baseline_db: Path,
+    baseline_build_id: str,
+) -> dict[str, Any]:
+    """Bridge the protected serving cache to a separately rebuilt baseline.
+
+    Historical serving and rebuilt caches may have different build IDs, code
+    SHAs, and input path hashes. The release can use the rebuilt cache for its
+    same-input proof only if every persisted legacy content table is identical
+    to the cache actually serving before activation.
+    """
+    if serving_db.resolve() == baseline_db.resolve():
+        raise ValueError("Serving and rebuilt baseline caches must be independent")
+    serving_sha = _candidate_db_hash(serving_db)
+    baseline_sha = _candidate_db_hash(baseline_db)
+    table_digests: dict[str, str] = {}
+    with duckdb.connect(str(serving_db), read_only=True) as serving:
+        with duckdb.connect(str(baseline_db), read_only=True) as baseline:
+            serving_meta = _build_metadata(serving, serving_build_id)
+            baseline_meta = _build_metadata(baseline, baseline_build_id)
+            patient_count = bill_count = 0
+            for table in (
+                *_PATIENT_TABLES, "patient_bill_billing_report_rows",
+                "cohort_compliance_index", *_SINGLETON_TABLES, *_ROW_TABLES,
+            ):
+                old_schema = serving.execute(f"PRAGMA table_info('{table}')").fetchall()
+                rebuilt_schema = baseline.execute(f"PRAGMA table_info('{table}')").fetchall()
+                if old_schema != rebuilt_schema:
+                    raise ValueError(f"Serving and rebuilt legacy {table} schema differs")
+                columns = [row[1] for row in old_schema]
+                expected = (
+                    ["build_id", "patient_id", "payload_json"]
+                    if table in (*_PATIENT_TABLES, "patient_bill_billing_report_rows")
+                    else ["build_id", "payload_json"]
+                    if table in ("cohort_compliance_index", *_SINGLETON_TABLES)
+                    else None
+                )
+                if expected is not None and columns != expected:
+                    raise ValueError(f"Serving legacy {table} has unverified columns")
+            for table in (*_PATIENT_TABLES, "patient_bill_billing_report_rows"):
+                old_rows = _payload_rows(serving, table, serving_build_id)
+                rebuilt_rows = _payload_rows(baseline, table, baseline_build_id)
+                if table in ("patient_billing_report_rows", "patient_bill_billing_report_rows"):
+                    for rows in (old_rows, rebuilt_rows):
+                        if any(
+                            _NEW_REPORT_FIELDS & row.keys()
+                            or not _baseline_has_only_original_five(row)
+                            for row in rows.values()
+                        ):
+                            raise ValueError("Serving or rebuilt baseline is not original-five")
+                    if table == "patient_billing_report_rows":
+                        patient_count = len(old_rows)
+                    else:
+                        bill_count = len(old_rows)
+                if _digest(old_rows) != _digest(rebuilt_rows):
+                    raise ValueError(f"Serving and rebuilt legacy {table} differ")
+                table_digests[table] = _digest(old_rows)
+            for table in ("cohort_compliance_index", *_SINGLETON_TABLES):
+                old_payload = _singleton(serving, table, serving_build_id)
+                rebuilt_payload = _singleton(baseline, table, baseline_build_id)
+                if _digest(old_payload) != _digest(rebuilt_payload):
+                    raise ValueError(f"Serving and rebuilt legacy {table} differ")
+                table_digests[table] = _digest(old_payload)
+            for table in _ROW_TABLES:
+                old_rows = _legacy_row_table(serving, table, serving_build_id)
+                rebuilt_rows = _legacy_row_table(baseline, table, baseline_build_id)
+                if _digest(old_rows) != _digest(rebuilt_rows):
+                    raise ValueError(f"Serving and rebuilt legacy {table} differ")
+                table_digests[table] = _digest(old_rows)
+    if patient_count < 1 or bill_count < 1 or len(table_digests) != 16:
+        raise ValueError("Serving baseline legacy inventory is incomplete")
+    if (
+        _candidate_db_hash(serving_db) != serving_sha
+        or _candidate_db_hash(baseline_db) != baseline_sha
+    ):
+        raise ValueError("Serving or rebuilt baseline cache changed during verification")
+    return {
+        "status": "serving_baseline_legacy_equivalent",
+        "serving_build_id": serving_build_id,
+        "serving_code_sha": serving_meta["code_sha"],
+        "serving_cache_sha256": serving_sha,
+        "baseline_build_id": baseline_build_id,
+        "baseline_code_sha": baseline_meta["code_sha"],
+        "baseline_cache_sha256": baseline_sha,
+        "patient_count": patient_count,
+        "bill_count": bill_count,
+        "table_digests": table_digests,
+    }
+
+
 def _check_legacy_parity(
     baseline: duckdb.DuckDBPyConnection,
     baseline_build: str,

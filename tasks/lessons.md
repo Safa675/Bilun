@@ -735,3 +735,15 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 **Pattern:** A private frontend had the correct runtime `API_PROXY_TARGET` but its Next build still rewrote `/api/*` to the old backend. Separately, a Caddy route switch could replace the Caddyfile and crash before reload, leaving the loaded route and on-disk restart route different. Runtime environment and currently loaded configuration alone did not prove the deployed pair would remain correct.
 
 **Rule:** For a release candidate, inspect the frontend's compiled `routes-manifest.json` and exercise the frontend API path against the intended backend. For a reverse-proxy transaction, verify both the loaded configuration and the installed file at every state transition; after a failed switch, reinstall and verify a maintenance barrier before reporting a blocked state.
+
+## 2026-09-28 — Separate serving history from a rebuilt comparison baseline
+
+**Pattern:** The Wave A receipt issuer reused one `baseline_build_id` for the protected live PR98 cache and an independent same-input PR98 rebuild. Those caches have different historical build/code identities even though all 16 legacy content tables match. A byte-equality gate between the two cache files therefore made honest signing impossible.
+
+**Rule:** Give the serving cache and rebuilt comparison cache separate identities. Verify the serving snapshot against the live service, verify the rebuilt cache against pinned inputs, and require type-sensitive equality of every legacy content table between them before using the rebuild for candidate parity. Never rewrite cache metadata or force build IDs to match to pass a release gate.
+
+## 2026-09-28 — Pin DuckDB's whole readable state
+
+**Pattern:** A read-only DuckDB connection can read committed rows from an uncheckpointed `.wal` while the hash of the main `.duckdb` file stays unchanged. An independent review reproduced this against the receipt's baseline comparison.
+
+**Rule:** Reject any WAL sidecar, including a broken symlink, before and after hashing every cache used for release attestation. Keep crash-WAL regression coverage on both the serving-to-baseline bridge and the same-input semantic checkpoint.

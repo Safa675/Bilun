@@ -109,7 +109,13 @@ def _stable_file_hash(path: Path) -> str:
 def _candidate_db_hash(path: Path) -> str:
     if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
         raise ValueError("Candidate database must be an independent regular file")
-    return _stable_file_hash(path)
+    wal_path = path.with_name(path.name + ".wal")
+    if os.path.lexists(wal_path):
+        raise ValueError("Candidate database has an uncheckpointed WAL sidecar")
+    digest = _stable_file_hash(path)
+    if os.path.lexists(wal_path):
+        raise ValueError("Candidate database gained an uncheckpointed WAL sidecar")
+    return digest
 
 
 def _manifest_sources(input_manifest: Path) -> list[tuple[str, Path, str]]:
