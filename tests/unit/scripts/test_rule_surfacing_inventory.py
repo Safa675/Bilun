@@ -76,8 +76,8 @@ def test_focused_report_visible_projection_dataflow_fails_closed(
     audit._validate_focused_report_dataflow()
     source = audit.PATIENT_REPORT_PATH.read_text(encoding="utf-8")
     source = source.replace(
-        "findings=(*compliance_batch.findings, *focused_batch.findings)",
-        "findings=(*compliance_batch.findings,)",
+        "*focused_batch.findings,",
+        "# omitted focused findings",
     )
     fixture = tmp_path / "patient_report.py"
     fixture.write_text(source, encoding="utf-8")
@@ -105,14 +105,14 @@ def test_focused_public_gate_rejects_missing_index_fail_open(
         audit._validate_focused_report_dataflow()
 
 
-def test_focused_public_gate_rejects_helper_missing_index_fail_open(
+def test_focused_public_gate_rejects_missing_index_validation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     audit = _load_script()
     source = audit.WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
     source = source.replace(
-        "if not complete_evidence_available(index, build_id):",
-        "if index is not None and not complete_evidence_available(index, build_id):",
+        "validate_full_wavea_evidence_index(index)",
+        "pass",
     )
     fixture = tmp_path / "wavea_gate.py"
     fixture.write_text(source, encoding="utf-8")
@@ -247,10 +247,17 @@ def test_focused_checkpoint_keeps_draft_review_and_money_hidden() -> None:
     assert len(focused["non_emitting_unavailable_rule_ids"]) == 3
     assert focused["review_and_financial_evidence_visibility"] == "draft_gate_hidden"
     assert focused["release_ready"] is False
+    broad = payload["broad_wavea_checkpoint"]
+    assert broad == {
+        "detector_groups": 7,
+        "authored_rule_ids": 496,
+        "review_and_financial_evidence_visibility": "draft_gate_hidden",
+        "release_ready": False,
+    }
     assert payload["counts"]["aggregate_only_findings"] == 5
 
     rows = {row["runtime_id"]: row for row in payload["rows"] if row.get("runtime_id")}
-    evidence = rows["compute_patient_billing_report:project_focused_evidence"]
+    evidence = rows["compute_patient_billing_report:project_full_wavea_evidence"]
     assert evidence["visibility_status"] == "hidden_runtime"
     assert evidence["money_semantics"] == "informational"
     assert evidence["money_fields"] == []

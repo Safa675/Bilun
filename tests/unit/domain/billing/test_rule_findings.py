@@ -365,7 +365,15 @@ def test_analyze_claim_reuses_canonical_batch_and_preserves_selected_legacy_outp
 
 
 def test_patient_report_evaluates_once_and_projector_is_pure() -> None:
-    ctx = _positive_context()
+    duplicated = _positive_context()
+    # Full report materialization requires unambiguous source-line ownership.
+    # The canonical evaluator's duplicate normalization is tested separately.
+    ctx = replace(
+        duplicated,
+        procedure_lines=duplicated.procedure_lines[:3],
+        material_lines=duplicated.material_lines[:1],
+        drug_lines=duplicated.drug_lines[:1],
+    )
 
     with (
         patch.object(

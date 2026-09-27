@@ -1,5 +1,11 @@
 {
   "audit_date": "2026-09-27",
+  "broad_wavea_checkpoint": {
+    "authored_rule_ids": 496,
+    "detector_groups": 7,
+    "release_ready": false,
+    "review_and_financial_evidence_visibility": "draft_gate_hidden"
+  },
   "canonical_entrypoints": [
     "src/bilun/domain/billing/engine.py::analyze_claim",
     "src/bilun/domain/billing/patient_report.py::compute_patient_billing_report"
@@ -23,7 +29,7 @@
     "nonfinancial_findings": 1574,
     "patient_visible_findings": 1393,
     "registry_rule_families": 46,
-    "runtime_detectors_adapters": 80
+    "runtime_detectors_adapters": 82
   },
   "focused_wavea_checkpoint": {
     "currently_detector_emittable_rule_ids": 29,
@@ -53,11 +59,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          202
+          215
         ],
         "analyzer_runtime_id": "analyze_claim:check_bundling_violations_for_context",
         "analyzer_source_lines": [
-          146
+          168
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -79,11 +85,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          202
+          215
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_bundling_for_context",
         "analyzer_source_lines": [
-          152
+          174
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -187,11 +193,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          202
+          215
         ],
         "analyzer_runtime_id": "analyze_claim:check_specialty_materials_for_context",
         "analyzer_source_lines": [
-          155
+          177
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -414,11 +420,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          202
+          215
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_preauth_for_context",
         "analyzer_source_lines": [
-          165
+          187
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -440,11 +446,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          202
+          215
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_miat_for_context",
         "analyzer_source_lines": [
-          168
+          190
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -466,11 +472,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_drg_package_adequacy_from_claims",
         "adapter_source_lines": [
-          178
+          191
         ],
         "analyzer_runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
         "analyzer_source_lines": [
-          193
+          215
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -493,11 +499,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_material_uplift_from_claims",
         "adapter_source_lines": [
-          174
+          187
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_pairing_for_context",
         "analyzer_source_lines": [
-          197
+          219
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -530,11 +536,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_procedure_addon_uplift_from_claims",
         "adapter_source_lines": [
-          182
+          195
         ],
         "analyzer_runtime_id": "analyze_claim:check_procedure_pairing_for_context",
         "analyzer_source_lines": [
-          195
+          217
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -563,11 +569,11 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:validate_drug_indication_from_claims",
         "adapter_source_lines": [
-          195
+          208
         ],
         "analyzer_runtime_id": "analyze_claim:evaluate_drug_indication_findings",
         "analyzer_source_lines": [
-          130
+          152
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -1633,7 +1639,7 @@
       "runtime_id": "analyze_claim:FocusedLegacyMaterializer",
       "runtime_status": "executed",
       "source_lines": [
-        134
+        156
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1678,7 +1684,7 @@
       "runtime_id": "analyze_claim:check_bundling_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        146
+        168
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1741,7 +1747,7 @@
       "runtime_id": "analyze_claim:check_dental_2_4_1_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        162
+        184
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1790,7 +1796,7 @@
       "runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        193
+        215
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1890,7 +1896,7 @@
       "runtime_id": "analyze_claim:check_drug_combination_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        187
+        209
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1935,7 +1941,7 @@
       "runtime_id": "analyze_claim:check_exclusion_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        149
+        171
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2070,7 +2076,7 @@
       "runtime_id": "analyze_claim:check_fatura_inceleme_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        178
+        200
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2172,7 +2178,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_misc_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        171
+        193
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2271,7 +2277,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_treatment_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        172
+        194
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2399,7 +2405,7 @@
       "runtime_id": "analyze_claim:check_material_bundling_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        152
+        174
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2439,7 +2445,7 @@
       "runtime_id": "analyze_claim:check_material_miat_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        168
+        190
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2503,7 +2509,7 @@
       "runtime_id": "analyze_claim:check_material_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        197
+        219
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2543,7 +2549,7 @@
       "runtime_id": "analyze_claim:check_material_preauth_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        165
+        187
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2637,7 +2643,7 @@
       "runtime_id": "analyze_claim:check_payment_method_traceability_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        183
+        205
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2691,7 +2697,7 @@
       "runtime_id": "analyze_claim:check_procedure_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        195
+        217
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2937,7 +2943,7 @@
       "runtime_id": "analyze_claim:check_specialty_materials_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        155
+        177
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3185,7 +3191,7 @@
       "runtime_id": "analyze_claim:check_treatment_pricing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        201
+        223
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3225,7 +3231,7 @@
       "runtime_id": "analyze_claim:detect_admission_billing_window",
       "runtime_status": "gated",
       "source_lines": [
-        271
+        293
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3274,7 +3280,7 @@
       "runtime_id": "analyze_claim:detect_blood_component_isbt128_violations",
       "runtime_status": "gated",
       "source_lines": [
-        246
+        268
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3318,7 +3324,7 @@
       "runtime_id": "analyze_claim:detect_conditional_addon_ek2d_opportunities",
       "runtime_status": "gated",
       "source_lines": [
-        216
+        238
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3362,7 +3368,7 @@
       "runtime_id": "analyze_claim:detect_dental_ga_uplift_violations",
       "runtime_status": "gated",
       "source_lines": [
-        299
+        321
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3404,7 +3410,7 @@
       "runtime_id": "analyze_claim:detect_diagnosis_procedure_mismatch_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        315
+        337
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3447,7 +3453,7 @@
       "runtime_id": "analyze_claim:detect_donor_prep_as_exam",
       "runtime_status": "gated",
       "source_lines": [
-        283
+        305
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3490,7 +3496,7 @@
       "runtime_id": "analyze_claim:detect_drug_quantity_error",
       "runtime_status": "gated",
       "source_lines": [
-        293
+        315
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3533,7 +3539,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_exam_10day",
       "runtime_status": "gated",
       "source_lines": [
-        262
+        284
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3576,7 +3582,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_tests",
       "runtime_status": "gated",
       "source_lines": [
-        263
+        285
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3617,7 +3623,7 @@
       "runtime_id": "analyze_claim:detect_exam_admission_date_mismatch",
       "runtime_status": "gated",
       "source_lines": [
-        264
+        286
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3660,7 +3666,7 @@
       "runtime_id": "analyze_claim:detect_green_area_bundled_extras",
       "runtime_status": "gated",
       "source_lines": [
-        277
+        299
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3703,7 +3709,7 @@
       "runtime_id": "analyze_claim:detect_inpatient_on_outpatient",
       "runtime_status": "gated",
       "source_lines": [
-        281
+        303
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3745,7 +3751,7 @@
       "runtime_id": "analyze_claim:detect_los_procedure_density_anomaly_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        330
+        352
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3788,7 +3794,7 @@
       "runtime_id": "analyze_claim:detect_material_preauth_missing",
       "runtime_status": "gated",
       "source_lines": [
-        288
+        310
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3831,7 +3837,7 @@
       "runtime_id": "analyze_claim:detect_material_type_missing",
       "runtime_status": "gated",
       "source_lines": [
-        290
+        312
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3873,7 +3879,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_imaging_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        320
+        342
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3915,7 +3921,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_surgery_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        323
+        345
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3956,7 +3962,7 @@
       "runtime_id": "analyze_claim:detect_never_principal_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        309
+        331
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3999,7 +4005,7 @@
       "runtime_id": "analyze_claim:detect_normal_poliklinik_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        275
+        297
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4041,7 +4047,7 @@
       "runtime_id": "analyze_claim:detect_procedure_time_overlap_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        327
+        349
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4095,7 +4101,7 @@
       "runtime_id": "analyze_claim:detect_radiation_oncology_violations",
       "runtime_status": "gated",
       "source_lines": [
-        251
+        273
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4137,7 +4143,7 @@
       "runtime_id": "analyze_claim:detect_sct_temporal_window_violations_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        255
+        277
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4178,7 +4184,7 @@
       "runtime_id": "analyze_claim:detect_traffic_accident_billing",
       "runtime_status": "gated",
       "source_lines": [
-        303
+        325
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4221,7 +4227,7 @@
       "runtime_id": "analyze_claim:detect_transplant_package_scope_violations",
       "runtime_status": "gated",
       "source_lines": [
-        222
+        244
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4262,7 +4268,7 @@
       "runtime_id": "analyze_claim:detect_unnecessary_additional_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        311
+        333
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4305,7 +4311,7 @@
       "runtime_id": "analyze_claim:detect_vakabasi_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        274
+        296
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4354,7 +4360,7 @@
       "runtime_id": "analyze_claim:detect_yatak_icu_overlap",
       "runtime_status": "gated",
       "source_lines": [
-        237
+        259
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5367,7 +5373,7 @@
       "runtime_id": "analyze_claim:evaluate_drug_indication_findings",
       "runtime_status": "gated",
       "source_lines": [
-        130
+        152
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5412,7 +5418,7 @@
       "runtime_id": "analyze_claim:evaluate_rule_findings",
       "runtime_status": "gated",
       "source_lines": [
-        127
+        149
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5451,7 +5457,7 @@
       "runtime_id": "analyze_claim:validate_focused_context_ownership",
       "runtime_status": "gated",
       "source_lines": [
-        124
+        146
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5489,7 +5495,7 @@
       "runtime_id": "compute_patient_billing_report:FocusedLegacyMaterializer",
       "runtime_status": "gated",
       "source_lines": [
-        98
+        102
       ],
       "visibility_status": "not_applicable"
     },
@@ -5527,7 +5533,7 @@
       "runtime_id": "compute_patient_billing_report:RuleEvaluationBatch",
       "runtime_status": "gated",
       "source_lines": [
-        104
+        111
       ],
       "visibility_status": "not_applicable"
     },
@@ -5565,7 +5571,7 @@
       "runtime_id": "compute_patient_billing_report:collect_billing_actions",
       "runtime_status": "gated",
       "source_lines": [
-        205
+        218
       ],
       "visibility_status": "not_applicable"
     },
@@ -5621,7 +5627,7 @@
       "runtime_id": "compute_patient_billing_report:compute_lab_and_capture_gap_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        130
+        143
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -5660,7 +5666,7 @@
       "runtime_id": "compute_patient_billing_report:dedupe_addon_against_capture",
       "runtime_status": "gated",
       "source_lines": [
-        181
+        194
       ],
       "visibility_status": "not_applicable"
     },
@@ -6680,7 +6686,7 @@
       "runtime_id": "compute_patient_billing_report:evaluate_drug_indication_findings",
       "runtime_status": "gated",
       "source_lines": [
-        125
+        138
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -6730,7 +6736,7 @@
       "runtime_id": "compute_patient_billing_report:evaluate_rule_findings",
       "runtime_status": "gated",
       "source_lines": [
-        92
+        96
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -6766,8 +6772,8 @@
       "runtime_id": "compute_patient_billing_report:finalize_report_exactness",
       "runtime_status": "gated",
       "source_lines": [
-        120,
-        207
+        133,
+        220
       ],
       "visibility_status": "not_applicable"
     },
@@ -6809,10 +6815,48 @@
       "runtime_id": "compute_patient_billing_report:finalize_report_totals",
       "runtime_status": "gated",
       "source_lines": [
-        119,
-        204
+        132,
+        217
       ],
       "visibility_status": "aggregate_only"
+    },
+    {
+      "callable": "src.bilun.domain.billing.broad_rule_materializer.materialize_broad_rules",
+      "catalog_visible": false,
+      "cohort_api_surface": null,
+      "cohort_ui_surface": null,
+      "duplicate_group": null,
+      "duplicate_status": "none",
+      "emitted_rule_ids_or_kinds": [],
+      "entrypoint": "compute_patient_billing_report",
+      "evidence_files": [
+        "src/bilun/domain/billing/broad_rule_materializer.py",
+        "src/bilun/domain/billing/patient_report.py"
+      ],
+      "finding_type": "internal",
+      "gating_condition": "claim_context is not None (enforced by early return/assert)",
+      "hidden_reason": "Captures ownership-bound broad detector rows and authored-rule statuses for the gated evidence projection.",
+      "included_in_totals": false,
+      "inventory_level": "runtime_detector",
+      "legacy_monetary_hint_unconfirmed": false,
+      "mapping_status": "runtime_without_registry_family",
+      "money_fields": [],
+      "money_semantics": "informational",
+      "patient_deep_link_sections": [],
+      "patient_ui_surface": null,
+      "recommended_action_surface": null,
+      "registry_rule_id": [],
+      "regulatory_source": [],
+      "report_field": null,
+      "required_inputs": [
+        "claim_context"
+      ],
+      "runtime_id": "compute_patient_billing_report:materialize_broad_rules",
+      "runtime_status": "gated",
+      "source_lines": [
+        106
+      ],
+      "visibility_status": "not_applicable"
     },
     {
       "callable": "src.bilun.domain.billing.claim_copay.optimize_copay_from_claims",
@@ -6908,7 +6952,7 @@
       "runtime_id": "compute_patient_billing_report:optimize_copay_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        142
+        155
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -7253,7 +7297,7 @@
       "runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        202
+        215
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -7325,77 +7369,9 @@
       "runtime_id": "compute_patient_billing_report:project_claim_compliance",
       "runtime_status": "executed",
       "source_lines": [
-        102
+        109
       ],
       "visibility_status": "patient_and_cohort_visible"
-    },
-    {
-      "callable": "src.bilun.domain.billing.wavea_evidence.project_focused_evidence",
-      "catalog_visible": false,
-      "cohort_api_surface": null,
-      "cohort_ui_surface": null,
-      "duplicate_group": null,
-      "duplicate_status": "none",
-      "emitted_rule_ids_or_kinds": [
-        "2-04.1.4_dental_ga_double_billed_anesthesia",
-        "2-04.1.4_dental_ga_missing_uplift",
-        "blood_component_isbt128_barcode",
-        "conditional_addon_ek2d_neuromonitoring",
-        "conditional_addon_ek2d_neuronavigation",
-        "radiation_oncology.course_cap.brachytherapy_design",
-        "radiation_oncology.course_cap.brachytherapy_dose",
-        "radiation_oncology.course_cap.external_rt_design",
-        "radiation_oncology.course_cap.external_rt_dose",
-        "radiation_oncology.course_cap.linac_application",
-        "radiation_oncology.course_cap.rt_application",
-        "radiation_oncology.course_cap.rt_planning",
-        "radiation_oncology.course_cap.special_devices",
-        "radiation_oncology.same_day_collapse.afterloading",
-        "radiation_oncology.same_day_collapse.brachy_application",
-        "radiation_oncology.same_day_collapse.linac_application",
-        "radiation_oncology.same_day_collapse.rt_application",
-        "tablo15_11_drug_quantity_error",
-        "tablo15_12_duplicate_test",
-        "tablo15_15_material_preauth_missing",
-        "tablo15_16_material_type_missing",
-        "tablo15_21_inpatient_on_outpatient",
-        "tablo15_24_donor_prep_as_exam",
-        "tablo15_2_duplicate_exam_10day",
-        "tablo15_3_vakabasi_wrong_method",
-        "tablo15_4_normal_poliklinik_wrong_method",
-        "tablo15_7_green_area_bundled_extra",
-        "transplant_bundled_surgical_procedure",
-        "yatak_icu_overlap_510010"
-      ],
-      "entrypoint": "compute_patient_billing_report",
-      "evidence_files": [
-        "src/bilun/domain/billing/patient_report.py",
-        "src/bilun/domain/billing/wavea_evidence.py"
-      ],
-      "finding_type": "review and financial review",
-      "gating_condition": "claim_context is not None (enforced by early return/assert)",
-      "hidden_reason": "Review and financial-review evidence is persisted as a draft capability; current billing APIs hide it until a complete release gate.",
-      "included_in_totals": false,
-      "inventory_level": "runtime_detector",
-      "legacy_monetary_hint_unconfirmed": false,
-      "mapping_status": "runtime_without_registry_family",
-      "money_fields": [],
-      "money_semantics": "informational",
-      "patient_deep_link_sections": [],
-      "patient_ui_surface": null,
-      "recommended_action_surface": null,
-      "registry_rule_id": [],
-      "regulatory_source": [],
-      "report_field": null,
-      "required_inputs": [
-        "claim_context"
-      ],
-      "runtime_id": "compute_patient_billing_report:project_focused_evidence",
-      "runtime_status": "gated",
-      "source_lines": [
-        110
-      ],
-      "visibility_status": "hidden_runtime"
     },
     {
       "callable": "src.bilun.domain.billing.focused_rule_projection.project_focused_legacy_rows",
@@ -7461,9 +7437,573 @@
       "runtime_id": "compute_patient_billing_report:project_focused_legacy_rows",
       "runtime_status": "gated",
       "source_lines": [
-        95
+        99
       ],
       "visibility_status": "not_applicable"
+    },
+    {
+      "callable": "src.bilun.domain.billing.wavea_full_evidence.project_full_wavea_evidence",
+      "catalog_visible": false,
+      "cohort_api_surface": null,
+      "cohort_ui_surface": null,
+      "duplicate_group": null,
+      "duplicate_status": "none",
+      "emitted_rule_ids_or_kinds": [
+        "1.10.(1).medula_health_report_format_required",
+        "1.5.1.(1).ssk_60c_exception_no_pay",
+        "1.5.1.(3).uncontracted_private_non_emergency_no_pay",
+        "1.5.2.(2).uncontracted_provider_non_emergency_no_pay",
+        "1.5.2.(3).contracted_provider_must_accept",
+        "1.6.(3).third_party_service_fraud_prohibited",
+        "1.8.2.(3).ek4d_exempt_no_copay",
+        "1.8.2.copay_required_outpatient",
+        "1.8.3.(1b).uncontracted_dental_prosthesis_copay",
+        "1.8.5.(5).emergency_except_green_area_no_copay",
+        "1.8.5.(7).ek1a_chronic_no_copay_outpatient",
+        "1.8.5.(8).inpatient_drugs_ek4d_no_copay",
+        "1.9.1.(1).extra_fee_permissible_scope",
+        "1.9.1.(5).extra_fee_written_consent_mandatory",
+        "1.9.1.(6).er_stabilization_24h_before_extra_fee",
+        "1.9.1.(7).foundation_university_2_3_step_private_inpatient_bundled",
+        "2-04.1.4_dental_ga_double_billed_anesthesia",
+        "2-04.1.4_dental_ga_missing_uplift",
+        "2.2.(12).no_pay_without_documentation",
+        "2.2.(13).health_report_single_bill",
+        "2.2.(14).committee_report_exam_fee",
+        "2.2.(3).aesthetic_must_not_bill",
+        "2.2.(5).interim_supplier_spa_reimbursement",
+        "2.2.(6).workplace_polyclinic_homecare_no_pay",
+        "2.2.(8).contracted_tetkik_mandatory",
+        "2.2.1.(20).class3_package_surcharge",
+        "2.2.1.B-1.(11).private_daily_visit_cap",
+        "2.2.1.B-1.(2).ten_day_same_specialty_no_visit",
+        "2.2.1.B-1.(3).deferred_ek2a2_no_second_visit",
+        "2.2.1.B-1.(4).same_day_outpatient_to_inpatient",
+        "2.2.1.B-1.(5).multi_specialty_same_day_no_visit",
+        "2.2.1.B-1.(6).followup_specialty_no_visit_fee",
+        "2.2.1.B-1.(7).main_side_specialty_split",
+        "2.2.1.B-1.(8).reported_therapy_subsequent_days",
+        "2.2.1.B-1.a",
+        "2.2.1.B-1.b",
+        "2.2.1.B-1.c.training_hospital_outpatient",
+        "2.2.1.B-2.(2).g.no_visit_fee",
+        "2.2.1.B-2.(4).training_hospital_inpatient",
+        "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+        "2.2.1.B-3.(1).home_health_daily_cap",
+        "2.2.1.B-3.(2).home_health_10day_cooldown",
+        "2.2.1.B-3.(3).materials_supplied_by_provider",
+        "2.2.1.B-3.(4).epidermolysis_home_wound_care",
+        "2.2.1.B-4.(1).telehealth_520032_billing",
+        "2.2.1.B-4.(4).same_specialty_10day_no_visit",
+        "2.2.1.B-4.(5).same_specialty_10day_no_telehealth",
+        "2.2.2.(1).itemized",
+        "2.2.2.(1).package",
+        "2.2.2.(2).override",
+        "2.2.2.(3).short_stay_day_bed",
+        "2.2.2.(4).gunubirlik_no_day_bed",
+        "2.2.2.(5).gunubirlik_no_companion_fee",
+        "2.2.2.A(1).itemized_basis",
+        "2.2.2.A(2).itemized_materials_drugs",
+        "2.2.2.A(3).companion_fee_itemized",
+        "2.2.2.A(4).ivd_kit_control_no_pay",
+        "2.2.2.A(6).training_hospital_itemized",
+        "2.2.2.A.cross_specialty_uplift_25pt",
+        "2.2.2.B-1.(4).duration_exceeded_separate_bill",
+        "2.2.2.B-1.(d).inpatient_medications_bundled",
+        "2.2.2.B-1.(diagnostics_bundled).no_separate_bill",
+        "2.2.2.B-1.(e).blood_components_bundled_with_fraction",
+        "2.2.2.B-2.(1).pre_procedure_death_fee_for_service",
+        "2.2.2.B-3.(1).early_discharge_same_specialty_no_repeat_fee",
+        "2.2.2.B.(1).diagnosis_based_ek2c",
+        "2.2.2.B.(2).non_diagnosis_fee_for_service",
+        "2.2.2.B.(3b).different_specialty_25pt_uplift",
+        "2.2.2.B.(4).planned_thoracic_chest_tube_no_separate_bill",
+        "2.2.2.B.(5).training_research_hospital_ek2c_star_30pct_uplift",
+        "2.2.2.C.(1).complication_itemized_discount",
+        "2.2.2.C.(2).comorbidity_itemized",
+        "2.3.(1).emergency_24h_window",
+        "2.3.1.(4).uncontracted_emergency_fee_for_service",
+        "2.3.1.(5).unstabilized_24h_inpatient_sut",
+        "2.4.1.(1).precious_metal_dental_materials_no_pay",
+        "2.4.1.(1).precious_metal_no_pay",
+        "2.4.1.(2).bone_implant_exception_board_report",
+        "2.4.1.(2).bone_implant_no_pay_default",
+        "2.4.1.(2).endosseous_implant_base_no_pay",
+        "2.4.1.(2).implant_exception_4_per_jaw_750tl",
+        "2.4.1.(3).prosthesis_4yr_renewal_cap",
+        "2.4.1.(3).prosthesis_renewal_within_4_years_no_pay",
+        "2.4.1.(4a).orthodontics_over_18_no_pay",
+        "2.4.1.(a).adult_orthodontics_18plus_no_pay",
+        "2.4.1.(b).early_orthodontic_p407321_p407322",
+        "2.4.1.(c).fixed_orthodontics_class1_2_3_min_intervals",
+        "2.4.1.(c_cleft).cleft_lip_palate_orthodontics_age_windows",
+        "2.4.1.A.(1).contracted_public_dental_ek2c_prosthesis_inclusive",
+        "2.4.1.A.(1).public_facility_ek2c_pricing",
+        "2.4.1.A.(1).university_dental_faculty_50pct_surcharge",
+        "2.4.1.A.(2).disabled_or_special_need_child_ga_sedo_2x",
+        "2.4.1.A.(2).disabled_special_needs_2x_pricing",
+        "2.4.1.A.(3).disabled_ga_no_extra_50pct_surcharge",
+        "2.4.1.B-1.(1).private_uncontracted_dental_default_no_pay",
+        "2.4.1.B-1.(1).private_uncontracted_dental_no_pay",
+        "2.4.1.B-1.(2).disabled_child_private_dental_report_10_biz_days",
+        "2.4.1.B-1.(2).disabled_special_needs_doc_and_10_day_start",
+        "2.4.1.B-1.(3).disabled_ga_sedo_facility_gate",
+        "2.4.1.B-1.(3).non_communicative_disabled_ga_unit_documentation",
+        "2.4.1.B-1.(5).orthodontics_3_dentist_board_6_month_start",
+        "2.4.1.B-1.(5).orthodontics_3_dentist_board_report_6mo",
+        "2.4.1.B-1.(6).post_treatment_control_form_public_dentist_approval",
+        "2.4.1.B-2.(1).disabled_or_special_need_child_ek2c_fee",
+        "2.4.1.B-2.(1).private_disabled_payment_ek2c_list_basis",
+        "2.4.1.B-2.(2).private_uncontracted_orthodontics_per_2_4_1_4",
+        "2.4.1.B-2.(3).ek2c_duration_quantity_compliance",
+        "2.4.1.B-2.(4).disabled_prosthesis_no_separate_material_casting_labor",
+        "2.4.1.B-2.(4).private_disabled_prosthesis_no_pay",
+        "2.4.1.B-2.(5).orthodontic_invoices_ek2c3_stage_payment",
+        "2.4.1.B-2.(5).orthodontics_stage_payment",
+        "2.4.1.B-3.(1).self_referral_board_signer_treatment_no_pay",
+        "2.4.1.B-3.(1).treating_physician_continuity",
+        "2.4.1.B-3.(2).specialist_or_doctor_required_for_star_and_7_1",
+        "2.4.1.B-3.(2).star_and_7_1_orthodontics_specialist_required",
+        "2.4.1.B.(1).private_uncontracted_dental_units_scope",
+        "2.4.2.A.(1).organ_tissue_transplant_recipient_donor_covered",
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+        "2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay",
+        "2.4.2.B-1.(1).hla_compatibility_tests_relatives_max30",
+        "2.4.2.B-1.(10).foreign_sourcing_activation_cancellation_fees",
+        "2.4.2.B-1.(11).bone_marrow_transplant_ek2c_licensed_center",
+        "2.4.2.B-1.(12).pre_2013_foreign_marrow_screening_retroactive",
+        "2.4.2.B-1.(3).marrow_bank_stage1_705090_110_verify_705100_120",
+        "2.4.2.B-1.(4).high_res_dna_hla_confirmation_max25",
+        "2.4.2.B-1.(5).domestic_unrelated_marrow_cord_procurement_ek2c",
+        "2.4.2.B-1.(6).foreign_hla_confirmation_7of8_max10x25",
+        "2.4.2.B-1.(9).marrow_cord_transport_euro_caps",
+        "2.4.2.B-2.(1).mesenchymal_stem_cell_transplant_moh_approval",
+        "2.4.2.B-2.(3).mesenchymal_704_981_production_center_required",
+        "2.4.2.B-2.(4).mesenchymal_stem_cell_separate_bill",
+        "2.4.2.B-2.(4).mesenchymal_within_allo_15d_before_90d_after_bundle",
+        "2.4.3.(A).non_eip_vaccines_high_risk_report",
+        "2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar",
+        "2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups",
+        "2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative",
+        "2.4.4.A.(3).eswl_session_cap_6mo",
+        "2.4.4.B.(1).hbo_facility_coverage",
+        "2.4.4.B.(10).hbo_anoxic_encephalopathy_start_5d",
+        "2.4.4.B.(12).hbo_ek2d3_indications_only",
+        "2.4.4.B.(13).hbo_traffic_accident_no_session_limit",
+        "2.4.4.B.(2).hbo_health_board_report",
+        "2.4.4.B.(4).hbo_emergency_no_board_report_but_session_cap",
+        "2.4.4.B.(6).hbo_start_10d_gap_7_biz_days",
+        "2.4.4.B.(7).hbo_one_session_per_day",
+        "2.4.4.B.(8).sudden_hearing_loss_20session_cap",
+        "2.4.4.B.(9).hbo_crao_start_within_5d",
+        "2.4.4.C-c.(1).photopheresis_3rd_step_board_report",
+        "2.4.4.C-c.(2).photopheresis_covered_for_indication",
+        "2.4.4.C-c.(3).photopheresis_6mo_report_max26_cycles",
+        "2.4.4.C-c.(4).photopheresis_other_indications_commission_approval",
+        "2.4.4.C-c.(5).photopheresis_ek2b_pricing",
+        "2.4.4.C.(1).radiosurgery_board_report_required",
+        "2.4.4.C.(2).radiosurgery_ek2c_conditional",
+        "2.4.4.D-1.(10).hemodialysis_min_4_hours",
+        "2.4.4.D-1.(11).hemodialysis_bundled_tests_no_separate_bill",
+        "2.4.4.D-1.(3).dialysis_prescription_by_center_physician",
+        "2.4.4.D-1.(3ev).home_dialysis_prescription_by_followup_center",
+        "2.4.4.D-1.(6).home_hemodialysis_ek2c_pricing",
+        "2.4.4.D-1.(7).hemodialysis_ek2c_pricing",
+        "2.4.4.D-1.(7ev).home_hemodialysis_device_no_pay",
+        "2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited",
+        "2.4.4.D-1.(8ev).home_hemodialysis_session_cap_excess",
+        "2.4.4.D-1.(9).private_dialysis_session_cap_excess",
+        "2.4.4.D-2.(1).apd_board_report_nephrology",
+        "2.4.4.D-2.(1).peritoneal_hemofiltration_plasmapheresis_fee_for_service",
+        "2.4.4.D-2.(1).sapd_monitoring_and_fluid_limits",
+        "2.4.4.D-2.(2).apd_device_no_pay",
+        "2.4.4.E.(2).angio_ptca_same_session_25pct",
+        "2.4.4.E.(4).angio_pcı_per_physician_daily_cap_15",
+        "2.4.4.F-1.(a).physio_up_to_30_sessions_specialist_or_3rd_step",
+        "2.4.4.F-1.health_report_required",
+        "2.4.4.F-2.(1).physio_billing_requires_f1_report",
+        "2.4.4.F-2.(10).traffic_accident_physio_controls_isolated",
+        "2.4.4.F-2.(12).disaster_provision_amputation_fracture_additional_30",
+        "2.4.4.F-2.(3).duty_war_veterans_physio_all_diagnoses",
+        "2.4.4.F-2.(4).physio_session_cap_per_day",
+        "2.4.4.F-2.(5).physio_annual_region_session_caps",
+        "2.4.4.F-2.(5).physio_respiratory_diagnosis_additional_30_sessions",
+        "2.4.4.F-2.(6).physio_star_diagnosis_annual_window",
+        "2.4.4.F-2.(7).physio_start_within_15d",
+        "2.4.4.F-2.(8).physio_report_modification_5d",
+        "2.4.4.F-2.(9).inpatient_physio_concomitant_services_fee_for_service",
+        "2.4.4.F-2.(a).physio_star_diagnosis_90_sessions_annual",
+        "2.4.4.F-2.(b).g80_post_surgery_additional_30_sessions",
+        "2.4.4.F-3.(1).private_physio_2_4_4_F_rules",
+        "2.4.4.F-3.(1).private_provider_physio_compliance_with_F1_F2",
+        "2.4.4.F-3.(1b).physio_pmr_specialist_supervision_required",
+        "2.4.4.F-3.(a).private_inpatient_60_sessions_d_group_excluded",
+        "2.4.4.F-3.(c).physio_session_min_60min_50pct_on_early_end",
+        "2.4.4.F-3.(c2).private_pmr_outpatient_daily_exam_cap_48",
+        "2.4.4.F-3.(d).private_outpatient_physio_group_caps_8h",
+        "2.4.4.F-4.(2).eswt_indication_limited",
+        "2.4.4.F-4.(3).eswt_ek2c_2_regions_5_sessions",
+        "2.4.4.F-4.(4).eswt_no_combo_with_physio",
+        "2.4.4.F-4.(4).eswt_not_with_other_physio",
+        "2.4.4.F-5.(2).robotic_rehab_double_star_indications_only",
+        "2.4.4.F-5.(3).robotic_rehab_billed_ek2c_points",
+        "2.4.4.F-5.(3).robotic_rehab_ek2c_pricing",
+        "2.4.4.F-5.(4).robotic_rehab_no_combo",
+        "2.4.4.F-5.(4).robotic_rehab_not_with_other_physio",
+        "2.4.4.F-5.(5).robotic_rehab_30_sessions_annual_8_daily_per_system",
+        "2.4.4.F-6.(1).sports_med_ecology_health_report_required",
+        "2.4.4.F-6.(2).sports_ecology_annual_region_session_caps",
+        "2.4.4.F-6.(3).sport_hydro_physio_p915030",
+        "2.4.4.F-6.(3).sports_ecology_physio_billed_p915030",
+        "2.4.4.G-1.(1).cytogenetic_tests_scope_header",
+        "2.4.4.G-1.(a).cytogenetic_molecular_3rd_step_public_service_procurement",
+        "2.4.4.G-1.(a_b).cytogenetic_3rd_step_public_or_licensed_ghdm",
+        "2.4.4.G-1.(b).cytogenetic_molecular_licensed_ghdm_facilities",
+        "2.4.4.G-1.tier3_public_facility_only",
+        "2.4.4.G-2.(1).molecular_genetic_tests_scope_header",
+        "2.4.4.G-2.(3).elective_genetic_test_no_pay",
+        "2.4.4.G-2.(3).molecular_genetic_self_requested_not_covered",
+        "2.4.4.G-2.(a).molecular_genetic_3rd_step_public_ghdm_procurement",
+        "2.4.4.G-2.(a_onc).molecular_genetic_oncologic_3rd_step_public_procurement",
+        "2.4.4.G-2.(b).molecular_genetic_licensed_ghdm_facilities_exceptions",
+        "2.4.4.G-2.(b_onc).molecular_genetic_oncologic_licensed_ghdm",
+        "2.4.4.G-2.tier3_public_facility_only",
+        "2.4.4.G-b.(2).risk_scoring_records_required",
+        "2.4.4.G-u.(1).risk_scored_coverage_via_annex",
+        "2.4.4.G-u.(2).risk_score_records_kept_in_patient_file",
+        "2.4.4.H.(1).icu_standards_required",
+        "2.4.4.H.(1).icu_unleveled_level1_unregistered_not_billable",
+        "2.4.4.H.(10a).icu_enabiz_uplift_plus_60tl",
+        "2.4.4.H.(10b).icu_enabiz_not_sent_downgrade_one_level",
+        "2.4.4.H.(2).icu_bundled_with_abc_procedures",
+        "2.4.4.H.(2).icu_group_de_bundled_abc_addon_same_day",
+        "2.4.4.H.(3).icu_pacu_no_icu_fee",
+        "2.4.4.H.(3).pacu_no_icu_bill",
+        "2.4.4.H.(5).platelet_pheresis_separate_bill",
+        "2.4.4.H.(5a).icu_platelet_apheresis_full_billable",
+        "2.4.4.H.(5b).icu_platelet_pheresis_36pct_billable",
+        "2.4.4.H.(5c).icu_platelet_pheresis_24pct_billable",
+        "2.4.4.H.(7).icu_single_fee_multiple_levels_same_day",
+        "2.4.4.H.(7).same_day_multi_level_one_icu_fee",
+        "2.4.4.H.(8).icu_admission_discharge_day_fee_for_service",
+        "2.4.4.H.(8).icu_admission_discharge_fee_for_service",
+        "2.4.4.H.(9).icu_blood_products_bundled_in_points",
+        "2.4.4.I-1.(1).ivf_ek2c_package_price",
+        "2.4.4.I-1.(1).ivf_married_no_child_max_3_cycles",
+        "2.4.4.I-1.(1d).ivf_3yr_other_methods_unsuccessful_documented",
+        "2.4.4.I-1.(2).ivf_age40_no_pay",
+        "2.4.4.I-1.(2).ivf_freezing_ek2b",
+        "2.4.4.I-1.(3).ivf_cancellation_10pct_discount",
+        "2.4.4.I-1.(3).ivf_prior_cycles_counted",
+        "2.4.4.I-1.(3c).ivf_not_performed_10pct_discount_ek2b",
+        "2.4.4.I-1.(4).ivf_report_conditions_specified",
+        "2.4.4.I-1.(5).ivf_apply_within_6mo_or_new_report",
+        "2.4.4.I-1.(5).ivf_multi_embryo_multi_birth_no_pay",
+        "2.4.4.I-1.(6).ivf_separate_board_report_per_treatment",
+        "2.4.4.I-2.(1).pgt_for_sibling_stem_cell_donor",
+        "2.4.4.I-2.(1).pgt_savior_sibling_conditions_otherwise_no_pay",
+        "2.4.4.I-2.(4).pgt_savior_billing_code_908746_includes_prep",
+        "2.4.4.I-3.(1).pgt_hereditary_ek2k_max_3_cycles",
+        "2.4.4.I-3.(10).pgt_healthy_embryo_freezing_if_cycles_remaining",
+        "2.4.4.I-3.(11).pgt_frozen_embryo_transfer_ek2c",
+        "2.4.4.I-3.(4).pgt_hereditary_ek2k_genetic_report_required",
+        "2.4.4.I-3.(5).pgt_hereditary_billing_code_908747_includes_prep",
+        "2.4.4.I-3.(6).pgt_embryo_max8_numbered_report_to_institution",
+        "2.4.4.I-d.(1).ivf_records_kept_and_presented_on_audit",
+        "2.4.4.I.(2).ophthalmology_outpatient_daily_exam_cap_45",
+        "2.4.4.I.(3).ophthalmology_15d_same_specialty_bundle",
+        "2.4.4.I.(3).ophthalmology_15day_revisit_ek2a2_only",
+        "2.4.4.J.(1).thermal_spa_board_report_required",
+        "2.4.4.J.(2).thermal_spa_start_within_6_months_else_new_report",
+        "2.4.4.J.(3).thermal_spa_unlicensed_facility_not_covered",
+        "2.4.4.J.(3).thermal_unlicensed_no_pay",
+        "2.4.4.J.(4).thermal_daily_allowance_until_contracted",
+        "2.4.4.J.(4).thermal_spa_uncontracted_only_702020_per_day",
+        "2.4.4.J.(5).thermal_spa_travel_per diem_per_2_6",
+        "2.4.4.K.(1).palliative_accreditation_required",
+        "2.4.4.K.(1).palliative_care_certified_facilities_only",
+        "2.4.4.K.(3).palliative_care_unregistered_bed_not_covered",
+        "2.4.4.K.(3).palliative_non_accredited_bed_no_pay",
+        "2.4.4.K.(5).palliative_care_p560000_once_per_day",
+        "2.4.4.K.(5).palliative_p560000_once_per_day",
+        "2.4.4.K.(6).palliative_care_ek2c_procedure_no_palliative_fee",
+        "2.4.4.K.(6).palliative_ek2c_procedure_same_day_no_double",
+        "2.4.4.K.(7).palliative_bundled_no_separate_bill",
+        "2.4.4.L.(1).diskoplasty_ek2c_3rd_step_only",
+        "2.4.4.L.(2).diskoplasty_3_specialty_board_report_required",
+        "2.4.4.L.(3).diskoplasty_covered_when_conditions_met",
+        "2.4.4.M.(1).neuromonitoring_ek2d4_p703365_bypass_2_2_2b3",
+        "2.4.4.N.(1).eb_wound_care_3rd_step_public",
+        "2.4.4.O-u.(1).neuronavigation_ek2c_d5_bypass_2_2_2b3",
+        "2.4.4.O.(a).bariatric_bmi40_4_specialty_board_report",
+        "2.4.4.O.(b).bariatric_bmi35_40_comorbidity_board_report",
+        "2.4.4.O.(c).bariatric_bmi35_40_6mo_unsuccessful_weight_loss",
+        "2.4.4.P.(1).psma_3sign_board_nuc_plus_onc",
+        "2.4.4.P.(2).psma_castration_resistant_metastatic_diagnosis",
+        "2.4.4.P.(3).psma_testosterone_under_50_psa_not_criteria",
+        "2.4.4.P.(5).psma_ga68_pet_min3_foci_above_liver",
+        "2.4.4.P.(6).psma_min6week_gap_8_or_12_doses_with_report",
+        "2.4.4.R.(2).pulmoner_rehab_board_report_requires_chest_specialist",
+        "2.4.4.R.(3).pulmoner_rehab_30_sessions_3_reports_annual",
+        "2.4.4.R.(4).pulmoner_rehab_pricing_p701074",
+        "2.4.4.R.(4).pulmoner_rehab_start_within_15d",
+        "2.4.4.R.(5).inpatient_pulmoner_rehab_fee_for_service",
+        "2.4.4.R.(6).private_provider_pulmoner_rehab_reduces_daily_visit_count",
+        "2.4.4.R.(6).pulmoner_rehab_16_patients_per_day_cap",
+        "2.4.4.R.pulmoner_rehab_5_biz_day_gap_excluding_chronic_failure",
+        "2.5.1.(3).overseas_assignment_insurance_no_pay",
+        "2.5.1.(5).overseas_no_travel_daily_companion",
+        "2.5.1.(6).trnc_contracted_exists_no_uncontracted",
+        "2.5.2.(1).overseas_reciprocity_required",
+        "2.5.2.(2).trnc_as_overseas",
+        "2.5.3.A-2.(2).overseas_duration_cannot_exceed_report",
+        "2.5.3.A-2.(4).organ_transplant_wait_in_host_country",
+        "2.5.3.A-3.(6).overseas_unrelated_treatment_no_pay",
+        "2.5.3.A-3.(8).overseas_unauthorized_different_treatment",
+        "2.5.3.A.(1).overseas_referral_only_if_not_domestic",
+        "2.5.3.B.(1).overseas_sample_only_no_patient_travel",
+        "2.6.1.A.(5).dialysis_travel_nearest_center",
+        "2.6.1.B-3.(3).vehicle_assigned_no_companion_travel",
+        "2.6.2.(3).same_day_referral_no_daily_allowance",
+        "2.6.3.(2).companion_bed_meal_bundled_inpatient",
+        "2.6.4.(c).non_listed_control_checkups_no_pay",
+        "2.6.6.(3).unlicensed_thermal_no_pay",
+        "2.6.8.(2).unreferral_death_no_funeral",
+        "2.6.9.(1).intra_settlement_no_travel_daily",
+        "2.6.9.(2).unreferral_outside_settlement_no_travel",
+        "3.1.1.(10).ek3_prices_kdv_excluded",
+        "3.1.1.(7).ek3b_listed_materials_no_pay",
+        "3.1.3.(7).medula_free_code_entry_no_pay",
+        "3.1.3.(8).fixed_asset_repair_spare_part_no_pay",
+        "3.1.3.(9).reusable_material_no_pay",
+        "3.3.10.(d).sphincter_contraindication_no_pay",
+        "3.3.11.(1).local_anesthesia_graft_membrane_billable",
+        "4.1.(2).medula_prior_drug_use_record_required",
+        "4.1.3.(1).health_report_medula_compliance",
+        "4.1.4.(b).ek4d_non_star_drugs_exempt_offlabel_approval",
+        "4.1.4.(c).offlabel_approval_max_1_year_validity",
+        "4.1.4.(c).offlabel_prescriber_must_be_relevant_specialist",
+        "4.1.4.(d).off_label_use_ministry_approval_required",
+        "4.1.4.(f).drug_not_reimbursed_indication_no_pay",
+        "4.1.5.(10).work_injury_traffic_must_be_eprescription",
+        "4.1.7.(2).ek4g_inpatient_only",
+        "4.1.8.(3).ek4d_no_copay_ek4f_copay",
+        "4.1.9.(1).ek4a_listed_only",
+        "4.2.1.C-1.(2).as_nsaid_failure_required",
+        "4.2.1.C-7.(3).anakinra_with_biologic_dmard_no_pay",
+        "4.2.1.C.(3).dual_anti_tnf_or_biologic_combo_no_pay",
+        "4.2.10.B-3.(4).ms_treatment_switch_6mo_rule",
+        "4.2.12.B-1.(ivig_indication_required)",
+        "4.2.12.B-2.(birdshot_retinochoroidopathy_no_pay)",
+        "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay",
+        "4.2.14.C.(atezo_hcc_bevacizumab).tier_c_review",
+        "4.2.14.C.(atezo_nsclc_adjuvant_pdl1_50).tier_c_review",
+        "4.2.14.C.(atezo_nsclc_pdl1_50).tier_c_review",
+        "4.2.14.C.(atezo_sclc_2l).tier_c_review",
+        "4.2.14.C.(atezo_sclc_extensive_1l).tier_c_review",
+        "4.2.14.C.(breast).fulvestrant_after_ai_adjuvant",
+        "4.2.14.C.(breast).ribociclib_palbociclib_after_ai_progression",
+        "4.2.14.C.(durva_biliary_pdl1_1).tier_c_review",
+        "4.2.14.C.(durva_nsclc_stage3_pdl1_1).tier_c_review",
+        "4.2.14.C.(glioblastoma).bevacizumab_after_temozolomide",
+        "4.2.14.C.(melanoma).braf_sequential_no_pay",
+        "4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay",
+        "4.2.14.C.(myeloma).pi_combo_no_pay",
+        "4.2.14.C.(pembro_nasopharyngeal).tier_c_review",
+        "4.2.14.C.(pembro_nsclc_pdl1_ge_50).tier_c_review",
+        "4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review",
+        "4.2.14.C.(pembro_tnbc_neoadjuvant).tier_c_review",
+        "4.2.14.C.(pembro_tnbc_pdl1_cps10).tier_c_review",
+        "4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay",
+        "4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6",
+        "4.2.15.D-1.(4).doac_combo_no_pay",
+        "4.2.16.(8).out_of_ek4b_no_pay",
+        "4.2.17.A.(9).active_vitamin_d_osteoporosis_no_pay",
+        "4.2.17.B.(1).calcitonin_6mo_cap",
+        "4.2.23.(3).antifungal_prophylaxis_neutropenia_10d",
+        "4.2.24.A.(7).laba_iks_mono_offlabel_no_pay",
+        "4.2.24.B.(laba_lama_iks_combo_no_pay)",
+        "4.2.25.(3).pregabalin_2nd_3rd_step",
+        "4.2.28.C.(3).bile_acid_sequestrant_t2dm_no_pay",
+        "4.2.3.(6).allergy_vaccine_oral_no_pay",
+        "4.2.30.A.(9).epoprostenol_dialysis_no_pay",
+        "4.2.33.(8).loading_dose_required_before_switch",
+        "4.2.33.(c).anti_vegf_same_eye_combo_no_pay",
+        "4.2.34.(2).ms_dmt_clinically_isolated_syndrome_no_pay",
+        "4.2.34.(3).ms_dmt_combo_no_pay",
+        "4.2.35.A.(5).capsaicin_postherpetic_diabetic_neuralgia",
+        "4.2.38.(8).empagliflozin_linagliptin_combo_indication",
+        "4.2.38.(c).dpp4_combo_no_pay",
+        "4.2.49.C.(5).sma_smn2_modifier_1yr_switch_no_pay",
+        "4.2.5.(3).out_of_indication_no_pay",
+        "4.2.7.(3).heparin_in_hemodialysis_no_pay",
+        "4.2.7.(4).distinct_lmw_heparin_combo_no_pay",
+        "4.2.71.(3).tafamidis_advanced_heart_failure_no_pay",
+        "4.2.9.A.(1).epoetin_out_of_indication",
+        "4.2.9.C-c.(6).cinacalcet_etelcalsetid_combo_no_pay",
+        "4.2.9.E.(7).cinacalcet_etelcalsetid_combo_no_pay",
+        "4.3.(3).ek4c_overseas_listed_only",
+        "4.3.(5).ek4d_overseas_no_copay",
+        "4.3.(8).overseas_drug_domestic_license_continues",
+        "4.4.2.(a).cheapest_unit_basis_ek2b",
+        "4.5.1.(2).uncontracted_pharmacy_non_emergency_no_pay",
+        "4.6.(4).blood_components_bundled_in_drg",
+        "5.2.(2).medula_outage_provision_documented",
+        "5.2.2.(a).monthly_prescription_period_close",
+        "5.2.2.(b).blood_hemophilia_prescription_2x_monthly",
+        "5.2.2.(separate).prescriptions_billed_separately",
+        "5.3.1.C.(1).medula_service_detail_required",
+        "6.3.2.(b).same_function_prior_material_warranty_no_pay",
+        "ACİL-2.acil_konsultasyon_ilk_muayene",
+        "ACİL-5.acil_poliklinik_mukerrer_tetkik",
+        "ACİL-7.acil_rutin_muayene_cocuk_genel_gebelik",
+        "ANESTEZİ-1.hasta_kontrollu_analjezi_ab_grubu",
+        "BEYİN-1.spinal_laminektomi_osteotomi",
+        "BEYİN-2.posterior_segmental_enstruman_artrodez",
+        "DERMATOLOJİ-1.intralezyonel_androjenik_alopesi",
+        "DYALIZ-1.peritoneal_simultaneous_hemodialysis",
+        "DYALIZ-2.part_time_physician_outside_hours",
+        "DYALIZ-3.session_date_medula_match",
+        "ENF-11.respiratory_906250_h_influenza_mantar",
+        "ENF-12.no_growth_typing_identification_antibiogram",
+        "ENF-13.wound_ear_csf_conjunctiva_culture_bundling",
+        "ENF-14.vaginal_semen_culture_bundling",
+        "ENF-2.tuberculosis_sputum_limits",
+        "ENF-3.anti_ena_without_ana",
+        "ENF-4.sputum_culture_905675_no_growth_bundling",
+        "ENF-5.throat_culture_905670_multiplex_test",
+        "ENF-6.parasite_and_unstained_microscopy_mutually_exclusive",
+        "ENF-7.stool_culture_905672_bundling",
+        "ENF-8.urine_culture_905671_bundling",
+        "ENF-9.blood_culture_906010_906020_mutually_exclusive",
+        "FTR-1.g80_tani_degisimi_faturalama",
+        "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling",
+        "GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling",
+        "GÖZ HASTALIKLARI-10.vitreoretinal_no_fotokoagulasyon",
+        "GÖZ HASTALIKLARI-11.trikiasis_fotokoagulasyon_elektroliz",
+        "GÖĞÜS_CERRAHİSİ-2.intraplevral_lavaj_ilk_ve_sonraki",
+        "GÖĞÜS_HASTALIKLARI-1.firca_biyopsisi_bronkoskopi_608310",
+        "GÖĞÜS_HASTALIKLARI-3.tbc_pcr_908290_endikasyon",
+        "GÖĞÜS_HASTALIKLARI-4.tbc_kultur_ureme_yok_906180_908301",
+        "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
+        "IC-1.tumor_markers_general_screening",
+        "IC-2.intraspinal_block_catheter_repeat",
+        "KADIN-1.dogum_paketi_bebek_islemleri",
+        "KADIN-3.tibbi_tahliye_bumm_kuretaj",
+        "KADIN-4.endometrioma_yapisklik_over",
+        "KADIN-5.fotal_biyometri_32_hafta",
+        "KADIN-6.surekli_fetal_monitorizasyon_dogum_travay",
+        "KADIN-7.vaginal_rekonstruksiyon_greft",
+        "KADIN-8.postpartum_tup_ligasyon_sezaryen",
+        "KALP_VE_DAMAR_CERRAHİSİ-1.kag_sonrasi_cabg_islem_yok_kesinti",
+        "KALP_VE_DAMAR_CERRAHİSİ-2.anjiyo_kdc_kardiyolog_kesinti_degil",
+        "KALP_VE_DAMAR_CERRAHİSİ-4.ek2b_lazer_tedavi_kdc_odenmez",
+        "KARDİYOLOJİ-2.spect_gated_ayri_ayri_odeme",
+        "KARDİYOLOJİ-3.nt_probnip_L106220_tek_sefer",
+        "KARDİYOLOJİ-4.ayni_seans_periferik_anjiografi",
+        "KARDİYOLOJİ-5.basarisiz_ptca_stent_yok",
+        "KARDİYOLOJİ-7.darlik_40_70_disi_basinc_teli",
+        "KARDİYOLOJİ-8.efc_ablasyon_701010_ayrica_odenmez",
+        "KARDİYOLOJİ-9.kalp_kat_sirasi_cerrahi_sadece_cerrahi",
+        "ORTAK-10.sunnet_z412",
+        "ORTAK-12.ameliyat_alt_operasyon",
+        "ORTAK-13.gecmis_muayene_sorgu",
+        "ORTAK-14.onkolojik_ek2b",
+        "ORTAK-16.iv_infuzyon_530160",
+        "ORTAK-18.toplu_fatura_gunluk_limit",
+        "ORTAK-19.eksik_faturalama_yuzde10",
+        "ORTAK-2.ek2a2_olmayan_islem",
+        "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+        "ORTAK-22.seans_kesi_kurali",
+        "ORTAK-23.konsultasyon_gerekce",
+        "ORTAK-25.yatis_oncesi_hazirlik_paket",
+        "ORTAK-26.ilac_dozi_endikasyon",
+        "ORTAK-28.ek2b_tetkik_gereksiz",
+        "ORTAK-4.ek2a2_gerekce_yok",
+        "ORTAK-7.acil_kontrol_muayene",
+        "ORTAK-8.paket_islem_ilac_malzeme",
+        "ORTAK-9.hastalik_disi_muayene",
+        "ORTOPEDİ-1.kapali_reduksiyon_alci_atel",
+        "ORTOPEDİ-2.acik_kirik_parmak_ana_islem",
+        "ORTOPEDİ-4.pin_cikarma_subkutan_vida",
+        "ORTOPEDİ-5.implant_pin_cikarma_ayni_bolge",
+        "PATOLOJİ-1.rutin_boyama_histokimyasal_911160",
+        "PSİKİYATRİ-4.projektif_testler_yillik_birkez",
+        "RADYASYON ONKOLOJİSİ-1.film_digital_haftalik_limit",
+        "RADYASYON ONKOLOJİSİ-3.multileaf_collimator_800290",
+        "RADYOLOJİ-1.arkus_aortografi_supraaortik_bundling",
+        "RADYOLOJİ-10.tunelli_kateter_floro_vena_kavagrafi",
+        "RADYOLOJİ-3.stent_pta_bundling",
+        "RADYOLOJİ-4.nefrostomi_dilatasyon_stent_bundling",
+        "RADYOLOJİ-5.ptk_koledok_bilier_stent_bundling",
+        "RADYOLOJİ-8.abdominal_aortografi_anjiografi_bundling",
+        "RADYOLOJİ-9.diyaliz_santi_trombolitik_607700",
+        "blood_component_isbt128_barcode",
+        "conditional_addon_ek2d_neuromonitoring",
+        "conditional_addon_ek2d_neuronavigation",
+        "radiation_oncology.course_cap.brachytherapy_design",
+        "radiation_oncology.course_cap.brachytherapy_dose",
+        "radiation_oncology.course_cap.external_rt_design",
+        "radiation_oncology.course_cap.external_rt_dose",
+        "radiation_oncology.course_cap.linac_application",
+        "radiation_oncology.course_cap.rt_application",
+        "radiation_oncology.course_cap.rt_planning",
+        "radiation_oncology.course_cap.special_devices",
+        "radiation_oncology.same_day_collapse.afterloading",
+        "radiation_oncology.same_day_collapse.brachy_application",
+        "radiation_oncology.same_day_collapse.linac_application",
+        "radiation_oncology.same_day_collapse.rt_application",
+        "tablo15_11_drug_quantity_error",
+        "tablo15_12_duplicate_test",
+        "tablo15_15_material_preauth_missing",
+        "tablo15_16_material_type_missing",
+        "tablo15_21_inpatient_on_outpatient",
+        "tablo15_24_donor_prep_as_exam",
+        "tablo15_2_duplicate_exam_10day",
+        "tablo15_3_vakabasi_wrong_method",
+        "tablo15_4_normal_poliklinik_wrong_method",
+        "tablo15_7_green_area_bundled_extra",
+        "transplant_bundled_surgical_procedure",
+        "yatak_icu_overlap_510010",
+        "ÇOCUK CERRAHİSİ-1.testikuler_fiksasyon_hydrocele_herni",
+        "ÇOCUK CERRAHİSİ-2.hydrocelektomi_bilateral_ayni_kesi",
+        "ÇOCUK CERRAHİSİ-3.cocuk_sagligi_paket_ameliyat_sonrasi",
+        "ÇOCUK CERRAHİSİ-5.uretra_dilatasyon_sunnet",
+        "ÜROLOJİ-1.sunnet_parafimozis_fimozis",
+        "ÜROLOJİ-2.sistoskopi_dilatasyon_uretra_darligi",
+        "ÜROLOJİ-3.mesane_bcg_intrakaviter_704370"
+      ],
+      "entrypoint": "compute_patient_billing_report",
+      "evidence_files": [
+        "src/bilun/domain/billing/patient_report.py",
+        "src/bilun/domain/billing/wavea_full_evidence.py"
+      ],
+      "finding_type": "review and financial review",
+      "gating_condition": "claim_context is not None (enforced by early return/assert)",
+      "hidden_reason": "Focused and broad review/financial evidence is persisted as a draft capability; current billing APIs hide it until a complete release gate.",
+      "included_in_totals": false,
+      "inventory_level": "runtime_detector",
+      "legacy_monetary_hint_unconfirmed": false,
+      "mapping_status": "runtime_without_registry_family",
+      "money_fields": [],
+      "money_semantics": "informational",
+      "patient_deep_link_sections": [],
+      "patient_ui_surface": null,
+      "recommended_action_surface": null,
+      "registry_rule_id": [],
+      "regulatory_source": [],
+      "report_field": null,
+      "required_inputs": [
+        "claim_context"
+      ],
+      "runtime_id": "compute_patient_billing_report:project_full_wavea_evidence",
+      "runtime_status": "gated",
+      "source_lines": [
+        107
+      ],
+      "visibility_status": "hidden_runtime"
     },
     {
       "callable": "src.bilun.domain.billing.claim_anestezi_puani.recommend_anestezi_puani_from_claims",
@@ -7504,7 +8044,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_anestezi_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        173
+        186
       ],
       "visibility_status": "aggregate_only"
     },
@@ -7565,7 +8105,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_billing_strategy_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        145
+        158
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -7613,7 +8153,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_blood_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        158
+        171
       ],
       "visibility_status": "patient_visible"
     },
@@ -7661,7 +8201,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_care_setting_review_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        175
+        188
       ],
       "visibility_status": "patient_visible"
     },
@@ -7774,7 +8314,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_claim_submission_checklist_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        192
+        205
       ],
       "visibility_status": "patient_visible"
     },
@@ -7829,7 +8369,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_drg_package_adequacy_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        178
+        191
       ],
       "visibility_status": "patient_visible"
     },
@@ -7877,7 +8417,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_drg_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        153
+        166
       ],
       "visibility_status": "patient_visible"
     },
@@ -7920,7 +8460,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_icu_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        160
+        173
       ],
       "visibility_status": "aggregate_only"
     },
@@ -7990,7 +8530,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_material_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        174
+        187
       ],
       "visibility_status": "patient_visible"
     },
@@ -8037,7 +8577,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_medula_rejection_playbook_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        190
+        203
       ],
       "visibility_status": "patient_visible"
     },
@@ -8097,7 +8637,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_procedure_addon_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        182
+        195
       ],
       "visibility_status": "patient_visible"
     },
@@ -8140,7 +8680,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_refakatci_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        172
+        185
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8194,7 +8734,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_session_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        152
+        165
       ],
       "visibility_status": "patient_visible"
     },
@@ -8239,7 +8779,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_yatak_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        159
+        172
       ],
       "visibility_status": "patient_visible"
     },
@@ -8282,7 +8822,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_yenidogan_yatak_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        171
+        184
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8327,7 +8867,7 @@
       "runtime_id": "compute_patient_billing_report:reconcile_yatak_icu_overlap",
       "runtime_status": "gated",
       "source_lines": [
-        168
+        181
       ],
       "visibility_status": "not_applicable"
     },
@@ -8363,7 +8903,7 @@
       "runtime_id": "compute_patient_billing_report:set_missing_inputs_report",
       "runtime_status": "gated",
       "source_lines": [
-        118
+        131
       ],
       "visibility_status": "not_applicable"
     },
@@ -9382,7 +9922,7 @@
       "runtime_id": "compute_patient_billing_report:validate_drug_indication_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        195
+        208
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -9420,7 +9960,45 @@
       "runtime_id": "compute_patient_billing_report:validate_focused_context_ownership",
       "runtime_status": "gated",
       "source_lines": [
-        94
+        98
+      ],
+      "visibility_status": "not_applicable"
+    },
+    {
+      "callable": "src.bilun.domain.billing.wavea_full_evidence.validate_full_wavea_evidence_detail",
+      "catalog_visible": false,
+      "cohort_api_surface": null,
+      "cohort_ui_surface": null,
+      "duplicate_group": null,
+      "duplicate_status": "none",
+      "emitted_rule_ids_or_kinds": [],
+      "entrypoint": "compute_patient_billing_report",
+      "evidence_files": [
+        "src/bilun/domain/billing/patient_report.py",
+        "src/bilun/domain/billing/wavea_full_evidence.py"
+      ],
+      "finding_type": "internal",
+      "gating_condition": "claim_context is not None (enforced by early return/assert)",
+      "hidden_reason": "Validates complete Wave A evidence detail before it can be persisted.",
+      "included_in_totals": false,
+      "inventory_level": "runtime_detector",
+      "legacy_monetary_hint_unconfirmed": false,
+      "mapping_status": "runtime_without_registry_family",
+      "money_fields": [],
+      "money_semantics": "informational",
+      "patient_deep_link_sections": [],
+      "patient_ui_surface": null,
+      "recommended_action_surface": null,
+      "registry_rule_id": [],
+      "regulatory_source": [],
+      "report_field": null,
+      "required_inputs": [
+        "claim_context"
+      ],
+      "runtime_id": "compute_patient_billing_report:validate_full_wavea_evidence_detail",
+      "runtime_status": "gated",
+      "source_lines": [
+        108
       ],
       "visibility_status": "not_applicable"
     },

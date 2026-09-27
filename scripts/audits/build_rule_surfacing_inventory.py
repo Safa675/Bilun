@@ -173,13 +173,27 @@ EXPECTED_REPORT_CALLS = frozenset(
         "FocusedLegacyMaterializer",
         "RuleEvaluationBatch",
         "project_focused_legacy_rows",
-        "project_focused_evidence",
+        "materialize_broad_rules",
+        "project_full_wavea_evidence",
+        "validate_full_wavea_evidence_detail",
         "validate_focused_context_ownership",
     }
 )
 
 
-NON_RUNTIME_IMPORTED_CALLS = frozenset({"BillingActionReport"})
+NON_RUNTIME_IMPORTED_CALLS = frozenset({"BillingActionReport", "deepcopy"})
+
+# analyze_claim calls these detectors through its _broad_rows wrapper.
+# Pin each family/detector pair so substitutions fail the static audit.
+BROAD_WRAPPED_CALLS = {
+    "dental_2_4_1": "check_dental_2_4_1_for_context",
+    "gap_closing_misc": "check_gap_closing_misc_for_context",
+    "gap_closing_treatment_2": "check_gap_closing_treatment_for_context",
+    "fatura_inceleme_prose": "check_fatura_inceleme_for_context",
+    "payment_method_2_2": "check_payment_method_traceability_for_context",
+    "drug_combination_4_2": "check_drug_combination_for_context",
+    "treatment_pricing_2_4": "check_treatment_pricing_for_context",
+}
 
 
 ARTIFACTS_BY_CALLABLE: dict[str, tuple[str, ...]] = {
@@ -235,6 +249,8 @@ NON_EMITTING_RUNTIME_HELPERS = frozenset(
         "FocusedLegacyMaterializer",
         "RuleEvaluationBatch",
         "validate_focused_context_ownership",
+        "materialize_broad_rules",
+        "validate_full_wavea_evidence_detail",
     }
 )
 
@@ -304,13 +320,29 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
         "visibility": "not_applicable",
         "hidden_reason": "Its confirmed unpriced rows flow through the generic claim-compliance projection; review rows remain separate.",
     },
-    "project_focused_evidence": {
+    "materialize_broad_rules": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Captures ownership-bound broad detector rows and authored-rule statuses for the gated evidence projection.",
+    },
+    "validate_full_wavea_evidence_detail": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Validates complete Wave A evidence detail before it can be persisted.",
+    },
+    "project_full_wavea_evidence": {
         "finding_type": "review and financial review",
         "money": "informational",
         "money_fields": [],
         "included": False,
         "visibility": "hidden_runtime",
-        "hidden_reason": "Review and financial-review evidence is persisted as a draft capability; current billing APIs hide it until a complete release gate.",
+        "hidden_reason": "Focused and broad review/financial evidence is persisted as a draft capability; current billing APIs hide it until a complete release gate.",
     },
     "evaluate_rule_findings": {
         "surface": "claim_compliance",
@@ -967,12 +999,33 @@ def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
     }
     focused_modules = _focused_materializer_calls() if materializer_bindings else {}
     focused_discovered: set[str] = set()
+    broad_discovered: set[str] = set()
 
     grouped: dict[str, dict[str, Any]] = {}
     for node in ast.walk(fn):
         if not isinstance(node, ast.Call):
             continue
         target = _call_target(node.func, imports, qualified_imports)
+        if (
+            target is None
+            and entrypoint == "analyze_claim"
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_broad_rows"
+        ):
+            if (
+                len(node.args) != 2
+                or node.keywords
+                or not isinstance(node.args[0], ast.Constant)
+                or not isinstance(node.args[0].value, str)
+                or not isinstance(node.args[1], ast.Name)
+            ):
+                raise ValueError("broad wrapper call is not statically auditable")
+            family = node.args[0].value
+            detector = node.args[1].id
+            if BROAD_WRAPPED_CALLS.get(family) != detector or detector not in imports:
+                raise ValueError(f"broad wrapper detector call drift: {family} -> {detector}")
+            broad_discovered.add(family)
+            target = (detector, imports[detector])
         if (
             target is None
             and isinstance(node.func, ast.Attribute)
@@ -1014,6 +1067,15 @@ def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
         raise ValueError(
             "focused materializer entrypoint coverage drift: "
             f"missing={sorted(set(focused_modules) - focused_discovered)}"
+        )
+    if (
+        entrypoint == "analyze_claim"
+        and path.resolve() == ENGINE_PATH.resolve()
+        and broad_discovered != set(BROAD_WRAPPED_CALLS)
+    ):
+        raise ValueError(
+            "broad wrapper entrypoint coverage drift: "
+            f"missing={sorted(set(BROAD_WRAPPED_CALLS) - broad_discovered)}"
         )
 
     return [
@@ -1099,21 +1161,46 @@ def _validate_focused_report_dataflow() -> None:
     ]
     if len(batches) != 1:
         raise ValueError("focused report evaluation-batch projection drift")
-    for field in ("findings", "evaluations"):
+    def batch_attribute(field: str, owner: str, attribute: str) -> bool:
         value = next((kw.value for kw in batches[0].keywords if kw.arg == field), None)
-        if value is None or not any(
+        return value is not None and any(
             isinstance(node, ast.Attribute)
             and isinstance(node.value, ast.Name)
-            and node.value.id == "focused_batch"
-            and node.attr == field
+            and node.value.id == owner
+            and node.attr == attribute
             for node in ast.walk(value)
-        ):
-            raise ValueError(f"focused report {field} no longer reaches claim compliance")
-    evidence = imported_calls("project_focused_evidence")
-    if len(evidence) != 1 or not any(
-        isinstance(arg, ast.Name) and arg.id == "focused_batch" for arg in evidence[0].args
+        )
+
+    if not batch_attribute("findings", "focused_batch", "findings"):
+        raise ValueError("focused report findings no longer reaches claim compliance")
+    if not batch_attribute("findings", "evidence", "confirmed_broad_findings"):
+        raise ValueError("broad report findings no longer reaches claim compliance")
+    if not batch_attribute("evaluations", "compliance_batch", "evaluations"):
+        raise ValueError("original-five evaluations no longer reach claim compliance")
+    materialize = imported_calls("materialize_broad_rules")
+    if len(materialize) != 1 or not any(
+        isinstance(node, ast.Assign)
+        and node.value is materialize[0]
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "broad_bundle"
+        for node in ast.walk(fn)
     ):
-        raise ValueError("focused report review evidence no longer consumes the focused batch")
+        raise ValueError("broad report materializer path drift")
+    evidence = imported_calls("project_full_wavea_evidence")
+    if len(evidence) != 1 or [
+        arg.id for arg in evidence[0].args if isinstance(arg, ast.Name)
+    ] != ["pid", "claim_context", "focused_batch", "broad_bundle"]:
+        raise ValueError("Wave A review evidence no longer consumes focused and broad batches")
+    validated = imported_calls("validate_full_wavea_evidence_detail")
+    if len(validated) != 1 or not any(
+        isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "evidence"
+        and node.attr == "detail"
+        for node in ast.walk(validated[0])
+    ):
+        raise ValueError("Wave A evidence detail validation path drift")
     api = BILLING_API_PATH.read_text(encoding="utf-8")
     for token in (
         "def _gate_wavea_evidence(",
@@ -1138,7 +1225,9 @@ def _validate_focused_report_dataflow() -> None:
     gate_api = WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
     for token in (
         "def complete_build_evidence_available(reader: Any, index: Any, build_id: str) -> bool:",
-        "if not complete_evidence_available(index, build_id):",
+        'index.get("schema_version") == FULL_EVIDENCE_SCHEMA_VERSION',
+        'index.get("capability") == COMPLETE_EVIDENCE_CAPABILITY',
+        "validate_full_wavea_evidence_index(index)",
         "counts = declared_build_row_counts(reader, build_id)",
         'expected = counts.get("patient_billing_report_rows")',
         'counts.get("wavea_evidence_detail") == expected',
@@ -1688,12 +1777,23 @@ def resolve_emissions(
         return sorted(
             rule_id for rule_id, _ in focused_specs[row.callable] if rule_id not in non_emitting
         )
-    if row.callable in {"project_focused_legacy_rows", "project_focused_evidence"}:
+    if row.callable in {"project_focused_legacy_rows", "project_full_wavea_evidence"}:
+        broad_ids = (
+            {
+                rule_id
+                for detector in BROAD_WRAPPED_CALLS.values()
+                for filename in ARTIFACTS_BY_CALLABLE[detector]
+                for rule_id in _artifact_rule_ids(filename)
+            }
+            if row.callable == "project_full_wavea_evidence" else set()
+        )
         return sorted(
-            rule_id
-            for specs in focused_specs.values()
-            for rule_id, _ in specs
-            if rule_id not in non_emitting
+            broad_ids | {
+                rule_id
+                for specs in focused_specs.values()
+                for rule_id, _ in specs
+                if rule_id not in non_emitting
+            }
         )
     if row.callable in _seen:
         return []
@@ -2270,6 +2370,14 @@ def build_audit() -> dict[str, Any]:
         if rule_id not in non_emitting
         and disposition in {"unpriced_compliance", "drug_quantity"}
     }
+    broad_ids = {
+        rule_id
+        for detector in BROAD_WRAPPED_CALLS.values()
+        for filename in ARTIFACTS_BY_CALLABLE[detector]
+        for rule_id in _artifact_rule_ids(filename)
+    }
+    if len(BROAD_WRAPPED_CALLS) != 7 or len(broad_ids) != 496:
+        raise ValueError("Broad Wave A authored family or identity roster drift")
 
     return {
         "schema_version": 4,
@@ -2291,6 +2399,12 @@ def build_audit() -> dict[str, Any]:
             "currently_detector_emittable_rule_ids": len(focused_current),
             "non_emitting_unavailable_rule_ids": sorted(non_emitting),
             "potential_confirmed_unpriced_rule_ids": sorted(focused_confirmed_candidates),
+            "review_and_financial_evidence_visibility": "draft_gate_hidden",
+            "release_ready": False,
+        },
+        "broad_wavea_checkpoint": {
+            "detector_groups": len(BROAD_WRAPPED_CALLS),
+            "authored_rule_ids": len(broad_ids),
             "review_and_financial_evidence_visibility": "draft_gate_hidden",
             "release_ready": False,
         },
@@ -2331,12 +2445,20 @@ def render_report(audit: dict[str, Any]) -> str:
             + "."
         ),
         "",
+        (
+            f"The broad materializer reaches **{audit['broad_wavea_checkpoint']['detector_groups']}** "
+            f"groups with **{audit['broad_wavea_checkpoint']['authored_rule_ids']}** authored IDs. "
+            "It records evaluated and unavailable statuses; positive, review, financial, and "
+            "confirmed unpriced outputs remain separately classified. Its new patient/cohort "
+            "evidence is draft-gated until the complete-25-v1 release activation."
+        ),
+        "",
         f"Only **{len(audit['focused_wavea_checkpoint']['potential_confirmed_unpriced_rule_ids'])}** focused IDs are candidates for confirmed, unpriced claim compliance after source and input gates. "
         "They enter the in-memory generic projection, but the current patient, bill, and cohort APIs hide them until the complete-25-v1 activation gate. "
         "Focused review and financial-review evidence is a draft persisted capability and remains hidden by the same gate. "
         "It contributes no confirmed TRY amount or existing report total. This checkpoint does not certify a complete 25-family release.",
         "",
-        "Relative to the 2026-09-18 baseline, the runtime row count changes from **73** to **80**: seven explicit ownership, materializer, batch, and projection stages were added, with no focused detector removed. "
+        f"Relative to the 2026-09-18 baseline, the runtime row count changes from **73** to **{counts['runtime_detectors_adapters']}**: ownership, focused and broad materialization, batch, validation, and projection stages were added. The seven broad detectors remain in the static runtime inventory through their wrapper. "
         "The distinct ID/kind count changes from **1,924** to **1,933** because twelve specific radiation identities replace one generic radiation kind, while the corrected admission-window and exam-date detectors no longer claim to emit findings. "
         "Those two historical identities remain in the 32-ID unavailable evaluation roster.",
         "",
