@@ -2,82 +2,51 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
+from fastapi.responses import JSONResponse
 
 from src.bilun.shared.models import ClaimValidationRequest
 from src.bilun.api.schemas import BundledConsumablesResponse, ValidateClaimResponse
 from src.bilun.domain.materials import get_bundled_consumables, get_non_reimbursable_materials
 from src.bilun.domain.rule_engine import validate_claim as sut_validate_claim
+from src.bilun.domain.claim_validation_v2 import typed_validation_payload, validate_claim_v2
+from src.bilun.domain.validation_serialization import serialize_legacy_validation_result
+from src.bilun.api.validation_schemas import ValidateClaimV2Response
 
 router = APIRouter()
 
 
-@router.post("/validate-claim", response_model=ValidateClaimResponse)
-def validate_claim_endpoint(req: ClaimValidationRequest):
+@router.post("/validate-claim", response_model=ValidateClaimV2Response)
+def validate_claim_endpoint(
+    req: ClaimValidationRequest,
+    contract_version: str | None = Header(default=None, alias="X-Bilun-Validation-Contract"),
+):
+    """Use the marked v2 contract; old clients must explicitly upgrade."""
+    if contract_version != "2":
+        return JSONResponse(
+            status_code=409,
+            content={
+                "code": "validation_contract_upgrade_required",
+                "detail": (
+                    "Doğrulayıcı güncellendi; sayfayı yenileyin veya istemciyi yükseltin. / "
+                    "Reload the page or upgrade your client to validation contract 2."
+                ),
+                "legacy_endpoint": "/api/validate-claim/legacy",
+            },
+        )
+    return typed_validation_payload(validate_claim_v2(
+        req.model_dump(), supplied_claim=req.model_dump(exclude_unset=True)
+    ))
+
+
+@router.post("/validate-claim/legacy", response_model=ValidateClaimResponse)
+def validate_claim_legacy_endpoint(req: ClaimValidationRequest):
+    """Historical unclassified rows and financial aggregation, explicitly named.
+
+    Authentication is enforced by the same application middleware as v2. These
+    rows retain the previous semantics and are not typed Compliance findings.
     """
-    Validate a healthcare claim against BILUN bundling and exclusion rules.
-
-    Checks each material line item for:
-      - Bundling violations (EK-3B-1): consumables bundled into procedure price
-      - Exclusion violations (EK-3B): non-reimbursable materials
-      - Partial §3.1 prose bundling (material_bundling_prose)
-      - Partial §3.3 specialty annex prose (specialty_materials_prose, L4.4)
-      - Material line pricing from billed amounts or exact EK-3 code lookup
-      - Drug indication checks (§4.2.14.C oncology + §4.2.33 anti-VEGF) when
-        drug_context is provided: indication match, prescriber specialty, board
-        report, biomarker, dose protocol, prior therapy.
-
-    Returns validation result with violations, savings, and priced material lines.
-    """
-    claim_dict = {
-        "claim_id": req.claim_id,
-        "procedure_code": req.procedure_code,
-        "materials": [m.model_dump() for m in req.materials],
-        "drug_context": req.drug_context.model_dump() if req.drug_context else None,
-    }
-
-    result = sut_validate_claim(claim_dict)
-
-    return {
-        "claim_id": result.claim_id,
-        "coverage_scope": result.coverage_scope,
-        "specialty_coverage_scope": result.specialty_coverage_scope,
-        "is_valid": result.is_valid,
-        "total_claim_amount": result.total_claim_amount,
-        "total_savings_try": result.total_savings_try,
-        "total_risk_try": result.total_risk_try,
-        "n_bundling_violations": result.n_bundling_violations,
-        "n_exclusion_violations": result.n_exclusion_violations,
-        "validation_time_ms": result.validation_time_ms,
-        "summary": result.summary,
-        "violations": [
-            {
-                "rule": v.rule,
-                "severity": v.severity,
-                "material_name": v.material_name,
-                "message": v.message,
-                "savings_try": v.savings_try,
-                "risk_amount": v.risk_amount,
-                "details": v.details,
-            }
-            for v in result.violations
-        ],
-        "material_lines": [
-            {
-                "material_code": line.material_code,
-                "material_name": line.material_name,
-                "unit_price": line.unit_price,
-                "quantity": line.quantity,
-                "total_price": line.total_price,
-                "is_reimbursable": line.is_reimbursable,
-                "is_bundled": line.is_bundled,
-                "source": line.source,
-                "exactness_status": line.exactness_status,
-                "notes": line.notes,
-            }
-            for line in result.material_lines
-        ],
-    }
+    return serialize_legacy_validation_result(sut_validate_claim(req.model_dump()))
 
 
 @router.get("/bundled-consumables", response_model=BundledConsumablesResponse)

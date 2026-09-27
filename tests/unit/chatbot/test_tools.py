@@ -17,6 +17,20 @@ from src.bilun.chatbot.tools import (
 pytestmark = pytest.mark.unit
 
 
+def _typed_validator_stub():
+    return {
+        "contract_version": 2, "request_id": "request:1", "claim_id": "C1",
+        "validation_status": "partially_evaluated", "is_valid": None,
+        "violations": [], "advisories": [],
+        "coverage": {"evaluation_count": 496, "authored_rule_count": 496,
+                     "unresolved_count": 496, "disposition_counts": {"missing_inputs": 496},
+                     "scope": "submitted_request_facts_only"},
+        "provenance": {"identity_kind": "request_scoped_not_verified_patient",
+                       "supplied_field_count": 1, "adapter_defaults_are_evidence": False},
+        "summary": "Incomplete", "validation_time_ms": 1.0,
+    }
+
+
 def test_normalize_alert_category_maps_legacy_labels():
     assert _normalize_alert_category("surcharge-exposure") == "surcharge"
     assert _normalize_alert_category("copay-rate") == "copay_rates"
@@ -228,52 +242,33 @@ def test_execute_tool_call_validate_claim_remaps_stored_fields(monkeypatch):
 
     validator_captured: dict = {}
 
-    def fake_validate_claim(claim_dict):
+    def fake_validate_claim(claim_dict, *, supplied_claim):
         validator_captured.update(claim_dict)
-        # Return a ClaimValidationResult-shaped object (duck-typed).
-        class _Violation:
-            def __init__(self):
-                self.rule = "bundling"
-                self.severity = "warning"
-                self.material_name = "Stent"
-                self.message = "bundled"
-                self.savings_try = 0.0
-                self.risk_amount = 0.0
-
-        class _Line:
-            def __init__(self):
-                self.material_code = claim_dict["materials"][0]["code"]
-                self.material_name = claim_dict["materials"][0]["name"]
-                self.unit_price = claim_dict["materials"][0]["unit_price"]
-                self.quantity = claim_dict["materials"][0]["quantity"]
-                self.total_price = 2000.0
-                self.is_reimbursable = True
-                self.is_bundled = False
-                self.source = "billed"
-                self.exactness_status = "exact"
-                self.notes = ""
-
-        class _Result:
-            claim_id = claim_dict["claim_id"]
-            is_valid = True
-            violations = [_Violation()]
-            material_lines = [_Line()]
-            total_claim_amount = 2000.0
-            total_savings_try = 0.0
-            total_risk_try = 0.0
-            n_bundling_violations = 1
-            n_exclusion_violations = 0
-            validation_time_ms = 1.0
-            summary = "ok"
-
-        return _Result()
+        assert supplied_claim["materials"][0]["billed_amount"] == 2000.0
+        return {
+            **_typed_validator_stub(),
+            "contract_version": 2,
+            "is_valid": None,
+            "validation_status": "review_required",
+            "violations": [],
+            "advisories": [{
+                "evidence_id": "A1", "rule": "test", "rule_id": None,
+                "material_name": "Stent", "message": claim_dict["materials"][0]["code"],
+                "disposition": "review_only", "source_status": "historical_match_unverified",
+                "reason": "source_review_required",
+            }],
+            "legacy_result": {
+                "total_savings_try": 987654.32,
+                "violations": [{"message": "Unverified legacy denial statement"}],
+            },
+        }
 
     monkeypatch.setattr(
         "src.bilun.api.routes.patients.get_patient_claim_detail",
         fake_get_patient_claim_detail,
     )
     monkeypatch.setattr(
-        "src.bilun.domain.rule_engine.validate_claim",
+        "src.bilun.domain.claim_validation_v2.validate_claim_v2",
         fake_validate_claim,
     )
 
@@ -294,10 +289,13 @@ def test_execute_tool_call_validate_claim_remaps_stored_fields(monkeypatch):
     assert remapped["unit_price"] == 2000.0
     assert remapped["billed_amount"] == 2000.0
     assert validator_captured["drug_context"] is None
-    # Result serialized with the flattened route shape
+    # Result uses the same explicit v2 dictionary contract as the API
     assert "600160" not in result.content  # procedure_code not echoed, but materials are
     assert "EK3-001" in result.content
     assert "is_valid" in result.content
+    assert "legacy_result" not in result.content
+    assert "987654.32" not in result.content
+    assert "Unverified legacy denial statement" not in result.content
 
 
 def test_validate_claim_rejects_missing_claim_id():
@@ -307,6 +305,73 @@ def test_validate_claim_rejects_missing_claim_id():
     assert result.success is False
     assert result.error is not None
     assert "claim_id" in result.error
+
+
+def test_stored_validator_keeps_missing_charge_distinct_from_zero():
+    from src.bilun.chatbot.tools import _validate_stored_claim
+
+    captured = {}
+
+    def validator(legacy, *, supplied_claim):
+        captured.update(supplied_claim)
+        assert [row["billed_amount"] for row in legacy["materials"]] == [0, 0]
+        return {**_typed_validator_stub(), "legacy_result": {"total_risk_try": 777}}
+
+    result = _validate_stored_claim(
+        lambda *_: {"materials": [
+            {"material_name": "same", "unit_price_try": 100},
+            {"material_name": "same", "unit_price_try": 100, "billed_amount_try": 0},
+        ]},
+        validator, "P1", "C1",
+    )
+    assert result == _typed_validator_stub()
+    assert "billed_amount" not in captured["materials"][0]
+    assert captured["materials"][1]["billed_amount"] == 0
+
+
+def test_chatbot_and_api_use_identical_typed_contract(monkeypatch):
+    from src.bilun.api.routes.validation import validate_claim_endpoint
+    from src.bilun.chatbot.tools import _validate_stored_claim
+    from src.bilun.domain.claim_validation_v2 import validate_claim_v2
+    from src.bilun.shared.models import ClaimValidationRequest
+
+    monkeypatch.setattr("src.bilun.domain.rule_engine.time.perf_counter", lambda: 100)
+    chatbot = _validate_stored_claim(
+        lambda *_: {"materials": [{"material_name": "altın kanal tedavisi",
+                                    "unit_price_try": 100}]},
+        validate_claim_v2, "P1", "C1",
+    )
+    api = validate_claim_endpoint(
+        ClaimValidationRequest.model_validate({"claim_id": "C1", "materials": [
+            {"name": "altın kanal tedavisi", "unit_price": 100}
+        ]}), "2",
+    )
+    # Stored legacy adapter defaults quantity to 0; API defaults to 1. The
+    # provenance-aware surfaces still share the same supplied facts/identity.
+    assert {k: v for k, v in chatbot.items() if k != "legacy_result"} == {
+        k: v for k, v in api.items() if k != "legacy_result"
+    }
+    assert chatbot["is_valid"] is None
+    assert chatbot["violations"] == []
+    assert "legacy_result" not in chatbot
+
+
+def test_chatbot_shared_projection_rejects_injected_nested_money():
+    from pydantic import ValidationError
+    from src.bilun.chatbot.tools import _validate_stored_claim
+
+    def leaking_validator(*_, **__):
+        return {
+            **_typed_validator_stub(), "validation_status": "review_required",
+            "advisories": [{
+                "evidence_id": "A1", "rule": "test", "material_name": "material",
+                "message": "review", "disposition": "review_only",
+                "source_status": "historical_match_unverified", "savings_try": 999,
+            }],
+        }
+
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        _validate_stored_claim(lambda *_: {"materials": []}, leaking_validator, "P1", "C1")
 
 
 @pytest.mark.parametrize(

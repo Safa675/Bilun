@@ -48,6 +48,18 @@ def _get_json(resp):
 
 @pytest.mark.smoke
 class TestSutClaimValidation:
+    def test_versioned_validator_keeps_incomplete_inputs_unresolved(self, api_client):
+        with _skip_if_unavailable():
+            res = _get_json(api_client.post(
+                "/api/validate-claim", json={"materials": []},
+                headers={"X-Bilun-Validation-Contract": "2"},
+            ))
+            assert res["contract_version"] == 2
+            assert res["validation_status"] == "partially_evaluated"
+            assert res["is_valid"] is None
+            assert res["violations"] == []
+            assert res["coverage"]["authored_rule_count"] == 496
+
     def test_cardiac_stent_separately_payable_per_3_1_4g(self, api_client):
         """Coronary stents are NOT bundled — per SUT §3.1.4(2)/C002801 they are
         'dâhil olmayan' (excluded from the diagnosis-based payment) and 'Kurumca
@@ -67,7 +79,7 @@ class TestSutClaimValidation:
                     },
                 ],
             }
-            res = _get_json(api_client.post("/api/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim/legacy", json=body))
             assert res["claim_id"] == "TEST-STENT-001"
             assert len(res["violations"]) >= 1
             assert any(v["severity"] == "info" for v in res["violations"])
@@ -84,7 +96,7 @@ class TestSutClaimValidation:
                     {"name": "Eldiven", "unit_price": 3, "quantity": 20},
                 ],
             }
-            res = _get_json(api_client.post("/api/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim/legacy", json=body))
             assert res["claim_id"] == "TEST-BUNDLE-001"
             assert len(res["violations"]) >= 1
             assert any(v["severity"] in ("warning", "error") for v in res["violations"])
@@ -97,7 +109,7 @@ class TestSutClaimValidation:
                 "procedure_code": "GENERIC",
                 "materials": [],
             }
-            res = _get_json(api_client.post("/api/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim/legacy", json=body))
             assert res["is_valid"] is True
             assert len(res["violations"]) == 0
 
@@ -110,7 +122,7 @@ class TestSutClaimValidation:
                     {"name": "Bistüri", "unit_price": 15, "quantity": 5},
                 ],
             }
-            res = _get_json(api_client.post("/api/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim/legacy", json=body))
             _assert_keys(
                 res,
                 {
@@ -144,7 +156,7 @@ class TestSutClaimValidation:
                     },
                 ],
             }
-            res = _get_json(api_client.post("/api/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim/legacy", json=body))
             if len(res["material_lines"]) > 0:
                 line = res["material_lines"][0]
                 _assert_keys(

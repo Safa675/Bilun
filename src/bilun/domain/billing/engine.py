@@ -24,6 +24,8 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.3.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from typing import Any
 
 from src.bilun.domain.billing.rule_findings import (
@@ -107,7 +109,11 @@ from src.bilun.domain.rules.exclusion_rules import (
 )
 
 
-def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+def analyze_claim(
+    ctx: PatientClaimContext,
+    *,
+    prepared_broad_rows: Mapping[str, Sequence[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
     """Run the regulatory validation motors against a PatientClaimContext.
 
     Returns a flat list of violation dicts (one per detected issue), in
@@ -119,7 +125,23 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     material motors only; drug_indication runs only when ``ctx.drug_lines``
     is non-empty (the adapter skips drug-line construction when no
     ``drug_context`` was supplied, mirroring the legacy early-return).
+
+    A versioned validator may supply already-observed broad rows. The complete
+    family mapping avoids rerunning those engines; all original motor positions
+    and applicability guards still apply. The default direct-call path retains
+    its historical full-context wrapper behavior.
     """
+    if prepared_broad_rows is not None:
+        from src.bilun.domain.billing.broad_rule_materializer import BROAD_FAMILY_ORDER
+
+        if set(prepared_broad_rows) != set(BROAD_FAMILY_ORDER):
+            raise ValueError("Prepared broad rows must contain exactly seven authored families")
+
+    def _broad_rows(family: str, detector) -> list[dict[str, Any]]:
+        if prepared_broad_rows is None:
+            return detector(ctx)
+        return deepcopy(list(prepared_broad_rows[family]))
+
     if ctx.patient_id:
         validate_focused_context_ownership(ctx.patient_id, ctx)
     violations: list[dict[str, Any]] = []
@@ -159,7 +181,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         violations.extend(drug_indication_batch.legacy_violations)
 
     # 6. §2.4.1 dental prose rules.
-    violations.extend(check_dental_2_4_1_for_context(ctx))
+    violations.extend(_broad_rows("dental_2_4_1", check_dental_2_4_1_for_context))
 
     # 7. §3.1.2 EK-3C-1 pre-authorization materials.
     violations.extend(check_material_preauth_for_context(ctx))
@@ -168,23 +190,23 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     violations.extend(check_material_miat_for_context(ctx))
 
     # 9. Cross-section gap-closing claim-level gates (§1.5/§1.6/§2.2/§2.3/§2.5).
-    violations.extend(check_gap_closing_misc_for_context(ctx))
-    violations.extend(check_gap_closing_treatment_for_context(ctx))
+    violations.extend(_broad_rows("gap_closing_misc", check_gap_closing_misc_for_context))
+    violations.extend(_broad_rows("gap_closing_treatment_2", check_gap_closing_treatment_for_context))
 
     # 9.5. Fatura İnceleme Usul ve Esasları — SGK billing audit guideline.
     # NOT SUT. Separate regulatory corpus. 91 algorithmic denial rules from
     # 28 branches + Ortak Kriterler. Fires when claim data matches denial
     # conditions (e.g. acilde kontrol muayenesi, paket işlemde ilaç faturalama).
-    violations.extend(check_fatura_inceleme_for_context(ctx))
+    violations.extend(_broad_rows("fatura_inceleme_prose", check_fatura_inceleme_for_context))
 
     # 10. §2.2 payment-method traceability (secondary, info-severity — the
     # primary _classify_payment_method_kind decision is unchanged; this emits
     # no-pay/mandatory-billing nuances from the JSON as traceability flags).
-    violations.extend(check_payment_method_traceability_for_context(ctx))
+    violations.extend(_broad_rows("payment_method_2_2", check_payment_method_traceability_for_context))
 
     # 11. §4.2 drug-combination (concurrent drug pairs/triplets on one claim).
     if ctx.drug_lines:
-        violations.extend(check_drug_combination_for_context(ctx))
+        violations.extend(_broad_rows("drug_combination_4_2", check_drug_combination_for_context))
 
     # 12. Procedure-driven motors — run only when procedure lines are present
     # (the dict-adapter path has none; the orchestrator/billing path does).
@@ -198,7 +220,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # §2.4 treatment-pricing prose (partial: 17 of 182 rules fire on
         # derivable keys; the rest need session counters / IVF cycles / clinical
         # scores absent from the claim model and honest-skip).
-        violations.extend(check_treatment_pricing_for_context(ctx))
+        violations.extend(_broad_rows("treatment_pricing_2_4", check_treatment_pricing_for_context))
 
     # ── El Kitabı-derived validation motors ───────────────────────────────
     # These detectors run on the typed context and emit violations for the
