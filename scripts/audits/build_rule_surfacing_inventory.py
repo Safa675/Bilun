@@ -1921,12 +1921,6 @@ def _runtime_row(
         if row.callable == "project_claim_compliance"
         else []
     )
-    public_emissions = (
-        sorted(set(emissions) - set(draft_hidden))
-        if meta.get("visibility")
-        in {"patient_visible", "cohort_visible", "patient_and_cohort_visible", "aggregate_only"}
-        else []
-    )
 
     return {
         "inventory_level": "runtime_detector",
@@ -1938,9 +1932,15 @@ def _runtime_row(
         "gating_condition": " OR ".join(dict.fromkeys(gates)) if gates else "always within entrypoint",
         "required_inputs": required_inputs,
         "emitted_rule_ids_or_kinds": emissions,
-        "public_emitted_rule_ids_or_kinds": public_emissions,
-        "draft_hidden_emitted_rule_ids_or_kinds": draft_hidden,
-        "public_visibility_gate": "complete-25-v1" if draft_hidden else None,
+        **(
+            {
+                "public_emitted_rule_ids_or_kinds": sorted(set(emissions) - set(draft_hidden)),
+                "draft_hidden_emitted_rule_ids_or_kinds": draft_hidden,
+                "public_visibility_gate": "complete-25-v1",
+            }
+            if draft_hidden
+            else {}
+        ),
         "report_field": report_field,
         "recommended_action_surface": meta.get("surface"),
         "finding_type": meta.get("finding_type"),
@@ -2362,7 +2362,7 @@ def render_report(audit: dict[str, Any]) -> str:
         emissions = row["emitted_rule_ids_or_kinds"]
         emission_text = f"{len(emissions)} id(s)" if len(emissions) > 3 else ", ".join(emissions) or "—"
         notes = row["hidden_reason"] or ("registry=" + ",".join(row["registry_rule_id"]) if row["registry_rule_id"] else "no registry family")
-        if row["draft_hidden_emitted_rule_ids_or_kinds"]:
+        if row.get("draft_hidden_emitted_rule_ids_or_kinds"):
             notes += (
                 f"; {len(row['draft_hidden_emitted_rule_ids_or_kinds'])} in-memory ID(s) "
                 f"are publicly hidden until {row['public_visibility_gate']}"
