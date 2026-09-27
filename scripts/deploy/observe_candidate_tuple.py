@@ -201,7 +201,7 @@ def _process_observation(
 
 
 def _authoritative_files_predate_listener(root: Path, started: datetime, *, backend: bool) -> None:
-    ignored_roots = {".git", ".cache", ".worktrees", "frontend"} if backend else {".git"}
+    ignored_roots = {".git", ".cache", ".worktrees", "frontend", "logs"} if backend else {".git"}
     for current, directories, files in os.walk(root, followlinks=False):
         current_path = Path(current)
         if current_path == root:

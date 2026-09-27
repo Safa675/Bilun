@@ -244,6 +244,16 @@ def test_effective_environment_and_runtime_mtime_drift_block(tmp_path: Path) -> 
         _observe(spec, proc_root, health)
 
 
+def test_candidate_runtime_log_written_after_start_is_not_source_drift(tmp_path: Path) -> None:
+    spec, proc_root, health = _fixture(tmp_path)
+    log = spec.backend_runtime / "logs" / "bilun.log"
+    log.parent.mkdir()
+    log.write_text("candidate started\n")
+    os.utime(log, (1800000010, 1800000010))
+
+    assert _observe(spec, proc_root, health)["status"] == "candidate_tuple_observed"
+
+
 def test_cache_forged_complete_marker_or_modified_bytes_block(tmp_path: Path) -> None:
     spec, proc_root, health = _fixture(tmp_path)
     with duckdb.connect(str(spec.cache_path)) as connection:

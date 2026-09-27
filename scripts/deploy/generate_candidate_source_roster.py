@@ -406,6 +406,11 @@ def validate_runtime_read_trace(
         Path(_git(checkout, "rev-parse", option).decode().strip()).resolve(strict=True)
         for option in ("--absolute-git-dir", "--git-common-dir")
     )
+    global_git_configs = frozenset({
+        Path.home() / ".gitconfig",
+        Path.home() / ".config/git/config",
+        Path("/etc/gitconfig"),
+    })
     if any(
         _relative_to(checkout, root)
         or _relative_to(root, checkout)
@@ -467,7 +472,7 @@ def validate_runtime_read_trace(
         git_control = (
             path == checkout / ".git"
             or any(_relative_to(path, root) for root in git_roots)
-            or path.name in {".gitconfig", "gitconfig"}
+            or path in global_git_configs
         )
         if git_control:
             if path.is_file():

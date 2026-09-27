@@ -193,13 +193,27 @@ def test_trace_records_git_identity_reads_without_accepting_unrostered_sources(
         ],
     )
 
+    roster = _roster(candidate)
     report = validate_runtime_read_trace(
-        trace, roster=_roster(candidate),
+        trace, roster=roster,
         candidate_db=tmp_path / "candidate.duckdb", dependency_roots=(),
     )
 
     assert report["git_control_file_count"] == 1
     assert report["runtime_reads_verified"] is False
+    rogue_config = _put(checkout, "data/gazette/prose_rules/.gitconfig")
+    _trace(
+        trace,
+        [
+            f'openat(AT_FDCWD, "config", O_RDONLY) = 3<{rogue_config}>',
+            "+++ exited with 0 +++",
+        ],
+    )
+    with pytest.raises(ValueError, match="outside source roster"):
+        validate_runtime_read_trace(
+            trace, roster=roster,
+            candidate_db=tmp_path / "candidate.duckdb", dependency_roots=(),
+        )
 
 
 def test_roster_fails_on_checkout_drift_or_untracked_glob_source(tmp_path: Path):
