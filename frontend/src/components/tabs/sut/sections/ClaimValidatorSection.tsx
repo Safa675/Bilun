@@ -389,7 +389,7 @@ function ViolationRow({ violation, t }: { violation: SutViolation; t: ReturnType
   );
 }
 
-function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typeof useT> }) {
+export function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typeof useT> }) {
   return (
     <tr>
       <td className="text-left">
@@ -399,8 +399,8 @@ function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typ
       <td className="text-right text-sm" style={{ color: "#71717A" }}>{fmtTRY2(line.unit_price)}</td>
       <td className="text-right text-sm" style={{ color: "#71717A" }}>{line.quantity}</td>
       <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(line.total_price)}</td>
-      <td className="text-center"><StatusPill ok={line.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} /></td>
-      <td className="text-center"><StatusPill ok={!line.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} invertColor /></td>
+      <td className="text-center"><StatusPill ok={line.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} unknownLabel={t("sections.claimValidator.annexUnconfirmed")} /></td>
+      <td className="text-center"><StatusPill ok={line.is_bundled === null ? null : !line.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} unknownLabel={t("sections.claimValidator.annexUnconfirmed")} invertColor /></td>
       <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>
         {line.source}
         {line.exactness_status === "missing_exact_inputs" && (
@@ -412,7 +412,10 @@ function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typ
   );
 }
 
-function StatusPill({ ok, yesLabel, noLabel, invertColor }: { ok: boolean; yesLabel: string; noLabel: string; invertColor?: boolean }) {
+function StatusPill({ ok, yesLabel, noLabel, unknownLabel, invertColor }: { ok: boolean | null; yesLabel: string; noLabel: string; unknownLabel: string; invertColor?: boolean }) {
+  if (ok === null) {
+    return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: "rgba(113, 113, 122, 0.10)", color: "#71717A" }}>{unknownLabel}</span>;
+  }
   const isGood = invertColor ? !ok : ok;
   const bg = isGood ? theme.accentAlpha(0.12) : "rgba(185, 28, 28, 0.10)";
   const color = isGood ? theme.accent : "#B91C1C";

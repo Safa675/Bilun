@@ -17,6 +17,7 @@ from src.bilun.domain.materials.catalog_lookup import (
 from src.bilun.domain.materials.exclusions import (
     is_consumable_bundled,
     is_material_reimbursable,
+    care_setting_from_header,
 )
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
@@ -94,17 +95,20 @@ def _material_eligible_for_uplift(
     material_code: str,
     *,
     pairing_mode: str,
+    care_setting: str | None = None,
 ) -> tuple[bool, str | None]:
     code = str(material_code or "").strip().upper()
     if not code:
         return False, "missing_material_code"
     if not is_material_in_ek3_catalog(code):
         return False, "not_in_ek3"
-    if not is_material_reimbursable("", material_code=code):
-        return False, "not_reimbursable"
+    reimbursable = is_material_reimbursable("", material_code=code)
+    if reimbursable is not True:
+        return False, "exclusion_applicability_unavailable" if reimbursable is None else "not_reimbursable"
     name = resolve_material_name_by_code(code) or code
-    if is_consumable_bundled(name):
-        return False, "ek3b1_bundled_consumable"
+    bundled = is_consumable_bundled(name, care_setting=care_setting)
+    if bundled is not False:
+        return False, "bundling_applicability_unavailable" if bundled is None else "ek3b1_bundled_consumable"
     if pairing_mode == "separate_billing":
         if not is_separate_billing_allowed(code) and not is_material_in_ek3c_catalog(code):
             return False, "separate_billing_not_allowed"
@@ -167,6 +171,7 @@ def detect_missing_billable_material_opportunities(
                 eligible, _skip_reason = _material_eligible_for_uplift(
                     code,
                     pairing_mode=pairing_mode,
+                    care_setting=care_setting_from_header(claim),
                 )
                 if not eligible:
                     continue
