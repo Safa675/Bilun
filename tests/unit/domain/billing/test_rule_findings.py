@@ -12,6 +12,7 @@ from src.bilun.domain.billing.rule_findings import (
     RuleEvaluation,
     RuleEvaluationBatch,
     RuleFinding,
+    build_evaluation_id,
     build_finding_id,
     evaluate_rule_findings,
 )
@@ -95,6 +96,61 @@ def test_finding_identity_distinguishes_line_kind_for_same_line_id() -> None:
     assert procedure_id != drug_id
     assert procedure_id == "claim_compliance:rule:P1:C1:procedure:L1"
     assert drug_id == "claim_compliance:rule:P1:C1:drug:L1"
+
+
+def test_evaluation_identity_distinguishes_two_source_lines_on_one_claim() -> None:
+    common = {
+        "patient_id": "P1",
+        "claim_id": "C1",
+        "rule_id": "rule:1",
+        "evaluation_status": "evaluated",
+        "required_inputs": [],
+        "missing_inputs": [],
+        "line_kind": "procedure",
+    }
+    first = RuleEvaluation(**common, line_id="L/1", decision="matched")
+    second = RuleEvaluation(**common, line_id="L/2", decision="not_matched")
+
+    assert first.evaluation_id != second.evaluation_id
+    assert first.evaluation_id == build_evaluation_id(
+        rule_id="rule:1",
+        patient_id="P1",
+        claim_id="C1",
+        line_kind="procedure",
+        line_id="L/1",
+    )
+    assert first.evaluation_id == "claim_evaluation:rule%3A1:P1:C1:procedure:L%2F1"
+    with pytest.raises(ValueError, match="Line evaluations require"):
+        RuleEvaluation(**common, line_id=None)
+    with pytest.raises(ValueError, match="source line ID must be nonempty"):
+        RuleEvaluation(**common, line_id="  ")
+    with pytest.raises(ValueError, match="Line evaluations require a claim ID"):
+        RuleEvaluation(**(common | {"claim_id": None}), line_id="L1")
+
+
+def test_line_evaluations_keep_source_ids_through_patient_projection() -> None:
+    rows = tuple(
+        RuleEvaluation(
+            patient_id="P1",
+            claim_id="C1",
+            rule_id="future_multirow_rule",
+            evaluation_status="evaluated",
+            required_inputs=["procedure_lines"],
+            missing_inputs=[],
+            line_kind="procedure",
+            line_id=line_id,
+            decision="matched",
+        )
+        for line_id in ("L1", "L2")
+    )
+
+    projection = claim_compliance.project_claim_compliance(
+        "P1", RuleEvaluationBatch(evaluations=rows)
+    )
+
+    assert [row["procedure_line_id"] for row in projection.evaluations] == ["L1", "L2"]
+    assert len({row["evaluation_id"] for row in projection.evaluations}) == 2
+    assert all(row["decision"] == "matched" for row in projection.evaluations)
 
 
 def _claim() -> ClaimHeader:

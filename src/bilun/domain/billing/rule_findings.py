@@ -79,6 +79,21 @@ def build_finding_id(
     )
 
 
+def build_evaluation_id(
+    *,
+    rule_id: str,
+    patient_id: str,
+    claim_id: str | None,
+    line_kind: LineKind,
+    line_id: str | None,
+) -> str:
+    """Identify one rule evaluation at its actual claim or source-line scope."""
+    return "claim_evaluation:" + ":".join(
+        quote(value, safe="")
+        for value in (rule_id, patient_id, claim_id or "", line_kind, line_id or "")
+    )
+
+
 @dataclass(frozen=True)
 class RuleFinding:
     finding_id: str
@@ -121,6 +136,38 @@ class RuleEvaluation:
     evaluation_status: EvaluationStatus
     required_inputs: list[str]
     missing_inputs: list[str]
+    line_kind: LineKind = "claim"
+    line_id: str | None = None
+    decision: str | None = None
+    reason: str | None = None
+    evaluation_id: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if not self.patient_id.strip() or not self.rule_id.strip():
+            raise ValueError("Evaluation patient and rule IDs must be nonempty")
+        if self.claim_id is not None and not self.claim_id.strip():
+            raise ValueError("Evaluation claim ID must be nonempty when present")
+        if self.line_kind not in ("claim", "procedure", "drug", "material"):
+            raise ValueError(f"Unknown evaluation line kind: {self.line_kind}")
+        if self.line_kind != "claim" and self.claim_id is None:
+            raise ValueError("Line evaluations require a claim ID")
+        if (self.line_kind == "claim") != (self.line_id is None):
+            raise ValueError(
+                "Line evaluations require a line ID; claim evaluations cannot have one"
+            )
+        if self.line_id is not None and not self.line_id.strip():
+            raise ValueError("Evaluation source line ID must be nonempty")
+        object.__setattr__(
+            self,
+            "evaluation_id",
+            build_evaluation_id(
+                rule_id=self.rule_id,
+                patient_id=self.patient_id,
+                claim_id=self.claim_id,
+                line_kind=self.line_kind,
+                line_id=self.line_id,
+            ),
+        )
 
 
 @dataclass(frozen=True)
