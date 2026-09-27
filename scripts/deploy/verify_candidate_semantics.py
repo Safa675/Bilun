@@ -308,7 +308,7 @@ def _check_full_bill_evidence(
             patient_detail is None
             or not claim_id
             or bill.get("patient_id") != patient_id
-            or bill.get("claim_id") != claim_id
+            or ("claim_id" in bill and bill["claim_id"] != claim_id)
             or detail.get("build_id") != build_id
             or detail.get("data_source") != bill.get("data_source")
             or detail.get("data_source") != patient_detail.get("data_source")

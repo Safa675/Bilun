@@ -108,8 +108,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path]:
             not in ("claim_reviews", "claim_advisories", "financial_findings", "wavea_coverage")
         }
     )
-    candidate_bill = {**candidate_report, "claim_id": "C1"}
-    baseline_bill = {**baseline_report, "claim_id": "C1"}
+    candidate_bill = dict(candidate_report)
+    baseline_bill = dict(baseline_report)
     index = build_wavea_evidence_index({"P1": detail})
     index["build_id"] = "candidate"
 
@@ -172,7 +172,7 @@ def _full_fixture(tmp_path: Path, ctx=None, *, bill_claim: str = "C1") -> tuple[
     patient_projection = _full_projection(ctx)
     bill_projection = _full_projection(bill_ctx)
 
-    def report_payload(claim_ctx, projection, *, claim_id: str | None = None) -> dict:
+    def report_payload(claim_ctx, projection) -> dict:
         report = json_ready(
             _without_wavea_detail(compute_patient_billing_report("P1", claim_context=claim_ctx))
         )
@@ -180,12 +180,10 @@ def _full_fixture(tmp_path: Path, ctx=None, *, bill_claim: str = "C1") -> tuple[
         report["claim_advisories"] = asdict(projection.claim_advisories)
         report["financial_findings"] = asdict(projection.financial_findings)
         report["wavea_coverage"] = projection.coverage
-        if claim_id is not None:
-            report["claim_id"] = claim_id
         return report
 
     patient_report = report_payload(ctx, patient_projection)
-    bill_report = report_payload(bill_ctx, bill_projection, claim_id=bill_claim)
+    bill_report = report_payload(bill_ctx, bill_projection)
     baseline_patient = original_five_report_payload(
         {
             key: value
@@ -347,6 +345,11 @@ def test_full_draft_checkpoint_proves_legacy_parity_but_blocks_release(tmp_path:
 
 def test_full_v2_evidence_reconciles_advisories_bills_and_pinned_scopes(tmp_path: Path) -> None:
     baseline, candidate, roster = _full_fixture(tmp_path)
+    with duckdb.connect(str(candidate), read_only=True) as con:
+        bill = json.loads(
+            con.execute("SELECT payload_json FROM patient_bill_billing_report_rows").fetchone()[0]
+        )
+    assert "claim_id" not in bill  # The producer stores claim identity in the composite DB key.
 
     report = _verify(baseline, candidate, roster)
 
@@ -372,6 +375,25 @@ def test_full_v2_evidence_reconciles_advisories_bills_and_pinned_scopes(tmp_path
     payload["claim_advisories"]["has_more"] = True
     _update_json(candidate, "patient_billing_report_rows", payload)
     with pytest.raises(ValueError, match="Default claim_advisories disagrees"):
+        _verify(baseline, candidate, roster)
+
+
+def test_conflicting_embedded_bill_claim_id_blocks_even_with_matching_legacy_rows(
+    tmp_path: Path,
+) -> None:
+    baseline, candidate, roster = _full_fixture(tmp_path)
+    for path in (baseline, candidate):
+        with duckdb.connect(str(path)) as con:
+            bill = json.loads(
+                con.execute("SELECT payload_json FROM patient_bill_billing_report_rows").fetchone()[0]
+            )
+            bill["claim_id"] = "C2"
+            con.execute(
+                "UPDATE patient_bill_billing_report_rows SET payload_json = ?",
+                [json.dumps(bill)],
+            )
+
+    with pytest.raises(ValueError, match="Wave A bill source identity differs"):
         _verify(baseline, candidate, roster)
 
 
