@@ -511,6 +511,75 @@ def test_detect_510010_on_icu_discharge_day_violation() -> None:
     assert "510090" in v["detail"]
 
 
+@pytest.mark.parametrize("bed_amount", ["0", "-0.01", "-742.60"])
+def test_detect_non_positive_bed_charge_has_no_double_billing(bed_amount: str) -> None:
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
+
+    claims = [
+        _make_claim_header(claim_id="ICU"),
+        _make_claim_header(claim_id="SRV", department="genel_cerrahi"),
+    ]
+    procs = [
+        _make_proc_line(claim_id="ICU", procedure_line_id="ICU-LINE"),
+        _make_proc_line(
+            claim_id="SRV",
+            procedure_line_id="BED-LINE",
+            procedure_code="510010",
+            procedure_name="Standart yatak",
+            procedure_date=_ICU_DISCHARGE,
+            billed_amount_try=bed_amount,
+        ),
+    ]
+
+    assert detect_yatak_icu_overlap(claims, procs) == []
+
+
+@pytest.mark.parametrize("bed_amount", ["0.01", "742.60"])
+def test_detect_positive_bed_names_only_qualifying_icu_evidence(bed_amount: str) -> None:
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
+
+    claims = [
+        _make_claim_header(claim_id="ICU-DAY-RATE"),
+        _make_claim_header(claim_id="SRV", department="genel_cerrahi"),
+        _make_claim_header(claim_id="OUTPATIENT", claim_type="ayakta"),
+        _make_claim_header(claim_id="MISSING-ADMISSION", admission=None),
+        _make_claim_header(claim_id="ICU-PACKAGE"),
+        _make_claim_header(claim_id="EARLIER-ICU", discharge=date(2026, 7, 12)),
+    ]
+    procs = [
+        _make_proc_line(claim_id=claim_id, procedure_line_id=f"{claim_id}-LINE")
+        for claim_id in ("ICU-DAY-RATE", "OUTPATIENT", "MISSING-ADMISSION", "EARLIER-ICU")
+    ]
+    procs.extend(
+        [
+            _make_proc_line(
+                claim_id="ICU-PACKAGE",
+                procedure_line_id="PACKAGE-LINE",
+                procedure_code="P552001",
+            ),
+            _make_proc_line(
+                claim_id="SRV",
+                procedure_line_id="BED-LINE",
+                procedure_code="510010",
+                procedure_name="Standart yatak",
+                procedure_date=_ICU_DISCHARGE,
+                billed_amount_try=bed_amount,
+            ),
+        ]
+    )
+
+    violations = detect_yatak_icu_overlap(claims, procs)
+
+    assert len(violations) == 1
+    finding = violations[0]
+    assert finding["claim_id"] == "SRV"
+    assert finding["procedure_line_id"] == "BED-LINE"
+    assert finding["icu_claim_id"] == "ICU-DAY-RATE,ICU-PACKAGE"
+    assert finding["risk_amount_try"] == pytest.approx(float(bed_amount))
+    assert finding["severity"] == "error"
+    assert finding["detail"].endswith("İlgili YB takibi: ICU-DAY-RATE,ICU-PACKAGE.")
+
+
 def test_detect_different_days_no_violation() -> None:
     """(b) Farklı günler → violation yok."""
     from src.bilun.domain.prose_rules.yatak_icu_overlap import (

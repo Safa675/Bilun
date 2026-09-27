@@ -238,7 +238,13 @@ def test_wave_a_lab_finding_projects_through_generic_cohort_surface() -> None:
 
 
 def test_future_rule_finding_projects_without_cohort_rule_registration() -> None:
-    finding_id = "canonical-future-finding-id"
+    finding_id = build_finding_id(
+        rule_id="future_rule_added_after_cohort_code",
+        patient_id="P-FUTURE",
+        claim_id="C-FUTURE",
+        line_kind="procedure",
+        line_id="PROC-FUTURE",
+    )
     reports = {
         "P-FUTURE": {
             "claim_compliance": {
@@ -388,6 +394,7 @@ def test_claim_compliance_dedupes_and_drops_noncanonical_rows() -> None:
         dict(canonical, line_id="DRUG-OTHER"),
         dict(canonical, procedure_line_id="PROC-OTHER"),
         dict(canonical, finding_id=""),
+        dict(canonical, finding_id="claim_compliance:forged", action_id="claim_compliance:forged"),
         dict(canonical, action_id="wrong-action-id"),
     ]
     reports = {
@@ -403,6 +410,37 @@ def test_claim_compliance_dedupes_and_drops_noncanonical_rows() -> None:
 
     assert len(rows) == 1
     assert rows[0]["finding_id"] == rows[0]["action_id"] == finding_id
+
+
+def test_claim_compliance_conflicting_finding_identity_fails_closed() -> None:
+    finding_id = build_finding_id(
+        rule_id="future_rule",
+        patient_id="P-STRICT",
+        claim_id="C-STRICT",
+        line_kind="procedure",
+        line_id="L1",
+    )
+    row = {
+        "finding_id": finding_id,
+        "action_id": finding_id,
+        "patient_id": "P-STRICT",
+        "claim_id": "C-STRICT",
+        "rule_id": "future_rule",
+        "line_kind": "procedure",
+        "line_id": "L1",
+        "procedure_line_id": "L1",
+        "detail": "first observation",
+    }
+    reports = {
+        "P-STRICT": {
+            "claim_compliance": {
+                "findings": [row, dict(row, detail="conflicting observation")]
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="Conflicting claim finding identity"):
+        build_cohort_compliance_index(reports)
 
 
 def test_claim_compliance_evaluations_are_generic_validated_and_deduped_by_rule_and_claim() -> None:
@@ -455,6 +493,130 @@ def test_claim_compliance_evaluations_are_generic_validated_and_deduped_by_rule_
     assert summary["non_evaluated_total"] == 1
     assert summary["details"][0]["rule_id"] == "future_missing_rule"
     assert summary["details"][0]["status"] == "missing_inputs"
+
+
+def test_claim_compliance_preserves_distinct_line_evaluations_and_rejects_wrong_identity() -> None:
+    from src.bilun.domain.billing.rule_findings import build_evaluation_id
+
+    base = {
+        "patient_id": "P-LINES",
+        "claim_id": "C-LINES",
+        "rule_id": "future_line_rule",
+        "line_kind": "procedure",
+        "status": "evaluated",
+        "evaluation_status": "evaluated",
+        "required_inputs": ["procedure_lines"],
+        "missing_inputs": [],
+    }
+    rows = []
+    for line_id in ("L1", "L2"):
+        rows.append({
+            **base,
+            "line_id": line_id,
+            "procedure_line_id": line_id,
+            "evaluation_id": build_evaluation_id(
+                rule_id=base["rule_id"],
+                patient_id=base["patient_id"],
+                claim_id=base["claim_id"],
+                line_kind="procedure",
+                line_id=line_id,
+            ),
+        })
+    invalid = dict(rows[0], evaluation_id="claim_evaluation:wrong")
+    orphan = dict(rows[0], claim_id=None)
+    orphan["evaluation_id"] = build_evaluation_id(
+        rule_id=base["rule_id"],
+        patient_id=base["patient_id"],
+        claim_id=None,
+        line_kind="procedure",
+        line_id="L1",
+    )
+    reports = {
+        "P-LINES": {
+            "claim_compliance": {"evaluations": [*rows, rows[0], invalid, orphan]}
+        }
+    }
+
+    summary = slice_compliance_index(
+        build_cohort_compliance_index(reports),
+        surface="claim_compliance",
+    )["claim_compliance"]
+
+    assert summary["counts"] == {"evaluated": 2, "missing_inputs": 0, "unavailable": 0}
+
+
+def test_claim_compliance_mixed_old_and_new_claim_evaluations_count_once() -> None:
+    from src.bilun.domain.billing.rule_findings import build_evaluation_id
+
+    legacy = {
+        "patient_id": "P-MIXED",
+        "claim_id": "C1",
+        "rule_id": "future_claim_rule",
+        "status": "evaluated",
+        "evaluation_status": "evaluated",
+        "required_inputs": ["claim_headers"],
+        "missing_inputs": [],
+    }
+    modern = {
+        **legacy,
+        "line_kind": "claim",
+        "line_id": None,
+        "evaluation_id": build_evaluation_id(
+            rule_id="future_claim_rule",
+            patient_id="P-MIXED",
+            claim_id="C1",
+            line_kind="claim",
+            line_id=None,
+        ),
+    }
+    reports = {"P-MIXED": {"claim_compliance": {"evaluations": [legacy, modern]}}}
+
+    summary = slice_compliance_index(
+        build_cohort_compliance_index(reports), surface="claim_compliance"
+    )["claim_compliance"]
+    assert summary["counts"] == {"evaluated": 1, "missing_inputs": 0, "unavailable": 0}
+
+    conflicting = dict(modern, status="unavailable", evaluation_status="unavailable")
+    reports["P-MIXED"]["claim_compliance"]["evaluations"] = [legacy, conflicting]
+    with pytest.raises(ValueError, match="Conflicting claim evaluation identity"):
+        build_cohort_compliance_index(reports)
+
+    contradictory_decision = dict(modern, decision="matched")
+    reports["P-MIXED"]["claim_compliance"]["evaluations"] = [
+        contradictory_decision,
+        dict(contradictory_decision, decision="not_matched"),
+    ]
+    with pytest.raises(ValueError, match="Conflicting claim evaluation identity"):
+        build_cohort_compliance_index(reports)
+
+
+def test_claim_compliance_conflicting_line_evaluation_fails_closed() -> None:
+    from src.bilun.domain.billing.rule_findings import build_evaluation_id
+
+    row = {
+        "patient_id": "P-LINES",
+        "claim_id": "C-LINES",
+        "rule_id": "future_line_rule",
+        "line_kind": "procedure",
+        "line_id": "L1",
+        "procedure_line_id": "L1",
+        "evaluation_id": build_evaluation_id(
+            rule_id="future_line_rule",
+            patient_id="P-LINES",
+            claim_id="C-LINES",
+            line_kind="procedure",
+            line_id="L1",
+        ),
+        "status": "evaluated",
+        "evaluation_status": "evaluated",
+        "required_inputs": ["procedure_lines"],
+        "missing_inputs": [],
+    }
+    conflicting = dict(row, status="unavailable", evaluation_status="unavailable")
+    reports = {"P-LINES": {"claim_compliance": {"evaluations": [row, conflicting]}}}
+
+    with pytest.raises(ValueError, match="Conflicting claim evaluation identity"):
+        build_cohort_compliance_index(reports)
 
 
 def test_claim_compliance_preserves_legitimate_null_claim_missing_input_evaluation() -> None:

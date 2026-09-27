@@ -16,7 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from src.bilun.api.routes.billing import _serialize_billing_report
-from src.bilun.api.routes.validation import validate_claim_endpoint
+from src.bilun.api.routes.validation import validate_claim_legacy_endpoint
 from src.bilun.api.schemas import (
     BillingReportResponse,
     DrugIndicationReviewResponse,
@@ -99,7 +99,7 @@ def _ctx(*, report_present: bool | None = False) -> PatientClaimContext:
 
 class TestPatientBillingDrugIndicationApi:
     def test_validate_claim_endpoint_preserves_structured_legacy_details(self) -> None:
-        payload = validate_claim_endpoint(
+        payload = validate_claim_legacy_endpoint(
             ClaimValidationRequest(
                 claim_id="PUBLIC-ENDPOINT-MISMATCH",
                 materials=[MaterialItem(name="Trastuzumab", unit_price=500)],

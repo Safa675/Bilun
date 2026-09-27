@@ -1156,6 +1156,10 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   claim_submission_checklist?: ClaimSubmissionChecklist;
   drug_indication?: DrugIndicationReview;
   claim_compliance?: ClaimCompliance | null;
+  claim_reviews?: import("./waveaEvidence").WaveAEvidenceBlock;
+  claim_advisories?: import("./waveaEvidence").WaveAEvidenceBlock;
+  financial_findings?: import("./waveaEvidence").WaveAEvidenceBlock;
+  wavea_coverage?: import("./waveaEvidence").WaveACoverage | null;
   materials: MaterialPreCheck;
   sgk_uplift_try?: number;
   compliance_adjustment_try?: number;

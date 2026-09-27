@@ -17,8 +17,10 @@ material without the flag — emits nothing (the honesty guard skips the rule).
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
+from hashlib import sha256
 
 import pytest
 
@@ -389,3 +391,140 @@ def test_bone_implant_with_explicit_board_report_no_default_no_pay() -> None:
     ]
     assert default_no_pay == []
 
+
+def _precious_name_context(name: str) -> PatientClaimContext:
+    """Use real line fields; composition must come from the actual name bridge."""
+    day = date(2026, 7, 10)
+    material = replace(
+        _make_material_line(name=name),
+        material_date=day,
+        billed_amount_try=Decimal("125.50"),
+    )
+    assert not hasattr(material, "material_contains_precious_metal")
+    procedure = replace(
+        _make_procedure_line(procedure_category="dental_restoration"), procedure_date=day
+    )
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+    return replace(
+        ctx,
+        claims=(
+            replace(
+                ctx.claims[0],
+                admission_date=day,
+                discharge_date=day,
+                claim_start_date=day,
+                claim_end_date=day,
+            ),
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "altın içermeyen kanal tedavisi materyali",
+        "platin içermeyen kanal tedavisi materyali",
+        "altınsız kompozit dolgu",
+        "platinsiz kompozit dolgu",
+        "altın içermez",
+        "altın ve platin içermeyen kompozit dolgu",
+        "altın veya platin içermez",
+        "paladyum+platin içermeyen kompozit dolgu",
+        "altın içermeyen platin içermeyen",
+        "platin içermeyen altın içermeyen",
+        "altınsız platin içermeyen",
+        "Bego gold EWL içermeyen materyal",
+    ],
+)
+def test_negated_precious_metal_names_do_not_emit_a_no_pay_finding(name: str) -> None:
+    assert check_dental_2_4_1_for_context(_precious_name_context(name)) == []
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "altın",
+        "altın köprü",
+        "platin",
+        "platinli alaşım",
+        "paladyum+platin",
+        "argenco 23",
+        "bego gold EWL",
+        "polliag-M",
+        "altın içermeyen platin içeren",
+        "platin içeren altın içermeyen",
+        "platin içermeyen altın içeren",
+        "altın içeren platin içermeyen",
+        "altın ve platin içermeyen, argenco 23",
+        "argenco 23, altın ve platin içermeyen",
+    ],
+)
+def test_affirmative_precious_metal_names_keep_the_original_raw_payload(name: str) -> None:
+    from src.bilun.domain.prose_rules.dental_2_4_1 import load_dental_2_4_1_rules
+
+    rule = load_dental_2_4_1_rules()["rules"][0]
+    assert check_dental_2_4_1_for_context(_precious_name_context(name)) == [
+        {
+            "rule": "dental_2_4_1",
+            "severity": "error",
+            "material_name": name,
+            "message": rule["action"]["denial_tr"],
+            "savings_try": 0.0,
+            "risk_amount": 125.5,
+            "sut_section": "2.4.1",
+            "rule_id": "2.4.1.(1).precious_metal_no_pay",
+            "billable": False,
+            "material_outcome": "no_pay",
+            "annex_basis": None,
+        }
+    ]
+
+
+def test_negated_line_does_not_change_other_lines_or_first_winner(monkeypatch) -> None:
+    from copy import deepcopy
+
+    from src.bilun.domain.prose_rules import dental_2_4_1 as dental
+
+    ctx = _precious_name_context("altın köprü")
+    first = ctx.material_lines[0]
+    negative = replace(first, material_line_id="NEGATIVE", material_name="altın içermeyen")
+    last = replace(
+        first,
+        material_line_id="LAST",
+        material_name="argenco 23",
+        billed_amount_try=Decimal("83.75"),
+    )
+    expected = dental.check_dental_2_4_1_for_context(replace(ctx, material_lines=(first, last)))
+    ruleset = deepcopy(dental.load_dental_2_4_1_rules())
+    later = deepcopy(ruleset["rules"][0])
+    later["rule_id"] = "test_later_matching_rule"
+    ruleset["rules"].append(later)
+    monkeypatch.setattr(dental, "load_dental_2_4_1_rules", lambda: ruleset)
+
+    assert dental.check_dental_2_4_1_for_context(
+        replace(ctx, material_lines=(first, negative, last))
+    ) == expected
+    assert [row["risk_amount"] for row in expected] == [125.5, 83.75]
+
+
+def test_precious_metal_clause_matches_the_verified_official_source_versions() -> None:
+    """SGK July/August 2026 DOCX paragraphs 1009/1015 have identical §2.4.1(1).
+
+    Official downloads (both independently fetched on 2026-09-27):
+    https://www.sgk.gov.tr/Download/DownloadFile?f=dae9aa86-dbf6-452d-9cd7-d5a937f25425.zip&d=27442b51-e108-4aac-853d-6e03d9704e4e
+    https://www.sgk.gov.tr/Download/DownloadFile?f=9afde55e-9207-4432-a54e-3b441f11e70c.zip&d=658f4ba1-b0e8-4dfb-8504-fa0b09e353e0
+
+    This pins the checked text, not applicability to an arbitrary service date.
+    """
+    import polars as pl
+
+    from src.bilun.domain.constants import SUT_CLAUSES_PATH
+
+    rows = pl.read_parquet(SUT_CLAUSES_PATH).filter(
+        (pl.col("clause_key") == "2.4.1.(1)#10e6c764") & pl.col("is_in_force")
+    )
+    assert rows.height == 1
+    assert not rows["is_heading"][0] and not rows["is_amendment"][0]
+    assert sha256(rows["in_force_text"][0].encode()).hexdigest() == (
+        "10e6c764fd9f71cff7e1f8ef9e1bc5b700da119ac7f82d4916add48143c72ba3"
+    )

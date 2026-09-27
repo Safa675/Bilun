@@ -23,7 +23,20 @@ from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
 from src.bilun.domain.billing.claim_compliance import project_claim_compliance
-from src.bilun.domain.billing.rule_findings import evaluate_rule_findings
+from src.bilun.domain.billing.broad_rule_materializer import materialize_broad_rules
+from src.bilun.domain.billing.focused_legacy_materializer import FocusedLegacyMaterializer
+from src.bilun.domain.billing.focused_rule_projection import (
+    project_focused_legacy_rows,
+    validate_focused_context_ownership,
+)
+from src.bilun.domain.billing.rule_findings import (
+    RuleEvaluationBatch,
+    evaluate_rule_findings,
+)
+from src.bilun.domain.billing.wavea_full_evidence import (
+    project_full_wavea_evidence,
+    validate_full_wavea_evidence_detail,
+)
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_drg_package_adequacy import (
     recommend_drg_package_adequacy_from_claims,
@@ -81,7 +94,37 @@ def compute_patient_billing_report(
     """
     report = BillingActionReport(patient_id=pid)
     compliance_batch = evaluate_rule_findings(pid, claim_context)
-    report.claim_compliance = project_claim_compliance(pid, compliance_batch)
+    if claim_context is not None:
+        validate_focused_context_ownership(pid, claim_context)
+    focused_batch = project_focused_legacy_rows(
+        pid,
+        claim_context,
+        FocusedLegacyMaterializer(claim_context).all_rows()
+        if claim_context is not None
+        else (),
+    )
+    broad_bundle = materialize_broad_rules(pid, claim_context)
+    evidence = project_full_wavea_evidence(pid, claim_context, focused_batch, broad_bundle)
+    validate_full_wavea_evidence_detail(evidence.detail, pid)
+    report.claim_compliance = project_claim_compliance(
+        pid,
+        RuleEvaluationBatch(
+            findings=(
+                *compliance_batch.findings,
+                *focused_batch.findings,
+                *evidence.confirmed_broad_findings,
+            ),
+            # Exhaustive focused/broad statuses live in the build-scoped detail.
+            # Normal report payloads keep the original-five evaluation contract.
+            evaluations=compliance_batch.evaluations,
+            legacy_violations=(*compliance_batch.legacy_violations, *focused_batch.legacy_rows),
+        ),
+    )
+    report.claim_reviews = evidence.claim_reviews
+    report.claim_advisories = evidence.claim_advisories
+    report.financial_findings = evidence.financial_findings
+    report.wavea_coverage = evidence.coverage
+    report.wavea_evidence_detail = evidence.detail
 
     if claim_context is None:
         if SUT_REQUIRE_CLAIM_LINES:

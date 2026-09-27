@@ -11,6 +11,9 @@ import os
 import sys
 from pathlib import Path
 
+from src.bilun.api import release_identity
+from src.bilun.api.wavea_activation import load_startup_activation, set_startup_activation
+
 logger = logging.getLogger("bilun.api")
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
@@ -26,9 +29,43 @@ def is_cache_ready() -> bool:
 
 
 def _exit_on_startup_failure() -> None:
-    if os.getenv("BILUN_STARTUP_POLICY", "").strip().lower() == "strict":
-        logger.critical("BILUN_STARTUP_POLICY=strict — exiting after startup failure.")
+    policy = os.getenv("BILUN_STARTUP_POLICY", "").strip().lower()
+    if policy in {"strict", "verified-load-only"}:
+        logger.critical("BILUN_STARTUP_POLICY=%s — exiting after startup failure.", policy)
         sys.exit(1)
+
+
+def _load_verified_release_cache() -> str:
+    """Read the private candidate's pinned complete build without writing."""
+    import duckdb
+
+    identity = release_identity.STARTUP_RELEASE_IDENTITY
+    if identity is None:
+        raise RuntimeError("Verified load requires a startup-pinned release identity")
+    raw_path = os.getenv("BILUN_CACHE_DB_PATH")
+    if not raw_path:
+        raise RuntimeError("Verified load requires an explicit candidate cache path")
+    path = Path(raw_path)
+    if (
+        not path.is_absolute()
+        or path.is_symlink()
+        or not path.is_file()
+        or path.stat().st_nlink != 1
+        or Path(f"{path}.wal").exists()
+    ):
+        raise RuntimeError("Verified load requires an independent stable candidate cache")
+    with duckdb.connect(str(path), read_only=True) as con:
+        pointers = con.execute("SELECT scope, active_build_id FROM build_pointer_scopes").fetchall()
+        if len(pointers) != 1 or pointers[0][0] != "bilun" or not pointers[0][1]:
+            raise RuntimeError("Verified candidate cache lacks one active Bilun build")
+        build_id = pointers[0][1]
+        rows = con.execute(
+            "SELECT status, build_scope, code_sha FROM build_meta WHERE build_id = ?",
+            [build_id],
+        ).fetchall()
+        if len(rows) != 1 or rows[0] != ("complete", "bilun", identity.code_sha):
+            raise RuntimeError("Verified candidate build status or code SHA differs")
+    return build_id
 
 
 def _has_bilun_cache() -> bool:
@@ -55,13 +92,45 @@ def _has_bilun_cache() -> bool:
 async def startup():
     global _startup_ready
     _startup_ready = False
+    set_startup_activation(None)
 
     policy = os.getenv("BILUN_STARTUP_POLICY", "load-only").strip().lower()
 
+    if policy != "verified-load-only" and any(
+        os.getenv(key) is not None
+        for key in ("BILUN_WAVEA_ACTIVATION_RECEIPT", "BILUN_WAVEA_ACTIVATION_KEY_FILE")
+    ):
+        logger.error("Wave A activation requires verified-load-only startup")
+        _exit_on_startup_failure()
+        return
+
     # Auto-upgrade to rebuild on cold start (no cache at all).
-    if policy not in {"rebuild", "strict"} and not _has_bilun_cache():
+    if policy not in {"rebuild", "strict", "verified-load-only"} and not _has_bilun_cache():
         logger.info("No BILUN cache found — auto-upgrading to rebuild policy for first run.")
         policy = "rebuild"
+
+    if policy == "verified-load-only":
+        try:
+            build_id = _load_verified_release_cache()
+            identity = release_identity.STARTUP_RELEASE_IDENTITY
+            if identity is None:
+                raise RuntimeError("Verified candidate has no pinned release identity")
+            activation = load_startup_activation(
+                os.environ,
+                cache_path=Path(os.environ["BILUN_CACHE_DB_PATH"]),
+                active_build_id=build_id,
+                code_sha=identity.code_sha,
+                source_manifest_sha256=identity.source_manifest_sha256,
+                backend_runtime=_PROJECT_ROOT,
+            )
+        except Exception as exc:
+            logger.error("Verified candidate cache load failed: %s", exc)
+            _exit_on_startup_failure()
+            return
+        set_startup_activation(activation)
+        _startup_ready = True
+        logger.info("Verified candidate cache loaded read-only — active build %s", build_id)
+        return
 
     # Load or rebuild BILUN cache synchronously based on explicit policy.
     try:

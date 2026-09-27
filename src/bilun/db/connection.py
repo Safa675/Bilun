@@ -30,10 +30,11 @@ class BuildInfo:
     error_message: str | None
 
 
-def connect(db_path: Path):
+def connect(db_path: Path, *, read_only: bool = False):
     if duckdb is None:
         raise RuntimeError("duckdb is required. Install with: pip install duckdb")
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    con = duckdb.connect(str(db_path))
+    if not read_only:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+    con = duckdb.connect(str(db_path), read_only=read_only)
     con.execute(f"PRAGMA threads={max(4, (os.cpu_count() or 8) // 2)}")
     return con

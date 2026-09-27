@@ -1,8 +1,7 @@
 """Unit tests for the Phase 2 Tablo 15 common billing error detectors.
 
-One positive (error detected) and one negative (no error) test per detector
-(22 tests total), covering errors #3, #4, #5, #7, #9, #10, #11, #15, #16,
-#21, #24 implemented in ``common_billing_errors`` Phase 2.
+Error #9 retains its legacy callable but cannot emit without a period-closure
+date; the other detectors cover positive and negative cases.
 """
 
 from __future__ import annotations
@@ -201,6 +200,7 @@ def test_vakabasi_wrong_method_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_3_vakabasi_wrong_method"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
     assert v["is_package_included"] is True
 
@@ -251,6 +251,7 @@ def test_normal_poliklinik_wrong_method_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_4_normal_poliklinik_wrong_method"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
 
 
@@ -340,8 +341,29 @@ def test_green_area_bundled_extras_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_7_green_area_bundled_extra"
+    assert v["procedure_line_id"] == "PL2"
     assert v["procedure_code"] == "401010"
     assert v["green_area_exam_code"] == "520021"
+
+
+def test_green_area_bundled_extras_same_rule_and_claim_keep_distinct_line_ids() -> None:
+    """Two identical extra codes must not collapse to one claim/code identity."""
+    claim = _make_claim_header(claim_id="C1")
+    green = _make_proc_line(procedure_line_id="PL1", procedure_code="520021")
+    extras = [
+        _make_proc_line(procedure_line_id=line_id, procedure_code="401010")
+        for line_id in ("PL2", "PL3")
+    ]
+
+    violations = detect_green_area_bundled_extras([claim], [green, *extras])
+
+    assert [
+        (v["rule_id"], v["claim_id"], v["procedure_code"], v["procedure_line_id"])
+        for v in violations
+    ] == [
+        ("tablo15_7_green_area_bundled_extra", "C1", "401010", "PL2"),
+        ("tablo15_7_green_area_bundled_extra", "C1", "401010", "PL3"),
+    ]
 
 
 def test_green_area_bundled_extras_negative() -> None:
@@ -364,39 +386,46 @@ def test_green_area_bundled_extras_negative() -> None:
 # ===========================================================================
 
 
-def test_admission_billing_window_positive() -> None:
-    """Admission >60 days before claim end → violation."""
+def test_admission_billing_window_long_stay_is_not_late_submission() -> None:
+    """A 70-day stay says nothing about when its invoice period was closed."""
     claim = _make_claim_header(
         claim_id="C1",
         claim_type="yatis",
         admission=date(2026, 5, 1),
         discharge=date(2026, 7, 10),
-        claim_end=date(2026, 7, 10),  # 70 days after admission
-    )
-
-    violations = detect_admission_billing_window([claim])
-
-    assert len(violations) == 1
-    v = violations[0]
-    assert v["claim_id"] == "C1"
-    assert v["rule_id"] == "tablo15_9_admission_billing_window"
-    assert v["severity"] == "error"
-    assert v["gap_days"] == 70
-
-
-def test_admission_billing_window_negative() -> None:
-    """Admission within 60 days of claim end → no violation."""
-    claim = _make_claim_header(
-        claim_id="C1",
-        claim_type="yatis",
-        admission=date(2026, 6, 20),
-        discharge=date(2026, 7, 10),
-        claim_end=date(2026, 7, 10),  # 20 days after admission
+        claim_end=date(2026, 7, 10),
     )
 
     violations = detect_admission_billing_window([claim])
 
     assert violations == []
+
+
+def test_admission_billing_window_short_stay_cannot_prove_timely_billing() -> None:
+    """A short stay also lacks the period-closure evidence needed to decide."""
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="yatis",
+        admission=date(2026, 6, 20),
+        discharge=date(2026, 7, 10),
+        claim_end=date(2026, 7, 10),
+    )
+
+    violations = detect_admission_billing_window([claim])
+
+    assert violations == []
+
+
+def test_admission_billing_window_outpatient_is_not_admission_based() -> None:
+    """The Ministry handbook's Table 15 row is not an inpatient stay cap."""
+    claim = _make_claim_header(
+        claim_type="poliklinik",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 10),
+        claim_end=date(2026, 7, 10),
+    )
+
+    assert detect_admission_billing_window([claim], claim_ids_with_procs={"C1"}) == []
 
 
 # ===========================================================================
@@ -571,6 +600,7 @@ def test_inpatient_on_outpatient_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_21_inpatient_on_outpatient"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
     assert v["care_setting"] == "outpatient"
 
@@ -620,6 +650,7 @@ def test_donor_prep_as_exam_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_24_donor_prep_as_exam"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "warning"
     assert v["occupational_context"] == "donor"
 
@@ -642,3 +673,56 @@ def test_donor_prep_as_exam_negative() -> None:
     violations = detect_donor_prep_as_exam([claim], [line])
 
     assert violations == []
+
+
+def test_donor_prep_category_on_same_claim_flags_only_distinct_exam_line() -> None:
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="poliklinik",
+        admission=None,
+        discharge=None,
+        occupational_context="none",
+    )
+    donor_prep = _make_proc_line(
+        procedure_line_id="PL-DONOR",
+        claim_id="C1",
+        procedure_category="donor_hazirligi",
+    )
+    exam = _make_proc_line(
+        procedure_line_id="PL-EXAM",
+        claim_id="C1",
+        procedure_category="muayene",
+    )
+
+    violations = detect_donor_prep_as_exam([claim], [donor_prep, exam])
+
+    assert len(violations) == 1
+    assert violations[0]["procedure_line_id"] == "PL-EXAM"
+    assert violations[0]["severity"] == "warning"
+    assert violations[0]["occupational_context"] == "none"
+
+
+def test_donor_prep_category_without_exam_is_not_violation() -> None:
+    claim = _make_claim_header(occupational_context="none")
+    donor_prep = _make_proc_line(procedure_category="donor_prep")
+
+    assert detect_donor_prep_as_exam([claim], [donor_prep]) == []
+
+
+def test_donor_prep_category_on_other_claim_does_not_mark_exam() -> None:
+    exam_claim = _make_claim_header(claim_id="C1", occupational_context="none")
+    donor_claim = _make_claim_header(claim_id="C2", occupational_context="none")
+    exam = _make_proc_line(
+        procedure_line_id="PL-EXAM",
+        claim_id="C1",
+        procedure_category="muayene",
+    )
+    donor_prep = _make_proc_line(
+        procedure_line_id="PL-DONOR",
+        claim_id="C2",
+        procedure_category="donor_hazirligi",
+    )
+
+    assert detect_donor_prep_as_exam(
+        [exam_claim, donor_claim], [exam, donor_prep]
+    ) == []

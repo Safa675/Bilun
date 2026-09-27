@@ -1,6 +1,7 @@
-"""Unit tests for the top-5 Tablo 15 common billing error detectors.
+"""Unit tests for the original top-5 Tablo 15 billing-error candidates.
 
-One positive (error detected) and one negative (no error) test per detector:
+Active detectors have positive and negative cases; #22 is unavailable because
+the outpatient patient-acceptance date is absent:
 - ``detect_duplicate_exam_10day``            (Tablo 15 #2)
 - ``detect_missing_diagnosis``               (Tablo 15 #8)
 - ``detect_duplicate_tests``                 (Tablo 15 #12)
@@ -10,6 +11,7 @@ One positive (error detected) and one negative (no error) test per detector:
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
@@ -168,6 +170,7 @@ def test_duplicate_exam_10day_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C2"
     assert v["rule_id"] == "tablo15_2_duplicate_exam_10day"
+    assert v["procedure_line_id"] == "PL2"
     assert v["severity"] == "error"
     assert v["procedure_specialty_code"] == "1000"
     assert v["gap_days"] == 5
@@ -204,6 +207,35 @@ def test_duplicate_exam_10day_negative() -> None:
     violations = detect_duplicate_exam_10day([c1, c2], [l1, l2])
 
     assert violations == []
+
+
+def test_duplicate_exam_10day_keeps_earlier_different_claim_for_later_same_claim_lines() -> None:
+    """Both later B lines must compare with A, even when B's first line is nearer."""
+    claims = [
+        _make_claim_header(claim_id=claim_id, claim_type="poliklinik")
+        for claim_id in ("A", "B")
+    ]
+    lines = [
+        _make_proc_line(
+            procedure_line_id=line_id,
+            claim_id=claim_id,
+            procedure_date=date(2026, 7, day),
+        )
+        for line_id, claim_id, day in (
+            ("A1", "A", 1),
+            ("B2", "B", 2),
+            ("B3", "B", 3),
+        )
+    ]
+
+    violations = detect_duplicate_exam_10day(claims, lines)
+
+    assert len(violations) == 2
+    assert [
+        (v["claim_id"], v["procedure_line_id"], v["prior_claim_id"], v["gap_days"])
+        for v in violations
+    ] == [("B", "B2", "A", 1), ("B", "B3", "A", 2)]
+    assert {v["rule_id"] for v in violations} == {"tablo15_2_duplicate_exam_10day"}
 
 
 # ===========================================================================
@@ -263,6 +295,7 @@ def test_duplicate_tests_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C2"
     assert v["rule_id"] == "tablo15_12_duplicate_test"
+    assert v["procedure_line_id"] == "PL2"
     assert v["severity"] == "warning"
     assert v["procedure_code"] == "901050"
     assert v["prior_claim_id"] == "C1"
@@ -298,44 +331,46 @@ def test_duplicate_tests_negative() -> None:
 # ===========================================================================
 
 
-def test_exam_admission_date_mismatch_positive() -> None:
-    """Inpatient claim whose first procedure date != admission date."""
+def test_exam_admission_date_mismatch_does_not_flag_late_inpatient_surgery() -> None:
+    """A later inpatient operation is not an outpatient exam-date mismatch."""
     claim = _make_claim_header(
         claim_id="C1",
         claim_type="yatis",
         admission=date(2026, 7, 10),
         discharge=date(2026, 7, 13),
     )
-    # Earliest procedure on 2026-07-12, admission on 2026-07-10 → mismatch.
+    # Surgery two days after admission is expected and says nothing about
+    # outpatient exam date versus patient acceptance date.
     line = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
         procedure_date=date(2026, 7, 12),
+        procedure_category="cerrahi",
     )
 
     violations = detect_exam_admission_date_mismatch([claim], [line])
 
-    assert len(violations) == 1
-    v = violations[0]
-    assert v["claim_id"] == "C1"
-    assert v["rule_id"] == "tablo15_22_exam_admission_date_mismatch"
-    assert v["severity"] == "error"
-    assert v["first_procedure_date"] == date(2026, 7, 12)
-    assert v["admission_date"] == date(2026, 7, 10)
+    assert violations == []
 
 
-def test_exam_admission_date_mismatch_negative() -> None:
-    """Inpatient claim whose earliest procedure date == admission date."""
+def test_exam_admission_date_mismatch_cannot_use_service_range_as_acceptance() -> None:
+    """Service-range start is not an outpatient patient-acceptance timestamp."""
     claim = _make_claim_header(
         claim_id="C1",
-        claim_type="yatis",
-        admission=date(2026, 7, 10),
-        discharge=date(2026, 7, 13),
+        claim_type="poliklinik",
+        admission=None,
+        discharge=None,
+    )
+    claim = replace(
+        claim,
+        claim_start_date=date(2026, 7, 10),
+        claim_end_date=date(2026, 7, 13),
     )
     line = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
-        procedure_date=date(2026, 7, 10),  # matches admission
+        procedure_category="muayene",
+        procedure_date=date(2026, 7, 12),
     )
 
     violations = detect_exam_admission_date_mismatch([claim], [line])

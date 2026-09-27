@@ -729,3 +729,9 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 1. Verify against official sources (tubitak.gov.tr, kosgeb.gov.tr) for the CURRENT call cycle before naming amounts or grant-vs-equity structure.
 2. If search results already surfaced contradicting evidence, re-read them instead of defaulting to memory — having fetched a source is not the same as having checked it against the claim I'm making.
 3. Distinguish superseded program codes/models explicitly (1512 old grant model vs 1812 investment model) rather than blending names.
+
+## 2026-09-27 — Verify compiled routing and the route installed for restart
+
+**Pattern:** A private frontend had the correct runtime `API_PROXY_TARGET` but its Next build still rewrote `/api/*` to the old backend. Separately, a Caddy route switch could replace the Caddyfile and crash before reload, leaving the loaded route and on-disk restart route different. Runtime environment and currently loaded configuration alone did not prove the deployed pair would remain correct.
+
+**Rule:** For a release candidate, inspect the frontend's compiled `routes-manifest.json` and exercise the frontend API path against the intended backend. For a reverse-proxy transaction, verify both the loaded configuration and the installed file at every state transition; after a failed switch, reinstall and verify a maintenance barrier before reporting a blocked state.

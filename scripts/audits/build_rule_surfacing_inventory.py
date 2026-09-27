@@ -27,6 +27,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -34,13 +35,18 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 ENGINE_PATH = ROOT / "src/bilun/domain/billing/engine.py"
 PATIENT_REPORT_PATH = ROOT / "src/bilun/domain/billing/patient_report.py"
+FOCUSED_MATERIALIZER_PATH = ROOT / "src/bilun/domain/billing/focused_legacy_materializer.py"
+FOCUSED_PROJECTION_PATH = ROOT / "src/bilun/domain/billing/focused_rule_projection.py"
+WAVEA_EVIDENCE_PATH = ROOT / "src/bilun/domain/billing/wavea_evidence.py"
 REGISTRY_PATH = ROOT / "src/bilun/domain/sut/rule_registry.py"
 CLAIM_COMPLIANCE_PATH = ROOT / "src/bilun/domain/billing/claim_compliance.py"
 COHORT_COMPLIANCE_PATH = ROOT / "src/bilun/domain/billing/cohort_compliance.py"
 RECOMMENDED_ACTIONS_PATH = ROOT / "frontend/src/lib/recommendedActions.ts"
 BILLING_ACTIONS_PATH = ROOT / "src/bilun/domain/billing/billing_actions.py"
+BILLING_API_PATH = ROOT / "src/bilun/api/routes/billing.py"
 ALERTS_API_PATH = ROOT / "src/bilun/api/routes/alerts.py"
 COMPLIANCE_API_PATH = ROOT / "src/bilun/api/routes/compliance.py"
+WAVEA_GATE_API_PATH = ROOT / "src/bilun/api/routes/wavea_gate.py"
 PATIENT_SECTIONS_PATH = ROOT / "frontend/src/components/patient/SutBillingReportSections.tsx"
 COMPLIANCE_VIEW_PATH = ROOT / "frontend/src/components/patient/views/ComplianceViewSection.tsx"
 REVENUE_VIEW_PATH = ROOT / "frontend/src/components/patient/views/RevenueViewSection.tsx"
@@ -128,6 +134,8 @@ EXPECTED_ANALYZE_CALLS = frozenset(
         "detect_missing_laterality_surgery_for_context",
         "detect_procedure_time_overlap_for_context",
         "detect_los_procedure_density_anomaly_for_context",
+        "FocusedLegacyMaterializer",
+        "validate_focused_context_ownership",
     }
 )
 
@@ -162,11 +170,30 @@ EXPECTED_REPORT_CALLS = frozenset(
         "validate_drug_indication_from_claims",
         "precheck_materials_from_claims",
         "collect_billing_actions",
+        "FocusedLegacyMaterializer",
+        "RuleEvaluationBatch",
+        "project_focused_legacy_rows",
+        "materialize_broad_rules",
+        "project_full_wavea_evidence",
+        "validate_full_wavea_evidence_detail",
+        "validate_focused_context_ownership",
     }
 )
 
 
-NON_RUNTIME_IMPORTED_CALLS = frozenset({"BillingActionReport"})
+NON_RUNTIME_IMPORTED_CALLS = frozenset({"BillingActionReport", "deepcopy"})
+
+# analyze_claim calls these detectors through its _broad_rows wrapper.
+# Pin each family/detector pair so substitutions fail the static audit.
+BROAD_WRAPPED_CALLS = {
+    "dental_2_4_1": "check_dental_2_4_1_for_context",
+    "gap_closing_misc": "check_gap_closing_misc_for_context",
+    "gap_closing_treatment_2": "check_gap_closing_treatment_for_context",
+    "fatura_inceleme_prose": "check_fatura_inceleme_for_context",
+    "payment_method_2_2": "check_payment_method_traceability_for_context",
+    "drug_combination_4_2": "check_drug_combination_for_context",
+    "treatment_pricing_2_4": "check_treatment_pricing_for_context",
+}
 
 
 ARTIFACTS_BY_CALLABLE: dict[str, tuple[str, ...]] = {
@@ -215,6 +242,19 @@ GENERIC_SURFACE_EMISSION_SOURCES: dict[str, tuple[str, ...]] = {
 }
 
 
+# These runtime calls establish ownership, memoize raw detector rows, or
+# combine already evaluated batches. Their own invocation emits no finding.
+NON_EMITTING_RUNTIME_HELPERS = frozenset(
+    {
+        "FocusedLegacyMaterializer",
+        "RuleEvaluationBatch",
+        "validate_focused_context_ownership",
+        "materialize_broad_rules",
+        "validate_full_wavea_evidence_detail",
+    }
+)
+
+
 EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
     "check_bundling_violations_for_context": ("kind:material_bundling",),
     "precheck_materials_from_claims": (
@@ -238,7 +278,6 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
     "recommend_care_setting_review_from_claims": ("kind:care_setting_review",),
     "recommend_medula_rejection_playbook_from_claims": ("kind:medula_rejection_playbook",),
     "recommend_claim_submission_checklist_from_claims": ("kind:claim_submission_checklist",),
-    "detect_radiation_oncology_violations": ("kind:radiation_oncology",),
     "collect_billing_actions": (),
     "finalize_report_totals": (),
     "finalize_report_exactness": (),
@@ -249,6 +288,62 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
 
 
 PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
+    "FocusedLegacyMaterializer": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Caches already-materialized focused detector rows for this report; it does not project findings.",
+    },
+    "RuleEvaluationBatch": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Combines canonical and focused evaluations for a shared projection; it does not evaluate rules.",
+    },
+    "validate_focused_context_ownership": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Validates patient and source-line ownership before focused projection; it emits no finding.",
+    },
+    "project_focused_legacy_rows": {
+        "finding_type": "compliance projection",
+        "money": "unpriced_compliance",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Its confirmed unpriced rows flow through the generic claim-compliance projection; review rows remain separate.",
+    },
+    "materialize_broad_rules": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Captures ownership-bound broad detector rows and authored-rule statuses for the gated evidence projection.",
+    },
+    "validate_full_wavea_evidence_detail": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "not_applicable",
+        "hidden_reason": "Validates complete Wave A evidence detail before it can be persisted.",
+    },
+    "project_full_wavea_evidence": {
+        "finding_type": "review and financial review",
+        "money": "informational",
+        "money_fields": [],
+        "included": False,
+        "visibility": "hidden_runtime",
+        "hidden_reason": "Focused and broad review/financial evidence is persisted as a draft capability; current billing APIs hide it until a complete release gate.",
+    },
     "evaluate_rule_findings": {
         "surface": "claim_compliance",
         "finding_type": "compliance",
@@ -678,6 +773,208 @@ def _assignment_report_fields(node: ast.AST, parents: dict[ast.AST, ast.AST]) ->
     return ()
 
 
+def _focused_specs() -> tuple[dict[str, tuple[tuple[str, str], ...]], frozenset[str]]:
+    """Read the reviewed 18-group/32-ID projection contract without imports."""
+    return _parse_focused_specs(
+        FOCUSED_PROJECTION_PATH.read_text(encoding="utf-8"),
+        str(FOCUSED_PROJECTION_PATH),
+    )
+
+
+@lru_cache(maxsize=8)
+def _parse_focused_specs(
+    source: str, filename: str
+) -> tuple[dict[str, tuple[tuple[str, str], ...]], frozenset[str]]:
+    tree = ast.parse(source, filename=filename)
+    assignment = next(
+        (
+            node
+            for node in tree.body
+            if isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "FOCUSED_RULE_SPECS"
+        ),
+        None,
+    )
+    if assignment is None or not isinstance(assignment.value, ast.Tuple):
+        raise ValueError("focused projection spec inventory is missing")
+    grouped: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    rule_ids: set[str] = set()
+    def spec_argument(arg: ast.AST, bindings: dict[str, Any]) -> str:
+        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+            return arg.value
+        if isinstance(arg, ast.JoinedStr):
+            pieces: list[str] = []
+            for part in arg.values:
+                if isinstance(part, ast.Constant) and isinstance(part.value, str):
+                    pieces.append(part.value)
+                elif (
+                    isinstance(part, ast.FormattedValue)
+                    and isinstance(part.value, ast.Name)
+                    and part.value.id in bindings
+                    and isinstance(bindings[part.value.id], str)
+                    and part.format_spec is None
+                    and part.conversion == -1
+                ):
+                    pieces.append(bindings[part.value.id])
+                else:
+                    raise ValueError("focused projection rule ID has dynamic interpolation")
+            return "".join(pieces)
+        raise ValueError("focused projection spec argument is not static")
+
+    def expand(node: ast.AST, bindings: dict[str, Any]) -> list[tuple[str, str, str, str]]:
+        if isinstance(node, ast.Starred) and isinstance(node.value, ast.GeneratorExp):
+            generator = node.value
+            if any(item.ifs or item.is_async for item in generator.generators):
+                raise ValueError("focused projection spec generator is conditional")
+
+            def walk_generators(index: int, values: dict[str, Any]) -> list[tuple[str, str, str, str]]:
+                if index == len(generator.generators):
+                    return expand(generator.elt, values)
+                item = generator.generators[index]
+                iterable = _resolve_static_value(item.iter, values)
+                if not isinstance(iterable, (tuple, list)):
+                    raise ValueError("focused projection spec generator source is dynamic")
+                result: list[tuple[str, str, str, str]] = []
+                for value in iterable:
+                    next_values = dict(values)
+                    if isinstance(item.target, ast.Name):
+                        next_values[item.target.id] = value
+                    elif (
+                        isinstance(item.target, ast.Tuple)
+                        and isinstance(value, (tuple, list))
+                        and len(item.target.elts) == len(value)
+                        and all(isinstance(target, ast.Name) for target in item.target.elts)
+                    ):
+                        next_values.update(
+                            (target.id, member)
+                            for target, member in zip(item.target.elts, value)
+                        )
+                    else:
+                        raise ValueError("focused projection spec generator binding is dynamic")
+                    result.extend(walk_generators(index + 1, next_values))
+                return result
+
+            return walk_generators(0, bindings)
+        if (
+            not isinstance(node, ast.Call)
+            or not isinstance(node.func, ast.Name)
+            or node.func.id != "_spec"
+            or len(node.args) < 4
+        ):
+            raise ValueError("focused projection spec is not statically auditable")
+        return [tuple(spec_argument(arg, bindings) for arg in node.args[:4])]
+
+    for node in assignment.value.elts:
+        for group, rule_id, _line_kind, disposition in expand(node, {}):
+            if rule_id in rule_ids:
+                raise ValueError(f"duplicate focused projection rule ID: {rule_id}")
+            rule_ids.add(rule_id)
+            grouped[group].append((rule_id, disposition))
+    bindings: dict[str, Any] = {}
+    for node in tree.body:
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        value = _resolve_static_value(node.value, bindings)
+        if value is _UNRESOLVED_STATIC_VALUE:
+            continue
+        for target in targets:
+            if isinstance(target, ast.Name):
+                bindings[target.id] = value
+    non_emitting = bindings.get("NON_EMITTING_FOCUSED_RULE_IDS")
+    if (
+        len(grouped) != 18
+        or len(rule_ids) != 32
+        or not isinstance(non_emitting, frozenset)
+        or len(non_emitting) != 3
+        or not non_emitting <= rule_ids
+    ):
+        raise ValueError("focused projection group, identity, or non-emitting inventory drift")
+    return {group: tuple(specs) for group, specs in grouped.items()}, non_emitting
+
+
+def _focused_materializer_calls() -> dict[str, str]:
+    """Prove each materializer group invokes its same-named detector."""
+    tree = ast.parse(
+        FOCUSED_MATERIALIZER_PATH.read_text(encoding="utf-8"),
+        filename=str(FOCUSED_MATERIALIZER_PATH),
+    )
+    order = _static_module_binding(FOCUSED_MATERIALIZER_PATH, "FOCUSED_GROUP_ORDER")
+    specs, _ = _focused_specs()
+    if (
+        not isinstance(order, tuple)
+        or len(order) != 18
+        or len(set(order)) != len(order)
+        or set(order) != set(specs)
+    ):
+        raise ValueError("focused materializer group order differs from the projection specs")
+    imports = _resolve_imports(FOCUSED_MATERIALIZER_PATH, tree)
+    qualified_imports = _resolve_qualified_imports(tree)
+    run_group = next(
+        (node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_group"),
+        None,
+    )
+    materializer = next(
+        (node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "FocusedLegacyMaterializer"),
+        None,
+    )
+    if run_group is None or materializer is None:
+        raise ValueError("focused materializer call path is missing")
+    methods = {
+        node.name: node for node in materializer.body if isinstance(node, ast.FunctionDef)
+    }
+    if not (
+        any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_run_group"
+            for node in ast.walk(methods.get("rows", ast.Pass()))
+        )
+        and any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "self"
+            and node.func.attr == "rows"
+            for node in ast.walk(methods.get("all_rows", ast.Pass()))
+        )
+    ):
+        raise ValueError("focused materializer rows/all_rows no longer reach _run_group")
+    mapping: dict[str, str] = {}
+    for branch in ast.walk(run_group):
+        if (
+            not isinstance(branch, ast.If)
+            or not isinstance(branch.test, ast.Compare)
+            or not isinstance(branch.test.left, ast.Name)
+            or branch.test.left.id != "group"
+            or len(branch.test.ops) != 1
+            or not isinstance(branch.test.ops[0], ast.Eq)
+            or len(branch.test.comparators) != 1
+            or not isinstance(branch.test.comparators[0], ast.Constant)
+            or not isinstance(branch.test.comparators[0].value, str)
+        ):
+            continue
+        group = branch.test.comparators[0].value
+        direct = {
+            name: module
+            for body_node in branch.body
+            for node in ast.walk(body_node)
+            if isinstance(node, ast.Call)
+            if (target := _call_target(node.func, imports, qualified_imports)) is not None
+            for name, module in (target,)
+            if name.startswith("detect_")
+        }
+        if group not in order or direct != {group: imports.get(group)}:
+            raise ValueError(f"focused materializer detector call drift: {group} -> {direct}")
+        if group in mapping:
+            raise ValueError(f"duplicate focused materializer branch: {group}")
+        mapping[group] = direct[group]
+    if set(mapping) != set(order) or set(_direct_imported_calls(FOCUSED_MATERIALIZER_PATH, "_run_group")) != set(order):
+        raise ValueError("focused materializer detector inventory drift")
+    return mapping
+
+
 def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     imports = _resolve_imports(path, tree)
@@ -690,11 +987,63 @@ def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
         for child in ast.iter_child_nodes(parent):
             parents[child] = parent
 
+    materializer_bindings = {
+        target.id
+        for node in ast.walk(fn)
+        if isinstance(node, ast.Assign)
+        and isinstance(node.value, ast.Call)
+        and _call_target(node.value.func, imports, qualified_imports)
+        == ("FocusedLegacyMaterializer", "src.bilun.domain.billing.focused_legacy_materializer")
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+    focused_modules = _focused_materializer_calls() if materializer_bindings else {}
+    focused_discovered: set[str] = set()
+    broad_discovered: set[str] = set()
+
     grouped: dict[str, dict[str, Any]] = {}
     for node in ast.walk(fn):
         if not isinstance(node, ast.Call):
             continue
         target = _call_target(node.func, imports, qualified_imports)
+        if (
+            target is None
+            and entrypoint == "analyze_claim"
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_broad_rows"
+        ):
+            if (
+                len(node.args) != 2
+                or node.keywords
+                or not isinstance(node.args[0], ast.Constant)
+                or not isinstance(node.args[0].value, str)
+                or not isinstance(node.args[1], ast.Name)
+            ):
+                raise ValueError("broad wrapper call is not statically auditable")
+            family = node.args[0].value
+            detector = node.args[1].id
+            if BROAD_WRAPPED_CALLS.get(family) != detector or detector not in imports:
+                raise ValueError(f"broad wrapper detector call drift: {family} -> {detector}")
+            broad_discovered.add(family)
+            target = (detector, imports[detector])
+        if (
+            target is None
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "rows"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in materializer_bindings
+        ):
+            if (
+                len(node.args) != 1
+                or node.keywords
+                or not isinstance(node.args[0], ast.Constant)
+                or not isinstance(node.args[0].value, str)
+                or node.args[0].value not in focused_modules
+            ):
+                raise ValueError("focused materializer group call is not statically auditable")
+            group = node.args[0].value
+            target = (group, focused_modules[group])
+            focused_discovered.add(group)
         if target is None:
             continue
         name, module = target
@@ -713,6 +1062,21 @@ def discover_runtime_calls(path: Path, entrypoint: str) -> list[RuntimeCall]:
         site_gates = _ancestor_if_gates(node, parents)
         row["gate_paths"].add(" AND ".join(site_gates) if site_gates else "always")
         row["report_fields"].update(_assignment_report_fields(node, parents))
+
+    if materializer_bindings and focused_discovered != set(focused_modules):
+        raise ValueError(
+            "focused materializer entrypoint coverage drift: "
+            f"missing={sorted(set(focused_modules) - focused_discovered)}"
+        )
+    if (
+        entrypoint == "analyze_claim"
+        and path.resolve() == ENGINE_PATH.resolve()
+        and broad_discovered != set(BROAD_WRAPPED_CALLS)
+    ):
+        raise ValueError(
+            "broad wrapper entrypoint coverage drift: "
+            f"missing={sorted(set(BROAD_WRAPPED_CALLS) - broad_discovered)}"
+        )
 
     return [
         RuntimeCall(
@@ -736,6 +1100,147 @@ def assert_known_runtime_calls(entrypoint: str, calls: Iterable[RuntimeCall]) ->
         raise ValueError(
             f"{entrypoint} runtime inventory drift: missing={missing}, unexpected={unexpected}"
         )
+
+
+def _validate_focused_report_dataflow() -> None:
+    """Confirm focused findings actually reach the generic visible projection."""
+    tree = ast.parse(PATIENT_REPORT_PATH.read_text(encoding="utf-8"), filename=str(PATIENT_REPORT_PATH))
+    imports = _resolve_imports(PATIENT_REPORT_PATH, tree)
+    qualified_imports = _resolve_qualified_imports(tree)
+    fn = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "compute_patient_billing_report"
+    )
+
+    def imported_calls(name: str) -> list[ast.Call]:
+        return [
+            node
+            for node in ast.walk(fn)
+            if isinstance(node, ast.Call)
+            and (target := _call_target(node.func, imports, qualified_imports)) is not None
+            and target[0] == name
+        ]
+
+    projections = imported_calls("project_focused_legacy_rows")
+    if len(projections) != 1 or len(projections[0].args) != 3:
+        raise ValueError("focused report projection path drift")
+    raw_arg = projections[0].args[2]
+    materialized = [
+        node
+        for node in ast.walk(raw_arg)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "all_rows"
+        and isinstance(node.func.value, ast.Call)
+        and _call_target(node.func.value.func, imports, qualified_imports)
+        == ("FocusedLegacyMaterializer", "src.bilun.domain.billing.focused_legacy_materializer")
+    ]
+    if len(materialized) != 1:
+        raise ValueError("focused report no longer consumes materialized detector rows")
+    focused_assignments = [
+        node
+        for node in ast.walk(fn)
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "focused_batch"
+        and node.value is projections[0]
+    ]
+    if len(focused_assignments) != 1:
+        raise ValueError("focused report projection result is not bound")
+    generic = imported_calls("project_claim_compliance")
+    if len(generic) != 1:
+        raise ValueError("focused report generic compliance projection drift")
+    batches = [
+        node
+        for node in ast.walk(generic[0])
+        if isinstance(node, ast.Call)
+        and (target := _call_target(node.func, imports, qualified_imports)) is not None
+        and target[0] == "RuleEvaluationBatch"
+    ]
+    if len(batches) != 1:
+        raise ValueError("focused report evaluation-batch projection drift")
+    def batch_attribute(field: str, owner: str, attribute: str) -> bool:
+        value = next((kw.value for kw in batches[0].keywords if kw.arg == field), None)
+        return value is not None and any(
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == owner
+            and node.attr == attribute
+            for node in ast.walk(value)
+        )
+
+    if not batch_attribute("findings", "focused_batch", "findings"):
+        raise ValueError("focused report findings no longer reaches claim compliance")
+    if not batch_attribute("findings", "evidence", "confirmed_broad_findings"):
+        raise ValueError("broad report findings no longer reaches claim compliance")
+    if not batch_attribute("evaluations", "compliance_batch", "evaluations"):
+        raise ValueError("original-five evaluations no longer reach claim compliance")
+    materialize = imported_calls("materialize_broad_rules")
+    if len(materialize) != 1 or not any(
+        isinstance(node, ast.Assign)
+        and node.value is materialize[0]
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "broad_bundle"
+        for node in ast.walk(fn)
+    ):
+        raise ValueError("broad report materializer path drift")
+    evidence = imported_calls("project_full_wavea_evidence")
+    if len(evidence) != 1 or [
+        arg.id for arg in evidence[0].args if isinstance(arg, ast.Name)
+    ] != ["pid", "claim_context", "focused_batch", "broad_bundle"]:
+        raise ValueError("Wave A review evidence no longer consumes focused and broad batches")
+    validated = imported_calls("validate_full_wavea_evidence_detail")
+    if len(validated) != 1 or not any(
+        isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "evidence"
+        and node.attr == "detail"
+        for node in ast.walk(validated[0])
+    ):
+        raise ValueError("Wave A evidence detail validation path drift")
+    api = BILLING_API_PATH.read_text(encoding="utf-8")
+    for token in (
+        "def _gate_wavea_evidence(",
+        "if not complete_build_evidence_available(reader, index, build_id):",
+        "payload = original_five_report_payload(payload)",
+        'payload["claim_reviews"]',
+        'payload["financial_findings"]',
+    ):
+        if token not in api:
+            raise ValueError("focused review/financial evidence draft API gate drift")
+    if api.count("_gate_wavea_evidence(") != 4:
+        raise ValueError("focused patient/bill report routes bypass the draft gate")
+    cohort_api = COMPLIANCE_API_PATH.read_text(encoding="utf-8")
+    for token in (
+        "if not complete_build_evidence_available(reader, wavea_index, active_build):",
+        "read_cache_json_payload_rows(",
+        "patient_id: original_five_report_payload(report)",
+        "build_cohort_compliance_index(",
+    ):
+        if token not in cohort_api:
+            raise ValueError("focused cohort compliance draft API gate drift")
+    gate_api = WAVEA_GATE_API_PATH.read_text(encoding="utf-8")
+    for token in (
+        "def complete_build_evidence_available(reader: Any, index: Any, build_id: str) -> bool:",
+        "activation_for_build(build_id) is not None",
+        'index.get("schema_version") == FULL_EVIDENCE_SCHEMA_VERSION',
+        'index.get("capability") == "draft"',
+        "validate_full_wavea_evidence_index(index)",
+        "counts = declared_build_row_counts(reader, build_id)",
+        'expected = counts.get("patient_billing_report_rows")',
+        'counts.get("wavea_evidence_detail") == expected',
+        'counts.get("wavea_evidence_index") == 1',
+        'index["n_patients"] == expected',
+    ):
+        if token not in gate_api:
+            raise ValueError("focused complete-build evidence gate drift")
+    if _static_module_binding(WAVEA_EVIDENCE_PATH, "COMPLETE_EVIDENCE_CAPABILITY") != "complete-25-v1":
+        raise ValueError("focused public activation marker drift")
+    if '"capability": "draft"' not in WAVEA_EVIDENCE_PATH.read_text(encoding="utf-8"):
+        raise ValueError("focused evidence builder no longer stamps draft capability")
 
 
 def _module_path(module: str) -> Path | None:
@@ -1266,6 +1771,31 @@ def resolve_emissions(
     *,
     _seen: frozenset[str] = frozenset(),
 ) -> list[str]:
+    if row.callable in NON_EMITTING_RUNTIME_HELPERS:
+        return []
+    focused_specs, non_emitting = _focused_specs()
+    if row.callable in focused_specs:
+        return sorted(
+            rule_id for rule_id, _ in focused_specs[row.callable] if rule_id not in non_emitting
+        )
+    if row.callable in {"project_focused_legacy_rows", "project_full_wavea_evidence"}:
+        broad_ids = (
+            {
+                rule_id
+                for detector in BROAD_WRAPPED_CALLS.values()
+                for filename in ARTIFACTS_BY_CALLABLE[detector]
+                for rule_id in _artifact_rule_ids(filename)
+            }
+            if row.callable == "project_full_wavea_evidence" else set()
+        )
+        return sorted(
+            broad_ids | {
+                rule_id
+                for specs in focused_specs.values()
+                for rule_id, _ in specs
+                if rule_id not in non_emitting
+            }
+        )
     if row.callable in _seen:
         return []
     seen = _seen | {row.callable}
@@ -1285,6 +1815,14 @@ def resolve_emissions(
                 f"generic surface emission source drift: {row.callable}->{source_name}"
             )
         values.update(resolve_emissions(source, all_calls, _seen=seen))
+    if row.callable == "project_claim_compliance":
+        values.update(
+            rule_id
+            for specs in focused_specs.values()
+            for rule_id, disposition in specs
+            if rule_id not in non_emitting
+            and disposition in {"unpriced_compliance", "drug_quantity"}
+        )
     for equivalent in EQUIVALENT_EMISSIONS.get(row.callable, ()):
         other = all_calls.get(equivalent)
         if other is not None:
@@ -1384,6 +1922,14 @@ def _runtime_row(
     registry_ids = _registry_matches(row, registry)
     module_path = row.module.replace(".", "/") + ".py"
     artifacts = [f"data/gazette/prose_rules/{name}" for name in ARTIFACTS_BY_CALLABLE.get(row.callable, ())]
+    focused_specs, _ = _focused_specs()
+    legacy_monetary_hint_unconfirmed = (
+        row.entrypoint == "analyze_claim"
+        and any(
+            disposition == "financial_review"
+            for _, disposition in focused_specs.get(row.callable, ())
+        )
+    )
 
     if row.entrypoint == "analyze_claim":
         meta = {
@@ -1425,6 +1971,15 @@ def _runtime_row(
             "patient_and_cohort_visible",
         }:
             meta["hidden_reason"] = None
+    if legacy_monetary_hint_unconfirmed:
+        meta.update(
+            finding_type="financial review (legacy raw)",
+            money="informational",
+            hidden_reason=(
+                "Legacy raw rows may carry an unverified amount hint; the focused financial-review "
+                "projection sets confirmed amount to null and the current API draft gate hides it."
+            ),
+        )
 
     report_field = REPORT_FIELD_OVERRIDES.get(row.callable)
     if report_field is None:
@@ -1463,8 +2018,23 @@ def _runtime_row(
         module_path,
         *artifacts,
     ]
+    if row.entrypoint == "analyze_claim" and row.callable in _focused_specs()[0]:
+        evidence.append(_rel(FOCUSED_MATERIALIZER_PATH))
     if row.entrypoint == "compute_patient_billing_report":
         evidence.extend(_metadata_evidence_files(meta))
+
+    emissions = resolve_emissions(row, all_calls)
+    focused_confirmed = {
+        rule_id
+        for specs in focused_specs.values()
+        for rule_id, disposition in specs
+        if disposition in {"unpriced_compliance", "drug_quantity"}
+    }
+    draft_hidden = (
+        sorted(focused_confirmed & set(emissions))
+        if row.callable == "project_claim_compliance"
+        else []
+    )
 
     return {
         "inventory_level": "runtime_detector",
@@ -1475,7 +2045,16 @@ def _runtime_row(
         "runtime_status": "gated" if gates != ["always"] else "executed",
         "gating_condition": " OR ".join(dict.fromkeys(gates)) if gates else "always within entrypoint",
         "required_inputs": required_inputs,
-        "emitted_rule_ids_or_kinds": resolve_emissions(row, all_calls),
+        "emitted_rule_ids_or_kinds": emissions,
+        **(
+            {
+                "public_emitted_rule_ids_or_kinds": sorted(set(emissions) - set(draft_hidden)),
+                "draft_hidden_emitted_rule_ids_or_kinds": draft_hidden,
+                "public_visibility_gate": "complete-25-v1",
+            }
+            if draft_hidden
+            else {}
+        ),
         "report_field": report_field,
         "recommended_action_surface": meta.get("surface"),
         "finding_type": meta.get("finding_type"),
@@ -1485,6 +2064,7 @@ def _runtime_row(
         "cohort_ui_surface": meta.get("cohort_ui"),
         "money_semantics": meta.get("money"),
         "money_fields": list(meta.get("money_fields") or []),
+        "legacy_monetary_hint_unconfirmed": legacy_monetary_hint_unconfirmed,
         "included_in_totals": bool(meta.get("included")),
         "visibility_status": meta.get("visibility"),
         "duplicate_group": meta.get("duplicate_group"),
@@ -1676,7 +2256,13 @@ def _semantic_rollup(runtime_rows: list[dict[str, Any]]) -> dict[str, dict[str, 
 
     result: dict[str, dict[str, Any]] = {}
     for emission, rows in sorted(by_emission.items()):
-        statuses = {row["visibility_status"] for row in rows}
+        public_rows = [
+            row
+            for row in rows
+            if emission
+            in row.get("public_emitted_rule_ids_or_kinds", row["emitted_rule_ids_or_kinds"])
+        ]
+        statuses = {row["visibility_status"] for row in public_rows}
         patient = bool(statuses & {"patient_visible", "patient_and_cohort_visible"})
         cohort = bool(statuses & {"cohort_visible", "patient_and_cohort_visible"})
         hidden = not patient and not cohort and "aggregate_only" not in statuses
@@ -1687,7 +2273,7 @@ def _semantic_rollup(runtime_rows: list[dict[str, Any]]) -> dict[str, dict[str, 
         )
         duplicates = [
             row
-            for row in rows
+            for row in public_rows
             if row["duplicate_status"] != "none"
             and row["visibility_status"]
             in {"patient_visible", "cohort_visible", "patient_and_cohort_visible"}
@@ -1756,6 +2342,7 @@ def build_audit() -> dict[str, Any]:
     assert_known_runtime_calls("analyze_claim", analyze)
     assert_known_runtime_calls("compute_patient_billing_report", report)
     validate_explicit_metadata(report)
+    _validate_focused_report_dataflow()
 
     runtime_calls = sorted([*analyze, *report], key=lambda row: (row.entrypoint, row.callable))
     all_calls = _all_discovered_by_name(runtime_calls)
@@ -1770,10 +2357,33 @@ def build_audit() -> dict[str, Any]:
     for entry in registry:
         status_breakdown[str(entry.get("coverage_status") or "unknown")] += 1
 
+    focused_specs, non_emitting = _focused_specs()
+    focused_current = {
+        rule_id
+        for specs in focused_specs.values()
+        for rule_id, _ in specs
+        if rule_id not in non_emitting
+    }
+    focused_confirmed_candidates = {
+        rule_id
+        for specs in focused_specs.values()
+        for rule_id, disposition in specs
+        if rule_id not in non_emitting
+        and disposition in {"unpriced_compliance", "drug_quantity"}
+    }
+    broad_ids = {
+        rule_id
+        for detector in BROAD_WRAPPED_CALLS.values()
+        for filename in ARTIFACTS_BY_CALLABLE[detector]
+        for rule_id in _artifact_rule_ids(filename)
+    }
+    if len(BROAD_WRAPPED_CALLS) != 7 or len(broad_ids) != 496:
+        raise ValueError("Broad Wave A authored family or identity roster drift")
+
     return {
-        "schema_version": 3,
-        "audit_date": "2026-09-18",
-        "source_revision": "0e709489a54339f9fd4c2d143f0ce30a53ffb94c",
+        "schema_version": 4,
+        "audit_date": "2026-09-27",
+        "source_revision": "wavea-current-working-tree-checkpoint",
         "canonical_entrypoints": [
             "src/bilun/domain/billing/engine.py::analyze_claim",
             "src/bilun/domain/billing/patient_report.py::compute_patient_billing_report",
@@ -1784,6 +2394,21 @@ def build_audit() -> dict[str, Any]:
             "src/bilun/domain/billing/cohort_compliance.py::build_cohort_compliance_index",
         ],
         "claim_compliance_surface": _claim_compliance_surface(runtime_calls),
+        "focused_wavea_checkpoint": {
+            "detector_groups": len(focused_specs),
+            "tracked_rule_ids": sum(len(specs) for specs in focused_specs.values()),
+            "currently_detector_emittable_rule_ids": len(focused_current),
+            "non_emitting_unavailable_rule_ids": sorted(non_emitting),
+            "potential_confirmed_unpriced_rule_ids": sorted(focused_confirmed_candidates),
+            "review_and_financial_evidence_visibility": "draft_gate_hidden",
+            "release_ready": False,
+        },
+        "broad_wavea_checkpoint": {
+            "detector_groups": len(BROAD_WRAPPED_CALLS),
+            "authored_rule_ids": len(broad_ids),
+            "review_and_financial_evidence_visibility": "draft_gate_hidden",
+            "release_ready": False,
+        },
         "locked_definitions": LOCKED_DEFINITIONS,
         "registry_status_breakdown": dict(sorted(status_breakdown.items())),
         "independent_rerun_debt": rerun_debt,
@@ -1806,9 +2431,37 @@ def render_report(audit: dict[str, Any]) -> str:
     rerun_debt = audit["independent_rerun_debt"]
 
     lines = [
-        "# Rule Engine → Product Surface Baseline Audit",
+        "# Rule Engine → Product Surface Current Wave A Checkpoint",
         "",
-        f"Source revision: `{audit['source_revision']}`. Audit taxonomy is frozen by `scripts/audits/build_rule_surfacing_inventory.py`.",
+        f"Source state: `{audit['source_revision']}` ({audit['audit_date']}). This is a source checkpoint, not a deployed-release claim. Audit taxonomy is frozen by `scripts/audits/build_rule_surfacing_inventory.py`.",
+        "",
+        "## Current Wave A scope",
+        "",
+        (
+            f"The focused materializer reaches **{audit['focused_wavea_checkpoint']['detector_groups']}** detector groups. "
+            f"Its projection tracks **{audit['focused_wavea_checkpoint']['tracked_rule_ids']}** stable rule IDs, "
+            f"of which **{audit['focused_wavea_checkpoint']['currently_detector_emittable_rule_ids']}** can currently be emitted by detectors. "
+            "The remaining historical IDs have explicit unavailable evaluations: "
+            + _markdown_list(audit['focused_wavea_checkpoint']['non_emitting_unavailable_rule_ids'])
+            + "."
+        ),
+        "",
+        (
+            f"The broad materializer reaches **{audit['broad_wavea_checkpoint']['detector_groups']}** "
+            f"groups with **{audit['broad_wavea_checkpoint']['authored_rule_ids']}** authored IDs. "
+            "It records evaluated and unavailable statuses; positive, review, financial, and "
+            "confirmed unpriced outputs remain separately classified. Its new patient/cohort "
+            "evidence is draft-gated until the complete-25-v1 release activation."
+        ),
+        "",
+        f"Only **{len(audit['focused_wavea_checkpoint']['potential_confirmed_unpriced_rule_ids'])}** focused IDs are candidates for confirmed, unpriced claim compliance after source and input gates. "
+        "They enter the in-memory generic projection, but the current patient, bill, and cohort APIs hide them until the complete-25-v1 activation gate. "
+        "Focused review and financial-review evidence is a draft persisted capability and remains hidden by the same gate. "
+        "It contributes no confirmed TRY amount or existing report total. This checkpoint does not certify a complete 25-family release.",
+        "",
+        f"Relative to the 2026-09-18 baseline, the runtime row count changes from **73** to **{counts['runtime_detectors_adapters']}**: ownership, focused and broad materialization, batch, validation, and projection stages were added. The seven broad detectors remain in the static runtime inventory through their wrapper. "
+        "The distinct ID/kind count changes from **1,924** to **1,933** because twelve specific radiation identities replace one generic radiation kind, while the corrected admission-window and exam-date detectors no longer claim to emit findings. "
+        "Those two historical identities remain in the 32-ID unavailable evaluation roster.",
         "",
         "## Exact counts",
         "",
@@ -1845,6 +2498,11 @@ def render_report(audit: dict[str, Any]) -> str:
         emissions = row["emitted_rule_ids_or_kinds"]
         emission_text = f"{len(emissions)} id(s)" if len(emissions) > 3 else ", ".join(emissions) or "—"
         notes = row["hidden_reason"] or ("registry=" + ",".join(row["registry_rule_id"]) if row["registry_rule_id"] else "no registry family")
+        if row.get("draft_hidden_emitted_rule_ids_or_kinds"):
+            notes += (
+                f"; {len(row['draft_hidden_emitted_rule_ids_or_kinds'])} in-memory ID(s) "
+                f"are publicly hidden until {row['public_visibility_gate']}"
+            )
         lines.append(
             "| "
             + " | ".join(

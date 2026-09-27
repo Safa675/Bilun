@@ -50,6 +50,9 @@ def test_compliance_index_returns_cached_payload(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(route, "_get_cache_reader", lambda: object())
     monkeypatch.setattr(route, "_get_active_bilun_build_id", lambda _reader: "build-1")
     monkeypatch.setattr(route, "read_cache_json_payload", lambda *_args, **_kw: payload)
+    # This unit isolates cached index rendering; build-gate integrity is
+    # exercised with a real DuckDB cache in test_claim_compliance_pipeline.
+    monkeypatch.setattr(route, "complete_build_evidence_available", lambda *_args: True)
     monkeypatch.setattr(
         route,
         "read_active_bilun_data_source",
@@ -71,6 +74,7 @@ def test_compliance_index_filters_surface(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr(route, "_get_cache_reader", lambda: object())
     monkeypatch.setattr(route, "_get_active_bilun_build_id", lambda _reader: "build-1")
     monkeypatch.setattr(route, "read_cache_json_payload", lambda *_args, **_kw: _index_payload())
+    monkeypatch.setattr(route, "complete_build_evidence_available", lambda *_args: True)
     monkeypatch.setattr(
         route,
         "read_active_bilun_data_source",
@@ -109,6 +113,7 @@ def test_compliance_index_http_keeps_drug_indication_nonfinancial(
     monkeypatch.setattr(route, "_get_cache_reader", lambda: object())
     monkeypatch.setattr(route, "_get_active_bilun_build_id", lambda _reader: "build-1")
     monkeypatch.setattr(route, "read_cache_json_payload", lambda *_args, **_kw: payload)
+    monkeypatch.setattr(route, "complete_build_evidence_available", lambda *_args: True)
     monkeypatch.setattr(
         route,
         "read_active_bilun_data_source",

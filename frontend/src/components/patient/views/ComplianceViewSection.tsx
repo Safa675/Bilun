@@ -20,6 +20,7 @@ import {
 } from "@/lib/complianceFindings";
 import { buildComplianceCoverage } from "@/lib/complianceCoverage";
 import UnifiedComplianceFindingsTable from "@/components/patient/UnifiedComplianceFindingsTable";
+import { PatientWaveAEvidenceSection, WaveACoverageSummary } from "@/components/patient/WaveAEvidenceSection";
 
 const RISK_COLOR = "#B91C1C";
 
@@ -55,6 +56,7 @@ export default function ComplianceViewSection({
   onSelectAction,
   onOpenClause,
   selectedFindingId,
+  selectedClaimId,
 }: {
   billingReport: BillingActionReport;
   patientId?: string;
@@ -63,6 +65,7 @@ export default function ComplianceViewSection({
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const rows = unifiedRows ?? buildUnifiedComplianceFindings(billingReport, t);
@@ -151,6 +154,26 @@ export default function ComplianceViewSection({
           </div>
         )}
       </section>
+
+      <WaveACoverageSummary coverage={billingReport.wavea_coverage} />
+
+      <PatientWaveAEvidenceSection
+        patientId={effectivePatientId}
+        kind="reviews"
+        block={billingReport.claim_reviews}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+        selectedClaimId={selectedClaimId}
+      />
+
+      <PatientWaveAEvidenceSection
+        patientId={effectivePatientId}
+        kind="advisories"
+        block={billingReport.claim_advisories}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+        selectedClaimId={selectedClaimId}
+      />
 
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} />

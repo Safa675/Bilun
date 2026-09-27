@@ -4,13 +4,14 @@ Each detector encodes one row of "El Kitabı Tablo 15 — 24 Most Common
 Outpatient Billing Errors". Phase 1 covered the 5 highest-frequency errors
 selected by the feasibility study (`/tmp/feasibility/common_errors.md`) as
 buildable now (data already on the claim context), high-frequency in real
-Medula denials, and low effort to implement. Phase 2 adds 11 more.
+Medula denials, and low effort to implement. One Phase 1 date rule and one
+Phase 2 timing rule are now unavailable because their source dates are absent.
 
 Phase 1 errors covered:
 - **#2** Same-specialty exam within 10 days  → ``detect_duplicate_exam_10day``
 - **#8** Services with no diagnosis on takip → ``detect_missing_diagnosis``
 - **#12** Duplicate tests across claims       → ``detect_duplicate_tests``
-- **#22** Exam date ≠ admission date          → ``detect_exam_admission_date_mismatch``
+- **#22** Exam date ≠ outpatient acceptance date (unavailable) → ``detect_exam_admission_date_mismatch``
 - **#20** Drug QR/barcode missing             → ``detect_missing_drug_barcode``
 
 Phase 2 errors covered:
@@ -18,7 +19,7 @@ Phase 2 errors covered:
 - **#4** Normal Poliklinik billed where vakabaşı required → ``detect_normal_poliklinik_wrong_method``
 - **#5** Material identity errors (SUT/barcode) → ``detect_material_identity_errors``
 - **#7** Green-area exam + bundled extras → ``detect_green_area_bundled_extras``
-- **#9** Admissions past 60-day billing window → ``detect_admission_billing_window``
+- **#9** Billing-period timing (unavailable from claim dates alone) → ``detect_admission_billing_window``
 - **#10** Incomplete/unreported procedures → ``detect_unreported_lab_result``
 - **#11** Drug quantity (adet) error → ``detect_drug_quantity_error``
 - **#15** Material pre-auth missing → ``detect_material_preauth_missing``
@@ -29,7 +30,7 @@ Phase 2 errors covered:
 Every detector takes plain ``ClaimHeader`` / ``ProcedureClaimLine`` /
 ``DrugClaimLine`` lists plus an optional ``claim_ids_with_procs`` filter set
 (matching the wiring gate used by ``patient_report`` and the other prose-rule
-motors, e.g. ``anestezi_puani``). Each emits violation dicts with a uniform
+motors, e.g. ``anestezi_puani``). Active detectors emit violation dicts with a uniform
 shape: ``type``, ``claim_id``, ``rule_id``, ``detail`` (Turkish),
 ``sut_section_id``, ``savings_category``, ``savings_basis``, ``severity``.
 """
@@ -95,11 +96,6 @@ _PACKAGE_CATEGORIES: frozenset[str] = frozenset({"paket", "vakabasi", "vakabaş�
 # Error #7 — Green-area (yeşil alan) poliklinik exam code. Sourced from
 # copay_line_waivers._GREEN_ZONE_EXAM_CODE (verified canonical constant).
 _GREEN_ZONE_EXAM_CODE = "520021"
-
-# Error #9 — Medula admission→claim billing window. SGK requires a yatış
-# takibi to be submitted within ~60 days of admission; beyond that the claim
-# is statute-barred (zamanaşımı) and rejected at the gateway.
-_ADMISSION_BILLING_WINDOW_DAYS = 60
 
 # Error #10 — lab_billing_status values that mean the result was never
 # reported back, so the test is unbundlable / non-reimbursable. The field
@@ -186,7 +182,8 @@ def detect_duplicate_exam_10day(
             continue
         exams.append(line)
 
-    # Group by specialty; within each group sort by date and compare consecutive.
+    # Group by specialty; within each group sort by date and retain the most
+    # recent prior exam from a different claim for each later line.
     by_specialty: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
     for line in exams:
         by_specialty[line.procedure_specialty_code].append(line)
@@ -194,14 +191,19 @@ def detect_duplicate_exam_10day(
     violations: list[dict[str, Any]] = []
     for specialty, lines in by_specialty.items():
         ordered = sorted(lines, key=lambda p: (p.procedure_date, p.claim_id))
-        for prev, curr in zip(ordered, ordered[1:]):
-            # Skip the same-claim self-pair (different error class).
-            if prev.claim_id == curr.claim_id:
-                continue
-            gap = (curr.procedure_date - prev.procedure_date).days
-            # Only a forward gap within the window counts; negative gaps
-            # are covered by the symmetric pair after sorting.
-            if 0 <= gap <= _EXAM_DUPLICATE_WINDOW_DAYS:
+        latest: ProcedureClaimLine | None = None
+        latest_other: ProcedureClaimLine | None = None
+        for curr in ordered:
+            # The immediately preceding line may belong to this same claim.
+            # Keep the latest line from another claim so each later line can
+            # still be checked without rescanning the entire specialty group.
+            prev = (
+                latest
+                if latest is not None and latest.claim_id != curr.claim_id
+                else latest_other
+            )
+            gap = (curr.procedure_date - prev.procedure_date).days if prev is not None else None
+            if gap is not None and 0 <= gap <= _EXAM_DUPLICATE_WINDOW_DAYS:
                 detail = (
                     f"Aynı branş ({specialty}) muayenesi {prev.procedure_date} ve "
                     f"{curr.procedure_date} tarihlerinde {_EXAM_DUPLICATE_WINDOW_DAYS} "
@@ -211,6 +213,7 @@ def detect_duplicate_exam_10day(
                     {
                         "type": _OPPORTUNITY_TYPE,
                         "claim_id": curr.claim_id,
+                        "procedure_line_id": curr.procedure_line_id,
                         "rule_id": "tablo15_2_duplicate_exam_10day",
                         "detail": detail,
                         "sut_section_id": _SUT_SECTION_ID,
@@ -227,6 +230,9 @@ def detect_duplicate_exam_10day(
                         "gap_days": gap,
                     }
                 )
+            if latest is not None and latest.claim_id != curr.claim_id:
+                latest_other = latest
+            latest = curr
     return violations
 
 
@@ -324,6 +330,7 @@ def detect_duplicate_tests(
                         {
                             "type": _OPPORTUNITY_TYPE,
                             "claim_id": curr.claim_id,
+                            "procedure_line_id": curr.procedure_line_id,
                             "rule_id": "tablo15_12_duplicate_test",
                             "detail": detail,
                             "sut_section_id": _SUT_SECTION_ID,
@@ -350,58 +357,16 @@ def detect_exam_admission_date_mismatch(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #22: First exam/procedure date doesn't match admission date.
+    """Legacy #22 entry point; no verdict without patient-acceptance date.
 
-    For inpatient claims, the earliest ``procedure_date`` among the claim's
-    procedure lines should equal ``admission_date`` (the first service day
-    of an inpatient episode is the admission day). A mismatch signals that
-    the exam/muayene was not recorded on the admission day, which is a
-    Medula data-integrity finding.
-
-    Honest skips: outpatient claims, no admission_date, no procedure lines
-    on the claim, or any procedure line missing a real date.
+    El Kitabı Table 15 #22 concerns an *outpatient exam* date versus the
+    patient's acceptance date. ``admission_date`` is the inpatient stay date;
+    ``claim_start_date`` is the service-range start. Neither is an accepted
+    substitute for outpatient acceptance, which this model does not ingest.
+    See ``billing.exam_acceptance_date`` for the unavailable evaluation and
+    the primary handbook source.
     """
-    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
-
-    lines_by_claim: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
-    for line in procedure_lines:
-        lines_by_claim[line.claim_id].append(line)
-
-    violations: list[dict[str, Any]] = []
-    for claim in claims:
-        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
-            continue
-        if infer_care_setting(claim) != "inpatient":
-            continue
-        if claim.admission_date is None:
-            continue
-        lines = lines_by_claim.get(claim.claim_id, [])
-        if not lines:
-            continue
-        earliest = min(line.procedure_date for line in lines)
-        if earliest == claim.admission_date:
-            continue
-        detail = (
-            f"Yatan hasta takibi {claim.claim_id}: ilk işlem tarihi {earliest}, "
-            f"yatırım tarihi {claim.admission_date} ile uyuşmuyor (Tablo 15 #22)."
-        )
-        violations.append(
-            {
-                "type": _OPPORTUNITY_TYPE,
-                "claim_id": claim.claim_id,
-                "rule_id": "tablo15_22_exam_admission_date_mismatch",
-                "detail": detail,
-                "sut_section_id": _SUT_SECTION_ID,
-                "source_type": _SOURCE_TYPE,
-                "clause_ref": _CLAUSE_REF,
-                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                "savings_basis": SAVINGS_BASIS_SOURCED,
-                "severity": "error",
-                "admission_date": claim.admission_date,
-                "first_procedure_date": earliest,
-            }
-        )
-    return violations
+    return []
 
 
 def detect_missing_drug_barcode(
@@ -515,6 +480,7 @@ def detect_vakabasi_wrong_method(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_3_vakabasi_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -569,6 +535,7 @@ def detect_normal_poliklinik_wrong_method(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_4_normal_poliklinik_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -691,6 +658,7 @@ def detect_green_area_bundled_extras(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_7_green_area_bundled_extra",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -712,48 +680,15 @@ def detect_admission_billing_window(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #9: Admissions billed past the 60-day SGK billing window.
+    """Legacy Error #9 entry point; no verdict without billing-period closure.
 
-    SGK requires a yatış takibi to be submitted within ~60 days of the
-    admission date; beyond that the claim is statute-barred (zamanaşımı) and
-    rejected. Flags any claim whose ``admission_date`` is more than
-    :data:`_ADMISSION_BILLING_WINDOW_DAYS` days before ``claim_end_date``.
-
-    Pure date arithmetic on existing header fields. Honest skip when either
-    date is missing.
+    El Kitabı Table 15 #9 does not define an admission-to-service-end clock.
+    Current SUT 5.2.1 concerns billing-period closure after service, while
+    ``claim_end_date`` is only the service-range end. Retain the callable but
+    emit no fabricated violations. Primary sources and the unavailable status
+    are documented in ``billing.admission_billing_window``.
     """
-    violations: list[dict[str, Any]] = []
-    for claim in claims:
-        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
-            continue
-        if claim.admission_date is None or claim.claim_end_date is None:
-            continue
-        gap = (claim.claim_end_date - claim.admission_date).days
-        if gap <= _ADMISSION_BILLING_WINDOW_DAYS:
-            continue
-        detail = (
-            f"Takip {claim.claim_id}: yatış tarihi {claim.admission_date} ile takip "
-            f"bitiş {claim.claim_end_date} arası {gap} gün — SGK 60 günlük faturalama "
-            f"süresi aşılmış (zamanaşımı, Tablo 15 #9)."
-        )
-        violations.append(
-            {
-                "type": _OPPORTUNITY_TYPE,
-                "claim_id": claim.claim_id,
-                "rule_id": "tablo15_9_admission_billing_window",
-                "detail": detail,
-                "sut_section_id": _SUT_SECTION_ID,
-                "source_type": _SOURCE_TYPE,
-                "clause_ref": _CLAUSE_REF,
-                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                "savings_basis": SAVINGS_BASIS_SOURCED,
-                "severity": "error",
-                "admission_date": claim.admission_date,
-                "claim_end_date": claim.claim_end_date,
-                "gap_days": gap,
-            }
-        )
-    return violations
+    return []
 
 
 def detect_unreported_lab_result(
@@ -1016,6 +951,7 @@ def detect_inpatient_on_outpatient(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_21_inpatient_on_outpatient",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -1038,17 +974,21 @@ def detect_donor_prep_as_exam(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #24: Donor-prep workup billed as a routine exam (muayene).
+    """Error #24: Review an exam line on a donor-preparation follow-up.
 
-    Living-donor transplant preparation visits are a distinct service class
-    (donor hazırlık) and must NOT be billed as a routine poliklinik muayenesi.
-    Flags a procedure line billed as an exam (``procedure_category`` in
-    :data:`_EXAM_CATEGORIES`) when the claim's ``occupational_context`` or the
-    line's ``procedure_category`` signals donor-prep.
-
-    Honest skip when neither the claim nor the line carries a donor-prep signal.
+    El Kitabı §4.2 and Table 15 #24 say no exam is billed on a donor-prep
+    follow-up. A donor context on the header or a *separate* donor-prep line
+    can mark the claim for review; an exam line cannot itself have both exam
+    and donor-prep categories. The authoritative MEDULA ``donorTCKimlikNo``
+    field is not ingested, so this remains a warning rather than a confirmed
+    regulatory finding.
     """
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+    donor_prep_claim_ids = {
+        line.claim_id
+        for line in procedure_lines
+        if (line.procedure_category or "").casefold() in _DONOR_PREP_CATEGORIES
+    }
 
     violations: list[dict[str, Any]] = []
     for line in procedure_lines:
@@ -1057,12 +997,10 @@ def detect_donor_prep_as_exam(
         if (line.procedure_category or "").casefold() not in _EXAM_CATEGORIES:
             continue
         claim = claims_by_id.get(line.claim_id)
-        ctx = (getattr(claim, "occupational_context", "") or "").casefold() if claim else ""
-        line_cat = (line.procedure_category or "").casefold()
-        is_donor_prep = (
-            ctx in _DONOR_PREP_CONTEXTS or line_cat in _DONOR_PREP_CATEGORIES
-        )
-        if not is_donor_prep:
+        if claim is None:
+            continue
+        ctx = (claim.occupational_context or "").casefold()
+        if ctx not in _DONOR_PREP_CONTEXTS and line.claim_id not in donor_prep_claim_ids:
             continue
         detail = (
             f"Donör/verici hazırlık viziti ({line.procedure_code}) rutin poliklinik "
@@ -1073,6 +1011,7 @@ def detect_donor_prep_as_exam(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_24_donor_prep_as_exam",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,

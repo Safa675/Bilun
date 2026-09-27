@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import dataclasses
-from dataclasses import replace
 from decimal import Decimal
-from typing import Any
 
 import pytest
 
 from src.bilun.domain.claims.models import (
     ClaimHeader,
-    ClaimDiagnosis,
     DrugClaimLine,
     MaterialClaimLine,
     ProcedureClaimLine,
@@ -116,6 +113,14 @@ def test_build_context_derives_emergency_from_department() -> None:
     ctx = _make_ctx(header=_make_header(department="acil servis"))
     context = _build_gap_closing_context(ctx)
     assert context["is_emergency"] is True
+
+
+@pytest.mark.parametrize("claim_type", ["yatis", "yatarak", "YATARAK", "inpatient"])
+def test_inpatient_care_setting_aliases_are_normalized_consistently(claim_type: str) -> None:
+    # SUT §2.1.2/§2.1.2.A and §2.2.2 use yatarak/yatan-hasta terminology;
+    # claim_utils.infer_care_setting already recognizes this inpatient alias.
+    ctx = _make_ctx(header=_make_header(claim_type=claim_type))
+    assert _build_gap_closing_context(ctx)["care_setting"] == "inpatient"
 
 
 def test_build_context_surfaces_procedure_fields() -> None:
@@ -272,5 +277,3 @@ def test_care_setting_maps_poliklinik_and_gunubirlik_to_outpatient() -> None:
         ctx = _make_ctx(header=_make_header(claim_type=claim_type))
         context = _build_gap_closing_context(ctx)
         assert context["care_setting"] == "outpatient", f"{claim_type} should map to outpatient"
-
-

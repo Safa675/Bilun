@@ -49,15 +49,22 @@ class BilunRuntimeState:
             return self.cache_con
         with self.cache_lock:
             if self.cache_con is None:
-                self.cache_con = connect_cache_db(self.canonical_cache_db_path)
-                init_cache_schema(self.cache_con)
+                verified_load = os.getenv("BILUN_STARTUP_POLICY", "").strip().lower() == (
+                    "verified-load-only"
+                )
+                self.cache_con = connect_cache_db(
+                    self.canonical_cache_db_path, read_only=verified_load
+                )
+                if not verified_load:
+                    init_cache_schema(self.cache_con)
         return self.cache_con
 
     def get_cache_reader(self):
         """Return a shared DuckDB cursor for read-mostly API queries.
 
         Concurrency contract (B-18):
-        - One process-singleton read-write connection backs all requests.
+        - One process-singleton connection backs all requests; verified-load-only
+          candidates keep it read-only for the entire listener lifetime.
         - Callers must use ``bootstrap_pointer=False`` on build lookups so the
           reader never issues INSERTs (see ``get_active_build_id_or_none``).
         - Do not run DDL or cache writes on this cursor; use a dedicated

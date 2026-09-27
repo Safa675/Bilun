@@ -66,15 +66,25 @@ def _serialize_finding(
 
 
 def _serialize_evaluation(evaluation: RuleEvaluation) -> dict[str, Any]:
-    return {
+    row = {
+        "evaluation_id": evaluation.evaluation_id,
         "patient_id": evaluation.patient_id,
         "claim_id": evaluation.claim_id,
         "rule_id": evaluation.rule_id,
+        "line_kind": evaluation.line_kind,
+        "line_id": evaluation.line_id,
         "status": evaluation.evaluation_status,
         "evaluation_status": evaluation.evaluation_status,
         "required_inputs": list(evaluation.required_inputs),
         "missing_inputs": list(evaluation.missing_inputs),
     }
+    if evaluation.line_kind != "claim":
+        row[_LINE_FIELDS[evaluation.line_kind][0]] = evaluation.line_id
+    if evaluation.decision is not None:
+        row["decision"] = evaluation.decision
+    if evaluation.reason is not None:
+        row["reason"] = evaluation.reason
+    return row
 
 
 def project_claim_compliance(

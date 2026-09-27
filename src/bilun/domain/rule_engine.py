@@ -420,6 +420,29 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
     """
     t0 = time.perf_counter()
 
+    if not claim.get("materials", []):
+        return project_claim_validation_rows(claim, [], started_at=t0)
+
+    from src.bilun.domain.billing.engine import analyze_claim
+    from src.bilun.domain.claims.adapter import build_context_from_material_dict
+
+    ctx = build_context_from_material_dict(claim)
+    return project_claim_validation_rows(claim, analyze_claim(ctx), started_at=t0)
+
+
+def project_claim_validation_rows(
+    claim: dict[str, Any],
+    raw_violations: list[dict[str, Any]],
+    *,
+    started_at: float | None = None,
+) -> ClaimValidationResult:
+    """Preserve the historical result from already-computed motor rows.
+
+    V2 can reuse the same observations for its typed and compatibility views;
+    this projector must never run a regulatory detector.
+    """
+    t0 = time.perf_counter() if started_at is None else started_at
+
     claim_id = str(claim.get("claim_id", ""))
     materials = claim.get("materials", [])
 
@@ -429,13 +452,6 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
         result.summary = "No materials to validate."
         result.validation_time_ms = round((time.perf_counter() - t0) * 1000, 2)
         return result
-
-    # Build the typed context (enricher populates is_ek3b1_bundled / is_excluded).
-    from src.bilun.domain.billing.engine import analyze_claim
-    from src.bilun.domain.claims.adapter import build_context_from_material_dict
-
-    ctx = build_context_from_material_dict(claim)
-    raw_violations = analyze_claim(ctx)
 
     # Project the flat violation list onto ClaimValidationResult, mirroring the
     # legacy aggregation (bundling → savings, exclusion → risk, prose motors

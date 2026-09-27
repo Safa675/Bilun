@@ -124,7 +124,7 @@ export interface SutSpecialtyProseCoverageScope {
   medula_savings_note?: string;
 }
 
-export interface SutValidationResult {
+export interface SutLegacyValidationResult {
   claim_id: string;
   coverage_scope?: SutMaterialBundlingCoverageScope;
   specialty_coverage_scope?: SutSpecialtyProseCoverageScope;
@@ -138,6 +138,53 @@ export interface SutValidationResult {
   summary: string;
   violations: SutViolation[];
   material_lines: SutMaterialLine[];
+}
+
+export interface SutValidationEvidence {
+  evidence_id: string;
+  rule: string;
+  rule_id?: string | null;
+  material_name: string;
+  message: string;
+  disposition: string;
+  reason?: string | null;
+  source_status: string;
+}
+
+export interface SutAnnexAssessment {
+  /** Only this annex match; false does not establish payment entitlement. */
+  matched: boolean | null;
+  source_reason: string | null;
+}
+
+export interface SutMaterialApplicability {
+  material_index: number;
+  material_id: string;
+  material_name: string;
+  material_code: string | null;
+  ek3b1: SutAnnexAssessment;
+  ek3b2: SutAnnexAssessment;
+}
+
+export interface SutValidationResult {
+  contract_version: 2;
+  request_id: string;
+  claim_id: string;
+  validation_status: "violations_found" | "review_required" | "partially_evaluated" | "no_violations_in_evaluated_scope";
+  is_valid: boolean | null;
+  violations: SutValidationEvidence[];
+  advisories: SutValidationEvidence[];
+  material_applicability: SutMaterialApplicability[];
+  coverage: {
+    evaluation_count: number;
+    unresolved_count: number;
+    authored_rule_count: number;
+    disposition_counts: Record<string, number>;
+    scope: string;
+  };
+  provenance: Record<string, unknown>;
+  summary: string;
+  validation_time_ms: number;
 }
 
 export interface SutMaterialPricing {
@@ -250,11 +297,20 @@ export async function validateSutClaim(
   claim: SutClaimRequest,
   options?: RequestInit,
 ): Promise<SutValidationResult> {
-  return postJSON<SutValidationResult, SutClaimRequest>(
+  const headers = new Headers(options?.headers);
+  headers.set("X-Bilun-Validation-Contract", "2");
+  const result = await postJSON<SutValidationResult, SutClaimRequest>(
     "/api/validate-claim",
     claim,
-    options,
+    { ...options, headers: Object.fromEntries(headers.entries()) },
   );
+  if (!result || result.contract_version !== 2) {
+    throw new Error(
+      "Doğrulama sürümü uyumsuz. Sayfayı yenileyin veya istemciyi güncelleyin. / " +
+      "Validation version mismatch. Reload the page or upgrade this client.",
+    );
+  }
+  return result;
 }
 
 export async function getSutMaterialPricing(
@@ -937,4 +993,3 @@ export async function getLabPrices(options?: RequestInit): Promise<{ tests: LabP
     options,
   );
 }
-

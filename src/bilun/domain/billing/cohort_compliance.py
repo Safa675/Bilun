@@ -12,6 +12,7 @@ from typing import Any
 
 import polars as pl
 
+from .rule_findings import build_evaluation_id, build_finding_id
 from ..money import money_round_half_up_opt as _money
 
 # Billing surface → Compliance subtab id. Copay exemption rows stay on
@@ -118,6 +119,40 @@ def _claim_evaluation(
     ):
         return None
 
+    has_identity = any(
+        field in row for field in ("evaluation_id", "line_kind", "line_id")
+    )
+    if has_identity:
+        line_kind = _non_empty_string(row.get("line_kind"))
+        raw_line_id = row.get("line_id")
+        if line_kind not in _CLAIM_LINE_ID_FIELDS:
+            return None
+        source_field = _CLAIM_LINE_ID_FIELDS[line_kind]
+        if source_field is None:
+            if raw_line_id is not None:
+                return None
+            line_id = None
+        else:
+            if claim_id is None:
+                return None
+            line_id = _non_empty_string(raw_line_id)
+            if line_id is None or _non_empty_string(row.get(source_field)) != line_id:
+                return None
+        if any(
+            field != source_field and row.get(field) is not None
+            for field in _CLAIM_LINE_SOURCE_FIELDS
+        ):
+            return None
+        expected_id = build_evaluation_id(
+            rule_id=rule_id,
+            patient_id=patient_id,
+            claim_id=claim_id,
+            line_kind=line_kind,
+            line_id=line_id,
+        )
+        if row.get("evaluation_id") != expected_id:
+            return None
+
     projected = dict(row)
     projected.update({
         "patient_id": patient_id,
@@ -167,6 +202,15 @@ def _claim_finding(
         for field in _CLAIM_LINE_SOURCE_FIELDS
     ):
         return None
+    expected_id = build_finding_id(
+        rule_id=rule_id,
+        patient_id=patient_id,
+        claim_id=claim_id,
+        line_kind=line_kind,
+        line_id=line_id,
+    )
+    if finding_id != expected_id:
+        return None
 
     projected = dict(row)
     projected.update({
@@ -192,21 +236,38 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
     block = payload.get("claim_compliance")
     if not isinstance(block, Mapping):
         block = {}
-    evaluations_by_rule_claim: dict[tuple[str, str | None], dict[str, Any]] = {}
+    evaluations_by_identity: dict[tuple[str, ...], dict[str, Any]] = {}
     for row in block.get("evaluations") or []:
         if not isinstance(row, Mapping):
             continue
         evaluation = _claim_evaluation(patient_id, row)
         if evaluation is None:
             continue
-        key = (evaluation["rule_id"], evaluation["claim_id"])
-        evaluations_by_rule_claim.setdefault(key, evaluation)
+        if evaluation.get("line_kind") not in (None, "claim"):
+            key = ("line", evaluation["evaluation_id"])
+        else:
+            # Old caches have no evaluation_id. A mixed payload can contain
+            # their claim row and the new claim-scoped row for the same fact.
+            key = ("claim", evaluation["rule_id"], evaluation["claim_id"] or "")
+        prior = evaluations_by_identity.get(key)
+        if prior is not None:
+            if prior.get("evaluation_id") and evaluation.get("evaluation_id") and prior != evaluation:
+                raise ValueError(f"Conflicting claim evaluation identity: {key[1]}")
+            if key[0] == "claim" and (
+                prior.get("evaluation_id") or evaluation.get("evaluation_id")
+            ):
+                if any(
+                    prior[field] != evaluation[field]
+                    for field in ("status", "required_inputs", "missing_inputs")
+                ):
+                    raise ValueError(f"Conflicting claim evaluation identity: {key[1:]}")
+                if evaluation.get("evaluation_id"):
+                    evaluations_by_identity[key] = evaluation
+        else:
+            evaluations_by_identity[key] = evaluation
     evaluations = [
-        evaluations_by_rule_claim[key]
-        for key in sorted(
-            evaluations_by_rule_claim,
-            key=lambda item: (item[0], item[1] is not None, item[1] or ""),
-        )
+        evaluations_by_identity[key]
+        for key in sorted(evaluations_by_identity)
     ]
 
     findings: dict[str, dict[str, Any]] = {}
@@ -216,6 +277,9 @@ def _claim_projection(patient_id: str, payload: Mapping[str, Any]) -> dict[str, 
         finding = _claim_finding(patient_id, row)
         if finding is None:
             continue
+        prior = findings.get(finding["finding_id"])
+        if prior is not None and prior != finding:
+            raise ValueError(f"Conflicting claim finding identity: {finding['finding_id']}")
         findings.setdefault(finding["finding_id"], finding)
     return {
         "findings": [findings[finding_id] for finding_id in sorted(findings)],

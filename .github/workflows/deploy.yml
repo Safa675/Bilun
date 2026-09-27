@@ -1,24 +1,19 @@
-name: Deploy
+name: Release Hold
 
-# Deploy to the production VPS after CI passes on main.
-# Uses workflow_run so a deploy only happens when the CI workflow (ci.yml)
-# completes successfully on the main branch — a red CI never ships.
+# A successful CI run on main records the exact reviewed commit. Production
+# activation remains held until the private candidate and rollback gate exist.
 on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
     branches: [main]
 
-# Prevent overlapping deploys racing each other; cancel an in-flight one if a
-# newer push lands. A deploy that's mid-restart should not fight a second one.
 concurrency:
-  group: deploy-production
+  group: release-hold
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    # workflow_run also fires for PR CI. Only a successful push to this
-    # repository's main branch may receive production credentials.
+  release_hold:
     if: >-
       ${{
         github.event.workflow_run.conclusion == 'success' &&
@@ -27,10 +22,9 @@ jobs:
         github.event.workflow_run.head_repository.full_name == github.repository
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 5
     permissions:
       contents: read
-
     steps:
       - name: Check out successful CI commit
         uses: actions/checkout@v4
@@ -38,187 +32,16 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           persist-credentials: false
 
-      - name: Record successful CI run
-        run: |
-          echo "Triggered by CI run #${{ github.event.workflow_run.id }}"
-          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
-
-      - name: Configure SSH
+      - name: Verify reviewed commit and record production hold
         env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-
-      - name: Deploy to VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "bash -s -- $DEPLOY_SHA" <<'REMOTE'
           set -euo pipefail
-          cd /opt/Bilun
-          EXPECTED_SHA="${1:?Missing successful CI commit}"
-
-          echo "=== recording state before fetch ==="
-          echo "HEAD before: $(git rev-parse --short HEAD)"
-
-          # Capture current HEAD so we can detect whether anything actually changed.
-          # BEFORE is captured from HEAD pre-fetch. On a healthy VPS this is the
-          # last-deployed commit (local main) and equals post-reset HEAD -> no-op.
-          # If the VPS is stuck on a stale branch (pr-61), HEAD differs from
-          # origin/main -> deploy runs, which is exactly what a branch recovery
-          # needs: the services may still be running the stale branch's code, so
-          # masking the recovery as a no-op would leave them on the wrong commit.
-          BEFORE=$(git rev-parse HEAD)
-
-          # Skip an older green run if main has advanced since its CI completed.
-          # This check happens before checking out code or changing services.
-          git fetch origin
-          REMOTE_MAIN=$(git rev-parse refs/remotes/origin/main)
-          if [ "$REMOTE_MAIN" != "$EXPECTED_SHA" ]; then
-            echo "CI commit $EXPECTED_SHA is superseded by origin/main $REMOTE_MAIN — skipping deploy."
-            exit 0
-          fi
-
-          # A leftover local branch must not decide what ships. -f discards
-          # tracked changes; never clean ignored files such as production .env.
-          git checkout -f -B main "$EXPECTED_SHA"
-
-          AFTER=$(git rev-parse HEAD)
-          if [ "$AFTER" != "$EXPECTED_SHA" ]; then
-            echo "ERROR: checked out $AFTER instead of successful CI commit $EXPECTED_SHA" >&2
-            exit 1
-          fi
-
-          if [ "$BEFORE" = "$AFTER" ]; then
-            echo "No new commits since last deploy — nothing to do."
-            exit 0
-          fi
-
-          # Detect what changed between the old and new HEAD.
-          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
-          echo "=== changed files ==="
-          echo "$CHANGED"
-
-          FRONTEND_CHANGED=$(echo "$CHANGED" | grep -E '^frontend/' || true)
-          BACKEND_CHANGED=$(echo "$CHANGED" | grep -E '^(src/|scripts/|pyproject\.toml|requirements\.txt)' || true)
-          DEPS_CHANGED=$(echo "$CHANGED" | grep -E '^(frontend/package(-lock)?\.json|pyproject\.toml|requirements\.txt)' || true)
-
-          # Cache rebuild is needed when rule data or evaluator code changes.
-          CACHE_REBUILD=$(echo "$CHANGED" | grep -E '^data/gazette/prose_rules/|^data/gazette/prose_rule_sources/|^data/gazette/prose_manifests/|^src/bilun/domain/|^scripts/sut/' || true)
-
-          # If dependency files changed, resync deps before restarting.
-          if [ -n "$DEPS_CHANGED" ]; then
-            echo "=== dependency files changed — resyncing deps ==="
-            if echo "$DEPS_CHANGED" | grep -q 'frontend/package'; then
-              (cd frontend && npm ci)
-            fi
-            if echo "$DEPS_CHANGED" | grep -qE 'pyproject\.toml|requirements\.txt'; then
-              .venv/bin/pip install -e .
-            fi
-          fi
-
-          # Rebuild and activate frontend atomically outside the live service.
-          if [ -n "$FRONTEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
-            echo "=== frontend changed — executing atomic release deployment ==="
-            scripts/deploy/deploy_frontend.sh --sha "$AFTER" --run-id "${GITHUB_RUN_ID:-$AFTER}"
-          fi
-
-          # Restart backend. If rule/evaluator data changed, rebuild the cache
-          # to a STAGING FILE in the background while the old backend keeps
-          # serving the existing cache. When the build finishes, atomically
-          # swap the file and restart in load-only mode (~5s downtime instead
-          # of the previous ~15min blocking rebuild that raced the 900s timeout).
-          if [ -n "$BACKEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
-            if [ -n "$CACHE_REBUILD" ]; then
-              echo "=== rule/evaluator data changed — background cache rebuild to staging file ==="
-              STAGING=".cache/bilun.duckdb.new"
-
-              # Remove any leftover staging file from a previous interrupted
-              # deploy so the build always starts from a clean slate.
-              rm -f "$STAGING" "$STAGING.wal"
-
-              # Build to a separate file — no DuckDB lock conflict with the
-              # live backend (which is still serving the old bilun.duckdb).
-              # The --activate flag sets the build pointer inside the staging
-              # file so it's ready to serve immediately after the swap.
-              nohup .venv/bin/python scripts/bilun/build_cache.py \
-                  --db-path "$STAGING" --activate \
-                  > /tmp/bilun_build.log 2>&1 &
-              BUILD_PID=$!
-              echo "Background build PID: $BUILD_PID"
-
-              # Wait for the staging build to finish (20-min ceiling).
-              # The backend stays UP serving the old cache this entire time.
-              BUILD_OK=""
-              for i in $(seq 1 120); do
-                if ! kill -0 "$BUILD_PID" 2>/dev/null; then
-                  wait "$BUILD_PID"; BUILD_EXIT=$?
-                  if [ "$BUILD_EXIT" -eq 0 ]; then
-                    echo "=== staging cache build complete ==="
-                    BUILD_OK=1
-                  else
-                    echo "=== ERROR: staging cache build failed (exit $BUILD_EXIT) ==="
-                    tail -30 /tmp/bilun_build.log
-                    rm -f "$STAGING" "$STAGING.wal"
-                    exit 1
-                  fi
-                  break
-                fi
-                echo "  background rebuild in progress... ($((i*10))s elapsed)"
-                sleep 10
-              done
-
-              if [ -z "$BUILD_OK" ]; then
-                echo "=== ERROR: cache build timed out after 1200s ==="
-                kill "$BUILD_PID" 2>/dev/null || true
-                rm -f "$STAGING" "$STAGING.wal"
-                exit 1
-              fi
-
-              # Atomic swap: move staging file over the live one.
-              # Linux leaves the old inode alive for the backend's open FD,
-              # so in-flight queries finish against the old data. The restart
-              # below is what makes the process pick up the new file.
-              #
-              # Also swap the WAL sidecar. DuckDB replays *.wal on open; leaving
-              # the old WAL would replay foreign transactions against the new
-              # main file. If the staging build left a WAL, move it; otherwise
-              # remove any stale old WAL so the restart starts clean.
-              mv -f "$STAGING" .cache/bilun.duckdb
-              if [ -f "$STAGING.wal" ]; then
-                mv -f "$STAGING.wal" .cache/bilun.duckdb.wal
-              else
-                rm -f .cache/bilun.duckdb.wal
-              fi
-              echo "=== atomic cache swap complete ==="
-            fi
-
-            # Restart in load-only mode — picks up the (already-built) cache
-            # file in ~5s. No synchronous rebuild, no 503 window.
-            sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/BILUN_STARTUP_POLICY=load-only/' .env
-            grep -q 'BILUN_STARTUP_POLICY' .env || echo 'BILUN_STARTUP_POLICY=load-only' >> .env
-            echo "=== restarting backend (load-only) ==="
-            systemctl restart bilun-backend
-          fi
-
-          echo "=== deploy of $AFTER complete ==="
-          REMOTE
-
-      - name: Health check
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-        run: |
-          # Give services a moment to settle, then probe health + all login assets.
-          sleep 6
-          echo "=== /health ==="
-          curl -fsS --max-time 15 "https://app.bilun.tech/health" | head -c 400
-          echo
-          echo "=== /login (frontend HTML + referenced asset verification) ==="
-          python3 scripts/deploy/verify_frontend_assets.py "https://app.bilun.tech/login"
-          echo "=== deploy verified ==="
+          test "$(git rev-parse HEAD)" = "$CI_HEAD_SHA"
+          {
+            echo "### Production release held"
+            echo ""
+            echo "CI run #${CI_RUN_ID} passed on main at ${CI_HEAD_SHA}."
+            echo "Production was not deployed. Wave A requires a privately verified candidate and reviewed activation and rollback evidence."
+          } >> "$GITHUB_STEP_SUMMARY"

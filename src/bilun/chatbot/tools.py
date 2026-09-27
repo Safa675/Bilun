@@ -104,13 +104,12 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
             "name": "validate_claim",
             "description": (
                 "Validate a STORED claim (by patient_id + claim_id) against"
-                " BILUN bundling and exclusion rules: EK-3B-1 bundled"
-                " consumables, EK-3B-2 exclusions, §3.1 material-bundling"
-                " prose, §3.3 specialty prose, and exact EK-3 material"
-                " pricing. Returns per-line violations, total savings and"
-                " risk (TRY), and priced material lines. Use this to check"
-                " whether a claim's materials are reimbursable / correctly"
-                " unbundled. Drug-indication sub-checks are not run on"
+                " the versioned BILUN request-validation contract. Only the"
+                " top-level violations are confirmed findings; advisories need"
+                " review and coverage reports missing or unavailable evidence."
+                " A null is_valid means unresolved, not valid. Historical raw"
+                " rows and unverified monetary claims are excluded from this"
+                " tool's response. Drug-indication sub-checks are not run on"
                 " stored claims (prescriber specialty unavailable)."
             ),
             "parameters": {
@@ -494,7 +493,7 @@ def _validate_stored_claim(
 ) -> dict[str, Any]:
     """Reconstruct a stored claim into the validator's expected dict and run it.
 
-    The rule-engine ``validate_claim`` (``src/bilun/domain/rule_engine.py``)
+    The versioned validator (``src/bilun/domain/claim_validation_v2.py``)
     expects ``{claim_id, procedure_code, materials[], drug_context}`` where each
     material uses the short field names ``name``/``code``/``unit_price``/
     ``billed_amount``. The stored claim-detail API
@@ -533,47 +532,33 @@ def _validate_stored_claim(
         "materials": materials,
         "drug_context": None,
     }
-    result = validator(claim_dict)
-    # Mirror the /validate-claim route's serialization (validation.py:53-78):
-    # flatten the nested RuleViolation / MaterialLinePricing dataclasses into
-    # JSON-friendly dicts so _serialize_for_llm round-trips cleanly.
-    return {
-        "claim_id": result.claim_id,
-        "is_valid": result.is_valid,
-        "total_claim_amount": result.total_claim_amount,
-        "total_savings_try": result.total_savings_try,
-        "total_risk_try": result.total_risk_try,
-        "n_bundling_violations": result.n_bundling_violations,
-        "n_exclusion_violations": result.n_exclusion_violations,
-        "validation_time_ms": result.validation_time_ms,
-        "summary": result.summary,
-        "violations": [
-            {
-                "rule": v.rule,
-                "severity": v.severity,
-                "material_name": v.material_name,
-                "message": v.message,
-                "savings_try": v.savings_try,
-                "risk_amount": v.risk_amount,
-            }
-            for v in result.violations
-        ],
-        "material_lines": [
-            {
-                "material_code": line.material_code,
-                "material_name": line.material_name,
-                "unit_price": line.unit_price,
-                "quantity": line.quantity,
-                "total_price": line.total_price,
-                "is_reimbursable": line.is_reimbursable,
-                "is_bundled": line.is_bundled,
-                "source": line.source,
-                "exactness_status": line.exactness_status,
-                "notes": line.notes,
-            }
-            for line in result.material_lines
-        ],
+    # Preserve field absence before the legacy adapter inserts numeric defaults.
+    # A stored claim reconstructed for this endpoint is still a limited request,
+    # not the full clinical context used by patient billing reports.
+    supplied_materials = []
+    aliases = {
+        "material_name": "name", "material_code": "code", "quantity": "quantity",
+        "unit_price_try": "unit_price", "billed_amount_try": "billed_amount",
     }
+    for line in detail.get("materials") or []:
+        supplied_materials.append({
+            target: line[source] for source, target in aliases.items()
+            if source in line and line[source] is not None
+        })
+    supplied_claim = {"claim_id": claim_id, "materials": supplied_materials}
+    if procedure_code:
+        supplied_claim["procedure_code"] = procedure_code
+    from src.bilun.shared.models import ClaimValidationRequest
+
+    supplied_claim = ClaimValidationRequest.model_validate(supplied_claim).model_dump(
+        exclude_unset=True
+    )
+    result = validator(claim_dict, supplied_claim=supplied_claim)
+    # Historical compatibility remains available at the explicit API endpoint,
+    # but never enters the LLM context as an apparently authoritative finding.
+    from src.bilun.domain.claim_validation_v2 import typed_validation_payload
+
+    return typed_validation_payload(result)
 
 
 def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
@@ -693,7 +678,7 @@ async def execute_tool_call(
             )
             from src.bilun.chatbot.medula_kb import search_playbook_entries
             from src.bilun.chatbot.repo_tools import grep_repo, read_repo_file
-            from src.bilun.domain.rule_engine import validate_claim as sut_validate_claim
+            from src.bilun.domain.claim_validation_v2 import validate_claim_v2 as sut_validate_claim
             from src.bilun.domain.sut.clause_retrieval import search_clauses
 
             size_cap = (

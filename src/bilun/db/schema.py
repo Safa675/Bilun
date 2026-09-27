@@ -280,6 +280,38 @@ def init_schema(con) -> None:
         """
     )
 
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS wavea_evidence_detail (
+            build_id TEXT NOT NULL,
+            patient_id TEXT NOT NULL,
+            payload_json TEXT NOT NULL
+        )
+        """
+    )
+
+    # Exhaustive bill-scope evidence has its own predicate context. The generic
+    # patient_id key column stores the same "patient_id::claim_id" composite
+    # identity as patient_bill_billing_report_rows.
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS wavea_bill_evidence_detail (
+            build_id TEXT NOT NULL,
+            patient_id TEXT NOT NULL,
+            payload_json TEXT NOT NULL
+        )
+        """
+    )
+
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS wavea_evidence_index (
+            build_id TEXT PRIMARY KEY,
+            payload_json TEXT NOT NULL
+        )
+        """
+    )
+
     # ── Phase 2 tables: per-patient pre-serialization ────────────────────
 
     con.execute(

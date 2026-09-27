@@ -43,6 +43,7 @@ export default function PatientWorkspaceViews({
   onOpenClause,
   sectionQuery,
   selectedFindingId,
+  selectedClaimId,
 }: {
   billingReport: BillingActionReport;
   patientId: string;
@@ -51,6 +52,7 @@ export default function PatientWorkspaceViews({
   onOpenClause?: (sectionId: string) => void;
   sectionQuery?: string | null;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const [activeView, setActiveView] = useState<WorkspaceViewId>("compliance");
@@ -121,6 +123,7 @@ export default function PatientWorkspaceViews({
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
           selectedFindingId={selectedFindingId}
+          selectedClaimId={selectedClaimId}
         />
       </Tabs.Content>
 
@@ -130,6 +133,8 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
+          selectedClaimId={selectedClaimId}
         />
       </Tabs.Content>
 

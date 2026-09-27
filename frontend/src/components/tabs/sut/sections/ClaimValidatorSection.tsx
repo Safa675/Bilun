@@ -10,22 +10,19 @@ import type {
   SutValidationResult,
   SutProcedureInfo,
   SutProcedureEntry,
-  SutViolation,
-  SutMaterialLine,
+  SutValidationEvidence,
 } from "@/lib/api/sut";
 import {
   ACCENT_LOCAL,
   fmtNum,
   fmtTRY2,
   KpiCard,
-  SEVERITY_COLORS,
   EMPTY_MATERIAL,
 } from "../shared";
-import { getSutSeverityLabel } from "@/lib/sutLabels";
-import { Chip, DataTable, Surface, Button, inputClass } from "@/components/primitives";
+import { Chip, Surface, Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
-import { translateValidationMessage, translateValidationSummary } from "@/lib/apiMessages";
+import { translateValidationMessage } from "@/lib/apiMessages";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
 
@@ -307,122 +304,108 @@ export function ClaimValidatorSection() {
   );
 }
 
-function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: ReturnType<typeof useT> }) {
-  const statusColor = result.is_valid ? theme.accent : "#B91C1C";
-  const statusLabel = result.is_valid ? t("sections.claimValidator.statusValid") : t("sections.claimValidator.statusInvalid");
-
+export function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: ReturnType<typeof useT> }) {
+  const confirmed = result.validation_status === "violations_found";
+  const incomplete = result.validation_status !== "no_violations_in_evaluated_scope" && !confirmed;
+  const statusColor = confirmed ? "#B91C1C" : incomplete ? "#B45309" : theme.accent;
+  // A client retained during rollback can receive the prior v2 API shape.
+  const materialApplicability = result.material_applicability ?? [];
   return (
     <div className="space-y-4">
-      <MaterialBundlingScopeNotice scope={result.coverage_scope} />
-      <SpecialtyProseScopeNotice scope={result.specialty_coverage_scope} />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard label={t("sections.claimValidator.kpi.status")} value={statusLabel} valueColor={statusColor} />
-        <KpiCard label={t("sections.claimValidator.kpi.claimTotal")} value={fmtTRY2(result.total_claim_amount)} />
-        <KpiCard label={t("sections.claimValidator.kpi.potentialSavings")} value={fmtTRY2(result.total_savings_try)} valueColor="#B45309" />
-        <KpiCard label={t("sections.claimValidator.kpi.violations")} value={fmtNum(result.violations.length)} valueColor={result.violations.length > 0 ? "#B91C1C" : theme.accent} />
+        <KpiCard label={t("sections.claimValidator.kpi.status")} value={t("sections.claimValidator.validationStatus." + result.validation_status)} valueColor={statusColor} />
+        <KpiCard label={t("sections.claimValidator.kpi.violations")} value={fmtNum(result.violations.length)} valueColor={confirmed ? "#B91C1C" : undefined} />
+        <KpiCard label={t("sections.claimValidator.kpi.advisories")} value={fmtNum(result.advisories.length)} />
+        <KpiCard label={t("sections.claimValidator.kpi.unresolved")} value={fmtNum(result.coverage.unresolved_count)} valueColor={result.coverage.unresolved_count > 0 ? "#B45309" : undefined} />
       </div>
-
       {result.violations.length > 0 && (
         <Surface variant="base" padding="lg">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.ruleViolations")}</h3>
-          <div className="space-y-2">
-            {result.violations.map((v, i) => (
-              <ViolationRow key={i} violation={v} t={t} />
-            ))}
+          <h3 className="text-sm font-semibold mb-3">{t("sections.claimValidator.ruleViolations")}</h3>
+          <div className="space-y-3">
+            {result.violations.map((row) => <ValidationEvidenceRow key={row.evidence_id} evidence={row} confirmed t={t} />)}
           </div>
         </Surface>
       )}
-
-      {result.material_lines.length > 0 && (
+      {result.advisories.length > 0 && (
         <Surface variant="base" padding="lg">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.materialLines")}</h3>
-          <DataTable>
-              <thead>
-                <tr>
-                  <th className="text-left">{t("sections.claimValidator.table.material")}</th>
-                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.unitPrice")}</th>
-                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.qty")}</th>
-                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.total")}</th>
-                  <th className="text-center">{t("sections.claimValidator.table.reimbursable")}</th>
-                  <th className="text-center">{t("sections.claimValidator.table.bundled")}</th>
-                  <th className="text-left">{t("sections.claimValidator.table.source")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.material_lines.map((line, i) => (
-                  <MaterialLineRow key={i} line={line} t={t} />
-                ))}
-              </tbody>
-          </DataTable>
+          <h3 className="text-sm font-semibold mb-3">{t("sections.claimValidator.advisories")}</h3>
+          <div className="space-y-3">
+            {result.advisories.map((row) => <ValidationEvidenceRow key={row.evidence_id} evidence={row} t={t} />)}
+          </div>
         </Surface>
       )}
-
-      <div className="text-xs text-right" style={{ color: "#A1A1AA" }}>
-        {t("sections.claimValidator.validatedIn", {
-          ms: result.validation_time_ms.toFixed(1),
-          summary: translateValidationSummary(result.summary),
+      {materialApplicability.length > 0 && (
+        <Surface variant="base" padding="lg">
+          <h3 className="text-sm font-semibold mb-3">{t("sections.claimValidator.annexAssessment.title")}</h3>
+          <div className="space-y-3">
+            {materialApplicability.map((material) => (
+              <div key={material.material_id} className="text-xs">
+                <div className="font-medium">{material.material_name || material.material_code || material.material_id}</div>
+                {(["ek3b1", "ek3b2"] as const).map((annex) => (
+                  <div key={annex} style={{ color: "#71717A" }}>
+                    {annex === "ek3b1" ? "EK-3B-1" : "EK-3B-2"}: {t(
+                      material[annex].matched === true
+                        ? "sections.claimValidator.annexAssessment.matched"
+                        : material[annex].matched === false
+                          ? "sections.claimValidator.annexAssessment.notMatched"
+                          : "sections.claimValidator.annexAssessment.unresolved"
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs mt-3" style={{ color: "#71717A" }}>
+            {t("sections.claimValidator.annexAssessment.disclaimer")}
+          </p>
+        </Surface>
+      )}
+      <div className="text-xs text-right" style={{ color: "#71717A" }}>
+        {t("sections.claimValidator.coverageSummary", {
+          checked: result.coverage.evaluation_count,
+          unresolved: result.coverage.unresolved_count,
         })}
       </div>
     </div>
   );
 }
 
-function ViolationRow({ violation, t }: { violation: SutViolation; t: ReturnType<typeof useT> }) {
-  const sev = SEVERITY_COLORS[violation.severity] ?? SEVERITY_COLORS.info;
+function unresolvedAnnexReviewKey(evidence: SutValidationEvidence): string | null {
+  if (evidence.disposition !== "review_only" || evidence.source_status !== "historical_match_unverified") {
+    return null;
+  }
+  if (evidence.rule === "bundling" && evidence.reason === "ek3b1_exception_setting_and_exact_line_proof_required") {
+    return "sections.claimValidator.annexReview.ek3b1";
+  }
+  if (evidence.rule === "exclusion" && evidence.reason === "ek3b2_exception_applicability_and_exact_line_proof_required") {
+    return "sections.claimValidator.annexReview.ek3b2";
+  }
+  return null;
+}
+
+function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
+  evidence: SutValidationEvidence;
+  confirmed?: boolean;
+  t: ReturnType<typeof useT>;
+}) {
+  const informational = evidence.disposition === "information_only" || evidence.disposition === "permission_or_instruction";
+  const annexReviewKey = unresolvedAnnexReviewKey(evidence);
   return (
-    <div className="rounded-xl p-3 flex items-start gap-3" style={{ background: sev.bg, border: `1px solid ${sev.border}` }}>
-      <span className="inline-block rounded-md px-2 py-0.5 text-xs font-bold uppercase shrink-0 mt-0.5" style={{ background: sev.border, color: sev.text }}>
-        {getSutSeverityLabel(violation.severity)}
-      </span>
+    <div className="flex items-start gap-3">
+      <Chip variant={confirmed ? "danger" : informational ? "neutral" : "warning"}>
+        {t(confirmed ? "sections.claimValidator.confirmedFinding" : informational ? "sections.claimValidator.information" : "sections.claimValidator.reviewCandidate")}
+      </Chip>
       <div className="min-w-0">
-        <div className="text-sm font-semibold" style={{ color: "#1A1A1A" }}>{violation.material_name}</div>
-        <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>
-          {translateValidationMessage(violation.message)}
+        <div className="text-sm font-medium">{evidence.material_name}</div>
+        <div className="text-xs mt-1" style={{ color: "#71717A" }}>
+          {translateValidationMessage(evidence.message)}
         </div>
-        {violation.savings_try > 0 && (
-          <div className="text-xs mt-1 font-medium" style={{ color: "#B45309" }}>
-            {t("sections.claimValidator.potentialSaving", { amount: fmtTRY2(violation.savings_try) })}
+        {annexReviewKey && (
+          <div className="text-xs mt-1" style={{ color: "#B45309" }}>
+            {t("sections.claimValidator.annexUnconfirmed")}: {t(annexReviewKey)}
           </div>
         )}
       </div>
     </div>
-  );
-}
-
-export function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typeof useT> }) {
-  return (
-    <tr>
-      <td className="text-left">
-        <div className="text-sm font-medium" style={{ color: "#1A1A1A" }}>{line.material_name}</div>
-        {line.material_code && <div className="text-xs" style={{ color: "#A1A1AA" }}>{line.material_code}</div>}
-      </td>
-      <td className="text-right text-sm" style={{ color: "#71717A" }}>{fmtTRY2(line.unit_price)}</td>
-      <td className="text-right text-sm" style={{ color: "#71717A" }}>{line.quantity}</td>
-      <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(line.total_price)}</td>
-      <td className="text-center"><StatusPill ok={line.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} unknownLabel={t("sections.claimValidator.annexUnconfirmed")} /></td>
-      <td className="text-center"><StatusPill ok={line.is_bundled === null ? null : !line.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} unknownLabel={t("sections.claimValidator.annexUnconfirmed")} invertColor /></td>
-      <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>
-        {line.source}
-        {line.exactness_status === "missing_exact_inputs" && (
-          <span className="block text-xs italic">{t("sections.claimValidator.missingExactInputs")}</span>
-        )}
-        {line.notes && <span className="block text-xs italic">{line.notes}</span>}
-      </td>
-    </tr>
-  );
-}
-
-function StatusPill({ ok, yesLabel, noLabel, unknownLabel, invertColor }: { ok: boolean | null; yesLabel: string; noLabel: string; unknownLabel: string; invertColor?: boolean }) {
-  if (ok === null) {
-    return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: "rgba(113, 113, 122, 0.10)", color: "#71717A" }}>{unknownLabel}</span>;
-  }
-  const isGood = invertColor ? !ok : ok;
-  const bg = isGood ? theme.accentAlpha(0.12) : "rgba(185, 28, 28, 0.10)";
-  const color = isGood ? theme.accent : "#B91C1C";
-  const label = ok ? yesLabel : noLabel;
-  return (
-    <span className="inline-block rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: bg, color }}>
-      {label}
-    </span>
   );
 }

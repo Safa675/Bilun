@@ -163,6 +163,61 @@ def test_double_billed_sums_multiple_dental_lines() -> None:
     assert set(v["dental_procedure_codes"]) == {"402010", "402020"}
 
 
+@pytest.mark.parametrize("anesthesia_amount", [Decimal("0"), Decimal("-0.01"), Decimal("-100")])
+@pytest.mark.parametrize("dental_category", ["dental_treatment", "dental_ga"])
+def test_non_positive_anesthesia_does_not_imply_double_billing_or_missing_uplift(
+    anesthesia_amount: Decimal,
+    dental_category: str,
+) -> None:
+    claim = _make_claim_header()
+    dental = _make_proc_line(
+        procedure_line_id="DENTAL",
+        procedure_category=dental_category,
+        billed_amount_try=Decimal("1000"),
+    )
+    anesthesia = _make_proc_line(
+        procedure_line_id="ANESTHESIA",
+        procedure_code="550130",
+        procedure_category="islem",
+        billed_amount_try=anesthesia_amount,
+    )
+
+    violations = detect_dental_ga_uplift_violations([claim], [dental, anesthesia])
+
+    # A zero charge or credit is neither a billed anesthesia charge nor proof
+    # that the dental bill omitted an uplift, even with a recorded GA marker.
+    assert violations == []
+
+
+def test_positive_anesthesia_cent_preserves_existing_result_with_zero_charge_sibling() -> None:
+    claim = _make_claim_header()
+    dental = _make_proc_line(procedure_line_id="DENTAL")
+    anesthesia = _make_proc_line(
+        procedure_line_id="ANESTHESIA",
+        procedure_code="550130",
+        procedure_category="islem",
+        billed_amount_try=Decimal("0.01"),
+    )
+    zero_charge = _make_proc_line(
+        procedure_line_id="ANESTHESIA_ZERO",
+        procedure_code="550130",
+        procedure_category="islem",
+        billed_amount_try=Decimal("0"),
+    )
+
+    positive_result = detect_dental_ga_uplift_violations([claim], [dental, anesthesia])
+    mixed_result = detect_dental_ga_uplift_violations(
+        [claim], [dental, zero_charge, anesthesia]
+    )
+
+    assert len(positive_result) == 1
+    assert positive_result[0]["violation_kind"] == "double_billed_anesthesia"
+    assert positive_result[0]["severity"] == "error"
+    assert positive_result[0]["expected_ga_fee_try"] == pytest.approx(300.0)
+    assert "recoverable_uplift_try" not in positive_result[0]
+    assert mixed_result == positive_result
+
+
 # ── Violation type 2: missing uplift ─────────────────────────────────────────
 
 
