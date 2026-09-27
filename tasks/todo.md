@@ -62,7 +62,7 @@ This is an explicit user-approved expansion of the original strict Wave A filter
 - [ ] Resolve the admission 60-day detector's use of service-range end as a purported submission date from primary source/input evidence; do not activate a false confirmed projection or waive the known wrong detector by merely relabeling it review.
 - [ ] Investigate the donor detector's unreachable category branch separately; correct it only if intended behavior is established from source.
 - [x] Correct the dental GA zero/credit-only anesthesia false positive in a separately reviewed detector change, without inferring a missing uplift.
-- [ ] Correct yatak zero/credit-only bed false positives and non-ICU evidence attribution separately, preserving the existing bed-day financial calculation.
+- [x] Correct yatak zero/credit-only bed false positives and non-ICU evidence attribution separately, preserving the existing bed-day financial calculation (commit `9689247f`; 22 direct tests and Ruff passed; independent review approved).
 - [ ] Resolve radiation whole-line risk attribution and same-day quantity semantics with source-backed entitlement/allocation; preserve participant evidence and keep unverified risk unavailable.
 - [ ] Classify transplant carveouts, missing monetary source/basis, and unverified dental uplift as review/unavailable with null confirmed amount, preserving existing patient/cohort totals.
 - [ ] Integrate the seven broad engines with rule-level authored-action classification and status metadata; account for every authored ID as eligible finding, positive, review, monetary, or unavailable without blanket conversion to violations.
