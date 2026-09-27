@@ -63,8 +63,10 @@ describe("workspaceViews", () => {
     expect(viewForSection("billing-lab")).toBe("compliance");
     expect(viewForSection("materials-pre-check")).toBe("compliance");
     expect(viewForSection("drug-indication")).toBe("compliance");
+    expect(viewForSection("wavea-reviews")).toBe("compliance");
     expect(viewForSection("billing-copay")).toBe("revenue");
     expect(viewForSection("billing-session-uplift")).toBe("revenue");
+    expect(viewForSection("wavea-financial")).toBe("revenue");
     expect(viewForSection("claim-submission-checklist")).toBe("audit");
     expect(viewForSection("medula-playbook")).toBe("audit");
     expect(viewForSection("unknown-section")).toBeNull();

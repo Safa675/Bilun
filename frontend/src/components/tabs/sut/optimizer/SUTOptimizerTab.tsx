@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import PatientTabLink from "@/components/shell/PatientTabLink";
+import { CohortWaveAEvidenceSection } from "@/components/patient/CohortWaveAEvidenceSection";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ShieldAlert,
@@ -1303,6 +1304,13 @@ function RevenueRecoveryDashboard({
           </DataTable>
         </Surface>
       )}
+
+      <CohortWaveAEvidenceSection
+        kind="financial_rows"
+        cohortPatientIds={cohortPatientIds}
+        cohortFilterActive={cohortFilterActive}
+        includeCoverage
+      />
 
       {/* Methodology Badge */}
       <div className="text-xs text-center py-2" style={{ color: "#A1A1AA" }}>

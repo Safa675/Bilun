@@ -16,6 +16,7 @@ import {
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import { recoverableUplift, viewActions } from "@/lib/workspaceViews";
+import { PatientWaveAEvidenceSection } from "@/components/patient/WaveAEvidenceSection";
 
 const UPLIFT_COLOR = "#2F6E4E";
 
@@ -30,11 +31,13 @@ export default function RevenueViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  selectedFindingId,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  selectedFindingId?: string | null;
 }) {
   const t = useT();
   const viewActionsList = viewActions(billingReport, "revenue");
@@ -69,6 +72,14 @@ export default function RevenueViewSection({
           onOpenClause={onOpenClause}
         />
       )}
+
+      <PatientWaveAEvidenceSection
+        patientId={billingReport.patient_id}
+        kind="financial_rows"
+        block={billingReport.financial_findings}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+      />
 
       <CopayOptimizationSection copayData={billingReport.copay} />
       {billingReport.session_uplift && (

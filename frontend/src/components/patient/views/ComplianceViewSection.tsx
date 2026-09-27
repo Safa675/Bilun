@@ -20,6 +20,7 @@ import {
 } from "@/lib/complianceFindings";
 import { buildComplianceCoverage } from "@/lib/complianceCoverage";
 import UnifiedComplianceFindingsTable from "@/components/patient/UnifiedComplianceFindingsTable";
+import { PatientWaveAEvidenceSection, WaveACoverageSummary } from "@/components/patient/WaveAEvidenceSection";
 
 const RISK_COLOR = "#B91C1C";
 
@@ -151,6 +152,16 @@ export default function ComplianceViewSection({
           </div>
         )}
       </section>
+
+      <WaveACoverageSummary coverage={billingReport.wavea_coverage} />
+
+      <PatientWaveAEvidenceSection
+        patientId={effectivePatientId}
+        kind="reviews"
+        block={billingReport.claim_reviews}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+      />
 
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} />

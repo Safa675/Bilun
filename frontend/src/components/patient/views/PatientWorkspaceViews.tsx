@@ -130,6 +130,7 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
         />
       </Tabs.Content>
 

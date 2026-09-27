@@ -12,6 +12,7 @@ import { CopayExemptionCompliance } from "./modules/CopayExemptionCompliance";
 import { SurchargeCompliance } from "./modules/SurchargeCompliance";
 import { CopayRateCompliance } from "./modules/CopayRateCompliance";
 import { ComplianceFindingTable } from "./modules/ComplianceFindingTable";
+import { CohortWaveAEvidenceSection } from "@/components/patient/CohortWaveAEvidenceSection";
 import { getComplianceIndex, getMedulaRejectionQueue, getPatientAlerts } from "@/lib/api/sut";
 import type { ComplianceIndexResponse, ComplianceIndexSurface } from "@/lib/domains/sut";
 import { buildSutHomeHref } from "@/lib/constants";
@@ -352,14 +353,24 @@ export function SUTComplianceDashboard({
           cohortFilterActive={cohortFilterActive}
         />
       ) : isIndexSurface(activeSubtab) ? (
-        <ComplianceIndexGroup
-          index={surfaceIndex}
-          surface={activeSubtab}
-          loading={surfaceLoading || currentIndexLoading}
-          cohortPatientIds={cohortPatientIds}
-          cohortFilterActive={cohortFilterActive}
-          onPageChange={(offset) => setPageCursor({ key: surfaceKey, offset })}
-        />
+        <>
+          <ComplianceIndexGroup
+            index={surfaceIndex}
+            surface={activeSubtab}
+            loading={surfaceLoading || currentIndexLoading}
+            cohortPatientIds={cohortPatientIds}
+            cohortFilterActive={cohortFilterActive}
+            onPageChange={(offset) => setPageCursor({ key: surfaceKey, offset })}
+          />
+          {activeSubtab === "claim_compliance" && (
+            <CohortWaveAEvidenceSection
+              kind="reviews"
+              cohortPatientIds={cohortPatientIds}
+              cohortFilterActive={cohortFilterActive}
+              includeCoverage
+            />
+          )}
+        </>
       ) : (
         <CopayExemptionCompliance
           cohortPatientIds={cohortPatientIds}
