@@ -15,7 +15,7 @@ This module provides two coordinated paths:
    inclusive LOS from the yatak bed-day count, so BILUN never recommends
    recovering a bed day that 510090 already paid (invoice correction).
 
-2. **detect_yatak_icu_overlap** (audit-exposure path): flags every **510010**
+2. **detect_yatak_icu_overlap** (audit-exposure path): flags positively billed **510010**
    procedure line whose ``procedure_date`` is an ICU discharge/transfer day
    (the last day of a claim carrying 510090/P55200x ICU codes) as a
    double-billing violation, mirroring the ``icu_bundled_leakage`` detector
@@ -107,11 +107,11 @@ def _find_package_surgery_day(
     return None
 
 
-def _collect_icu_last_days(
+def _collect_icu_discharge_claims(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],
-) -> set[date]:
-    """Discharge/transfer dates of claims that carry ICU indicator codes.
+) -> dict[date, list[str]]:
+    """Qualifying ICU claim IDs grouped by discharge/transfer date.
 
     Per the ``icu_puani`` day model, when a claim carries 510090 or a
     P55200x package on its procedure lines, the ICU span is the claim span
@@ -123,7 +123,7 @@ def _collect_icu_last_days(
     for line in procedure_lines:
         procedures_by_claim.setdefault(line.claim_id, []).append(line)
 
-    icu_last_days: set[date] = set()
+    icu_discharge_claims: dict[date, list[str]] = {}
     for claim in claims:
         if infer_care_setting(claim) != "inpatient":
             continue
@@ -135,8 +135,16 @@ def _collect_icu_last_days(
             for line in claim_procs
         ):
             continue
-        icu_last_days.add(claim.discharge_date)
-    return icu_last_days
+        icu_discharge_claims.setdefault(claim.discharge_date, []).append(claim.claim_id)
+    return icu_discharge_claims
+
+
+def _collect_icu_last_days(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+) -> set[date]:
+    """Preserve the ICU discharge-day set used by bed-day reconciliation."""
+    return set(_collect_icu_discharge_claims(claims, procedure_lines))
 
 
 def detect_yatak_icu_overlap(
@@ -147,7 +155,7 @@ def detect_yatak_icu_overlap(
 ) -> list[dict[str, Any]]:
     """Detect service bed (510010) billed on an ICU discharge/transfer day.
 
-    For each **510010** procedure line whose ``procedure_date`` equals the
+    For each positively billed **510010** procedure line whose ``procedure_date`` equals the
     discharge/transfer day of a claim that carries ICU indicator codes
     (510090 / P55200x), emit an audit-exposure violation: the ICU day-rate
     already pays for the bed (EK-2B "Yemek, yatak, hasta vizit hizmetlerini
@@ -172,17 +180,9 @@ def detect_yatak_icu_overlap(
     if not procedure_lines:
         return []
 
-    icu_last_days = _collect_icu_last_days(claims, procedure_lines)
-    if not icu_last_days:
+    icu_discharge_claims = _collect_icu_discharge_claims(claims, procedure_lines)
+    if not icu_discharge_claims:
         return []
-
-    # ICU claim(s) that discharged on each overlap date, for audit context.
-    icu_discharge_claims: dict[date, list[str]] = {}
-    for claim in claims:
-        if claim.discharge_date in icu_last_days:
-            icu_discharge_claims.setdefault(claim.discharge_date, []).append(
-                claim.claim_id
-            )
 
     violations: list[dict[str, Any]] = []
     for line in procedure_lines:
@@ -190,7 +190,9 @@ def detect_yatak_icu_overlap(
             continue
         if _normalize_code(line.procedure_code) != _BED_CODE:
             continue
-        if line.procedure_date not in icu_last_days:
+        if line.billed_amount_try <= 0:
+            continue
+        if line.procedure_date not in icu_discharge_claims:
             continue
 
         icu_claim_ids = icu_discharge_claims.get(line.procedure_date, [])
