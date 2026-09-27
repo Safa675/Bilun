@@ -23,7 +23,15 @@ from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
 from src.bilun.domain.billing.claim_compliance import project_claim_compliance
-from src.bilun.domain.billing.rule_findings import evaluate_rule_findings
+from src.bilun.domain.billing.focused_legacy_materializer import FocusedLegacyMaterializer
+from src.bilun.domain.billing.focused_rule_projection import (
+    project_focused_legacy_rows,
+    validate_focused_context_ownership,
+)
+from src.bilun.domain.billing.rule_findings import (
+    RuleEvaluationBatch,
+    evaluate_rule_findings,
+)
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_drg_package_adequacy import (
     recommend_drg_package_adequacy_from_claims,
@@ -81,7 +89,23 @@ def compute_patient_billing_report(
     """
     report = BillingActionReport(patient_id=pid)
     compliance_batch = evaluate_rule_findings(pid, claim_context)
-    report.claim_compliance = project_claim_compliance(pid, compliance_batch)
+    if claim_context is not None:
+        validate_focused_context_ownership(pid, claim_context)
+    focused_batch = project_focused_legacy_rows(
+        pid,
+        claim_context,
+        FocusedLegacyMaterializer(claim_context).all_rows()
+        if claim_context is not None
+        else (),
+    )
+    report.claim_compliance = project_claim_compliance(
+        pid,
+        RuleEvaluationBatch(
+            findings=(*compliance_batch.findings, *focused_batch.findings),
+            evaluations=(*compliance_batch.evaluations, *focused_batch.evaluations),
+            legacy_violations=(*compliance_batch.legacy_violations, *focused_batch.legacy_rows),
+        ),
+    )
 
     if claim_context is None:
         if SUT_REQUIRE_CLAIM_LINES:

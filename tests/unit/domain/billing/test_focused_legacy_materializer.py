@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from contextlib import ExitStack
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import date, timedelta
 from decimal import Decimal
 from unittest.mock import patch
@@ -11,8 +11,12 @@ from unittest.mock import patch
 import pytest
 
 from src.bilun.domain.billing import focused_legacy_materializer as materializer
+from src.bilun.domain.billing import patient_report
 from src.bilun.domain.billing.engine import analyze_claim
-from src.bilun.domain.billing.focused_rule_projection import FOCUSED_RULE_SPECS
+from src.bilun.domain.billing.focused_rule_projection import (
+    FOCUSED_RULE_SPECS,
+    FocusedProjectionBatch,
+)
 from src.bilun.domain.claims.models import (
     ClaimHeader,
     DrugClaimLine,
@@ -140,9 +144,30 @@ def _context() -> PatientClaimContext:
 
 def test_all_group_rows_equal_the_current_engine_focused_subsequence() -> None:
     ctx = _context()
-    original = [row for row in analyze_claim(ctx) if row.get("rule_id") in _RULE_IDS]
+    flat = analyze_claim(ctx)
+    original = [row for row in flat if row.get("rule_id") in _RULE_IDS]
     collector = materializer.FocusedLegacyMaterializer(ctx)
 
+    # Baseline captured from the pre-materializer engine on this mixed claim.
+    # It pins focused/nonfocused interleaving as well as the focused subsequence.
+    assert [row.get("rule_id") for row in flat] == [
+        "3.1.2.(2).not_in_ek3c",
+        "1.9.1.(1).extra_fee_permissible_scope",
+        "ORTAK-13.gecmis_muayene_sorgu",
+        "ORTAK-14.onkolojik_ek2b",
+        "ORTAK-19.eksik_faturalama_yuzde10",
+        "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+        "ORTAK-22.seans_kesi_kurali",
+        "ORTAK-28.ek2b_tetkik_gereksiz",
+        "2.2.1.B-1.(11).private_daily_visit_cap",
+        "radiation_oncology.course_cap.external_rt_design",
+        "radiation_oncology.course_cap.external_rt_design",
+        "tablo15_2_duplicate_exam_10day",
+        "tablo15_16_material_type_missing",
+        "tablo15_11_drug_quantity_error",
+        "never_principal_diagnosis_blocklist",
+        "never_principal_diagnosis_blocklist",
+    ]
     assert len(materializer.FOCUSED_GROUP_ORDER) == 18
     assert set(materializer.FOCUSED_GROUP_ORDER) == {spec.group for spec in FOCUSED_RULE_SPECS}
     assert [
@@ -222,3 +247,67 @@ def test_unknown_group_fails_without_running_a_detector() -> None:
     collector = materializer.FocusedLegacyMaterializer(_context())
     with pytest.raises(KeyError, match="Unknown focused detector group"):
         collector.rows("not_a_focused_group")
+
+
+def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> None:
+    ctx = _context()
+    with ExitStack() as stack:
+        spies = {
+            group: stack.enter_context(
+                patch.object(
+                    materializer,
+                    group,
+                    wraps=getattr(materializer, group),
+                )
+            )
+            for group in materializer.FOCUSED_GROUP_ORDER
+        }
+        report = patient_report.compute_patient_billing_report("P1", claim_context=ctx)
+    assert all(
+        spy.call_count == (
+            len(ctx.claims) if group == "detect_transplant_package_scope_violations" else 1
+        )
+        for group, spy in spies.items()
+    )
+    assert {row["rule_id"] for row in report.claim_compliance.findings} == {
+        "tablo15_2_duplicate_exam_10day",
+        "tablo15_16_material_type_missing",
+        "tablo15_11_drug_quantity_error",
+    }
+    assert len({row["evaluation_id"] for row in report.claim_compliance.evaluations}) == len(
+        report.claim_compliance.evaluations
+    )
+    assert {row["rule_id"] for row in report.claim_compliance.evaluations} >= _RULE_IDS
+    assert (
+        report.sgk_uplift_try,
+        report.compliance_adjustment_try,
+        report.audit_exposure_try,
+        report.total_recoverable_try,
+        report.action_count,
+    ) == (0.0, 0.0, 140.0, 0.0, 1)
+    assert [
+        (row["surface"], row["kind"], row["material_code"], row["billed_try"])
+        for row in report.recommended_actions
+    ] == [("materials", "material_prose_bundling", "500000", 100.0)]
+
+    with patch.object(
+        patient_report,
+        "project_focused_legacy_rows",
+        return_value=FocusedProjectionBatch(),
+    ):
+        baseline = patient_report.compute_patient_billing_report("P1", claim_context=ctx)
+    actual_dict = asdict(report)
+    baseline_dict = asdict(baseline)
+    actual_dict.pop("claim_compliance")
+    baseline_dict.pop("claim_compliance")
+    assert actual_dict == baseline_dict
+
+
+def test_orphan_lines_fail_before_any_focused_detector_runs() -> None:
+    ctx = replace(_context(), claims=())
+    with patch.object(materializer, "detect_radiation_oncology_violations") as radiation:
+        with pytest.raises(ValueError, match="orphan source line"):
+            patient_report.compute_patient_billing_report("P1", claim_context=ctx)
+        with pytest.raises(ValueError, match="orphan source line"):
+            analyze_claim(ctx)
+    radiation.assert_not_called()

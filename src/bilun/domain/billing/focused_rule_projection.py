@@ -525,12 +525,10 @@ def _input_limitation(
     return None
 
 
-def project_focused_legacy_rows(
-    patient_id: str,
-    ctx: PatientClaimContext,
-    legacy_rows: Iterable[dict[str, Any]],
-) -> FocusedProjectionBatch:
-    """Project observed focused rows once; retain the original flat sequence."""
+def validate_focused_context_ownership(
+    patient_id: str, ctx: PatientClaimContext
+) -> None:
+    """Reject foreign or orphan source data before running focused detectors."""
     if not patient_id.strip() or ctx.patient_id != patient_id:
         raise ValueError("Focused projection patient identity mismatch")
     claims = {claim.claim_id: claim for claim in ctx.claims}
@@ -538,6 +536,44 @@ def project_focused_legacy_rows(
         claim.patient_id != patient_id for claim in ctx.claims
     ):
         raise ValueError("Focused projection has duplicate or foreign claim headers")
+    for rows in (
+        ctx.procedure_lines,
+        ctx.material_lines,
+        ctx.drug_lines,
+        ctx.diagnoses,
+        ctx.performed_procedure_lines,
+        ctx.medula_rejection_events,
+    ):
+        if any(row.patient_id != patient_id or row.claim_id not in claims for row in rows):
+            raise ValueError("Focused projection contains a foreign or orphan source line")
+
+
+def project_focused_legacy_rows(
+    patient_id: str,
+    ctx: PatientClaimContext | None,
+    legacy_rows: Iterable[dict[str, Any]],
+) -> FocusedProjectionBatch:
+    """Project observed focused rows once; retain the original flat sequence."""
+    originals = tuple(legacy_rows)
+    if ctx is None:
+        if not patient_id.strip() or originals:
+            raise ValueError("Focused projection requires a patient and owned context for rows")
+        return FocusedProjectionBatch(
+            evaluations=tuple(
+                RuleEvaluation(
+                    patient_id=patient_id,
+                    claim_id=None,
+                    rule_id=spec.rule_id,
+                    evaluation_status="missing_inputs",
+                    required_inputs=list(spec.required_inputs),
+                    missing_inputs=["claim_context"],
+                    reason="claim_context_unavailable",
+                )
+                for spec in FOCUSED_RULE_SPECS
+            )
+        )
+    validate_focused_context_ownership(patient_id, ctx)
+    claims = {claim.claim_id: claim for claim in ctx.claims}
     line_maps: dict[LineKind, dict[tuple[str, str], Any]] = {
         "claim": {},
         "procedure": {},
@@ -553,11 +589,10 @@ def project_focused_legacy_rows(
             if line.patient_id != patient_id or line.claim_id not in claims:
                 raise ValueError("Focused projection contains a foreign source line")
             key = (line.claim_id, getattr(line, id_field))
-            if not key[1] or key in line_maps[kind]:
+            if not key[1] or (key in line_maps[kind] and line_maps[kind][key] != line):
                 raise ValueError("Focused projection source line identity is ambiguous")
-            line_maps[kind][key] = line
+            line_maps[kind].setdefault(key, line)
 
-    originals = tuple(legacy_rows)
     findings: list[RuleFinding] = []
     # The corrected timing and exam-date rules have per-claim unavailable
     # evaluators because the needed dates are not present in this claim model.
@@ -704,6 +739,45 @@ def project_focused_legacy_rows(
                     else "unpriced_review",
                 )
             )
+
+    covered = {(row.claim_id, row.rule_id) for row in evaluations}
+    if ctx.claims:
+        for claim in sorted(ctx.claims, key=lambda row: row.claim_id):
+            for spec in FOCUSED_RULE_SPECS:
+                key = (claim.claim_id, spec.rule_id)
+                if key in covered:
+                    continue
+                evaluations.append(
+                    RuleEvaluation(
+                        patient_id=patient_id,
+                        claim_id=claim.claim_id,
+                        rule_id=spec.rule_id,
+                        evaluation_status="unavailable",
+                        required_inputs=list(spec.required_inputs),
+                        missing_inputs=[],
+                        reason="detector_negative_not_certified",
+                    )
+                )
+                covered.add(key)
+    else:
+        for spec in FOCUSED_RULE_SPECS:
+            key = (None, spec.rule_id)
+            if key in covered:
+                continue
+            evaluations.append(
+                RuleEvaluation(
+                    patient_id=patient_id,
+                    claim_id=None,
+                    rule_id=spec.rule_id,
+                    evaluation_status="missing_inputs",
+                    required_inputs=list(spec.required_inputs),
+                    missing_inputs=["claim_headers"],
+                    reason="claim_headers_unavailable",
+                )
+            )
+            covered.add(key)
+    if len({row.evaluation_id for row in evaluations}) != len(evaluations):
+        raise ValueError("Focused evaluations have conflicting identities")
 
     return FocusedProjectionBatch(
         tuple(findings), tuple(evaluations), tuple(reviews), originals, tuple(quarantined)

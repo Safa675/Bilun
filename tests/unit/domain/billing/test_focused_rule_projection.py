@@ -270,8 +270,8 @@ def test_one_pass_projection_keeps_legacy_rows_and_separates_money() -> None:
     evaluation_by_id = {
         row.rule_id: row
         for row in batch.evaluations
-        if row.rule_id
-        not in {
+        if row.reason != "detector_negative_not_certified"
+        and row.rule_id not in {
             "tablo15_2_duplicate_exam_10day",
             "tablo15_9_admission_billing_window",
             "tablo15_22_exam_admission_date_mismatch",
@@ -334,7 +334,11 @@ def test_all_32_tracked_ids_route_without_fabricating_confirmed_money() -> None:
     assert len({row.evaluation_id for row in batch.evaluations}) == len(batch.evaluations)
     assert all(review.confirmed_amount_try is None for review in batch.reviews)
     assert all(finding.risk_amount_try is None for finding in batch.findings)
-    by_id = {row.rule_id: row for row in batch.evaluations}
+    by_id = {
+        row.rule_id: row
+        for row in batch.evaluations
+        if row.reason != "detector_negative_not_certified"
+    }
     assert by_id["radiation_oncology.same_day_collapse.rt_application"].evaluation_status == (
         "unavailable"
     )
@@ -400,12 +404,55 @@ def test_identity_validation_and_conflicting_duplicate_rejection() -> None:
 def test_empty_legacy_output_is_not_a_clean_negative() -> None:
     batch = project_focused_legacy_rows("P1", _context(), [])
     assert not batch.findings and not batch.reviews and not batch.legacy_rows
+    assert len(batch.evaluations) == 2 * len(FOCUSED_RULE_SPECS) == 64
+    assert len({row.evaluation_id for row in batch.evaluations}) == 64
     assert {row.rule_id for row in batch.evaluations} == {
-        "tablo15_9_admission_billing_window",
-        "tablo15_22_exam_admission_date_mismatch",
-        "radiation_oncology.same_day_collapse.hyperthermia",
+        spec.rule_id for spec in FOCUSED_RULE_SPECS
     }
     assert all(row.evaluation_status == "unavailable" for row in batch.evaluations)
+    assert all(
+        row.reason == "detector_negative_not_certified"
+        for row in batch.evaluations
+        if row.rule_id not in NON_EMITTING_FOCUSED_RULE_IDS
+    )
+
+
+@pytest.mark.parametrize("with_context", [False, True])
+def test_no_claim_headers_or_context_has_all_focused_ids_as_missing(with_context: bool) -> None:
+    ctx = replace(_context(), claims=()) if with_context else None
+    if ctx is not None:
+        ctx = replace(ctx, procedure_lines=(), material_lines=(), drug_lines=())
+    batch = project_focused_legacy_rows("P1", ctx, [])
+    assert len(batch.evaluations) == len(FOCUSED_RULE_SPECS) == 32
+    assert len({row.evaluation_id for row in batch.evaluations}) == 32
+    assert all(
+        row.claim_id is None
+        and row.evaluation_status == "missing_inputs"
+        and row.missing_inputs == ["claim_headers" if with_context else "claim_context"]
+        for row in batch.evaluations
+    )
+
+
+def test_missing_detector_row_generates_one_claim_scope_status_only_for_that_claim() -> None:
+    row = _row("tablo15_2_duplicate_exam_10day", line_kind="procedure", line_id="L1")
+    batch = project_focused_legacy_rows("P1", _context(), [row])
+    statuses = [
+        item for item in batch.evaluations if item.rule_id == row["rule_id"]
+    ]
+    assert len(statuses) == 2
+    assert (statuses[0].claim_id, statuses[0].line_id, statuses[0].decision) == (
+        "C1", "L1", "matched"
+    )
+    assert (
+        statuses[1].claim_id,
+        statuses[1].line_kind,
+        statuses[1].reason,
+    ) == ("C2", "claim", "detector_negative_not_certified")
+
+
+def test_source_lines_without_claim_headers_are_rejected_before_projection() -> None:
+    with pytest.raises(ValueError, match="orphan source line"):
+        project_focused_legacy_rows("P1", replace(_context(), claims=()), [])
 
 
 @pytest.mark.parametrize(

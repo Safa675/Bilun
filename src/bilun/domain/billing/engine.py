@@ -37,12 +37,13 @@ from src.bilun.domain.billing.rule_findings import (
 from src.bilun.domain.billing.drug_indication_findings import (
     evaluate_drug_indication_findings,
 )
+from src.bilun.domain.billing.focused_legacy_materializer import FocusedLegacyMaterializer
+from src.bilun.domain.billing.focused_rule_projection import (
+    validate_focused_context_ownership,
+)
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.dental_2_4_1 import (
     check_dental_2_4_1_for_context,
-)
-from src.bilun.domain.prose_rules.dental_ga_uplift import (
-    detect_dental_ga_uplift_violations,
 )
 from src.bilun.domain.prose_rules.drg_package_adequacy import (
     check_drg_package_adequacy_for_context,
@@ -84,26 +85,6 @@ from src.bilun.domain.prose_rules.traffic_accident_billing import (
 from src.bilun.domain.prose_rules.fatura_inceleme import (
     check_fatura_inceleme_for_context,
 )
-from src.bilun.domain.prose_rules.blood_component_isbt128 import (
-    detect_blood_component_isbt128_violations,
-)
-from src.bilun.domain.prose_rules.yatak_icu_overlap import (
-    detect_yatak_icu_overlap,
-)
-from src.bilun.domain.prose_rules.common_billing_errors import (
-    detect_admission_billing_window,
-    detect_donor_prep_as_exam,
-    detect_drug_quantity_error,
-    detect_duplicate_exam_10day,
-    detect_duplicate_tests,
-    detect_exam_admission_date_mismatch,
-    detect_green_area_bundled_extras,
-    detect_inpatient_on_outpatient,
-    detect_material_preauth_missing,
-    detect_material_type_missing,
-    detect_normal_poliklinik_wrong_method,
-    detect_vakabasi_wrong_method,
-)
 from src.bilun.domain.prose_rules.diagnosis_coding_quality import (
     detect_diagnosis_procedure_mismatch_for_context,
     detect_never_principal_diagnosis_for_context,
@@ -117,17 +98,8 @@ from src.bilun.domain.prose_rules.temporal_anomaly import (
     detect_los_procedure_density_anomaly_for_context,
     detect_procedure_time_overlap_for_context,
 )
-from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
-    detect_conditional_addon_ek2d_opportunities,
-)
-from src.bilun.domain.prose_rules.radiation_oncology import (
-    detect_radiation_oncology_violations,
-)
 from src.bilun.domain.prose_rules.sct_temporal_window import (
     detect_sct_temporal_window_violations_for_context,
-)
-from src.bilun.domain.prose_rules.transplant_package_scope import (
-    detect_transplant_package_scope_violations,
 )
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations_for_context
 from src.bilun.domain.rules.exclusion_rules import (
@@ -148,6 +120,8 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     is non-empty (the adapter skips drug-line construction when no
     ``drug_context`` was supplied, mirroring the legacy early-return).
     """
+    if ctx.patient_id:
+        validate_focused_context_ownership(ctx.patient_id, ctx)
     violations: list[dict[str, Any]] = []
     canonical_batch = (
         evaluate_rule_findings(ctx.patient_id, ctx) if ctx.patient_id else None
@@ -157,6 +131,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         if ctx.drug_lines
         else None
     )
+    focused_rows = FocusedLegacyMaterializer(ctx)
 
     def _canonical_violations(rule_id: str) -> list[dict[str, Any]]:
         if canonical_batch is None:
@@ -238,21 +213,13 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # the D-4/D-5 list).
         if ctx.procedure_lines:
             violations.extend(
-                detect_conditional_addon_ek2d_opportunities(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
+                focused_rows.rows("detect_conditional_addon_ek2d_opportunities")
             )
 
         # 14. Transplant package-scope (liver transplant P609080 bundles all
         # surgical procedures; separately billed items are violations).
         if ctx.procedure_lines:
-            for claim in ctx.claims:
-                claim_lines = [
-                    ln for ln in ctx.procedure_lines if ln.claim_id == claim.claim_id
-                ]
-                violations.extend(
-                    detect_transplant_package_scope_violations(claim, claim_lines)
-                )
+            violations.extend(focused_rows.rows("detect_transplant_package_scope_violations"))
 
         # 14.5. SUT §2.4.4.H — ICU 510090 day-rate bundles ventilation/oxygen/
         # nebulization/suction/monitoring; separately billed lines are
@@ -267,14 +234,7 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # uplift counterpart (dropping the day from expected yatak bed days)
         # runs in patient_report.reconcile_yatak_icu_overlap.
         if ctx.procedure_lines:
-            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
-            violations.extend(
-                detect_yatak_icu_overlap(
-                    list(ctx.claims),
-                    list(ctx.procedure_lines),
-                    claim_ids_with_procs=claim_ids_with_procs,
-                )
-            )
+            violations.extend(focused_rows.rows("detect_yatak_icu_overlap"))
 
         # 14.7. SUT §4.6 — blood components must carry ISBT 128 barcodes.
         # Rules 4.6.ek2b/4.6.ek2c: EK-2/B payment is conditioned on the
@@ -283,23 +243,12 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # barcode. Missing/malformed barcode on a blood-component line is an
         # audit-exposure violation (compliance), not an uplift opportunity.
         if ctx.procedure_lines:
-            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
-            violations.extend(
-                detect_blood_component_isbt128_violations(
-                    list(ctx.claims),
-                    list(ctx.procedure_lines),
-                    claim_ids_with_procs=claim_ids_with_procs,
-                )
-            )
+            violations.extend(focused_rows.rows("detect_blood_component_isbt128_violations"))
 
         # 15. Radiation oncology mutual-exclusion (800xxx family caps +
         # same-day collapse).
         if ctx.procedure_lines:
-            violations.extend(
-                detect_radiation_oncology_violations(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_radiation_oncology_violations"))
 
         # 16. SCT temporal-window (704981 mesenchymal SCT add-on gating).
         if ctx.procedure_lines:
@@ -310,90 +259,44 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # exam/admission date mismatch, missing drug barcode.
         violations.extend(_canonical_violations(DIAGNOSIS_RULE_ID))
         if ctx.procedure_lines:
-            violations.extend(
-                detect_duplicate_exam_10day(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
-            violations.extend(
-                detect_duplicate_tests(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
-            violations.extend(
-                detect_exam_admission_date_mismatch(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_duplicate_exam_10day"))
+            violations.extend(focused_rows.rows("detect_duplicate_tests"))
+            violations.extend(focused_rows.rows("detect_exam_admission_date_mismatch"))
         if ctx.drug_lines:
             violations.extend(_canonical_violations(DRUG_BARCODE_RULE_ID))
 
         # Phase 2 (11 more detectors, errors #3/#4/#5/#7/#9/#10/#11/#15/#16/
         # #21/#24). Each is gated on the data it needs.
         # #9 — admission→billing window (claim-header date arithmetic).
-        violations.extend(detect_admission_billing_window(list(ctx.claims)))
+        violations.extend(focused_rows.rows("detect_admission_billing_window"))
         if ctx.procedure_lines:
             # #3 / #4 — payment-method (vakabaşı vs Normal Poliklinik) mismatch.
-            violations.extend(
-                detect_vakabasi_wrong_method(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
-            violations.extend(
-                detect_normal_poliklinik_wrong_method(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_vakabasi_wrong_method"))
+            violations.extend(focused_rows.rows("detect_normal_poliklinik_wrong_method"))
             # #7 — green-area exam + bundled extras.
-            violations.extend(
-                detect_green_area_bundled_extras(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_green_area_bundled_extras"))
             # #10 — unreported lab result.
             violations.extend(_canonical_violations(LAB_RULE_ID))
             # #21 — inpatient-only service on an outpatient takip.
-            violations.extend(
-                detect_inpatient_on_outpatient(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_inpatient_on_outpatient"))
             # #24 — donor-prep workup billed as routine exam.
-            violations.extend(
-                detect_donor_prep_as_exam(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_donor_prep_as_exam"))
         if ctx.material_lines:
             # #5 — material identity (SUT/barcode) errors.
             violations.extend(_canonical_violations(MATERIAL_IDENTITY_RULE_ID))
             # #15 — material pre-auth missing.
-            violations.extend(
-                detect_material_preauth_missing(
-                    list(ctx.claims), ctx.material_lines
-                )
-            )
+            violations.extend(focused_rows.rows("detect_material_preauth_missing"))
             # #16 — wrong/missing material-type code.
-            violations.extend(
-                detect_material_type_missing(
-                    list(ctx.claims), ctx.material_lines
-                )
-            )
+            violations.extend(focused_rows.rows("detect_material_type_missing"))
         if ctx.drug_lines:
             # #11 — drug quantity (adet) error.
-            violations.extend(
-                detect_drug_quantity_error(list(ctx.claims), ctx.drug_lines)
-            )
+            violations.extend(focused_rows.rows("detect_drug_quantity_error"))
 
         # ── Algoritma Rehberi-derived motors ─────────────────────────────
         # §2-04.1 Madde 4: dental GA +%30 uplift — separate anesthesia
         # line is double-billing; missing uplift is under-billing.
         if ctx.procedure_lines:
-            violations.extend(
-                detect_dental_ga_uplift_violations(
-                    list(ctx.claims), list(ctx.procedure_lines)
-                )
-            )
+            violations.extend(focused_rows.rows("detect_dental_ga_uplift_violations"))
 
         # §2-09 / 2918 SK Madde 98: traffic accident billing pathway —
         # always SGK provision type "trafik kazasi", copay-exempt.
