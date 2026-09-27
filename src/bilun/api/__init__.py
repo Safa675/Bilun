@@ -32,6 +32,8 @@ import logging as _logging
 
 _api_logger = _logging.getLogger("bilun.api")
 
+from src.bilun.api import release_identity as _release_identity  # noqa: E402
+
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
@@ -44,6 +46,7 @@ async def _lifespan(_app: FastAPI):
 
     await _startup_handler()
     yield
+
 
 # ── App ──────────────────────────────────────────────────────────────────────
 
@@ -99,9 +102,8 @@ class SessionGateMiddleware(BaseHTTPMiddleware):
                     "(BILUN_AUTH_OPTIONAL=1). Do not use in production."
                 )
                 return await call_next(request)
-            if (
-                path in _SESSION_EXEMPT_PATHS
-                or any(path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES)
+            if path in _SESSION_EXEMPT_PATHS or any(
+                path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES
             ):
                 return await call_next(request)
             return _JSONResponse(
@@ -110,9 +112,8 @@ class SessionGateMiddleware(BaseHTTPMiddleware):
             )
         # Exempt auth routes (needed to obtain/clear a token and probe status)
         # and health.
-        if (
-            path in _SESSION_EXEMPT_PATHS
-            or any(path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES)
+        if path in _SESSION_EXEMPT_PATHS or any(
+            path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES
         ):
             return await call_next(request)
         token = request.cookies.get(_SESSION_COOKIE, "")
@@ -169,6 +170,7 @@ def health_check() -> dict:
 
     db_ok = False
     active_build = None
+    wavea_capability = None
     if db_path.exists():
         # Use closing() so the connection is released even if execute() raises
         # (audit H16: previously con.close() was only reached on the success
@@ -176,12 +178,23 @@ def health_check() -> dict:
         try:
             import duckdb
 
-            with closing(duckdb.connect(str(db_path))) as con:
+            with closing(duckdb.connect(str(db_path), read_only=True)) as con:
                 row = con.execute(
-                    "SELECT active_build_id FROM build_pointer_scopes "
-                    "WHERE scope = 'bilun'"
+                    "SELECT active_build_id FROM build_pointer_scopes WHERE scope = 'bilun'"
                 ).fetchone()
                 active_build = row[0] if row else None
+                if active_build is not None:
+                    try:
+                        capability = con.execute(
+                            "SELECT json_extract_string(payload_json, '$.capability') "
+                            "FROM wavea_evidence_index WHERE build_id = ?",
+                            [active_build],
+                        ).fetchone()
+                        wavea_capability = capability[0] if capability else None
+                    except Exception:
+                        # Older caches have no Wave A index. The existing
+                        # database readiness contract still applies to them.
+                        pass
             db_ok = True
         except Exception:
             pass
@@ -204,6 +217,17 @@ def health_check() -> dict:
         "database_reachable": db_ok,
         "cache_ready": cache_ready,
         "active_build": active_build,
+        "code_sha": (
+            _release_identity.STARTUP_RELEASE_IDENTITY.code_sha
+            if _release_identity.STARTUP_RELEASE_IDENTITY is not None
+            else None
+        ),
+        "source_manifest_sha256": (
+            _release_identity.STARTUP_RELEASE_IDENTITY.source_manifest_sha256
+            if _release_identity.STARTUP_RELEASE_IDENTITY is not None
+            else None
+        ),
+        "wavea_capability": wavea_capability,
         "active_gazette_version": active_gazette_version,
         "version": "1.0.0",
     }
