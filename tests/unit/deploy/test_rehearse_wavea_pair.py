@@ -30,6 +30,7 @@ def test_rehearsal_rejects_host_network_before_starting_services(
         "--frontend-runtime", str(tmp_path / "frontend"),
         "--code-sha", "a" * 40,
         "--backend-python", sys.executable,
+        "--node", sys.executable,
         "--patient-id", "P1",
     ]
     with pytest.raises(ValueError, match="isolated network namespace"):
