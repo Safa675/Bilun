@@ -7,7 +7,7 @@ import { fmtTRY2 } from "@/components/tabs/sut/shared";
 import { getPatientWaveAEvidence } from "@/lib/api/waveaEvidence";
 import { ApiRequestError } from "@/lib/apiClient";
 import { buildSutBillingHref } from "@/lib/constants";
-import type { WaveACoverage, WaveAEvidenceBlock, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
+import type { WaveACoverage, WaveAEvidenceBlock, WaveAEvidencePage, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
 import { useT } from "@/lib/i18n/useTranslations";
 import { findFindingRowElement } from "@/lib/patientRoute";
 
@@ -65,6 +65,12 @@ function validPatientBlock(block: WaveAEvidenceBlock | undefined, patientId: str
   ) return false;
   return new Set(block.rows.map((row) => row.evidence_id)).size === block.rows.length &&
     block.rows.every((row) => validRowForKind(row, patientId, kind));
+}
+
+export function matchesPatientEvidenceScope(page: WaveAEvidencePage, selectedClaimId?: string | null): boolean {
+  return selectedClaimId
+    ? page.scope === "bill" && page.claim_id === selectedClaimId
+    : page.scope === "patient" && page.claim_id === null;
 }
 
 export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | null }) {
@@ -164,7 +170,6 @@ export function WaveAEvidenceRowsTable({
           const source = clauseKey(row);
           const authoredReferences = sourceReferences(row);
           const href = buildSutBillingHref(row.patient_id, {
-            claimId: row.claim_id ?? undefined,
             section,
             findingId: row.evidence_id,
           });
@@ -261,12 +266,14 @@ export function PatientWaveAEvidenceSection({
   block,
   onOpenClause,
   selectedFindingId,
+  selectedClaimId,
 }: {
   patientId: string;
   kind: WaveAEvidenceKind;
   block?: WaveAEvidenceBlock;
   onOpenClause?: (clauseKey: string) => void;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const [rows, setRows] = useState(block?.rows ?? []);
@@ -284,7 +291,7 @@ export function PatientWaveAEvidenceSection({
     setError(false);
     setSelectedRow(null);
     return () => pending.current?.abort();
-  }, [patientId, kind, block?.available, block?.total_rows, block?.rows]);
+  }, [patientId, kind, selectedClaimId, block?.available, block?.total_rows, block?.rows]);
 
   useEffect(() => {
     const prefix = evidencePrefix(kind);
@@ -298,13 +305,14 @@ export function PatientWaveAEvidenceSection({
     const controller = new AbortController();
     getPatientWaveAEvidence(
       patientId,
-      { kind, offset: 0, limit: 1, evidenceId: selectedFindingId },
+      { kind, offset: 0, limit: 1, evidenceId: selectedFindingId, billClaimId: selectedClaimId },
       { signal: controller.signal },
     ).then((page) => {
       if (controller.signal.aborted) return;
       const exact = Array.isArray(page.rows) ? page.rows[0] : null;
       if (
         page.available !== true || page.patient_id !== patientId || page.kind !== kind ||
+        !matchesPatientEvidenceScope(page, selectedClaimId) ||
         page.pagination?.total_matching !== 1 || !Array.isArray(page.rows) || page.rows.length !== 1 ||
         exact?.evidence_id !== selectedFindingId || !validRowForKind(exact, patientId, kind)
       ) {
@@ -323,7 +331,7 @@ export function PatientWaveAEvidenceSection({
       }
     });
     return () => controller.abort();
-  }, [patientId, kind, selectedFindingId, unavailable, rows]);
+  }, [patientId, kind, selectedClaimId, selectedFindingId, unavailable, rows]);
 
   useEffect(() => {
     if (!selectedFindingId || typeof document === "undefined") return;
@@ -348,7 +356,7 @@ export function PatientWaveAEvidenceSection({
     try {
       const next = await getPatientWaveAEvidence(
         patientId,
-        { kind, offset: rows.length },
+        { kind, offset: rows.length, billClaimId: selectedClaimId },
         { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
@@ -357,6 +365,7 @@ export function PatientWaveAEvidenceSection({
         next.available !== true ||
         next.patient_id !== patientId ||
         next.kind !== kind ||
+        !matchesPatientEvidenceScope(next, selectedClaimId) ||
         next.pagination.offset !== rows.length ||
         next.pagination.total_matching !== total ||
         !Array.isArray(incoming) ||

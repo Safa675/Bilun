@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceProvider } from "@/stores/workspaceContext";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import type { WaveAEvidenceBlock, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
-import { PatientWaveAEvidenceSection, WaveACoverageSummary } from "./WaveAEvidenceSection";
+import { PatientWaveAEvidenceSection, WaveACoverageSummary, matchesPatientEvidenceScope } from "./WaveAEvidenceSection";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -41,6 +41,22 @@ function render(block: WaveAEvidenceBlock) {
 }
 
 describe("Wave A patient evidence", () => {
+  it("rejects a patient response when a selected bill is expected and vice versa", () => {
+    const page = {
+      available: true,
+      unavailable_reason: null,
+      patient_id: "P-1",
+      kind: "financial_rows" as const,
+      rows: [row],
+      pagination: { total_matching: 1, limit: 20, offset: 0, has_more: false },
+    };
+    expect(matchesPatientEvidenceScope({ ...page, scope: "patient", claim_id: null }, null)).toBe(true);
+    expect(matchesPatientEvidenceScope({ ...page, scope: "bill", claim_id: "C-1" }, "C-1")).toBe(true);
+    expect(matchesPatientEvidenceScope({ ...page, scope: "patient", claim_id: null }, "C-1")).toBe(false);
+    expect(matchesPatientEvidenceScope({ ...page, scope: "bill", claim_id: "C-2" }, "C-1")).toBe(false);
+    expect(matchesPatientEvidenceScope(page, "C-1")).toBe(false);
+  });
+
   it("shows an exact billed charge separately from unverified risk", () => {
     const html = render({
       available: true,
@@ -99,6 +115,8 @@ describe("Wave A patient evidence", () => {
     expect(html).not.toContain("source=\"");
     expect(html).toContain("Show more (1 of 2)");
     expect(html).toContain('data-finding-id="wavea_financial:claim_evaluation:source-1"');
+    expect(html).toContain("section=wavea-financial");
+    expect(html).not.toContain("claim=C-1");
   });
 
   it("marks an exact patient deep link for post-mount navigation", () => {

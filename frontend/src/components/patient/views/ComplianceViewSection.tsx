@@ -56,6 +56,7 @@ export default function ComplianceViewSection({
   onSelectAction,
   onOpenClause,
   selectedFindingId,
+  selectedClaimId,
 }: {
   billingReport: BillingActionReport;
   patientId?: string;
@@ -64,6 +65,7 @@ export default function ComplianceViewSection({
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const rows = unifiedRows ?? buildUnifiedComplianceFindings(billingReport, t);
@@ -161,6 +163,7 @@ export default function ComplianceViewSection({
         block={billingReport.claim_reviews}
         onOpenClause={onOpenClause}
         selectedFindingId={selectedFindingId}
+        selectedClaimId={selectedClaimId}
       />
 
       <PatientWaveAEvidenceSection
@@ -169,6 +172,7 @@ export default function ComplianceViewSection({
         block={billingReport.claim_advisories}
         onOpenClause={onOpenClause}
         selectedFindingId={selectedFindingId}
+        selectedClaimId={selectedClaimId}
       />
 
       <LabOptimizationSection labData={billingReport.lab} />

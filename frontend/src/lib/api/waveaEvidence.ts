@@ -70,6 +70,7 @@ export function getPatientWaveAEvidence(
     offset: number;
     limit?: number;
     evidenceId?: string;
+    billClaimId?: string | null;
   },
   options?: RequestInit,
 ): Promise<WaveAEvidencePage> {
@@ -79,6 +80,10 @@ export function getPatientWaveAEvidence(
     limit: String(params.limit ?? 20),
   });
   if (params.evidenceId) query.set("evidence_id", params.evidenceId);
+  if (params.billClaimId) {
+    query.set("scope", "bill");
+    query.set("claim_id", params.billClaimId);
+  }
   return requestJSON<WaveAEvidencePage>(
     `/api/wavea-evidence/${encodeURIComponent(patientId)}?${query}`,
     options,

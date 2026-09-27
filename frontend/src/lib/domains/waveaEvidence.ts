@@ -56,6 +56,8 @@ export interface WaveAEvidencePage {
   available: boolean;
   unavailable_reason: string | null;
   patient_id?: string;
+  scope?: "patient" | "bill";
+  claim_id?: string | null;
   kind?: "evaluations" | "reviews" | "advisories" | "financial_rows";
   rows: WaveAEvidenceRow[];
   pagination: {

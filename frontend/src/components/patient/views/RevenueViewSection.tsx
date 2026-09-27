@@ -32,12 +32,14 @@ export default function RevenueViewSection({
   onSelectAction,
   onOpenClause,
   selectedFindingId,
+  selectedClaimId,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
 }) {
   const t = useT();
   const viewActionsList = viewActions(billingReport, "revenue");
@@ -79,6 +81,7 @@ export default function RevenueViewSection({
         block={billingReport.financial_findings}
         onOpenClause={onOpenClause}
         selectedFindingId={selectedFindingId}
+        selectedClaimId={selectedClaimId}
       />
 
       <CopayOptimizationSection copayData={billingReport.copay} />

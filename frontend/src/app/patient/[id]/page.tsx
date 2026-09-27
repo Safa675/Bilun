@@ -646,6 +646,7 @@ export function SutPatientPageContent({
                       onOpenClause={handleOpenClause}
                       sectionQuery={sectionQuery}
                       selectedFindingId={findingQuery}
+                      selectedClaimId={selectedClaimId}
                     />
 
                     {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}

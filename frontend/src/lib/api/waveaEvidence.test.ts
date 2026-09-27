@@ -38,6 +38,16 @@ describe("Wave A evidence clients", () => {
     );
   });
 
+  it("pages a selected bill from its independent claim-scoped evidence", async () => {
+    await getPatientWaveAEvidence("P-1", {
+      kind: "financial_rows", offset: 20, billClaimId: "C /2",
+    });
+    expect(calls.get).toHaveBeenCalledWith(
+      "/api/wavea-evidence/P-1?kind=financial_rows&offset=20&limit=20&scope=bill&claim_id=C+%2F2",
+      undefined,
+    );
+  });
+
   it("requests advisory evidence by its separate kind and canonical ID", async () => {
     await getPatientWaveAEvidence("P-1", {
       kind: "advisories",
