@@ -119,12 +119,26 @@ def _raw_header_gate(condition: dict[str, Any], header: Any) -> tuple[str, list[
             missing.append("claim_type")
         elif not any(
             token in claim_type
-            for token in ("yatis", "inpatient", "ayakta", "outpatient", "poliklinik", "gunubirlik")
+            for token in (
+                "yatis",
+                "yatarak",
+                "inpatient",
+                "ayakta",
+                "outpatient",
+                "poliklinik",
+                "gunubirlik",
+            )
         ):
             return "unavailable", missing, f"unrecognized claim_type: {claim_type}"
 
     if missing:
         return "missing_inputs", missing, "raw claim header inputs are absent"
+    provider_type = str(header.provider_type or "").strip().casefold()
+    if "provider_contract_status" in condition and provider_type == "private":
+        # SUT §1.5.1.(3) expressly distinguishes uncontracted private providers;
+        # ownership is not an SGK contract signal. Keep the legacy default in
+        # raw rows only until the claim carries a distinct contract marker.
+        return "unavailable", [], "private ownership does not establish provider contract status"
     return None
 
 
@@ -155,9 +169,7 @@ def evaluate_payment_method_traceability(
         if len({claim.claim_id for claim in ctx.claims}) != len(ctx.claims):
             raise ValueError("Duplicate payment traceability claim header")
         claim_ids = {claim.claim_id for claim in ctx.claims}
-        if claim_ids and any(
-            row.claim_id not in claim_ids for rows in rows_by_source[1:] for row in rows
-        ):
+        if any(row.claim_id not in claim_ids for rows in rows_by_source[1:] for row in rows):
             raise ValueError("Payment traceability lines include a foreign claim")
     if ctx is None or not ctx.claims:
         missing = "claim_context" if ctx is None else "claim_headers"

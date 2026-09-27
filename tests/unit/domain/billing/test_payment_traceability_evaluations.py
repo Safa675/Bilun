@@ -151,15 +151,16 @@ def test_match_clean_nonmatch_missing_and_unsupported_are_distinct() -> None:
     assert "annex membership not confirmed" in (by_key["C2", annex_id].reason or "")
 
 
-def test_absent_claim_context_accounts_for_every_authored_id() -> None:
-    batch = evaluate_payment_method_traceability("P1", None)
+@pytest.mark.parametrize("ctx", [None, replace(_context(), claims=(), procedure_lines=())])
+def test_absent_claim_context_accounts_for_every_authored_id(ctx) -> None:
+    batch = evaluate_payment_method_traceability("P1", ctx)
     assert len(batch.evaluations) == 42
     assert not batch.matches
     assert not batch.legacy_rows
     assert all(
         row.claim_id is None
         and row.evaluation_status == "missing_inputs"
-        and row.missing_inputs == ["claim_context"]
+        and row.missing_inputs == ["claim_context" if ctx is None else "claim_headers"]
         for row in batch.evaluations
     )
 
@@ -211,6 +212,55 @@ def test_raw_header_gates_metadata_but_retains_legacy_rows(
     )
     if header_change == {"claim_type": ""}:
         assert any(row.rule_id == rule_id for row in batch.legacy_rows)
+
+
+@pytest.mark.parametrize("claim_type", ["yatis", "yatarak", "YATARAK", "inpatient"])
+def test_inpatient_alias_has_same_legacy_and_typed_payment_decision(claim_type: str) -> None:
+    original = _context().slice_for_claim("C1")
+    assert original is not None
+    ctx = replace(
+        original,
+        claims=(
+            replace(
+                original.claims[0],
+                claim_type=claim_type,
+                provider_type="universite",
+                facility_tier="3",
+            ),
+        ),
+    )
+    batch = evaluate_payment_method_traceability("P1", ctx)
+    rule_id = "2.2.1.B-2.(4).training_hospital_inpatient"
+    # Intentional legacy correction: yatarak previously leaked through as a
+    # raw setting and failed this inpatient predicate. It now matches yatis.
+    assert any(r["rule_id"] == rule_id for r in check_payment_method_traceability_for_context(ctx))
+    row = next(r for r in batch.evaluations if r.rule_id == rule_id)
+    assert (row.evaluation_status, row.decision) == ("evaluated", "matched")
+    assert any(r.rule_id == rule_id for r in batch.matches)
+    assert [
+        r.legacy_row for r in batch.legacy_rows
+    ] == check_payment_method_traceability_for_context(ctx)
+
+
+@pytest.mark.parametrize("provider_type", ["private", "Private", " PRIVATE "])
+def test_private_ownership_is_not_contract_status_evidence(provider_type: str) -> None:
+    ctx = _context().slice_for_claim("C2")
+    assert ctx is not None
+    ctx = replace(ctx, claims=(replace(ctx.claims[0], provider_type=provider_type),))
+    batch = evaluate_payment_method_traceability("P1", ctx)
+    rule_id = "2.2.(12).no_pay_without_documentation"
+    row = next(r for r in batch.evaluations if r.rule_id == rule_id)
+    assert row.evaluation_status == "unavailable"
+    assert "private ownership does not establish" in row.reason
+    assert not any(r.rule_id == rule_id for r in batch.matches)
+    assert [
+        r.legacy_row for r in batch.legacy_rows
+    ] == check_payment_method_traceability_for_context(ctx)
+
+
+def test_source_lines_without_claim_headers_are_rejected() -> None:
+    with pytest.raises(ValueError, match="foreign claim"):
+        evaluate_payment_method_traceability("P1", replace(_context(), claims=()))
 
 
 def test_validated_catalog_source_view_is_cached_once_per_process(

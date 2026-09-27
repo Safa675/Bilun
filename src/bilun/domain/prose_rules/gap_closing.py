@@ -320,14 +320,12 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         "provider_type": header.provider_type or "",
         "claim_type": header.claim_type or "",
     }
-    # Care setting: inpatient (yatis) vs outpatient (ayakta/poliklinik) vs
-    # day-case (gunubirlik, billed as outpatient per SUT §2.2). The
-    # gap-closing JSON expects "inpatient" / "outpatient"; fall back to
-    # "outpatient" for unrecognized outpatient-style visit types rather than
-    # leaking the raw Turkish token, which _resolve_claim_kind would then
-    # mis-classify as inpatient.
+    # SUT §2.1.2.A/§2.2.2 use yatan-hasta/yatarak terminology. Recognize
+    # yatarak just like claim_utils.infer_care_setting and treatment_pricing;
+    # leaking that raw token silently fails authored inpatient predicates.
+    # Preserve other legacy fallbacks; their metadata gates handle unknowns.
     claim_type_lower = (header.claim_type or "").lower()
-    if "yatis" in claim_type_lower or "inpatient" in claim_type_lower:
+    if any(token in claim_type_lower for token in ("yatis", "yatarak", "inpatient")):
         context["care_setting"] = "inpatient"
     elif (
         "ayakta" in claim_type_lower
