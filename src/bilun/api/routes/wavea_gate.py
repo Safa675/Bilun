@@ -9,7 +9,7 @@ from src.bilun.domain.billing.wavea_full_evidence import (
     FULL_EVIDENCE_SCHEMA_VERSION,
     validate_full_wavea_evidence_index,
 )
-from src.bilun.domain.billing.wavea_evidence import COMPLETE_EVIDENCE_CAPABILITY
+from src.bilun.api.wavea_activation import activation_for_build
 
 
 def declared_build_row_counts(reader: Any, build_id: str) -> dict[str, int]:
@@ -34,17 +34,15 @@ def declared_patient_report_count(reader: Any, build_id: str) -> int:
 
 
 def complete_build_evidence_available(reader: Any, index: Any, build_id: str) -> bool:
-    """A complete marker cannot claim fewer patients than the built tables."""
+    """Require a process-pinned receipt and the full draft build inventory."""
     if not (
-        isinstance(index, dict)
+        activation_for_build(build_id) is not None
+        and isinstance(index, dict)
         and index.get("build_id") == build_id
         and index.get("schema_version") == FULL_EVIDENCE_SCHEMA_VERSION
-        and index.get("capability") == COMPLETE_EVIDENCE_CAPABILITY
+        and index.get("capability") == "draft"
     ):
         return False
-    # The v2 validator currently accepts only draft indexes. The release
-    # attestation checkpoint will extend it with verified complete capability;
-    # a string toggle alone therefore cannot activate this route.
     try:
         validate_full_wavea_evidence_index(index)
     except ValueError:

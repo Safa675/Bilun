@@ -179,6 +179,47 @@ def test_observation_uses_actual_listener_runtime_cache_assets_and_health(tmp_pa
     assert spec.cache_path.read_bytes() == before
 
 
+def test_signed_private_candidate_tuple_binds_receipt_and_health(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.bilun.api import wavea_activation
+
+    spec, proc_root, health = _fixture(tmp_path)
+    receipt = tmp_path / "receipt.json"
+    key = tmp_path / "key.bin"
+    backend_env = (proc_root / "101" / "environ").read_bytes()
+    backend_env += _environment(
+        f"BILUN_WAVEA_ACTIVATION_RECEIPT={receipt}",
+        f"BILUN_WAVEA_ACTIVATION_KEY_FILE={key}",
+    )
+    (proc_root / "101" / "environ").write_bytes(backend_env)
+    spec = replace(
+        spec,
+        activation_receipt_path=receipt,
+        activation_key_path=key,
+        backend_environment_sha256=_environment_sha(backend_env),
+    )
+    monkeypatch.setattr(
+        wavea_activation, "load_startup_activation", lambda *_args, **_kw:
+        wavea_activation.WaveAActivation(
+            "release-1", "123", spec.code_sha, spec.source_manifest_sha256,
+            spec.cache_build_id, spec.cache_sha256, "d" * 64, "e" * 64,
+        ),
+    )
+    health["wavea_capability"] = "complete-25-v1"
+    health["wavea_receipt_sha256"] = "e" * 64
+    report = _observe(spec, proc_root, health)
+    assert report["activation_ready"] is False
+    assert report["private_activation_verified"] is True
+    assert report["logical_tuple"]["cache"]["release_attestation"] == "signed"
+    assert report["logical_tuple"]["health"]["wavea_receipt_sha256"] == "e" * 64
+    assert report["remaining_gates"] == ["public_route_transaction_pending"]
+
+    health["wavea_receipt_sha256"] = "f" * 64
+    with pytest.raises(ValueError, match="receipt identity"):
+        _observe(spec, proc_root, health)
+
+
 @pytest.mark.parametrize(
     ("field", "value", "reason"),
     [

@@ -57,6 +57,8 @@ class CandidateSpec:
     frontend_environment_sha256: str
     frontend_build_id: str
     frontend_assets_sha256: str
+    activation_receipt_path: Path | None = None
+    activation_key_path: Path | None = None
     backend_port: int = 8002
     frontend_port: int = 3099
 
@@ -95,6 +97,14 @@ class CandidateSpec:
             )
         ):
             raise ValueError("Candidate artifact paths must be absolute")
+        if (self.activation_receipt_path is None) != (self.activation_key_path is None):
+            raise ValueError("Candidate activation receipt and key must be paired")
+        if any(
+            not path.is_absolute() or path.is_symlink()
+            for path in (self.activation_receipt_path, self.activation_key_path)
+            if path is not None
+        ):
+            raise ValueError("Candidate activation paths must be independent and absolute")
 
 
 def _canonical_digest(value: Any) -> str:
@@ -178,6 +188,8 @@ def _process_observation(
             b"BILUN_RELEASE_CODE_SHA",
             b"BILUN_RELEASE_SOURCE_MANIFEST_SHA256",
             b"BILUN_STARTUP_POLICY",
+            b"BILUN_WAVEA_ACTIVATION_RECEIPT",
+            b"BILUN_WAVEA_ACTIVATION_KEY_FILE",
             b"API_PROXY_TARGET",
         }:
             decoded_key = key.decode("ascii")
@@ -340,7 +352,7 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
         "build_id": spec.cache_build_id,
         "source_hash": spec.cache_source_hash,
         "evidence_capability": "draft",
-        "release_attestation": "pending",
+        "release_attestation": "signed" if spec.activation_receipt_path else "pending",
         "patient_count": len(patient_keys),
         "bill_count": len(bill_keys),
     }
@@ -390,12 +402,18 @@ def observe_candidate_tuple(
         or frontend["effective_environment_sha256"] != spec.frontend_environment_sha256
     ):
         raise ValueError("Candidate effective listener environment changed")
-    if backend["selected_environment"] != {
+    expected_backend_environment = {
         "BILUN_CACHE_DB_PATH": str(spec.cache_path),
         "BILUN_RELEASE_CODE_SHA": spec.code_sha,
         "BILUN_RELEASE_SOURCE_MANIFEST_SHA256": spec.source_manifest_sha256,
         "BILUN_STARTUP_POLICY": "verified-load-only",
-    }:
+    }
+    if spec.activation_receipt_path is not None:
+        expected_backend_environment.update({
+            "BILUN_WAVEA_ACTIVATION_RECEIPT": str(spec.activation_receipt_path),
+            "BILUN_WAVEA_ACTIVATION_KEY_FILE": str(spec.activation_key_path),
+        })
+    if backend["selected_environment"] != expected_backend_environment:
         raise ValueError("Candidate backend startup identity/environment differs")
     if frontend["selected_environment"] != {
         "BILUN_RELEASE_CODE_SHA": spec.code_sha,
@@ -428,6 +446,22 @@ def observe_candidate_tuple(
         raise ValueError("Candidate serving Next assets differ from manifest")
     cache = _cache_observation(spec)
     health = fetch_health(f"http://127.0.0.1:{spec.backend_port}/health")
+    activated = spec.activation_receipt_path is not None
+    receipt_sha256 = None
+    if activated:
+        from src.bilun.api.wavea_activation import load_startup_activation
+
+        activation = load_startup_activation(
+            expected_backend_environment,
+            cache_path=spec.cache_path,
+            active_build_id=spec.cache_build_id,
+            code_sha=spec.code_sha,
+            source_manifest_sha256=spec.source_manifest_sha256,
+            backend_runtime=spec.backend_runtime,
+        )
+        if activation is None:
+            raise ValueError("Candidate activation receipt was not verified")
+        receipt_sha256 = activation.receipt_sha256
     if any(
         health.get(key) != value
         for key, value in {
@@ -436,10 +470,12 @@ def observe_candidate_tuple(
             "active_build": spec.cache_build_id,
             "code_sha": spec.code_sha,
             "source_manifest_sha256": spec.source_manifest_sha256,
-            "wavea_capability": "draft",
+            "wavea_capability": "complete-25-v1" if activated else "draft",
         }.items()
     ):
         raise ValueError("Candidate backend health identity differs from artifacts")
+    if activated and health.get("wavea_receipt_sha256") != receipt_sha256:
+        raise ValueError("Candidate backend receipt identity differs from process receipt")
     if (
         listener_pid(spec.backend_port) != backend["listener_pid"]
         or listener_pid(spec.frontend_port) != frontend["listener_pid"]
@@ -487,10 +523,16 @@ def observe_candidate_tuple(
             )
         },
     }
+    if activated:
+        logical_tuple["health"]["wavea_receipt_sha256"] = receipt_sha256
     return {
         "status": "candidate_tuple_observed",
         "activation_ready": False,
-        "remaining_gates": ["independent_release_attestation_missing"],
+        "private_activation_verified": activated,
+        "remaining_gates": (
+            ["public_route_transaction_pending"] if activated
+            else ["independent_release_attestation_missing"]
+        ),
         "tuple_sha256": _canonical_digest(logical_tuple),
         "listener_identity_sha256": _canonical_digest(
             {

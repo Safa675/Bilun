@@ -646,6 +646,35 @@ def test_v2_capability_string_toggle_cannot_publish_unattested_evidence(cached_p
     assert {row["rule_id"] for row in patient["claim_compliance"]["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
 
 
+def test_v2_pinned_activation_opens_complete_draft_build(cached_pipeline, monkeypatch):
+    from src.bilun.api import wavea_activation
+
+    client, _, _, _ = cached_pipeline
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        index = read_json_payload(con, "wavea_evidence_index", build_id)
+        assert index["capability"] == "draft"
+    finally:
+        con.close()
+    monkeypatch.setattr(
+        wavea_activation,
+        "_startup_activation",
+        wavea_activation.WaveAActivation(
+            release_id="test-release", ci_run_id="123", code_sha="a" * 40,
+            source_roster_sha256="b" * 64, cache_build_id=build_id,
+            cache_sha256="c" * 64, sidecar_sha256="d" * 64,
+            receipt_sha256="e" * 64,
+        ),
+    )
+    index_response = client.get("/api/wavea-evidence-index").json()
+    patient_response = client.get("/api/billing-report/P1").json()
+    assert index_response["available"] is True
+    assert index_response["counts"]["by_group"] == index["counts"]["by_group"]
+    assert patient_response["claim_reviews"]["available"] is True
+    assert patient_response["claim_advisories"]["available"] is True
+
+
 def test_v2_explicit_empty_patient_selection_never_expands_to_all(cached_pipeline, monkeypatch):
     client, _, _, _ = cached_pipeline
     monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)

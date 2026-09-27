@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 from src.bilun.api import release_identity
+from src.bilun.api.wavea_activation import load_startup_activation, set_startup_activation
 
 logger = logging.getLogger("bilun.api")
 
@@ -91,8 +92,17 @@ def _has_bilun_cache() -> bool:
 async def startup():
     global _startup_ready
     _startup_ready = False
+    set_startup_activation(None)
 
     policy = os.getenv("BILUN_STARTUP_POLICY", "load-only").strip().lower()
+
+    if policy != "verified-load-only" and any(
+        os.getenv(key) is not None
+        for key in ("BILUN_WAVEA_ACTIVATION_RECEIPT", "BILUN_WAVEA_ACTIVATION_KEY_FILE")
+    ):
+        logger.error("Wave A activation requires verified-load-only startup")
+        _exit_on_startup_failure()
+        return
 
     # Auto-upgrade to rebuild on cold start (no cache at all).
     if policy not in {"rebuild", "strict", "verified-load-only"} and not _has_bilun_cache():
@@ -102,10 +112,22 @@ async def startup():
     if policy == "verified-load-only":
         try:
             build_id = _load_verified_release_cache()
+            identity = release_identity.STARTUP_RELEASE_IDENTITY
+            if identity is None:
+                raise RuntimeError("Verified candidate has no pinned release identity")
+            activation = load_startup_activation(
+                os.environ,
+                cache_path=Path(os.environ["BILUN_CACHE_DB_PATH"]),
+                active_build_id=build_id,
+                code_sha=identity.code_sha,
+                source_manifest_sha256=identity.source_manifest_sha256,
+                backend_runtime=_PROJECT_ROOT,
+            )
         except Exception as exc:
             logger.error("Verified candidate cache load failed: %s", exc)
             _exit_on_startup_failure()
             return
+        set_startup_activation(activation)
         _startup_ready = True
         logger.info("Verified candidate cache loaded read-only — active build %s", build_id)
         return
