@@ -35,6 +35,50 @@ Final decision: retain **default CI threads** and the measured **one-thread loca
 
 ---
 
+## Task: Complete the deferred PR #89 Wave A groups in one verified release (2026-09-27)
+
+### Goal
+Cover all 25 deferred detector/engine groups (18 focused and seven broad) through canonical, single-evaluation patient/cohort projections, with each authored outcome honestly classified. Ship in reviewable checkpoints on one integration branch, then activate once after a validated cache rebuild and verify the live patient and cohort experience. This is group coverage, not a claim that every possible authored rule ID fires in live data. PR #96's post-merge CI and Deploy completed successfully before this task began.
+
+This is an explicit user-approved expansion of the original strict Wave A filter: mixed monetary outputs use existing financial sections and informational outputs use review-only presentation. Do not label those rows unpriced violations merely because their engines appeared on the deferred candidate list.
+
+### Locked decisions from the grilling interview
+- Keep the ten excluded synthetic `kind:<callable>` identities outside this release and report them honestly.
+- Compliance contains only eligible, unpriced violations; positive actions are evaluations, review-only outcomes remain outside violation counts, and missing inputs remain unavailable rather than a clean pass.
+- Preserve detector decision semantics; add status/skip metadata as needed. A wrong detector is held for a separate focused correction, and the combined release waits for that blocker.
+- Give every distinct finding and per-line evaluation a stable source/line identity across patient, cache, cohort, API, and UI. Never collapse multiple rows into one claim identity.
+- Show financial-only outcomes in existing patient and cohort financial/recovery sections with separately labeled billed/risk/uplift values and verified source/basis. If provenance or amount is unverified, show an honest review/unavailable state rather than a sourced or confirmed number. Keep existing savings/recovery totals byte/value-equivalent and do not double count or invent zero amounts.
+- Show actual findings plus compact evaluated/unavailable summaries, not the full static ID catalog. Verify all cached rows and representative live triggers; use synthetic per-rule tests for rare rules with no live positive case.
+- Validate the rebuilt cache and cohort before one user-visible activation; block unexplained financial drift, identity collisions, or finding-count changes; provide a tested rollback to the previous version/cache.
+
+### Subtasks
+- [ ] Reconcile all 25 groups: 516 hidden static inventory identities (20 focused entries including one synthetic radiation grouping, plus 496 broad authored IDs) and 526 possible runtime rule IDs (30 focused emitted IDs, plus 496 broad authored IDs). Check emitted IDs, source rows, `billable`/review semantics, input availability, stable identity, existing monetary paths, and the ten explicit exclusions.
+- [ ] Capture baseline code/data identities, financial totals, current patient/cohort payloads, and active cache build ID without changing production state; record representative and negative cases.
+- [x] Write detailed focused, broad, and financial/release architecture maps in `plans/billing/`; independently review and approve this task plan and those maps before production code changes.
+- [x] Inventory the four flat-only monetary focused outputs from their detector results and patient-report totals before implementing their display; identify exact amount basis, source strength, and whether they currently participate in headline calculations.
+- [ ] Extend the canonical finding/evaluation contract with per-rule outcome classification, stable distinct finding/evaluation identities, honest missing-input/skip status, source evidence, review-only status, and a separate typed financial projection while preserving detector decisions.
+- [ ] Integrate the 18 focused groups into one-pass evaluation, including explicit classification of the four money-bearing groups and source-derived identity for multirow detectors; add group-level regressions.
+- [ ] Resolve correctness blockers in separately reviewed focused changes before final activation: correct the duplicate-exam ten-day false negative with a regression; investigate the admission 60-day detector's use of service-range end as a purported submission date and obtain the actual input/source or keep its confirmed projection unavailable. Investigate the donor branch discrepancy separately without altering its predicate on speculation.
+- [ ] Resolve separately reviewed monetary-detector correctness blockers before projecting confirmed amounts: radiation whole-line risk attribution (and same-day quantity case), dental zero-charge anesthesia false positive, and yatak zero-charge bed plus non-ICU evidence attribution. Preserve existing participant identity and patient/cohort totals; route uncertain transplant carveouts, missing monetary source/basis, and unverified uplift to review/unavailable rather than asserting confirmed savings or risk.
+- [ ] Integrate the seven broad engines with rule-level authored-action classification and status metadata; account for every authored ID as eligible finding, positive, review, monetary, or unavailable without blanket conversion to violations.
+- [ ] Carry canonical nonfinancial, review-only, and financial projections through patient report, cache, cohort index, API, and old-cache fallback; prove identity parity and bounded honest status summaries without new aggregate money.
+- [ ] Reconcile the existing `validate_claim()` public `violations`/validity contract with typed positive/review outcomes; migrate its API, chatbot, frontend validator, and tests together so public counts no longer call permitted or informational actions violations, retaining a documented compatibility path.
+- [ ] Render eligible findings and review-only statuses in the existing patient/cohort Compliance UI and sourced monetary outcomes in the existing patient/cohort financial sections; preserve links, pagination, and old-cache honesty.
+- [ ] Update surfacing inventory and regression gates so the 25 groups are classified correctly, visible where eligible, and not double counted; retain the ten excluded synthetic identities.
+- [ ] Implement a single-activation release gate: validate staged cache/financial/identity/cohort parity before enabling new surfaces, fail closed on unexplained drift, and test restoring the prior code/frontend/cache tuple. Measure preparation/rehearsal duration and raise or split the current 25-minute deploy job without losing same-SHA/stale-head/lock guarantees. The current frontend-first deploy and cache overwrite cannot be used unchanged.
+- [ ] Run focused domain, API/cache, frontend, financial, and release-gate tests; then run full backend/frontend CI-equivalent checks, generated-artifact checks, and a no-drift financial snapshot comparison.
+- [ ] Independently review the final source, classification, UI, and release diff; resolve all correctness findings and re-run affected checks.
+- [ ] Check branch CI before pushes; publish reviewable checkpoint commits/PR, obtain final hosted CI and review feedback, then merge for one production activation.
+- [ ] Verify the merged production deploy, active cache build, every cached patient/cohort payload, representative live findings and statuses, financial-path identity/amount labels, unchanged totals, and rollback readiness; record exact evidence and remaining limits.
+
+### Out of Scope
+The ten synthetic-identity rows previously excluded from Wave A; new clinical/regulatory rule decisions; new claim-data ingestion solely to make dormant authored IDs fire; changing existing savings/recovery totals; treating positive or review-only outcomes as compliance violations; activating partial checkpoints in production.
+
+### Review
+Plan independently reviewed and approved for staged implementation by three agents after correction of classification, identity-count, detector-correctness, retained-client, and deployment-timeout gaps. Detailed per-rule inventory, production baseline capture, and code changes remain pending. Latest main is `bbf9acaf` (merged PR #96); its [post-merge CI](https://github.com/Safa675/Bilun/actions/runs/36316401829) and [Deploy](https://github.com/Safa675/Bilun/actions/runs/36316669982) passed. Read-only audit found 18 focused groups (20 static inventory identities, expanding to 30 possible emitted runtime IDs because radiation has 11 IDs) and seven broad engines (496 authored IDs) remain hidden. These IDs are possibilities, not guaranteed live findings. Financial, positive, review, missing-input, and stable-identity classification must precede implementation. A read-only synthetic baseline at `bbf9acaf` covers 50 patients, 94 bills, and 636 legacy validator rows; its 5.25 MB JSON is saved outside the worktree at `/root/artifacts/bilun-wavea-2026-09-27/baseline-synthetic.json` (SHA-256 `12cfec6940a2beae19de08881e56c88bd018bc166a24ee9e56f536317ff4f5b3`). Patient report baseline sums: SGK uplift/recoverable ₺348,340.41, audit exposure ₺673,902.64, action count 452; bill report financial sums match, with 563 bill actions. These are synthetic comparison fixtures, not production values. A read-only production `/health` response on 2026-09-27 reported `status=ok`, `database_reachable=true`, `cache_ready=true`, active build `b1fdcb54-0abb-426a-94fb-f00d006144a7`, and gazette version `2026-07-07`. This establishes only the health/build baseline; authenticated patient/cohort payloads and source-code identity still need capture before release. A read-only unauthenticated request to `/api/compliance-index?limit=1` returned HTTP 401, so the health response is not a substitute for private payload verification.
+
+---
+
 ## Task: Fix PR #94 CI after repricing removal
 
 ### Goal
