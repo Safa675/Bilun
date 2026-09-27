@@ -201,6 +201,7 @@ def test_vakabasi_wrong_method_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_3_vakabasi_wrong_method"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
     assert v["is_package_included"] is True
 
@@ -251,6 +252,7 @@ def test_normal_poliklinik_wrong_method_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_4_normal_poliklinik_wrong_method"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
 
 
@@ -340,8 +342,29 @@ def test_green_area_bundled_extras_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_7_green_area_bundled_extra"
+    assert v["procedure_line_id"] == "PL2"
     assert v["procedure_code"] == "401010"
     assert v["green_area_exam_code"] == "520021"
+
+
+def test_green_area_bundled_extras_same_rule_and_claim_keep_distinct_line_ids() -> None:
+    """Two identical extra codes must not collapse to one claim/code identity."""
+    claim = _make_claim_header(claim_id="C1")
+    green = _make_proc_line(procedure_line_id="PL1", procedure_code="520021")
+    extras = [
+        _make_proc_line(procedure_line_id=line_id, procedure_code="401010")
+        for line_id in ("PL2", "PL3")
+    ]
+
+    violations = detect_green_area_bundled_extras([claim], [green, *extras])
+
+    assert [
+        (v["rule_id"], v["claim_id"], v["procedure_code"], v["procedure_line_id"])
+        for v in violations
+    ] == [
+        ("tablo15_7_green_area_bundled_extra", "C1", "401010", "PL2"),
+        ("tablo15_7_green_area_bundled_extra", "C1", "401010", "PL3"),
+    ]
 
 
 def test_green_area_bundled_extras_negative() -> None:
@@ -571,6 +594,7 @@ def test_inpatient_on_outpatient_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_21_inpatient_on_outpatient"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "error"
     assert v["care_setting"] == "outpatient"
 
@@ -620,6 +644,7 @@ def test_donor_prep_as_exam_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C1"
     assert v["rule_id"] == "tablo15_24_donor_prep_as_exam"
+    assert v["procedure_line_id"] == "PL1"
     assert v["severity"] == "warning"
     assert v["occupational_context"] == "donor"
 

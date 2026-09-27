@@ -168,6 +168,7 @@ def test_duplicate_exam_10day_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C2"
     assert v["rule_id"] == "tablo15_2_duplicate_exam_10day"
+    assert v["procedure_line_id"] == "PL2"
     assert v["severity"] == "error"
     assert v["procedure_specialty_code"] == "1000"
     assert v["gap_days"] == 5
@@ -204,6 +205,35 @@ def test_duplicate_exam_10day_negative() -> None:
     violations = detect_duplicate_exam_10day([c1, c2], [l1, l2])
 
     assert violations == []
+
+
+def test_duplicate_exam_10day_keeps_earlier_different_claim_for_later_same_claim_lines() -> None:
+    """Both later B lines must compare with A, even when B's first line is nearer."""
+    claims = [
+        _make_claim_header(claim_id=claim_id, claim_type="poliklinik")
+        for claim_id in ("A", "B")
+    ]
+    lines = [
+        _make_proc_line(
+            procedure_line_id=line_id,
+            claim_id=claim_id,
+            procedure_date=date(2026, 7, day),
+        )
+        for line_id, claim_id, day in (
+            ("A1", "A", 1),
+            ("B2", "B", 2),
+            ("B3", "B", 3),
+        )
+    ]
+
+    violations = detect_duplicate_exam_10day(claims, lines)
+
+    assert len(violations) == 2
+    assert [
+        (v["claim_id"], v["procedure_line_id"], v["prior_claim_id"], v["gap_days"])
+        for v in violations
+    ] == [("B", "B2", "A", 1), ("B", "B3", "A", 2)]
+    assert {v["rule_id"] for v in violations} == {"tablo15_2_duplicate_exam_10day"}
 
 
 # ===========================================================================
@@ -263,6 +293,7 @@ def test_duplicate_tests_positive() -> None:
     v = violations[0]
     assert v["claim_id"] == "C2"
     assert v["rule_id"] == "tablo15_12_duplicate_test"
+    assert v["procedure_line_id"] == "PL2"
     assert v["severity"] == "warning"
     assert v["procedure_code"] == "901050"
     assert v["prior_claim_id"] == "C1"

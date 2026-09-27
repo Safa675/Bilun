@@ -186,7 +186,8 @@ def detect_duplicate_exam_10day(
             continue
         exams.append(line)
 
-    # Group by specialty; within each group sort by date and compare consecutive.
+    # Group by specialty; within each group sort by date and retain the most
+    # recent prior exam from a different claim for each later line.
     by_specialty: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
     for line in exams:
         by_specialty[line.procedure_specialty_code].append(line)
@@ -194,14 +195,19 @@ def detect_duplicate_exam_10day(
     violations: list[dict[str, Any]] = []
     for specialty, lines in by_specialty.items():
         ordered = sorted(lines, key=lambda p: (p.procedure_date, p.claim_id))
-        for prev, curr in zip(ordered, ordered[1:]):
-            # Skip the same-claim self-pair (different error class).
-            if prev.claim_id == curr.claim_id:
-                continue
-            gap = (curr.procedure_date - prev.procedure_date).days
-            # Only a forward gap within the window counts; negative gaps
-            # are covered by the symmetric pair after sorting.
-            if 0 <= gap <= _EXAM_DUPLICATE_WINDOW_DAYS:
+        latest: ProcedureClaimLine | None = None
+        latest_other: ProcedureClaimLine | None = None
+        for curr in ordered:
+            # The immediately preceding line may belong to this same claim.
+            # Keep the latest line from another claim so each later line can
+            # still be checked without rescanning the entire specialty group.
+            prev = (
+                latest
+                if latest is not None and latest.claim_id != curr.claim_id
+                else latest_other
+            )
+            gap = (curr.procedure_date - prev.procedure_date).days if prev is not None else None
+            if gap is not None and 0 <= gap <= _EXAM_DUPLICATE_WINDOW_DAYS:
                 detail = (
                     f"Aynı branş ({specialty}) muayenesi {prev.procedure_date} ve "
                     f"{curr.procedure_date} tarihlerinde {_EXAM_DUPLICATE_WINDOW_DAYS} "
@@ -211,6 +217,7 @@ def detect_duplicate_exam_10day(
                     {
                         "type": _OPPORTUNITY_TYPE,
                         "claim_id": curr.claim_id,
+                        "procedure_line_id": curr.procedure_line_id,
                         "rule_id": "tablo15_2_duplicate_exam_10day",
                         "detail": detail,
                         "sut_section_id": _SUT_SECTION_ID,
@@ -227,6 +234,9 @@ def detect_duplicate_exam_10day(
                         "gap_days": gap,
                     }
                 )
+            if latest is not None and latest.claim_id != curr.claim_id:
+                latest_other = latest
+            latest = curr
     return violations
 
 
@@ -324,6 +334,7 @@ def detect_duplicate_tests(
                         {
                             "type": _OPPORTUNITY_TYPE,
                             "claim_id": curr.claim_id,
+                            "procedure_line_id": curr.procedure_line_id,
                             "rule_id": "tablo15_12_duplicate_test",
                             "detail": detail,
                             "sut_section_id": _SUT_SECTION_ID,
@@ -515,6 +526,7 @@ def detect_vakabasi_wrong_method(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_3_vakabasi_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -569,6 +581,7 @@ def detect_normal_poliklinik_wrong_method(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_4_normal_poliklinik_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -691,6 +704,7 @@ def detect_green_area_bundled_extras(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_7_green_area_bundled_extra",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -1016,6 +1030,7 @@ def detect_inpatient_on_outpatient(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_21_inpatient_on_outpatient",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
@@ -1073,6 +1088,7 @@ def detect_donor_prep_as_exam(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": line.claim_id,
+                "procedure_line_id": line.procedure_line_id,
                 "rule_id": "tablo15_24_donor_prep_as_exam",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
