@@ -120,10 +120,14 @@ def test_bill_detail_is_independently_scoped_when_patient_icu_history_changes_ou
     srv_ctx = ctx.slice_for_claim("SRV")
     assert srv_ctx is not None
     bill = compute_patient_billing_report("P1", claim_context=srv_ctx)
-    assert any(
-        row["rule_id"] == "yatak_icu_overlap_510010" and row["claim_id"] == "SRV"
-        for row in patient.financial_findings.rows
+    patient_yatak = next(
+        row for row in patient.financial_findings.rows
+        if row["rule_id"] == "yatak_icu_overlap_510010" and row["claim_id"] == "SRV"
     )
+    assert patient_yatak["observed_billed_amount_try"] == 742.60
+    assert patient_yatak["observed_amount_basis"] == "procedure_claim_line.billed_amount_try"
+    assert patient_yatak["observed_amount_unavailable_reason"] is None
+    assert patient_yatak["confirmed_amount_try"] is None
     assert not any(
         row["rule_id"] == "yatak_icu_overlap_510010" for row in bill.financial_findings.rows
     )

@@ -10,11 +10,14 @@ from __future__ import annotations
 from collections import Counter
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal, InvalidOperation
+import math
 from typing import Any
 
 from src.bilun.domain.billing.focused_rule_projection import (
     FOCUSED_RULE_SPECS,
     FocusedProjectionBatch,
+    FocusedReviewEvidence,
 )
 from src.bilun.domain.billing.rule_findings import (
     DIAGNOSIS_RULE_ID,
@@ -40,7 +43,13 @@ _UNSOURCED_MONEY_FIELDS = frozenset({
 })
 _FINANCIAL_ONLY_FIELDS = frozenset({
     "financial_kind", "confirmed_amount_try", "amount_status", "currency",
-    "headline_relation",
+    "headline_relation", "observed_billed_amount_try", "observed_amount_basis",
+    "observed_amount_unavailable_reason",
+})
+_OBSERVED_BASIS = "procedure_claim_line.billed_amount_try"
+_OBSERVED_UNAVAILABLE_REASONS = frozenset({
+    "procedure_line_missing", "procedure_line_ambiguous", "procedure_line_owner_mismatch",
+    "procedure_line_charge_invalid", "procedure_line_charge_not_cent_exact",
 })
 _SPEC_BY_ID = {spec.rule_id: spec for spec in FOCUSED_RULE_SPECS}
 ORIGINAL_FIVE_RULE_IDS = frozenset(
@@ -293,6 +302,45 @@ def _source_status(raw: dict[str, Any]) -> str:
     return "locator_only" if raw.get("sut_section_id") or raw.get("source_type") else "unverified"
 
 
+def _observed_procedure_charge(
+    ctx: PatientClaimContext | None, review: FocusedReviewEvidence
+) -> dict[str, Any]:
+    """Use only the exact owned claim line, never a detector-estimated amount."""
+    candidates = [
+        line for line in (ctx.procedure_lines if ctx is not None else ())
+        if line.claim_id == review.claim_id and line.procedure_line_id == review.line_id
+    ]
+    owned = [line for line in candidates if line.patient_id == review.patient_id]
+    reason = None
+    amount_value: float | None = None
+    if len(owned) > 1:
+        reason = "procedure_line_ambiguous"
+    elif not owned and candidates:
+        reason = "procedure_line_owner_mismatch"
+    elif not owned:
+        reason = "procedure_line_missing"
+    else:
+        raw_amount = owned[0].billed_amount_try
+        try:
+            amount = Decimal(str(raw_amount)) if not isinstance(raw_amount, bool) else Decimal("NaN")
+        except (InvalidOperation, ValueError):
+            amount = Decimal("NaN")
+        if not amount.is_finite() or amount < 0:
+            reason = "procedure_line_charge_invalid"
+        elif amount * 100 != (amount * 100).to_integral_value():
+            reason = "procedure_line_charge_not_cent_exact"
+        else:
+            amount_value = float(amount)
+            if not math.isfinite(amount_value) or Decimal(str(amount_value)) != amount:
+                amount_value = None
+                reason = "procedure_line_charge_invalid"
+    return {
+        "observed_billed_amount_try": amount_value,
+        "observed_amount_basis": _OBSERVED_BASIS if amount_value is not None else None,
+        "observed_amount_unavailable_reason": reason,
+    }
+
+
 def _validate_evidence_row_semantics(row: dict[str, Any], label: str, rule_id: str) -> None:
     source_status = row.get("source_status")
     source = row.get("regulatory_source")
@@ -306,7 +354,12 @@ def _validate_evidence_row_semantics(row: dict[str, Any], label: str, rule_id: s
     if any(
         not isinstance(field, str)
         or field in _UNSOURCED_MONEY_FIELDS
-        or (field.endswith("_try") and not (label == "financial" and field == "confirmed_amount_try"))
+        or (
+            field.endswith("_try")
+            and not (label == "financial" and field in {
+                "confirmed_amount_try", "observed_billed_amount_try"
+            })
+        )
         for field in row
     ):
         raise ValueError("Wave A evidence has unsourced money fields")
@@ -330,6 +383,34 @@ def _validate_evidence_row_semantics(row: dict[str, Any], label: str, rule_id: s
         )
     ):
         raise ValueError("Wave A financial evidence has unsupported amount semantics")
+    observed_fields = (
+        "observed_billed_amount_try", "observed_amount_basis",
+        "observed_amount_unavailable_reason",
+    )
+    if row.get("line_kind") == "claim":
+        if any(field in row for field in observed_fields):
+            raise ValueError("Claim-scoped financial review has an observed line amount")
+        return
+    if row.get("line_kind") != "procedure" or any(field not in row for field in observed_fields):
+        raise ValueError("Procedure financial review lacks observed charge status")
+    observed = row["observed_billed_amount_try"]
+    basis = row["observed_amount_basis"]
+    reason = row["observed_amount_unavailable_reason"]
+    if observed is None:
+        if basis is not None or reason not in _OBSERVED_UNAVAILABLE_REASONS:
+            raise ValueError("Unavailable observed charge lacks a source reason")
+        return
+    if isinstance(observed, bool) or not isinstance(observed, (int, float, Decimal)):
+        raise ValueError("Observed charge must be numeric")
+    amount = Decimal(str(observed))
+    if (
+        not amount.is_finite()
+        or amount < 0
+        or amount * 100 != (amount * 100).to_integral_value()
+        or basis != _OBSERVED_BASIS
+        or reason is not None
+    ):
+        raise ValueError("Observed charge has unsupported source or amount")
 
 
 def project_focused_evidence(
@@ -394,6 +475,8 @@ def project_focused_evidence(
                 else "not_directly_included",
                 "money_semantics": "amount_unavailable",
             }
+            if review.line_kind == "procedure":
+                row.update(_observed_procedure_charge(ctx, review))
             target = financial_rows
         else:
             row = {

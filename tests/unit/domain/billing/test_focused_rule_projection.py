@@ -11,11 +11,13 @@ import pytest
 
 from src.bilun.domain.billing.focused_rule_projection import (
     FOCUSED_RULE_SPECS,
+    FocusedReviewEvidence,
     NON_EMITTING_FOCUSED_RULE_IDS,
     project_focused_legacy_rows,
 )
 from src.bilun.domain.billing.wavea_evidence import (
     COMPLETE_EVIDENCE_CAPABILITY,
+    _observed_procedure_charge,
     build_wavea_evidence_index,
     complete_evidence_available,
     project_focused_evidence,
@@ -471,7 +473,7 @@ def test_review_and_financial_evidence_stay_separate_and_unpriced() -> None:
             "radiation_oncology.course_cap.external_rt_design",
             line_kind="procedure",
             line_id="L2",
-            billed_amount_try=100.0,
+            billed_amount_try=999.0,
             risk_amount_try=100.0,
         ),
     ]
@@ -491,6 +493,9 @@ def test_review_and_financial_evidence_stay_separate_and_unpriced() -> None:
     assert financial["confirmed_amount_try"] is None
     assert financial["amount_status"] == "unavailable"
     assert financial["financial_kind"] == "risk"
+    assert financial["observed_billed_amount_try"] == 100.0
+    assert financial["observed_amount_basis"] == "procedure_claim_line.billed_amount_try"
+    assert financial["observed_amount_unavailable_reason"] is None
     assert "risk_amount_try" not in financial
     assert "billed_amount_try" not in financial
     assert evidence.detail["counts"]["financial_count"] == 1
@@ -506,6 +511,78 @@ def test_review_and_financial_evidence_stay_separate_and_unpriced() -> None:
     assert bill_evidence.financial_findings.rows[0]["source_evidence_id"] == financial[
         "source_evidence_id"
     ]
+
+
+@pytest.mark.parametrize(
+    ("charge", "reason"),
+    [
+        (Decimal("-1"), "procedure_line_charge_invalid"),
+        (Decimal("NaN"), "procedure_line_charge_invalid"),
+        (Decimal("1.001"), "procedure_line_charge_not_cent_exact"),
+    ],
+)
+def test_procedure_financial_observation_withholds_invalid_line_charge(charge, reason) -> None:
+    ctx = _context()
+    ctx = replace(
+        ctx,
+        procedure_lines=tuple(
+            replace(line, billed_amount_try=charge) if line.procedure_line_id == "L2" else line
+            for line in ctx.procedure_lines
+        ),
+    )
+    row = _row(
+        "radiation_oncology.course_cap.external_rt_design",
+        line_kind="procedure", line_id="L2", billed_amount_try=999.0,
+    )
+    evidence = project_focused_evidence(
+        "P1", ctx, project_focused_legacy_rows("P1", ctx, [row])
+    )
+    financial = evidence.detail["financial_rows"][0]
+    assert financial["observed_billed_amount_try"] is None
+    assert financial["observed_amount_basis"] is None
+    assert financial["observed_amount_unavailable_reason"] == reason
+    assert financial["confirmed_amount_try"] is None
+    build_wavea_evidence_index({"P1": evidence.detail})
+
+
+def test_claim_scoped_dental_financial_review_has_no_observed_line_charge() -> None:
+    ctx = _context()
+    row = _row("2-04.1.4_dental_ga_missing_uplift")
+    evidence = project_focused_evidence(
+        "P1", ctx, project_focused_legacy_rows("P1", ctx, [row])
+    )
+    financial = evidence.detail["financial_rows"][0]
+    assert financial["line_kind"] == "claim"
+    assert financial["financial_kind"] == "uplift"
+    assert financial["confirmed_amount_try"] is None
+    assert not any(key.startswith("observed_") for key in financial)
+
+
+def test_observed_charge_selects_one_owned_line_before_testing_ambiguity() -> None:
+    ctx = _context()
+    owned = next(line for line in ctx.procedure_lines if line.procedure_line_id == "L2")
+    foreign = replace(owned, patient_id="P2", billed_amount_try=Decimal("999.00"))
+    review = FocusedReviewEvidence(
+        patient_id="P1", claim_id="C1",
+        rule_id="radiation_oncology.course_cap.external_rt_design",
+        line_kind="procedure", line_id="L2", kind="financial_review",
+        reason="test", source_engine="detect_radiation_oncology_violations",
+        legacy_row={},
+    )
+    with_foreign_duplicate = replace(ctx, procedure_lines=ctx.procedure_lines + (foreign,))
+    assert _observed_procedure_charge(with_foreign_duplicate, review) == {
+        "observed_billed_amount_try": 100.0,
+        "observed_amount_basis": "procedure_claim_line.billed_amount_try",
+        "observed_amount_unavailable_reason": None,
+    }
+    only_foreign = replace(ctx, procedure_lines=(foreign,))
+    assert _observed_procedure_charge(only_foreign, review)[
+        "observed_amount_unavailable_reason"
+    ] == "procedure_line_owner_mismatch"
+    duplicate_owned = replace(ctx, procedure_lines=ctx.procedure_lines + (owned,))
+    assert _observed_procedure_charge(duplicate_owned, review)[
+        "observed_amount_unavailable_reason"
+    ] == "procedure_line_ambiguous"
 
 
 def test_evidence_counts_are_exhaustive_even_when_default_detail_is_bounded() -> None:
@@ -607,6 +684,11 @@ def test_evidence_index_reconciles_rows_and_rejects_corrupt_identity_or_money() 
         lambda item: item["financial_rows"][0].__setitem__("amount_status", "verified"),
         lambda item: item["financial_rows"][0].__setitem__("currency", "USD"),
         lambda item: item["financial_rows"][0].__setitem__("headline_relation", "included"),
+        lambda item: item["financial_rows"][0].__setitem__("observed_billed_amount_try", -1),
+        lambda item: item["financial_rows"][0].__setitem__("observed_billed_amount_try", 0.001),
+        lambda item: item["financial_rows"][0].__setitem__("observed_amount_basis", "legacy_row"),
+        lambda item: item["financial_rows"][0].__setitem__("observed_amount_unavailable_reason", "unknown"),
+        lambda item: item["reviews"][0].__setitem__("observed_billed_amount_try", 100.0),
         lambda item: item["financial_rows"][0].__setitem__("source_evidence_id", "wrong"),
         lambda item: item["counts"]["by_rule"][rows[0]["rule_id"]].__setitem__(
             "evaluated", 999
