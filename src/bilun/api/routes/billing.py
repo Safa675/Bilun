@@ -20,6 +20,7 @@ from src.bilun.shared.state import (
     get_pipeline_mode,
 )
 from src.bilun.db import (
+    read_json_payload as read_cache_json_payload,
     has_json_payload as cache_json_payload_exists,
     has_json_payload_rows as cache_json_payload_rows_exist,
     read_json_payload_entry as read_cache_json_payload_entry,
@@ -29,10 +30,14 @@ from src.bilun.domain.billing import BillingActionReport
 from src.bilun.domain.billing.drug_indication_findings import (
     normalize_drug_indication_payload,
 )
+from src.bilun.domain.billing.wavea_evidence import (
+    original_five_report_payload,
+)
 from src.bilun.domain.materials import get_all_specialty_materials
 from src.bilun.domain.utils import turkish_lower
 
 from .provenance import attach_bilun_data_source, read_active_bilun_data_source
+from .wavea_gate import complete_build_evidence_available
 
 router = APIRouter()
 PIPELINE_MODE: str | None = None
@@ -52,7 +57,10 @@ def _get_active_bilun_build_id(reader) -> str | None:
 def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> dict[str, Any]:
     """Serialize a BillingActionReport to a JSON-safe dict."""
     if dataclasses.is_dataclass(report):
-        payload = dataclasses.asdict(report)
+        payload = dataclasses.asdict(
+            dataclasses.replace(report, wavea_evidence_detail=None)
+        )
+        payload.pop("wavea_evidence_detail", None)
         strategy = payload.get("billing_strategy")
         if isinstance(strategy, dict):
             strategy["uplift_savings_try"] = report.billing_strategy.uplift_savings_try
@@ -118,6 +126,7 @@ def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> d
         return payload
     if isinstance(report, dict):
         payload = dict(report)
+        payload.pop("wavea_evidence_detail", None)
         drug_indication = payload.get("drug_indication")
         if isinstance(drug_indication, dict):
             normalized_drug_indication = normalize_drug_indication_payload(
@@ -129,6 +138,28 @@ def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> d
             )
         return payload
     raise TypeError(f"Unsupported billing report payload type: {type(report)!r}")
+
+
+def _gate_wavea_evidence(
+    payload: dict[str, Any], reader: Any, build_id: str
+) -> dict[str, Any]:
+    """Keep draft or old-cache evidence hidden on existing billing endpoints."""
+    try:
+        index = read_cache_json_payload(reader, "wavea_evidence_index", build_id)
+    except Exception:
+        index = None
+    if not complete_build_evidence_available(reader, index, build_id):
+        payload = original_five_report_payload(payload)
+        payload["claim_reviews"] = {
+            "available": False,
+            "unavailable_reason": "wavea_capability_unavailable",
+            "total_rows": None,
+            "rows": [],
+            "has_more": False,
+        }
+        payload["financial_findings"] = dict(payload["claim_reviews"])
+        payload["wavea_coverage"] = None
+    return payload
 
 
 @router.get("/billing-report/{patient_id}", response_model=BillingReportResponse)
@@ -154,7 +185,9 @@ def get_patient_billing_report(patient_id: str):
             )
             if report is not None:
                 return attach_bilun_data_source(
-                    _serialize_billing_report(report),
+                    _gate_wavea_evidence(
+                        _serialize_billing_report(report), reader, active_build
+                    ),
                     read_active_bilun_data_source(reader, active_build),
                 )
             if (
@@ -175,7 +208,9 @@ def get_patient_billing_report(patient_id: str):
             )
             if report is not None:
                 return attach_bilun_data_source(
-                    _serialize_billing_report(report),
+                    _gate_wavea_evidence(
+                        _serialize_billing_report(report), reader, active_build
+                    ),
                     read_active_bilun_data_source(reader, active_build),
                 )
             if (
@@ -226,7 +261,7 @@ def get_bill_billing_report(patient_id: str, claim_id: str):
                 payload["claim_id"] = claim_id
                 payload["scope"] = "bill"
                 return attach_bilun_data_source(
-                    payload,
+                    _gate_wavea_evidence(payload, reader, active_build),
                     read_active_bilun_data_source(reader, active_build),
                 )
             if mode == "persistent" and cache_json_payload_rows_exist(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import os
 import logging
@@ -35,6 +36,10 @@ from src.bilun.db import (
     write_dataframe,
 )
 from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
+from src.bilun.domain.billing.wavea_evidence import (
+    build_wavea_evidence_index,
+    unavailable_evidence_detail,
+)
 from src.bilun.domain.claims.provenance import attach_bilun_data_source_metadata
 from src.bilun.domain.claims import SUTDataSourceConfig, resolve_sut_data_source
 from src.bilun.shared.memory import memory_snapshot_message, read_current_rss_mb
@@ -157,6 +162,19 @@ def _print_sut_data_source(config: SUTDataSourceConfig) -> None:
     print(f"  synthetic  : {metadata['is_synthetic']}")
 
 
+def _without_wavea_detail(report: object) -> object:
+    """Avoid serializing the exhaustive drill-down into default report rows."""
+    if dataclasses.is_dataclass(report):
+        return {
+            field.name: getattr(report, field.name)
+            for field in dataclasses.fields(report)
+            if field.name != "wavea_evidence_detail"
+        }
+    if isinstance(report, dict):
+        return {key: value for key, value in report.items() if key != "wavea_evidence_detail"}
+    return report
+
+
 def run_build(args: argparse.Namespace) -> str:
     db_path = Path(args.db_path)
     con = connect(db_path)
@@ -246,7 +264,28 @@ def run_build(args: argparse.Namespace) -> str:
                 sut_data_source_metadata,
             ),
         )
-        billing_reports = json_ready(ctx.get("billing_reports", {}))
+        raw_billing_reports = ctx.get("billing_reports", {})
+        wavea_details = {
+            patient_id: json_ready(
+                (
+                    report.get("wavea_evidence_detail")
+                    if isinstance(report, dict)
+                    else getattr(report, "wavea_evidence_detail", None)
+                )
+                or unavailable_evidence_detail(patient_id)
+            )
+            for patient_id, report in raw_billing_reports.items()
+        }
+        for detail in wavea_details.values():
+            detail["build_id"] = build.build_id
+        billing_reports = json_ready(
+            {
+                patient_id: _without_wavea_detail(report)
+                for patient_id, report in raw_billing_reports.items()
+            }
+        )
+        for report in billing_reports.values():
+            report.pop("wavea_evidence_detail", None)
         write_json_payload_rows(
             con,
             "patient_billing_report_rows",
@@ -259,7 +298,14 @@ def run_build(args: argparse.Namespace) -> str:
                 for patient_id, report in billing_reports.items()
             },
         )
-        bill_billing_reports = json_ready(ctx.get("bill_billing_reports", {}))
+        bill_billing_reports = json_ready(
+            {
+                bill_key: _without_wavea_detail(report)
+                for bill_key, report in ctx.get("bill_billing_reports", {}).items()
+            }
+        )
+        for report in bill_billing_reports.values():
+            report.pop("wavea_evidence_detail", None)
         write_json_payload_rows(
             con,
             "patient_bill_billing_report_rows",
@@ -287,6 +333,28 @@ def run_build(args: argparse.Namespace) -> str:
             build.build_id,
             attach_bilun_data_source_metadata(
                 build_cohort_compliance_index(billing_reports),
+                sut_data_source_metadata,
+            ),
+        )
+        write_json_payload_rows(
+            con,
+            "wavea_evidence_detail",
+            build.build_id,
+            {
+                patient_id: attach_bilun_data_source_metadata(
+                    detail, sut_data_source_metadata
+                )
+                for patient_id, detail in wavea_details.items()
+            },
+        )
+        wavea_index = build_wavea_evidence_index(wavea_details)
+        wavea_index["build_id"] = build.build_id
+        upsert_single_json_table(
+            con,
+            "wavea_evidence_index",
+            build.build_id,
+            attach_bilun_data_source_metadata(
+                wavea_index,
                 sut_data_source_metadata,
             ),
         )
@@ -354,6 +422,8 @@ def run_build(args: argparse.Namespace) -> str:
             ),
             "cohort_recovery_summary": 1,
             "cohort_compliance_index": 1,
+            "wavea_evidence_detail": len(wavea_details),
+            "wavea_evidence_index": 1,
             "patient_detail_cache": int(detail_rows),
             "patient_outcome_base": int(outcome_rows),
         }

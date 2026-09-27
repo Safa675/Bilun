@@ -32,6 +32,7 @@ from src.bilun.domain.billing.rule_findings import (
     RuleEvaluationBatch,
     evaluate_rule_findings,
 )
+from src.bilun.domain.billing.wavea_evidence import project_focused_evidence
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_drg_package_adequacy import (
     recommend_drg_package_adequacy_from_claims,
@@ -106,6 +107,11 @@ def compute_patient_billing_report(
             legacy_violations=(*compliance_batch.legacy_violations, *focused_batch.legacy_rows),
         ),
     )
+    evidence = project_focused_evidence(pid, claim_context, focused_batch)
+    report.claim_reviews = evidence.claim_reviews
+    report.financial_findings = evidence.financial_findings
+    report.wavea_coverage = evidence.coverage
+    report.wavea_evidence_detail = evidence.detail
 
     if claim_context is None:
         if SUT_REQUIRE_CLAIM_LINES:

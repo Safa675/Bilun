@@ -298,8 +298,15 @@ def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> N
         baseline = patient_report.compute_patient_billing_report("P1", claim_context=ctx)
     actual_dict = asdict(report)
     baseline_dict = asdict(baseline)
-    actual_dict.pop("claim_compliance")
-    baseline_dict.pop("claim_compliance")
+    for field in (
+        "claim_compliance",
+        "claim_reviews",
+        "financial_findings",
+        "wavea_coverage",
+        "wavea_evidence_detail",
+    ):
+        actual_dict.pop(field)
+        baseline_dict.pop(field)
     assert actual_dict == baseline_dict
 
 

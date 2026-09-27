@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import replace
 from datetime import date, timedelta
 from decimal import Decimal
@@ -12,6 +13,13 @@ from src.bilun.domain.billing.focused_rule_projection import (
     FOCUSED_RULE_SPECS,
     NON_EMITTING_FOCUSED_RULE_IDS,
     project_focused_legacy_rows,
+)
+from src.bilun.domain.billing.wavea_evidence import (
+    COMPLETE_EVIDENCE_CAPABILITY,
+    build_wavea_evidence_index,
+    complete_evidence_available,
+    project_focused_evidence,
+    unavailable_evidence_detail,
 )
 from src.bilun.domain.claims.models import (
     ClaimHeader,
@@ -453,6 +461,216 @@ def test_missing_detector_row_generates_one_claim_scope_status_only_for_that_cla
 def test_source_lines_without_claim_headers_are_rejected_before_projection() -> None:
     with pytest.raises(ValueError, match="orphan source line"):
         project_focused_legacy_rows("P1", replace(_context(), claims=()), [])
+
+
+def test_review_and_financial_evidence_stay_separate_and_unpriced() -> None:
+    ctx = _context()
+    rows = [
+        _row("tablo15_24_donor_prep_as_exam", line_kind="procedure", line_id="L1", severity="warning"),
+        _row(
+            "radiation_oncology.course_cap.external_rt_design",
+            line_kind="procedure",
+            line_id="L2",
+            billed_amount_try=100.0,
+            risk_amount_try=100.0,
+        ),
+    ]
+    projected = project_focused_legacy_rows("P1", ctx, rows)
+    evidence = project_focused_evidence("P1", ctx, projected)
+    assert (evidence.claim_reviews.total_rows, evidence.financial_findings.total_rows) == (1, 1)
+    review = evidence.claim_reviews.rows[0]
+    financial = evidence.financial_findings.rows[0]
+    assert review["evidence_id"].startswith("wavea_review:claim_evaluation:")
+    assert financial["evidence_id"].startswith("wavea_financial:claim_evaluation:")
+    assert review["source_evidence_id"] == next(
+        row.evaluation_id for row in projected.evaluations if row.rule_id == review["rule_id"]
+    )
+    assert financial["source_evidence_id"] == next(
+        row.evaluation_id for row in projected.evaluations if row.rule_id == financial["rule_id"]
+    )
+    assert financial["confirmed_amount_try"] is None
+    assert financial["amount_status"] == "unavailable"
+    assert financial["financial_kind"] == "risk"
+    assert "risk_amount_try" not in financial
+    assert "billed_amount_try" not in financial
+    assert evidence.detail["counts"]["financial_count"] == 1
+    assert evidence.coverage["evaluation_count"] == len(projected.evaluations)
+
+    bill_ctx = ctx.slice_for_claim("C1")
+    assert bill_ctx is not None
+    bill_projected = project_focused_legacy_rows("P1", bill_ctx, rows)
+    bill_evidence = project_focused_evidence("P1", bill_ctx, bill_projected)
+    assert bill_evidence.claim_reviews.rows[0]["source_evidence_id"] == review[
+        "source_evidence_id"
+    ]
+    assert bill_evidence.financial_findings.rows[0]["source_evidence_id"] == financial[
+        "source_evidence_id"
+    ]
+
+
+def test_evidence_counts_are_exhaustive_even_when_default_detail_is_bounded() -> None:
+    ctx = _context()
+    rows = [
+        _row("tablo15_24_donor_prep_as_exam", line_kind="procedure", line_id="L1", severity="warning"),
+        _row("tablo15_24_donor_prep_as_exam", line_kind="procedure", line_id="L2", severity="warning"),
+    ]
+    evidence = project_focused_evidence(
+        "P1", ctx, project_focused_legacy_rows("P1", ctx, rows), detail_limit=1
+    )
+    assert evidence.claim_reviews.total_rows == 2
+    assert len(evidence.claim_reviews.rows) == 1
+    assert evidence.claim_reviews.has_more
+    assert len(evidence.detail["reviews"]) == 2
+    assert evidence.detail["counts"]["review_count"] == 2
+    assert sum(
+        sum(counts.values()) for counts in evidence.detail["counts"]["by_group"].values()
+    ) == evidence.detail["counts"]["evaluation_count"]
+    assert set(evidence.detail["counts"]["by_rule"]) == {
+        spec.rule_id for spec in FOCUSED_RULE_SPECS
+    }
+
+
+def test_no_context_has_explicit_unavailable_blocks_and_missing_statuses() -> None:
+    no_headers = replace(
+        _context(), claims=(), procedure_lines=(), material_lines=(), drug_lines=(), diagnoses=()
+    )
+    for ctx, reason in ((None, "claim_context_unavailable"), (no_headers, "claim_headers_unavailable")):
+        evidence = project_focused_evidence(
+            "P1", ctx, project_focused_legacy_rows("P1", ctx, [])
+        )
+        assert not evidence.claim_reviews.available
+        assert not evidence.financial_findings.available
+        assert evidence.claim_reviews.total_rows is None
+        assert evidence.financial_findings.total_rows is None
+        assert evidence.claim_reviews.unavailable_reason == reason
+        assert evidence.coverage["evaluation_count"] == len(FOCUSED_RULE_SPECS)
+        assert all(
+            row["evaluation_status"] == "missing_inputs"
+            for row in evidence.detail["evaluations"]
+        )
+        index = build_wavea_evidence_index({"P1": evidence.detail})
+        assert index["n_patients_unavailable"] == 1
+        assert index["patients"]["P1"]["available"] is False
+        assert index["patients"]["P1"]["counts"]["evaluation_count"] == len(FOCUSED_RULE_SPECS)
+        assert sum(
+            statuses["missing_inputs"] for statuses in index["counts"]["by_rule"].values()
+        ) == len(FOCUSED_RULE_SPECS)
+        index.update(build_id="B1", capability=COMPLETE_EVIDENCE_CAPABILITY)
+        assert complete_evidence_available(index, "B1")
+
+
+def test_evidence_index_reconciles_rows_and_rejects_corrupt_identity_or_money() -> None:
+    ctx = _context()
+    rows = [
+        _row("tablo15_24_donor_prep_as_exam", line_kind="procedure", line_id="L1", severity="warning"),
+        _row(
+            "radiation_oncology.course_cap.external_rt_design",
+            line_kind="procedure",
+            line_id="L2",
+            risk_amount_try=100.0,
+        ),
+    ]
+    detail = project_focused_evidence(
+        "P1", ctx, project_focused_legacy_rows("P1", ctx, rows)
+    ).detail
+    index = build_wavea_evidence_index({"P1": detail})
+    assert index["patients"]["P1"]["counts"]["evaluation_count"] == len(
+        detail["evaluations"]
+    )
+    assert index["counts"]["review_count"] == 1
+    assert index["counts"]["financial_count"] == 1
+    assert index["counts"]["by_rule"] == detail["counts"]["by_rule"]
+
+    mutations = (
+        lambda item: item.__setitem__("patient_id", "P2"),
+        lambda item: item.__setitem__("available", "yes"),
+        lambda item: item["counts"].__setitem__("evaluation_count", 999),
+        lambda item: item["counts"].__setitem__("review_count", True),
+        lambda item: item["counts"]["by_rule"][rows[0]["rule_id"]].__setitem__("evaluated", True),
+        lambda item: item["evaluations"][0].__setitem__("evaluation_id", "claim_evaluation:forged"),
+        lambda item: item["reviews"].append(deepcopy(item["reviews"][0])),
+        lambda item: item["reviews"][0].__setitem__("patient_id", "P2"),
+        lambda item: item["reviews"][0].__setitem__("claim_id", "C2"),
+        lambda item: item["reviews"][0].__setitem__("line_id", "L2"),
+        lambda item: item["reviews"][0].__setitem__("source_engine", "wrong_group"),
+        lambda item: item["reviews"][0].__setitem__("source_status", "invented_source"),
+        lambda item: item["reviews"][0].__setitem__("risk_amount_try", 0),
+        lambda item: item["reviews"][0].update(
+            {
+                "source_evidence_id": item["financial_rows"][0]["source_evidence_id"],
+                "evidence_id": "wavea_review:"
+                + item["financial_rows"][0]["source_evidence_id"],
+            }
+        ),
+        lambda item: item["financial_rows"][0].__setitem__("confirmed_amount_try", 100.0),
+        lambda item: item["financial_rows"][0].__setitem__("financial_kind", "uplift"),
+        lambda item: item["financial_rows"][0].__setitem__("amount_status", "verified"),
+        lambda item: item["financial_rows"][0].__setitem__("currency", "USD"),
+        lambda item: item["financial_rows"][0].__setitem__("headline_relation", "included"),
+        lambda item: item["financial_rows"][0].__setitem__("source_evidence_id", "wrong"),
+        lambda item: item["counts"]["by_rule"][rows[0]["rule_id"]].__setitem__(
+            "evaluated", 999
+        ),
+    )
+    for mutate in mutations:
+        corrupt = deepcopy(detail)
+        mutate(corrupt)
+        with pytest.raises(ValueError):
+            build_wavea_evidence_index({"P1": corrupt})
+
+    incomplete = build_wavea_evidence_index({"P1": unavailable_evidence_detail("P1")})
+    assert incomplete["n_patients_unavailable"] == 1
+    assert incomplete["patients"]["P1"]["counts"] is None
+
+
+def test_completed_evidence_index_rejects_forged_aggregate_and_patient_counts() -> None:
+    ctx = _context()
+    detail = project_focused_evidence(
+        "P1",
+        ctx,
+        project_focused_legacy_rows(
+            "P1",
+            ctx,
+            [
+                _row("tablo15_24_donor_prep_as_exam", line_kind="procedure", line_id="L1"),
+                _row(
+                    "radiation_oncology.course_cap.external_rt_design",
+                    line_kind="procedure", line_id="L2", risk_amount_try=100.0,
+                ),
+            ],
+        ),
+    ).detail
+    index = build_wavea_evidence_index({"P1": detail})
+    index.update(build_id="B1", capability=COMPLETE_EVIDENCE_CAPABILITY)
+    assert complete_evidence_available(index, "B1")
+    assert len(index["evidence_rows"]) == 2
+    assert [row["evidence_id"] for row in index["evidence_rows"]] == sorted(
+        row["evidence_id"] for row in index["evidence_rows"]
+    )
+
+    rule_id = "tablo15_24_donor_prep_as_exam"
+    group = next(spec.group for spec in FOCUSED_RULE_SPECS if spec.rule_id == rule_id)
+    mutations = (
+        lambda item: item["counts"]["by_rule"][rule_id].__setitem__("evaluated", 99),
+        lambda item: item["counts"]["by_group"][group].__setitem__("evaluated", 99),
+        lambda item: item["counts"].__setitem__("review_count", 99),
+        lambda item: item["counts"].__setitem__("financial_count", 99),
+        lambda item: item["patients"]["P1"]["counts"]["by_rule"][rule_id].__setitem__("evaluated", 99),
+        lambda item: item["evidence_rows"].pop(),
+        lambda item: item["evidence_rows"].append(deepcopy(item["evidence_rows"][0])),
+        lambda item: item["evidence_rows"].reverse(),
+        lambda item: item["evidence_rows"][0].__setitem__("source_evidence_id", "forged"),
+        lambda item: item["evidence_rows"][0].__setitem__("confirmed_amount_try", 100.0),
+        lambda item: item["evidence_rows"][0].__setitem__("financial_kind", "uplift"),
+        lambda item: item["patients"].clear(),
+    )
+    for mutate in mutations:
+        corrupt = deepcopy(index)
+        mutate(corrupt)
+        if not corrupt["patients"]:
+            corrupt["n_patients"] = 0
+            corrupt["n_patients_unavailable"] = 0
+        assert not complete_evidence_available(corrupt, "B1")
 
 
 @pytest.mark.parametrize(

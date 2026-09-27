@@ -9,10 +9,15 @@ from pydantic import BaseModel
 
 from src.bilun.api.schemas import BilunCachePayloadResponse
 from src.bilun.db import read_json_payload as read_cache_json_payload
+from src.bilun.db import read_json_payload_rows as read_cache_json_payload_rows
 from src.bilun.domain.billing.cohort_compliance import (
     INDEX_SURFACES,
+    build_cohort_compliance_index,
     empty_cohort_compliance_index,
     slice_compliance_index,
+)
+from src.bilun.domain.billing.wavea_evidence import (
+    original_five_report_payload,
 )
 from src.bilun.shared.exceptions import ServiceUnavailableError, ValidationError
 from src.bilun.shared.state import (
@@ -22,6 +27,7 @@ from src.bilun.shared.state import (
 )
 
 from .provenance import attach_bilun_data_source, read_active_bilun_data_source
+from .wavea_gate import complete_build_evidence_available, declared_patient_report_count
 
 router = APIRouter(tags=["compliance"])
 
@@ -117,6 +123,51 @@ def _compliance_index_response(
             "offset": offset,
         }
         return attach_bilun_data_source(unavailable, data_source)
+
+    try:
+        wavea_index = read_cache_json_payload(
+            reader, "wavea_evidence_index", active_build
+        )
+    except Exception:
+        wavea_index = None
+    if not complete_build_evidence_available(reader, wavea_index, active_build):
+        # Cached aggregate counts have no rule IDs. Rebuild from the stored
+        # patient rows so a draft or unmarked old cache cannot leak Wave A
+        # statuses through a count even when its finding rows are empty.
+        try:
+            expected = declared_patient_report_count(reader, active_build)
+            reports = read_cache_json_payload_rows(
+                reader, "patient_billing_report_rows", active_build
+            )
+            if (
+                len(reports) != expected
+                or payload.get("n_patients") != expected
+                or any(
+                    report.get("patient_id") != patient_id
+                    or not isinstance(report.get("claim_compliance"), dict)
+                    or not all(
+                        isinstance(report["claim_compliance"].get(field), list)
+                        for field in ("findings", "evaluations")
+                    )
+                    for patient_id, report in reports
+                )
+            ):
+                raise ValueError("Draft build patient reports disagree with build metadata")
+            payload = build_cohort_compliance_index(
+                {
+                    patient_id: original_five_report_payload(report)
+                    for patient_id, report in reports
+                }
+            )
+        except Exception:
+            unavailable = empty_cohort_compliance_index(artifacts_available=False)
+            unavailable["pagination"] = {
+                "total_matching": 0,
+                "limit": limit,
+                "offset": offset,
+                "has_more": False,
+            }
+            return attach_bilun_data_source(unavailable, data_source)
 
     sliced = slice_compliance_index(
         payload,

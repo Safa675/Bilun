@@ -461,6 +461,14 @@ class PatientOptimizationResponse(BaseModel):
 # ── billing.py ──────────────────────────────────────────────────────────────
 
 
+class WaveAEvidenceBlockResponse(BaseModel):
+    available: bool = False
+    unavailable_reason: str | None = "wavea_capability_unavailable"
+    total_rows: int | None = None
+    rows: list[dict[str, Any]] = Field(default_factory=list)
+    has_more: bool = False
+
+
 class BillingReportResponse(BaseModel):
     """Per-patient billing action report — variable shape per algorithm
     family, stays permissive."""
@@ -521,6 +529,13 @@ class BillingReportResponse(BaseModel):
     exactness_status: ExactnessStatus = "missing_exact_inputs"
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = Field(default_factory=list)
+    claim_reviews: WaveAEvidenceBlockResponse = Field(
+        default_factory=WaveAEvidenceBlockResponse
+    )
+    financial_findings: WaveAEvidenceBlockResponse = Field(
+        default_factory=WaveAEvidenceBlockResponse
+    )
+    wavea_coverage: dict[str, Any] | None = None
     data_source: BILUNDataSourceMetadata = Field(
         default_factory=default_bilun_data_source_metadata
     )

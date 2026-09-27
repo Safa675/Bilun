@@ -15,6 +15,7 @@ from .drug_indication_findings import (
     DrugIndicationFinding,
     DrugIndicationLineEvaluation,
 )
+from .wavea_evidence import WaveAEvidenceBlock
 
 EXACTNESS_STATUS_EXACT = "exact"
 EXACTNESS_STATUS_PARTIAL = "partial_exact"
@@ -782,6 +783,12 @@ class BillingActionReport:
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
     claim_compliance: ClaimCompliance = field(default_factory=ClaimCompliance)
+    claim_reviews: WaveAEvidenceBlock = field(default_factory=WaveAEvidenceBlock)
+    financial_findings: WaveAEvidenceBlock = field(default_factory=WaveAEvidenceBlock)
+    wavea_coverage: dict[str, Any] | None = None
+    # Kept only until cache build writes the separate patient detail table.
+    # Default report/API serialization must remove this exhaustive payload.
+    wavea_evidence_detail: dict[str, Any] | None = field(default=None, repr=False)
 
 
 @dataclass
