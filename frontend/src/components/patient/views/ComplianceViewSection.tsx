@@ -163,6 +163,14 @@ export default function ComplianceViewSection({
         selectedFindingId={selectedFindingId}
       />
 
+      <PatientWaveAEvidenceSection
+        patientId={effectivePatientId}
+        kind="advisories"
+        block={billingReport.claim_advisories}
+        onOpenClause={onOpenClause}
+        selectedFindingId={selectedFindingId}
+      />
+
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} />
       <OptionalOverrideSection strategyData={billingReport.billing_strategy} />

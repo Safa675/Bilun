@@ -30,6 +30,7 @@ export const SECTION_VIEW_MAP: Record<string, WorkspaceViewId> = {
   "drug-indication": "compliance",
   "claim-compliance": "compliance",
   "wavea-reviews": "compliance",
+  "wavea-advisories": "compliance",
   "billing-copay": "revenue",
   "wavea-financial": "revenue",
   "billing-session-uplift": "revenue",

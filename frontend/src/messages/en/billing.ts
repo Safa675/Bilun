@@ -423,6 +423,8 @@ const billing = {
   },
   "wavea": {
     "reviewTitle": "Review-only rule observations",
+    "advisoryTitle": "Informational and permission outcomes",
+    "advisoryNotice": "These observations need review where applicable and are excluded from violation and financial totals.",
     "financialTitle": "Separate financial evidence",
     "coverageTitle": "Wave A evaluation coverage",
     "coverageSummary": "{groups} groups · {evaluated} evaluated · {missing} missing inputs · {unavailable} unavailable",
@@ -438,6 +440,8 @@ const billing = {
     "patient": "Patient",
     "amount": "Separate amount",
     "review": "Review only",
+    "information": "Information · review only",
+    "permission": "Permission · check conditions",
     "risk": "Risk exposure",
     "uplift": "Recoverable uplift candidate",
     "sourceLocator": "Source locator; applicability unverified",

@@ -6,7 +6,7 @@ const MAX_GET_QUERY_LENGTH = 6000;
 function cohortQuery(
   params: {
     patientIds?: readonly string[];
-    kind?: "reviews" | "financial_rows";
+    kind?: "reviews" | "advisories" | "financial_rows";
     ruleId?: string;
     claimId?: string;
     limit?: number;
@@ -26,7 +26,7 @@ function cohortQuery(
 export function getCohortWaveAEvidence(
   params: {
     patientIds?: readonly string[];
-    kind: "reviews" | "financial_rows";
+    kind: "reviews" | "advisories" | "financial_rows";
     ruleId?: string;
     claimId?: string;
     limit?: number;
@@ -66,7 +66,7 @@ export function getCohortWaveAIndex(
 export function getPatientWaveAEvidence(
   patientId: string,
   params: {
-    kind: "reviews" | "financial_rows";
+    kind: "reviews" | "advisories" | "financial_rows";
     offset: number;
     limit?: number;
     evidenceId?: string;

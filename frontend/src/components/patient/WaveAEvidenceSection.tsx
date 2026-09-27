@@ -11,7 +11,35 @@ import type { WaveACoverage, WaveAEvidenceBlock, WaveAEvidenceRow } from "@/lib/
 import { useT } from "@/lib/i18n/useTranslations";
 import { findFindingRowElement } from "@/lib/patientRoute";
 
-export type WaveAEvidenceKind = "reviews" | "financial_rows";
+export type WaveAEvidenceKind = "reviews" | "advisories" | "financial_rows";
+
+function evidencePrefix(kind: WaveAEvidenceKind): string {
+  return kind === "financial_rows" ? "wavea_financial:"
+    : kind === "advisories" ? "wavea_advisory:"
+    : "wavea_review:";
+}
+
+function sectionId(kind: WaveAEvidenceKind): string {
+  return kind === "financial_rows" ? "wavea-financial"
+    : kind === "advisories" ? "wavea-advisories"
+    : "wavea-reviews";
+}
+
+function titleKey(kind: WaveAEvidenceKind): string {
+  return kind === "financial_rows" ? "billing.wavea.financialTitle"
+    : kind === "advisories" ? "billing.wavea.advisoryTitle"
+    : "billing.wavea.reviewTitle";
+}
+
+function validRowForKind(row: WaveAEvidenceRow, patientId: string, kind: WaveAEvidenceKind): boolean {
+  if (row.patient_id !== patientId || row.evidence_id !== evidencePrefix(kind) + row.source_evidence_id) {
+    return false;
+  }
+  if (kind !== "advisories") return true;
+  return (row.advisory_kind === "permission" || row.advisory_kind === "information") &&
+    row.money_semantics === "unpriced_advisory" &&
+    row.financial_kind == null && row.confirmed_amount_try == null;
+}
 
 function validPatientBlock(block: WaveAEvidenceBlock | undefined, patientId: string, kind: WaveAEvidenceKind): boolean {
   if (
@@ -22,9 +50,8 @@ function validPatientBlock(block: WaveAEvidenceBlock | undefined, patientId: str
     block.rows.length > block.total_rows! ||
     block.has_more !== (block.rows.length < block.total_rows!)
   ) return false;
-  const prefix = kind === "financial_rows" ? "wavea_financial:" : "wavea_review:";
   return new Set(block.rows.map((row) => row.evidence_id)).size === block.rows.length &&
-    block.rows.every((row) => row.patient_id === patientId && row.evidence_id.startsWith(prefix));
+    block.rows.every((row) => validRowForKind(row, patientId, kind));
 }
 
 export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | null }) {
@@ -81,6 +108,17 @@ function clauseKey(row: WaveAEvidenceRow): string | null {
   return key || null;
 }
 
+function sourceReferences(row: WaveAEvidenceRow): string[] {
+  const references = row.regulatory_source?.source_locators;
+  if (!Array.isArray(references)) return [];
+  const locators = references.filter((reference): reference is string =>
+    typeof reference === "string" && reference.trim().length > 0,
+  ).map((reference) => reference.trim());
+  const fatura = row.regulatory_source?.fatura_inceleme_ref?.trim();
+  if (fatura && !locators.includes(fatura)) locators.push(fatura);
+  return locators;
+}
+
 export function WaveAEvidenceRowsTable({
   rows,
   kind,
@@ -94,7 +132,7 @@ export function WaveAEvidenceRowsTable({
 }) {
   const t = useT();
   const financial = kind === "financial_rows";
-  const section = financial ? "wavea-financial" : "wavea-reviews";
+  const section = sectionId(kind);
 
   return (
     <DataTable minWidth={880}>
@@ -111,6 +149,7 @@ export function WaveAEvidenceRowsTable({
       <tbody>
         {rows.map((row) => {
           const source = clauseKey(row);
+          const authoredReferences = sourceReferences(row);
           const href = buildSutBillingHref(row.patient_id, {
             claimId: row.claim_id ?? undefined,
             section,
@@ -124,9 +163,11 @@ export function WaveAEvidenceRowsTable({
               className={selectedFindingId === row.evidence_id ? "bg-[var(--gold-subtle)]" : undefined}
             >
               <td>
-                <Chip variant="warning">
+                <Chip variant={kind === "advisories" ? "neutral" : "warning"}>
                   {financial
                     ? t(row.financial_kind === "uplift" ? "billing.wavea.uplift" : "billing.wavea.risk")
+                    : kind === "advisories"
+                      ? t(row.advisory_kind === "information" ? "billing.wavea.information" : "billing.wavea.permission")
                     : t("billing.wavea.review")}
                 </Chip>
               </td>
@@ -145,11 +186,24 @@ export function WaveAEvidenceRowsTable({
                   </button>
                 ) : source ? (
                   <span className="font-mono">{source}</span>
+                ) : authoredReferences.length > 0 ? (
+                  <span className="font-mono">
+                    {authoredReferences.map((reference, index) => (
+                      <span key={`${reference}:${index}`}>
+                        {index > 0 ? " · " : null}
+                        {onOpenClause && reference.includes("#") ? (
+                          <button type="button" className="underline" onClick={() => onOpenClause(reference)}>
+                            {reference}
+                          </button>
+                        ) : reference}
+                      </span>
+                    ))}
+                  </span>
                 ) : (
                   <span className="text-[var(--text-muted)]">{t("billing.wavea.sourceUnverified")}</span>
                 )}
                 <div className="mt-1 text-[var(--text-muted)]">
-                  {row.source_status === "structured_locator"
+                  {row.source_status === "structured_locator" || authoredReferences.length > 0
                     ? t("billing.wavea.sourceLocator")
                     : t("billing.wavea.sourceUnverified")}
                 </div>
@@ -214,7 +268,7 @@ export function PatientWaveAEvidenceSection({
   }, [patientId, kind, block?.available, block?.total_rows, block?.rows]);
 
   useEffect(() => {
-    const prefix = kind === "financial_rows" ? "wavea_financial:" : "wavea_review:";
+    const prefix = evidencePrefix(kind);
     if (
       unavailable || !selectedFindingId?.startsWith(prefix) ||
       rows.some((row) => row.evidence_id === selectedFindingId)
@@ -233,7 +287,7 @@ export function PatientWaveAEvidenceSection({
       if (
         page.available !== true || page.patient_id !== patientId || page.kind !== kind ||
         page.pagination?.total_matching !== 1 || !Array.isArray(page.rows) || page.rows.length !== 1 ||
-        exact?.evidence_id !== selectedFindingId || exact.patient_id !== patientId
+        exact?.evidence_id !== selectedFindingId || !validRowForKind(exact, patientId, kind)
       ) {
         setUnavailable(true);
         setRows([]);
@@ -288,7 +342,7 @@ export function PatientWaveAEvidenceSection({
         next.pagination.total_matching !== total ||
         !Array.isArray(incoming) ||
         incoming.length === 0 ||
-        incoming.some((row) => row.patient_id !== patientId)
+        incoming.some((row) => !validRowForKind(row, patientId, kind))
       ) {
         setUnavailable(true);
         setRows([]);
@@ -317,10 +371,13 @@ export function PatientWaveAEvidenceSection({
   };
 
   return (
-    <section id={kind === "financial_rows" ? "wavea-financial" : "wavea-reviews"} className="space-y-2 scroll-mt-24">
+    <section id={sectionId(kind)} className="space-y-2 scroll-mt-24">
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-        {t(kind === "financial_rows" ? "billing.wavea.financialTitle" : "billing.wavea.reviewTitle")}
+        {t(titleKey(kind))}
       </h3>
+      {kind === "advisories" && (
+        <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.advisoryNotice")}</p>
+      )}
       {unavailable ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.unavailable")}</p>
       ) : displayRows.length === 0 ? (

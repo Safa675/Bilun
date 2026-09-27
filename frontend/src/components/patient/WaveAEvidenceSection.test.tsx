@@ -74,6 +74,91 @@ describe("Wave A patient evidence", () => {
     expect(html).toContain(`data-finding-id="${row.evidence_id}" data-selected="true"`);
   });
 
+  it("shows information as review-only advisory outside violation and financial totals", () => {
+    const advisory = {
+      ...row,
+      evidence_id: "wavea_advisory:claim_evaluation:source-1",
+      advisory_kind: "information" as const,
+      money_semantics: "unpriced_advisory",
+      financial_kind: undefined,
+      confirmed_amount_try: undefined,
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="advisories"
+          block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [advisory], has_more: false }}
+          selectedFindingId={advisory.evidence_id}
+        />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toContain("Informational and permission outcomes");
+    expect(html).toContain("Information · review only");
+    expect(html).toContain("excluded from violation and financial totals");
+    expect(html).toContain('id="wavea-advisories"');
+    expect(html).toContain('data-selected="true"');
+    expect(html).not.toContain("Amount unverified");
+  });
+
+  it("shows broad authored locators as traceable references without implying verified applicability", () => {
+    const advisory = {
+      ...row,
+      evidence_id: "wavea_advisory:claim_evaluation:source-1",
+      advisory_kind: "information" as const,
+      money_semantics: "unpriced_advisory",
+      financial_kind: undefined,
+      confirmed_amount_try: undefined,
+      source_status: "authored_locator_unverified",
+      regulatory_source: { source_locators: ["F21", "2.4.1.(1)"], fatura_inceleme_ref: "F21" },
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="advisories"
+          block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [advisory], has_more: false }}
+        />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toContain("F21");
+    expect(html).toContain("2.4.1.(1)");
+    expect(html).toContain("Source locator; applicability unverified");
+  });
+
+  it("withholds an advisory whose kind or money semantics is malformed", () => {
+    const advisory = {
+      ...row,
+      evidence_id: "wavea_advisory:claim_evaluation:source-1",
+      money_semantics: "amount_unavailable",
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="advisories"
+          block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [advisory], has_more: false }}
+        />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toContain("Wave A evidence is unavailable");
+    expect(html).not.toContain("Permission · check conditions");
+  });
+
+  it("does not treat an old build with no advisory block as a clean advisory zero", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection patientId="P-1" kind="advisories" />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toContain("Wave A evidence is unavailable");
+    expect(html).not.toContain("No observations in this category");
+  });
+
   it("keeps old or draft evidence unavailable instead of presenting a clean zero", () => {
     const html = render({
       available: false,

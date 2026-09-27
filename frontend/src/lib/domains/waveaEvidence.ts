@@ -11,8 +11,14 @@ export interface WaveAEvidenceRow {
   evaluation_status: string;
   reason: string | null;
   source_status: string;
-  regulatory_source: { clause_key?: string | null; clause_id?: string | null } | null;
+  regulatory_source: {
+    clause_key?: string | null;
+    clause_id?: string | null;
+    source_locators?: string[];
+    fatura_inceleme_ref?: string | null;
+  } | null;
   money_semantics: string;
+  advisory_kind?: "permission" | "information";
   financial_kind?: "risk" | "uplift";
   confirmed_amount_try?: number | null;
   amount_status?: string;
@@ -47,7 +53,7 @@ export interface WaveAEvidencePage {
   available: boolean;
   unavailable_reason: string | null;
   patient_id?: string;
-  kind?: "evaluations" | "reviews" | "financial_rows";
+  kind?: "evaluations" | "reviews" | "advisories" | "financial_rows";
   rows: WaveAEvidenceRow[];
   pagination: {
     total_matching: number | null;
@@ -58,7 +64,7 @@ export interface WaveAEvidencePage {
 }
 
 export interface WaveACohortEvidencePage extends Omit<WaveAEvidencePage, "patient_id"> {
-  kind?: "reviews" | "financial_rows";
+  kind?: "reviews" | "advisories" | "financial_rows";
   counts: { matching_rows: number } | null;
 }
 
@@ -69,6 +75,7 @@ export interface WaveAEvidenceIndexPage {
     by_group: Record<string, WaveAStatusCounts>;
     evaluation_count: number;
     review_count: number;
+    advisory_count: number;
     financial_count: number;
   } | null;
   rows: Array<{

@@ -363,12 +363,20 @@ export function SUTComplianceDashboard({
             onPageChange={(offset) => setPageCursor({ key: surfaceKey, offset })}
           />
           {activeSubtab === "claim_compliance" && (
-            <CohortWaveAEvidenceSection
-              kind="reviews"
-              cohortPatientIds={cohortPatientIds}
-              cohortFilterActive={cohortFilterActive}
-              includeCoverage
-            />
+            <>
+              <CohortWaveAEvidenceSection
+                kind="reviews"
+                cohortPatientIds={cohortPatientIds}
+                cohortFilterActive={cohortFilterActive}
+                includeCoverage
+              />
+              <CohortWaveAEvidenceSection
+                kind="advisories"
+                cohortPatientIds={cohortPatientIds}
+                cohortFilterActive={cohortFilterActive}
+                includeCoverage
+              />
+            </>
           )}
         </>
       ) : (

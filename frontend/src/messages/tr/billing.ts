@@ -423,6 +423,8 @@ const billing = {
   },
   "wavea": {
     "reviewTitle": "Yalnızca inceleme gerektiren kural gözlemleri",
+    "advisoryTitle": "Bilgilendirme ve izin sonuçları",
+    "advisoryNotice": "Bu gözlemler gerektiğinde inceleme gerektirir; ihlal ve finansal toplamlara dahil değildir.",
     "financialTitle": "Ayrı finansal kanıtlar",
     "coverageTitle": "Wave A değerlendirme kapsamı",
     "coverageSummary": "{groups} grup · {evaluated} değerlendirildi · {missing} eksik girdi · {unavailable} değerlendirilemedi",
@@ -438,6 +440,8 @@ const billing = {
     "patient": "Hasta",
     "amount": "Ayrı tutar",
     "review": "Yalnızca inceleme",
+    "information": "Bilgilendirme · yalnızca inceleme",
+    "permission": "İzin · koşulları kontrol edin",
     "risk": "Risk tutarı",
     "uplift": "Tahsil edilebilir artış adayı",
     "sourceLocator": "Kaynak konumu; uygulanabilirlik doğrulanmadı",

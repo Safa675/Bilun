@@ -20,7 +20,9 @@ export function validCohortEvidencePage(
   const pagination = page?.pagination;
   const rows = page?.rows;
   const total = pagination?.total_matching;
-  const prefix = kind === "financial_rows" ? "wavea_financial:" : "wavea_review:";
+  const prefix = kind === "financial_rows" ? "wavea_financial:"
+    : kind === "advisories" ? "wavea_advisory:"
+    : "wavea_review:";
   if (
     page?.available !== true || page.kind !== kind ||
     !pagination || pagination.offset !== offset || pagination.limit !== PAGE_SIZE ||
@@ -34,6 +36,10 @@ export function validCohortEvidencePage(
       !row.patient_id ||
       !row.evidence_id.startsWith(prefix) ||
       row.evidence_id !== prefix + row.source_evidence_id ||
+      (kind === "advisories" &&
+        ((row.advisory_kind !== "permission" && row.advisory_kind !== "information") ||
+        row.money_semantics !== "unpriced_advisory" ||
+        row.financial_kind != null || row.confirmed_amount_try != null)) ||
       (selected != null && !selected.includes(row.patient_id)))
   ) return false;
   if (!includeCoverage) return true;
@@ -42,9 +48,11 @@ export function validCohortEvidencePage(
     index?.available !== true || !counts ||
     !Number.isInteger(counts.evaluation_count) || counts.evaluation_count < 0 ||
     !Number.isInteger(counts.review_count) || counts.review_count < 0 ||
+    !Number.isInteger(counts.advisory_count) || counts.advisory_count < 0 ||
     !Number.isInteger(counts.financial_count) || counts.financial_count < 0 ||
     !counts.by_group || typeof counts.by_group !== "object" ||
-    total !== (kind === "financial_rows" ? counts.financial_count : counts.review_count) ||
+    total !== (kind === "financial_rows" ? counts.financial_count
+      : kind === "advisories" ? counts.advisory_count : counts.review_count) ||
     (selected != null && index.pagination.total_matching !== selected.length)
   ) return false;
   return Object.values(counts.by_group).every((group) =>
@@ -127,14 +135,15 @@ export function CohortWaveAEvidenceSection({
 
   const total = result?.pagination.total_matching;
   const available = !loading && !failed && result?.available === true;
-  const title = t(kind === "financial_rows" ? "billing.wavea.financialTitle" : "billing.wavea.reviewTitle");
+  const title = t(kind === "financial_rows" ? "billing.wavea.financialTitle"
+    : kind === "advisories" ? "billing.wavea.advisoryTitle" : "billing.wavea.reviewTitle");
 
   return (
     <section className="space-y-3" aria-label={title}>
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
       {includeCoverage && kind === "reviews" && index?.available === true && index.counts && (
         <WaveACoverageSummary coverage={{
-          schema_version: "wavea-evidence-v1",
+          schema_version: "wavea-evidence-v2",
           available: true,
           unavailable_reason: null,
           tracked_rule_count: 0,

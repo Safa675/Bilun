@@ -38,6 +38,19 @@ describe("Wave A evidence clients", () => {
     );
   });
 
+  it("requests advisory evidence by its separate kind and canonical ID", async () => {
+    await getPatientWaveAEvidence("P-1", {
+      kind: "advisories",
+      offset: 0,
+      limit: 1,
+      evidenceId: "wavea_advisory:claim_evaluation:one",
+    });
+    expect(calls.get).toHaveBeenCalledWith(
+      "/api/wavea-evidence/P-1?kind=advisories&offset=0&limit=1&evidence_id=wavea_advisory%3Aclaim_evaluation%3Aone",
+      undefined,
+    );
+  });
+
   it("uses a bounded GET for small filtered cohorts", async () => {
     await getCohortWaveAEvidence({ kind: "reviews", patientIds: ["P-1", "P-2"], limit: 20, offset: 40 });
     expect(calls.get).toHaveBeenCalledWith(

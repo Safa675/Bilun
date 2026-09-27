@@ -34,6 +34,7 @@ const index: WaveAEvidenceIndexPage = {
     by_group: { focused: { evaluated: 1, missing_inputs: 0, unavailable: 0 } },
     evaluation_count: 1,
     review_count: 0,
+    advisory_count: 0,
     financial_count: 1,
   },
   rows: [],
@@ -51,6 +52,31 @@ describe("cohort Wave A response integrity", () => {
       ...page,
       rows: [{ ...page.rows[0], evidence_id: "wavea_review:claim_evaluation:one" }],
     }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
+  });
+
+  it("keeps informational advisories separate from review and financial counts", () => {
+    const advisory: WaveACohortEvidencePage = {
+      ...page,
+      kind: "advisories",
+      rows: [{
+        ...page.rows[0],
+        evidence_id: "wavea_advisory:claim_evaluation:one",
+        advisory_kind: "information",
+        money_semantics: "unpriced_advisory",
+        financial_kind: undefined,
+        confirmed_amount_try: undefined,
+      }],
+    };
+    const advisoryIndex: WaveAEvidenceIndexPage = {
+      ...index,
+      counts: { ...index.counts!, advisory_count: 1, financial_count: 0 },
+    };
+    expect(validCohortEvidencePage(advisory, "advisories", 0, ["P-1"], advisoryIndex, true)).toBe(true);
+    expect(validCohortEvidencePage(advisory, "advisories", 0, ["P-1"], index, true)).toBe(false);
+    expect(validCohortEvidencePage({
+      ...advisory,
+      rows: [{ ...advisory.rows[0], advisory_kind: undefined }],
+    }, "advisories", 0, ["P-1"], advisoryIndex, true)).toBe(false);
   });
 
   it("rejects a false clean zero or malformed cohort count", () => {
