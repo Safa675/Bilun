@@ -5,7 +5,7 @@ import { getCohortWaveAEvidence, getCohortWaveAIndex } from "@/lib/api/waveaEvid
 import { ApiRequestError } from "@/lib/apiClient";
 import type { WaveACohortEvidencePage, WaveAEvidenceIndexPage } from "@/lib/domains/waveaEvidence";
 import { useT } from "@/lib/i18n/useTranslations";
-import { WaveACoverageSummary, WaveAEvidenceRowsTable, type WaveAEvidenceKind } from "./WaveAEvidenceSection";
+import { WaveACoverageSummary, WaveAEvidenceRowsTable, validRowForKind, type WaveAEvidenceKind } from "./WaveAEvidenceSection";
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +35,7 @@ export function validCohortEvidencePage(
     rows.some((row) =>
       !row.patient_id ||
       !row.evidence_id.startsWith(prefix) ||
-      row.evidence_id !== prefix + row.source_evidence_id ||
+      !validRowForKind(row, row.patient_id, kind) ||
       (kind === "advisories" &&
         ((row.advisory_kind !== "permission" && row.advisory_kind !== "information") ||
         row.money_semantics !== "unpriced_advisory" ||

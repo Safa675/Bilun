@@ -31,10 +31,23 @@ function titleKey(kind: WaveAEvidenceKind): string {
     : "billing.wavea.reviewTitle";
 }
 
-function validRowForKind(row: WaveAEvidenceRow, patientId: string, kind: WaveAEvidenceKind): boolean {
+function isCentAmount(value: number): boolean {
+  const minorUnits = value * 100;
+  return Number.isFinite(value) && value >= 0 &&
+    Number.isSafeInteger(Math.round(minorUnits)) &&
+    Math.abs(minorUnits - Math.round(minorUnits)) < 1e-6;
+}
+
+export function validRowForKind(row: WaveAEvidenceRow, patientId: string, kind: WaveAEvidenceKind): boolean {
   if (row.patient_id !== patientId || row.evidence_id !== evidencePrefix(kind) + row.source_evidence_id) {
     return false;
   }
+  if (row.observed_billed_amount_try != null && (
+    kind !== "financial_rows" || row.line_kind !== "procedure" || !row.line_id ||
+    row.observed_amount_basis !== "procedure_claim_line.billed_amount_try" ||
+    !isCentAmount(row.observed_billed_amount_try)
+  )) return false;
+  if (row.observed_amount_basis != null && row.observed_billed_amount_try == null) return false;
   if (kind !== "advisories") return true;
   return (row.advisory_kind === "permission" || row.advisory_kind === "information") &&
     row.money_semantics === "unpriced_advisory" &&
@@ -215,6 +228,12 @@ export function WaveAEvidenceRowsTable({
                   !Number.isFinite(row.confirmed_amount_try)
                     ? t("billing.wavea.amountUnavailable")
                     : fmtTRY2(row.confirmed_amount_try)}
+                  {row.observed_billed_amount_try != null && (
+                    <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {t("billing.wavea.observedBilledCharge")}: {fmtTRY2(row.observed_billed_amount_try)}
+                      <div className="text-[var(--text-muted)]">{t("billing.wavea.procedureLineBasis")}</div>
+                    </div>
+                  )}
                   <div className="text-xs text-[var(--text-muted)]">
                     {row.headline_relation === "separate_yatak_reconciliation"
                       ? t("billing.wavea.separateReconciliation")

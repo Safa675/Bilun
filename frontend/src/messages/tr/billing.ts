@@ -447,6 +447,8 @@ const billing = {
     "sourceLocator": "Kaynak konumu; uygulanabilirlik doğrulanmadı",
     "sourceUnverified": "Kaynak doğrulanmadı",
     "amountUnavailable": "Tutar doğrulanmadı",
+    "observedBilledCharge": "Faturalanan gözlenen tutar",
+    "procedureLineBasis": "Kaynak: ilgili işlem fatura satırı; risk veya artıştan ayrıdır",
     "separateReconciliation": "Mevcut mutabakattan ayrı gösterilir",
     "notInHeadline": "Mevcut tahsilat toplamlarına dahil değil",
     "loadMore": "Daha fazla göster ({shown}/{total})",

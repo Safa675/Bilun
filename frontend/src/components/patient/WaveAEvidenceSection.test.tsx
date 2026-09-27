@@ -41,6 +41,48 @@ function render(block: WaveAEvidenceBlock) {
 }
 
 describe("Wave A patient evidence", () => {
+  it("shows an exact billed charge separately from unverified risk", () => {
+    const html = render({
+      available: true,
+      unavailable_reason: null,
+      total_rows: 1,
+      rows: [{
+        ...row,
+        observed_billed_amount_try: 175.25,
+        observed_amount_basis: "procedure_claim_line.billed_amount_try",
+      }],
+      has_more: false,
+    });
+    expect(html).toContain("Amount unverified");
+    expect(html).toContain("Observed billed charge");
+    expect(html).toContain("Source: exact procedure claim line; separate from risk or uplift");
+    expect(html).toContain("175.25 TRY");
+  });
+
+  it("withholds a billed charge without exact procedure-line provenance", () => {
+    const html = render({
+      available: true,
+      unavailable_reason: null,
+      total_rows: 1,
+      rows: [{ ...row, observed_billed_amount_try: 175.25 }],
+      has_more: false,
+    });
+    expect(html).toContain("unavailable");
+    expect(html).not.toContain("Observed billed charge");
+    const fractionalCent = render({
+      available: true,
+      unavailable_reason: null,
+      total_rows: 1,
+      rows: [{
+        ...row,
+        observed_billed_amount_try: 175.255,
+        observed_amount_basis: "procedure_claim_line.billed_amount_try",
+      }],
+      has_more: false,
+    });
+    expect(fractionalCent).not.toContain("Observed billed charge");
+  });
+
   it("shows a sourced, distinct financial candidate without inventing an amount or adding a headline", () => {
     const html = render({
       available: true,

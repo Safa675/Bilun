@@ -447,6 +447,8 @@ const billing = {
     "sourceLocator": "Source locator; applicability unverified",
     "sourceUnverified": "Source not verified",
     "amountUnavailable": "Amount unverified",
+    "observedBilledCharge": "Observed billed charge",
+    "procedureLineBasis": "Source: exact procedure claim line; separate from risk or uplift",
     "separateReconciliation": "Shown separately from the existing reconciliation",
     "notInHeadline": "Excluded from existing recovery totals",
     "loadMore": "Show more ({shown} of {total})",

@@ -54,6 +54,20 @@ describe("cohort Wave A response integrity", () => {
     }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
   });
 
+  it("accepts only exact procedure-line billed charges, separate from risk", () => {
+    const sourceRow = {
+      ...page.rows[0],
+      line_kind: "procedure",
+      line_id: "L-1",
+      observed_billed_amount_try: 175.25,
+      observed_amount_basis: "procedure_claim_line.billed_amount_try" as const,
+    };
+    expect(validCohortEvidencePage({ ...page, rows: [sourceRow] }, "financial_rows", 0, ["P-1"], index, true)).toBe(true);
+    expect(validCohortEvidencePage({ ...page, rows: [{ ...sourceRow, line_id: null }] }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
+    expect(validCohortEvidencePage({ ...page, rows: [{ ...sourceRow, observed_billed_amount_try: -1 }] }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
+    expect(validCohortEvidencePage({ ...page, rows: [{ ...sourceRow, observed_billed_amount_try: 175.255 }] }, "financial_rows", 0, ["P-1"], index, true)).toBe(false);
+  });
+
   it("keeps informational advisories separate from review and financial counts", () => {
     const advisory: WaveACohortEvidencePage = {
       ...page,

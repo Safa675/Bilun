@@ -22,6 +22,9 @@ export interface WaveAEvidenceRow {
   financial_kind?: "risk" | "uplift";
   confirmed_amount_try?: number | null;
   amount_status?: string;
+  /** Actual charge on this exact procedure line; separate from estimated risk/uplift. */
+  observed_billed_amount_try?: number | null;
+  observed_amount_basis?: "procedure_claim_line.billed_amount_try" | null;
   currency?: "TRY";
   headline_relation?: string;
 }
