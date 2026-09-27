@@ -248,10 +248,6 @@ def _all_tablo15_findings() -> list[dict]:
             ),
         ],
     )
-    findings += cbe.detect_exam_admission_date_mismatch(
-        [inpatient],
-        [_proc(claim_id="C3", procedure_date=date(2026, 7, 11))],
-    )
     findings += cbe.detect_missing_drug_barcode([], [_drug(barkod="")])
     findings += cbe.detect_vakabasi_wrong_method(
         [outpatient_a],
@@ -288,11 +284,11 @@ def _all_tablo15_findings() -> list[dict]:
     return findings
 
 
-def test_all_15_active_tablo15_detectors_carry_el_kitabi_provenance() -> None:
+def test_all_14_active_tablo15_detectors_carry_el_kitabi_provenance() -> None:
     findings = _all_tablo15_findings()
-    assert len(findings) == 15
+    assert len(findings) == 14
     rule_ids = {f["rule_id"] for f in findings}
-    assert len(rule_ids) == 15  # one distinct rule id per active detector
+    assert len(rule_ids) == 14  # one distinct rule id per active detector
     for finding in findings:
         _assert_non_sut_provenance(
             finding,

@@ -1,6 +1,7 @@
-"""Unit tests for the top-5 Tablo 15 common billing error detectors.
+"""Unit tests for the original top-5 Tablo 15 billing-error candidates.
 
-One positive (error detected) and one negative (no error) test per detector:
+Active detectors have positive and negative cases; #22 is unavailable because
+the outpatient patient-acceptance date is absent:
 - ``detect_duplicate_exam_10day``            (Tablo 15 #2)
 - ``detect_missing_diagnosis``               (Tablo 15 #8)
 - ``detect_duplicate_tests``                 (Tablo 15 #12)
@@ -10,6 +11,7 @@ One positive (error detected) and one negative (no error) test per detector:
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
@@ -329,44 +331,46 @@ def test_duplicate_tests_negative() -> None:
 # ===========================================================================
 
 
-def test_exam_admission_date_mismatch_positive() -> None:
-    """Inpatient claim whose first procedure date != admission date."""
+def test_exam_admission_date_mismatch_does_not_flag_late_inpatient_surgery() -> None:
+    """A later inpatient operation is not an outpatient exam-date mismatch."""
     claim = _make_claim_header(
         claim_id="C1",
         claim_type="yatis",
         admission=date(2026, 7, 10),
         discharge=date(2026, 7, 13),
     )
-    # Earliest procedure on 2026-07-12, admission on 2026-07-10 → mismatch.
+    # Surgery two days after admission is expected and says nothing about
+    # outpatient exam date versus patient acceptance date.
     line = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
         procedure_date=date(2026, 7, 12),
+        procedure_category="cerrahi",
     )
 
     violations = detect_exam_admission_date_mismatch([claim], [line])
 
-    assert len(violations) == 1
-    v = violations[0]
-    assert v["claim_id"] == "C1"
-    assert v["rule_id"] == "tablo15_22_exam_admission_date_mismatch"
-    assert v["severity"] == "error"
-    assert v["first_procedure_date"] == date(2026, 7, 12)
-    assert v["admission_date"] == date(2026, 7, 10)
+    assert violations == []
 
 
-def test_exam_admission_date_mismatch_negative() -> None:
-    """Inpatient claim whose earliest procedure date == admission date."""
+def test_exam_admission_date_mismatch_cannot_use_service_range_as_acceptance() -> None:
+    """Service-range start is not an outpatient patient-acceptance timestamp."""
     claim = _make_claim_header(
         claim_id="C1",
-        claim_type="yatis",
-        admission=date(2026, 7, 10),
-        discharge=date(2026, 7, 13),
+        claim_type="poliklinik",
+        admission=None,
+        discharge=None,
+    )
+    claim = replace(
+        claim,
+        claim_start_date=date(2026, 7, 10),
+        claim_end_date=date(2026, 7, 13),
     )
     line = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
-        procedure_date=date(2026, 7, 10),  # matches admission
+        procedure_category="muayene",
+        procedure_date=date(2026, 7, 12),
     )
 
     violations = detect_exam_admission_date_mismatch([claim], [line])

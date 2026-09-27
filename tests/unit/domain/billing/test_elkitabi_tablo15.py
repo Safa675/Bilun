@@ -1,19 +1,20 @@
 """El Kitabı Tablo 15 — 24 Most Common Billing Errors, top 5 detectors.
 
-This integration test drives the 5 detectors we implemented for "El Kitabı
+This integration test drives the supported detectors implemented for "El Kitabı
 Tablo 15 — En Sık Yapılan 24 Faturalandırma Hatası" through the unified
 ``analyze_claim(ctx)`` engine (the same entry point the billing orchestrator
 and ``validate_claim`` adapter consume), rather than calling each detector
 in isolation. The goal is to confirm that each scenario, built from typed
 claim models, surfaces its expected violation through the full motor
-pipeline.
+pipeline. It also checks that the unavailable #22 candidate emits no false
+legacy violation.
 
 **Scenarios (Tablo 15):**
 - #2  Same-specialty exam within 10 days  → ``tablo15_2_duplicate_exam_10day``
 - #8  Missing diagnosis on takip          → ``tablo15_8_missing_diagnosis``
 - #12 Duplicate tests within 7 days       → ``tablo15_12_duplicate_test``
 - #20 Missing drug barcode                → ``tablo15_20_missing_drug_barcode``
-- #22 Exam date ≠ admission date          → ``tablo15_22_exam_admission_date_mismatch``
+- #22 Outpatient exam/acceptance date     → unavailable without acceptance data
 
 The Tablo 15 detectors are gated on a non-empty ``patient_id`` (see
 ``engine.analyze_claim``), so every scenario uses ``patient_id="TABLO15-P1"``.
@@ -288,16 +289,11 @@ def test_tablo15_missing_drug_barcode() -> None:
     )
 
 
-# ── Test 5 — Exam date ≠ admission date (#22) ───────────────────────────────
+# ── Test 5 — Unsupported exam/acceptance date inference (#22) ──────────────
 
 
-def test_tablo15_exam_admission_date_mismatch() -> None:
-    """#22: On an inpatient claim, earliest procedure date must equal admission.
-
-    Build a ``yatis`` (inpatient) claim with ``admission_date`` 2026-07-10
-    but an exam/procedure line dated 2026-07-12 (≠ admission). The
-    ``detect_exam_admission_date_mismatch`` motor must surface a violation.
-    """
+def test_tablo15_inpatient_surgery_does_not_trigger_outpatient_exam_rule() -> None:
+    """#22 must not turn a later inpatient operation into an exam-date error."""
     admission = date(2026, 7, 10)
     discharge = date(2026, 7, 14)
     claim = ClaimHeader(
@@ -312,23 +308,23 @@ def test_tablo15_exam_admission_date_mismatch() -> None:
         discharge_date=discharge,
         claim_start_date=admission,
         claim_end_date=discharge,
-        primary_icd10="K35.8",  # Acute appendicitis
+        primary_icd10="",  # keep a separate real missing-diagnosis finding
         package_candidate=False,
         expected_total_billed_try=Decimal("5000"),
         expected_total_payable_try=Decimal("5000"),
         expected_denial_reason="",
         scenario_tag="elkitabi_tablo15",
     )
-    # Earliest procedure is 2 days AFTER admission → mismatch.
+    # Inpatient surgery two days after admission is not a Tablo 15 #22 exam.
     proc = ProcedureClaimLine(
         procedure_line_id="TABLO15-P5",
         claim_id="TABLO15-C5",
         patient_id=_PATIENT_ID,
         episode_id="TABLO15-C5-E",
         procedure_date=date(2026, 7, 12),
-        procedure_code="720010",
-        procedure_name="Poliklinik Muayenesi",
-        procedure_category="muayene",
+        procedure_code="601010",
+        procedure_name="Surgical procedure",
+        procedure_category="cerrahi",
         quantity=1,
         unit_price_try=Decimal("100"),
         billed_amount_try=Decimal("100"),
@@ -352,7 +348,5 @@ def test_tablo15_exam_admission_date_mismatch() -> None:
 
     violations = analyze_claim(ctx)
 
-    assert "tablo15_22_exam_admission_date_mismatch" in _rule_ids(violations), (
-        f"expected exam_admission_date_mismatch violation, "
-        f"got rule_ids={_rule_ids(violations)}"
-    )
+    assert "tablo15_8_missing_diagnosis" in _rule_ids(violations)
+    assert "tablo15_22_exam_admission_date_mismatch" not in _rule_ids(violations)

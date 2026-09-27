@@ -4,14 +4,14 @@ Each detector encodes one row of "El Kitabı Tablo 15 — 24 Most Common
 Outpatient Billing Errors". Phase 1 covered the 5 highest-frequency errors
 selected by the feasibility study (`/tmp/feasibility/common_errors.md`) as
 buildable now (data already on the claim context), high-frequency in real
-Medula denials, and low effort to implement. Phase 2 has 10 active detectors
-and one unavailable timing candidate.
+Medula denials, and low effort to implement. One Phase 1 date rule and one
+Phase 2 timing rule are now unavailable because their source dates are absent.
 
 Phase 1 errors covered:
 - **#2** Same-specialty exam within 10 days  → ``detect_duplicate_exam_10day``
 - **#8** Services with no diagnosis on takip → ``detect_missing_diagnosis``
 - **#12** Duplicate tests across claims       → ``detect_duplicate_tests``
-- **#22** Exam date ≠ admission date          → ``detect_exam_admission_date_mismatch``
+- **#22** Exam date ≠ outpatient acceptance date (unavailable) → ``detect_exam_admission_date_mismatch``
 - **#20** Drug QR/barcode missing             → ``detect_missing_drug_barcode``
 
 Phase 2 errors covered:
@@ -357,58 +357,16 @@ def detect_exam_admission_date_mismatch(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #22: First exam/procedure date doesn't match admission date.
+    """Legacy #22 entry point; no verdict without patient-acceptance date.
 
-    For inpatient claims, the earliest ``procedure_date`` among the claim's
-    procedure lines should equal ``admission_date`` (the first service day
-    of an inpatient episode is the admission day). A mismatch signals that
-    the exam/muayene was not recorded on the admission day, which is a
-    Medula data-integrity finding.
-
-    Honest skips: outpatient claims, no admission_date, no procedure lines
-    on the claim, or any procedure line missing a real date.
+    El Kitabı Table 15 #22 concerns an *outpatient exam* date versus the
+    patient's acceptance date. ``admission_date`` is the inpatient stay date;
+    ``claim_start_date`` is the service-range start. Neither is an accepted
+    substitute for outpatient acceptance, which this model does not ingest.
+    See ``billing.exam_acceptance_date`` for the unavailable evaluation and
+    the primary handbook source.
     """
-    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
-
-    lines_by_claim: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
-    for line in procedure_lines:
-        lines_by_claim[line.claim_id].append(line)
-
-    violations: list[dict[str, Any]] = []
-    for claim in claims:
-        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
-            continue
-        if infer_care_setting(claim) != "inpatient":
-            continue
-        if claim.admission_date is None:
-            continue
-        lines = lines_by_claim.get(claim.claim_id, [])
-        if not lines:
-            continue
-        earliest = min(line.procedure_date for line in lines)
-        if earliest == claim.admission_date:
-            continue
-        detail = (
-            f"Yatan hasta takibi {claim.claim_id}: ilk işlem tarihi {earliest}, "
-            f"yatırım tarihi {claim.admission_date} ile uyuşmuyor (Tablo 15 #22)."
-        )
-        violations.append(
-            {
-                "type": _OPPORTUNITY_TYPE,
-                "claim_id": claim.claim_id,
-                "rule_id": "tablo15_22_exam_admission_date_mismatch",
-                "detail": detail,
-                "sut_section_id": _SUT_SECTION_ID,
-                "source_type": _SOURCE_TYPE,
-                "clause_ref": _CLAUSE_REF,
-                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                "savings_basis": SAVINGS_BASIS_SOURCED,
-                "severity": "error",
-                "admission_date": claim.admission_date,
-                "first_procedure_date": earliest,
-            }
-        )
-    return violations
+    return []
 
 
 def detect_missing_drug_barcode(
