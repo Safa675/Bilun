@@ -2,6 +2,8 @@
 
 This is the Checkpoint 1 prerequisite audit of the four money-bearing focused groups. It records existing behavior, not an implemented financial projection. The audit was performed in `/root/worktrees/bilun-wavea-complete`; the worktree HEAD at document creation was `c19293ffe74c9cf96348b3424b5c28290e169433`. Other Wave A changes were in progress. The four audited detector files and the financial call chains below were unchanged by this audit.
 
+**Correction after this baseline:** `e0ca7875` changed radiation detector decisions and output. Its old full-line `risk_amount_try` is now null on review-only rows; the actual billed amount remains separate. Distinct course-limit candidates for 800370 and 800430 were added, while the old hyperthermia same-day grouping no longer emits. The historical 15-ID count and R1–R3 reproductions below describe the pre-correction detector and must not be used as the current runtime inventory.
+
 **Decision: hold financial display implementation for independent plan review and separate Q9 detector corrections.** None of these four flat detector amounts currently enters patient/cohort totals directly. Yatak has a separate existing bed-day reconciliation that already affects those totals. Keeping new amounts separate does not make a wrong detector safe to surface.
 
 Source-strength conclusions below concern provenance present in the code and emitted rows. This audit does not independently establish the current legal validity of each cited payment rule.
