@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections import Counter
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +20,7 @@ import pyarrow.parquet as pq
 
 from scripts.deploy.verify_candidate_cache import _candidate_db_hash, _parse_json, _stable_file_hash
 from src.bilun.domain.billing.broad_rule_catalog import load_broad_rule_catalog
+from src.bilun.domain.billing.focused_rule_projection import FOCUSED_RULE_SPECS
 from src.bilun.domain.billing.rule_findings import build_evaluation_id
 
 _ROSTER_VERSION = "wavea-source-v1"
@@ -35,6 +38,12 @@ _REQUIRED_DATA_LABELS = frozenset(
     }
 )
 _STATUS_NAMES = ("evaluated", "missing_inputs", "unavailable")
+_LINE_SOURCES = {
+    "procedure": ("claim:procedure_claim_lines.parquet", "procedure_line_id"),
+    "drug": ("claim:drug_claim_lines.parquet", "drug_claim_line_id"),
+    "material": ("claim:material_claim_lines.parquet", "material_line_id"),
+}
+_OBSERVED_AMOUNT_BASIS = "procedure_claim_line.billed_amount_try"
 
 
 def _canonical(value: Any) -> bytes:
@@ -43,7 +52,9 @@ def _canonical(value: Any) -> bytes:
     ).encode("utf-8")
 
 
-def _pinned_claim_paths(roster: Path) -> tuple[Path, Path, str, dict[str, str]]:
+def _pinned_claim_paths(
+    roster: Path, labels_to_read: tuple[str, ...]
+) -> tuple[dict[str, Path], str, dict[str, str]]:
     roster_sha = _candidate_db_hash(roster)
     manifest = _parse_json(roster.read_text(), context="candidate source roster")
     if not isinstance(manifest, dict) or manifest.get("roster_version") != _ROSTER_VERSION:
@@ -74,8 +85,8 @@ def _pinned_claim_paths(roster: Path) -> tuple[Path, Path, str, dict[str, str]]:
     if manifest.get("roster_sha256") != expected_roster_sha:
         raise ValueError("Candidate source roster digest disagrees with entries")
     pinned: dict[str, str] = {}
-    paths: list[Path] = []
-    for label in ("claim:claim_headers.parquet", "claim:material_claim_lines.parquet"):
+    paths: dict[str, Path] = {}
+    for label in labels_to_read:
         entry = labels[label]
         raw_path, expected_sha, expected_size = (
             entry.get("path"),
@@ -102,11 +113,11 @@ def _pinned_claim_paths(roster: Path) -> tuple[Path, Path, str, dict[str, str]]:
             or _stable_file_hash(path) != expected_sha
         ):
             raise ValueError(f"Pinned claim source byte identity differs: {label}")
-        paths.append(path)
+        paths[label] = path
         pinned[label] = expected_sha
-    if paths[0].parent != paths[1].parent or roster_sha != _candidate_db_hash(roster):
+    if len({path.parent for path in paths.values()}) != 1 or roster_sha != _candidate_db_hash(roster):
         raise ValueError("Pinned claim inputs or source roster changed during verification")
-    return paths[0], paths[1], roster_sha, pinned
+    return paths, roster_sha, pinned
 
 
 def _id(value: Any, *, label: str) -> str:
@@ -122,6 +133,45 @@ def _id_rows(path: Path, columns: tuple[str, ...]):
     for batch in source.iter_batches(batch_size=4096, columns=list(columns)):
         values = batch.to_pydict()
         yield from zip(*(values[column] for column in columns), strict=True)
+
+
+def _minor_units(value: Any, *, label: str) -> int:
+    if value is None or isinstance(value, bool) or not isinstance(value, (str, int, float, Decimal)):
+        raise ValueError(f"Missing or malformed {label}")
+    try:
+        amount = Decimal(str(value))
+        if not amount.is_finite() or amount < 0 or amount != amount.quantize(Decimal("0.01")):
+            raise ValueError(f"Non-cent {label}")
+        return int(amount * 100)
+    except (InvalidOperation, ValueError, OverflowError) as exc:
+        raise ValueError(f"Missing or malformed {label}") from exc
+
+
+def _procedure_charge_state(matches: list[tuple[str, Any]], patient_id: str) -> tuple[str | None, int | None]:
+    owned = [raw_amount for owner, raw_amount in matches if owner == patient_id]
+    if len(owned) > 1:
+        return "procedure_line_ambiguous", None
+    if not owned and matches:
+        return "procedure_line_owner_mismatch", None
+    if not owned:
+        return "procedure_line_missing", None
+    raw_amount = owned[0]
+    if raw_amount is None or isinstance(raw_amount, bool) or not isinstance(
+        raw_amount, (str, int, float, Decimal)
+    ):
+        return "procedure_line_charge_invalid", None
+    try:
+        amount = Decimal(str(raw_amount))
+        if not amount.is_finite() or amount < 0:
+            return "procedure_line_charge_invalid", None
+        if amount * 100 != (amount * 100).to_integral_value():
+            return "procedure_line_charge_not_cent_exact", None
+        amount_value = float(amount)
+        if not math.isfinite(amount_value) or Decimal(str(amount_value)) != amount:
+            return "procedure_line_charge_invalid", None
+        return None, int(amount * 100)
+    except (InvalidOperation, ValueError, OverflowError):
+        return "procedure_line_charge_invalid", None
 
 
 def _source_scopes(
@@ -208,7 +258,12 @@ def verify_pinned_claim_scopes(
     """Require exact broad identities against raw, pinned claim/material rows."""
     if not details_by_patient or any(not patient_id for patient_id in details_by_patient):
         raise ValueError("Scope verification requires nonempty patient detail identities")
-    headers, materials, roster_sha, pinned = _pinned_claim_paths(source_roster)
+    paths, roster_sha, pinned = _pinned_claim_paths(
+        source_roster,
+        ("claim:claim_headers.parquet", "claim:material_claim_lines.parquet"),
+    )
+    headers = paths["claim:claim_headers.parquet"]
+    materials = paths["claim:material_claim_lines.parquet"]
     scopes = _source_scopes(headers, materials, set(details_by_patient))
     catalog = load_broad_rule_catalog()
     dental_rules = {rule.rule_id for rule in catalog if rule.family == "dental_2_4_1"}
@@ -289,5 +344,140 @@ def verify_pinned_claim_scopes(
         "material_line_count": total_materials,
         "broad_evaluation_count": total_evaluations,
         "scope_semantic_sha256": hashlib.sha256(_canonical(scopes)).hexdigest(),
+        "release_ready": False,
+    }
+
+
+def verify_pinned_evidence_lines(
+    source_roster: Path,
+    patient_details: dict[str, dict[str, Any]],
+    bill_details: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Check line-owned evidence against independent, pinned claim inputs."""
+    if not patient_details:
+        raise ValueError("Line verification requires patient details")
+    labels = (
+        "claim:claim_headers.parquet",
+        "claim:material_claim_lines.parquet",
+        "claim:procedure_claim_lines.parquet",
+        "claim:drug_claim_lines.parquet",
+    )
+    paths, roster_sha, pinned = _pinned_claim_paths(source_roster, labels)
+    scopes = _source_scopes(
+        paths["claim:claim_headers.parquet"],
+        paths["claim:material_claim_lines.parquet"],
+        set(patient_details),
+    )
+    claim_owner = {
+        claim["claim_id"]: patient_id
+        for patient_id, scope in scopes.items()
+        for claim in scope["claims"]
+    }
+    source_lines: dict[str, dict[tuple[str, str], list[tuple[str, Any]]]] = {}
+    for kind, (label, id_column) in _LINE_SOURCES.items():
+        source_lines[kind] = {}
+        seen_nonprocedure: set[str] = set()
+        columns = (id_column, "claim_id", "patient_id") + (
+            ("billed_amount_try",) if kind == "procedure" else ()
+        )
+        for values in _id_rows(paths[label], columns):
+            line_raw, claim_raw, patient_raw = values[:3]
+            line_id = _id(line_raw, label=id_column)
+            claim_id = _id(claim_raw, label=f"{kind} claim_id")
+            patient_id = _id(patient_raw, label=f"{kind} patient_id")
+            if kind != "procedure" and line_id in seen_nonprocedure:
+                raise ValueError(f"Duplicate {kind} source line identity: {line_id}")
+            seen_nonprocedure.add(line_id)
+            if claim_id not in claim_owner or (
+                kind != "procedure" and claim_owner[claim_id] != patient_id
+            ):
+                raise ValueError(f"Orphan or cross-patient {kind} source line: {line_id}")
+            source_lines[kind].setdefault((claim_id, line_id), []).append(
+                (patient_id, values[3] if kind == "procedure" else None)
+            )
+
+    focused_ids = {spec.rule_id for spec in FOCUSED_RULE_SPECS}
+    if len(focused_ids) != 32:
+        raise ValueError("Focused source roster differs from 32 authored IDs")
+    checked_line_rows = 0
+
+    def check_rows(patient_id: str, detail: dict[str, Any]) -> None:
+        nonlocal checked_line_rows
+        for collection in ("evaluations", "reviews", "advisories", "financial_rows"):
+            rows = detail.get(collection)
+            if not isinstance(rows, list):
+                raise ValueError(f"Wave A {collection} lacks source rows")
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise ValueError(f"Malformed Wave A {collection} source row")
+                kind = row.get("line_kind")
+                if kind == "claim":
+                    continue
+                if kind not in _LINE_SOURCES:
+                    raise ValueError("Wave A source row has unsupported line kind")
+                line_id = row.get("line_id")
+                claim_id = row.get("claim_id")
+                matches = (
+                    source_lines[kind].get((claim_id, line_id), [])
+                    if isinstance(claim_id, str) and isinstance(line_id, str)
+                    else []
+                )
+                owned = sum(owner == patient_id for owner, _ in matches) == 1
+                if not owned:
+                    raise ValueError(f"Wave A {collection} line is absent from pinned {kind} Parquet")
+                checked_line_rows += 1
+                if collection == "financial_rows" and kind == "procedure":
+                    source_reason, expected = _procedure_charge_state(matches, patient_id)
+                    observed = row.get("observed_billed_amount_try")
+                    basis = row.get("observed_amount_basis")
+                    reason = row.get("observed_amount_unavailable_reason")
+                    if source_reason is None:
+                        if basis != _OBSERVED_AMOUNT_BASIS or reason is not None:
+                            raise ValueError("Financial review lacks exact procedure-line amount basis")
+                        if _minor_units(
+                            observed, label="observed procedure billed amount"
+                        ) != expected:
+                            raise ValueError(
+                                "Observed financial amount differs from pinned procedure line"
+                            )
+                    elif observed is not None or basis is not None or reason != source_reason:
+                        raise ValueError("Unavailable observed charge reason differs from pinned procedure line")
+
+    for patient_id, detail in patient_details.items():
+        if detail.get("patient_id") != patient_id or detail.get("claim_scope_inventory") != scopes[
+            patient_id
+        ]:
+            raise ValueError(f"Wave A patient scope differs from pinned claims: {patient_id}")
+        check_rows(patient_id, detail)
+    for key, detail in bill_details.items():
+        if "::" not in key:
+            raise ValueError("Wave A bill evidence key lacks claim identity")
+        patient_id, claim_id = key.split("::", 1)
+        if patient_id not in scopes or detail.get("patient_id") != patient_id:
+            raise ValueError(f"Wave A bill evidence has foreign patient identity: {key}")
+        claim = next(
+            (row for row in scopes[patient_id]["claims"] if row["claim_id"] == claim_id),
+            None,
+        )
+        if detail.get("claim_scope_inventory") != {
+            "context_state": "available",
+            "claims": [claim],
+        }:
+            raise ValueError(f"Wave A bill scope differs from pinned claims: {key}")
+        check_rows(patient_id, detail)
+    if any(pinned[label] != _stable_file_hash(path) for label, path in paths.items()) or (
+        roster_sha != _candidate_db_hash(source_roster)
+    ):
+        raise ValueError("Pinned line inputs or source roster changed during verification")
+    return {
+        "source_roster_sha256": roster_sha,
+        "line_source_sha256": pinned,
+        "patient_detail_count": len(patient_details),
+        "bill_detail_count": len(bill_details),
+        "checked_line_evidence_rows": checked_line_rows,
+        "source_line_counts": {
+            kind: sum(len(matches) for matches in rows.values())
+            for kind, rows in source_lines.items()
+        },
         "release_ready": False,
     }

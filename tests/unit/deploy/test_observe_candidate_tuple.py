@@ -15,6 +15,7 @@ import pytest
 
 from scripts.deploy import observe_candidate_tuple as probe
 from scripts.deploy.capture_release_preflight import _runtime_digest
+from src.bilun.domain.billing.wavea_full_evidence import build_full_wavea_evidence_index
 
 
 def _environment(*items: str) -> bytes:
@@ -50,22 +51,8 @@ def _fixture(tmp_path: Path) -> tuple[probe.CandidateSpec, Path, dict]:
     (frontend / "package.json").write_text('{"name":"candidate"}\n')
 
     cache = tmp_path / "candidate.duckdb"
-    index = {
-        "schema_version": "wavea-evidence-v1",
-        "build_id": build_id,
-        "capability": "complete-25-v1",
-        "available": True,
-        "n_patients": 0,
-        "n_patients_unavailable": 0,
-        "patients": {},
-        "evidence_rows": [],
-        "counts": {
-            "by_rule": {},
-            "by_group": {},
-            "review_count": 0,
-            "financial_count": 0,
-        },
-    }
+    index = build_full_wavea_evidence_index({})
+    index["build_id"] = build_id
     with duckdb.connect(str(cache)) as connection:
         connection.execute(
             "CREATE TABLE build_pointer_scopes(scope VARCHAR, active_build_id VARCHAR)"
@@ -77,6 +64,15 @@ def _fixture(tmp_path: Path) -> tuple[probe.CandidateSpec, Path, dict]:
         connection.execute(
             "CREATE TABLE wavea_evidence_index(build_id VARCHAR, payload_json VARCHAR)"
         )
+        for table in (
+            "patient_billing_report_rows",
+            "wavea_evidence_detail",
+            "patient_bill_billing_report_rows",
+            "wavea_bill_evidence_detail",
+        ):
+            connection.execute(
+                f'CREATE TABLE "{table}"(build_id VARCHAR, patient_id VARCHAR, payload_json VARCHAR)'
+            )
         connection.execute("INSERT INTO build_pointer_scopes VALUES ('bilun', ?)", [build_id])
         connection.execute(
             "INSERT INTO build_meta VALUES (?, 'complete', 'bilun', ?, 'source-hash', ?)",
@@ -87,6 +83,8 @@ def _fixture(tmp_path: Path) -> tuple[probe.CandidateSpec, Path, dict]:
                     {
                         "patient_billing_report_rows": 0,
                         "wavea_evidence_detail": 0,
+                        "patient_bill_billing_report_rows": 0,
+                        "wavea_bill_evidence_detail": 0,
                         "wavea_evidence_index": 1,
                     }
                 ),
@@ -143,7 +141,7 @@ def _fixture(tmp_path: Path) -> tuple[probe.CandidateSpec, Path, dict]:
         "active_build": build_id,
         "code_sha": code_sha,
         "source_manifest_sha256": source_sha,
-        "wavea_capability": "complete-25-v1",
+        "wavea_capability": "draft",
     }
     return spec, proc_root, health
 
@@ -168,6 +166,8 @@ def test_observation_uses_actual_listener_runtime_cache_assets_and_health(tmp_pa
     assert report["backend_listener"]["listener_pid"] == 101
     assert report["frontend_listener"]["listener_pid"] == 202
     assert report["logical_tuple"]["cache"]["build_id"] == "candidate-build"
+    assert report["logical_tuple"]["cache"]["release_attestation"] == "pending"
+    assert report["remaining_gates"] == ["independent_release_attestation_missing"]
     assert report["logical_tuple"]["frontend_build_id"] == "next-build-1"
     assert report["asset_count"] == 1
     assert report["tuple_sha256"] == _observe(spec, proc_root, health)["tuple_sha256"]
@@ -184,7 +184,7 @@ def test_observation_uses_actual_listener_runtime_cache_assets_and_health(tmp_pa
     [
         ("code_sha", "f" * 40, "health identity"),
         ("source_manifest_sha256", "f" * 64, "health identity"),
-        ("wavea_capability", "draft", "health identity"),
+        ("wavea_capability", "complete-25-v1", "health identity"),
         ("active_build", "other-build", "health identity"),
     ],
 )
@@ -244,18 +244,18 @@ def test_effective_environment_and_runtime_mtime_drift_block(tmp_path: Path) -> 
         _observe(spec, proc_root, health)
 
 
-def test_cache_draft_or_modified_bytes_block(tmp_path: Path) -> None:
+def test_cache_forged_complete_marker_or_modified_bytes_block(tmp_path: Path) -> None:
     spec, proc_root, health = _fixture(tmp_path)
     with duckdb.connect(str(spec.cache_path)) as connection:
         index = json.loads(
             connection.execute("SELECT payload_json FROM wavea_evidence_index").fetchone()[0]
         )
-        index["capability"] = "draft"
+        index["capability"] = "complete-25-v1"
         connection.execute("UPDATE wavea_evidence_index SET payload_json = ?", [json.dumps(index)])
     with pytest.raises(ValueError, match="cache bytes differ"):
         _observe(spec, proc_root, health)
     changed = replace(spec, cache_sha256=hashlib.sha256(spec.cache_path.read_bytes()).hexdigest())
-    with pytest.raises(ValueError, match="capability is not complete"):
+    with pytest.raises(ValueError, match="v2 draft index is invalid"):
         _observe(changed, proc_root, health)
 
 
@@ -269,6 +269,8 @@ def test_cache_declared_patient_count_and_index_must_reconcile(tmp_path: Path) -
                     {
                         "patient_billing_report_rows": 1,
                         "wavea_evidence_detail": 0,
+                        "patient_bill_billing_report_rows": 0,
+                        "wavea_bill_evidence_detail": 0,
                         "wavea_evidence_index": 1,
                     }
                 )
@@ -276,6 +278,26 @@ def test_cache_declared_patient_count_and_index_must_reconcile(tmp_path: Path) -
         )
     changed = replace(spec, cache_sha256=hashlib.sha256(spec.cache_path.read_bytes()).hexdigest())
     with pytest.raises(ValueError, match="evidence row counts disagree"):
+        _observe(changed, proc_root, health)
+
+
+def test_cache_bill_detail_keys_must_match_bill_reports(tmp_path: Path) -> None:
+    spec, proc_root, health = _fixture(tmp_path)
+    with duckdb.connect(str(spec.cache_path)) as connection:
+        connection.execute(
+            "INSERT INTO patient_bill_billing_report_rows VALUES (?, 'P1::C1', '{}')",
+            [spec.cache_build_id],
+        )
+        connection.execute(
+            "INSERT INTO wavea_bill_evidence_detail VALUES (?, 'P1::C2', '{}')",
+            [spec.cache_build_id],
+        )
+        counts = json.loads(connection.execute("SELECT row_counts_json FROM build_meta").fetchone()[0])
+        counts["patient_bill_billing_report_rows"] = 1
+        counts["wavea_bill_evidence_detail"] = 1
+        connection.execute("UPDATE build_meta SET row_counts_json = ?", [json.dumps(counts)])
+    changed = replace(spec, cache_sha256=hashlib.sha256(spec.cache_path.read_bytes()).hexdigest())
+    with pytest.raises(ValueError, match="evidence key sets differ"):
         _observe(changed, proc_root, health)
 
 
@@ -292,7 +314,7 @@ def test_cache_wal_or_duplicate_index_json_blocks(tmp_path: Path) -> None:
             "UPDATE wavea_evidence_index SET payload_json = ?",
             [
                 raw.replace(
-                    '"capability": "complete-25-v1",',
+                    '"capability": "draft",',
                     '"capability": "draft", "capability": "complete-25-v1",',
                 )
             ],

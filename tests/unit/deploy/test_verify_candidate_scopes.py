@@ -11,8 +11,12 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from scripts.deploy.verify_candidate_scopes import verify_pinned_claim_scopes
+from scripts.deploy.verify_candidate_scopes import (
+    verify_pinned_claim_scopes,
+    verify_pinned_evidence_lines,
+)
 from src.bilun.domain.billing.broad_rule_catalog import load_broad_rule_catalog
+from src.bilun.domain.billing.focused_rule_projection import FOCUSED_RULE_SPECS
 from src.bilun.domain.billing.rule_findings import build_evaluation_id
 
 _DATA_NAMES = (
@@ -77,6 +81,21 @@ def _write_claim_parquets(root: Path, *, extra_material: dict | None = None) -> 
     if extra_material is not None:
         materials.append(extra_material)
     pq.write_table(pa.Table.from_pylist(materials), claims / "material_claim_lines.parquet")
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1"],
+                "claim_id": ["C1"],
+                "patient_id": ["P1"],
+                "billed_amount_try": ["10.00"],
+            }
+        ),
+        claims / "procedure_claim_lines.parquet",
+    )
+    pq.write_table(
+        pa.table({"drug_claim_line_id": ["DRUG-1"], "claim_id": ["C2"], "patient_id": ["P1"]}),
+        claims / "drug_claim_lines.parquet",
+    )
 
 
 def _detail(patient_id: str, scopes: list[tuple[str, list[str]]]) -> dict:
@@ -129,6 +148,9 @@ def _detail(patient_id: str, scopes: list[tuple[str, list[str]]]) -> dict:
             ],
         },
         "evaluations": evaluations,
+        "reviews": [],
+        "advisories": [],
+        "financial_rows": [],
         "counts": {
             "by_rule": {
                 rule_id: {status: counter[status] for status in _STATUSES}
@@ -247,6 +269,194 @@ def test_pinned_claim_header_patient_cannot_be_omitted_from_reports(tmp_path: Pa
     roster = _write_roster(tmp_path)
     with pytest.raises(ValueError, match="patient is absent from billing report details"):
         verify_pinned_claim_scopes(roster, details)
+
+
+def test_focused_line_and_bill_scope_membership_comes_from_pinned_parquet(tmp_path: Path) -> None:
+    roster, details = _fixture(tmp_path)
+    procedure_rule = next(spec.rule_id for spec in FOCUSED_RULE_SPECS if spec.line_kind == "procedure")
+    focused = {
+        "rule_id": procedure_rule,
+        "patient_id": "P1",
+        "claim_id": "C1",
+        "line_kind": "procedure",
+        "line_id": "PROC-1",
+    }
+    details["P1"]["patient_id"] = "P1"
+    details["P1"]["evaluations"].append(focused)
+    details["P2"]["patient_id"] = "P2"
+    bill = {
+        "patient_id": "P1",
+        "claim_scope_inventory": {
+            "context_state": "available",
+            "claims": [{"claim_id": "C1", "material_line_ids": ["M1", "M2"]}],
+        },
+        "evaluations": [focused.copy()],
+        "reviews": [],
+        "advisories": [],
+        "financial_rows": [],
+    }
+
+    result = verify_pinned_evidence_lines(roster, details, {"P1::C1": bill})
+
+    assert result["checked_line_evidence_rows"] == 19 * 2 + 2
+    assert result["source_line_counts"]["procedure"] == 1
+    assert result["bill_detail_count"] == 1
+
+    bill["evaluations"][0]["line_id"] = "FORGED"
+    with pytest.raises(ValueError, match="absent from pinned procedure Parquet"):
+        verify_pinned_evidence_lines(roster, details, {"P1::C1": bill})
+
+    bill["evaluations"][0]["line_id"] = "PROC-1"
+    bill["claim_scope_inventory"]["claims"][0]["material_line_ids"] = []
+    with pytest.raises(ValueError, match="bill scope differs from pinned claims"):
+        verify_pinned_evidence_lines(roster, details, {"P1::C1": bill})
+
+
+def test_observed_financial_charge_must_equal_owned_pinned_procedure_line(tmp_path: Path) -> None:
+    roster, details = _fixture(tmp_path)
+    for patient_id, detail in details.items():
+        detail["patient_id"] = patient_id
+    source_id = build_evaluation_id(
+        rule_id="yatak_icu_overlap_510010",
+        patient_id="P1",
+        claim_id="C1",
+        line_kind="procedure",
+        line_id="PROC-1",
+    )
+    details["P1"]["evaluations"].append(
+        {
+            "evaluation_id": source_id,
+            "patient_id": "P1",
+            "claim_id": "C1",
+            "line_kind": "procedure",
+            "line_id": "PROC-1",
+        }
+    )
+    row = {
+        "source_evidence_id": source_id,
+        "patient_id": "P1",
+        "claim_id": "C1",
+        "line_kind": "procedure",
+        "line_id": "PROC-1",
+        "observed_amount_basis": "procedure_claim_line.billed_amount_try",
+        "observed_billed_amount_try": 10.0,
+        "observed_amount_unavailable_reason": None,
+    }
+    details["P1"]["financial_rows"] = [row]
+    verify_pinned_evidence_lines(roster, details, {})
+
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1", "PROC-1"],
+                "claim_id": ["C1", "C1"],
+                "patient_id": ["P1", "P2"],
+                "billed_amount_try": ["10.00", "99.00"],
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    verify_pinned_evidence_lines(roster, details, {})
+
+    row["observed_billed_amount_try"] = 10.01
+    with pytest.raises(ValueError, match="differs from pinned procedure line"):
+        verify_pinned_evidence_lines(roster, details, {})
+    row["observed_billed_amount_try"] = None
+    with pytest.raises(ValueError, match="Missing or malformed observed procedure billed amount"):
+        verify_pinned_evidence_lines(roster, details, {})
+
+    row["observed_billed_amount_try"] = 10.0
+    row["observed_amount_basis"] = "estimated_total"
+    with pytest.raises(ValueError, match="exact procedure-line amount basis"):
+        verify_pinned_evidence_lines(roster, details, {})
+
+    row["observed_amount_basis"] = "procedure_claim_line.billed_amount_try"
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1"],
+                "claim_id": ["C1"],
+                "patient_id": ["P1"],
+                "billed_amount_try": pa.array([None], type=pa.string()),
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    with pytest.raises(ValueError, match="Unavailable observed charge reason differs"):
+        verify_pinned_evidence_lines(roster, details, {})
+    row.update(
+        observed_billed_amount_try=None,
+        observed_amount_basis=None,
+        observed_amount_unavailable_reason="procedure_line_charge_invalid",
+    )
+    verify_pinned_evidence_lines(roster, details, {})
+
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1", "PROC-1"],
+                "claim_id": ["C1", "C1"],
+                "patient_id": ["P1", "P1"],
+                "billed_amount_try": ["10.00", "10.00"],
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    with pytest.raises(ValueError, match="line is absent from pinned procedure Parquet"):
+        verify_pinned_evidence_lines(roster, details, {})
+    row["observed_amount_unavailable_reason"] = "procedure_line_ambiguous"
+    with pytest.raises(ValueError, match="line is absent from pinned procedure Parquet"):
+        verify_pinned_evidence_lines(roster, details, {})
+
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["OTHER"],
+                "claim_id": ["C1"],
+                "patient_id": ["P1"],
+                "billed_amount_try": ["10.00"],
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    row["observed_amount_unavailable_reason"] = "procedure_line_missing"
+    with pytest.raises(ValueError, match="line is absent from pinned procedure Parquet"):
+        verify_pinned_evidence_lines(roster, details, {})
+
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1"],
+                "claim_id": ["C1"],
+                "patient_id": ["P2"],
+                "billed_amount_try": ["10.00"],
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    row["observed_amount_unavailable_reason"] = "procedure_line_owner_mismatch"
+    with pytest.raises(ValueError, match="line is absent from pinned procedure Parquet"):
+        verify_pinned_evidence_lines(roster, details, {})
+
+    pq.write_table(
+        pa.table(
+            {
+                "procedure_line_id": ["PROC-1"],
+                "claim_id": ["C1"],
+                "patient_id": ["P1"],
+                "billed_amount_try": ["10.001"],
+            }
+        ),
+        tmp_path / "claim" / "procedure_claim_lines.parquet",
+    )
+    roster = _write_roster(tmp_path)
+    row["observed_amount_unavailable_reason"] = "procedure_line_charge_not_cent_exact"
+    verify_pinned_evidence_lines(roster, details, {})
 
 
 def test_missing_required_manifest_source_blocks(tmp_path: Path) -> None:

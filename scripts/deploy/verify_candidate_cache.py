@@ -33,6 +33,9 @@ _BUILDER_TABLES = frozenset(
         "patient_alert_rows",
         "patient_billing_report_rows",
         "patient_bill_billing_report_rows",
+        "wavea_evidence_detail",
+        "wavea_bill_evidence_detail",
+        "wavea_evidence_index",
         "cohort_recovery_summary",
         "cohort_compliance_index",
         "patient_detail_cache",
@@ -44,6 +47,7 @@ _PATIENT_KEY_TABLES = (
     "patient_billing_report_rows",
     "patient_detail_cache",
     "patient_outcome_base",
+    "wavea_evidence_detail",
 )
 
 
@@ -189,15 +193,33 @@ def _scan_table(
                     else:
                         value = _parse_json(value, context=f"{table}.{column}")
                 normalized[column] = value
-            if table in {"patient_billing_report_rows", "patient_bill_billing_report_rows"}:
+            if table in {
+                "patient_billing_report_rows",
+                "patient_bill_billing_report_rows",
+                "wavea_evidence_detail",
+                "wavea_bill_evidence_detail",
+            }:
                 payload = normalized["payload_json"]
                 patient_id = key.split("::", 1)[0]
                 if not isinstance(payload, dict) or payload.get("patient_id") != patient_id:
-                    raise ValueError(f"Billing report patient identity mismatch in {table}")
+                    raise ValueError(f"Patient identity mismatch in {table}")
                 if table == "patient_bill_billing_report_rows" and (
                     "::" not in key or payload.get("claim_id") != key.split("::", 1)[1]
                 ):
                     raise ValueError("Bill report claim identity mismatch")
+                if table == "wavea_bill_evidence_detail":
+                    inventory = payload.get("claim_scope_inventory")
+                    claims = inventory.get("claims") if isinstance(inventory, dict) else None
+                    if (
+                        "::" not in key
+                        or not key.split("::", 1)[1]
+                        or not isinstance(claims, list)
+                        or len(claims) != 1
+                        or not isinstance(claims[0], dict)
+                        or inventory.get("context_state") != "available"
+                        or claims[0].get("claim_id") != key.split("::", 1)[1]
+                    ):
+                        raise ValueError("Bill evidence claim identity mismatch")
             digest.update(_canonical_bytes(normalized))
             digest.update(b"\n")
             count += 1
@@ -330,11 +352,14 @@ def verify_candidate_cache(
             for key in bill_keys
         ):
             raise ValueError("Orphan or malformed bill report key")
+        if table_keys["wavea_bill_evidence_detail"] != bill_keys:
+            raise ValueError("Bill evidence key set differs from bill report keys")
         for table in (
             "cohort_optimization_summary",
             "cohort_recovery_summary",
             "cohort_compliance_index",
             "patient_alerts_summary",
+            "wavea_evidence_index",
         ):
             if table_summaries[table]["row_count"] != 1:
                 raise ValueError(f"Required cohort/cache singleton is missing: {table}")

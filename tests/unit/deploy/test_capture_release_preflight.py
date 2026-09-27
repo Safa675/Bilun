@@ -294,6 +294,32 @@ def test_backend_runtime_digest_excludes_mutable_linked_worktrees(tmp_path: Path
     )
 
 
+def test_frontend_runtime_digest_excludes_only_vitest_result_cache(tmp_path: Path) -> None:
+    live = tmp_path / "live"
+    snapshot = tmp_path / "snapshot"
+    for root in (live, snapshot):
+        (root / "node_modules" / ".vite" / "vitest").mkdir(parents=True)
+        (root / "node_modules" / "next" / "dist").mkdir(parents=True)
+        (root / ".next" / "static").mkdir(parents=True)
+        (root / "node_modules" / "next" / "dist" / "server.js").write_text("next")
+        (root / ".next" / "static" / "app.js").write_text("asset")
+    (live / "node_modules" / ".vite" / "vitest" / "results.json").write_text("new")
+    (snapshot / "node_modules" / ".vite" / "vitest" / "results.json").write_text("old")
+    assert preflight._runtime_digest(live, backend=False) == preflight._runtime_digest(
+        snapshot, backend=False
+    )
+
+    (snapshot / "node_modules" / "next" / "dist" / "server.js").write_text("different")
+    assert preflight._runtime_digest(live, backend=False) != preflight._runtime_digest(
+        snapshot, backend=False
+    )
+    (snapshot / "node_modules" / "next" / "dist" / "server.js").write_text("next")
+    (snapshot / ".next" / "static" / "app.js").write_text("different")
+    assert preflight._runtime_digest(live, backend=False) != preflight._runtime_digest(
+        snapshot, backend=False
+    )
+
+
 def test_environment_file_changed_after_process_start_blocks_rollback_readiness(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -79,6 +79,13 @@ def _runtime_digest(root: Path, *, backend: bool) -> str:
         relative_dir = current_path.relative_to(root)
         if relative_dir == Path("."):
             directories[:] = sorted(name for name in directories if name not in ignored_roots)
+        elif not backend and relative_dir == Path("node_modules/.vite"):
+            # Vitest rewrites its test-result cache after a serving snapshot is
+            # taken; Next does not load this directory when serving requests.
+            directories[:] = sorted(
+                name for name in directories
+                if name != "vitest" or (current_path / name).is_symlink()
+            )
         else:
             directories.sort()
         for name in tuple(directories):

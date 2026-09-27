@@ -1,9 +1,9 @@
 """Read-only candidate listener and artifact observation for a future release gate.
 
-There is no launcher or activation command here. The candidate cannot pass
-until its backend reports startup-pinned code/source identity and its cache
-contains the completed Wave A capability. A separate semantic verifier must
-still attest every cached payload before a release can be activated.
+There is no launcher or activation command here. The private candidate must
+report startup-pinned code/source identity and a valid immutable v2 draft
+cache. Separate semantic and release attestation gates must still authorize
+public activation.
 """
 
 from __future__ import annotations
@@ -27,7 +27,11 @@ from scripts.deploy.capture_release_preflight import (
     _runtime_digest,
     _stable_file_digest,
 )
-from src.bilun.domain.billing.wavea_evidence import complete_evidence_available
+from src.bilun.domain.billing.wavea_full_evidence import (
+    FULL_EVIDENCE_SCHEMA_VERSION,
+    FULL_ROSTER_VERSION,
+    validate_full_wavea_evidence_index,
+)
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _CODE_SHA = re.compile(r"[0-9a-f]{40}\Z")
@@ -197,7 +201,7 @@ def _process_observation(
 
 
 def _authoritative_files_predate_listener(root: Path, started: datetime, *, backend: bool) -> None:
-    ignored_roots = {".git", ".cache", "frontend"} if backend else {".git"}
+    ignored_roots = {".git", ".cache", ".worktrees", "frontend"} if backend else {".git"}
     for current, directories, files in os.walk(root, followlinks=False):
         current_path = Path(current)
         if current_path == root:
@@ -269,10 +273,43 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
             or counts["patient_billing_report_rows"] < 0
             or type(counts.get("wavea_evidence_detail")) is not int
             or counts["wavea_evidence_detail"] != counts["patient_billing_report_rows"]
+            or type(counts.get("patient_bill_billing_report_rows")) is not int
+            or counts["patient_bill_billing_report_rows"] < 0
+            or type(counts.get("wavea_bill_evidence_detail")) is not int
+            or counts["wavea_bill_evidence_detail"] != counts["patient_bill_billing_report_rows"]
             or type(counts.get("wavea_evidence_index")) is not int
             or counts["wavea_evidence_index"] != 1
         ):
             raise ValueError("Candidate cache evidence row counts disagree")
+
+        def keys(table: str, expected: int) -> set[str]:
+            rows = connection.execute(
+                f'SELECT patient_id FROM "{table}" WHERE build_id = ?',
+                [spec.cache_build_id],
+            ).fetchall()
+            identities = [row[0] for row in rows]
+            if (
+                len(identities) != expected
+                or any(not isinstance(key, str) or not key for key in identities)
+                or len(set(identities)) != len(identities)
+            ):
+                raise ValueError(f"Candidate cache {table} row keys differ from declared count")
+            return set(identities)
+
+        patient_keys = keys(
+            "patient_billing_report_rows", counts["patient_billing_report_rows"]
+        )
+        detail_keys = keys("wavea_evidence_detail", counts["wavea_evidence_detail"])
+        bill_keys = keys(
+            "patient_bill_billing_report_rows", counts["patient_bill_billing_report_rows"]
+        )
+        bill_detail_keys = keys(
+            "wavea_bill_evidence_detail", counts["wavea_bill_evidence_detail"]
+        )
+        if patient_keys != detail_keys or bill_keys != bill_detail_keys or any(
+            "::" not in key or key.split("::", 1)[0] not in patient_keys for key in bill_keys
+        ):
+            raise ValueError("Candidate cache Wave A evidence key sets differ from reports")
         evidence = connection.execute(
             "SELECT payload_json FROM wavea_evidence_index WHERE build_id = ?",
             [spec.cache_build_id],
@@ -283,11 +320,18 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
             index = _strict_json(evidence[0][0])
         except (TypeError, ValueError) as exc:
             raise ValueError("Candidate Wave A evidence index is malformed") from exc
+        try:
+            validate_full_wavea_evidence_index(index)
+        except ValueError as exc:
+            raise ValueError("Candidate Wave A v2 draft index is invalid") from exc
         if (
-            not complete_evidence_available(index, spec.cache_build_id)
+            index.get("build_id") != spec.cache_build_id
+            or index.get("schema_version") != FULL_EVIDENCE_SCHEMA_VERSION
+            or index.get("roster_version") != FULL_ROSTER_VERSION
             or index["n_patients"] != counts["patient_billing_report_rows"]
+            or set(index["patients"]) != patient_keys
         ):
-            raise ValueError("Candidate Wave A evidence capability is not complete")
+            raise ValueError("Candidate Wave A v2 index identity/counts differ")
     if path.with_name(path.name + ".wal").exists() or _stable_file_digest(path) != before:
         raise ValueError("Candidate cache changed during observation")
     return {
@@ -295,7 +339,10 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
         "sha256": before,
         "build_id": spec.cache_build_id,
         "source_hash": spec.cache_source_hash,
-        "evidence_capability": "complete-25-v1",
+        "evidence_capability": "draft",
+        "release_attestation": "pending",
+        "patient_count": len(patient_keys),
+        "bill_count": len(bill_keys),
     }
 
 
@@ -389,7 +436,7 @@ def observe_candidate_tuple(
             "active_build": spec.cache_build_id,
             "code_sha": spec.code_sha,
             "source_manifest_sha256": spec.source_manifest_sha256,
-            "wavea_capability": "complete-25-v1",
+            "wavea_capability": "draft",
         }.items()
     ):
         raise ValueError("Candidate backend health identity differs from artifacts")
@@ -443,6 +490,7 @@ def observe_candidate_tuple(
     return {
         "status": "candidate_tuple_observed",
         "activation_ready": False,
+        "remaining_gates": ["independent_release_attestation_missing"],
         "tuple_sha256": _canonical_digest(logical_tuple),
         "listener_identity_sha256": _canonical_digest(
             {

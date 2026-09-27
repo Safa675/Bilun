@@ -64,6 +64,7 @@ def _cache_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
                 "patient_billing_report_rows",
                 "patient_detail_cache",
                 "patient_outcome_base",
+                "wavea_evidence_detail",
             ):
                 con.execute(
                     f"INSERT INTO {table} (build_id, patient_id, payload_json) VALUES (?, ?, ?)",
@@ -92,14 +93,40 @@ def _cache_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
                     ),
                 ],
             )
+            con.execute(
+                "INSERT INTO wavea_bill_evidence_detail "
+                "(build_id, patient_id, payload_json) VALUES (?, ?, ?)",
+                [
+                    BUILD_ID,
+                    f"{patient_id}::C-{patient_id}",
+                    json.dumps(
+                        {
+                            "patient_id": patient_id,
+                            "claim_scope_inventory": {
+                                "context_state": "available",
+                                "claims": [
+                                    {"claim_id": f"C-{patient_id}", "material_line_ids": []}
+                                ],
+                            },
+                        }
+                    ),
+                ],
+            )
+        con.execute(
+            "INSERT INTO wavea_evidence_index (build_id, payload_json) VALUES (?, ?)",
+            [BUILD_ID, json.dumps({"n_patients": 2})],
+        )
         for table in (
             "patient_meta",
             "patient_billing_report_rows",
             "patient_detail_cache",
             "patient_outcome_base",
             "patient_bill_billing_report_rows",
+            "wavea_evidence_detail",
+            "wavea_bill_evidence_detail",
         ):
             counts[table] = 2
+        counts["wavea_evidence_index"] = 1
         con.execute(
             """INSERT INTO build_meta (
                 build_id, status, created_at, finished_at, code_sha, source_hash,
@@ -249,7 +276,7 @@ def test_orphan_bill_and_foreign_build_rows_block(tmp_path: Path):
         "UPDATE patient_bill_billing_report_rows SET patient_id = 'P9::C' "
         "WHERE patient_id = 'P1::C-P1'",
     )
-    with pytest.raises(ValueError, match="Billing report patient identity mismatch"):
+    with pytest.raises(ValueError, match="Patient identity mismatch"):
         _verify(db_path, manifest)
 
     _execute(
@@ -278,6 +305,36 @@ def test_hardlinked_database_cannot_be_called_isolated(tmp_path: Path):
     db_path, manifest, _ = _cache_fixture(tmp_path)
     os.link(db_path, tmp_path / "other-cache.duckdb")
     with pytest.raises(ValueError, match="independent regular file"):
+        _verify(db_path, manifest)
+
+
+def test_bill_evidence_requires_exact_bill_keys_and_claim_identity(tmp_path: Path):
+    db_path, manifest, _ = _cache_fixture(tmp_path)
+    _execute(
+        db_path,
+        "UPDATE wavea_bill_evidence_detail SET patient_id = 'P1::OTHER', "
+        "payload_json = ? WHERE patient_id = 'P1::C-P1'",
+        [
+            json.dumps(
+                {
+                    "patient_id": "P1",
+                    "claim_scope_inventory": {
+                        "context_state": "available",
+                        "claims": [{"claim_id": "OTHER", "material_line_ids": []}],
+                    },
+                }
+            )
+        ],
+    )
+    with pytest.raises(ValueError, match="Bill evidence key set differs"):
+        _verify(db_path, manifest)
+
+    _execute(
+        db_path,
+        "UPDATE wavea_bill_evidence_detail SET patient_id = 'P1::C-P1' "
+        "WHERE patient_id = 'P1::OTHER'",
+    )
+    with pytest.raises(ValueError, match="Bill evidence claim identity mismatch"):
         _verify(db_path, manifest)
 
 
