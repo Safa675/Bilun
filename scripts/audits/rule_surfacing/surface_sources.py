@@ -7,9 +7,13 @@ unused imports and uncalled local functions do not. No runtime reachability or
 arbitrary TypeScript evaluation is claimed.
 """
 
-from collections.abc import Mapping
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
 from pathlib import Path
+from .model import AuditContext
+
+from collections.abc import Mapping
+from dataclasses import field
 
 from .tsx_tokens import Token, expression_end, fail, group_end, tokenize
 
@@ -325,3 +329,96 @@ class SurfaceSourceResolver:
         if section_id is not None and not any(section_id in ids for _, ids in tags):
             raise fail(f"section ID {section_id!r} not rendered by {component_name}")
         return sorted(paths | {path})
+
+
+def discover_deep_link_sections(ctx: AuditContext) -> dict[str, str]:
+    text = ctx.recommended_actions_path.read_text(encoding="utf-8")
+    match = re.search(
+        r"const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = \{(?P<body>.*?)\n\};",
+        text,
+        flags=re.DOTALL,
+    )
+    if match is None:
+        raise ValueError("RECOMMENDED_ACTION_SECTION_IDS not found")
+    return dict(
+        re.findall(r'^\s*([A-Za-z0-9_]+):\s*"([^"]+)",?\s*$', match.group("body"), flags=re.MULTILINE)
+    )
+
+
+def _require_source_token(ctx: AuditContext, path: Path, token: str, *, label: str) -> None:
+    if token not in path.read_text(encoding="utf-8"):
+        raise ValueError(f"{label} source drift: {token!r} missing from {ctx.relative_path(path)}")
+
+
+def _patient_ui_evidence_paths(ctx: AuditContext, patient_ui: str) -> list[Path]:
+    views = {
+        "ComplianceViewSection": ctx.compliance_view_path,
+        "RevenueViewSection": ctx.revenue_view_path,
+        "AuditViewSection": ctx.audit_view_path,
+    }
+    resolver = SurfaceSourceResolver(ctx.frontend_source_root, views)
+    if patient_ui == "RecommendedActionsPanel":
+        return sorted({
+            path
+            for view in ("RevenueViewSection", "AuditViewSection")
+            for path in resolver.component_evidence(view, patient_ui)
+        })
+    if "#" in patient_ui:
+        component, section_id = patient_ui.split("#", 1)
+        return resolver.view_evidence(component, section_id=section_id)
+    if ":" in patient_ui:
+        component, child = patient_ui.split(":", 1)
+        section_ids = {
+            "CopayOptimizationSection": "billing-copay",
+            "BillingStrategySection": "billing-strategy",
+            "SessionUpliftSection": "billing-session-uplift",
+            "DrgUpliftSection": "billing-drg-uplift",
+            "BloodComponentUpliftSection": "billing-blood-uplift",
+            "MaterialUpliftSection": "billing-material-uplift",
+            "CareSettingReviewSection": "billing-care-setting-review",
+            "DrgPackageAdequacyReviewSection": "billing-drg-package-adequacy",
+            "ProcedureAddonUpliftSection": "billing-procedure-addon-uplift",
+            "MedulaRejectionPlaybookSection": "medula-playbook",
+            "ClaimSubmissionChecklistSection": "claim-submission-checklist",
+            "DrugIndicationReviewSection": "drug-indication",
+            "MaterialsPreCheckSection": "materials-pre-check",
+        }
+        if child not in section_ids:
+            raise ValueError(f"patient UI source: unknown component contract {child}")
+        return resolver.component_evidence(component, child, section_id=section_ids[child])
+
+    section_ids = [value for value in patient_ui.split(",") if value]
+    if not section_ids:
+        raise ValueError("empty patient UI metadata")
+    section_components = {
+        "billing-lab": ("ComplianceViewSection", "LabOptimizationSection"),
+        "billing-procedure-capture-gap": ("RevenueViewSection", "ProcedureCaptureGapSection"),
+    }
+    paths: set[Path] = set()
+    for section_id in section_ids:
+        if section_id not in section_components:
+            raise ValueError(f"patient UI source: unknown section contract {section_id}")
+        view, child = section_components[section_id]
+        paths.update(resolver.component_evidence(view, child, section_id=section_id))
+    return sorted(paths)
+
+
+def _cohort_api_evidence_path(ctx: AuditContext, cohort_api: str) -> Path:
+    route = cohort_api.split("?", 1)[0]
+    path = {
+        "/compliance-index": ctx.compliance_api_path,
+        "/patient-alerts": ctx.alerts_api_path,
+    }.get(route)
+    if path is None:
+        raise ValueError(f"unknown cohort API metadata route: {cohort_api}")
+    _require_source_token(ctx, path, f'@router.get("{route}"', label="cohort API")
+    return path
+
+
+def _cohort_ui_evidence_path(ctx: AuditContext, cohort_ui: str) -> Path:
+    prefix = "SUTComplianceDashboard:"
+    if not cohort_ui.startswith(prefix):
+        raise ValueError(f"unknown cohort UI metadata: {cohort_ui}")
+    surface = cohort_ui[len(prefix) :]
+    _require_source_token(ctx, ctx.cohort_dashboard_path, f'"{surface}"', label="cohort UI")
+    return ctx.cohort_dashboard_path

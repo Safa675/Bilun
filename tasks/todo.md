@@ -1,3 +1,31 @@
+## Task: Complete hotspot refactoring delivery F — audit decomposition
+
+### Goal
+Give audit discovery, classifications, reconciliation, rendering, and CLI their own modules without changing generated outputs or the supported CLI, then publish the final focused PR after E.
+
+### Subtasks
+- [x] Create an isolated F worktree from C head `b5bae476` with D/E integration deferred until their verified merges.
+- [x] Independently review the approved F boundaries, existing imports/test patch points, source root behavior, and every CLI mode before code edits.
+- [x] Capture byte-exact baseline JSON/Markdown, CLI outputs and 1,119 tracked artifact hashes in this worktree before any Python test writers.
+- [x] Mechanically extract model, metadata, Python source resolution, inventory validation/rollups, rendering and CLI into `scripts/audits/rule_surfacing/`; keep the old script pathname and callable compatibility.
+- [x] Prove generated JSON/Markdown and all supported CLI modes are byte identical; preserve missing-surface and source-contract failures.
+- [ ] In a separate commit, replace only the exact-format literal deep-link map regex using the bounded token reader, with realistic valid syntax and computed/spread/unresolved rejection regressions.
+- [ ] Run focused audit tests, full backend gates, standalone CLI from repository and isolated cwd, sequential compiler/manifest checks, and tracked artifact drift checks.
+- [ ] Obtain independent review of source-vs-classification proof, path handling, imports/patch points and diff; resolve substantive findings.
+- [ ] Integrate verified E main, rerun affected checks, publish and attach focused PR, verify current-revision CI/reviews and merge only after all gates pass.
+- [ ] Run both frontend and backend gates on final integrated main and complete all three responsibility-locality walkthroughs in the approved plan.
+- [ ] Record PR/revisions/verification and finish the agreed refactor only after the completion audit passes.
+
+### Out of Scope
+Changing detector semantics, rule coverage/classifications/counts, audit report formatting, frontend/clinical/financial behavior, canonical findings, new dependencies, production data/cache, deployment and unrelated user work.
+
+### Review
+The independent read-only inventory defines explicit ownership across `model`, `metadata`, `python_sources`, `surface_sources`, `inventory`, `render`, and `cli`, with the old script retaining compatible callables and a single root/path context. Tests patch nine old-script path globals, three path helpers, and `PATIENT_REPORT_META`; the extraction must keep those seams observable. The map reader is a separate bounded change after pure extraction. Baseline direct `python -I` behavior was captured from `/tmp` for default, check, full/chunk/combined prints and invalid arguments in `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-f`; successful full JSON and Markdown hashes exactly match C's baseline. All 1,119 tracked artifacts are unchanged. F can be implemented in parallel with D/E integration, but publication remains last. Worktree `/root/worktrees/bilun-audit-decomposition`, branch `refactor/hotspot-audit-decomposition`.
+
+The frozen mechanical extraction moves audit ownership to the planned modules while retaining a script-path facade with explicit call-time `AuditContext` from the original root, patched globals and three helper callbacks. Independent review found no actionable issue: all 52 original function bodies are unchanged apart from explicit context plumbing, all 27 facade wrapper signatures and 12 metadata tables remain compatible, and import/source-proof boundaries hold. Scoped Ruff and 78 focused tests passed. All 12 captured direct CLI cases preserve exit codes and stdout; successful modes and parser-exclusivity stderr are byte-identical, while invalid-chunk exception text remains exact with expected relocated traceback frames. Generated JSON/Markdown bytes and all 1,119 tracked artifact hashes remain unchanged. Evidence and the independent review are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-f`. The literal-map reader remains a separate next commit.
+
+---
+
 ## Task: Complete hotspot refactoring delivery E — drug routing, constraints and evaluation
 
 ### Goal
