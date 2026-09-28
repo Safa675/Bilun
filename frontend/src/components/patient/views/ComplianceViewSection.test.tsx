@@ -88,7 +88,7 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain(">2<");
   });
 
-  it("renders compact structural coverage summary '25 yapısal kontrol değerlendirildi · 0 ek bulgu'", () => {
+  it("renders structural coverage as a distinct subset without implying a clean result", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
         <ComplianceViewSection billingReport={baseReport} />
@@ -96,8 +96,8 @@ describe("ComplianceViewSection", () => {
       "tr",
     );
 
-    expect(html).toContain("25 yapısal kontrol değerlendirildi · 0 ek bulgu");
-    expect(html).toContain("Değerlendirilmiş olması uygun olduğu anlamına gelmez.");
+    expect(html).toContain("Yapısal kontroller: 25 değerlendirme · 0 bulgu");
+    expect(html).toContain("Yalnızca yapısal kontrollerin özeti; değerlendirme uygunluk kararı değildir.");
     // No details disclosure when all are evaluated
     expect(html).not.toContain("<details");
   });
@@ -134,7 +134,7 @@ describe("ComplianceViewSection", () => {
       "tr",
     );
 
-    expect(html).toContain("23 yapısal kontrol değerlendirildi · 0 ek bulgu");
+    expect(html).toContain("Yapısal kontroller: 23 değerlendirme · 0 bulgu");
     expect(html).toContain("1 eksik girdi");
     expect(html).toContain("1 değerlendirilemedi");
     expect(html).toContain("<details");

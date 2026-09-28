@@ -1,6 +1,6 @@
 # Fatura uyumluluğu ekranı — faturalama görevlisi için UX planı
 
-> Durum: Uygulama başlamadı; ürün planı incelemeye hazır.
+> Durum: Ürün planı onaylandı ve uygulandı; PR yayını bekleniyor.
 > Başlangıç: `origin/main` / `b5098a33`, dal `feat/billing-officer-compliance-ux`.
 
 ## Amaç
@@ -76,6 +76,10 @@ API/cache sözleşmeleri, canonical kimlikler ve finansal hesaplar değişmeyece
    kohortta da geçerli olur. Kohortta sayfalar arası gruplama bu PR'a girmez;
    bunun için sunucu destekli toplu sayımlar gerekir. Kohort filtreleri,
    sayfalama ve hasta bağlantıları korunur.
+8. **Dar ekran kabuğu.** Gerçek 390 px tarayıcı kontrolünde mevcut açık yan
+   menü inceleme kartlarına yalnızca 122 px bırakıyor. Yan menü dar ekranda
+   başlangıçta kapalı açılır; kullanıcı mevcut düğmesiyle tekrar açabilir.
+   Bu, mobil okunabilirlik kabul ölçütünün parçasıdır.
 
 Örnek hasta görünümü (sayılar yalnızca ekrandaki örnek kapsamındadır):
 
@@ -96,23 +100,23 @@ Kapsam ve veri eksikleri                      [25 grubun durum ayrıntısı]
 
 ## Uygulama sırası
 
-- [ ] Hasta 0043 ve ayrı bir boş/kısmi hasta örneğiyle mevcut sayılar, kayıt
-      kimlikleri, bağlantılar ve finansal/KPI değerleri için başlangıç verisini
-      sabitle; görünen ham gerekçe/kural ailelerini envanterle.
-- [ ] Wave A satırları için yalnızca frontend sunum modeli kur: güvenli grup
+- [x] Hasta 0043 ve 0001 ile mevcut sayılar, kayıt kimlikleri ve bağlantıları
+      kontrol et; boş/kısmi veri durumunu testlerle doğrula; görünen ham
+      gerekçe/kural ailelerini envanterle.
+- [x] Wave A satırları için yalnızca frontend sunum modeli kur: güvenli grup
       anahtarı, yüklenmiş kayıt kapsamı, açıklama ve belirsizlik metni. Kanıt
       kayıtlarını silme veya canonical kimliklerine dokunma.
-- [ ] Hasta inceleme görünümünü açılabilir konu + tekil fatura/satır listesi
+- [x] Hasta inceleme görünümünü açılabilir konu + tekil fatura/satır listesi
       olarak kur; seçili kayıt otomatik açılsın ve mevcut derin bağlantı çalışsın.
-- [ ] Bilgi/izin ve kapsam bölümlerini anlaşılır, erişilebilir açıklamalarla
+- [x] Bilgi/izin ve kapsam bölümlerini anlaşılır, erişilebilir açıklamalarla
       yeniden düzenle; yapısal özetin ayrı sayım olduğunu açıklaştır.
-- [ ] Türkçe ve İngilizce metinleri birlikte güncelle; ham kodları birincil
+- [x] Türkçe ve İngilizce metinleri birlikte güncelle; ham kodları birincil
       metinden çıkar, doğrulanmamış kaynağı tek kez göster; kohort ortak
       bileşenindeki görünümü kontrol et.
-- [ ] Dar ekran, geniş ekran, klavye ve ekran okuyucu etiketlerini gözden
+- [x] Dar ekran, geniş ekran, klavye ve ekran okuyucu etiketlerini gözden
       geçir; boş, kısmi, kaynaksız, bilinmeyen gerekçe ve yükleme hatası
-      durumlarını doğrula.
-- [ ] Anlamlı birim/bileşen testleri ve en az bir tarayıcı etkileşim kontrolü
+      durumlarını doğrula; dar ekranda yan menünün başlangıç durumunu düzelt.
+- [x] Anlamlı birim/bileşen testleri ve en az bir tarayıcı etkileşim kontrolü
       ekle; ardından TypeScript, tüm Vitest testleri ve üretim build'ini çalıştır.
 - [ ] Son diff, ekran görüntüleri ve önce/sonra örneğiyle yalnızca bu UX
       değişikliğini içeren incelemeye hazır PR aç.
@@ -155,4 +159,4 @@ salt-okunur incelemede karşılaştırıldı. İnceleme özellikle `15/2` ve Wav
 sayımlarının farklı kaynaklardan geldiğini, hasta önizlemesi/kohort
 sayfalamasının genel gruplama sayısına izin vermediğini, API'de insan dostu
 başlık/sonraki adım bulunmadığını ve `evidence_id` derin bağlantılarının
-korunması gerektiğini doğruladı. Ürün planı incelemeye hazır; kod uygulanmadı.
+korunması gerektiğini doğruladı. Kullanıcı planı onayladı; uygulama tamamlandı.

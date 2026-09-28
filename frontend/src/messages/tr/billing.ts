@@ -422,31 +422,149 @@ const billing = {
     "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
   },
   "wavea": {
-    "reviewTitle": "Yalnızca inceleme gerektiren kural gözlemleri",
-    "advisoryTitle": "Bilgilendirme ve izin sonuçları",
-    "advisoryNotice": "Bu gözlemler gerektiğinde inceleme gerektirir; ihlal ve finansal toplamlara dahil değildir.",
+    "reviewTitle": "İnsan incelemesi gerekli",
+    "reviewHeading": "İnsan incelemesi gerekli",
+    "reviewNotice": "Bu kayıtlar henüz ihlal veya finansal kazanç olarak sayılmadı. Fatura ve kaynak koşullarını doğrulayın.",
+    "reviewCount": "Toplam {count} inceleme kaydı",
+    "shownClaimCount": "Gösterilen kayıtlarda {count} fatura",
+    "claimReferenceUnavailable": "Bu gözlemde fatura kimliği yok",
+    "reviewGroupDetails": "Fatura ve kanıtları göster ({count})",
+    "advisoryTitle": "Bilgi ve koşullu izinler",
+    "advisoryCount": "{count} bilgi veya koşullu izin kaydı",
+    "advisoryNotice": "Bilgi kayıtları karar değildir; izinler yalnızca kaynak ve koşullar doğrulanırsa uygulanabilir. Bu kayıtlar ihlal ve finansal toplamlara dahil değildir.",
     "financialTitle": "Ayrı finansal kanıtlar",
-    "coverageTitle": "Wave A değerlendirme kapsamı",
-    "coverageSummary": "{groups} grup · {evaluated} değerlendirildi · {missing} eksik girdi · {unavailable} değerlendirilemedi",
-    "coveragePartial": "Bazı fatura girdileri yok; bu sayılar sorunsuz sonuç anlamına gelmez.",
+    "coverageTitle": "Değerlendirme kapsamı",
+    "coverageCompact": "Değerlendirme kısmi; bazı kurallar için girdi eksik veya sonuç kullanılamıyor.",
+    "coverageComplete": "Kapsam bilgisi mevcut; değerlendirilmiş olması uygunluk sonucu değildir.",
+    "coverageDetails": "Kapsam ve veri eksikleri",
+    "coverageExplainer": "Sayılar kural değerlendirmelerine aittir; fatura, ihlal veya uygun sonuç sayısı değildir. Eksik girdi ve değerlendirilemeyen durumlar sorunsuz sonuç sayılmaz.",
+    "coverageSummary": "{groups} kural grubu · {evaluated} değerlendirilen · {missing} eksik girdi · {unavailable} değerlendirilemeyen",
+    "coveragePartial": "Bazı fatura girdileri veya değerlendirme sonuçları kullanılamıyor; bu durum sorunsuz sonuç anlamına gelmez.",
     "partialCohort": "Seçili {count} hastanın fatura girdileri eksik. Verisi bulunan hastaların bulguları gösteriliyor; eksik girdiler sorunsuz sonuç anlamına gelmez.",
-    "groupDetails": "Grup durum sayılarını göster",
+    "groupDetails": "Kural grubu durumlarını göster",
     "groupCounts": "{evaluated} değerlendirildi · {missing} eksik · {unavailable} değerlendirilemedi",
     "unavailable": "Wave A kanıtları bu derleme veya fatura için kullanılamıyor. Bu, sıfır bulgu olduğu anlamına gelmez.",
     "noRows": "Seçili kapsamda bu kategoride gözlem yok.",
-    "type": "Sonuç",
-    "ruleAndReason": "Kural ve gerekçe",
+    "type": "Durum",
+    "ruleAndReason": "Konu ve kontrol edilecek nokta",
     "claimAndLine": "Fatura ve kaynak satır",
     "source": "Kaynak referansı",
+    "sourceStatus": "Kaynak durumu",
     "patient": "Hasta",
     "amount": "Ayrı tutar",
-    "review": "Yalnızca inceleme",
-    "information": "Bilgilendirme · yalnızca inceleme",
-    "permission": "İzin · koşulları kontrol edin",
+    "review": "İnsan incelemesi",
+    "information": "Bilgi kaydı",
+    "permission": "Koşullu izin",
     "risk": "Risk tutarı",
     "uplift": "Tahsil edilebilir artış adayı",
-    "sourceLocator": "Kaynak konumu; uygulanabilirlik doğrulanmadı",
-    "sourceUnverified": "Kaynak doğrulanmadı",
+    "sourceLocator": "Kaynak konumu kayıtlı; bu faturaya uygulanması doğrulanmadı",
+    "sourceUnverified": "Bu kayıtta doğrulanmış kaynak yok",
+    "technicalDetails": "Teknik ayrıntılar",
+    "evidenceLink": "Kanıt kaydını aç",
+    "unknownRuleTitle": "Kural gözlemi",
+    "unknownNextStep": "Bu gözlem için kullanıcı açıklaması henüz hazırlanmadı. Fatura ve kaynak ayrıntılarını inceleyin; kesin ihlal veya faturalama kararı saymayın.",
+    "presentation": {
+      "extraFeeScope": {
+        "title": "Ek ücret kapsamı",
+        "nextStep": "Hizmet tarihindeki kaynak metni ve bu hizmete uygulanmasını ayrıca teyit edin; ek ücret için kesin karar vermeyin."
+      },
+      "priorVisitLookup": {
+        "title": "Geçmiş muayene sorgusu",
+        "nextStep": "Önceki muayene kayıtlarını karşılaştırın. Kılavuz gözlemini geçerli SUT hükmüyle doğrulamadan ihlal saymayın."
+      },
+      "oncologyEk2b": {
+        "title": "Onkoloji ve EK-2B koşulları",
+        "nextStep": "İlgili hizmet ve EK-2B koşullarını inceleyin. Kılavuz gözlemini geçerli SUT hükmüyle doğrulamadan ihlal saymayın."
+      },
+      "underbillingThreshold": {
+        "title": "Eksik faturalama ve yüzde 10 eşiği",
+        "nextStep": "Fatura tutarlarını ve eşik koşulunu karşılaştırın; geçerli SUT hükmünü doğrulamadan finansal sonuç çıkarmayın."
+      },
+      "sessionDeduction": {
+        "title": "Seans kesinti koşulu",
+        "nextStep": "Seans kayıtlarını ve uygulanabilir hükmü karşılaştırın; bu kılavuz gözlemini tek başına ihlal saymayın."
+      },
+      "preadmissionPackage": {
+        "title": "Yatış öncesi hazırlık ve paket kapsamı",
+        "nextStep": "Yatış tarihi, hazırlık hizmeti ve paket koşullarını inceleyin; geçerli SUT hükmünü ayrıca doğrulayın."
+      },
+      "ek2bTestNecessity": {
+        "title": "EK-2B tetkik gerekliliği",
+        "nextStep": "Tetikleyici hizmet ve tetkik gerekçesini inceleyin; kılavuz gözlemini tek başına kesinti nedeni saymayın."
+      },
+      "packageProcedureDrugMaterial": {
+        "title": "Paket işlem, ilaç ve malzeme kapsamı",
+        "nextStep": "Paket ile ilaç ve malzeme satırlarını karşılaştırın; uygulanabilir SUT hükmü doğrulanmadan ayrı faturalama kararı vermeyin."
+      },
+      "outpatientEk2a2Scope": {
+        "title": "Ayaktan işlemde EK-2/A-2 kapsamı",
+        "nextStep": "İşlem kodunun hizmet tarihindeki EK-2/A-2 kapsamını ve fatura satırını karşılaştırın; kılavuz gözlemini tek başına ihlal saymayın."
+      },
+      "outpatientAdmissionAnnex": {
+        "title": "Ayaktan işlem, yatış ve ek liste koşulu",
+        "nextStep": "Ayaktan işlemle yatışın tarihini ve EK-2/B satırını karşılaştırın; geçerli SUT hükmü doğrulanmadan kesinti kararı vermeyin."
+      },
+      "sameSessionAngiography": {
+        "title": "Aynı seansta periferik anjiyografi",
+        "nextStep": "Seans kayıtlarını ve işlem sırasını inceleyin; ilgili SUT hükmünü doğrulamadan ödeme veya kesinti kararı vermeyin."
+      },
+      "catheterizationAndSurgery": {
+        "title": "Kalp kateterizasyonu sırasında cerrahi işlem",
+        "nextStep": "Kateterizasyon ve cerrahinin aynı seansta olup olmadığını inceleyin; geçerli ödeme hükmünü ayrıca doğrulayın."
+      },
+      "openFractureProcedure": {
+        "title": "Açık kırık işlemi ve ana cerrahi",
+        "nextStep": "İşlemin parmak kırığına veya aynı ana cerrahiye ilişkin olup olmadığını kontrol edin; kılavuz gözlemini tek başına ihlal saymayın."
+      },
+      "materialPreauthorization": {
+        "title": "Malzeme ön onay kaydı",
+        "nextStep": "Bu malzeme için ön onay koşulunu ve belge kaydını kontrol edin; mevcut girdilerde onay kanıtı doğrulanamadı."
+      },
+      "greenAreaExtraProcedure": {
+        "title": "Yeşil alan muayenesi ve ek işlem",
+        "nextStep": "Aynı takipteki ek işlem satırlarını ve uygulanabilir hükmü kontrol edin; bu gözlemi kesin ihlal saymayın."
+      },
+      "outpatientEk2cPackage": {
+        "title": "Ayaktan EK-2C paket ödeme yöntemi",
+        "nextStep": "Hizmet tarihindeki yürürlükteki metni ve istisnaları teyit edin; bu bilgi kaydını kesin faturalama kararı saymayın."
+      },
+      "itemizedEk2bEk2cBasis": {
+        "title": "EK-2/B / EK-2/C hizmet başına ödeme temeli",
+        "nextStep": "İşlem kodlarını, hizmet tarihini ve tüm istisnaları teyit edin; ödeme yöntemini bu gözleme dayanarak kesinleştirmeyin."
+      },
+      "trainingHospitalOutpatient": {
+        "title": "Eğitim hastanesinde ayaktan ödeme yöntemi",
+        "nextStep": "Kurum türünü, işlem kodunu ve hizmet tarihindeki hüküm ile istisnaları doğrulayın; ödeme yöntemini bu gözleme dayanarak kesinleştirmeyin."
+      },
+      "trainingHospitalInpatient": {
+        "title": "Eğitim hastanesinde yatarak ödeme yöntemi",
+        "nextStep": "Kurum türünü, yatış bağlamını ve hizmet tarihindeki hüküm ile istisnaları doğrulayın; ödeme yöntemini bu gözleme dayanarak kesinleştirmeyin."
+      },
+      "inpatientPackage": {
+        "title": "Yatan hasta paket ödeme yöntemi",
+        "nextStep": "Hizmet tarihindeki paket koşullarını ve istisnaları doğrulayın; bu bilgi kaydını kesin ödeme kararı saymayın."
+      },
+      "inpatientItemizedBasis": {
+        "title": "Yatan hasta kalem bazlı ödeme temeli",
+        "nextStep": "İşlem ve hizmet tarihi için geçerli metni ve istisnaları doğrulayın; kalem bazlı faturayı bu gözleme dayanarak kesinleştirmeyin."
+      },
+      "inpatientMaterialsDrugs": {
+        "title": "Yatan hasta ilaç ve malzeme kalemleri",
+        "nextStep": "İlaç ve malzeme satırlarının paket kapsamını ve istisnalarını doğrulayın; ayrı faturalama kararını bu gözleme dayandırmayın."
+      },
+      "trainingHospitalItemized": {
+        "title": "Eğitim hastanesinde hizmet başına ödeme",
+        "nextStep": "Kurum türünü, işlem kodunu, hizmet tarihini ve tüm istisnaları doğrulayın; kalem bazlı ödeme kararını bu gözleme dayandırmayın."
+      },
+      "diagnosisBasedEk2c": {
+        "title": "Tanıya bağlı EK-2C uygulaması",
+        "nextStep": "Tanı, işlem, hizmet tarihindeki hüküm ve istisnaları doğrulayın; koşullar teyit edilmeden izin olarak uygulamayın."
+      },
+      "plateletPheresis": {
+        "title": "Trombosit aferezi için ayrı faturalama koşulu",
+        "nextStep": "İşlem kodunu, hizmet tarihindeki hükmü ve istisnaları doğrulayın; koşullar teyit edilmeden ayrı faturalama izni saymayın."
+      }
+    },
     "amountUnavailable": "Tutar doğrulanmadı",
     "observedBilledCharge": "Faturalanan gözlenen tutar",
     "procedureLineBasis": "Kaynak: ilgili işlem fatura satırı; risk veya artıştan ayrıdır",
@@ -487,10 +605,10 @@ const billing = {
       "inspectAction": "İncele",
       "openBill": "Faturaya git",
       "noFindings": "Bu görünümde uyumluluk bulgusu bulunmuyor.",
-      "coverageSummary": "{evaluated} yapısal kontrol değerlendirildi · {findings} ek bulgu",
+      "coverageSummary": "Yapısal kontroller: {evaluated} değerlendirme · {findings} bulgu",
       "coverageMissing": " · {count} eksik girdi",
       "coverageUnavailable": " · {count} değerlendirilemedi",
-      "coverageNotice": "Değerlendirilmiş olması uygun olduğu anlamına gelmez."
+      "coverageNotice": "Yalnızca yapısal kontrollerin özeti; değerlendirme uygunluk kararı değildir."
     },
     "revenue": {
       "shortTitle": "Gelir Dashboard",

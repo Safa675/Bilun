@@ -10,6 +10,8 @@ import { buildSutBillingHref } from "@/lib/constants";
 import type { WaveACoverage, WaveAEvidenceBlock, WaveAEvidencePage, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
 import { useT } from "@/lib/i18n/useTranslations";
 import { findFindingRowElement } from "@/lib/patientRoute";
+import { groupWaveAReviewRows } from "@/lib/groupWaveAReviewRows";
+import { getWaveAEvidencePresentation } from "@/lib/waveaEvidencePresentation";
 
 export type WaveAEvidenceKind = "reviews" | "advisories" | "financial_rows";
 
@@ -97,19 +99,25 @@ export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | 
     <section className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3 text-sm">
       <h3 className="font-semibold text-[var(--text-primary)]">{t("billing.wavea.coverageTitle")}</h3>
       <p className="mt-1 text-[var(--text-secondary)]">
-        {t("billing.wavea.coverageSummary", {
-          groups: groups.length,
-          evaluated: totals.evaluated,
-          missing: totals.missing_inputs,
-          unavailable: totals.unavailable,
-        })}
+        {t(!coverage.available || totals.missing_inputs > 0 || totals.unavailable > 0
+          ? "billing.wavea.coverageCompact"
+          : "billing.wavea.coverageComplete")}
       </p>
       {!coverage.available && (
         <p className="mt-1 text-[var(--text-muted)]">{t("billing.wavea.coveragePartial")}</p>
       )}
-      {groups.length > 0 && (
-        <details className="mt-2">
-          <summary className="cursor-pointer font-medium">{t("billing.wavea.groupDetails")}</summary>
+      <details className="mt-2">
+        <summary className="cursor-pointer font-medium">{t("billing.wavea.coverageDetails")}</summary>
+        <div className="mt-2 space-y-2 text-[var(--text-secondary)]">
+          <p className="tabular-nums">{t("billing.wavea.coverageSummary", {
+            groups: groups.length,
+            evaluated: totals.evaluated,
+            missing: totals.missing_inputs,
+            unavailable: totals.unavailable,
+          })}</p>
+          <p className="text-xs">{t("billing.wavea.coverageExplainer")}</p>
+        </div>
+        {groups.length > 0 && (
           <ul className="mt-2 space-y-1">
             {groups.map(([group, counts]) => (
               <li key={group} className="flex flex-wrap justify-between gap-2 border-t border-[var(--border-subtle)] pt-1">
@@ -124,8 +132,8 @@ export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | 
               </li>
             ))}
           </ul>
-        </details>
-      )}
+        )}
+      </details>
     </section>
   );
 }
@@ -137,13 +145,163 @@ function clauseKey(row: WaveAEvidenceRow): string | null {
 
 function sourceReferences(row: WaveAEvidenceRow): string[] {
   const references = row.regulatory_source?.source_locators;
-  if (!Array.isArray(references)) return [];
-  const locators = references.filter((reference): reference is string =>
+  const locators = (Array.isArray(references) ? references : []).filter((reference): reference is string =>
     typeof reference === "string" && reference.trim().length > 0,
   ).map((reference) => reference.trim());
   const fatura = row.regulatory_source?.fatura_inceleme_ref?.trim();
   if (fatura && !locators.includes(fatura)) locators.push(fatura);
   return locators;
+}
+
+function sourceStatusKey(row: WaveAEvidenceRow): string {
+  return clauseKey(row) || sourceReferences(row).length > 0
+    ? "billing.wavea.sourceLocator"
+    : "billing.wavea.sourceUnverified";
+}
+
+function WaveATechnicalDetails({
+  row,
+  onOpenClause,
+}: {
+  row: WaveAEvidenceRow;
+  onOpenClause?: (clauseKey: string) => void;
+}) {
+  const t = useT();
+  const source = clauseKey(row);
+  const references = sourceReferences(row);
+  return (
+    <details className="mt-2 text-xs text-[var(--text-muted)]">
+      <summary className="cursor-pointer">{t("billing.wavea.technicalDetails")}</summary>
+      <div className="mt-1 space-y-1 break-all">
+        <p>{row.rule_id}{row.reason ? ` · ${row.reason}` : ""}</p>
+        <p>{row.line_kind}{row.line_id ? `:${row.line_id}` : ""}</p>
+        {source && onOpenClause ? (
+          <button type="button" className="underline" onClick={() => onOpenClause(source)}>{source}</button>
+        ) : source ? <p>{source}</p> : null}
+        {references.length > 0 && <p>{references.join(" · ")}</p>}
+      </div>
+    </details>
+  );
+}
+
+function PatientWaveAReviewList({
+  rows,
+  selectedFindingId,
+  selectedClaimId,
+  onOpenClause,
+}: {
+  rows: WaveAEvidenceRow[];
+  selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
+  onOpenClause?: (clauseKey: string) => void;
+}) {
+  const t = useT();
+  const groups = groupWaveAReviewRows(rows);
+  return (
+    <div className="space-y-3">
+      {groups.map((group) => {
+        const first = group.rows[0];
+        const copy = getWaveAEvidencePresentation(first, t);
+        const selected = group.rows.some((row) => row.evidence_id === selectedFindingId);
+        return (
+          <article key={group.key} className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Chip variant="warning">{t("billing.wavea.review")}</Chip>
+              <span className="text-xs tabular-nums text-[var(--text-muted)]">
+                {group.claimCount > 0
+                  ? t("billing.wavea.shownClaimCount", { count: group.claimCount })
+                  : t("billing.wavea.claimReferenceUnavailable")}
+              </span>
+            </div>
+            <h4 className="mt-2 font-semibold text-[var(--text-primary)]">{copy.title}</h4>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{copy.nextStep}</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">{t(sourceStatusKey(first))}</p>
+            <details className="mt-3" open={selected || undefined}>
+              <summary className="cursor-pointer text-sm font-medium text-[var(--text-primary)]">
+                {t("billing.wavea.reviewGroupDetails", { count: group.rows.length })}
+              </summary>
+              <ul className="mt-2 divide-y divide-[var(--border-subtle)]">
+                {group.rows.map((row) => {
+                  const href = buildSutBillingHref(row.patient_id, {
+                    claimId: row.claim_id ?? selectedClaimId ?? undefined,
+                    section: sectionId("reviews"),
+                    findingId: row.evidence_id,
+                  });
+                  return (
+                    <li
+                      key={row.evidence_id}
+                      data-finding-id={row.evidence_id}
+                      data-selected={selectedFindingId === row.evidence_id ? "true" : undefined}
+                      className={`scroll-mt-24 py-3 text-sm ${selectedFindingId === row.evidence_id ? "bg-[var(--gold-subtle)]" : ""}`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="break-all font-medium text-[var(--text-primary)]">
+                          {row.claim_id || "—"}
+                          {row.line_id ? ` · ${row.line_id}` : ""}
+                        </span>
+                        <PatientTabLink patientId={row.patient_id} href={href} className="underline">
+                          {t("billing.wavea.evidenceLink")}
+                        </PatientTabLink>
+                      </div>
+                      <WaveATechnicalDetails row={row} onOpenClause={onOpenClause} />
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function PatientWaveAAdvisoryList({
+  rows,
+  selectedFindingId,
+  selectedClaimId,
+  onOpenClause,
+}: {
+  rows: WaveAEvidenceRow[];
+  selectedFindingId?: string | null;
+  selectedClaimId?: string | null;
+  onOpenClause?: (clauseKey: string) => void;
+}) {
+  const t = useT();
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {rows.map((row) => {
+        const copy = getWaveAEvidencePresentation(row, t);
+        const href = buildSutBillingHref(row.patient_id, {
+          claimId: row.claim_id ?? selectedClaimId ?? undefined,
+          section: sectionId("advisories"),
+          findingId: row.evidence_id,
+        });
+        return (
+          <article
+            key={row.evidence_id}
+            data-finding-id={row.evidence_id}
+            data-selected={selectedFindingId === row.evidence_id ? "true" : undefined}
+            className={`scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-4 ${selectedFindingId === row.evidence_id ? "bg-[var(--gold-subtle)]" : ""}`}
+          >
+            <Chip variant="neutral">
+              {t(row.advisory_kind === "information" ? "billing.wavea.information" : "billing.wavea.permission")}
+            </Chip>
+            <h4 className="mt-2 font-semibold text-[var(--text-primary)]">{copy.title}</h4>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{copy.nextStep}</p>
+            <p className="mt-2 break-all text-xs text-[var(--text-secondary)]">
+              {row.claim_id || "—"}{row.line_id ? ` · ${row.line_id}` : ""}
+            </p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">{t(sourceStatusKey(row))}</p>
+            <PatientTabLink patientId={row.patient_id} href={href} className="mt-2 inline-block text-sm underline">
+              {t("billing.wavea.evidenceLink")}
+            </PatientTabLink>
+            <WaveATechnicalDetails row={row} onOpenClause={onOpenClause} />
+          </article>
+        );
+      })}
+    </div>
+  );
 }
 
 export function WaveAEvidenceRowsTable({
@@ -152,12 +310,14 @@ export function WaveAEvidenceRowsTable({
   onOpenClause,
   selectedFindingId,
   selectedClaimId,
+  patientId,
 }: {
   rows: WaveAEvidenceRow[];
   kind: WaveAEvidenceKind;
   onOpenClause?: (clauseKey: string) => void;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
+  patientId?: string;
 }) {
   const t = useT();
   const financial = kind === "financial_rows";
@@ -168,19 +328,20 @@ export function WaveAEvidenceRowsTable({
       <thead>
         <tr>
           <th>{t("billing.wavea.type")}</th>
-          <th>{t("billing.wavea.ruleAndReason")}</th>
+          <th>{t(financial ? "billing.wavea.technicalDetails" : "billing.wavea.ruleAndReason")}</th>
           <th>{t("billing.wavea.claimAndLine")}</th>
           <th>{t("billing.wavea.source")}</th>
-          <th className="text-right">{financial ? t("billing.wavea.amount") : t("billing.wavea.patient")}</th>
-          {financial && <th>{t("billing.wavea.patient")}</th>}
+          <th className="text-right">{financial ? t("billing.wavea.amount") : patientId ? t("billing.wavea.evidenceLink") : t("billing.wavea.patient")}</th>
+          {financial && <th>{patientId ? t("billing.wavea.evidenceLink") : t("billing.wavea.patient")}</th>}
         </tr>
       </thead>
       <tbody>
         {rows.map((row) => {
           const source = clauseKey(row);
           const authoredReferences = sourceReferences(row);
+          const copy = getWaveAEvidencePresentation(row, t);
           const href = buildSutBillingHref(row.patient_id, {
-            claimId: selectedClaimId ?? undefined,
+            claimId: financial ? selectedClaimId ?? undefined : row.claim_id ?? selectedClaimId ?? undefined,
             section,
             findingId: row.evidence_id,
           });
@@ -201,12 +362,25 @@ export function WaveAEvidenceRowsTable({
                 </Chip>
               </td>
               <td>
-                <div className="font-mono text-xs text-[var(--text-primary)]">{row.rule_id}</div>
-                {row.reason && <div className="mt-1 text-xs text-[var(--text-secondary)]">{row.reason}</div>}
+                {financial ? (
+                  <>
+                    <div className="font-mono text-xs text-[var(--text-primary)]">{row.rule_id}</div>
+                    {row.reason && <div className="mt-1 text-xs text-[var(--text-secondary)]">{row.reason}</div>}
+                  </>
+                ) : (
+                  <>
+                    <div className="font-medium text-[var(--text-primary)]">{copy.title}</div>
+                    <div className="mt-1 text-xs text-[var(--text-secondary)]">{copy.nextStep}</div>
+                    <details className="mt-1 text-xs text-[var(--text-muted)]">
+                      <summary className="cursor-pointer">{t("billing.wavea.technicalDetails")}</summary>
+                      <p className="mt-1 break-all">{row.rule_id}{row.reason ? ` · ${row.reason}` : ""}</p>
+                    </details>
+                  </>
+                )}
               </td>
               <td className="font-mono text-xs">
                 {row.claim_id || "—"}
-                {row.line_id ? ` · ${row.line_kind}:${row.line_id}` : ""}
+                {row.line_id ? ` · ${row.line_id}` : ""}
               </td>
               <td className="text-xs">
                 {source && onOpenClause ? (
@@ -228,13 +402,9 @@ export function WaveAEvidenceRowsTable({
                       </span>
                     ))}
                   </span>
-                ) : (
-                  <span className="text-[var(--text-muted)]">{t("billing.wavea.sourceUnverified")}</span>
-                )}
-                <div className="mt-1 text-[var(--text-muted)]">
-                  {row.source_status === "structured_locator" || authoredReferences.length > 0
-                    ? t("billing.wavea.sourceLocator")
-                    : t("billing.wavea.sourceUnverified")}
+                ) : null}
+                <div className={source || authoredReferences.length > 0 ? "mt-1 text-[var(--text-muted)]" : "text-[var(--text-muted)]"}>
+                  {t(sourceStatusKey(row))}
                 </div>
               </td>
               {financial && (
@@ -265,7 +435,7 @@ export function WaveAEvidenceRowsTable({
               )}
               <td>
                 <PatientTabLink patientId={row.patient_id} href={href} className="underline">
-                  {row.patient_id}
+                  {patientId ? t("billing.wavea.evidenceLink") : row.patient_id}
                 </PatientTabLink>
               </td>
             </tr>
@@ -364,6 +534,7 @@ export function PatientWaveAEvidenceSection({
   const displayRows = selectedRow && !rows.some((row) => row.evidence_id === selectedRow.evidence_id)
     ? [selectedRow, ...rows]
     : rows;
+  const selectedInSection = selectedFindingId?.startsWith(evidencePrefix(kind)) ?? false;
   const loadMore = async () => {
     if (!canLoadMore || loading) return;
     const controller = new AbortController();
@@ -417,21 +588,47 @@ export function PatientWaveAEvidenceSection({
 
   return (
     <section id={sectionId(kind)} className="space-y-2 scroll-mt-24">
-      <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-        {t(titleKey(kind))}
-      </h3>
-      {kind === "advisories" && (
-        <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.advisoryNotice")}</p>
+      {(kind !== "advisories" || unavailable) && (
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+          {t(kind === "reviews" ? "billing.wavea.reviewHeading" : titleKey(kind))}
+        </h3>
+      )}
+      {kind === "reviews" && !unavailable && (
+        <>
+          <p className="text-sm text-[var(--text-secondary)]">{t("billing.wavea.reviewCount", { count: total })}</p>
+          <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.reviewNotice")}</p>
+        </>
       )}
       {unavailable ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.unavailable")}</p>
+      ) : kind === "advisories" ? (
+        <details open={selectedInSection || undefined}>
+          <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
+            {t(titleKey(kind))} · {t("billing.wavea.advisoryCount", { count: total })}
+          </summary>
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.advisoryNotice")}</p>
+            {displayRows.length === 0 ? (
+              <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noRows")}</p>
+            ) : (
+              <PatientWaveAAdvisoryList rows={displayRows} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
+            )}
+            {canLoadMore && (
+              <button type="button" disabled={loading} onClick={loadMore} className="text-sm font-medium underline disabled:opacity-50">
+                {loading ? t("billing.wavea.loading") : t("billing.wavea.loadMore", { shown: rows.length, total })}
+              </button>
+            )}
+          </div>
+        </details>
       ) : displayRows.length === 0 ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noRows")}</p>
+      ) : kind === "reviews" ? (
+        <PatientWaveAReviewList rows={displayRows} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
       ) : (
-        <WaveAEvidenceRowsTable rows={displayRows} kind={kind} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
+        <WaveAEvidenceRowsTable rows={displayRows} kind={kind} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} patientId={patientId} />
       )}
       {error && <p role="alert" className="text-sm text-[var(--danger)]">{t("billing.wavea.loadFailed")}</p>}
-      {canLoadMore && (
+      {canLoadMore && kind !== "advisories" && (
         <button type="button" disabled={loading} onClick={loadMore} className="text-sm font-medium underline disabled:opacity-50">
           {loading ? t("billing.wavea.loading") : t("billing.wavea.loadMore", { shown: rows.length, total })}
         </button>
