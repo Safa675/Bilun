@@ -7,7 +7,6 @@ unused imports and uncalled local functions do not. No runtime reachability or
 arbitrary TypeScript evaluation is claimed.
 """
 
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from .model import AuditContext
@@ -331,19 +330,96 @@ class SurfaceSourceResolver:
         return sorted(paths | {path})
 
 
-def discover_deep_link_sections(ctx: AuditContext) -> dict[str, str]:
-    text = ctx.recommended_actions_path.read_text(encoding="utf-8")
-    match = re.search(
-        r"const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = \{(?P<body>.*?)\n\};",
-        text,
-        flags=re.DOTALL,
-    )
-    if match is None:
-        raise ValueError("RECOMMENDED_ACTION_SECTION_IDS not found")
-    return dict(
-        re.findall(r'^\s*([A-Za-z0-9_]+):\s*"([^"]+)",?\s*$', match.group("body"), flags=re.MULTILINE)
-    )
+_SECTION_MAP_NAME = "RECOMMENDED_ACTION_SECTION_IDS"
 
+
+def _section_map_error(detail: str) -> ValueError:
+    return ValueError(f"{_SECTION_MAP_NAME}: {detail}")
+
+
+def _section_map_entries(tokens: list[Token]) -> dict[str, str]:
+    entries: dict[str, str] = {}
+    index = 0
+    while index < len(tokens):
+        key = tokens[index]
+        if key.kind not in {"word", "string"} or not key.value:
+            raise _section_map_error("entry key must be an identifier or literal string")
+        if index + 2 >= len(tokens) or tokens[index + 1] != Token(":"):
+            raise _section_map_error("entry must have a literal string value")
+        value = tokens[index + 2]
+        if value.kind != "string" or not value.value:
+            raise _section_map_error("entry must have a non-empty, unescaped literal string value")
+        if key.value in entries:
+            raise _section_map_error(f"duplicate key {key.value!r}")
+        entries[key.value] = value.value
+        index += 3
+        if index < len(tokens):
+            if tokens[index] != Token(","):
+                raise _section_map_error("unsupported expression after map entry")
+            index += 1
+    return entries
+
+
+def read_section_id_map(source: str) -> dict[str, str]:
+    """Read this one top-level const map without executing TypeScript.
+
+    Entries are identifier/quoted keys and unescaped quoted string values.
+    The declaration may be untyped, Record<string, string>, or
+    Readonly<Record<string, string>>, with an optional `as const` assertion.
+    Comments, ordinary whitespace and trailing commas are insignificant.
+    Expressions, spreads, computed keys and ambiguous declarations fail.
+    Top-level slash expressions are unsupported: the shared lexer does not
+    distinguish regex literals from division, so their text cannot prove a map.
+    """
+    tokens = tokenize(source)
+    declarations: list[int] = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token == Token("/"):
+            raise _section_map_error("unsupported top-level slash expression")
+        if (
+            token.kind == "word" and token.value in {"const", "let", "var"}
+            and index + 1 < len(tokens) and tokens[index + 1] == Token(_SECTION_MAP_NAME, "word")
+        ):
+            declarations.append(index)
+        if token.kind == "symbol" and token.value in {"(", "[", "{"}:
+            index = group_end(tokens, index)
+        else:
+            index += 1
+
+    if not declarations:
+        raise ValueError(f"{_SECTION_MAP_NAME} not found")
+    if len(declarations) != 1:
+        raise _section_map_error("ambiguous declarations")
+    index = declarations[0]
+    if tokens[index] != Token("const", "word"):
+        raise _section_map_error("declaration must be const")
+    index += 2
+    if index < len(tokens) and tokens[index] == Token(":"):
+        index += 1
+        supported_types = (
+            tokenize("Readonly<Record<string, string>>"),
+            tokenize("Record<string, string>"),
+        )
+        annotation = next((kind for kind in supported_types if tokens[index:index + len(kind)] == kind), None)
+        if annotation is None:
+            raise _section_map_error("unsupported type annotation")
+        index += len(annotation)
+    if tokens[index:index + 2] != [Token("="), Token("{")]:
+        raise _section_map_error("initializer must be a literal object")
+    end = group_end(tokens, index + 1)
+    entries = _section_map_entries(tokens[index + 2:end - 1])
+    index = end
+    if tokens[index:index + 2] == [Token("as", "word"), Token("const", "word")]:
+        index += 2
+    if index < len(tokens) and tokens[index] != Token(";"):
+        raise _section_map_error("unsupported expression after literal object")
+    return entries
+
+
+def discover_deep_link_sections(ctx: AuditContext) -> dict[str, str]:
+    return read_section_id_map(ctx.recommended_actions_path.read_text(encoding="utf-8"))
 
 def _require_source_token(ctx: AuditContext, path: Path, token: str, *, label: str) -> None:
     if token not in path.read_text(encoding="utf-8"):

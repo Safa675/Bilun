@@ -162,14 +162,16 @@ Proposed package: `scripts/audits/rule_surfacing/`.
 | `render.py` | Deterministic JSON/Markdown formatting. |
 | `cli.py` | Argument handling, output modes, exit behavior. |
 
-- [ ] Keep `scripts/audits/build_rule_surfacing_inventory.py` as the compatible script entrypoint and retain callable imports used by tests/tools. Support execution by script path from the documented working directory.
-- [ ] Pass repository paths/context explicitly; moving a module must not change root resolution through `__file__`. Preserve existing test patch points or replace them with equivalent explicit fixture inputs without weakening assertions.
-- [ ] Move source discovery, metadata, validation, and rendering mechanically. Require byte-identical generated outputs for this extraction.
-- [ ] In a separate commit, replace the exact-format map regex with literal-object reading using the bounded token adapter. Accept ordinary whitespace/comments, quote styles, and supported type annotations; reject computed/spread/unresolved map entries. Keep this confined to the audited contract rather than growing a general language parser.
-- [ ] Preserve default counts output, `--check`, `--write`, both full print modes, both chunk print modes, `--chunk-lines`, mutually exclusive write/check modes, and exit codes (`build_rule_surfacing_inventory.py:2040`).
-- [ ] Preserve all detector/source/metadata agreement checks, missing-surface failures, and tests proving projectors do not rerun detectors or use rule-ID allowlists.
+- [x] Keep `scripts/audits/build_rule_surfacing_inventory.py` as the compatible script entrypoint and retain callable imports used by tests/tools. Support execution by script path from the documented working directory.
+- [x] Pass repository paths/context explicitly; moving a module must not change root resolution through `__file__`. Preserve existing test patch points or replace them with equivalent explicit fixture inputs without weakening assertions.
+- [x] Move source discovery, metadata, validation, and rendering mechanically. Require byte-identical generated outputs for this extraction.
+- [x] In a separate commit, replace the exact-format map regex with literal-object reading using the bounded token adapter. Accept ordinary whitespace/comments, quote styles, and supported type annotations; reject computed/spread/unresolved map entries. Keep this confined to the audited contract rather than growing a general language parser.
+- [x] Preserve default counts output, `--check`, `--write`, both full print modes, both chunk print modes, `--chunk-lines`, mutually exclusive write/check modes, and exit codes (`build_rule_surfacing_inventory.py:2040`).
+- [x] Preserve all detector/source/metadata agreement checks, missing-surface failures, and tests proving projectors do not rerun detectors or use rule-ID allowlists.
 
 Acceptance: changing report formatting is local to `render.py`; source syntax is handled by source adapters; classifiers are not used as substitutes for source proof; actual surface/contract removal still fails.
+
+The local F extraction retains the original script-path callable API and passes explicit path/helper context to owned modules. Mechanical source review found 52 original function bodies equivalent apart from context plumbing, with 27 compatible old signatures and unchanged metadata/source proofs. The separate literal-map reader supports the existing 17-entry map and bounded formatting variants while rejecting dynamic and regex-decoy false evidence. Independent review found and verified the fix for that decoy. On the corrected source, 122 focused and 4,133 full backend tests, Ruff, isolated CLI, compiler, manifest parity, byte-identical JSON/Markdown and 1,119 artifact hashes passed. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-f`. Final E-main integration and hosted CI remain.
 
 ## 9. Verification and artifact handling
 
@@ -256,7 +258,7 @@ Separate worktrees may be used for independent frontend/backend work, but integr
 - [ ] A reviewer can identify the owner of each responsibility and trace dependencies without circular imports or a new catch-all helper module.
 - [x] Walk through a hypothetical display-column change: it is confined to that section/presentation function/tests and does not require drug-engine changes. Do not ship a dummy column to demonstrate this.
 - [x] Walk through a route-selection change: its implementation and focused tests are discoverable in routing, with public-contract changes made explicit if ever required. No dummy rule change is included.
-- [ ] Walk through an audit-report formatting change: it requires rendering/tests, without changing discovery or visibility definitions.
+- [x] Walk through an audit-report formatting change: it requires rendering/tests, without changing discovery or visibility definitions.
 - [ ] All preserved contracts and before/after comparisons pass, supported legacy behavior remains covered, and no test has been removed or weakened merely to accommodate file moves.
 - [ ] Browser observations, test results, final revision, expected provenance diffs, and absence of unrelated artifact drift are recorded for each delivery.
 - [ ] Declaration-file cleanup and canonical-model redesign remain deferred. Any further scope is justified by a concrete maintenance problem rather than line count.
