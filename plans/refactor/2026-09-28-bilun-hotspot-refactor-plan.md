@@ -1,9 +1,9 @@
 # Bilun targeted hotspot refactoring plan
 
 - Date: 2026-09-28.
-- Status: Delivery A implemented and locally verified; draft PR publication in progress. Deliveries B–F have not started.
+- Status: Delivery A implemented, locally verified, and published as [draft PR #101](https://github.com/Safa675/Bilun/pull/101). Deliveries B–F have not started.
 - Inspection baseline: `/opt/Bilun`, commit `4af38b28`. Source line references below describe that inspected revision. Delivery A uses a fresh worktree at `/root/worktrees/bilun-hotspot-refactor`, based on current main `46ae9fdf`, including the merged billing-officer UX work.
-- Delivery A branch: `refactor/hotspot-audit-sources`. The user authorized opening a new PR and starting implementation; this delivery will be published as a draft PR after verification.
+- Delivery A branch: `refactor/hotspot-audit-sources`. The user authorized opening a new PR and starting implementation; this delivery was published as a draft PR after local verification.
 
 ## Task: Make the billing hotspots easier to change independently
 
@@ -266,4 +266,5 @@ The original plan was prepared from read-only frontend, backend, and audit inspe
 - Baseline: audit `--check` passed; existing audit tests **26 passed in 20.16s**. No generated-file changes followed the focused run.
 - Evidence directory: `/root/artifacts/bilun-hotspot-refactor-2026-09-28`, containing both baseline audit outputs, 1,091 tracked artifact hashes, and the baseline test log.
 - Implementation and independent review are complete for the bounded supported grammar. Current/moved-source regressions pass; every other serialized field and Markdown byte remains equal after the 16-row provenance-only matrix update.
-- Local checks passed: **4,075 backend tests, 8 warnings, 734.61s**; full Ruff; the audit CLI in isolated Python mode from outside the repository; **134 byte-identical generated rule/manifest artifacts**; **23 manifests with zero parity issues**; final artifact hashes changed only for the reviewed audit matrix. Draft PR publication remains in progress.
+- Local checks passed: **4,075 backend tests, 8 warnings, 734.61s**; full Ruff; the audit CLI in isolated Python mode from outside the repository; **134 byte-identical generated rule/manifest artifacts**; **23 manifests with zero parity issues**; final artifact hashes changed only for the reviewed audit matrix.
+- Publication: [draft PR #101](https://github.com/Safa675/Bilun/pull/101), attached to the task. Hosted CI started at publication; its current status is available on the PR. No merge or deployment was performed. The next planned delivery is the mechanical report-section extraction (B).
