@@ -21,6 +21,28 @@ Plan, mevcut `ComplianceViewSection`, `WaveAEvidenceSection`, `CohortWaveAEviden
 
 ---
 
+## Task: Implement hotspot refactoring delivery A and open a draft PR
+
+### Goal
+Make the surfacing audit follow supported patient component imports and named re-exports while preserving source evidence, then publish the verified first implementation delivery as a draft PR.
+
+### Subtasks
+- [x] Confirm the user-approved hotspot plan and create an isolated worktree on current main `46ae9fdf`, including the merged billing-officer UX work.
+- [x] Capture the baseline audit output, focused tests, generated-artifact hashes, and relevant current source contracts.
+- [x] Implement the bounded frontend component-source adapter and integrate it without changing application behavior or the later-phase map reader.
+- [x] Add meaningful moved-component and missing/false-evidence regressions; preserve existing audit checks.
+- [x] Independently review the implementation and resolve findings.
+- [x] Run the applicable full backend gates, audit parity checks, and artifact-drift inspection; record results.
+- [ ] Check branch CI, commit and push the reviewed changes, open and attach a draft PR, and report its CI status.
+
+### Out of Scope
+Deliveries B–F, component moves, drug-rule changes, a general TS parser, new dependencies, production data/cache changes, merge, and deployment.
+
+### Review
+Implementation authorized by the user after review of `plans/refactor/2026-09-28-bilun-hotspot-refactor-plan.md`. Delivery A is the concrete first PR; later deliveries remain tracked in that plan. Work is isolated from the original checkout and its uncommitted planning documents. Independent review's demonstrated false-evidence cases are fixed. Full backend verification passed **4,075 tests, 8 warnings, in 734.61s**, including all 38 new regression cases and the existing committed-output parity check. Reviewed regeneration adds evidence paths to 16 rows, preserving every other serialized field and Markdown bytes. Full Ruff, isolated direct CLI checks, compiler check (**134 byte-identical rule/manifest artifacts**), and manifest parity (**23 manifests, zero issues**) pass. The final 1,091-file artifact hash comparison found only the reviewed matrix change. Publication is pending.
+
+---
+
 ## Task: Reduce full-suite runtime without reducing coverage
 
 ### Goal
