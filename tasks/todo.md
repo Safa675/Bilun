@@ -7,7 +7,7 @@ Make route selection, ordered constraints and detailed-result construction indep
 - [x] Review approved Phase E and the stable D implementation for ownership, public wrapper/patch seams, raw-versus-decorated violation shape and ordered constraints.
 - [x] Create an isolated E worktree at C head `b5bae476`, with D integration deferred until D is verified and merged.
 - [x] Add targeted dynamic-wrapper/default-loader, competing-failure precedence and primary-plus-supplemental identity tests and prove them on the unchanged monolith; re-run after D integration before source edits.
-- [ ] Integrate verified D main, refresh import/patch inventory, and compare the unchanged D full-output baseline.
+- [x] Integrate verified D main, refresh import/patch inventory, and compare the unchanged D full-output baseline.
 - [x] Mechanically extract routing, constraints and evidence helpers into the three approved internal modules, retaining callable identities, public wrappers and cached objects.
 - [x] Give the internal evaluator explicit rules; keep default loading in the facade and preserve first-hit, nested payload and supplemental-ID behavior.
 - [x] Compare the immutable complete result snapshot and new pre-extraction tests; run focused/full backend, Ruff, isolated audit, compiler/manifest gates sequentially and tracked-artifact hash checks.
@@ -25,6 +25,8 @@ Three targeted groups (ten cases) passed against the unchanged C monolith at `b5
 
 After provisional D integration, 12 boundary/cache tests and the immutable complete comparator passed before E source edits. The reviewed extraction gives routing, constraints and evaluation their own modules while keeping all 46 other original function ASTs, 47 signatures, 44 exact callable aliases and four cache objects. The 20,339,608-byte detailed/canonical/legacy/cache/API payload snapshot remains identical. Independent review found no actionable finding, including first-hit order, raw/common nested fields and supplemental inner/outer IDs. The final isolated E source passed 868 focused tests, 4,087 full backend tests (eight warnings), full Ruff, isolated audit `--check`, compiler `--check` (134 byte-identical artifacts), and manifest parity (23 scanned, zero issues), with all 1,119 tracked artifact hashes unchanged after each gate. Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`. Rebase onto D's merged main and hosted current-revision CI remain before publication/merge.
 
+E was rebased onto D's head-guarded merged main `ec368706` with byte-identical E source/test content. The immutable complete comparator, 868 focused tests (three warnings), Ruff and isolated audit `--check` passed again on the integrated tree; all 1,119 current tracked artifact hashes remain unchanged. D's merge-main CI run `36487251655` passed. PR publication and E current-head hosted CI remain.
+
 ---
 
 ## Task: Prepare and implement hotspot refactoring delivery D — drug corpus and matching
@@ -40,8 +42,8 @@ Extract drug matching and corpus responsibilities behind the existing public mod
 - [x] Extract pure matching and corpus/coverage responsibilities with the same cache instances and shallow-copy semantics; preserve public names and signatures.
 - [x] Compare complete outputs and source/audit contracts, obtain independent review, and resolve substantive findings.
 - [x] Run focused drug checks and full backend gates sequentially with tracked artifact hash checks; preserve all data and financial/clinical behavior.
-- [ ] Integrate the verified predecessor, publish and attach a focused PR, verify current-revision CI/review, and merge only after all gates pass.
-- [ ] Record evidence and advance to delivery E.
+- [x] Integrate the verified predecessor, publish and request task attachment for a focused PR, verify current-revision CI/review, and merge only after all gates pass.
+- [x] Record evidence and advance to delivery E.
 
 ### Out of Scope
 Routing/constraint/evaluation extraction (delivery E), semantic or clinical rule changes, canonical/API/cache redesign, generated corpus/manifest rewrites, new dependencies, deployment, and live service changes.
@@ -52,6 +54,8 @@ Preparation may run in parallel with frontend deliveries in this isolated worktr
 Baseline/ownership review is complete before runtime edits: matching owns pure predicates/normalization/specialty/INN/ICD functions; corpus owns paths/loading/manifest/subsection coverage/promotion/stop conditions. All four original decorated caches and shallow list/dictionary identities remain contracts. The immutable comparator captures 54 line cases, nine full report contexts, all 968 corpus rules, detailed/canonical/legacy/cache/API projections and coverage, including full-corpus order permutations. A second monolithic capture is byte-identical (20,339,608 bytes; SHA256 `5c046be33ba9eccf305034baac29bc1b02ff9b7542fd1e272f4154e9a403d7c1`). It verifies loaded `bilun` and `src.bilun` modules originate inside this worktree (284 origins). The focused baseline passed 122 tests including two missing public cache/default-input contracts; 1,119 tracked artifact hashes remained unchanged. Evidence and executable comparator: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-d`.
 
 The extraction preserved all 47 original function ASTs and directly re-exports all 22 moved callables, including the four original cache objects, with no internal facade/billing dependency. The immutable complete payload snapshot is byte-identical after extraction. Independent source/runtime review found no actionable regression. Focused checks passed 858 tests; full backend passed 4,077 tests with eight warnings; full Ruff, isolated audit `--check`, compiler `--check` (134 byte-identical artifacts), and manifest parity (23 scanned, zero issues) passed. Hashes of all 1,119 tracked data/report artifacts are unchanged after every writer. These results apply to the isolated D source before integration on C main; publication and current-revision CI remain.
+
+Delivery D publication: [PR #104](https://github.com/Safa675/Bilun/pull/104) at `79fefdcf` passed both hosted jobs in run `36486246248` and independent review, with no human or inline findings (Copilot reported quota exhaustion). It merged head-guarded as `ec368706047d3b3d95ddd5e76131825aa1f18940` at 2026-09-28 21:36:38 UTC; its tree equals the tested branch. Main CI run `36487251655` passed. The app attachment call did not return, so attachment is unconfirmed.
 
 D was rebased onto C's merged main `20873ff6` without any source/test content change. The frozen full-output comparator remained byte-identical; the integrated tree passed 858 focused tests (three warnings), Ruff and isolated audit `--check`, with hashes of all 1,119 current tracked artifacts unchanged after each check. Relative to D's original A base, only the previously reviewed B report matrix provenance differs. C's merge-main CI run `36484758171` passed. D PR publication and current-head hosted CI remain.
 
@@ -71,7 +75,7 @@ Give copay, strategy, drug review, and material presentation clear local ownersh
 - [x] Remove only the proven unreachable strategy override notice, after confirming overrides remain in their dedicated section.
 - [x] Run focused tests, full frontend typecheck/tests/build, audit checks and artifact parity; exercise changing/unknown finding selection and drawers in the isolated browser preview.
 - [x] Obtain independent implementation review, resolve findings and complete the hypothetical local-column-change walkthrough.
-- [x] Integrate verified B main, publish/attach the focused PR, verify current-revision CI and reviews, then merge only after all gates pass.
+- [x] Integrate verified B main, publish and request task attachment for the focused PR, verify current-revision CI and reviews, then merge only after all gates pass.
 - [x] Record evidence and advance to D.
 
 ### Out of Scope
