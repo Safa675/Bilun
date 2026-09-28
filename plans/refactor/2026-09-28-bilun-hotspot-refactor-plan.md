@@ -1,7 +1,7 @@
 # Bilun targeted hotspot refactoring plan
 
 - Date: 2026-09-28.
-- Status: A and B are merged as [PR #101](https://github.com/Safa675/Bilun/pull/101) (`63df008d`) and [PR #102](https://github.com/Safa675/Bilun/pull/102) (`f63bb12b`), with successful main CI. Delivery C is locally verified in `/root/worktrees/bilun-report-presentation` and awaits publication. D extraction is in progress in a separate worktree; E–F remain pending.
+- Status at F publication: deliveries A–E merged as PRs #101–#105, with successful main CI after each. [PR #106](https://github.com/Safa675/Bilun/pull/106) contains F on E's merged main; final PR-head CI, merge and merge-main CI remain.
 - Inspection baseline: `/opt/Bilun`, commit `4af38b28`. Source line references below describe that inspected revision. Delivery A uses a fresh worktree at `/root/worktrees/bilun-hotspot-refactor`, based on current main `46ae9fdf`, including the merged billing-officer UX work.
 - Delivery A branch: `refactor/hotspot-audit-sources`. The user authorized opening a new PR and starting implementation; this delivery was published as a draft PR after local verification.
 - Unattended continuation: the user subsequently authorized completion of B–F and merges after tests and independent review pass, with no requested time/token cap. Deployment remains outside scope. The persistent run configuration is `/root/artifacts/bilun-hotspot-refactor-2026-09-28/overnight-run.md`.
@@ -18,9 +18,10 @@ Give report presentation, drug-rule evaluation, and surfacing audits clear respo
 - [x] Make the audit resolve the actual report components before moving their source.
 - [x] Extract report sections while preserving existing imports and UI behavior.
 - [x] Separate section-specific data preparation and compatibility handling from rendering.
-- [ ] Extract drug corpus/matching code, then route/constraint/evaluation code behind the existing public module.
-- [ ] Separate audit discovery, metadata, validation, rendering, and CLI responsibilities.
-- [ ] Complete the applicable verification gates and review whether representative changes have become local.
+- [x] Extract drug corpus/matching code, then route/constraint/evaluation code behind the existing public module.
+- [x] Separate audit discovery, metadata, validation, rendering, and CLI responsibilities.
+- [x] Complete local verification and review whether representative changes have become local.
+- [ ] Verify the final F PR head and merged main CI, then record the final revision.
 
 ### Out of Scope
 
@@ -49,7 +50,7 @@ Preserve useful existing boundaries: canonical drug evaluation calls the prose e
 - [x] Recheck current exports, callers, source-scanning assumptions, test imports/mocks, and the plan's source anchors for delivery A. Reconcile direct file overlaps on the selected base; coordinate or rebase as necessary without requiring unrelated work to merge or stop.
 - [x] Include the billing-officer UX work in the selected implementation base: fetched main `46ae9fdf` contains the merged #100 changes. Preserve that current behavior rather than restoring this older inspection snapshot.
 - [x] Run focused baseline checks and retain the existing two audit outputs outside tracked output paths. Record any pre-existing failures; do not rewrite expectations to make an unexplained failure disappear.
-- [ ] Use existing fixtures to capture complete representative drug results through detailed, canonical, legacy, and cached/API projections. Compare fields, text, ordering, identities, and null values, not only counts. Add characterization tests only where an extraction risk is currently uncovered.
+- [x] Use existing fixtures to capture complete representative drug results through detailed, canonical, legacy, and cached/API projections. Compare fields, text, ordering, identities, and null values, not only counts. Add characterization tests only where an extraction risk is currently uncovered.
 
 The following contracts remain stable throughout:
 
@@ -121,7 +122,7 @@ Proposed internal package: `src/bilun/domain/prose_rules/_drug_indication/`, wit
 
 Acceptance: loaders and coverage outputs are equivalent; corpus/matching work can be tested without importing billing; public callers keep working through the existing module.
 
-Delivery D extraction retains all 47 original function ASTs, directly re-exports 22 moved callable objects, and preserves the four decorated cache instances. An independently reviewed complete 20,339,608-byte output snapshot (54 line cases, nine full contexts, all 968 rules, canonical/legacy/cache/API projections) is identical to the unchanged monolith. The isolated D source passed 858 focused tests, 4,077 backend tests, Ruff, audit `--check`, compiler `--check` (134 byte-identical artifacts), manifest parity (23 manifests, zero issues), and unchanged hashes for 1,119 tracked artifacts. It was then rebased onto C's merged main without changing D source/test content; the full-output comparator, 858 focused tests, Ruff, audit `--check` and current artifact hashes passed on that integrated tree. Hosted PR CI and review feedback are the remaining publication gates; evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-d`.
+Delivery D extraction retains all 47 original function ASTs, directly re-exports 22 moved callable objects, and preserves the four decorated cache instances. An independently reviewed complete 20,339,608-byte output snapshot (54 line cases, nine full contexts, all 968 rules, canonical/legacy/cache/API projections) is identical to the unchanged monolith. The isolated D source passed 858 focused tests, 4,077 backend tests, Ruff, audit `--check`, compiler `--check` (134 byte-identical artifacts), manifest parity (23 manifests, zero issues), and unchanged hashes for 1,119 tracked artifacts. It was then rebased onto C's merged main without changing D source/test content; the full-output comparator, 858 focused tests, Ruff, audit `--check` and current artifact hashes passed on that integrated tree. [PR #104](https://github.com/Safa675/Bilun/pull/104) passed hosted CI and independent review, merged as `ec368706`, and passed main CI run `36487251655`; evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-d`.
 
 ## 7. Phase E — Separate routing, constraints, and evaluation
 
@@ -146,7 +147,7 @@ Dependency direction: facade → corpus/evaluation; evaluation → routing/const
 
 Acceptance: exact public-output parity, one evaluation per line, deterministic route/evidence order, preserved caches/imports, and unchanged data/schema artifacts.
 
-The E extraction retains the original result and cache contracts; a complete 20,339,608-byte snapshot, 868 focused tests, 4,087 full backend tests, Ruff, isolated audit, compiler, manifest parity and 1,119 artifact hashes passed. No audit source expansion was needed because the existing canonical audited entrypoint remained in place and its source check passed. Independent review found no actionable issue. The 13 route helpers now reside in `routing.py`, five constraint helpers in `constraints.py`, and explicit-rule orchestration/evidence in `evaluation.py`; the public facade remains the default-load and dynamic-call boundary. The reviewed E source/tests were rebased unchanged onto D's verified merged main, then the complete comparator, 868 focused tests, Ruff and audit `--check` passed again with unchanged artifact hashes. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`. Hosted PR CI and review feedback remain before E merge.
+The E extraction retains the original result and cache contracts; a complete 20,339,608-byte snapshot, 868 focused tests, 4,087 full backend tests, Ruff, isolated audit, compiler, manifest parity and 1,119 artifact hashes passed. No audit source expansion was needed because the existing canonical audited entrypoint remained in place and its source check passed. Independent review found no actionable issue. The 13 route helpers now reside in `routing.py`, five constraint helpers in `constraints.py`, and explicit-rule orchestration/evidence in `evaluation.py`; the public facade remains the default-load and dynamic-call boundary. The reviewed E source/tests were rebased unchanged onto D's verified merged main, then the complete comparator, 868 focused tests, Ruff and audit `--check` passed again with unchanged artifact hashes. [PR #105](https://github.com/Safa675/Bilun/pull/105) passed hosted CI and independent review, merged as `46a694d0`, and passed main CI run `36489455355`. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`.
 
 ## 8. Phase F — Complete the audit decomposition
 
@@ -171,7 +172,7 @@ Proposed package: `scripts/audits/rule_surfacing/`.
 
 Acceptance: changing report formatting is local to `render.py`; source syntax is handled by source adapters; classifiers are not used as substitutes for source proof; actual surface/contract removal still fails.
 
-The local F extraction retains the original script-path callable API and passes explicit path/helper context to owned modules. Mechanical source review found 52 original function bodies equivalent apart from context plumbing, with 27 compatible old signatures and unchanged metadata/source proofs. The separate literal-map reader supports the existing 17-entry map and bounded formatting variants while rejecting dynamic and regex-decoy false evidence. Independent review found and verified the fix for that decoy. On the corrected source, 122 focused and 4,133 full backend tests, Ruff, isolated CLI, compiler, manifest parity, byte-identical JSON/Markdown and 1,119 artifact hashes passed. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-f`. Final E-main integration and hosted CI remain.
+The local F extraction retains the original script-path callable API and passes explicit path/helper context to owned modules. Mechanical source review found 52 original function bodies equivalent apart from context plumbing, with 27 compatible old signatures and unchanged metadata/source proofs. The separate literal-map reader supports the existing 17-entry map and bounded formatting variants while rejecting dynamic and regex-decoy false evidence. Independent review found and verified the fix for that decoy. Before E integration, the corrected source passed 122 focused and 4,133 full backend tests. Rebased onto E's merged main, the reviewed F source/test files are unchanged except three trailing signature spaces removed without changing their AST. The integrated candidate passed 964 focused and 4,145 full backend tests, TypeScript, 383 frontend tests, production build, Ruff, isolated audit/12 CLI cases, compiler `--check` (134 byte-identical artifacts), manifest parity (23/zero), byte-identical JSON/Markdown and 1,119 unchanged artifact hashes. Independent final review found no remaining issue; the package import graph is acyclic. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-f`. Final PR-head CI, merge and merge-main CI remain.
 
 ## 9. Verification and artifact handling
 
@@ -255,13 +256,14 @@ Separate worktrees may be used for independent frontend/backend work, but integr
 
 ## 11. Definition of done
 
-- [ ] A reviewer can identify the owner of each responsibility and trace dependencies without circular imports or a new catch-all helper module.
+- [x] A reviewer can identify the owner of each responsibility and trace dependencies without circular imports or a new catch-all helper module.
 - [x] Walk through a hypothetical display-column change: it is confined to that section/presentation function/tests and does not require drug-engine changes. Do not ship a dummy column to demonstrate this.
 - [x] Walk through a route-selection change: its implementation and focused tests are discoverable in routing, with public-contract changes made explicit if ever required. No dummy rule change is included.
 - [x] Walk through an audit-report formatting change: it requires rendering/tests, without changing discovery or visibility definitions.
-- [ ] All preserved contracts and before/after comparisons pass, supported legacy behavior remains covered, and no test has been removed or weakened merely to accommodate file moves.
-- [ ] Browser observations, test results, final revision, expected provenance diffs, and absence of unrelated artifact drift are recorded for each delivery.
-- [ ] Declaration-file cleanup and canonical-model redesign remain deferred. Any further scope is justified by a concrete maintenance problem rather than line count.
+- [x] All preserved contracts and before/after comparisons pass, supported legacy behavior remains covered, and no test has been removed or weakened merely to accommodate file moves.
+- [x] Browser observations, test results, expected provenance diffs, and absence of unrelated artifact drift are recorded for each delivery.
+- [ ] Record F's final merged revision and resulting main CI in the external run checkpoint.
+- [x] Declaration-file cleanup and canonical-model redesign remain deferred. Any further scope is justified by a concrete maintenance problem rather than line count.
 
 ## Planning review
 
@@ -274,7 +276,7 @@ The original plan was prepared from read-only frontend, backend, and audit inspe
 - Evidence directory: `/root/artifacts/bilun-hotspot-refactor-2026-09-28`, containing both baseline audit outputs, 1,091 tracked artifact hashes, and the baseline test log.
 - Implementation and independent review are complete for the bounded supported grammar. Current/moved-source regressions pass; every other serialized field and Markdown byte remains equal after the 16-row provenance-only matrix update.
 - Local checks passed: **4,075 backend tests, 8 warnings, 734.61s**; full Ruff; the audit CLI in isolated Python mode from outside the repository; **134 byte-identical generated rule/manifest artifacts**; **23 manifests with zero parity issues**; final artifact hashes changed only for the reviewed audit matrix.
-- Publication: [draft PR #101](https://github.com/Safa675/Bilun/pull/101), attached to the task. Hosted CI started at publication; its current status is available on the PR. No merge or deployment was performed. The next planned delivery is the mechanical report-section extraction (B).
+- Publication: [PR #101](https://github.com/Safa675/Bilun/pull/101), attached to the task. Hosted and merge-main CI passed; it merged as `63df008d` without deployment. Delivery B followed separately.
 
 ## Delivery B implementation record
 
@@ -292,4 +294,4 @@ The original plan was prepared from read-only frontend, backend, and audit inspe
 - Verification passed: final TypeScript, 383 frontend tests in 65 files, production build, 64 audit/source tests, isolated audit CLI check, byte-identical JSON and Markdown audit outputs, and unchanged hashes for all 1,119 tracked data/report artifacts.
 - Independent review matched 16 extracted markup/helper units to the prior sections and found no import cycles. Chromium passed 20 cases, ten in each locale, on both baseline and candidate; every case result is identical, with no page errors or unexpected API calls. Checks include a changed finding selection, unknown-finding fallback, invoice highlighting, clause drawers, narrow scrolling, and empty/partial/legacy states. The preview used actual patient-page content with synthetic APIs in a minimal embedded shell; production data and whole-shell visual parity were outside this local check.
 - A hypothetical extra KDV review column is confined to `MaterialKdvReviewTable`'s header/cell and a focused assertion; its parent section's availability/order and the other seven renderers remain separate. No dummy column was shipped.
-- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`. Hosted PR CI/integration are pending; the completed drug baseline is being used for D's separate extraction.
+- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`. [PR #103](https://github.com/Safa675/Bilun/pull/103) passed hosted CI and independent review, merged as `20873ff6`, and passed main CI run `36484758171`. The completed drug baseline was used for D's separate extraction.
