@@ -1,3 +1,26 @@
+## Task: Fatura uyumluluğu ekranını faturalama görevlisi için anlaşılır hale getir (2026-09-28)
+
+### Goal
+Mevcut eyleme dönük bulgular, Wave A inceleme gözlemleri, bilgi/izin kayıtları ve değerlendirme kapsamı hasta ekranında açıkça ayrışsın; her tekil kanıtın kimliği ve bağlantısı korunsun. Ayrıntılı kapsam ve kabul ölçütleri [UX planında](../plans/billing/2026-09-28-billing-officer-compliance-ux-plan.md).
+
+### Subtasks
+- [x] Mevcut hasta/kohort bileşenlerini, sayım kaynaklarını, sayfalama sınırını ve test kapılarını incele.
+- [x] Ürün düzeni, güvenli gruplama, metin kataloğu, belirsizlik gösterimi ve doğrulama için ayrıntılı plan yaz.
+- [x] Planı mevcut veri sözleşmeleri ve testlerle bağımsız olarak karşılaştır; yanlış toplulaştırma ve kayıp deep link risklerini plana işle.
+- [ ] Ürün planı gözden geçirilip onaylandıktan sonra uygulamaya başla.
+- [ ] Hasta inceleme sunum modeli, erişilebilir grup/ayrıntı etkileşimi ve seçili tekil kayıt bağlantısını uygula.
+- [ ] Yapısal/Wave A kapsamını, advisory bölümünü ve iki dilli açıklamaları güncelle; kohort ortak bileşen etkisini doğrula.
+- [ ] Odaklı davranış testleri, masaüstü/mobil tarayıcı kontrolü ve tüm frontend CI kapılarını tamamla.
+- [ ] Son diff'i ve sayısal/finansal değişmezleri gözden geçir; incelemeye hazır yeni PR aç.
+
+### Out of Scope
+Kural motoru, backend/API/cache, finansal toplamlar, kohortta sayfalar arası gruplama, canlı dağıtım ve mevzuatın hukuki teyidi.
+
+### Review
+Plan, mevcut `ComplianceViewSection`, `WaveAEvidenceSection`, `CohortWaveAEvidenceSection`, veri tipleri ve frontend testleriyle iki bağımsız salt-okunur incelemede karşılaştırıldı. Hasta önizlemesi/kohort sayfalaması nedeniyle yalnızca yüklenmiş satırlara ait gruplama sayıları kullanılacak; tekil `evidence_id` bağlantıları korunacak. Ürün planı incelemeye hazır; uygulama başlamadı.
+
+---
+
 ## Task: Reduce full-suite runtime without reducing coverage
 
 ### Goal
