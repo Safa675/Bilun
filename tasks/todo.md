@@ -11,13 +11,13 @@ Mevcut eyleme dönük bulgular, Wave A inceleme gözlemleri, bilgi/izin kayıtla
 - [x] Hasta inceleme sunum modeli, erişilebilir grup/ayrıntı etkileşimi ve seçili tekil kayıt bağlantısını uygula.
 - [x] Yapısal/Wave A kapsamını, advisory bölümünü ve iki dilli açıklamaları güncelle; kohort ortak bileşen etkisini doğrula.
 - [x] Odaklı davranış testleri, dar ekran yan menü kontrolü, masaüstü/mobil tarayıcı kontrolü ve tüm frontend CI kapılarını tamamla.
-- [ ] Son diff'i ve sayısal/finansal değişmezleri gözden geçir; incelemeye hazır yeni PR aç.
+- [x] Son diff'i ve sayısal/finansal değişmezleri gözden geçir; incelemeye hazır yeni PR aç.
 
 ### Out of Scope
 Kural motoru, backend/API/cache, finansal toplamlar, kohortta sayfalar arası gruplama, canlı dağıtım ve mevzuatın hukuki teyidi.
 
 ### Review
-Plan, mevcut `ComplianceViewSection`, `WaveAEvidenceSection`, `CohortWaveAEvidenceSection`, veri tipleri ve frontend testleriyle iki bağımsız salt-okunur incelemede karşılaştırıldı. Hasta önizlemesi/kohort sayfalaması nedeniyle yalnızca yüklenmiş satırlara ait gruplama sayıları kullanıldı; tekil `evidence_id` bağlantıları korundu. Kullanıcı planı onayladı. Hasta 0043/0001 üzerinde masaüstü, 390 px mobil, klavye, sayfalama ve önizleme dışındaki seçili kayıt tarayıcıda doğrulandı; mobil yan menü tercihi masaüstünde korunuyor. Tam frontend doğrulaması: 64 Vitest dosyasında 373 test, TypeScript ve üretim derlemesi geçti. Backend/API/cache/kural kararları ve finansal hesaplar değiştirilmedi. PR yayını bekleniyor.
+Plan, mevcut `ComplianceViewSection`, `WaveAEvidenceSection`, `CohortWaveAEvidenceSection`, veri tipleri ve frontend testleriyle iki bağımsız salt-okunur incelemede karşılaştırıldı. Hasta önizlemesi/kohort sayfalaması nedeniyle yalnızca yüklenmiş satırlara ait gruplama sayıları kullanıldı; tekil `evidence_id` bağlantıları korundu. Kullanıcı planı onayladı. Hasta 0043/0001 üzerinde masaüstü, 390 px mobil, klavye, sayfalama ve önizleme dışındaki seçili kayıt tarayıcıda doğrulandı; mobil yan menü tercihi masaüstünde korunuyor. Tam frontend doğrulaması: 64 Vitest dosyasında 373 test, TypeScript ve üretim derlemesi geçti. Backend/API/cache/kural kararları ve finansal hesaplar değiştirilmedi. İncelemeye hazır [PR #100](https://github.com/Safa675/Bilun/pull/100) açıldı; ilk [GitHub CI koşusunda](https://github.com/Safa675/Bilun/actions/runs/36469974065) backend ve frontend başarılı.
 
 ---
 

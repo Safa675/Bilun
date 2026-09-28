@@ -1,6 +1,6 @@
 # Fatura uyumluluğu ekranı — faturalama görevlisi için UX planı
 
-> Durum: Ürün planı onaylandı ve uygulandı; PR yayını bekleniyor.
+> Durum: Ürün planı onaylandı ve uygulandı; [PR #100](https://github.com/Safa675/Bilun/pull/100) incelemede.
 > Başlangıç: `origin/main` / `b5098a33`, dal `feat/billing-officer-compliance-ux`.
 
 ## Amaç
@@ -118,7 +118,7 @@ Kapsam ve veri eksikleri                      [25 grubun durum ayrıntısı]
       durumlarını doğrula; dar ekranda yan menünün başlangıç durumunu düzelt.
 - [x] Anlamlı birim/bileşen testleri ve en az bir tarayıcı etkileşim kontrolü
       ekle; ardından TypeScript, tüm Vitest testleri ve üretim build'ini çalıştır.
-- [ ] Son diff, ekran görüntüleri ve önce/sonra örneğiyle yalnızca bu UX
+- [x] Son diff, ekran görüntüleri ve önce/sonra örneğiyle yalnızca bu UX
       değişikliğini içeren incelemeye hazır PR aç.
 
 ## Kabul ölçütleri
