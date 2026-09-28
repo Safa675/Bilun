@@ -1,3 +1,33 @@
+## Task: Prepare and implement hotspot refactoring delivery D — drug corpus and matching
+
+### Goal
+Extract drug matching and corpus responsibilities behind the existing public module with exact output/cache compatibility, then integrate after delivery C as its own verified PR.
+
+### Subtasks
+- [x] Read the approved phase D/E boundaries and create an isolated worktree at main `63df008d`; rebase onto the verified delivery C main before publication.
+- [x] Independently inventory public/private accesses, cached objects and monkeypatch seams; review the planned ownership before runtime edits.
+- [x] Capture complete representative baseline detailed/canonical/legacy/cache/API results using existing fixtures, including the plan's edge cases, and save an executable before/after comparison outside tracked artifacts.
+- [x] Add only meaningful missing compatibility regressions exposed by the extraction risk.
+- [x] Extract pure matching and corpus/coverage responsibilities with the same cache instances and shallow-copy semantics; preserve public names and signatures.
+- [x] Compare complete outputs and source/audit contracts, obtain independent review, and resolve substantive findings.
+- [x] Run focused drug checks and full backend gates sequentially with tracked artifact hash checks; preserve all data and financial/clinical behavior.
+- [ ] Integrate the verified predecessor, publish and attach a focused PR, verify current-revision CI/review, and merge only after all gates pass.
+- [ ] Record evidence and advance to delivery E.
+
+### Out of Scope
+Routing/constraint/evaluation extraction (delivery E), semantic or clinical rule changes, canonical/API/cache redesign, generated corpus/manifest rewrites, new dependencies, deployment, and live service changes.
+
+### Review
+Preparation may run in parallel with frontend deliveries in this isolated worktree; integration remains B then C then D. The user approved the full hotspot plan and unattended execution with merging only after tests and independent review pass. Runtime edits begin after the concrete baseline/ownership review. The original `/opt/Bilun` checkout remains untouched.
+
+Baseline/ownership review is complete before runtime edits: matching owns pure predicates/normalization/specialty/INN/ICD functions; corpus owns paths/loading/manifest/subsection coverage/promotion/stop conditions. All four original decorated caches and shallow list/dictionary identities remain contracts. The immutable comparator captures 54 line cases, nine full report contexts, all 968 corpus rules, detailed/canonical/legacy/cache/API projections and coverage, including full-corpus order permutations. A second monolithic capture is byte-identical (20,339,608 bytes; SHA256 `5c046be33ba9eccf305034baac29bc1b02ff9b7542fd1e272f4154e9a403d7c1`). It verifies loaded `bilun` and `src.bilun` modules originate inside this worktree (284 origins). The focused baseline passed 122 tests including two missing public cache/default-input contracts; 1,119 tracked artifact hashes remained unchanged. Evidence and executable comparator: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-d`.
+
+The extraction preserved all 47 original function ASTs and directly re-exports all 22 moved callables, including the four original cache objects, with no internal facade/billing dependency. The immutable complete payload snapshot is byte-identical after extraction. Independent source/runtime review found no actionable regression. Focused checks passed 858 tests; full backend passed 4,077 tests with eight warnings; full Ruff, isolated audit `--check`, compiler `--check` (134 byte-identical artifacts), and manifest parity (23 scanned, zero issues) passed. Hashes of all 1,119 tracked data/report artifacts are unchanged after every writer. These results apply to the isolated D source before integration on C main; publication and current-revision CI remain.
+
+D was rebased onto C's merged main `20873ff6` without any source/test content change. The frozen full-output comparator remained byte-identical; the integrated tree passed 858 focused tests (three warnings), Ruff and isolated audit `--check`, with hashes of all 1,119 current tracked artifacts unchanged after each check. Relative to D's original A base, only the previously reviewed B report matrix provenance differs. C's merge-main CI run `36484758171` passed. D PR publication and current-head hosted CI remain.
+
+---
+
 ## Task: Complete hotspot refactoring delivery C — section presentation decisions
 
 ### Goal
@@ -12,8 +42,8 @@ Give copay, strategy, drug review, and material presentation clear local ownersh
 - [x] Remove only the proven unreachable strategy override notice, after confirming overrides remain in their dedicated section.
 - [x] Run focused tests, full frontend typecheck/tests/build, audit checks and artifact parity; exercise changing/unknown finding selection and drawers in the isolated browser preview.
 - [x] Obtain independent implementation review, resolve findings and complete the hypothetical local-column-change walkthrough.
-- [ ] Integrate verified B main, publish/attach the focused PR, verify current-revision CI and reviews, then merge only after all gates pass.
-- [ ] Record evidence and advance to D.
+- [x] Integrate verified B main, publish/attach the focused PR, verify current-revision CI and reviews, then merge only after all gates pass.
+- [x] Record evidence and advance to D.
 
 ### Out of Scope
 Clinical or financial reinterpretation, new features/labels, payload or schema changes, removal of supported legacy data, new generic frameworks/dependencies, deployment, and live data/service changes.
@@ -21,7 +51,9 @@ Clinical or financial reinterpretation, new features/labels, payload or schema c
 ### Review
 The approved plan and read-only extraction review establish the five drug states (hidden, structured, legacy, evaluations, empty), first-non-insight copay header selection, per-row mixed shape handling, overlapping strategy categories with violations before claim rows, explicit zero-count preservation, and simultaneous material groups. Detailed scope is saved at `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c-scope.md`. Worktree: `/root/worktrees/bilun-report-presentation`; branch: `refactor/hotspot-report-presentation`. B merged as [PR #102](https://github.com/Safa675/Bilun/pull/102), main `f63bb12b`, with successful main CI run `36482614267`.
 
-Local C verification is complete against frozen source. Ten independently authored public-section compatibility cases passed on unchanged B before rewiring; after extraction, 41 focused tests and all 383 frontend tests in 65 files passed, as did final TypeScript and the production build. The 64 focused audit/source tests and isolated CLI `--check` passed. Both generated audit files are byte-identical to the B baseline, and hashes of all 1,119 tracked data/report artifacts remain unchanged. Independent source review matched 16 moved markup/helper bodies and found no local import cycles. Chromium passed 20 checks, ten per locale, on both the B baseline and C candidate; every case result is identical, with no page errors or unexpected APIs. The preview used actual patient-page content and synthetic intercepted APIs in a minimal embedded shell; it does not claim production data or full-shell visual coverage. The local-column walkthrough found `MaterialKdvReviewTable` owns its own header/cell rendering and focused test; the owning section's availability, order and other seven renderers need no change. Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`. Publication and current-revision hosted CI remain.
+Local C verification is complete against frozen source. Ten independently authored public-section compatibility cases passed on unchanged B before rewiring; after extraction, 41 focused tests and all 383 frontend tests in 65 files passed, as did final TypeScript and the production build. The 64 focused audit/source tests and isolated CLI `--check` passed. Both generated audit files are byte-identical to the B baseline, and hashes of all 1,119 tracked data/report artifacts remain unchanged. Independent source review matched 16 moved markup/helper bodies and found no local import cycles. Chromium passed 20 checks, ten per locale, on both the B baseline and C candidate; every case result is identical, with no page errors or unexpected APIs. The preview used actual patient-page content and synthetic intercepted APIs in a minimal embedded shell; it does not claim production data or full-shell visual coverage. The local-column walkthrough found `MaterialKdvReviewTable` owns its own header/cell rendering and focused test; the owning section's availability, order and other seven renderers need no change. Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`.
+
+Delivery C publication: [PR #103](https://github.com/Safa675/Bilun/pull/103) at `b5bae476` passed hosted frontend/backend CI run `36483840115` and independent review, with no human or inline findings (Copilot reported quota exhaustion). It was merged head-guarded as `20873ff6e66e75bb3d95b0af5206d58fe6d8d788` at 2026-09-28 21:14:27 UTC. Its merge tree matches the tested source tree. Main CI run `36484758171` passed. The app artifact attachment call is still pending; do not assume attached.
 
 ---
 
@@ -49,9 +81,9 @@ The existing approved plan and fresh export/helper/fixture inspection define thi
 
 Local verification is complete at source/artifact commit `1dc0b239`: 19 component modules and shared helpers preserve all 23 facade exports and all 29 original declarations (independent AST comparisons). Baseline frontend checks passed 102 tests; final TypeScript, all 373 tests in 64 files, and production build passed. All 64 focused audit/source tests and isolated CLI `--check` passed. Only the matrix changed among 1,119 tracked artifacts: 17 added source-path occurrences across 16 of 97 rows, with every non-provenance field and all Markdown bytes unchanged. No package/lockfile changes remain.
 
-Publication/integration: [PR #102](https://github.com/Safa675/Bilun/pull/102), head `9a539d5d`, passed hosted CI run `36481871547`. Final GitHub review fetch found no human or inline findings; Copilot reported exhausted review quota, so independent agent review provides the completed review evidence. Merged with a head-SHA guard as `f63bb12b1568f5cc02632cdeccff728a6ec9ea54` on 2026-09-28 at 20:55:32 UTC. Main CI run `36482614267` is in progress. Release Hold remains unchanged; no deployment occurred. The primary checkout remains on main with its original uncommitted edits preserved.
+Publication/integration: [PR #102](https://github.com/Safa675/Bilun/pull/102), head `9a539d5d`, passed hosted CI run `36481871547`. Final GitHub review fetch found no human or inline findings; Copilot reported exhausted review quota, so independent agent review provides the completed review evidence. Merged with a head-SHA guard as `f63bb12b1568f5cc02632cdeccff728a6ec9ea54` on 2026-09-28 at 20:55:32 UTC. Main CI run `36482614267` passed. Release Hold remains unchanged; no deployment occurred. The primary checkout remains on main with its original uncommitted edits preserved.
 
-Independent structural review found no import cycles, reverse facade dependencies, or changed declarations. Playwright/system Chromium passed 14 interaction/state checks across English and Turkish, including selected-finding focus and viewport visibility, action-to-invoice highlighting, clause fetching/closing, 390px table scrolling, and exact-empty/partial-noncoverage/collapsed-legacy states. The isolated preview used the actual patient-page content and matching source hashes with intercepted synthetic APIs, `embedded=true`, a minimal provider/layout shell and fallback font; it does not claim production backend or whole-shell visual verification. Logs, scripts, hashes, parity results, and screenshots are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. Publication and hosted CI remain the next gate.
+Independent structural review found no import cycles, reverse facade dependencies, or changed declarations. Playwright/system Chromium passed 14 interaction/state checks across English and Turkish, including selected-finding focus and viewport visibility, action-to-invoice highlighting, clause fetching/closing, 390px table scrolling, and exact-empty/partial-noncoverage/collapsed-legacy states. The isolated preview used the actual patient-page content and matching source hashes with intercepted synthetic APIs, `embedded=true`, a minimal provider/layout shell and fallback font; it does not claim production backend or whole-shell visual verification. Logs, scripts, hashes, parity results, and screenshots are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`.
 
 ---
 

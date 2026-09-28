@@ -113,13 +113,15 @@ Keep `src/bilun/domain/prose_rules/drug_indication.py` as the public facade. The
 
 Proposed internal package: `src/bilun/domain/prose_rules/_drug_indication/`, with an initially minimal `__init__.py`.
 
-- [ ] Add `matching.py` for pure normalization, specialty/INN/ICD matching, diagnosis collection, and rule-field predicates. Move it before or together with corpus code so the corpus does not need to import the facade.
-- [ ] Add `corpus.py` for paths, corpus/manifest loading, coverage metadata, promotion gates, and stop conditions. Preserve merge order, optional corpus handling, metadata keys, lazy imports, and shallow-copy behavior.
-- [ ] Preserve the single decorated loader/manifest caches and regex cache, including invalidation behavior. Re-export the decorated functions where appropriate; do not add a second cache on a wrapper or duplicate cached state.
-- [ ] Inventory and preserve public access to loading/listing/coverage functions as well as evaluators. Recheck dynamic/private accesses and monkeypatch points against the implementation base before removing names.
-- [ ] Leave canonical finding types, API schemas, rule data, manifests, and clinical messages unchanged.
+- [x] Add `matching.py` for pure normalization, specialty/INN/ICD matching, diagnosis collection, and rule-field predicates. Move it before or together with corpus code so the corpus does not need to import the facade.
+- [x] Add `corpus.py` for paths, corpus/manifest loading, coverage metadata, promotion gates, and stop conditions. Preserve merge order, optional corpus handling, metadata keys, lazy imports, and shallow-copy behavior.
+- [x] Preserve the single decorated loader/manifest caches and regex cache, including invalidation behavior. Re-export the decorated functions where appropriate; do not add a second cache on a wrapper or duplicate cached state.
+- [x] Inventory and preserve public access to loading/listing/coverage functions as well as evaluators. Recheck dynamic/private accesses and monkeypatch points against the implementation base before removing names.
+- [x] Leave canonical finding types, API schemas, rule data, manifests, and clinical messages unchanged.
 
 Acceptance: loaders and coverage outputs are equivalent; corpus/matching work can be tested without importing billing; public callers keep working through the existing module.
+
+Delivery D extraction retains all 47 original function ASTs, directly re-exports 22 moved callable objects, and preserves the four decorated cache instances. An independently reviewed complete 20,339,608-byte output snapshot (54 line cases, nine full contexts, all 968 rules, canonical/legacy/cache/API projections) is identical to the unchanged monolith. The isolated D source passed 858 focused tests, 4,077 backend tests, Ruff, audit `--check`, compiler `--check` (134 byte-identical artifacts), manifest parity (23 manifests, zero issues), and unchanged hashes for 1,119 tracked artifacts. It was then rebased onto C's merged main without changing D source/test content; the full-output comparator, 858 focused tests, Ruff, audit `--check` and current artifact hashes passed on that integrated tree. Hosted PR CI and review feedback are the remaining publication gates; evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-d`.
 
 ## 7. Phase E — Separate routing, constraints, and evaluation
 
