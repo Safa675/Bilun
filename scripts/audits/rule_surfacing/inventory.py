@@ -164,7 +164,7 @@ def _all_discovered_by_name(calls: Iterable[RuntimeCall]) -> dict[str, RuntimeCa
     return {row.callable: row for row in calls}
 
 
-def resolve_emissions(ctx: AuditContext, 
+def resolve_emissions(ctx: AuditContext,
     row: RuntimeCall,
     all_calls: dict[str, RuntimeCall],
     *,
@@ -291,7 +291,7 @@ def _registry_matches(row: RuntimeCall, registry: list[dict[str, Any]]) -> list[
     )
 
 
-def _runtime_row(ctx: AuditContext, 
+def _runtime_row(ctx: AuditContext,
     row: RuntimeCall,
     registry: list[dict[str, Any]],
     all_calls: dict[str, RuntimeCall],
@@ -551,7 +551,7 @@ def _artifact_only_rows(rule_sets: list[dict[str, Any]]) -> list[dict[str, Any]]
     return result
 
 
-def _independent_rerun_debt(ctx: AuditContext, 
+def _independent_rerun_debt(ctx: AuditContext,
     runtime_calls: list[RuntimeCall],
     all_calls: dict[str, RuntimeCall],
 ) -> dict[str, Any]:
