@@ -1,3 +1,31 @@
+## Task: Complete hotspot refactoring delivery B — report section extraction
+
+### Goal
+Move each existing report section into its owning module while preserving public imports, markup, behavior, and verified audit provenance, then publish and merge the independently reviewed PR after all gates pass.
+
+### Subtasks
+- [x] Confirm the approved plan and unattended authorization; use an isolated branch from merged delivery A at `63df008d` with successful main CI.
+- [x] Review the 23-export inventory, helper ownership, source-resolver fixture dependency, and frontend verification requirements before implementation.
+- [x] Move the 19 existing report components and genuinely shared helpers into `billing-report/`, preserving bodies and client boundaries; retain explicit named exports at the original module.
+- [x] Adapt the real-extraction audit fixture to the new source graph without weakening full-output/evidence assertions.
+- [x] Compare candidate audit outputs and record only explained provenance changes; verify tracked artifact hashes.
+- [x] Run focused audit checks and full frontend typecheck, tests, and build; exercise the required focus/highlight/drawer/locale/partial-state flows in an isolated browser preview.
+- [x] Obtain independent implementation review and resolve substantive findings; complete diff/scope checks.
+- [ ] Commit, check CI before push, open and attach the focused PR, verify current-revision CI/review, and merge only after all gates pass.
+- [ ] Record PR/revision/verification and advance to delivery C.
+
+### Out of Scope
+Section decision cleanup (delivery C), drug engine changes, general type/schema restructuring, changes to UI or financial/clinical behavior, new dependencies, deployment, live cache/data updates, and unrelated user edits.
+
+### Review
+The existing approved plan and fresh export/helper/fixture inspection define this mechanical delivery. The user authorized unattended B–F completion and merges after tests and independent review pass. PR #101 was already merged by `Safa675` when this run resumed; its merge commit is `63df008d9ac91564247b53c83231d283754931ce`, and main CI run `36479428919` passed. The original `/opt/Bilun` checkout and its uncommitted work remain untouched. Worktree: `/root/worktrees/bilun-report-sections`; branch: `refactor/hotspot-report-sections`.
+
+Local verification is complete at source/artifact commit `1dc0b239`: 19 component modules and shared helpers preserve all 23 facade exports and all 29 original declarations (independent AST comparisons). Baseline frontend checks passed 102 tests; final TypeScript, all 373 tests in 64 files, and production build passed. All 64 focused audit/source tests and isolated CLI `--check` passed. Only the matrix changed among 1,119 tracked artifacts: 17 added source-path occurrences across 16 of 97 rows, with every non-provenance field and all Markdown bytes unchanged. No package/lockfile changes remain.
+
+Independent structural review found no import cycles, reverse facade dependencies, or changed declarations. Playwright/system Chromium passed 14 interaction/state checks across English and Turkish, including selected-finding focus and viewport visibility, action-to-invoice highlighting, clause fetching/closing, 390px table scrolling, and exact-empty/partial-noncoverage/collapsed-legacy states. The isolated preview used the actual patient-page content and matching source hashes with intercepted synthetic APIs, `embedded=true`, a minimal provider/layout shell and fallback font; it does not claim production backend or whole-shell visual verification. Logs, scripts, hashes, parity results, and screenshots are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. Publication and hosted CI remain the next gate.
+
+---
+
 ## Task: Fatura uyumluluğu ekranını faturalama görevlisi için anlaşılır hale getir (2026-09-28)
 
 ### Goal

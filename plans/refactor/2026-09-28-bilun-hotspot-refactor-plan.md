@@ -1,9 +1,10 @@
 # Bilun targeted hotspot refactoring plan
 
 - Date: 2026-09-28.
-- Status: Delivery A implemented, locally verified, and published as [draft PR #101](https://github.com/Safa675/Bilun/pull/101). Deliveries B–F have not started.
+- Status: Delivery A is merged as [PR #101](https://github.com/Safa675/Bilun/pull/101), merge commit `63df008d`, with successful main CI. Delivery B is in progress in `/root/worktrees/bilun-report-sections` on `refactor/hotspot-report-sections`; C–F remain pending.
 - Inspection baseline: `/opt/Bilun`, commit `4af38b28`. Source line references below describe that inspected revision. Delivery A uses a fresh worktree at `/root/worktrees/bilun-hotspot-refactor`, based on current main `46ae9fdf`, including the merged billing-officer UX work.
 - Delivery A branch: `refactor/hotspot-audit-sources`. The user authorized opening a new PR and starting implementation; this delivery was published as a draft PR after local verification.
+- Unattended continuation: the user subsequently authorized completion of B–F and merges after tests and independent review pass, with no requested time/token cap. Deployment remains outside scope. The persistent run configuration is `/root/artifacts/bilun-hotspot-refactor-2026-09-28/overnight-run.md`.
 
 ## Task: Make the billing hotspots easier to change independently
 
@@ -15,7 +16,7 @@ Give report presentation, drug-rule evaluation, and surfacing audits clear respo
 
 - [ ] Establish the implementation base, dependency inventory, and behavior baseline.
 - [x] Make the audit resolve the actual report components before moving their source.
-- [ ] Extract report sections while preserving existing imports and UI behavior.
+- [x] Extract report sections while preserving existing imports and UI behavior.
 - [ ] Separate section-specific data preparation and compatibility handling from rendering.
 - [ ] Extract drug corpus/matching code, then route/constraint/evaluation code behind the existing public module.
 - [ ] Separate audit discovery, metadata, validation, rendering, and CLI responsibilities.
@@ -87,11 +88,11 @@ Proposed directory: `frontend/src/components/patient/billing-report/`.
 | `MaterialsPreCheckSection.tsx` | Existing material checks and coverage notices. |
 | One file per remaining existing exported section | Move the existing lab, care-setting, checklist, and other sections according to the export inventory. Do not invent new product sections. |
 
-- [ ] Move shared helpers, summary/actions, then smaller sections, then copay/strategy, then drug/materials. Keep moves separate from logic cleanup in reviewable commits.
-- [ ] Retain `SutBillingReportSections.tsx` as an explicit named-export facade with the required client boundary. Preserve callers and existing mocks, including helper imports from `PatientFinancialSummary`.
-- [ ] Import local helpers directly from leaf files; extracted components must not import back through the facade. Preserve required `"use client"` boundaries.
-- [ ] Preserve markup, ordering, labels, callback signatures, styling, and runtime decisions during this phase.
-- [ ] Update audit evidence using Phase A's resolution. Generate candidate reports outside the tracked files, compare them, then regenerate the two reports if required. Permit only explained source/provenance changes.
+- [x] Move shared helpers, summary/actions, then smaller sections, then copay/strategy, then drug/materials. Keep moves separate from logic cleanup in reviewable commits.
+- [x] Retain `SutBillingReportSections.tsx` as an explicit named-export facade with the required client boundary. Preserve callers and existing mocks, including helper imports from `PatientFinancialSummary`.
+- [x] Import local helpers directly from leaf files; extracted components must not import back through the facade. Preserve required `"use client"` boundaries.
+- [x] Preserve markup, ordering, labels, callback signatures, styling, and runtime decisions during this phase.
+- [x] Update audit evidence using Phase A's resolution. Generate candidate reports outside the tracked files, compare them, then regenerate the two reports if required. Permit only explained source/provenance changes.
 
 Acceptance: existing UI checks pass through the original imports; report sections live in dedicated files; no behavior changes are needed to complete the move.
 
@@ -268,3 +269,12 @@ The original plan was prepared from read-only frontend, backend, and audit inspe
 - Implementation and independent review are complete for the bounded supported grammar. Current/moved-source regressions pass; every other serialized field and Markdown byte remains equal after the 16-row provenance-only matrix update.
 - Local checks passed: **4,075 backend tests, 8 warnings, 734.61s**; full Ruff; the audit CLI in isolated Python mode from outside the repository; **134 byte-identical generated rule/manifest artifacts**; **23 manifests with zero parity issues**; final artifact hashes changed only for the reviewed audit matrix.
 - Publication: [draft PR #101](https://github.com/Safa675/Bilun/pull/101), attached to the task. Hosted CI started at publication; its current status is available on the PR. No merge or deployment was performed. The next planned delivery is the mechanical report-section extraction (B).
+
+## Delivery B implementation record
+
+- Base `63df008d`; source move commit `af58b2d1`, separately reviewed provenance commit `1dc0b239`. Original module remains a 23-export client facade; 19 section files and shared helpers own the unchanged implementation.
+- Both author and independent reviewer compared all 29 declarations, preserving signatures/bodies and all original exports. No reverse imports or local import cycles were found.
+- Verification passed: baseline 102 frontend tests; final TypeScript, 373 frontend tests in 64 files, production build, 64 audit/source tests, isolated audit CLI check, and diff checks.
+- Candidate reports were compared before regeneration: 16 rows gain 17 verified leaf source-path occurrences, with all other serialized values equal and Markdown byte-identical. Post-test hashes of 1,119 tracked artifacts changed only for the expected matrix.
+- Browser verification passed 14 English/Turkish checks for finding focus/visibility, invoice highlighting, clause drawer fetch/close, narrow-table scrolling, and representative empty/partial/legacy states. It used the actual extracted patient-page content in an isolated minimal embedded preview with synthetic intercepted APIs; production data, shell visual parity and production fonts were not tested. Preview source hashes match the committed components.
+- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. Hosted PR CI and integration remain pending. Delivery C's read-only scope review is recorded in `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c-scope.md`; drug baseline preparation runs independently with no runtime edits.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 import importlib.util
 from pathlib import Path
-import re
+from shutil import copytree
 import sys
 
 import pytest
@@ -250,7 +250,7 @@ def test_unsupported_audited_component_forms_fail_explicitly(tmp_path: Path, sou
         _evidence(resolver)
 
 
-def test_audit_accepts_real_report_facade_extraction_without_changing_classifications(
+def test_audit_accepts_real_section_relocation_through_report_facade_without_changing_classifications(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     audit = _load_audit()
@@ -264,13 +264,19 @@ def test_audit_accepts_real_report_facade_extraction_without_changing_classifica
         copied = _write(copied_source_root / original.relative_to(original_source_root), original.read_text(encoding="utf-8"))
         monkeypatch.setattr(audit, name, copied)
 
-    sections = audit.PATIENT_SECTIONS_PATH
-    source = sections.read_text(encoding="utf-8")
-    exported_names = re.findall(r"^export (?:function|const) (\w+)", source, re.MULTILINE)
-    assert COMPONENT in exported_names
-    leaf = _write(sections.parent / "billing-report/sections.tsx", source)
-    sections.write_text(
-        '"use client";\nexport { ' + ", ".join(exported_names) + ' } from "./billing-report/sections";\n',
+    # Copy the actual extracted graph so that facade, view, and leaf imports
+    # retain their real relationships. Move one section again in the fixture:
+    # the old leaf becomes another named-export hop, while relative helper
+    # imports remain valid because the new definition stays in the same folder.
+    original_sections = original_source_root / "components/patient/billing-report"
+    copied_sections = audit.PATIENT_SECTIONS_PATH.parent / "billing-report"
+    copytree(original_sections, copied_sections)
+    section = copied_sections / f"{COMPONENT}.tsx"
+    source = section.read_text(encoding="utf-8")
+    assert f"export function {COMPONENT}" in source
+    leaf = _write(copied_sections / f"Relocated{COMPONENT}.tsx", source)
+    section.write_text(
+        f'"use client";\nexport {{ {COMPONENT} }} from "./Relocated{COMPONENT}";\n',
         encoding="utf-8",
     )
     original_rel = audit._rel
@@ -292,6 +298,11 @@ def test_audit_accepts_real_report_facade_extraction_without_changing_classifica
             expected_row["evidence_files"] = actual_row["evidence_files"]
 
     assert "compute_patient_billing_report:validate_drug_indication_from_claims" in changed_rows
+    assert set(changed_rows) == {
+        row["runtime_id"]
+        for row in before["rows"]
+        if row.get("patient_ui_surface") == f"{VIEW_NAME}:{COMPONENT}"
+    }
     assert after == expected
     assert leaf in audit._patient_ui_evidence_paths("ComplianceViewSection:DrugIndicationReviewSection")
 
