@@ -5,28 +5,21 @@ import type { BillingActionReport } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translateStructuredApiMessage } from "@/lib/apiMessages";
-import { isExactOutput } from "@/lib/sutExactness";
-import { copayClaimScopedAnnexLabels, copayCorrectionBilledTry, copayCorrectionGroundKey, copayCorrectionPayableTry, copayCorrectionProcedureLabel, copayCorrectionSavingsTry, copayCorrectedPayableTry, resolveCopayIlaveStatus, copayExemptionGapTotal, copayShowsIlaveColumn, formatSutSectionLabel, usesClaimCopayCorrectionShape, usesInsightOnlyCopayCorrectionShape } from "@/lib/billingReportFields";
+import { copayCorrectionBilledTry, copayCorrectionGroundKey, copayCorrectionPayableTry, copayCorrectionProcedureLabel, copayCorrectionSavingsTry, copayCorrectedPayableTry, resolveCopayIlaveStatus, formatSutSectionLabel, usesClaimCopayCorrectionShape } from "@/lib/billingReportFields";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
 import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import { Chip, ExactnessBlock as ExactnessNotice } from "@/components/primitives";
 import { fmtTRY2, fmtTRY2OrUnavailable, KpiCard } from "@/components/tabs/sut/shared";
+import { buildCopaySectionModel } from "./CopayOptimizationSection.model";
 import { ACCENT, WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableWrap } from "./shared";
 
 export function CopayOptimizationSection({ copayData }: { copayData: BillingActionReport["copay"] }) {
   const t = useT();
   const [clauseDrawerKey, setClauseDrawerKey] = useState<string | null>(null);
-  const copayExact = isExactOutput(copayData);
-  const hasInsight =
-    copayData.is_exempt ||
-    copayData.rate_corrections.some(
-      (correction) =>
-        usesClaimCopayCorrectionShape(correction) ||
-        usesInsightOnlyCopayCorrectionShape(correction),
-    );
+  const model = buildCopaySectionModel(copayData);
 
-  if (!copayExact && !hasInsight) {
+  if (model.kind === "unavailable") {
     return (
       <BillingSectionShell title={t("billing.copay.title")}>
         <ExactnessNotice block={copayData} fallback={t("billing.copay.unavailable")} />
@@ -34,25 +27,21 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     );
   }
 
-  const exemptionGapTotal = copayExemptionGapTotal(copayData);
+  const {
+    copayExact,
+    exemptionGapTotal,
+    showIlaveColumn,
+    ilaveTotal,
+    copayOnlyDecomposition,
+    insightOnlyRows,
+    claimRows,
+    claimScopedChips,
+    hasWaiverGroundColumn,
+    inpatientDrugGroundTotal,
+    hasEk1aVisitSavings,
+    usesClaimTableHeader,
+  } = model;
   const savingsColor = exemptionGapTotal > 0 ? ACCENT : "#71717A";
-  const showIlaveColumn = copayShowsIlaveColumn(copayData);
-  const ilaveTotal = copayData.ilave_ucret_total_try ?? 0;
-  const copayOnlyDecomposition = copayData.line_decomposition_status === "copay_only";
-  const insightOnlyRows = copayData.rate_corrections.filter((correction) =>
-    usesInsightOnlyCopayCorrectionShape(correction),
-  );
-  const claimRows = copayData.rate_corrections.filter(
-    (correction) => !usesInsightOnlyCopayCorrectionShape(correction),
-  );
-  const claimScopedChips = copayClaimScopedAnnexLabels(copayData);
-  const hasWaiverGroundColumn = claimRows.some((row) => Boolean(copayCorrectionGroundKey(row)));
-  const inpatientDrugGroundTotal =
-    copayData.rx_copay_savings_by_ground?.inpatient_drug_1_8_5_8 ?? 0;
-  const hasEk1aVisitSavings = copayData.rate_corrections.some(
-    (row) =>
-      row.exemption_ground === "ek1a_muayene" && (row.copay_component_try ?? 0) > 0,
-  );
 
   const waiverGroundLabel = (ground: string | null) => {
     if (!ground) {
@@ -185,7 +174,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               <tr>
                 <th>{t("billing.copay.procedure")}</th>
                 {hasWaiverGroundColumn ? <th>{t("billing.copay.waiverGround")}</th> : null}
-                {usesClaimCopayCorrectionShape(claimRows[0]) ? (
+                {usesClaimTableHeader ? (
                   <>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.payable")}</th>
