@@ -3,32 +3,17 @@
 import type { BillingActionReport } from "@/lib/domains/sut";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translateApiText, translateStructuredApiMessage } from "@/lib/apiMessages";
-import { isExactOutput } from "@/lib/sutExactness";
-import { formatSutSectionLabel, isClaimLevelStrategyRow, isComplianceViolationRow, mergeClaimStrategyTableRows, strategyBadgeColor, strategyItemizedTotalTry, strategyModeLabel, strategyPackageTotalTry, strategyPaymentMethodKindMessageKey, strategyPrimaryLabel, strategyRecommendationKindMessageKey, strategyCatalogAsOfFootnote, strategyRowStatus, strategyRowStatusChipVariant, strategyRowStatusMessageKey, strategySavingsHeaderKey, strategySavingsTryDisplay, strategySecondaryLabel, usesHeuristicStrategyReviewShape } from "@/lib/billingReportFields";
+import { formatSutSectionLabel, isComplianceViolationRow, strategyBadgeColor, strategyItemizedTotalTry, strategyModeLabel, strategyPackageTotalTry, strategyPaymentMethodKindMessageKey, strategyPrimaryLabel, strategyRecommendationKindMessageKey, strategyRowStatus, strategyRowStatusChipVariant, strategyRowStatusMessageKey, strategySavingsTryDisplay, strategySecondaryLabel } from "@/lib/billingReportFields";
 import { Chip, ExactnessBlock as ExactnessNotice } from "@/components/primitives";
 import { fmtLabel, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
+import { buildBillingStrategySectionModel } from "./BillingStrategySection.model";
 import { ACCENT, WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableWrap } from "./shared";
 
 export function BillingStrategySection({ strategyData }: { strategyData: BillingActionReport["billing_strategy"] }) {
   const t = useT();
-  const strategyExact = isExactOutput(strategyData);
-  const heuristicRows = strategyData.recommendations.filter((item) =>
-    usesHeuristicStrategyReviewShape(item),
-  );
-  const claimLevelRows = strategyData.recommendations.filter(
-    (item) =>
-      isClaimLevelStrategyRow(item) && item.recommendation_kind !== "optional_override",
-  );
-  const complianceViolations = strategyData.recommendations.filter((item) =>
-    isComplianceViolationRow(item),
-  );
-  const mergedClaimRows = mergeClaimStrategyTableRows(claimLevelRows, complianceViolations);
-  const hasRecommendations =
-    heuristicRows.length > 0 ||
-    claimLevelRows.length > 0 ||
-    complianceViolations.length > 0;
+  const model = buildBillingStrategySectionModel(strategyData);
 
-  if (!strategyExact && !hasRecommendations) {
+  if (model.kind === "unavailable") {
     return (
       <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
         <ExactnessNotice block={strategyData} fallback={t("billing.strategy.unavailable")} />
@@ -36,19 +21,20 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
     );
   }
 
-  if (!hasRecommendations) {
+  if (model.kind === "hidden") {
     return null;
   }
 
-  const heuristicOnly = heuristicRows.length > 0 && mergedClaimRows.length === 0;
-  const usesClaimTable = mergedClaimRows.length > 0;
-  const savingsHeaderKey = usesClaimTable
-    ? strategySavingsHeaderKey(claimLevelRows)
-    : "billing.strategy.savings";
-  const catalogAsOfFootnote = strategyCatalogAsOfFootnote(claimLevelRows);
-  const hasOptionalOverride = claimLevelRows.some(
-    (item) => item.recommendation_kind === "optional_override",
-  );
+  const {
+    strategyExact,
+    heuristicRows,
+    claimLevelRows,
+    mergedClaimRows,
+    heuristicOnly,
+    usesClaimTable,
+    savingsHeaderKey,
+    catalogAsOfFootnote,
+  } = model;
 
   const renderSutRuleBadge = (item: (typeof claimLevelRows)[number]) => {
     const section = formatSutSectionLabel(item.sut_section_id ?? item.sut_section);
@@ -70,11 +56,6 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
       {usesClaimTable && catalogAsOfFootnote && (
         <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
           {t("billing.strategy.catalogAsOf", { date: catalogAsOfFootnote })}
-        </p>
-      )}
-      {usesClaimTable && hasOptionalOverride && (
-        <p className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "rgba(37, 99, 235, 0.08)", color: "#1D4ED8" }}>
-          {t("billing.strategy.overrideScopeNotice")}
         </p>
       )}
       {heuristicOnly && (
