@@ -24,6 +24,7 @@ import argparse
 import ast
 import json
 import re
+import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -33,6 +34,12 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.audits.rule_surfacing.surface_sources import SurfaceSourceResolver
+
+FRONTEND_SOURCE_ROOT = ROOT / "frontend/src"
 ENGINE_PATH = ROOT / "src/bilun/domain/billing/engine.py"
 PATIENT_REPORT_PATH = ROOT / "src/bilun/domain/billing/patient_report.py"
 FOCUSED_MATERIALIZER_PATH = ROOT / "src/bilun/domain/billing/focused_legacy_materializer.py"
@@ -1595,42 +1602,56 @@ def _require_source_token(path: Path, token: str, *, label: str) -> None:
 
 
 def _patient_ui_evidence_paths(patient_ui: str) -> list[Path]:
+    views = {
+        "ComplianceViewSection": COMPLIANCE_VIEW_PATH,
+        "RevenueViewSection": REVENUE_VIEW_PATH,
+        "AuditViewSection": AUDIT_VIEW_PATH,
+    }
+    resolver = SurfaceSourceResolver(FRONTEND_SOURCE_ROOT, views)
     if patient_ui == "RecommendedActionsPanel":
-        _require_source_token(
-            PATIENT_SECTIONS_PATH,
-            "export function RecommendedActionsPanel",
-            label="patient UI",
-        )
-        return [PATIENT_SECTIONS_PATH]
+        return sorted({
+            path
+            for view in ("RevenueViewSection", "AuditViewSection")
+            for path in resolver.component_evidence(view, patient_ui)
+        })
     if "#" in patient_ui:
         component, section_id = patient_ui.split("#", 1)
-        path = {
-            "ComplianceViewSection": COMPLIANCE_VIEW_PATH,
-            "RevenueViewSection": REVENUE_VIEW_PATH,
-            "AuditViewSection": AUDIT_VIEW_PATH,
-        }.get(component)
-        if path is None:
-            raise ValueError(f"unknown patient UI component metadata: {patient_ui}")
-        _require_source_token(path, f'id="{section_id}"', label="patient UI")
-        return [path]
+        return resolver.view_evidence(component, section_id=section_id)
     if ":" in patient_ui:
         component, child = patient_ui.split(":", 1)
-        path = {
-            "ComplianceViewSection": COMPLIANCE_VIEW_PATH,
-            "RevenueViewSection": REVENUE_VIEW_PATH,
-            "AuditViewSection": AUDIT_VIEW_PATH,
-        }.get(component)
-        if path is None:
-            raise ValueError(f"unknown patient UI component metadata: {patient_ui}")
-        _require_source_token(path, child, label="patient UI")
-        return [path]
+        section_ids = {
+            "CopayOptimizationSection": "billing-copay",
+            "BillingStrategySection": "billing-strategy",
+            "SessionUpliftSection": "billing-session-uplift",
+            "DrgUpliftSection": "billing-drg-uplift",
+            "BloodComponentUpliftSection": "billing-blood-uplift",
+            "MaterialUpliftSection": "billing-material-uplift",
+            "CareSettingReviewSection": "billing-care-setting-review",
+            "DrgPackageAdequacyReviewSection": "billing-drg-package-adequacy",
+            "ProcedureAddonUpliftSection": "billing-procedure-addon-uplift",
+            "MedulaRejectionPlaybookSection": "medula-playbook",
+            "ClaimSubmissionChecklistSection": "claim-submission-checklist",
+            "DrugIndicationReviewSection": "drug-indication",
+            "MaterialsPreCheckSection": "materials-pre-check",
+        }
+        if child not in section_ids:
+            raise ValueError(f"patient UI source: unknown component contract {child}")
+        return resolver.component_evidence(component, child, section_id=section_ids[child])
 
     section_ids = [value for value in patient_ui.split(",") if value]
     if not section_ids:
         raise ValueError("empty patient UI metadata")
+    section_components = {
+        "billing-lab": ("ComplianceViewSection", "LabOptimizationSection"),
+        "billing-procedure-capture-gap": ("RevenueViewSection", "ProcedureCaptureGapSection"),
+    }
+    paths: set[Path] = set()
     for section_id in section_ids:
-        _require_source_token(PATIENT_SECTIONS_PATH, f'id="{section_id}"', label="patient UI")
-    return [PATIENT_SECTIONS_PATH]
+        if section_id not in section_components:
+            raise ValueError(f"patient UI source: unknown section contract {section_id}")
+        view, child = section_components[section_id]
+        paths.update(resolver.component_evidence(view, child, section_id=section_id))
+    return sorted(paths)
 
 
 def _cohort_api_evidence_path(cohort_api: str) -> Path:

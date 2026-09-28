@@ -5589,6 +5589,8 @@
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
         "frontend/src/components/patient/SutBillingReportSections.tsx",
+        "frontend/src/components/patient/views/ComplianceViewSection.tsx",
+        "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/api/routes/compliance.py",
@@ -6651,6 +6653,7 @@
       "evidence_files": [
         "data/gazette/prose_rules/anti_vegf_prose.json",
         "data/gazette/prose_rules/drug_indication_prose.json",
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/ComplianceViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
@@ -6900,6 +6903,7 @@
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
         "data/gazette/prose_rules/copay_general_1_8.json",
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
@@ -7258,6 +7262,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/ComplianceViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
@@ -8061,6 +8066,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/ComplianceViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
@@ -8121,6 +8127,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8169,6 +8176,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8281,6 +8289,7 @@
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
         "data/gazette/prose_rules/fatura_inceleme_checklist.json",
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/AuditViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8331,6 +8340,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8385,6 +8395,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8487,6 +8498,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8546,6 +8558,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/AuditViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8600,6 +8613,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8700,6 +8714,7 @@
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
         "data/gazette/prose_rules/session_pricing_2_2_2_B.json",
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "frontend/src/lib/recommendedActions.ts",
         "src/bilun/domain/billing/billing_actions.py",
@@ -8751,6 +8766,8 @@
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
         "frontend/src/components/patient/SutBillingReportSections.tsx",
+        "frontend/src/components/patient/views/AuditViewSection.tsx",
+        "frontend/src/components/patient/views/RevenueViewSection.tsx",
         "src/bilun/domain/billing/billing_actions.py",
         "src/bilun/domain/billing/claim_yatak_puani.py",
         "src/bilun/domain/billing/patient_report.py"
@@ -9886,6 +9903,7 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
         "frontend/src/components/patient/views/ComplianceViewSection.tsx",
         "frontend/src/components/tabs/sut/compliance/SUTComplianceDashboard.tsx",
         "frontend/src/lib/recommendedActions.ts",
