@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceProvider } from "@/stores/workspaceContext";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import type { WaveAEvidenceBlock, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
-import { PatientWaveAEvidenceSection, WaveACoverageSummary, matchesPatientEvidenceScope } from "./WaveAEvidenceSection";
+import { PatientWaveAEvidenceSection, WaveACoverageSummary, WaveAEvidenceRowsTable, matchesPatientEvidenceScope } from "./WaveAEvidenceSection";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -38,6 +38,25 @@ delete advisoryBase.observed_billed_amount_try;
 delete advisoryBase.observed_amount_basis;
 delete advisoryBase.observed_amount_unavailable_reason;
 
+function reviewRow(claimId: string, suffix: string): WaveAEvidenceRow {
+  const source_evidence_id = `claim_evaluation:review-${suffix}`;
+  return {
+    evidence_id: `wavea_review:${source_evidence_id}`,
+    source_evidence_id,
+    patient_id: "P-1",
+    claim_id: claimId,
+    rule_id: "1.9.1.(1).extra_fee_permissible_scope",
+    line_kind: "claim",
+    line_id: null,
+    source_engine: "extra_fee_scope",
+    evaluation_status: "evaluated",
+    reason: "authored_source_pending_independent_review",
+    source_status: "structured_locator",
+    regulatory_source: { clause_key: "1.9.1.(1)#43cd69a1" },
+    money_semantics: "unpriced_review",
+  };
+}
+
 function render(block: WaveAEvidenceBlock) {
   return renderToStaticMarkupWithLocale(
     <WorkspaceProvider>
@@ -48,6 +67,55 @@ function render(block: WaveAEvidenceBlock) {
 }
 
 describe("Wave A patient evidence", () => {
+  it("groups loaded review evidence by topic and keeps each exact claim link and identity", () => {
+    const reviews = [reviewRow("C-1", "1"), reviewRow("C-2", "2"), reviewRow("C-3", "3")];
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="reviews"
+          block={{ available: true, unavailable_reason: null, total_rows: 5, rows: reviews, has_more: true }}
+        />
+      </WorkspaceProvider>,
+      "tr",
+    );
+
+    expect(html).toContain("Toplam 5 inceleme kaydı");
+    expect(html).toContain("Gösterilen kayıtlarda 3 fatura");
+    expect(html.match(/Ek ücret kapsamı/g)).toHaveLength(1);
+    expect(html).toContain("henüz ihlal veya finansal kazanç olarak sayılmadı");
+    expect(html).not.toContain("<table");
+    for (const review of reviews) {
+      expect(html).toContain(`data-finding-id="${review.evidence_id}"`);
+      expect(html).toContain(review.claim_id);
+      expect(html).toContain(encodeURIComponent(review.evidence_id));
+      expect(html).toContain(`claim=${review.claim_id}`);
+    }
+    expect(html).toContain("Daha fazla göster (3/5)");
+  });
+
+  it("opens the selected review group and never presents a source-free review as verified", () => {
+    const selected = reviewRow("C-2", "2");
+    const noSource = { ...selected, regulatory_source: null, source_status: "unverified" };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection
+          patientId="P-1"
+          kind="reviews"
+          block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [noSource], has_more: false }}
+          selectedFindingId={selected.evidence_id}
+          selectedClaimId="C-2"
+        />
+      </WorkspaceProvider>,
+      "tr",
+    );
+
+    expect(html).toContain('open=""');
+    expect(html).toContain(`data-finding-id="${selected.evidence_id}" data-selected="true"`);
+    expect(html.match(/Bu kayıtta doğrulanmış kaynak yok/g)).toHaveLength(1);
+    expect(html).toContain("claim=C-2");
+  });
+
   it("rejects a patient response when a selected bill is expected and vice versa", () => {
     const page = {
       available: true,
@@ -205,8 +273,8 @@ describe("Wave A patient evidence", () => {
       </WorkspaceProvider>,
       "en",
     );
-    expect(html).toContain("Informational and permission outcomes");
-    expect(html).toContain("Information · review only");
+    expect(html).toContain("Information and conditional permissions");
+    expect(html).toContain("Information record");
     expect(html).toContain("excluded from violation and financial totals");
     expect(html).toContain('id="wavea-advisories"');
     expect(html).toContain('data-selected="true"');
@@ -236,7 +304,7 @@ describe("Wave A patient evidence", () => {
     );
     expect(html).toContain("F21");
     expect(html).toContain("2.4.1.(1)");
-    expect(html).toContain("Source locator; applicability unverified");
+    expect(html).toContain("Source locator recorded; applicability to this claim unverified");
   });
 
   it("withholds an advisory whose kind or money semantics is malformed", () => {
@@ -256,7 +324,7 @@ describe("Wave A patient evidence", () => {
       "en",
     );
     expect(html).toContain("Wave A evidence is unavailable");
-    expect(html).not.toContain("Permission · check conditions");
+    expect(html).not.toContain("Conditional permission");
   });
 
   it("does not treat an old build with no advisory block as a clean advisory zero", () => {
@@ -266,8 +334,21 @@ describe("Wave A patient evidence", () => {
       </WorkspaceProvider>,
       "en",
     );
+    expect(html).toContain("Information and conditional permissions");
     expect(html).toContain("Wave A evidence is unavailable");
     expect(html).not.toContain("No observations in this category");
+  });
+
+  it("shows an absent source once in the shared cohort table", () => {
+    const review = { ...reviewRow("C-1", "no-source"), regulatory_source: null, source_status: "unverified" };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <WaveAEvidenceRowsTable rows={[review]} kind="reviews" />
+      </WorkspaceProvider>,
+      "tr",
+    );
+    expect(html.match(/Bu kayıtta doğrulanmış kaynak yok/g)).toHaveLength(1);
+    expect(html).toContain("claim=C-1");
   });
 
   it("keeps old or draft evidence unavailable instead of presenting a clean zero", () => {
@@ -310,8 +391,8 @@ describe("Wave A patient evidence", () => {
       }} />,
       "en",
     );
-    expect(html).toContain("2 groups · 1 evaluated · 1 missing inputs · 1 unavailable");
-    expect(html).toContain("Some claim inputs are unavailable");
-    expect(html).toContain("View group status counts");
+    expect(html).toContain("2 rule groups · 1 evaluated · 1 missing inputs · 1 unavailable");
+    expect(html).toContain("Some claim inputs or evaluation results are unavailable");
+    expect(html).toContain("Coverage and missing data");
   });
 });

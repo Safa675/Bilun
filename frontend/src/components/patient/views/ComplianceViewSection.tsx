@@ -155,8 +155,6 @@ export default function ComplianceViewSection({
         )}
       </section>
 
-      <WaveACoverageSummary coverage={billingReport.wavea_coverage} />
-
       <PatientWaveAEvidenceSection
         patientId={effectivePatientId}
         kind="reviews"
@@ -174,6 +172,8 @@ export default function ComplianceViewSection({
         selectedFindingId={selectedFindingId}
         selectedClaimId={selectedClaimId}
       />
+
+      <WaveACoverageSummary coverage={billingReport.wavea_coverage} />
 
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} />

@@ -422,31 +422,149 @@ const billing = {
     "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"
   },
   "wavea": {
-    "reviewTitle": "Review-only rule observations",
-    "advisoryTitle": "Informational and permission outcomes",
-    "advisoryNotice": "These observations need review where applicable and are excluded from violation and financial totals.",
+    "reviewTitle": "Human review required",
+    "reviewHeading": "Human review required",
+    "reviewNotice": "These records are not yet counted as violations or financial gains. Verify the claim and source conditions.",
+    "reviewCount": "{count} review records in total",
+    "shownClaimCount": "{count} claims in loaded records",
+    "claimReferenceUnavailable": "No claim identifier in this observation",
+    "reviewGroupDetails": "Show claims and evidence ({count})",
+    "advisoryTitle": "Information and conditional permissions",
+    "advisoryCount": "{count} information or conditional permission records",
+    "advisoryNotice": "Information records are not decisions; permissions apply only after the source and conditions are verified. These records are excluded from violation and financial totals.",
     "financialTitle": "Separate financial evidence",
-    "coverageTitle": "Wave A evaluation coverage",
-    "coverageSummary": "{groups} groups · {evaluated} evaluated · {missing} missing inputs · {unavailable} unavailable",
-    "coveragePartial": "Some claim inputs are unavailable; these counts are not clean passes.",
+    "coverageTitle": "Evaluation coverage",
+    "coverageCompact": "Evaluation is partial; some rules lack inputs or have no available result.",
+    "coverageComplete": "Coverage information is available; evaluation is not a compliance verdict.",
+    "coverageDetails": "Coverage and missing data",
+    "coverageExplainer": "These are rule evaluations, not claim, violation, or compliant-result counts. Missing inputs and unavailable results are not clean passes.",
+    "coverageSummary": "{groups} rule groups · {evaluated} evaluated · {missing} missing inputs · {unavailable} unavailable",
+    "coveragePartial": "Some claim inputs or evaluation results are unavailable; this does not mean they passed.",
     "partialCohort": "Claim inputs are unavailable for {count} selected patients. Showing findings from patients with available evidence; missing inputs are not clean passes.",
-    "groupDetails": "View group status counts",
+    "groupDetails": "View rule-group status counts",
     "groupCounts": "{evaluated} evaluated · {missing} missing · {unavailable} unavailable",
     "unavailable": "Wave A evidence is unavailable for this build or claim. No zero finding count is implied.",
     "noRows": "No observations in this category for the selected scope.",
-    "type": "Outcome",
-    "ruleAndReason": "Rule and reason",
+    "type": "Status",
+    "ruleAndReason": "Topic and what to check",
     "claimAndLine": "Claim and source line",
     "source": "Source reference",
+    "sourceStatus": "Source status",
     "patient": "Patient",
     "amount": "Separate amount",
-    "review": "Review only",
-    "information": "Information · review only",
-    "permission": "Permission · check conditions",
+    "review": "Human review",
+    "information": "Information record",
+    "permission": "Conditional permission",
     "risk": "Risk exposure",
     "uplift": "Recoverable uplift candidate",
-    "sourceLocator": "Source locator; applicability unverified",
-    "sourceUnverified": "Source not verified",
+    "sourceLocator": "Source locator recorded; applicability to this claim unverified",
+    "sourceUnverified": "No verified source in this record",
+    "technicalDetails": "Technical details",
+    "evidenceLink": "Open evidence record",
+    "unknownRuleTitle": "Rule observation",
+    "unknownNextStep": "A user-facing explanation is not yet available for this observation. Review the claim and source details; do not treat it as a confirmed violation or billing decision.",
+    "presentation": {
+      "extraFeeScope": {
+        "title": "Extra-charge scope",
+        "nextStep": "Verify the source text effective on the service date and whether it applies to this service; do not make a final extra-charge decision yet."
+      },
+      "priorVisitLookup": {
+        "title": "Prior-visit lookup",
+        "nextStep": "Compare prior visit records. Do not count this guideline observation as a violation without verifying applicable SUT authority."
+      },
+      "oncologyEk2b": {
+        "title": "Oncology and EK-2B conditions",
+        "nextStep": "Review the service and EK-2B conditions. Do not count this guideline observation as a violation without verifying applicable SUT authority."
+      },
+      "underbillingThreshold": {
+        "title": "Underbilling and the 10% threshold",
+        "nextStep": "Compare billed amounts with the threshold conditions; do not infer a financial outcome without verifying applicable SUT authority."
+      },
+      "sessionDeduction": {
+        "title": "Session deduction condition",
+        "nextStep": "Compare session records with the applicable rule; this guideline observation alone is not a violation."
+      },
+      "preadmissionPackage": {
+        "title": "Pre-admission preparation and package scope",
+        "nextStep": "Review admission date, preparation service, and package conditions; verify the applicable SUT provision separately."
+      },
+      "ek2bTestNecessity": {
+        "title": "EK-2B test necessity",
+        "nextStep": "Review the triggering service and test rationale; do not use this guideline observation alone as a deduction basis."
+      },
+      "packageProcedureDrugMaterial": {
+        "title": "Package procedure, drug, and material scope",
+        "nextStep": "Compare package, drug, and material lines; do not decide separate billing without verifying applicable SUT authority."
+      },
+      "outpatientEk2a2Scope": {
+        "title": "Outpatient procedure and EK-2/A-2 scope",
+        "nextStep": "Compare the procedure code, the EK-2/A-2 scope effective on the service date, and the claim line; this guideline observation alone is not a violation."
+      },
+      "outpatientAdmissionAnnex": {
+        "title": "Outpatient procedure, admission, and annex condition",
+        "nextStep": "Compare the outpatient procedure and admission dates with the EK-2/B line; do not decide a deduction without verifying applicable SUT authority."
+      },
+      "sameSessionAngiography": {
+        "title": "Same-session peripheral angiography",
+        "nextStep": "Review session records and procedure sequence; do not make a payment or deduction decision without verifying the relevant SUT rule."
+      },
+      "catheterizationAndSurgery": {
+        "title": "Surgery during cardiac catheterization",
+        "nextStep": "Check whether catheterization and surgery occurred in the same session; verify the applicable payment rule separately."
+      },
+      "openFractureProcedure": {
+        "title": "Open-fracture procedure and primary surgery",
+        "nextStep": "Check whether the procedure concerns a finger fracture or the same primary surgery; this guideline observation alone is not a violation."
+      },
+      "materialPreauthorization": {
+        "title": "Material prior-authorization record",
+        "nextStep": "Check the prior-authorization condition and document record for this material; the available inputs do not verify approval evidence."
+      },
+      "greenAreaExtraProcedure": {
+        "title": "Green-area visit and additional procedure",
+        "nextStep": "Check additional procedure lines on the same claim and the applicable rule; do not treat this observation as a confirmed violation."
+      },
+      "outpatientEk2cPackage": {
+        "title": "Outpatient EK-2C package payment method",
+        "nextStep": "Verify the text effective on the service date and all exceptions; this information record is not a final billing decision."
+      },
+      "itemizedEk2bEk2cBasis": {
+        "title": "EK-2/B / EK-2/C itemized-payment basis",
+        "nextStep": "Verify procedure codes, service date, and all exceptions; do not finalize payment method from this observation."
+      },
+      "trainingHospitalOutpatient": {
+        "title": "Outpatient payment at a teaching hospital",
+        "nextStep": "Verify facility type, procedure code, and the service-date rule and exceptions; do not finalize payment method from this observation."
+      },
+      "trainingHospitalInpatient": {
+        "title": "Inpatient payment at a teaching hospital",
+        "nextStep": "Verify facility type, admission context, and the service-date rule and exceptions; do not finalize payment method from this observation."
+      },
+      "inpatientPackage": {
+        "title": "Inpatient package payment method",
+        "nextStep": "Verify the package conditions and exceptions effective on the service date; this information record is not a final payment decision."
+      },
+      "inpatientItemizedBasis": {
+        "title": "Inpatient itemized-payment basis",
+        "nextStep": "Verify the text and exceptions applicable to the procedure and service date; do not finalize itemized billing from this observation."
+      },
+      "inpatientMaterialsDrugs": {
+        "title": "Inpatient material and drug lines",
+        "nextStep": "Verify package coverage and exceptions for drug and material lines; do not decide separate billing from this observation."
+      },
+      "trainingHospitalItemized": {
+        "title": "Itemized payment at a teaching hospital",
+        "nextStep": "Verify facility type, procedure code, service date, and all exceptions; do not decide itemized payment from this observation."
+      },
+      "diagnosisBasedEk2c": {
+        "title": "Diagnosis-based EK-2C application",
+        "nextStep": "Verify diagnosis, procedure, service-date rule, and exceptions; do not apply this permission until its conditions are confirmed."
+      },
+      "plateletPheresis": {
+        "title": "Separate billing condition for platelet pheresis",
+        "nextStep": "Verify the procedure code, service-date rule, and exceptions; do not treat this as permission for separate billing until conditions are confirmed."
+      }
+    },
     "amountUnavailable": "Amount unverified",
     "observedBilledCharge": "Observed billed charge",
     "procedureLineBasis": "Source: exact procedure claim line; separate from risk or uplift",
@@ -487,10 +605,10 @@ const billing = {
       "inspectAction": "Inspect",
       "openBill": "Open bill",
       "noFindings": "No compliance findings in this view.",
-      "coverageSummary": "{evaluated} structural controls evaluated · {findings} additional findings",
+      "coverageSummary": "Structural checks: {evaluated} evaluations · {findings} findings",
       "coverageMissing": " · {count} missing inputs",
       "coverageUnavailable": " · {count} unavailable",
-      "coverageNotice": "Evaluated does not imply compliant."
+      "coverageNotice": "This summarizes structural checks only; evaluation is not a compliance verdict."
     },
     "revenue": {
       "shortTitle": "Revenue Dashboard",

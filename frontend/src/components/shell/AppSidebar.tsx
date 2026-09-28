@@ -61,7 +61,10 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const activeTab = useActiveHomeTab();
   const userRole = useUserRole();
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const [narrowScreen, setNarrowScreen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const collapsed = narrowScreen ? !mobileExpanded : desktopCollapsed;
   const hideShell = pathname === "/login";
   const chatDock = useAiDockPosition();
   const navigationStore = useNavigationStoreApi();
@@ -70,22 +73,35 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     if (hideShell) return;
     return navigationStore.subscribe((state, prevState) => {
       if (state.aiDockPosition === "right" && prevState.aiDockPosition !== "right") {
-        setCollapsed(true);
+        setDesktopCollapsed(true);
+        setMobileExpanded(false);
       }
     });
   }, [hideShell, navigationStore]);
 
   // Mount-only read; synchronously initialize sidebar state and width before paint.
   useLayoutEffect(() => {
-    const initialCollapsed = readSidebarCollapsed() || chatDock === "right";
-    setCollapsed(initialCollapsed);
+    const initiallyNarrow = window.matchMedia("(max-width: 640px)").matches;
+    const initialDesktopCollapsed = readSidebarCollapsed() || chatDock === "right";
+    setNarrowScreen(initiallyNarrow);
+    setDesktopCollapsed(initialDesktopCollapsed);
     if (!hideShell) {
       document.documentElement.style.setProperty(
         "--shell-sidebar-width",
-        `${sidebarWidthPx(initialCollapsed)}px`,
+        `${sidebarWidthPx(initiallyNarrow || initialDesktopCollapsed)}px`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only read
+  }, []);
+
+  useEffect(() => {
+    const narrowScreen = window.matchMedia("(max-width: 640px)");
+    const updateNarrowScreen = (event: MediaQueryListEvent) => {
+      setNarrowScreen(event.matches);
+      if (event.matches) setMobileExpanded(false);
+    };
+    narrowScreen.addEventListener("change", updateNarrowScreen);
+    return () => narrowScreen.removeEventListener("change", updateNarrowScreen);
   }, []);
 
   useLayoutEffect(() => {
@@ -100,8 +116,8 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
 
   useEffect(() => {
     if (hideShell) return;
-    writeSidebarCollapsed(collapsed);
-  }, [collapsed, hideShell]);
+    writeSidebarCollapsed(desktopCollapsed);
+  }, [desktopCollapsed, hideShell]);
 
   useEffect(() => {
     if (hideShell) return;
@@ -208,7 +224,9 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
 
         <button
           type="button"
-          onClick={() => setCollapsed((value) => !value)}
+          onClick={() => narrowScreen
+            ? setMobileExpanded((value) => !value)
+            : setDesktopCollapsed((value) => !value)}
           className={cn(
             "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--r-md)]",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-primary)]",
