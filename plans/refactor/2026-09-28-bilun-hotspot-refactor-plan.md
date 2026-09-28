@@ -133,18 +133,20 @@ Add these files inside the same internal package:
 | `constraints.py` | Existing report, tier-B, dose, biomarker, prior-therapy, and supplemental checks. |
 | `evaluation.py` | Detailed-result orchestration, common evidence construction, and violation decoration. |
 
-- [ ] Move route logic while retaining its existing internal result shape. Keep sorted candidate order, stable tie-breaks, supplemental behavior, and the single-rule compatibility branch (`drug_indication.py:858`). Do not redesign semantics during extraction.
-- [ ] Move constraints with the exact existing first-hit order: applicability, report presence, tier-B, dose, biomarker, prior therapy, supplemental.
-- [ ] Shorten detailed evaluation around those stages. Keep result construction and violation decoration explicit; preserve message text, evidence ordering, provenance, and missing-input fields.
-- [ ] Keep default rule loading in the facade and pass explicit rules to the internal evaluator. Preserve `rules=None` versus `rules=[]`.
-- [ ] Preserve dynamic calls through the public detailed evaluator where current wrappers/tests depend on them. The canonical caller and monkeypatch test are at `drug_indication_findings.py:556` and `test_drug_indication_findings.py:128`.
-- [ ] Preserve all existing public names/signatures, including both line evaluators and `check_drug_indication_for_context`. Context iteration, no-drug behavior, and missing-claim handling stay unchanged.
-- [ ] Extend Python source resolution only if the actual audited entrypoints require it; retain explicit source validation rather than treating an unresolvable function as valid.
-- [ ] Compare complete baseline and candidate results for known/unknown drugs, absent diagnoses, secondary diagnoses, explicit empty rules, valid/ambiguous routes, supplemental-only cases, report true/false/unknown, and each constraint family. Reuse reversed/permuted-corpus and cache/API tests.
+- [x] Move route logic while retaining its existing internal result shape. Keep sorted candidate order, stable tie-breaks, supplemental behavior, and the single-rule compatibility branch (`drug_indication.py:858`). Do not redesign semantics during extraction.
+- [x] Move constraints with the exact existing first-hit order: applicability, report presence, tier-B, dose, biomarker, prior therapy, supplemental.
+- [x] Shorten detailed evaluation around those stages. Keep result construction and violation decoration explicit; preserve message text, evidence ordering, provenance, and missing-input fields.
+- [x] Keep default rule loading in the facade and pass explicit rules to the internal evaluator. Preserve `rules=None` versus `rules=[]`.
+- [x] Preserve dynamic calls through the public detailed evaluator where current wrappers/tests depend on them. The canonical caller and monkeypatch test are at `drug_indication_findings.py:556` and `test_drug_indication_findings.py:128`.
+- [x] Preserve all existing public names/signatures, including both line evaluators and `check_drug_indication_for_context`. Context iteration, no-drug behavior, and missing-claim handling stay unchanged.
+- [x] Extend Python source resolution only if the actual audited entrypoints require it; retain explicit source validation rather than treating an unresolvable function as valid.
+- [x] Compare complete baseline and candidate results for known/unknown drugs, absent diagnoses, secondary diagnoses, explicit empty rules, valid/ambiguous routes, supplemental-only cases, report true/false/unknown, and each constraint family. Reuse reversed/permuted-corpus and cache/API tests.
 
 Dependency direction: facade → corpus/evaluation; evaluation → routing/constraints/matching; routing/constraints/corpus → matching where needed. Internal modules never import the facade or billing. The canonical billing module continues to call the prose facade once and owns its existing projections. Consolidating its messages/types with prose is deferred.
 
 Acceptance: exact public-output parity, one evaluation per line, deterministic route/evidence order, preserved caches/imports, and unchanged data/schema artifacts.
+
+The local E extraction retains the original result and cache contracts; a complete 20,339,608-byte snapshot, 868 focused tests, 4,087 full backend tests, Ruff, isolated audit, compiler, manifest parity and 1,119 artifact hashes passed before final D-main integration. No audit source expansion was needed because the existing canonical audited entrypoint remained in place and its source check passed. Independent review found no actionable issue. The 13 route helpers now reside in `routing.py`, five constraint helpers in `constraints.py`, and explicit-rule orchestration/evidence in `evaluation.py`; the public facade remains the default-load and dynamic-call boundary. Evidence is under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`. Final predecessor integration and hosted CI remain.
 
 ## 8. Phase F — Complete the audit decomposition
 
@@ -253,7 +255,7 @@ Separate worktrees may be used for independent frontend/backend work, but integr
 
 - [ ] A reviewer can identify the owner of each responsibility and trace dependencies without circular imports or a new catch-all helper module.
 - [x] Walk through a hypothetical display-column change: it is confined to that section/presentation function/tests and does not require drug-engine changes. Do not ship a dummy column to demonstrate this.
-- [ ] Walk through a route-selection change: its implementation and focused tests are discoverable in routing, with public-contract changes made explicit if ever required. No dummy rule change is included.
+- [x] Walk through a route-selection change: its implementation and focused tests are discoverable in routing, with public-contract changes made explicit if ever required. No dummy rule change is included.
 - [ ] Walk through an audit-report formatting change: it requires rendering/tests, without changing discovery or visibility definitions.
 - [ ] All preserved contracts and before/after comparisons pass, supported legacy behavior remains covered, and no test has been removed or weakened merely to accommodate file moves.
 - [ ] Browser observations, test results, final revision, expected provenance diffs, and absence of unrelated artifact drift are recorded for each delivery.

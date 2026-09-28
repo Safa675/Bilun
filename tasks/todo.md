@@ -8,10 +8,10 @@ Make route selection, ordered constraints and detailed-result construction indep
 - [x] Create an isolated E worktree at C head `b5bae476`, with D integration deferred until D is verified and merged.
 - [x] Add targeted dynamic-wrapper/default-loader, competing-failure precedence and primary-plus-supplemental identity tests and prove them on the unchanged monolith; re-run after D integration before source edits.
 - [ ] Integrate verified D main, refresh import/patch inventory, and compare the unchanged D full-output baseline.
-- [ ] Mechanically extract routing, constraints and evidence helpers into the three approved internal modules, retaining callable identities, public wrappers and cached objects.
-- [ ] Give the internal evaluator explicit rules; keep default loading in the facade and preserve first-hit, nested payload and supplemental-ID behavior.
-- [ ] Compare the immutable complete result snapshot and new pre-extraction tests; run focused/full backend, Ruff, isolated audit, compiler/manifest gates sequentially and tracked-artifact hash checks.
-- [ ] Obtain independent review of AST/signature/dependency and output parity; resolve substantive findings.
+- [x] Mechanically extract routing, constraints and evidence helpers into the three approved internal modules, retaining callable identities, public wrappers and cached objects.
+- [x] Give the internal evaluator explicit rules; keep default loading in the facade and preserve first-hit, nested payload and supplemental-ID behavior.
+- [x] Compare the immutable complete result snapshot and new pre-extraction tests; run focused/full backend, Ruff, isolated audit, compiler/manifest gates sequentially and tracked-artifact hash checks.
+- [x] Obtain independent review of AST/signature/dependency and output parity; resolve substantive findings.
 - [ ] Publish/attach E PR, verify current-revision CI/GitHub feedback, merge with exact-head guard only after checks pass, then verify main CI.
 - [ ] Record PR/revision/evidence and advance to F.
 
@@ -22,6 +22,8 @@ New clinical rules or messages, route semantics, corpus/cache changes, canonical
 The read-only map and explicit extraction traps are recorded at `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e/read-only-extraction-checklist.md`. E's source changes wait for D integration; targeted baseline tests can be authored on the unchanged monolith in parallel. Worktree `/root/worktrees/bilun-drug-evaluation`, branch `refactor/hotspot-drug-evaluation`.
 
 Three targeted groups (ten cases) passed against the unchanged C monolith at `b5bae476` before E source work: facade default-loader calls for `None` versus explicit `[]`, dynamic public detailed calls and context order/orphan behavior, first-hit precedence across overlapping failures, and primary/supplemental inner-versus-outer identities. Ruff passed. Source/test hashes and logs are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`. The verified D source can be integrated provisionally before its PR merge; E publication remains dependent on D's final merged main and hosted gates.
+
+After provisional D integration, 12 boundary/cache tests and the immutable complete comparator passed before E source edits. The reviewed extraction gives routing, constraints and evaluation their own modules while keeping all 46 other original function ASTs, 47 signatures, 44 exact callable aliases and four cache objects. The 20,339,608-byte detailed/canonical/legacy/cache/API payload snapshot remains identical. Independent review found no actionable finding, including first-hit order, raw/common nested fields and supplemental inner/outer IDs. The final isolated E source passed 868 focused tests, 4,087 full backend tests (eight warnings), full Ruff, isolated audit `--check`, compiler `--check` (134 byte-identical artifacts), and manifest parity (23 scanned, zero issues), with all 1,119 tracked artifact hashes unchanged after each gate. Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-e`. Rebase onto D's merged main and hosted current-revision CI remain before publication/merge.
 
 ---
 
