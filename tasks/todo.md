@@ -1,3 +1,30 @@
+## Task: Complete hotspot refactoring delivery C — section presentation decisions
+
+### Goal
+Give copay, strategy, drug review, and material presentation clear local ownership while preserving current payload precedence, row decisions, focus behavior and UI output, then deliver a separate verified PR after B.
+
+### Subtasks
+- [x] Review delivery C against the actual extracted code and tests; create an isolated branch at B commit `9a539d5d`, to integrate onto verified main before publication.
+- [x] Add focused compatibility regressions and verify them against unchanged B components before rewiring those components.
+- [x] Extract section-local copay/strategy models preserving existing overlapping filters, row order, first-row header selection, null/zero values, and shared `billingReportFields` behavior.
+- [x] Make drug display states explicit and split substantial card/legacy/evaluation rendering while keeping section-owned refs, focus effects and the same precedence/array identity.
+- [x] Split material tables into named local components while retaining simultaneous groups, order, source/coverage notices and empty/partial behavior.
+- [x] Remove only the proven unreachable strategy override notice, after confirming overrides remain in their dedicated section.
+- [x] Run focused tests, full frontend typecheck/tests/build, audit checks and artifact parity; exercise changing/unknown finding selection and drawers in the isolated browser preview.
+- [x] Obtain independent implementation review, resolve findings and complete the hypothetical local-column-change walkthrough.
+- [ ] Integrate verified B main, publish/attach the focused PR, verify current-revision CI and reviews, then merge only after all gates pass.
+- [ ] Record evidence and advance to D.
+
+### Out of Scope
+Clinical or financial reinterpretation, new features/labels, payload or schema changes, removal of supported legacy data, new generic frameworks/dependencies, deployment, and live data/service changes.
+
+### Review
+The approved plan and read-only extraction review establish the five drug states (hidden, structured, legacy, evaluations, empty), first-non-insight copay header selection, per-row mixed shape handling, overlapping strategy categories with violations before claim rows, explicit zero-count preservation, and simultaneous material groups. Detailed scope is saved at `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c-scope.md`. Worktree: `/root/worktrees/bilun-report-presentation`; branch: `refactor/hotspot-report-presentation`. B merged as [PR #102](https://github.com/Safa675/Bilun/pull/102), main `f63bb12b`, with successful main CI run `36482614267`.
+
+Local C verification is complete against frozen source. Ten independently authored public-section compatibility cases passed on unchanged B before rewiring; after extraction, 41 focused tests and all 383 frontend tests in 65 files passed, as did final TypeScript and the production build. The 64 focused audit/source tests and isolated CLI `--check` passed. Both generated audit files are byte-identical to the B baseline, and hashes of all 1,119 tracked data/report artifacts remain unchanged. Independent source review matched 16 moved markup/helper bodies and found no local import cycles. Chromium passed 20 checks, ten per locale, on both the B baseline and C candidate; every case result is identical, with no page errors or unexpected APIs. The preview used actual patient-page content and synthetic intercepted APIs in a minimal embedded shell; it does not claim production data or full-shell visual coverage. The local-column walkthrough found `MaterialKdvReviewTable` owns its own header/cell rendering and focused test; the owning section's availability, order and other seven renderers need no change. Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`. Publication and current-revision hosted CI remain.
+
+---
+
 ## Task: Complete hotspot refactoring delivery B — report section extraction
 
 ### Goal
@@ -11,8 +38,8 @@ Move each existing report section into its owning module while preserving public
 - [x] Compare candidate audit outputs and record only explained provenance changes; verify tracked artifact hashes.
 - [x] Run focused audit checks and full frontend typecheck, tests, and build; exercise the required focus/highlight/drawer/locale/partial-state flows in an isolated browser preview.
 - [x] Obtain independent implementation review and resolve substantive findings; complete diff/scope checks.
-- [ ] Commit, check CI before push, open and attach the focused PR, verify current-revision CI/review, and merge only after all gates pass.
-- [ ] Record PR/revision/verification and advance to delivery C.
+- [x] Commit, check CI before push, open and attach the focused PR, verify current-revision CI/review, and merge only after all gates pass.
+- [x] Record PR/revision/verification and advance to delivery C.
 
 ### Out of Scope
 Section decision cleanup (delivery C), drug engine changes, general type/schema restructuring, changes to UI or financial/clinical behavior, new dependencies, deployment, live cache/data updates, and unrelated user edits.
@@ -21,6 +48,8 @@ Section decision cleanup (delivery C), drug engine changes, general type/schema 
 The existing approved plan and fresh export/helper/fixture inspection define this mechanical delivery. The user authorized unattended B–F completion and merges after tests and independent review pass. PR #101 was already merged by `Safa675` when this run resumed; its merge commit is `63df008d9ac91564247b53c83231d283754931ce`, and main CI run `36479428919` passed. The original `/opt/Bilun` checkout and its uncommitted work remain untouched. Worktree: `/root/worktrees/bilun-report-sections`; branch: `refactor/hotspot-report-sections`.
 
 Local verification is complete at source/artifact commit `1dc0b239`: 19 component modules and shared helpers preserve all 23 facade exports and all 29 original declarations (independent AST comparisons). Baseline frontend checks passed 102 tests; final TypeScript, all 373 tests in 64 files, and production build passed. All 64 focused audit/source tests and isolated CLI `--check` passed. Only the matrix changed among 1,119 tracked artifacts: 17 added source-path occurrences across 16 of 97 rows, with every non-provenance field and all Markdown bytes unchanged. No package/lockfile changes remain.
+
+Publication/integration: [PR #102](https://github.com/Safa675/Bilun/pull/102), head `9a539d5d`, passed hosted CI run `36481871547`. Final GitHub review fetch found no human or inline findings; Copilot reported exhausted review quota, so independent agent review provides the completed review evidence. Merged with a head-SHA guard as `f63bb12b1568f5cc02632cdeccff728a6ec9ea54` on 2026-09-28 at 20:55:32 UTC. Main CI run `36482614267` is in progress. Release Hold remains unchanged; no deployment occurred. The primary checkout remains on main with its original uncommitted edits preserved.
 
 Independent structural review found no import cycles, reverse facade dependencies, or changed declarations. Playwright/system Chromium passed 14 interaction/state checks across English and Turkish, including selected-finding focus and viewport visibility, action-to-invoice highlighting, clause fetching/closing, 390px table scrolling, and exact-empty/partial-noncoverage/collapsed-legacy states. The isolated preview used the actual patient-page content and matching source hashes with intercepted synthetic APIs, `embedded=true`, a minimal provider/layout shell and fallback font; it does not claim production backend or whole-shell visual verification. Logs, scripts, hashes, parity results, and screenshots are under `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. Publication and hosted CI remain the next gate.
 

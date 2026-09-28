@@ -1,7 +1,7 @@
 # Bilun targeted hotspot refactoring plan
 
 - Date: 2026-09-28.
-- Status: Delivery A is merged as [PR #101](https://github.com/Safa675/Bilun/pull/101), merge commit `63df008d`, with successful main CI. Delivery B is in progress in `/root/worktrees/bilun-report-sections` on `refactor/hotspot-report-sections`; C–F remain pending.
+- Status: A and B are merged as [PR #101](https://github.com/Safa675/Bilun/pull/101) (`63df008d`) and [PR #102](https://github.com/Safa675/Bilun/pull/102) (`f63bb12b`), with successful main CI. Delivery C is locally verified in `/root/worktrees/bilun-report-presentation` and awaits publication. D extraction is in progress in a separate worktree; E–F remain pending.
 - Inspection baseline: `/opt/Bilun`, commit `4af38b28`. Source line references below describe that inspected revision. Delivery A uses a fresh worktree at `/root/worktrees/bilun-hotspot-refactor`, based on current main `46ae9fdf`, including the merged billing-officer UX work.
 - Delivery A branch: `refactor/hotspot-audit-sources`. The user authorized opening a new PR and starting implementation; this delivery was published as a draft PR after local verification.
 - Unattended continuation: the user subsequently authorized completion of B–F and merges after tests and independent review pass, with no requested time/token cap. Deployment remains outside scope. The persistent run configuration is `/root/artifacts/bilun-hotspot-refactor-2026-09-28/overnight-run.md`.
@@ -14,10 +14,10 @@ Give report presentation, drug-rule evaluation, and surfacing audits clear respo
 
 ### Subtasks
 
-- [ ] Establish the implementation base, dependency inventory, and behavior baseline.
+- [x] Establish the implementation base, dependency inventory, and behavior baseline.
 - [x] Make the audit resolve the actual report components before moving their source.
 - [x] Extract report sections while preserving existing imports and UI behavior.
-- [ ] Separate section-specific data preparation and compatibility handling from rendering.
+- [x] Separate section-specific data preparation and compatibility handling from rendering.
 - [ ] Extract drug corpus/matching code, then route/constraint/evaluation code behind the existing public module.
 - [ ] Separate audit discovery, metadata, validation, rendering, and CLI responsibilities.
 - [ ] Complete the applicable verification gates and review whether representative changes have become local.
@@ -98,12 +98,12 @@ Acceptance: existing UI checks pass through the original imports; report section
 
 ## 5. Phase C — Simplify the section decisions
 
-- [ ] For copay and strategy, move nontrivial row selection/merging into pure, section-specific presentation functions colocated with that section. Reuse `frontend/src/lib/billingReportFields.ts`; do not create a new global collection of unrelated helpers.
-- [ ] Give drug presentation an explicit internal state for structured findings, legacy violations, and evaluation-only output. Preserve the existing precedence and empty/partial behavior. Keep focus/ref management in the owning section and split substantial local card/table/notice rendering where it improves readability.
-- [ ] Split material sub-tables into local presentational components while retaining simultaneous category rendering and coverage/source notices.
-- [ ] Remove the proven unreachable optional-override check only after a test confirms overrides still render in their dedicated section. The current exclusion and later search are at `SutBillingReportSections.tsx:841` and `:872`; preserve the tested output at `SutBillingReportSections.test.tsx:387`.
-- [ ] Keep regulatory interpretation in the backend. Presentation functions select and format already computed results; they do not re-evaluate rules or infer new clinical classifications.
-- [ ] Add tests only for previously uncovered compatibility, selection, or focus decisions affected by this work. Existing behavior tests remain authoritative.
+- [x] For copay and strategy, move nontrivial row selection/merging into pure, section-specific presentation functions colocated with that section. Reuse `frontend/src/lib/billingReportFields.ts`; do not create a new global collection of unrelated helpers.
+- [x] Give drug presentation an explicit internal state for structured findings, legacy violations, and evaluation-only output. Preserve the existing precedence and empty/partial behavior. Keep focus/ref management in the owning section and split substantial local card/table/notice rendering where it improves readability.
+- [x] Split material sub-tables into local presentational components while retaining simultaneous category rendering and coverage/source notices.
+- [x] Remove the proven unreachable optional-override check only after a test confirms overrides still render in their dedicated section. The current exclusion and later search are at `SutBillingReportSections.tsx:841` and `:872`; preserve the tested output at `SutBillingReportSections.test.tsx:387`.
+- [x] Keep regulatory interpretation in the backend. Presentation functions select and format already computed results; they do not re-evaluate rules or infer new clinical classifications.
+- [x] Add tests only for previously uncovered compatibility, selection, or focus decisions affected by this work. Existing behavior tests remain authoritative.
 
 Acceptance: a report display change can be implemented in its section and, where needed, its own presentation function/tests without studying drug evaluation or unrelated report sections. Legacy support remains explicit and tested.
 
@@ -250,7 +250,7 @@ Separate worktrees may be used for independent frontend/backend work, but integr
 ## 11. Definition of done
 
 - [ ] A reviewer can identify the owner of each responsibility and trace dependencies without circular imports or a new catch-all helper module.
-- [ ] Walk through a hypothetical display-column change: it is confined to that section/presentation function/tests and does not require drug-engine changes. Do not ship a dummy column to demonstrate this.
+- [x] Walk through a hypothetical display-column change: it is confined to that section/presentation function/tests and does not require drug-engine changes. Do not ship a dummy column to demonstrate this.
 - [ ] Walk through a route-selection change: its implementation and focused tests are discoverable in routing, with public-contract changes made explicit if ever required. No dummy rule change is included.
 - [ ] Walk through an audit-report formatting change: it requires rendering/tests, without changing discovery or visibility definitions.
 - [ ] All preserved contracts and before/after comparisons pass, supported legacy behavior remains covered, and no test has been removed or weakened merely to accommodate file moves.
@@ -277,4 +277,13 @@ The original plan was prepared from read-only frontend, backend, and audit inspe
 - Verification passed: baseline 102 frontend tests; final TypeScript, 373 frontend tests in 64 files, production build, 64 audit/source tests, isolated audit CLI check, and diff checks.
 - Candidate reports were compared before regeneration: 16 rows gain 17 verified leaf source-path occurrences, with all other serialized values equal and Markdown byte-identical. Post-test hashes of 1,119 tracked artifacts changed only for the expected matrix.
 - Browser verification passed 14 English/Turkish checks for finding focus/visibility, invoice highlighting, clause drawer fetch/close, narrow-table scrolling, and representative empty/partial/legacy states. It used the actual extracted patient-page content in an isolated minimal embedded preview with synthetic intercepted APIs; production data, shell visual parity and production fonts were not tested. Preview source hashes match the committed components.
-- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. Hosted PR CI and integration remain pending. Delivery C's read-only scope review is recorded in `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c-scope.md`; drug baseline preparation runs independently with no runtime edits.
+- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-b`. [PR #102](https://github.com/Safa675/Bilun/pull/102) passed hosted CI and merged as `f63bb12b`; main CI run `36482614267` passed. Delivery C's read-only scope review is recorded in `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c-scope.md`.
+
+## Delivery C implementation record
+
+- Initial base: B head `9a539d5d`; the identical verified tree merged as `f63bb12b`. Ten new public-section compatibility cases passed before any existing section rewiring.
+- Copay and strategy now have section-local pure presentation models. Drug has five explicit display states with section-owned ID/ref/focus handling and local card/legacy/evaluation rendering. Eight material table/benchmark renderers have local ownership. The unsupported duplicate override notice was removed while the dedicated override section remains covered.
+- Verification passed: final TypeScript, 383 frontend tests in 65 files, production build, 64 audit/source tests, isolated audit CLI check, byte-identical JSON and Markdown audit outputs, and unchanged hashes for all 1,119 tracked data/report artifacts.
+- Independent review matched 16 extracted markup/helper units to the prior sections and found no import cycles. Chromium passed 20 cases, ten in each locale, on both baseline and candidate; every case result is identical, with no page errors or unexpected API calls. Checks include a changed finding selection, unknown-finding fallback, invoice highlighting, clause drawers, narrow scrolling, and empty/partial/legacy states. The preview used actual patient-page content with synthetic APIs in a minimal embedded shell; production data and whole-shell visual parity were outside this local check.
+- A hypothetical extra KDV review column is confined to `MaterialKdvReviewTable`'s header/cell and a focused assertion; its parent section's availability/order and the other seven renderers remain separate. No dummy column was shipped.
+- Evidence: `/root/artifacts/bilun-hotspot-refactor-2026-09-28/delivery-c`. Hosted PR CI/integration are pending; the completed drug baseline is being used for D's separate extraction.
