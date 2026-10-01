@@ -1,7 +1,10 @@
 const auth = {
   login: {
-    title: "Sign in to BILUN",
-    subtitle: "Enter the shared credentials to continue.",
+    title: "Developer sign in",
+    subtitle: "Sign in with your developer account.",
+    developerSignIn: "Developer sign in",
+    returnToBilling: "Return to billing",
+    notDeveloper: "This account does not have developer access.",
     username: "Username",
     password: "Password",
     submit: "Sign in",
@@ -12,6 +15,7 @@ const auth = {
   },
   logout: {
     button: "Sign out",
+    error: "Could not confirm sign-out. Please try again.",
   },
 } as const;
 

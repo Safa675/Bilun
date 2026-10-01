@@ -347,7 +347,8 @@ describe("claim compliance projection", () => {
     expect(html).not.toContain("optimizer.claimCompliance.tablo15_10_unreported_lab_result");
     expect(html).toContain("Wave A lab finding");
     expect(html).toContain("Error");
-    expect(html).toContain("detect_unreported_lab_result");
+    expect(html).not.toContain("detect_unreported_lab_result");
+    expect(html).toContain("Tablo 15.10");
     expect(html).toContain("L-LAB");
     const canonicalFindingQuery = new URLSearchParams({ finding: canonicalWaveAFinding.finding_id ?? "" }).toString();
     expect(html.split(`&amp;${canonicalFindingQuery}`).length - 1).toBe(2);

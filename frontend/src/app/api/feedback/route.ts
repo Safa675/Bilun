@@ -1,5 +1,31 @@
 import { NextResponse } from "next/server";
 import https from "node:https";
+import { canUseBilling } from "@/lib/auth";
+import { getServerIdentity } from "@/lib/authServer";
+
+const MAX_FEEDBACK_BYTES = 16_384;
+const feedbackWindow = { since: 0, requests: 0 };
+
+async function readFeedbackBody(request: Request): Promise<unknown> {
+  const reader = request.body?.getReader();
+  if (!reader) throw new Error("invalid_body");
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_FEEDBACK_BYTES) {
+      await reader.cancel();
+      throw new Error("body_too_large");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
 
 const DEFAULT_FROM = process.env.CONTACT_FROM || "BILUN Feedback <contact@bilun.tech>";
 const DEFAULT_TO = process.env.CONTACT_TO || "safaoksuz@bilun.tech";
@@ -71,8 +97,17 @@ function sendEmailViaResend(apiKey: string, payload: ResendPayload): Promise<{ o
 }
 
 export async function POST(request: Request) {
+  const identity = await getServerIdentity(request.headers.get("cookie") ?? "");
+  if (!canUseBilling(identity)) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  // A server-wide budget bounds email work even when client address headers are forged.
+  const now = Date.now();
+  if (now - feedbackWindow.since >= 60_000) { feedbackWindow.since = now; feedbackWindow.requests = 0; }
+  if (++feedbackWindow.requests > 20) return NextResponse.json({ error: "Please retry later" }, { status: 429, headers: { "Retry-After": "60" } });
   try {
-    const body = await request.json();
+    const body = await readFeedbackBody(request) as Record<string, unknown> | null;
+    if (!body || Array.isArray(body) || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid feedback" }, { status: 400 });
+    }
 
     // Anti-spam honeypot
     if (body && body.website) {
@@ -84,10 +119,18 @@ export async function POST(request: Request) {
       email,
       category = "general",
       message,
-      systemInfo,
+      systemInfo: untrustedSystemInfo,
     } = body || {};
+    const suppliedInfo = untrustedSystemInfo && typeof untrustedSystemInfo === "object"
+      ? untrustedSystemInfo as Record<string, unknown> : {};
+    const systemInfo = {
+      activeTab: String(suppliedInfo.activeTab ?? "").slice(0, 160),
+      role: identity.role,
+      url: String(suppliedInfo.url ?? "").slice(0, 1000),
+      timestamp: new Date().toISOString(),
+    };
 
-    if (!name || !email || !message) {
+    if (typeof name !== "string" || typeof email !== "string" || typeof message !== "string" || !name.trim() || !email.trim() || !message.trim() || name.length > 200 || email.length > 320 || message.length > 8000 || typeof category !== "string") {
       return NextResponse.json(
         { error: "Ad, e-posta ve mesaj alanları zorunludur." },
         { status: 400 },
@@ -150,13 +193,12 @@ ${message}
 
     // If RESEND_API_KEY is not configured (e.g. offline demo)
     if (!apiKey) {
-      console.warn("RESEND_API_KEY is not set. Feedback logged locally:\n", text);
       return NextResponse.json({
         ok: true,
         delivered: false,
         warning: "RESEND_API_KEY_NOT_CONFIGURED",
         mailtoHref,
-        message: "Mesaj yerel konsola kaydedildi. Gerçek e-posta için RESEND_API_KEY gereklidir.",
+        message: "E-posta gönderimi şu anda kullanılamıyor. E-posta bağlantısını kullanabilirsiniz.",
       });
     }
 
@@ -182,6 +224,9 @@ ${message}
 
     return NextResponse.json({ ok: true, delivered: true, id: result.data?.id });
   } catch (error) {
+    if (error instanceof SyntaxError || (error instanceof Error && ["body_too_large", "invalid_body"].includes(error.message))) {
+      return NextResponse.json({ error: "Invalid feedback" }, { status: error instanceof Error && error.message === "body_too_large" ? 413 : 400 });
+    }
     console.error("Feedback route error:", error);
     return NextResponse.json(
       { error: "Sunucu hatası oluştu. Lütfen tekrar deneyin." },

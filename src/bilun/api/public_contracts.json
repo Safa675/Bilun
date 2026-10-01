@@ -1,0 +1,2610 @@
+{
+  "SUTDataSourceMetadata": {
+    "mode": true,
+    "label": true,
+    "is_synthetic": true,
+    "notice": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "SutPatientOutcomeData": {
+    "patient_id": true,
+    "sut_claim_totals": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "patient_id": true,
+      "total_billed_try": true,
+      "total_expected_payable_try": true,
+      "claim_count": true,
+      "procedure_line_count": true,
+      "material_line_count": true,
+      "drug_line_count": true,
+      "lab_billed_line_count": true,
+      "source": true
+    },
+    "sut_claim_summary": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "source": true,
+      "claim_count": true,
+      "procedure_line_count": true,
+      "material_line_count": true,
+      "drug_line_count": true,
+      "diagnosis_count": true,
+      "claims": {
+        "$list": {
+          "claim_id": true,
+          "episode_id": true,
+          "claim_type": true,
+          "department": true,
+          "admission_date": true,
+          "claim_start_date": true,
+          "claim_end_date": true,
+          "primary_icd10": true,
+          "package_candidate": true,
+          "total_billed_try": true
+        }
+      },
+      "top_procedures": {
+        "$list": {
+          "procedure_line_id": true,
+          "claim_id": true,
+          "episode_id": true,
+          "procedure_date": true,
+          "procedure_code": true,
+          "procedure_name": true,
+          "procedure_category": true,
+          "billed_amount_try": true,
+          "expected_payable_try": true,
+          "surcharge_applicable": true,
+          "copay_rate_applicable": true
+        }
+      },
+      "drug_claims": {
+        "$list": {
+          "drug_claim_line_id": true,
+          "claim_id": true,
+          "drug_claim_date": true,
+          "drug_name": true,
+          "drug_code": true,
+          "billed_amount_try": true,
+          "expected_payable_try": true
+        }
+      },
+      "material_claims": {
+        "$list": {
+          "material_line_id": true,
+          "claim_id": true,
+          "material_date": true,
+          "material_code": true,
+          "material_name": true,
+          "billed_amount_try": true,
+          "expected_payable_try": true
+        }
+      }
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "CopayExemptionResult": {
+    "exempt": true,
+    "n_qualifying": true,
+    "qualifying_diagnoses": {
+      "$list": {
+        "$ref": "QualifyingDiagnosis"
+      }
+    },
+    "exemption_sources": {
+      "$list": {
+        "$ref": "ExemptionSource"
+      }
+    },
+    "categories_not_evaluated": {
+      "$list": {
+        "$ref": "ExemptionCategoryGap"
+      }
+    },
+    "primary_exemption_category": true,
+    "action": true
+  },
+  "QualifyingDiagnosis": {
+    "icd10": true,
+    "disease": true,
+    "range": true
+  },
+  "ExemptionSource": {
+    "category": true,
+    "rule_source": true,
+    "evidence": {
+      "visit_type": true,
+      "sgk_benefit_class": true,
+      "veteran_martyr_status": true,
+      "national_service_status": true,
+      "occupational_context": true,
+      "disaster_victim": true,
+      "emergency": true,
+      "is_emergency": true,
+      "infectious_disease": true,
+      "qualifying_diagnoses": {
+        "$list": {
+          "$ref": "QualifyingDiagnosis"
+        }
+      },
+      "elderly_allowance_2022": true,
+      "age_at_latest_claim": true,
+      "procedure_codes": {
+        "$list": true
+      }
+    },
+    "counts_toward_exempt": true,
+    "exemption_strength": true,
+    "waives_sections": {
+      "$list": true
+    },
+    "missing_requirements": {
+      "$list": true
+    }
+  },
+  "ExemptionCategoryGap": {
+    "category": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "SurchargeExposureResult": {
+    "n_applicable_procedures": true,
+    "n_total_ek2g": true,
+    "exposure_rate": true,
+    "applicable_rules": {
+      "$list": {
+        "$ref": "SurchargeRule"
+      }
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "SurchargeRule": {
+    "code": true,
+    "name": true,
+    "procedure_date": true,
+    "rule_trace": true,
+    "matched_chapters": {
+      "$list": true
+    }
+  },
+  "CopayRateExposureResult": {
+    "n_applicable_procedures": true,
+    "n_total_ek2c1": true,
+    "procedures_with_rates": {
+      "$list": {
+        "$ref": "CopayRateProcedure"
+      }
+    },
+    "mean_rate": true,
+    "rate_distribution": {
+      "$map": true
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "CopayRateProcedure": {
+    "code": true,
+    "name": true,
+    "rate_pct": true,
+    "mandated_rate_pct": true,
+    "procedure_date": true,
+    "rule_trace": true,
+    "matched_chapters": {
+      "$list": true
+    }
+  },
+  "PatientDrgUnbundling": {
+    "has_unbundling_risk": true,
+    "n_chapters_analyzed": true,
+    "chapter_analysis": {
+      "$list": {
+        "$ref": "ChapterUnbundlingDetail"
+      }
+    },
+    "total_potential_savings": true,
+    "total_sourced_savings": true,
+    "patient_icd10_chapters": {
+      "$list": true
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "ChapterUnbundlingDetail": {
+    "chapter": true,
+    "ek2c_group": true,
+    "package_floor_price": true,
+    "n_individual_procedures": true,
+    "individual_procedures_total": true,
+    "unbundling_risk": true,
+    "savings_if_packaged": true
+  },
+  "PatientOptimization": {
+    "patient_id": true,
+    "n_diagnoses": true,
+    "diagnoses": {
+      "$list": true
+    },
+    "icd10_chapters": {
+      "$list": true
+    },
+    "copay_exemptions": {
+      "$ref": "CopayExemptionResult"
+    },
+    "surcharge_exposure": {
+      "$ref": "SurchargeExposureResult"
+    },
+    "copay_rate_exposure": {
+      "$ref": "CopayRateExposureResult"
+    },
+    "drg_unbundling": {
+      "$ref": "PatientDrgUnbundling"
+    },
+    "claim_id": true,
+    "scope": true,
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "PatientAlertRow": {
+    "patient_id": true,
+    "n_diagnoses": true,
+    "icd10_chapters": {
+      "$list": true
+    },
+    "copay_exemption": {
+      "$ref": "PatientAlertCopay"
+    },
+    "surcharge_exposure": {
+      "$ref": "PatientAlertSurcharge"
+    },
+    "copay_rate_exposure": {
+      "$ref": "PatientAlertCopayRate"
+    }
+  },
+  "PatientAlertCopay": {
+    "exempt": true,
+    "n_qualifying": true,
+    "qualifying_diagnoses": {
+      "$list": {
+        "$ref": "QualifyingDiagnosis"
+      }
+    },
+    "exemption_sources": {
+      "$list": {
+        "$ref": "ExemptionSource"
+      }
+    },
+    "categories_not_evaluated": {
+      "$list": {
+        "$ref": "ExemptionCategoryGap"
+      }
+    },
+    "primary_exemption_category": true,
+    "action": true
+  },
+  "PatientAlertSurcharge": {
+    "n_applicable": true,
+    "exposure_rate": true,
+    "top_rules": {
+      "$list": {
+        "$ref": "SurchargeRule"
+      }
+    },
+    "action": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "PatientAlertCopayRate": {
+    "n_applicable": true,
+    "n_violations": true,
+    "mean_rate": true,
+    "top_procedures": {
+      "$list": {
+        "$ref": "CopayRateProcedure"
+      }
+    },
+    "action": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "PatientAlertsSummary": {
+    "n_total_patients": true,
+    "n_exempt_patients": true,
+    "exemption_rate": true,
+    "n_patients_with_surcharge_flags": true,
+    "n_patients_with_copay_rate_flags": true,
+    "total_surcharge_flags": true,
+    "total_copay_rate_flags": true,
+    "n_patients_with_surcharge_unavailable": true,
+    "n_patients_with_copay_rate_unavailable": true,
+    "surcharge_exactness_status": true,
+    "surcharge_unavailable_reason": true,
+    "surcharge_required_inputs_missing": {
+      "$list": true
+    },
+    "copay_rate_exactness_status": true,
+    "copay_rate_unavailable_reason": true,
+    "copay_rate_required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "PatientAlertsPagination": {
+    "total_matching": true,
+    "limit": true,
+    "offset": true,
+    "has_more": true
+  },
+  "PatientAlertsQuery": {
+    "category": true,
+    "status": true,
+    "search": true
+  },
+  "PatientAlertsResponse": {
+    "patients": {
+      "$list": {
+        "$ref": "PatientAlertRow"
+      }
+    },
+    "summary": {
+      "$ref": "PatientAlertsSummary"
+    },
+    "pagination": {
+      "$ref": "PatientAlertsPagination"
+    },
+    "query": {
+      "$ref": "PatientAlertsQuery"
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "ComplianceIndexSurfaceSummary": {
+    "n": true,
+    "billed_try": true,
+    "n_patients": true
+  },
+  "ComplianceIndexRow": {
+    "patient_id": true,
+    "claim_id": true,
+    "surface": true,
+    "source_surface": true,
+    "finding_id": true,
+    "action_id": true,
+    "rule_id": true,
+    "line_kind": true,
+    "line_id": true,
+    "procedure_line_id": true,
+    "kind": true,
+    "status": true,
+    "finding_type": true,
+    "detail": true,
+    "severity": true,
+    "regulatory_source": {
+      "$anyOf": [
+        true,
+        {
+          "clause_key": true,
+          "clause_id": true,
+          "clause_coordinate": true,
+          "source_type": true,
+          "rule_type": true,
+          "annex": true,
+          "statutory_law": true,
+          "sut_section": true,
+          "sut_section_id": true,
+          "fatura_inceleme_ref": true,
+          "source_locators": {
+            "$list": true
+          }
+        }
+      ]
+    },
+    "evaluation_status": true,
+    "required_inputs": {
+      "$list": true
+    },
+    "missing_inputs": {
+      "$list": true
+    },
+    "procedure_code": true,
+    "procedure_name": true,
+    "lab_billing_status": true,
+    "drug_claim_line_id": true,
+    "material_code": true,
+    "material_name": true,
+    "drug_code": true,
+    "drug_name": true,
+    "material_line_id": true,
+    "barcode_sut_mismatch": true,
+    "titubb_uts_barcode_documentation_missing": true,
+    "sut_section_id": true,
+    "amount_try": true,
+    "billed_try": true,
+    "payable_try": true,
+    "savings_try": true,
+    "recoverable_uplift_try": true,
+    "compliance_savings_try": true,
+    "risk_amount_try": true,
+    "audit_exposure_try": true
+  },
+  "ComplianceIndexPagination": {
+    "total_matching": true,
+    "limit": true,
+    "offset": true,
+    "has_more": true
+  },
+  "ClaimComplianceCohortSummary": {
+    "counts": {
+      "evaluated": true,
+      "missing_inputs": true,
+      "unavailable": true
+    },
+    "non_evaluated_total": true,
+    "details": {
+      "$list": {
+        "$ref": "ClaimComplianceEvaluation"
+      }
+    },
+    "details_truncated": true
+  },
+  "ClaimComplianceEvaluation": {
+    "patient_id": true,
+    "claim_id": true,
+    "rule_id": true,
+    "status": true,
+    "evaluation_status": true,
+    "required_inputs": {
+      "$list": true
+    },
+    "missing_inputs": {
+      "$list": true
+    },
+    "evaluation_id": true,
+    "line_kind": true,
+    "line_id": true
+  },
+  "ComplianceIndexResponse": {
+    "artifacts_available": true,
+    "n_patients": true,
+    "n_findings": true,
+    "n_patients_with_findings": true,
+    "billed_at_risk_try": true,
+    "by_surface": {
+      "$map": {
+        "$ref": "ComplianceIndexSurfaceSummary"
+      }
+    },
+    "rows": {
+      "$list": {
+        "$ref": "ComplianceIndexRow"
+      }
+    },
+    "pagination": {
+      "$ref": "ComplianceIndexPagination"
+    },
+    "claim_compliance": {
+      "$ref": "ClaimComplianceCohortSummary"
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "LabOptimization": {
+    "normative_cost_try": true,
+    "hemogram_bundling_savings": true,
+    "session_fraction_savings": true,
+    "flagged_tests": {
+      "$list": {
+        "test_name": true,
+        "sut_code": true,
+        "gazette_price": true,
+        "flag_type": true,
+        "savings_try": true,
+        "detail": true
+      }
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "CopayOptimization": {
+    "rule_source": true,
+    "is_exempt": true,
+    "exemption_disease": true,
+    "exemption_range": true,
+    "exemption_sources": {
+      "$list": {
+        "$ref": "ExemptionSource"
+      }
+    },
+    "categories_not_evaluated": {
+      "$list": {
+        "$ref": "ExemptionCategoryGap"
+      }
+    },
+    "primary_exemption_category": true,
+    "copay_primary_outcome": true,
+    "savings_beneficiary": true,
+    "gap_kind": true,
+    "visit_copay_savings_try": true,
+    "rx_copay_savings_try": true,
+    "total_copay_savings_try": true,
+    "patient_copay_waived_total_try": true,
+    "patient_copay_try": true,
+    "ilave_ucret_total_try": true,
+    "line_decomposition_status": true,
+    "rx_copay_savings_by_ground": {
+      "$map": true
+    },
+    "rate_corrections": {
+      "$list": {
+        "procedure": true,
+        "gazette_rate": true,
+        "correction_try": true,
+        "code": true,
+        "name": true,
+        "billed_try": true,
+        "payable_try": true,
+        "copay_component_try": true,
+        "ilave_ucret_try": true,
+        "exemption_ground": true,
+        "sut_section": true,
+        "annex": true,
+        "detail": true,
+        "clause_ref": {
+          "$ref": "SutClauseReference"
+        },
+        "ilave_ucret_status": true,
+        "ilave_clause_ref": {
+          "$ref": "SutClauseReference"
+        },
+        "rule_id": true,
+        "expected_copay_rate_pct": true,
+        "message_code": true,
+        "message_params": {
+          "amount_try": true,
+          "claim_id": true,
+          "itemized_total_try": true,
+          "method": true,
+          "package_total_try": true,
+          "procedure_code": true,
+          "rate_pct": true,
+          "section": true
+        }
+      }
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "SutClauseReference": {
+    "clause_key": true,
+    "clause_coordinate": true,
+    "source_type": true,
+    "rule_type": true,
+    "annex": true,
+    "statutory_law": true
+  },
+  "BillingStrategyRecommendation": {
+    "optional_override_uplift_try": true,
+    "recommendations": {
+      "$list": {
+        "chapter": true,
+        "chapter_description": true,
+        "ek2c_group": true,
+        "strategy": true,
+        "package_price": true,
+        "itemized_estimate": true,
+        "confidence": true,
+        "claim_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "recommendation": true,
+        "recommendation_kind": true,
+        "payment_method_kind": true,
+        "sut_section_id": true,
+        "sut_section": true,
+        "rule_id": true,
+        "mandated_method": true,
+        "package_total_try": true,
+        "itemized_total_try": true,
+        "detail": true,
+        "savings_try": true,
+        "savings_basis": true,
+        "current_billing": true,
+        "catalog_as_of_date": true,
+        "package_price_methodology": true,
+        "type": true,
+        "billed_as_package": true,
+        "recommended_package_code": true,
+        "recoverable_uplift_try": true,
+        "included_in_sgk_total": true,
+        "message_code": true,
+        "message_params": {
+          "amount_try": true,
+          "claim_id": true,
+          "itemized_total_try": true,
+          "method": true,
+          "package_total_try": true,
+          "procedure_code": true,
+          "rate_pct": true,
+          "section": true
+        },
+        "savings_category": true,
+        "itemized_price_methodology": true,
+        "itemized_raw_try": true,
+        "itemized_excluded_violation_count": true,
+        "itemized_excluded_procedure_codes": {
+          "$list": true
+        },
+        "mandated_methods": {
+          "$list": true
+        },
+        "clause_ref": {
+          "$ref": "SutClauseReference"
+        }
+      }
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "SessionPricingUplift": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "session_date": true,
+        "primary_procedure_code": true,
+        "expected_billed_try": true,
+        "actual_billed_try": true,
+        "recoverable_uplift_try": true,
+        "review_kind": true,
+        "included_in_sgk_total": true,
+        "sut_section_id": true,
+        "detail": true,
+        "procedure_line_id": true,
+        "expected_point_factor": true,
+        "primary_billed_try": true,
+        "review_uplift_try": true,
+        "savings_category": true,
+        "savings_basis": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "review_uplift_try": true,
+    "review_opportunity_count": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "DrgUpliftRecommendation": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "payment_method_kind": true,
+        "current_billing": true,
+        "itemized_total_try": true,
+        "package_total_try": true,
+        "recoverable_uplift_try": true,
+        "savings_basis": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "itemized_raw_try": true,
+        "package_price_methodology": true,
+        "itemized_heuristic_uplift_try": true,
+        "gross_uplift_try": true,
+        "deduped_session_try": true,
+        "included_in_sgk_total": true,
+        "itemized_price_methodology": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "BloodComponentUplift": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "allowed_fraction": true,
+        "max_billable_try": true,
+        "actual_billed_try": true,
+        "recoverable_uplift_try": true,
+        "savings_basis": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "procedure_line_id": true,
+        "reference_payable_try": true,
+        "included_in_sgk_total": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "MaterialUplift": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "procedure_line_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "material_code": true,
+        "material_name": true,
+        "actual_billed_try": true,
+        "recoverable_uplift_try": true,
+        "list_price_try": true,
+        "price_methodology": true,
+        "savings_basis": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "message_code": true,
+        "message_params": {
+          "amount_try": true,
+          "claim_id": true,
+          "itemized_total_try": true,
+          "method": true,
+          "package_total_try": true,
+          "procedure_code": true,
+          "rate_pct": true,
+          "section": true
+        },
+        "ceiling_try": true,
+        "included_in_sgk_total": true,
+        "pairing_mode": true,
+        "specialty_annex": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "CareSettingReview": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "claim_id": true,
+        "claim_type": true,
+        "ambiguity_reason": true,
+        "actual_care_setting": true,
+        "alternate_care_setting": true,
+        "actual_best_try": true,
+        "alternate_best_try": true,
+        "actual_payment_method_kind": true,
+        "alternate_payment_method_kind": true,
+        "package_total_try": true,
+        "itemized_total_try": true,
+        "recoverable_uplift_try": true,
+        "recommendation_kind": true,
+        "review_kind": true,
+        "included_in_sgk_total": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "review_uplift_try": true,
+    "review_opportunity_count": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "ProcedureAddonUplift": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "trigger_procedure_code": true,
+        "trigger_procedure_name": true,
+        "expected_addon_procedure_code": true,
+        "expected_addon_procedure_name": true,
+        "session_date": true,
+        "addon_factor": true,
+        "list_price_try": true,
+        "actual_billed_try": true,
+        "recoverable_uplift_try": true,
+        "price_methodology": true,
+        "savings_basis": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "trigger_procedure_line_id": true,
+        "trigger_billed_try": true,
+        "same_incision": true,
+        "included_in_sgk_total": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "ProcedureCaptureGap": {
+    "opportunities": {
+      "$list": {
+        "type": true,
+        "claim_id": true,
+        "performed_line_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "service_date": true,
+        "source": true,
+        "actual_billed_try": true,
+        "list_price_try": true,
+        "recoverable_gap_try": true,
+        "price_methodology": true,
+        "savings_basis": true,
+        "savings_category": true,
+        "included_in_sgk_total": true,
+        "sut_section_id": true,
+        "detail": true,
+        "rule_id": true
+      }
+    },
+    "total_gap_try": true,
+    "confirmed_gap_try": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "DrgPackageAdequacyReview": {
+    "rule_source": true,
+    "opportunities": {
+      "$list": {
+        "claim_id": true,
+        "primary_icd10": true,
+        "clinical_procedure_codes": {
+          "$list": true
+        },
+        "current_package_code": true,
+        "current_package_footprint": {
+          "$list": true
+        },
+        "candidate_package_code": true,
+        "candidate_package_footprint": {
+          "$list": true
+        },
+        "current_package_price_try": true,
+        "candidate_package_price_try": true,
+        "recoverable_uplift_try": true,
+        "recommendation_kind": true,
+        "review_kind": true,
+        "included_in_sgk_total": true,
+        "savings_category": true,
+        "sut_section_id": true,
+        "detail": true,
+        "type": true,
+        "current_price_methodology": true,
+        "candidate_price_methodology": true,
+        "savings_basis": true,
+        "rule_id": true
+      }
+    },
+    "total_uplift_try": true,
+    "confirmed_uplift_try": true,
+    "review_uplift_try": true,
+    "review_opportunity_count": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "MedulaRejectionPlaybook": {
+    "entries": {
+      "$list": {
+        "playbook_id": true,
+        "rejection_event_id": true,
+        "claim_id": true,
+        "medula_stage": true,
+        "sonuc_kodu": true,
+        "hata_kodu": true,
+        "hata_mesaji": true,
+        "related_procedure_code": true,
+        "related_procedure_line_id": true,
+        "related_line_type": true,
+        "related_line_id": true,
+        "sut_anchor": true,
+        "problem_summary_tr": true,
+        "problem_summary_en": true,
+        "corrective_steps_tr": {
+          "$list": true
+        },
+        "corrective_steps_en": {
+          "$list": true
+        },
+        "rebill_permitted": true,
+        "rebill_stage": true,
+        "recommendation_kind": true,
+        "included_in_sgk_total": true,
+        "savings_category": true,
+        "patient_id": true,
+        "episode_id": true,
+        "opportunity_type": true,
+        "rule_id": true,
+        "scenario_tag": true
+      }
+    },
+    "entry_count": true,
+    "rebill_permitted_count": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "ClaimSubmissionChecklist": {
+    "items": {
+      "$list": {
+        "checklist_id": true,
+        "trigger_key": true,
+        "playbook_key": true,
+        "sonuc_kodu_risk": true,
+        "severity": true,
+        "claim_id": true,
+        "line_type": true,
+        "line_id": true,
+        "line_code": true,
+        "line_name": true,
+        "reminder_tr": true,
+        "reminder_en": true,
+        "sut_anchor": true,
+        "preventive_steps_tr": {
+          "$list": true
+        },
+        "preventive_steps_en": {
+          "$list": true
+        },
+        "recommendation_kind": true,
+        "included_in_sgk_total": true,
+        "savings_category": true,
+        "checklist_kind": true,
+        "patient_id": true,
+        "procedure_code": true,
+        "fatura_inceleme_ref": true,
+        "message_tr": true,
+        "detail": true,
+        "episode_id": true,
+        "rule_id": true,
+        "procedure_codes": {
+          "$list": true
+        },
+        "required_documents": {
+          "$list": true
+        }
+      }
+    },
+    "item_count": true,
+    "error_count": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "DrugIndicationReview": {
+    "violations": {
+      "$list": {
+        "drug_claim_line_id": true,
+        "claim_id": true,
+        "drug_name": true,
+        "drug_code": true,
+        "rule_id": true,
+        "sut_section": true,
+        "primary_icd10": true,
+        "violation_kind": true,
+        "severity": true,
+        "message_tr": true,
+        "finding_id": true,
+        "applicability_status": true,
+        "evaluation_status": true,
+        "observed_icd10_codes": {
+          "$list": true
+        },
+        "matched_icd10_codes": {
+          "$list": true
+        },
+        "unmatched_icd10_codes": {
+          "$list": true
+        },
+        "selected_rule_id": true,
+        "detail": true,
+        "patient_id": true,
+        "material_name": true,
+        "message": true,
+        "savings_try": true,
+        "risk_amount": true,
+        "recommended_action_tr": true,
+        "eligible_route_count": true,
+        "eligible_routes_truncated": true,
+        "required_inputs": {
+          "$list": true
+        },
+        "missing_inputs": {
+          "$list": true
+        },
+        "eligible_icd10_codes_or_ranges": {
+          "$list": true
+        }
+      }
+    },
+    "findings": {
+      "$list": {
+        "$ref": "DrugIndicationFinding"
+      }
+    },
+    "evaluations": {
+      "$list": {
+        "$ref": "DrugIndicationLineEvaluation"
+      }
+    },
+    "violation_count": true,
+    "error_count": true,
+    "coverage_scope": {
+      "status": true,
+      "coverage_tier": true,
+      "scope_note": true,
+      "scope_note_tr": true,
+      "scope_note_en": true,
+      "is_partial": true,
+      "effective_date": true,
+      "unavailable_reason": true,
+      "prose_engine_status": true,
+      "prose_coverage_tier": true,
+      "sut_anchors": {
+        "$list": true
+      }
+    },
+    "rule_source": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "DrugIndicationFinding": {
+    "finding_id": true,
+    "patient_id": true,
+    "claim_id": true,
+    "drug_claim_line_id": true,
+    "drug_name": true,
+    "drug_code": true,
+    "finding_kind": true,
+    "severity": true,
+    "applicability_status": true,
+    "evaluation_status": true,
+    "observed_icd10_codes": {
+      "$list": true
+    },
+    "matched_icd10_codes": {
+      "$list": true
+    },
+    "unmatched_icd10_codes": {
+      "$list": true
+    },
+    "eligible_routes": {
+      "$list": {
+        "$ref": "DrugIndicationRouteEvidence"
+      }
+    },
+    "selected_rule_id": true,
+    "explanation_tr": true,
+    "recommended_action_tr": true,
+    "required_inputs": {
+      "$list": true
+    },
+    "missing_inputs": {
+      "$list": true
+    },
+    "eligible_route_count": true,
+    "eligible_routes_truncated": true,
+    "observed_icd10_count": true,
+    "observed_icd10_truncated": true
+  },
+  "DrugIndicationRouteEvidence": {
+    "rule_id": true,
+    "sut_section": true,
+    "icd10_codes": {
+      "$list": true
+    },
+    "icd10_ranges": {
+      "$list": true
+    },
+    "regulatory_summary_tr": true,
+    "report_required": true,
+    "report_duration_months": true,
+    "report_specialties": {
+      "$list": true
+    },
+    "prescriber_specialties": {
+      "$list": true
+    },
+    "indication_label_tr": true,
+    "icd10_code_count": true,
+    "icd10_codes_truncated": true,
+    "icd10_range_count": true,
+    "icd10_ranges_truncated": true
+  },
+  "DrugIndicationLineEvaluation": {
+    "patient_id": true,
+    "claim_id": true,
+    "drug_claim_line_id": true,
+    "drug_name": true,
+    "drug_code": true,
+    "applicability_status": true,
+    "evaluation_status": true,
+    "observed_icd10_codes": {
+      "$list": true
+    },
+    "matched_icd10_codes": {
+      "$list": true
+    },
+    "unmatched_icd10_codes": {
+      "$list": true
+    },
+    "eligible_routes": {
+      "$list": {
+        "$ref": "DrugIndicationRouteEvidence"
+      }
+    },
+    "selected_rule_id": true,
+    "finding_id": true,
+    "finding_kind": true,
+    "required_inputs": {
+      "$list": true
+    },
+    "missing_inputs": {
+      "$list": true
+    },
+    "eligible_route_count": true,
+    "eligible_routes_truncated": true,
+    "observed_icd10_count": true,
+    "observed_icd10_truncated": true
+  },
+  "ClaimCompliance": {
+    "findings": {
+      "$list": {
+        "$ref": "ClaimComplianceFinding"
+      }
+    },
+    "evaluations": {
+      "$list": {
+        "$ref": "ClaimComplianceEvaluation"
+      }
+    }
+  },
+  "ClaimComplianceFinding": {
+    "finding_id": true,
+    "action_id": true,
+    "patient_id": true,
+    "claim_id": true,
+    "line_kind": true,
+    "line_id": true,
+    "rule_id": true,
+    "kind": true,
+    "status": true,
+    "finding_type": true,
+    "detail": true,
+    "severity": true,
+    "sut_section_id": true,
+    "regulatory_source": {
+      "$anyOf": [
+        true,
+        {
+          "clause_key": true,
+          "clause_id": true,
+          "clause_coordinate": true,
+          "source_type": true,
+          "rule_type": true,
+          "annex": true,
+          "statutory_law": true,
+          "sut_section": true,
+          "sut_section_id": true,
+          "fatura_inceleme_ref": true,
+          "source_locators": {
+            "$list": true
+          }
+        }
+      ]
+    },
+    "evaluation_status": true,
+    "applicability_status": true,
+    "required_inputs": {
+      "$list": true
+    },
+    "missing_inputs": {
+      "$list": true
+    },
+    "surface": true,
+    "source_surface": true,
+    "procedure_line_id": true,
+    "procedure_code": true,
+    "procedure_name": true,
+    "lab_billing_status": true,
+    "drug_claim_line_id": true,
+    "drug_code": true,
+    "drug_name": true,
+    "observed_icd10_codes": {
+      "$list": true
+    },
+    "matched_icd10_codes": {
+      "$list": true
+    },
+    "unmatched_icd10_codes": {
+      "$list": true
+    },
+    "eligible_routes": {
+      "$list": {
+        "$ref": "DrugIndicationRouteEvidence"
+      }
+    },
+    "recommended_action_tr": true,
+    "eligible_route_count": true,
+    "eligible_routes_truncated": true,
+    "observed_icd10_count": true,
+    "observed_icd10_truncated": true,
+    "material_line_id": true,
+    "material_code": true,
+    "material_name": true,
+    "barcode_sut_mismatch": true,
+    "titubb_uts_barcode_documentation_missing": true,
+    "amount_try": true,
+    "billed_try": true,
+    "payable_try": true,
+    "savings_try": true,
+    "recoverable_uplift_try": true,
+    "compliance_savings_try": true,
+    "risk_amount_try": true,
+    "audit_exposure_try": true,
+    "money_semantics": true
+  },
+  "WaveAEvidenceBlock": {
+    "available": true,
+    "unavailable_reason": true,
+    "total_rows": true,
+    "rows": {
+      "$list": {
+        "$ref": "WaveAEvidenceRow"
+      }
+    },
+    "has_more": true
+  },
+  "WaveAEvidenceRow": {
+    "evidence_id": true,
+    "source_evidence_id": true,
+    "patient_id": true,
+    "claim_id": true,
+    "rule_id": true,
+    "line_kind": true,
+    "line_id": true,
+    "evaluation_status": true,
+    "reason": true,
+    "source_status": true,
+    "regulatory_source": {
+      "clause_key": true,
+      "clause_id": true,
+      "source_locators": {
+        "$list": true
+      },
+      "fatura_inceleme_ref": true,
+      "clause_coordinate": true,
+      "source_type": true,
+      "rule_type": true,
+      "annex": true,
+      "statutory_law": true,
+      "sut_section": true,
+      "sut_section_id": true
+    },
+    "money_semantics": true,
+    "advisory_kind": true,
+    "financial_kind": true,
+    "confirmed_amount_try": true,
+    "amount_status": true,
+    "observed_billed_amount_try": true,
+    "observed_amount_basis": true,
+    "observed_amount_unavailable_reason": true,
+    "currency": true,
+    "headline_relation": true,
+    "disposition": true,
+    "source_authority": true,
+    "review_kind": true
+  },
+  "WaveACoverage": {
+    "available": true,
+    "unavailable_reason": true,
+    "evaluation_count": true,
+    "by_group": {
+      "$statusCountsSummary": true
+    }
+  },
+  "WaveAStatusCounts": {
+    "evaluated": true,
+    "missing_inputs": true,
+    "unavailable": true
+  },
+  "MaterialPreCheck": {
+    "pre_auth_required": {
+      "$list": {
+        "sut_code": true,
+        "material_name": true,
+        "price_try": true,
+        "note": true,
+        "claim_id": true,
+        "sut_section_id": true,
+        "procedure_code": true
+      }
+    },
+    "miat_restricted": {
+      "$list": {
+        "sut_code": true,
+        "material_name": true,
+        "miat_period": true,
+        "price_try": true,
+        "note": true,
+        "claim_id": true,
+        "sut_section_id": true,
+        "procedure_code": true
+      }
+    },
+    "miat_interval_violations": {
+      "$list": {
+        "sut_code": true,
+        "material_name": true,
+        "miat_period": true,
+        "last_use_date": true,
+        "days_since_last_use": true,
+        "minimum_interval_days": true,
+        "price_try": true,
+        "savings_try": true,
+        "note": true
+      }
+    },
+    "bundled_separate_billing": {
+      "$list": {
+        "sut_code": true,
+        "material_name": true,
+        "price_try": true,
+        "note": true,
+        "claim_id": true,
+        "sut_section_id": true,
+        "procedure_code": true
+      }
+    },
+    "prose_bundling_violations": {
+      "$list": {
+        "rule_id": true,
+        "material_name": true,
+        "material_code": true,
+        "message": true,
+        "severity": true,
+        "risk_amount": true,
+        "savings_try": true,
+        "sut_section": true,
+        "material_outcome": true,
+        "source_type": true,
+        "sut_section_id": true,
+        "sut_code": true,
+        "price_try": true,
+        "note": true,
+        "claim_id": true,
+        "procedure_code": true,
+        "clause_ref": {
+          "$ref": "SutClauseReference"
+        }
+      }
+    },
+    "specialty_prose_violations": {
+      "$list": {
+        "rule_id": true,
+        "material_name": true,
+        "material_code": true,
+        "message": true,
+        "severity": true,
+        "risk_amount": true,
+        "material_outcome": true,
+        "savings_try": true,
+        "sut_section": true,
+        "source_type": true,
+        "sut_section_id": true,
+        "sut_code": true,
+        "price_try": true,
+        "note": true,
+        "claim_id": true,
+        "procedure_code": true,
+        "clause_ref": {
+          "$ref": "SutClauseReference"
+        }
+      }
+    },
+    "kdv_price_reviews": {
+      "$list": {
+        "sut_code": true,
+        "material_name": true,
+        "billed_try": true,
+        "gazette_ex_vat_try": true,
+        "gazette_ceiling_try": true,
+        "kdv_applied": true,
+        "kdv_rate": true,
+        "note": true
+      }
+    },
+    "gazette_ceiling_by_specialty": {
+      "$map": true
+    },
+    "coverage_scope": {
+      "$ref": "SutMaterialBundlingCoverageScope"
+    },
+    "specialty_coverage_scope": {
+      "$ref": "SutSpecialtyProseCoverageScope"
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "rule_source": true
+  },
+  "SutMaterialBundlingCoverageScope": {
+    "prose_section_prefixes": {
+      "$list": true
+    },
+    "prose_engine_status": true,
+    "prose_coverage_tier": true,
+    "prose_effective_date": true,
+    "implemented_annexes": {
+      "$list": true
+    },
+    "ek3b1_row_count": true,
+    "ek3b2_row_count": true,
+    "medula_overlap_classification": true,
+    "medula_savings_note": true
+  },
+  "SutSpecialtyProseCoverageScope": {
+    "prose_section_prefixes": {
+      "$list": true
+    },
+    "prose_engine_status": true,
+    "prose_coverage_tier": true,
+    "prose_effective_date": true,
+    "implemented_annexes": {
+      "$list": true
+    },
+    "medula_overlap_classification": true,
+    "medula_savings_note": true
+  },
+  "RecommendedActionItem": {
+    "action_id": true,
+    "surface": true,
+    "kind": true,
+    "claim_id": true,
+    "procedure_code": true,
+    "procedure_name": true,
+    "material_code": true,
+    "drug_code": true,
+    "drug_name": true,
+    "drug_claim_line_id": true,
+    "finding_id": true,
+    "severity": true,
+    "applicability_status": true,
+    "evaluation_status": true,
+    "observed_icd10_codes": {
+      "$list": true
+    },
+    "matched_icd10_codes": {
+      "$list": true
+    },
+    "unmatched_icd10_codes": {
+      "$list": true
+    },
+    "eligible_routes": {
+      "$list": {
+        "$ref": "DrugIndicationRouteEvidence"
+      }
+    },
+    "eligible_route_count": true,
+    "eligible_routes_truncated": true,
+    "observed_icd10_count": true,
+    "observed_icd10_truncated": true,
+    "recommended_action_tr": true,
+    "sgk_uplift_try": true,
+    "audit_risk_try": true,
+    "compliance_savings_try": true,
+    "billed_try": true,
+    "material_name": true,
+    "detail": true,
+    "sut_section_id": true,
+    "clause_ref": {
+      "$ref": "SutClauseReference"
+    },
+    "finding_type": true,
+    "message_code": true,
+    "message_params": {
+      "amount_try": true,
+      "claim_id": true,
+      "itemized_total_try": true,
+      "method": true,
+      "package_total_try": true,
+      "procedure_code": true,
+      "rate_pct": true,
+      "section": true
+    }
+  },
+  "BillingActionReport": {
+    "patient_id": true,
+    "lab": {
+      "$ref": "LabOptimization"
+    },
+    "copay": {
+      "$ref": "CopayOptimization"
+    },
+    "billing_strategy": {
+      "$ref": "BillingStrategyRecommendation"
+    },
+    "session_uplift": {
+      "$ref": "SessionPricingUplift"
+    },
+    "drg_uplift": {
+      "$ref": "DrgUpliftRecommendation"
+    },
+    "blood_uplift": {
+      "$ref": "BloodComponentUplift"
+    },
+    "material_uplift": {
+      "$ref": "MaterialUplift"
+    },
+    "care_setting_review": {
+      "$ref": "CareSettingReview"
+    },
+    "procedure_addon_uplift": {
+      "$ref": "ProcedureAddonUplift"
+    },
+    "procedure_capture_gap": {
+      "$ref": "ProcedureCaptureGap"
+    },
+    "drg_package_adequacy": {
+      "$ref": "DrgPackageAdequacyReview"
+    },
+    "medula_rejection_playbook": {
+      "$ref": "MedulaRejectionPlaybook"
+    },
+    "claim_submission_checklist": {
+      "$ref": "ClaimSubmissionChecklist"
+    },
+    "drug_indication": {
+      "$ref": "DrugIndicationReview"
+    },
+    "claim_compliance": {
+      "$ref": "ClaimCompliance"
+    },
+    "claim_reviews": {
+      "$ref": "WaveAEvidenceBlock"
+    },
+    "claim_advisories": {
+      "$ref": "WaveAEvidenceBlock"
+    },
+    "financial_findings": {
+      "$ref": "WaveAEvidenceBlock"
+    },
+    "wavea_coverage": {
+      "$ref": "WaveACoverage"
+    },
+    "materials": {
+      "$ref": "MaterialPreCheck"
+    },
+    "sgk_uplift_try": true,
+    "compliance_adjustment_try": true,
+    "audit_exposure_try": true,
+    "capture_gap_try": true,
+    "package_adequacy_review_try": true,
+    "medula_playbook_entry_count": true,
+    "claim_submission_checklist_count": true,
+    "drug_indication_violation_count": true,
+    "total_recoverable_try": true,
+    "recommended_actions": {
+      "$list": {
+        "$ref": "RecommendedActionItem"
+      }
+    },
+    "action_count": true,
+    "priority": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "claim_id": true,
+    "scope": true,
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "medula_rejection_ingest_available": true,
+    "yatak_puani": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "rule_source": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "opportunities": {
+        "$list": {
+          "type": true,
+          "claim_id": true,
+          "rule_id": true,
+          "detail": true,
+          "included_in_sgk_total": true,
+          "savings_category": true,
+          "savings_basis": true,
+          "sut_section_id": true,
+          "recoverable_uplift_try": true,
+          "expected_try": true,
+          "actual_billed_try": true,
+          "bed_code": true,
+          "bed_days": true,
+          "bundled_days": true,
+          "daily_rate_try": true,
+          "expected_yatak_try": true,
+          "gross_bed_days": true,
+          "same_day_stay": true,
+          "surgery_day_bundled": true
+        }
+      }
+    },
+    "icu_puani": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "rule_source": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "opportunities": {
+        "$list": {
+          "type": true,
+          "claim_id": true,
+          "rule_id": true,
+          "detail": true,
+          "included_in_sgk_total": true,
+          "savings_category": true,
+          "savings_basis": true,
+          "sut_section_id": true,
+          "recoverable_uplift_try": true,
+          "expected_try": true,
+          "icu_days": true,
+          "same_day_stay": true,
+          "first_day_code": true,
+          "last_day_code": true,
+          "intermediate_package": true,
+          "intermediate_days": true,
+          "day_rate_puan": true,
+          "intermediate_puan": true,
+          "intermediate_puan_base": true,
+          "intermediate_puan_uplifted": true,
+          "ilave_oran_pct": true,
+          "ilave_oran_eligible": true,
+          "ilave_oran_reason": true,
+          "total_puan": true,
+          "total_try": true,
+          "actual_billed_try": true
+        }
+      }
+    },
+    "yenidogan_yatak": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "rule_source": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "opportunities": {
+        "$list": {
+          "type": true,
+          "claim_id": true,
+          "rule_id": true,
+          "detail": true,
+          "included_in_sgk_total": true,
+          "savings_category": true,
+          "savings_basis": true,
+          "sut_section_id": true,
+          "recoverable_uplift_try": true,
+          "expected_try": true,
+          "bed_code": true,
+          "days": true,
+          "puan": true,
+          "same_day_stay": true,
+          "rooming_in": true
+        }
+      }
+    },
+    "refakatci": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "rule_source": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "opportunities": {
+        "$list": {
+          "type": true,
+          "claim_id": true,
+          "rule_id": true,
+          "detail": true,
+          "included_in_sgk_total": true,
+          "savings_category": true,
+          "savings_basis": true,
+          "sut_section_id": true,
+          "recoverable_uplift_try": true,
+          "expected_try": true,
+          "days": true,
+          "katsayi": true,
+          "puan": true,
+          "suppression_notes": {
+            "$list": true
+          }
+        }
+      }
+    },
+    "anestezi_puani": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "rule_source": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "opportunities": {
+        "$list": {
+          "type": true,
+          "claim_id": true,
+          "rule_id": true,
+          "detail": true,
+          "included_in_sgk_total": true,
+          "savings_category": true,
+          "savings_basis": true,
+          "sut_section_id": true,
+          "recoverable_uplift_try": true,
+          "expected_try": true,
+          "anestezi_code": true,
+          "anestezi_group": true,
+          "anestezi_puan": true,
+          "katsayi": true,
+          "procedure_code": true,
+          "procedure_puan": true
+        }
+      }
+    }
+  },
+  "PatientRecoverySummaryRow": {
+    "patient_id": true,
+    "total_recoverable_try": true,
+    "sgk_uplift_try": true,
+    "compliance_adjustment_try": true,
+    "exemption_gap_try": true,
+    "total_opportunity_try": true,
+    "priority": true,
+    "action_count": true,
+    "top_action_type": true
+  },
+  "CohortRecoverySummary": {
+    "n_patients": true,
+    "total_lab_savings": true,
+    "total_copay_savings": true,
+    "total_strategy_savings": true,
+    "total_session_uplift": true,
+    "total_drg_uplift": true,
+    "total_blood_uplift": true,
+    "total_optional_override_uplift": true,
+    "n_optional_override_patients": true,
+    "n_drg_uplift_patients": true,
+    "n_blood_uplift_patients": true,
+    "total_material_uplift": true,
+    "n_material_uplift_patients": true,
+    "total_procedure_addon_uplift": true,
+    "n_procedure_addon_patients": true,
+    "total_strategy_uplift": true,
+    "total_compliance_adjustment": true,
+    "total_sgk_uplift": true,
+    "total_audit_exposure": true,
+    "total_capture_gap": true,
+    "total_package_adequacy_review": true,
+    "total_medula_playbook_entries": true,
+    "medula_rejection_ingest_available": true,
+    "total_material_flags": true,
+    "grand_total_recoverable": true,
+    "top_patients": {
+      "$list": {
+        "$ref": "PatientRecoverySummaryRow"
+      }
+    },
+    "patient_summaries": {
+      "$list": {
+        "$ref": "PatientRecoverySummaryRow"
+      }
+    },
+    "savings_by_category": {
+      "$map": true
+    },
+    "priority_distribution": {
+      "$map": true
+    },
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "total_yatak_puani": true,
+    "n_yatak_puani_patients": true,
+    "total_icu_puani": true,
+    "n_icu_puani_patients": true,
+    "total_yenidogan_yatak": true,
+    "n_yenidogan_yatak_patients": true,
+    "total_refakatci": true,
+    "n_refakatci_patients": true,
+    "total_anestezi_puani": true,
+    "n_anestezi_puani_patients": true
+  },
+  "PatientClaimSummary": {
+    "claim_id": true,
+    "episode_id": true,
+    "claim_type": true,
+    "admission_date": true,
+    "discharge_date": true,
+    "claim_start_date": true,
+    "claim_end_date": true,
+    "primary_icd10": true,
+    "expected_total_billed_try": true,
+    "expected_total_payable_try": true,
+    "expected_denial_reason": true,
+    "scenario_tag": true,
+    "recoverable_try": true,
+    "priority": true,
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "PatientClaimsListResponse": {
+    "patient_id": true,
+    "claims": {
+      "$list": {
+        "$ref": "PatientClaimSummary"
+      }
+    },
+    "total": true,
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "ClaimProcedureLine": {
+    "procedure_line_id": true,
+    "procedure_date": true,
+    "procedure_code": true,
+    "procedure_name": true,
+    "procedure_category": true,
+    "quantity": true,
+    "unit_price_try": true,
+    "billed_amount_try": true,
+    "expected_payable_try": true,
+    "is_package_included": true,
+    "package_code": true,
+    "denial_reason_expected": true,
+    "rule_trace_expected": true
+  },
+  "ClaimMaterialLine": {
+    "material_line_id": true,
+    "material_date": true,
+    "material_code": true,
+    "material_name": true,
+    "material_type": true,
+    "specialty_category": true,
+    "quantity": true,
+    "unit_price_try": true,
+    "billed_amount_try": true,
+    "expected_payable_try": true,
+    "is_bundled": true,
+    "requires_pre_auth": true,
+    "denial_reason_expected": true,
+    "rule_trace_expected": true
+  },
+  "ClaimDrugLine": {
+    "drug_claim_line_id": true,
+    "prescription_id": true,
+    "drug_claim_date": true,
+    "drug_name": true,
+    "drug_code": true,
+    "barkod": true,
+    "equivalence_group": true,
+    "quantity": true,
+    "unit_price_try": true,
+    "billed_amount_try": true,
+    "expected_payable_try": true,
+    "discount_tier_expected": true,
+    "denial_reason_expected": true,
+    "rule_trace_expected": true
+  },
+  "PatientClaimDetail": {
+    "claim_id": true,
+    "patient_id": true,
+    "episode_id": true,
+    "claim_type": true,
+    "facility_tier": true,
+    "provider_type": true,
+    "department": true,
+    "admission_date": true,
+    "discharge_date": true,
+    "claim_start_date": true,
+    "claim_end_date": true,
+    "primary_icd10": true,
+    "package_candidate": true,
+    "expected_total_billed_try": true,
+    "expected_total_payable_try": true,
+    "expected_denial_reason": true,
+    "scenario_tag": true,
+    "occupational_context": true,
+    "procedures": {
+      "$list": {
+        "$ref": "ClaimProcedureLine"
+      }
+    },
+    "materials": {
+      "$list": {
+        "$ref": "ClaimMaterialLine"
+      }
+    },
+    "drugs": {
+      "$list": {
+        "$ref": "ClaimDrugLine"
+      }
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "MedulaRejectionQueueRow": {
+    "rejection_event_id": true,
+    "patient_id": true,
+    "claim_id": true,
+    "episode_id": true,
+    "medula_stage": true,
+    "sonuc_kodu": true,
+    "hata_mesaji": true,
+    "related_procedure_code": true,
+    "rejection_timestamp": true,
+    "related_line_type": true,
+    "related_line_id": true,
+    "playbook_matched": true,
+    "playbook_key": true,
+    "sut_anchor": true,
+    "rebill_permitted": true,
+    "corrective_steps_tr": {
+      "$list": true
+    }
+  },
+  "MedulaRejectionQueueResponse": {
+    "ingest_available": true,
+    "rows": {
+      "$list": {
+        "$ref": "MedulaRejectionQueueRow"
+      }
+    },
+    "total": true,
+    "page": true,
+    "page_size": true,
+    "facets": {
+      "sonuc_kodu": {
+        "$list": true
+      },
+      "medula_stage": {
+        "$list": true
+      }
+    },
+    "stats": {
+      "n_events": true,
+      "n_matched": true,
+      "n_rebill_permitted": true
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "ExemptionCategoryCount": {
+    "category": true,
+    "count": true
+  },
+  "TopDisease": {
+    "disease": true,
+    "count": true
+  },
+  "TemporalPriceValidation": {
+    "ek2b": {
+      "$ref": "TemporalAnnexStats"
+    },
+    "ek2c": {
+      "$ref": "TemporalAnnexStats"
+    },
+    "methodology": true
+  },
+  "TemporalAnnexStats": {
+    "n_codes": true,
+    "n_effective_dates": true,
+    "date_range": {
+      "$list": true
+    },
+    "effective_dates": {
+      "$list": true
+    },
+    "n_codes_with_changes": true,
+    "price_change_rate": true,
+    "mean_price_delta_pct": true,
+    "top_increases": {
+      "$list": {
+        "$ref": "TemporalPriceDelta"
+      }
+    },
+    "top_decreases": {
+      "$list": {
+        "$ref": "TemporalPriceDelta"
+      }
+    }
+  },
+  "TemporalPriceDelta": {
+    "code": true,
+    "name": true,
+    "old_price": true,
+    "new_price": true,
+    "delta_pct": true,
+    "old_date": true,
+    "new_date": true
+  },
+  "DrgUnbundlingSummary": {
+    "n_patients_checked": true,
+    "n_patients_with_risk": true,
+    "risk_rate": true,
+    "total_potential_savings": true,
+    "total_sourced_savings": true,
+    "top_risky_chapters": {
+      "$list": {
+        "$ref": "ChapterRiskSummary"
+      }
+    },
+    "methodology": true,
+    "exactness_status": true,
+    "unavailable_reason": true,
+    "required_inputs_missing": {
+      "$list": true
+    }
+  },
+  "ChapterRiskSummary": {
+    "chapter": true,
+    "n_patients": true,
+    "total_savings": true,
+    "count": true
+  },
+  "OptimizationSummary": {
+    "copay_exemptions": {
+      "n_exempt_patients": true,
+      "n_exempt_ek1a_patients": true,
+      "n_exempt_status_only_patients": true,
+      "n_exempt_ek1a_and_status_patients": true,
+      "n_total_patients": true,
+      "exemption_rate": true,
+      "exemption_by_category": {
+        "$list": {
+          "$ref": "ExemptionCategoryCount"
+        }
+      },
+      "top_diseases": {
+        "$list": {
+          "$ref": "TopDisease"
+        }
+      },
+      "methodology": true,
+      "rule_source": true,
+      "n_total_bills": true,
+      "n_exempt_bills": true,
+      "n_exempt_ek1a_bills": true,
+      "n_exempt_status_only_bills": true,
+      "n_exempt_ek1a_and_status_bills": true,
+      "exemption_rate_bills": true,
+      "exemption_by_category_bills": {
+        "$list": {
+          "$ref": "ExemptionCategoryCount"
+        }
+      }
+    },
+    "surcharge_exposure": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "n_total_ek2g": true,
+      "mean_applicable_per_patient": true,
+      "max_applicable": true,
+      "cohort_coverage_rate": true,
+      "methodology": true,
+      "n_patients_with_surcharge_flags": true
+    },
+    "copay_rate_exposure": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "n_total_ek2c1": true,
+      "mean_applicable_per_patient": true,
+      "cohort_mean_rate": true,
+      "rate_distribution": {
+        "$map": true
+      },
+      "methodology": true,
+      "n_patients_with_copay_rate_flags": true
+    },
+    "temporal_price_validation": {
+      "$ref": "TemporalPriceValidation"
+    },
+    "drg_unbundling": {
+      "$ref": "DrgUnbundlingSummary"
+    },
+    "drug_discount_validation": {
+      "exactness_status": true,
+      "unavailable_reason": true,
+      "required_inputs_missing": {
+        "$list": true
+      },
+      "n_total_patients": true,
+      "n_drug_lines": true,
+      "n_evaluable_lines": true,
+      "n_discounted_lines": true,
+      "n_violations": true,
+      "total_billed_try": true,
+      "total_expected_payable_try": true,
+      "total_expected_discount_try": true,
+      "mean_expected_discount_pct": true,
+      "top_violations": {
+        "$list": {
+          "patient_id": true,
+          "claim_id": true,
+          "drug_name": true,
+          "drug_code": true,
+          "billed_amount_try": true,
+          "expected_payable_try": true,
+          "expected_discount_try": true,
+          "discount_pct": true,
+          "violation": true,
+          "message": true,
+          "reason": true,
+          "source": true,
+          "severity": true,
+          "line_id": true
+        }
+      },
+      "methodology": true,
+      "rule_source": true
+    },
+    "data_source": {
+      "$ref": "SUTDataSourceMetadata"
+    },
+    "dataSource": {
+      "$ref": "SUTDataSourceMetadata"
+    }
+  },
+  "VisitPricingSpecialty": {
+    "code": true,
+    "name": true,
+    "section": true,
+    "prices_try": {
+      "$map": true
+    }
+  },
+  "VisitPricingResponse": {
+    "specialties": {
+      "$list": {
+        "$ref": "VisitPricingSpecialty"
+      }
+    }
+  },
+  "MaterialEntry": {
+    "sut_code": true,
+    "material_name": true,
+    "name": true,
+    "description": true,
+    "price_try": true,
+    "category": true,
+    "source": true
+  },
+  "MaterialsBySpecialtyResponse": {
+    "materials": {
+      "$list": {
+        "$ref": "MaterialEntry"
+      }
+    },
+    "total": true,
+    "truncated": true,
+    "specialties": {
+      "$list": {
+        "label": true,
+        "name": true
+      }
+    }
+  },
+  "WaveAEvidencePage": {
+    "available": true,
+    "unavailable_reason": true,
+    "patient_id": true,
+    "scope": true,
+    "claim_id": true,
+    "kind": true,
+    "rows": {
+      "$list": {
+        "$ref": "WaveAEvidenceRow"
+      }
+    },
+    "pagination": {
+      "total_matching": true,
+      "limit": true,
+      "offset": true,
+      "has_more": true
+    }
+  },
+  "WaveACohortEvidencePage": {
+    "kind": true,
+    "counts": {
+      "matching_rows": true
+    },
+    "patient_coverage": {
+      "selected": true,
+      "available": true,
+      "unavailable": true
+    },
+    "available": true,
+    "unavailable_reason": true,
+    "scope": true,
+    "claim_id": true,
+    "rows": {
+      "$list": {
+        "$ref": "WaveAEvidenceRow"
+      }
+    },
+    "pagination": {
+      "total_matching": true,
+      "limit": true,
+      "offset": true,
+      "has_more": true
+    }
+  },
+  "WaveAEvidenceIndexPage": {
+    "available": true,
+    "unavailable_reason": true,
+    "patient_coverage": {
+      "selected": true,
+      "available": true,
+      "unavailable": true
+    },
+    "counts": {
+      "by_group": {
+        "$statusCountsSummary": true
+      },
+      "evaluation_count": true,
+      "review_count": true,
+      "advisory_count": true,
+      "financial_count": true
+    },
+    "rows": {
+      "$list": {
+        "patient_id": true,
+        "available": true,
+        "unavailable_reason": true,
+        "counts": {
+          "evaluation_count": true,
+          "review_count": true,
+          "advisory_count": true,
+          "financial_count": true,
+          "by_group": {
+            "$statusCountsSummary": true
+          },
+          "by_rule": {
+            "$map": {
+              "$ref": "WaveAStatusCounts"
+            }
+          }
+        }
+      }
+    },
+    "pagination": {
+      "total_matching": true,
+      "limit": true,
+      "offset": true,
+      "has_more": true
+    }
+  },
+  "SutMaterialPricing": {
+    "material_code": true,
+    "material_name": true,
+    "price_try": true,
+    "source": true,
+    "description": true
+  },
+  "SutMaterialPricingResult": {
+    "query": true,
+    "n_matches": true,
+    "materials": {
+      "$list": {
+        "$ref": "SutMaterialPricing"
+      }
+    }
+  },
+  "SutBundledItem": {
+    "item_name": true,
+    "description": true,
+    "bundled_in": true,
+    "effective_date": true,
+    "evaluation_status": true
+  },
+  "SutExclusionCategory": {
+    "section": true,
+    "material_code": true,
+    "material_name": true,
+    "description": true,
+    "effective_date": true,
+    "evaluation_status": true
+  },
+  "SutBundledConsumablesResult": {
+    "coverage_scope": {
+      "$ref": "SutMaterialBundlingCoverageScope"
+    },
+    "specialty_coverage_scope": {
+      "$ref": "SutSpecialtyProseCoverageScope"
+    },
+    "bundled_consumables": {
+      "count": true,
+      "items": {
+        "$list": {
+          "$ref": "SutBundledItem"
+        }
+      }
+    },
+    "exclusion_categories": {
+      "count": true,
+      "categories": {
+        "$list": {
+          "$ref": "SutExclusionCategory"
+        }
+      }
+    }
+  },
+  "SutProcedureEntry": {
+    "code": true,
+    "name": true,
+    "description": true,
+    "price_try": true
+  },
+  "SutProcedureInfo": {
+    "match_type": true,
+    "entry": {
+      "$ref": "SutProcedureEntry"
+    },
+    "candidates": {
+      "$list": {
+        "$ref": "SutProcedureEntry"
+      }
+    }
+  },
+  "SutValidationEvidence": {
+    "evidence_id": true,
+    "rule": true,
+    "rule_id": true,
+    "material_name": true,
+    "message": true,
+    "disposition": true,
+    "reason": true,
+    "source_status": true
+  },
+  "SutMaterialApplicability": {
+    "material_index": true,
+    "material_id": true,
+    "material_name": true,
+    "material_code": true,
+    "ek3b1": {
+      "$ref": "SutAnnexAssessment"
+    },
+    "ek3b2": {
+      "$ref": "SutAnnexAssessment"
+    }
+  },
+  "SutAnnexAssessment": {
+    "matched": true,
+    "source_reason": true
+  },
+  "SutValidationResult": {
+    "contract_version": true,
+    "request_id": true,
+    "claim_id": true,
+    "validation_status": true,
+    "is_valid": true,
+    "violations": {
+      "$list": {
+        "$ref": "SutValidationEvidence"
+      }
+    },
+    "advisories": {
+      "$list": {
+        "$ref": "SutValidationEvidence"
+      }
+    },
+    "material_applicability": {
+      "$list": {
+        "$ref": "SutMaterialApplicability"
+      }
+    },
+    "coverage": {
+      "evaluation_count": true,
+      "unresolved_count": true,
+      "disposition_counts": {
+        "$map": true
+      },
+      "scope": true
+    },
+    "provenance": {
+      "identity_kind": true,
+      "supplied_field_count": true,
+      "adapter_defaults_are_evidence": true
+    },
+    "summary": true,
+    "validation_time_ms": true
+  },
+  "DrugEntry": {
+    "drug_name": true,
+    "equivalence_group": true,
+    "discount_status": true,
+    "discount_tier_1": true,
+    "passivation_date": true
+  },
+  "LabPriceEntry": {
+    "test_name": true,
+    "sut_code": true,
+    "price_try": true
+  },
+  "RuleClause": {
+    "clause_key": true,
+    "paragraph_index": true,
+    "section_id": true,
+    "section_title": true,
+    "section_path": true,
+    "chapter": true,
+    "clause_type": true,
+    "clause_number": true,
+    "clause_letter": true,
+    "clause_coordinate": true,
+    "is_heading": true,
+    "text_tr": true,
+    "annex_refs": {
+      "$list": true
+    },
+    "procedure_codes": {
+      "$list": true
+    },
+    "percentages": {
+      "$list": true
+    },
+    "amendment_refs": {
+      "$list": true
+    },
+    "deontic_modality": true,
+    "source_effective_date": true
+  }
+}

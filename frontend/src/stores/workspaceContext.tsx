@@ -3,13 +3,13 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { useStore } from "zustand";
 import type { StoreApi } from "zustand";
-import { writeWorkspaceSession } from "@/lib/workspaceTabs";
+import { accessibleWorkspaceSession, readWorkspaceSession, writeWorkspaceSession } from "@/lib/workspaceTabs";
 import { createWorkspaceStore, type WorkspaceStore } from "./workspaceStore";
 
 const WorkspaceContext = createContext<{ store: StoreApi<WorkspaceStore> } | null>(null);
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const store = useMemo(() => createWorkspaceStore(), []);
+export function WorkspaceProvider({ children, developer = false }: { children: ReactNode; developer?: boolean }) {
+  const store = useMemo(() => createWorkspaceStore(accessibleWorkspaceSession(readWorkspaceSession(), developer)), [developer]);
 
   useEffect(() => {
     const unsubscribe = store.subscribe((state) => {

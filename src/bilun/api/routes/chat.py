@@ -12,14 +12,18 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from src.bilun.shared.exceptions import RateLimitError
+from src.bilun.shared.exceptions import BilunAPIError, RateLimitError
 from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_window as _rate_window
 from src.bilun.chatbot import stream_chat_response
-from src.bilun.chatbot.context import build_bilun_runtime_context
+from src.bilun.chatbot.context import build_bilun_runtime_context, officer_page_context
 from src.bilun.chatbot.llm import stream_chat_response_with_tools
 from src.bilun.chatbot.prompts import ChatIntent, _parse_ui_locale
+from src.bilun.chatbot.public_limits import (
+    PUBLIC_REQUEST_TIMEOUT_SEC, admit_public_chat, bounded_chat_work,
+    client_identity, public_chat_stream,
+)
 
 logger = logging.getLogger("bilun.api.chat")
 
@@ -94,17 +98,35 @@ UiLocaleLiteral = Literal["en", "tr"]
 
 class BilunChatMessage(BaseModel):
     role: Literal["user", "assistant"]
-    content: str
+    content: str = Field(max_length=8000)
 
 
 class BilunChatRequest(BaseModel):
-    messages: list[BilunChatMessage] = Field(default_factory=list)
-    active_tab: str = "BILUN Analytics"
-    patient_id: str | None = None
+    messages: list[BilunChatMessage] = Field(default_factory=list, max_length=20)
+    active_tab: str = Field(default="BILUN Analytics", max_length=128)
+    patient_id: str | None = Field(default=None, max_length=128)
     intent: ChatIntent = "user_question"
     page_context: dict[str, Any] | None = None
     user_role: UserRoleLiteral = "billing_officer"
     ui_locale: UiLocaleLiteral = "en"
+
+    @model_validator(mode="after")
+    def bounded_context(self):
+        if sum(len(message.content) for message in self.messages) > 32000:
+            raise ValueError("Conversation is too long")
+        if self.page_context is not None:
+            if len(json.dumps(self.page_context, ensure_ascii=False).encode("utf-8")) > 24576:
+                raise ValueError("Page context is too large")
+            pending = [(self.page_context, 0)]
+            while pending:
+                value, depth = pending.pop()
+                if depth > 8:
+                    raise ValueError("Page context is too deeply nested")
+                if isinstance(value, dict):
+                    pending.extend((item, depth + 1) for item in value.values())
+                elif isinstance(value, list):
+                    pending.extend((item, depth + 1) for item in value)
+        return self
 
 
 # ── Summarizers (keep in chat.py — they depend on route imports) ──────────────
@@ -278,8 +300,8 @@ def _summarize_rule_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
 def _safe_context_block(label: str, builder) -> dict[str, Any]:
     try:
         return {"status": "ready", "summary": builder()}
-    except Exception as exc:
-        return {"status": "unavailable", "detail": f"{label} unavailable: {exc}"}
+    except Exception:
+        return {"status": "unavailable", "detail": f"{label} unavailable."}
 
 
 # ── Data fetching (lives in chat.py — this is the only place that imports   ──
@@ -331,7 +353,9 @@ def _fetch_billing_report_for_chat(
         payload = get_patient_billing_report(patient_id)
     if user_role == "dev":
         return payload
-    return _summarize_billing_report(payload)
+    from src.bilun.api.public_responses import project_public_response
+
+    return _summarize_billing_report(project_public_response(payload, "get_billing_report"))
 
 
 def _cached_patient_optimization_payload(patient_id: str) -> dict[str, Any] | None:
@@ -438,6 +462,15 @@ def _fetch_runtime_data(
 ) -> dict[str, Any]:
     """Fetch all data needed for context assembly (parallel where independent)."""
     tab_slug = _normalize_tab_slug(active_tab, page_context)
+    if user_role != "dev" and tab_slug == "rule-database":
+        tab_slug = "patients"
+
+    def public_payload(payload: Any, surface: str) -> Any:
+        if user_role == "dev":
+            return payload
+        from src.bilun.api.public_responses import project_public_response
+
+        return project_public_response(payload, surface)
 
     def _fetch_rule_catalog() -> dict[str, Any]:
         return _safe_context_block(
@@ -448,20 +481,20 @@ def _fetch_runtime_data(
     def _fetch_optimization_summary() -> dict[str, Any]:
         return _safe_context_block(
             "Optimization summary",
-            lambda: _summarize_optimization(get_optimization_summary()),
+            lambda: _summarize_optimization(public_payload(get_optimization_summary(), "get_optimization_summary")),
         )
 
     def _fetch_revenue_recovery() -> dict[str, Any]:
         return _safe_context_block(
             "Revenue recovery",
-            lambda: get_revenue_recovery(),
+            lambda: public_payload(get_revenue_recovery(), "get_revenue_recovery"),
         )
 
     def _fetch_patient_outcome() -> dict[str, Any]:
         return _safe_context_block(
             "Patient outcome",
             lambda: _summarize_patient_outcome(
-                get_bilun_patient_outcome(patient_id)
+                public_payload(get_bilun_patient_outcome(patient_id), "get_patient_outcome")
             ),
         )
 
@@ -469,7 +502,7 @@ def _fetch_runtime_data(
         return _safe_context_block(
             "Patient optimization",
             lambda: _summarize_patient_optimization(
-                _get_patient_optimization_for_chat(patient_id)
+                public_payload(_get_patient_optimization_for_chat(patient_id), "get_patient_optimization")
             ),
         )
 
@@ -486,7 +519,7 @@ def _fetch_runtime_data(
     def _fetch_medula_search() -> dict[str, Any]:
         return _safe_context_block(
             "MEDULA knowledge base",
-            lambda: search_medula(user_message or ""),
+            lambda: public_payload(search_medula(user_message or ""), "search_medula"),
         )
 
     def _fetch_medula_queue_count() -> dict[str, Any]:
@@ -532,32 +565,47 @@ def _fetch_runtime_data(
 
 async def _sse_event_stream(
     producer: Any,
+    *,
+    timeout_seconds: float | None = None,
 ) -> Any:
     """Wrap an async producer with immediate stream-start and keepalive comments."""
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=_SSE_QUEUE_MAXSIZE)
 
     async def _run_producer() -> None:
+        cancelled = False
         try:
-            async for kind, payload in producer():
-                # B-H12: bounded queue provides backpressure. When the SSE
-                # client is slow and the buffer fills, this put() awaits,
-                # which in turn pauses upstream consumption from OpenRouter
-                # (the producer's aiter_lines loop). This prevents unbounded
-                # memory growth when a verbose model outpaces a slow client.
-                await queue.put((kind, payload))
+            # Own the deadline in the consuming task, including blocked queue
+            # writes; never keep asyncio.timeout open across generator yields.
+            async with asyncio.timeout(timeout_seconds):
+                async with contextlib.aclosing(producer()) as stream:
+                    # Bounded backpressure pauses upstream model consumption.
+                    async for kind, payload in stream:
+                        await queue.put((kind, payload))
+        except TimeoutError:
+            # Discard stale backlog so a slow connected client receives the
+            # deadline error and completion rather than endless keepalives.
+            while not queue.empty():
+                queue.get_nowait()
+            await queue.put(("error", "Chat timed out. Please try a shorter question."))
         except asyncio.CancelledError:
-            return
+            cancelled = True
+        except BilunAPIError as exc:
+            # Domain exception messages are not a public contract: other
+            # services may include source paths or upstream request fragments.
+            message = "Chat limit reached. Please try later." if isinstance(exc, RateLimitError) else "BILUN chat is temporarily unavailable. Please try again."
+            await queue.put(("error", message))
         except Exception as exc:
-            logger.exception("Chat SSE producer failed")
-            await queue.put(("error", f"BILUN chat stream failed: {exc}"))
+            logger.error("Chat SSE producer failed | type=%s", type(exc).__name__)
+            await queue.put(("error", "BILUN chat is temporarily unavailable. Please try again."))
         finally:
-            await queue.put(None)
+            if not cancelled and not asyncio.current_task().cancelling():
+                await queue.put(None)
 
     task = asyncio.create_task(_run_producer())
-    yield ": stream-start\n\n"
 
     try:
+        yield ": stream-start\n\n"
         while True:
             try:
                 item = await asyncio.wait_for(queue.get(), timeout=5.0)
@@ -572,7 +620,7 @@ async def _sse_event_stream(
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
-        yield _encode_sse("data", "[DONE]")
+    yield _encode_sse("data", "[DONE]")
 
 
 # ── Endpoint ─────────────────────────────────────────────────────────────────
@@ -591,7 +639,7 @@ async def _sse_event_stream(
     },
 )
 async def bilun_chat(req: BilunChatRequest, request: Request):
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = client_identity(request)
     if not _check_rate_limit(client_ip):
         raise RateLimitError("Too many requests. Please wait a moment.")
 
@@ -601,6 +649,8 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
     claims = verify_session_token(session_token)
     username = claims.username if claims else None
     user_role: UserRole = resolve_user_role(username)  # type: ignore[assignment]
+    page_context = req.page_context if user_role == "dev" else officer_page_context(req.page_context)
+    lease = admit_public_chat(request, user_role=user_role)
 
     user_message: str | None = None
     for msg in reversed(req.messages):
@@ -610,13 +660,13 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
 
     async def _producer():
         t0 = time.perf_counter()
-        raw_data = await asyncio.to_thread(
+        raw_data = await bounded_chat_work(
             _fetch_runtime_data,
             req.active_tab,
             req.patient_id,
             user_message,
             intent=req.intent,
-            page_context=req.page_context,
+            page_context=page_context,
             user_role=user_role,
         )
         t_fetch = time.perf_counter()
@@ -626,7 +676,7 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             raw_data,
             req.active_tab,
             req.patient_id,
-            page_context=req.page_context,
+            page_context=page_context,
             intent=req.intent,
             billing_detail=billing_detail,
             user_role=user_role,
@@ -654,23 +704,30 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             if use_tools
             else stream_chat_response
         )
-        async for item in stream_fn(
+        async with contextlib.aclosing(stream_fn(
             [message.model_dump() for message in req.messages],
             runtime_context,
             intent=req.intent,
             user_role=user_role,
             ui_locale=ui_locale,
-        ):
-            if isinstance(item, tuple):
-                kind, text = item
-                yield (kind, text)
-            else:
-                yield ("data", item)
+        )) as stream:
+            async for item in stream:
+                if isinstance(item, tuple):
+                    kind, text = item
+                    if kind in {"content", "data"} or (kind == "reasoning" and user_role == "dev"):
+                        yield (kind, text)
+                    elif kind == "error":
+                        yield ("error", "Chat is temporarily unavailable. Please try again.")
+                else:
+                    yield ("data", item)
 
     return StreamingResponse(
-        _sse_event_stream(_producer),
+        _sse_event_stream(
+            lambda: public_chat_stream(_producer, lease),
+            timeout_seconds=PUBLIC_REQUEST_TIMEOUT_SEC,
+        ) if lease else _sse_event_stream(_producer),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        headers={"Cache-Control": "private, no-store", "X-Accel-Buffering": "no"},
     )
 
 
@@ -693,7 +750,7 @@ WEEKLY_BRIEF_PROMPT = (
 
 
 class WeeklyBriefRequest(BaseModel):
-    language: str = "tr"
+    language: UiLocaleLiteral = "tr"
 
 
 @router.post("/weekly-brief")
@@ -720,17 +777,18 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
             billing_detail="summary",
             ui_locale=_parse_ui_locale(req.language),
         )
-        async for item in stream_chat_response(
+        async with contextlib.aclosing(stream_chat_response(
             messages,
             runtime_context,
             intent="auto_brief",
             ui_locale=_parse_ui_locale(req.language),
-        ):
-            if isinstance(item, tuple):
-                kind, text = item
-                yield (kind, text)
-            else:
-                yield ("data", item)
+        )) as stream:
+            async for item in stream:
+                if isinstance(item, tuple):
+                    kind, text = item
+                    yield (kind, text)
+                else:
+                    yield ("data", item)
 
     return StreamingResponse(
         _sse_event_stream(_producer),

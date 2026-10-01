@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import time
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -563,6 +564,8 @@ def _validate_stored_claim(
 
 def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
     """Validate tool arguments against the schema. Raises ValueError on mismatch."""
+    if not isinstance(arguments, dict):
+        raise ValueError("Tool arguments must be an object")
     schema = _tool_schema_by_name(tool_name)
     if schema is None:
         raise ValueError(f"Unknown tool: {tool_name}")
@@ -582,6 +585,8 @@ def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
                 f"Unknown parameter '{key}' for tool '{tool_name}'"
             )
         expected_type = properties[key].get("type", "string")
+        if isinstance(value, str) and len(value) > 2000:
+            raise ValueError("Tool argument is too long")
         if expected_type == "string" and not isinstance(value, str):
             raise ValueError(
                 f"Parameter '{key}' must be a string for tool '{tool_name}'"
@@ -590,6 +595,8 @@ def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
             raise ValueError(
                 f"Parameter '{key}' must be a number for tool '{tool_name}'"
             )
+        if expected_type == "number" and (isinstance(value, bool) or not math.isfinite(value)):
+            raise ValueError("Tool numeric argument must be finite")
 
 
 async def execute_tool_call(
@@ -604,6 +611,11 @@ async def execute_tool_call(
         session = ToolSession()
 
     t0 = time.perf_counter()
+
+    if session.call_count >= MAX_TOOL_CALLS_PER_TURN:
+        return ToolCallResult(tool_name, arguments, False, error="Tool call limit reached.")
+    # Reserve before any await so parallel calls cannot exceed the turn budget.
+    session.call_count += 1
 
     if tool_name in _DEV_TOOL_NAMES and user_role != "dev":
         result = ToolCallResult(
@@ -624,7 +636,7 @@ async def execute_tool_call(
             success=False,
             content="",
             elapsed_ms=0.0,
-            error=f"Tool '{tool_name}' is not in the allowlist. Available tools: {list(_TOOL_FUNCTION_MAP.keys())}",
+            error="Tool is not available.",
         )
         session.record_result(result)
         return result
@@ -748,16 +760,22 @@ async def execute_tool_call(
             if func is None:
                 raise ValueError(f"Executor not found for tool '{tool_name}'")
             result = func()
+            if user_role != "dev":
+                from src.bilun.api.public_responses import project_public_response
+
+                result = project_public_response(result, tool_name)
             return _serialize_for_llm(result, size_cap=size_cap)
 
+        from .public_limits import bounded_chat_work
+
         content = await asyncio.wait_for(
-            asyncio.to_thread(_exec), timeout=TOOL_TIMEOUT_SEC
+            bounded_chat_work(_exec), timeout=TOOL_TIMEOUT_SEC
         )
     except TimeoutError:
         error = f"Tool '{tool_name}' timed out after {TOOL_TIMEOUT_SEC}s"
     except Exception as exc:
-        error = f"Tool '{tool_name}' execution failed: {exc}"
-        logger.warning("Tool execution error | tool=%s | error=%s", tool_name, exc)
+        error = "The requested billing data is temporarily unavailable."
+        logger.warning("Tool execution error | tool=%s | type=%s", tool_name, type(exc).__name__)
 
     elapsed_ms = (time.perf_counter() - t0) * 1000
     success = error is None

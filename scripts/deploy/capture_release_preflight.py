@@ -21,7 +21,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
-from urllib.request import urlopen
 
 
 @dataclass(frozen=True)
@@ -600,7 +599,9 @@ def assess_release_preflight(
 
 
 def _live_health(url: str) -> dict[str, Any]:
-    with urlopen(url, timeout=5) as response:  # noqa: S310 - CLI accepts operator-selected loopback URL
+    from scripts.deploy.health_request import open_health
+
+    with open_health(url, timeout=5) as response:
         return json.load(response)
 
 

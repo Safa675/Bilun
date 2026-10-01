@@ -63,7 +63,7 @@ function sourceLabel(row: ComplianceIndexRow): string | null {
       .map((key) => record[key])
       .find((value): value is string => typeof value === "string" && value.length > 0) ?? null;
   }
-  return [row.sut_section_id, row.source_engine, structuredSource]
+  return [row.sut_section_id, structuredSource]
     .filter((value): value is string => Boolean(value))
     .join(" · ") || null;
 }

@@ -9,6 +9,11 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
+@pytest.fixture(autouse=True)
+def _operator_health_token(monkeypatch):
+    monkeypatch.setenv("BILUN_HEALTH_PROBE_TOKEN", "health-test-token-" * 4)
+
+
 def _health_body(response) -> dict:
     return json.loads(response.content)
 
@@ -20,7 +25,7 @@ def test_health_503_when_database_missing(api_client, monkeypatch, tmp_path) -> 
     monkeypatch.setenv("BILUN_CACHE_DB_PATH", str(missing_db))
     monkeypatch.setattr(startup_mod, "_startup_ready", False)
 
-    response = api_client.get("/health")
+    response = api_client.get("/health", headers={"X-Bilun-Health-Token": "health-test-token-" * 4})
 
     assert response.status_code == 503
     body = _health_body(response)
@@ -46,7 +51,7 @@ def test_health_503_when_database_has_no_active_build(
     monkeypatch.setenv("BILUN_CACHE_DB_PATH", str(db_path))
     monkeypatch.setattr(startup_mod, "_startup_ready", False)
 
-    response = api_client.get("/health")
+    response = api_client.get("/health", headers={"X-Bilun-Health-Token": "health-test-token-" * 4})
 
     assert response.status_code == 503
     body = _health_body(response)
@@ -93,7 +98,7 @@ def test_health_200_when_active_build_present(
     monkeypatch.setenv("BILUN_CACHE_DB_PATH", str(db_path))
     monkeypatch.setattr(startup_mod, "_startup_ready", True)
 
-    response = api_client.get("/health")
+    response = api_client.get("/health", headers={"X-Bilun-Health-Token": "health-test-token-" * 4})
 
     assert response.status_code == 200
     body = _health_body(response)
@@ -119,3 +124,16 @@ def test_startup_failure_marks_cache_not_ready(monkeypatch) -> None:
     asyncio.run(startup_mod.startup())
 
     assert startup_mod.is_cache_ready() is False
+
+
+@pytest.mark.parametrize("headers", [{}, {"X-Bilun-Health-Token": "wrong"}, {"X-Forwarded-For": "127.0.0.1"}])
+def test_public_health_never_exposes_release_identity(api_client, headers):
+    response = api_client.get("/health", headers=headers)
+    assert set(response.json()) == {"status", "service", "database_reachable", "cache_ready"}
+    assert response.headers["cache-control"] == "private, no-store"
+
+
+def test_short_operator_token_does_not_unlock_health(api_client, monkeypatch):
+    monkeypatch.setenv("BILUN_HEALTH_PROBE_TOKEN", "short")
+    response = api_client.get("/health", headers={"X-Bilun-Health-Token": "short"})
+    assert "code_sha" not in response.json()

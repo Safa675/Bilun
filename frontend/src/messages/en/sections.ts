@@ -299,12 +299,14 @@ const sections = {
     validatedIn: "Validated in {ms}ms · {summary}",
   },
   specialtyProseScope: {
+    publicNotice: "Review the applicable specialty, material and documentation requirements alongside the displayed checks.",
     bodyImplemented:
       "Coverage v{effectiveDate}: §3.3 specialty annex prose engine ({proseRules} rules — wound/optical/orthobiologic branches). Full §3.3 long tail remains open.",
     medulaNote:
       "Pre-MEDULA §3.3 compliance flags (MEDULA additive). Not guaranteed SGK recovery.",
   },
   materialBundlingScope: {
+    publicNotice: "The displayed material checks cover part of the billing review. Additional SUT conditions and supporting documents may require manual review.",
     title: "Material bundling scope",
     body: "Checks use annex lists only (EK-3B-1: {ek3b1} bundled categories, EK-3B-2: {ek3b2} exclusion rows). Full SUT §3.1–3.2 prose bundling and payment rules are not encoded in this release.",
     bodyPartial: "EK-3B-1 ({ek3b1}) and EK-3B-2 ({ek3b2}) annex lists plus {proseRules} partial §3.1 prose rules. Full §3.1–3.2 decision tables are not yet encoded.",

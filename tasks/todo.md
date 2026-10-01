@@ -1,3 +1,42 @@
+## Task: Implement public billing and protected developer access
+
+### Goal
+Implement the approved public-billing/developer-login plan, verify security and billing behavior, and publish a new reviewed PR without deploying.
+
+### Subtasks
+- [x] Review the approved plan and repository instructions; create isolated branch `feat/public-billing-developer-access` from current `origin/main` at `3db12d53` (includes deployed #99, billing UX #100 and refactors #101–106).
+- [x] Implement explicit backend access policies, authoritative capabilities and public response projections.
+- [x] Secure officer chatbot context/tools and bound public computation.
+- [x] Implement capability-driven frontend, developer sign-in, logout/expiry and public billing workflow.
+- [x] Add release migration instructions, protected health probes, credential/session cutover support and asset confidentiality verification.
+- [x] Review integrated behavior, run focused tests, full CI parity and production browser security checks; resolve failures.
+- [ ] Review final diff, verify branch CI status, publish/attach a new PR and confirm its checks.
+
+### Out of Scope
+Merging, live deployment, live credential rotation, changing clinical/payment calculations, new real-patient datasets or multiuser/SSO provisioning.
+
+### Review
+Plan approved by the user; implementation follows `plans/security/2026-09-29-public-billing-developer-access-plan.md`. Main checkout and existing deployment are preserved. Public access defaults disabled pending the documented release cutover.
+
+Implementation & verification evidence:
+- Backend access control, authoritative session resolution, and public JSON response projections verified.
+- Fixed cohort projection test `test_public_projection_preserves_cohort_business_results_and_cached_nulls` by popping internal `wavea_evidence_detail` payload before projection comparison.
+- Fixed Next.js Playwright strict mode conflict on `getByRole("alert")` in `test-access-browser.mjs` by filtering on text.
+- Full CI test parity:
+  - Ruff check (`ruff check src/ scripts/`): clean
+  - Rules compiler check (`python scripts/sut/compile_rules.py --check`): 134 rule/manifest artifacts byte-identical
+  - Drug manifest parity check (`python scripts/sut/audit_manifest_parity.py --drug-only`): 23 manifests scanned, 0 issues
+  - Unit tests: 964 passed in 538s
+  - Cohort projection test: 1 passed in 86s
+  - Vitest frontend suite: 70 files passed, 402 tests passed in 17s
+  - TypeScript build check (`npx tsc --noEmit`): clean
+  - Frontend production build (`next build`): clean
+  - Browser E2E security tests (`node scripts/test-access-browser.mjs`): all 4 scenarios passed
+  - Public asset verification (`verify_public_assets`): 52 files checked, 0 problems
+  - `git diff --check`: clean
+
+---
+
 ## Task: Complete hotspot refactoring delivery F — audit decomposition
 
 ### Goal

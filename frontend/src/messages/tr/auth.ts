@@ -1,7 +1,10 @@
 const auth = {
   login: {
-    title: "Bilun'a giriş yapın",
-    subtitle: "Devam etmek için ortak kimlik bilgilerini girin.",
+    title: "Geliştirici girişi",
+    subtitle: "Geliştirici hesabınızla giriş yapın.",
+    developerSignIn: "Geliştirici girişi",
+    returnToBilling: "Faturalamaya dön",
+    notDeveloper: "Bu hesabın geliştirici erişimi yok.",
     username: "Kullanıcı adı",
     password: "Parola",
     submit: "Giriş yap",
@@ -12,6 +15,7 @@ const auth = {
   },
   logout: {
     button: "Çıkış yap",
+    error: "Çıkış doğrulanamadı. Lütfen tekrar deneyin.",
   },
 } as const;
 

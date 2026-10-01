@@ -4,6 +4,11 @@ import { useState, type FormEvent } from "react";
 import BilunFullLogo from "@/components/brand/BilunFullLogo";
 import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import Link from "next/link";
+import { canUseDeveloper } from "@/lib/auth";
+import { getSessionIdentity } from "@/lib/api/auth";
+import { announceSessionChange, clearProtectedBrowserState } from "@/lib/authBrowser";
+import { useSessionIdentity } from "@/components/shell/RoleProvider";
 
 /**
  * Shared-password login screen.
@@ -15,6 +20,7 @@ import { useT } from "@/lib/i18n/useTranslations";
  */
 export default function LoginPage() {
   const t = useT();
+  const identity = useSessionIdentity();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +35,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ username, password }),
       });
       const body = await res.json().catch(() => ({}));
@@ -40,6 +47,13 @@ export default function LoginPage() {
         );
         return;
       }
+      const verified = await getSessionIdentity();
+      if (!canUseDeveloper(verified)) {
+        setError(t("auth.login.notDeveloper"));
+        return;
+      }
+      clearProtectedBrowserState();
+      announceSessionChange();
       // Hard navigation so the new Set-Cookie is always sent on the next
       // document request. router.replace() can race the cookie commit and
       // leave a fresh (e.g. Incognito) session stuck on /login with no error.
@@ -126,6 +140,7 @@ export default function LoginPage() {
             {submitting ? t("auth.login.submitting") : t("auth.login.submit")}
           </Button>
         </form>
+        {identity.public_billing_enabled && <Link href="/" prefetch={false} className="mt-4 block text-center text-sm underline">{t("auth.login.returnToBilling")}</Link>}
       </div>
     </main>
   );

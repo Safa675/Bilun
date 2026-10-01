@@ -10,14 +10,11 @@ gates: a frontend replay may still use the original compiled backend address.
 from __future__ import annotations
 
 import argparse
-import base64
 import hashlib
-import hmac
 import json
 import os
 import re
 import stat
-import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -127,8 +124,13 @@ class _NoRedirect(HTTPRedirectHandler):
 
 
 def _http(port: int, path: str, cookie: str | None) -> tuple[int, bytes]:
+    from scripts.deploy.health_request import health_headers
+
     headers = {"Cookie": cookie} if cookie else {}
-    request = Request(f"http://127.0.0.1:{port}{path}", headers=headers)
+    url = f"http://127.0.0.1:{port}{path}"
+    if path == "/health":
+        headers.update(health_headers(url))
+    request = Request(url, headers=headers)
     try:
         with build_opener(_NoRedirect).open(request, timeout=15) as response:
             return response.status, response.read()
@@ -139,12 +141,11 @@ def _http(port: int, path: str, cookie: str | None) -> tuple[int, bytes]:
 
 
 def _cookie(environment: dict[bytes, bytes]) -> str:
+    from scripts.deploy.probe_auth import probe_cookie
+
     if any(not environment.get(key) for key in _AUTH_KEYS):
         raise ValueError("Protected authentication configuration is incomplete")
-    payload = environment[b"BILUN_AUTH_USERNAME"] + b"." + str(int(time.time()) + 300).encode()
-    signature = hmac.new(environment[b"BILUN_SESSION_SECRET"], payload, hashlib.sha256).digest()
-    encoded = [base64.urlsafe_b64encode(value).rstrip(b"=").decode() for value in (payload, signature)]
-    return "bilun:session=" + ".".join(encoded)
+    return probe_cookie({key.decode(): value.decode() for key, value in environment.items()})
 
 
 def _cache(path: Path) -> tuple[dict[str, Any], list[str], list[str]]:

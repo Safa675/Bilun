@@ -8,24 +8,17 @@ import SkipToContent from "@/components/shell/SkipToContent";
 import WorkspaceRouteSync from "@/components/shell/WorkspaceRouteSync";
 import WorkspaceQuickOpen from "@/components/shell/WorkspaceQuickOpen";
 import WorkspaceSplitLayout from "@/components/shell/WorkspaceSplitLayout";
-import { ConfigProvider } from "@/lib/configContext";
+import { getServerIdentity } from "@/lib/authServer";
 import { SUT_BRAND } from "@/lib/constants";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/types";
 import enMessages from "@/messages/en";
 import trMessages from "@/messages/tr";
-
-type UserRole = "billing_officer" | "dev";
-
-const ROLE_COOKIE_KEY = "bilun:role";
 
 function resolveMetaDescription(locale: Locale): string {
   const messages = locale === "tr" ? trMessages : enMessages;
   return messages.constants.brand.metaDescription;
 }
 
-function parseRole(value: string | undefined): UserRole {
-  return value === "billing_officer" ? "billing_officer" : "dev";
-}
 import WorkspaceTabStripMount from "@/components/shell/WorkspaceTabStripMount";
 import { ShellStateProviders } from "@/stores/providers";
 import "./globals.css";
@@ -68,13 +61,12 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const initialLocale = parseLocale(cookieStore.get("bilun:locale")?.value);
-  const initialRole: UserRole = parseRole(cookieStore.get(ROLE_COOKIE_KEY)?.value);
+  const initialIdentity = await getServerIdentity(cookieStore.toString());
 
   return (
     <html lang={initialLocale} className={`${fontDisplay.variable} ${fontSans.variable}`}>
       <body className="antialiased" suppressHydrationWarning>
-        <ConfigProvider>
-          <ShellStateProviders initialLocale={initialLocale} initialRole={initialRole}>
+          <ShellStateProviders initialLocale={initialLocale} initialIdentity={initialIdentity}>
             <SkipToContent />
             <ChatDockInsetSync />
             <Suspense>
@@ -85,7 +77,6 @@ export default async function RootLayout({
             <WorkspaceSplitLayout>{children}</WorkspaceSplitLayout>
             <WorkspaceQuickOpen />
           </ShellStateProviders>
-        </ConfigProvider>
       </body>
     </html>
   );

@@ -10,6 +10,15 @@ from fastapi.testclient import TestClient
 pytestmark = pytest.mark.unit
 
 
+@pytest.fixture(autouse=True)
+def synthetic_chat_runtime(monkeypatch):
+    """Endpoint tests use their explicit synthetic stubs, never rebuild a cache."""
+    async def startup():
+        pass
+    monkeypatch.setattr("src.bilun.api.startup.startup", startup)
+    monkeypatch.setattr("src.bilun.api.routes.chat.get_revenue_recovery", lambda: {})
+
+
 def test_sut_chat_streams_sut_only_context(monkeypatch):
     import src.bilun.api.routes.chat as sut_chat_mod
     from src.bilun.api import app
@@ -526,9 +535,16 @@ def test_removed_estimate_native_sut_routes_return_404():
         ).status_code == 404
 
 
-def test_sut_chat_rule_database_context(monkeypatch):
+def test_sut_chat_rule_database_context_requires_verified_developer(monkeypatch):
     import src.bilun.api.routes.chat as sut_chat_mod
     from src.bilun.api import app
+    from src.bilun.api.auth import COOKIE_NAME, issue_session_token
+
+    monkeypatch.setenv("BILUN_AUTH_USERNAME", "test_developer")
+    monkeypatch.setenv("BILUN_AUTH_PASSWORD", "test-only-unused-password-hash")
+    monkeypatch.setenv("BILUN_SESSION_SECRET", "test-only-chat-session-secret")
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", "test_developer")
+    token = issue_session_token("test_developer")
 
     captured: dict[str, object] = {}
 
@@ -580,6 +596,7 @@ def test_sut_chat_rule_database_context(monkeypatch):
     monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream_chat_response)
 
     with TestClient(app) as client:
+        client.cookies.set(COOKIE_NAME, token)
         response = client.post(
             "/api/chat",
             json={

@@ -54,6 +54,9 @@ ignore = ["F841", "UP047", "UP007", "F601"]
 where = ["."]
 include = ["src", "src.*", "scripts", "scripts.*"]
 
+[tool.setuptools.package-data]
+"src.bilun.api" = ["public_contracts.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

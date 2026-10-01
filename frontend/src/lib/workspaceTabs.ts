@@ -171,6 +171,23 @@ export interface WorkspaceSessionState {
   paneBTabId: string | null;
 }
 
+/** Stored navigation is not a permission grant; discard inaccessible developer views. */
+export function accessibleWorkspaceSession(
+  session: WorkspaceSessionState | null,
+  developer: boolean,
+): WorkspaceSessionState {
+  if (!session) return { tabs: [], activeTabId: null, paneBTabId: null };
+  if (developer) return session;
+  const tabs = session.tabs.filter((tab) => tab.kind !== "section" || tab.refId !== "rule-database").map((tab) => {
+    const query = new URLSearchParams(tab.query);
+    query.delete("admin");
+    if (query.get("tab") === "rule-database") query.delete("tab");
+    return { ...tab, query: query.toString() || undefined };
+  });
+  const present = (id: string | null) => tabs.some((tab) => tab.id === id) ? id : null;
+  return { tabs, activeTabId: present(session.activeTabId), paneBTabId: present(session.paneBTabId) };
+}
+
 export function readWorkspaceSession(): WorkspaceSessionState | null {
   if (typeof window === "undefined") return null;
   try {

@@ -36,6 +36,8 @@ import {
   useWorkspacePaneBTabId,
 } from "@/stores/index";
 import { useT } from "@/lib/i18n";
+import { useSessionIdentity } from "@/components/shell/RoleProvider";
+import { canUseDeveloper, requestsDeveloper } from "@/lib/auth";
 
 const SUTPatients = dynamic(() => import("@/components/tabs/SUTPatients"), {
   loading: () => <SutAnalyticsShellSkeleton />,
@@ -60,6 +62,8 @@ function SutHomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useT();
+  const developer = canUseDeveloper(useSessionIdentity());
+  const denied = requestsDeveloper("/", searchParams) && !developer;
   const activeTab = parseSutHomeTab(searchParams.get("tab"));
   const isWorkspaceMode = true;
   const showHowItWorks = useShowHowItWorks();
@@ -81,8 +85,9 @@ function SutHomeContent() {
   }, [router]);
 
   useEffect(() => {
-    setShowAdmin(isSutAdminEnabled(searchParams.get("admin")));
-  }, [searchParams, setShowAdmin]);
+    setShowAdmin(isSutAdminEnabled(searchParams.get("admin"), developer));
+    if (denied) router.replace("/login?access=developer");
+  }, [searchParams, setShowAdmin, developer, denied, router]);
 
   const activeMeta = SUT_HOME_TABS.find((tab) => tab.id === activeTab) ?? SUT_HOME_TABS[0];
   const activeTabCatalogKey =
@@ -109,7 +114,7 @@ function SutHomeContent() {
     : "mx-auto max-w-7xl space-y-6";
 
   useEffect(() => {
-    if (!isWorkspaceMode || !showAdmin) {
+    if (!isWorkspaceMode || !showAdmin || !developer) {
       return;
     }
 
@@ -135,14 +140,16 @@ function SutHomeContent() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [isWorkspaceMode, setHealthStatus, showAdmin]);
+  }, [isWorkspaceMode, setHealthStatus, showAdmin, developer]);
+
+  if (denied) return null;
 
   return (
     <>
       <main id="main-content" className="sut-app-main">
         <section className={sectionClass}>
             <>
-              {showAdmin && (
+              {developer && showAdmin && (
                 <SutHealthPanel healthStatus={healthStatus} />
               )}
 

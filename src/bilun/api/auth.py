@@ -1,9 +1,9 @@
-"""Shared-password authentication helpers for the BILUN API.
+"""Developer-password authentication helpers for the BILUN API.
 
 This is a deliberately simple shared-secret gate (Option A), not a per-user
 account system. One username + one password are configured via environment
-variables; a successful login issues a stateless HMAC session token that both
-the backend middleware and the Next.js frontend middleware verify.
+variables; a successful login issues a purpose-bound stateless HMAC session
+token. The backend verifies identity; the frontend consumes the auth/me contract.
 
 Security notes:
 - Passwords are stored PBKDF2-HMAC-SHA256 hashed (never plaintext in .env).
@@ -35,6 +35,7 @@ _HASH_DELIMITER = "$"
 _SESSION_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
 
 COOKIE_NAME = "bilun:session"
+SESSION_PURPOSE = "bilun-developer-v1"
 
 
 class AuthConfigError(RuntimeError):
@@ -232,7 +233,9 @@ def issue_session_token(username: str, *, ttl_seconds: int = _SESSION_TTL_SECOND
     except AuthConfigError as exc:
         raise AuthConfigError("Cannot issue session token: auth not configured") from exc
     expires_at = int(time.time()) + ttl_seconds
-    payload = f"{username}.{expires_at}".encode()
+    # Reject pre-cutover shared-login sessions even if an operator reuses the
+    # signing key. The credential cutover must still rotate the old password.
+    payload = f"{SESSION_PURPOSE}:{username}.{expires_at}".encode()
     signature = hmac.new(creds.session_secret, payload, _PBKDF2_HASH_NAME).digest()
     return f"{_b64url(payload)}.{_b64url(signature)}"
 
@@ -255,7 +258,10 @@ def verify_session_token(token: str) -> TokenClaims | None:
     if not hmac.compare_digest(provided_sig, expected_sig):
         return None
     try:
-        username, exp_str = payload.decode("utf-8").rsplit(".", 1)
+        purpose_username, exp_str = payload.decode("utf-8").rsplit(".", 1)
+        purpose, username = purpose_username.split(":", 1)
+        if purpose != SESSION_PURPOSE or not username:
+            return None
         expires_at = int(exp_str)
     except (ValueError, UnicodeDecodeError):
         return None

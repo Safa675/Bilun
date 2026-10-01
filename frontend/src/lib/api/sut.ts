@@ -92,7 +92,8 @@ export interface SutMaterialLine {
 }
 
 export interface SutMaterialBundlingCoverageScope {
-  prose_rule_id: string;
+  /** Engineering metadata is available only to verified developers. */
+  prose_rule_id?: string;
   prose_section_prefixes: string[];
   prose_engine_status: string;
   prose_coverage_tier?: string;
@@ -101,7 +102,8 @@ export interface SutMaterialBundlingCoverageScope {
   implemented_annexes: string[];
   ek3b1_row_count: number;
   ek3b2_row_count: number;
-  p2_plan_path: string;
+  /** Engineering metadata is available only to verified developers. */
+  p2_plan_path?: string;
   medula_overlap_classification?: string;
   medula_boundary_doc?: string;
   medula_savings_note?: string;
@@ -111,7 +113,8 @@ export interface SutMaterialBundlingCoverageScope {
 }
 
 export interface SutSpecialtyProseCoverageScope {
-  prose_rule_id: string;
+  /** Engineering metadata is available only to verified developers. */
+  prose_rule_id?: string;
   prose_section_prefixes: string[];
   prose_engine_status: string;
   prose_coverage_tier?: string;

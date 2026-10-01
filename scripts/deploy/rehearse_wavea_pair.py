@@ -7,9 +7,7 @@ and old-route recovery; public release remains a separate transaction.
 from __future__ import annotations
 
 import argparse
-import base64
 import hashlib
-import hmac
 import json
 import os
 import re
@@ -18,7 +16,7 @@ import time
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import quote
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 import duckdb
 
@@ -43,19 +41,24 @@ def environment(path: Path) -> dict[str, str]:
 
 
 def cookie(values: dict[str, str]) -> str:
-    payload = f"{values['BILUN_AUTH_USERNAME']}.{int(time.time()) + 300}".encode()
-    signature = hmac.new(values["BILUN_SESSION_SECRET"].encode(), payload, hashlib.sha256).digest()
-    encode = lambda raw: base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
-    return f"bilun:session={encode(payload)}.{encode(signature)}"
+    from scripts.deploy.probe_auth import probe_cookie
+
+    return probe_cookie(values)
 
 
 def fetch(port: int, path: str, session: str | None = None) -> tuple[int, bytes]:
+    from scripts.deploy.health_request import health_headers, open_probe
+
+    url = f"http://127.0.0.1:{port}{path}"
+    headers = {"Cookie": session} if session else {}
+    if path == "/health":
+        headers.update(health_headers(url))
     request = Request(
-        f"http://127.0.0.1:{port}{path}",
-        headers={"Cookie": session} if session else {},
+        url,
+        headers=headers,
     )
     try:
-        with urlopen(request, timeout=15) as response:
+        with open_probe(request, timeout=15) as response:
             return response.status, response.read()
     except HTTPError as error:
         return error.code, error.read()
