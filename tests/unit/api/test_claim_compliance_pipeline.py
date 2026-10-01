@@ -965,6 +965,8 @@ def test_wavea_routes_share_production_session_gate(cached_pipeline, monkeypatch
     monkeypatch.setenv("BILUN_AUTH_USERNAME", "wavea_tester")
     monkeypatch.setenv("BILUN_AUTH_PASSWORD", hash_password("wavea-test-password"))
     monkeypatch.setenv("BILUN_SESSION_SECRET", "wavea-test-secret-long-enough-for-session")
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", "wavea_tester")
+    monkeypatch.setenv("BILUN_COOKIE_SECURE", "0")
     monkeypatch.setenv("BILUN_AUTH_OPTIONAL", "0")
     client = TestClient(production_app)
     try:

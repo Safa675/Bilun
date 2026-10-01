@@ -15,7 +15,6 @@ from starlette.routing import compile_path, get_route_path
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from .access import ROUTE_POLICY, has_developer_access, identity_from_request
-from .auth import is_auth_configured, is_auth_optional
 from .public_responses import project_public_response, public_error
 
 _BODY_LIMIT = 256 * 1024
@@ -111,7 +110,8 @@ class SessionGateMiddleware:
         request.state.bilun_identity = identity
         # Preserve the repository's explicit local/test setup, never activate
         # this bypass merely because credentials are absent.
-        bypass = not is_auth_configured() and is_auth_optional()
+        import src.bilun.api as _api
+        bypass = not _api.is_auth_configured() and _api.is_auth_optional()
         route_path = _resolve_route(scope, scope["method"])
         policy = ROUTE_POLICY.get((scope["method"], route_path))
 

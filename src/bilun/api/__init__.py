@@ -65,6 +65,12 @@ app.add_middleware(
 
 
 # ── Session gate and final public JSON boundary ───────────────────────────────
+from src.bilun.api.auth import (  # noqa: E402
+    COOKIE_NAME as COOKIE_NAME,
+    is_auth_configured as is_auth_configured,
+    is_auth_optional as is_auth_optional,
+    verify_session_token as verify_session_token,
+)
 from src.bilun.api.access_middleware import SessionGateMiddleware  # noqa: E402
 
 app.add_middleware(SessionGateMiddleware)
