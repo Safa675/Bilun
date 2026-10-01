@@ -128,24 +128,41 @@ def health_check(request: Request = None) -> Response:
         # path, leaking a handle per /health probe on the error path).
         try:
             import duckdb
+            from src.bilun.shared.runtime import get_api_runtime
 
-            with closing(duckdb.connect(str(db_path), read_only=True)) as con:
-                row = con.execute(
-                    "SELECT active_build_id FROM build_pointer_scopes WHERE scope = 'bilun'"
-                ).fetchone()
-                active_build = row[0] if row else None
-                if active_build is not None:
-                    try:
-                        capability = con.execute(
-                            "SELECT json_extract_string(payload_json, '$.capability') "
-                            "FROM wavea_evidence_index WHERE build_id = ?",
-                            [active_build],
-                        ).fetchone()
-                        wavea_capability = capability[0] if capability else None
-                    except Exception:
-                        # Older caches have no Wave A index. The existing
-                        # database readiness contract still applies to them.
-                        pass
+            runtime = get_api_runtime()
+            # Serialize with first-time runtime connection initialization.
+            with runtime.cache_lock:
+                if (
+                    runtime.cache_con is not None
+                    and runtime.canonical_cache_db_path.resolve() == db_path.resolve()
+                ):
+                    # DuckDB rejects a read-only connection alongside the writable
+                    # singleton used by load-only startup. Borrow an independent
+                    # cursor, not the singleton itself, and issue only SELECTs.
+                    probe = runtime.cache_con.cursor()
+                else:
+                    # Do not call get_cache_reader(): an uninitialized runtime
+                    # would create the database/schema during a health check.
+                    probe = duckdb.connect(str(db_path), read_only=True)
+
+                with closing(probe) as con:
+                    row = con.execute(
+                        "SELECT active_build_id FROM build_pointer_scopes WHERE scope = 'bilun'"
+                    ).fetchone()
+                    active_build = row[0] if row else None
+                    if active_build is not None:
+                        try:
+                            capability = con.execute(
+                                "SELECT json_extract_string(payload_json, '$.capability') "
+                                "FROM wavea_evidence_index WHERE build_id = ?",
+                                [active_build],
+                            ).fetchone()
+                            wavea_capability = capability[0] if capability else None
+                        except Exception:
+                            # Older caches have no Wave A index. The existing
+                            # database readiness contract still applies to them.
+                            pass
             db_ok = True
         except Exception:
             pass
