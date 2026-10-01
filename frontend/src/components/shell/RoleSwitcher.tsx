@@ -1,60 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { UserCog } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
-import { useSetUserRole, useUserRole } from "@/components/shell/RoleProvider";
-import type { UserRole } from "@/lib/userRole";
+import { useSessionIdentity } from "@/components/shell/RoleProvider";
+import { canUseDeveloper } from "@/lib/auth";
 
-const ROLES: UserRole[] = ["billing_officer", "dev"];
-
+/** The historical component name remains; users can no longer select permission. */
 export default function RoleSwitcher({ compact = false }: { compact?: boolean }) {
-  const role = useUserRole();
-  const setRole = useSetUserRole();
+  const identity = useSessionIdentity();
   const t = useT();
-
-  if (compact) {
-    const nextRole = ROLES[(ROLES.indexOf(role) + 1) % ROLES.length] ?? "dev";
-    return (
-      <button
-        type="button"
-        onClick={() => setRole(nextRole)}
-        className={cn(
-          "inline-flex h-8 w-8 items-center justify-center rounded-[var(--r-md)]",
-          "border border-[var(--border-subtle)] text-[var(--text-muted)]",
-          "hover:bg-[var(--surface-tint)] hover:text-[var(--text-primary)]",
-          "transition-colors",
-        )}
-        aria-label={`${t("shell.role.groupLabel")}: ${t(`shell.role.${role}`)}`}
-        title={`${t("shell.role.groupLabel")}: ${t(`shell.role.${role}`)}`}
-      >
-        <UserCog className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="role-switcher" className="sr-only">
-        {t("shell.role.groupLabel")}
-      </label>
-      <select
-        id="role-switcher"
-        value={role}
-        onChange={(e) => setRole(e.target.value as UserRole)}
-        aria-label={t("shell.role.groupLabel")}
-        className={cn(
-          "h-7 min-w-[8rem] rounded-[var(--r-md)] border border-[var(--border-subtle)]",
-          "bg-[var(--surface-base)] px-2 text-xs font-medium text-[var(--text-primary)]",
-          "focus:outline-none focus:ring-1 focus:ring-[var(--gold)]",
-        )}
-      >
-        {ROLES.map((r) => (
-          <option key={r} value={r}>
-            {t(`shell.role.${r}`)}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
+  const developer = canUseDeveloper(identity);
+  const label = developer ? t("shell.role.dev") : t("auth.login.developerSignIn");
+  const content = <><UserCog className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />{!compact && <span>{label}</span>}</>;
+  const className = cn("inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium text-[var(--text-muted)]", compact && "justify-center px-0");
+  return developer
+    ? <span className={className} title={label} aria-label={label}>{content}</span>
+    : <Link href="/login" prefetch={false} className={className} title={label} aria-label={label}>{content}</Link>;
 }

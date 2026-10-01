@@ -1,37 +1,22 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-
+import { describe, expect, it } from "vitest";
 import RoleSwitcher from "./RoleSwitcher";
+import { RoleProvider } from "./RoleProvider";
+import { CLOSED_IDENTITY } from "@/lib/auth";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
-vi.mock("@/components/shell/RoleProvider", () => ({
-  useUserRole: () => "dev",
-  useSetUserRole: () => vi.fn(),
-}));
-
-describe("RoleSwitcher", () => {
-  beforeEach(() => {
-    vi.stubGlobal("window", {
-      localStorage: {
-        getItem: () => "dev",
-        setItem: vi.fn(),
-      },
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    });
+describe("developer entry", () => {
+  it.each([false, true])("offers login without a role selector (compact=%s)", (compact) => {
+    const html = renderToStaticMarkupWithLocale(<RoleProvider initialIdentity={{ ...CLOSED_IDENTITY, public_billing_enabled: true, capabilities: ["billing"] }}><RoleSwitcher compact={compact} /></RoleProvider>);
+    expect(html).toContain('href="/login"');
+    expect(html).toContain("Developer sign in");
+    expect(html).not.toContain("<select");
+    expect(html).not.toContain('value="dev"');
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.clearAllMocks();
-  });
-
-  it("renders a select with the two roles and selects the current role", () => {
-    const html = renderToStaticMarkupWithLocale(<RoleSwitcher />, "en");
-    expect(html).toContain('<select');
-    expect(html).toContain('value="dev"');
-    expect(html).toContain('value="billing_officer"');
+  it("shows developer identity only after the server grants capability", () => {
+    const html = renderToStaticMarkupWithLocale(<RoleProvider initialIdentity={{ ...CLOSED_IDENTITY, authenticated: true, username: "tester", role: "dev", capabilities: ["billing", "developer"] }}><RoleSwitcher /></RoleProvider>);
     expect(html).toContain("Developer");
-    expect(html).toContain("Billing Officer");
+    expect(html).not.toContain('href="/login"');
+    expect(html).not.toContain("<select");
   });
 });

@@ -63,69 +63,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# ── Session gate ──────────────────────────────────────────────────────────────
-# Reject any unauthenticated request to a protected route. This is the second
-# layer of defense (the first being the Next.js middleware); it ensures the
-# backend cannot be bypassed by hitting :8001 directly. Auth fails **closed**
-# when env vars are missing unless ``BILUN_AUTH_OPTIONAL=1`` (local dev only).
-
-from starlette.middleware.base import BaseHTTPMiddleware  # noqa: E402
-from starlette.requests import Request as _StarletteRequest  # noqa: E402
-from starlette.responses import JSONResponse as _JSONResponse  # noqa: E402
-
+# ── Session gate and final public JSON boundary ───────────────────────────────
 from src.bilun.api.auth import (  # noqa: E402
-    COOKIE_NAME as _SESSION_COOKIE,
-    is_auth_configured,
-    is_auth_optional,
-    verify_session_token,
+    COOKIE_NAME as COOKIE_NAME,
+    is_auth_configured as is_auth_configured,
+    is_auth_optional as is_auth_optional,
+    verify_session_token as verify_session_token,
 )
-
-# Paths exempt from the session check. /api/auth/* must be reachable without a
-# token (login to obtain one, logout to clear it, me to probe status); /health
-# stays open for uptime probes.
-_SESSION_EXEMPT_PREFIXES = ("/api/auth/",)
-_SESSION_EXEMPT_PATHS = {"/health", "/"}
-
-
-class SessionGateMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: _StarletteRequest, call_next):
-        path = request.url.path
-        # Only gate the API surface and the doc roots.
-        if not (path == "/health" or path.startswith("/api/")):
-            return await call_next(request)
-        if not is_auth_configured():
-            if is_auth_optional():
-                _api_logger.warning(
-                    "BILUN_AUTH_* env vars not set — session gate disabled "
-                    "(BILUN_AUTH_OPTIONAL=1). Do not use in production."
-                )
-                return await call_next(request)
-            if path in _SESSION_EXEMPT_PATHS or any(
-                path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES
-            ):
-                return await call_next(request)
-            return _JSONResponse(
-                status_code=401,
-                content={"detail": "Authentication not configured."},
-            )
-        # Exempt auth routes (needed to obtain/clear a token and probe status)
-        # and health.
-        if path in _SESSION_EXEMPT_PATHS or any(
-            path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES
-        ):
-            return await call_next(request)
-        token = request.cookies.get(_SESSION_COOKIE, "")
-        if verify_session_token(token) is not None:
-            return await call_next(request)
-        return _JSONResponse(
-            status_code=401,
-            content={"detail": "Authentication required."},
-        )
-
+from src.bilun.api.access_middleware import SessionGateMiddleware  # noqa: E402
 
 app.add_middleware(SessionGateMiddleware)
+# Compression wraps the access layer: projection sees uncompressed JSON, and
+# every explicit JSONResponse/error follows the same final public contract.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ── Exception handlers ───────────────────────────────────────────────────────
 
@@ -142,11 +93,11 @@ app.include_router(bilun_router)
 
 # ── Health check ─────────────────────────────────────────────────────────────
 
-from fastapi import Response  # noqa: E402
+from fastapi import Request, Response  # noqa: E402
 
 
 @app.get("/health")
-def health_check() -> dict:
+def health_check(request: Request = None) -> Response:
     """Return API health status.
 
     Checks:
@@ -241,10 +192,21 @@ def health_check() -> dict:
     }
     if wavea_receipt_sha256 is not None:
         payload["wavea_receipt_sha256"] = wavea_receipt_sha256
+    # Direct Python callers are internal release-identity tests. Every HTTP
+    # request gets an injected Request and must authenticate for detail.
+    if request is not None:
+        from src.bilun.api.health_access import health_details_allowed
+
+        if not health_details_allowed(request):
+            payload = {
+                key: payload[key]
+                for key in ("status", "service", "database_reachable", "cache_ready")
+            }
     return Response(
         content=__import__("json").dumps(payload),
         media_type="application/json",
         status_code=status_code,
+        headers={"Cache-Control": "private, no-store", "Vary": "Cookie, X-Bilun-Health-Token"},
     )
 
 

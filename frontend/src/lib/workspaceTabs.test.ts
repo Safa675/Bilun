@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createWorkspaceStore } from "@/stores/workspaceStore";
 import {
+  accessibleWorkspaceSession,
   applyWorkspaceClose,
   applyWorkspaceSync,
   deriveWorkspaceView,
@@ -9,6 +10,18 @@ import {
   workspaceTabId,
   type WorkspaceTab,
 } from "./workspaceTabs";
+
+describe("workspace permission transitions", () => {
+  it("removes developer tabs and diagnostic query state while preserving officer deep links", () => {
+    const patient = { id: "patient:P-1", kind: "patient" as const, refId: "P-1", lastActivatedAt: 1, query: "claim=C-1&finding=F-1&admin=1" };
+    const ruleTab = { id: "section:rule-database", kind: "section" as const, refId: "rule-database", lastActivatedAt: 2, query: "tab=rule-database" };
+    const session = { tabs: [patient, ruleTab], activeTabId: ruleTab.id, paneBTabId: patient.id };
+    expect(accessibleWorkspaceSession(session, false)).toEqual({
+      tabs: [{ ...patient, query: "claim=C-1&finding=F-1" }], activeTabId: null, paneBTabId: patient.id,
+    });
+    expect(accessibleWorkspaceSession(session, true)).toEqual(session);
+  });
+});
 
 function tab(kind: "section" | "patient", refId: string, lastActivatedAt: number): WorkspaceTab {
   return { id: workspaceTabId(kind, refId), kind, refId, lastActivatedAt };

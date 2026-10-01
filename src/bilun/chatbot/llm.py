@@ -10,11 +10,13 @@ import time
 from pathlib import Path
 from typing import Any
 from collections.abc import AsyncIterator
+from contextlib import aclosing
 
 import httpx
 
 from .metadata import get_chat_model_context
 from .prompts import ChatIntent, ChatLocale, build_system_prompt
+from .public_limits import authorize_provider_payload
 from .tools import (
     ToolSession,
     UserRole,
@@ -175,8 +177,7 @@ def _llm_http_error_message(status_code: int, raw_body: str) -> str:
     """Return a user-facing message for a non-200 LLM response.
 
     Never echoes the raw upstream body to the user (it can leak provider
-    internals or echo back request fragments). The raw body is logged at
-    ERROR level separately for operators.
+    internals or echo back request fragments). Only the HTTP status is logged.
     """
     base = _LLM_HTTP_ERROR_MAP.get(status_code)
     if base is None:
@@ -194,7 +195,7 @@ async def _call_llm_non_streaming(
     if not api_key:
         return None
 
-    payload = {**payload, "stream": False}
+    payload = authorize_provider_payload({**payload, "stream": False})
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
@@ -203,16 +204,14 @@ async def _call_llm_non_streaming(
                 json=payload,
             )
             if response.status_code != 200:
-                body = response.text[:500]
                 logger.error(
-                    "LLM NON-STREAMING ERROR | status=%d | body=%s",
+                    "LLM NON-STREAMING ERROR | status=%d",
                     response.status_code,
-                    body,
                 )
                 return None
             return response.json()
     except (httpx.TimeoutException, httpx.RequestError) as exc:
-        logger.error("LLM NON-STREAMING NETWORK ERROR | error=%s", exc)
+        logger.error("LLM NON-STREAMING NETWORK ERROR | type=%s", type(exc).__name__)
         return None
 
 
@@ -228,10 +227,10 @@ async def _stream_text_from_llm(
     """
     api_key = _get_api_key()
     if not api_key:
-        yield "⚠️ LLM API key not found."
+        yield "Chat is temporarily unavailable. Please try later."
         return
 
-    payload = {**payload, "stream": True}
+    payload = authorize_provider_payload({**payload, "stream": True})
     t0 = time.perf_counter()
     token_count = 0
 
@@ -247,13 +246,11 @@ async def _stream_text_from_llm(
                     body = await response.aread()
                     error_text = body.decode()[:500]
                     logger.error(
-                        "LLM STREAM ERROR | status=%d | body=%s",
+                        "LLM STREAM ERROR | status=%d",
                         response.status_code,
-                        error_text,
                     )
                     # Never echo the raw upstream body to the user (it can
-                    # leak provider internals or request fragments). The raw
-                    # body is logged above for operators.
+                    # leak provider internals or request fragments).
                     yield f"⚠️ {_llm_http_error_message(response.status_code, error_text)}"
                     return
 
@@ -295,8 +292,8 @@ async def _stream_text_from_llm(
         logger.error("LLM STREAM TIMEOUT after %.1fs", time.perf_counter() - t0)
         yield "\n⚠️ Request timed out. Please try again."
     except httpx.RequestError as exc:
-        logger.error("LLM STREAM NETWORK ERROR | error=%s", exc)
-        yield f"\n⚠️ Network error: {exc}"
+        logger.error("LLM STREAM NETWORK ERROR | type=%s", type(exc).__name__)
+        yield "\n⚠️ Chat connection failed. Please try again."
 
 
 def _extract_tool_calls(response: dict[str, Any]) -> list[dict[str, Any]] | None:
@@ -377,8 +374,10 @@ async def stream_chat_response_with_tools(
         len(runtime_context),
     )
 
-    # Phase 1: Tool resolution loop (non-streaming, max MAX_TOOL_CALLS_PER_TURN rounds)
-    for round_num in range(MAX_TOOL_CALLS_PER_TURN + 1):
+    # Three tool calls total, not three calls per round. A final model call
+    # without tool schemas answers from the results already retrieved.
+    requested_tools = 0
+    for _round_num in range(MAX_TOOL_CALLS_PER_TURN):
         payload = {
             **base_payload,
             "messages": full_messages,
@@ -405,45 +404,14 @@ async def stream_chat_response_with_tools(
                 yield "\n\nI wasn't able to generate a response. Please try asking again."
             return
 
-        # Execute tool calls (max 3 tools per round)
-        tool_names = [tc.get("function", {}).get("name", "tool") for tc in tool_calls[:3]]
+        tool_calls = tool_calls[:MAX_TOOL_CALLS_PER_TURN - requested_tools]
+        requested_tools += len(tool_calls)
+        tool_names = [tc.get("function", {}).get("name", "tool") for tc in tool_calls]
         tool_names_str = ", ".join(tool_names)
         if ui_locale == "tr":
             yield ("reasoning", f"SUT ve hasta verileri sorgulanıyor ({tool_names_str})...\n")
         else:
             yield ("reasoning", f"Querying SUT and patient data ({tool_names_str})...\n")
-
-        if round_num >= MAX_TOOL_CALLS_PER_TURN:
-            logger.warning(
-                "TOOL CALL LIMIT REACHED | round=%d | limit=%d",
-                round_num,
-                MAX_TOOL_CALLS_PER_TURN,
-            )
-            full_messages.append({
-                "role": "assistant",
-                "content": None,
-                "tool_calls": tool_calls,
-            })
-            for tc in tool_calls[:3]:
-                result = await _execute_session_tool(
-                    tc["function"]["name"],
-                    json.loads(tc["function"]["arguments"]),
-                )
-                full_messages.append({
-                    "role": "tool",
-                    "tool_call_id": tc["id"],
-                    "content": result.content if result.success else f"Error: {result.error}",
-                })
-            yield ("\n\nI've retrieved the available data but reached the tool call"
-                   " limit. Here's what I found based on what's available:\n\n")
-            # Fall through to final streaming call
-            stream_payload = {
-                **base_payload,
-                "messages": full_messages,
-            }
-            async for item in _stream_text_from_llm(stream_payload):
-                yield item if isinstance(item, str) else item[1]
-            return
 
         # Record assistant message with tool calls
         full_messages.append({
@@ -456,11 +424,11 @@ async def stream_chat_response_with_tools(
             try:
                 tool_name = tc["function"]["name"]
                 arguments = json.loads(tc["function"]["arguments"])
-            except (json.JSONDecodeError, KeyError) as exc:
+            except (json.JSONDecodeError, KeyError, TypeError):
                 return tc, {
                     "role": "tool",
                     "tool_call_id": tc.get("id", "unknown"),
-                    "content": f"Error: invalid tool call arguments — {exc}",
+                    "content": "Error: invalid tool call arguments.",
                 }
             result = await _execute_session_tool(
                 tool_name,
@@ -484,13 +452,17 @@ async def stream_chat_response_with_tools(
         else:
             yield ("reasoning", "Data retrieved, compiling response...\n")
 
+        if requested_tools >= MAX_TOOL_CALLS_PER_TURN:
+            break
+
     # Should not reach here (handled above), but safety net
     stream_payload = {
         **base_payload,
         "messages": full_messages,
     }
-    async for item in _stream_text_from_llm(stream_payload):
-        yield item if isinstance(item, str) else item[1]
+    async with aclosing(_stream_text_from_llm(stream_payload)) as stream:
+        async for item in stream:
+            yield item
 
 
 async def stream_chat_response(
@@ -512,7 +484,7 @@ async def stream_chat_response(
     api_key = _get_api_key()
     if not api_key:
         logger.error("LLM_API_KEY not set — cannot call LLM")
-        yield "⚠️ LLM API key not found. Set LLM_API_KEY in your .env file."
+        yield "Chat is temporarily unavailable. Please try later."
         return
 
     msg_copy = copy.deepcopy(messages)
@@ -552,6 +524,7 @@ async def stream_chat_response(
     }
     if extra_params:
         payload.update(extra_params)
+    payload = authorize_provider_payload(payload)
 
     t0 = time.perf_counter()
     token_count = 0
@@ -568,9 +541,8 @@ async def stream_chat_response(
                     body = await response.aread()
                     error_text = body.decode()[:500]
                     logger.error(
-                        "LLM API ERROR | status=%d | body=%s",
+                        "LLM API ERROR | status=%d",
                         response.status_code,
-                        error_text,
                     )
                     yield f"⚠️ {_llm_http_error_message(response.status_code, error_text)}"
                     return
@@ -595,11 +567,9 @@ async def stream_chat_response(
                         elif content:
                             token_count += 1
                             yield ("content", content)
-                    except (json.JSONDecodeError, KeyError, IndexError) as exc:
+                    except (json.JSONDecodeError, KeyError, IndexError):
                         logger.warning(
-                            "LLM CHUNK PARSE ERROR | data=%r | error=%s",
-                            data[:200],
-                            exc,
+                            "LLM CHUNK PARSE ERROR",
                         )
 
         elapsed = time.perf_counter() - t0
@@ -616,13 +586,5 @@ async def stream_chat_response(
         )
         yield "\n⚠️ Request timed out. Please try again."
     except httpx.RequestError as exc:
-        logger.error("LLM NETWORK ERROR | error=%s", exc, exc_info=True)
-        message = str(exc).lower()
-        if "name resolution" in message or "getaddrinfo" in message or "errno -3" in message:
-            yield (
-                "\n⚠️ Cannot reach the LLM provider (DNS/network). "
-                "Ensure this machine has internet access and can resolve openrouter.ai, "
-                "then retry."
-            )
-        else:
-            yield f"\n⚠️ Network error: {exc}"
+        logger.error("LLM NETWORK ERROR | type=%s", type(exc).__name__)
+        yield "\n⚠️ Chat connection failed. Please try again."

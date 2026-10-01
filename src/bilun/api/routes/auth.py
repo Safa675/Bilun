@@ -11,17 +11,19 @@ from __future__ import annotations
 
 import threading
 import time
+import os
 
 from fastapi import APIRouter, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.bilun.api.auth import (
     COOKIE_NAME,
     check_credentials,
     is_auth_configured,
     issue_session_token,
-    verify_session_token,
+    resolve_user_role,
 )
+from src.bilun.api.access import identity_from_request, is_public_billing_enabled
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -66,13 +68,22 @@ def _clear_login_failures(ip: str) -> None:
 
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=1, max_length=256)
+    password: str = Field(min_length=1, max_length=4096)
 
 
 class AuthStatus(BaseModel):
     authenticated: bool
     username: str | None = None
+    role: str = "billing_officer"
+    capabilities: list[str] = Field(default_factory=list)
+    public_billing_enabled: bool = False
+    expires_at: int | None = None
+
+
+def _secure_cookie() -> bool:
+    """HTTPS by default; explicit false supports documented local HTTP use."""
+    return os.getenv("BILUN_COOKIE_SECURE", "true").strip().lower() not in {"0", "false", "no"}
 
 
 @router.post("/login")
@@ -92,6 +103,10 @@ def login(body: LoginRequest, request: Request, response: Response) -> dict:
         _record_login_failure(ip)
         response.status_code = 401
         return {"ok": False, "error": "Invalid username or password."}
+    if resolve_user_role(body.username) != "dev":
+        _record_login_failure(ip)
+        response.status_code = 403
+        return {"ok": False, "error": "This account is not authorized for developer access."}
     _clear_login_failures(ip)
     token = issue_session_token(body.username)
     response.set_cookie(
@@ -100,7 +115,7 @@ def login(body: LoginRequest, request: Request, response: Response) -> dict:
         max_age=_COOKIE_MAX_AGE,
         httponly=True,
         samesite=_COOKIE_SAMESITE,
-        secure=False,  # TLS is terminated by the reverse proxy; set True behind HTTPS
+        secure=_secure_cookie(),
         path="/",
     )
     return {"ok": True, "username": body.username}
@@ -109,15 +124,18 @@ def login(body: LoginRequest, request: Request, response: Response) -> dict:
 @router.post("/logout")
 def logout(response: Response) -> dict:
     """Clear the session cookie."""
-    response.delete_cookie(key=COOKIE_NAME, path="/")
+    response.delete_cookie(
+        key=COOKIE_NAME, path="/", secure=_secure_cookie(), httponly=True, samesite=_COOKIE_SAMESITE,
+    )
     return {"ok": True}
 
 
 @router.get("/me")
 def me(request: Request) -> AuthStatus:
     """Return the current session's username, or unauthenticated status."""
-    token = request.cookies.get(COOKIE_NAME, "")
-    claims = verify_session_token(token)
-    if claims is None:
-        return AuthStatus(authenticated=False)
-    return AuthStatus(authenticated=True, username=claims.username)
+    identity = identity_from_request(request)
+    return AuthStatus(
+        authenticated=identity.authenticated, username=identity.username,
+        role=identity.role, capabilities=list(identity.capabilities),
+        public_billing_enabled=is_public_billing_enabled(), expires_at=identity.expires_at,
+    )

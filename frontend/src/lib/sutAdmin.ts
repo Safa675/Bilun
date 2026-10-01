@@ -1,3 +1,3 @@
-export function isSutAdminEnabled(value: string | null | undefined): boolean {
-  return value === "1";
+export function isSutAdminEnabled(value: string | null | undefined, developer = false): boolean {
+  return developer && value === "1";
 }

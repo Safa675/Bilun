@@ -881,6 +881,27 @@ def slim_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | N
     return slim
 
 
+def officer_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Keep only UI hints; browser-supplied text never selects private context."""
+    if not page_context:
+        return None
+    allowed = {"page", "tab", "patient_id", "selected_section"}
+    result = {key: value for key, value in page_context.items() if key in allowed and isinstance(value, str)}
+    tab = result.get("tab", "").lower()
+    if "rule" in tab or "kural" in tab:
+        result["tab"] = "patients"
+    sections = page_context.get("sections")
+    if isinstance(sections, dict):
+        result["sections"] = {
+            name: {key: value for key, value in section.items()
+                   if key in (*_PAGE_SECTION_SUMMARY_KEYS[name], "loaded", "claim_id")
+                   and isinstance(value, (str, int, float, bool, type(None)))}
+            for name, section in sections.items()
+            if name in _PAGE_SECTION_SUMMARY_KEYS and isinstance(section, dict)
+        }
+    return result
+
+
 def build_bilun_runtime_context(
     data: dict[str, Any],
     active_tab: str,
@@ -938,6 +959,8 @@ def build_bilun_runtime_context(
             "UI locale is Turkish (tr): every assistant reply must be written entirely in Turkish, even if the user prompt is in English."
         )
 
+    if user_role != "dev":
+        page_context = officer_page_context(page_context)
     slim_view = slim_page_context(page_context)
     if slim_view:
         context["page_view"] = slim_view
@@ -946,7 +969,7 @@ def build_bilun_runtime_context(
     if page_context and isinstance(page_context.get("tab"), str):
         tab_normalized = page_context["tab"].strip().lower()
 
-    is_rule_db = "rule" in tab_normalized or "kural" in tab_normalized
+    is_rule_db = user_role == "dev" and ("rule" in tab_normalized or "kural" in tab_normalized)
 
     if is_rule_db:
         rule_db_ctx = build_rule_database_context(data)

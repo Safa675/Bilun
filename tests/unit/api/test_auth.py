@@ -26,6 +26,9 @@ def auth_env(monkeypatch):
     monkeypatch.setenv("BILUN_AUTH_USERNAME", _USERNAME)
     monkeypatch.setenv("BILUN_AUTH_PASSWORD", hash_password(_PASSWORD))
     monkeypatch.setenv("BILUN_SESSION_SECRET", _SESSION_SECRET)
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", _USERNAME)
+    monkeypatch.setenv("BILUN_COOKIE_SECURE", "false")
+    monkeypatch.setenv("BILUN_PUBLIC_BILLING_ENABLED", "false")
     # The auth module reads env at call time, so no cache to clear.
     yield
 
@@ -215,7 +218,7 @@ class TestSessionGateMiddleware:
         monkeypatch.delenv("BILUN_AUTH_OPTIONAL", raising=False)
         res = api_client.get("/api/patients")
         assert res.status_code == 401
-        assert res.json()["detail"] == "Authentication not configured."
+        assert res.json()["detail"] == "Authentication required."
 
     def test_gate_optional_when_unconfigured(self, api_client, monkeypatch) -> None:
         monkeypatch.delenv("BILUN_AUTH_USERNAME", raising=False)

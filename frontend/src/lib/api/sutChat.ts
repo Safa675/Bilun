@@ -5,7 +5,6 @@ import type { SutChatPageContext } from "../sutChatPageContext";
 import { LOCALE_COOKIE_KEY, type Locale } from "../i18n/types";
 import { getModuleLocale } from "../i18n/localeModule";
 import { translate } from "../i18n/translate";
-import { parseRole, ROLE_COOKIE_KEY, type UserRole } from "../userRole";
 import { translateApiText } from "../apiMessages";
 import enMessages from "@/messages/en/index";
 import trMessages from "@/messages/tr/index";
@@ -48,7 +47,6 @@ export async function sendSutChatMessage(
   }: SendSutChatMessageOptions,
 ): Promise<void> {
   const url = buildApiUrl("/api/chat");
-  const userRole: UserRole = parseRole(getCookie(ROLE_COOKIE_KEY));
   const uiLocale: Locale = parseUiLocale(getCookie(LOCALE_COOKIE_KEY));
   const requestController = new AbortController();
   let abortSource: "caller" | "timeout" | null = null;
@@ -81,6 +79,7 @@ export async function sendSutChatMessage(
     response = await fetch(url, {
       method: "POST",
       credentials: "include",
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages,
@@ -88,7 +87,6 @@ export async function sendSutChatMessage(
         active_tab: activeTab,
         intent,
         page_context: pageContext,
-        user_role: userRole,
         ui_locale: uiLocale,
       }),
       signal: requestController.signal,

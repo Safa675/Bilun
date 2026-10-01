@@ -8,6 +8,8 @@ reports whose recoverable totals sum to the patient-level aggregate.
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import asdict
+import json
 
 import polars as pl
 import pytest
@@ -133,3 +135,70 @@ class TestPerBillAdditivity:
         pid = multi[0]
         keys = {k for k in bill_reports if k.startswith(f"{pid}::")}
         assert len(keys) == len(_DATASET.claims_by_patient[pid])
+
+    def test_public_projection_preserves_cohort_business_results_and_cached_nulls(self, _orchestrator_outputs):
+        """Real 50-patient and per-bill results survive JSON/cache projection.
+
+        Sharing the orchestrator fixture adds no extra engine run. Unknown
+        nested fields must stay private while money, uncertainty, identity,
+        corrective actions and citation references keep their exact values.
+        """
+        from src.bilun.api.public_responses import project_public_response
+
+        business_keys = {
+            "patient_id", "claim_id", "severity", "exactness_status", "evaluation_status",
+            "applicability_status", "unavailable_reason", "required_inputs_missing",
+            "required_inputs", "missing_inputs", "confirmed_amount_try", "risk_amount",
+            "money_semantics", "amount_status", "observed_amount_basis", "currency",
+            "headline_relation", "detail", "recommended_action_tr", "clause_ref",
+            "clause_key", "clause_coordinate", "sut_section", "sut_section_id",
+        }
+        business_blocks = {"opportunities", "recommendations", "findings", "evaluations",
+                           "violations", "rows", "required_documents", "corrective_steps_tr",
+                           "items", "entries"}
+
+        def inject(value):
+            if isinstance(value, dict):
+                return {**{key: inject(item) for key, item in value.items()}, "private_injected": {"domain_modules": ["secret.py"]}}
+            if isinstance(value, list):
+                return [inject(item) for item in value]
+            return value
+
+        def assert_business(raw, public, path=""):
+            if isinstance(raw, dict):
+                for key, value in raw.items():
+                    # Coverage inventories and private file provenance are
+                    # intentionally omitted, not financial result records.
+                    if key in {"coverage_scope", "specialty_coverage_scope", "data_source"}:
+                        continue
+                    if key == "by_group":
+                        for status in ("evaluated", "missing_inputs", "unavailable"):
+                            assert sum(row[status] for row in value.values()) == sum(row[status] for row in public[key].values())
+                        continue
+                    if key in business_blocks:
+                        assert key in public, path + "." + key
+                        assert_business(value, public[key], path + "." + key)
+                    elif key in business_keys or key.endswith("_try"):
+                        assert key in public, path + "." + key
+                        assert public[key] == value, path + "." + key
+                    elif key in public:
+                        assert_business(value, public[key], path + "." + key)
+            elif isinstance(raw, list):
+                assert len(raw) == len(public), path
+                for index, (left, right) in enumerate(zip(raw, public, strict=True)):
+                    assert_business(left, right, path + f"[{index}]")
+
+        patient_reports, bill_reports = _orchestrator_outputs
+        for reports in (patient_reports, bill_reports):
+            for report in reports.values():
+                raw = json.loads(json.dumps(asdict(report)))
+                raw.pop("wavea_evidence_detail", None)
+                result = project_public_response(raw, "get_billing_report")
+                assert set(result) == set(raw), "Every report section remains available"
+                assert_business(raw, result)
+                assert project_public_response(inject(raw), "get_billing_report") == result
+                assert "private_injected" not in raw
+        null_payload = {"claim_reviews": {"available": False, "rows": [
+            {"confirmed_amount_try": None, "amount_status": "not_confirmed", "observed_billed_amount_try": None},
+        ]}}
+        assert project_public_response(null_payload, "get_billing_report") == null_payload

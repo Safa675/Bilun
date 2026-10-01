@@ -49,7 +49,6 @@ describe("sendSutChatMessage", () => {
         active_tab: "SUT Patient Workspace",
         intent: "user_question",
         page_context: null,
-        user_role: "dev",
         ui_locale: "en",
       }),
     );
@@ -84,7 +83,6 @@ describe("sendSutChatMessage", () => {
       active_tab: "SUT Patient Workspace",
       intent: "user_question",
       page_context: pageContext,
-      user_role: "dev",
       ui_locale: "en",
     });
   });

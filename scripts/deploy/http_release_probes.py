@@ -9,9 +9,10 @@ from collections.abc import Callable
 from typing import Any, Literal
 from urllib.error import HTTPError
 from urllib.parse import quote, urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from scripts.deploy.release_transaction import ReleaseIdentity
+from scripts.deploy.health_request import health_headers, open_probe
 from scripts.deploy.verify_frontend_assets import (
     extract_assets_from_html,
     is_local_asset,
@@ -23,12 +24,16 @@ _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def _fetch(base: str, path: str, cookie: str | None) -> tuple[int, bytes]:
+    url = urljoin(base + "/", path.lstrip("/"))
+    headers = {"Cookie": cookie} if cookie else {}
+    if path == "/health":
+        headers.update(health_headers(url))
     request = Request(
-        urljoin(base + "/", path.lstrip("/")),
-        headers={"Cookie": cookie} if cookie else {},
+        url,
+        headers=headers,
     )
     try:
-        with urlopen(request, timeout=15) as response:
+        with open_probe(request, timeout=15) as response:
             if response.geturl() != request.full_url:
                 raise ValueError("Release HTTP route redirected away from its exact path")
             body = response.read(20_000_001)

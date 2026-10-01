@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from urllib.request import urlopen
 
 import duckdb
 
@@ -385,7 +384,9 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
 
 
 def _fetch_health(url: str) -> dict[str, Any]:
-    with urlopen(url, timeout=5) as response:  # noqa: S310 - URL is fixed to loopback
+    from scripts.deploy.health_request import open_health
+
+    with open_health(url, timeout=5) as response:
         raw = response.read(65537)
     if len(raw) > 65536:
         raise ValueError("Candidate health response is too large")

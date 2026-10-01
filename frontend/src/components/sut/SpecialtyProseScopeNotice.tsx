@@ -15,15 +15,15 @@ export function SpecialtyProseScopeNotice({ scope, compact }: Props) {
     return null;
   }
 
-  const ruleCount = scope.prose_rules_implemented ?? 0;
+  const ruleCount = scope.prose_rules_implemented;
 
   return (
     <Surface variant="soft" padding={compact ? "sm" : "md"}>
       <p className="text-xs leading-relaxed" style={{ color: "#52525B" }}>
-        {t("sections.specialtyProseScope.bodyImplemented", {
+        {typeof ruleCount === "number" ? t("sections.specialtyProseScope.bodyImplemented", {
           proseRules: ruleCount,
           effectiveDate: scope.prose_effective_date || "—",
-        })}
+        }) : t("sections.specialtyProseScope.publicNotice")}
       </p>
       {scope.medula_savings_note && (
         <p className="text-xs mt-2 leading-relaxed italic" style={{ color: "#A1A1AA" }}>

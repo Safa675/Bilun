@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CircleHelp,
@@ -30,7 +30,9 @@ import {
   useSetShowReportProblem,
 } from "@/stores/index";
 import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
-import { useUserRole } from "@/components/shell/RoleProvider";
+import { useSessionIdentity, useUserRole } from "@/components/shell/RoleProvider";
+import { endSession } from "@/lib/api/auth";
+import { announceSessionChange, clearProtectedBrowserState } from "@/lib/authBrowser";
 import {
   readSidebarCollapsed,
   sidebarWidthPx,
@@ -51,7 +53,6 @@ function useActiveHomeTab(): SutHomeTab {
 
 export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarProps) {
   const t = useT();
-  const router = useRouter();
   const pathname = usePathname();
   const setShowHowItWorks = useSetShowHowItWorks();
   const setShowReportProblem = useSetShowReportProblem();
@@ -60,6 +61,9 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const sutDataSource = config.sut_data_source ?? config.sutDataSource ?? null;
   const activeTab = useActiveHomeTab();
   const userRole = useUserRole();
+  const identity = useSessionIdentity();
+  const [logoutError, setLogoutError] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [narrowScreen, setNarrowScreen] = useState(false);
@@ -169,13 +173,17 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   };
 
   async function handleLogout() {
+    setLogoutError(false);
+    setLoggingOut(true);
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      const next = await endSession();
+      clearProtectedBrowserState();
+      announceSessionChange();
+      window.location.replace(next.public_billing_enabled ? "/" : "/login");
     } catch {
-      // Even if the network call fails, clear the session locally and leave.
+      setLogoutError(true);
+      setLoggingOut(false);
     }
-    router.replace("/login");
-    router.refresh();
   }
 
   const CollapseIcon = collapsed ? PanelLeft : PanelLeftClose;
@@ -334,9 +342,10 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
           {!collapsed && <span>{t("shell.appSidebar.howItWorks")}</span>}
         </button>
 
-        <button
+        {identity.authenticated && <button
           type="button"
           onClick={handleLogout}
+          disabled={loggingOut}
           className={cn(
             "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
@@ -348,7 +357,8 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
         >
           <LogOut className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           {!collapsed && <span>{t("auth.logout.button")}</span>}
-        </button>
+        </button>}
+        {logoutError && <p role="alert" className="px-2 text-xs text-[var(--danger)]">{t("auth.logout.error")}</p>}
       </div>
     </aside>
   );

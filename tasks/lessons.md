@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-09-29 — Check established demo-data scope before asking about real records
+
+**Pattern:** During a proposal for anonymous billing access, I asked whether Bilun contains real patient/billing records before checking the existing synthetic-data setup. The user had to restate that the app has no real records.
+
+**Rule:** Before asking a data-sensitivity clarification, inspect the project's documented/current dataset and reuse established session facts. For this Bilun setup, the user confirmed all patient and billing data is synthetic/demo. Design anonymous billing access on that basis; ask again only if new evidence indicates the data scope has changed.
+
 ## 2026-09-25 — Rule removal needs full CI parity before opening a PR
 
 **Pattern:** I removed a registered pricing rule and its demo, then opened a PR after focused tests and selected artifact checks. I missed a stale row in the committed registry-coverage parquet and hard-coded cohort-tier counts in an unselected test; the full CI backend suite caught both.

@@ -1,68 +1,83 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import { setCookie } from "@/lib/cookies";
-import {
-  parseRole,
-  ROLE_COOKIE_KEY,
-  ROLE_STORAGE_KEY,
-  setUserRole as setUserRoleRaw,
-  type UserRole,
-} from "@/lib/userRole";
+import { createContext, Fragment, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { canUseDeveloper, CLOSED_IDENTITY, identityKey, type SessionIdentity } from "@/lib/auth";
+import { getSessionIdentity } from "@/lib/api/auth";
+import { AUTH_CHANGE_KEY, clearProtectedBrowserState, removeLegacyRolePreferences } from "@/lib/authBrowser";
+import type { UserRole } from "@/lib/userRole";
 
-interface RoleContextValue {
-  role: UserRole;
-  setRole: (role: UserRole) => void;
-}
+const RoleContext = createContext<SessionIdentity | null>(null);
 
-const RoleContext = createContext<RoleContextValue | null>(null);
-
-export function RoleProvider({
-  children,
-  initialRole,
-}: {
+export function RoleProvider({ children, initialIdentity = CLOSED_IDENTITY }: {
   children: ReactNode;
-  initialRole?: UserRole;
+  initialIdentity?: SessionIdentity;
 }) {
-  const [role, setRoleState] = useState<UserRole>(() => initialRole ?? parseRole(undefined));
+  const [identity, setIdentity] = useState(initialIdentity);
+  const current = useRef(initialIdentity);
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    if (initialRole !== undefined) return;
-    const stored =
-      typeof window !== "undefined"
-        ? parseRole(window.localStorage.getItem(ROLE_STORAGE_KEY))
-        : parseRole(undefined);
-    setRoleState(stored);
-  }, [initialRole]);
+    removeLegacyRolePreferences();
+    let active = true;
+    let requestVersion = 0;
+    const refresh = async (conceal = false) => {
+      const version = ++requestVersion;
+      if (conceal) setChecking(true);
+      try {
+        const next = await getSessionIdentity();
+        if (!active || version !== requestVersion) return;
+        if (identityKey(next) !== identityKey(current.current)) {
+          clearProtectedBrowserState();
+          current.current = next;
+          setIdentity(next);
+          // A document navigation discards all old React, fetch and chat state.
+          window.location.replace(next.capabilities.includes("billing") ? "/" : "/login");
+          return;
+        }
+        setChecking(false);
+      } catch {
+        if (!active || version !== requestVersion) return;
+        // Never retain a privileged screen when its identity cannot be verified.
+        current.current = CLOSED_IDENTITY;
+        setIdentity(CLOSED_IDENTITY);
+        clearProtectedBrowserState();
+        if (window.location.pathname !== "/login") window.location.replace("/login");
+        else setChecking(false);
+      }
+    };
+    const onFocus = () => { void refresh(); };
+    const onVisibility = () => { if (document.visibilityState === "visible") void refresh(); };
+    const onStorage = (event: StorageEvent) => { if (event.key === AUTH_CHANGE_KEY) void refresh(true); };
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) void refresh(true); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("pageshow", onPageShow);
+    const poll = window.setInterval(() => { void refresh(); }, 30_000);
+    const delay = identity.expires_at == null ? null : Math.max(0, identity.expires_at * 1000 - Date.now() + 100);
+    const expiry = delay == null ? null : window.setTimeout(() => { void refresh(true); }, Math.min(delay, 2_147_483_647));
+    return () => {
+      active = false;
+      window.clearInterval(poll);
+      if (expiry !== null) window.clearTimeout(expiry);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [identity.expires_at]);
 
-  const setRole = useCallback((next: UserRole) => {
-    setRoleState(next);
-    setUserRoleRaw(next);
-    setCookie(ROLE_COOKIE_KEY, next);
-  }, []);
+  return <RoleContext.Provider value={identity}>
+    {checking ? <div aria-busy="true" /> : <Fragment key={identityKey(identity)}>{children}</Fragment>}
+  </RoleContext.Provider>;
+}
 
-  return <RoleContext.Provider value={{ role, setRole }}>{children}</RoleContext.Provider>;
+export function useSessionIdentity(): SessionIdentity {
+  const identity = useContext(RoleContext);
+  if (!identity) throw new Error("useSessionIdentity must be used within RoleProvider");
+  return identity;
 }
 
 export function useUserRole(): UserRole {
-  const context = useContext(RoleContext);
-  if (!context) {
-    throw new Error("useUserRole must be used within RoleProvider");
-  }
-  return context.role;
-}
-
-export function useSetUserRole(): (role: UserRole) => void {
-  const context = useContext(RoleContext);
-  if (!context) {
-    throw new Error("useSetUserRole must be used within RoleProvider");
-  }
-  return context.setRole;
+  return canUseDeveloper(useSessionIdentity()) ? "dev" : "billing_officer";
 }
