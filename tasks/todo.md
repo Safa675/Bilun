@@ -10,7 +10,7 @@ Implement the approved public-billing/developer-login plan, verify security and 
 - [x] Implement capability-driven frontend, developer sign-in, logout/expiry and public billing workflow.
 - [x] Add release migration instructions, protected health probes, credential/session cutover support and asset confidentiality verification.
 - [x] Review integrated behavior, run focused tests, full CI parity and production browser security checks; resolve failures.
-- [ ] Review final diff, verify branch CI status, publish/attach a new PR and confirm its checks.
+- [x] Review final diff, verify branch CI status, publish/attach a new PR and confirm its checks.
 
 ### Out of Scope
 Merging, live deployment, live credential rotation, changing clinical/payment calculations, new real-patient datasets or multiuser/SSO provisioning.
