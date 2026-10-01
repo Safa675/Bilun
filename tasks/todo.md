@@ -1229,3 +1229,30 @@ Reviewed against the three reproduced findings and current main bb41c3f6d78e25e5
 - Scoped Python Ruff and compileall passed. Independent review found no blocking issue.
 - Local Python is 3.12 and the backend checkout is partial; full backend pytest, generated-rule parity, and manifest checks require hosted CI on the published commit. Component handler tests use mocked React hooks; no browser interaction coverage is claimed.
 - Original main bb41c3f6d78e25e5c0d766f1b0b64be6d4709274 was rechecked before branch creation; its backend and frontend CI passed. Exact new-commit hosted CI remains pending at publication.
+
+## Task: Fix compatible health cache probes
+
+### Goal
+Return truthful health readiness while the running API owns a writable load-only cache connection, without mutating the cache or disturbing that connection.
+
+### Subtasks
+- [x] Verify current main source, repository instructions, existing health contract, and the DuckDB mixed-configuration failure.
+- [x] Add regressions for existing writable and verified read-only runtime connections, missing caches, non-mutating fallback probes, and probe cleanup.
+- [x] Reuse an existing runtime cursor only for the same database; otherwise open an independent read-only probe without initializing runtime state.
+- [x] Run RED/GREEN regressions, focused lint and compilation, and independent review.
+- [ ] Check base CI, publish one atomic commit on a new branch, open a draft pull request, and verify exact-commit hosted CI.
+
+### Out of Scope
+No merge, deployment, production database access, schema migration, cache build, or Wave A rule/activation changes.
+
+### Plan Review
+Reviewed against current main 05aba8152087cf049cebcd70ce1629e03ca94649 and the authorized health fix. Preserve the HTTP readiness and detail-access contracts. The probe executes SELECTs only, never calls get_cache_con/get_cache_reader (which can initialize schema), closes only its owned cursor/connection, and does not create a missing database. Success requires active-build health to pass with both runtime access modes while failure paths remain 503 and leave the runtime connection usable.
+
+### Verification Review
+- The original probe failed the real load-only singleton regression and misreported an existing writable database with an empty pointer as unreachable (RED: 2 failed, 8 passed).
+- The final focused connection suite passed 17/17 tests with DuckDB 1.5.6, including both runtime access modes, repeated and parallel probes, first-reader initialization serialization, missing/other database paths, no schema initialization, byte-identical read-only fallback, startup-not-ready, and owned-cursor cleanup on success/error.
+- Scoped Ruff and Python compilation passed.
+- Local execution uses Python 3.12 with a partial checkout and an isolated import harness that loads the exact health functions, runtime, storage connection and schema modules. Full application imports, HTTP health tests, Python 3.13, and the full backend/Frontend suite are reserved for hosted CI on the published commit.
+- Base main 05aba8152087cf049cebcd70ce1629e03ca94649 has passing backend and frontend checks. No production state was changed.
+
+- Independent review reran all 17 focused regressions successfully and found no remaining blocking issue. The initialization-race case exercises real runtime initialization while the fallback probe holds the cache lock.
