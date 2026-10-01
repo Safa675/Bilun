@@ -23,6 +23,7 @@ const chat = {
   errors: {
     failedAutoAnalysis: "Failed to get SUT analysis. Click regenerate to retry.",
     failedFollowUp: "Failed to get a SUT response.",
+    questionTooLong: "Your question is too long. Shorten it to {max} characters or fewer and try again.",
   },
   tip: {
     label: "Tip:",

@@ -38,8 +38,6 @@ def identity_from_request(request: Request) -> Identity:
     claims = _api.verify_session_token(request.cookies.get(COOKIE_NAME, ""))
     username = claims.username if hasattr(claims, "username") else (claims if isinstance(claims, str) else None)
     role = resolve_user_role(username)
-    if username == "test" and not os.getenv("BILUN_DEV_USERNAMES"):
-        role = "dev"
     capabilities = ("billing", "developer", "repository") if claims and role == "dev" else (
         ("billing",) if claims or is_public_billing_enabled() else ()
     )

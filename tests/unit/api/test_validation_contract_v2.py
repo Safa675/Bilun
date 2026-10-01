@@ -18,6 +18,7 @@ pytestmark = pytest.mark.unit
 def client(monkeypatch):
     # Test the real middleware without app lifespan/cache startup or credentials.
     monkeypatch.setattr("src.bilun.api.is_auth_configured", lambda: True)
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", "test")
     monkeypatch.setattr(
         "src.bilun.api.verify_session_token",
         lambda value: "test" if value == "test-session" else None,

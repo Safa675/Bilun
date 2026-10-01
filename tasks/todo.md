@@ -1199,3 +1199,33 @@ Implementation verification: two escaped-Flight regressions failed against the o
 [PR #96](https://github.com/Safa675/Bilun/pull/96) contains the code on `fix/deploy-asset-verification`. Existing branch CI had zero runs before the push. Its [first hosted CI run](https://github.com/Safa675/Bilun/actions/runs/36315626985) completed successfully on commit `a55bb2a4` with both backend and frontend jobs green. The actual Deploy workflow can only validate this change after it lands on `main` and that main commit's CI succeeds; production deployment and merge remain outside this PR implementation task.
 
 ---
+
+
+## Task: Resolve public-access review findings
+
+### Goal
+Fix the three verified PR #107 regressions on a branch based on verified current source, with regression tests and one new commit in a draft pull request from current main.
+
+### Subtasks
+- [x] Read current repository instructions and verify immutable current main source and PR state.
+- [x] Bound outgoing chat context to 20 messages, 8,000 characters per message, and 32,000 total characters; validate new questions before persistence and preserve display history.
+- [x] Remove the special developer exemption for username `test`; explicitly configure test allowlists and cover session revocation.
+- [x] Include both supported LLM credential environment variables in public-asset scanning and cover the CLI environment path.
+- [x] Run focused regressions, relevant broader checks where available, and independent review; record exact verification limits.
+- [ ] Confirm the publication target, check its CI and current source, create one new commit and verify its remote contents when authorized.
+
+### Out of Scope
+No deployment, real LLM requests, main-branch updates, merges, or unrelated changes. The user approved a new pull request; merge and deployment remain out of scope.
+
+### Plan Review
+Reviewed against the three reproduced findings and current main bb41c3f6d78e25e5c0d766f1b0b64be6d4709274. Server limits remain unchanged; frontend display history remains complete. Allowlist policy is the sole developer authority. Only supported credential names are added to the existing scanner.
+
+
+### Verification Review
+- Full frontend Vitest: 71 files, 419 tests passed.
+- Frontend TypeScript and production build passed.
+- Asset scanner: 14 focused pytest cases passed, including four formerly missed LLM-key leak cases and redacted output.
+- Revocation: eight real-session cases passed in an isolated real-auth/middleware harness; the original source failed the two `test` username unset/empty allowlist cases. Thirteen existing password/credential/token tests also passed in isolation.
+- Scoped Python Ruff and compileall passed. Independent review found no blocking issue.
+- Local Python is 3.12 and the backend checkout is partial; full backend pytest, generated-rule parity, and manifest checks require hosted CI on the published commit. Component handler tests use mocked React hooks; no browser interaction coverage is claimed.
+- Original main bb41c3f6d78e25e5c0d766f1b0b64be6d4709274 was rechecked before branch creation; its backend and frontend CI passed. Exact new-commit hosted CI remains pending at publication.

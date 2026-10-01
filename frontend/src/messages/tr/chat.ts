@@ -23,6 +23,7 @@ const chat = {
   errors: {
     failedAutoAnalysis: "SUT analizi alınamadı. Yeniden denemek için yenileye tıklayın.",
     failedFollowUp: "SUT yanıtı alınamadı.",
+    questionTooLong: "Sorunuz çok uzun. {max} karakter veya daha az olacak şekilde kısaltıp tekrar deneyin.",
   },
   tip: {
     label: "İpucu:",

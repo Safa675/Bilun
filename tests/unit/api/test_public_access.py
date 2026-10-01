@@ -189,6 +189,50 @@ def test_pre_cutover_sessions_cannot_upgrade_to_developer(client):
     assert client.get("/api/rules").status_code == 401
 
 
+@pytest.mark.parametrize("username", ["test", "developer"])
+@pytest.mark.parametrize("allowlist", [None, "", " ", "different-account"])
+def test_existing_session_loses_developer_access_when_allowlist_is_revoked(
+    client, monkeypatch, username, allowlist
+):
+    monkeypatch.setenv("BILUN_AUTH_USERNAME", username)
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", username)
+    login = client.post(
+        "/api/auth/login", json={"username": username, "password": "test-password"}
+    )
+    assert login.status_code == 200
+    token = client.cookies.get(COOKIE_NAME)
+    before = client.get("/api/auth/me").json()
+    assert before["role"] == "dev"
+    assert before["capabilities"] == ["billing", "developer", "repository"]
+    protected_paths = ("/api/rules", "/docs", "/redoc", "/openapi.json")
+    for path in protected_paths:
+        assert client.get(path).status_code == 200
+
+    if allowlist is None:
+        monkeypatch.delenv("BILUN_DEV_USERNAMES")
+    else:
+        monkeypatch.setenv("BILUN_DEV_USERNAMES", allowlist)
+
+    # Keep the same valid session: authorization must follow the current allowlist.
+    status = client.get("/api/auth/me")
+    assert status.status_code == 200
+    assert status.json() == {
+        "authenticated": True,
+        "username": username,
+        "role": "billing_officer",
+        "capabilities": ["billing"],
+        "public_billing_enabled": True,
+        "expires_at": before["expires_at"],
+    }
+    assert client.cookies.get(COOKIE_NAME) == token
+    for path in protected_paths:
+        assert client.get(path).status_code == 403
+    report = client.get("/api/billing-report/demo")
+    assert report.status_code == 200
+    assert "domain_modules" not in report.json()
+    assert "private" not in report.text and "secret" not in report.text
+
+
 @pytest.mark.parametrize("token_kind", ["expired", "tampered"])
 def test_invalid_tokens_fall_back_only_to_public_billing(client, token_kind):
     token = issue_session_token("developer", ttl_seconds=-1 if token_kind == "expired" else 3600)

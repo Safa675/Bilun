@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from scripts.deploy.verify_public_assets import inspect_assets
+from scripts.deploy.verify_public_assets import inspect_assets, main
 
 
 @pytest.fixture
@@ -38,6 +38,39 @@ def test_inline_maps_and_supplied_secrets_fail_without_printing_secret(artifact)
     report = inspect_assets(artifact, secrets=[secret])
     assert {item["reason"] for item in report["problems"]} == {"source_map_reference", "secret_content"}
     assert secret not in json.dumps(report)
+
+
+@pytest.mark.parametrize("env_name", ["LLM_API_KEY", "OPENROUTER_API_KEY"])
+@pytest.mark.parametrize("asset_path", [".next/static/chunks/app.js", "public/config.json"])
+def test_cli_rejects_llm_environment_secrets_without_printing_values(
+    artifact, monkeypatch, capsys, env_name, asset_path
+):
+    secret = f"synthetic-{env_name.lower()}-never-display"
+    monkeypatch.setenv(env_name, secret)
+    (artifact / asset_path).write_text(json.dumps({"key": secret}))
+
+    exit_code = main(["--frontend", str(artifact)])
+    output = capsys.readouterr()
+
+    assert exit_code == 1
+    assert secret not in output.out
+    assert secret not in output.err
+    assert json.loads(output.out)["problems"] == [
+        {"path": asset_path, "reason": "secret_content"}
+    ]
+
+
+def test_cli_allows_clean_assets_with_llm_environment_secrets(artifact, monkeypatch, capsys):
+    secrets = ["synthetic-llm-secret-never-display", "synthetic-openrouter-secret-never-display"]
+    for env_name, secret in zip(("LLM_API_KEY", "OPENROUTER_API_KEY"), secrets, strict=True):
+        monkeypatch.setenv(env_name, secret)
+
+    exit_code = main(["--frontend", str(artifact)])
+    output = capsys.readouterr()
+
+    assert exit_code == 0
+    assert all(secret not in output.out and secret not in output.err for secret in secrets)
+    assert json.loads(output.out) == {"ok": True, "files_checked": 1, "problems": []}
 
 
 def test_public_symlink_does_not_escape_inspection(artifact, tmp_path):
