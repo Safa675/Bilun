@@ -16,7 +16,15 @@ from collections.abc import Iterable
 
 _PRIVATE_SUFFIXES = {".map", ".py", ".pyc", ".pyo", ".duckdb", ".sqlite", ".sqlite3", ".zip", ".tar", ".tgz"}
 _TEXT_SUFFIXES = {".js", ".css", ".json", ".html", ".txt", ".mjs"}
-_SECRET_ENV = ("BILUN_AUTH_PASSWORD", "BILUN_SESSION_SECRET", "BILUN_HEALTH_PROBE_TOKEN", "OPENAI_API_KEY", "ANTHROPIC_API_KEY")
+_SECRET_ENV = (
+    "BILUN_AUTH_PASSWORD",
+    "BILUN_SESSION_SECRET",
+    "BILUN_HEALTH_PROBE_TOKEN",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "LLM_API_KEY",
+    "OPENROUTER_API_KEY",
+)
 _MAP_COMMENT = re.compile(rb"(?m)^\s*//[#@]\s*sourceMappingURL\s*=|/\*[#@]\s*sourceMappingURL\s*=")
 _PRIVATE_KEY = re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
 

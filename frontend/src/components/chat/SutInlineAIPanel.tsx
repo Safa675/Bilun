@@ -9,7 +9,7 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
-import { sendSutChatMessage } from "@/lib/api/sutChat";
+import { sendSutChatMessage, validateSutChatQuestion } from "@/lib/api/sutChat";
 import {
   buildSutChatContextKey,
   formatSutChatContextPrompt,
@@ -355,6 +355,15 @@ export default function SutInlineAIPanel({
   const handleSend = useCallback(() => {
     const question = input.trim();
     if (!question || isResponding) {
+      return;
+    }
+
+    try {
+      validateSutChatQuestion(question);
+    } catch (err) {
+      setFollowUpError(
+        err instanceof Error ? err.message : t("chat.errors.failedFollowUp"),
+      );
       return;
     }
 
