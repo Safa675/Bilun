@@ -30,10 +30,7 @@ class _BaselineDB:
         return [(self.code_sha, "complete", "bilun")]
 
 
-@pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])
-def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers,
-) -> None:
+def _issuer_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers=(2, 2)):
     protected = tmp_path / "protected"
     protected.mkdir(mode=0o700)
     cache = protected / "candidate.duckdb"
@@ -116,11 +113,12 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
 
     monkeypatch.setattr(issuer, "verify_traced_build_attestation", verify_trace)
     monkeypatch.setattr(issuer, "verify_private_rehearsal", lambda *_args, **_kw: rehearsal)
-    monkeypatch.setattr(issuer, "_live_health", lambda *_: {
+    old_health = {
         "active_build": "serving-old-1", "cache_ready": True,
-    })
+    }
+    monkeypatch.setattr(issuer, "_live_health", lambda *_: old_health)
     monkeypatch.setattr(issuer, "observe_service", lambda *_args, **_kw: object())
-    monkeypatch.setattr(issuer, "assess_release_preflight", lambda *_args, **_kw: {
+    old_preflight = {
         "observed": {"backend": {"observed_checkout_head": baseline_sha}},
         "rollback": {
             "blockers": ["serving_backend_code_sha_unverified"],
@@ -131,7 +129,8 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
                 "service_and_proxy_configuration": {},
             },
         },
-    })
+    }
+    monkeypatch.setattr(issuer, "assess_release_preflight", lambda *_args, **_kw: old_preflight)
     arguments = dict(
         payload_workers=workers[0], billing_workers=workers[1],
         release_id="release-1", ci_run_id="123", github_token="test-token",
@@ -152,13 +151,40 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
         python_executable=Path("/usr/bin/python3"), dependency_roots=(),
         key_path=protected / "activation.key", receipt_path=protected / "activation.json",
     )
+    return arguments, code_sha, old_health, old_preflight
+
+
+@pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])
+@pytest.mark.parametrize("baseline_mode", ["legacy", "verified", "verified-distinct"])
+@pytest.mark.parametrize("reuse_key", [False, True])
+def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers, baseline_mode: str, reuse_key: bool,
+) -> None:
+    arguments, code_sha, old_health, preflight = _issuer_fixture(tmp_path, monkeypatch, workers)
+    if baseline_mode != "legacy":
+        serving_sha = "9" * 40 if baseline_mode == "verified-distinct" else arguments["baseline_code_sha"]
+        arguments["serving_code_sha"] = serving_sha
+        old_health["code_sha"] = serving_sha
+        preflight["observed"]["backend"].update({
+            "observed_checkout_head": serving_sha, "serving_code_sha_verified": True,
+            "health_code_sha": serving_sha,
+        })
+        preflight["rollback"]["blockers"] = []
+    if reuse_key:
+        arguments["use_existing_key"] = True
+        arguments["key_path"].write_bytes(b"retained-fixture-key-for-two-releases")
+        arguments["key_path"].chmod(0o600)
+    before_key = arguments["key_path"].read_bytes() if reuse_key else None
     monkeypatch.setattr(
         issuer, "fetch_successful_release_ci",
         lambda **_: (_ for _ in ()).throw(ValueError("CI has not passed")),
     )
     with pytest.raises(ValueError, match="CI has not passed"):
         issuer.issue_wavea_activation(**arguments)
-    assert not arguments["key_path"].exists()
+    if reuse_key:
+        assert arguments["key_path"].read_bytes() == before_key
+    else:
+        assert not arguments["key_path"].exists()
     assert not arguments["receipt_path"].exists()
 
     monkeypatch.setattr(issuer, "fetch_successful_release_ci", lambda **_: {
@@ -178,3 +204,73 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
     assert hmac.compare_digest(signature, hmac.new(key, signed, hashlib.sha256).hexdigest())
     assert os.stat(arguments["key_path"]).st_mode & 0o077 == 0
     assert os.stat(arguments["receipt_path"]).st_mode & 0o077 == 0
+    if reuse_key:
+        assert key == before_key
+
+
+@pytest.mark.parametrize("corruption", ["unknown_blocker", "unproven_no_blocker", "wrong_health", "wrong_checkout"])
+def test_repeat_issuer_rejects_unproven_old_runtime_or_unrelated_blocker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, corruption: str,
+) -> None:
+    arguments, _, health, preflight = _issuer_fixture(tmp_path, monkeypatch)
+    if corruption == "unknown_blocker":
+        preflight["rollback"]["blockers"].append("cache_snapshot_changed")
+    elif corruption == "unproven_no_blocker":
+        preflight["rollback"]["blockers"] = []
+    elif corruption == "wrong_checkout":
+        preflight["observed"]["backend"]["observed_checkout_head"] = "e" * 40
+    else:
+        health["code_sha"] = "e" * 40
+        preflight["observed"]["backend"].update({
+            "serving_code_sha_verified": True, "health_code_sha": arguments["baseline_code_sha"],
+        })
+    with pytest.raises(ValueError, match="Protected old"):
+        issuer.issue_wavea_activation(**arguments)
+    assert not arguments["key_path"].exists()
+    assert not arguments["receipt_path"].exists()
+
+
+def test_reused_signing_key_survives_receipt_failure_and_rotation_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    arguments, code_sha, _, _ = _issuer_fixture(tmp_path, monkeypatch)
+    key = b"retained-fixture-key-for-two-releases"
+    arguments["key_path"].write_bytes(key)
+    arguments["key_path"].chmod(0o600)
+    arguments["use_existing_key"] = True
+    monkeypatch.setattr(issuer, "fetch_successful_release_ci", lambda **_: {
+        "status": "release_ci_verified", "code_sha": code_sha, "ci_run_id": "123",
+    })
+    monkeypatch.setattr(issuer, "_new_private_file", lambda *_: (_ for _ in ()).throw(OSError("fixture write failure")))
+    with pytest.raises(OSError, match="fixture write failure"):
+        issuer.issue_wavea_activation(**arguments)
+    assert arguments["key_path"].read_bytes() == key
+
+    def rotate_key(**_):
+        arguments["key_path"].write_bytes(b"changed-fixture-key-during-verification")
+        return {"status": "release_ci_verified", "code_sha": code_sha, "ci_run_id": "123"}
+
+    monkeypatch.setattr(issuer, "fetch_successful_release_ci", rotate_key)
+    with pytest.raises(ValueError, match="key changed before receipt issuance"):
+        issuer.issue_wavea_activation(**arguments)
+    assert not arguments["receipt_path"].exists()
+
+
+@pytest.mark.parametrize("invalid", ["short", "permissions", "symlink", "hardlink"])
+def test_reused_key_must_be_a_private_independent_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, invalid: str,
+) -> None:
+    arguments, _, _, _ = _issuer_fixture(tmp_path, monkeypatch)
+    path = arguments["key_path"]
+    path.write_bytes(b"too-short" if invalid == "short" else b"retained-fixture-key-for-two-releases")
+    path.chmod(0o644 if invalid == "permissions" else 0o600)
+    if invalid == "symlink":
+        original = path.with_suffix(".original")
+        path.rename(original)
+        path.symlink_to(original)
+    elif invalid == "hardlink":
+        path.with_suffix(".alias").hardlink_to(path)
+    arguments["use_existing_key"] = True
+    with pytest.raises(ValueError, match="private independent|too short"):
+        issuer.issue_wavea_activation(**arguments)
+    assert not arguments["receipt_path"].exists()

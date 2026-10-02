@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import base64
+import io
+import os
 
 import pytest
 
 from scripts.deploy.health_request import _NoRedirect, health_headers
+from scripts.deploy import health_request
 from scripts.deploy.probe_auth import probe_cookie
 
 
@@ -41,3 +44,19 @@ def test_probe_token_purpose_supports_explicit_new_and_captured_old_targets():
 def test_unknown_probe_token_format_fails_closed():
     with pytest.raises(ValueError, match="Unknown"):
         probe_cookie({"BILUN_AUTH_USERNAME": "dev", "BILUN_SESSION_SECRET": "test", "BILUN_SESSION_TOKEN_PURPOSE": "other"})
+
+
+def test_loopback_health_uses_existing_service_token_without_shell_secret(monkeypatch):
+    monkeypatch.delenv("BILUN_HEALTH_PROBE_TOKEN", raising=False)
+    observed = []
+
+    def open_probe(request, **kwargs):
+        observed.append(request)
+        return io.BytesIO(b'{"status":"ok","active_build":"actual-build"}')
+
+    monkeypatch.setattr(health_request, "open_probe", open_probe)
+    token = "existing-service-secret-" * 3
+    assert health_request.read_loopback_health({"BILUN_HEALTH_PROBE_TOKEN": token})["active_build"] == "actual-build"
+    assert observed[0].full_url == "http://127.0.0.1:8001/health"
+    assert dict(observed[0].header_items())["X-bilun-health-token"] == token
+    assert "BILUN_HEALTH_PROBE_TOKEN" not in os.environ

@@ -12,6 +12,13 @@ from pathlib import Path
 from typing import Any
 
 from scripts.deploy.release_sidecar import _load_private_json
+from scripts.deploy.observe_candidate_tuple import _canonical_digest
+
+_SAME_PORT_PROFILE = "single-vps-same-port-v2"
+_SAME_PORT_ROUTE_SHA256 = _canonical_digest({
+    "profile": _SAME_PORT_PROFILE, "backend": "127.0.0.1:8001",
+    "frontend": "127.0.0.1:3000",
+})
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
@@ -40,7 +47,52 @@ def verify_private_rehearsal(
     health = logical.get("health")
     if not isinstance(cache, dict) or not isinstance(health, dict):
         raise ValueError("Private candidate cache or health observation is missing")
-    producer = backend_runtime / "scripts/deploy/rehearse_wavea_pair.py"
+    schema = rehearsal.get("schema_version")
+    if schema == "wavea-real-pair-rehearsal-v1":
+        producer_name, ports = "rehearse_wavea_pair.py", (8002, 3099)
+    elif schema == "wavea-same-port-rehearsal-v2":
+        producer_name, ports = "rehearse_wavea_same_port.py", (8001, 3000)
+        capture, capture_sha = _load_private_json(
+            rehearsal_path.parent / "old-api-capture.json", root=rehearsal_path.parent,
+        )
+        same_input, same_input_sha = _load_private_json(
+            rehearsal_path.parent / "same-input-rehearsal.json", root=rehearsal_path.parent,
+        )
+        if (
+            rehearsal.get("profile") != _SAME_PORT_PROFILE
+            or rehearsal.get("backend_port") != ports[0]
+            or rehearsal.get("frontend_port") != ports[1]
+            or any(rehearsal.get(key) is not True for key in (
+                "sequential_same_ports_verified", "compiled_proxy_verified",
+                "authentication_verified", "public_real_data_guard_verified",
+                "public_asset_guard_verified", "persisted_api_dtos_verified",
+            ))
+            or type(rehearsal.get("access_checks")) is not int
+            or rehearsal["access_checks"] < 1
+            or rehearsal.get("baseline_contract") not in {"original-five", "wavea-evidence-v2"}
+            or rehearsal.get("old_api_capture_sha256") != capture_sha
+            or rehearsal.get("same_input_proof_sha256") != same_input_sha
+            or same_input.get("status") != "same_input_bytes_verified"
+            or not isinstance(same_input.get("candidate"), dict)
+            or same_input["candidate"].get("roster_sha256") != candidate["source_roster_sha256"]
+            or same_input["candidate"].get("source_hash") != candidate["source_hash"]
+            or not isinstance(capture, dict)
+            or len(capture) != candidate["patient_count"] + candidate["bill_count"]
+            or any(not isinstance(value, dict) for value in capture.values())
+            or sum(bool(re.fullmatch(r"/api/billing-report/[^/]+", path)) for path in capture)
+            != candidate["patient_count"]
+            or sum(bool(re.fullmatch(r"/api/billing-report/[^/]+/bills/[^/]+", path)) for path in capture)
+            != candidate["bill_count"]
+            or rehearsal.get("candidate_wavea_capability") != "draft"
+            or (rehearsal.get("baseline_contract") == "wavea-evidence-v2"
+                and rehearsal.get("old_wavea_capability") not in {"draft", "complete-25-v1"})
+            or rehearsal.get("old_route_sha256") != _SAME_PORT_ROUTE_SHA256
+            or rehearsal.get("candidate_route_sha256") != _SAME_PORT_ROUTE_SHA256
+        ):
+            raise ValueError("Same-port rehearsal profile or sequential proof differs")
+    else:
+        raise ValueError("Unknown private rehearsal schema")
+    producer = backend_runtime / "scripts/deploy" / producer_name
     if producer.is_symlink() or not producer.is_file():
         raise ValueError("Private pair producer is absent from candidate source")
     producer_sha = hashlib.sha256(producer.read_bytes()).hexdigest()
@@ -68,11 +120,20 @@ def verify_private_rehearsal(
         or health.get("status") != "ok"
         or not isinstance(observed.get("tuple_sha256"), str)
         or not _SHA256.fullmatch(observed["tuple_sha256"])
+        or (schema == "wavea-same-port-rehearsal-v2" and (
+            observed["tuple_sha256"] != _canonical_digest(logical)
+            or any(
+                not isinstance(logical.get(role), dict)
+                or logical[role].get("port") != port
+                or not isinstance(observed.get(f"{role}_listener"), dict)
+                or observed[f"{role}_listener"].get("port") != port
+                for role, port in zip(("backend", "frontend"), ports, strict=True)
+            )
+        ))
     ):
         raise ValueError("Private candidate tuple differs from release candidate")
     if (
-        rehearsal.get("schema_version") != "wavea-real-pair-rehearsal-v1"
-        or rehearsal.get("passed") is not True
+        rehearsal.get("passed") is not True
         or rehearsal.get("network_namespace_isolated") is not True
         or rehearsal.get("producer_script_sha256") != producer_sha
         or rehearsal.get("public_activation_ready") is not False
@@ -95,7 +156,8 @@ def verify_private_rehearsal(
                 "api_paths_checked", "old_assets_checked", "candidate_assets_checked"
             )
         )
-        or rehearsal.get("old_route_sha256") == rehearsal.get("candidate_route_sha256")
+        or (schema == "wavea-real-pair-rehearsal-v1"
+            and rehearsal.get("old_route_sha256") == rehearsal.get("candidate_route_sha256"))
         or any(
             not isinstance(rehearsal.get(key), str)
             or not _SHA256.fullmatch(rehearsal[key])
@@ -132,6 +194,7 @@ def verify_private_rehearsal(
         raise ValueError("Private old rollback cache or frontend identity is malformed")
     return {
         "status": "private_pair_rehearsal_verified",
+        "schema_version": schema,
         "activation_ready": False,
         "rehearsal_sha256": rehearsal_sha,
         "tuple_observation_sha256": tuple_file_sha,

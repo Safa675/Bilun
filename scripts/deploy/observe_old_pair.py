@@ -12,11 +12,33 @@ from scripts.deploy.capture_release_preflight import (
     assess_release_preflight,
     observe_service,
 )
+from scripts.deploy.verify_candidate_cache import _CODE_SHA
 
-_EXPECTED_BLOCKERS = {
-    "serving_backend_code_sha_unverified",
-    "service_and_proxy_configuration_snapshots_missing",
-}
+def verified_old_backend_identity(
+    observed: dict[str, Any], health: dict[str, Any], expected_code_sha: str,
+) -> bool:
+    """Bind old runtime identity without requiring the historical missing-SHA gap."""
+    backend = observed.get("backend", {})
+    if (
+        not isinstance(expected_code_sha, str)
+        or not _CODE_SHA.fullmatch(expected_code_sha)
+        or backend.get("observed_checkout_head") != expected_code_sha
+    ):
+        raise ValueError("Protected old backend checkout identity differs")
+    if backend.get("serving_code_sha_verified") is True:
+        if (
+            backend.get("health_code_sha") != expected_code_sha
+            or health.get("code_sha") != expected_code_sha
+        ):
+            raise ValueError("Protected old backend health identity differs")
+        return True
+    if (
+        backend.get("serving_code_sha_verified") not in (False, None)
+        or backend.get("health_code_sha") is not None
+        or health.get("code_sha") is not None
+    ):
+        raise ValueError("Protected old backend has an unverified reported code identity")
+    return False
 
 
 def observe_old_pair(
@@ -44,10 +66,12 @@ def observe_old_pair(
     rollback = report.get("rollback", {})
     observed = report.get("observed", {})
     artifacts = rollback.get("artifacts", {})
+    verified_code = verified_old_backend_identity(observed, health, baseline_code_sha)
+    expected_blockers = {"service_and_proxy_configuration_snapshots_missing"}
+    if not verified_code:
+        expected_blockers.add("serving_backend_code_sha_unverified")
     if (
-        set(rollback.get("blockers", [])) != _EXPECTED_BLOCKERS
-        or observed.get("backend", {}).get("observed_checkout_head")
-        != baseline_code_sha
+        set(rollback.get("blockers", [])) != expected_blockers
         or health.get("status") != "ok"
         or health.get("cache_ready") is not True
         or health.get("active_build") != baseline_build_id

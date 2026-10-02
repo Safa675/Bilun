@@ -1339,3 +1339,32 @@ Independent reviewer confirmed the separate history design and the known consume
 - Full pytest was attempted on the local Python 3.12 partial checkout and stops at nine collection errors from missing manifests/raw source data and the requests dependency. Generated-rule checking requires absent artifacts; manifest parity scans zero manifests, so neither is counted as a pass. Complete Python 3.13 backend, frontend and artifact/parity gates remain for hosted CI.
 - Main 0e40e09f was rechecked immediately before publication: backend, frontend and release-hold checks are successful. No rule constants, source authority, broad rule expansion, access controls, production data, merge or deployment are changed.
 - First hosted CI395 on db322e6 passed 4356 backend tests and all frontend gates. Its sole failure was an existing deployment-verifier test explicitly asserting that cross-claim ICU evidence disappears from a bill. Updated that test to require exact ICU evidence parity with the service claim's patient finding while asserting service-only claim inventory and evaluation scope. No runtime code changed. The deployment/cache/history selection passes 61 tests locally; full hosted rerun remains the final gate.
+
+
+---
+
+## Task: Simplify single-VPS Wave A releases
+
+### Goal
+Provide one prepare/status/activate/rollback release interface with version-aware current-cache verification, exact final-artifact attestation and coherent paired recovery on ports 8001/3000.
+
+### Subtasks
+- [x] Verify source against main 3f5540cf and read repository instructions and prior tested rollout helpers.
+- [x] Bound changes to release tooling, versioned activation integration and focused fault-injection/regression tests.
+- [x] Implement original-five and strict current full-v2 baseline comparison across all persisted report/evidence rows without rewriting inputs.
+- [x] Confirm and implement the paired-release state machine, preserving current history/mutable state and attesting actual final serving bytes.
+- [x] Add operator prepare/status/activate/rollback interface and concise migration/runbook documentation.
+- [x] Add explicit opt-in preparation snapshot maintenance for the initial writable load-only deployment; default refuses unsupported online snapshots before stopping services, and durable recovery restores the unchanged old pair before builds.
+- [x] Independently verify baseline and candidate build-config environments against their stored hashes, preserving exact historical metadata.
+- [x] Build the preparation bundle from explicit machine/input paths: consistent serving snapshot and retained baseline roster, fresh detached target/frontend, traced cache and all verification/rehearsal/signing gates; test fail-closed ordering, default no-mutation snapshot rejection and explicit recoverable snapshot-maintenance integration.
+- [x] Verify rollback for failures around both service stops/restarts, database/source/frontend switches, interruption and retry; preserve all historical/mutable state.
+- [ ] Obtain independent review and resolve substantive findings.
+- [ ] Run applicable local checks, publish only changed blobs on a new draft PR, then verify full hosted CI at the exact final head.
+
+### Out of Scope
+Merging or deploying, user-computer/VPS operations, production credential/security/network configuration changes, broad runtime or billing redesign, historical crash attribution, data pruning, and unrelated cleanup.
+
+### Review
+User approved this PR. Work uses the authorized GitHub connector and isolated cloud workspace because the declined local task will not be retried. Source inventory is partial only for unavailable data/binary assets, so publication must derive from the verified complete remote base tree and include changed files only. Current-baseline design is confirmed: version comes from complete persisted evidence/report contracts, not API feature visibility or unchanged build_meta schema; original-five migration remains supported; current full-v2 comparisons validate both sides and normalize only independently bound identity fields. The paired transaction design must explicitly bind the final serving database; changing bytes after signing or weakening hashes is prohibited. No production command is executed during implementation.
+
+Snapshot design decision: the current ordinary load-only service owns a writable DuckDB connection. Do not claim an undocumented hot-copy snapshot. The authorized PR includes explicit opt-in snapshot maintenance with warnings, shared locking, durable recovery and interruption tests; actual VPS execution remains out of scope. Later read-only online snapshot support requires tested reader-lock semantics.
