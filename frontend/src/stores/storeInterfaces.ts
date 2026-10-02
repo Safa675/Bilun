@@ -10,6 +10,8 @@ export interface SutInlineChatState {
   autoFiredKey: string;
   /** Context keys that already received an auto-briefing in this session. */
   briefedContextKeys: string[];
+  /** Unanswered request retained for explicit retry after interruption/remount. */
+  pendingQuestion?: string | null;
 }
 
 export const EMPTY_SUT_INLINE_CHAT_STATE: SutInlineChatState = {

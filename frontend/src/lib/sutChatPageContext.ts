@@ -1,3 +1,4 @@
+import { matchingBillReport } from "./scopedPatientReport";
 import type {
   BillingActionReport,
   PatientOptimization,
@@ -120,9 +121,14 @@ export function buildPatientWorkspacePageContext(input: {
   outcome: SutPatientOutcomeData | null;
   optimization: PatientOptimization | null;
   billingReport: BillingActionReport | null;
+  /** Selection remains authoritative while the scoped report is loading/unavailable. */
+  selectedClaimId?: string | null;
   /** Section id the user is focused on, e.g. from a `?section=` deep link. */
   selectedSection?: string | null;
 }): SutChatPageContext {
+  const billingReport = input.selectedClaimId
+    ? matchingBillReport(input.billingReport, input.patientId, input.selectedClaimId)
+    : input.billingReport?.patient_id === input.patientId ? input.billingReport : null;
   const sections: Record<string, unknown> = {
     workspace_header: {
       patient_id: input.patientId,
@@ -143,15 +149,23 @@ export function buildPatientWorkspacePageContext(input: {
       n_diagnoses: input.optimization.n_diagnoses,
     };
   }
-  if (input.billingReport) {
-    const recommended = summarizeRecommendedActions(input.billingReport);
+  if (input.selectedClaimId && !billingReport) {
+    sections.billing_report = {
+      loaded: false,
+      patient_id: input.patientId,
+      claim_id: input.selectedClaimId,
+      scope: "bill",
+    };
+  }
+  if (billingReport) {
+    const recommended = summarizeRecommendedActions(billingReport);
     sections.billing_report = {
       loaded: true,
-      patient_id: input.billingReport.patient_id,
-      claim_id: input.billingReport.claim_id,
-      total_recoverable_try: input.billingReport.total_recoverable_try,
-      priority: input.billingReport.priority,
-      exactness_status: input.billingReport.exactness_status,
+      patient_id: billingReport.patient_id,
+      claim_id: billingReport.claim_id,
+      total_recoverable_try: billingReport.total_recoverable_try,
+      priority: billingReport.priority,
+      exactness_status: billingReport.exactness_status,
       recommended_actions: recommended.length > 0 ? recommended : undefined,
     };
   }
@@ -161,8 +175,8 @@ export function buildPatientWorkspacePageContext(input: {
     tab: "SUT Patient Workspace",
     patient_id: input.patientId,
     selected_section: input.selectedSection ?? undefined,
-    visible_billing: input.billingReport
-      ? buildVisibleBillingSnapshot(input.billingReport)
+    visible_billing: billingReport
+      ? buildVisibleBillingSnapshot(billingReport)
       : undefined,
     sections,
   };

@@ -470,7 +470,7 @@ export function SutPatientPageContent({
     ? [outcomeError, optimizationError, billingError].filter(Boolean).join(" ")
     : null;
 
-  const chatSessionKey = sutPatientChatSessionKey(patientId);
+  const chatSessionKey = sutPatientChatSessionKey(patientId, selectedClaimId);
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
   const handleChatStateChange = useCallback(
@@ -486,8 +486,9 @@ export function SutPatientPageContent({
         outcome,
         optimization: activeOptimization,
         billingReport: activeBillingReport,
+        selectedClaimId,
       }),
-    [patientId, outcome, activeOptimization, activeBillingReport],
+    [patientId, outcome, activeOptimization, activeBillingReport, selectedClaimId],
   );
   const shouldRenderChat = !loading && !allFailed;
   const isDocked = shouldRenderChat && chatDock !== "center";
@@ -541,8 +542,9 @@ export function SutPatientPageContent({
             </Surface>
             )}
 
-            {!embedded && shouldRenderChat && chatDock === "center" && (
+            {!embedded && shouldRenderChat && (
               <SutInlineAIPanel
+                key={chatSessionKey}
                 patientId={patientId}
                 activeTab="SUT Patient Workspace"
                 pageContext={chatPageContext}
@@ -673,17 +675,7 @@ export function SutPatientPageContent({
             )}
           </section>
       </ShellTag>
-      {!embedded && shouldRenderChat && chatDock !== "center" && (
-        <SutInlineAIPanel
-          patientId={patientId}
-          activeTab="SUT Patient Workspace"
-          pageContext={chatPageContext}
-          dock={chatDock}
-          onDockChange={dockChange}
-          chatState={chatState}
-          onChatStateChange={handleChatStateChange}
-        />
-      )}
+
       <SutClauseDrawer clauseKey={clauseKey} onClose={handleCloseClause} />
       {!embedded && (
         <>

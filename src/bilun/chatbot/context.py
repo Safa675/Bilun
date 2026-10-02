@@ -671,6 +671,13 @@ def _append_billing_sections(
             lines.append(f"  Report exactness: {report_exactness}")
 
 
+def _append_billing_scope(lines: list[str], report: dict[str, Any]) -> None:
+    scope = report.get("scope", "patient")
+    lines.append(f"  Scope: {scope}")
+    if scope == "bill":
+        _format_sut_section(lines, "Bill ID", report.get("claim_id", "?"))
+
+
 def build_full_billing_context(report: dict[str, Any]) -> str:
     """Build full per-patient billing context with all detail rows (cap 50 per list)."""
     if not report:
@@ -678,6 +685,7 @@ def build_full_billing_context(report: dict[str, Any]) -> str:
 
     lines: list[str] = ["--- BILLING OPTIMIZATION (FULL) ---"]
     _format_sut_section(lines, "Patient ID", report.get("patient_id", "?"))
+    _append_billing_scope(lines, report)
     _append_billing_sections(lines, report, detail_level="full")
     return "\n".join(lines)
 
@@ -696,6 +704,7 @@ def build_billing_context(
         return build_full_billing_context(report)
 
     lines: list[str] = ["--- BILLING OPTIMIZATION ---"]
+    _append_billing_scope(lines, report)
     _append_billing_sections(lines, report, detail_level="summary")
     return "\n".join(lines)
 
@@ -890,6 +899,13 @@ def officer_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] 
     tab = result.get("tab", "").lower()
     if "rule" in tab or "kural" in tab:
         result["tab"] = "patients"
+    visible = page_context.get("visible_billing")
+    if isinstance(visible, dict):
+        # Retain selection identity only. Server lookup owns bill amounts.
+        result["visible_billing"] = {
+            key: visible[key] for key in ("patient_id", "claim_id", "scope")
+            if key in visible and isinstance(visible[key], str)
+        }
     sections = page_context.get("sections")
     if isinstance(sections, dict):
         result["sections"] = {

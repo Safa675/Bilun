@@ -14,7 +14,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
-from src.bilun.shared.exceptions import BilunAPIError, RateLimitError
+from src.bilun.shared.exceptions import BilunAPIError, RateLimitError, ServiceUnavailableError
 from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_window as _rate_window
 from src.bilun.chatbot import stream_chat_response
 from src.bilun.chatbot.context import build_bilun_runtime_context, officer_page_context
@@ -112,6 +112,16 @@ class BilunChatRequest(BaseModel):
 
     @model_validator(mode="after")
     def bounded_context(self):
+        claim_id = _claim_id_from_page_context(self.page_context)
+        if claim_id:
+            if not self.patient_id or not self.patient_id.strip():
+                raise ValueError("A selected bill requires a patient")
+            sections = self.page_context.get("sections") or {}
+            for hint in (self.page_context, self.page_context.get("visible_billing"),
+                         sections.get("billing_report") if isinstance(sections, dict) else None):
+                if isinstance(hint, dict) and "patient_id" in hint:
+                    if hint["patient_id"] != self.patient_id:
+                        raise ValueError("Selected bill patient does not match the request")
         if sum(len(message.content) for message in self.messages) > 32000:
             raise ValueError("Conversation is too long")
         if self.page_context is not None:
@@ -218,6 +228,8 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
     summary_cap = 5
     return {
         "patient_id": payload.get("patient_id"),
+        "claim_id": payload.get("claim_id"),
+        "scope": payload.get("scope", "patient"),
         "lab": {
             "exactness_status": lab.get("exactness_status"),
             "hemogram_bundling_savings": lab.get("hemogram_bundling_savings"),
@@ -323,21 +335,26 @@ def _should_use_chat_tools(
 
 
 def _claim_id_from_page_context(page_context: dict[str, Any] | None) -> str | None:
+    """Read a bounded, unambiguous selection; never downgrade invalid bills to patients."""
     if not page_context:
         return None
-    visible = page_context.get("visible_billing")
-    if isinstance(visible, dict):
-        claim_id = visible.get("claim_id")
-        if isinstance(claim_id, str) and claim_id.strip():
-            return claim_id.strip()
     sections = page_context.get("sections")
-    if isinstance(sections, dict):
-        billing = sections.get("billing_report")
-        if isinstance(billing, dict):
-            claim_id = billing.get("claim_id")
-            if isinstance(claim_id, str) and claim_id.strip():
-                return claim_id.strip()
-    return None
+    billing = sections.get("billing_report") if isinstance(sections, dict) else None
+    selected: set[str] = set()
+    for hint in (page_context.get("visible_billing"), billing):
+        if not isinstance(hint, dict):
+            continue
+        claim_id = hint.get("claim_id")
+        if claim_id is None and hint.get("scope") != "bill":
+            continue
+        if not isinstance(claim_id, str) or not claim_id.strip() or len(claim_id) > 128:
+            raise ValueError("Invalid selected bill")
+        if "scope" in hint and hint["scope"] != "bill":
+            raise ValueError("Selected bill scope is inconsistent")
+        selected.add(claim_id.strip())
+    if len(selected) > 1:
+        raise ValueError("Selected bill IDs do not match")
+    return next(iter(selected), None)
 
 
 def _fetch_billing_report_for_chat(
@@ -347,8 +364,14 @@ def _fetch_billing_report_for_chat(
     page_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     claim_id = _claim_id_from_page_context(page_context)
-    if user_role == "dev" and claim_id:
+    if claim_id:
+        # The canonical lookup is keyed by patient and claim; never use a
+        # patient total as a fallback for a missing/unavailable selected bill.
         payload = get_bill_billing_report(patient_id, claim_id)
+        if (payload.get("patient_id") != patient_id
+                or payload.get("claim_id") != claim_id
+                or payload.get("scope") != "bill"):
+            raise ServiceUnavailableError("Selected bill context unavailable.")
     else:
         payload = get_patient_billing_report(patient_id)
     if user_role == "dev":
@@ -669,6 +692,9 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             page_context=page_context,
             user_role=user_role,
         )
+        if (_claim_id_from_page_context(page_context)
+                and raw_data.get("billing_report", {}).get("status") != "ready"):
+            raise ServiceUnavailableError("Selected bill context unavailable. Please try again.")
         t_fetch = time.perf_counter()
         ui_locale = _parse_ui_locale(req.ui_locale)
         billing_detail = "full" if user_role == "dev" and req.patient_id else "summary"

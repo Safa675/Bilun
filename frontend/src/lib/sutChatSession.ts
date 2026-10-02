@@ -8,8 +8,9 @@ export function sutWorkspaceChatSessionKey(tab?: string | null): string {
   return `${SUT_WORKSPACE_CHAT_SESSION_KEY}:${normalized}`;
 }
 
-export function sutPatientChatSessionKey(patientId: string): string {
-  return `bilun:patient:${patientId.trim()}`;
+export function sutPatientChatSessionKey(patientId: string, claimId?: string | null): string {
+  const patientKey = `bilun:patient:${encodeURIComponent(patientId.trim())}`;
+  return claimId ? `${patientKey}:bill:${encodeURIComponent(claimId)}` : patientKey;
 }
 
 export function buildSutChatContextKey(
