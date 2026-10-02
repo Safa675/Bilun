@@ -1455,7 +1455,10 @@
         "minimum_interval_days": true,
         "price_try": true,
         "savings_try": true,
-        "note": true
+        "note": true,
+        "claim_id": true,
+        "sut_section_id": true,
+        "procedure_code": true
       }
     },
     "bundled_separate_billing": {
@@ -1746,6 +1749,10 @@
           "daily_rate_try": true,
           "expected_yatak_try": true,
           "gross_bed_days": true,
+          "icu_overlap_days": true,
+          "icu_overlap_dates": {
+            "$list": true
+          },
           "same_day_stay": true,
           "surgery_day_bundled": true
         }

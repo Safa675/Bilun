@@ -68,6 +68,10 @@ if len(FOCUSED_GROUP_ORDER) != 18 or set(FOCUSED_GROUP_ORDER) != {
 }:
     raise RuntimeError("Focused materializer groups differ from the reviewed inventory")
 
+_HISTORY_GROUPS = frozenset({
+    "detect_yatak_icu_overlap", "detect_duplicate_exam_10day", "detect_duplicate_tests",
+})
+
 
 def _run_group(ctx: PatientClaimContext, group: str) -> list[dict[str, Any]]:
     """Preserve the legacy call signature and input gate for one group."""
@@ -97,8 +101,11 @@ def _run_group(ctx: PatientClaimContext, group: str) -> list[dict[str, Any]]:
 
     if not has_procedures:
         return []
-    claims = list(ctx.claims)
-    procedures = list(ctx.procedure_lines)
+    if group in _HISTORY_GROUPS:
+        history = ctx.history
+        claims, procedures = list(history.claims), list(history.procedure_lines)
+    else:
+        claims, procedures = list(ctx.claims), list(ctx.procedure_lines)
     if group == "detect_conditional_addon_ek2d_opportunities":
         return detect_conditional_addon_ek2d_opportunities(claims, procedures)
     if group == "detect_transplant_package_scope_violations":
@@ -150,7 +157,13 @@ class FocusedLegacyMaterializer:
         if group not in FOCUSED_GROUP_ORDER:
             raise KeyError(f"Unknown focused detector group: {group}")
         if group not in self._cache:
-            self._cache[group] = tuple(_run_group(self._ctx, group))
+            rows = _run_group(self._ctx, group)
+            if group in _HISTORY_GROUPS:
+                # Filtering input lines would erase prerequisites. Match with
+                # history first, then retain only active bill findings.
+                active_claim_ids = {claim.claim_id for claim in self._ctx.claims}
+                rows = [row for row in rows if row.get("claim_id") in active_claim_ids]
+            self._cache[group] = tuple(rows)
         return self._cache[group]
 
     def all_rows(self) -> tuple[dict[str, Any], ...]:

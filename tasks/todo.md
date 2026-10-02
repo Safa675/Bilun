@@ -1311,3 +1311,31 @@ Reviewed against main 09749e23f8ba6907f7addca8c7fddea8b66f8475 and the authorize
 - Local Python is 3.12 with a partial source/data checkout. Full pytest was attempted and stopped on nine collection errors from missing manifests/raw source assets and requests. Generated-rule checking reports absent artifacts; manifest parity scans zero manifests, so neither is counted as a pass. The complete Python 3.13 backend, generated-artifact/parity, and frontend gates remain for hosted CI.
 - Base main 09749e2 has successful backend and frontend checks. No production state, rule JSON, or unrelated task was changed.
 - First hosted run on 98a296c passed 4316 backend tests and all frontend gates, with two scoped failures: the new ceiling evidence fields were absent from the frozen public DTO, and the blood demo still expected the duplicate confirmed 310 TRY. Added only those two scalar DTO fields with patient/bill public-projection assertions that retain private-field filtering. SHA-verified synthetic claim 0004 has blood list/payable 1000, billed 50, and primary P611720 billed 101019.30: min(300,360)-50 = 250, retaining the existing clinical-review restriction. Updated the demo to pin those exact amounts, identity, and zero confirmed blood uplift. The 26 regressions plus the actual 0004 test pass locally; hosted rerun remains the final gate.
+
+## Task: Preserve bill-scoped claim history
+
+### Goal
+Restore known same-patient evidence for existing dated rules while keeping every bill's monetary lines and emitted findings limited to that bill, based on verified main 0e40e09f.
+
+### Subtasks
+- [x] Reproduce MIAT and ICU failures on verified main and add failing regression tests
+- [x] Retain separate historical claim/procedure/material rows when slicing a bill, preserving active-row semantics and rejecting foreign or orphan history
+- [x] Route MIAT, ICU overlap, duplicate exam/test and SCT temporal checks through history with their existing per-event date boundaries; scope results to active rows
+- [x] Cover boundary dates, future/foreign evidence, repeated slicing, patient behavior, report/cohort additivity, public projection and cache serialization
+- [x] Run focused suites, full pytest, lint and artifact checks; disclose environmental gaps
+- [ ] Obtain independent diff review, verify main and prior CI, publish a separate draft PR, then monitor and fix scoped CI failures until terminal
+
+### Out of Scope
+Other audit findings; new rules or changes to rule constants and authored authority; broad Wave A work; real patient data; access/authentication changes; merge/deploy
+
+### Plan Review
+Independent reviewer confirmed the separate history design and the known consumers. History views must replace any retained active-claim rows with current active rows so repeated slicing and dataclass replacements cannot resurrect stale inputs. Duplicate detectors must see prerequisite history before filtering emitted target rows; focused projection must validate historic evidence without broadening source ownership. ICU report/audit rows, MIAT legacy/prose and SCT checks keep their existing dated predicates. Existing unavailable treatment-course/prior-therapy metadata remains unchanged. Success: ICU service bed 3→2 days, MIAT warning restored, unchanged current-bill billed totals and no future/foreign-triggered findings. Local partial checkout limitations will be distinguished from complete hosted CI.
+
+### Verification Review
+- RED on verified main 0e40e09f: all five new direct regressions failed (MIAT, ICU bed reconciliation, duplicate exams, duplicate tests, and SCT prior-transplant eligibility). GREEN: all 39 expanded regressions pass, covering date-window boundaries, unknown/future dates, ownership, active-row replacement, repeated slicing, and source-order ties.
+- Real report/cohort runs cover single-worker and threaded bill calculations, current-bill money, per-patient additivity, another patient's isolation, focused evidence ownership, public projection, and a DuckDB bill-row round trip. The public DTO adds only ICU overlap day/date evidence and MIAT claim/section/package-code attribution; unknown/private fields still filter out.
+- Independent review passed 132 focused tests and 960 bill slices over 240 seeded input orderings, comparing MIAT/ICU/exam/test/SCT results with the same bill's full-patient findings. A same-day SCT tie-order regression caught during review was fixed with identity-preserving history overlays and permutation regressions.
+- The combined local focused selection passes 234 tests, including the actual 50-patient/per-bill synthetic report suite, existing public access/probe tests, and deterministic surfacing inventory. Source/script and changed-test Ruff pass.
+- Full pytest was attempted on the local Python 3.12 partial checkout and stops at nine collection errors from missing manifests/raw source data and the requests dependency. Generated-rule checking requires absent artifacts; manifest parity scans zero manifests, so neither is counted as a pass. Complete Python 3.13 backend, frontend and artifact/parity gates remain for hosted CI.
+- Main 0e40e09f was rechecked immediately before publication: backend, frontend and release-hold checks are successful. No rule constants, source authority, broad rule expansion, access controls, production data, merge or deployment are changed.
+- First hosted CI395 on db322e6 passed 4356 backend tests and all frontend gates. Its sole failure was an existing deployment-verifier test explicitly asserting that cross-claim ICU evidence disappears from a bill. Updated that test to require exact ICU evidence parity with the service claim's patient finding while asserting service-only claim inventory and evaluation scope. No runtime code changed. The deployment/cache/history selection passes 61 tests locally; full hosted rerun remains the final gate.
