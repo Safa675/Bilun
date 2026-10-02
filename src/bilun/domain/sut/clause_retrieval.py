@@ -22,6 +22,7 @@ import logging
 import math
 import re
 from dataclasses import dataclass
+from threading import Lock
 from typing import Any
 
 import numpy as np
@@ -93,13 +94,15 @@ class _Index:
 
 _index: _Index | None = None
 _index_loaded = False
+_index_lock = Lock()
 
 
 def reset_cache() -> None:
     """Clear the cached index (test seam)."""
     global _index, _index_loaded
-    _index = None
-    _index_loaded = False
+    with _index_lock:
+        _index = None
+        _index_loaded = False
 
 
 def _build_index() -> _Index | None:
@@ -176,15 +179,18 @@ def _build_index() -> _Index | None:
 
 def _get_index() -> _Index | None:
     global _index, _index_loaded
-    if _index_loaded:
+    with _index_lock:
+        if _index_loaded:
+            return _index
+        try:
+            candidate = _build_index()
+        except Exception as exc:  # degrade gracefully, but retry transient failures
+            logger.warning("Failed to build SUT clause retrieval index: %s", exc)
+            return None
+        _index = candidate
+        # A successful None (missing/empty artifacts) is cached until reset.
+        _index_loaded = True
         return _index
-    _index_loaded = True
-    try:
-        _index = _build_index()
-    except Exception as exc:  # pragma: no cover - defensive
-        logger.warning("Failed to build SUT clause retrieval index: %s", exc)
-        _index = None
-    return _index
 
 
 def artifacts_available() -> bool:

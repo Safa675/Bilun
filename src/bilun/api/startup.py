@@ -156,10 +156,17 @@ async def startup():
     if _log_memory_snapshot is not None:
         _log_memory_snapshot("startup:before_bilun_build", logger_obj=logger)
 
+    # Pin one target for both rebuilding and checking the resulting active build.
+    db_path = Path(
+        os.getenv("BILUN_CACHE_DB_PATH", str(_PROJECT_ROOT / ".cache" / "bilun.duckdb"))
+    ).resolve()
+    rebuilt_build_id = None
     try:
         if policy in {"rebuild", "strict"}:
             logger.info("BILUN cache rebuild starting (blocking, policy=%s)...", policy)
-            rebuild_bilun_cache_offline()
+            rebuilt_build_id = rebuild_bilun_cache_offline(db_path=str(db_path))
+            if not rebuilt_build_id:
+                raise RuntimeError("Cache rebuild did not return a build identity")
         else:
             logger.info("BILUN cache load starting (policy=%s)...", policy)
             load_bilun_cache_only()
@@ -174,16 +181,12 @@ async def startup():
     try:
         from src.bilun.db import get_active_build_id, connect
 
-        db_path = Path(
-            os.getenv(
-                "BILUN_CACHE_DB_PATH",
-                str(_PROJECT_ROOT / ".cache" / "bilun.duckdb"),
-            )
-        )
         if db_path.exists():
             con = connect(db_path)
             bid = get_active_build_id(con, scope="bilun")
             con.close()
+            if rebuilt_build_id is not None and bid != rebuilt_build_id:
+                raise RuntimeError("Cache rebuild is not active at the configured database path")
             if bid is not None:
                 _startup_ready = True
                 logger.info("BILUN cache startup step complete — API fully ready.")

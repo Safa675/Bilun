@@ -35,7 +35,9 @@ _MAX_GREP_FILES = 200
 
 
 def _normalize_rel_path(rel_path: str) -> str:
-    cleaned = rel_path.strip().replace("\\", "/").lstrip("/")
+    cleaned = rel_path.strip().replace("\\", "/")
+    if cleaned.startswith("/") or re.match(r"^[A-Za-z]:", cleaned):
+        raise ValueError("Absolute paths are not allowed")
     if not cleaned:
         raise ValueError("Path is required")
     parts = [part for part in cleaned.split("/") if part not in ("", ".")]
@@ -47,7 +49,10 @@ def _normalize_rel_path(rel_path: str) -> str:
 def _is_allowed_rel_path(rel_path: str) -> bool:
     if any(part in _BLOCKED_PARTS for part in rel_path.split("/")):
         return False
-    return any(rel_path.startswith(prefix) for prefix in _ALLOWED_PREFIXES)
+    return any(
+        rel_path == prefix.rstrip("/") or rel_path.startswith(prefix)
+        for prefix in _ALLOWED_PREFIXES
+    )
 
 
 def resolve_repo_path(rel_path: str) -> Path:
@@ -58,8 +63,12 @@ def resolve_repo_path(rel_path: str) -> Path:
             f"Path not in dev allowlist. Allowed roots: {', '.join(_ALLOWED_PREFIXES)}"
         )
     full = (_REPO_ROOT / rel).resolve()
-    if not str(full).startswith(str(_REPO_ROOT)):
-        raise ValueError("Path resolves outside the repository")
+    try:
+        resolved_rel = full.relative_to(_REPO_ROOT).as_posix()
+    except ValueError as exc:
+        raise ValueError("Path resolves outside the repository") from exc
+    if not _is_allowed_rel_path(resolved_rel):
+        raise ValueError("Resolved path not in dev allowlist")
     return full
 
 
@@ -121,36 +130,24 @@ def grep_repo(
     except re.error as exc:
         raise ValueError(f"Invalid regex pattern: {exc}") from exc
 
-    prefix = _normalize_rel_path(path_prefix.rstrip("/"))
-    if not _is_allowed_rel_path(prefix + "/"):
-        raise ValueError(
-            f"path_prefix not in dev allowlist. Allowed roots: {', '.join(_ALLOWED_PREFIXES)}"
-        )
-
+    prefix = _normalize_rel_path(path_prefix)
     root = resolve_repo_path(prefix)
-    if root.is_file():
-        search_root = root.parent
-        file_filter = root.name
-    else:
-        search_root = root
-        file_filter = None
-
-    if not search_root.exists():
+    if not root.exists():
         raise FileNotFoundError(f"Search path not found: {path_prefix}")
 
     cap = max(1, min(int(max_matches), _MAX_GREP_MATCHES))
     matches: list[dict[str, Any]] = []
     files_scanned = 0
 
-    for file_path in sorted(search_root.rglob("*")):
+    candidates = [root] if root.is_file() else sorted(root.rglob("*"))
+    for candidate in candidates:
+        rel = candidate.relative_to(_REPO_ROOT).as_posix()
+        try:
+            # Discovered files need the same resolved policy as explicit reads.
+            file_path = resolve_repo_path(rel)
+        except (OSError, RuntimeError, ValueError):
+            continue
         if not file_path.is_file():
-            continue
-        rel = file_path.relative_to(_REPO_ROOT).as_posix()
-        if file_filter and file_path.name != file_filter and not rel.startswith(prefix + "/"):
-            continue
-        if not _is_allowed_rel_path(rel):
-            continue
-        if any(part in _BLOCKED_PARTS for part in rel.split("/")):
             continue
         if file_path.suffix.lower() not in {
             ".py",
