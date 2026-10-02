@@ -283,6 +283,39 @@ def resolve_gate_b_ref_to_clause_ids(
     if "clause_id" not in clauses.columns:
         raise ValueError("clauses frame missing clause_id column")
 
+    # A paragraph can repeat verbatim under different medication headings. A
+    # content hash alone cannot establish its legal scope. Keep heading scope in
+    # the reference itself so every existing source consumer resolves it.
+    if "@within:" in text:
+        child_ref, separator, heading_ref = text.partition("@within:")
+        if not separator or "@within:" in heading_ref or not is_clause_key(child_ref):
+            raise UnknownClauseCiteError(f"invalid heading-scoped cite: {text!r}")
+        heading_coord, heading_hash = split_clause_key(heading_ref)
+        needed = {"paragraph_index", "clause_coordinate", "content_hash", "clause_type", "is_in_force"}
+        if not needed.issubset(clauses.columns) or not heading_coord or not heading_hash:
+            raise UnknownClauseCiteError(f"heading-scoped cite lacks source context: {text!r}")
+        headings = clauses.filter(
+            (pl.col("clause_type") == "section_heading") & pl.col("is_in_force")
+        )
+        heading = headings.filter(
+            (pl.col("clause_coordinate") == heading_coord)
+            & (pl.col("content_hash") == heading_hash)
+        )
+        if heading.height != 1:
+            raise UnknownClauseCiteError(f"heading-scoped cite needs one active heading: {text!r}")
+        start = heading["paragraph_index"][0]
+        later = headings.filter(pl.col("paragraph_index") > start)
+        scoped = clauses.filter(pl.col("paragraph_index") > start)
+        if later.height:
+            scoped = scoped.filter(pl.col("paragraph_index") < later["paragraph_index"].min())
+        ids = resolve_gate_b_ref_to_clause_ids(
+            child_ref, scoped, in_force_only=in_force_only,
+            encode_eligible_only=encode_eligible_only, allow_ambiguous=False,
+        )
+        if len(ids) != 1:
+            raise AmbiguousClauseCiteError(f"heading-scoped cite is not unique: {text!r}: {ids}")
+        return ids
+
     if is_clause_id(text):
         if encode_eligible_only and "clause_type" in clauses.columns:
             hit = clauses.filter(pl.col("clause_id").cast(pl.Utf8) == text)

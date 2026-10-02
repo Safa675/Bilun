@@ -1,9 +1,9 @@
 section_id: 4.2.49.A
 rules:
-- rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_a
+- rule_id: 4.2.49.A.1.nusinersen_all_criteria_coverage
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007082
+  - 4.2.49.A.(1)#e6be0652@within:4.2.49.A#f57da6c0
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -17,15 +17,22 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: 'nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
-    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A).
-- rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_b
+    enforcement: 'nusinersen: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A.1,
+      nusinersen).
+  source_subsection: 4.2.49.A.1
+  source_heading_key: 4.2.49.A#f57da6c0
+  supersedes_rule_ids:
+  - 4.2.49.A.neuro.nusinersen_all_criteria_coverage_a
+  source_effective_date: '2025-05-06'
+  source_scope_note: Subsection provenance and drug routing only; source clinical criteria are not yet executable.
+  verification_status: ai_generated_pending_review
+- rule_id: 4.2.49.A.2.risdiplam_all_criteria_coverage
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007082
+  - 4.2.49.A.(1)#e6be0652@within:4.2.49.A#c2df3999
   drug_names:
-  - nusinersen
-  - nusinersen sodium
+  - risdiplam
   icd10_codes:
   - G12.0
   - G12.1
@@ -36,12 +43,20 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: 'nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
-    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A).
-- rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a
+    enforcement: 'risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A.2,
+      risdiplam).
+  source_subsection: 4.2.49.A.2
+  source_heading_key: 4.2.49.A#c2df3999
+  supersedes_rule_ids:
+  - 4.2.49.A.neuro.nusinersen_all_criteria_coverage_b
+  source_effective_date: '2025-05-06'
+  source_scope_note: Subsection provenance and drug routing only; source clinical criteria are not yet executable.
+  verification_status: ai_generated_pending_review
+- rule_id: 4.2.49.A.1.nusinersen_multidisciplinary_monitoring
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007088
+  - 4.2.49.A.(2)#481b9b26@within:4.2.49.A#f57da6c0
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -53,18 +68,24 @@ rules:
   - çocuk nöroloji
   - nöroloji
   action:
-    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
-      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
-    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
-      yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda
-      belirtilmesi gereklidir (§4.2.49.A).
-- rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve
+      ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan
+      izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık
+      kurulu raporunda belirtilmesi gereklidir (§4.2.49.A.1, nusinersen).
+  source_subsection: 4.2.49.A.1
+  source_heading_key: 4.2.49.A#f57da6c0
+  supersedes_rule_ids:
+  - 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a
+  source_effective_date: '2025-05-06'
+  source_scope_note: Subsection provenance and drug routing only; source clinical criteria are not yet executable.
+  verification_status: ai_generated_pending_review
+- rule_id: 4.2.49.A.2.risdiplam_multidisciplinary_monitoring
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007088
+  - 4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999
   drug_names:
-  - nusinersen
-  - nusinersen sodium
+  - risdiplam
   icd10_codes:
   - G12.0
   - G12.1
@@ -73,15 +94,22 @@ rules:
   - çocuk nöroloji
   - nöroloji
   action:
-    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
-      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
-    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
-      yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda
-      belirtilmesi gereklidir (§4.2.49.A).
-- rule_id: 4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve
+      ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan
+      izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık
+      kurulu raporunda belirtilmesi gereklidir (§4.2.49.A.2, risdiplam).
+  source_subsection: 4.2.49.A.2
+  source_heading_key: 4.2.49.A#c2df3999
+  supersedes_rule_ids:
+  - 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b
+  source_effective_date: '2025-05-06'
+  source_scope_note: Subsection provenance and drug routing only; source clinical criteria are not yet executable.
+  verification_status: ai_generated_pending_review
+- rule_id: 4.2.49.A.1.nusinersen_no_csf_shunt_catheter
   sut_section: 4.2.49.A
   gate_b_sources:
-  - 4.2.49.A.c
+  - 4.2.49.A.c#75d4ce7f@within:4.2.49.A#f57da6c0
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -94,5 +122,15 @@ rules:
   - nöroloji
   action:
     enforcement: 'mandatory: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmamalıdır'
-    message_tr: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49.A).
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+    message_tr: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49.A.1,
+      nusinersen).
+  source_subsection: 4.2.49.A.1
+  source_heading_key: 4.2.49.A#f57da6c0
+  supersedes_rule_ids:
+  - 4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a
+  source_effective_date: '2025-05-06'
+  source_scope_note: Subsection provenance and drug routing only; source clinical criteria are not yet executable.
+  verification_status: ai_generated_pending_review
+source_note: Reconciled to RG 26/04/2025-32882/7 (effective 06/05/2025), SGK consolidated 02/10/2026; preserve .1/.2
+  medication context.
+
