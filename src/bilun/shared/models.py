@@ -4,7 +4,9 @@ Pydantic request/response schemas for the BILUN API.
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from datetime import date
+
+from pydantic import BaseModel, field_validator
 
 
 class MaterialItem(BaseModel):
@@ -32,6 +34,20 @@ class DrugContext(BaseModel):
     (§4.2.14.C oncology + §4.2.33 anti-VEGF) against each material line.
     Line-level fields (biomarkers, dose counts) stay on MaterialItem.
     """
+
+    service_date: date | None = None
+
+    @field_validator("service_date", mode="before")
+    @classmethod
+    def validate_service_date(cls, value: object) -> date | None:
+        from src.bilun.domain.prose_rules._drug_indication.temporal import parse_service_date
+
+        if value is None:
+            return None
+        parsed = parse_service_date(value)
+        if parsed is None:
+            raise ValueError("service_date must be an ISO calendar date (YYYY-MM-DD)")
+        return parsed
 
     primary_icd10: str = ""
     prescriber_specialty: str = ""

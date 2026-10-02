@@ -139,6 +139,7 @@ class DrugIndicationFinding:
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+    temporal_evidence: dict[str, Any] | None = None
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -147,6 +148,7 @@ class DrugIndicationFinding:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"temporal_evidence": self.temporal_evidence} if self.temporal_evidence else {}),
             "finding_id": self.finding_id,
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
@@ -239,8 +241,11 @@ class DrugIndicationLineEvaluation:
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
 
+    temporal_evidence: dict[str, Any] | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"temporal_evidence": self.temporal_evidence} if self.temporal_evidence else {}),
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
             "drug_claim_line_id": self.drug_claim_line_id,
@@ -589,6 +594,7 @@ def evaluate_drug_indication_findings(
                 drug_name=line.drug_name,
             )
             finding = DrugIndicationFinding(
+                temporal_evidence=detailed.get("temporal_evidence"),
                 finding_id=finding_id,
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
@@ -627,6 +633,7 @@ def evaluate_drug_indication_findings(
 
         evaluations.append(
             DrugIndicationLineEvaluation(
+                temporal_evidence=detailed.get("temporal_evidence"),
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
                 drug_claim_line_id=line.drug_claim_line_id,

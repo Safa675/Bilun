@@ -45,6 +45,9 @@ def load_drug_indication_rules() -> dict[str, Any]:
                 "Failed to load anti-VEGF corpus %s: %s", _ANTI_VEGF_RULES_PATH, exc
             )
 
+    from .temporal import temporal_drug_rules
+
+    merged_rules.extend(temporal_drug_rules())
     payload["rules"] = merged_rules
     # Expose anti-VEGF anchors alongside §4.2.14.C for honest coverage metadata.
     anchors = set(payload.get("sut_anchors") or ["4.2"])
@@ -311,7 +314,7 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
     normative §4.2.14.C clauses now have gate_b_sources; remaining tier-C + EMR is ~50.
     """
     manifest_stats = _drug_indication_manifest_stats()
-    rules = list_drug_indication_rules()
+    rules = [rule for rule in list_drug_indication_rules() if not rule.get("temporal_source_only")]
     section_rules = sum(1 for rule in rules if rule.get("sut_section") == "4.2.14.C")
     tier_b_rules = sum(1 for rule in rules if _has_tier_b_constraints(rule))
     inn_pct = float(manifest_stats.get("inn_named_actionable_pct") or 0.0)
@@ -345,7 +348,7 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
 
 def drug_indication_coverage_scope() -> dict[str, Any]:
     """Honest partial-corpus metadata for §4.2 indication engine."""
-    rules = list_drug_indication_rules()
+    rules = [rule for rule in list_drug_indication_rules() if not rule.get("temporal_source_only")]
     anchors = load_drug_indication_rules().get("sut_anchors") or ["4.2"]
     section_4214c = sum(1 for rule in rules if rule.get("sut_section") == "4.2.14.C")
     tier_b_rules = sum(1 for rule in rules if _has_tier_b_constraints(rule))
@@ -358,6 +361,7 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
         "prose_engine_status": engine_status,
         "prose_coverage_tier": engine_status,
         "pilot_rule_count": len(rules),
+        "temporal_source_review_count": sum(1 for rule in list_drug_indication_rules() if rule.get("temporal_source_only")),
         "section_4.2.14.C_rule_count": section_4214c,
         "tier_b_rule_count": tier_b_rules,
         "target_phase1_rule_count": _PHASE1_TARGET_RULE_COUNT,

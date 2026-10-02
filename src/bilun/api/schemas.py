@@ -355,7 +355,32 @@ class DrugIndicationRouteEvidenceResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class DrugTemporalCheckResponse(BaseModel):
+    field: str
+    status: str
+    marker: str | None = None
+
+
+class DrugTemporalEvidenceResponse(BaseModel):
+    status: str
+    service_date: date | None = None
+    version_id: str | None = None
+    successor_version_id: str | None = None
+    candidate_version_ids: list[str] = Field(default_factory=list)
+    valid_from: date | None = None
+    valid_until: date | None = None
+    publication_date: date
+    source_url: str
+    source_sha256: str
+    source_text_sha256: str
+    date_basis: str
+    verification_status: str | None = None
+    clinical_eligibility_complete: bool = False
+    supported_checks: list[DrugTemporalCheckResponse] = Field(default_factory=list)
+
+
 class DrugIndicationFindingResponse(BaseModel):
+    temporal_evidence: DrugTemporalEvidenceResponse | None = None
     finding_id: str = Field(...)
     patient_id: str = Field(...)
     claim_id: str = Field(...)
@@ -384,6 +409,7 @@ class DrugIndicationFindingResponse(BaseModel):
 
 
 class DrugIndicationEvaluationResponse(BaseModel):
+    temporal_evidence: DrugTemporalEvidenceResponse | None = None
     patient_id: str = Field(...)
     claim_id: str | None = Field(...)
     drug_claim_line_id: str = Field(...)

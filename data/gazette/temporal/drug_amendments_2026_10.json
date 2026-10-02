@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "rule_id": "sut.temporal.trastuzumab_emtansine.2026-10-10",
+      "sut_section": "4.2.14.C(3)(ff)",
+      "drug_names": [
+        "trastuzumab emtansin",
+        "trastuzumab emtansine",
+        "t-dm1",
+        "ado-trastuzumab"
+      ],
+      "temporal_source_only": true,
+      "report_required": true,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "required_biomarkers": [],
+      "report_duration_max_months": null,
+      "report_duration_months": null,
+      "unimplemented_clinical_inputs": [
+        "cancer_stage",
+        "treatment_setting",
+        "prior_taxane_anti_her2_cycles",
+        "residual_invasive_disease",
+        "treatment_cycle_count",
+        "disease_progression",
+        "monotherapy",
+        "report_board_composition",
+        "her2_ihc_3plus_or_fish_sish_cish_positive"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 5644,
+          "text": "(Değişik: RG-02/10/2026- 33388/ 2-a md. Yürürlük: 10/10/2026)"
+        },
+        {
+          "paragraph_index": 5647,
+          "text": "ff) Trastuzumab emtansin;"
+        },
+        {
+          "paragraph_index": 5648,
+          "text": "a)HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan, neoadjuvan olarak yeterli süre (en az 4 kür) taksan ve anti-HER2 tedavi almış ve cerrahi sonrasında patolojik incelemede memede 1 cm’in üzerinde invaziv rezidü hastalık veya lenf düğümünde invaziv rezidü hastalık mevcut olan erken evre meme kanseri hastalarının adjuvan tedavisinde tek ajan olarak en fazla 14 kür kullanılır."
+        },
+        {
+          "paragraph_index": 5649,
+          "text": "b)Metastatik meme kanserinde daha önce trastuzumab ve bir basamak taksan tedavisi almış ve hastalığı sonrasında progresyon göstermiş, HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan metastatik meme kanseri hastalarında kurtarma tedavisinde tek ajan olarak progresyona kadar kullanılır. Progresyon sonrası tek ajan veya kombinasyon tedavisinin bir parçası olarak kullanılamaz."
+        },
+        {
+          "paragraph_index": 5650,
+          "text": "c)Tıbbi onkoloji uzman hekiminin yer aldığı ve bu hususların belirtildiği sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır."
+        }
+      ],
+      "source_text_sha256": "8ab002c60a7b1f2237f8ca4ea357860371b7341e8188d8b197cf4693a012e48a",
+      "temporal": {
+        "publication_date": "2026-10-02",
+        "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "source_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "amendment_url": "https://kars.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "amendment_sha256": "a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb",
+        "valid_from": "2026-10-10",
+        "valid_until": null,
+        "version_id": "RG33388:4.2.14.C(3)(ff):2026-10-10",
+        "supersedes_section": null,
+        "date_basis": "explicit consolidated SUT Yürürlük annotation",
+        "historical_lower_bound_verified": false
+      },
+      "verification_status": "ai_generated_pending_review",
+      "activation_status": "source_only_partial"
+    },
+    {
+      "rule_id": "sut.temporal.pertuzumab.2026-10-10",
+      "sut_section": "4.2.14.C(3)(gg)",
+      "drug_names": [
+        "pertuzumab"
+      ],
+      "temporal_source_only": true,
+      "report_required": true,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "required_biomarkers": [],
+      "report_duration_max_months": null,
+      "report_duration_months": null,
+      "unimplemented_clinical_inputs": [
+        "cancer_stage",
+        "treatment_setting",
+        "treatment_cycle_count",
+        "ecog",
+        "combination_regimen",
+        "prior_metastatic_therapy",
+        "disease_progression",
+        "months_since_adjuvant_therapy",
+        "report_board_composition",
+        "her2_ihc_3plus_or_fish_sish_cish_positive"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 5651,
+          "text": "(Değişik: RG-02/10/2026- 33388/ 2-b md. Yürürlük: 10/10/2026)"
+        },
+        {
+          "paragraph_index": 5654,
+          "text": "gg) Pertuzumab, trastuzumab ve pertuzumab kombinasyonu;"
+        },
+        {
+          "paragraph_index": 5655,
+          "text": "a)Pertuzumab, trastuzumab ve kemoterapi ile kombine olarak HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan lokal ilerlemiş, enflamatuvar ya da lokal ileri evre meme kanseri (T3-4 ve/veya Nod pozitif) olan neoadjuvan erken evre meme kanseri hastalarının tedavisinde en fazla 4 kür kullanılır."
+        },
+        {
+          "paragraph_index": 5656,
+          "text": "b)Daha önce metastatik hastalığı için sistemik kemoterapi veya trastuzumab tedavisi almamış, ECOG performans skoru 0-1 olan, HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan metastatik meme kanserinde ilk seri tedavide pertuzumab, trastuzumab ve dosetaksel kemoterapisi kombine olarak progresyona kadar kullanılabilir. Pertuzumab veya kombinasyon tedavisi alırken progresyon gösteren hastalarda bir daha pertuzumab tedavisine monoterapi veya kombinasyon tedavisinin bir parçası olarak devam edilemez. Adjuvan veya neoadjuvan trastuzumab kullanmış hastalarda trastuzumab tedavisinin tamamlanmasından sonraki ilk 12 ay içinde veya tedavi sırasında gelişen hastalık nüksü veya progresyonunda pertuzumab kullanılamaz. Adjuvan veya neoadjuvan trastuzumab tedavisinin tamamlanmasından sonraki 12 aydan sonra gelişen hastalık nüksü veya progresyonunda pertuzumab, trastuzumab ve dosetaksel kemoterapisi kombine olarak progresyona kadar kullanılabilir. Dosetaksel toksisitesi nedeniyle dosetaksel kemoterapisinin kesilmesi durumunda trastuzumab ve pertuzumab kombinasyonu ile tedaviye devam edilebilir."
+        },
+        {
+          "paragraph_index": 5657,
+          "text": "c)Tıbbi onkoloji uzman hekiminin yer aldığı ve bu hususların belirtildiği sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır."
+        }
+      ],
+      "source_text_sha256": "ff744c1ed929ed7ce9295526e7689c43da3f73bf7df723858ee017ee626b4b24",
+      "temporal": {
+        "publication_date": "2026-10-02",
+        "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "source_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "amendment_url": "https://kars.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "amendment_sha256": "a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb",
+        "valid_from": "2026-10-10",
+        "valid_until": null,
+        "version_id": "RG33388:4.2.14.C(3)(gg):2026-10-10",
+        "supersedes_section": null,
+        "date_basis": "explicit consolidated SUT Yürürlük annotation",
+        "historical_lower_bound_verified": false
+      },
+      "verification_status": "ai_generated_pending_review",
+      "activation_status": "source_only_partial"
+    },
+    {
+      "rule_id": "sut.temporal.satralizumab.2026-10-10",
+      "sut_section": "4.2.14.C(3)(aaaa)",
+      "drug_names": [
+        "satralizumab"
+      ],
+      "temporal_source_only": true,
+      "report_required": true,
+      "prescriber_specialties": [
+        "nöroloji"
+      ],
+      "required_biomarkers": [
+        {
+          "marker": "AQP4",
+          "status_any": [
+            "positive",
+            "pozitif"
+          ]
+        }
+      ],
+      "report_duration_max_months": 6,
+      "report_duration_months": null,
+      "unimplemented_clinical_inputs": [
+        "age",
+        "weight_kg",
+        "nmosd_diagnosis",
+        "high_disease_activity",
+        "relapsing_course",
+        "treatment_stage",
+        "edss",
+        "adequate_prior_immunosuppressants",
+        "relapse_under_treatment",
+        "tertiary_care",
+        "three_neurologist_board",
+        "ek4g_inpatient_supply"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 6128,
+          "text": "(Ek: RG-02/10/2026- 33388/ 2-c md. Yürürlük: 10/10/2026)"
+        },
+        {
+          "paragraph_index": 6129,
+          "text": "aaaa) Satralizumab yalnızca; yüksek hastalık aktivitesi gösteren, relapslarla seyreden vücut ağırlığı 40 kg veya üzerinde olan 12 yaşından itibaren adolesan ve yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde;"
+        },
+        {
+          "paragraph_index": 6130,
+          "text": "a) Aşağıda yer alan kriterleri birlikte sağlayan hastalarda tedaviye monoterapi olarak veya immünosupresif tedavi ile kombine olarak başlanılması ve üçüncü basamak sağlık hizmeti sunucularında üç nöroloji uzman hekiminin yer aldığı ve aşağıdaki durumların belirtildiği en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır."
+        },
+        {
+          "paragraph_index": 6131,
+          "text": "1- Aquaporin 4 (AQP4) antikoru pozitif,"
+        },
+        {
+          "paragraph_index": 6132,
+          "text": "2- Expanded Disability Status Scale (EDSS) 6,5 ve altında olan,"
+        },
+        {
+          "paragraph_index": 6133,
+          "text": "3- En az iki ya da daha fazla immünosupresan tedaviyi (azatiyoprin, mikofenolat mofetil, siklofosfamid veya rituksimab etkin maddeli ilaçlar) monoterapi olarak uygun dozda ve sürede kullanmasına rağmen tedavi altında iken en az 1 atak geçiren."
+        },
+        {
+          "paragraph_index": 6134,
+          "text": "b) NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda; EDSS 8 ve üzerinde ise tedavi sonlandırılır. EDSS her sağlık kurulu raporunda belirtilmelidir."
+        }
+      ],
+      "source_text_sha256": "3d18fa0551375e910ce2ef7de20e4d54f48d8607a601ac5f339d5472ff339677",
+      "temporal": {
+        "publication_date": "2026-10-02",
+        "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "source_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "amendment_url": "https://kars.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "amendment_sha256": "a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb",
+        "valid_from": "2026-10-10",
+        "valid_until": null,
+        "version_id": "RG33388:4.2.14.C(3)(aaaa):2026-10-10",
+        "supersedes_section": null,
+        "date_basis": "explicit consolidated SUT Yürürlük annotation",
+        "historical_lower_bound_verified": false
+      },
+      "verification_status": "ai_generated_pending_review",
+      "activation_status": "source_only_partial",
+      "additional_source_requirements": [
+        {
+          "amendment_article": "7",
+          "annex": "EK-4/G",
+          "requirement": "Yalnızca yatan hastalarda kullanımı halinde bedelleri ödenecek ilaçlar listesine satralizumab eklenmesi",
+          "valid_from": "2026-10-10"
+        }
+      ]
+    }
+  ],
+  "quarantined_rules": [
+    {
+      "rule_id": "sut.temporal.thiotepa.2026-09-05",
+      "sut_section": "4.2.14.C(3)(zzz)",
+      "drug_names": [
+        "tiyotepa",
+        "tiotepa",
+        "thiotepa"
+      ],
+      "temporal_source_only": true,
+      "report_required": true,
+      "prescriber_specialties": [
+        "çocuk hematoloji-onkoloji",
+        "hematoloji"
+      ],
+      "required_biomarkers": [],
+      "report_duration_max_months": null,
+      "report_duration_months": 6,
+      "unimplemented_clinical_inputs": [
+        "transplant_preparation_indication",
+        "combination_regimen",
+        "report_board_composition"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 6125,
+          "text": "(Ek: RG-29/08/2026-33355/8-d md. Yürürlük:05/09/2026)"
+        },
+        {
+          "paragraph_index": 6126,
+          "text": "zzz) Tiyotepa;"
+        },
+        {
+          "paragraph_index": 6127,
+          "text": "(1) Tiyotepa diğer kemoterapi ürünleri ile birlikte kombine olarak; erişkin ve pediatrik hematoloji hastalarında allojenik veya otolog hematopoetik progenitör hücre nakli (HPHN) öncesinde hazırlama rejiminde, erişkin ve pediatrik hastaların solid tümörlerinin tedavisinde HPHN desteği ile birlikte yüksek doz kemoterapi uygun olduğunda kullanılması halinde; en az bir çocuk hematoloji-onkoloji uzman hekiminin veya erişkin hematoloji uzman hekiminin yer aldığı 6 aylık sağlık kurulu raporuna istinaden adı geçen hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır."
+        }
+      ],
+      "source_text_sha256": "cd575654a4f7799ef6e73ddeb151b1c195b9d90512d5afe9497f6a25304f7435",
+      "temporal": {
+        "publication_date": "2026-08-29",
+        "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "source_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "amendment_url": "https://sgd.sgk.gov.tr/Download/DownloadFile?f=873126b6-2250-4c64-b0a4-fe910055fe11.docx&d=658f4ba1-b0e8-4dfb-8504-fa0b09e353e0",
+        "amendment_sha256": "ffd269486c0fb75a65321c0ebafb898bc74193125a49a916842bcc457c6ea491",
+        "valid_from": "2026-09-05",
+        "valid_until": null,
+        "version_id": "RG33355:4.2.14.C(3)(zzz):2026-09-05",
+        "supersedes_section": "4.2.61",
+        "date_basis": "explicit consolidated SUT Yürürlük annotation",
+        "historical_lower_bound_verified": false
+      },
+      "verification_status": "ai_generated_pending_review",
+      "activation_status": "quarantined",
+      "quarantine_reason": "August amendment Articles 8(d), 13 and 24(a) verify relocation and repeal from 2026-09-05; activation withheld until mis-targeted repealed 4.2.61 karmustin rule and generic tiotepa specialty constraints are safely versioned."
+    }
+  ]
+}

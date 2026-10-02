@@ -552,7 +552,7 @@ def _validate_stored_claim(
     from src.bilun.shared.models import ClaimValidationRequest
 
     supplied_claim = ClaimValidationRequest.model_validate(supplied_claim).model_dump(
-        exclude_unset=True
+        mode="json", exclude_unset=True
     )
     result = validator(claim_dict, supplied_claim=supplied_claim)
     # Historical compatibility remains available at the explicit API endpoint,

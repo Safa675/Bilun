@@ -45,6 +45,7 @@ def _evaluation_status_for_violation(violation_kind: str | None) -> str:
         "needs_dose_verification",
         "needs_biomarker_verification",
         "needs_prior_therapy_verification",
+        "needs_growth_hormone_verification",
     }:
         return "missing_inputs"
     return "evaluated"
@@ -192,6 +193,14 @@ def evaluate_drug_indication_line_with_rules(
     rules: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Evaluate explicit rules in applicability, primary, then supplemental order."""
+    from .temporal import evaluate_temporal_drug
+
+    temporal_result, temporal_evidence = evaluate_temporal_drug(
+        drug_line=drug_line, claim=claim, diagnoses=diagnoses, rules=rules,
+    )
+    if temporal_result is not None:
+        return temporal_result
+    rules = [rule for rule in rules if not rule.get("temporal_source_only")]
     icd_codes = _collect_icd10_codes(claim, diagnoses)
     resolution = _resolve_drug_indication_route(
         drug_line=drug_line,
@@ -209,8 +218,10 @@ def evaluate_drug_indication_line_with_rules(
         resolution=resolution,
         status=status,
     )
+    if temporal_evidence is not None:
+        common["temporal_evidence"] = temporal_evidence
     if status == "not_in_encoded_corpus":
-        return {
+        result = {
             **common,
             "required_inputs": [],
             "missing_inputs": [],
@@ -220,6 +231,11 @@ def evaluate_drug_indication_line_with_rules(
             ),
             "violation": None,
         }
+        if temporal_evidence is not None:
+            from .temporal import guard_historical_evaluation
+
+            return guard_historical_evaluation(result, temporal_evidence)
+        return result
 
     violation = _applicability_violation(
         status=status,
@@ -267,4 +283,9 @@ def evaluate_drug_indication_line_with_rules(
         # projecting the actual constraint certainty to every downstream layer.
         for field in ("evaluation_status", "required_inputs", "missing_inputs"):
             common[field] = violation[field]
-    return {**common, "violation": violation}
+    result = {**common, "violation": violation}
+    if temporal_evidence is not None:
+        from .temporal import guard_historical_evaluation
+
+        return guard_historical_evaluation(result, temporal_evidence)
+    return result

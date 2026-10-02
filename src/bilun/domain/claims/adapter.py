@@ -29,6 +29,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 from typing import Any
+from src.bilun.domain.prose_rules._drug_indication.temporal import parse_service_date
 
 from src.bilun.domain.claims.dataset_builder import _enrich_material_regulatory_flags
 from src.bilun.domain.claims.models import (
@@ -217,7 +218,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     claim_id=claim_id,
                     patient_id="",
                     episode_id="",
-                    drug_claim_date=date.today(),
+                    drug_claim_date=parse_service_date(drug_ctx.get("service_date")),
                     drug_name=drug_name,
                     drug_code=str(mat.get("code", "") or ""),
                     barkod="",

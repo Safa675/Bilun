@@ -112,7 +112,7 @@ def test_load_drug_indication_rules_phase2_corpus() -> None:
     core = json.loads((_PROSE_RULES_DIR / "drug_indication_prose.json").read_text("utf-8"))
     anti_vegf = json.loads((_PROSE_RULES_DIR / "anti_vegf_prose.json").read_text("utf-8"))
     expected = len(core.get("rules") or []) + len(anti_vegf.get("rules") or [])
-    assert len(rules) == expected
+    assert len([r for r in rules if not r.get("temporal_source_only")]) == expected
 
 
 def test_drug_indication_coverage_scope_phase2() -> None:

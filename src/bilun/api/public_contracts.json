@@ -1124,6 +1124,9 @@
         },
         "eligible_icd10_codes_or_ranges": {
           "$list": true
+        },
+        "temporal_evidence": {
+          "$ref": "DrugTemporalEvidence"
         }
       }
     },
@@ -1198,7 +1201,10 @@
     "eligible_route_count": true,
     "eligible_routes_truncated": true,
     "observed_icd10_count": true,
-    "observed_icd10_truncated": true
+    "observed_icd10_truncated": true,
+    "temporal_evidence": {
+      "$ref": "DrugTemporalEvidence"
+    }
   },
   "DrugIndicationRouteEvidence": {
     "rule_id": true,
@@ -1258,7 +1264,10 @@
     "eligible_route_count": true,
     "eligible_routes_truncated": true,
     "observed_icd10_count": true,
-    "observed_icd10_truncated": true
+    "observed_icd10_truncated": true,
+    "temporal_evidence": {
+      "$ref": "DrugTemporalEvidence"
+    }
   },
   "ClaimCompliance": {
     "findings": {
@@ -2615,5 +2624,30 @@
     },
     "deontic_modality": true,
     "source_effective_date": true
+  },
+  "DrugTemporalEvidence": {
+    "status": true,
+    "service_date": true,
+    "version_id": true,
+    "successor_version_id": true,
+    "valid_from": true,
+    "valid_until": true,
+    "publication_date": true,
+    "source_url": true,
+    "source_sha256": true,
+    "source_text_sha256": true,
+    "date_basis": true,
+    "verification_status": true,
+    "clinical_eligibility_complete": true,
+    "candidate_version_ids": {
+      "$list": true
+    },
+    "supported_checks": {
+      "$list": {
+        "field": true,
+        "status": true,
+        "marker": true
+      }
+    }
   }
 }

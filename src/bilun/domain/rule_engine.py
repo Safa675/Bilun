@@ -24,6 +24,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any
+from src.bilun.domain.prose_rules._drug_indication.temporal import parse_service_date
 
 from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
 from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
@@ -150,7 +151,7 @@ def _run_drug_indication_checks(
             claim_id=claim_header.claim_id,
             patient_id="",
             episode_id="",
-            drug_claim_date=date.today(),
+            drug_claim_date=parse_service_date(drug_ctx.get("service_date")),
             drug_name=drug_name,
             drug_code=str(mat.get("code", "")),
             barkod="",

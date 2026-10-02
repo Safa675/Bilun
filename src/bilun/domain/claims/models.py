@@ -252,7 +252,7 @@ class DrugClaimLine:
     claim_id: str
     patient_id: str
     episode_id: str
-    drug_claim_date: date
+    drug_claim_date: date | None
     drug_name: str
     drug_code: str
     barkod: str
