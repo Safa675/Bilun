@@ -84,7 +84,7 @@ _register(
     "/api/wavea-evidence-rows", "/api/validate-claim", "/api/chat",
 )
 _register(
-    "developer", "GET", "/api/rules", "/api/rules/{rule_id}", "/api/rules/sections",
+    "developer", "GET", "/api/health", "/api/rules", "/api/rules/{rule_id}", "/api/rules/sections",
     "/api/rules/sections/clauses", "/api/rules/prose-inventory",
     "/api/rules/prose-rules/{rule_set_id}", "/api/rules/prose-rules/{rule_set_id}/{rule_id}",
     "/api/rules/deferrals", "/api/rules/clauses", "/docs", "/docs/oauth2-redirect",

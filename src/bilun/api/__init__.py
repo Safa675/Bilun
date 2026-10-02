@@ -96,6 +96,7 @@ app.include_router(bilun_router)
 from fastapi import Request, Response  # noqa: E402
 
 
+@app.get("/api/health")
 @app.get("/health")
 def health_check(request: Request = None) -> Response:
     """Return API health status.

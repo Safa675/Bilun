@@ -31,3 +31,10 @@ describe("SutHealthPanel", () => {
     expect(html).toContain("Build:");
   });
 });
+
+it("renders degraded readiness and unknown count/build without raw translation keys", () => {
+  const html = renderToStaticMarkupWithLocale(<SutHealthPanel healthStatus={{ status: "degraded", patients: null, build_id: null }} />);
+  expect(html).toContain("degraded");
+  expect(html).not.toContain("admin.statuses.");
+  expect(html.match(/—/g)).toHaveLength(2);
+});

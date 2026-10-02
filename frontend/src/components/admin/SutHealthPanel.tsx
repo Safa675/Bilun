@@ -9,10 +9,8 @@ function statusVariant(status: HealthStatus["status"] | "unavailable"): "success
   switch (status) {
     case "ready":
       return "success";
-    case "building":
+    case "degraded":
       return "warning";
-    case "error":
-    case "not_started":
     case "unavailable":
     default:
       return "danger";

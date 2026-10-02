@@ -5,6 +5,7 @@ const admin = {
   "build": "Derleme:",
   "empty": "—",
   "statuses": {
+    "degraded": "kısıtlı",
     "ready": "hazır",
     "building": "derleniyor",
     "error": "hata",

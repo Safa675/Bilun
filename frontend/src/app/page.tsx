@@ -18,7 +18,7 @@ import {
   SutAnalyticsShellSkeleton,
   SutOptimizerShellSkeleton,
 } from "@/components/skeletons/SutSkeletons";
-import { getHealthStatus } from "@/lib/api/health";
+import { useHealthPolling } from "@/components/admin/useHealthPolling";
 import { isSutAdminEnabled } from "@/lib/sutAdmin";
 import {
   useAiDockPosition,
@@ -113,34 +113,7 @@ function SutHomeContent() {
     ? "w-full space-y-6"
     : "mx-auto max-w-7xl space-y-6";
 
-  useEffect(() => {
-    if (!isWorkspaceMode || !showAdmin || !developer) {
-      return;
-    }
-
-    let cancelled = false;
-    const poll = () => {
-      getHealthStatus()
-        .then((status) => {
-          if (!cancelled) {
-            setHealthStatus(status);
-          }
-        })
-        .catch((err) => {
-          if (cancelled) {
-            return;
-          }
-          console.warn("SUT health polling failed:", err);
-        });
-    };
-
-    poll();
-    const timer = window.setInterval(poll, 30_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [isWorkspaceMode, setHealthStatus, showAdmin, developer]);
+  useHealthPolling(isWorkspaceMode && showAdmin && developer, setHealthStatus);
 
   if (denied) return null;
 
