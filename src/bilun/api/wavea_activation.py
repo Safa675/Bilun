@@ -50,6 +50,7 @@ class WaveAActivation:
     cache_sha256: str
     sidecar_sha256: str
     receipt_sha256: str
+    receipt_version: str = RECEIPT_VERSION
 
 
 _startup_activation: WaveAActivation | None = None
@@ -143,6 +144,15 @@ def load_startup_activation(
         )
     except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError("Wave A activation receipt is malformed") from exc
+    if isinstance(receipt, dict) and receipt.get("schema_version") == "wavea-serving-receipt-v2":
+        from scripts.deploy.serving_activation import load_serving_activation
+
+        return load_serving_activation(
+            receipt, receipt_path=receipt_path, key_path=key_path,
+            cache_path=cache_path, active_build_id=active_build_id,
+            code_sha=code_sha, source_manifest_sha256=source_manifest_sha256,
+            backend_runtime=backend_runtime,
+        )
     if not isinstance(receipt, dict) or set(receipt) != _RECEIPT_FIELDS:
         raise ValueError("Wave A activation receipt has unexpected fields")
     signature = receipt["signature_sha256"]

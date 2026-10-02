@@ -40,9 +40,11 @@ from scripts.deploy.verify_candidate_semantics import (
     verify_serving_baseline_equivalence,
 )
 from scripts.deploy.verify_github_ci import fetch_successful_release_ci
+from scripts.deploy.health_request import read_loopback_health
+from scripts.deploy.observe_old_pair import verified_old_backend_identity
 from scripts.deploy.verify_private_rehearsal import verify_private_rehearsal
 from scripts.deploy.verify_traced_build_attestation import verify_traced_build_attestation
-from src.bilun.api.wavea_activation import RECEIPT_VERSION
+from src.bilun.api.wavea_activation import RECEIPT_VERSION, _private_file
 
 _CONFIG_ENVIRONMENT = dict.fromkeys((
     "PIPELINE_MODE", "PIPELINE_SUT_MODE", "BILUN_DATA_MODE",
@@ -74,6 +76,14 @@ def _new_private_file(path: Path, data: bytes) -> None:
         os.fsync(parent)
     finally:
         os.close(parent)
+
+
+def _existing_private_key(path: Path) -> bytes:
+    _private_file(path)
+    key = path.read_bytes()
+    if len(key) < 32:
+        raise ValueError("Existing Wave A activation key is too short")
+    return key
 
 
 def issue_wavea_activation(
@@ -109,14 +119,25 @@ def issue_wavea_activation(
     receipt_path: Path,
     payload_workers: int = 2,
     billing_workers: int = 2,
+    use_existing_key: bool = False,
+    serving_code_sha: str | None = None,
+    baseline_build_config_environment: dict[str, str] | None = None,
+    old_backend_environment_path: Path | None = None,
 ) -> dict[str, Any]:
     """Seal one exact main-CI candidate after cache, trace, and rollback proof."""
     if any(type(value) is not int or not 1 <= value <= 8 for value in (
         payload_workers, billing_workers
     )):
         raise ValueError("Private build worker count is invalid")
-    if key_path == receipt_path or key_path.exists() or receipt_path.exists():
+    if type(use_existing_key) is not bool:
+        raise ValueError("Existing signing key selection must be a boolean")
+    if (
+        key_path.resolve() == receipt_path.resolve()
+        or receipt_path.exists() or receipt_path.is_symlink()
+        or (not use_existing_key and (key_path.exists() or key_path.is_symlink()))
+    ):
         raise ValueError("Wave A receipt and key require fresh independent paths")
+    existing_key = _existing_private_key(key_path) if use_existing_key else None
     sidecar, sidecar_sha = _load_private_json(sidecar_path, root=sidecar_path.parent)
     candidate = sidecar.get("candidate")
     if not isinstance(candidate, dict):
@@ -150,6 +171,7 @@ def issue_wavea_activation(
         candidate_db=candidate_db, candidate_build_id=candidate["build_id"],
         source_roster=source_roster_path, baseline_roster=baseline_roster_path,
         build_config_environment=_CONFIG_ENVIRONMENT,
+        baseline_build_config_environment=baseline_build_config_environment,
     )
     identity = {
         "build_id": candidate["build_id"], "code_sha": code_sha,
@@ -208,7 +230,13 @@ def issue_wavea_activation(
         rehearsal_path, tuple_observation_path,
         candidate=candidate, backend_runtime=backend_runtime,
     )
-    old_health = _live_health("http://127.0.0.1:8001/health")
+    if old_backend_environment_path is None:
+        old_health = _live_health("http://127.0.0.1:8001/health")
+    else:
+        from scripts.deploy.candidate_environment import _environment
+        if old_backend_environment_path != old_snapshot / "backend-effective-env.nul":
+            raise ValueError("Old health environment must be the protected serving snapshot")
+        old_health = read_loopback_health(_environment(old_backend_environment_path))
     old_preflight = assess_release_preflight(
         observe_service("bilun-frontend.service", 3000),
         observe_service("bilun-backend.service", 8001),
@@ -224,10 +252,13 @@ def issue_wavea_activation(
     )
     rollback = old_preflight.get("rollback", {})
     artifacts = rollback.get("artifacts", {})
+    verified_code = verified_old_backend_identity(
+        old_preflight.get("observed", {}), old_health,
+        baseline_code_sha if serving_code_sha is None else serving_code_sha,
+    )
+    expected_blockers = [] if verified_code else ["serving_backend_code_sha_unverified"]
     if (
-        rollback.get("blockers") != ["serving_backend_code_sha_unverified"]
-        or old_preflight.get("observed", {}).get("backend", {}).get("observed_checkout_head")
-        != baseline_code_sha
+        rollback.get("blockers") != expected_blockers
         or old_health.get("active_build") != serving_old_build_id
         or old_health.get("cache_ready") is not True
         or not all(
@@ -287,16 +318,20 @@ def issue_wavea_activation(
         payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"),
         allow_nan=False,
     ).encode("utf-8")
-    key = secrets.token_bytes(32)
+    if use_existing_key and _existing_private_key(key_path) != existing_key:
+        raise ValueError("Existing Wave A activation key changed before receipt issuance")
+    key = existing_key if use_existing_key else secrets.token_bytes(32)
     payload["signature_sha256"] = hmac.new(key, signature_input, hashlib.sha256).hexdigest()
-    _new_private_file(key_path, key)
+    if not use_existing_key:
+        _new_private_file(key_path, key)
     try:
         _new_private_file(
             receipt_path,
             (json.dumps(payload, sort_keys=True, ensure_ascii=False, indent=2) + "\n").encode(),
         )
     except Exception:
-        key_path.unlink(missing_ok=True)
+        if not use_existing_key:
+            key_path.unlink(missing_ok=True)
         raise
     return {
         "status": "private_activation_receipt_issued",
@@ -354,7 +389,8 @@ def main(argv: list[str] | None = None) -> int:
         # Older manifests intentionally mean the historical default, never counts
         # inferred from the untrusted recorded invocation. Unknown fields still fail.
         workers = {key: manifest.get(key, 2) for key in ("payload_workers", "billing_workers")}
-        if set(manifest) - workers.keys() != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
+        optional = {"use_existing_key", "serving_code_sha", "baseline_build_config_environment", "old_backend_environment_path"}
+        if set(manifest) - workers.keys() - optional != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
             raise ValueError("Activation manifest has missing or extra fields")
         if any(
             not isinstance(manifest[key], str) or not manifest[key]
@@ -370,12 +406,24 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("Activation manifest field type is invalid")
         if any(type(value) is not int or not 1 <= value <= 8 for value in workers.values()):
             raise ValueError("Private build worker count is invalid")
+        if type(manifest.get("use_existing_key", False)) is not bool or (
+            "serving_code_sha" in manifest
+            and (not isinstance(manifest["serving_code_sha"], str) or not manifest["serving_code_sha"])
+        ) or (
+            "old_backend_environment_path" in manifest
+            and (not isinstance(manifest["old_backend_environment_path"], str)
+                 or not Path(manifest["old_backend_environment_path"]).is_absolute())
+        ):
+            raise ValueError("Activation manifest optional field type is invalid")
         paths = {key: Path(manifest[key]) for key in _MANIFEST_PATHS}
+        if "old_backend_environment_path" in manifest:
+            manifest["old_backend_environment_path"] = Path(manifest["old_backend_environment_path"])
         if any(not path.is_absolute() for path in paths.values()):
             raise ValueError("Activation manifest paths must be absolute")
         result = issue_wavea_activation(
             **{key: manifest[key] for key in _MANIFEST_STRINGS},
             **paths, **workers,
+            **{key: manifest[key] for key in optional if key in manifest},
             dependency_roots=tuple(Path(path) for path in manifest["dependency_roots"]),
             github_token=_github_read_token(),
         )

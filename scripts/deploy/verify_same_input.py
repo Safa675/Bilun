@@ -93,12 +93,16 @@ def verify_same_input_rosters(
     baseline_meta: Mapping[str, str],
     candidate_meta: Mapping[str, str],
     build_config_environment: Mapping[str, str],
+    baseline_build_config_environment: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Re-read every pinned source and reconcile each build's stored hashes."""
-    if set(build_config_environment) != set(_CONFIG_KEYS) or any(
-        not isinstance(value, str) for value in build_config_environment.values()
-    ):
-        raise ValueError("Same-input build configuration environment is incomplete")
+    baseline_environment = (build_config_environment if baseline_build_config_environment is None
+                            else baseline_build_config_environment)
+    for environment in (build_config_environment, baseline_environment):
+        if not isinstance(environment, Mapping) or set(environment) != set(_CONFIG_KEYS) or any(
+            not isinstance(value, str) for value in environment.values()
+        ):
+            raise ValueError("Same-input build configuration environment is incomplete")
     if baseline_roster.resolve() == candidate_roster.resolve():
         raise ValueError("Same-input rosters must be independent")
     old, old_data = _roster(baseline_roster, baseline_meta["code_sha"])
@@ -134,7 +138,7 @@ def verify_same_input_rosters(
         if (
             source_hash_from_files(hashed_paths) != meta["source_hash"]
             or _config_hash(
-                build_config_environment,
+                baseline_environment if name == "baseline" else build_config_environment,
                 mode=roster["data_mode"],
                 claims_dir=claim_source,
                 clean_dir=clinical_source,

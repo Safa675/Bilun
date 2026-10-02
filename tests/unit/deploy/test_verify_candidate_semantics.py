@@ -442,6 +442,7 @@ def test_full_v2_evidence_reconciles_advisories_bills_and_pinned_scopes(tmp_path
     report = _verify(baseline, candidate, roster)
 
     assert report["release_ready"] is False
+    assert report["legacy"]["comparison_contract"] == "original-five"
     assert report["wavea_evidence"]["schema_version"] == "wavea-evidence-v2"
     assert report["wavea_evidence"]["bill_evidence_count"] == 1
     assert report["wavea_evidence"]["pinned_claim_scopes"]["claim_count"] == 2
@@ -696,3 +697,252 @@ def test_legacy_financial_number_representation_must_match(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="Legacy cohort_optimization_summary payload drift"):
         _verify(baseline, candidate)
+
+
+def _reidentify_fixture(db_path: Path, old: str, new: str) -> None:
+    """Construct an independent fixture build with its own genuine identities."""
+    with duckdb.connect(str(db_path)) as con:
+        for (table,) in con.execute("SHOW TABLES").fetchall():
+            columns = {row[1] for row in con.execute(f"PRAGMA table_info('{table}')").fetchall()}
+            if "build_id" in columns:
+                con.execute(f'UPDATE "{table}" SET build_id = ? WHERE build_id = ?', [new, old])
+        for table in ("wavea_evidence_detail", "wavea_bill_evidence_detail", "wavea_evidence_index"):
+            for (raw,) in con.execute(
+                f'SELECT payload_json FROM "{table}" WHERE build_id = ?', [new]
+            ).fetchall():
+                payload = json.loads(raw)
+                assert payload["build_id"] == old
+                payload["build_id"] = new
+                con.execute(
+                    f'UPDATE "{table}" SET payload_json = ? WHERE build_id = ? AND payload_json = ?',
+                    [json.dumps(payload), new, raw],
+                )
+
+
+def _current_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+    baseline, candidate, roster = _full_fixture(tmp_path)
+    # These are fabricated full-v2 caches, not a stripped migration baseline.
+    shutil.copy2(candidate, baseline)
+    _reidentify_fixture(baseline, "candidate", "baseline")
+    with duckdb.connect(str(baseline)) as con:
+        con.execute("UPDATE build_meta SET code_sha = ?", ["a" * 40])
+    return baseline, candidate, roster
+
+
+def _mutate_payload(db: Path, table: str, change) -> None:
+    with duckdb.connect(str(db)) as con:
+        rows = con.execute(f'SELECT build_id, payload_json FROM "{table}"').fetchall()
+        for build, raw in rows:
+            payload = json.loads(raw)
+            change(payload)
+            con.execute(
+                f'UPDATE "{table}" SET payload_json = ? WHERE build_id = ? AND payload_json = ?',
+                [json.dumps(payload), build, raw],
+            )
+
+
+def test_current_raw_cache_parity_and_serving_bridge_preserve_all_fields_and_ids(
+    tmp_path: Path,
+) -> None:
+    baseline, candidate, roster = _current_fixture(tmp_path)
+    serving = tmp_path / "serving.duckdb"
+    shutil.copy2(baseline, serving)
+    _reidentify_fixture(serving, "baseline", "historical-serving")
+    with duckdb.connect(str(serving)) as con:
+        con.execute("UPDATE build_meta SET code_sha = ?, source_hash = 'historical-source'", ["c" * 40])
+    before = {path: path.read_bytes() for path in (serving, baseline, candidate)}
+
+    bridge = verify_serving_baseline_equivalence(
+        serving, serving_build_id="historical-serving",
+        baseline_db=baseline, baseline_build_id="baseline",
+    )
+    report = _verify(baseline, candidate, roster)
+
+    assert bridge["comparison_contract"] == "wavea-evidence-v2"
+    assert bridge["serving_build_id"] != bridge["baseline_build_id"]
+    assert bridge["serving_code_sha"] != bridge["baseline_code_sha"]
+    assert len(bridge["table_digests"]) == 19
+    assert report["legacy"]["comparison_contract"] == "wavea-evidence-v2"
+    assert report["legacy"]["full_evidence_parity"] == "verified_all_current_rows"
+    assert len(report["legacy"]["table_semantic_sha256"]) == 19
+    assert report["wavea_evidence"]["bill_evidence_count"] == 1
+    assert report["release_ready"] is False
+    assert {path: path.read_bytes() for path in before} == before
+
+
+@pytest.mark.parametrize("table", [
+    "patient_billing_report_rows", "patient_bill_billing_report_rows",
+    "patient_detail_cache", "patient_outcome_base", "cohort_optimization_summary",
+    "patient_alerts_summary", "cohort_recovery_summary", "cohort_compliance_index",
+    "patient_alerts_payload", "wavea_evidence_detail", "wavea_bill_evidence_detail",
+    "wavea_evidence_index",
+])
+def test_current_comparison_does_not_drop_any_payload_semantics(tmp_path: Path, table: str) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    _mutate_payload(candidate, table, lambda row: row.update({"unreviewed_semantic_change": "drift"}))
+
+    with pytest.raises(ValueError, match="Current .* (payload drift|disagrees)"):
+        _verify(baseline, candidate)
+
+
+@pytest.mark.parametrize("table", ["wavea_evidence_detail", "wavea_bill_evidence_detail"])
+def test_current_exhaustive_evaluation_drift_beyond_default_preview_blocks(
+    tmp_path: Path, table: str,
+) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+
+    def change_last_evaluation(payload):
+        assert len(payload["evaluations"]) > 500
+        payload["evaluations"][-1]["explanation"] = "changed source interpretation"
+
+    _mutate_payload(candidate, table, change_last_evaluation)
+    with pytest.raises(ValueError, match=f"Current {table} payload drift"):
+        _verify(baseline, candidate)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("sgk_uplift_try", None), ("sgk_uplift_try", -0.0), ("sgk_uplift_try", 0),
+])
+def test_current_financial_null_and_number_representation_remain_exact(
+    tmp_path: Path, field: str, value: object,
+) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    _mutate_payload(baseline, "patient_bill_billing_report_rows", lambda row: row.update({field: 0.0}))
+    _mutate_payload(candidate, "patient_bill_billing_report_rows", lambda row: row.update({field: value}))
+    with pytest.raises(ValueError, match="Current patient_bill_billing_report_rows payload drift"):
+        _verify(baseline, candidate)
+
+
+@pytest.mark.parametrize("table", ["wavea_evidence_detail", "wavea_bill_evidence_detail", "wavea_evidence_index"])
+def test_current_evidence_build_id_must_be_valid_before_normalization(tmp_path: Path, table: str) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    _mutate_payload(baseline, table, lambda row: row.update({"build_id": "unrelated-build"}))
+    with pytest.raises(ValueError, match=f"Current {table} build identity differs"):
+        _verify(baseline, candidate)
+
+
+@pytest.mark.parametrize("corruption", [
+    "mixed_bill", "mixed_patient", "unknown_report", "partial_report", "unknown_detail",
+    "missing_bill_detail", "missing_index", "cache_schema", "identical_invalid_evidence",
+])
+def test_current_unknown_mixed_incomplete_and_corrupt_contracts_fail_closed(
+    tmp_path: Path, corruption: str,
+) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    for db in (baseline, candidate):
+        if corruption in ("mixed_bill", "mixed_patient"):
+            table = "patient_bill_billing_report_rows" if corruption == "mixed_bill" else "patient_billing_report_rows"
+
+            def legacy(row):
+                clean = original_five_report_payload({
+                    key: value for key, value in row.items()
+                    if key not in ("claim_reviews", "claim_advisories", "financial_findings", "wavea_coverage")
+                })
+                row.clear()
+                row.update(clean)
+
+            _mutate_payload(db, table, legacy)
+        elif corruption == "unknown_report":
+            _mutate_payload(db, "patient_billing_report_rows", lambda row: row["wavea_coverage"].update({"schema_version": "wavea-evidence-v999"}))
+        elif corruption == "partial_report":
+            _mutate_payload(db, "patient_billing_report_rows", lambda row: row.pop("claim_advisories"))
+        elif corruption == "unknown_detail":
+            _mutate_payload(db, "wavea_evidence_detail", lambda row: row.update({"schema_version": "wavea-evidence-v999"}))
+        elif corruption == "identical_invalid_evidence":
+            _mutate_payload(db, "wavea_evidence_detail", lambda row: row["evaluations"][-1].update({"evaluation_id": "forged"}))
+        else:
+            with duckdb.connect(str(db)) as con:
+                if corruption == "cache_schema":
+                    con.execute("UPDATE build_meta SET schema_version = 'unknown'")
+                else:
+                    table = "wavea_bill_evidence_detail" if corruption == "missing_bill_detail" else "wavea_evidence_index"
+                    con.execute(f'DELETE FROM "{table}"')
+
+    with pytest.raises(ValueError):
+        _verify(baseline, candidate)
+
+
+def test_legacy_baseline_cannot_hide_current_evidence(tmp_path: Path) -> None:
+    baseline, candidate = _fixture(tmp_path)
+    with duckdb.connect(str(baseline)) as con:
+        _insert_rows(con, "wavea_evidence_detail", "baseline", {"P1": {"schema_version": "wavea-evidence-v2"}})
+    with pytest.raises(ValueError, match="Original-five baseline contains mixed Wave A evidence"):
+        _verify(baseline, candidate)
+
+
+def test_current_source_identity_cannot_be_removed_without_attested_proof(tmp_path: Path) -> None:
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    _mutate_payload(candidate, "patient_detail_cache", lambda row: row.update({
+        "data_source": {"claim_source": "/unproven/claims", "clinical_source": "/unproven/clinical"},
+    }))
+    with pytest.raises(ValueError, match="Current patient_detail_cache payload drift"):
+        _verify(baseline, candidate)
+    with pytest.raises(ValueError, match="Serving and rebuilt legacy patient_detail_cache differ"):
+        verify_serving_baseline_equivalence(
+            baseline, serving_build_id="baseline", baseline_db=candidate, baseline_build_id="candidate",
+        )
+
+
+@pytest.mark.parametrize("separate_baseline_environment", [False, True])
+def test_current_source_paths_normalize_only_after_independent_byte_proof(
+    tmp_path: Path, separate_baseline_environment: bool,
+) -> None:
+    from scripts.deploy.verify_same_input import _config_hash
+    from src.bilun.cache.builder import SUT_CLAIM_FILENAMES, SUT_CLEAN_FILENAMES
+    from src.bilun.db.hashing import source_hash_from_files
+    from tests.unit.deploy.test_generate_candidate_source_roster import _candidate, _roster
+
+    baseline, candidate, _ = _current_fixture(tmp_path)
+    environment = dict.fromkeys((
+        "PIPELINE_MODE", "PIPELINE_SUT_MODE", "BILUN_DATA_MODE", "BILUN_CLAIMS_DIR", "BILUN_CLEAN_DIR",
+    ), "")
+    old_environment = {**environment, "BILUN_DATA_MODE": "synthetic_demo",
+                       "BILUN_CLAIMS_DIR": "/retained/explicit/build/claims",
+                       "BILUN_CLEAN_DIR": "/retained/explicit/build/clean"} if separate_baseline_environment else environment
+    rosters = []
+    for name, db in (("old-inputs", baseline), ("new-inputs", candidate)):
+        root = tmp_path / name
+        root.mkdir()
+        checkout, sha, claims, clean = _candidate(root)
+        input_root = claims.parent / name
+        input_root.mkdir()
+        shutil.move(claims, input_root / "claims")
+        shutil.move(clean, input_root / "clean")
+        claims, clean = input_root / "claims", input_root / "clean"
+        for source in (tmp_path / "claim").glob("*.parquet"):
+            shutil.copy2(source, claims / source.name)
+        roster = root / "roster.json"
+        roster.write_text(json.dumps(_roster((checkout, sha, claims, clean))))
+        rosters.append(roster)
+        claim_source, clinical_source = claims.relative_to(checkout).as_posix(), clean.relative_to(checkout).as_posix()
+        source = {"claim_source": claim_source, "clinical_source": clinical_source, "data_mode": "synthetic_demo"}
+        with duckdb.connect(str(db)) as con:
+            con.execute(
+                "UPDATE build_meta SET code_sha = ?, source_hash = ?, config_hash = ?",
+                [sha, source_hash_from_files(
+                    [clean / file for file in SUT_CLEAN_FILENAMES]
+                    + [claims / file for file in SUT_CLAIM_FILENAMES]
+                ), _config_hash(old_environment if db == baseline else environment,
+                                mode="synthetic_demo", claims_dir=claim_source, clean_dir=clinical_source)],
+            )
+            tables = [table for (table,) in con.execute("SHOW TABLES").fetchall() if "payload_json" in {
+                row[1] for row in con.execute(f"PRAGMA table_info('{table}')").fetchall()
+            }]
+        for table in tables:
+            _mutate_payload(db, table, lambda row: row.update({"data_source": source}))
+
+    arguments = dict(
+        baseline_db=baseline, baseline_build_id="baseline", candidate_db=candidate,
+        candidate_build_id="candidate", baseline_roster=rosters[0], source_roster=rosters[1],
+        build_config_environment=environment,
+        baseline_build_config_environment=old_environment,
+    )
+    result = verify_candidate_semantic_checkpoint(**arguments)
+    assert result["same_input"]["status"] == "same_input_bytes_verified"
+    assert result["legacy"]["full_evidence_parity"] == "verified_all_current_rows"
+    if separate_baseline_environment:
+        with pytest.raises(ValueError, match="baseline stored source/config identity differs"):
+            verify_candidate_semantic_checkpoint(**{**arguments, "baseline_build_config_environment": environment})
+    _mutate_payload(candidate, "patient_detail_cache", lambda row: row["data_source"].update({"claim_source": "/forged-source"}))
+    with pytest.raises(ValueError, match="Cached data_source claim_source differs from attested input"):
+        verify_candidate_semantic_checkpoint(**arguments)

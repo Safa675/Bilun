@@ -96,12 +96,12 @@ class CaddyRouteDriver:
         ):
             raise ValueError("Caddy admin observation must use the loopback config endpoint")
         if (
-            set(route_files) != {"old", "barrier", "candidate"}
+            set(route_files) not in ({"old", "barrier", "candidate"}, {"old", "barrier"})
             or set(expected_digests) != set(route_files)
             or set(expected_file_digests) != set(route_files)
         ):
-            raise ValueError("All three Caddy route files and digests are required")
-        if len(set(expected_digests.values())) != 3:
+            raise ValueError("Complete Caddy route files and digests are required")
+        if len(set(expected_digests.values())) != len(route_files):
             raise ValueError("Caddy release routes must be distinct")
         if not config_path.is_absolute() or config_path.is_symlink():
             raise ValueError("Caddy live config path must be absolute and independent")
@@ -138,7 +138,7 @@ class CaddyRouteDriver:
         return None
 
     def verify_sealed_routes(self) -> None:
-        """Prove all three recovery routes can be loaded before changing Caddy."""
+        """Prove every sealed recovery route can be loaded before changing Caddy."""
         for route, source in self.route_files.items():
             if (
                 source.is_symlink() or not source.is_file()
@@ -178,7 +178,9 @@ class CaddyRouteDriver:
         descriptor, temporary = tempfile.mkstemp(prefix=".wavea-route-", dir=target.parent)
         try:
             with os.fdopen(descriptor, "wb") as output:
-                os.fchmod(output.fileno(), target.stat().st_mode & 0o777)
+                target_stat = target.stat()
+                os.fchown(output.fileno(), target_stat.st_uid, target_stat.st_gid)
+                os.fchmod(output.fileno(), target_stat.st_mode & 0o777)
                 output.write(contents)
                 output.flush()
                 os.fsync(output.fileno())

@@ -273,19 +273,20 @@ def _static_assets(runtime: Path) -> tuple[int, str]:
     return len(assets), _canonical_digest(assets)
 
 
-def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
+def _cache_observation(spec: CandidateSpec, *, preserved_scopes: bool = False) -> dict[str, Any]:
     path = spec.cache_path
     if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
         raise ValueError("Candidate cache is not an independent regular file")
-    if path.with_name(path.name + ".wal").exists():
+    if os.path.lexists(path.with_name(path.name + ".wal")):
         raise ValueError("Candidate cache has an uncheckpointed WAL")
     before = _stable_file_digest(path)
     if before != spec.cache_sha256:
         raise ValueError("Candidate cache bytes differ from prepared artifact")
     with duckdb.connect(str(path), read_only=True) as connection:
-        pointer = connection.execute(
-            "SELECT scope, active_build_id FROM build_pointer_scopes"
-        ).fetchall()
+        pointer_query = "SELECT scope, active_build_id FROM build_pointer_scopes"
+        if preserved_scopes:
+            pointer_query += " WHERE scope = 'bilun'"
+        pointer = connection.execute(pointer_query).fetchall()
         if pointer != [("bilun", spec.cache_build_id)]:
             raise ValueError("Candidate cache active pointer differs")
         build = connection.execute(
@@ -369,7 +370,7 @@ def _cache_observation(spec: CandidateSpec) -> dict[str, Any]:
             or set(index["patients"]) != patient_keys
         ):
             raise ValueError("Candidate Wave A v2 index identity/counts differ")
-    if path.with_name(path.name + ".wal").exists() or _stable_file_digest(path) != before:
+    if os.path.lexists(path.with_name(path.name + ".wal")) or _stable_file_digest(path) != before:
         raise ValueError("Candidate cache changed during observation")
     return {
         "path": str(path),
@@ -472,10 +473,10 @@ def observe_candidate_tuple(
     asset_count, assets_sha256 = _static_assets(spec.frontend_runtime)
     if assets_sha256 != spec.frontend_assets_sha256:
         raise ValueError("Candidate serving Next assets differ from manifest")
-    cache = _cache_observation(spec)
     health = fetch_health(f"http://127.0.0.1:{spec.backend_port}/health")
     activated = spec.activation_receipt_path is not None
     receipt_sha256 = None
+    preserved_scopes = False
     if activated:
         from src.bilun.api.wavea_activation import load_startup_activation
 
@@ -490,6 +491,8 @@ def observe_candidate_tuple(
         if activation is None:
             raise ValueError("Candidate activation receipt was not verified")
         receipt_sha256 = activation.receipt_sha256
+        preserved_scopes = activation.receipt_version == "wavea-serving-receipt-v2"
+    cache = _cache_observation(spec, preserved_scopes=preserved_scopes)
     if any(
         health.get(key) != value
         for key, value in {

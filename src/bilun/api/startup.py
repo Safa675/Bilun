@@ -51,11 +51,21 @@ def _load_verified_release_cache() -> str:
         or path.is_symlink()
         or not path.is_file()
         or path.stat().st_nlink != 1
-        or Path(f"{path}.wal").exists()
+        or os.path.lexists(f"{path}.wal")
     ):
         raise RuntimeError("Verified load requires an independent stable candidate cache")
     with duckdb.connect(str(path), read_only=True) as con:
-        pointers = con.execute("SELECT scope, active_build_id FROM build_pointer_scopes").fetchall()
+        pointer_query = "SELECT scope, active_build_id FROM build_pointer_scopes"
+        # Only the new signed whole-serving-file contract supports other saved
+        # scopes. Its full signature/derivation check still runs before readiness.
+        raw_receipt = os.getenv("BILUN_WAVEA_ACTIVATION_RECEIPT")
+        if raw_receipt:
+            from scripts.deploy.release_sidecar import _load_private_json
+            receipt_path = Path(raw_receipt)
+            receipt, _ = _load_private_json(receipt_path, root=receipt_path.parent)
+            if receipt.get("schema_version") == "wavea-serving-receipt-v2":
+                pointer_query += " WHERE scope = 'bilun'"
+        pointers = con.execute(pointer_query).fetchall()
         if len(pointers) != 1 or pointers[0][0] != "bilun" or not pointers[0][1]:
             raise RuntimeError("Verified candidate cache lacks one active Bilun build")
         build_id = pointers[0][1]

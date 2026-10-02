@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import ipaddress
+import json
 import os
+from collections.abc import Mapping
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -43,3 +45,17 @@ def open_probe(request: Request, *, timeout: float = 5):
 
 def open_health(url: str, *, timeout: float = 5):
     return open_probe(Request(url, headers=health_headers(url)), timeout=timeout)
+
+
+def read_loopback_health(environment: Mapping[str, str]) -> dict:
+    """Use an already-observed service environment, never a retyped shell secret."""
+    token = environment.get("BILUN_HEALTH_PROBE_TOKEN", "").strip()
+    if token and len(token) < 32:
+        raise ValueError("Health probe token must contain at least 32 characters")
+    headers = {"X-Bilun-Health-Token": token} if token else {}
+    request = Request("http://127.0.0.1:8001/health", headers=headers)
+    with open_probe(request, timeout=5) as response:
+        value = json.load(response)
+    if not isinstance(value, dict):
+        raise ValueError("Service health response is malformed")
+    return value
