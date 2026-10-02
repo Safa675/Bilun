@@ -507,7 +507,7 @@ def test_full_v2_bill_preview_cannot_disagree_with_own_detail(tmp_path: Path) ->
         _verify(baseline, candidate, roster)
 
 
-def test_bill_evidence_may_differ_from_patient_when_icu_history_is_cross_claim(
+def test_bill_evidence_retains_cross_claim_icu_history_without_broadening_scope(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     install_yatak_catalog_stub(monkeypatch)
@@ -543,14 +543,19 @@ def test_bill_evidence_may_differ_from_patient_when_icu_history_is_cross_claim(
         bill_detail = json.loads(
             con.execute("SELECT payload_json FROM wavea_bill_evidence_detail").fetchone()[0]
         )
-    assert any(
-        row["rule_id"] == "yatak_icu_overlap_510010"
-        for row in patient_detail["financial_rows"]
-    )
-    assert not any(
-        row["rule_id"] == "yatak_icu_overlap_510010"
-        for row in bill_detail["financial_rows"]
-    )
+    patient_icu_rows = [
+        row for row in patient_detail["financial_rows"]
+        if row["rule_id"] == "yatak_icu_overlap_510010" and row["claim_id"] == "SRV"
+    ]
+    assert len(patient_icu_rows) == 1
+    assert [
+        row for row in bill_detail["financial_rows"]
+        if row["rule_id"] == "yatak_icu_overlap_510010"
+    ] == patient_icu_rows
+    assert bill_detail["claim_scope_inventory"]["claims"] == [
+        {"claim_id": "SRV", "material_line_ids": []},
+    ]
+    assert {row["claim_id"] for row in bill_detail["evaluations"]} == {"SRV"}
 
 
 @pytest.mark.parametrize(
