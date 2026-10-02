@@ -52,11 +52,17 @@ class BilunRuntimeState:
                 verified_load = os.getenv("BILUN_STARTUP_POLICY", "").strip().lower() == (
                     "verified-load-only"
                 )
-                self.cache_con = connect_cache_db(
+                candidate = connect_cache_db(
                     self.canonical_cache_db_path, read_only=verified_load
                 )
-                if not verified_load:
-                    init_cache_schema(self.cache_con)
+                try:
+                    if not verified_load:
+                        init_cache_schema(candidate)
+                except BaseException:
+                    candidate.close()
+                    raise
+                # The unlocked fast path must only observe a fully usable connection.
+                self.cache_con = candidate
         return self.cache_con
 
     def get_cache_reader(self):
