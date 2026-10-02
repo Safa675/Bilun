@@ -12,6 +12,7 @@ from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session
 from ..money import money_round_half_up as _money
 from .session_pricing import (
+    billed_package_scopes,
     blood_component_max_billable_try,
     compute_session_point_factors,
     expected_session_billed_try,
@@ -106,6 +107,7 @@ def iter_session_secondary_assessments(
                 [line.procedure_code for line in billable],
                 same_incision=same_incision,
                 cross_specialty=session_cross,
+                as_of_date=session_date,
             )
             if session.rule_id == "single_procedure":
                 continue
@@ -137,6 +139,7 @@ def detect_session_underbilling_opportunities(
 ) -> list[dict[str, Any]]:
     """Flag one composed underbilling gap for each applicable secondary line."""
     opportunities: list[dict[str, Any]] = []
+    package_scopes = billed_package_scopes(lines)
     for assessment in iter_session_secondary_assessments(
         lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
     ):
@@ -145,7 +148,9 @@ def detect_session_underbilling_opportunities(
         factor = assessment.factor
         session = assessment.session
         session_expected = expected_session_billed_try(line, point_factor=factor.point_factor)
-        blood_ceiling = blood_component_max_billable_try(line)
+        blood_ceiling = blood_component_max_billable_try(
+            line, package_context=(line.patient_id, line.claim_id, line.episode_id) in package_scopes,
+        )
         # These are constraints on the same line, not additive opportunities.
         # Compose actual amounts: session list×quantity and blood payable can differ.
         expected_billed = (

@@ -49,10 +49,10 @@ def catalog(monkeypatch):
         scores = points or {"111111": 30, "222222": 20, "333333": 10}
         monkeypatch.setattr(
             session_pricing, "procedure_annex_membership",
-            lambda code: (True, code in ek2c),
+            lambda code, **kwargs: (True, code in ek2c),
         )
         monkeypatch.setattr(
-            session_pricing, "_procedure_point_score", lambda code: scores.get(code, 0),
+            session_pricing, "_procedure_point_score", lambda code, **kwargs: scores.get(code, 0),
         )
 
     configure()
@@ -252,7 +252,10 @@ class TestSessionAdjustedItemizedTotal:
     @pytest.mark.parametrize("apply_blood_fraction, expected", [(True, 1036.0), (False, 1050.0)])
     def test_blood_cap_still_uses_own_payable(self, catalog, apply_blood_fraction, expected) -> None:
         total, _ = compute_session_adjusted_itemized_total(
-            [_priced("primary", "111111", "1000"), _priced("blood", "705430", "100")],
+            [
+                _priced("primary", "111111", "1000"), _priced("blood", "705430", "100"),
+                _priced("package", "111111", "5000", procedure_category="paket"),
+            ],
             same_incision=False, cross_specialty=False, apply_blood_fraction=apply_blood_fraction,
         )
         assert total == expected

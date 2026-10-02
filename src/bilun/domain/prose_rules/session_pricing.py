@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
@@ -103,36 +104,42 @@ def _factor_with_uplift(base: float, cross_specialty: bool) -> float:
     return base
 
 
-def _procedure_point_score(code: str) -> float:
+def _procedure_point_score(code: str, *, as_of_date: date | str | None = None) -> float:
     """EK-2/C puan from catalog; EK-2/B-only via lookup; fallback for unknown codes."""
     normalized = normalize_procedure_code(code)
     if not normalized:
         return 0.0
 
-    ek2c_entry = get_ek2c_entry(normalized)
+    ek2c_entry = get_ek2c_entry(normalized, as_of_date=as_of_date)
     if ek2c_entry is not None and ek2c_entry.get("puan") is not None:
         return float(ek2c_entry["puan"])
 
     try:
         from ..catalog import lookup_procedure_code
 
-        lookup = lookup_procedure_code(normalized)
+        lookup = lookup_procedure_code(normalized, visit_date=as_of_date)
         entry = lookup.get("entry") if lookup else None
-        if entry is not None and entry.get("puan") is not None:
+        # The general catalog may return its oldest row before history starts.
+        # Session ranking must not treat that future amendment as dated evidence.
+        effective = str(entry.get("effective_date") or "") if entry else ""
+        effective_on_date = as_of_date is None or not effective or effective <= str(as_of_date)
+        if effective_on_date and entry is not None and entry.get("puan") is not None:
             return float(entry["puan"])
     except Exception:
         pass
 
-    _, in_ek2c = procedure_annex_membership(normalized)
+    _, in_ek2c = procedure_annex_membership(normalized, as_of_date=as_of_date)
     return 2.0 if in_ek2c else 1.0
 
 
-def _primary_index_by_points(codes: list[str]) -> int:
+def _primary_index_by_points(
+    codes: list[str], *, as_of_date: date | str | None = None,
+) -> int:
     """Index of highest EK puan procedure; ties → first occurrence (SUT §2.2.2.B)."""
     best_idx = 0
     best_points = -1.0
     for idx, code in enumerate(codes):
-        points = _procedure_point_score(code)
+        points = _procedure_point_score(code, as_of_date=as_of_date)
         if points > best_points:
             best_points = points
             best_idx = idx
@@ -193,6 +200,7 @@ def compute_session_point_factors(
     *,
     same_incision: bool,
     cross_specialty: bool = False,
+    as_of_date: date | str | None = None,
 ) -> SessionPricingResult:
     """Apply §2.2.2.B / §2.2.2.A(5) point factors for procedures in the same session."""
     normalized = [normalize_procedure_code(code) for code in procedure_codes if code]
@@ -200,13 +208,30 @@ def compute_session_point_factors(
     if not normalized:
         return SessionPricingResult(factors=(), rule_id="", sut_section="")
 
-    memberships = [procedure_annex_membership(code) for code in normalized]
+    memberships = [procedure_annex_membership(code, as_of_date=as_of_date) for code in normalized]
+    if as_of_date is not None and not any(in_b or in_c for in_b, in_c in memberships):
+        # No annex evidence at the requested date. Preserve the line amounts;
+        # arbitrary unknown-code ordering cannot establish a payable discount.
+        return SessionPricingResult(
+            factors=tuple(
+                SessionProcedureFactor(
+                    procedure_code=code, point_factor=1.0, is_primary=idx == 0,
+                    trace=ProseRuleTrace(
+                        rule_id="session_tariff_unavailable", sut_section="",
+                        rule_set_id=_RULE_SET_ID,
+                        detail="No historical annex membership available for this session date.",
+                    ),
+                ) for idx, code in enumerate(normalized)
+            ),
+            rule_id="session_tariff_unavailable", sut_section="",
+            metadata={"historical_catalog_unavailable": True, "as_of_date": str(as_of_date)},
+        )
     all_in_ek2c = all(in_ek2c for _, in_ek2c in memberships)
     any_in_ek2c = any(in_ek2c for _, in_ek2c in memberships)
     any_ek2b_only = any(in_ek2b and not in_ek2c for in_ek2b, in_ek2c in memberships)
     mixed = any_in_ek2c and any_ek2b_only
 
-    primary_idx = _primary_index_by_points(normalized)
+    primary_idx = _primary_index_by_points(normalized, as_of_date=as_of_date)
     _, primary_in_ek2c = memberships[primary_idx]
 
     if len(normalized) == 1:
@@ -350,9 +375,10 @@ def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
     try:
         from ..catalog import lookup_procedure_code
 
-        lookup = lookup_procedure_code(normalized)
+        lookup = lookup_procedure_code(normalized, visit_date=line.procedure_date)
         entry = lookup.get("entry") if lookup else None
-        if entry is not None:
+        effective = str(entry.get("effective_date") or "") if entry else ""
+        if entry is not None and (not effective or effective <= str(line.procedure_date)):
             price = float(entry.get("price_try") or 0)
             if price > 0:
                 return _money(price * qty)
@@ -409,12 +435,15 @@ def compute_session_adjusted_itemized_total(
     When ``cross_specialty`` is ``None``, each session auto-detects different
     specialties from line ``procedure_specialty_code`` and EK-2/C (or EK-2/B) ``group``.
     """
+    # Hypothetical itemized alternatives omit package rows and must retain
+    # full itemized blood prices. Candidate flags/codes are not billed packages.
+    package_scopes = billed_package_scopes(lines)
     total = 0.0
     sessions_with_adjustment = 0
     lines_in_scope = 0
     sessions_cross_specialty = 0
 
-    for _session_date, session_lines in group_procedure_lines_by_session(lines).items():
+    for session_date, session_lines in group_procedure_lines_by_session(lines).items():
         billable = [
             line
             for line in session_lines
@@ -431,7 +460,10 @@ def compute_session_adjusted_itemized_total(
             total += _session_adjusted_line_payable(
                 line,
                 point_factor=1.0,
-                apply_blood_fraction=apply_blood_fraction,
+                apply_blood_fraction=(
+                    apply_blood_fraction
+                    and (line.patient_id, line.claim_id, line.episode_id) in package_scopes
+                ),
             )
             continue
 
@@ -447,8 +479,9 @@ def compute_session_adjusted_itemized_total(
             codes,
             same_incision=same_incision,
             cross_specialty=session_cross,
+            as_of_date=session_date,
         )
-        if session.rule_id != "single_procedure":
+        if any(f.point_factor != 1.0 for f in session.factors):
             sessions_with_adjustment += 1
 
         # Factors preserve input occurrence order, excluding empty normalized
@@ -461,7 +494,10 @@ def compute_session_adjusted_itemized_total(
             total += _session_adjusted_line_payable(
                 line,
                 point_factor=point_factor,
-                apply_blood_fraction=apply_blood_fraction,
+                apply_blood_fraction=(
+                    apply_blood_fraction
+                    and (line.patient_id, line.claim_id, line.episode_id) in package_scopes
+                ),
             )
 
     methodology = (
@@ -503,8 +539,26 @@ def blood_component_billable_fraction(procedure_code: str) -> float | None:
     return None
 
 
-def blood_component_max_billable_try(line: ProcedureClaimLine) -> float | None:
-    """Existing blood ceiling on the whole-line payable (billed fallback)."""
+def billed_package_scopes(
+    lines: list[ProcedureClaimLine],
+) -> frozenset[tuple[str, str, str]]:
+    """Actual package billing in a patient/claim/episode, not a candidate code.
+
+    §4.6(3)/(4) distinguishes itemized treatment from package treatment. Blood
+    can be used on another day in the same treatment, so no same-day gate applies.
+    """
+    return frozenset(
+        (line.patient_id, line.claim_id, line.episode_id) for line in lines
+        if line.procedure_category == "paket" and float(line.billed_amount_try) > 0
+    )
+
+
+def blood_component_max_billable_try(
+    line: ProcedureClaimLine, *, package_context: bool = False,
+) -> float | None:
+    """Package-only blood ceiling on the whole-line payable (billed fallback)."""
+    if not package_context:
+        return None
     fraction = blood_component_billable_fraction(line.procedure_code)
     if fraction is None:
         return None

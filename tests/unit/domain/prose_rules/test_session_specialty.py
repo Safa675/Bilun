@@ -101,11 +101,11 @@ class TestSessionSpecialtyDetect:
 
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing.procedure_annex_membership",
-            lambda _code: (True, True),
+            lambda _code, **kwargs: (True, True),
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing._procedure_point_score",
-            lambda code: 10.0 if code == "B" else 5.0,
+            lambda code, **kwargs: 10.0 if code == "B" else 5.0,
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing.detect_cross_specialty_session",

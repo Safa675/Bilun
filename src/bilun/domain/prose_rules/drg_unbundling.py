@@ -10,6 +10,7 @@ from .claim_utils import group_procedure_lines_by_session, infer_care_setting
 from ..money import money_round_half_up as _money
 from .payment_method import check_payment_method_compliance, resolve_payment_method
 from .session_pricing import (
+    billed_package_scopes,
     blood_component_billable_fraction,
     compute_session_point_factors,
     expected_session_billed_try,
@@ -125,6 +126,7 @@ def detect_session_point_violations(
             codes,
             same_incision=same_incision,
             cross_specialty=session_cross,
+            as_of_date=session_date,
         )
         if session.rule_id == "single_procedure":
             continue
@@ -187,8 +189,11 @@ def detect_blood_component_violations(
     lines: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
+    package_scopes = billed_package_scopes(lines)
 
     for line in lines:
+        if (line.patient_id, line.claim_id, line.episode_id) not in package_scopes:
+            continue
         if line.is_package_included or _line_billed(line) <= 0:
             continue
         fraction = blood_component_billable_fraction(line.procedure_code)

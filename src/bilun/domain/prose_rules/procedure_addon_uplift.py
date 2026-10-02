@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import json
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -108,6 +110,7 @@ def _resolve_addon_factor(
     session_lines: list[ProcedureClaimLine],
     claim: ClaimHeader,
     rule: dict[str, Any],
+    session_date: date,
 ) -> float:
     """Match §2.2.2.B / §2.2.2.A(5) session point factors for the add-on code."""
     same_incision = bool(rule.get("same_incision", True))
@@ -129,6 +132,7 @@ def _resolve_addon_factor(
         codes,
         same_incision=same_incision,
         cross_specialty=cross_specialty,
+        as_of_date=session_date,
     )
     factors = {
         normalize_procedure_code(f.procedure_code): f for f in session.factors
@@ -209,6 +213,7 @@ def detect_missing_procedure_addon_opportunities(
                         session_lines=session_lines,
                         claim=claim,
                         rule=rule,
+                        session_date=session_date,
                     )
                     if factor <= 0:
                         continue

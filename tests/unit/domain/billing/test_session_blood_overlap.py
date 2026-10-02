@@ -26,11 +26,11 @@ def stable_catalog(monkeypatch):
 
     monkeypatch.setattr(
         session_pricing, "procedure_annex_membership",
-        lambda code: (True, code == "610070"),
+        lambda code, **kwargs: (True, code == "610070"),
     )
     monkeypatch.setattr(
         session_pricing, "_procedure_point_score",
-        lambda code: 100 if code == "610070" else 10,
+        lambda code, **kwargs: 100 if code == "610070" else 10,
     )
 
 
@@ -135,7 +135,9 @@ def test_partial_overlap_preserves_same_code_on_other_lines_dates_and_claims():
     other_claim = _blood(claim_id="OTHER")  # Same code and line ID, different claim.
     claims = [_claim(), _claim(claim_id="OTHER")]
     for lines in permutations([_primary(), overlap, next_day, other_claim]):
-        session, blood = _blocks(lines, claims)
+        session, blood = _blocks([*lines, _primary(
+            claim_id="OTHER", procedure_date=date(2026, 1, 12),
+        )], claims)
         assert session.confirmed_uplift_try == 140.41
         assert blood.confirmed_uplift_try == 417
         assert {(r["claim_id"], r["procedure_line_id"]) for r in blood.opportunities} == {
@@ -158,7 +160,7 @@ def test_same_normalized_blood_code_preserves_primary_occurrence(reverse):
     lines = [_blood(procedure_line_id="first", procedure_code="P705430"), _blood(procedure_line_id="second")]
     if reverse:
         lines.reverse()
-    session, blood = _blocks(lines)
+    session, blood = _blocks([*lines, _primary(procedure_date=date(2026, 1, 12))])
     assert [r["procedure_line_id"] for r in session.opportunities] == [lines[1].procedure_line_id]
     assert [r["procedure_line_id"] for r in blood.opportunities] == [lines[0].procedure_line_id]
     assert session.confirmed_uplift_try == 140.41
@@ -175,8 +177,8 @@ def test_zero_billed_and_package_included_lines_keep_existing_eligibility():
     assert blood.confirmed_uplift_try == 408.5
 
 
-def test_standalone_blood_line_is_unchanged():
-    session, blood = _blocks([_blood()])
+def test_standalone_blood_line_in_actual_package_treatment():
+    session, blood = _blocks([_blood(), _primary(procedure_date=date(2026, 1, 12))])
     assert session.opportunities == []
     assert blood.confirmed_uplift_try == 208.5
 
@@ -196,13 +198,12 @@ def test_direct_detector_never_borrows_another_claims_session():
     lines = [_primary(claim_id="OTHER"), _blood()]
     assert detect_session_underbilling_opportunities(lines) == []
     blood = detect_blood_component_underbilling_opportunities(lines)
-    assert len(blood) == 1
-    assert blood[0]["recoverable_uplift_try"] == 208.5
+    assert blood == []  # The other claim is not package evidence for this blood line.
 
 
 def test_blank_line_ids_do_not_collapse_distinct_occurrences():
     lines = [_blood(procedure_line_id=""), _blood(procedure_line_id="")]
-    session, blood = _blocks(lines)
+    session, blood = _blocks([*lines, _primary(procedure_date=date(2026, 1, 12))])
     assert len(session.opportunities) == len(blood.opportunities) == 1
     assert session.confirmed_uplift_try == 140.41
     assert blood.confirmed_uplift_try == 208.5

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.materials.catalog_lookup import lookup_ek3_list_price_try
 from src.bilun.domain.pricing.material_kdv import (
@@ -115,8 +116,10 @@ def _append_kdv_price_reviews(
         )
         if ceiling is None:
             continue
+        # Catalog prices are per unit; billed_amount_try covers the whole line.
+        ceiling = _money(ceiling * line.quantity)
         billed = float(line.billed_amount_try)
-        if billed <= ceiling + 0.01:
+        if _money(billed - ceiling) <= 0.01:
             continue
         result.kdv_price_reviews.append(
             {
