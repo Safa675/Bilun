@@ -53,6 +53,8 @@ from src.bilun.db.hashing import source_hash_from_files
 
 SCHEMA = "bilun-single-vps-preparation-v1"
 DEPENDENCY_FILE_SCHEMA = "bilun-single-vps-preparation-v2"
+DEPENDENCY_CHAIN_SCHEMA = "bilun-single-vps-preparation-v3"
+_MAX_DEPENDENCY_LINKS = 8
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _PATHS = frozenset({
     "repository", "bundle_root", "baseline_checkout", "baseline_claims_dir",
@@ -93,7 +95,7 @@ def _canonical_path(value: Any, *, executable: bool = False) -> Path:
 def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False) -> dict[str, Any]:
     value, _ = _load_private_json(path, root=path.parent)
     if (set(value) - {"snapshot_mode"} != _FIELDS
-            or value.get("schema_version") not in (SCHEMA, DEPENDENCY_FILE_SCHEMA)):
+            or value.get("schema_version") not in (SCHEMA, DEPENDENCY_FILE_SCHEMA, DEPENDENCY_CHAIN_SCHEMA)):
         raise ValueError("Preparation manifest has missing, extra, or unsupported fields")
     if any(not isinstance(value[key], str) or not value[key] for key in _STRINGS):
         raise ValueError("Preparation string field is malformed")
@@ -123,12 +125,14 @@ def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False
     for key in ("dependency_roots", "external_state_paths"):
         if not isinstance(value[key], list) or len(value[key]) > 64:
             raise ValueError("Preparation path inventory must be a bounded list")
-        value[key] = tuple(_canonical_path(item) for item in value[key])
+        value[key] = tuple(_canonical_path(
+            item, executable=key == "dependency_roots" and value["schema_version"] == DEPENDENCY_CHAIN_SCHEMA,
+        ) for item in value[key])
         if len(set(value[key])) != len(value[key]):
             raise ValueError("Preparation path inventory repeats entries")
     if not value["dependency_roots"]:
         raise ValueError("Preparation requires explicit dependency roots")
-    if value["schema_version"] == DEPENDENCY_FILE_SCHEMA:
+    if value["schema_version"] in (DEPENDENCY_FILE_SCHEMA, DEPENDENCY_CHAIN_SCHEMA):
         # Source inventories never inherit the dependency-only link exception.
         sources = (value["baseline_claims_dir"], value["baseline_clean_dir"])
         if any(root == Path("/") or any(root.is_relative_to(source) or source.is_relative_to(root)
@@ -180,7 +184,64 @@ def _git(root: Path, *args: str) -> str:
     return _run(["git", "-C", str(root), *args], cwd=root)
 
 
-def _inventory(path: Path, *, external_dependency_files: frozenset[Path] = frozenset()) -> dict[str, Any]:
+def _direct_dependency_target(path: Path, literal: str) -> Path:
+    """Normalize one leaf hop without following any directory symlink."""
+    if not literal or literal.endswith("/") or literal.rsplit("/", 1)[-1] in {".", ".."}:
+        raise ValueError("Dependency file link has a directory target spelling")
+    direct = path.parent / literal
+    # Check before normalizing '..': resolving first would hide an alias or a
+    # non-directory component that the kernel must traverse in the real path.
+    if any(part.is_symlink() or not part.is_dir() for part in direct.parents):
+        raise ValueError("Dependency file link traverses a linked or non-directory parent")
+    return Path(os.path.normpath(str(direct)))
+
+
+def _dependency_link_pin(path: Path, *, files: frozenset[Path], links: frozenset[Path],
+                         root: Path | None = None) -> dict[str, Any]:
+    """Pin an explicitly authorized file-link graph, never an implicit resolve()."""
+    current = path
+    seen: set[Path] = set()
+    chain = []
+    external = root is None
+    while current.is_symlink():
+        if current in seen or len(chain) >= _MAX_DEPENDENCY_LINKS:
+            raise ValueError("Dependency file link chain is cyclic or exceeds the hop limit")
+        seen.add(current)
+        if current.parent != current.parent.resolve(strict=True):
+            raise ValueError("Dependency file link parent must be canonical")
+        before = current.lstat()
+        literal = os.readlink(current)
+        target = _direct_dependency_target(current, literal)
+        after = current.lstat()
+        # readlink may update access time; only identity/content/permission
+        # metadata belongs in this stability check.
+        stable_fields = ("st_dev", "st_ino", "st_mode", "st_nlink", "st_uid", "st_gid",
+                         "st_size", "st_mtime_ns", "st_ctime_ns")
+        if (any(getattr(before, field) != getattr(after, field) for field in stable_fields)
+                or not current.is_symlink() or os.readlink(current) != literal):
+            raise ValueError("Dependency file link changed during inventory")
+        chain.append({"path": str(current), "link": literal,
+                      "mode": before.st_mode & 0o7777, "target_path": str(target)})
+        external = external or not target.is_relative_to(root)
+        current = target
+    if not chain:
+        raise ValueError("Declared dependency file link is not a symlink")
+    if not external:
+        # Ordinary root-contained links retain their original inventory shape;
+        # no outside path was traversed and the directory inventory covers them.
+        if current != current.resolve(strict=True) or not (current.is_file() or current.is_dir()):
+            raise ValueError("Dependency link target is absent or unsupported")
+        return {"link": chain[0]["link"]}
+    if (any(Path(hop["path"]) not in links for hop in chain[1:])
+            or current not in files or not current.is_file()
+            or current != current.resolve(strict=True)):
+        raise ValueError("Dependency file chain requires every link and final file to be declared")
+    return {"link": chain[0]["link"], "link_chain": chain, "resolved_target": str(current),
+            "target": _inventory(current, external_dependency_files=files)}
+
+
+def _inventory(path: Path, *, external_dependency_files: frozenset[Path] = frozenset(),
+               dependency_file_links: frozenset[Path] | None = None) -> dict[str, Any]:
     """Pin full external state, including absent optional files via directory membership."""
     if path.is_symlink():
         raise ValueError("External state cannot be a symlink")
@@ -193,6 +254,11 @@ def _inventory(path: Path, *, external_dependency_files: frozenset[Path] = froze
     for item in sorted(path.rglob("*")):
         relative = item.relative_to(path).as_posix()
         if item.is_symlink():
+            if dependency_file_links is not None:
+                rows[relative] = _dependency_link_pin(
+                    item, files=external_dependency_files, links=dependency_file_links, root=path,
+                )
+                continue
             target = item.resolve(strict=True)
             if not target.is_relative_to(path):
                 if target not in external_dependency_files:
@@ -218,25 +284,31 @@ def _inventory(path: Path, *, external_dependency_files: frozenset[Path] = froze
 
 
 def _pin_inputs(paths: set[Path], executables: set[Path], *,
-                dependency_roots: tuple[Path, ...] = ()) -> dict[str, Any]:
+                dependency_roots: tuple[Path, ...] = (),
+                allow_dependency_file_links: bool = False) -> dict[str, Any]:
     dependencies = set(dependency_roots)
     if (len(dependencies) != len(dependency_roots) or len(dependencies) > 64
             or not dependencies.issubset(paths) or Path("/") in dependencies):
         raise ValueError("Preparation dependency roles are malformed")
     for path in dependencies:
-        if (_canonical_path(str(path)) != path or not (path.is_file() or path.is_dir())):
+        if (_canonical_path(str(path), executable=allow_dependency_file_links and path.is_symlink()) != path
+                or not (path.is_file() or path.is_dir())):
             raise ValueError("Dependency roots must be canonical ordinary files or directories")
     # Only separately declared file entries grant permission, never a containing
     # directory or an unrelated immutable input such as a key or source file.
-    targets = frozenset(path for path in dependencies if path.is_file())
+    targets = frozenset(path for path in dependencies if path.is_file() and not path.is_symlink())
+    links = frozenset(path for path in dependencies if path.is_symlink()) if allow_dependency_file_links else None
     result = {}
     for path in sorted(paths):
-        if path in executables:
+        if links is not None and path in links:
+            result[str(path)] = {"dependency_link": _dependency_link_pin(path, files=targets, links=links)}
+        elif path in executables:
             target = path.resolve(strict=True)
             result[str(path)] = {"executable_target": str(target), "bytes": _inventory(target)}
         else:
             result[str(path)] = _inventory(
                 path, external_dependency_files=targets if path in dependencies else frozenset(),
+                dependency_file_links=links if path in dependencies else None,
             )
     return result
 
@@ -266,26 +338,28 @@ def verify_preparation_pins(path: Path, expected_sha256: str) -> None:
     report, digest = _load_private_json(path, root=path.parent)
     version = report.get("schema_version")
     fields = {"schema_version", "immutable_inputs", "external_state"}
-    if version == "bilun-preparation-pins-v2":
+    if version in ("bilun-preparation-pins-v2", "bilun-preparation-pins-v3"):
         fields.add("dependency_roots")
     if (digest != expected_sha256 or set(report) != fields
-            or version not in ("bilun-preparation-pins-v1", "bilun-preparation-pins-v2")
+            or version not in ("bilun-preparation-pins-v1", "bilun-preparation-pins-v2", "bilun-preparation-pins-v3")
             or not isinstance(report.get("immutable_inputs"), dict)
             or not report["immutable_inputs"] or not isinstance(report.get("external_state"), dict)):
         raise ValueError("Preparation dependency pin contract is malformed or changed")
     immutable = report["immutable_inputs"]
-    paths = {_canonical_path(key, executable="executable_target" in value)
+    chained = version == "bilun-preparation-pins-v3"
+    dependencies = ()
+    if version in ("bilun-preparation-pins-v2", "bilun-preparation-pins-v3"):
+        if not isinstance(report["dependency_roots"], list) or not report["dependency_roots"]:
+            raise ValueError("Preparation dependency roles are malformed")
+        dependencies = tuple(_canonical_path(key, executable=chained) for key in report["dependency_roots"])
+    paths = {_canonical_path(key, executable="executable_target" in value or chained and Path(key) in dependencies)
              for key, value in immutable.items() if isinstance(value, dict)}
     if len(paths) != len(immutable):
         raise ValueError("Preparation immutable pin inventory is malformed")
     executables = {Path(key) for key, value in immutable.items() if "executable_target" in value}
     external = tuple(_canonical_path(key) for key in report["external_state"])
-    dependencies = ()
-    if version == "bilun-preparation-pins-v2":
-        if not isinstance(report["dependency_roots"], list) or not report["dependency_roots"]:
-            raise ValueError("Preparation dependency roles are malformed")
-        dependencies = tuple(_canonical_path(key) for key in report["dependency_roots"])
-    if (_pin_inputs(paths, executables, dependency_roots=dependencies) != immutable
+    if (_pin_inputs(paths, executables, dependency_roots=dependencies,
+                    allow_dependency_file_links=chained) != immutable
             or _external_identities(external) != report["external_state"]
             or _stable_file_hash(path) != expected_sha256):
         raise ValueError("Preparation dependency bytes or external state ownership changed")
@@ -609,7 +683,7 @@ def _handoff(spec: dict[str, Any], checkout: Path, frontend: Path) -> Path:
 
 def _snapshot_journal(manifest_path: Path) -> Path:
     manifest, _ = _load_private_json(manifest_path, root=manifest_path.parent)
-    if manifest.get("schema_version") not in (SCHEMA, DEPENDENCY_FILE_SCHEMA):
+    if manifest.get("schema_version") not in (SCHEMA, DEPENDENCY_FILE_SCHEMA, DEPENDENCY_CHAIN_SCHEMA):
         raise ValueError("Unsupported preparation recovery manifest")
     root = _canonical_path(manifest.get("bundle_root"))
     return root / "snapshot-maintenance" / "transaction.json"
@@ -674,8 +748,10 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         spec["backend_python"], spec["node"], spec["npm"],
     }
     executables = {spec["backend_python"], spec["node"], spec["npm"]}
-    dependencies = spec["dependency_roots"] if spec["schema_version"] == DEPENDENCY_FILE_SCHEMA else ()
-    pinned = _pin_inputs(pins, executables, dependency_roots=dependencies)
+    dependencies = spec["dependency_roots"] if spec["schema_version"] != SCHEMA else ()
+    pin_options = {"dependency_roots": dependencies,
+                   "allow_dependency_file_links": spec["schema_version"] == DEPENDENCY_CHAIN_SCHEMA}
+    pinned = _pin_inputs(pins, executables, **pin_options)
     external = _external_identities(spec["external_state_paths"])
     before = _observe_live(spec)
     _verify_known_external_state(spec, before, candidate_backend)
@@ -690,7 +766,8 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         pin_contract = {"schema_version": "bilun-preparation-pins-v1",
                         "immutable_inputs": pinned, "external_state": external}
         if dependencies:
-            pin_contract.update(schema_version="bilun-preparation-pins-v2",
+            pin_contract.update(schema_version="bilun-preparation-pins-v3" if pin_options["allow_dependency_file_links"]
+                                else "bilun-preparation-pins-v2",
                                 dependency_roots=[str(path) for path in dependencies])
         _save(root / "preparation-pins.json", pin_contract)
         before = _snapshot_old(spec, before)
@@ -746,7 +823,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     trace_attestation_path=root / "trace-attestation.json", rehearsal_path=rehearsal,
                     tuple_observation_path=observed, evidence_dir=evidence)
         # Reconcile external mutable state and live pair before any receipt can exist.
-        if (_pin_inputs(pins, executables, dependency_roots=dependencies) != pinned
+        if (_pin_inputs(pins, executables, **pin_options) != pinned
                 or _external_identities(spec["external_state_paths"]) != external
                 or _observe_live(spec) != before or _stable_file_hash(manifest_path) != manifest_sha
                 or _baseline_roster(spec) != baseline
@@ -775,7 +852,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     baseline_build_config_environment=spec["baseline_build_config_environment"],
                     payload_workers=spec["payload_workers"], billing_workers=spec["billing_workers"])
         if (_observe_live(spec) != before
-                or _pin_inputs(pins, executables, dependency_roots=dependencies) != pinned
+                or _pin_inputs(pins, executables, **pin_options) != pinned
                 or _external_identities(spec["external_state_paths"]) != external):
             raise ValueError("Serving pair or pinned external state changed before preparation completed")
         paired = _handoff(spec, checkout, frontend)

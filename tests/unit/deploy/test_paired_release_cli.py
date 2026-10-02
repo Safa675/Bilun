@@ -8,7 +8,8 @@ import pytest
 from scripts.deploy import paired_release, prepare_single_vps_release, snapshot_maintenance
 
 
-@pytest.fixture(params=["bilun-single-vps-preparation-v1", "bilun-single-vps-preparation-v2"])
+@pytest.fixture(params=["bilun-single-vps-preparation-v1", "bilun-single-vps-preparation-v2",
+                        "bilun-single-vps-preparation-v3"])
 def manifest(tmp_path, request):
     path = tmp_path / "machine.json"
     path.write_text(json.dumps({"schema_version": request.param,

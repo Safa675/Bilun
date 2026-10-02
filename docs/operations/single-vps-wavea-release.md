@@ -158,6 +158,38 @@ intermediate target paths remain rejected. Source, cache and runtime inventory
 rules and signed startup receipts are unchanged. V1 manifests and pin contracts
 retain their original strict behavior; they do not gain this exception.
 
+For an external **file-link chain**, select
+`"schema_version": "bilun-single-vps-preparation-v3"`. It uses the same fields,
+but `dependency_roots` may also explicitly name leaf symlinks whose parent is
+canonical and contains no directory symlinks. Every intermediate link in a
+chain leaving a dependency root must be listed separately, and so must the
+canonical final regular file. A source link already inside an inventoried
+dependency directory need not also be listed as a leaf; listing it is allowed.
+Declaring another directory never grants permission for its file-link leaves.
+
+For example, the observed Ubuntu layout is:
+
+```text
+/usr/lib/python3.13/config-3.13-x86_64-linux-gnu/libpython3.13.so
+  -> ../../x86_64-linux-gnu/libpython3.13.so.1
+/usr/lib/x86_64-linux-gnu/libpython3.13.so.1
+  -> libpython3.13.so.1.0
+/usr/lib/x86_64-linux-gnu/libpython3.13.so.1.0  (regular file)
+```
+
+Alongside the stdlib and venv directories, explicitly list the `.so.1` link and
+the `.so.1.0` file, plus `/etc/python3.13/sitecustomize.py` for the direct
+sitecustomize link. V3 pins every hop's absolute path, literal text, link mode
+and normalized next path, and the final file's bytes/full mode. Each declared
+leaf link and final file also receives an independent pin. Replay uses only
+the roles in the hash-bound `bilun-preparation-pins-v3` contract. Cycles, more
+than eight link hops, undeclared hops/targets, directory-link components
+(including those hidden by `..`) and external directory targets fail closed.
+Purely root-contained links retain their ordinary inventory behavior; this
+does not grant new directory-link permissions. V1 and V2 remain unchanged and
+continue rejecting external multi-hop links. Do not alter distribution links
+or replace these declarations with broad filesystem roots.
+
 `external_state_paths` pins canonical locations, filesystem identity, permissions
 and ownership of known live mutable state. Mutable ledger contents may continue
 to change; these ledgers are never copied, reset or replaced. A configured
