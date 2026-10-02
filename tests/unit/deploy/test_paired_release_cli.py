@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 import pytest
 
 from scripts.deploy import paired_release, prepare_single_vps_release, snapshot_maintenance
 
 
-@pytest.fixture
-def manifest(tmp_path):
+@pytest.fixture(params=["bilun-single-vps-preparation-v1", "bilun-single-vps-preparation-v2"])
+def manifest(tmp_path, request):
     path = tmp_path / "machine.json"
-    path.write_text(json.dumps({"schema_version": "bilun-single-vps-preparation-v1",
+    path.write_text(json.dumps({"schema_version": request.param,
                                 "bundle_root": str(tmp_path / "absent")}))
     path.chmod(0o600)
     return path
@@ -46,3 +47,30 @@ def test_preparation_status_is_read_only_before_bundle_exists(manifest, monkeypa
     assert paired_release.main(["status", "--manifest", str(manifest)]) == 0
     assert json.loads(capsys.readouterr().out)["state"] == "unprepared"
     assert not (manifest.parent / "absent").exists()
+
+
+def test_preparation_dispatches_bundle_handoff_to_paired_prepare(manifest, monkeypatch, capsys):
+    calls = []
+    paired_path = manifest.parent / "paired-manifest.json"
+    paired_manifest = {"schema_version": "bilun-single-vps-pair-v1", "release_id": "dispatch-test"}
+    paired_path.write_text(json.dumps(paired_manifest))
+    paired_path.chmod(0o600)
+    monkeypatch.setattr(prepare_single_vps_release, "inspect_preparation_snapshot", lambda _: None)
+    monkeypatch.setattr(prepare_single_vps_release, "prepare_release_bundle", lambda path:
+                        calls.append(("bundle", path)) or {"paired_manifest_path": str(paired_path)})
+
+    def driver(value):
+        calls.append(("driver", value))
+        return SimpleNamespace(root=manifest.parent, paths={"lock_path": manifest.parent / "lock"})
+
+    def transaction(**kwargs):
+        assert kwargs["state_dir"] == manifest.parent
+        assert kwargs["lock_path"] == manifest.parent / "lock"
+        assert kwargs["manifest_sha256"] == paired_release._stable_file_hash(paired_path)
+        return SimpleNamespace(prepare=lambda: calls.append(("prepare", None)) or {"state": "prepared"})
+
+    monkeypatch.setattr(paired_release, "SingleVpsDriver", driver)
+    monkeypatch.setattr(paired_release, "PairedReleaseTransaction", transaction)
+    assert paired_release.main(["prepare", "--manifest", str(manifest)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"state": "prepared"}
+    assert calls == [("bundle", manifest), ("driver", paired_manifest), ("prepare", None)]

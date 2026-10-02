@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import fcntl
+import hashlib
 import os
 import shutil
 import subprocess
@@ -380,7 +381,8 @@ def test_invalid_candidate_metadata_stops_before_structural_gate(machine, monkey
 
 @pytest.mark.parametrize("field,value", [("payload_workers", True), ("billing_workers", 9),
                                        ("target_sha", "main"), ("ci_run_id", "0"),
-                                       ("unknown_field", "value"), ("dependency_roots", [])])
+                                       ("unknown_field", "value"), ("dependency_roots", []),
+                                       ("schema_version", []), ("schema_version", {})])
 def test_manifest_rejects_ambiguous_inputs_before_any_work(machine, field, value):
     manifest, spec, events, _ = machine
     spec[field] = value
@@ -487,3 +489,335 @@ def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkey
     assert "scripts.deploy.rehearse_wavea_same_port" in argv
     assert "systemctl" not in argv and "--profile" not in argv
     assert kwargs["env"]["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
+@pytest.fixture
+def dependency_machine(machine):
+    manifest, spec, _, _ = machine
+    spec["schema_version"] = module.DEPENDENCY_FILE_SCHEMA
+    dependency = Path(spec["dependency_roots"][0])
+    library = manifest.parent / "stdlib"
+    library.mkdir()
+    target = library / "sitecustomize.py"
+    target.write_bytes(b"# system Python customization\n")
+    target.chmod(0o644)
+    alternate = library / "alternate.py"
+    alternate.write_bytes(target.read_bytes())
+    alternate.chmod(0o644)
+    link = dependency / "lib/python3.12/sitecustomize.py"
+    link.parent.mkdir(parents=True)
+    link.symlink_to(target)
+    spec["dependency_roots"].extend((str(target), str(alternate)))
+    save(manifest, spec)
+    return machine, dependency, target, alternate, link
+
+
+def _prepared_pins(result):
+    paired = json.loads(Path(result["paired_manifest_path"]).read_text())
+    path = Path(paired["preparation_pins_path"])
+    return path, paired["preparation_pins_sha256"], json.loads(path.read_text())
+
+
+@pytest.mark.parametrize("relative_link", [False, True])
+@pytest.mark.parametrize("mode", [0o644, 0o4644, 0o2644, 0o1644])
+def test_v2_preparation_pins_declared_file_and_replays_exact_bundle(dependency_machine, relative_link, mode):
+    machine, dependency, target, _, link = dependency_machine
+    manifest, spec, events, original = machine
+    target.chmod(mode)
+    if relative_link:
+        link.unlink()
+        link.symlink_to(os.path.relpath(target, link.parent))
+    result = module.prepare_release_bundle(manifest)
+    path, digest, report = _prepared_pins(result)
+    target_pin = {"file": hashlib.sha256(target.read_bytes()).hexdigest(), "mode": mode}
+    assert report["schema_version"] == "bilun-preparation-pins-v2"
+    assert report["dependency_roots"] == spec["dependency_roots"]
+    assert report["immutable_inputs"][str(target)] == target_pin
+    assert report["immutable_inputs"][str(dependency)][link.relative_to(dependency).as_posix()] == {
+        "link": os.readlink(link), "resolved_target": str(target), "target": target_pin,
+    }
+    assert result["schema_version"] == module.DEPENDENCY_FILE_SCHEMA
+    module.verify_preparation_pins(path, digest)
+    before = list(events)
+    assert module.prepare_release_bundle(manifest) == result
+    assert events == before
+    assert Path(spec["live_cache_path"]).read_bytes() == original
+    assert json.loads(Path(result["paired_manifest_path"]).read_text())["schema_version"] == "bilun-single-vps-pair-v1"
+
+
+def test_v1_still_emits_exact_legacy_pin_contract(machine):
+    manifest, spec, _, _ = machine
+    path, digest, report = _prepared_pins(module.prepare_release_bundle(manifest))
+    assert set(report) == {"schema_version", "immutable_inputs", "external_state"}
+    assert report["schema_version"] == "bilun-preparation-pins-v1"
+    module.verify_preparation_pins(path, digest)
+    assert module.load_preparation_manifest(manifest, allow_existing_bundle=True)["schema_version"] == module.SCHEMA
+
+
+def test_legacy_literal_pin_report_accepts_internal_and_executable_links(tmp_path):
+    dependency = tmp_path / "dependency"
+    dependency.mkdir()
+    target = dependency / "module.py"
+    target.write_bytes(b"legacy bytes")
+    target.chmod(0o640)
+    (dependency / "internal.py").symlink_to("module.py")
+    executable = tmp_path / "python"
+    executable.symlink_to(target)
+    digest = hashlib.sha256(b"legacy bytes").hexdigest()
+    report = {
+        "schema_version": "bilun-preparation-pins-v1",
+        "immutable_inputs": {
+            str(dependency): {"internal.py": {"link": "module.py"},
+                              "module.py": {"sha256": digest, "mode": 0o640}},
+            str(executable): {"executable_target": str(target),
+                              "bytes": {"file": digest, "mode": 0o640}},
+        },
+        "external_state": {},
+    }
+    path = tmp_path / "legacy-pins.json"
+    save(path, report)
+    module.verify_preparation_pins(path, hashlib.sha256(path.read_bytes()).hexdigest())
+
+
+def test_v1_refuses_even_independently_declared_external_file(dependency_machine):
+    machine, _, _, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    spec["schema_version"] = module.SCHEMA
+    save(manifest, spec)
+    with pytest.raises(ValueError, match="escapes"):
+        module.prepare_release_bundle(manifest)
+    assert events == ["ci"]
+    assert not Path(spec["bundle_root"]).exists()
+
+
+@pytest.mark.parametrize("mutation", ["bytes", "mode", "setuid", "setgid", "sticky", "equal_bytes_retarget", "link_text",
+                                     "deleted", "target_symlink", "new_file"])
+@pytest.mark.parametrize("boundary", ["handoff", "repeat_prepare"])
+def test_v2_replay_rejects_dependency_drift(dependency_machine, mutation, boundary):
+    machine, dependency, target, alternate, link = dependency_machine
+    manifest, _, events, _ = machine
+    path, digest, _ = _prepared_pins(module.prepare_release_bundle(manifest))
+    before = list(events)
+    if mutation == "bytes":
+        target.write_bytes(b"# changed OS package\n")
+    elif mutation == "mode":
+        target.chmod(0o600)
+    elif mutation in {"setuid", "setgid", "sticky"}:
+        target.chmod({"setuid": 0o4644, "setgid": 0o2644, "sticky": 0o1644}[mutation])
+    elif mutation in {"equal_bytes_retarget", "link_text"}:
+        link.unlink()
+        link.symlink_to(alternate if mutation == "equal_bytes_retarget" else os.path.relpath(target, link.parent))
+    elif mutation == "deleted":
+        target.unlink()
+    elif mutation == "target_symlink":
+        target.unlink()
+        target.symlink_to(alternate)
+    else:
+        (dependency / "injected.py").write_bytes(b"unexpected module")
+    with pytest.raises((ValueError, OSError)):
+        if boundary == "handoff":
+            module.verify_preparation_pins(path, digest)
+        else:
+            module.prepare_release_bundle(manifest)
+    assert events == before
+
+
+@pytest.mark.parametrize("stage", ["build_wavea_sidecar", "issue_wavea_activation"])
+@pytest.mark.parametrize("mutation", ["bytes", "mode"])
+def test_v2_rechecks_external_file_before_and_after_signing(dependency_machine, monkeypatch, stage, mutation):
+    machine, _, target, _, _ = dependency_machine
+    manifest, spec, events, original = machine
+    operation = getattr(module, stage)
+
+    def change(**kwargs):
+        result = operation(**kwargs)
+        target.write_bytes(b"changed during preparation") if mutation == "bytes" else target.chmod(0o600)
+        return result
+
+    monkeypatch.setattr(module, stage, change)
+    with pytest.raises(ValueError, match="changed"):
+        module.prepare_release_bundle(manifest)
+    assert not (Path(spec["bundle_root"]) / "prepared.json").exists()
+    assert not (Path(spec["bundle_root"]) / "paired-manifest.json").exists()
+    assert Path(spec["live_cache_path"]).read_bytes() == original
+    if stage == "build_wavea_sidecar":
+        assert "issue" not in events
+
+
+@pytest.mark.parametrize("declaration", ["undeclared", "directory_only", "other_immutable_input"])
+def test_v2_requires_separate_file_role_not_directory_or_other_input(dependency_machine, declaration):
+    machine, _, target, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    spec["dependency_roots"].remove(str(target))
+    if declaration == "directory_only":
+        spec["dependency_roots"].append(str(target.parent))
+    elif declaration == "other_immutable_input":
+        # Already hashed as a candidate environment is not a dependency-file declaration.
+        spec["candidate_backend_environment"] = str(target)
+    save(manifest, spec)
+    with pytest.raises(ValueError, match="escapes"):
+        module.prepare_release_bundle(manifest)
+    assert "snapshot" not in events and not Path(spec["bundle_root"]).exists()
+
+
+@pytest.mark.parametrize("link_kind", ["directory", "file_chain", "directory_chain",
+                                      "hidden_parent_chain", "dangling", "cycle"])
+def test_v2_rejects_external_directories_chains_and_invalid_targets(dependency_machine, link_kind):
+    machine, _, target, _, link = dependency_machine
+    manifest, spec, events, _ = machine
+    link.unlink()
+    if link_kind == "directory":
+        link.symlink_to(target.parent)
+        spec["dependency_roots"].append(str(target.parent))
+    elif link_kind == "file_chain":
+        alias = target.with_name("alias.py")
+        alias.symlink_to(target)
+        link.symlink_to(alias)
+    elif link_kind in {"directory_chain", "hidden_parent_chain"}:
+        alias = target.parent.parent / "stdlib-alias"
+        if link_kind == "directory_chain":
+            alias.symlink_to(target.parent, target_is_directory=True)
+            link.symlink_to(alias / target.name)
+        else:
+            child = target.parent / "nested"
+            child.mkdir()
+            alias.symlink_to(child, target_is_directory=True)
+            link.symlink_to(alias / ".." / target.name)
+    elif link_kind == "dangling":
+        link.symlink_to(target.with_name("absent.py"))
+    else:
+        alias = target.with_name("cycle.py")
+        alias.symlink_to(link)
+        link.symlink_to(alias)
+    save(manifest, spec)
+    with pytest.raises((ValueError, OSError, RuntimeError)):
+        module.prepare_release_bundle(manifest)
+    assert "snapshot" not in events and not Path(spec["bundle_root"]).exists()
+
+
+@pytest.mark.parametrize("alias_kind", ["file_symlink", "parent_symlink", "parent_traversal", "duplicate"])
+def test_v2_manifest_rejects_noncanonical_or_duplicate_file_declarations(dependency_machine, alias_kind):
+    machine, _, target, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    if alias_kind == "file_symlink":
+        alias = target.with_name("alias.py")
+        alias.symlink_to(target)
+    elif alias_kind == "parent_symlink":
+        parent = target.parent.parent / "alias"
+        parent.symlink_to(target.parent, target_is_directory=True)
+        alias = parent / target.name
+    elif alias_kind == "parent_traversal":
+        alias = target.parent / ".." / target.parent.name / target.name
+    else:
+        alias = target
+    spec["dependency_roots"].append(str(alias))
+    save(manifest, spec)
+    with pytest.raises(ValueError, match="canonical|repeats"):
+        module.prepare_release_bundle(manifest)
+    assert events == []
+
+
+@pytest.mark.parametrize("source_key", ["baseline_claims_dir", "baseline_clean_dir"])
+@pytest.mark.parametrize("overlap", ["equal", "ancestor", "descendant", "file", "filesystem_root"])
+def test_v2_dependency_roles_cannot_overlap_source_inventory(dependency_machine, source_key, overlap):
+    machine, _, _, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    source = Path(spec[source_key])
+    if overlap == "descendant":
+        overlap_path = source / "nested"
+        overlap_path.mkdir()
+    else:
+        overlap_path = {"equal": source, "ancestor": source.parent,
+                        "file": source / "input.txt", "filesystem_root": Path("/")}[overlap]
+    spec["dependency_roots"].append(str(overlap_path))
+    save(manifest, spec)
+    with pytest.raises(ValueError, match="source data"):
+        module.prepare_release_bundle(manifest)
+    assert events == []
+
+
+@pytest.mark.parametrize("source_key", ["baseline_claims_dir", "baseline_clean_dir"])
+def test_v2_declared_dependency_file_never_authorizes_source_links(dependency_machine, source_key):
+    machine, _, target, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    (Path(spec[source_key]) / "source-link.py").symlink_to(target)
+    with pytest.raises(ValueError, match="escapes"):
+        module.prepare_release_bundle(manifest)
+    assert "snapshot" not in events and not Path(spec["bundle_root"]).exists()
+
+
+@pytest.mark.parametrize("forgery", ["missing_roles", "null_roles", "string_roles", "empty_roles",
+                                    "duplicate_role", "undeclared_role", "relative_role", "alias_role",
+                                    "nonstring_role", "too_many_roles", "filesystem_root",
+                                    "missing_file_role", "missing_directory_role", "extra_field",
+                                    "missing_target_pin", "changed_target_pin", "changed_link_target",
+                                    "downgrade", "malformed_pin", "malformed_version"])
+def test_v2_hash_bound_replay_rejects_malformed_or_forged_contract(dependency_machine, forgery):
+    machine, dependency, target, alternate, link = dependency_machine
+    manifest, _, _, _ = machine
+    path, _, report = _prepared_pins(module.prepare_release_bundle(manifest))
+    roles = report["dependency_roots"]
+    if forgery == "missing_roles":
+        del report["dependency_roots"]
+    elif forgery in {"null_roles", "string_roles", "empty_roles"}:
+        report["dependency_roots"] = {"null_roles": None, "string_roles": str(target), "empty_roles": []}[forgery]
+    elif forgery == "duplicate_role":
+        roles.append(str(target))
+    elif forgery == "undeclared_role":
+        roles.append(str(manifest))
+    elif forgery == "relative_role":
+        roles.append("sitecustomize.py")
+    elif forgery == "alias_role":
+        alias = target.with_name("alias.py")
+        alias.symlink_to(target)
+        roles.append(str(alias))
+    elif forgery == "nonstring_role":
+        roles.append({"path": str(target)})
+    elif forgery == "too_many_roles":
+        report["dependency_roots"] = [str(target)] * 65
+    elif forgery == "filesystem_root":
+        roles.append("/")
+    elif forgery == "missing_file_role":
+        roles.remove(str(target))
+    elif forgery == "missing_directory_role":
+        roles.remove(str(dependency))
+    elif forgery == "extra_field":
+        report["external_dependency_files"] = [str(target)]
+    elif forgery == "missing_target_pin":
+        del report["immutable_inputs"][str(target)]
+    elif forgery == "changed_target_pin":
+        report["immutable_inputs"][str(target)]["mode"] = 0o600
+    elif forgery == "changed_link_target":
+        report["immutable_inputs"][str(dependency)][link.relative_to(dependency).as_posix()]["resolved_target"] = str(alternate)
+    elif forgery == "downgrade":
+        report["schema_version"] = "bilun-preparation-pins-v1"
+        del report["dependency_roots"]
+    elif forgery == "malformed_version":
+        report["schema_version"] = []
+    else:
+        report["immutable_inputs"][str(target)] = None
+    save(path, report)
+    # Recompute only to reach structural validation; production handoffs retain
+    # the original hash, independently covered by the next regression.
+    with pytest.raises(ValueError):
+        module.verify_preparation_pins(path, hashlib.sha256(path.read_bytes()).hexdigest())
+
+
+def test_v2_role_permissions_are_bound_to_original_handoff_digest(dependency_machine):
+    machine, _, target, _, _ = dependency_machine
+    manifest, _, _, _ = machine
+    path, digest, report = _prepared_pins(module.prepare_release_bundle(manifest))
+    report["dependency_roots"].remove(str(target))
+    save(path, report)
+    with pytest.raises(ValueError, match="contract is malformed or changed"):
+        module.verify_preparation_pins(path, digest)
+
+
+def test_v2_declared_external_target_must_be_regular_file(dependency_machine):
+    machine, _, target, _, _ = dependency_machine
+    manifest, spec, events, _ = machine
+    target.unlink()
+    os.mkfifo(target)
+    with pytest.raises(ValueError, match="ordinary files or directories"):
+        module.prepare_release_bundle(manifest)
+    assert "snapshot" not in events and not Path(spec["bundle_root"]).exists()

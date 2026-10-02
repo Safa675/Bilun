@@ -792,7 +792,9 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(result, sort_keys=True))
             return 0
         manifest, digest = _load_private_json(args.manifest, root=args.manifest.parent)
-        if manifest.get("schema_version") == "bilun-single-vps-preparation-v1":
+        if manifest.get("schema_version") in (
+            "bilun-single-vps-preparation-v1", "bilun-single-vps-preparation-v2",
+        ):
             from scripts.deploy.prepare_single_vps_release import (
                 inspect_preparation_snapshot, prepare_release_bundle, recover_preparation_snapshot,
             )
