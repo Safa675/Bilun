@@ -121,11 +121,11 @@ class TestDrgUpliftWiring:
             payment_method, "resolve_payment_method", claim_strategy.resolve_payment_method,
         )
         monkeypatch.setattr(
-            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+            session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
         )
         monkeypatch.setattr(
             session_pricing, "_procedure_point_score",
-            lambda code: {"111111": 20, "222222": 10}[code],
+            lambda code, **kwargs: {"111111": 20, "222222": 10}[code],
         )
         claim = _claim(package_candidate=False)
         lines = [

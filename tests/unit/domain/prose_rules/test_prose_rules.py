@@ -73,7 +73,7 @@ class TestSessionPricing:
     def test_ek2b_only_multi_procedure_uses_itemized_a5(self, monkeypatch) -> None:
         from src.bilun.domain.prose_rules import compute_session_point_factors
 
-        def _ek2b_only(_code: str) -> tuple[bool, bool]:
+        def _ek2b_only(_code: str, **kwargs) -> tuple[bool, bool]:
             return (True, False)
 
         monkeypatch.setattr(
@@ -82,7 +82,7 @@ class TestSessionPricing:
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing._procedure_point_score",
-            lambda _code: 10.0,
+            lambda _code, **kwargs: 10.0,
         )
 
         result = compute_session_point_factors(
@@ -97,10 +97,10 @@ class TestSessionPricing:
     def test_mixed_session_falls_back_to_a5_when_ek2b_primary(self, monkeypatch) -> None:
         from src.bilun.domain.prose_rules import compute_session_point_factors
 
-        def _membership(code: str) -> tuple[bool, bool]:
+        def _membership(code: str, **kwargs) -> tuple[bool, bool]:
             return (True, False) if code == "EK2BHI" else (True, True)
 
-        def _points(code: str) -> float:
+        def _points(code: str, **kwargs) -> float:
             return 100.0 if code == "EK2BHI" else 1.0
 
         monkeypatch.setattr(
@@ -127,11 +127,11 @@ class TestSessionPricing:
 
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing.procedure_annex_membership",
-            lambda _code: (True, False),
+            lambda _code, **kwargs: (True, False),
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing._procedure_point_score",
-            lambda code: 10.0 if code == "B" else 5.0,
+            lambda code, **kwargs: 10.0 if code == "B" else 5.0,
         )
 
         result = compute_session_point_factors(
