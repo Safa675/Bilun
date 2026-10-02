@@ -13,8 +13,9 @@ import pytest
 from tests.unit.deploy.test_generate_candidate_source_roster import _candidate, _roster
 
 
+@pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])
 def test_failed_traced_process_never_seals_a_candidate(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers,
 ) -> None:
     build = importlib.import_module("scripts.deploy.build_traced_candidate")
     checkout, sha, claims, clean = _candidate(tmp_path)
@@ -40,9 +41,12 @@ def test_failed_traced_process_never_seals_a_candidate(
             db_path=db_path, trace_path=tmp_path / "trace.log",
             log_path=tmp_path / "build.log", report_path=report_path,
             python_executable=Path(sys.executable), dependency_roots=(),
+            payload_workers=workers[0], billing_workers=workers[1],
         )
 
     assert len(commands) == 1
+    for option, count in zip(("--payload-workers", "--billing-workers"), workers, strict=True):
+        assert commands[0][0][commands[0][0].index(option) + 1] == str(count)
     assert commands[0][0][:3] == ["strace", "-f", "-yy"]
     assert commands[0][1].get("shell", False) is False
     assert commands[0][1]["env"]["BILUN_DATA_MODE"] == ""

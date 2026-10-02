@@ -77,6 +77,10 @@ def verify_traced_build_attestation(
     billing_workers: int = 2,
 ) -> dict[str, Any]:
     """Reject a changed command, input, read trace, process result, or cache."""
+    if any(type(value) is not int or not 1 <= value <= 8 for value in (
+        payload_workers, billing_workers
+    )):
+        raise ValueError("Private build worker count is invalid")
     record, record_sha = _private_record(record_path)
     roster_sha = _stable_file_hash(source_roster_path)
     roster = json.loads(

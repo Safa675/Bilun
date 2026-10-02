@@ -1,4 +1,4 @@
-"""The private listener launcher keeps old credentials and pins new routing."""
+"""The private listener launcher requires candidate credentials and pins new routing."""
 
 from __future__ import annotations
 
@@ -17,20 +17,26 @@ def test_signed_candidate_launch_replaces_stale_release_environment(tmp_path: Pa
     (Path(config["frontend_runtime"]) / "server.js").write_text("server")
     for key in _CONFIG_PATHS - {
         "backend_runtime", "frontend_runtime", "backend_python", "node",
-        "old_backend_environment", "old_frontend_environment",
+        "candidate_backend_environment", "candidate_frontend_environment",
     }:
         Path(config[key]).write_text(key)
     config["backend_python"] = sys.executable
     config["node"] = sys.executable
-    old = (
+    candidate = (
         b"BILUN_AUTH_USERNAME=private-user\0"
+        b"BILUN_AUTH_PASSWORD=fixture-hash\0"
+        b"BILUN_SESSION_SECRET=fixture-only-candidate-secret\0"
+        b"BILUN_SESSION_TOKEN_PURPOSE=bilun-developer-v1\0"
+        b"BILUN_DEV_USERNAMES=private-user\0"
         b"BILUN_STARTUP_POLICY=stale\0"
         b"BILUN_RELEASE_CODE_SHA=stale\0"
         b"BILUN_CACHE_DB_PATH=/old/cache\0"
         b"PYTHONPATH=/old/code\0"
     )
-    Path(config["old_backend_environment"]).write_bytes(old)
-    Path(config["old_frontend_environment"]).write_bytes(old)
+    Path(config["candidate_backend_environment"]).write_bytes(candidate)
+    Path(config["candidate_frontend_environment"]).write_bytes(b"NODE_ENV=production\0")
+    for name in ("candidate_backend_environment", "candidate_frontend_environment"):
+        Path(config[name]).chmod(0o600)
 
     executable, args, cwd, backend = candidate_command("backend", config)
     assert executable == Path(sys.executable)

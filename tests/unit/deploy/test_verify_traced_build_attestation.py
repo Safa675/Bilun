@@ -18,8 +18,9 @@ from src.bilun.db import (
 from tests.unit.deploy.test_generate_candidate_source_roster import _candidate, _roster
 
 
+@pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])
 def test_independent_attestation_rejects_forged_invocation_and_cache_drift(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers,
 ) -> None:
     checkout, sha, claims, clean = _candidate(tmp_path)
     protected = tmp_path / "protected"
@@ -57,8 +58,8 @@ def test_independent_attestation_rejects_forged_invocation_and_cache_drift(
         "strace", "-f", "-yy", "-s", "4096", "-e",
         "trace=open,openat,openat2,clone,clone3,fork,vfork,exit_group,execve",
         "-o", str(trace), sys.executable, "-m", "scripts.bilun.build_cache",
-        "--db-path", str(cache), "--activate", "--payload-workers", "2",
-        "--billing-workers", "2", "--sut-data-mode", "synthetic_demo",
+        "--db-path", str(cache), "--activate", "--payload-workers", str(workers[0]),
+        "--billing-workers", str(workers[1]), "--sut-data-mode", "synthetic_demo",
         "--sut-claims-dir", str(claims), "--sut-clean-dir", str(clean),
     ]
     record = {
@@ -91,9 +92,13 @@ def test_independent_attestation_rejects_forged_invocation_and_cache_drift(
         source_roster_path=roster_path, data_mode="synthetic_demo",
         claims_dir=claims, clean_dir=clean, cache_path=cache,
         trace_path=trace, log_path=log, python_executable=Path(sys.executable),
-        dependency_roots=(),
+        dependency_roots=(), payload_workers=workers[0], billing_workers=workers[1],
     )
 
+    if workers != (2, 2):
+        defaults = {key: value for key, value in arguments.items() if key not in {"payload_workers", "billing_workers"}}
+        with pytest.raises(ValueError, match="invocation"):
+            attestation.verify_traced_build_attestation(**defaults)
     result = attestation.verify_traced_build_attestation(**arguments)
     assert result["status"] == "traced_build_attestation_verified"
     assert len(calls) == 1
