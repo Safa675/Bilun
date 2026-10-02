@@ -128,9 +128,11 @@ def test_bill_detail_is_independently_scoped_when_patient_icu_history_changes_ou
     assert patient_yatak["observed_amount_basis"] == "procedure_claim_line.billed_amount_try"
     assert patient_yatak["observed_amount_unavailable_reason"] is None
     assert patient_yatak["confirmed_amount_try"] is None
-    assert not any(
-        row["rule_id"] == "yatak_icu_overlap_510010" for row in bill.financial_findings.rows
+    bill_yatak = next(
+        row for row in bill.financial_findings.rows
+        if row["rule_id"] == "yatak_icu_overlap_510010"
     )
+    assert bill_yatak == patient_yatak
     details = _collect_wavea_bill_details({"P1::SRV": bill}, "B1")
     stored = details["P1::SRV"]
     validate_full_wavea_evidence_detail(stored, "P1")

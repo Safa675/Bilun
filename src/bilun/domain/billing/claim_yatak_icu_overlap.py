@@ -30,8 +30,8 @@ def reconcile_yatak_icu_overlap(
     """Drop ICU discharge/transfer days from yatak bed-day expectations.
 
     Args:
-        ctx: Patient claim context (claims + procedure lines are needed to
-            confirm ICU last days and the package surgery day).
+        ctx: Active patient/bill context; separate known history confirms ICU
+            last days without adding historical opportunities or billed money.
         yatak_review: Output of ``recommend_yatak_puani_from_claims``.
 
     Returns:
@@ -43,10 +43,11 @@ def reconcile_yatak_icu_overlap(
     if not yatak_review.opportunities or not ctx.procedure_lines:
         return yatak_review
 
+    history = ctx.history
     adjusted = reconcile_yatak_bed_days(
         yatak_review.opportunities,
-        list(ctx.claims),
-        list(ctx.procedure_lines),
+        list(history.claims),
+        list(history.procedure_lines),
     )
     if adjusted is yatak_review.opportunities:
         return yatak_review

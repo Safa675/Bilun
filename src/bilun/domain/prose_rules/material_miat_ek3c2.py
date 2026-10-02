@@ -15,12 +15,9 @@ this module is a thin ``PatientClaimContext``-shaped adapter that emits
 ``risk_amount``/``details``).
 
 Scope limit (cross-claim history): ``check_miat_interval_violation`` reads
-prior applications from ``ctx.material_lines`` only (via
-``prior_use_dates_for_material`` in miat_interval.py:39-56). A
-``PatientClaimContext`` built by ``build_patient_claim_context`` carries
-every material line loaded for the patient, so intra-dataset renewals ARE
-detected — including renewals across different bills (``claim_id``) for the
-same patient, because ``material_lines`` is patient-scoped, not bill-scoped.
+prior applications from ``ctx.history.material_lines``. Bill slices retain
+known same-patient history separately, so intra-dataset renewals are detected
+across different bills without emitting findings for historical material rows.
 Material applications that exist *outside* the loaded dataset (truly
 external patient history) are NOT visible and will not raise a violation.
 This matches the existing ``claim_materials.py`` scope exactly; no history is
@@ -36,6 +33,7 @@ evaluator is the more thorough one and flags each renewal event.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 from src.bilun.domain.billing.materials import _get_ek3c2_miat
@@ -46,28 +44,16 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 def _dated_material_context(ctx: PatientClaimContext) -> PatientClaimContext:
     """Return ``ctx``, or a copy with ``None``-dated material lines dropped.
 
-    ``check_miat_interval_violation`` compares ``material_date`` values
-    directly (miat_interval.py:54,79-83); a ``None`` date raises ``TypeError``
-    and would abort the whole evaluator. ``claim_materials.py`` sidesteps this
-    via its latest-line-by-code selection (claim_materials.py:145-165); this
-    evaluator iterates every line, so it defensively strips ``None``-dated
-    lines before delegating to the shared interval checker. In practice the
-    claim parser coerces null dates to ``date.min``, so ``None`` is rare.
+    Preserve separate history when filtering active targets. The shared
+    interval checker also ignores unknown dates in historical evidence.
     """
     if all(line.material_date is not None for line in ctx.material_lines):
         return ctx
-    return PatientClaimContext(
-        patient_id=ctx.patient_id,
-        claims=ctx.claims,
-        procedure_lines=ctx.procedure_lines,
+    return replace(
+        ctx,
         material_lines=tuple(
             line for line in ctx.material_lines if line.material_date is not None
         ),
-        drug_lines=ctx.drug_lines,
-        diagnoses=ctx.diagnoses,
-        performed_procedure_lines=ctx.performed_procedure_lines,
-        medula_rejection_events=ctx.medula_rejection_events,
-        medula_rejection_ingest_available=ctx.medula_rejection_ingest_available,
     )
 
 
@@ -78,7 +64,7 @@ def check_material_miat_for_context(
 
     For each material line whose ``material_code`` is in the EK-3C-2 MIAT
     catalog, checks the renewal interval against prior applications of the
-    same code visible in ``ctx.material_lines``. Returns one violation dict
+    same code visible in ``ctx.history.material_lines``. Returns one violation dict
     per too-soon renewal, in the ``analyze_claim`` shape (``rule``,
     ``severity``, ``material_name``, ``material_code``, ``message``,
     ``savings_try``, ``risk_amount``, ``sut_section``, ``material_outcome``,

@@ -48,10 +48,12 @@ def prior_use_dates_for_material(
         return []
 
     dates: list[date] = []
-    for line in ctx.material_lines:
+    for line in ctx.history.material_lines:
+        if line.patient_id != ctx.patient_id:
+            continue
         if str(line.material_code or "").strip().upper() != code:
             continue
-        if line.material_date < before:
+        if isinstance(line.material_date, date) and date.min < line.material_date < before:
             dates.append(line.material_date)
     return sorted(dates)
 
@@ -64,7 +66,11 @@ def check_miat_interval_violation(
 ) -> dict[str, object] | None:
     """Return alert dict when a prior use falls inside the MIAT window."""
     interval_days = parse_miat_period_days(miat_period)
-    if interval_days is None or interval_days <= 0:
+    if (
+        interval_days is None or interval_days <= 0
+        or line.patient_id != ctx.patient_id
+        or not isinstance(line.material_date, date) or line.material_date == date.min
+    ):
         return None
 
     prior_dates = prior_use_dates_for_material(

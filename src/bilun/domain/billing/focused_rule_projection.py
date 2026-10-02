@@ -504,7 +504,8 @@ def _input_limitation(
         gap_days = (source_line.procedure_date - prior_date).days
         if not 0 <= gap_days <= _EXAM_DUPLICATE_WINDOW_DAYS:
             return "unavailable", [], "exam_10day_window_not_met"
-        prior_claim = next((item for item in ctx.claims if item.claim_id == prior_claim_id), None)
+        history = ctx.history
+        prior_claim = next((item for item in history.claims if item.claim_id == prior_claim_id), None)
         if prior_claim is None:
             return "unavailable", [], "cross_claim_history_evidence_unavailable"
         prior_claim_type = str(getattr(prior_claim, "claim_type", "") or "").strip().casefold()
@@ -518,7 +519,7 @@ def _input_limitation(
             and line.procedure_category in _EXAM_CATEGORIES
             and line.procedure_specialty_code == source_line.procedure_specialty_code
             and line.procedure_date == prior_date
-            for line in ctx.procedure_lines
+            for line in history.procedure_lines
         ):
             return "unavailable", [], "cross_claim_history_evidence_unavailable"
 

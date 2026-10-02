@@ -100,7 +100,7 @@ def _is_real_date(d: date) -> bool:
     ``date.min`` is the loader's "date unknown" marker and must not feed a
     day-count calculation (it would produce a nonsense ~1.7M-day gap).
     """
-    return d != date.min
+    return isinstance(d, date) and d != date.min
 
 
 def _days_after(bmt_date: date, sct_date: date) -> int | None:
@@ -303,11 +303,14 @@ def detect_sct_temporal_window_violations_for_context(
 ) -> list[dict[str, Any]]:
     """Cross-claim entry point over a single patient's ``PatientClaimContext``.
 
-    This is the canonical wiring: ``PatientClaimContext`` carries ALL procedure
-    lines across a patient's claims, which is exactly the cross-claim visibility
-    the 60/90-day window needs (a prior-claim BMT must be visible to a current
-    704981 line). Delegates to :func:`detect_sct_temporal_window_violations`.
+    Read known history for the 60/90-day prerequisite window, then keep only
+    active claims' findings. Full-patient contexts retain their existing scope.
     """
-    return detect_sct_temporal_window_violations(
-        list(ctx.claims), list(ctx.procedure_lines)
-    )
+    history = ctx.history
+    active_claim_ids = {line.claim_id for line in ctx.procedure_lines}
+    return [
+        row for row in detect_sct_temporal_window_violations(
+            list(history.claims), list(history.procedure_lines)
+        )
+        if row["claim_id"] in active_claim_ids
+    ]
