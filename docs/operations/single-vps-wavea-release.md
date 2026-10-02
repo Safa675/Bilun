@@ -141,6 +141,23 @@ arguments. Different old/new configuration values are verified independently.
 `dependency_roots` must enumerate the existing Python runtime roots permitted by
 the trace verifier. Their complete bytes and the executable targets remain
 bound through activation. Do not point these at the whole filesystem.
+
+For a distribution Python installation with an external regular-file link (for
+example, `/usr/lib/python3.13/sitecustomize.py` pointing directly to
+`/etc/python3.13/sitecustomize.py`), explicitly select
+`"schema_version": "bilun-single-vps-preparation-v2"` and include the canonical
+target **file** as a separate `dependency_roots` entry alongside the Python
+directories. No new manifest fields are required. Merely declaring the target's
+parent directory does not authorize the link. V2 pins both its literal link text
+and resolved target, plus the target's bytes and mode, and inventories that file
+independently. The dependency roles are retained in the hash-bound
+`bilun-preparation-pins-v2` contract and replayed on repeated preparation and
+the paired release's existing preflight, candidate start and listener checks.
+Undeclared targets, external directory links, dangling/cyclic links and linked
+intermediate target paths remain rejected. Source, cache and runtime inventory
+rules and signed startup receipts are unchanged. V1 manifests and pin contracts
+retain their original strict behavior; they do not gain this exception.
+
 `external_state_paths` pins canonical locations, filesystem identity, permissions
 and ownership of known live mutable state. Mutable ledger contents may continue
 to change; these ledgers are never copied, reset or replaced. A configured
