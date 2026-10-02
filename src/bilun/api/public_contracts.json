@@ -709,6 +709,8 @@
         "session_date": true,
         "primary_procedure_code": true,
         "expected_billed_try": true,
+        "session_expected_billed_try": true,
+        "blood_max_billable_try": true,
         "actual_billed_try": true,
         "recoverable_uplift_try": true,
         "review_kind": true,

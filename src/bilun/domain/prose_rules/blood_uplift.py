@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from .session_pricing import blood_component_billable_fraction
+from .session_pricing import blood_component_billable_fraction, blood_component_max_billable_try
+from .session_uplift import iter_session_secondary_assessments
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
 if TYPE_CHECKING:
-    from src.bilun.domain.claims.models import ProcedureClaimLine
+    from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
 from src.bilun.domain.money import money_round_half_up as _money
 _BILLING_TOLERANCE = 0.02
@@ -28,12 +29,30 @@ def detect_blood_component_underbilling_opportunities(
     lines: list[ProcedureClaimLine],
     *,
     claim_id: str = "",
+    same_incision: bool = True,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
     """Flag blood component lines billed below allowed package-context fraction."""
     opportunities: list[dict[str, Any]] = []
+    blood_lines = [
+        line for line in lines
+        if not line.is_package_included
+        and blood_component_billable_fraction(line.procedure_code) is not None
+    ]
+    if not blood_lines:
+        return opportunities
+    # Session-owned secondaries already compose both ceilings, including
+    # zero-gap and review-only cases. Object identity denotes the exact input
+    # occurrence, so repeated codes or missing/reused IDs cannot suppress peers.
+    session_owned = {
+        id(assessment.line) for assessment in iter_session_secondary_assessments(
+            lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
+        )
+    }
 
-    for line in lines:
-        if line.is_package_included:
+    for line in blood_lines:
+        if id(line) in session_owned:
             continue
         fraction = blood_component_billable_fraction(line.procedure_code)
         if fraction is None:
@@ -45,7 +64,8 @@ def detect_blood_component_underbilling_opportunities(
             continue
 
         reference = payable if payable > 0 else billed
-        max_billable = reference * fraction
+        max_billable = blood_component_max_billable_try(line)
+        assert max_billable is not None
         if billed >= max_billable * (1.0 - _BILLING_TOLERANCE):
             continue
 
