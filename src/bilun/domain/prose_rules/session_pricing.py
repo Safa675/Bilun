@@ -381,23 +381,17 @@ def _line_itemized_payable(line: ProcedureClaimLine) -> float:
 def _session_adjusted_line_payable(
     line: ProcedureClaimLine,
     *,
-    primary_line: ProcedureClaimLine,
-    primary_payable: float,
     point_factor: float,
-    primary_factor: float,
     apply_blood_fraction: bool,
 ) -> float:
-    if line.procedure_line_id == primary_line.procedure_line_id:
-        amount = primary_payable
-    elif primary_factor > 0:
-        amount = primary_payable * (point_factor / primary_factor)
-    else:
-        amount = 0.0
+    # Payables already contain the whole-line quantity. Each procedure's
+    # percentage applies to its own amount, not the primary procedure's price.
+    base = _line_itemized_payable(line)
+    amount = base * point_factor
 
     if apply_blood_fraction:
         fraction = blood_component_billable_fraction(line.procedure_code)
         if fraction is not None:
-            base = _line_itemized_payable(line)
             amount = min(amount, base * fraction)
     return amount
 
@@ -436,10 +430,7 @@ def compute_session_adjusted_itemized_total(
             line = billable[0]
             total += _session_adjusted_line_payable(
                 line,
-                primary_line=line,
-                primary_payable=_line_itemized_payable(line),
                 point_factor=1.0,
-                primary_factor=1.0,
                 apply_blood_fraction=apply_blood_fraction,
             )
             continue
@@ -460,28 +451,16 @@ def compute_session_adjusted_itemized_total(
         if session.rule_id != "single_procedure":
             sessions_with_adjustment += 1
 
-        factors = {
-            normalize_procedure_code(f.procedure_code): f for f in session.factors
-        }
-        primary_line = billable[0]
-        primary_factor = 1.0
+        # Factors preserve input occurrence order, excluding empty normalized
+        # codes. A code-keyed map would discard the primary factor when two
+        # distinct lines normalize to the same code.
+        factors = iter(session.factors)
         for line in billable:
-            factor = factors.get(normalize_procedure_code(line.procedure_code))
-            if factor is not None and factor.is_primary:
-                primary_line = line
-                primary_factor = factor.point_factor
-                break
-
-        primary_payable = _line_itemized_payable(primary_line)
-        for line in billable:
-            factor = factors.get(normalize_procedure_code(line.procedure_code))
+            factor = next(factors) if normalize_procedure_code(line.procedure_code) else None
             point_factor = factor.point_factor if factor is not None else 1.0
             total += _session_adjusted_line_payable(
                 line,
-                primary_line=primary_line,
-                primary_payable=primary_payable,
                 point_factor=point_factor,
-                primary_factor=primary_factor,
                 apply_blood_fraction=apply_blood_fraction,
             )
 

@@ -141,9 +141,12 @@ class TestBillingActionsBreakdown:
             if row.get("kind") == "optional_override"
         ]
         assert len(override) == 1
-        assert override[0]["sgk_uplift_try"] == pytest.approx(6750.0)
+        assert override[0]["sgk_uplift_try"] == pytest.approx(6650.0)
 
         strategy_override = report.billing_strategy.optional_override_opportunities[0]
+        # 600160 is primary by catalog points: 1800 + 25% of 600150's own 2200.
+        assert strategy_override["itemized_total_try"] == pytest.approx(2350.0)
+        assert strategy_override["package_total_try"] == pytest.approx(9000.0)
         assert strategy_override.get("recommended_package_code") == "609300"
 
         materials = [
@@ -393,4 +396,3 @@ class TestBillingStrategyCompliantClaimFiltering:
 
         actions = collect_billing_actions(report)
         assert len(actions) == 0
-
