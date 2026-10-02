@@ -14,7 +14,10 @@ from functools import lru_cache
 from typing import Any
 
 from ...constants import _GAZETTE_DIR
-from .matching import _collect_icd10_codes, _drug_name_matches, _specialty_matches
+from .matching import (
+    _collect_icd10_codes, _diagnosis_matches_specific_rule, _drug_name_matches,
+    _is_indication_route_rule, _specialty_matches,
+)
 
 _CATALOG = _GAZETTE_DIR / "temporal" / "drug_amendments_2026_10.json"
 
@@ -37,7 +40,7 @@ def temporal_drug_rules() -> tuple[dict[str, Any], ...]:
     payload = json.loads(_CATALOG.read_text(encoding="utf-8"))
     if payload.get("schema_version") != 1:
         raise ValueError("Unsupported drug temporal catalog schema")
-    rules = payload["rules"]
+    rules = [*payload["rules"], *payload.get("source_corrections", [])]
     for rule in rules:
         if rule.get("activation_status") != "source_only_partial":
             raise ValueError("Temporal rule is not approved for source-only evaluation")
@@ -82,10 +85,13 @@ def _supported_checks(rule: dict[str, Any], line: Any) -> tuple[list[dict[str, A
     add("prescriber_specialty", specialty,
         bool(specialty and _specialty_matches(specialty, rule["prescriber_specialties"])))
     maximum = rule.get("report_duration_max_months")
-    if maximum is not None:
+    exact = rule.get("report_duration_months")
+    if maximum is not None or exact is not None:
         duration = line.drug_report_duration_months
-        add("drug_report_duration_months", duration,
-            type(duration) is int and 0 < duration <= maximum)
+        valid = type(duration) is int and duration > 0 and (
+            duration <= maximum if maximum is not None else duration == exact
+        )
+        add("drug_report_duration_months", duration, valid)
     for requirement in rule.get("required_biomarkers") or []:
         matched = [b for b in line.biomarkers or ()
                    if str(b.get("marker", "")).upper().replace("-", "") == requirement["marker"]]
@@ -141,7 +147,7 @@ def evaluate_temporal_drug(*, drug_line: Any, claim: Any, diagnoses: Any,
     order independent, with gaps, malformed bounds and overlaps failing closed.
     """
     candidates = [r for r in rules if r.get("temporal_source_only") and
-                  _drug_name_matches(drug_line.drug_name, r.get("drug_names") or [])]
+                  not r.get("temporal_source_correction") and _drug_name_matches(drug_line.drug_name, r.get("drug_names") or [])]
     if not candidates:
         return None, None
     candidates.sort(key=lambda r: str(r.get("rule_id", "")))
@@ -169,13 +175,14 @@ def evaluate_temporal_drug(*, drug_line: Any, claim: Any, diagnoses: Any,
         if service_date < first[1]:
             legacy = [r for r in rules if not r.get("temporal_source_only") and
                       _drug_name_matches(drug_line.drug_name, r.get("drug_names") or [])]
-            if legacy:
+            if legacy and not first[0].get("historical_source_unverified"):
                 evidence = _evidence(first[0], service_date, "historical_legacy_unverified")
                 evidence["successor_version_id"] = evidence.pop("version_id")
                 evidence["valid_from"] = None
                 evidence["valid_until"] = first[1].isoformat()
                 return None, evidence
-            status = "not_yet_effective"
+            status = ("historical_source_unverified" if first[0].get("historical_source_unverified")
+                      else "not_yet_effective")
         else:
             status = "no_effective_version"
     evidence = _evidence(rule, service_date, status)
@@ -206,3 +213,49 @@ def guard_historical_evaluation(result: dict[str, Any], evidence: dict[str, Any]
         "temporal_evidence", "evaluation_status", "missing_inputs", "required_inputs",
     )}}
     return result
+
+
+def apply_temporal_source_corrections(*, drug_line: Any, claim: Any, diagnoses: Any,
+                                      rules: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Quarantine exact known mis-targeted IDs, never all rules for a medicine.
+
+    A source about thiotepa cannot adjudicate carmustine on either side of its
+    repeal. Preserve an independently applicable retained indication; otherwise
+    return review instead of manufacturing a mismatch against unrelated routes.
+    Explicit corpora without the source correction record remain self-contained.
+    """
+    corrections = [r for r in rules if r.get("temporal_source_correction")]
+    excluded_ids = {rule_id for row in corrections for rule_id in row["excluded_rule_ids"]}
+    excluded = [r for r in rules if r.get("rule_id") in excluded_ids]
+    retained = [r for r in rules if r.get("rule_id") not in excluded_ids]
+    if not excluded:
+        return retained, None
+    codes = _collect_icd10_codes(claim, diagnoses)
+    family_ids = {
+        rule_id for correction in corrections
+        if _drug_name_matches(drug_line.drug_name, correction.get("drug_names") or [])
+        for rule_id in correction["excluded_rule_ids"]
+    }
+    # The mis-targeted rule may itself have an incomplete alias list. Guard the
+    # independently verified medicine family, not just that defective spelling.
+    affected = [r for r in excluded if r.get("rule_id") in family_ids
+                and (not codes or _diagnosis_matches_specific_rule(codes, r))]
+    if not affected:
+        return retained, None
+    legitimate = any(not r.get("temporal_source_only") and _is_indication_route_rule(r)
+                     and _drug_name_matches(drug_line.drug_name, r.get("drug_names") or [])
+                     and _diagnosis_matches_specific_rule(codes, r) for r in retained)
+    if legitimate:
+        return retained, None
+    affected_ids = {r["rule_id"] for r in affected}
+    correction = next(r for r in corrections if affected_ids.intersection(r["excluded_rule_ids"]))
+    evidence = _evidence(correction, parse_service_date(drug_line.drug_claim_date), "source_target_mismatch")
+    evidence["excluded_rule_ids"] = sorted(affected_ids)
+    evidence["repeal_effective_date"] = correction["temporal"]["repeal_effective_date"]
+    result = _review_result(drug_line=drug_line, claim=claim, diagnoses=diagnoses,
+                            rule=correction, evidence=evidence, selected=False)
+    message = ("Önceki kodlanmış kural farklı bir ilaca ait SUT hükmüne dayanıyor; "
+               "bu kaynaktan uygunluk veya ödeme reddi çıkarılamaz. İlgili ilaç ve hizmet "
+               "tarihi için kaynak incelemesi gerekir.")
+    result["violation"].update(message_tr=message, detail=message)
+    return retained, result

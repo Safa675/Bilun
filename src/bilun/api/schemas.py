@@ -367,6 +367,8 @@ class DrugTemporalEvidenceResponse(BaseModel):
     version_id: str | None = None
     successor_version_id: str | None = None
     candidate_version_ids: list[str] = Field(default_factory=list)
+    excluded_rule_ids: list[str] = Field(default_factory=list)
+    repeal_effective_date: date | None = None
     valid_from: date | None = None
     valid_until: date | None = None
     publication_date: date

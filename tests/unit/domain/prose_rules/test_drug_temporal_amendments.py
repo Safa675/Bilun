@@ -85,10 +85,12 @@ def test_source_catalog_dates_and_hashes(name):
     assert hashlib.sha256("\n".join(p["text"] for p in rule["source_paragraphs"]).encode()).hexdigest() == rule["source_text_sha256"]
 
 
-def test_quarantined_thiotepa_is_never_loaded():
-    assert not any("thiotepa" in r["rule_id"] for r in temporal_drug_rules())
+def test_thiotepa_source_review_requires_exact_legacy_target_correction():
     payload = json.loads(_CATALOG.read_text())
-    assert payload["quarantined_rules"][0]["activation_status"] == "quarantined"
+    assert not payload["quarantined_rules"]
+    assert next(r for r in temporal_drug_rules() if "thiotepa" in r["rule_id"])["historical_source_unverified"]
+    correction = next(r for r in temporal_drug_rules() if r.get("temporal_source_correction"))
+    assert correction["excluded_rule_ids"] == ["4.2.61.onco.carmustine_offlabel_bmt_conditioning_coverage"]
 
 
 @pytest.mark.parametrize("day", ["2026-10-02", "2026-10-09"])

@@ -2648,6 +2648,10 @@
         "status": true,
         "marker": true
       }
-    }
+    },
+    "excluded_rule_ids": {
+      "$list": true
+    },
+    "repeal_effective_date": true
   }
 }

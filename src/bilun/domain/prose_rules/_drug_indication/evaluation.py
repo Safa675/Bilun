@@ -193,8 +193,13 @@ def evaluate_drug_indication_line_with_rules(
     rules: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Evaluate explicit rules in applicability, primary, then supplemental order."""
-    from .temporal import evaluate_temporal_drug
+    from .temporal import apply_temporal_source_corrections, evaluate_temporal_drug
 
+    rules, source_review = apply_temporal_source_corrections(
+        drug_line=drug_line, claim=claim, diagnoses=diagnoses, rules=rules,
+    )
+    if source_review is not None:
+        return source_review
     temporal_result, temporal_evidence = evaluate_temporal_drug(
         drug_line=drug_line, claim=claim, diagnoses=diagnoses, rules=rules,
     )

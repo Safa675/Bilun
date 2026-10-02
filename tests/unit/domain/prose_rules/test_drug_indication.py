@@ -468,8 +468,14 @@ def test_unrelated_complete_diagnoses_cannot_be_shadowed_by_icd_less_rules(
     )
 
     assert hit is not None
-    assert hit["violation_kind"] == "indication_mismatch"
-    assert hit["applicability_status"] == "indication_mismatch"
+    if drug_name == "tiotepa":
+        # The historical generic route cannot establish a valid source version.
+        # This is review, not a manufactured nonpayment determination.
+        assert hit["violation_kind"] == "needs_temporal_clinical_verification"
+        assert hit["temporal_evidence"]["status"] == "historical_source_unverified"
+    else:
+        assert hit["violation_kind"] == "indication_mismatch"
+        assert hit["applicability_status"] == "indication_mismatch"
     assert hit["selected_rule_id"] is None
     assert hit["matched_icd10_codes"] == []
 

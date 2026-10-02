@@ -1,5 +1,7 @@
 # SGK SUT temporal source review
 
+This report records the first reviewed temporal base. The subsequent narrow thiotepa source-target correction is documented in [the follow-up report](2026-10-02-thiotepa-source-correction.md); its source-only successor supersedes the initial quarantine after exact-ID safeguards were implemented.
+
 Review date: 2026-10-02 UTC
 
 ## Findings and disposition
