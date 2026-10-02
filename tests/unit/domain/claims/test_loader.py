@@ -167,3 +167,31 @@ def test_load_sut_claim_dataset_exposes_cache_clear_alias() -> None:
     assert len(first.claims) == len(second.claims)
     soft_floor(len(first.claims), 80, label="claims after cache_clear")
     assert first is not second
+
+
+@pytest.mark.parametrize("prefix", ["BILUN", "SUT"])
+def test_loader_uses_environment_mode_and_shares_resolved_cache(tmp_path, monkeypatch, prefix):
+    """Environment and explicit configuration must resolve to the same cache key."""
+    claims_dir = tmp_path / "claim_export"
+    shutil.copytree(DEFAULT_SYNTHETIC_CLAIMS_DIR, claims_dir)
+    for name in ("BILUN_DATA_MODE", "SUT_DATA_MODE", "BILUN_CLAIMS_DIR", "SUT_CLAIMS_DIR"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv(f"{prefix}_DATA_MODE", "real_claims")
+    monkeypatch.setenv(f"{prefix}_CLAIMS_DIR", str(claims_dir))
+
+    first = load_sut_claim_dataset()
+    explicit = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    padded = load_sut_claim_dataset(claims_dir=claims_dir, mode=" real_claims ")
+    assert first is explicit is padded
+
+    # Cache hits still pass the current path/mode guards.
+    monkeypatch.setenv(f"{prefix}_DATA_MODE", "synthetic_demo")
+    with pytest.raises(SUTDataSourceConfigError, match="must be under data/synthetic/sut"):
+        load_sut_claim_dataset()
+
+
+def test_explicit_mode_overrides_environment_and_normalizes_cache(monkeypatch):
+    monkeypatch.setenv("BILUN_DATA_MODE", "real_claims")
+    explicit = load_sut_claim_dataset(mode="synthetic_demo")
+    padded = load_sut_claim_dataset(mode=" synthetic_demo ")
+    assert explicit is padded

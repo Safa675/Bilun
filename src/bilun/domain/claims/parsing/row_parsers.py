@@ -18,10 +18,12 @@ from src.bilun.domain.claims.models import (
 )
 from src.bilun.domain.claims.types import RowDict
 from src.bilun.domain.claims.parsing.primitives import (
+    is_missing,
     optional_bool,
     optional_date,
     optional_integer,
     optional_money,
+    optional_string_records,
     parse_bool,
     parse_integer,
     parse_money,
@@ -52,6 +54,9 @@ _MATERIAL_EXPLICIT_FIELDS = frozenset(
         "rule_trace_expected",
         "titubb_registered",
         "uts_registered",
+        "medical_necessity_board_report",
+        "treating_physician_different_from_board_signatory",
+        "patient_in_first_degree_relative_of_physician",
     }
 )
 
@@ -161,6 +166,8 @@ def parse_medula_rejection_event(
         rejection_ts = row.get("rejection_timestamp")
         parsed_ts: date | None = None
         if rejection_ts not in (None, ""):
+            # Despite its source name, this model field is date-valued. Retain
+            # the existing calendar-day claim-range policy, not instant chronology.
             parsed_ts = required_date(row, "rejection_timestamp", event_id, errors)
         return MedulaRejectionEvent(
             rejection_event_id=event_id,
@@ -284,6 +291,13 @@ def parse_material_line(row: RowDict, errors: list[str]) -> MaterialClaimLine | 
             rule_trace_expected=parse_text(row, "rule_trace_expected"),
             titubb_registered=optional_bool(row.get("titubb_registered")),
             uts_registered=optional_bool(row.get("uts_registered")),
+            medical_necessity_board_report=optional_bool(row.get("medical_necessity_board_report")),
+            treating_physician_different_from_board_signatory=optional_bool(
+                row.get("treating_physician_different_from_board_signatory")
+            ),
+            patient_in_first_degree_relative_of_physician=optional_bool(
+                row.get("patient_in_first_degree_relative_of_physician")
+            ),
             **_material_prose_bool_kwargs(row),
         )
     except KeyError as exc:
@@ -294,6 +308,7 @@ def parse_material_line(row: RowDict, errors: list[str]) -> MaterialClaimLine | 
 def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
     try:
         line_id = parse_text(row, "drug_claim_line_id")
+        annual_count = row.get("annual_application_count")
         return DrugClaimLine(
             drug_claim_line_id=line_id,
             prescription_id=parse_text(row, "prescription_id"),
@@ -321,6 +336,17 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
                 row.get("drug_report_duration_months")
             ),
             drug_inpatient_supply=optional_bool(row.get("drug_inpatient_supply")),
+            annual_application_count=(
+                None if is_missing(annual_count)
+                else parse_integer(annual_count, "annual_application_count", line_id, errors)
+            ),
+            is_loading_phase=optional_bool(row.get("is_loading_phase")),
+            biomarkers=optional_string_records(
+                row, "biomarkers", line_id, errors,
+            ),
+            prior_therapies=optional_string_records(
+                row, "prior_therapies", line_id, errors,
+            ),
             prescriber_specialty=parse_text(
                 {**row, "prescriber_specialty": row.get("prescriber_specialty") or ""},
                 "prescriber_specialty",
