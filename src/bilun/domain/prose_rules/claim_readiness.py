@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote
 
 from src.bilun.domain.constants import _DATA_DIR
 from src.bilun.domain.prose_rules.medula_rejection import load_medula_rejection_playbook
@@ -70,8 +71,16 @@ def _build_checklist_item(
 ) -> dict[str, Any]:
     playbook_key = str(trigger.get("playbook_key") or "")
     sonuc = str(trigger.get("sonuc_kodu_risk") or "")
+    line_id = getattr(
+        line, "drug_claim_line_id" if line_type == "drug" else "material_line_id", "",
+    )
+    # New scoped identities cannot inherit the old blank-suffix readiness key.
+    identity = (claim.patient_id, claim.claim_id, trigger.get("trigger_key") or playbook_key,
+                line_type, line_id)
     return {
-        "checklist_id": f"{playbook_key}:{getattr(line, f'{line_type}_line_id' if line_type == 'drug' else 'material_line_id', '')}",
+        "checklist_id": "claim_readiness:" + ":".join(
+            quote(str(value), safe="") for value in identity
+        ),
         "trigger_key": trigger.get("trigger_key", ""),
         "playbook_key": playbook_key,
         "sonuc_kodu_risk": sonuc,
@@ -80,11 +89,7 @@ def _build_checklist_item(
         "patient_id": claim.patient_id,
         "episode_id": claim.episode_id,
         "line_type": line_type,
-        "line_id": getattr(
-            line,
-            "drug_claim_line_id" if line_type == "drug" else "material_line_id",
-            "",
-        ),
+        "line_id": line_id,
         "line_code": getattr(
             line,
             "drug_code" if line_type == "drug" else "material_code",
@@ -153,7 +158,7 @@ def detect_claim_readiness_items(
                 line_type=line_type,
                 template=template,
             )
-            dedupe_key = f"{item['trigger_key']}:{item['line_id']}"
+            dedupe_key = item["checklist_id"]
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)

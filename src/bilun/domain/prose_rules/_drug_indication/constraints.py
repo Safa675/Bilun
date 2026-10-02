@@ -36,6 +36,7 @@ def _evaluate_tier_b_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_report_verification",
                 "severity": "review",
+                "missing_inputs": ["drug_report_duration_months"],
                 "message_tr": (
                     f"Sağlık kurulu rapor süresi ({duration_required} ay) doğrulanmalı (§4.2.14.C)."
                 ),
@@ -85,6 +86,7 @@ def _evaluate_tier_b_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_report_verification",
                 "severity": "review",
+                "missing_inputs": ["drug_inpatient_supply"],
                 "message_tr": "Yatarak hastane temini durumu doğrulanmalı (§4.2.14.C).",
             }
 
@@ -102,6 +104,7 @@ def _evaluate_tier_b_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_report_verification",
                 "severity": "review",
+                "missing_inputs": ["prescriber_specialty"],
                 "prescriber_specialties": prescriber_specialties,
                 "message_tr": "Reçete eden uzmanlık dalı doğrulanmalı (§4.2.14.C).",
             }
@@ -137,9 +140,9 @@ def _evaluate_dose_protocol(
       application count must not exceed the rule's loading-dose ceiling.
     - ``max_applications_per_year``: annual application count must not exceed the ceiling.
 
-    When the claim does not carry dose fields (annual_application_count /
-    is_loading_phase both None), emit ``needs_dose_verification`` (review) — honest
-    partial, since DrugClaimLine ingestion is not universal.
+    Require the inputs of each applicable bound. A phase flag never supplies an
+    annual count; loading-only rules do not require a count outside loading.
+    Unknown facts remain review-only, and known exceeded bounds stay visible.
     """
     loading_ceiling = rule.get("loading_dose_count")
     annual_ceiling = rule.get("max_applications_per_year")
@@ -148,26 +151,16 @@ def _evaluate_dose_protocol(
     annual_count = drug_line.annual_application_count
     in_loading = drug_line.is_loading_phase
 
-    has_dose_input = annual_count is not None or in_loading is not None
+    missing_inputs = []
+    if loading_ceiling is not None and in_loading is None:
+        missing_inputs.append("is_loading_phase")
+    if annual_count is None and (
+        annual_ceiling is not None or (loading_ceiling is not None and in_loading is True)
+    ):
+        missing_inputs.append("annual_application_count")
 
-    if not has_dose_input:
-        return {
-            "drug_claim_line_id": drug_line.drug_claim_line_id,
-            "claim_id": claim.claim_id,
-            "drug_name": drug_line.drug_name,
-            "rule_id": rule.get("rule_id"),
-            "sut_section": section,
-            "primary_icd10": claim.primary_icd10,
-            "matched_icd10_codes": icd_codes,
-            "violation_kind": "needs_dose_verification",
-            "severity": "review",
-            "message_tr": (
-                f"Doz protokolü (yıllık maksimum / yükleme dozu sayısı) doğrulanmalı ({section})."
-            ),
-        }
-
-    if loading_ceiling is not None and in_loading is True:
-        count = annual_count if annual_count is not None else 0
+    if loading_ceiling is not None and in_loading is True and annual_count is not None:
+        count = annual_count
         if count > loading_ceiling:
             return {
                 "drug_claim_line_id": drug_line.drug_claim_line_id,
@@ -179,6 +172,7 @@ def _evaluate_dose_protocol(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "loading_dose_exceeded",
                 "severity": "error",
+                "missing_inputs": missing_inputs,
                 "loading_dose_count": loading_ceiling,
                 "actual_application_count": count,
                 "message_tr": (
@@ -199,6 +193,7 @@ def _evaluate_dose_protocol(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "annual_max_exceeded",
                 "severity": "error",
+                "missing_inputs": missing_inputs,
                 "max_applications_per_year": annual_ceiling,
                 "actual_application_count": annual_count,
                 "message_tr": (
@@ -206,6 +201,23 @@ def _evaluate_dose_protocol(
                     f"{annual_ceiling}) ({section})."
                 ),
             }
+
+    if missing_inputs:
+        return {
+            "drug_claim_line_id": drug_line.drug_claim_line_id,
+            "claim_id": claim.claim_id,
+            "drug_name": drug_line.drug_name,
+            "rule_id": rule.get("rule_id"),
+            "sut_section": section,
+            "primary_icd10": claim.primary_icd10,
+            "matched_icd10_codes": icd_codes,
+            "violation_kind": "needs_dose_verification",
+            "severity": "review",
+            "missing_inputs": missing_inputs,
+            "message_tr": (
+                f"Doz protokolü (yıllık maksimum / yükleme dozu sayısı) doğrulanmalı ({section})."
+            ),
+        }
 
     return None
 
@@ -256,6 +268,7 @@ def _evaluate_biomarker_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_biomarker_verification",
                 "severity": "review",
+                "missing_inputs": [f"biomarkers.{req_marker}"],
                 "required_biomarker": req_marker,
                 "message_tr": (
                     f"Biyobelirtçi ({req_marker}) doğrulanmalı — kural bu marker'ı "
@@ -303,20 +316,24 @@ def _evaluate_prior_therapy_constraints(
         return None
 
     section = rule.get("sut_section") or "4.2.14.C"
-    req_drug = str(required.get("drug_or_class", "")).lower()
+    req_drug = str(required.get("drug_or_class") or "").strip().lower()
     req_outcome = str(required.get("outcome", "")).lower()
     claim_prior = drug_line.prior_therapies or ()
 
     # Look for a matching prior therapy (drug_or_class match; outcome flexible)
     found = False
+    has_unknown_identity = False
     for entry in claim_prior:
-        prior_drug = str(entry.get("drug_or_class", "")).lower()
-        if req_drug in prior_drug or prior_drug in req_drug:
+        prior_drug = str(entry.get("drug_or_class") or "").strip().lower()
+        if not prior_drug:
+            has_unknown_identity = True
+            continue
+        if req_drug and (req_drug in prior_drug or prior_drug in req_drug):
             found = True
             break
 
     if not found:
-        if not claim_prior:
+        if not claim_prior or has_unknown_identity:
             return {
                 "drug_claim_line_id": drug_line.drug_claim_line_id,
                 "claim_id": claim.claim_id,
@@ -327,6 +344,9 @@ def _evaluate_prior_therapy_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_prior_therapy_verification",
                 "severity": "review",
+                "missing_inputs": [
+                    "prior_therapies.drug_or_class" if claim_prior else "prior_therapies"
+                ],
                 "required_prior_therapy": req_drug,
                 "required_outcome": req_outcome,
                 "message_tr": (
@@ -388,6 +408,7 @@ def _evaluate_supplemental_constraints(
                 "primary_icd10": claim.primary_icd10,
                 "violation_kind": "needs_report_verification",
                 "severity": "review",
+                "missing_inputs": ["drug_specialty_board_report_present"],
                 "report_specialties": list(rule.get("report_specialties") or []),
                 "message_tr": rule.get("message_tr")
                 or "Sağlık kurulu raporu durumu doğrulanmalı (§4.2).",
@@ -442,6 +463,7 @@ def _evaluate_report_requirement(
                 "primary_icd10": claim.primary_icd10,
                 "violation_kind": "needs_report_verification",
                 "severity": "review",
+                "missing_inputs": ["drug_specialty_board_report_present"],
                 "report_specialties": list(rule.get("report_specialties") or []),
                 "message_tr": rule.get("message_tr")
                 or "Sağlık kurulu raporu durumu doğrulanmalı (§4.2).",
