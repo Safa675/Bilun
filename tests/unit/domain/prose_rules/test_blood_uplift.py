@@ -41,10 +41,17 @@ def _proc(**overrides) -> ProcedureClaimLine:
     return ProcedureClaimLine(**base)
 
 
+def _package():
+    # Actual package treatment on another day; a candidate flag is insufficient.
+    return _proc(procedure_line_id="package", procedure_code="P610070",
+                 procedure_category="paket", procedure_date=date(2026, 1, 9),
+                 billed_amount_try=Decimal("10000"), expected_payable_try=Decimal("10000"))
+
+
 class TestBloodComponentUplift:
     def test_detects_underbilling_below_fraction(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(
-            [_proc()],
+            [_package(), _proc()],
             claim_id="CLM1",
         )
         assert len(hits) == 1
@@ -56,15 +63,15 @@ class TestBloodComponentUplift:
 
     def test_skips_when_billed_within_tolerance(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(
-            [_proc(billed_amount_try=Decimal("360"))],
+            [_package(), _proc(billed_amount_try=Decimal("360"))],
             claim_id="CLM1",
         )
         assert hits == []
 
     def test_overbilling_goes_to_audit_not_uplift(self) -> None:
         line = _proc(billed_amount_try=Decimal("500"))
-        assert detect_blood_component_underbilling_opportunities([line]) == []
-        violations = detect_blood_component_violations([line])
+        assert detect_blood_component_underbilling_opportunities([_package(), line]) == []
+        violations = detect_blood_component_violations([_package(), line])
         assert len(violations) == 1
         assert violations[0]["risk_amount_try"] > 0
 

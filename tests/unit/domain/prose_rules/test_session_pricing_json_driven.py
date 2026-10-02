@@ -46,7 +46,7 @@ _EK2B_ONLY = "200100"
 def _stub_membership(monkeypatch, mapping: dict[str, tuple[bool, bool]]):
     """Stub ``procedure_annex_membership`` to return (in_ek2b, in_ek2c)."""
 
-    def fake(code: str):
+    def fake(code: str, **kwargs):
         return mapping.get(code, (False, False))
 
     monkeypatch.setattr(

@@ -107,11 +107,11 @@ class TestClaimStrategySut:
         monkeypatch.setattr(claim_strategy, "resolve_payment_method", optional_payment_method)
         monkeypatch.setattr(payment_method, "resolve_payment_method", optional_payment_method)
         monkeypatch.setattr(
-            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+            session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
         )
         monkeypatch.setattr(
             session_pricing, "_procedure_point_score",
-            lambda code: {"111111": 20, "222222": 10}[code],
+            lambda code, **kwargs: {"111111": 20, "222222": 10}[code],
         )
         claim = _claim(facility_tier="egitim_arastirma", package_candidate=True)
         lines = [
@@ -416,11 +416,11 @@ class TestClaimStrategySut:
 
         # Fix the pricing fixture's ranking while leaving payment compliance real.
         monkeypatch.setattr(
-            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+            session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
         )
         monkeypatch.setattr(
             session_pricing, "_procedure_point_score",
-            lambda code: {"700390": 10, "L116470": 20, "G100580": 30}[code],
+            lambda code, **kwargs: {"700390": 10, "L116470": 20, "G100580": 30}[code],
         )
         claim = _claim(
             facility_tier="2_basamak_kamu",

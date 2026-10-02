@@ -78,7 +78,12 @@ def _ctx(claim: ClaimHeader, *lines: ProcedureClaimLine) -> PatientClaimContext:
 class TestBloodUpliftWiring:
     def test_blood_uplift_in_sgk_headline_not_audit(self) -> None:
         claim = _claim()
-        lines = [_proc()]
+        lines = [
+            _proc(),
+            _proc(procedure_line_id="package", procedure_code="P610070",
+                  procedure_category="paket", procedure_date=date(2026, 1, 11),
+                  billed_amount_try=Decimal("10000"), expected_payable_try=Decimal("10000")),
+        ]
         ctx = _ctx(claim, *lines)
         blood = recommend_blood_uplift_from_claims(ctx)
         assert blood.confirmed_uplift_try == pytest.approx(310.0)

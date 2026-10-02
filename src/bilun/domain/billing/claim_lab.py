@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ..catalog import get_lab_price
+from ..pricing.temporal import get_ek2b_price_for_date
 from ..constants import HEMOGRAM_TESTS
 from .types import LabOptimization
 
@@ -39,7 +39,12 @@ def _is_hemogram_subtest_line(line: Any) -> bool:
 
 def _hemogram_gazette_price(service_date: Any | None = None) -> float:
     """Gazette price for one hemogram (L107020) as of the service date."""
-    price = get_lab_price("Hemoglobin", visit_date=service_date)
+    if service_date is None:
+        return 0.0
+    try:
+        price = get_ek2b_price_for_date("L107020", service_date)
+    except FileNotFoundError:
+        return 0.0
     return float(price) if price is not None else 0.0
 
 
@@ -62,17 +67,16 @@ def _optimize_lab_billing_from_claims(
     if not lab_lines:
         return result
 
-    # Group by episode/visit for hemogram bundling.
-    by_episode: dict[str, list[Any]] = {}
+    # Each dated bill/visit has its own panel allowance and tariff.
+    by_episode: dict[tuple[str, str, str], list[Any]] = {}
     for line in lab_lines:
-        by_episode.setdefault(line.episode_id, []).append(line)
+        key = (line.claim_id, line.episode_id, str(line.procedure_date))
+        by_episode.setdefault(key, []).append(line)
 
     total_hemogram_savings = 0.0
     flagged: list[dict[str, Any]] = []
 
-    for episode_id, lines in by_episode.items():
-        service_date = str(lines[0].procedure_date) if lines else None
-
+    for (_claim_id, episode_id, service_date), lines in by_episode.items():
         hemogram_lines = [ln for ln in lines if _is_hemogram_subtest_line(ln)]
         # A single L107020 line is the correct bundle; unbundling only applies
         # when multiple CBC component lines are billed separately.
@@ -80,6 +84,9 @@ def _optimize_lab_billing_from_claims(
             continue
 
         hemogram_price = _hemogram_gazette_price(service_date)
+        if hemogram_price <= 0:
+            # No dated tariff is evidence of no price, not a zero-price panel.
+            continue
         hemogram_billed_total = sum(float(ln.billed_amount_try) for ln in hemogram_lines)
         # Correct billing: one hemogram panel. Overbilling = total billed - one panel price.
         hemogram_savings = round(hemogram_billed_total - hemogram_price, 2)
@@ -94,7 +101,7 @@ def _optimize_lab_billing_from_claims(
                     "savings_try": hemogram_savings,
                     "detail": (
                         f"{len(hemogram_lines)} CBC component line(s) billed in "
-                        f"{episode_id}; should be billed as one hemogram (L107020)"
+                        f"{episode_id} on {service_date}; should be billed as one hemogram (L107020)"
                     ),
                 }
             )

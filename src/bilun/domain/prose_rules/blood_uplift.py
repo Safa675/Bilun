@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from .session_pricing import blood_component_billable_fraction, blood_component_max_billable_try
+from .session_pricing import (
+    billed_package_scopes, blood_component_billable_fraction, blood_component_max_billable_try,
+)
 from .session_uplift import iter_session_secondary_assessments
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
@@ -35,9 +37,11 @@ def detect_blood_component_underbilling_opportunities(
 ) -> list[dict[str, Any]]:
     """Flag blood component lines billed below allowed package-context fraction."""
     opportunities: list[dict[str, Any]] = []
+    package_scopes = billed_package_scopes(lines)
     blood_lines = [
         line for line in lines
-        if not line.is_package_included
+        if (line.patient_id, line.claim_id, line.episode_id) in package_scopes
+        and not line.is_package_included
         and blood_component_billable_fraction(line.procedure_code) is not None
     ]
     if not blood_lines:
@@ -64,7 +68,7 @@ def detect_blood_component_underbilling_opportunities(
             continue
 
         reference = payable if payable > 0 else billed
-        max_billable = blood_component_max_billable_try(line)
+        max_billable = blood_component_max_billable_try(line, package_context=True)
         assert max_billable is not None
         if billed >= max_billable * (1.0 - _BILLING_TOLERANCE):
             continue
