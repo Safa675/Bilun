@@ -80,17 +80,24 @@ export function SutPatientPageContent({
   tRef.current = t;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {
-    claimId: claimQuery,
-    section: sectionQuery,
-    findingId: findingQuery,
-  } = parsePatientWorkspaceQuery(searchParams);
+  const routeQuery = parsePatientWorkspaceQuery(searchParams);
+  // The document URL belongs to the primary pane, never to an embedded patient.
+  const claimQuery = embedded ? null : routeQuery.claimId;
+  const sectionQuery = embedded ? null : routeQuery.section;
+  const findingQuery = embedded ? null : routeQuery.findingId;
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
   const [billingReport, setBillingReport] = useState<BillingActionReport | null>(null);
   const [claims, setClaims] = useState<PatientClaimSummary[]>([]);
-  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  const [claimSelection, setClaimSelection] = useState<{ patientId: string; claimId: string | null }>(
+    { patientId, claimId: null },
+  );
+  // Mask the previous patient's selection during the render before effect cleanup.
+  const selectedClaimId = claimSelection.patientId === patientId ? claimSelection.claimId : null;
+  const setSelectedClaimId = useCallback((claimId: string | null) => {
+    setClaimSelection({ patientId, claimId });
+  }, [patientId]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [clauseKey, setClauseKey] = useState<string | null>(null);
   const [claimDetail, setClaimDetail] = useState<PatientClaimDetail | null>(null);
@@ -223,7 +230,7 @@ export function SutPatientPageContent({
     setClaimsLoading(true);
     setClaimsError(null);
     setClaims([]);
-    setSelectedClaimId(null);
+    setClaimSelection({ patientId: nextPatientId, claimId: null });
     setClaimDetail(null);
 
     getPatientClaims(nextPatientId, { signal: controller.signal })
@@ -233,7 +240,7 @@ export function SutPatientPageContent({
         const requestedClaim = initialClaimId
           ? response.claims.find((c) => c.claim_id === initialClaimId)?.claim_id ?? null
           : null;
-        setSelectedClaimId(requestedClaim ?? null);
+        setClaimSelection({ patientId: nextPatientId, claimId: requestedClaim });
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
@@ -421,6 +428,7 @@ export function SutPatientPageContent({
     (claimId: string | null) => {
       setSelectedClaimId(claimId);
       setSelectedActionId(null);
+      if (embedded) return;
       router.replace(
         buildSutPatientHref(patientId, {
           claimId: claimId ?? undefined,
@@ -429,7 +437,7 @@ export function SutPatientPageContent({
         { scroll: false },
       );
     },
-    [patientId, router, sectionQuery],
+    [embedded, patientId, router, sectionQuery, setSelectedClaimId],
   );
 
   const handleOpenClause = useCallback((nextClauseKey: string) => {
@@ -446,7 +454,7 @@ export function SutPatientPageContent({
     (action: RecommendedActionItem) => {
       setSelectedActionId(action.action_id);
       const sectionId = recommendedActionSectionId(action.surface);
-      if (sectionId) {
+      if (sectionId && !embedded) {
         router.replace(
           buildSutPatientHref(patientId, {
             claimId: selectedClaimId ?? undefined,
@@ -456,7 +464,7 @@ export function SutPatientPageContent({
         );
       }
     },
-    [patientId, router, selectedClaimId],
+    [embedded, patientId, router, selectedClaimId],
   );
 
   const handlePatientSelect = useCallback((selectedPatientId: string) => {

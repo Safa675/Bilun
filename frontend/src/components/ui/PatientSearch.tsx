@@ -49,6 +49,7 @@ export default function PatientSearch({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PatientSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [highlightIdx, setHighlightIdx] = useState(-1);
@@ -64,38 +65,55 @@ export default function PatientSearch({
     searchFnRef.current = searchFn;
   }, [searchFn]);
 
+  const cancelSearch = useCallback(() => {
+    requestSeqRef.current += 1;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = null;
+    activeControllerRef.current?.abort();
+    activeControllerRef.current = null;
+  }, []);
+
+  const dismiss = useCallback((endEditing = true) => {
+    cancelSearch();
+    setLoading(false);
+    setIsOpen(false);
+    setHighlightIdx(-1);
+    if (endEditing) setIsEditing(false);
+  }, [cancelSearch]);
+
   const doSearch = useCallback(
     (q: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      // Invalidate immediately, including the debounce gap before the next request.
+      cancelSearch();
+      const requestId = requestSeqRef.current;
+      setIsEditing(true);
+      setIsOpen(true);
+      setLoading(true);
+      setError(null);
+      setResults([]);
+      setHighlightIdx(-1);
       debounceRef.current = setTimeout(async () => {
-        const requestId = requestSeqRef.current + 1;
-        requestSeqRef.current = requestId;
-
-        activeControllerRef.current?.abort();
+        debounceRef.current = null;
         const controller = new AbortController();
         activeControllerRef.current = controller;
-
-        setLoading(true);
-        setError(null);
         try {
           const res = await searchFnRef.current(q, 20, { signal: controller.signal });
           if (controller.signal.aborted || requestId !== requestSeqRef.current) return;
           setResults(res.results);
-          setIsOpen(true);
-          setHighlightIdx(-1);
         } catch (err) {
-          if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
+          if (controller.signal.aborted || requestId !== requestSeqRef.current ||
+              (err instanceof DOMException && err.name === "AbortError")) return;
           setResults([]);
           setError(err instanceof Error ? err.message : t("cohort.patientSearch.searchFailed"));
-          setIsOpen(true);
         } finally {
-          if (activeControllerRef.current === controller) {
+          if (requestId === requestSeqRef.current && activeControllerRef.current === controller) {
+            activeControllerRef.current = null;
             setLoading(false);
           }
         }
       }, 200);
     },
-    [t],
+    [cancelSearch, t],
   );
 
   const retrySearch = useCallback(() => {
@@ -110,12 +128,16 @@ export default function PatientSearch({
 
   const handleSelect = (pid: string) => {
     setQuery("");
-    setIsOpen(false);
-    setHighlightIdx(-1);
+    dismiss();
     onSelect(pid);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      dismiss(false);
+      return;
+    }
     if (!isOpen || results.length === 0) {
       if (e.key === "ArrowDown" || e.key === "Enter") {
         doSearch(query);
@@ -137,9 +159,6 @@ export default function PatientSearch({
         return;
       }
       handleSelect(pid);
-    } else if (e.key === "Escape") {
-      setIsOpen(false);
-      setHighlightIdx(-1);
     }
   };
 
@@ -150,32 +169,26 @@ export default function PatientSearch({
     }
   }, [highlightIdx]);
 
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      activeControllerRef.current?.abort();
-      activeControllerRef.current = null;
-    };
-  }, []);
+  useEffect(() => cancelSearch, [cancelSearch]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        dismiss();
       }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [dismiss]);
 
   const displayValue = selectedPatientId
     ? t("cohort.patientSearch.selectedLabel", { patientId: selectedPatientId })
     : "";
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
+    <div ref={containerRef} style={{ position: "relative" }} onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) dismiss();
+    }}>
       <div style={{ position: "relative" }}>
         <Search
           style={{
@@ -195,7 +208,7 @@ export default function PatientSearch({
             paddingLeft: 36,
             transition: "border-color 0.2s ease, box-shadow 0.2s ease",
           }}
-          value={isOpen ? query : displayValue}
+          value={isEditing ? query : displayValue}
           onChange={handleChange}
           onFocus={() => {
             setQuery("");
@@ -269,6 +282,7 @@ export default function PatientSearch({
                 key={r.patient_id}
                 id={`${id}-option-${idx}`}
                 role="option"
+                onMouseDown={(event) => event.preventDefault()}
                 aria-selected={highlightIdx === idx}
                 onClick={(event) => {
                   if (isBackgroundTabPointer(event)) {

@@ -48,9 +48,14 @@ export function fmtDate(
     return String(iso).slice(0, 10) || "—";
   }
   const locale = getIntlLocale(getModuleLocale());
+  const formatOptions = options ?? { year: "numeric", month: "short", day: "numeric" };
+  const isCivilDate = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  // ISO date-only values are calendar dates, not instants in the browser's zone.
+  // Reject normalized impossible days (e.g. February 30) using the existing fallback.
+  if (isCivilDate && parsed.toISOString().slice(0, 10) !== iso) return iso;
   return parsed.toLocaleDateString(
     locale,
-    options ?? { year: "numeric", month: "short", day: "numeric" },
+    isCivilDate ? { ...formatOptions, timeZone: "UTC" } : formatOptions,
   );
 }
 

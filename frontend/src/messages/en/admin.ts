@@ -5,6 +5,7 @@ const admin = {
   "build": "Build:",
   "empty": "—",
   "statuses": {
+    "degraded": "degraded",
     "ready": "ready",
     "building": "building",
     "error": "error",
