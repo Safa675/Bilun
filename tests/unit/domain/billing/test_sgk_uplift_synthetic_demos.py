@@ -366,20 +366,38 @@ class TestCareSettingReviewSyntheticDemo:
 
 
 class TestBloodUpliftSyntheticDemo:
-    def test_0004_blood_uplift_demo_in_sgk_headline(self, dataset) -> None:
+    def test_0004_blood_gap_is_session_owned_and_review_only(self, dataset) -> None:
         patient_id = _patient_for_scenario("sgk_blood_uplift_yatis")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
-        _claim_by_scenario_tag(ctx, "sgk_blood_uplift_yatis")
+        demo_claim = _claim_by_scenario_tag(ctx, "sgk_blood_uplift_yatis")
         report = compute_patient_billing_report(
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
         )
 
-        assert report.blood_uplift.confirmed_uplift_try == pytest.approx(310.0)
-        assert report.sgk_uplift_try >= 310.0
+        # Same-session package P611720 is primary (101019.30 TRY). The blood
+        # line has list/payable1000 and billed50: min(30%×1000,36%×1000)-50=250.
+        # The existing low-secondary/high-primary heuristic requires chart review.
+        rows = [row for row in report.session_uplift.opportunities
+                if row.get("claim_id") == demo_claim.claim_id]
+        assert len(rows) == 1
+        row = rows[0]
+        assert row["procedure_code"] == "705371"
+        assert row["primary_procedure_code"] == "P611720"
+        assert row["primary_billed_try"] == pytest.approx(101019.30)
+        assert row["session_expected_billed_try"] == pytest.approx(300.0)
+        assert row["blood_max_billable_try"] == pytest.approx(360.0)
+        assert row["expected_billed_try"] == pytest.approx(300.0)
+        assert row["actual_billed_try"] == pytest.approx(50.0)
+        assert row["review_uplift_try"] == pytest.approx(250.0)
+        assert row["recoverable_uplift_try"] == 0.0
+        assert row["review_kind"] == "needs_clinical_review"
+        assert row["included_in_sgk_total"] is False
+        assert report.blood_uplift.opportunities == []
+        assert report.blood_uplift.confirmed_uplift_try == 0.0
 
 
 class TestClaimReadinessSyntheticDemo:

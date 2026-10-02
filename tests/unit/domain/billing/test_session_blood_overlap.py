@@ -260,6 +260,7 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
     from dataclasses import replace
 
     from src.bilun.api.routes.billing import _serialize_billing_report
+    from src.bilun.api.public_responses import project_public_response
     from src.bilun.domain.billing import patient_report
     from src.bilun.domain.billing.cohort_summary import build_cohort_recovery_summary
     from src.bilun.domain.billing.recovery_summary import (
@@ -314,6 +315,17 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
     assert payload["session_uplift"]["confirmed_uplift_try"] == expected_confirmed
     assert payload["session_uplift"]["total_uplift_try"] == expected_total
     assert payload["blood_uplift"]["opportunities"] == []
+    raw_row = payload["session_uplift"]["opportunities"][0]
+    raw_row["private_injected"] = {"domain_modules": ["private.py"]}
+    for surface in ("get_billing_report", "get_bill_billing_report"):
+        public = project_public_response(payload, surface)
+        public_row = public["session_uplift"]["opportunities"][0]
+        assert public_row["session_expected_billed_try"] == raw_row["session_expected_billed_try"]
+        assert public_row["blood_max_billable_try"] == raw_row["blood_max_billable_try"]
+        assert public_row["expected_billed_try"] == raw_row["expected_billed_try"]
+        assert public_row["recoverable_uplift_try"] == expected_confirmed
+        assert public_row["review_uplift_try"] == (expected_total if review_only else 0)
+        assert "private_injected" not in public_row
     assert patient_recovery_summary_from_payload(payload) == patient_recovery_summary_entry(report)
     cohort = build_cohort_recovery_summary({"P1": report}, claim_dataset=None)
     assert cohort.total_session_uplift == expected_confirmed
