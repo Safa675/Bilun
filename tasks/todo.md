@@ -1267,6 +1267,7 @@ Apply each procedure occurrence's session factor to its own whole-line payable, 
 - [x] Add failing synthetic regressions for unequal line amounts, duplicate normalized codes, package memberships, quantities, exclusions, fallback amounts, and rounding.
 - [x] Replace primary-derived amounts with own-line amounts while preserving occurrence alignment and existing blood caps.
 - [x] Run focused regression and integration tests, repository quality gates where available, and independent review.
+- [x] Reconcile the two F011 synthetic golden expectations exposed by hosted CI with exact own-line arithmetic.
 - [ ] Check base CI, publish an atomic commit on a new branch, open a draft PR, and verify remote commit and hosted CI.
 
 ### Out of Scope
@@ -1281,3 +1282,4 @@ Reviewed against main 45f97a64385c7b1959c44125b949f2d2e3e1e90b and the authorize
 - Full source/script Ruff, changed-test Ruff, and changed-file Python compilation passed. Independent review reran the 60-case core suite and found no blocking source issue.
 - Local verification uses Python 3.12 and a partial source/data checkout. Full pytest was attempted but stopped at collection on missing manifests/raw source assets and a missing requests dependency. Generated-rule checking also requires the absent manifests; manifest parity scanned zero files, so it is not counted as a pass. Complete Python 3.13 backend tests, generated-artifact/parity checks, and frontend gates remain for hosted CI on the published commit.
 - Base main 45f97a64385c7b1959c44125b949f2d2e3e1e90b was rechecked with successful backend and frontend checks before publication. No production state was changed.
+- First hosted run on 8567ee5: frontend passed all 419 tests and all frontend gates; backend passed 4290 tests with two stale F011 golden failures. SHA-verified synthetic rows and independent review confirm primary 600160 has payable 1800 and secondary 600150 has payable 2200 at 25%, giving itemized 2350 and package-9000 uplift 6650. Updated only the exact vignette/action expectations, added explicit itemized/package assertions, and retained existing tolerances. Five registry/lookup tests and Ruff/compilation passed; the complete hosted rerun remains pending for the follow-up commit.
