@@ -40,6 +40,15 @@ const sections = {
       },
     },
     coverage: {
+      staticInventoryNotice: "Bunlar kaynak ve kural envanterleridir; otomatik klinik tamamlanma ölçümü değildir. Kodlanmış veya ertelenmiş metin, klinik koşulun denetlendiğini göstermez.",
+      evidenceTitle: "İlaç endikasyonu kanıtı",
+      evidenceSource: "Temsil edilen benzersiz kaynak hükümleri",
+      evidencePredicate: "Tanı uygulanabilirlik koşulu olan kurallar (alt sınır)",
+      evidenceInputs: "Fatura için mevcut girdiler",
+      evidenceEvaluated: "Fatura için fiilen değerlendirilen",
+      evidenceUnknown: "Ölçülmedi",
+      evidenceNote: "Koşul sayıları kural kimliklerini, kaynak sayıları hüküm kimliklerini kullanır. Burada yalnızca tanı uygulanabilirliği envanteri vardır; tüm klinik koşullar değil. Fatura değerlendirme gözlemleri sağlanmamıştır.",
+
       title: "Kapsam işlem hattı",
       clausesTitle: "Hükümler",
       registryTitle: "Kural kaydı",

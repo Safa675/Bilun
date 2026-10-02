@@ -8,6 +8,7 @@ import { fmtNum } from "../../shared";
 import { CoverageChip } from "./shared";
 import { GlossaryStrip } from "./GlossaryStrip";
 import { GapCompositionBanner } from "./GapCompositionBanner";
+import { CoverageEvidencePanel } from "./CoverageEvidencePanel";
 import { PartialEnginePanel } from "./PartialEnginePanel";
 
 export function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
@@ -36,6 +37,13 @@ export function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) 
           </span>
         )}
       </div>
+
+      <p className="text-xs text-[var(--text-secondary)]">
+        {t("sections.ruleDatabase.coverage.staticInventoryNotice")}
+      </p>
+      {partialEngines?.drug_indication_prose?.coverage_evidence && (
+        <CoverageEvidencePanel evidence={partialEngines.drug_indication_prose.coverage_evidence} />
+      )}
 
       <GlossaryStrip
         clauseCount={clauses.total_extracted}

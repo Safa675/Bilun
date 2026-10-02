@@ -688,7 +688,22 @@ export interface CoverageSummaryMeta {
   unavailable_reason: string | null;
 }
 
+export interface CoverageEvidence {
+  schema_version: number;
+  available: boolean;
+  unavailable_reason?: string;
+  source_clause_count?: number;
+  source_represented_clause_count?: number;
+  executable_predicate_rule_count?: number;
+  executable_predicate_scope?: string;
+  inputs_available_count?: number | null;
+  actually_evaluated_count?: number | null;
+  runtime_unavailable_reason?: string;
+  clinical_completion_pct?: null;
+}
+
 export interface PartialEngineCoverage {
+  coverage_evidence?: CoverageEvidence;
   rule_id: string;
   registry_status: string;
   prose_engine_status: string;

@@ -1368,3 +1368,30 @@ Merging or deploying, user-computer/VPS operations, production credential/securi
 User approved this PR. Work uses the authorized GitHub connector and isolated cloud workspace because the declined local task will not be retried. Source inventory is partial only for unavailable data/binary assets, so publication must derive from the verified complete remote base tree and include changed files only. Current-baseline design is confirmed: version comes from complete persisted evidence/report contracts, not API feature visibility or unchanged build_meta schema; original-five migration remains supported; current full-v2 comparisons validate both sides and normalize only independently bound identity fields. The paired transaction design must explicitly bind the final serving database; changing bytes after signing or weakening hashes is prohibited. No production command is executed during implementation.
 
 Snapshot design decision: the current ordinary load-only service owns a writable DuckDB connection. Do not claim an undocumented hot-copy snapshot. The authorized PR includes explicit opt-in snapshot maintenance with warnings, shared locking, durable recovery and interruption tests; actual VPS execution remains out of scope. Later read-only online snapshot support requires tested reader-lock semantics.
+
+## Task: Reproducible honest SUT coverage
+
+### Goal
+Expose reproducible, deduplicated source representation separately from executable predicates, per-claim input availability and observed evaluation, without implying clinical completeness.
+
+### Subtasks
+- [x] Review source/evaluator contracts and confirm this plan with the coordinating reviewer.
+- [x] Reverify and classify each of the 85 baseline drug gaps with source-text hashes, existing-rule evidence, and explicit executable limitations.
+- [x] Pin every coverage dependency by file hash and validate full-corpus predicate routability without changing evaluator behavior.
+- [x] Add a deterministic, versioned coverage-evidence report with sorted source IDs, input hashes, explicit unknown runtime metrics, and structural/deferred exclusions.
+- [x] Integrate the report into the existing build CLI and drug partial-engine API summary without changing evaluator behavior.
+- [x] Display source representation and explicit runtime unknowns in the coverage panel, preserving existing compatibility fields.
+- [x] Add invariant tests for duplicate IDs, structured/deferred text, absent observations and reproducibility; run focused backend/frontend checks.
+- [x] Deliver exact diff, verification results and limitations for independent review and deliberate integration.
+
+### Out of Scope
+No clinical-completeness percentage, evaluator/temporal behavior changes, production access, publication, merges or deployment. No inferred clinical facts or fabricated runtime observations. Existing legacy structural fields remain for compatibility.
+
+### Success criteria and integration contract
+The new report is deterministic for the same file contents; representation counts use unique nonempty clause IDs. Executability is never derived solely from encoding flags or manifest categories. Runtime input/evaluation counts remain null unless measured by an explicit observation contract. CLI can write a reviewable JSON artifact; API and UI explicitly distinguish static source inventory from clinical execution. Python 3.12 cloud verification is reported separately from CI Python 3.13.
+
+### Stream C plan review
+The coordinating reviewer reconfirmed this bounded plan on 2026-10-02. Work continues in an isolated recovered materialization to preserve edits in the original stream. Gap classifications are review recommendations, never automatic changes to registry/manifest coverage. Source-link repairs cannot close clinical predicate gaps.
+
+### Verification review
+19 evidence tests and 3 frontend tests pass. Complete backend collection is blocked by missing raw data; existing coverage selection has one missing EMR catalog artifact failure. Typecheck is blocked by absent react-test-renderer dependencies in unrelated tests. Scoped Ruff, 134 generated artifacts, and 23-manifest parity pass. Two final CLI reports are byte-identical. Frozen selected-file packet excludes pytest-generated parquets and runtime cache files. Independent integration review remains a separate publication gate.

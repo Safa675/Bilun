@@ -40,6 +40,15 @@ const sections = {
       },
     },
     coverage: {
+      staticInventoryNotice: "These are source and rule inventories, not automated clinical completion. Encoded or deferred text does not prove that a clinical condition was checked.",
+      evidenceTitle: "Drug indication evidence",
+      evidenceSource: "Unique represented source clauses",
+      evidencePredicate: "Rules with diagnosis-applicability predicates (lower bound)",
+      evidenceInputs: "Inputs available for a claim",
+      evidenceEvaluated: "Actually evaluated for a claim",
+      evidenceUnknown: "Not measured",
+      evidenceNote: "Predicate counts use rule IDs; source counts use clause IDs. Only diagnosis applicability is inventoried here, not every clinical constraint. No claim execution observations are supplied.",
+
       title: "Coverage pipeline",
       clausesTitle: "Clauses",
       registryTitle: "Registry",
