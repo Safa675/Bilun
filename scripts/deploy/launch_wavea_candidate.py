@@ -1,7 +1,7 @@
-"""Exec a signed Wave A candidate listener from protected old credentials.
+"""Exec a signed Wave A candidate listener from explicit candidate environments.
 
 Use this as the ExecStart for private candidate services on :8002 and :3099.
-The launch manifest contains paths and identities only. Old effective process
+The launch manifest contains paths and identities only. Effective process
 environments stay in private NUL files and are never logged or copied to a
 systemd unit. This command does not change the public route.
 """
@@ -14,13 +14,13 @@ import re
 import sys
 from pathlib import Path
 
-from scripts.deploy.rehearse_wavea_pair import environment
+from scripts.deploy.candidate_environment import candidate_environments
 from scripts.deploy.release_sidecar import _load_private_json
 from scripts.deploy.verify_candidate_cache import _stable_file_hash
 
 _CODE_SHA = re.compile(r"[0-9a-f]{40}\Z")
 _CONFIG_PATHS = frozenset({
-    "old_backend_environment", "old_frontend_environment", "backend_runtime",
+    "candidate_backend_environment", "candidate_frontend_environment", "backend_runtime",
     "frontend_runtime", "backend_python", "node", "cache_path",
     "source_roster_path", "activation_receipt_path", "activation_key_path",
 })
@@ -38,7 +38,10 @@ def candidate_command(role: str, config: dict) -> tuple[Path, list[str], Path, d
             for key in _CONFIG_PATHS
         )
     ):
-        raise ValueError("Signed candidate launch config is malformed")
+        raise ValueError(
+            "Signed candidate launch config is malformed; regenerate with the explicit "
+            "candidate environment paths used in rehearsal"
+        )
     paths = {key: Path(config[key]) for key in _CONFIG_PATHS}
     if any(
         path.is_symlink() for key, path in paths.items()
@@ -52,17 +55,10 @@ def candidate_command(role: str, config: dict) -> tuple[Path, list[str], Path, d
     ):
         raise ValueError("Signed candidate launch artifacts are absent or linked")
     source_sha = _stable_file_hash(paths["source_roster_path"])
-    values = environment(paths[
-        "old_backend_environment" if role == "backend"
-        else "old_frontend_environment"
-    ])
-    for key in (
-        "PYTHONPATH", "PYTHONHOME", "BILUN_WAVEA_ACTIVATION_RECEIPT",
-        "BILUN_WAVEA_ACTIVATION_KEY_FILE", "BILUN_CACHE_DB_PATH",
-        "BILUN_RELEASE_CODE_SHA", "BILUN_RELEASE_SOURCE_MANIFEST_SHA256",
-        "BILUN_STARTUP_POLICY", "API_PROXY_TARGET", "PORT", "HOSTNAME",
-    ):
-        values.pop(key, None)
+    backend, frontend = candidate_environments(
+        paths["candidate_backend_environment"], paths["candidate_frontend_environment"],
+    )
+    values = backend if role == "backend" else frontend
     if role == "backend":
         values.update(
             BILUN_CACHE_DB_PATH=str(paths["cache_path"]),

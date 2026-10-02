@@ -24,6 +24,8 @@ def test_rehearsal_rejects_host_network_before_starting_services(
         "--work-dir", str(work_dir),
         "--old-snapshot", str(tmp_path / "old-snapshot"),
         "--old-replay", str(tmp_path / "old-replay"),
+        "--candidate-backend-environment", str(tmp_path / "candidate-backend.nul"),
+        "--candidate-frontend-environment", str(tmp_path / "candidate-frontend.nul"),
         "--candidate-checkout", str(tmp_path / "checkout"),
         "--candidate-db", str(tmp_path / "candidate.duckdb"),
         "--candidate-roster", str(tmp_path / "roster.json"),

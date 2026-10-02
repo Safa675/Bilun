@@ -83,11 +83,11 @@ def build_traced_candidate(
     billing_workers: int = 2,
 ) -> dict[str, Any]:
     """Run the exact traced build once; failure leaves no success attestation."""
-    checkout = checkout.resolve(strict=True)
     if any(type(value) is not int or value < 1 or value > 8 for value in (
         payload_workers, billing_workers
     )):
         raise ValueError("Private build worker count is invalid")
+    checkout = checkout.resolve(strict=True)
     if not python_executable.is_absolute() or not python_executable.is_file():
         raise ValueError("Private build Python interpreter is invalid")
     if len({db_path, trace_path, log_path, report_path, roster_path}) != 5:

@@ -107,8 +107,14 @@ def issue_wavea_activation(
     dependency_roots: tuple[Path, ...],
     key_path: Path,
     receipt_path: Path,
+    payload_workers: int = 2,
+    billing_workers: int = 2,
 ) -> dict[str, Any]:
     """Seal one exact main-CI candidate after cache, trace, and rollback proof."""
+    if any(type(value) is not int or not 1 <= value <= 8 for value in (
+        payload_workers, billing_workers
+    )):
+        raise ValueError("Private build worker count is invalid")
     if key_path == receipt_path or key_path.exists() or receipt_path.exists():
         raise ValueError("Wave A receipt and key require fresh independent paths")
     sidecar, sidecar_sha = _load_private_json(sidecar_path, root=sidecar_path.parent)
@@ -184,6 +190,7 @@ def issue_wavea_activation(
         claims_dir=claims_dir, clean_dir=clean_dir, cache_path=candidate_db,
         trace_path=trace_path, log_path=build_log_path,
         python_executable=python_executable, dependency_roots=dependency_roots,
+        payload_workers=payload_workers, billing_workers=billing_workers,
     )
     saved_trace, saved_trace_sha = _load_private_json(
         trace_attestation_path, root=trace_attestation_path.parent
@@ -344,7 +351,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         manifest, _ = _load_private_json(args.manifest, root=args.manifest.parent)
-        if set(manifest) != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
+        # Older manifests intentionally mean the historical default, never counts
+        # inferred from the untrusted recorded invocation. Unknown fields still fail.
+        workers = {key: manifest.get(key, 2) for key in ("payload_workers", "billing_workers")}
+        if set(manifest) - workers.keys() != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
             raise ValueError("Activation manifest has missing or extra fields")
         if any(
             not isinstance(manifest[key], str) or not manifest[key]
@@ -358,12 +368,14 @@ def main(argv: list[str] | None = None) -> int:
             )
         ):
             raise ValueError("Activation manifest field type is invalid")
+        if any(type(value) is not int or not 1 <= value <= 8 for value in workers.values()):
+            raise ValueError("Private build worker count is invalid")
         paths = {key: Path(manifest[key]) for key in _MANIFEST_PATHS}
         if any(not path.is_absolute() for path in paths.values()):
             raise ValueError("Activation manifest paths must be absolute")
         result = issue_wavea_activation(
             **{key: manifest[key] for key in _MANIFEST_STRINGS},
-            **paths,
+            **paths, **workers,
             dependency_roots=tuple(Path(path) for path in manifest["dependency_roots"]),
             github_token=_github_read_token(),
         )

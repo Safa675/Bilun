@@ -3,6 +3,8 @@
 Run with ``unshare -n`` and a fresh private work directory. A draft candidate
 keeps Wave A hidden during this rehearsal. The result proves private pairing
 and old-route recovery; public release remains a separate transaction.
+Supply explicit private candidate backend/frontend NUL environments. Regenerated
+launch configurations must use these same files, never the protected old files.
 """
 from __future__ import annotations
 
@@ -20,6 +22,7 @@ from urllib.request import Request
 
 import duckdb
 
+from scripts.deploy.candidate_environment import candidate_environments
 from scripts.deploy.caddy_route_driver import CaddyRouteDriver, _adapt, _digest
 from scripts.deploy.capture_release_preflight import _runtime_digest, _stable_file_digest
 from scripts.deploy.observe_candidate_tuple import (
@@ -125,7 +128,7 @@ def same_api(first: int, second: int, path: str, session: str) -> None:
         raise ValueError(f"Private/frontend/Caddy API pairing differs for {path}")
 
 
-def legacy_api_parity(session: str, candidate_db: Path) -> tuple[int, int]:
+def legacy_api_parity(old_session: str, candidate_session: str, candidate_db: Path) -> tuple[int, int]:
     with duckdb.connect(str(candidate_db), read_only=True) as db:
         patients = [row[0] for row in db.execute(
             "SELECT patient_id FROM patient_billing_report_rows ORDER BY patient_id"
@@ -139,8 +142,8 @@ def legacy_api_parity(session: str, candidate_db: Path) -> tuple[int, int]:
             path = f"/api/billing-report/{quote(patient_id)}/bills/{quote(claim_id)}"
         else:
             path = f"/api/billing-report/{quote(key)}"
-        old_status, old_body = fetch(8001, path, session)
-        new_status, new_body = fetch(8002, path, session)
+        old_status, old_body = fetch(8001, path, old_session)
+        new_status, new_body = fetch(8002, path, candidate_session)
         if old_status != 200 or new_status != 200 or _legacy_report(
             json.loads(old_body)
         ) != _legacy_report(json.loads(new_body)):
@@ -153,6 +156,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--work-dir", type=Path, required=True)
     parser.add_argument("--old-snapshot", type=Path, required=True)
     parser.add_argument("--old-replay", type=Path, required=True)
+    parser.add_argument("--candidate-backend-environment", type=Path, required=True)
+    parser.add_argument("--candidate-frontend-environment", type=Path, required=True)
     parser.add_argument("--candidate-checkout", type=Path, required=True)
     parser.add_argument("--candidate-db", type=Path, required=True)
     parser.add_argument("--candidate-roster", type=Path, required=True)
@@ -194,16 +199,14 @@ def main(argv: list[str] | None = None) -> None:
         hashlib.sha256(candidate_producer.read_bytes()).hexdigest() != producer_sha
     ):
         raise ValueError("Private pair producer differs from candidate source")
+    new_backend, new_frontend = candidate_environments(
+        args.candidate_backend_environment, args.candidate_frontend_environment,
+    )
     subprocess.run(["ip", "link", "set", "lo", "up"], check=True, capture_output=True)
     old_backend = environment(snapshot / "backend-effective-env.nul")
     old_frontend = environment(snapshot / "frontend-effective-env.nul")
     old_backend_serving_env_sha = env_digest(old_backend)
     old_frontend_serving_env_sha = env_digest(old_frontend)
-    new_backend = dict(old_backend)
-    new_frontend = dict(old_frontend)
-    new_frontend.pop("BILUN_STARTUP_POLICY", None)
-    for key in ("BILUN_WAVEA_ACTIVATION_RECEIPT", "BILUN_WAVEA_ACTIVATION_KEY_FILE"):
-        new_backend.pop(key, None)
     old_backend.update(BILUN_CACHE_DB_PATH=str(replay / "cache.duckdb"), PYTHONDONTWRITEBYTECODE="1")
     old_frontend.update(PORT="3000", HOSTNAME="127.0.0.1")
     roster_sha = hashlib.sha256(candidate_roster.read_bytes()).hexdigest()
@@ -215,7 +218,7 @@ def main(argv: list[str] | None = None) -> None:
         PYTHONDONTWRITEBYTECODE="1",
     )
     new_frontend.update(
-        PORT="3099", HOSTNAME="127.0.0.1",
+        PORT="3099", HOSTNAME="127.0.0.1", NODE_ENV="production",
         API_PROXY_TARGET="http://127.0.0.1:8002", BILUN_RELEASE_CODE_SHA=sha,
     )
     children: list[subprocess.Popen] = []
@@ -299,7 +302,8 @@ def main(argv: list[str] | None = None) -> None:
         )
         if not old_assets_ok or not candidate_assets_ok:
             raise ValueError("Private frontend static assets are incomplete")
-        session = cookie(old_backend)
+        old_session = cookie(old_backend)
+        candidate_session = cookie(new_backend)
         patient = args.patient_id
         paths = (
             f"/api/billing-report/{patient}",
@@ -307,11 +311,11 @@ def main(argv: list[str] | None = None) -> None:
             "/api/revenue-recovery",
         )
         for path in paths:
-            same_api(8001, 3000, path, session)
-            same_api(8002, 3099, path, session)
-        same_api(8002, 3099, "/api/wavea-evidence-index", session)
-        patient_count, bill_count = legacy_api_parity(session, candidate_db)
-        for port in (3000, 3099):
+            same_api(8001, 3000, path, old_session)
+            same_api(8002, 3099, path, candidate_session)
+        same_api(8002, 3099, "/api/wavea-evidence-index", candidate_session)
+        patient_count, bill_count = legacy_api_parity(old_session, candidate_session, candidate_db)
+        for port, session in ((3000, old_session), (3099, candidate_session)):
             if fetch(port, f"/patient/{patient}", session)[0] != 200:
                 raise ValueError("Authenticated patient page is unavailable")
 
@@ -349,16 +353,16 @@ def main(argv: list[str] | None = None) -> None:
         if fetch(8090, "/health") != fetch(8002, "/health"):
             raise ValueError("Candidate health route differs")
         for path in paths:
-            same_api(8002, 8090, path, session)
-        same_api(8002, 8090, "/api/wavea-evidence-index", session)
-        if fetch(8090, f"/patient/{patient}", session)[0] != 200:
+            same_api(8002, 8090, path, candidate_session)
+        same_api(8002, 8090, "/api/wavea-evidence-index", candidate_session)
+        if fetch(8090, f"/patient/{patient}", candidate_session)[0] != 200:
             raise ValueError("Candidate public patient page is unavailable")
         driver.install("barrier")
         driver.install("old")
         if fetch(8090, "/health") != fetch(8001, "/health"):
             raise ValueError("Restored old health differs")
         for path in paths:
-            same_api(8001, 8090, path, session)
+            same_api(8001, 8090, path, old_session)
         old_health_payload = json.loads(fetch(8001, "/health")[1])
         old_frontend_probe_sha = write_private_json(
             work_dir / "old-frontend-probe.json",

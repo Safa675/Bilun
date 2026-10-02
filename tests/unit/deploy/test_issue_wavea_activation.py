@@ -30,8 +30,9 @@ class _BaselineDB:
         return [(self.code_sha, "complete", "bilun")]
 
 
+@pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])
 def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers,
 ) -> None:
     protected = tmp_path / "protected"
     protected.mkdir(mode=0o700)
@@ -109,7 +110,11 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
             "independent_release_attestation_missing",
         ],
     })
-    monkeypatch.setattr(issuer, "verify_traced_build_attestation", lambda **_: trace)
+    def verify_trace(**kwargs):
+        assert (kwargs["payload_workers"], kwargs["billing_workers"]) == workers
+        return trace
+
+    monkeypatch.setattr(issuer, "verify_traced_build_attestation", verify_trace)
     monkeypatch.setattr(issuer, "verify_private_rehearsal", lambda *_args, **_kw: rehearsal)
     monkeypatch.setattr(issuer, "_live_health", lambda *_: {
         "active_build": "serving-old-1", "cache_ready": True,
@@ -128,6 +133,7 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
         },
     })
     arguments = dict(
+        payload_workers=workers[0], billing_workers=workers[1],
         release_id="release-1", ci_run_id="123", github_token="test-token",
         sidecar_path=sidecar_path, baseline_db=baseline,
         baseline_build_id="baseline-1", baseline_code_sha=baseline_sha,
@@ -158,6 +164,7 @@ def test_issuer_waits_for_exact_main_ci_before_writing_key_or_receipt(
     monkeypatch.setattr(issuer, "fetch_successful_release_ci", lambda **_: {
         "status": "release_ci_verified", "code_sha": code_sha, "ci_run_id": "123",
     })
+    monkeypatch.setattr(issuer.secrets, "token_bytes", lambda _: b"fixture-only-key-for-test-00000000")
     result = issuer.issue_wavea_activation(**arguments)
     assert result["status"] == "private_activation_receipt_issued"
     assert result["public_activation_ready"] is False
