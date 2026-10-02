@@ -1283,3 +1283,30 @@ Reviewed against main 45f97a64385c7b1959c44125b949f2d2e3e1e90b and the authorize
 - Local verification uses Python 3.12 and a partial source/data checkout. Full pytest was attempted but stopped at collection on missing manifests/raw source assets and a missing requests dependency. Generated-rule checking also requires the absent manifests; manifest parity scanned zero files, so it is not counted as a pass. Complete Python 3.13 backend tests, generated-artifact/parity checks, and frontend gates remain for hosted CI on the published commit.
 - Base main 45f97a64385c7b1959c44125b949f2d2e3e1e90b was rechecked with successful backend and frontend checks before publication. No production state was changed.
 - First hosted run on 8567ee5: frontend passed all 419 tests and all frontend gates; backend passed 4290 tests with two stale F011 golden failures. SHA-verified synthetic rows and independent review confirm primary 600160 has payable 1800 and secondary 600150 has payable 2200 at 25%, giving itemized 2350 and package-9000 uplift 6650. Updated only the exact vignette/action expectations, added explicit itemized/package assertions, and retained existing tolerances. Five registry/lookup tests and Ruff/compilation passed; the complete hosted rerun remains pending for the follow-up commit.
+
+## Task: Reconcile blood and session uplift
+
+### Goal
+Compute one recoverable gap per shared blood/session procedure line using the existing minimum-ceiling composition, then publish a separate draft PR with verified hosted CI.
+
+### Subtasks
+- [x] Verify current main after PR111, repository instructions, detector/report consumers, and encoded ceiling composition.
+- [x] Add failing direct and report regressions for overlap, no-gap constraints, review-only amounts, identities, ordering, and partial overlap.
+- [x] Share the session secondary assessment, cap its blood-line ceiling, and exclude its exact line identities from the independent blood detector.
+- [x] Run focused tests, repository quality gates where available, and independent review.
+- [ ] Check base CI, publish an atomic scoped commit, open a draft PR, and monitor hosted CI to completion.
+
+### Out of Scope
+No merge, deployment, production records, blood-rule package applicability changes, patient-history fixes, historical catalog ranking changes, or Wave A changes.
+
+### Plan Review
+Reviewed against main 09749e23f8ba6907f7addca8c7fddea8b66f8475 and the authorized F02 roadmap. Independent review agrees that matching opportunities must compose actual monetary ceilings with min, consistent with the existing session-adjusted payable calculation. A shared secondary-line assessment must cover lines without positive session gaps; ownership remains in the session block so DRG/add-on de-duplication consumes reconciled amounts. Keep the existing clinical-review restriction even when a blood cap reduces a review gap below its heuristic threshold. Never identify opportunities by code alone. Preserve independent lines and blood-only sessions, inputs, rounding, and existing package applicability. Python 3.12/partial data are available locally; hosted CI provides the full Python 3.13 and frontend gates.
+
+
+### Verification Review
+- Reproduced on merged main 09749e2: plasma billed 200 with session ceiling 340.41 and blood ceiling 408.50 emitted 140.41 + 208.50 = 348.91. The reconciled session-owned gap is 140.41; billed plus uplift is 340.41.
+- RED: 15 of the first 17 new regressions failed before the fix. GREEN: all 26 final regressions pass, including the actual report assembler, DRG/add-on input boundaries, recommended actions, API serialization, live/cached recovery summaries, and cohort totals for confirmed and review-only cases.
+- The broader focused selection passes 135 tests; two existing tests requiring absent synthetic claim tables are explicitly deselected. Source/script Ruff, changed-test Ruff, changed-file compilation, and diff whitespace checks pass.
+- Independent review found no blocking issue and passed 104 focused cases plus 1,440 synthetic parameter combinations across amounts, quantities, fractions, incision/specialty settings, and ordering.
+- Local Python is 3.12 with a partial source/data checkout. Full pytest was attempted and stopped on nine collection errors from missing manifests/raw source assets and requests. Generated-rule checking reports absent artifacts; manifest parity scans zero manifests, so neither is counted as a pass. The complete Python 3.13 backend, generated-artifact/parity, and frontend gates remain for hosted CI.
+- Base main 09749e2 has successful backend and frontend checks. No production state, rule JSON, or unrelated task was changed.

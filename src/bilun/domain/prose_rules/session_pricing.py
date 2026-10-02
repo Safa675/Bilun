@@ -501,3 +501,11 @@ def blood_component_billable_fraction(procedure_code: str) -> float | None:
     if normalized in {normalize_procedure_code(c) for c in special.get("codes", [])}:
         return float(special.get("billable_point_fraction", 0.36))
     return None
+
+
+def blood_component_max_billable_try(line: ProcedureClaimLine) -> float | None:
+    """Existing blood ceiling on the whole-line payable (billed fallback)."""
+    fraction = blood_component_billable_fraction(line.procedure_code)
+    if fraction is None:
+        return None
+    return _line_itemized_payable(line) * fraction

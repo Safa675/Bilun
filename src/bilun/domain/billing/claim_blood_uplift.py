@@ -43,6 +43,7 @@ def recommend_blood_uplift_from_claims(
             detect_blood_component_underbilling_opportunities(
                 claim_procs,
                 claim_id=claim.claim_id,
+                claim=claim,
             )
         )
 
