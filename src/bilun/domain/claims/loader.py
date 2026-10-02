@@ -10,7 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from src.bilun.domain.claims.config import SYNTHETIC_DEMO_MODE, resolve_sut_claims_dir
+from src.bilun.domain.claims.config import resolve_sut_data_source
 from src.bilun.domain.claims.dataset import ClaimTables, SUTClaimDataset
 from src.bilun.domain.claims.parquet_reader import read_claim_tables
 from src.bilun.domain.claims.schema import REQUIRED_CLAIM_COLUMNS
@@ -25,12 +25,6 @@ __all__ = [
 ]
 
 
-def _normalize_loader_mode(mode: str | None) -> str:
-    """Map unset loader mode to the default synthetic demo mode for cache keys."""
-
-    return mode if mode is not None else SYNTHETIC_DEMO_MODE
-
-
 def load_sut_claim_dataset(
     claims_dir: str | Path | None = None,
     *,
@@ -38,11 +32,12 @@ def load_sut_claim_dataset(
 ) -> SUTClaimDataset:
     """Load an exact SUT claim dataset after data-source path guards."""
 
-    directory = resolve_sut_claims_dir(mode=mode, claims_dir=claims_dir)
-    resolved_mode = _normalize_loader_mode(mode)
+    config = resolve_sut_data_source(
+        mode=mode, claims_dir=claims_dir, require_clean_dir=False,
+    )
     return _load_sut_claim_dataset_cached(
-        str(Path(directory).resolve()),
-        resolved_mode,
+        str(config.claims_dir.resolve()),
+        config.mode,
     )
 
 

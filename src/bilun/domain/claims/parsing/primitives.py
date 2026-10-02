@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date
+from collections.abc import Mapping
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from math import isnan
 from typing import Any
@@ -53,6 +54,35 @@ def optional_integer(value: Any) -> int | None:
         return None
 
 
+def optional_string_records(
+    row: RowDict,
+    field: str,
+    row_id: str,
+    errors: list[str],
+) -> tuple[dict[str, str], ...] | None:
+    """Read a nullable Parquet list-of-structs without erasing explicit emptiness."""
+    value = row.get(field)
+    if is_missing(value):
+        return None
+    if not isinstance(value, (list, tuple)):
+        errors.append(f"{row_id} invalid {field}: expected a list of string records")
+        return None
+
+    records: list[dict[str, str]] = []
+    for index, record in enumerate(value):
+        if (
+            not isinstance(record, Mapping)
+            or not all(isinstance(key, str) and isinstance(item, str)
+                       for key, item in record.items())
+        ):
+            errors.append(
+                f"{row_id} invalid {field}[{index}]: expected a string record"
+            )
+            return None
+        records.append(dict(record))
+    return tuple(records)
+
+
 def parse_integer(value: Any, field: str, row_id: str, errors: list[str]) -> int:
     if is_missing(value):
         errors.append(f"{row_id} missing {field}")
@@ -97,9 +127,13 @@ def required_date(row: RowDict, field: str, row_id: str, errors: list[str]) -> d
 
 
 def optional_date(row: RowDict, field: str, row_id: str, errors: list[str]) -> date | None:
+    """Normalize date-valued fields to their source calendar date, without UTC conversion."""
     value = row.get(field)
     if is_missing(value):
         return None
+    # datetime subclasses date; strip its time before accepting an ordinary date.
+    if isinstance(value, datetime):
+        return value.date()
     if isinstance(value, date):
         return value
     try:
