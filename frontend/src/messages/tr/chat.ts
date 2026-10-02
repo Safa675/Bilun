@@ -5,6 +5,7 @@ const chat = {
     cohortOverview: "Kohort özeti",
   },
   actions: {
+    retryQuestion: "Soruyu yeniden dene",
     regenerateAnalysis: "Analizi yenile",
     centerInline: "Ortala (satır içi)",
     dockRight: "Sağa sabitle",
@@ -21,6 +22,7 @@ const chat = {
     thinking: "Düşünüyor",
   },
   errors: {
+    interruptedFollowUp: "Son sorunun yanıtı tamamlanmadı. Hazır olduğunuzda tekrar deneyin.",
     failedAutoAnalysis: "SUT analizi alınamadı. Yeniden denemek için yenileye tıklayın.",
     failedFollowUp: "SUT yanıtı alınamadı.",
     questionTooLong: "Sorunuz çok uzun. {max} karakter veya daha az olacak şekilde kısaltıp tekrar deneyin.",

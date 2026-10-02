@@ -153,8 +153,9 @@ function SutHomeContent() {
                 <SutHealthPanel healthStatus={healthStatus} />
               )}
 
-              {chatDock === "center" && (
+              {shouldRenderChat && (
                 <SutInlineAIPanel
+                  key={chatSessionKey}
                   activeTab={activeTabLabel}
                   pageContext={chatPageContext}
                   dock={chatDock}
@@ -189,16 +190,7 @@ function SutHomeContent() {
       </main>
       <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
       <ReportProblemModal open={showReportProblem} onClose={() => setShowReportProblem(false)} />
-      {shouldRenderChat && chatDock !== "center" && (
-        <SutInlineAIPanel
-          activeTab={activeTabLabel}
-          pageContext={chatPageContext}
-          dock={chatDock}
-          onDockChange={dockChange}
-          chatState={chatState}
-          onChatStateChange={handleChatStateChange}
-        />
-      )}
+
     </>
   );
 }

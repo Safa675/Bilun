@@ -309,6 +309,7 @@ def test_fetch_billing_report_for_chat_uses_bill_scope_for_dev(monkeypatch):
         lambda patient_id, claim_id: calls.append(("bill", patient_id, claim_id)) or {
             "patient_id": patient_id,
             "claim_id": claim_id,
+            "scope": "bill",
             "audit_exposure_try": 41103.79,
         },
     )
@@ -339,9 +340,11 @@ def test_fetch_billing_report_for_chat_summarizes_for_officer(monkeypatch):
 
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_patient_billing_report",
-        lambda patient_id: {
+        "get_bill_billing_report",
+        lambda patient_id, claim_id: {
             "patient_id": patient_id,
+            "claim_id": claim_id,
+            "scope": "bill",
             "lab": {"exactness_status": "exact", "flagged_tests": [{"test_name": f"T-{i}"} for i in range(8)]},
             "copay": {},
             "billing_strategy": {},

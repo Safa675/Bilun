@@ -16,6 +16,13 @@ describe("sutChatSession", () => {
     expect(sutPatientChatSessionKey("P-001")).toBe("bilun:patient:P-001");
   });
 
+  it("isolates bill and patient histories without delimiter collisions", () => {
+    expect(sutPatientChatSessionKey("P-001", "B-A")).not.toBe(sutPatientChatSessionKey("P-001", "B-B"));
+    expect(sutPatientChatSessionKey("P-001", "B-A")).not.toBe(sutPatientChatSessionKey("P-001"));
+    expect(sutPatientChatSessionKey("P:bill:A")).not.toBe(sutPatientChatSessionKey("P", "A"));
+    expect(sutPatientChatSessionKey("P", null)).toBe(sutPatientChatSessionKey("P"));
+  });
+
   it("builds stable context keys for cohort and patient views", () => {
     expect(buildSutChatContextKey(null, "Patients")).toBe("cohort::Patients::en");
     expect(buildSutChatContextKey("P-001", "SUT Patient Workspace")).toBe(

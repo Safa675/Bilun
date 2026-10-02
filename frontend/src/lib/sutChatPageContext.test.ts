@@ -82,3 +82,29 @@ describe("sutChatPageContext", () => {
     });
   });
 });
+
+
+describe("selected bill chat context", () => {
+  it.each([null, "wrong-claim", "wrong-patient", "wrong-scope"])("retains selection while %s report is unavailable", mismatch => {
+    const billingReport = mismatch === null ? null : {
+      patient_id: mismatch === "wrong-patient" ? "OTHER" : "PATIENT",
+      claim_id: mismatch === "wrong-claim" ? "OTHER" : "BILL",
+      scope: mismatch === "wrong-scope" ? "patient" : "bill",
+      total_recoverable_try: 999,
+    } as Parameters<typeof buildPatientWorkspacePageContext>[0]["billingReport"];
+    const context = buildPatientWorkspacePageContext({
+      patientId: "PATIENT", selectedClaimId: "BILL", outcome: null, optimization: null, billingReport,
+    });
+    expect(context.sections.billing_report).toEqual({ loaded: false, patient_id: "PATIENT", claim_id: "BILL", scope: "bill" });
+    expect(context.visible_billing).toBeUndefined();
+    expect(JSON.stringify(context)).not.toContain("999");
+  });
+
+  it("does not invent a selected bill for a patient view", () => {
+    const context = buildPatientWorkspacePageContext({
+      patientId: "PATIENT", selectedClaimId: null, outcome: null, optimization: null, billingReport: null,
+    });
+    expect(context.sections.billing_report).toBeUndefined();
+    expect(context.visible_billing).toBeUndefined();
+  });
+});

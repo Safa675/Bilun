@@ -108,7 +108,8 @@ export default function SutInlineAIPanel({
   const briefedContextKeysRef = useRef<string[]>(externalState?.briefedContextKeys ?? []);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-  const autoInFlightRef = useRef(false);
+  const pendingQuestionRef = useRef(externalState?.pendingQuestion ?? null);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(externalState?.pendingQuestion ?? null);
   const pageContextRef = useRef(pageContext);
   const fireAutoAnalysisRef = useRef<(options?: { force?: boolean }) => void>(() => undefined);
   const prevLocaleRef = useRef(locale);
@@ -147,6 +148,10 @@ export default function SutInlineAIPanel({
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      autoAbortRef.current?.abort();
+      followUpAbortRef.current?.abort();
+      autoAbortRef.current = null;
+      followUpAbortRef.current = null;
     };
   }, []);
 
@@ -173,7 +178,12 @@ export default function SutInlineAIPanel({
     autoText: string;
     autoFiredKey?: string;
     briefedContextKeys?: string[];
+    pendingQuestion?: string | null;
   }) => {
+    if (next.pendingQuestion !== undefined) {
+      pendingQuestionRef.current = next.pendingQuestion;
+      setPendingQuestion(next.pendingQuestion);
+    }
     if (next.autoFiredKey !== undefined) {
       autoFiredRef.current = next.autoFiredKey;
     }
@@ -189,13 +199,15 @@ export default function SutInlineAIPanel({
       autoText: next.autoText,
       autoFiredKey: autoFiredRef.current,
       briefedContextKeys: briefedContextKeysRef.current,
+      pendingQuestion: pendingQuestionRef.current,
     });
   }, [onChatStateChange]);
 
-  const setMessages = useCallback((nextMessages: ChatMessage[]) => {
+  const setMessages = useCallback((nextMessages: ChatMessage[], pending?: string | null) => {
     persistChatState({
       messages: nextMessages,
       autoText: autoTextRef.current,
+      pendingQuestion: pending,
     });
   }, [persistChatState]);
 
@@ -204,18 +216,14 @@ export default function SutInlineAIPanel({
     autoTextRef.current = nextText;
   }, []);
 
-  const clearInFlightAuto = useCallback(() => {
-    setAutoTextStreaming("");
-    autoInFlightRef.current = false;
-    setAutoError(null);
-  }, [setAutoTextStreaming]);
-
   const fireAutoAnalysis = useCallback((options?: { force?: boolean }) => {
     const force = options?.force ?? false;
     const contextKey = buildSutChatContextKey(patientId, activeTab, locale);
     const briefedKeys = briefedContextKeysRef.current;
 
-    if (autoInFlightRef.current && !force) {
+    // Refs close the same-render double-click window; force only bypasses
+    // the completed-brief cache, never an active generation or pending answer.
+    if (!mountedRef.current || autoAbortRef.current || followUpAbortRef.current || pendingQuestionRef.current) {
       return;
     }
 
@@ -223,10 +231,10 @@ export default function SutInlineAIPanel({
       return;
     }
 
-    autoAbortRef.current?.abort();
     const controller = new AbortController();
     autoAbortRef.current = controller;
-    autoInFlightRef.current = true;
+    const isCurrent = () => mountedRef.current && !controller.signal.aborted
+      && autoAbortRef.current === controller;
 
     const promptKey = resolvePromptKey(activeTab);
     const prompt = autoPrompt ?? t(`chat.defaultPrompts.${promptKey}`);
@@ -253,7 +261,7 @@ export default function SutInlineAIPanel({
       pageContext: pageContextRef.current,
       signal: controller.signal,
       onToken: (token: string, event?: string) => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         if (event === "reasoning") {
@@ -266,7 +274,7 @@ export default function SutInlineAIPanel({
       },
     })
       .then(() => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         const nextBriefedKeys = [...new Set([...briefedKeys, contextKey])];
@@ -283,11 +291,11 @@ export default function SutInlineAIPanel({
         setAutoReasoningText("");
       })
       .catch((err) => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         if (isAbortError(err)) {
-          clearInFlightAuto();
+          setAutoTextStreaming("");
           return;
         }
         setAutoTextStreaming("");
@@ -297,18 +305,19 @@ export default function SutInlineAIPanel({
         );
       })
       .finally(() => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         if (autoAbortRef.current === controller) {
           autoAbortRef.current = null;
         }
-        autoInFlightRef.current = false;
         setIsAutoLoading(false);
       });
-  }, [activeTab, autoPrompt, clearInFlightAuto, locale, patientId, persistChatState, setAutoTextStreaming, t]);
+  }, [activeTab, autoPrompt, locale, patientId, persistChatState, setAutoTextStreaming, t]);
 
-  fireAutoAnalysisRef.current = fireAutoAnalysis;
+  useEffect(() => {
+    fireAutoAnalysisRef.current = fireAutoAnalysis;
+  }, [fireAutoAnalysis]);
 
   useEffect(() => {
     if (prevLocaleRef.current !== locale) {
@@ -321,11 +330,16 @@ export default function SutInlineAIPanel({
       }
       followUpAbortRef.current?.abort();
       autoAbortRef.current?.abort();
+      followUpAbortRef.current = null;
+      autoAbortRef.current = null;
+      setIsResponding(false);
+      setIsAutoLoading(false);
       persistChatState({
         messages: [],
         autoText: "",
         autoFiredKey: "",
         briefedContextKeys: [],
+        pendingQuestion: null,
       });
       setFollowUpText("");
       setFollowUpReasoningText("");
@@ -348,13 +362,15 @@ export default function SutInlineAIPanel({
         clearTimeout(debounceRef.current);
       }
       autoAbortRef.current?.abort();
+      followUpAbortRef.current?.abort();
       autoAbortRef.current = null;
+      followUpAbortRef.current = null;
     };
   }, [patientId, activeTab]);
 
-  const handleSend = useCallback(() => {
-    const question = input.trim();
-    if (!question || isResponding) {
+  const handleSend = useCallback((retryQuestion?: string) => {
+    const question = (retryQuestion ?? input).trim();
+    if (!mountedRef.current || !question || autoAbortRef.current || followUpAbortRef.current) {
       return;
     }
 
@@ -367,15 +383,20 @@ export default function SutInlineAIPanel({
       return;
     }
 
-    followUpAbortRef.current?.abort();
     const controller = new AbortController();
     followUpAbortRef.current = controller;
+    const isCurrent = () => mountedRef.current && !controller.signal.aborted
+      && followUpAbortRef.current === controller;
 
-    const nextMessages: ChatMessage[] = [
-      ...messages,
+    const history = messagesRef.current;
+    const last = history.at(-1);
+    const retrying = retryQuestion && pendingQuestionRef.current === question
+      && last?.role === "user" && last.content === question;
+    const nextMessages: ChatMessage[] = retrying ? history : [
+      ...history,
       { role: "user", content: question },
     ];
-    setMessages(nextMessages);
+    setMessages(nextMessages, question);
     setInput("");
     requestAnimationFrame(syncInputHeight);
     setFollowUpText("");
@@ -393,7 +414,7 @@ export default function SutInlineAIPanel({
       pageContext: pageContextRef.current,
       signal: controller.signal,
       onToken: (token: string, event?: string) => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         if (event === "reasoning") {
@@ -406,18 +427,18 @@ export default function SutInlineAIPanel({
       },
     })
       .then(() => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
         setMessages([
           ...nextMessages,
           { role: "assistant", content: accumulated },
-        ]);
+        ], null);
         setFollowUpText("");
         setFollowUpReasoningText("");
       })
       .catch((err) => {
-        if (!mountedRef.current || isAbortError(err)) {
+        if (!isCurrent() || isAbortError(err)) {
           return;
         }
         setFollowUpError(
@@ -425,12 +446,13 @@ export default function SutInlineAIPanel({
         );
       })
       .finally(() => {
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
           return;
         }
+        followUpAbortRef.current = null;
         setIsResponding(false);
       });
-  }, [activeTab, input, isResponding, messages, patientId, setMessages, syncInputHeight, t]);
+  }, [activeTab, input, patientId, setMessages, syncInputHeight, t]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -484,6 +506,7 @@ export default function SutInlineAIPanel({
               setAutoError(null);
               fireAutoAnalysis({ force: true });
             }}
+            disabled={isAutoLoading || isResponding || Boolean(pendingQuestion)}
             aria-label={t("chat.actions.regenerateAnalysis")}
             title={t("chat.actions.regenerateAnalysis")}
             className="h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]"
@@ -589,6 +612,7 @@ export default function SutInlineAIPanel({
               <Button
                 variant="ghost"
                 size="compact"
+                disabled={isAutoLoading || isResponding || Boolean(pendingQuestion)}
                 onClick={() => {
                   setAutoError(null);
                   fireAutoAnalysis({ force: true });
@@ -639,6 +663,16 @@ export default function SutInlineAIPanel({
         </div>
       )}
 
+      {pendingQuestion && !isResponding && !isAutoLoading && (
+        <div role="status" className="mt-2 text-[13px] text-[var(--text-muted)]">
+          {t("chat.errors.interruptedFollowUp")}
+          <Button variant="ghost" size="compact" onClick={() => handleSend(pendingQuestion)}
+            aria-label={t("chat.actions.retryQuestion")}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      )}
+
       <div className="mt-2.5 flex items-end gap-2">
         <textarea
           ref={inputRef}
@@ -654,7 +688,7 @@ export default function SutInlineAIPanel({
         />
         <Button
           variant="icon"
-          onClick={handleSend}
+          onClick={() => handleSend()}
           disabled={!input.trim() || isResponding || isAutoLoading}
           aria-label={t("chat.actions.sendMessage")}
           className="border-none bg-[var(--gold)] text-[var(--text-inverse)] hover:bg-[var(--gold-hover)] hover:border-transparent hover:text-[var(--text-inverse)] disabled:cursor-default disabled:bg-[var(--surface-soft)] disabled:text-[var(--text-muted)] disabled:border-transparent disabled:opacity-100"

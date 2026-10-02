@@ -5,6 +5,7 @@ const chat = {
     cohortOverview: "Cohort overview",
   },
   actions: {
+    retryQuestion: "Retry question",
     regenerateAnalysis: "Regenerate analysis",
     centerInline: "Center (inline)",
     dockRight: "Dock right",
@@ -21,6 +22,7 @@ const chat = {
     thinking: "Thinking",
   },
   errors: {
+    interruptedFollowUp: "The last question has no completed answer. Retry when ready.",
     failedAutoAnalysis: "Failed to get SUT analysis. Click regenerate to retry.",
     failedFollowUp: "Failed to get a SUT response.",
     questionTooLong: "Your question is too long. Shorten it to {max} characters or fewer and try again.",
