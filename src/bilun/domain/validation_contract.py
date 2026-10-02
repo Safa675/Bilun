@@ -30,6 +30,7 @@ class ValidationFinding(_ValidationEvidence):
 
 
 class ValidationAdvisory(_ValidationEvidence):
+    missing_inputs: list[str] = Field(default_factory=list)
     disposition: Literal[
         "unavailable", "review_only", "information_only", "permission_or_instruction",
     ]

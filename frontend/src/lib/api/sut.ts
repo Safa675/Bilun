@@ -40,16 +40,18 @@ export interface SutMaterialItem {
   code?: string;
   // §4.2.33 anti-VEGF dose protocol (intravitreal injection counts).
   // Optional; only meaningful when validate-claim runs drug_indication checks.
-  annual_application_count?: number;
-  is_loading_phase?: boolean;
+  annual_application_count?: number | null;
+  is_loading_phase?: boolean | null;
   // §4.2.14.C oncology biomarker + prior-therapy gating.
   // biomarkers: [{ marker: "HER2", status: "3+" }]
-  biomarkers?: Array<{ marker: string; status: string }>;
+  biomarkers?: Array<{ marker: string; status: string }> | null;
   // prior_therapies: [{ drug_or_class: "imatinib", outcome: "resistant" }]
-  prior_therapies?: Array<{ drug_or_class: string; outcome: string }>;
+  prior_therapies?: Array<{ drug_or_class: string; outcome: string }> | null;
 }
 
 export interface SutDrugContext {
+  /** Actual service date, never inferred from the request time. */
+  service_date?: string | null;
   /** Primary ICD-10 diagnosis code (required for drug_indication checks). */
   primary_icd10: string;
   /** Prescriber's medical specialty (e.g. "tıbbi onkoloji", "göz hastalıkları"). */
@@ -144,6 +146,7 @@ export interface SutLegacyValidationResult {
 }
 
 export interface SutValidationEvidence {
+  missing_inputs?: string[];
   evidence_id: string;
   rule: string;
   rule_id?: string | null;

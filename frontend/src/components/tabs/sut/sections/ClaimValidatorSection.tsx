@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DrugMaterialInputs } from "./DrugMaterialInputs";
+import { drugMaterialPayload, optionalCount } from "./drugInputs";
 import { theme } from "@/lib/theme";
 import { validateSutClaim, getSutProcedureInfo } from "@/lib/api/sut";
 import type {
@@ -48,6 +50,8 @@ export function ClaimValidatorSection() {
   const [drugIcd10, setDrugIcd10] = useState("");
   const [drugPrescriber, setDrugPrescriber] = useState("");
   const [drugReportPresent, setDrugReportPresent] = useState<string>("");
+  const [drugServiceDate, setDrugServiceDate] = useState("");
+  const [drugReportDuration, setDrugReportDuration] = useState<number | null>(null);
 
   useEffect(() => {
     if (!shouldShowProcedureLookup) {
@@ -124,14 +128,16 @@ export function ClaimValidatorSection() {
       const claim: SutClaimRequest = {
         claim_id: claimId || "CLM-001",
         procedure_code: procedureCode || "GENERIC",
-        materials: validMaterials,
+        materials: validMaterials.map(material => drugMaterialPayload(material, drugContextEnabled)),
       };
-      // Attach drug_context only when the user enabled it and filled at least
-      // the ICD-10. The backend runs §4.2.14.C + §4.2.33 checks when present.
-      if (drugContextEnabled && drugIcd10.trim()) {
+      // Enabled checks retain unknown diagnosis instead of silently disappearing.
+      if (drugContextEnabled) {
         const ctx: SutDrugContext = {
           primary_icd10: drugIcd10.trim(),
           prescriber_specialty: drugPrescriber.trim(),
+          report_duration_months: drugReportDuration,
+          service_date: drugServiceDate || null,
+          board_report_present: null,
         };
         if (drugReportPresent === "yes") ctx.board_report_present = true;
         else if (drugReportPresent === "no") ctx.board_report_present = false;
@@ -150,7 +156,7 @@ export function ClaimValidatorSection() {
         abortRef.current = null;
       }
     }
-  }, [materials, claimId, procedureCode, drugContextEnabled, drugIcd10, drugPrescriber, drugReportPresent, t]);
+  }, [materials, claimId, procedureCode, drugContextEnabled, drugIcd10, drugPrescriber, drugReportPresent, drugReportDuration, drugServiceDate, t]);
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
@@ -225,7 +231,8 @@ export function ClaimValidatorSection() {
 
         <div className="space-y-2">
           {materials.map((mat, idx) => (
-            <div key={idx} className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 1fr 120px 80px 36px" }}>
+            <div key={idx} className="space-y-3">
+            <div className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 1fr 120px 80px 36px" }}>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.name")}</label>}
                 <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.namePlaceholder")} />
@@ -247,12 +254,15 @@ export function ClaimValidatorSection() {
                 <Button variant="icon" onClick={() => removeMaterial(idx)} title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</Button>
               </div>
             </div>
+            {drugContextEnabled && <DrugMaterialInputs material={mat} onChange={patch => setMaterials(previous => previous.map((row, i) => i === idx ? { ...row, ...patch } : row))} />}
+            </div>
           ))}
         </div>
 
         <div className="mt-4 rounded-[var(--r-md)] border border-[var(--border-subtle)]">
           <button
             type="button"
+            aria-expanded={drugContextEnabled}
             onClick={() => setDrugContextEnabled((v) => !v)}
             className="flex w-full items-center justify-between px-3 py-2 text-left"
           >
@@ -281,6 +291,16 @@ export function ClaimValidatorSection() {
                   <option value="no">{t("sections.claimValidator.drugContext.absent")}</option>
                 </select>
               </div>
+              <label className="text-xs">{t("sections.claimValidator.drugContext.serviceDate")}
+                <input aria-label={t("sections.claimValidator.drugContext.serviceDate")} type="date" className={inputClass}
+                  value={drugServiceDate} onChange={e => setDrugServiceDate(e.target.value)} />
+              </label>
+              <label className="text-xs">{t("sections.claimValidator.drugContext.reportDuration")}
+                <input aria-label={t("sections.claimValidator.drugContext.reportDuration")} type="number" min="0" step="1" className={inputClass}
+                  value={drugReportDuration ?? ""} placeholder={t("sections.claimValidator.drugContext.unknown")}
+                  onChange={e => setDrugReportDuration(optionalCount(e.target.value))} />
+              </label>
+              <p className="text-xs text-[var(--text-muted)] sm:col-span-3">{t("sections.claimValidator.drugContext.unknownHint")}</p>
             </div>
           )}
         </div>
@@ -400,6 +420,17 @@ function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
         <div className="text-xs mt-1" style={{ color: "#71717A" }}>
           {translateValidationMessage(evidence.message)}
         </div>
+        {(evidence.missing_inputs?.length ?? 0) > 0 && (
+          <div className="text-xs mt-1" style={{ color: "#B45309" }}>
+            {t("sections.claimValidator.drugContext.missingInputs")}: {evidence.missing_inputs!.map(field => {
+              const [key, detail] = field.split(".");
+              const label = ["service_date", "drug_claim_date"].includes(key) ? "serviceDate" : key;
+              const detailLabel = key === "prior_therapies" && detail === "drug_or_class"
+                ? t("sections.claimValidator.drugContext.therapy") : detail;
+              return `${t(`sections.claimValidator.drugContext.${label}`)}${detailLabel ? ` (${detailLabel})` : ""}`;
+            }).join(", ")}
+          </div>
+        )}
         {annexReviewKey && (
           <div className="text-xs mt-1" style={{ color: "#B45309" }}>
             {t("sections.claimValidator.annexUnconfirmed")}: {t(annexReviewKey)}

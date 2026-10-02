@@ -40,6 +40,28 @@ _LEGACY_REVIEW_GATES = {
 }
 
 
+def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
+    """Expose bounded input identifiers, never raw clinical payloads or money."""
+    allowed = {
+        "primary_icd10", "prescriber_specialty", "drug_specialty_board_report_present",
+        "drug_report_duration_months", "annual_application_count", "is_loading_phase",
+        "biomarkers", "prior_therapies", "drug_inpatient_supply", "service_date",
+        "route_discriminator",
+        "drug_claim_date", "age", "weight_kg", "edss", "cancer_stage", "treatment_setting",
+        "historical_rule_version", "effective_rule_version", "prior_taxane_anti_her2_cycles",
+        "residual_invasive_disease", "treatment_cycle_count", "disease_progression",
+        "monotherapy", "report_board_composition", "her2_ihc_3plus_or_fish_sish_cish_positive",
+        "ecog", "combination_regimen", "prior_metastatic_therapy", "months_since_adjuvant_therapy",
+        "nmosd_diagnosis", "high_disease_activity", "relapsing_course", "treatment_stage",
+        "adequate_prior_immunosuppressants", "relapse_under_treatment", "tertiary_care",
+        "three_neurologist_board", "ek4g_inpatient_supply", "transplant_preparation_indication",
+    }
+    return sorted({
+        value for value in raw.get("missing_inputs", [])
+        if isinstance(value, str) and value.split(".", 1)[0] in allowed
+    })
+
+
 def typed_validation_payload(result: dict[str, Any]) -> dict[str, Any]:
     """Select the public/API and LLM contract, excluding internal raw history."""
     selected = {key: result[key] for key in (
@@ -142,6 +164,7 @@ def validate_claim_v2(
             "disposition": "review_only",
             "reason": _LEGACY_REVIEW_GATES.get(family, "unreviewed_legacy_family"),
             "source_status": "historical_match_unverified",
+            "missing_inputs": _drug_missing_inputs(raw) if family == "drug_indication" else [],
         })
     unresolved = counts["missing_inputs"] + counts["unavailable"]
     status = (
