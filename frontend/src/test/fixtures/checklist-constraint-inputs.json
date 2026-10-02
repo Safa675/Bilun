@@ -1,0 +1,399 @@
+{
+  "drugReview": {
+    "exactness_status": "missing_exact_inputs",
+    "required_inputs_missing": [
+      "annual_application_count"
+    ],
+    "unavailable_reason": "Drug indication validation requires exact dispensed drug claim lines with primary ICD-10 context, which are not available in the active SUT runtime inputs.",
+    "findings": [
+      {
+        "finding_id": "drug_indication:P1:C1:D1:needs_dose_verification",
+        "patient_id": "P1",
+        "claim_id": "C1",
+        "drug_claim_line_id": "D1",
+        "drug_name": "OZURDEX (DEKSAMETAZON)",
+        "drug_code": "SYN-OZURDEX",
+        "finding_kind": "needs_dose_verification",
+        "severity": "review",
+        "applicability_status": "eligible",
+        "evaluation_status": "missing_inputs",
+        "observed_icd10_codes": [
+          "H34.8"
+        ],
+        "matched_icd10_codes": [
+          "H34.8"
+        ],
+        "unmatched_icd10_codes": [],
+        "eligible_routes": [
+          {
+            "rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+            "sut_section": "4.2.33.B",
+            "icd10_codes": [
+              "H34.8"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006582; §4.2.33.B.(1), C006590).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 1,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.D.deksametazon_itv_dmo",
+            "sut_section": "4.2.33.D",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.dexamethasone_ivt_implant_frequency",
+            "sut_section": "4.2.33",
+            "icd10_codes": [
+              "H34.8",
+              "H35.0",
+              "H35.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon intravitreal implant; anti-VEGF sonrası en erken 1 ay sonra olmak kaydıyla yılda en fazla 4 defa, aynı göze ardışık uygulamada iki doz arasında ≥3 ay olmalıdır; bevacizumab yükleme dozu sonrası deksametazon yapılan hastanın 3. ay kontrolünde hekim uygun görürse aynı ilaçla devam veya yükleme dozu zorunluluğu olmaksızın beva/ranibi/aflibersept idameye geçilebilir (§4.2.33).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [],
+            "indication_label_tr": null,
+            "icd10_code_count": 3,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.Ç.deksametazon_itv_dmo",
+            "sut_section": "4.2.33.Ç",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en fazla 4 (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf",
+            "sut_section": "4.2.33.Ç",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          }
+        ],
+        "selected_rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+        "explanation_tr": "OZURDEX (DEKSAMETAZON) için doz protokolü doğrulanamadı veya aşıldı.",
+        "recommended_action_tr": "İlgili sağlık kurulu raporunu, klinik koşulları ve MEDULA kayıtlarını belgelerle doğrulayın; istisnai kullanım varsa manuel değerlendirin.",
+        "required_inputs": [
+          "dispensed_drug_claim_lines",
+          "claim_diagnoses",
+          "annual_application_count"
+        ],
+        "missing_inputs": [
+          "annual_application_count"
+        ],
+        "eligible_route_count": 5,
+        "eligible_routes_truncated": false,
+        "observed_icd10_count": 1,
+        "observed_icd10_truncated": false
+      }
+    ],
+    "evaluations": [
+      {
+        "patient_id": "P1",
+        "claim_id": "C1",
+        "drug_claim_line_id": "D1",
+        "drug_name": "OZURDEX (DEKSAMETAZON)",
+        "drug_code": "SYN-OZURDEX",
+        "applicability_status": "eligible",
+        "evaluation_status": "missing_inputs",
+        "observed_icd10_codes": [
+          "H34.8"
+        ],
+        "matched_icd10_codes": [
+          "H34.8"
+        ],
+        "unmatched_icd10_codes": [],
+        "eligible_routes": [
+          {
+            "rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+            "sut_section": "4.2.33.B",
+            "icd10_codes": [
+              "H34.8"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006582; §4.2.33.B.(1), C006590).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 1,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.D.deksametazon_itv_dmo",
+            "sut_section": "4.2.33.D",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.dexamethasone_ivt_implant_frequency",
+            "sut_section": "4.2.33",
+            "icd10_codes": [
+              "H34.8",
+              "H35.0",
+              "H35.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon intravitreal implant; anti-VEGF sonrası en erken 1 ay sonra olmak kaydıyla yılda en fazla 4 defa, aynı göze ardışık uygulamada iki doz arasında ≥3 ay olmalıdır; bevacizumab yükleme dozu sonrası deksametazon yapılan hastanın 3. ay kontrolünde hekim uygun görürse aynı ilaçla devam veya yükleme dozu zorunluluğu olmaksızın beva/ranibi/aflibersept idameye geçilebilir (§4.2.33).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [],
+            "indication_label_tr": null,
+            "icd10_code_count": 3,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.Ç.deksametazon_itv_dmo",
+            "sut_section": "4.2.33.Ç",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en fazla 4 (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          },
+          {
+            "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf",
+            "sut_section": "4.2.33.Ç",
+            "icd10_codes": [
+              "E10.3",
+              "E11.3",
+              "E13.3",
+              "E14.3"
+            ],
+            "icd10_ranges": [],
+            "regulatory_summary_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006582).",
+            "report_required": true,
+            "report_duration_months": null,
+            "report_specialties": [
+              "göz hastalıkları"
+            ],
+            "prescriber_specialties": [
+              "göz hastalıkları"
+            ],
+            "indication_label_tr": null,
+            "icd10_code_count": 4,
+            "icd10_codes_truncated": false,
+            "icd10_range_count": 0,
+            "icd10_ranges_truncated": false
+          }
+        ],
+        "selected_rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+        "finding_id": "drug_indication:P1:C1:D1:needs_dose_verification",
+        "finding_kind": "needs_dose_verification",
+        "required_inputs": [
+          "dispensed_drug_claim_lines",
+          "claim_diagnoses",
+          "annual_application_count"
+        ],
+        "missing_inputs": [
+          "annual_application_count"
+        ],
+        "eligible_route_count": 5,
+        "eligible_routes_truncated": false,
+        "observed_icd10_count": 1,
+        "observed_icd10_truncated": false
+      }
+    ],
+    "violations": [
+      {
+        "drug_claim_line_id": "D1",
+        "claim_id": "C1",
+        "drug_name": "OZURDEX (DEKSAMETAZON)",
+        "rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+        "sut_section": "4.2.33.B",
+        "primary_icd10": "H34.8",
+        "violation_kind": "needs_dose_verification",
+        "severity": "review",
+        "missing_inputs": [
+          "annual_application_count"
+        ],
+        "message_tr": "OZURDEX (DEKSAMETAZON) için doz protokolü doğrulanamadı veya aşıldı.",
+        "drug_code": "SYN-OZURDEX",
+        "selected_rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+        "applicability_status": "eligible",
+        "evaluation_status": "missing_inputs",
+        "required_inputs": [
+          "dispensed_drug_claim_lines",
+          "claim_diagnoses",
+          "annual_application_count"
+        ],
+        "detail": "OZURDEX (DEKSAMETAZON) için doz protokolü doğrulanamadı veya aşıldı.",
+        "observed_icd10_codes": [
+          "H34.8"
+        ],
+        "matched_icd10_codes": [
+          "H34.8"
+        ],
+        "unmatched_icd10_codes": [],
+        "eligible_icd10_codes_or_ranges": [
+          "E10.3",
+          "E11.3",
+          "E13.3",
+          "E14.3",
+          "H34.8",
+          "H35.0",
+          "H35.3"
+        ],
+        "finding_id": "drug_indication:P1:C1:D1:needs_dose_verification",
+        "patient_id": "P1",
+        "material_name": "OZURDEX (DEKSAMETAZON)",
+        "message": "OZURDEX (DEKSAMETAZON) için doz protokolü doğrulanamadı veya aşıldı.",
+        "savings_try": 0.0,
+        "risk_amount": 0.0,
+        "recommended_action_tr": "İlgili sağlık kurulu raporunu, klinik koşulları ve MEDULA kayıtlarını belgelerle doğrulayın; istisnai kullanım varsa manuel değerlendirin.",
+        "eligible_route_count": 5,
+        "eligible_routes_truncated": false
+      }
+    ],
+    "violation_count": 1,
+    "error_count": 0
+  },
+  "checklistItems": [
+    {
+      "checklist_id": "claim_readiness:P1:C1:drug_board_report_missing:drug:D1",
+      "claim_id": "C1",
+      "patient_id": "P1",
+      "line_id": "D1",
+      "sut_anchor": "SUT §4.2 / uzmanlık sağlık kurulu raporu",
+      "severity": "error"
+    },
+    {
+      "checklist_id": "claim_readiness:P1:C1:drug_board_report_missing:drug:D2",
+      "claim_id": "C1",
+      "patient_id": "P1",
+      "line_id": "D2",
+      "sut_anchor": "SUT §4.2 / uzmanlık sağlık kurulu raporu",
+      "severity": "error"
+    },
+    {
+      "checklist_id": "claim_readiness:P1:C2:drug_board_report_missing:drug:D1",
+      "claim_id": "C2",
+      "patient_id": "P1",
+      "line_id": "D1",
+      "sut_anchor": "SUT §4.2 / uzmanlık sağlık kurulu raporu",
+      "severity": "error"
+    }
+  ]
+}

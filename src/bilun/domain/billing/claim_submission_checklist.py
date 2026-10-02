@@ -111,8 +111,10 @@ def recommend_claim_submission_checklist_from_claims(
 
     items = detect_claim_readiness_for_context(ctx)
     # Documentation requirements are procedure-oriented; skip when no procs.
-    if ctx.procedure_lines:
-        items.extend(_documentation_requirement_items(ctx))
+    for claim in sorted(ctx.claims, key=lambda claim: claim.claim_id):
+        claim_ctx = ctx.slice_for_claim(claim.claim_id)
+        if claim_ctx is not None and claim_ctx.procedure_lines:
+            items.extend(_documentation_requirement_items(claim_ctx))
     return ClaimSubmissionChecklist(
         items=items,
         exactness_status=EXACTNESS_STATUS_EXACT,

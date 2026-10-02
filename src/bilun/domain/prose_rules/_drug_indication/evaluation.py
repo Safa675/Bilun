@@ -75,11 +75,18 @@ def _decorate_drug_violation(
         str(selected_rule.get("rule_id")) if selected_rule is not None else None
     )
     violation["applicability_status"] = resolution.get("applicability_status")
-    violation["evaluation_status"] = _evaluation_status_for_violation(
-        str(violation.get("violation_kind") or "")
+    violation["missing_inputs"] = sorted({
+        *(resolution.get("missing_inputs") or []),
+        *(violation.get("missing_inputs") or []),
+    })
+    violation["evaluation_status"] = (
+        "missing_inputs" if violation["missing_inputs"]
+        else _evaluation_status_for_violation(str(violation.get("violation_kind") or ""))
     )
-    violation["required_inputs"] = ["dispensed_drug_claim_lines", "claim_diagnoses"]
-    violation["missing_inputs"] = list(resolution.get("missing_inputs") or [])
+    violation["required_inputs"] = list(dict.fromkeys([
+        "dispensed_drug_claim_lines", "claim_diagnoses",
+        *(violation.get("required_inputs") or []), *violation["missing_inputs"],
+    ]))
     violation.setdefault("detail", violation.get("message_tr"))
     # Keep ``rule_id`` unset when candidates remain semantically distinct. The
     # candidate route ids remain bounded evidence; no representative may be
@@ -247,15 +254,17 @@ def evaluate_drug_indication_line_with_rules(
                 # Only the nested violation uses the supplemental identity.
                 decoration_resolution = {**resolution, "selected_rule": supplemental_rule}
 
-    return {
-        **common,
-        "violation": _decorate_drug_violation(
+    if violation is not None:
+        violation = _decorate_drug_violation(
             violation=violation,
             drug_line=drug_line,
             claim=claim,
             resolution=decoration_resolution,
             observed_codes=icd_codes,
         )
-        if violation is not None
-        else None,
-    }
+        # Route eligibility is distinct from whether its constraints had the
+        # required facts. Keep primary/supplemental identities unchanged while
+        # projecting the actual constraint certainty to every downstream layer.
+        for field in ("evaluation_status", "required_inputs", "missing_inputs"):
+            common[field] = violation[field]
+    return {**common, "violation": violation}
