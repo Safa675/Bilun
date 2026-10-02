@@ -75,6 +75,88 @@ def _ctx(claim: ClaimHeader, *lines: ProcedureClaimLine) -> PatientClaimContext:
 
 
 class TestClaimStrategySut:
+    @pytest.mark.parametrize(
+        "package_amount, expected_recommendation, expected_savings",
+        [("1100", "package", 0.0), ("1000", "itemized", 30.0)],
+    )
+    def test_secondary_own_payable_controls_optional_strategy(
+        self, monkeypatch, package_amount, expected_recommendation, expected_savings,
+    ) -> None:
+        from src.bilun.domain.billing import claim_strategy
+        from src.bilun.domain.prose_rules import payment_method, session_pricing
+        from src.bilun.domain.prose_rules.types import PaymentMethodResult, ProseRuleTrace
+
+        def optional_payment_method(code, **_kwargs):
+            is_package = str(code).startswith("P")
+            return PaymentMethodResult(
+                procedure_code=code,
+                payment_method="package" if is_package else "itemized",
+                kind="DRG_OVERRIDABLE",
+                in_ek2b=True,
+                in_ek2c=is_package,
+                has_star=False,
+                bill_materials_separately=False,
+                bill_drugs_separately=False,
+                visit_fee_annex=None,
+                trace=ProseRuleTrace(
+                    rule_id="test", sut_section="2.2.2.(2)",
+                    rule_set_id="test", detail="test optional itemized alternative",
+                ),
+            )
+
+        monkeypatch.setattr(claim_strategy, "resolve_payment_method", optional_payment_method)
+        monkeypatch.setattr(payment_method, "resolve_payment_method", optional_payment_method)
+        monkeypatch.setattr(
+            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+        )
+        monkeypatch.setattr(
+            session_pricing, "_procedure_point_score",
+            lambda code: {"111111": 20, "222222": 10}[code],
+        )
+        claim = _claim(facility_tier="egitim_arastirma", package_candidate=True)
+        lines = [
+            _proc(
+                procedure_code="111111",
+                procedure_specialty_code="same-specialty",
+                expected_payable_try=Decimal("1000"),
+                billed_amount_try=Decimal("1000"),
+            ),
+            _proc(
+                procedure_line_id="PL2",
+                procedure_code="222222",
+                procedure_specialty_code="same-specialty",
+                unit_price_try=Decimal("100"),
+                expected_payable_try=Decimal("100"),
+                billed_amount_try=Decimal("100"),
+            ),
+            _proc(
+                procedure_line_id="PL3",
+                procedure_code="P333333",
+                procedure_category="paket",
+                unit_price_try=Decimal(package_amount),
+                expected_payable_try=Decimal(package_amount),
+                billed_amount_try=Decimal(package_amount),
+            ),
+        ]
+
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_recs = [rec for rec in result.recommendations if "recommendation_kind" in rec]
+
+        assert len(claim_recs) == 1
+        rec = claim_recs[0]
+        assert rec["recommendation"] == expected_recommendation
+        assert rec["savings_try"] == expected_savings
+        assert rec["recoverable_uplift_try"] == expected_savings
+        assert rec["recommendation_kind"] == "optional_override"
+        assert rec["payment_method_kind"] == "DRG_OVERRIDABLE"
+        assert rec["current_billing"] == "package"
+        assert rec["itemized_raw_try"] == 1100.0
+        assert rec["itemized_total_try"] == 1030.0
+        assert rec["package_total_try"] == float(package_amount)
+        assert rec["itemized_price_methodology"] == "session_adjusted"
+        assert rec["itemized_excluded_violation_count"] == 0
+        assert rec["included_in_sgk_total"] is (expected_savings > 0)
+
     def test_tier_2_ek2c_mandatory_package_not_cheaper_itemized(self) -> None:
         claim = _claim(facility_tier="2_basamak_kamu")
         lines = [
@@ -329,7 +411,17 @@ class TestClaimStrategySut:
             f"per {vparams['section']}."
         )
 
-    def test_itemized_totals_exclude_payment_method_violation(self) -> None:
+    def test_itemized_totals_exclude_payment_method_violation(self, monkeypatch) -> None:
+        from src.bilun.domain.prose_rules import session_pricing
+
+        # Fix the pricing fixture's ranking while leaving payment compliance real.
+        monkeypatch.setattr(
+            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+        )
+        monkeypatch.setattr(
+            session_pricing, "_procedure_point_score",
+            lambda code: {"700390": 10, "L116470": 20, "G100580": 30}[code],
+        )
         claim = _claim(
             facility_tier="2_basamak_kamu",
             claim_type="yatis",
@@ -344,6 +436,7 @@ class TestClaimStrategySut:
             _proc(
                 procedure_line_id="PL-M",
                 procedure_code="700390",
+                procedure_specialty_code="same-specialty",
                 procedure_category="muayene",
                 expected_payable_try=Decimal("17.11"),
             ),
@@ -357,12 +450,14 @@ class TestClaimStrategySut:
             _proc(
                 procedure_line_id="PL-L",
                 procedure_code="L116470",
+                procedure_specialty_code="same-specialty",
                 procedure_category="laboratuvar",
                 expected_payable_try=Decimal("107.55"),
             ),
             _proc(
                 procedure_line_id="PL-I",
                 procedure_code="G100580",
+                procedure_specialty_code="same-specialty",
                 procedure_category="islem",
                 expected_payable_try=Decimal("1848.56"),
             ),
@@ -380,7 +475,8 @@ class TestClaimStrategySut:
             if rec.get("claim_id") == "CLM1" and "itemized_raw_try" in rec
         )
         assert claim_rec["itemized_raw_try"] == 1973.22
-        assert claim_rec["itemized_total_try"] == 2957.7
+        # 1848.56 + (17.11 + 107.55) × 30%, rounded once at the end.
+        assert claim_rec["itemized_total_try"] == 1885.96
         assert claim_rec["itemized_excluded_violation_count"] == 1
         assert claim_rec["itemized_excluded_procedure_codes"] == ["612070"]
         violations = [

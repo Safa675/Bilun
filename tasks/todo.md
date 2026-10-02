@@ -1256,3 +1256,28 @@ Reviewed against current main 05aba8152087cf049cebcd70ce1629e03ca94649 and the a
 - Base main 05aba8152087cf049cebcd70ce1629e03ca94649 has passing backend and frontend checks. No production state was changed.
 
 - Independent review reran all 17 focused regressions successfully and found no remaining blocking issue. The initialization-race case exercises real runtime initialization while the fallback probe holds the cache lock.
+
+## Task: Fix secondary procedure payable bases
+
+### Goal
+Apply each procedure occurrence's session factor to its own whole-line payable, add regression coverage, and publish a draft PR with verified CI.
+
+### Subtasks
+- [x] Verify current main, repository instructions, pricing semantics, and downstream callers.
+- [x] Add failing synthetic regressions for unequal line amounts, duplicate normalized codes, package memberships, quantities, exclusions, fallback amounts, and rounding.
+- [x] Replace primary-derived amounts with own-line amounts while preserving occurrence alignment and existing blood caps.
+- [x] Run focused regression and integration tests, repository quality gates where available, and independent review.
+- [ ] Check base CI, publish an atomic commit on a new branch, open a draft PR, and verify remote commit and hosted CI.
+
+### Out of Scope
+No merge, deployment, production records, blood/session overlap arbitration, blood applicability changes, historical catalog ranking fixes, or Wave A changes.
+
+### Plan Review
+Reviewed against main 45f97a64385c7b1959c44125b949f2d2e3e1e90b and the authorized standalone secondary-pricing fix. Preserve expected-payable/billed fallback, whole-line quantity semantics, exclusion filters, session grouping, final-total rounding, and existing blood caps. Use source-order factors without normalized-code collisions, retaining the factor-1 fallback for empty/invalid codes. Success includes 1000 + 100 at 30% = 1030, conservation for discount-only factors, and correct downstream DRG/strategy comparisons. Tests use synthetic records and explicit catalog fixtures.
+
+### Verification Review
+- RED: the original implementation failed 31 of 35 focused amount/occurrence cases. GREEN: the final focused selection passed 99 tests across session factors, amounts, specialties, DRG uplift, strategy, care-setting review, unbundling, and session uplift. Four existing tests requiring missing dental/synthetic assets were deselected from this focused run.
+- New strategy and DRG regressions exercise the real session calculation: a 1100 package produces no false uplift, while a 1000 package produces exactly 30. The payment-compliance exclusion fixture keeps its real eligibility checks and now asserts the correct own-line total, 1885.96, with deterministic catalog ranking.
+- Full source/script Ruff, changed-test Ruff, and changed-file Python compilation passed. Independent review reran the 60-case core suite and found no blocking source issue.
+- Local verification uses Python 3.12 and a partial source/data checkout. Full pytest was attempted but stopped at collection on missing manifests/raw source assets and a missing requests dependency. Generated-rule checking also requires the absent manifests; manifest parity scanned zero files, so it is not counted as a pass. Complete Python 3.13 backend tests, generated-artifact/parity checks, and frontend gates remain for hosted CI on the published commit.
+- Base main 45f97a64385c7b1959c44125b949f2d2e3e1e90b was rechecked with successful backend and frontend checks before publication. No production state was changed.

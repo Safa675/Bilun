@@ -109,6 +109,66 @@ def _patch_overridable_payment_methods(monkeypatch) -> None:
 
 
 class TestDrgUpliftWiring:
+    @pytest.mark.parametrize("package_amount, expected_uplift", [("1100", 0.0), ("1000", 30.0)])
+    def test_secondary_own_payable_controls_itemized_uplift(
+        self, monkeypatch, package_amount, expected_uplift,
+    ) -> None:
+        from src.bilun.domain.billing import claim_strategy
+        from src.bilun.domain.prose_rules import payment_method, session_pricing
+
+        _patch_overridable_payment_methods(monkeypatch)
+        monkeypatch.setattr(
+            payment_method, "resolve_payment_method", claim_strategy.resolve_payment_method,
+        )
+        monkeypatch.setattr(
+            session_pricing, "procedure_annex_membership", lambda code: (True, False),
+        )
+        monkeypatch.setattr(
+            session_pricing, "_procedure_point_score",
+            lambda code: {"111111": 20, "222222": 10}[code],
+        )
+        claim = _claim(package_candidate=False)
+        lines = [
+            _proc(
+                procedure_code="111111",
+                procedure_specialty_code="same-specialty",
+                expected_payable_try=Decimal("1000"),
+                billed_amount_try=Decimal("1000"),
+            ),
+            _proc(
+                procedure_line_id="PL2",
+                procedure_code="222222",
+                procedure_specialty_code="same-specialty",
+                unit_price_try=Decimal("100"),
+                expected_payable_try=Decimal("100"),
+                billed_amount_try=Decimal("100"),
+            ),
+            _proc(
+                procedure_line_id="PL3",
+                procedure_code="P333333",
+                procedure_category="paket",
+                unit_price_try=Decimal(package_amount),
+                expected_payable_try=Decimal(package_amount),
+                billed_amount_try=Decimal(package_amount),
+            ),
+        ]
+
+        drg = recommend_drg_uplift_from_claims(_ctx(claim, *lines))
+
+        assert drg.confirmed_uplift_try == expected_uplift
+        if expected_uplift == 0.0:
+            assert drg.opportunities == []
+        else:
+            assert len(drg.opportunities) == 1
+            opportunity = drg.opportunities[0]
+            assert opportunity["current_billing"] == "package"
+            assert opportunity["itemized_raw_try"] == 1100.0
+            assert opportunity["itemized_total_try"] == 1030.0
+            assert opportunity["package_total_try"] == float(package_amount)
+            assert opportunity["gross_uplift_try"] == 30.0
+            assert opportunity["recoverable_uplift_try"] == 30.0
+            assert opportunity["itemized_price_methodology"] == "session_adjusted"
+
     def test_non_package_candidate_uplift_counts_in_sgk_headline(
         self, monkeypatch
     ) -> None:
