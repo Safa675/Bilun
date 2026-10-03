@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "R5 TierB remap — 933 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
+  "coverage_note": "R5 TierB remap — 936 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
@@ -14440,19 +14440,32 @@
       "rule_id": "4.2.23.bucket_b.C006102",
       "sut_section": "4.2.23",
       "drug_names": [
-        "amfoterisin"
+        "posakonazol",
+        "posaconazole"
       ],
       "gate_b_sources": [
         "4.2.23.(3)#84014798",
-        "4.2.23.(7)"
+        "4.2.23.(7)#6ef97a80"
       ],
       "report_required": true,
       "message_tr": "3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.",
       "encode_bucket": "B",
-      "requires_prior_therapy": {
-        "drug_or_class": "prior_therapy",
-        "outcome": "refractory_or_intolerant"
-      }
+      "source_subsection": "4.2.23.(4).b",
+      "source_heading_key": "4.2.23.(4)#1d9b3cd3",
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Corrected medication and source attribution; clinical conjunctions are evaluated only by the separately typed source-scoped clinical gates.",
+      "clinical_constraint_set": "antifungal_source_constraints",
+      "clinical_constraint_drugs": [
+        "anidilofungin",
+        "anidulafungin",
+        "anidulofungin",
+        "itraconazole",
+        "itrakonazol",
+        "micafungin",
+        "mikafungin",
+        "posaconazole",
+        "posakonazol"
+      ]
     },
     {
       "rule_id": "4.2.23.itraconazole_oral_ek4e_105",
@@ -14470,29 +14483,53 @@
       "action": {
         "enforcement": "itrakonazol'ün oral formları (solüsyon hariç) SUT eki EK-4/E 10.5 maddesinde belirtildiği şekilde reçetelenir",
         "message_tr": "Itrakonazol'ün oral formları (solüsyon formları hariç), SUT eki Sistemik Antimikrobik ve Diğer İlaçların Reçeteleme Kuralları Listesi'nin (EK-4/E) 10.5 maddesinde belirtildiği şekilde reçetelenebilecektir (§4.2.23)."
-      }
+      },
+      "clinical_constraint_set": "antifungal_source_constraints",
+      "clinical_constraint_drugs": [
+        "anidilofungin",
+        "anidulafungin",
+        "anidulofungin",
+        "itraconazole",
+        "itrakonazol",
+        "micafungin",
+        "mikafungin",
+        "posaconazole",
+        "posakonazol"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.23.neutropenia_prophylaxis_nopay",
       "sut_section": "4.2.23",
       "gate_b_sources": [
-        "4.2.23.a#77f6ee8f",
-        "4.2.23.(4)#06a1b9aa",
-        "4.2.23.(5)#2fe8e460",
-        "4.2.23.(3)#cf0aee43",
-        "4.2.23.(8)"
+        "4.2.23.(3)#cf0aee43"
       ],
       "drug_names": [
-        "posakonazol",
-        "itrakonazol",
-        "vorikonazol",
-        "flukonazol"
+        "mikafungin",
+        "micafungin"
       ],
       "pay": false,
       "action": {
         "enforcement": "no-pay condition: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez",
         "message_tr": "10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez (§4.2.23)."
-      }
+      },
+      "source_subsection": "4.2.23.(6)",
+      "source_heading_key": "4.2.23.(6)#1df4e6b7",
+      "source_effective_date": "2018-04-01",
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Corrected medication and source attribution; clinical conjunctions are evaluated only by the separately typed source-scoped clinical gates.",
+      "clinical_constraint_set": "antifungal_source_constraints",
+      "clinical_constraint_drugs": [
+        "anidilofungin",
+        "anidulafungin",
+        "anidulofungin",
+        "itraconazole",
+        "itrakonazol",
+        "micafungin",
+        "mikafungin",
+        "posaconazole",
+        "posakonazol"
+      ]
     },
     {
       "rule_id": "4.2.23.posaconazole_parenteral_oral_unable",
@@ -14507,7 +14544,20 @@
       "action": {
         "enforcement": "posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir; invazif mantar enfeksiyonu profilaksisi endikasyonu",
         "message_tr": "Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23)."
-      }
+      },
+      "clinical_constraint_set": "antifungal_source_constraints",
+      "clinical_constraint_drugs": [
+        "anidilofungin",
+        "anidulafungin",
+        "anidulofungin",
+        "itraconazole",
+        "itrakonazol",
+        "micafungin",
+        "mikafungin",
+        "posaconazole",
+        "posakonazol"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.23.systemic_fungal_infection_coverage",
@@ -14525,7 +14575,12 @@
         "flukonazol",
         "kasopofungin",
         "anidulafungin",
-        "mikafungin"
+        "mikafungin",
+        "anidulofungin",
+        "anidilofungin",
+        "micafungin",
+        "posaconazole",
+        "itraconazole"
       ],
       "icd10_codes": [
         "B37",
@@ -14542,7 +14597,20 @@
       "action": {
         "enforcement": "bu maddedeki etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanımı bedelleri Kurumca karşılanır",
         "message_tr": "Bu maddede belirtilen etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanılması halinde bedelleri Kurumca karşılanır (§4.2.23)."
-      }
+      },
+      "clinical_constraint_set": "antifungal_source_constraints",
+      "clinical_constraint_drugs": [
+        "anidilofungin",
+        "anidulafungin",
+        "anidulofungin",
+        "itraconazole",
+        "itrakonazol",
+        "micafungin",
+        "mikafungin",
+        "posaconazole",
+        "posakonazol"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.24.A.resp.iks_one_per_prescription_coverage",
@@ -19272,10 +19340,10 @@
       }
     },
     {
-      "rule_id": "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a",
+      "rule_id": "4.2.49.A.1.nusinersen_all_criteria_coverage",
       "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "C007082"
+        "4.2.49.A.(1)#e6be0652@within:4.2.49.A#f57da6c0"
       ],
       "drug_names": [
         "nusinersen",
@@ -19294,42 +19362,29 @@
         "coverage_note": true
       },
       "action": {
-        "enforcement": "nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
-        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A)."
-      }
-    },
-    {
-      "rule_id": "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b",
-      "sut_section": "4.2.49.A",
-      "gate_b_sources": [
-        "C007082"
-      ],
-      "drug_names": [
-        "nusinersen",
-        "nusinersen sodium"
-      ],
-      "icd10_codes": [
-        "G12.0",
-        "G12.1"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "çocuk nöroloji",
-        "nöroloji"
-      ],
-      "condition": {
-        "coverage_note": true
+        "enforcement": "nusinersen: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
+        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A.1, nusinersen)."
       },
-      "action": {
-        "enforcement": "nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
-        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A)."
-      }
+      "source_subsection": "4.2.49.A.1",
+      "source_heading_key": "4.2.49.A#f57da6c0",
+      "supersedes_rule_ids": [
+        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a",
+      "rule_id": "4.2.49.A.1.nusinersen_multidisciplinary_monitoring",
       "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "C007088"
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#f57da6c0"
       ],
       "drug_names": [
         "nusinersen",
@@ -19346,38 +19401,28 @@
       ],
       "action": {
         "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
-        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.A)."
-      }
-    },
-    {
-      "rule_id": "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b",
-      "sut_section": "4.2.49.A",
-      "gate_b_sources": [
-        "C007088"
+        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.A.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.A.1",
+      "source_heading_key": "4.2.49.A#f57da6c0",
+      "supersedes_rule_ids": [
+        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a"
       ],
-      "drug_names": [
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
         "nusinersen",
-        "nusinersen sodium"
-      ],
-      "icd10_codes": [
-        "G12.0",
-        "G12.1"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "çocuk nöroloji",
-        "nöroloji"
-      ],
-      "action": {
-        "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
-        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.A)."
-      }
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
+      "rule_id": "4.2.49.A.1.nusinersen_no_csf_shunt_catheter",
       "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "4.2.49.A.c"
+        "4.2.49.A.c#75d4ce7f@within:4.2.49.A#f57da6c0"
       ],
       "drug_names": [
         "nusinersen",
@@ -19394,14 +19439,28 @@
       ],
       "action": {
         "enforcement": "mandatory: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmamalıdır",
-        "message_tr": "BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49.A)."
-      }
+        "message_tr": "BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49.A.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.A.1",
+      "source_heading_key": "4.2.49.A#f57da6c0",
+      "supersedes_rule_ids": [
+        "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.B.neuro.risdiplam_all_criteria_coverage",
-      "sut_section": "4.2.49.B",
+      "rule_id": "4.2.49.A.2.risdiplam_all_criteria_coverage",
+      "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "C007082"
+        "4.2.49.A.(1)#e6be0652@within:4.2.49.A#c2df3999"
       ],
       "drug_names": [
         "risdiplam"
@@ -19420,17 +19479,69 @@
       },
       "action": {
         "enforcement": "risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
-        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B)."
-      }
+        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A.2, risdiplam)."
+      },
+      "source_subsection": "4.2.49.A.2",
+      "source_heading_key": "4.2.49.A#c2df3999",
+      "supersedes_rule_ids": [
+        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b",
-      "sut_section": "4.2.49.B",
+      "rule_id": "4.2.49.A.2.risdiplam_multidisciplinary_monitoring",
+      "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "C007082"
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
       ],
       "drug_names": [
         "risdiplam"
+      ],
+      "icd10_codes": [
+        "G12.0",
+        "G12.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk nöroloji",
+        "nöroloji"
+      ],
+      "action": {
+        "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
+        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.A.2, risdiplam)."
+      },
+      "source_subsection": "4.2.49.A.2",
+      "source_heading_key": "4.2.49.A#c2df3999",
+      "supersedes_rule_ids": [
+        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
+    },
+    {
+      "rule_id": "4.2.49.B.1.nusinersen_all_criteria_coverage",
+      "sut_section": "4.2.49.B",
+      "gate_b_sources": [
+        "4.2.49.B.(1)#e6be0652@within:4.2.49.B#1a8f10e4"
+      ],
+      "drug_names": [
+        "nusinersen",
+        "nusinersen sodium"
       ],
       "icd10_codes": [
         "G12.0",
@@ -19445,18 +19556,33 @@
         "coverage_note": true
       },
       "action": {
-        "enforcement": "risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
-        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B)."
-      }
+        "enforcement": "nusinersen: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
+        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.B.1",
+      "source_heading_key": "4.2.49.B#1a8f10e4",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_all_criteria_coverage"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
+      "rule_id": "4.2.49.B.1.nusinersen_multidisciplinary_monitoring",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "4.2.49.B.(3)"
+        "4.2.49.B.(3)#ee4a0812@within:4.2.49.B#1a8f10e4"
       ],
       "drug_names": [
-        "risdiplam"
+        "nusinersen",
+        "nusinersen sodium"
       ],
       "icd10_codes": [
         "G12.0",
@@ -19469,40 +19595,32 @@
       ],
       "action": {
         "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
-        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.B)."
-      }
+        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.B.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.B.1",
+      "source_heading_key": "4.2.49.B#1a8f10e4",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b",
+      "rule_id": "4.2.49.B.1.nusinersen_no_implanted_csf_shunt",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "4.2.49.B.(2)#e0dba5fb"
+        "4.2.49.B.c#bf5b1877@within:4.2.49.B#1a8f10e4"
       ],
       "drug_names": [
-        "risdiplam"
-      ],
-      "icd10_codes": [
-        "G12.0",
-        "G12.1"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "çocuk nöroloji",
-        "nöroloji"
-      ],
-      "action": {
-        "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
-        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.B)."
-      }
-    },
-    {
-      "rule_id": "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
-      "sut_section": "4.2.49.B",
-      "gate_b_sources": [
-        "4.2.49.B.c"
-      ],
-      "drug_names": [
-        "risdiplam"
+        "nusinersen",
+        "nusinersen sodium"
       ],
       "icd10_codes": [
         "G12.0",
@@ -19515,14 +19633,106 @@
       ],
       "action": {
         "enforcement": "mandatory: BOS drenajı için implante edilmiş bir şant veya implante edilmiş bir BOS kateteri bulunmamalıdır",
-        "message_tr": "BOS drenajı için implante edilmiş bir şant veya implante edilmiş bir BOS kateteri bulunmaması gerekmektedir (§4.2.49.B)."
-      }
+        "message_tr": "BOS drenajı için implante edilmiş bir şant veya implante edilmiş bir BOS kateteri bulunmaması gerekmektedir (§4.2.49.B.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.B.1",
+      "source_heading_key": "4.2.49.B#1a8f10e4",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
-      "rule_id": "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
+      "rule_id": "4.2.49.B.1.nusinersen_no_lumbar_puncture_contraindication",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "4.2.49.B.e"
+        "4.2.49.B.e#927a1a83@within:4.2.49.B#1a8f10e4"
+      ],
+      "drug_names": [
+        "nusinersen",
+        "nusinersen sodium"
+      ],
+      "icd10_codes": [
+        "G12.0",
+        "G12.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk nöroloji",
+        "nöroloji"
+      ],
+      "action": {
+        "enforcement": "mandatory: lomber ponksiyon uygulanmasına engel bir durum olmadığı sağlık kurulu raporunda belirtilmiş olmalıdır",
+        "message_tr": "Lomber ponksiyon uygulanmasına engel bir durum olmadığının sağlık kurulu raporunda belirtilmiş olması gerekmektedir (§4.2.49.B.1, nusinersen)."
+      },
+      "source_subsection": "4.2.49.B.1",
+      "source_heading_key": "4.2.49.B#1a8f10e4",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
+    },
+    {
+      "rule_id": "4.2.49.B.2.risdiplam_all_criteria_coverage",
+      "sut_section": "4.2.49.B",
+      "gate_b_sources": [
+        "4.2.49.B.(1)#e6be0652@within:4.2.49.B#58c3e3be"
+      ],
+      "drug_names": [
+        "risdiplam"
+      ],
+      "icd10_codes": [
+        "G12.0",
+        "G12.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk nöroloji",
+        "nöroloji"
+      ],
+      "condition": {
+        "coverage_note": true
+      },
+      "action": {
+        "enforcement": "risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir",
+        "message_tr": "Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B.2, risdiplam)."
+      },
+      "source_subsection": "4.2.49.B.2",
+      "source_heading_key": "4.2.49.B#58c3e3be",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
+    },
+    {
+      "rule_id": "4.2.49.B.2.risdiplam_multidisciplinary_monitoring",
+      "sut_section": "4.2.49.B",
+      "gate_b_sources": [
+        "4.2.49.B.(2)#e0dba5fb@within:4.2.49.B#58c3e3be"
       ],
       "drug_names": [
         "risdiplam"
@@ -19537,9 +19747,23 @@
         "nöroloji"
       ],
       "action": {
-        "enforcement": "mandatory: lomber ponksiyon uygulanmasına engel bir durum olmadığı sağlık kurulu raporunda belirtilmiş olmalıdır",
-        "message_tr": "Lomber ponksiyon uygulanmasına engel bir durum olmadığının sağlık kurulu raporunda belirtilmiş olması gerekmektedir (§4.2.49.B)."
-      }
+        "enforcement": "mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir",
+        "message_tr": "Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir (§4.2.49.B.2, risdiplam)."
+      },
+      "source_subsection": "4.2.49.B.2",
+      "source_heading_key": "4.2.49.B#58c3e3be",
+      "supersedes_rule_ids": [
+        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b"
+      ],
+      "source_effective_date": "2025-05-06",
+      "source_scope_note": "Subsection provenance and drug routing only; source clinical criteria are not yet executable.",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
@@ -19566,6 +19790,12 @@
       "report_specialties": [
         "çocuk nörolojisi",
         "nöroloji"
+      ],
+      "clinical_constraint_set": "sma_safety_2025",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
       ]
     },
     {
@@ -19600,7 +19830,14 @@
       "action": {
         "enforcement": "nusinersen: Ulusal Yenidoğan SMA Tarama/SMA Tip-1 çocuk nöroloji raporu; Tip-2/3 en az biri çocuk nöroloji/nöroloji olmak üzere ortopedi veya beyin-sinir cerrahisi; üçüncü basamak, ilk 4 uygulama 3 ay, sonraki 4 ay; her uygulama için çocuk nöroloji/nöroloji reçetesi; koşullar raporda",
         "message_tr": "Nusinersen tedavisi; Ulusal Yenidoğan SMA Tarama Programından gelen hastalar ile SMA Tip-1 hastalarında çocuk nöroloji uzman hekiminin yer aldığı sağlık kurulu raporuna istinaden, SMA Tip-2 ve SMA Tip-3 hastalarında en az birisi çocuk nöroloji/nöroloji uzmanı olmak üzere ortopedi ve travmatoloji veya beyin ve sinir cerrahisi uzman hekiminin yer aldığı sağlık kurulu raporuna istinaden reçetelenir. İlk 4 uygulama için 3 ay süreli, sonraki uygulamalar için 4 ay süreli Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen sağlık kurulu raporuna istinaden üçüncü basamakta çocuk nöroloji veya nöroloji uzman hekimi tarafından her bir uygulama için ayrı ayrı reçete edilmesi halinde bedeli Kurumca karşılanır; ilaç kullanımı koşulları raporda belirtilmelidir (§4.2.49.C)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
@@ -19631,7 +19868,14 @@
       "action": {
         "enforcement": "risdiplam: üçüncü basamakta çocuk nöroloji/nöroloji raporu; SMA Tip-1/tarama en fazla 3 ay, Tip-2/3 en fazla 6 ay; reçetede hasta kilosu; koşullar raporda; reçeteler en fazla 2 aylık dozda",
         "message_tr": "Risdiplam tedavisi çocuk nöroloji/nöroloji uzman hekiminin yer aldığı; Ulusal Yenidoğan SMA Tarama Programından gelen hastalar ile SMA Tip-1 hastalarında en fazla 3 ay süreli, SMA Tip-2 ve SMA Tip-3 hastalarında en fazla 6 ay süreli Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen sağlık kurulu raporuna istinaden üçüncü basamakta çocuk nöroloji veya nöroloji uzman hekimi tarafından reçete edilmesi halinde bedeli Kurumca karşılanır; reçetelerde hastanın kilosu belirtilmelidir, ilaç kullanımı koşulları raporda belirtilmelidir, reçeteler en fazla 2 aylık dozda olmalıdır (§4.2.49.C)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.C.neuro.sma_designated_multidisciplinary_center_coverage",
@@ -19659,7 +19903,14 @@
       "action": {
         "enforcement": "nusinersen sodium ve risdiplam: tescilli yenidoğan/çocuk yoğun bakım + çocuk nörolojisi uzmanı + beslenme-diyetetik ve fizik tedavi-rehabilitasyon multidisipliner sunulabilen Kurumca belirlenen üçüncü basamakta kullanılırsa ödenir",
         "message_tr": "Nusinersen sodium ve risdiplam etkin maddeli ilaçların; tescili yapılmış yenidoğan ve çocuk yoğun bakım servisi bulunan, bünyesinde çocuk nörolojisi uzmanının da yer aldığı, beslenme ve diyetetik ile fizik tedavi ve rehabilitasyon hizmetlerinin multidisipliner bir yaklaşımla sunulabileceği Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında kullanılması halinde bedeli Kurumca karşılanır (§4.2.49.C)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.C.neuro.sma_modifying_switch_under_1yr_nopay",
@@ -19680,7 +19931,14 @@
       "action": {
         "enforcement": "no-pay condition: SMN2 modifiye eden tedaviler (nusinersen, risdiplam) arasında 1 yıldan kısa süre ile geçiş; ancak fonksiyonel değerlendirmede bozulma veya belirgin hayatı tehdit eden yan etki olursa yeni raporla ilaç değişimi yapılabilir",
         "message_tr": "SMN2 modifiye eden tedaviler (nusinersen, risdiplam) arasında 1 yıldan kısa süre ile geçiş yapılması halinde bedeli Kurumca karşılanmaz; ancak fonksiyonel değerlendirmelerde bozulma olması veya belirgin hayatı tehdit eden yan etki ortaya çıkması durumunda yeni düzenlenecek sağlık kurulu raporunda belirtilmesi halinde ilaç değişimi yapılabilir (§4.2.49.C)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.neuro.nusinersen_no_csf_shunt_catheter",
@@ -19704,7 +19962,14 @@
       "action": {
         "enforcement": "mandatory: nusinersen tedavisi için hastalarda BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmamalıdır",
         "message_tr": "Nusinersen tedavisi için hastalarda BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.neuro.sma_smn2_copy2_3_infant_coverage",
@@ -19732,7 +19997,14 @@
       "action": {
         "enforcement": "SMN2 kopya sayısı 2 ve 3 olan bebeklerde ilaç bedeli Kurumca karşılanır",
         "message_tr": "SMN2 kopya sayısı 2 ve 3 olan bebeklerde ilaç bedeli Kurumca karşılanır (§4.2.49)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.49.neuro.sma_smn2_copy4_symptomatic_coverage",
@@ -19760,7 +20032,14 @@
       "action": {
         "enforcement": "SMN2 kopya sayısı 4 olduğunda klinik takiple tedavi kararı; takipte semptomatik olan hastalara ilaç bedeli ödenir",
         "message_tr": "SMN2 kopya sayısı 4 olduğunda klinik takiple tedavi kararı verilir, takip sırasında semptomatik olan hastalarda ilacın bedeli Kurumca karşılanır (§4.2.49)."
-      }
+      },
+      "clinical_constraint_set": "sma_safety_2025",
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_drugs": [
+        "nusinersen",
+        "nusinersen sodium",
+        "risdiplam"
+      ]
     },
     {
       "rule_id": "4.2.5.botox.axillary_hyperhidrosis_tertiary_coverage",
@@ -22231,6 +22510,33 @@
       }
     },
     {
+      "rule_id": "4.2.9.B.clinical_phosphate_necessary_restrictions",
+      "sut_section": "4.2.9.B",
+      "drug_names": [
+        "sevelamer",
+        "lantanyum karbonat",
+        "alüminyum klorür hidroksit"
+      ],
+      "gate_b_sources": [
+        "4.2.9.B.(1)#00052268",
+        "4.2.9.B.a#2cbf02e7",
+        "4.2.9.B.b#1438d4b8",
+        "4.2.9.B.c#44af65a8",
+        "4.2.9.B.ç#4843bec7",
+        "4.2.9.B.(3)#cbdee244",
+        "4.2.9.B.(4)#e346bde0"
+      ],
+      "clinical_constraint_set": "renal_source_constraints",
+      "clinical_constraint_drugs": [
+        "sevelamer",
+        "lantanyum karbonat",
+        "alüminyum klorür hidroksit"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Necessary typed renal constraints only; no diagnosis route or complete payment eligibility. Historical source effectiveness unverified; source snapshot 2026-10-02 only.",
+      "message_tr": "Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir."
+    },
+    {
       "rule_id": "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
       "sut_section": "4.2.9.B",
       "gate_b_sources": [
@@ -22395,6 +22701,36 @@
         "enforcement": "parikalsitol parenteral formları yalnızca hemodiyaliz hastalarına nefroloji/iç/çocuk veya diyaliz sertifikalı uzmanın ≤6 ay raporuyla bu hekimlerce en fazla 1 aylık dozda reçete",
         "message_tr": "Parikalsitolün parenteral formlarının yalnızca hemodiyaliz hastalarına yukarıda belirtilen koşullarda nefroloji, iç hastalıkları veya çocuk sağlığı ve hastalıkları uzman hekimleri veya diyaliz sertifikalı uzman hekimi tarafından düzenlenen en fazla 6 ay süreli sağlık raporuna istinaden yine bu hekimler tarafından en fazla 1 aylık dozda reçete edilmesi halinde Kurumca bedelleri karşılanır (§4.2.9.C)."
       }
+    },
+    {
+      "rule_id": "4.2.9.D.clinical_nutrition_necessary_restrictions",
+      "sut_section": "4.2.9.D",
+      "drug_names": [
+        "oral esansiyel aminoasit",
+        "oral esansiyel aminoasit preparatları",
+        "oral esansiyel aminoasit preperatları",
+        "keto analogları",
+        "keto analog"
+      ],
+      "gate_b_sources": [
+        "4.2.9.D.(1)#4dc7d730",
+        "4.2.9.D.a#f13a1cdd",
+        "4.2.9.D.b#914a33c4",
+        "4.2.9.D.a#7aa28a33",
+        "4.2.9.D.b#a3749cdc",
+        "4.2.9.D.c#6a824531"
+      ],
+      "clinical_constraint_set": "renal_source_constraints",
+      "clinical_constraint_drugs": [
+        "oral esansiyel aminoasit",
+        "oral esansiyel aminoasit preparatları",
+        "oral esansiyel aminoasit preperatları",
+        "keto analogları",
+        "keto analog"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Necessary typed renal constraints only; no diagnosis route or complete payment eligibility. Historical source effectiveness unverified; source snapshot 2026-10-02 only.",
+      "message_tr": "Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir."
     },
     {
       "rule_id": "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
@@ -22829,19 +23165,41 @@
       "rule_id": "4.2.9.Ç.bucket_b.C004176",
       "sut_section": "4.2.9.Ç",
       "drug_names": [
-        "bifosfonat",
-        "albumin"
+        "sinakalset",
+        "cinacalcet"
       ],
       "gate_b_sources": [
-        "4.2.9.Ç.b"
+        "4.2.9.Ç.b#568549ff"
       ],
       "report_required": true,
       "message_tr": "b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış ve albümin ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,",
       "encode_bucket": "B",
-      "requires_prior_therapy": {
-        "drug_or_class": "prior_therapy",
-        "outcome": "relapse"
-      }
+      "source_subsection": "4.2.9.Ç.(5)",
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Corrected medication and source attribution; clinical conjunctions are evaluated only by the separately typed source-scoped clinical gates.",
+      "clinical_constraint_set": "renal_source_constraints"
+    },
+    {
+      "rule_id": "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions",
+      "sut_section": "4.2.9.Ç",
+      "drug_names": [
+        "cinacalcet"
+      ],
+      "gate_b_sources": [
+        "4.2.9.Ç.(1)#d5f6d259",
+        "4.2.9.Ç.(2)#ab7653a8",
+        "4.2.9.Ç.(3)#0a00af38",
+        "4.2.9.Ç.(5)#deb19c81",
+        "4.2.9.Ç.a#afe54fee",
+        "4.2.9.Ç.b#568549ff"
+      ],
+      "clinical_constraint_set": "renal_source_constraints",
+      "clinical_constraint_drugs": [
+        "cinacalcet"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Necessary typed renal constraints only; no diagnosis route or complete payment eligibility. Historical source effectiveness unverified; source snapshot 2026-10-02 only.",
+      "message_tr": "Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir."
     },
     {
       "rule_id": "4.3.ek4c_ek4d_copay_exempt",

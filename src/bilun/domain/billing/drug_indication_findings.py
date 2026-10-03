@@ -14,6 +14,9 @@ from urllib.parse import quote
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules import drug_indication as prose
+from .drug_clinical_evidence import (
+    DrugClinicalRestriction, bounded_clinical_restrictions, clinical_evidence_payload,
+)
 
 
 _MAX_ROUTE_EVIDENCE = 24
@@ -140,6 +143,9 @@ class DrugIndicationFinding:
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
     temporal_evidence: dict[str, Any] | None = None
+
+
+    clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -172,6 +178,7 @@ class DrugIndicationFinding:
             "eligible_routes_truncated": self.eligible_routes_truncated,
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
+            **clinical_evidence_payload(self.clinical_restrictions),
         }
 
     def to_legacy_violation(self) -> dict[str, Any]:
@@ -215,6 +222,7 @@ class DrugIndicationFinding:
                 "eligible_routes_truncated": self.eligible_routes_truncated,
             }
         )
+        legacy.update(clinical_evidence_payload(self.clinical_restrictions))
         return legacy
 
 
@@ -240,6 +248,7 @@ class DrugIndicationLineEvaluation:
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+    clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
 
     temporal_evidence: dict[str, Any] | None = None
 
@@ -266,6 +275,7 @@ class DrugIndicationLineEvaluation:
             "eligible_routes_truncated": self.eligible_routes_truncated,
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
+            **clinical_evidence_payload(self.clinical_restrictions),
         }
 
 
@@ -439,6 +449,8 @@ def _explanation_tr(
         ", ".join(value for route in routes for value in (*route.icd10_codes, *route.icd10_ranges))
         or "kodlanmış tanı yolu"
     )
+    if violation.get("clinical_restrictions") and violation.get("message_tr"):
+        return str(violation["message_tr"])
     if kind == "indication_mismatch":
         return (
             f"Faturada {observed} tanıları bulundu. {drug_name} için kodlanmış SGK "
@@ -575,6 +587,7 @@ def evaluate_drug_indication_findings(
         evaluation_status = str(detailed.get("evaluation_status") or "unavailable")
         selected_rule_id = detailed.get("selected_rule_id")
         selected_rule_id = str(selected_rule_id) if selected_rule_id else None
+        clinical_restrictions = bounded_clinical_restrictions(detailed.get("clinical_restrictions"))
         violation = detailed.get("violation")
         finding_id: str | None = None
         finding_kind: str | None = None
@@ -609,6 +622,7 @@ def evaluate_drug_indication_findings(
                 matched_icd10_codes=matched_codes,
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
+                clinical_restrictions=clinical_restrictions,
                 selected_rule_id=selected_rule_id,
                 explanation_tr=explanation,
                 recommended_action_tr=_recommended_action(finding_kind),
@@ -645,6 +659,7 @@ def evaluate_drug_indication_findings(
                 matched_icd10_codes=matched_codes,
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
+                clinical_restrictions=clinical_restrictions,
                 selected_rule_id=selected_rule_id,
                 finding_id=finding_id,
                 finding_kind=finding_kind,

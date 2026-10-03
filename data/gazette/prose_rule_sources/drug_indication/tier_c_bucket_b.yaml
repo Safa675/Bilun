@@ -8,8 +8,9 @@ rules:
   gate_b_sources:
   - 4.2.1.C-2.(2)#4e24982b
   report_required: true
-  message_tr: (2) Siklofosfamide dirençli veya siklofosfamid tedavisi verilemeyen ciddi, aktif granulamatoz polianjitis (GPA/
-    Wegener granülomatozu) ve mikroskobik polianjitis (MPA) hastalarının tedavisinde glukokortikoidlerle kombine olarak;
+  message_tr: (2) Siklofosfamide dirençli veya siklofosfamid tedavisi verilemeyen ciddi, aktif granulamatoz polianjitis
+    (GPA/ Wegener granülomatozu) ve mikroskobik polianjitis (MPA) hastalarının tedavisinde glukokortikoidlerle kombine
+    olarak;
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: prior_therapy
@@ -17,17 +18,19 @@ rules:
 - rule_id: 4.2.9.Ç.bucket_b.C004176
   sut_section: 4.2.9.Ç
   drug_names:
-  - bifosfonat
-  - albumin
+  - sinakalset
+  - cinacalcet
   gate_b_sources:
-  - 4.2.9.Ç.b
+  - 4.2.9.Ç.b#568549ff
   report_required: true
-  message_tr: b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış ve albümin
-    ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,
+  message_tr: b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış
+    ve albümin ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,
   encode_bucket: B
-  requires_prior_therapy:
-    drug_or_class: prior_therapy
-    outcome: relapse
+  source_subsection: 4.2.9.Ç.(5)
+  verification_status: ai_generated_pending_review
+  source_scope_note: Corrected medication and source attribution; clinical conjunctions are evaluated only by the
+    separately typed source-scoped clinical gates.
+  clinical_constraint_set: renal_source_constraints
 - rule_id: 4.2.13.3.2.B.bucket_b.C004920
   sut_section: 4.2.13.3.2.B
   drug_names:
@@ -35,8 +38,8 @@ rules:
   gate_b_sources:
   - C004974
   report_required: true
-  message_tr: Genotip 1, 2, 4, 5 ve 6 kompanse sirozu olan NS5A inhibitörü veya proteaz inhibitörü tedavisi almamış hastalarda
-    toplam 12 hafta;
+  message_tr: Genotip 1, 2, 4, 5 ve 6 kompanse sirozu olan NS5A inhibitörü veya proteaz inhibitörü tedavisi almamış
+    hastalarda toplam 12 hafta;
   encode_bucket: B
   required_biomarkers:
   - marker: HCV_GENOTYPE
@@ -52,8 +55,8 @@ rules:
   gate_b_sources:
   - C004976
   report_required: true
-  message_tr: Genotip 1 nonsirotik ya da kompanse sirozu olan daha önceden proteaz inhibitörü kullanmış fakat NS5A inhibitörü
-    almamış hastalarda 12 hafta;
+  message_tr: Genotip 1 nonsirotik ya da kompanse sirozu olan daha önceden proteaz inhibitörü kullanmış fakat NS5A
+    inhibitörü almamış hastalarda 12 hafta;
   encode_bucket: B
   required_biomarkers:
   - marker: HCV_GENOTYPE
@@ -68,10 +71,10 @@ rules:
   gate_b_sources:
   - 4.2.21.(1)
   report_required: true
-  message_tr: (1) Hidroksiüre + asetil salisilik asit tedavisine dirençli olduğu ya da hidroksiüre ile dirençli sitopeni (anemi
-    ve/veya lökopeni) geliştiği belgelenen, yüksek vasküler risk taşıyan esansiyel trombositemi hastalıklarında, hematoloji
-    veya tıbbi onkoloji uzman hekimlerinden biri tarafından düzenlenen uzman hekim raporuna dayanılarak bu uzman hekimler
-    tarafından reçete edilebilir.
+  message_tr: (1) Hidroksiüre + asetil salisilik asit tedavisine dirençli olduğu ya da hidroksiüre ile dirençli
+    sitopeni (anemi ve/veya lökopeni) geliştiği belgelenen, yüksek vasküler risk taşıyan esansiyel trombositemi
+    hastalıklarında, hematoloji veya tıbbi onkoloji uzman hekimlerinden biri tarafından düzenlenen uzman hekim raporuna
+    dayanılarak bu uzman hekimler tarafından reçete edilebilir.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: prior_therapy
@@ -79,16 +82,31 @@ rules:
 - rule_id: 4.2.23.bucket_b.C006102
   sut_section: 4.2.23
   drug_names:
-  - amfoterisin
+  - posakonazol
+  - posaconazole
   gate_b_sources:
   - 4.2.23.(3)#84014798
-  - 4.2.23.(7)
+  - 4.2.23.(7)#6ef97a80
   report_required: true
-  message_tr: 3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.
+  message_tr: 3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı
+    olan hastalarda.
   encode_bucket: B
-  requires_prior_therapy:
-    drug_or_class: prior_therapy
-    outcome: refractory_or_intolerant
+  source_subsection: 4.2.23.(4).b
+  source_heading_key: 4.2.23.(4)#1d9b3cd3
+  verification_status: ai_generated_pending_review
+  source_scope_note: Corrected medication and source attribution; clinical conjunctions are evaluated only by the
+    separately typed source-scoped clinical gates.
+  clinical_constraint_set: antifungal_source_constraints
+  clinical_constraint_drugs:
+  - anidilofungin
+  - anidulafungin
+  - anidulofungin
+  - itraconazole
+  - itrakonazol
+  - micafungin
+  - mikafungin
+  - posaconazole
+  - posakonazol
 - rule_id: 4.2.30.A.bucket_b.C006411
   sut_section: 4.2.30.A
   drug_names:
@@ -97,9 +115,9 @@ rules:
   gate_b_sources:
   - 4.2.30.A.(4)
   report_required: true
-  message_tr: (4) İlgili ilaçlar üçüncü basamak sağlık hizmeti sunucularında bu durumların belirtildiği kardiyoloji, kalp
-    damar cerrahisi, göğüs hastalıkları, çocuk kardiyolojisi uzman hekimlerinden birinin yer aldığı 3 ay süreli sağlık kurulu
-    raporuna dayanılarak belirtilen hekimlerce reçete edilir.
+  message_tr: (4) İlgili ilaçlar üçüncü basamak sağlık hizmeti sunucularında bu durumların belirtildiği kardiyoloji,
+    kalp damar cerrahisi, göğüs hastalıkları, çocuk kardiyolojisi uzman hekimlerinden birinin yer aldığı 3 ay süreli
+    sağlık kurulu raporuna dayanılarak belirtilen hekimlerce reçete edilir.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -111,7 +129,8 @@ rules:
   gate_b_sources:
   - 4.2.30.(1)
   report_required: true
-  message_tr: (1) Riosiguat; yalnızca inoperabl veya cerrahi tedavi sonrasında dirençli/nükseden KTEPH'li erişkin hastalardan;
+  message_tr: (1) Riosiguat; yalnızca inoperabl veya cerrahi tedavi sonrasında dirençli/nükseden KTEPH'li erişkin
+    hastalardan;
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: prior_therapy
@@ -124,9 +143,10 @@ rules:
   gate_b_sources:
   - 4.2.30.(2)
   report_required: true
-  message_tr: (2) Üçüncü basamak sağlık tesislerinde bu durumların belirtildiği ve en az birinin göğüs cerrahisi veya kalp
-    damar cerrahisi uzman hekimi olması koşuluyla, kardiyoloji, göğüs hastalıkları, göğüs cerrahisi veya kalp damar cerrahisi
-    uzman hekimlerinden en az üçünün bulunduğu üç ay süreli sağlık kurulu raporuna dayanılarak yine bu hekimlerce reçete edilir.
+  message_tr: (2) Üçüncü basamak sağlık tesislerinde bu durumların belirtildiği ve en az birinin göğüs cerrahisi
+    veya kalp damar cerrahisi uzman hekimi olması koşuluyla, kardiyoloji, göğüs hastalıkları, göğüs cerrahisi veya
+    kalp damar cerrahisi uzman hekimlerinden en az üçünün bulunduğu üç ay süreli sağlık kurulu raporuna dayanılarak
+    yine bu hekimlerce reçete edilir.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -138,8 +158,9 @@ rules:
   gate_b_sources:
   - 4.2.43.b
   report_required: true
-  message_tr: b) Bu hususların belirtildiği, üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekiminin bulunduğu
-    6 ay süreli sağlık kurulu raporuna dayanılarak yine bu sağlık kurumlarında romatoloji uzman hekimlerince reçetelenir.
+  message_tr: b) Bu hususların belirtildiği, üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekiminin
+    bulunduğu 6 ay süreli sağlık kurulu raporuna dayanılarak yine bu sağlık kurumlarında romatoloji uzman hekimlerince
+    reçetelenir.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -151,10 +172,10 @@ rules:
   gate_b_sources:
   - C006986
   report_required: true
-  message_tr: kriterlerinden en az birinin sağlandığı vakalarda; üçüncü basamak resmi sağlık hizmeti sunucularında, çocuk
-    endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji ve metabolizma
-    uzmanlarınca düzenlenecek 6 ay süreli sağlık kurulu raporu ile yine üçüncü basamak resmi sağlık hizmeti sunucularında
-    bu uzmanlık dallarınca reçetelenerek tedaviye başlanır.
+  message_tr: kriterlerinden en az birinin sağlandığı vakalarda; üçüncü basamak resmi sağlık hizmeti sunucularında,
+    çocuk endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji
+    ve metabolizma uzmanlarınca düzenlenecek 6 ay süreli sağlık kurulu raporu ile yine üçüncü basamak resmi sağlık
+    hizmeti sunucularında bu uzmanlık dallarınca reçetelenerek tedaviye başlanır.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -166,11 +187,11 @@ rules:
   gate_b_sources:
   - C006988
   report_required: true
-  message_tr: Erken başlangıçlı (1 yaştan önce) morbid obezitesi olan (2 yaşın altında boya göre vücut ağırlığı > %140, 2
-    yaş ve üzerinde Vücut Kitle İndeksi Standart Deviasyon Skoru > 3SDS olan) Leptin düzeyinin biyokimyasal olarak <2 ng/ml
-    olduğu veya moleküler genetik tetkik ile Leptin geninde homozigot mutasyonun gösterildiği vakalarda; üçüncü basamak resmi
-    sağlık hizmeti sunucularında çocuk endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma
-    ve/veya eriş
+  message_tr: Erken başlangıçlı (1 yaştan önce) morbid obezitesi olan (2 yaşın altında boya göre vücut ağırlığı
+    > %140, 2 yaş ve üzerinde Vücut Kitle İndeksi Standart Deviasyon Skoru > 3SDS olan) Leptin düzeyinin biyokimyasal
+    olarak <2 ng/ml olduğu veya moleküler genetik tetkik ile Leptin geninde homozigot mutasyonun gösterildiği vakalarda;
+    üçüncü basamak resmi sağlık hizmeti sunucularında çocuk endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk
+    endokrinoloji ve metabolizma ve/veya eriş
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -182,10 +203,10 @@ rules:
   gate_b_sources:
   - C006993
   report_required: true
-  message_tr: kriterlerinden en az birinin sağlandığı vakalarda üçüncü basamak resmi sağlık hizmeti sunucularında, çocuk endokrinoloji
-    ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji ve metabolizma uzmanlarınca
-    düzenlenecek 6 ay süreli sağlık kurulu raporu ile yine üçüncü basamak resmi sağlık hizmeti sunucularında bu uzmanlık dallarınca
-    reçetelenerek tedaviye devam edilir.
+  message_tr: kriterlerinden en az birinin sağlandığı vakalarda üçüncü basamak resmi sağlık hizmeti sunucularında,
+    çocuk endokrinoloji ve/veya çocuk metabolizma ve/veya çocuk endokrinoloji ve metabolizma ve/veya erişkin endokrinoloji
+    ve metabolizma uzmanlarınca düzenlenecek 6 ay süreli sağlık kurulu raporu ile yine üçüncü basamak resmi sağlık
+    hizmeti sunucularında bu uzmanlık dallarınca reçetelenerek tedaviye devam edilir.
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -197,10 +218,10 @@ rules:
   gate_b_sources:
   - 4.2.60.(4)
   report_required: true
-  message_tr: (4) Yukarıdaki durumlardan herhangi birinin belirtildiği, üçüncü basamak (Değişik:RG-25/08/2022-31934/45 md.
-    Yürürlük:03/09/2022) resmi sağlık hizmet sunucularında çocuk metabolizma uzman hekimi veya çocuk endokrinolojisi ve metabolizma
-    hastalıkları uzman hekimlerinden biri tarafından düzenlenen 6 ay süreli uzman hekim raporuna dayanılarak bu uzman hekimlerce
-    veya çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi halinde,
+  message_tr: (4) Yukarıdaki durumlardan herhangi birinin belirtildiği, üçüncü basamak (Değişik:RG-25/08/2022-31934/45
+    md. Yürürlük:03/09/2022) resmi sağlık hizmet sunucularında çocuk metabolizma uzman hekimi veya çocuk endokrinolojisi
+    ve metabolizma hastalıkları uzman hekimlerinden biri tarafından düzenlenen 6 ay süreli uzman hekim raporuna
+    dayanılarak bu uzman hekimlerce veya çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi halinde,
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -212,10 +233,10 @@ rules:
   gate_b_sources:
   - 4.2.69.a
   report_required: true
-  message_tr: a) Pediatrik hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda
-    yer alan tanı kriterlerinin belirtildiği, en az bir çocuk gastroentroloji uzman hekiminin yer aldığı üç çocuk sağlığı
-    ve hastalıkları uzman hekimince düzenlenecek sağlık kurulu raporuna istinaden çocuk sağlığı ve hastalıkları uzman hekimlerince
-    reçete edilmesi halinde,
+  message_tr: a) Pediatrik hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen
+    ve yukarıda yer alan tanı kriterlerinin belirtildiği, en az bir çocuk gastroentroloji uzman hekiminin yer aldığı
+    üç çocuk sağlığı ve hastalıkları uzman hekimince düzenlenecek sağlık kurulu raporuna istinaden çocuk sağlığı
+    ve hastalıkları uzman hekimlerince reçete edilmesi halinde,
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting
@@ -227,9 +248,9 @@ rules:
   gate_b_sources:
   - 4.2.69.b
   report_required: true
-  message_tr: b) Yetişkin hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda
-    yer alan tanı kriterlerinin belirtildiği, en az bir gastroentereoloji uzman hekiminin yer aldığı sağlık kurulu raporuna
-    istinaden gastroentereloji uzman hekimlerince reçete edilmesi halinde,
+  message_tr: b) Yetişkin hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen
+    ve yukarıda yer alan tanı kriterlerinin belirtildiği, en az bir gastroentereoloji uzman hekiminin yer aldığı
+    sağlık kurulu raporuna istinaden gastroentereloji uzman hekimlerince reçete edilmesi halinde,
   encode_bucket: B
   requires_prior_therapy:
     drug_or_class: third_line_setting

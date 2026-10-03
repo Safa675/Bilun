@@ -1,7 +1,7 @@
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { growthHormoneFields, praderWilliFields,
+import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields,
   optionalClinicalNumber, type ClinicalField } from "./clinicalFields";
 
 type ClinicalValue = string | number | boolean | null | undefined;
@@ -57,5 +57,11 @@ export function ClinicalMaterialInputs({ material, onChange }: {
       onChange={onChange} />
     <ClinicalGroup group="praderWilli" fields={praderWilliFields} value={material}
       onChange={onChange} />
+    <ClinicalGroup group="sma" fields={smaFields} value={material.sma_evidence}
+      onChange={value => onChange({ sma_evidence: value })} />
+    <ClinicalGroup group="antifungal" fields={antifungalFields} value={material.antifungal_evidence}
+      onChange={value => onChange({ antifungal_evidence: value })} />
+    <ClinicalGroup group="renal" fields={renalFields} value={material.renal_evidence}
+      onChange={value => onChange({ renal_evidence: value })} />
   </div>;
 }

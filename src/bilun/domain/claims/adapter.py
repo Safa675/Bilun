@@ -28,6 +28,12 @@ from __future__ import annotations
 
 from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
 
+from src.bilun.domain.claims.clinical_evidence import (
+    AntifungalEvidence, RenalEvidence, SmaEvidence,
+    parse_clinical_evidence,
+)
+
+
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -240,6 +246,10 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     biomarkers=tuple(biomarkers) if biomarkers else None,
                     prior_therapies=tuple(prior_therapies) if prior_therapies else None,
                     **parse_growth_hormone_inputs(mat),
+
+                    sma_evidence=parse_clinical_evidence(mat.get("sma_evidence"), SmaEvidence),
+                    antifungal_evidence=parse_clinical_evidence(mat.get("antifungal_evidence"), AntifungalEvidence),
+                    renal_evidence=parse_clinical_evidence(mat.get("renal_evidence"), RenalEvidence),
                 )
             )
 

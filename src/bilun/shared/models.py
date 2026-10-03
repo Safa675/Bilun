@@ -9,6 +9,10 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
+from src.bilun.domain.claims.clinical_evidence import (
+    AntifungalEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
+)
+
 
 class MaterialItem(BaseModel):
     """A single material line item in a claim."""
@@ -63,6 +67,28 @@ class MaterialItem(BaseModel):
         if parsed is None:
             raise ValueError(f"{info.field_name} requires explicit typed clinical evidence")
         return parsed
+
+    # Strict typed interpretation happens at the shared clinical parser boundary;
+    # malformed/unknown facts must remain unknown, never coerced to absent disease.
+    sma_evidence: SmaEvidence | None = None
+    antifungal_evidence: AntifungalEvidence | None = None
+    renal_evidence: RenalEvidence | None = None
+
+    @field_validator('sma_evidence', mode='before')
+    @classmethod
+    def parse_sma_evidence(cls, value):
+        return parse_clinical_evidence(value, SmaEvidence)
+
+    @field_validator('antifungal_evidence', mode='before')
+    @classmethod
+    def parse_antifungal_evidence(cls, value):
+        return parse_clinical_evidence(value, AntifungalEvidence)
+
+    @field_validator('renal_evidence', mode='before')
+    @classmethod
+    def parse_renal_evidence(cls, value):
+        return parse_clinical_evidence(value, RenalEvidence)
+
 
 
 class DrugContext(BaseModel):

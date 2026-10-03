@@ -7,6 +7,7 @@ are never promoted into clinical evidence or financial conclusions here.
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import fields
 import time
 from typing import Any
 
@@ -16,7 +17,11 @@ from src.bilun.domain.billing.broad_rule_materializer import (
     materialize_broad_rules,
 )
 from src.bilun.domain.billing.engine import analyze_claim
+from src.bilun.domain.billing.drug_clinical_evidence import (
+    bounded_clinical_restrictions, clinical_evidence_payload,
+)
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
+from src.bilun.domain.claims.clinical_evidence import AntifungalEvidence, RenalEvidence, SmaEvidence
 from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
     assess_bundled_material,
@@ -48,8 +53,6 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "drug_report_duration_months", "annual_application_count", "is_loading_phase",
         "biomarkers", "prior_therapies", "drug_inpatient_supply", "service_date",
         "route_discriminator",
-        *GROWTH_HORMONE_INPUT_FIELDS, "historical_sut_version",
-        "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
         "drug_claim_date", "age", "weight_kg", "edss", "cancer_stage", "treatment_setting",
         "historical_rule_version", "effective_rule_version", "prior_taxane_anti_her2_cycles",
         "residual_invasive_disease", "treatment_cycle_count", "disease_progression",
@@ -58,10 +61,39 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "nmosd_diagnosis", "high_disease_activity", "relapsing_course", "treatment_stage",
         "adequate_prior_immunosuppressants", "relapse_under_treatment", "tertiary_care",
         "three_neurologist_board", "ek4g_inpatient_supply", "transplant_preparation_indication",
+        "historical_sut_version", "verified_source_for_service_date",
+        "remaining_sut_clinical_criteria", "micafungin_prophylaxis_route",
+        "itraconazole_source_neutrophil_unit_verification", "itraconazole_non_solution_EK4E_requirements",
+        *GROWTH_HORMONE_INPUT_FIELDS,
+        "pws_genetic_diagnosis_confirmed", "pws_uncontrolled_diabetes",
+        "pws_untreatable_obstructive_sleep_apnea", "pws_active_cancer", "pws_active_psychosis",
+        "pws_progressive_scoliosis", "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
     }
+    clinical = {name: {field.name for field in fields(model)} for name, model in (
+        ("sma_evidence", SmaEvidence), ("antifungal_evidence", AntifungalEvidence),
+        ("renal_evidence", RenalEvidence),
+    )}
+    clinical["antifungal_evidence"].add("single_supported_medicine_family")
+    clinical["renal_evidence"].update({
+        "source_supported_treatment_phase", "source_continuation_checkpoint",
+        "supported_renal_indication", "single_supported_medicine_family",
+        "phosphate_binding_indication", "renal_nutrition_indication", "valid_ckd_stage",
+        "positive_baseline_albumin_g_dl",
+    })
+
+    def supported(value: str) -> bool:
+        root, separator, detail = value.partition(".")
+        if root in clinical:
+            return not separator or detail in clinical[root]
+        if root == "biomarkers":
+            return not separator or bool(detail and "." not in detail)
+        if root == "prior_therapies":
+            return not separator or detail == "drug_or_class"
+        return root in allowed and not separator
+
     return sorted({
         value for value in raw.get("missing_inputs", [])
-        if isinstance(value, str) and value.split(".", 1)[0] in allowed
+        if isinstance(value, str) and supported(value)
     })
 
 
@@ -168,6 +200,12 @@ def validate_claim_v2(
             "reason": _LEGACY_REVIEW_GATES.get(family, "unreviewed_legacy_family"),
             "source_status": "historical_match_unverified",
             "missing_inputs": _drug_missing_inputs(raw) if family == "drug_indication" else [],
+
+
+            **(clinical_evidence_payload(bounded_clinical_restrictions(raw.get('clinical_restrictions')))
+               if family == 'drug_indication' else {}),
+            **({'selected_rule_id': raw.get('selected_rule_id')}
+               if family == 'drug_indication' and raw.get('clinical_restrictions') else {}),
         })
     unresolved = counts["missing_inputs"] + counts["unavailable"]
     status = (

@@ -463,7 +463,14 @@
     "recoverable_uplift_try": true,
     "compliance_savings_try": true,
     "risk_amount_try": true,
-    "audit_exposure_try": true
+    "audit_exposure_try": true,
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true
   },
   "ComplianceIndexPagination": {
     "total_matching": true,
@@ -1127,7 +1134,13 @@
         },
         "temporal_evidence": {
           "$ref": "DrugTemporalEvidence"
-        }
+        },
+        "clinical_restrictions": {
+          "$list": {
+            "$ref": "DrugClinicalRestriction"
+          }
+        },
+        "clinical_eligibility_complete": true
       }
     },
     "findings": {
@@ -1204,7 +1217,13 @@
     "observed_icd10_truncated": true,
     "temporal_evidence": {
       "$ref": "DrugTemporalEvidence"
-    }
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true
   },
   "DrugIndicationRouteEvidence": {
     "rule_id": true,
@@ -1267,7 +1286,13 @@
     "observed_icd10_truncated": true,
     "temporal_evidence": {
       "$ref": "DrugTemporalEvidence"
-    }
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true
   },
   "ClaimCompliance": {
     "findings": {
@@ -1364,7 +1389,14 @@
     "compliance_savings_try": true,
     "risk_amount_try": true,
     "audit_exposure_try": true,
-    "money_semantics": true
+    "money_semantics": true,
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true
   },
   "WaveAEvidenceBlock": {
     "available": true,
@@ -1638,7 +1670,14 @@
       "procedure_code": true,
       "rate_pct": true,
       "section": true
-    }
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true
   },
   "BillingActionReport": {
     "patient_id": true,
@@ -2653,5 +2692,25 @@
       "$list": true
     },
     "repeal_effective_date": true
+  },
+  "DrugClinicalRestriction": {
+    "constraint_set": true,
+    "criterion_status": true,
+    "missing_inputs": {
+      "$list": true
+    },
+    "checks": {
+      "$list": {
+        "field": true,
+        "status": true
+      }
+    },
+    "source_refs": {
+      "$list": true
+    },
+    "clinical_eligibility_complete": true,
+    "verification_status": true,
+    "checks_truncated": true,
+    "source_refs_truncated": true
   }
 }

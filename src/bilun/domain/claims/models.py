@@ -7,6 +7,9 @@ from datetime import date
 from decimal import Decimal
 
 
+from .clinical_evidence import AntifungalEvidence, RenalEvidence, SmaEvidence
+
+
 Money = Decimal
 
 
@@ -294,6 +297,10 @@ class DrugClaimLine:
     pws_active_cancer: bool | None = None
     pws_active_psychosis: bool | None = None
     pws_progressive_scoliosis: bool | None = None
+
+    sma_evidence: SmaEvidence | None = None
+    antifungal_evidence: AntifungalEvidence | None = None
+    renal_evidence: RenalEvidence | None = None
 
 
 @dataclass(frozen=True)

@@ -29,12 +29,32 @@ class ValidationFinding(_ValidationEvidence):
     source_status: Literal["primary_meaning_and_date_verified"]
 
 
+class ValidationClinicalCheck(_StrictContract):
+    field: str = Field(min_length=1, max_length=240)
+    status: Literal['pass', 'fail', 'unknown']
+
+
+class ValidationClinicalRestriction(_StrictContract):
+    constraint_set: str = Field(min_length=1, max_length=240)
+    criterion_status: Literal['not_evaluated', 'unknown', 'criterion_clear', 'restriction_not_met']
+    missing_inputs: list[str] = Field(default_factory=list, max_length=64)
+    checks: list[ValidationClinicalCheck] = Field(default_factory=list, max_length=64)
+    source_refs: list[str] = Field(default_factory=list, max_length=32)
+    clinical_eligibility_complete: Literal[False] = False
+    verification_status: Literal['ai_generated_pending_review'] = 'ai_generated_pending_review'
+    checks_truncated: bool = False
+    source_refs_truncated: bool = False
+
+
 class ValidationAdvisory(_ValidationEvidence):
     missing_inputs: list[str] = Field(default_factory=list)
     disposition: Literal[
         "unavailable", "review_only", "information_only", "permission_or_instruction",
     ]
     source_status: Literal["authored_locator_unverified", "historical_match_unverified"]
+    clinical_restrictions: list[ValidationClinicalRestriction] = Field(default_factory=list, max_length=8)
+    clinical_eligibility_complete: Literal[False] | None = None
+    selected_rule_id: str | None = None
 
 
 class ValidationAnnexAssessment(_StrictContract):

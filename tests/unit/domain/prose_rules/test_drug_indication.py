@@ -695,13 +695,14 @@ def test_biomarker_verification_needed_when_claim_lacks_biomarker() -> None:
 
 
 def test_bucket_b_rules_carry_biomarker_or_prior_therapy_fields() -> None:
-    """All Bucket B rules must gate on biomarker or prior-therapy."""
+    """Bucket B rules carry a legacy biomarker/prior-therapy or typed clinical gate."""
     rules = list_drug_indication_rules()
     bucket_b = [r for r in rules if "bucket_b" in r.get("rule_id", "")]
     assert len(bucket_b) >= 16
     for rule in bucket_b:
-        assert rule.get("required_biomarkers") or rule.get("requires_prior_therapy"), (
-            f"Bucket B rule {rule['rule_id']} has neither biomarker nor prior-therapy gate"
+        assert (rule.get("required_biomarkers") or rule.get("requires_prior_therapy")
+                or rule.get("clinical_constraint_set")), (
+            f"Bucket B rule {rule['rule_id']} has no structured clinical gate"
         )
         assert rule.get("gate_b_sources"), f"Bucket B rule {rule['rule_id']} missing provenance"
 

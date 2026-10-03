@@ -381,6 +381,23 @@ class DrugTemporalEvidenceResponse(BaseModel):
     supported_checks: list[DrugTemporalCheckResponse] = Field(default_factory=list)
 
 
+class DrugClinicalCheckResponse(BaseModel):
+    field: str
+    status: str
+
+
+class DrugClinicalRestrictionResponse(BaseModel):
+    constraint_set: str
+    criterion_status: str
+    missing_inputs: list[str] = Field(default_factory=list)
+    checks: list[DrugClinicalCheckResponse] = Field(default_factory=list)
+    source_refs: list[str] = Field(default_factory=list)
+    clinical_eligibility_complete: bool = False
+    verification_status: str = 'ai_generated_pending_review'
+    checks_truncated: bool = False
+    source_refs_truncated: bool = False
+
+
 class DrugIndicationFindingResponse(BaseModel):
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
     finding_id: str = Field(...)
@@ -407,6 +424,9 @@ class DrugIndicationFindingResponse(BaseModel):
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
 
+    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)
+    clinical_eligibility_complete: bool | None = None
+
     model_config = ConfigDict(extra="allow")
 
 
@@ -432,6 +452,9 @@ class DrugIndicationEvaluationResponse(BaseModel):
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+
+    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)
+    clinical_eligibility_complete: bool | None = None
 
     model_config = ConfigDict(extra="allow")
 

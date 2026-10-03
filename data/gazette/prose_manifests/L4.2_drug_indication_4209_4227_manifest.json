@@ -3,7 +3,7 @@
   "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.9,4.2.27",
   "effective_date": "2026-06-29",
-  "rules_in_json": 55,
+  "rules_in_json": 58,
   "section_clause_total": 115,
   "encoded_clause_count": 64,
   "encoded_clause_ids": [

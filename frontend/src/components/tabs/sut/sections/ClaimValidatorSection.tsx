@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DrugMaterialInputs } from "./DrugMaterialInputs";
 import { drugMaterialPayload, optionalCount } from "./drugInputs";
 import { clinicalMissingInputLabel } from "./clinicalFields";
+import { ClinicalRestrictionDetails } from "./ClinicalRestrictionDetails";
 import { theme } from "@/lib/theme";
 import { validateSutClaim, getSutProcedureInfo } from "@/lib/api/sut";
 import type {
@@ -434,6 +435,8 @@ function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
             }).join(", ")}
           </div>
         )}
+        <ClinicalRestrictionDetails restrictions={evidence.clinical_restrictions ?? []}
+          selectedRuleId={evidence.selected_rule_id} />
         {annexReviewKey && (
           <div className="text-xs mt-1" style={{ color: "#B45309" }}>
             {t("sections.claimValidator.annexUnconfirmed")}: {t(annexReviewKey)}

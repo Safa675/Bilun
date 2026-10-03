@@ -1,5 +1,6 @@
 import { postJSON, requestJSON } from "./request";
-import type { SutGrowthHormoneEvidence } from "./clinicalEvidence";
+import type { SutClinicalRestriction } from "./clinicalEvidence";
+import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
   PatientOptimization,
@@ -35,6 +36,9 @@ function buildPatientAlertsPath(params: PatientAlertsRequestParams = {}): string
 }
 
 export interface SutMaterialItem extends SutGrowthHormoneEvidence {
+  sma_evidence?: SutSmaEvidence | null;
+  antifungal_evidence?: SutAntifungalEvidence | null;
+  renal_evidence?: SutRenalEvidence | null;
   name: string;
   unit_price: number;
   quantity: number;
@@ -147,6 +151,9 @@ export interface SutLegacyValidationResult {
 }
 
 export interface SutValidationEvidence {
+  clinical_restrictions?: SutClinicalRestriction[];
+  clinical_eligibility_complete?: false | null;
+  selected_rule_id?: string | null;
   missing_inputs?: string[];
   evidence_id: string;
   rule: string;
