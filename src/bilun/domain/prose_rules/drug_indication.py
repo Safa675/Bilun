@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from ._drug_indication.clinical import apply_clinical_restrictions
+from ._drug_indication.gh_runtime import make_gh_observer, attach_gh_runtime
 
 # Keep the established callable names and the original decorated cache objects
 # available through this public module.
@@ -88,13 +89,16 @@ def evaluate_drug_indication_line_detailed(
 ) -> dict[str, Any]:
     """Evaluate one line, keeping applicability evidence separate from constraints."""
     encoded_rules = rules if rules is not None else list_drug_indication_rules()
+    gh_observer = make_gh_observer(drug_line, encoded_rules)
     base = _evaluate_drug_indication_line_with_rules(
         drug_line=drug_line,
         claim=claim,
         diagnoses=diagnoses,
         rules=encoded_rules,
+        gh_observer=gh_observer,
     )
-    return apply_clinical_restrictions(base, drug_line, encoded_rules)
+    result = apply_clinical_restrictions(base, drug_line, encoded_rules)
+    return attach_gh_runtime(result, gh_observer)
 
 
 def evaluate_drug_indication_line(

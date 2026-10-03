@@ -1,0 +1,1063 @@
+{
+  "evaluator_version": "gh.atomic.v1.2026-10-02",
+  "family": "growth_hormone",
+  "predicates": [
+    {
+      "predicate_id": "gh.ckd.dose.within_source_range",
+      "source_refs": [
+        "4.2.6.A-5.(3)#a8cf7ca9"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 129,
+        "violation_callable": "lambda value: not 0.045 <= value <= 0.05"
+      },
+      "reachability": "Both initiation and continuation, after preconditions and any earlier initiation exclusion return; later CKD growth checks have not yet run.",
+      "input_fields": [
+        "gh_daily_dose_mg_per_kg"
+      ],
+      "operator": "closed_interval",
+      "expected": {
+        "lower": 0.045,
+        "upper": 0.05,
+        "lower_inclusive": true,
+        "upper_inclusive": true
+      },
+      "unit": "mg/kg/day",
+      "comparison_expression": "0.045 <= gh_daily_dose_mg_per_kg <= 0.05",
+      "violation_expression": "not (0.045 <= gh_daily_dose_mg_per_kg <= 0.05)"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.height_percentile_below_3",
+      "source_refs": [
+        "4.2.6.A-5.a#7420864e",
+        "4.2.6.A-5.b#7b829f92",
+        "4.2.6.A-5.c#843b4071"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_height_age_sex_percentile"
+      ],
+      "operator": "<",
+      "expected": 3,
+      "unit": "percentile"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.height_sds_below_minus_2",
+      "source_refs": [
+        "4.2.6.A-5.a#7420864e",
+        "4.2.6.A-5.b#7b829f92",
+        "4.2.6.A-5.c#843b4071"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_height_age_sex_sds"
+      ],
+      "operator": "<",
+      "expected": -2,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.route_a.persistent_failure",
+      "source_refs": [
+        "4.2.6.A-5.a#7420864e"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_persistent_growth_failure_confirmed"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.route_b.ckd_post_transplant_one_year_elapsed",
+      "source_refs": [
+        "4.2.6.A-5.b#7b829f92"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_post_transplant_one_year_elapsed"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.route_b.ckd_spontaneous_growth_absent",
+      "source_refs": [
+        "4.2.6.A-5.b#7b829f92"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_spontaneous_growth_absent"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.route_b.ckd_steroid_treatment_absent",
+      "source_refs": [
+        "4.2.6.A-5.b#7b829f92"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_steroid_treatment_absent"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.route_c.nephropathic_cystinosis",
+      "source_refs": [
+        "4.2.6.A-5.c#843b4071"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_nephropathic_cystinosis_related_confirmed"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.ckd.growth.velocity_below_25",
+      "source_refs": [
+        "4.2.6.A-5.a#7420864e",
+        "4.2.6.A-5.b#7b829f92",
+        "4.2.6.A-5.c#843b4071"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "ckd_annual_growth_velocity_percentile"
+      ],
+      "operator": "<",
+      "expected": 25,
+      "unit": "percentile"
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.no_ckd_active_cancer",
+      "source_refs": [
+        "4.2.6.A-5.(2)#583eda78"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 95,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "ckd_active_cancer"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "ckd_active_cancer is False",
+      "violation_expression": "ckd_active_cancer is True"
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.no_ckd_first_post_transplant_year",
+      "source_refs": [
+        "4.2.6.A-5.(2)#583eda78"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 95,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "ckd_first_post_transplant_year"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "ckd_first_post_transplant_year is False",
+      "violation_expression": "ckd_first_post_transplant_year is True"
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.no_ckd_proliferative_or_severe_nonproliferative_retinopathy",
+      "source_refs": [
+        "4.2.6.A-5.(2)#583eda78"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 95,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "ckd_proliferative_or_severe_nonproliferative_retinopathy"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "ckd_proliferative_or_severe_nonproliferative_retinopathy is False",
+      "violation_expression": "ckd_proliferative_or_severe_nonproliferative_retinopathy is True"
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.no_epiphyses_closed",
+      "source_refs": [
+        "4.2.6.A-5.(2)#583eda78"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 95,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.no_persistent_severe_shpt",
+      "source_refs": [
+        "4.2.6.A-5.(2)#583eda78"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 102,
+        "violation_callable": "lambda flag, value: flag is True and value >= 500"
+      },
+      "reachability": "Initiation only, and only after the separate PTH >=500 comparison fails its necessary PTH<500 requirement.",
+      "input_fields": [
+        "ckd_persistent_severe_secondary_hyperparathyroidism",
+        "ckd_parathyroid_hormone_pg_ml"
+      ],
+      "operator": "not_conjunction",
+      "expected": {
+        "ckd_persistent_severe_secondary_hyperparathyroidism": true,
+        "ckd_parathyroid_hormone_pg_ml": {
+          "operator": ">=",
+          "value": 500
+        }
+      },
+      "unit": "mixed",
+      "input_units": {
+        "ckd_persistent_severe_secondary_hyperparathyroidism": "boolean",
+        "ckd_parathyroid_hormone_pg_ml": "pg/mL"
+      },
+      "comparison_expression": "not (ckd_persistent_severe_secondary_hyperparathyroidism is True and ckd_parathyroid_hormone_pg_ml >= 500)",
+      "violation_expression": "ckd_persistent_severe_secondary_hyperparathyroidism is True and ckd_parathyroid_hormone_pg_ml >= 500",
+      "interpretation_note": "Persistent severe condition is independently recorded; a PTH reading never establishes persistence."
+    },
+    {
+      "predicate_id": "gh.ckd.initiation.pth_below_500",
+      "source_refs": [
+        "4.2.6.A-5.(1)#c50ec607"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/ckd_growth_hormone.py",
+        "file_sha256": "ad6420a21e360b0d3c208cc38b5ccd6192d414b94720367b8085133ed4428ca9",
+        "line": 99,
+        "violation_callable": "lambda value: value >= 500"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "ckd_parathyroid_hormone_pg_ml"
+      ],
+      "operator": "<",
+      "expected": 500,
+      "unit": "pg/mL",
+      "comparison_expression": "ckd_parathyroid_hormone_pg_ml < 500",
+      "violation_expression": "ckd_parathyroid_hormone_pg_ml >= 500"
+    },
+    {
+      "predicate_id": "gh.mecasermin.continuation.epiphyses_open",
+      "source_refs": [
+        "4.2.6.B-3#dde3c8f6"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py",
+        "file_sha256": "60f60227583d3f4ba165b3f19f3ca57d71b369c63ccdc8df818b3e48633f371b",
+        "line": 98,
+        "violation_callable": "lambda value: value is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.mecasermin.continuation.growth_gain_at_least_2",
+      "source_refs": [
+        "4.2.6.B-3#11e1f077"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py",
+        "file_sha256": "60f60227583d3f4ba165b3f19f3ca57d71b369c63ccdc8df818b3e48633f371b",
+        "line": 103,
+        "violation_callable": "lambda actual, prior: Decimal(str(actual)) < Decimal(str(prior)) + Decimal(\"2\")"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "annual_growth_velocity_cm",
+        "pretreatment_annual_growth_velocity_cm"
+      ],
+      "operator": "difference>=",
+      "expected": 2,
+      "unit": "cm/year",
+      "comparison_expression": "Decimal(str(annual_growth_velocity_cm)) >= Decimal(str(pretreatment_annual_growth_velocity_cm)) + Decimal(\"2\")",
+      "violation_expression": "Decimal(str(annual_growth_velocity_cm)) < Decimal(str(pretreatment_annual_growth_velocity_cm)) + Decimal(\"2\")",
+      "numeric_semantics": "Decimal construction from each validated number string preserves exact equality at a two-cm/year gain."
+    },
+    {
+      "predicate_id": "gh.mecasermin.continuation.height_below_limit",
+      "source_refs": [
+        "4.2.6.B-3#de2f2b31"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py",
+        "file_sha256": "60f60227583d3f4ba165b3f19f3ca57d71b369c63ccdc8df818b3e48633f371b",
+        "line": 108,
+        "violation_callable": "lambda height, _: height >= limit"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "height_cm",
+        "gh_height_reference_sex"
+      ],
+      "operator": "casewise_<",
+      "expected": {
+        "female": 155,
+        "male": 165
+      },
+      "unit": "cm",
+      "comparison_expression": "height_cm < expected[gh_height_reference_sex]",
+      "violation_expression": "height_cm >= expected[gh_height_reference_sex]",
+      "input_units": {
+        "height_cm": "cm",
+        "gh_height_reference_sex": "explicit female/male reference enum"
+      },
+      "interpretation_note": "Missing or invalid reference sex makes this predicate unknown; no sex is inferred from diagnosis, age or identity."
+    },
+    {
+      "predicate_id": "gh.mecasermin.continuation.height_percentile_below_25",
+      "source_refs": [
+        "4.2.6.B-3.ç#269f3195"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py",
+        "file_sha256": "60f60227583d3f4ba165b3f19f3ca57d71b369c63ccdc8df818b3e48633f371b",
+        "line": 112,
+        "violation_callable": "lambda value: value >= 25"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "height_percentile"
+      ],
+      "operator": "<",
+      "expected": 25,
+      "unit": "percentile",
+      "comparison_expression": "height_percentile < 25",
+      "violation_expression": "height_percentile >= 25"
+    },
+    {
+      "predicate_id": "gh.mecasermin.initiation.dose_at_most_120",
+      "source_refs": [
+        "4.2.6.B-1.(2)#df3e5cd0"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py",
+        "file_sha256": "60f60227583d3f4ba165b3f19f3ca57d71b369c63ccdc8df818b3e48633f371b",
+        "line": 81,
+        "violation_callable": "lambda value: value > 120"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "mecasermin_daily_dose_mcg_per_kg"
+      ],
+      "operator": "<=",
+      "expected": 120,
+      "unit": "mcg/kg/day",
+      "comparison_expression": "mecasermin_daily_dose_mcg_per_kg <= 120",
+      "violation_expression": "mecasermin_daily_dose_mcg_per_kg > 120"
+    },
+    {
+      "predicate_id": "gh.pediatric.continuation.epiphyses_open",
+      "source_refs": [
+        "4.2.6.A-1.a#592aef98"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 98,
+        "violation_callable": "lambda closed: closed is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.pediatric.continuation.growth_above_4",
+      "source_refs": [
+        "4.2.6.A-1.b#bbd37380"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 101,
+        "violation_callable": "lambda velocity: velocity <= 4"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "annual_growth_velocity_cm"
+      ],
+      "operator": ">",
+      "expected": 4,
+      "unit": "cm/year",
+      "comparison_expression": "annual_growth_velocity_cm > 4",
+      "violation_expression": "annual_growth_velocity_cm <= 4"
+    },
+    {
+      "predicate_id": "gh.pediatric.continuation.height_below_limit",
+      "source_refs": [
+        "4.2.6.A-1.c#b5a513b6"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 109,
+        "violation_callable": "lambda height, *_: height >= height_limit"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "height_cm",
+        "gh_height_reference_sex"
+      ],
+      "operator": "casewise_<",
+      "expected": {
+        "female": 157,
+        "male": 168
+      },
+      "unit": "cm",
+      "comparison_expression": "height_cm < expected[gh_height_reference_sex]",
+      "violation_expression": "height_cm >= expected[gh_height_reference_sex]",
+      "input_units": {
+        "height_cm": "cm",
+        "gh_height_reference_sex": "explicit female/male reference enum"
+      },
+      "interpretation_note": "Missing or invalid reference sex makes this predicate unknown; no sex is inferred from diagnosis, age or identity."
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.prepubertal.bone_delay_at_least_2",
+      "source_refs": [
+        "4.2.6.A-1.(2)#13f4b28c"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_chronological_age_years",
+        "bone_age_years"
+      ],
+      "operator": "difference>=",
+      "expected": 2,
+      "unit": "years"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.pubertal.growth_assessment",
+      "source_refs": [
+        "4.2.6.A-1.(4)#dcfc2909"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_pubertal_growth_assessment_completed"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.pubertal.open_epiphyses",
+      "source_refs": [
+        "4.2.6.A-1.(3)#0c2b0e3f"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga1.age_at_least_4",
+      "source_refs": [
+        "4.2.6.A-1.(1)#52b1f15a"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_chronological_age_years"
+      ],
+      "operator": ">=",
+      "expected": 4,
+      "unit": "years"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga1.birth_length_below_minus_2",
+      "source_refs": [
+        "4.2.6.A-1.(1)#52b1f15a"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_birth_length_for_gestational_age_sds"
+      ],
+      "operator": "<",
+      "expected": -2,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga1.birth_weight_below_minus_2",
+      "source_refs": [
+        "4.2.6.A-1.(1)#52b1f15a"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_birth_weight_for_gestational_age_sds"
+      ],
+      "operator": "<",
+      "expected": -2,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga1.growth_sds_below_zero",
+      "source_refs": [
+        "4.2.6.A-1.(1)#52b1f15a"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_last_year_growth_velocity_sds"
+      ],
+      "operator": "<",
+      "expected": 0,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga2.birth_status",
+      "source_refs": [
+        "4.2.6.A-1.(2)#75f092ee"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_sga_birth_status_confirmed"
+      ],
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga2.height_below_minus_2_5",
+      "source_refs": [
+        "4.2.6.A-1.(2)#75f092ee"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_current_height_sds"
+      ],
+      "operator": "<",
+      "expected": -2.5,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.sga2.parent_adjusted_below_minus_1",
+      "source_refs": [
+        "4.2.6.A-1.(2)#75f092ee"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "gh_parent_adjusted_height_sds"
+      ],
+      "operator": "<",
+      "expected": -1,
+      "unit": "SDS"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.standard.velocity_0_2_years",
+      "source_refs": [
+        "4.2.6.A-1.(1)#72e47d24"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "annual_growth_velocity_cm"
+      ],
+      "operator": "<",
+      "expected": 10,
+      "unit": "cm/year"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.standard.velocity_2_1_4_years",
+      "source_refs": [
+        "4.2.6.A-1.(2)#30e012d8"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "annual_growth_velocity_cm"
+      ],
+      "operator": "<",
+      "expected": 7,
+      "unit": "cm/year"
+    },
+    {
+      "predicate_id": "gh.pediatric.initiation.standard.velocity_4_1_prepubertal",
+      "source_refs": [
+        "4.2.6.A-1.(3)#89477346"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "input_fields": [
+        "annual_growth_velocity_cm"
+      ],
+      "operator": "<",
+      "expected": 5,
+      "unit": "cm/year"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_epiphyses_closed",
+      "source_refs": [
+        "4.2.6.A-4.(6)#b1fc17e1"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_pws_active_cancer",
+      "source_refs": [
+        "4.2.6.A-4.(5)#b34205e7"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_active_cancer"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_active_cancer is False",
+      "violation_expression": "pws_active_cancer is True"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_pws_active_psychosis",
+      "source_refs": [
+        "4.2.6.A-4.(5)#b34205e7"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_active_psychosis"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_active_psychosis is False",
+      "violation_expression": "pws_active_psychosis is True"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_pws_progressive_scoliosis",
+      "source_refs": [
+        "4.2.6.A-4.(5)#b34205e7"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_progressive_scoliosis"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_progressive_scoliosis is False",
+      "violation_expression": "pws_progressive_scoliosis is True"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_pws_uncontrolled_diabetes",
+      "source_refs": [
+        "4.2.6.A-4.(5)#b34205e7"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_uncontrolled_diabetes"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_uncontrolled_diabetes is False",
+      "violation_expression": "pws_uncontrolled_diabetes is True"
+    },
+    {
+      "predicate_id": "gh.pws.continuation.no_pws_untreatable_obstructive_sleep_apnea",
+      "source_refs": [
+        "4.2.6.A-4.(5)#b34205e7"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 105,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_untreatable_obstructive_sleep_apnea"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_untreatable_obstructive_sleep_apnea is False",
+      "violation_expression": "pws_untreatable_obstructive_sleep_apnea is True"
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_epiphyses_closed",
+      "source_refs": [
+        "4.2.6.A-4.(1)#83cfa4bc"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_pws_active_cancer",
+      "source_refs": [
+        "4.2.6.A-4.b#c166b1e4"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_active_cancer"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_active_cancer is False",
+      "violation_expression": "pws_active_cancer is True"
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_pws_active_psychosis",
+      "source_refs": [
+        "4.2.6.A-4.b#c166b1e4"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_active_psychosis"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_active_psychosis is False",
+      "violation_expression": "pws_active_psychosis is True"
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_pws_severe_obesity_source_criterion_present",
+      "source_refs": [
+        "4.2.6.A-4.b#c166b1e4"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_severe_obesity_source_criterion_present"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_severe_obesity_source_criterion_present is False",
+      "violation_expression": "pws_severe_obesity_source_criterion_present is True",
+      "interpretation_note": "Explicit recorded source-criterion flag; no calculation from weight, BMI, or an inferred percent."
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_pws_uncontrolled_diabetes",
+      "source_refs": [
+        "4.2.6.A-4.b#c166b1e4"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_uncontrolled_diabetes"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_uncontrolled_diabetes is False",
+      "violation_expression": "pws_uncontrolled_diabetes is True"
+    },
+    {
+      "predicate_id": "gh.pws.initiation.no_pws_untreatable_obstructive_sleep_apnea",
+      "source_refs": [
+        "4.2.6.A-4.b#c166b1e4"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py",
+        "file_sha256": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
+        "line": 77,
+        "violation_callable": "lambda flag: flag is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "pws_untreatable_obstructive_sleep_apnea"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "pws_untreatable_obstructive_sleep_apnea is False",
+      "violation_expression": "pws_untreatable_obstructive_sleep_apnea is True"
+    },
+    {
+      "predicate_id": "gh.turner.continuation.bone_age_below_14",
+      "source_refs": [
+        "4.2.6.A-3.ç#89b3cb7c"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 114,
+        "violation_callable": "lambda age: age >= 14"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "bone_age_years"
+      ],
+      "operator": "<",
+      "expected": 14,
+      "unit": "years",
+      "comparison_expression": "bone_age_years < 14",
+      "violation_expression": "bone_age_years >= 14"
+    },
+    {
+      "predicate_id": "gh.turner.continuation.epiphyses_open",
+      "source_refs": [
+        "4.2.6.A-3.a#ae56e068"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 98,
+        "violation_callable": "lambda closed: closed is True"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "epiphyses_closed"
+      ],
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean",
+      "comparison_expression": "epiphyses_closed is False",
+      "violation_expression": "epiphyses_closed is True"
+    },
+    {
+      "predicate_id": "gh.turner.continuation.growth_above_4",
+      "source_refs": [
+        "4.2.6.A-3.b#30c6f092"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 101,
+        "violation_callable": "lambda velocity: velocity <= 4"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "annual_growth_velocity_cm"
+      ],
+      "operator": ">",
+      "expected": 4,
+      "unit": "cm/year",
+      "comparison_expression": "annual_growth_velocity_cm > 4",
+      "violation_expression": "annual_growth_velocity_cm <= 4"
+    },
+    {
+      "predicate_id": "gh.turner.continuation.height_below_limit",
+      "source_refs": [
+        "4.2.6.A-3.c#62c61a16"
+      ],
+      "clause_predicate_complete": false,
+      "family": "growth_hormone",
+      "call_site": {
+        "path": "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py",
+        "file_sha256": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
+        "line": 109,
+        "violation_callable": "lambda height, *_: height >= height_limit"
+      },
+      "reachability": "After the selected protocol, explicit source date and required scope facts permit this phase.",
+      "input_fields": [
+        "height_cm"
+      ],
+      "operator": "<",
+      "expected": 155,
+      "unit": "cm",
+      "comparison_expression": "height_cm < 155",
+      "violation_expression": "height_cm >= 155"
+    }
+  ],
+  "source_metrics_note": "Mecasermin Word-numbered bullets require the reviewed stable-key corrected source view. Raw prose must not pass the active-normative gate. All full-clause completeness remains false.",
+  "prior_binding_count": 31,
+  "new_binding_count": 21,
+  "observation_limits": "Reconciliation and source-notation guards are routes, not normative predicates. SGA birth alternatives retain short-circuit; CKD route flag comparisons are explicitly evaluated before the unchanged three-valued OR decision. CKD height predicates occur only when both independent recorded representations are available; this is not a legal requirement to measure both.",
+  "prior_binding_semantics_annotation_sha256": "7d838c438533d3953764af4b1f6ea1bc36d9462abf891f7b5708157a79b10b9e"
+}

@@ -85,3 +85,9 @@ def bounded_runtime_coverage(raw: Any) -> dict[str, Any] | None:
     output['receipt_sha256'] = digest
     output['clinical_eligibility_complete'] = False
     return output
+
+
+def runtime_coverage_payload(raw: Any) -> dict[str, Any]:
+    """Optional measured metadata; it never creates a clinical finding."""
+    bounded = bounded_runtime_coverage(raw)
+    return {'runtime_coverage': bounded} if bounded is not None else {}

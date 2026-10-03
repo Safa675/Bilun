@@ -117,6 +117,8 @@ def typed_validation_payload(result: dict[str, Any]) -> dict[str, Any]:
         "violations", "advisories", "material_applicability", "coverage", "provenance",
         "summary", "validation_time_ms",
     )}
+    if "drug_runtime_coverage" in result:
+        selected["drug_runtime_coverage"] = result["drug_runtime_coverage"]
     return ValidateClaimV2Response.model_validate(selected).model_dump()
 
 
@@ -161,10 +163,15 @@ def validate_claim_v2(
         {**row, "claim_id": old_claim_id}
         for row in prepared["drug_combination_4_2"]
     ) if old_claim_id else ()
+    from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
+
+    drug_runtime_observations = RequestDrugRuntimeSink(legacy_context.drug_lines)
     raw_rows = (
-        analyze_claim(legacy_context, prepared_broad_rows=prepared)
+        analyze_claim(legacy_context, prepared_broad_rows=prepared,
+                      drug_runtime_observations=drug_runtime_observations)
         if legacy_claim.get("materials") else []
     )
+    drug_runtime_coverage = drug_runtime_observations.payload()
     historical = project_claim_validation_rows(legacy_claim, raw_rows, started_at=started)
     classifier = BroadRuleClassifier(provenance.typed_context)
     counts: Counter[str] = Counter()
@@ -236,6 +243,7 @@ def validate_claim_v2(
         "violations": violations,
         "advisories": advisories,
         "material_applicability": _material_applicability(supplied_claim, provenance.request_id),
+        "drug_runtime_coverage": drug_runtime_coverage,
         "coverage": {
             "evaluation_count": len(bundle.evaluations),
             "authored_rule_count": len(broad_ids),

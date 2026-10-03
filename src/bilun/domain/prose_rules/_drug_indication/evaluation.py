@@ -8,6 +8,8 @@ from .pediatric_gh_initiation import evaluate_pediatric_gh_initiation_preconditi
 from .prader_willi import evaluate_pws_preconditions
 from .ckd_growth_hormone import evaluate_ckd_gh_preconditions
 from .mecasermin import evaluate_mecasermin_preconditions
+from .gh_runtime import gh_caller_skip, gh_caller_input_block, gh_selected_scope
+from .runtime_observations import ClinicalObservationCollector
 
 from .matching import (
     _collect_icd10_codes,
@@ -196,6 +198,7 @@ def evaluate_drug_indication_line_with_rules(
     claim: ClaimHeader,
     diagnoses: list[ClaimDiagnosis],
     rules: list[dict[str, Any]],
+    gh_observer: ClinicalObservationCollector | None = None,
 ) -> dict[str, Any]:
     """Evaluate explicit rules in applicability, primary, then supplemental order."""
     from .temporal import apply_temporal_source_corrections, evaluate_temporal_drug
@@ -204,11 +207,13 @@ def evaluate_drug_indication_line_with_rules(
         drug_line=drug_line, claim=claim, diagnoses=diagnoses, rules=rules,
     )
     if source_review is not None:
+        gh_caller_skip(gh_observer, "gh.caller.source_review", "earlier_source_review_returned")
         return source_review
     temporal_result, temporal_evidence = evaluate_temporal_drug(
         drug_line=drug_line, claim=claim, diagnoses=diagnoses, rules=rules,
     )
     if temporal_result is not None:
+        gh_caller_skip(gh_observer, "gh.caller.temporal", "earlier_temporal_path_returned")
         return temporal_result
     rules = [rule for rule in rules if not rule.get("temporal_source_only")]
     icd_codes = _collect_icd10_codes(claim, diagnoses)
@@ -231,6 +236,7 @@ def evaluate_drug_indication_line_with_rules(
     if temporal_evidence is not None:
         common["temporal_evidence"] = temporal_evidence
     if status == "not_in_encoded_corpus":
+        gh_caller_skip(gh_observer, "gh.caller.corpus", "outside_active_encoded_route")
         result = {
             **common,
             "required_inputs": [],
@@ -254,18 +260,28 @@ def evaluate_drug_indication_line_with_rules(
         claim=claim,
         icd_codes=icd_codes,
     )
+    if violation is not None:
+        if status == "missing_diagnosis":
+            gh_caller_input_block(gh_observer, "gh.caller.diagnosis", "diagnosis_unavailable", ["claim_diagnoses"])
+        else:
+            gh_caller_skip(gh_observer, "gh.caller.applicability", "earlier_applicability_result")
     decoration_resolution = resolution
     rule = resolution.get("selected_rule")
+    if violation is None and rule is None:
+        gh_caller_skip(gh_observer, "gh.caller.unselected", "no_selected_route")
     if violation is None and rule is not None:
-        precondition_hit = (evaluate_pws_preconditions(rule=rule, drug_line=drug_line)
-                            or evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line)
-                            or evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line)
-                            or evaluate_pediatric_gh_initiation_preconditions(rule=rule, drug_line=drug_line))
+        gh_selected_scope(gh_observer, rule)
+        precondition_hit = (evaluate_pws_preconditions(rule=rule, drug_line=drug_line, observer=gh_observer)
+                            or evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line, observer=gh_observer)
+                            or evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line, observer=gh_observer)
+                            or evaluate_pediatric_gh_initiation_preconditions(rule=rule, drug_line=drug_line, observer=gh_observer))
         report_hit = (None if precondition_hit is not None else
                       _evaluate_report_requirement(rule=rule, drug_line=drug_line, claim=claim))
         if precondition_hit is not None:
+            gh_caller_skip(gh_observer, "gh.caller.after_preconditions", "clinical_checks_not_reached")
             violation = precondition_hit
         elif report_hit is not None:
+            gh_caller_skip(gh_observer, "gh.caller.report_gate", "clinical_checks_not_reached")
             # Primary report failures have always included the common evidence;
             # raw clinical and supplemental failures intentionally do not.
             violation = {**common, **report_hit}
@@ -275,6 +291,7 @@ def evaluate_drug_indication_line_with_rules(
                 drug_line=drug_line,
                 claim=claim,
                 icd_codes=icd_codes,
+                gh_observer=gh_observer,
             )
         if violation is None and supplemental_rule is not None:
             violation = _evaluate_supplemental_constraints(

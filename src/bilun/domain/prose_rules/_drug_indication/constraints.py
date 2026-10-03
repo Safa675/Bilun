@@ -10,6 +10,8 @@ from .growth_hormone import evaluate_growth_hormone_continuation
 from .prader_willi import PWS_PROTOCOL, evaluate_pws_clinical_checks
 from .ckd_growth_hormone import evaluate_ckd_gh_checks
 from .mecasermin import evaluate_mecasermin_checks
+from .gh_runtime import gh_caller_skip
+from .runtime_observations import ClinicalObservationCollector
 
 from .matching import (
     _has_biomarker_requirement,
@@ -531,7 +533,8 @@ def _evaluate_report_requirement(
 
 
 def _evaluate_selected_rule_constraints(
-    *, rule: dict[str, Any], drug_line: DrugClaimLine, claim: ClaimHeader, icd_codes: list[str]
+    *, rule: dict[str, Any], drug_line: DrugClaimLine, claim: ClaimHeader, icd_codes: list[str],
+    gh_observer: ClinicalObservationCollector | None = None
 ) -> dict[str, Any] | None:
     """Return the first tier-B, dose, biomarker, or prior-therapy violation."""
     source_review = _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)
@@ -541,20 +544,21 @@ def _evaluate_selected_rule_constraints(
         rule=rule, drug_line=drug_line, claim=claim, icd_codes=icd_codes
     )
     if tier_b_hit is not None:
+        gh_caller_skip(gh_observer, "gh.caller.tier_b", "earlier_legacy_constraint_returned")
         return tier_b_hit
-    growth_hit = evaluate_growth_hormone_continuation(rule=rule, drug_line=drug_line)
+    growth_hit = evaluate_growth_hormone_continuation(rule=rule, drug_line=drug_line, observer=gh_observer)
     if growth_hit is not None:
         return growth_hit
-    pws_hit = evaluate_pws_clinical_checks(rule=rule, drug_line=drug_line)
+    pws_hit = evaluate_pws_clinical_checks(rule=rule, drug_line=drug_line, observer=gh_observer)
     if pws_hit is not None:
         return pws_hit
-    ckd_hit = evaluate_ckd_gh_checks(rule=rule, drug_line=drug_line)
+    ckd_hit = evaluate_ckd_gh_checks(rule=rule, drug_line=drug_line, observer=gh_observer)
     if ckd_hit is not None:
         return ckd_hit
-    mecasermin_hit = evaluate_mecasermin_checks(rule=rule, drug_line=drug_line)
+    mecasermin_hit = evaluate_mecasermin_checks(rule=rule, drug_line=drug_line, observer=gh_observer)
     if mecasermin_hit is not None:
         return mecasermin_hit
-    pediatric_initiation_hit = evaluate_pediatric_gh_initiation_checks(rule=rule, drug_line=drug_line)
+    pediatric_initiation_hit = evaluate_pediatric_gh_initiation_checks(rule=rule, drug_line=drug_line, observer=gh_observer)
     if pediatric_initiation_hit is not None:
         return pediatric_initiation_hit
     if _has_dose_protocol(rule):

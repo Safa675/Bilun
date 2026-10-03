@@ -28,6 +28,8 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
+
 from src.bilun.domain.billing.rule_findings import (
     DIAGNOSIS_RULE_ID,
     DRUG_BARCODE_RULE_ID,
@@ -113,6 +115,7 @@ def analyze_claim(
     ctx: PatientClaimContext,
     *,
     prepared_broad_rows: Mapping[str, Sequence[dict[str, Any]]] | None = None,
+    drug_runtime_observations: RequestDrugRuntimeSink | None = None,
 ) -> list[dict[str, Any]]:
     """Run the regulatory validation motors against a PatientClaimContext.
 
@@ -131,6 +134,12 @@ def analyze_claim(
     and applicability guards still apply. The default direct-call path retains
     its historical full-context wrapper behavior.
     """
+    if drug_runtime_observations is not None:
+        if (not isinstance(drug_runtime_observations, RequestDrugRuntimeSink)
+                or not drug_runtime_observations.fresh
+                or not drug_runtime_observations.matches_context(ctx.drug_lines)):
+            raise ValueError("Runtime observation sink must be fresh and bound to this request context")
+
     if prepared_broad_rows is not None:
         from src.bilun.domain.billing.broad_rule_materializer import BROAD_FAMILY_ORDER
 
@@ -149,7 +158,7 @@ def analyze_claim(
         evaluate_rule_findings(ctx.patient_id, ctx) if ctx.patient_id else None
     )
     drug_indication_batch = (
-        evaluate_drug_indication_findings(ctx.patient_id, ctx)
+        evaluate_drug_indication_findings(ctx.patient_id, ctx, runtime_sink=drug_runtime_observations)
         if ctx.drug_lines
         else None
     )

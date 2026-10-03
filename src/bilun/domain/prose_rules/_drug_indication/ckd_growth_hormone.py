@@ -10,7 +10,10 @@ from ...claims.growth_hormone import (
     CKD_GH_BOOLEAN_FIELDS, CKD_GH_NUMERIC_FIELDS, validated_growth_hormone_value,
 )
 
+from .gh_observations import gh_context, gh_route, gh_scope_block, gh_violation
+
 if TYPE_CHECKING:
+    from .runtime_observations import ClinicalObservationCollector
     from ...claims.models import DrugClaimLine
 
 CKD_GH_PROTOCOL = "ckd_somatropin_v1"
@@ -27,11 +30,17 @@ def _review(rule: dict[str, Any], missing: list[str], message: str,
     }
 
 
-def evaluate_ckd_gh_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_ckd_gh_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     if rule.get("ckd_growth_hormone_protocol") != CKD_GH_PROTOCOL:
+        gh_route(observer, "gh.ckd.preconditions.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
     when = drug_line.drug_claim_date
+    gh_context(observer, drug_claim_date=when if type(when) is date else None)
     if type(when) is not date or when < date(2024, 5, 17):
+        gh_route(observer, "gh.ckd.source", "blocked_inputs" if type(when) is not date else "blocked_source",
+                 "service_date_unavailable" if type(when) is not date else "source_version_unverified",
+                 ["drug_claim_date"] if type(when) is not date else [])
         return _review(rule, ["drug_claim_date"] if type(when) is not date else ["historical_sut_version"],
                        "KBY somatropin için hizmet tarihine uygun SUT sürümü doğrulanmalı; "
                        "bu kontrol 17.05.2024 öncesini değerlendirmez (§4.2.6.A-5).")
@@ -42,23 +51,34 @@ def evaluate_ckd_gh_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimL
         missing.append("ckd_growth_disorder_confirmed")
     if validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase) is None:
         missing.append("gh_treatment_phase")
+    scope_values = {field: validated_growth_hormone_value(field, getattr(drug_line, field))
+                    for field in ('gh_patient_group', 'ckd_growth_disorder_confirmed', 'gh_treatment_phase')}
+    gh_context(observer, **scope_values)
     if missing:
+        gh_scope_block(observer, "gh.ckd.scope", scope_values, missing)
         return _review(rule, missing, "Çocuk hastada KBY ile ilişkili büyüme bozukluğu ve tedavi "
                        "aşaması açıkça doğrulanmalı; böbrek/diyaliz tanı kodu tek başına yeterli değildir (§4.2.6.A-5).")
-    if (drug_line.gh_treatment_phase == "initiation"
-            and validated_growth_hormone_value("ckd_first_post_transplant_year", drug_line.ckd_first_post_transplant_year) is True
-            and validated_growth_hormone_value("ckd_post_transplant_one_year_elapsed", drug_line.ckd_post_transplant_one_year_elapsed) is True):
-        return _review(rule, ["ckd_transplant_timing_reconciliation"],
-                       "Nakil sonrası ilk yıl ile bir yılın dolduğu kayıtları çelişiyor; "
-                       "başlangıç koşullarından önce nakil zamanlaması doğrulanmalı (§4.2.6.A-5).",
-                       extra_fields=("ckd_post_transplant_one_year_elapsed",))
+    if drug_line.gh_treatment_phase == "initiation":
+        first_year = validated_growth_hormone_value("ckd_first_post_transplant_year", drug_line.ckd_first_post_transplant_year)
+        gh_context(observer, ckd_first_post_transplant_year=first_year)
+        if first_year is True:
+            elapsed = validated_growth_hormone_value("ckd_post_transplant_one_year_elapsed", drug_line.ckd_post_transplant_one_year_elapsed)
+            gh_context(observer, ckd_post_transplant_one_year_elapsed=elapsed)
+            if elapsed is True:
+                gh_route(observer, "gh.ckd.transplant_timing", "blocked_source", "clinical_facts_conflict")
+                return _review(rule, ["ckd_transplant_timing_reconciliation"],
+                               "Nakil sonrası ilk yıl ile bir yılın dolduğu kayıtları çelişiyor; "
+                               "başlangıç koşullarından önce nakil zamanlaması doğrulanmalı (§4.2.6.A-5).",
+                               extra_fields=("ckd_post_transplant_one_year_elapsed",))
     return None
 
 
-def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     if rule.get("ckd_growth_hormone_protocol") != CKD_GH_PROTOCOL:
+        gh_route(observer, "gh.ckd.checks.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
-    precondition = evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line)
+    precondition = evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line, observer=observer)
     if precondition is not None:
         return precondition
     base = {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"], "severity": "error",
@@ -71,12 +91,17 @@ def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) ->
         missing = [field for field, value in values.items() if value is None]
         persistent = values["ckd_persistent_severe_secondary_hyperparathyroidism"]
         pth = values["ckd_parathyroid_hormone_pg_ml"]
-        exclusions = [field for field in (*CKD_GH_BOOLEAN_FIELDS[2:], "epiphyses_closed") if values[field] is True]
+        exclusions = [field for field in (*CKD_GH_BOOLEAN_FIELDS[2:], "epiphyses_closed")
+                      if gh_violation(observer, "gh.ckd.initiation.no_" + field, ["4.2.6.A-5.(2)#583eda78"],
+                                      {field: values[field]}, lambda flag: flag is True)]
         # §(1) independently requires PTH<500. This alone does NOT establish
         # the persistent severe condition in §(2); that requires explicit evidence.
-        if pth is not None and pth >= 500:
+        if gh_violation(observer, "gh.ckd.initiation.pth_below_500", ["4.2.6.A-5.(1)#c50ec607"],
+                        {"ckd_parathyroid_hormone_pg_ml": pth}, lambda value: value >= 500):
             exclusions.append("ckd_parathyroid_hormone_pg_ml")
-            if persistent is True:
+            if gh_violation(observer, "gh.ckd.initiation.no_persistent_severe_shpt", ["4.2.6.A-5.(2)#583eda78"],
+                            {"ckd_persistent_severe_secondary_hyperparathyroidism": persistent,
+                             "ckd_parathyroid_hormone_pg_ml": pth}, lambda flag, value: flag is True and value >= 500):
                 exclusions.append("ckd_persistent_severe_secondary_hyperparathyroidism")
         if exclusions:
             labels = {
@@ -94,9 +119,15 @@ def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) ->
                                   f"({'; '.join(labels[field] for field in exclusions)}); "
                                   "geri ödeme uygunluğu uzman incelemesi gerektirir (§4.2.6.A-5(1)-(2))."}
         if persistent is True and pth is not None and pth < 500:
+            gh_context(observer, ckd_persistent_severe_secondary_hyperparathyroidism=persistent,
+                       ckd_parathyroid_hormone_pg_ml=pth)
+            gh_route(observer, "gh.ckd.pth_reconciliation", "blocked_source", "clinical_facts_conflict")
             missing.append("ckd_parathyroid_status_reconciliation")
+    if drug_line.gh_treatment_phase == "continuation":
+        gh_route(observer, "gh.ckd.initiation_exclusions", "skipped_not_applicable", "continuation_bypasses_initiation")
     dose = validated_growth_hormone_value("gh_daily_dose_mg_per_kg", drug_line.gh_daily_dose_mg_per_kg)
-    if dose is not None and not 0.045 <= dose <= 0.05:
+    if gh_violation(observer, "gh.ckd.dose.within_source_range", ["4.2.6.A-5.(3)#a8cf7ca9"],
+                    {"gh_daily_dose_mg_per_kg": dose}, lambda value: not 0.045 <= value <= 0.05):
         return {**base, "violation_kind": "growth_hormone_dose_out_of_range",
                 "required_inputs": [*base["required_inputs"], "gh_daily_dose_mg_per_kg"],
                 "message_tr": f"KBY somatropin tedavi dozu 0,045–0,05 mg/kg/gün aralığında olmalı; "
@@ -105,7 +136,7 @@ def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) ->
         missing.append("gh_daily_dose_mg_per_kg")
     extra_fields: tuple[str, ...] = ()
     if drug_line.gh_treatment_phase == "initiation":
-        growth = evaluate_ckd_growth_pathways(drug_line)
+        growth = evaluate_ckd_growth_pathways(drug_line, observer=observer)
         extra_fields = tuple(growth["required_inputs"])
         if growth["failed_criteria"]:
             return {**base, "violation_kind": "growth_hormone_initiation_criterion_not_met",

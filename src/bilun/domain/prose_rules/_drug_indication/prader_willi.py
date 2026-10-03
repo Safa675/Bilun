@@ -8,7 +8,10 @@ from ...claims.growth_hormone import (
     PWS_CONTINUATION_STOP_FIELDS, PWS_INITIATION_EXCLUSION_FIELDS, validated_growth_hormone_value,
 )
 
+from .gh_observations import gh_context, gh_route, gh_scope_block, gh_violation
+
 if TYPE_CHECKING:
+    from .runtime_observations import ClinicalObservationCollector
     from ...claims.models import DrugClaimLine
 
 
@@ -27,12 +30,18 @@ def _review(rule: dict[str, Any], missing: list[str], message: str,
     }
 
 
-def evaluate_pws_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_pws_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     """No new report/clinical conclusion before drug, date and specific scope."""
     if rule.get("pws_continuation_protocol") != PWS_PROTOCOL:
+        gh_route(observer, "gh.pws.preconditions.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
     when = drug_line.drug_claim_date
+    gh_context(observer, drug_claim_date=when if type(when) is date else None)
     if type(when) is not date or when < date(2024, 5, 17):
+        gh_route(observer, "gh.pws.source", "blocked_inputs" if type(when) is not date else "blocked_source",
+                 "service_date_unavailable" if type(when) is not date else "source_version_unverified",
+                 ["drug_claim_date"] if type(when) is not date else [])
         return _review(rule, ["drug_claim_date"] if type(when) is not date else ["historical_sut_version"],
                        "PWS somatropin için hizmet tarihine uygun SUT sürümü doğrulanmalı; "
                        "bu kontrol 17.05.2024 öncesini değerlendirmez (§4.2.6.A-4).")
@@ -43,22 +52,31 @@ def evaluate_pws_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine
         required.append("pws_genetic_diagnosis_confirmed")
     if validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase) is None:
         required.append("gh_treatment_phase")
+    scope_values = {field: validated_growth_hormone_value(field, getattr(drug_line, field))
+                    for field in ('gh_patient_group', 'pws_genetic_diagnosis_confirmed', 'gh_treatment_phase')}
+    gh_context(observer, **scope_values)
     if required:
+        gh_scope_block(observer, "gh.pws.scope", scope_values, required)
         return _review(rule, required, "PWS için çocuk hasta grubu, genetik tanı ve tedavi aşaması "
                        "açıkça doğrulanmalı; Q87.1 tanı kodu bu bilgileri tek başına sağlamaz (§4.2.6.A-4).")
     return None
 
 
-def evaluate_pws_clinical_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_pws_clinical_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     if rule.get("pws_continuation_protocol") != PWS_PROTOCOL:
+        gh_route(observer, "gh.pws.checks.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
-    precondition = evaluate_pws_preconditions(rule=rule, drug_line=drug_line)
+    precondition = evaluate_pws_preconditions(rule=rule, drug_line=drug_line, observer=observer)
     if precondition is not None:
         return precondition
     if drug_line.gh_treatment_phase == "initiation":
         fields = (*PWS_INITIATION_EXCLUSION_FIELDS, "epiphyses_closed")
         values = {field: validated_growth_hormone_value(field, getattr(drug_line, field)) for field in fields}
-        excluded = [field for field, value in values.items() if value is True]
+        excluded = [field for field, value in values.items()
+                    if gh_violation(observer, "gh.pws.initiation.no_" + field,
+                        ["4.2.6.A-4.(1)#83cfa4bc" if field == "epiphyses_closed" else "4.2.6.A-4.b#c166b1e4"],
+                        {field: value}, lambda flag: flag is True)]
         if excluded:
             labels = {
                 "pws_severe_obesity_source_criterion_present": "kaynakta tanımlı şiddetli obezite koşulu",
@@ -83,7 +101,10 @@ def evaluate_pws_clinical_checks(*, rule: dict[str, Any], drug_line: DrugClaimLi
                        clinical_fields=fields)
     fields = (*PWS_CONTINUATION_STOP_FIELDS, "epiphyses_closed")
     values = {field: validated_growth_hormone_value(field, getattr(drug_line, field)) for field in fields}
-    stopped = [field for field, value in values.items() if value is True]
+    stopped = [field for field, value in values.items()
+               if gh_violation(observer, "gh.pws.continuation.no_" + field,
+                   ["4.2.6.A-4.(6)#b1fc17e1" if field == "epiphyses_closed" else "4.2.6.A-4.(5)#b34205e7"],
+                   {field: value}, lambda flag: flag is True)]
     if stopped:
         labels = {
             "pws_uncontrolled_diabetes": "kontrol edilemeyen diyabet",

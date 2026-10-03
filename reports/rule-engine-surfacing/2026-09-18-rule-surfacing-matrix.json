@@ -63,7 +63,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_bundling_violations_for_context",
         "analyzer_source_lines": [
-          168
+          177
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -89,7 +89,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_bundling_for_context",
         "analyzer_source_lines": [
-          174
+          183
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -197,7 +197,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_specialty_materials_for_context",
         "analyzer_source_lines": [
-          177
+          186
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -424,7 +424,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_preauth_for_context",
         "analyzer_source_lines": [
-          187
+          196
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -450,7 +450,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_miat_for_context",
         "analyzer_source_lines": [
-          190
+          199
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -476,7 +476,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
         "analyzer_source_lines": [
-          215
+          224
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -503,7 +503,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_pairing_for_context",
         "analyzer_source_lines": [
-          219
+          228
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -540,7 +540,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_procedure_pairing_for_context",
         "analyzer_source_lines": [
-          217
+          226
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -573,7 +573,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:evaluate_drug_indication_findings",
         "analyzer_source_lines": [
-          152
+          161
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -1648,7 +1648,7 @@
       "runtime_id": "analyze_claim:FocusedLegacyMaterializer",
       "runtime_status": "executed",
       "source_lines": [
-        156
+        165
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1693,7 +1693,7 @@
       "runtime_id": "analyze_claim:check_bundling_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        168
+        177
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1756,7 +1756,7 @@
       "runtime_id": "analyze_claim:check_dental_2_4_1_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        184
+        193
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1805,7 +1805,7 @@
       "runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        215
+        224
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1905,7 +1905,7 @@
       "runtime_id": "analyze_claim:check_drug_combination_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        209
+        218
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1950,7 +1950,7 @@
       "runtime_id": "analyze_claim:check_exclusion_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        171
+        180
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2085,7 +2085,7 @@
       "runtime_id": "analyze_claim:check_fatura_inceleme_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        200
+        209
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2187,7 +2187,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_misc_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        193
+        202
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2286,7 +2286,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_treatment_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        194
+        203
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2414,7 +2414,7 @@
       "runtime_id": "analyze_claim:check_material_bundling_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        174
+        183
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2454,7 +2454,7 @@
       "runtime_id": "analyze_claim:check_material_miat_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        190
+        199
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2518,7 +2518,7 @@
       "runtime_id": "analyze_claim:check_material_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        219
+        228
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2558,7 +2558,7 @@
       "runtime_id": "analyze_claim:check_material_preauth_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        187
+        196
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2652,7 +2652,7 @@
       "runtime_id": "analyze_claim:check_payment_method_traceability_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        205
+        214
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2706,7 +2706,7 @@
       "runtime_id": "analyze_claim:check_procedure_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        217
+        226
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2952,7 +2952,7 @@
       "runtime_id": "analyze_claim:check_specialty_materials_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        177
+        186
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3200,7 +3200,7 @@
       "runtime_id": "analyze_claim:check_treatment_pricing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        223
+        232
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3240,7 +3240,7 @@
       "runtime_id": "analyze_claim:detect_admission_billing_window",
       "runtime_status": "gated",
       "source_lines": [
-        293
+        302
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3289,7 +3289,7 @@
       "runtime_id": "analyze_claim:detect_blood_component_isbt128_violations",
       "runtime_status": "gated",
       "source_lines": [
-        268
+        277
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3333,7 +3333,7 @@
       "runtime_id": "analyze_claim:detect_conditional_addon_ek2d_opportunities",
       "runtime_status": "gated",
       "source_lines": [
-        238
+        247
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3377,7 +3377,7 @@
       "runtime_id": "analyze_claim:detect_dental_ga_uplift_violations",
       "runtime_status": "gated",
       "source_lines": [
-        321
+        330
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3419,7 +3419,7 @@
       "runtime_id": "analyze_claim:detect_diagnosis_procedure_mismatch_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        337
+        346
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3462,7 +3462,7 @@
       "runtime_id": "analyze_claim:detect_donor_prep_as_exam",
       "runtime_status": "gated",
       "source_lines": [
-        305
+        314
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3505,7 +3505,7 @@
       "runtime_id": "analyze_claim:detect_drug_quantity_error",
       "runtime_status": "gated",
       "source_lines": [
-        315
+        324
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3548,7 +3548,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_exam_10day",
       "runtime_status": "gated",
       "source_lines": [
-        284
+        293
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3591,7 +3591,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_tests",
       "runtime_status": "gated",
       "source_lines": [
-        285
+        294
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3632,7 +3632,7 @@
       "runtime_id": "analyze_claim:detect_exam_admission_date_mismatch",
       "runtime_status": "gated",
       "source_lines": [
-        286
+        295
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3675,7 +3675,7 @@
       "runtime_id": "analyze_claim:detect_green_area_bundled_extras",
       "runtime_status": "gated",
       "source_lines": [
-        299
+        308
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3718,7 +3718,7 @@
       "runtime_id": "analyze_claim:detect_inpatient_on_outpatient",
       "runtime_status": "gated",
       "source_lines": [
-        303
+        312
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3760,7 +3760,7 @@
       "runtime_id": "analyze_claim:detect_los_procedure_density_anomaly_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        352
+        361
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3803,7 +3803,7 @@
       "runtime_id": "analyze_claim:detect_material_preauth_missing",
       "runtime_status": "gated",
       "source_lines": [
-        310
+        319
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3846,7 +3846,7 @@
       "runtime_id": "analyze_claim:detect_material_type_missing",
       "runtime_status": "gated",
       "source_lines": [
-        312
+        321
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3888,7 +3888,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_imaging_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        342
+        351
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3930,7 +3930,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_surgery_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        345
+        354
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3971,7 +3971,7 @@
       "runtime_id": "analyze_claim:detect_never_principal_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        331
+        340
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4014,7 +4014,7 @@
       "runtime_id": "analyze_claim:detect_normal_poliklinik_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        297
+        306
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4056,7 +4056,7 @@
       "runtime_id": "analyze_claim:detect_procedure_time_overlap_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        349
+        358
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4110,7 +4110,7 @@
       "runtime_id": "analyze_claim:detect_radiation_oncology_violations",
       "runtime_status": "gated",
       "source_lines": [
-        273
+        282
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4152,7 +4152,7 @@
       "runtime_id": "analyze_claim:detect_sct_temporal_window_violations_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        277
+        286
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4193,7 +4193,7 @@
       "runtime_id": "analyze_claim:detect_traffic_accident_billing",
       "runtime_status": "gated",
       "source_lines": [
-        325
+        334
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4236,7 +4236,7 @@
       "runtime_id": "analyze_claim:detect_transplant_package_scope_violations",
       "runtime_status": "gated",
       "source_lines": [
-        244
+        253
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4277,7 +4277,7 @@
       "runtime_id": "analyze_claim:detect_unnecessary_additional_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        333
+        342
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4320,7 +4320,7 @@
       "runtime_id": "analyze_claim:detect_vakabasi_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        296
+        305
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4369,7 +4369,7 @@
       "runtime_id": "analyze_claim:detect_yatak_icu_overlap",
       "runtime_status": "gated",
       "source_lines": [
-        259
+        268
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5391,7 +5391,7 @@
       "runtime_id": "analyze_claim:evaluate_drug_indication_findings",
       "runtime_status": "gated",
       "source_lines": [
-        152
+        161
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5436,7 +5436,7 @@
       "runtime_id": "analyze_claim:evaluate_rule_findings",
       "runtime_status": "gated",
       "source_lines": [
-        149
+        158
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5475,7 +5475,7 @@
       "runtime_id": "analyze_claim:validate_focused_context_ownership",
       "runtime_status": "gated",
       "source_lines": [
-        146
+        155
       ],
       "visibility_status": "hidden_runtime"
     },

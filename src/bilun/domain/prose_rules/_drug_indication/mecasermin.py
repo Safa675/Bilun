@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING, Any
 
 from ...claims.growth_hormone import validated_growth_hormone_value
 
+from .gh_observations import gh_context, gh_route, gh_scope_block, gh_violation
+
 if TYPE_CHECKING:
+    from .runtime_observations import ClinicalObservationCollector
     from ...claims.models import DrugClaimLine
 
 MECASERMIN_SCOPE = "mecasermin_laron_v1"
@@ -24,15 +27,19 @@ def _review(rule: dict[str, Any], missing: list[str], message: str) -> dict[str,
             "missing_inputs": missing, "message_tr": message}
 
 
-def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
+        gh_route(observer, "gh.mecasermin.preconditions.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
     authority = rule.get("mecasermin_source_authority")
     if not isinstance(authority, dict):
         authority = {}
     known_dates = authority.get("known_as_of_dates")
     when = drug_line.drug_claim_date
+    gh_context(observer, drug_claim_date=when if type(when) is date else None)
     if type(when) is not date:
+        gh_route(observer, "gh.mecasermin.source", "blocked_inputs", "service_date_unavailable", ["drug_claim_date"])
         return _review(rule, ["drug_claim_date"], "Mecasermin hizmet tarihi açıkça belirtilmeli; "
                        "tarih yerine bugünün tarihi kullanılamaz (§4.2.6.B).")
     # Matching a verified source snapshot is deliberately not an enactment date
@@ -41,6 +48,7 @@ def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugCl
         or authority.get("coverage_kind") != "verified_snapshot_dates_only"
         or not isinstance(known_dates, list) or not all(isinstance(value, str) for value in known_dates)
         or when.isoformat() not in known_dates):
+        gh_route(observer, "gh.mecasermin.source", "blocked_source", "source_snapshot_unverified")
         return _review(rule, ["mecasermin_source_version"], "Mecasermin için bu hizmet gününe uygun "
                        "kaynak sürümü doğrulanmalı. Mevcut kontrol yalnızca 29.08.2026 ve 02.10.2026 "
                        "kaynak günlerini kapsar; bu tarihler yasal yürürlük başlangıcı sayılmaz (§4.2.6.B-3).")
@@ -49,22 +57,29 @@ def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugCl
         missing.append("mecasermin_laron_syndrome_confirmed")
     if validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase) is None:
         missing.append("gh_treatment_phase")
+    scope_values = {field: validated_growth_hormone_value(field, getattr(drug_line, field))
+                    for field in ('mecasermin_laron_syndrome_confirmed', 'gh_treatment_phase')}
+    gh_context(observer, **scope_values)
     if missing:
+        gh_scope_block(observer, "gh.mecasermin.scope", scope_values, missing)
         return _review(rule, missing, "Laron sendromu ve tedavi aşaması açıkça doğrulanmalı; "
                        "E34.3 tanı kodundan veya diğer ölçümlerden çıkarılamaz (§4.2.6.B).")
     return None
 
 
-def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine,
+                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
     if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
+        gh_route(observer, "gh.mecasermin.checks.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
-    precondition = evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line)
+    precondition = evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line, observer=observer)
     if precondition is not None:
         return precondition
     if drug_line.gh_treatment_phase != "continuation":
         dose = validated_growth_hormone_value(
             "mecasermin_daily_dose_mcg_per_kg", drug_line.mecasermin_daily_dose_mcg_per_kg)
-        if dose is not None and dose > 120:
+        if gh_violation(observer, "gh.mecasermin.initiation.dose_at_most_120", ["4.2.6.B-1.(2)#df3e5cd0"],
+                        {"mecasermin_daily_dose_mcg_per_kg": dose}, lambda value: value > 120):
             return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
                     "violation_kind": "mecasermin_initial_dose_exceeded", "severity": "error",
                     "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed",
@@ -80,16 +95,22 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
                        "uygunluk göstermez (§4.2.6.B-1).")
     values = {field: validated_growth_hormone_value(field, getattr(drug_line, field)) for field in _FIELDS}
     stopped = []
-    if values["epiphyses_closed"] is True:
+    if gh_violation(observer, "gh.mecasermin.continuation.epiphyses_open", ["4.2.6.B-3#dde3c8f6"],
+                    {"epiphyses_closed": values["epiphyses_closed"]}, lambda value: value is True):
         stopped.append("epiphyses_closed")
     current = values["annual_growth_velocity_cm"]
     baseline = values["pretreatment_annual_growth_velocity_cm"]
-    if current is not None and baseline is not None and Decimal(str(current)) < Decimal(str(baseline)) + Decimal("2"):
+    if gh_violation(observer, "gh.mecasermin.continuation.growth_gain_at_least_2", ["4.2.6.B-3#11e1f077"],
+                    {"annual_growth_velocity_cm": current, "pretreatment_annual_growth_velocity_cm": baseline},
+                    lambda actual, prior: Decimal(str(actual)) < Decimal(str(prior)) + Decimal("2")):
         stopped.append("growth_velocity_gain_under_2_cm_per_year")
     limit = {"female": 155, "male": 165}.get(values["gh_height_reference_sex"])
-    if limit is not None and values["height_cm"] is not None and values["height_cm"] >= limit:
+    if gh_violation(observer, "gh.mecasermin.continuation.height_below_limit", ["4.2.6.B-3#de2f2b31"],
+                    {"height_cm": values["height_cm"], "gh_height_reference_sex": values["gh_height_reference_sex"]},
+                    lambda height, _: height >= limit):
         stopped.append("height_cm")
-    if values["height_percentile"] is not None and values["height_percentile"] >= 25:
+    if gh_violation(observer, "gh.mecasermin.continuation.height_percentile_below_25", ["4.2.6.B-3.ç#269f3195"],
+                    {"height_percentile": values["height_percentile"]}, lambda value: value >= 25):
         stopped.append("height_percentile")
     if stopped:
         labels = {"epiphyses_closed": "epifiz hattının kapanması",

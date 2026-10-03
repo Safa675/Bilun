@@ -1140,7 +1140,10 @@
             "$ref": "DrugClinicalRestriction"
           }
         },
-        "clinical_eligibility_complete": true
+        "clinical_eligibility_complete": true,
+        "runtime_coverage": {
+          "$ref": "DrugRuntimeCoverage"
+        }
       }
     },
     "findings": {
@@ -1223,7 +1226,10 @@
         "$ref": "DrugClinicalRestriction"
       }
     },
-    "clinical_eligibility_complete": true
+    "clinical_eligibility_complete": true,
+    "runtime_coverage": {
+      "$ref": "DrugRuntimeCoverage"
+    }
   },
   "DrugIndicationRouteEvidence": {
     "rule_id": true,
@@ -1292,7 +1298,10 @@
         "$ref": "DrugClinicalRestriction"
       }
     },
-    "clinical_eligibility_complete": true
+    "clinical_eligibility_complete": true,
+    "runtime_coverage": {
+      "$ref": "DrugRuntimeCoverage"
+    }
   },
   "ClaimCompliance": {
     "findings": {

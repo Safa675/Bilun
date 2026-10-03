@@ -402,6 +402,7 @@ class DrugClinicalRestrictionResponse(BaseModel):
 
 
 class DrugIndicationFindingResponse(BaseModel):
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
     finding_id: str = Field(...)
     patient_id: str = Field(...)
@@ -434,6 +435,7 @@ class DrugIndicationFindingResponse(BaseModel):
 
 
 class DrugIndicationEvaluationResponse(BaseModel):
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
     patient_id: str = Field(...)
     claim_id: str | None = Field(...)

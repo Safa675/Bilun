@@ -14,6 +14,8 @@ from urllib.parse import quote
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules import drug_indication as prose
+from src.bilun.domain.sut.runtime_coverage_contract import bounded_runtime_coverage, runtime_coverage_payload
+from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
 from .drug_clinical_evidence import (
     DrugClinicalRestriction, bounded_clinical_restrictions, clinical_evidence_payload,
 )
@@ -146,6 +148,7 @@ class DrugIndicationFinding:
 
 
     clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
+    runtime_coverage: dict[str, Any] | None = None
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -179,6 +182,7 @@ class DrugIndicationFinding:
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
             **clinical_evidence_payload(self.clinical_restrictions),
+            **runtime_coverage_payload(self.runtime_coverage),
         }
 
     def to_legacy_violation(self) -> dict[str, Any]:
@@ -223,6 +227,7 @@ class DrugIndicationFinding:
             }
         )
         legacy.update(clinical_evidence_payload(self.clinical_restrictions))
+        legacy.update(runtime_coverage_payload(self.runtime_coverage))
         return legacy
 
 
@@ -249,6 +254,7 @@ class DrugIndicationLineEvaluation:
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
     clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
+    runtime_coverage: dict[str, Any] | None = None
 
     temporal_evidence: dict[str, Any] | None = None
 
@@ -276,6 +282,7 @@ class DrugIndicationLineEvaluation:
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
             **clinical_evidence_payload(self.clinical_restrictions),
+            **runtime_coverage_payload(self.runtime_coverage),
         }
 
 
@@ -300,6 +307,15 @@ def normalize_drug_indication_payload(value: Mapping[str, Any]) -> dict[str, Any
     creates a finding, route, diagnosis, or canonical identity.
     """
     payload = dict(value)
+    # Cached measurement metadata uses the same bounded contract as live rows.
+    # Missing old-cache metadata stays absent; it cannot become measured zero.
+    for kind in ("findings", "evaluations", "violations"):
+        if isinstance(payload.get(kind), list):
+            payload[kind] = [
+                {**row, **runtime_coverage_payload(row.get("runtime_coverage"))}
+                if isinstance(row, Mapping) and "runtime_coverage" in row else row
+                for row in payload[kind]
+            ]
     findings = payload.get("findings")
     evaluations = payload.get("evaluations")
     violations = payload.get("violations")
@@ -538,8 +554,15 @@ def evaluate_drug_indication_findings(
     ctx: PatientClaimContext | None,
     *,
     rules: list[dict[str, Any]] | None = None,
+    runtime_sink: RequestDrugRuntimeSink | None = None,
 ) -> DrugIndicationEvaluationBatch:
     """Evaluate every drug line once and return all pure family projections."""
+    if runtime_sink is not None and (
+            not isinstance(runtime_sink, RequestDrugRuntimeSink) or not runtime_sink.fresh
+            or ctx is None or not runtime_sink.matches_context(ctx.drug_lines)):
+        raise ValueError("Runtime sink must belong to this exact fresh request context")
+    if runtime_sink is not None:
+        runtime_sink.begin(ctx.drug_lines)
     if ctx is None or not ctx.drug_lines:
         return DrugIndicationEvaluationBatch()
 
@@ -588,6 +611,9 @@ def evaluate_drug_indication_findings(
         selected_rule_id = detailed.get("selected_rule_id")
         selected_rule_id = str(selected_rule_id) if selected_rule_id else None
         clinical_restrictions = bounded_clinical_restrictions(detailed.get("clinical_restrictions"))
+        runtime_coverage = bounded_runtime_coverage(detailed.get("runtime_coverage"))
+        if runtime_sink is not None:
+            runtime_sink.capture(line, selected_rule_id, runtime_coverage)
         violation = detailed.get("violation")
         finding_id: str | None = None
         finding_kind: str | None = None
@@ -623,6 +649,7 @@ def evaluate_drug_indication_findings(
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
                 clinical_restrictions=clinical_restrictions,
+                runtime_coverage=runtime_coverage,
                 selected_rule_id=selected_rule_id,
                 explanation_tr=explanation,
                 recommended_action_tr=_recommended_action(finding_kind),
@@ -660,6 +687,7 @@ def evaluate_drug_indication_findings(
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
                 clinical_restrictions=clinical_restrictions,
+                runtime_coverage=runtime_coverage,
                 selected_rule_id=selected_rule_id,
                 finding_id=finding_id,
                 finding_kind=finding_kind,
