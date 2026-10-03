@@ -7,10 +7,12 @@ import hashlib
 import shutil
 import json
 import os
+import py_compile
 import runpy
 import sys
 import subprocess
 import sysconfig
+import tomllib
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -232,6 +234,25 @@ def fixture_git_commit(root):
 
 
 @pytest.fixture
+def isolated_projection_source(tmp_path):
+    """Copy the exact Git-bound Python closure, without editable-install metadata."""
+    base = Path(rehearsal.__file__).resolve().parents[2]
+    base_sha = subprocess.check_output(["git", "-C", str(base), "rev-parse", "HEAD"]).decode().strip()
+    expected = rehearsal._source_binding(base, base_sha)
+    source = tmp_path / "independent-public-source"
+    for relative in sorted(rehearsal._projection_source_files(base)):
+        destination = source / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(base / relative, destination)
+    code_sha = fixture_git_commit(source)
+    actual = rehearsal._source_binding(source, code_sha)
+    assert actual["source_sha256"] == expected["source_sha256"]
+    assert actual["source_file_count"] == expected["source_file_count"]
+    assert rehearsal._source_binding(base, base_sha) == expected
+    return source, code_sha
+
+
+@pytest.fixture
 def known_mode_source(tmp_path):
     root = tmp_path / "source"
     file = root / "src/bilun/domain/claims/config.py"
@@ -328,21 +349,35 @@ def test_transport_rejects_rehashed_self_consistent_package_mutation(monkeypatch
         forged.validate()
 
 
-def test_actual_source_worker_keeps_existing_bytecode_and_runtime_untouched(monkeypatch):
-    repository = Path(rehearsal.__file__).resolve().parents[2]
-    code_sha = subprocess.check_output(["git", "-C", str(repository), "rev-parse", "HEAD"]).decode().strip()
+def test_actual_source_worker_keeps_existing_bytecode_and_runtime_untouched(isolated_projection_source, monkeypatch):
+    repository, code_sha = isolated_projection_source
+    # CI's editable install creates root egg-info. Fresh release source checkouts
+    # do not contain it; never allow metadata reads through the source audit.
+    schema = repository / "src/bilun/api/schemas.py"
+    bytecode = schema.parent / "__pycache__" / f"schemas.{sys.implementation.cache_tag}.pyc"
+    bytecode.parent.mkdir()
+    py_compile.compile(str(schema), cfile=str(bytecode), doraise=True)
+    bytecode_before = hashlib.sha256(bytecode.read_bytes()).hexdigest()
     before = rehearsal._source_binding(repository, code_sha)
+    runtime_before = rehearsal._runtime_digest(repository, backend=True)
     provenance = {**full_report()["data_source"], "label": "Public synthetic fixture", "notice": "Fixture only"}
     original = subprocess.run
     observations = []
 
     def run(argv, **kwargs):
-        if "-c" in argv and rehearsal._PROJECTION_WORKER in argv:
+        worker = "-c" in argv and rehearsal._PROJECTION_WORKER in argv
+        if worker:
             observations.append((argv, kwargs["env"]))
             assert "BILUN_AUTH_PASSWORD" not in kwargs["env"]
             assert "-I" in argv and "-S" in argv and "-B" in argv
             assert any(value.startswith("pycache_prefix=") for value in argv)
-        return original(argv, **kwargs)
+        result = original(argv, **kwargs)
+        if worker:
+            categories = [line for line in result.stderr.decode(errors="replace").splitlines()
+                          if line.startswith(("ValueError: Report projection", "ModuleNotFoundError:",
+                                              "ImportError:", "PermissionError:"))]
+            assert result.returncode == 0, f"Public source worker exit {result.returncode}: {categories}"
+        return result
 
     monkeypatch.setenv("BILUN_AUTH_PASSWORD", "public-unit-never-forwarded")
     monkeypatch.setattr(rehearsal.subprocess, "run", run)
@@ -351,11 +386,49 @@ def test_actual_source_worker_keeps_existing_bytecode_and_runtime_untouched(monk
     transport = cli_namespace["project_report_transport"]({"/api/billing-report/P1": full_report()}, provenance,
         repository=repository, expected_code_sha=code_sha, python_executable=Path(sys.executable),
         dependency_roots=(Path(sysconfig.get_path("stdlib")), Path(sysconfig.get_path("purelib"))),
-        cache_sha256="a" * 64, build_id="public-unit", contract="wavea-evidence-v2")
+        cache_sha256="a" * 64, build_id="public-unit", contract="wavea-evidence-v2",
+        expected_runtime_sha256=runtime_before)
     transport.validate()
     assert observations
     assert type(transport) is rehearsal.PinnedReportTransport
     assert rehearsal._source_binding(repository, code_sha) == before
+    assert rehearsal._runtime_digest(repository, backend=True) == runtime_before
+    assert hashlib.sha256(bytecode.read_bytes()).hexdigest() == bytecode_before
+
+
+def test_source_worker_rejects_editable_install_metadata(isolated_projection_source, monkeypatch):
+    repository, code_sha = isolated_projection_source
+    arguments = dict(repository=repository, expected_code_sha=code_sha, python_executable=Path(sys.executable),
+        dependency_roots=(Path(sysconfig.get_path("stdlib")), Path(sysconfig.get_path("purelib"))),
+        cache_sha256="a" * 64, build_id="public-unit", contract="wavea-evidence-v2")
+    provenance = {**full_report()["data_source"], "label": "Public synthetic fixture", "notice": "Fixture only"}
+    reports = {"/api/billing-report/P1": full_report()}
+    rehearsal.project_report_transport(reports, provenance, **arguments).validate()
+    before = rehearsal._source_binding(repository, code_sha)
+    # Reproduce pip install -e '.[dev]' metadata using the real public entrypoints.
+    project = Path(rehearsal.__file__).resolve().parents[2] / "pyproject.toml"
+    entrypoints = tomllib.loads(project.read_text())["project"]["scripts"]
+    metadata = repository / "bilun.egg-info" / "entry_points.txt"
+    metadata.parent.mkdir()
+    metadata.write_text("[console_scripts]\n" + "".join(
+        name + " = " + value + "\n" for name, value in sorted(entrypoints.items())))
+    metadata_before = hashlib.sha256(metadata.read_bytes()).hexdigest()
+    original = subprocess.run
+    failures = []
+
+    def run(argv, **kwargs):
+        result = original(argv, **kwargs)
+        if rehearsal._PROJECTION_WORKER in argv:
+            failures.append(result)
+        return result
+
+    monkeypatch.setattr(rehearsal.subprocess, "run", run)
+    with pytest.raises(ValueError, match="Pinned isolated report serialization failed"):
+        rehearsal.project_report_transport(reports, provenance, **arguments)
+    assert len(failures) == 1 and failures[0].returncode != 0
+    assert b"Report projection read outside pinned source closure" in failures[0].stderr
+    assert rehearsal._source_binding(repository, code_sha) == before
+    assert hashlib.sha256(metadata.read_bytes()).hexdigest() == metadata_before
 
 
 @pytest.mark.parametrize("fault", ["environment_file", "filesystem_write", "source_change_after_worker"])
