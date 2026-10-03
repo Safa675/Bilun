@@ -1,5 +1,12 @@
 /** Explicit source-specific facts. Null never asserts a negative clinical finding. */
 export interface SutGrowthHormoneEvidence {
+  ckd_growth_disorder_confirmed?: boolean | null;
+  ckd_persistent_severe_secondary_hyperparathyroidism?: boolean | null;
+  ckd_proliferative_or_severe_nonproliferative_retinopathy?: boolean | null;
+  ckd_first_post_transplant_year?: boolean | null;
+  ckd_active_cancer?: boolean | null;
+  ckd_parathyroid_hormone_pg_ml?: number | null;
+  gh_daily_dose_mg_per_kg?: number | null;
   pws_genetic_diagnosis_confirmed?: boolean | null;
   pws_uncontrolled_diabetes?: boolean | null;
   pws_untreatable_obstructive_sleep_apnea?: boolean | null;

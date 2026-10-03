@@ -8,14 +8,14 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
 vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
-const groups = { growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+const groups = { ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
   antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
@@ -176,4 +176,35 @@ it("submits distinct enteral and ravulizumab facts without copying dates or infe
   await change("ravulizumab", "edss", "10.1");
   await change("enteral", "pediatric", "");
   expect((await submit()).materials[0]).toMatchObject({ enteral_evidence: { pediatric: null }, ravulizumab_evidence: { edss: null } });
+});
+
+it("submits CKD dose and PTH exactly without deriving persistent disease or converting units", async () => {
+  await change("ckdGrowthHormone", "ckd_growth_disorder_confirmed", "true");
+  await change("ckdGrowthHormone", "ckd_parathyroid_hormone_pg_ml", "500");
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.045");
+  await change("ckdGrowthHormone", "ckd_first_post_transplant_year", "false");
+  let material = (await submit()).materials[0];
+  expect(material).toMatchObject({ ckd_growth_disorder_confirmed: true, ckd_parathyroid_hormone_pg_ml: 500,
+    gh_daily_dose_mg_per_kg: 0.045, ckd_first_post_transplant_year: false,
+    ckd_persistent_severe_secondary_hyperparathyroidism: null });
+  // A recorded noncompliant dose must reach the evaluator rather than being normalized to a pass.
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.051");
+  expect((await submit()).materials[0].gh_daily_dose_mg_per_kg).toBe(0.051);
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0");
+  expect((await submit()).materials[0].gh_daily_dose_mg_per_kg).toBe(0);
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", ""); await change("ckdGrowthHormone", "ckd_parathyroid_hormone_pg_ml", "");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_daily_dose_mg_per_kg: null, ckd_parathyroid_hormone_pg_ml: null });
+});
+
+it("keeps all seven CKD GH facts unknown until entered alongside earlier groups", async () => {
+  const material = (await submit()).materials[0];
+  for (const field of ckdGrowthHormoneFields) expect(material[field.name]).toBeNull();
+  expect(material).toMatchObject({ sma_evidence: null, renal_evidence: null, enteral_evidence: null, ravulizumab_evidence: null });
+});
+
+it("does not describe the partial GH checks as continuation-only after adding CKD initiation", () => {
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
+  expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation");
+  expect(tr.claimValidator.clinical.hints.growthHormone).toContain("tam uygunluk sağlamaz");
 });

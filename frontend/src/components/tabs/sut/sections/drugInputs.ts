@@ -14,6 +14,9 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     pws_genetic_diagnosis_confirmed, pws_uncontrolled_diabetes, pws_untreatable_obstructive_sleep_apnea,
     pws_active_cancer, pws_active_psychosis, pws_progressive_scoliosis,
     enteral_evidence, ravulizumab_evidence,
+    ckd_growth_disorder_confirmed, ckd_persistent_severe_secondary_hyperparathyroidism,
+    ckd_proliferative_or_severe_nonproliferative_retinopathy, ckd_first_post_transplant_year,
+    ckd_active_cancer, ckd_parathyroid_hormone_pg_ml, gh_daily_dose_mg_per_kg,
     ...base } = material;
   if (!enabled) return base;
   return {
@@ -38,6 +41,13 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     pws_active_cancer: pws_active_cancer ?? null,
     pws_active_psychosis: pws_active_psychosis ?? null,
     pws_progressive_scoliosis: pws_progressive_scoliosis ?? null,
+    ckd_growth_disorder_confirmed: ckd_growth_disorder_confirmed ?? null,
+    ckd_persistent_severe_secondary_hyperparathyroidism: ckd_persistent_severe_secondary_hyperparathyroidism ?? null,
+    ckd_proliferative_or_severe_nonproliferative_retinopathy: ckd_proliferative_or_severe_nonproliferative_retinopathy ?? null,
+    ckd_first_post_transplant_year: ckd_first_post_transplant_year ?? null,
+    ckd_active_cancer: ckd_active_cancer ?? null,
+    ckd_parathyroid_hormone_pg_ml: ckd_parathyroid_hormone_pg_ml ?? null,
+    gh_daily_dose_mg_per_kg: gh_daily_dose_mg_per_kg ?? null,
     // Incomplete edits are unknown facts, not negative clinical findings.
     biomarkers: biomarkers?.filter(row => row.marker.trim() && row.status.trim())
       .map(row => ({ marker: row.marker.trim(), status: row.status.trim() })) ?? null,

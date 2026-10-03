@@ -82,6 +82,7 @@ def _semantic_route_signature(rule: dict[str, Any]) -> str:
         "requires_prior_therapy",
         "growth_hormone_continuation_protocol",
         "pws_continuation_protocol",
+        "ckd_growth_hormone_protocol",
         "report_duration_by_phase",
         "gh_patient_group",
         "gh_treatment_phase",

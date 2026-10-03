@@ -86,7 +86,7 @@
       "primary_icd10": "N18.5",
       "report_present": false,
       "prescriber_specialty": "çocuk endokrinoloji",
-      "expect_violation": "missing_board_report",
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.ckd_gh_nephro_endo_board"
     },
     {
@@ -95,7 +95,7 @@
       "report_present": true,
       "prescriber_specialty": "çocuk endokrinoloji",
       "report_duration_months": 6,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.ckd_gh_nephro_endo_board"
     },
     {

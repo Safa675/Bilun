@@ -259,6 +259,7 @@ const sections = {
         "enteral": "Enteral nutrition evidence",
         "ravulizumab": "Ravulizumab evidence",
 
+        "ckdGrowthHormone": "CKD growth-hormone evidence",
         "praderWilli": "Prader–Willi evidence",
         "growthHormone": "Growth-hormone evidence",
         "sma": "SMA evidence",
@@ -269,8 +270,9 @@ const sections = {
         "enteral": "Choose the documented malnutrition or exempt pathway. Report authorship is separate from the prescriber; dates remain explicit.",
         "ravulizumab": "Choose the documented indication. Enter completed treatment duration without inferring months from dates; EDSS must be a recorded score.",
 
+        "ckdGrowthHormone": "CKD somatropin only. Enter the prescribed mg/kg/day directly. A PTH result never sets the persistent-disease flag or any other clinical finding.",
         "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria.",
-        "growthHormone": "Only supported continuation criteria are checked. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown.",
+        "growthHormone": "Only supported source criteria are checked; these partial checks do not establish full eligibility. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown.",
         "sma": "Enter documented assessment dates and history. Unknown history does not mean the condition is absent.",
         "antifungal": "Keep treatment, prophylaxis and formulation distinct. Use recorded laboratory units and outcomes without conversion or inference.",
         "renal": "Use documented source-unit values and treatment checkpoints. Six-month albumin is the historical checkpoint, not the current result."
@@ -287,6 +289,16 @@ const sections = {
         "exception_path_requires_review": "Exempt nutrition pathway requires source review",
         "adult_path_requires_review": "Adult nutrition pathway requires source review",
         "six_month_edss_stop": "Six-month EDSS continuation requirement",
+        "ckd_growth_disorder_confirmed": "CKD-associated growth disorder confirmed",
+        "ckd_persistent_severe_secondary_hyperparathyroidism": "Documented persistent severe secondary hyperparathyroidism",
+        "ckd_proliferative_or_severe_nonproliferative_retinopathy": "Proliferative or severe nonproliferative diabetic retinopathy",
+        "ckd_first_post_transplant_year": "Within first year after renal transplant, documented",
+        "ckd_active_cancer": "Active cancer, CKD growth-hormone assessment",
+        "ckd_parathyroid_hormone_pg_ml": "PTH for CKD growth-hormone assessment (pg/mL)",
+        "gh_daily_dose_mg_per_kg": "Prescribed somatropin daily dose for CKD (mg/kg/day)",
+        "ckd_growth_initiation_clinical_assessment": "Remaining CKD growth-hormone initiation assessment",
+        "ckd_growth_continuation_clinical_assessment": "Remaining CKD growth-hormone continuation assessment",
+        "ckd_parathyroid_status_reconciliation": "PTH and persistent parathyroid diagnosis need reconciliation",
 
         "pws_genetic_diagnosis_confirmed": "Prader–Willi genetic diagnosis confirmed",
         "pws_uncontrolled_diabetes": "Diabetes that cannot be controlled",

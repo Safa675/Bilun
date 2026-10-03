@@ -259,6 +259,7 @@ const sections = {
         "enteral": "Enteral beslenme bilgileri",
         "ravulizumab": "Ravulizumab bilgileri",
 
+        "ckdGrowthHormone": "KBY büyüme hormonu bilgileri",
         "praderWilli": "Prader-Willi bilgileri",
         "growthHormone": "Büyüme hormonu bilgileri",
         "sma": "SMA bilgileri",
@@ -269,8 +270,9 @@ const sections = {
         "enteral": "Belgelenmiş malnütrisyon veya muafiyet yolunu seçin. Raporu düzenleyen hekim ve reçete eden hekim ayrıdır; tarihleri açıkça girin.",
         "ravulizumab": "Belgelenmiş endikasyonu seçin. Tarihlerden ay hesabı çıkarmadan tamamlanmış tedavi süresini girin; EDSS kayıtlı bir ölçüm olmalıdır.",
 
+        "ckdGrowthHormone": "Yalnız KBY somatropin koşulları içindir. Reçetelenen mg/kg/gün değerini doğrudan girin. PTH sonucundan persistan hastalık veya diğer klinik bulgular çıkarılmaz.",
         "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir.",
-        "growthHormone": "Yalnız kodlanmış devam tedavisi koşulları kontrol edilir. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir.",
+        "growthHormone": "Yalnız desteklenen kaynak koşulları kontrol edilir; bu kısmi kontroller tam uygunluk sağlamaz. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir.",
         "sma": "Belgelenmiş değerlendirme tarihlerini ve öyküyü girin. Bilinmeyen öykü, durumun olmadığı anlamına gelmez.",
         "antifungal": "Tedavi, profilaksi ve ilaç formunu ayrı belirtin. Kaydedilmiş laboratuvar birimlerini ve sonuçları dönüşüm veya çıkarım yapmadan kullanın.",
         "renal": "Belgelenmiş kaynak birimlerini ve tedavi kontrollerini kullanın. Altıncı ay albümini geçmiş kontrol ölçümüdür; güncel sonuç değildir."
@@ -287,6 +289,16 @@ const sections = {
         "exception_path_requires_review": "Muaf beslenme yolu için kaynak incelemesi gerekli",
         "adult_path_requires_review": "Erişkin beslenme yolu için kaynak incelemesi gerekli",
         "six_month_edss_stop": "Altıncı ay EDSS devam tedavisi koşulu",
+        "ckd_growth_disorder_confirmed": "Kronik böbrek yetmezliği ile ilişkili büyüme bozukluğu doğrulandı",
+        "ckd_persistent_severe_secondary_hyperparathyroidism": "Belgelenmiş persistan ağır sekonder hiperparatiroidizm",
+        "ckd_proliferative_or_severe_nonproliferative_retinopathy": "Proliferatif veya şiddetli nonproliferatif diyabetik retinopati",
+        "ckd_first_post_transplant_year": "Böbrek nakli sonrası ilk yıl içinde olma, belgelenmiş",
+        "ckd_active_cancer": "Aktif kanser, KBY büyüme hormonu değerlendirmesi",
+        "ckd_parathyroid_hormone_pg_ml": "KBY büyüme hormonu değerlendirmesi için PTH (pg/mL)",
+        "gh_daily_dose_mg_per_kg": "KBY için reçetelenen günlük somatropin dozu (mg/kg/gün)",
+        "ckd_growth_initiation_clinical_assessment": "Diğer KBY büyüme hormonu başlangıç değerlendirmeleri",
+        "ckd_growth_continuation_clinical_assessment": "Diğer KBY büyüme hormonu devam değerlendirmeleri",
+        "ckd_parathyroid_status_reconciliation": "PTH ile persistan paratiroid tanısının tutarlılığı doğrulanmalı",
 
         "pws_genetic_diagnosis_confirmed": "Prader-Willi genetik tanısı doğrulanmış",
         "pws_uncontrolled_diabetes": "Kontrol edilemeyen diyabet",

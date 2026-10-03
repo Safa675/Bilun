@@ -4,9 +4,11 @@ rules:
   sut_section: 4.2.6.A-5
   gate_b_sources:
   - 4.2.6.A-5.(1)
+  - 4.2.6.A-5.(2)
+  - 4.2.6.A-5.(3)
+  - 4.2.6.A-5.(4)
   drug_names:
   - somatropin
-  - büyüme hormonu
   icd10_codes:
   - N18
   - N18.3
@@ -19,17 +21,24 @@ rules:
   action:
     enforcement: KBY evre III-V veya >6 ay diyaliz, epifiz hatları açık, PTH<500 pg/ml; malnutrisyon/asidoz/sıvı-elektrolit
       dengesizliği/anemi yoksa koşullar sağlandığında GH ödenir
-    message_tr: KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan, paratiroid
-      hormonu 500 pikogram(pg)/ml altında olan çocuk hastalarda; malnutrisyonu, metabolik asidozu, sıvı elektrolit dengesizliği,
-      anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine başlanması halinde bedelleri
-      Kurumca karşılanır (§4.2.6.A-5).
+    message_tr: KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan,
+      paratiroid hormonu 500 pikogram(pg)/ml altında olan çocuk hastalarda; malnutrisyonu, metabolik asidozu, sıvı
+      elektrolit dengesizliği, anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine
+      başlanması halinde bedelleri Kurumca karşılanır (§4.2.6.A-5).
+  report_specialties: &id001
+  - çocuk nefroloji
+  - çocuk endokrinoloji
+  prescriber_specialties: &id002
+  - çocuk endokrinoloji
+  report_duration_months: 6
+  ckd_growth_hormone_protocol: ckd_somatropin_v1
+  gh_patient_group: pediatric
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/ckd_somatropin_partial_checks.json
 - rule_id: 4.2.6.ckd_gh_nephro_endo_board
   sut_section: 4.2.6.A-5
   drug_names:
   - somatropin
-  - somatrogon
-  - büyüme hormonu
-  - buyume hormonu
   - genotropin
   - norditropin
   - omnitrope
@@ -40,15 +49,18 @@ rules:
   - N19
   - N25
   report_required: true
-  message_tr: KBY ilişkili büyüme bozukluğu somatropin — çocuk nefroloji ve çocuk endokrinoloji uzman hekimlerinin yer aldığı
-    6 aylık sağlık kurulu raporu gerekir (§4.2.6.A-5).
+  message_tr: KBY ilişkili büyüme bozukluğu somatropin — çocuk nefroloji ve çocuk endokrinoloji uzman hekimlerinin
+    yer aldığı 6 aylık sağlık kurulu raporu gerekir (§4.2.6.A-5).
   gate_b_sources:
   - 4.2.6.A-5.(4)
-  report_specialties:
-  - çocuk nefroloji
-  - çocuk endokrinoloji
-  - nefroloji
-  prescriber_specialties:
-  - çocuk endokrinoloji
+  - 4.2.6.A-5.(1)
+  - 4.2.6.A-5.(2)
+  - 4.2.6.A-5.(3)
+  report_specialties: *id001
+  prescriber_specialties: *id002
   report_duration_months: 6
+  ckd_growth_hormone_protocol: ckd_somatropin_v1
+  gh_patient_group: pediatric
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/ckd_somatropin_partial_checks.json
 source_note: Exported from drug_indication_prose.json (YAML source migration)

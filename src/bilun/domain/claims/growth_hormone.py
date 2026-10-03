@@ -24,8 +24,18 @@ PWS_FIELDS = (
     "pws_progressive_scoliosis",
 )
 
+CKD_GH_BOOLEAN_FIELDS = (
+    "ckd_growth_disorder_confirmed",
+    "ckd_persistent_severe_secondary_hyperparathyroidism",
+    "ckd_proliferative_or_severe_nonproliferative_retinopathy",
+    "ckd_first_post_transplant_year",
+    "ckd_active_cancer",
+)
+CKD_GH_NUMERIC_FIELDS = ("ckd_parathyroid_hormone_pg_ml", "gh_daily_dose_mg_per_kg")
+
 GROWTH_HORMONE_INPUT_FIELDS = (
     *GROWTH_HORMONE_FIELDS, "gh_patient_group", "gh_height_reference_sex", *PWS_FIELDS,
+    *CKD_GH_BOOLEAN_FIELDS, *CKD_GH_NUMERIC_FIELDS,
 )
 
 def validated_growth_hormone_value(field: str, value: Any) -> Any:
@@ -36,9 +46,9 @@ def validated_growth_hormone_value(field: str, value: Any) -> Any:
         return value if isinstance(value, str) and value in {"pediatric", "adult"} else None
     if field == "gh_height_reference_sex":
         return value if isinstance(value, str) and value in {"female", "male"} else None
-    if field == "epiphyses_closed" or field in PWS_FIELDS:
+    if field == "epiphyses_closed" or field in (*PWS_FIELDS, *CKD_GH_BOOLEAN_FIELDS):
         return value if type(value) is bool else None
-    if field in {"annual_growth_velocity_cm", "height_cm", "bone_age_years"}:
+    if field in {"annual_growth_velocity_cm", "height_cm", "bone_age_years", *CKD_GH_NUMERIC_FIELDS}:
         if type(value) not in {int, float}:
             return None
         try:

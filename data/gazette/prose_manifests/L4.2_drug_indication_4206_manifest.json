@@ -4,8 +4,8 @@
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
-  "section_clause_total": 47,
-  "encoded_clause_count": 26,
+  "section_clause_total": 49,
+  "encoded_clause_count": 28,
   "encoded_clause_ids": [
     "C003995",
     "C003996",
@@ -30,6 +30,8 @@
     "C004073",
     "C004074",
     "C004078",
+    "C004082",
+    "C004083",
     "C004084",
     "C004087",
     "C004093"
@@ -56,6 +58,8 @@
     "4.2.6.A-4.(5)",
     "4.2.6.A-4.(6)",
     "4.2.6.A-5.(1)",
+    "4.2.6.A-5.(2)",
+    "4.2.6.A-5.(3)",
     "4.2.6.A-5.(4)",
     "4.2.6.A.(1)",
     "4.2.6.A.(2)",
@@ -500,7 +504,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "KBY evresi evre III",
       "linked_rule_ids": [
-        "4.2.6.A5.ckd_dialysis_children_gh_coverage"
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
       ]
     },
     {
@@ -515,6 +520,28 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C004082",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Epifiz hatları kapalı olanlara",
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
+    },
+    {
+      "clause_id": "C004083",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavi dozu 0",
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
+    },
+    {
       "clause_id": "C004084",
       "section_id": "4.2.6.A-5",
       "encode_tier": "A",
@@ -522,6 +549,7 @@
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
         "4.2.6.A.max_3_month_supply_daily_dose",
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
         "4.2.6.ckd_gh_nephro_endo_board"
       ]
     },
@@ -605,5 +633,5 @@
   "clause_trace_complete": true,
   "encode_tier_C_deferred_count": 21,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 55.3
+  "encoded_clause_pct": 57.1
 }

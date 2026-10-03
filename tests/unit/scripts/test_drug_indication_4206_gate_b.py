@@ -26,9 +26,9 @@ _ALL_TIER_A_ENCODED = frozenset({
 # keyword of their own; the two list introductions are source links, not extra predicates.
 _ALL_STOP_SOURCE_IDS = frozenset({
     "C004037", "C004038", "C004039", "C004040", "C004058",
-    "C004059", "C004060", "C004061", "C004062", "C004073", "C004074",
+    "C004059", "C004060", "C004061", "C004062", "C004073", "C004074", "C004082", "C004083",
 })
-_ALL_ENCODED = _ALL_TIER_A_ENCODED | _ALL_STOP_SOURCE_IDS | {"C004067"}
+_ALL_ENCODED = _ALL_TIER_A_ENCODED | _ALL_STOP_SOURCE_IDS | {"C004067", "C004078"}
 
 
 def _all_4206_batch_rules() -> list[dict[str, Any]]:

@@ -43,6 +43,7 @@
         "growth_hormone_continuation_protocol": { "type": "string", "enum": ["turner_somatropin_v1", "pediatric_gh_v1"] },
         "gh_patient_group": { "type": "string", "enum": ["pediatric", "adult"] },
         "gh_treatment_phase": { "type": "string", "enum": ["initiation", "continuation"] },
+        "ckd_growth_hormone_protocol": { "type": "string", "enum": ["ckd_somatropin_v1"] },
         "pws_continuation_protocol": { "type": "string", "enum": ["pws_somatropin_v1"] },
         "report_duration_by_phase": {
           "type": "object", "required": ["initiation", "continuation"], "additionalProperties": false,

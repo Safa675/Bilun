@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from .growth_hormone import evaluate_growth_hormone_continuation
 from .prader_willi import PWS_PROTOCOL, evaluate_pws_clinical_checks
+from .ckd_growth_hormone import evaluate_ckd_gh_checks
 
 from .matching import (
     _has_biomarker_requirement,
@@ -493,6 +494,9 @@ def _evaluate_selected_rule_constraints(
     pws_hit = evaluate_pws_clinical_checks(rule=rule, drug_line=drug_line)
     if pws_hit is not None:
         return pws_hit
+    ckd_hit = evaluate_ckd_gh_checks(rule=rule, drug_line=drug_line)
+    if ckd_hit is not None:
+        return ckd_hit
     if _has_dose_protocol(rule):
         dose_hit = _evaluate_dose_protocol(
             rule=rule, drug_line=drug_line, claim=claim, icd_codes=icd_codes

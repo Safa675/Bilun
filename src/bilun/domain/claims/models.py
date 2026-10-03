@@ -297,6 +297,14 @@ class DrugClaimLine:
     pws_active_cancer: bool | None = None
     pws_active_psychosis: bool | None = None
     pws_progressive_scoliosis: bool | None = None
+    # Explicit CKD-associated pediatric growth-disorder evidence.
+    ckd_growth_disorder_confirmed: bool | None = None
+    ckd_persistent_severe_secondary_hyperparathyroidism: bool | None = None
+    ckd_proliferative_or_severe_nonproliferative_retinopathy: bool | None = None
+    ckd_first_post_transplant_year: bool | None = None
+    ckd_active_cancer: bool | None = None
+    ckd_parathyroid_hormone_pg_ml: float | None = None
+    gh_daily_dose_mg_per_kg: float | None = None
 
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None

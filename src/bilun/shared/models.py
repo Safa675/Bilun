@@ -44,6 +44,13 @@ class MaterialItem(BaseModel):
     pws_active_cancer: bool | None = None
     pws_active_psychosis: bool | None = None
     pws_progressive_scoliosis: bool | None = None
+    ckd_growth_disorder_confirmed: bool | None = None
+    ckd_persistent_severe_secondary_hyperparathyroidism: bool | None = None
+    ckd_proliferative_or_severe_nonproliferative_retinopathy: bool | None = None
+    ckd_first_post_transplant_year: bool | None = None
+    ckd_active_cancer: bool | None = None
+    ckd_parathyroid_hormone_pg_ml: float | None = None
+    gh_daily_dose_mg_per_kg: float | None = None
 
     @field_validator(
         "gh_treatment_phase", "epiphyses_closed", "annual_growth_velocity_cm",
@@ -55,6 +62,13 @@ class MaterialItem(BaseModel):
         "pws_active_cancer",
         "pws_active_psychosis",
         "pws_progressive_scoliosis",
+        "ckd_growth_disorder_confirmed",
+        "ckd_persistent_severe_secondary_hyperparathyroidism",
+        "ckd_proliferative_or_severe_nonproliferative_retinopathy",
+        "ckd_first_post_transplant_year",
+        "ckd_active_cancer",
+        "ckd_parathyroid_hormone_pg_ml",
+        "gh_daily_dose_mg_per_kg",
         mode="before",
     )
     @classmethod
