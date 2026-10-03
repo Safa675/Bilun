@@ -5,17 +5,22 @@ rules:
   gate_b_sources:
   - C004551
   drug_names:
-  - intravenöz immünglobulin
-  - ivig
+  - subkutan immünglobulin
+  - subkutan immunglobulin
+  - subcutaneous immunoglobulin
+  - scig
   report_required: true
-  prescriber_specialties:
-  - uzman hekimler
   condition:
     coverage_note: true
   action:
-    enforcement: ilgili bentlerdeki uzman hekimlerin yer aldığı sağlık kurulu raporuyla ilgili uzmanlarca 1 aylık dozda reçete
-      edilirse ödenir; Birdshot retinokoroidopati ödenmez
-    message_tr: Düzenlenen, yukarıdaki bentlerde belirtilen ilgili uzman hekimlerin yer aldığı sağlık kurulu raporuna istinaden,
-      ilgili bentlerde belirtilen uzman hekimlerce 1 aylık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır. (Birdshot
-      retinokoroidopati endikasyonu ödenmez.) (§4.2.12.B-2).
+    enforcement: ilgili bentlerdeki uzman hekimlerin yer aldığı sağlık kurulu raporuyla ilgili uzmanlarca 1 aylık
+      dozda reçete edilirse ödenir; Birdshot retinokoroidopati ödenmez
+    message_tr: Düzenlenen, yukarıdaki bentlerde belirtilen ilgili uzman hekimlerin yer aldığı sağlık kurulu raporuna
+      istinaden, ilgili bentlerde belirtilen uzman hekimlerce 1 aylık dozda reçete edilmesi halinde bedelleri Kurumca
+      karşılanır. (Birdshot retinokoroidopati endikasyonu ödenmez.) (§4.2.12.B-2).
+  source_scope_note: B-2 source is subcutaneous-only. Legacy IVIG ID retained for compatibility; the relevant b-branch
+    specialty is checked by typed clinical evidence. Positional closing-prose cite retained until stable prose reference
+    support.
+  verification_status: ai_generated_pending_review
 source_note: Exported from drug_indication_prose.json (YAML source migration)
+

@@ -1,0 +1,32 @@
+SOURCE URL: https://www.resmigazete.gov.tr/
+OBSERVED AT UTC: 2026-10-03T07:02:24Z
+CAPTURE TYPE: Relevant current-issue and supplement excerpt copied from successful live cloud Chrome accessibility-tree observation. This is observer evidence, not original HTML or an official downloadable file's raw bytes. Node labels preserved for the excerpt. The absence conclusion is bounded to what the live homepage advertised at observation, not the remainder of October 3.
+
+Browser tab: 5, Title: "T.C. Resmî Gazete", URL: "https://www.resmigazete.gov.tr/".
+0 AXWebArea T.C. Resmî Gazete, URL: resmigazete.gov.tr/
+  1 container
+    2 link Description: TÜRKİYE CUMHURUYETİ CUMHURBAŞKANLIĞI FORSU, Value: resmigazete.gov.tr/, ID: text-logo
+    3 image Kuruluş 7 Ekim 1920
+  4 container
+    5 link Description: PDF Görüntüle, Value: resmigazete.gov.tr/eskiler/2026/10/20261003.pdf, ID: btnPdfGoruntule
+    6 image Resmî Gazete
+  7 image Description: Bugün, ID: imgBugun
+  8 heading 03 Ekim 2026 Tarihli ve 33389 Sayılı Resmî Gazete, Value: 6
+    9 text 03 Ekim 2026 Tarihli ve 33389 Sayılı Resmî Gazete
+  10 container
+    11 link Description:  Arama, Help: Arama Formu, Value: resmigazete.gov.tr/#
+    12 pop up button (collapsed, settable) Description: Mevzuat Türü, Value: Tüm Kategoriler, ID: selectMevzuatTuru, Secondary Actions: Expand
+      13 menu
+        14 (selected) Tüm Kategoriler
+        15 Yasama
+        16 Yürütme ve İdare
+        17 Yargı
+    18 pop up button (collapsed, settable) Description: Zaman Aralığı, ID: selectTarihAraligi, Secondary Actions: Expand
+      19 menu
+        20 (selected) Zaman Aralığı
+        21 Bugün
+        22 Son 1 Hafta
+        23 Son 1 Ay
+    24 link Description:  Son Mükerrer, Help: Son Mükerrer Gazete, Value: resmigazete.gov.tr/fihrist?tarih=2026-09-06&mukerrer=1
+    25 link Description:  Arşiv, Help: Arşiv Arama Formu, Value: resmigazete.gov.tr/#
+  26 link Description:  Önceki Sayı, Value: resmigazete.gov.tr/02.10.2026

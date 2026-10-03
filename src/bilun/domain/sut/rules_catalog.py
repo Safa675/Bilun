@@ -1136,13 +1136,11 @@ def resolve_prose_rule_gate_b_sources(
                     AmbiguousClauseCiteError,
                     NonEncodeEligibleCiteError,
                     UnknownClauseCiteError,
-                    is_clause_coordinate,
-                    is_clause_id,
-                    is_clause_key,
+                    is_gate_b_source_ref,
                     resolve_gate_b_ref_to_clause_ids,
                 )
 
-                if is_clause_id(ref) or is_clause_coordinate(ref) or is_clause_key(ref):
+                if is_gate_b_source_ref(ref):
                     resolved_ids = resolve_gate_b_ref_to_clause_ids(
                         ref,
                         resolve_frame,

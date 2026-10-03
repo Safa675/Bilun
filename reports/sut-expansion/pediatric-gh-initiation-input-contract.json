@@ -1,0 +1,113 @@
+{
+  "fields": [
+    {
+      "name": "gh_initiation_pathway",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "standard",
+        "neurosecretory_bioinactive",
+        "organic_or_surgical",
+        "sga_case_1",
+        "sga_case_2"
+      ],
+      "unit": null
+    },
+    {
+      "name": "gh_reported_growth_age_band",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "0_2_years",
+        "2_1_4_years",
+        "4_1_prepubertal",
+        "pubertal"
+      ],
+      "unit": null
+    },
+    {
+      "name": "gh_chronological_age_years",
+      "type": "float | None",
+      "required": false,
+      "unit": "years (finite nonnegative)"
+    },
+    {
+      "name": "gh_pubertal_status",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "prepubertal",
+        "pubertal"
+      ],
+      "unit": null
+    },
+    {
+      "name": "gh_pubertal_growth_assessment_completed",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    },
+    {
+      "name": "gh_birth_weight_for_gestational_age_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (signed finite; no conversion)"
+    },
+    {
+      "name": "gh_birth_length_for_gestational_age_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (signed finite; no conversion)"
+    },
+    {
+      "name": "gh_last_year_growth_velocity_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (signed finite; no conversion)"
+    },
+    {
+      "name": "gh_current_height_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (signed finite; no conversion)"
+    },
+    {
+      "name": "gh_parent_adjusted_height_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (signed finite; no conversion)"
+    },
+    {
+      "name": "gh_sga_birth_status_confirmed",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    }
+  ],
+  "service_scope": "Explicit pediatric initiation; current heading>=2024-05-17; prior/missing dates manual review. Exact medicine required.",
+  "hints": {
+    "gh_reported_growth_age_band": "Explicit clinician-recorded source age band. Do not compute a band from numerical age or interpret source2,1/4,1 as decimal-years/months. Clear age/band contradictions yield reconciliation review; transition intervals2–2.1 and4–4.1 are deliberately not reclassified.",
+    "gh_pubertal_growth_assessment_completed": "Source-described pediatric endocrine/endocrine-metabolism specialist assessment of monitoring period and growth using other findings is documented.",
+    "gh_pubertal_status": "Clinician-recorded assessment using SUT §4.2.6.A-1(1)(b)(3): onset is testicular volume >=4 ml in boys or T2 thelarche in girls. Enter prepubertal/pubertal only when the recorded assessment uses that definition; otherwise leave unknown. Do not infer from age, diagnosis or height-reference sex; no raw measurements are requested.",
+    "gh_sga_birth_status_confirmed": "Recorded small-for-gestational-age birth confirmation for sourcecase2; not derived from diagnosis."
+  },
+  "review_only_identifiers": [
+    "gh_initiation_clinical_assessment",
+    "gh_growth_stage_reconciliation"
+  ],
+  "partial_eligibility_always": true,
+  "reuse": [
+    "gh_patient_group",
+    "gh_treatment_phase",
+    "annual_growth_velocity_cm",
+    "bone_age_years",
+    "epiphyses_closed"
+  ],
+  "puberty_assessment_contract": {
+    "source_ref": "4.2.6.A-1.(3)#0c2b0e3f",
+    "additional_attestation_required": false,
+    "rationale": "The existing nullable enum is itself the documented source-defined clinician assessment. A second boolean would duplicate that fact without verifying it. Older generic assessments must be reconciled by the clinician or left unknown; this clarification does not retrospectively validate them. The application neither collects raw measurements nor diagnoses puberty.",
+    "raw_measurements_collected": false,
+    "height_reference_sex_reused": false
+  }
+}

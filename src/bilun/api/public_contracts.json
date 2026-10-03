@@ -463,7 +463,17 @@
     "recoverable_uplift_try": true,
     "compliance_savings_try": true,
     "risk_amount_try": true,
-    "audit_exposure_try": true
+    "audit_exposure_try": true,
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true,
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
+    }
   },
   "ComplianceIndexPagination": {
     "total_matching": true,
@@ -1124,6 +1134,21 @@
         },
         "eligible_icd10_codes_or_ranges": {
           "$list": true
+        },
+        "temporal_evidence": {
+          "$ref": "DrugTemporalEvidence"
+        },
+        "clinical_restrictions": {
+          "$list": {
+            "$ref": "DrugClinicalRestriction"
+          }
+        },
+        "clinical_eligibility_complete": true,
+        "runtime_coverage": {
+          "$ref": "DrugRuntimeCoverage"
+        },
+        "source_authority": {
+          "$ref": "ClinicalSourceAuthorityEvidence"
         }
       }
     },
@@ -1198,7 +1223,22 @@
     "eligible_route_count": true,
     "eligible_routes_truncated": true,
     "observed_icd10_count": true,
-    "observed_icd10_truncated": true
+    "observed_icd10_truncated": true,
+    "temporal_evidence": {
+      "$ref": "DrugTemporalEvidence"
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "runtime_coverage": {
+      "$ref": "DrugRuntimeCoverage"
+    },
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
+    }
   },
   "DrugIndicationRouteEvidence": {
     "rule_id": true,
@@ -1258,7 +1298,22 @@
     "eligible_route_count": true,
     "eligible_routes_truncated": true,
     "observed_icd10_count": true,
-    "observed_icd10_truncated": true
+    "observed_icd10_truncated": true,
+    "temporal_evidence": {
+      "$ref": "DrugTemporalEvidence"
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "runtime_coverage": {
+      "$ref": "DrugRuntimeCoverage"
+    },
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
+    }
   },
   "ClaimCompliance": {
     "findings": {
@@ -1355,7 +1410,14 @@
     "compliance_savings_try": true,
     "risk_amount_try": true,
     "audit_exposure_try": true,
-    "money_semantics": true
+    "money_semantics": true,
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true
   },
   "WaveAEvidenceBlock": {
     "available": true,
@@ -1629,6 +1691,16 @@
       "procedure_code": true,
       "rate_pct": true,
       "section": true
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true,
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
     }
   },
   "BillingActionReport": {
@@ -2521,7 +2593,20 @@
     "message": true,
     "disposition": true,
     "reason": true,
-    "source_status": true
+    "source_status": true,
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
+    },
+    "clinical_restrictions": {
+      "$list": {
+        "$ref": "DrugClinicalRestriction"
+      }
+    },
+    "clinical_eligibility_complete": true,
+    "selected_rule_id": true,
+    "missing_inputs": {
+      "$list": true
+    }
   },
   "SutMaterialApplicability": {
     "material_index": true,
@@ -2615,5 +2700,114 @@
     },
     "deontic_modality": true,
     "source_effective_date": true
+  },
+  "DrugTemporalEvidence": {
+    "status": true,
+    "service_date": true,
+    "version_id": true,
+    "successor_version_id": true,
+    "valid_from": true,
+    "valid_until": true,
+    "publication_date": true,
+    "source_url": true,
+    "source_sha256": true,
+    "source_text_sha256": true,
+    "date_basis": true,
+    "verification_status": true,
+    "clinical_eligibility_complete": true,
+    "candidate_version_ids": {
+      "$list": true
+    },
+    "supported_checks": {
+      "$list": {
+        "field": true,
+        "status": true,
+        "marker": true
+      }
+    },
+    "excluded_rule_ids": {
+      "$list": true
+    },
+    "repeal_effective_date": true
+  },
+  "DrugClinicalRestriction": {
+    "constraint_set": true,
+    "criterion_status": true,
+    "missing_inputs": {
+      "$list": true
+    },
+    "checks": {
+      "$list": {
+        "field": true,
+        "status": true
+      }
+    },
+    "source_refs": {
+      "$list": true
+    },
+    "clinical_eligibility_complete": true,
+    "verification_status": true,
+    "checks_truncated": true,
+    "source_refs_truncated": true,
+    "runtime_coverage": {
+      "$ref": "DrugRuntimeCoverage"
+    },
+    "source_authority": {
+      "$ref": "ClinicalSourceAuthorityEvidence"
+    }
+  },
+  "DrugRuntimeCoverage": {
+    "schema_version": true,
+    "available": true,
+    "unavailable_reason": true,
+    "source_metrics_available": true,
+    "complete_clause_mapping_available": true,
+    "source_unavailable_reason": true,
+    "complete_clause_mapping_unavailable_reason": true,
+    "receipt_sha256": true,
+    "clinical_eligibility_complete": true,
+    "input_facts_available_count": true,
+    "input_facts_missing_count": true,
+    "predicate_attempted_count": true,
+    "predicate_evaluated_count": true,
+    "predicate_passed_count": true,
+    "predicate_failed_count": true,
+    "predicate_missing_inputs_count": true,
+    "routes_blocked_source_count": true,
+    "routes_blocked_inputs_count": true,
+    "routes_skipped_count": true,
+    "receipt_count": true,
+    "unresolved_source_ref_count": true,
+    "source_clauses_touched_count": true,
+    "source_clauses_fully_evaluated_count": true,
+    "instrumented_families": {
+      "$list": true
+    },
+    "source_clause_ids": {
+      "$list": true
+    },
+    "fully_evaluated_source_clause_ids": {
+      "$list": true
+    }
+  },
+  "ClinicalSourceAuthorityEvidence": {
+    "schema_version": true,
+    "status": true,
+    "reason": true,
+    "family_id": true,
+    "version_id": true,
+    "service_date": true,
+    "legal_effective_from": true,
+    "admission_basis": true,
+    "admitted_from": true,
+    "admitted_through": true,
+    "source_observed_on": true,
+    "official_review_checked_at": true,
+    "source_docx_sha256": true,
+    "review_id": true,
+    "next_action": true,
+    "scope": true,
+    "clinical_eligibility_complete": true,
+    "verification_status": true
   }
 }

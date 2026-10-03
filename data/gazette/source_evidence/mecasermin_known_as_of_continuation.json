@@ -1,0 +1,1224 @@
+{
+  "scope_id": "mecasermin_laron_v1",
+  "rule_ids": [
+    "4.2.6.laron_mecasermin_initiation_board",
+    "4.2.6.laron_mecasermin_continuation_board"
+  ],
+  "sut_section": "4.2.6.B-2/B-3",
+  "verification_status": "ai_generated_pending_review",
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "legal_valid_from": null,
+  "known_as_of_dates": [
+    "2026-08-29",
+    "2026-10-02"
+  ],
+  "coverage_kind": "verified_snapshot_dates_only",
+  "unserved_service_dates": "Every date other than the two verified authoritative source dates remains manual source-version review, including dates between the snapshots and later dates. This is evidence-limited coverage, not a completed historical rule.",
+  "date_basis": "No clause-specific enactment annotation was found in these authoritative snapshots. Identical text in two snapshots does not establish the intervening legal interval. Nearby 2017 specialty amendment is not borrowed. Official original2013 and amendment-history research remains open; publication is not treated as enactment.",
+  "scope": "Explicit Laron-syndrome confirmation and phase; known positive continuation stop is decisive. No measured percentile, reference sex or pretreatment velocity is inferred. Negative screens stay review for monitoring/report and other clinical requirements. The separate initiation dose ceiling is 120 micrograms/kg/day from §B-1(2), based only on an explicit prescribed-dose input. No quantity-based or cross-drug unit inference; negative dose checks remain partial review.",
+  "stop_if_any": [
+    {
+      "field": "epiphyses_closed",
+      "operator": "eq",
+      "value": true
+    },
+    {
+      "field": "annual_growth_velocity_cm",
+      "operator": "lt",
+      "reference_field_plus_2": "pretreatment_annual_growth_velocity_cm"
+    },
+    {
+      "field": "height_cm",
+      "operator": "ge",
+      "value_by_gh_height_reference_sex": {
+        "female": 155,
+        "male": 165
+      }
+    },
+    {
+      "field": "height_percentile",
+      "operator": "ge",
+      "value": 25
+    }
+  ],
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "authoritative_document_as_of": "2026-08-29",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4304,
+          "text": "4.2.6.B - Laron Sendromu tanı kriterleri ve rhIGF-I (mecasermin) kullanım ilkeleri",
+          "text_sha256": "12b7ef75b642fedfb9589ca9c382f52161cd878d7d716ce5df2961e3433056bd",
+          "runs": [
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.B",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Laron",
+              "struck": false
+            },
+            {
+              "text": " Sendromu ",
+              "struck": false
+            },
+            {
+              "text": "tanı kriterleri ",
+              "struck": false
+            },
+            {
+              "text": "ve ",
+              "struck": false
+            },
+            {
+              "text": "rhIGF",
+              "struck": false
+            },
+            {
+              "text": "-I (",
+              "struck": false
+            },
+            {
+              "text": "mecasermin",
+              "struck": false
+            },
+            {
+              "text": ") ",
+              "struck": false
+            },
+            {
+              "text": "kullanım ilkeleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4305,
+          "text": "(1) En az bir (Ek:RG-09/09/2017- 30175/ 17 md. Yürürlük:  23/09/2017) çocuk endokrinolojisi ve metabolizma hastalıkları veya çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ile (Ek:RG-09/09/2017- 30175/ 17 md. Yürürlük:  23/09/2017) çocuk endokrinolojisi ve metabolizma hastalıkları veya çocuk endokrinoloji uzman hekimince reçete edilmesi halinde bedeli ödenir. Bu raporda, ilacın kullanım dozu, uygulama planı, süresi ve başlama kriterleri belirtilir.",
+          "text_sha256": "e4f714846a309ead74a1140261291712dad19bd5543e6183aa4ad895ce78b266",
+          "runs": [
+            {
+              "text": "(1) En az bir",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek",
+              "struck": false
+            },
+            {
+              "text": ":",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "-09/09/2017- 30175",
+              "struck": false
+            },
+            {
+              "text": "/ 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Yürürlük: ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "23",
+              "struck": false
+            },
+            {
+              "text": "/09/2017",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": " çocuk endokrinolojisi ve metabolizma hastalıkları veya ",
+              "struck": false
+            },
+            {
+              "text": "çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ",
+              "struck": false
+            },
+            {
+              "text": "ile",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(Ek",
+              "struck": false
+            },
+            {
+              "text": ":",
+              "struck": false
+            },
+            {
+              "text": "RG-09/09/2017- 30175",
+              "struck": false
+            },
+            {
+              "text": "/ 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Yürürlük: ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "23",
+              "struck": false
+            },
+            {
+              "text": "/09/2017",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": " çocuk endokrinolojisi ve metabolizma hastalıkları veya",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "çocuk endokrinoloji uzman hekimince reçete edilmesi halinde bedeli ödenir. Bu raporda, ilacın kullanım dozu, uygulama planı, süresi ve başlama kriterleri belirtilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4306,
+          "text": "4.2.6.B-1 - Başlama kriterleri",
+          "text_sha256": "54b838a3b1eb4fca03792bbe734147ef3e61b5924f8c034e790147705f36b706",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "1",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Başlama k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4307,
+          "text": "(1) İlgili uzman hekim tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra büyümeyi etkileyen sistemik bir hastalığı veya beslenme bozukluğu olmadığı tespit edilen hastalarda; boy (-3) standart sapmanın altında, yıllık büyüme hızı yaş ve cinse göre 25 persentilin altında, serum IGF-I düzeyi < -2 SD, serum IGFBP-3 düzeyi < -1 SD, bazal veya uyarılmış büyüme hormonu düzeyi > 10 mcg/L, somatomedin jenerasyon testinde büyüme hormonu uyarısına IGF-I artışının yetersiz olduğu durumlarda tedaviye başlanılır.",
+          "text_sha256": "5997f9741bb6e4f6c854f9f3a6f1b84f8d32b0706548bc46c89dc16ec9c10f46",
+          "runs": [
+            {
+              "text": "(1) ",
+              "struck": false
+            },
+            {
+              "text": "İ",
+              "struck": false
+            },
+            {
+              "text": "lgili uzman hekim tarafından en az 6",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "ay süreyle büyüme hızı izlendikten sonra büyümeyi etkileyen sistemik bir hastalığı veya beslenme bozukluğu olma",
+              "struck": false
+            },
+            {
+              "text": "dığı tespit edilen",
+              "struck": false
+            },
+            {
+              "text": " hastalarda; ",
+              "struck": false
+            },
+            {
+              "text": "b",
+              "struck": false
+            },
+            {
+              "text": "oy (-3) standart sapmanın altında, yıllık büyüme hızı yaş ve cinse göre 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında, serum IGF-I düzeyi < -2 SD, serum IGFBP-3 düzeyi < -1 SD, bazal veya uyarılmış büy",
+              "struck": false
+            },
+            {
+              "text": "üme hormonu düzeyi > 10 ",
+              "struck": false
+            },
+            {
+              "text": "mcg",
+              "struck": false
+            },
+            {
+              "text": "/L, ",
+              "struck": false
+            },
+            {
+              "text": "s",
+              "struck": false
+            },
+            {
+              "text": "omatomedin",
+              "struck": false
+            },
+            {
+              "text": " jenerasyon testinde büyüme hormonu uyarısına IGF-I artışının yetersiz olduğu durumlarda tedaviye başlanılır. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4308,
+          "text": "(2) Başlangıç dozu 120 mcg/kg/gün’e kadar çıkılabilir.",
+          "text_sha256": "df3e5cd0be1ac74c2340ff2021640e5dc88bbfa4ce6c3cf96a447dffcaaf943d",
+          "runs": [
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "2",
+              "struck": false
+            },
+            {
+              "text": ") Başlangıç dozu 120 ",
+              "struck": false
+            },
+            {
+              "text": "mcg",
+              "struck": false
+            },
+            {
+              "text": "/kg/",
+              "struck": false
+            },
+            {
+              "text": "gün’e",
+              "struck": false
+            },
+            {
+              "text": " kadar çıkılabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4309,
+          "text": "(3) Büyüme hormonu tedavisinin yerine kullanılmaz.",
+          "text_sha256": "218ac9a2283be06078fb79dbccb3f176bfe48508fa6d08a8ba008cfb68bd6d18",
+          "runs": [
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "3",
+              "struck": false
+            },
+            {
+              "text": ") Büyüme hormonu tedavisinin yerine kullanılmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4310,
+          "text": "4.2.6.B-2 - Devam kriterleri",
+          "text_sha256": "52f25f7ce70ef2cc7347b3432fbcb003f956a6f9acf9dc1337da0134dc976cd7",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "2",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Devam k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4311,
+          "text": "(1) Tedavi alan hastalar en az 3 aylık sürelerle izlenerek, radyolojik olarak epifiz hatlarının açık olduğunun reçetede belirtilmesi kaydıyla hedeflenen yaş grubu ortalama boy skalasına göre 25 persentile ulaşana kadar, tedavi ile yıllık büyüme hızının izlemde tedavi öncesi yıllık büyüme hızının 2 cm üstünde olan hastalarda yılda bir sağlık kurulu raporu yenilenerek tedavi devam ettirilir.",
+          "text_sha256": "e92a7dce5a933bfe282030c0bbcb98fa9e180e6839170267222bb9e184a67f3a",
+          "runs": [
+            {
+              "text": "(1) Tedavi alan hastalar en az 3 aylık sürelerle izlenerek, radyolojik olarak epifiz hatlarının açık olduğunun reçetede belirtilmesi kaydıyla hedeflenen yaş grubu ortalama boy skalasına göre 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentile",
+              "struck": false
+            },
+            {
+              "text": " ulaşana kadar, tedavi ile yıllık büyüme hızının izlemde tedavi öncesi yıllık büyüme hızının 2 cm üstünde olan hastalarda yılda bir sağlık kurulu raporu yenilenerek tedavi devam ettirilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4312,
+          "text": "(2) Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı, ulaştığı boy skalası ve epifiz hatlarının durumu belirtilir.",
+          "text_sha256": "c81c85332addffcf868c45390402d477d4dc38edea91c46746dde9fd0f791a01",
+          "runs": [
+            {
+              "text": "(2) Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı, ulaştığı boy skalası ve epifiz hatlarının durumu belirtilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4313,
+          "text": "4.2.6.B-3 - Sonlandırma kriterleri",
+          "text_sha256": "b96bc439ae458074bee87ad6d244ffdf0e3557d1edf99955bbba80b0d99245c2",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "3",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Sonlandırma k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4314,
+          "text": "(1) Tedavi;",
+          "text_sha256": "f26d9b5758bcd7a446b0e9c5ad501dd52e7364e125e9033e38b1041680535594",
+          "runs": [
+            {
+              "text": "(1) Tedavi;",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4315,
+          "text": "Epifiz hattı kapandığında veya",
+          "text_sha256": "dde3c8f61ad7719b2363fd762bc01efbf8afaa7524c7e5d1f44b2b18f2b17f0c",
+          "runs": [
+            {
+              "text": "Epifiz hattı kapandığında veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4316,
+          "text": "Yıllık büyüme hızı tedavi öncesi hıza göre + 2 cm’den düşük olduğunda veya",
+          "text_sha256": "11e1f07761bd53af78aa49e614126cc264cbd00be62e77c48009ca49c5946a1b",
+          "runs": [
+            {
+              "text": "Yıllık büyüme hızı tedavi öncesi hıza göre + 2 cm’den düşük olduğunda veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4317,
+          "text": "Boy uzunluğu kızlarda 155 cm ve erkeklerde 165 cm’ye ulaştığında veya",
+          "text_sha256": "de2f2b31454b8e6081711bdaa207331f199e69eaf9a0fa089cd4c00ef54949c1",
+          "runs": [
+            {
+              "text": "Boy uzunluğu kızlarda 155 cm ve erkeklerde 165 cm’ye ulaştığında veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4318,
+          "text": "ç) Tedavi esnasında boy 25 persentile ulaştığında,",
+          "text_sha256": "269f3195c84fd172c96451133fc34c5899b956c2646901cb75a00e1f4b069dff",
+          "runs": [
+            {
+              "text": "ç",
+              "struck": false
+            },
+            {
+              "text": ") ",
+              "struck": false
+            },
+            {
+              "text": "Tedavi esnasında boy 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentile",
+              "struck": false
+            },
+            {
+              "text": " ulaştığında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4319,
+          "text": "sonlandırılacaktır.",
+          "text_sha256": "46acd2ab953e52a429947c7a01d505730bee345410957678cff7cdd328f45cfd",
+          "runs": [
+            {
+              "text": "sonlandırılacaktır",
+              "struck": false
+            },
+            {
+              "text": ". ",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "authoritative_document_as_of": "2026-10-02",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4312,
+          "text": "4.2.6.B - Laron Sendromu tanı kriterleri ve rhIGF-I (mecasermin) kullanım ilkeleri",
+          "text_sha256": "12b7ef75b642fedfb9589ca9c382f52161cd878d7d716ce5df2961e3433056bd",
+          "runs": [
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.B",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Laron",
+              "struck": false
+            },
+            {
+              "text": " Sendromu ",
+              "struck": false
+            },
+            {
+              "text": "tanı kriterleri ",
+              "struck": false
+            },
+            {
+              "text": "ve ",
+              "struck": false
+            },
+            {
+              "text": "rhIGF",
+              "struck": false
+            },
+            {
+              "text": "-I (",
+              "struck": false
+            },
+            {
+              "text": "mecasermin",
+              "struck": false
+            },
+            {
+              "text": ") ",
+              "struck": false
+            },
+            {
+              "text": "kullanım ilkeleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4313,
+          "text": "(1) En az bir (Ek:RG-09/09/2017- 30175/ 17 md. Yürürlük:  23/09/2017) çocuk endokrinolojisi ve metabolizma hastalıkları veya çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ile (Ek:RG-09/09/2017- 30175/ 17 md. Yürürlük:  23/09/2017) çocuk endokrinolojisi ve metabolizma hastalıkları veya çocuk endokrinoloji uzman hekimince reçete edilmesi halinde bedeli ödenir. Bu raporda, ilacın kullanım dozu, uygulama planı, süresi ve başlama kriterleri belirtilir.",
+          "text_sha256": "e4f714846a309ead74a1140261291712dad19bd5543e6183aa4ad895ce78b266",
+          "runs": [
+            {
+              "text": "(1) En az bir",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek",
+              "struck": false
+            },
+            {
+              "text": ":",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "-09/09/2017- 30175",
+              "struck": false
+            },
+            {
+              "text": "/ 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Yürürlük: ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "23",
+              "struck": false
+            },
+            {
+              "text": "/09/2017",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": " çocuk endokrinolojisi ve metabolizma hastalıkları veya ",
+              "struck": false
+            },
+            {
+              "text": "çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ",
+              "struck": false
+            },
+            {
+              "text": "ile",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(Ek",
+              "struck": false
+            },
+            {
+              "text": ":",
+              "struck": false
+            },
+            {
+              "text": "RG-09/09/2017- 30175",
+              "struck": false
+            },
+            {
+              "text": "/ 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Yürürlük: ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "23",
+              "struck": false
+            },
+            {
+              "text": "/09/2017",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": " çocuk endokrinolojisi ve metabolizma hastalıkları veya",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "çocuk endokrinoloji uzman hekimince reçete edilmesi halinde bedeli ödenir. Bu raporda, ilacın kullanım dozu, uygulama planı, süresi ve başlama kriterleri belirtilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4314,
+          "text": "4.2.6.B-1 - Başlama kriterleri",
+          "text_sha256": "54b838a3b1eb4fca03792bbe734147ef3e61b5924f8c034e790147705f36b706",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "1",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Başlama k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4315,
+          "text": "(1) İlgili uzman hekim tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra büyümeyi etkileyen sistemik bir hastalığı veya beslenme bozukluğu olmadığı tespit edilen hastalarda; boy (-3) standart sapmanın altında, yıllık büyüme hızı yaş ve cinse göre 25 persentilin altında, serum IGF-I düzeyi < -2 SD, serum IGFBP-3 düzeyi < -1 SD, bazal veya uyarılmış büyüme hormonu düzeyi > 10 mcg/L, somatomedin jenerasyon testinde büyüme hormonu uyarısına IGF-I artışının yetersiz olduğu durumlarda tedaviye başlanılır.",
+          "text_sha256": "5997f9741bb6e4f6c854f9f3a6f1b84f8d32b0706548bc46c89dc16ec9c10f46",
+          "runs": [
+            {
+              "text": "(1) ",
+              "struck": false
+            },
+            {
+              "text": "İ",
+              "struck": false
+            },
+            {
+              "text": "lgili uzman hekim tarafından en az 6",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "ay süreyle büyüme hızı izlendikten sonra büyümeyi etkileyen sistemik bir hastalığı veya beslenme bozukluğu olma",
+              "struck": false
+            },
+            {
+              "text": "dığı tespit edilen",
+              "struck": false
+            },
+            {
+              "text": " hastalarda; ",
+              "struck": false
+            },
+            {
+              "text": "b",
+              "struck": false
+            },
+            {
+              "text": "oy (-3) standart sapmanın altında, yıllık büyüme hızı yaş ve cinse göre 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında, serum IGF-I düzeyi < -2 SD, serum IGFBP-3 düzeyi < -1 SD, bazal veya uyarılmış büy",
+              "struck": false
+            },
+            {
+              "text": "üme hormonu düzeyi > 10 ",
+              "struck": false
+            },
+            {
+              "text": "mcg",
+              "struck": false
+            },
+            {
+              "text": "/L, ",
+              "struck": false
+            },
+            {
+              "text": "s",
+              "struck": false
+            },
+            {
+              "text": "omatomedin",
+              "struck": false
+            },
+            {
+              "text": " jenerasyon testinde büyüme hormonu uyarısına IGF-I artışının yetersiz olduğu durumlarda tedaviye başlanılır. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4316,
+          "text": "(2) Başlangıç dozu 120 mcg/kg/gün’e kadar çıkılabilir.",
+          "text_sha256": "df3e5cd0be1ac74c2340ff2021640e5dc88bbfa4ce6c3cf96a447dffcaaf943d",
+          "runs": [
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "2",
+              "struck": false
+            },
+            {
+              "text": ") Başlangıç dozu 120 ",
+              "struck": false
+            },
+            {
+              "text": "mcg",
+              "struck": false
+            },
+            {
+              "text": "/kg/",
+              "struck": false
+            },
+            {
+              "text": "gün’e",
+              "struck": false
+            },
+            {
+              "text": " kadar çıkılabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4317,
+          "text": "(3) Büyüme hormonu tedavisinin yerine kullanılmaz.",
+          "text_sha256": "218ac9a2283be06078fb79dbccb3f176bfe48508fa6d08a8ba008cfb68bd6d18",
+          "runs": [
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "3",
+              "struck": false
+            },
+            {
+              "text": ") Büyüme hormonu tedavisinin yerine kullanılmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4318,
+          "text": "4.2.6.B-2 - Devam kriterleri",
+          "text_sha256": "52f25f7ce70ef2cc7347b3432fbcb003f956a6f9acf9dc1337da0134dc976cd7",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "2",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Devam k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4319,
+          "text": "(1) Tedavi alan hastalar en az 3 aylık sürelerle izlenerek, radyolojik olarak epifiz hatlarının açık olduğunun reçetede belirtilmesi kaydıyla hedeflenen yaş grubu ortalama boy skalasına göre 25 persentile ulaşana kadar, tedavi ile yıllık büyüme hızının izlemde tedavi öncesi yıllık büyüme hızının 2 cm üstünde olan hastalarda yılda bir sağlık kurulu raporu yenilenerek tedavi devam ettirilir.",
+          "text_sha256": "e92a7dce5a933bfe282030c0bbcb98fa9e180e6839170267222bb9e184a67f3a",
+          "runs": [
+            {
+              "text": "(1) Tedavi alan hastalar en az 3 aylık sürelerle izlenerek, radyolojik olarak epifiz hatlarının açık olduğunun reçetede belirtilmesi kaydıyla hedeflenen yaş grubu ortalama boy skalasına göre 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentile",
+              "struck": false
+            },
+            {
+              "text": " ulaşana kadar, tedavi ile yıllık büyüme hızının izlemde tedavi öncesi yıllık büyüme hızının 2 cm üstünde olan hastalarda yılda bir sağlık kurulu raporu yenilenerek tedavi devam ettirilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4320,
+          "text": "(2) Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı, ulaştığı boy skalası ve epifiz hatlarının durumu belirtilir.",
+          "text_sha256": "c81c85332addffcf868c45390402d477d4dc38edea91c46746dde9fd0f791a01",
+          "runs": [
+            {
+              "text": "(2) Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı, ulaştığı boy skalası ve epifiz hatlarının durumu belirtilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4321,
+          "text": "4.2.6.B-3 - Sonlandırma kriterleri",
+          "text_sha256": "b96bc439ae458074bee87ad6d244ffdf0e3557d1edf99955bbba80b0d99245c2",
+          "runs": [
+            {
+              "text": "4.2.6.B-",
+              "struck": false
+            },
+            {
+              "text": "3",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "-",
+              "struck": false
+            },
+            {
+              "text": " Sonlandırma k",
+              "struck": false
+            },
+            {
+              "text": "riterleri ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4322,
+          "text": "(1) Tedavi;",
+          "text_sha256": "f26d9b5758bcd7a446b0e9c5ad501dd52e7364e125e9033e38b1041680535594",
+          "runs": [
+            {
+              "text": "(1) Tedavi;",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4323,
+          "text": "Epifiz hattı kapandığında veya",
+          "text_sha256": "dde3c8f61ad7719b2363fd762bc01efbf8afaa7524c7e5d1f44b2b18f2b17f0c",
+          "runs": [
+            {
+              "text": "Epifiz hattı kapandığında veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4324,
+          "text": "Yıllık büyüme hızı tedavi öncesi hıza göre + 2 cm’den düşük olduğunda veya",
+          "text_sha256": "11e1f07761bd53af78aa49e614126cc264cbd00be62e77c48009ca49c5946a1b",
+          "runs": [
+            {
+              "text": "Yıllık büyüme hızı tedavi öncesi hıza göre + 2 cm’den düşük olduğunda veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4325,
+          "text": "Boy uzunluğu kızlarda 155 cm ve erkeklerde 165 cm’ye ulaştığında veya",
+          "text_sha256": "de2f2b31454b8e6081711bdaa207331f199e69eaf9a0fa089cd4c00ef54949c1",
+          "runs": [
+            {
+              "text": "Boy uzunluğu kızlarda 155 cm ve erkeklerde 165 cm’ye ulaştığında veya ",
+              "struck": false
+            }
+          ],
+          "word_numbering": {
+            "num_id": "47",
+            "level": "2",
+            "abstract_num_id": "33",
+            "format": "lowerLetter",
+            "level_text": "%3)"
+          }
+        },
+        {
+          "docx_paragraph_index_zero_based": 4326,
+          "text": "ç) Tedavi esnasında boy 25 persentile ulaştığında,",
+          "text_sha256": "269f3195c84fd172c96451133fc34c5899b956c2646901cb75a00e1f4b069dff",
+          "runs": [
+            {
+              "text": "ç",
+              "struck": false
+            },
+            {
+              "text": ") ",
+              "struck": false
+            },
+            {
+              "text": "Tedavi esnasında boy 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentile",
+              "struck": false
+            },
+            {
+              "text": " ulaştığında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4327,
+          "text": "sonlandırılacaktır.",
+          "text_sha256": "46acd2ab953e52a429947c7a01d505730bee345410957678cff7cdd328f45cfd",
+          "runs": [
+            {
+              "text": "sonlandırılacaktır",
+              "struck": false
+            },
+            {
+              "text": ". ",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source_fragment_keys": [
+    "4.2.6.B-3#46acd2ab"
+  ],
+  "historical_source_research": {
+    "official_original_act_url": "https://www.resmigazete.gov.tr/eskiler/2013/03/20130324-3.pdf",
+    "verified_index_url": "https://resmigazete.gov.tr/fihrist?tarih=2013-03-24",
+    "official_2017_amendment_url": "https://resmigazete.gov.tr/eskiler/2017/09/20170909-1.htm",
+    "result": "Original PDF is 49,709,128 bytes and exceeded web tool size limit; authorized local download timed out before response after 90 seconds. The 2017 amendment timed out and then returned502. Original provision and exhaustive amendment history remain unread; no continuous legal interval established."
+  },
+  "initial_dose_max_mcg_per_kg_per_day": 120
+}

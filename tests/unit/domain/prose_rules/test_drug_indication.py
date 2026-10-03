@@ -112,7 +112,7 @@ def test_load_drug_indication_rules_phase2_corpus() -> None:
     core = json.loads((_PROSE_RULES_DIR / "drug_indication_prose.json").read_text("utf-8"))
     anti_vegf = json.loads((_PROSE_RULES_DIR / "anti_vegf_prose.json").read_text("utf-8"))
     expected = len(core.get("rules") or []) + len(anti_vegf.get("rules") or [])
-    assert len(rules) == expected
+    assert len([r for r in rules if not r.get("temporal_source_only")]) == expected
 
 
 def test_drug_indication_coverage_scope_phase2() -> None:
@@ -468,8 +468,14 @@ def test_unrelated_complete_diagnoses_cannot_be_shadowed_by_icd_less_rules(
     )
 
     assert hit is not None
-    assert hit["violation_kind"] == "indication_mismatch"
-    assert hit["applicability_status"] == "indication_mismatch"
+    if drug_name == "tiotepa":
+        # The historical generic route cannot establish a valid source version.
+        # This is review, not a manufactured nonpayment determination.
+        assert hit["violation_kind"] == "needs_temporal_clinical_verification"
+        assert hit["temporal_evidence"]["status"] == "historical_source_unverified"
+    else:
+        assert hit["violation_kind"] == "indication_mismatch"
+        assert hit["applicability_status"] == "indication_mismatch"
     assert hit["selected_rule_id"] is None
     assert hit["matched_icd10_codes"] == []
 
@@ -689,13 +695,14 @@ def test_biomarker_verification_needed_when_claim_lacks_biomarker() -> None:
 
 
 def test_bucket_b_rules_carry_biomarker_or_prior_therapy_fields() -> None:
-    """All Bucket B rules must gate on biomarker or prior-therapy."""
+    """Bucket B rules carry a legacy biomarker/prior-therapy or typed clinical gate."""
     rules = list_drug_indication_rules()
     bucket_b = [r for r in rules if "bucket_b" in r.get("rule_id", "")]
     assert len(bucket_b) >= 16
     for rule in bucket_b:
-        assert rule.get("required_biomarkers") or rule.get("requires_prior_therapy"), (
-            f"Bucket B rule {rule['rule_id']} has neither biomarker nor prior-therapy gate"
+        assert (rule.get("required_biomarkers") or rule.get("requires_prior_therapy")
+                or rule.get("clinical_constraint_set")), (
+            f"Bucket B rule {rule['rule_id']} has no structured clinical gate"
         )
         assert rule.get("gate_b_sources"), f"Bucket B rule {rule['rule_id']} missing provenance"
 

@@ -1368,3 +1368,23 @@ Merging or deploying, user-computer/VPS operations, production credential/securi
 User approved this PR. Work uses the authorized GitHub connector and isolated cloud workspace because the declined local task will not be retried. Source inventory is partial only for unavailable data/binary assets, so publication must derive from the verified complete remote base tree and include changed files only. Current-baseline design is confirmed: version comes from complete persisted evidence/report contracts, not API feature visibility or unchanged build_meta schema; original-five migration remains supported; current full-v2 comparisons validate both sides and normalize only independently bound identity fields. The paired transaction design must explicitly bind the final serving database; changing bytes after signing or weakening hashes is prohibited. No production command is executed during implementation.
 
 Snapshot design decision: the current ordinary load-only service owns a writable DuckDB connection. Do not claim an undocumented hot-copy snapshot. The authorized PR includes explicit opt-in snapshot maintenance with warnings, shared locking, durable recovery and interruption tests; actual VPS execution remains out of scope. Later read-only online snapshot support requires tested reader-lock semantics.
+
+## Task: Date-aware SUT drug amendments
+
+### Goal
+Select source-verified amendments by the actual drug service date, preserve older rule behavior and disclose missing temporal or clinical evidence.
+
+### Subtasks
+- [x] Verify current-main blobs and baseline focused tests.
+- [x] Review plan and official October amendment evidence with coordinator.
+- [ ] Add a versioned, source-pinned amendment catalog and strict date resolver.
+- [ ] Integrate affected drug evaluation with explicit unresolved clinical gates.
+- [ ] Propagate optional drug service dates through dict adapters and typed evidence.
+- [ ] Add boundary, historical, unknown-date, source and no-false-compliance tests.
+- [ ] Run focused and aggregate tests, lint and independently review selected-file overlay.
+
+### Out of Scope
+No merge, deployment, VPS access, invented clinical criteria, blanket source dates or claims that historical lower bounds are verified. Other SUT groups remain separate workstreams.
+
+### Verified implementation contract
+The service date is optional `drug_context.service_date`, mapped to the actual drug line, never the server date. Date-aware selection uses half-open validity intervals and fails closed on absent, invalid, overlapping or unsupported versions. The three explicitly annotated October 10 successor clauses are source-backed partial evaluations, not complete eligibility decisions. Legacy clinical checks may still run before that boundary, with an explicit unverified historical-version review. Thiotepa stays quarantined; no active amendment is inferred from consolidation. Temporal records do not inflate encoded-rule coverage. Public evidence is bounded and allowlisted, with source IDs/dates/hashes but no raw rule payload. Stream B owns the form/type; this stream owns backend contracts and domain tests.

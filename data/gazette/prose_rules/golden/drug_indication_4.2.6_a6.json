@@ -49,14 +49,14 @@
       "report_present": true,
       "prescriber_specialty": "çocuk endokrinoloji",
       "report_duration_months": 12,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.turner_somatropin_pediatric_board"
     },
     {
       "drug_name": "INCRELEX 10 MG/ML (MECASERMIN)",
       "primary_icd10": "E34.31",
       "report_present": false,
-      "expect_violation": "missing_board_report",
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.laron_mecasermin_continuation_board"
     },
     {
@@ -64,7 +64,7 @@
       "primary_icd10": "E34.31",
       "report_present": true,
       "report_duration_months": 12,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.laron_mecasermin_continuation_board"
     },
     {
@@ -72,7 +72,7 @@
       "primary_icd10": "E34.31",
       "report_present": true,
       "report_duration_months": null,
-      "expect_violation": "needs_report_verification",
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.laron_mecasermin_continuation_board"
     }
   ]

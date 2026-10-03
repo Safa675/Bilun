@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -10,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+from src.bilun.domain.claims.clinical_evidence import IndicationEvidence
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
 pytestmark = pytest.mark.unit
@@ -48,6 +50,7 @@ def _drug_line(
     report_present: bool | None,
     report_duration_months: int | None = None,
     prescriber_specialty: str | None = None,
+    service_date: date = date(2026, 1, 2),
 ) -> DrugClaimLine:
     return DrugClaimLine(
         drug_claim_line_id="D-A3",
@@ -55,7 +58,7 @@ def _drug_line(
         claim_id="C-A3",
         patient_id="P1",
         episode_id="E1",
-        drug_claim_date=date(2026, 1, 2),
+        drug_claim_date=service_date,
         drug_name=drug_name,
         drug_code="",
         barkod="",
@@ -105,6 +108,7 @@ def test_a3_golden_samples(sample: dict) -> None:
             report_present=sample.get("report_present"),
             report_duration_months=sample.get("report_duration_months"),
             prescriber_specialty=sample.get("prescriber_specialty"),
+            service_date=date.fromisoformat(sample.get("service_date", "2026-01-02")),
         ),
         claim=_claim(primary_icd10=sample["primary_icd10"]),
         diagnoses=(),
@@ -120,3 +124,25 @@ def test_a3_golden_samples(sample: dict) -> None:
             assert sample["rule_id"] in hit["eligible_route_rule_ids"]
         else:
             assert hit["rule_id"] == sample["rule_id"]
+
+    if sample.get("expect_clinical_status"):
+        assert hit["severity"] == sample["expect_severity"]
+        observed = next(row for row in hit["clinical_restrictions"] if row["constraint_set"] == "other_indication_source_constraints")
+        assert observed["criterion_status"] == sample["expect_clinical_status"]
+        assert sample["expect_missing_input"] in observed["missing_inputs"]
+        assert hit["clinical_eligibility_complete"] is sample["expect_clinical_eligibility_complete"]
+        assert not any(key in hit for key in ("payable_try", "risk_amount", "savings_try", "recoverable_uplift_try"))
+
+
+def test_denosumab_supported_source_date_retains_missing_report_enforcement():
+    day = date(2026, 10, 2)
+    drug = replace(_drug_line(drug_name="PROLIA 60 MG (DENOSUMAB)", report_present=False,
+        prescriber_specialty="endokrinoloji", service_date=day), indication_evidence=IndicationEvidence(
+            applies_on=day, assessment_date=day, indication="glucocorticoid_bone_loss", age_group="adult",
+            osteoporosis_diagnosed=True, high_fracture_risk=True, long_term_glucocorticoid_treatment=True,
+            glucocorticoid_associated_bone_loss=True, bisphosphonate_intolerant=True))
+    hit = evaluate_drug_indication_line(drug_line=drug, claim=_claim(primary_icd10="M81.0"), diagnoses=())
+    assert hit["violation_kind"] == "missing_board_report"
+    assert hit["severity"] == "error"
+    assert hit["clinical_restrictions"][0]["criterion_status"] == "criterion_clear"
+    assert hit["clinical_eligibility_complete"] is False

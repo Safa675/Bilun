@@ -7,6 +7,7 @@ are never promoted into clinical evidence or financial conclusions here.
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import fields
 import time
 from typing import Any
 
@@ -16,7 +17,14 @@ from src.bilun.domain.billing.broad_rule_materializer import (
     materialize_broad_rules,
 )
 from src.bilun.domain.billing.engine import analyze_claim
+from src.bilun.domain.billing.drug_clinical_evidence import (
+    bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
+)
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
+from src.bilun.domain.claims.clinical_evidence import (
+    AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+)
+from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
     assess_bundled_material,
     assess_excluded_material,
@@ -40,6 +48,68 @@ _LEGACY_REVIEW_GATES = {
 }
 
 
+def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
+    """Expose bounded input identifiers, never raw clinical payloads or money."""
+    allowed = {
+        "primary_icd10", "prescriber_specialty", "drug_specialty_board_report_present",
+        "drug_report_duration_months", "annual_application_count", "is_loading_phase",
+        "biomarkers", "prior_therapies", "drug_inpatient_supply", "service_date",
+        "route_discriminator",
+        "ckd_growth_initiation_clinical_assessment", "ckd_growth_continuation_clinical_assessment",
+        "ckd_parathyroid_status_reconciliation",
+        "mecasermin_source_version", "mecasermin_remaining_clinical_criteria",
+        "drug_claim_date", "age", "weight_kg", "edss", "cancer_stage", "treatment_setting",
+        "historical_rule_version", "effective_rule_version", "prior_taxane_anti_her2_cycles",
+        "residual_invasive_disease", "treatment_cycle_count", "disease_progression",
+        "monotherapy", "report_board_composition", "her2_ihc_3plus_or_fish_sish_cish_positive",
+        "ecog", "combination_regimen", "prior_metastatic_therapy", "months_since_adjuvant_therapy",
+        "nmosd_diagnosis", "high_disease_activity", "relapsing_course", "treatment_stage",
+        "adequate_prior_immunosuppressants", "relapse_under_treatment", "tertiary_care",
+        "three_neurologist_board", "ek4g_inpatient_supply", "transplant_preparation_indication",
+        "historical_sut_version", "verified_source_for_service_date",
+        "remaining_sut_clinical_criteria", "micafungin_prophylaxis_route",
+        "itraconazole_source_neutrophil_unit_verification", "itraconazole_non_solution_EK4E_requirements",
+        *GROWTH_HORMONE_INPUT_FIELDS,
+        "ckd_height_source_notation_verification", "ckd_height_reference_reconciliation",
+        "ckd_transplant_timing_reconciliation",
+        "gh_initiation_clinical_assessment", "gh_growth_stage_reconciliation",
+        "pws_genetic_diagnosis_confirmed", "pws_uncontrolled_diabetes",
+        "pws_untreatable_obstructive_sleep_apnea", "pws_active_cancer", "pws_active_psychosis",
+        "pws_progressive_scoliosis", "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
+    }
+    clinical = {name: {field.name for field in fields(model)} for name, model in (
+        ("sma_evidence", SmaEvidence), ("antifungal_evidence", AntifungalEvidence),
+        ("renal_evidence", RenalEvidence), ("followup_evidence", FollowupEvidence), ("indication_evidence", IndicationEvidence),
+        ("enteral_evidence", EnteralEvidence), ("ravulizumab_evidence", RavulizumabEvidence),
+    )}
+    clinical["enteral_evidence"].update({"exception_path_requires_review", "adult_path_requires_review"})
+    clinical["indication_evidence"].update({"single_supported_medicine_family",
+        "histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping"})
+    clinical["followup_evidence"].update({"documented_16_week_response", "single_supported_medicine_family"})
+    clinical["antifungal_evidence"].add("single_supported_medicine_family")
+    clinical["renal_evidence"].update({
+        "source_supported_treatment_phase", "source_continuation_checkpoint",
+        "supported_renal_indication", "single_supported_medicine_family",
+        "phosphate_binding_indication", "renal_nutrition_indication", "valid_ckd_stage",
+        "positive_baseline_albumin_g_dl",
+    })
+
+    def supported(value: str) -> bool:
+        root, separator, detail = value.partition(".")
+        if root in clinical:
+            return not separator or detail in clinical[root]
+        if root == "biomarkers":
+            return not separator or bool(detail and "." not in detail)
+        if root == "prior_therapies":
+            return not separator or detail == "drug_or_class"
+        return root in allowed and not separator
+
+    return sorted({
+        value for value in raw.get("missing_inputs", [])
+        if isinstance(value, str) and supported(value)
+    })
+
+
 def typed_validation_payload(result: dict[str, Any]) -> dict[str, Any]:
     """Select the public/API and LLM contract, excluding internal raw history."""
     selected = {key: result[key] for key in (
@@ -47,6 +117,8 @@ def typed_validation_payload(result: dict[str, Any]) -> dict[str, Any]:
         "violations", "advisories", "material_applicability", "coverage", "provenance",
         "summary", "validation_time_ms",
     )}
+    if "drug_runtime_coverage" in result:
+        selected["drug_runtime_coverage"] = result["drug_runtime_coverage"]
     return ValidateClaimV2Response.model_validate(selected).model_dump()
 
 
@@ -91,10 +163,15 @@ def validate_claim_v2(
         {**row, "claim_id": old_claim_id}
         for row in prepared["drug_combination_4_2"]
     ) if old_claim_id else ()
+    from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
+
+    drug_runtime_observations = RequestDrugRuntimeSink(legacy_context.drug_lines)
     raw_rows = (
-        analyze_claim(legacy_context, prepared_broad_rows=prepared)
+        analyze_claim(legacy_context, prepared_broad_rows=prepared,
+                      drug_runtime_observations=drug_runtime_observations)
         if legacy_claim.get("materials") else []
     )
+    drug_runtime_coverage = drug_runtime_observations.payload()
     historical = project_claim_validation_rows(legacy_claim, raw_rows, started_at=started)
     classifier = BroadRuleClassifier(provenance.typed_context)
     counts: Counter[str] = Counter()
@@ -142,6 +219,14 @@ def validate_claim_v2(
             "disposition": "review_only",
             "reason": _LEGACY_REVIEW_GATES.get(family, "unreviewed_legacy_family"),
             "source_status": "historical_match_unverified",
+            "missing_inputs": _drug_missing_inputs(raw) if family == "drug_indication" else [],
+
+
+            **(source_authority_payload(raw.get('source_authority')) if family == 'drug_indication' else {}),
+            **(clinical_evidence_payload(bounded_clinical_restrictions(raw.get('clinical_restrictions')))
+               if family == 'drug_indication' else {}),
+            **({'selected_rule_id': raw.get('selected_rule_id')}
+               if family == 'drug_indication' and (raw.get('clinical_restrictions') or raw.get('source_authority')) else {}),
         })
     unresolved = counts["missing_inputs"] + counts["unavailable"]
     status = (
@@ -159,6 +244,7 @@ def validate_claim_v2(
         "violations": violations,
         "advisories": advisories,
         "material_applicability": _material_applicability(supplied_claim, provenance.request_id),
+        "drug_runtime_coverage": drug_runtime_coverage,
         "coverage": {
             "evaluation_count": len(bundle.evaluations),
             "authored_rule_count": len(broad_ids),

@@ -1,0 +1,1352 @@
+{
+  "protocol_id": "pediatric_gh_initiation_v1",
+  "verification_status": "ai_generated_pending_review",
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "date_basis": "Explicit RG09/05/2024-32541/7-a current pediatric somatropin/somatrogon heading effective17/05/2024; not the initial enactment date of underlying growth criteria. Earlier dates review-only.",
+  "scope": "Necessary standard velocity/bone-age and explicit SGA case1/case2 comparisons only. Printed age bands are clinician-recorded source categories, never derived from decimal chronological age. Puberty is explicit clinical assessment, never inferred from sex/age. Organic/surgical and neurosecretory paths remain review-only and never inherit standard conditions. All successful necessary checks retain partial eligibility review.",
+  "source_keys": {
+    "velocity": [
+      "4.2.6.A-1.(1)#72e47d24",
+      "4.2.6.A-1.(2)#30e012d8",
+      "4.2.6.A-1.(3)#89477346",
+      "4.2.6.A-1.(4)#dcfc2909"
+    ],
+    "bone_age": [
+      "4.2.6.A-1.(1)#8539914f",
+      "4.2.6.A-1.(2)#13f4b28c",
+      "4.2.6.A-1.(3)#0c2b0e3f"
+    ],
+    "sga": [
+      "4.2.6.A-1.(1)#52b1f15a",
+      "4.2.6.A-1.(2)#75f092ee"
+    ]
+  },
+  "remaining_clinical_requirements": "Systemic disease, height deficit, duration/author of monitoring, laboratory GH tests, source-specific diagnostic confirmation, reports, puberty biological definition and specialist judgement remain unproven by these comparisons. SGA source cases are selected explicitly rather than guessing AND/OR between cases.",
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4235,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "text_sha256": "cc9e57a82a474ef0e01a1ca8138b7a356e9a1d45048f4b121d35fbd3858ba852",
+          "active_text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "runs": [
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-a ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4236,
+          "text": "4.2.6.A-1 - Çocuklarda;",
+          "text_sha256": "7f8c846ef34296a990f9b4e338190d28c215158a02de8667f905daac84a8bd81",
+          "active_text": "",
+          "runs": [
+            {
+              "text": "  ",
+              "struck": false
+            },
+            {
+              "text": "            ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-",
+              "struck": true
+            },
+            {
+              "text": "1 -",
+              "struck": true
+            },
+            {
+              "text": " Çocuklarda;",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4237,
+          "text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "text_sha256": "45cb2c1e4792dd101c3b5e062af4d34ac804487d0a49dde8fb632fef7a8cdb66",
+          "active_text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-1 – Çocuklarda ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " ve ",
+              "struck": false
+            },
+            {
+              "text": "somatrogon",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri",
+              "struck": false
+            },
+            {
+              "text": ";",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4238,
+          "text": "(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir hastalığı (Mülga:RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024) veya beslenme bozukluğu olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+          "text_sha256": "696113e2fca9e48c687161ac9cd1e19a2ee402811cadaa0cd5d08304bf36b1a5",
+          "active_text": "(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir hastalığı (Mülga:RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024)  olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir ",
+              "struck": false
+            },
+            {
+              "text": "hastalığı ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Mülga:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-b ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "veya beslenme bozukluğu",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4239,
+          "text": "a) Yıllık büyüme hızı;",
+          "text_sha256": "9787d58721581e318730febbe0c3a511c1506594523f2b8ec9b7b77dbfea555b",
+          "active_text": "a) Yıllık büyüme hızı;",
+          "runs": [
+            {
+              "text": "           ",
+              "struck": false
+            },
+            {
+              "text": "\ta) Yıllık büyüme hızı; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4240,
+          "text": "1) 0-2 yaş aralığında 10 cm’nin altında,",
+          "text_sha256": "72e47d24c18949b7539d911a60314cfbc720a7f20b902a41d0e19cb151a71d59",
+          "active_text": "1) 0-2 yaş aralığında 10 cm’nin altında,",
+          "runs": [
+            {
+              "text": "               ",
+              "struck": false
+            },
+            {
+              "text": "\t1) 0-2 yaş aralığında 10 cm’nin altında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4241,
+          "text": "2) 2,1-4 yaş aralığında 7 cm’nin altında,",
+          "text_sha256": "30e012d8b7017761d21264e4a7aebe7de3bfb6c0594e398b2a7df64fcbc818ff",
+          "active_text": "2) 2,1-4 yaş aralığında 7 cm’nin altında,",
+          "runs": [
+            {
+              "text": "                2) 2,1-4 yaş aralığında 7 cm’nin altında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4242,
+          "text": "3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+          "text_sha256": "894773465d85cd87cbfc9c6311c14e33c17bb8583d710ae83d420542116896e4",
+          "active_text": "3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+          "runs": [
+            {
+              "text": "                3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4243,
+          "text": "4) Puberte’de; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi,",
+          "text_sha256": "dcfc2909e394495bef1f3888d8f3dd80bf86a369c075c958ff3f903860e66ba8",
+          "active_text": "4) Puberte’de; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi,",
+          "runs": [
+            {
+              "text": "               ",
+              "struck": false
+            },
+            {
+              "text": "\t4) ",
+              "struck": false
+            },
+            {
+              "text": "Puberte’de",
+              "struck": false
+            },
+            {
+              "text": "; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4244,
+          "text": "b) Kemik yaşı;",
+          "text_sha256": "3b2664e61e02c7386c08a72b951bac8409323fa975e392d2fe2b9aa1fc72e57a",
+          "active_text": "b) Kemik yaşı;",
+          "runs": [
+            {
+              "text": "         ",
+              "struck": false
+            },
+            {
+              "text": "\tb) Kemik yaşı; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4245,
+          "text": "1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+          "text_sha256": "8539914f8631157765ed7cc290498dc0be1a695305d6d4952b5fc62a8d8718ae",
+          "active_text": "1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4246,
+          "text": "2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,",
+          "text_sha256": "13f4b28c70c7f652f4fb39cbbac7cd84a244c1d28dd592e8fef1eed5bb19fe79",
+          "active_text": "2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,  ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4247,
+          "text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+          "text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b",
+          "active_text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde ",
+              "struck": false
+            },
+            {
+              "text": "gonadarj",
+              "struck": false
+            },
+            {
+              "text": " (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde ",
+              "struck": false
+            },
+            {
+              "text": "telarşın",
+              "struck": false
+            },
+            {
+              "text": " olması pubertenin başlangıcı olarak kabul edilecektir.) ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4248,
+          "text": "c) Ötiroid hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (hipopituitarizm),",
+          "text_sha256": "f5d47ff1685034b7c4b4b66ed167cfdd3cb560b2f42aac68130b20d431ccacbd",
+          "active_text": "c) Ötiroid hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (hipopituitarizm),",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\tc) ",
+              "struck": false
+            },
+            {
+              "text": "Ötiroid",
+              "struck": false
+            },
+            {
+              "text": " hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (",
+              "struck": false
+            },
+            {
+              "text": "hipopituitarizm",
+              "struck": false
+            },
+            {
+              "text": "),",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4249,
+          "text": "ç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz konusu ise, yani nörosekretuar disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada biyoinaktif büyüme hormonu saptanmış olması (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.),",
+          "text_sha256": "1139d54c67803f5749642cbe64e33407cb1ebc7f58d2a1b56197fd57c418310a",
+          "active_text": "ç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz konusu ise, yani nörosekretuar disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada biyoinaktif büyüme hormonu saptanmış olması (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.),",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\tç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "konusu ise, yani ",
+              "struck": false
+            },
+            {
+              "text": "nörosekretuar",
+              "struck": false
+            },
+            {
+              "text": " disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada ",
+              "struck": false
+            },
+            {
+              "text": "biyoinaktif",
+              "struck": false
+            },
+            {
+              "text": " büyüme hormonu saptanmış olması",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-c ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Yalnızca ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " etkin maddeli ilaçlar ",
+              "struck": false
+            },
+            {
+              "text": "kullanılabilir.",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": ",",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4250,
+          "text": "d) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle hipotalamo-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya hipotalamo-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+          "text_sha256": "378dc00473a56a186a6640809ad76653eaad08a3d33df6e394278c71b4e0edfc",
+          "active_text": "d) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle hipotalamo-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya hipotalamo-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\td) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamo",
+              "struck": false
+            },
+            {
+              "text": "-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamo",
+              "struck": false
+            },
+            {
+              "text": "-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4251,
+          "text": "e) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.);",
+          "text_sha256": "0de79eedbf529d4b090638490f54a1e0f5a7bb3b96dc999fe39ff724719338fd",
+          "active_text": "e) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.);",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\te) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-c ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Yalnızca ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " etkin maddeli ilaçlar ",
+              "struck": false
+            },
+            {
+              "text": "kullanılabilir.",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": ";",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4252,
+          "text": "1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı standard sapması <0) olması,",
+          "text_sha256": "52b1f15a7d9bc373ebfc5ff882a1fb54d8106ba0fc244b7d57b911426ea3005f",
+          "active_text": "1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı standard sapması <0) olması,",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı ",
+              "struck": false
+            },
+            {
+              "text": "standard",
+              "struck": false
+            },
+            {
+              "text": " sapması <0) olması,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4253,
+          "text": "2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+          "text_sha256": "75f092ee8250607ddca6868913306fb9d9e9fd4d206eac87bab9d43df983d6c1",
+          "active_text": "2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": "\t2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4254,
+          "text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "text_sha256": "a3b772ffa12b25cb0017a632f40882fe9fb061f38dc4eb6525cd202ba1a0f6ea",
+          "active_text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4243,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "text_sha256": "cc9e57a82a474ef0e01a1ca8138b7a356e9a1d45048f4b121d35fbd3858ba852",
+          "active_text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "runs": [
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-a ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4244,
+          "text": "4.2.6.A-1 - Çocuklarda;",
+          "text_sha256": "7f8c846ef34296a990f9b4e338190d28c215158a02de8667f905daac84a8bd81",
+          "active_text": "",
+          "runs": [
+            {
+              "text": "  ",
+              "struck": false
+            },
+            {
+              "text": "            ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-",
+              "struck": true
+            },
+            {
+              "text": "1 -",
+              "struck": true
+            },
+            {
+              "text": " Çocuklarda;",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4245,
+          "text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "text_sha256": "45cb2c1e4792dd101c3b5e062af4d34ac804487d0a49dde8fb632fef7a8cdb66",
+          "active_text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-1 – Çocuklarda ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " ve ",
+              "struck": false
+            },
+            {
+              "text": "somatrogon",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri",
+              "struck": false
+            },
+            {
+              "text": ";",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4246,
+          "text": "(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir hastalığı (Mülga:RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024) veya beslenme bozukluğu olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+          "text_sha256": "696113e2fca9e48c687161ac9cd1e19a2ee402811cadaa0cd5d08304bf36b1a5",
+          "active_text": "(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir hastalığı (Mülga:RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024)  olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t(1) Tedaviye başlanabilmesi için hastanın çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra; büyümeyi etkileyen sistematik bir ",
+              "struck": false
+            },
+            {
+              "text": "hastalığı ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Mülga:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-b ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "veya beslenme bozukluğu",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "olmayan, boy sapması -2,0 standart sapmadan (SD) küçük ve yıllık büyüme hızı ve kemik yaşı için aşağıda yer verilen kriterleri birlikte karşılayan hastalarda çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden en az birinin bulunduğu 1 yıl süreli sağlık kurulu raporu ile büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4247,
+          "text": "a) Yıllık büyüme hızı;",
+          "text_sha256": "9787d58721581e318730febbe0c3a511c1506594523f2b8ec9b7b77dbfea555b",
+          "active_text": "a) Yıllık büyüme hızı;",
+          "runs": [
+            {
+              "text": "           ",
+              "struck": false
+            },
+            {
+              "text": "\ta) Yıllık büyüme hızı; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4248,
+          "text": "1) 0-2 yaş aralığında 10 cm’nin altında,",
+          "text_sha256": "72e47d24c18949b7539d911a60314cfbc720a7f20b902a41d0e19cb151a71d59",
+          "active_text": "1) 0-2 yaş aralığında 10 cm’nin altında,",
+          "runs": [
+            {
+              "text": "               ",
+              "struck": false
+            },
+            {
+              "text": "\t1) 0-2 yaş aralığında 10 cm’nin altında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4249,
+          "text": "2) 2,1-4 yaş aralığında 7 cm’nin altında,",
+          "text_sha256": "30e012d8b7017761d21264e4a7aebe7de3bfb6c0594e398b2a7df64fcbc818ff",
+          "active_text": "2) 2,1-4 yaş aralığında 7 cm’nin altında,",
+          "runs": [
+            {
+              "text": "                2) 2,1-4 yaş aralığında 7 cm’nin altında, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4250,
+          "text": "3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+          "text_sha256": "894773465d85cd87cbfc9c6311c14e33c17bb8583d710ae83d420542116896e4",
+          "active_text": "3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+          "runs": [
+            {
+              "text": "                3) 4,1 yaş-ergenlik döneminde 5 cm’nin altında,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4251,
+          "text": "4) Puberte’de; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi,",
+          "text_sha256": "dcfc2909e394495bef1f3888d8f3dd80bf86a369c075c958ff3f903860e66ba8",
+          "active_text": "4) Puberte’de; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi,",
+          "runs": [
+            {
+              "text": "               ",
+              "struck": false
+            },
+            {
+              "text": "\t4) ",
+              "struck": false
+            },
+            {
+              "text": "Puberte’de",
+              "struck": false
+            },
+            {
+              "text": "; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi, ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4252,
+          "text": "b) Kemik yaşı;",
+          "text_sha256": "3b2664e61e02c7386c08a72b951bac8409323fa975e392d2fe2b9aa1fc72e57a",
+          "active_text": "b) Kemik yaşı;",
+          "runs": [
+            {
+              "text": "         ",
+              "struck": false
+            },
+            {
+              "text": "\tb) Kemik yaşı; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4253,
+          "text": "1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+          "text_sha256": "8539914f8631157765ed7cc290498dc0be1a695305d6d4952b5fc62a8d8718ae",
+          "active_text": "1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t1) 4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4254,
+          "text": "2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,",
+          "text_sha256": "13f4b28c70c7f652f4fb39cbbac7cd84a244c1d28dd592e8fef1eed5bb19fe79",
+          "active_text": "2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t2) 4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması,  ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4255,
+          "text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+          "text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b",
+          "active_text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde ",
+              "struck": false
+            },
+            {
+              "text": "gonadarj",
+              "struck": false
+            },
+            {
+              "text": " (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde ",
+              "struck": false
+            },
+            {
+              "text": "telarşın",
+              "struck": false
+            },
+            {
+              "text": " olması pubertenin başlangıcı olarak kabul edilecektir.) ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4256,
+          "text": "c) Ötiroid hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (hipopituitarizm),",
+          "text_sha256": "f5d47ff1685034b7c4b4b66ed167cfdd3cb560b2f42aac68130b20d431ccacbd",
+          "active_text": "c) Ötiroid hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (hipopituitarizm),",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\tc) ",
+              "struck": false
+            },
+            {
+              "text": "Ötiroid",
+              "struck": false
+            },
+            {
+              "text": " hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (",
+              "struck": false
+            },
+            {
+              "text": "hipopituitarizm",
+              "struck": false
+            },
+            {
+              "text": "),",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4257,
+          "text": "ç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz konusu ise, yani nörosekretuar disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada biyoinaktif büyüme hormonu saptanmış olması (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.),",
+          "text_sha256": "1139d54c67803f5749642cbe64e33407cb1ebc7f58d2a1b56197fd57c418310a",
+          "active_text": "ç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz konusu ise, yani nörosekretuar disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada biyoinaktif büyüme hormonu saptanmış olması (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.),",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\tç) Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), ancak yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı ve hastada büyüme hormonu eksikliği olmamasına rağmen eğer büyüme hormonu salınımında bir bozukluk söz",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "konusu ise, yani ",
+              "struck": false
+            },
+            {
+              "text": "nörosekretuar",
+              "struck": false
+            },
+            {
+              "text": " disfonksiyon söz konusu ise ya da hastanın test öncesi bakılan serum IGF-1 düzeyi <-2 SD olması koşuluyla yapılacak olan IGF-1 jenerasyon testi ile hastada ",
+              "struck": false
+            },
+            {
+              "text": "biyoinaktif",
+              "struck": false
+            },
+            {
+              "text": " büyüme hormonu saptanmış olması",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-c ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Yalnızca ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " etkin maddeli ilaçlar ",
+              "struck": false
+            },
+            {
+              "text": "kullanılabilir.",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": ",",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4258,
+          "text": "d) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle hipotalamo-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya hipotalamo-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+          "text_sha256": "378dc00473a56a186a6640809ad76653eaad08a3d33df6e394278c71b4e0edfc",
+          "active_text": "d) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle hipotalamo-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya hipotalamo-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\td) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamo",
+              "struck": false
+            },
+            {
+              "text": "-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamo",
+              "struck": false
+            },
+            {
+              "text": "-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4259,
+          "text": "e) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.);",
+          "text_sha256": "0de79eedbf529d4b090638490f54a1e0f5a7bb3b96dc999fe39ff724719338fd",
+          "active_text": "e) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde (Ek:RG- 09/05/2024- 32541/7-c md. Yürürlük: 17/05/2024) (Yalnızca somatropin etkin maddeli ilaçlar kullanılabilir.);",
+          "runs": [
+            {
+              "text": "        ",
+              "struck": false
+            },
+            {
+              "text": "\te) Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Ek:",
+              "struck": false
+            },
+            {
+              "text": "RG",
+              "struck": false
+            },
+            {
+              "text": "- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-c ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "Yalnızca ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " etkin maddeli ilaçlar ",
+              "struck": false
+            },
+            {
+              "text": "kullanılabilir.",
+              "struck": false
+            },
+            {
+              "text": ")",
+              "struck": false
+            },
+            {
+              "text": ";",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4260,
+          "text": "1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı standard sapması <0) olması,",
+          "text_sha256": "52b1f15a7d9bc373ebfc5ff882a1fb54d8106ba0fc244b7d57b911426ea3005f",
+          "active_text": "1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı standard sapması <0) olması,",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı ",
+              "struck": false
+            },
+            {
+              "text": "standard",
+              "struck": false
+            },
+            {
+              "text": " sapması <0) olması,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4261,
+          "text": "2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+          "text_sha256": "75f092ee8250607ddca6868913306fb9d9e9fd4d206eac87bab9d43df983d6c1",
+          "active_text": "2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": "\t2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4262,
+          "text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "text_sha256": "a3b772ffa12b25cb0017a632f40882fe9fb061f38dc4eb6525cd202ba1a0f6ea",
+          "active_text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "runs": [
+            {
+              "text": "              ",
+              "struck": false
+            },
+            {
+              "text": "\t(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

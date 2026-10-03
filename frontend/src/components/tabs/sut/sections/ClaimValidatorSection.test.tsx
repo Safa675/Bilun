@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import en from "@/messages/en/sections";
+import tr from "@/messages/tr/sections";
 import type { SutLegacyValidationResult, SutValidationResult } from "@/lib/api/sut";
 import { useT } from "@/lib/i18n/useTranslations";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
@@ -119,4 +123,43 @@ describe("typed validator result", () => {
     expect(html).not.toContain("Material annex assessment");
     expect(html).not.toContain("Legacy false positive");
   });
+});
+
+it("shows missing drug facts without turning unknown into a confirmed finding", () => {
+  const data = { ...result, advisories: [{ evidence_id: "D1", rule: "drug_indication", material_name: "Drug",
+    message: "Historical rule observation requires source and input review.", disposition: "review_only", source_status: "historical_match_unverified",
+    missing_inputs: ["primary_icd10", "is_loading_phase", "biomarkers.HER2", "route_discriminator", "prior_therapies.drug_or_class"] }] };
+  const english = renderToStaticMarkupWithLocale(<Panel data={data} />, "en");
+  const turkish = renderToStaticMarkupWithLocale(<Panel data={data} />, "tr");
+  expect(english).toContain("Cannot evaluate without");
+  expect(english).toContain("Loading phase");
+  expect(english).toContain("Biomarkers (HER2)");
+  expect(english).toContain("Clinical details to distinguish indication routes");
+  expect(english).toContain("Prior treatments (Drug or class)");
+  expect(english).not.toContain("drug_or_class");
+  expect(turkish).toContain("Değerlendirme için gerekli");
+  expect(turkish).toContain("Yükleme dönemi");
+  expect(english).not.toContain("Findings confirmed");
+});
+
+it("localizes every authored temporal prerequisite and version gate", () => {
+  const catalog = JSON.parse(readFileSync(resolve(
+    process.cwd(), "../data/gazette/temporal/drug_amendments_2026_10.json",
+  ), "utf8")) as { rules: Array<{ unimplemented_clinical_inputs?: string[] }>;
+    quarantined_rules: Array<{ unimplemented_clinical_inputs?: string[] }> };
+  const fields = [...new Set(["historical_rule_version", "effective_rule_version",
+    ...[...catalog.rules, ...catalog.quarantined_rules].flatMap(row => row.unimplemented_clinical_inputs ?? []),
+  ])];
+  const data = { ...result, advisories: [{ evidence_id: "TEMPORAL", rule: "drug_indication",
+    material_name: "Drug", message: "Historical rule observation requires source and input review.",
+    disposition: "review_only", source_status: "historical_match_unverified", missing_inputs: fields }] };
+  for (const [locale, messages] of [["en", en], ["tr", tr]] as const) {
+    const html = renderToStaticMarkupWithLocale(<Panel data={data} />, locale);
+    const labels: Record<string, string> = messages.claimValidator.drugContext;
+    for (const field of fields) {
+      expect(labels[field], field).toBeTruthy();
+      expect(html).toContain(labels[field]);
+    }
+    expect(html).not.toContain("sections.claimValidator.drugContext.");
+  }
 });

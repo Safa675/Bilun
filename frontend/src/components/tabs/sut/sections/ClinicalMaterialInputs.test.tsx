@@ -1,0 +1,549 @@
+import { indicationEvidencePayload } from "./drugInputs";
+import { act } from "react";
+import { create, type ReactTestRenderer } from "react-test-renderer";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
+import { validateSutClaim } from "@/lib/api/sut";
+import en from "@/messages/en/sections";
+import tr from "@/messages/tr/sections";
+import { ClaimValidatorSection } from "./ClaimValidatorSection";
+import { ckdGrowthPathwayFields, pediatricInitiationFields, mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, indicationFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+  clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
+
+vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
+vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
+vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
+let renderer: ReactTestRenderer;
+const ghFields = [...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields, ...mecaserminFields, ...pediatricInitiationFields, ...ckdGrowthPathwayFields];
+const labels: Record<string, string> = en.claimValidator.clinical.fields;
+const groups = { ckdGrowthPathways: ckdGrowthPathwayFields, pediatricInitiation: pediatricInitiationFields, indication: indicationFields, followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+  antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
+const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
+  .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
+const change = async (name: keyof typeof groups, field: string, value: string, index = 0) => {
+  const labels: Record<string, string> = en.claimValidator.clinical.fields;
+  await act(async () => { group(name, index).findByProps({ "aria-label": labels[field] })
+    .props.onChange({ target: { value } }); });
+};
+const button = (label: string) => renderer.root.findAllByType("button")
+  .find(row => row.children.join("") === label)!;
+const submit = async () => {
+  await act(async () => { button("Validate Claim").props.onClick(); });
+  return vi.mocked(validateSutClaim).mock.calls.at(-1)![0];
+};
+beforeEach(async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.stubGlobal("document", { documentElement: { lang: "en" } });
+  vi.mocked(validateSutClaim).mockReset().mockRejectedValue(new Error("synthetic response"));
+  await act(async () => { renderer = create(<LocaleProvider initialLocale="en"><ClaimValidatorSection /></LocaleProvider>); });
+  await act(async () => { renderer.root.findAllByType("input")[2].props.onChange({ target: { value: "synthetic medicine" } }); });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
+});
+afterEach(async () => { await act(async () => { renderer.unmount(); }); vi.unstubAllGlobals(); });
+
+it("leaves every clinical input unknown until explicitly entered", async () => {
+  for (const name of Object.keys(groups) as Array<keyof typeof groups>) {
+    for (const input of [...group(name).findAllByType("input"), ...group(name).findAllByType("select")]) {
+      expect(input.props.value).toBe("");
+    }
+  }
+  const payload = await submit();
+  expect(ghFields).toHaveLength(44);
+  for (const field of ghFields) expect(payload.materials[0][field.name]).toBeNull();
+  expect(payload.materials[0].followup_evidence).toBeNull();
+  expect(payload.materials[0].indication_evidence).toBeNull();
+  expect(payload.materials[0]).toMatchObject({ gh_patient_group: null, gh_height_reference_sex: null,
+    gh_treatment_phase: null, epiphyses_closed: null, annual_growth_velocity_cm: null,
+    height_cm: null, bone_age_years: null, sma_evidence: null, antifungal_evidence: null, renal_evidence: null });
+  expect(payload.materials[0]).toMatchObject({ enteral_evidence: null, ravulizumab_evidence: null });
+});
+
+it("submits explicit GH categories, negative histories, zero counts, source units and scoped dates", async () => {
+  await change("growthHormone", "gh_patient_group", "pediatric");
+  await change("growthHormone", "gh_height_reference_sex", "female");
+  await change("growthHormone", "gh_treatment_phase", "continuation");
+  await change("growthHormone", "epiphyses_closed", "false");
+  await change("growthHormone", "annual_growth_velocity_cm", "0");
+  await change("growthHormone", "height_cm", "157");
+  await change("praderWilli", "pws_genetic_diagnosis_confirmed", "true");
+  await change("praderWilli", "pws_untreatable_obstructive_sleep_apnea", "false");
+  await change("sma", "sma_type", "type_2");
+  await change("sma", "bacterial_meningitis_history", "false");
+  await change("sma", "applies_on", "2026-10-02");
+  await change("sma", "assessment_date", "2026-10-01");
+  await change("antifungal", "intent", "prophylaxis");
+  await change("antifungal", "formulation", "oral_solution");
+  await change("antifungal", "anc_per_mm3", "0");
+  await change("antifungal", "fluconazole_resistant", "true");
+  await change("renal", "dialysis", "false");
+  await change("renal", "baseline_albumin_g_dl", "2.7");
+  await change("renal", "six_month_albumin_g_dl", "3.6");
+  await change("renal", "albumin_g_dl", "4");
+  const payload = await submit();
+  expect(payload.materials[0]).toMatchObject({ gh_patient_group: "pediatric", gh_height_reference_sex: "female",
+    gh_treatment_phase: "continuation", epiphyses_closed: false, annual_growth_velocity_cm: 0, height_cm: 157,
+    pws_genetic_diagnosis_confirmed: true, pws_untreatable_obstructive_sleep_apnea: false,
+    sma_evidence: { sma_type: "type_2", bacterial_meningitis_history: false,
+      applies_on: "2026-10-02", assessment_date: "2026-10-01" },
+    antifungal_evidence: { intent: "prophylaxis", formulation: "oral_solution", anc_per_mm3: 0,
+      fluconazole_resistant: true },
+    renal_evidence: { dialysis: false, baseline_albumin_g_dl: 2.7, six_month_albumin_g_dl: 3.6, albumin_g_dl: 4 },
+  });
+  // The evidence date never silently fills the separate actual service date.
+  expect(payload.drug_context?.service_date).toBeNull();
+});
+
+it("clears facts to unknown and strips all clinical evidence when drug mode is disabled", async () => {
+  await change("growthHormone", "epiphyses_closed", "false");
+  await change("growthHormone", "height_cm", "150");
+  await change("sma", "csf_shunt_or_catheter", "false");
+  await change("sma", "applies_on", "2026-10-02");
+  await change("antifungal", "intent", "treatment");
+  await change("renal", "phase", "continuation");
+  await change("indication", "hcv_rna_positive", "false");
+  await change("praderWilli", "pws_severe_obesity_source_criterion_present", "false");
+  await change("growthHormone", "height_cm", "");
+  await change("sma", "applies_on", "");
+  expect((await submit()).materials[0]).toMatchObject({ height_cm: null,
+    sma_evidence: { applies_on: null, csf_shunt_or_catheter: false } });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  const disabled = await submit();
+  expect(disabled).not.toHaveProperty("drug_context");
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), ...pediatricInitiationFields.map(row => row.name), ...ckdGrowthPathwayFields.map(row => row.name), "indication_evidence", "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
+    expect(disabled.materials[0]).not.toHaveProperty(field);
+  }
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
+  expect(group("growthHormone").findByProps({ "aria-label": en.claimValidator.clinical.fields.epiphyses_closed }).props.value).toBe("false");
+});
+
+it("retains the surviving material's nested clinical evidence after another line is removed", async () => {
+  await act(async () => { button("+ Add Material").props.onClick(); });
+  await change("renal", "six_month_albumin_g_dl", "3.2", 1);
+  await act(async () => { renderer.root.findAllByProps({ title: "Remove" }).find(row => row.type === "button")!.props.onClick(); });
+  expect(group("renal").findByProps({ "aria-label": en.claimValidator.clinical.fields.six_month_albumin_g_dl }).props.value).toBe(3.2);
+});
+
+describe("clinical contract metadata", () => {
+  it.each([["", null], ["0", 0], ["4.1", 4.1], ["-1", null], ["NaN", null], ["Infinity", null]])("parses %s without inventing a measurement", (raw, expected) => {
+    expect(optionalClinicalNumber(String(raw))).toBe(expected);
+  });
+  it("does not accept zero as a measured height", () => { expect(optionalClinicalNumber("0", true)).toBeNull(); });
+  it("preserves EDSS boundaries but does not accept out-of-range measurements", () => {
+    expect(optionalClinicalNumber("0", false, 10)).toBe(0);
+    expect(optionalClinicalNumber("10", false, 10)).toBe(10);
+    expect(optionalClinicalNumber("10.1", false, 10)).toBeNull();
+  });
+  it("covers every exact family field declared by the backend contract", () => {
+    const source = readFileSync(resolve(process.cwd(), "../src/bilun/domain/claims/clinical_evidence.py"), "utf8");
+    for (const [cls, fields] of [["IndicationEvidence", indicationFields], ["FollowupEvidence", followupFields], ["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
+      const body = source.split(`class ${cls}:`)[1].split("\n\n")[0];
+      const names = [...body.matchAll(/^    (\w+): (?:date|bool|float|str) \| None/gm)].map(match => match[1]);
+      expect(fields.map(row => row.name).sort(), cls).toEqual(names.sort());
+    }
+  });
+  it("localizes every field, choice and uneditable review reason in both languages", () => {
+    for (const messages of [en, tr]) {
+      const labels: Record<string, string> = messages.claimValidator.clinical.fields;
+      const options: Record<string, string> = messages.claimValidator.clinical.options;
+      for (const fields of Object.values(groups)) {
+        for (const field of fields) {
+          expect(labels[field.name], field.name).toBeTruthy();
+          if ("options" in field) for (const option of field.options ?? []) expect(options[option], option).toBeTruthy();
+        }
+      }
+      for (const field of clinicalReviewFields) expect(labels[field], field).toBeTruthy();
+      const t = (key: string) => key.split(".").reduce<unknown>((value, part) =>
+        (value as Record<string, unknown>)[part], { sections: messages }) as string;
+      expect(clinicalMissingInputLabel("gh_treatment_phase", t)).toBe(labels.gh_treatment_phase);
+      expect(clinicalMissingInputLabel("renal_evidence.source_supported_treatment_phase", t)).toContain(labels.source_supported_treatment_phase);
+    }
+  });
+});
+
+it("submits distinct enteral and ravulizumab facts without copying dates or inferring an indication", async () => {
+  await change("enteral", "pediatric", "false");
+  await change("enteral", "phase", "renewal");
+  await change("enteral", "malnutrition_path", "exemption");
+  await change("enteral", "report_author_specialty", "pediatric_neurology");
+  await change("enteral", "neurological_disease", "true");
+  await change("enteral", "applies_on", "2026-09-05");
+  await change("ravulizumab", "indication", "pnh");
+  await change("ravulizumab", "adult", "false");
+  await change("ravulizumab", "therapy_months", "0");
+  await change("ravulizumab", "edss", "8");
+  await change("ravulizumab", "edss_in_report", "false");
+  const payload = await submit();
+  expect(payload.materials[0]).toMatchObject({
+    enteral_evidence: { pediatric: false, phase: "renewal", malnutrition_path: "exemption",
+      report_author_specialty: "pediatric_neurology", neurological_disease: true, applies_on: "2026-09-05" },
+    ravulizumab_evidence: { indication: "pnh", adult: false, therapy_months: 0, edss: 8, edss_in_report: false },
+  });
+  expect(payload.materials[0].ravulizumab_evidence).not.toHaveProperty("applies_on");
+  expect(payload.drug_context?.service_date).toBeNull();
+  await change("ravulizumab", "edss", "10.1");
+  await change("enteral", "pediatric", "");
+  expect((await submit()).materials[0]).toMatchObject({ enteral_evidence: { pediatric: null }, ravulizumab_evidence: { edss: null } });
+});
+
+it("submits CKD dose and PTH exactly without deriving persistent disease or converting units", async () => {
+  await change("ckdGrowthHormone", "ckd_growth_disorder_confirmed", "true");
+  await change("ckdGrowthHormone", "ckd_parathyroid_hormone_pg_ml", "500");
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.045");
+  await change("ckdGrowthHormone", "ckd_first_post_transplant_year", "false");
+  let material = (await submit()).materials[0];
+  expect(material).toMatchObject({ ckd_growth_disorder_confirmed: true, ckd_parathyroid_hormone_pg_ml: 500,
+    gh_daily_dose_mg_per_kg: 0.045, ckd_first_post_transplant_year: false,
+    ckd_persistent_severe_secondary_hyperparathyroidism: null });
+  // A recorded noncompliant dose must reach the evaluator rather than being normalized to a pass.
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.051");
+  expect((await submit()).materials[0].gh_daily_dose_mg_per_kg).toBe(0.051);
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0");
+  expect((await submit()).materials[0].gh_daily_dose_mg_per_kg).toBe(0);
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", ""); await change("ckdGrowthHormone", "ckd_parathyroid_hormone_pg_ml", "");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_daily_dose_mg_per_kg: null, ckd_parathyroid_hormone_pg_ml: null });
+});
+
+it("keeps all seven CKD GH facts unknown until entered alongside earlier groups", async () => {
+  const material = (await submit()).materials[0];
+  for (const field of ckdGrowthHormoneFields) expect(material[field.name]).toBeNull();
+  expect(material).toMatchObject({ sma_evidence: null, renal_evidence: null, enteral_evidence: null, ravulizumab_evidence: null });
+});
+
+it("does not describe the partial GH checks as continuation-only after adding CKD initiation", () => {
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
+  expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation");
+  expect(tr.claimValidator.clinical.hints.growthHormone).toContain("tam uygunluk sağlamaz");
+});
+
+it("keeps mecasermin facts and mcg dose separate from CKD mg dose without inferring source facts", async () => {
+  await change("mecasermin", "mecasermin_laron_syndrome_confirmed", "false");
+  await change("mecasermin", "pretreatment_annual_growth_velocity_cm", "0");
+  await change("growthHormone", "height_cm", "155");
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "120");
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.045");
+  expect((await submit()).materials[0]).toMatchObject({
+    mecasermin_laron_syndrome_confirmed: false, pretreatment_annual_growth_velocity_cm: 0,
+    mecasermin_daily_dose_mcg_per_kg: 120, gh_daily_dose_mg_per_kg: 0.045,
+    height_percentile: null, gh_treatment_phase: null, gh_height_reference_sex: null,
+  });
+  // A dose above the clinical ceiling must be evaluated, not erased or converted.
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "120.001");
+  expect((await submit()).materials[0].mecasermin_daily_dose_mcg_per_kg).toBe(120.001);
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "0");
+  expect((await submit()).materials[0].mecasermin_daily_dose_mcg_per_kg).toBe(0);
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "");
+  await change("mecasermin", "mecasermin_laron_syndrome_confirmed", "");
+  expect((await submit()).materials[0]).toMatchObject({
+    mecasermin_daily_dose_mcg_per_kg: null, mecasermin_laron_syndrome_confirmed: null,
+    gh_daily_dose_mg_per_kg: 0.045,
+  });
+});
+
+it.each([["0", 0], ["100", 100], ["100.01", null], ["-0.01", null], ["", null]])(
+  "bounds recorded height percentile %s without calculating it from height", async (input, expected) => {
+    await change("mecasermin", "height_percentile", input);
+    expect((await submit()).materials[0].height_percentile).toBe(expected);
+  },
+);
+
+it("keeps mecasermin facts unknown without deriving percentile from recorded height", async () => {
+  const material = (await submit()).materials[0];
+  for (const field of mecaserminFields) expect(material[field.name]).toBeNull();
+});
+
+
+it("preserves the recorded initiation obesity flag without deriving it from other measurements", async () => {
+  await change("growthHormone", "height_cm", "155");
+  await change("praderWilli", "pws_progressive_scoliosis", "true");
+  expect((await submit()).materials[0].pws_severe_obesity_source_criterion_present).toBeNull();
+  for (const [input, expected] of [["true", true], ["false", false], ["", null]] as const) {
+    await change("praderWilli", "pws_severe_obesity_source_criterion_present", input);
+    expect((await submit()).materials[0].pws_severe_obesity_source_criterion_present).toBe(expected);
+  }
+  expect(tr.claimValidator.clinical.fields.pws_severe_obesity_source_criterion_present)
+    .toBe("Şiddetli obezite (ideal ağırlığının %225 üzerinde olması)");
+  expect(en.claimValidator.clinical.hints.praderWilli).toContain("initiation-only");
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
+  expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation criteria");
+});
+
+it("records follow-up scores and completed-treatment checkpoint without assuming calendar continuity", async () => {
+  await change("followup", "phase", "continuation");
+  await change("followup", "indication", "atopic_dermatitis");
+  await change("followup", "applies_on", "2026-10-02");
+  await change("followup", "treatment_start_date", "2026-06-12");
+  await change("followup", "baseline_assessment_date", "2026-06-12");
+  await change("followup", "response_assessment_date", "2026-10-02");
+  await change("followup", "baseline_easi", "40");
+  await change("followup", "response_easi", "20");
+  expect((await submit()).materials[0].followup_evidence).not.toHaveProperty("week16_checkpoint_documented");
+  await change("followup", "week16_checkpoint_documented", "true");
+  await change("followup", "response_dlqi", "0");
+  const payload = await submit();
+  expect(payload.materials[0].followup_evidence).toMatchObject({ phase: "continuation", indication: "atopic_dermatitis",
+    applies_on: "2026-10-02", treatment_start_date: "2026-06-12", baseline_assessment_date: "2026-06-12",
+    response_assessment_date: "2026-10-02", baseline_easi: 40, response_easi: 20, response_dlqi: 0,
+    week16_checkpoint_documented: true });
+  expect(payload.drug_context?.service_date).toBeNull();
+  await change("followup", "week16_checkpoint_documented", "false");
+  expect((await submit()).materials[0].followup_evidence?.week16_checkpoint_documented).toBe(false);
+  await change("followup", "week16_checkpoint_documented", "");
+  expect((await submit()).materials[0].followup_evidence?.week16_checkpoint_documented).toBeNull();
+});
+
+it.each([["baseline_easi", 72], ["response_easi", 72], ["baseline_dlqi", 30], ["response_dlqi", 30],
+  ["baseline_pruritus_nrs", 10], ["response_pruritus_nrs", 10]] as const)("honors inclusive %s instrument bounds", async (field, maximum) => {
+  await change("followup", field, String(maximum));
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBe(maximum);
+  await change("followup", field, String(maximum + 0.01));
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBeNull();
+  await change("followup", field, "0");
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBe(0);
+});
+
+it("keeps FVC percent-predicted values and explicit out-of-attack evidence separate", async () => {
+  await change("followup", "indication", "progressive_fibrosing_ild");
+  await change("followup", "previous_report_date", "2025-10-02");
+  await change("followup", "current_report_date", "2026-10-02");
+  await change("followup", "previous_fvc_percent_predicted", "110");
+  await change("followup", "current_fvc_percent_predicted", "99");
+  await change("followup", "fvc_assessment_outside_exacerbation", "false");
+  await change("followup", "report_documents_fvc_response", "false");
+  expect((await submit()).materials[0].followup_evidence).toMatchObject({ previous_report_date: "2025-10-02",
+    current_report_date: "2026-10-02", previous_fvc_percent_predicted: 110, current_fvc_percent_predicted: 99,
+    fvc_assessment_outside_exacerbation: false, report_documents_fvc_response: false });
+});
+
+it("transports indication scope, separate dates, explicit negative and zero without inventing clinical facts", async () => {
+  await change("indication", "indication", "hbv_initiation_path_a");
+  await change("indication", "phase", "initiation");
+  await change("indication", "age_group", "adult");
+  await change("indication", "applies_on", "2026-10-02");
+  await change("indication", "assessment_date", "2026-10-01");
+  await change("indication", "first_alt_date", "2026-06-01");
+  await change("indication", "second_alt_date", "2026-09-01");
+  await change("indication", "hbv_dna_iu_ml", "0");
+  await change("indication", "first_alt_uln_ratio", "0");
+  await change("indication", "hcv_rna_positive", "false");
+  const payload = await submit();
+  expect(payload.materials[0].indication_evidence).toMatchObject({ indication: "hbv_initiation_path_a",
+    phase: "initiation", age_group: "adult", applies_on: "2026-10-02", assessment_date: "2026-10-01",
+    first_alt_date: "2026-06-01", second_alt_date: "2026-09-01", hbv_dna_iu_ml: 0,
+    first_alt_uln_ratio: 0, hcv_rna_positive: false });
+  expect(payload.drug_context?.service_date).toBeNull();
+  expect(payload.materials[0].indication_evidence).not.toHaveProperty("hcv_genotype_result_present");
+  for (const field of ["histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping", "alt_retest_interval"]) {
+    expect(indicationFields.some(row => row.name === (field as string))).toBe(false);
+  }
+});
+
+it("never equates histology systems and restores edits only when their explicit method supports them", async () => {
+  await change("indication", "biopsy_hai", "18");
+  await change("indication", "biopsy_fibrosis_stage", "6");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+  await change("indication", "biopsy_scoring_system", "ishak_modified_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 18, biopsy_fibrosis_stage: 6 });
+  await change("indication", "biopsy_scoring_system", "knodell_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 18, biopsy_fibrosis_stage: null });
+  await change("indication", "biopsy_hai", "22");
+  await change("indication", "biopsy_fibrosis_stage", "4");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 22, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_scoring_system", "metavir");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_scoring_system", "ishak_modified_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_hai", "0");
+  expect((await submit()).materials[0].indication_evidence?.biopsy_hai).toBe(0);
+  await change("indication", "biopsy_scoring_system", "");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+});
+
+it("keeps board-author, medication supply and route distinct from prescriber and report validity", async () => {
+  await change("indication", "indication", "sc_ig_cll");
+  await change("indication", "administration_route", "subcutaneous");
+  await change("indication", "report_author_specialty", "hematology");
+  await change("indication", "prescribed_supply_months", "3");
+  await change("indication", "prophylactic_antibiotics_failed", "false");
+  await change("indication", "prophylactic_antibiotics_contraindicated", "true");
+  const payload = await submit();
+  expect(payload.materials[0].indication_evidence).toMatchObject({ indication: "sc_ig_cll", administration_route: "subcutaneous",
+    report_author_specialty: "hematology", prescribed_supply_months: 3, prophylactic_antibiotics_failed: false,
+    prophylactic_antibiotics_contraindicated: true });
+  expect(payload.drug_context?.prescriber_specialty).toBe("");
+  expect(payload.drug_context?.report_duration_months).toBeNull();
+});
+
+
+it.each([
+  ["ishak_modified_hai", 18, 6], ["knodell_hai", 22, 4],
+] as const)("retains inclusive recorded %s domains and makes impossible values unknown", (method, haiMax, fibrosisMax) => {
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: haiMax, biopsy_fibrosis_stage: fibrosisMax }))
+    .toMatchObject({ biopsy_hai: haiMax, biopsy_fibrosis_stage: fibrosisMax });
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: haiMax + 0.01, biopsy_fibrosis_stage: fibrosisMax + 0.01 }))
+    .toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: 0, biopsy_fibrosis_stage: 0 }))
+    .toMatchObject({ biopsy_hai: 0, biopsy_fibrosis_stage: 0 });
+});
+
+
+it("retains signed SDS and clinician-recorded pathway/stage without deriving classifications", async () => {
+  await change("pediatricInitiation", "gh_chronological_age_years", "2.05");
+  let material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_initiation_pathway: null, gh_reported_growth_age_band: null,
+    gh_pubertal_status: null, gh_sga_birth_status_confirmed: null });
+  await change("pediatricInitiation", "gh_initiation_pathway", "sga_case_1");
+  await change("pediatricInitiation", "gh_reported_growth_age_band", "2_1_4_years");
+  await change("pediatricInitiation", "gh_pubertal_status", "prepubertal");
+  await change("pediatricInitiation", "gh_pubertal_growth_assessment_completed", "false");
+  await change("pediatricInitiation", "gh_birth_weight_for_gestational_age_sds", "-2.1");
+  await change("pediatricInitiation", "gh_birth_length_for_gestational_age_sds", "0");
+  await change("pediatricInitiation", "gh_last_year_growth_velocity_sds", "-0.01");
+  await change("pediatricInitiation", "gh_current_height_sds", "-2.5");
+  await change("pediatricInitiation", "gh_parent_adjusted_height_sds", "-1.01");
+  await change("pediatricInitiation", "gh_sga_birth_status_confirmed", "true");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_initiation_pathway: "sga_case_1", gh_reported_growth_age_band: "2_1_4_years",
+    gh_chronological_age_years: 2.05, gh_pubertal_status: "prepubertal", gh_pubertal_growth_assessment_completed: false,
+    gh_birth_weight_for_gestational_age_sds: -2.1, gh_birth_length_for_gestational_age_sds: 0,
+    gh_last_year_growth_velocity_sds: -0.01, gh_current_height_sds: -2.5, gh_parent_adjusted_height_sds: -1.01,
+    gh_sga_birth_status_confirmed: true });
+  expect(renderer.root.findByProps({ "aria-label": labels.gh_current_height_sds }).props.min).toBeUndefined();
+  expect(renderer.root.findByProps({ "aria-label": labels.gh_chronological_age_years }).props.min).toBe(0);
+  await change("pediatricInitiation", "gh_initiation_pathway", ""); await change("pediatricInitiation", "gh_current_height_sds", "");
+  expect((await submit()).materials[0]).toMatchObject({ gh_initiation_pathway: null, gh_current_height_sds: null });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  const disabled = (await submit()).materials[0];
+  for (const field of ghFields) expect(disabled).not.toHaveProperty(field.name);
+});
+
+it.each([["-2.5", -2.5], ["0", 0], ["2.5", 2.5], ["", null], ["Infinity", null], ["NaN", null]])(
+  "accepts finite signed SDS %s without changing the nonnegative measurement contract", (input, expected) => {
+    expect(optionalClinicalNumber(String(input), false, undefined, true)).toBe(expected);
+    expect(optionalClinicalNumber("-2.5")).toBeNull();
+  },
+);
+
+it("explains that source bands and puberty are recorded facts, with no inferred source authority", () => {
+  expect(en.claimValidator.clinical.hints.pediatricInitiation).toContain("Do not calculate");
+  expect(tr.claimValidator.clinical.options["2_1_4_years"]).toContain("2,1–4");
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("pediatric initiation");
+});
+
+
+it("records CKD growth alternatives without deriving percentile, persistence or transplant timing", async () => {
+  await change("growthHormone", "height_cm", "150"); await change("growthHormone", "annual_growth_velocity_cm", "7.1");
+  await change("ckdGrowthHormone", "ckd_first_post_transplant_year", "false");
+  let material = (await submit()).materials[0];
+  for (const field of ckdGrowthPathwayFields) expect(material[field.name]).toBeNull();
+  await change("ckdGrowthPathways", "ckd_height_age_sex_sds", "-2.1");
+  expect((await submit()).materials[0].ckd_height_age_sex_percentile).toBeNull();
+  await change("ckdGrowthPathways", "ckd_height_age_sex_percentile", "2.9");
+  await change("ckdGrowthPathways", "ckd_annual_growth_velocity_percentile", "0");
+  await change("ckdGrowthPathways", "ckd_persistent_growth_failure_confirmed", "true");
+  await change("ckdGrowthPathways", "ckd_post_transplant_one_year_elapsed", "false");
+  await change("ckdGrowthPathways", "ckd_steroid_treatment_absent", "false");
+  await change("ckdGrowthPathways", "ckd_spontaneous_growth_absent", "false");
+  await change("ckdGrowthPathways", "ckd_nephropathic_cystinosis_related_confirmed", "false");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ ckd_height_age_sex_percentile: 2.9, ckd_height_age_sex_sds: -2.1,
+    ckd_annual_growth_velocity_percentile: 0, ckd_persistent_growth_failure_confirmed: true,
+    ckd_post_transplant_one_year_elapsed: false, ckd_steroid_treatment_absent: false,
+    ckd_spontaneous_growth_absent: false, ckd_nephropathic_cystinosis_related_confirmed: false,
+    ckd_first_post_transplant_year: false, annual_growth_velocity_cm: 7.1 });
+  await change("ckdGrowthPathways", "ckd_height_age_sex_sds", ""); await change("ckdGrowthPathways", "ckd_post_transplant_one_year_elapsed", "");
+  expect((await submit()).materials[0]).toMatchObject({ ckd_height_age_sex_sds: null, ckd_post_transplant_one_year_elapsed: null });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  const disabled = (await submit()).materials[0];
+  for (const field of ghFields) expect(disabled).not.toHaveProperty(field.name);
+});
+
+it.each(["ckd_height_age_sex_percentile", "ckd_annual_growth_velocity_percentile"] as const)(
+  "enforces the structural %s range while retaining a noncompliant clinical value", async field => {
+    for (const [raw, expected] of [["0", 0], ["25", 25], ["100", 100], ["100.001", null], ["-0.1", null], ["", null]] as const) {
+      await change("ckdGrowthPathways", field, raw); expect((await submit()).materials[0][field]).toBe(expected);
+    }
+    expect(renderer.root.findByProps({ "aria-label": labels[field] }).props.max).toBe(100);
+    expect(renderer.root.findByProps({ "aria-label": labels.ckd_height_age_sex_sds }).props.min).toBeUndefined();
+  },
+);
+
+it("keeps height-source ambiguity as review and both reference inputs optional", () => {
+  expect(en.claimValidator.clinical.hints.ckdGrowthPathways).toContain("both fields are optional");
+  expect(en.claimValidator.clinical.hints.ckdGrowthPathways).toContain("source percentile/SDS notation needs review");
+  expect(tr.claimValidator.clinical.hints.ckdGrowthPathways).toContain("isteğe bağlıdır");
+  expect(ckdGrowthPathwayFields.some(field => String(field.name) === "ckd_height_source_notation_verification")).toBe(false);
+});
+
+
+it("keeps report-content facts distinct from clinical qualification and prior duration", async () => {
+  await change("enteral", "malnutrition_criteria_met", "true");
+  await change("enteral", "specialist_report_present", "true");
+  await change("renal", "other_phosphate_therapy_months", "3");
+  let payload = await submit();
+  expect(payload.materials[0].enteral_evidence?.malnutrition_conditions_documented_in_report).toBeUndefined();
+  expect(payload.materials[0].renal_evidence?.prior_phosphate_therapy_documented_in_report).toBeUndefined();
+  for (const value of ["true", "false", ""]) {
+    await change("enteral", "malnutrition_conditions_documented_in_report", value);
+    await change("renal", "prior_phosphate_therapy_documented_in_report", value);
+    payload = await submit();
+    const expected = value === "" ? null : value === "true";
+    expect(payload.materials[0].enteral_evidence).toMatchObject({ malnutrition_criteria_met: true,
+      specialist_report_present: true, malnutrition_conditions_documented_in_report: expected });
+    expect(payload.materials[0].renal_evidence).toMatchObject({ other_phosphate_therapy_months: 3,
+      prior_phosphate_therapy_documented_in_report: expected });
+  }
+});
+
+it("localizes the new missing report-content inputs in English and Turkish", () => {
+  for (const messages of [en, tr]) {
+    const t = (key: string) => key.split(".").reduce<unknown>((value, part) =>
+      (value as Record<string, unknown>)[part], { sections: messages }) as string;
+    for (const [prefix, name] of [["enteral_evidence", "malnutrition_conditions_documented_in_report"],
+      ["renal_evidence", "prior_phosphate_therapy_documented_in_report"]]) {
+      expect(clinicalMissingInputLabel(`${prefix}.${name}`, t))
+        .toContain((messages.claimValidator.clinical.fields as Record<string, string>)[name]);
+    }
+  }
+});
+
+it("shows the source-defined clinician puberty contract without collecting measurements", async () => {
+  expect(group("pediatricInitiation").findByType("p").children.join("")).toContain("testicular volume ≥4 ml in boys or T2 thelarche in girls");
+  expect(tr.claimValidator.clinical.hints.pediatricInitiation).toContain("testis hacminin ≥4 ml");
+  expect(tr.claimValidator.clinical.hints.pediatricInitiation).toContain("T2 düzeyinde telarş");
+  expect(pediatricInitiationFields.some(field => /testicular|tanner/.test(field.name))).toBe(false);
+  await change("growthHormone", "gh_height_reference_sex", "male");
+  expect((await submit()).materials[0].gh_pubertal_status).toBeNull();
+  await change("pediatricInitiation", "gh_pubertal_status", "pubertal");
+  await change("growthHormone", "gh_height_reference_sex", "female");
+  expect((await submit()).materials[0].gh_pubertal_status).toBe("pubertal");
+  await change("pediatricInitiation", "gh_pubertal_status", "");
+  expect((await submit()).materials[0].gh_pubertal_status).toBeNull();
+});
+
+
+it("submits and clears exact itraconazole prophylaxis and risdiplam documentary facts", async () => {
+  await change("antifungal", "neutropenia_development_expected", "true");
+  await change("antifungal", "indication", "deep_fungal_infection_prophylaxis");
+  await change("sma", "sma_type", "type_1");
+  const documentary = smaFields.filter(field => field.name.startsWith("risdiplam_") && field.kind === "boolean");
+  expect(documentary).toHaveLength(7);
+  await change("sma", "risdiplam_treatment_period", "during_treatment");
+  for (const field of documentary) await change("sma", field.name, "false");
+  const payload = await submit();
+  expect(payload.materials[0].antifungal_evidence).toMatchObject({
+    neutropenia_development_expected: true, indication: "deep_fungal_infection_prophylaxis" });
+  for (const field of documentary) expect(payload.materials[0].sma_evidence?.[field.name]).toBe(false);
+  expect(payload.materials[0].sma_evidence?.risdiplam_treatment_period).toBe("during_treatment");
+  await change("sma", "risdiplam_treatment_period", "not_started");
+  expect((await submit()).materials[0].sma_evidence?.risdiplam_treatment_period).toBe("not_started");
+  await change("sma", "risdiplam_treatment_period", "");
+  for (const field of documentary) await change("sma", field.name, "");
+  await change("antifungal", "neutropenia_development_expected", "");
+  const cleared = await submit();
+  for (const field of documentary) expect(cleared.materials[0].sma_evidence?.[field.name]).toBeNull();
+  expect(cleared.materials[0].antifungal_evidence?.neutropenia_development_expected).toBeNull();
+  expect(cleared.materials[0].sma_evidence?.risdiplam_treatment_period).toBeNull();
+});

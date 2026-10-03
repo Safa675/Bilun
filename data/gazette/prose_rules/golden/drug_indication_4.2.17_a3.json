@@ -26,15 +26,27 @@
       "drug_name": "PROLIA 60 MG (DENOSUMAB)",
       "primary_icd10": "M81.0",
       "report_present": false,
-      "expect_violation": "missing_board_report",
-      "rule_id": "4.2.17.denosumab_board_report"
+      "expect_violation": "needs_clinical_verification",
+      "rule_id": "other_indication_source_constraints",
+      "service_date": "2026-01-02",
+      "legacy_candidate_rule_id": "4.2.17.denosumab_board_report",
+      "expect_severity": "review",
+      "expect_clinical_status": "not_evaluated",
+      "expect_missing_input": "verified_source_for_service_date",
+      "expect_clinical_eligibility_complete": false
     },
     {
       "drug_name": "PROLIA 60 MG (DENOSUMAB)",
       "primary_icd10": "M81.0",
       "report_present": true,
-      "expect_violation": null,
-      "rule_id": "4.2.17.denosumab_board_report"
+      "expect_violation": "needs_clinical_verification",
+      "rule_id": "other_indication_source_constraints",
+      "service_date": "2026-01-02",
+      "legacy_candidate_rule_id": "4.2.17.denosumab_board_report",
+      "expect_severity": "review",
+      "expect_clinical_status": "not_evaluated",
+      "expect_missing_input": "verified_source_for_service_date",
+      "expect_clinical_eligibility_complete": false
     },
     {
       "drug_name": "FORTEO 20 MCG (TERIPARATID)",

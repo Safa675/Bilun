@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.23.(1)#7976531d",
+      "clause_coordinate": "4.2.23.(1)",
+      "section_id": "4.2.23",
+      "in_force_text": "1) İnvaziv kandidiyazis ve özofajiyal kandidiyazis endikasyonlarında kullanılır.",
+      "text_sha256": "7976531d3bf59da1275075b64716fc2083bfbce08c92ddc59e93353a29c0621e",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(1)#9dd6786c",
+      "clause_coordinate": "4.2.23.(1)",
+      "section_id": "4.2.23",
+      "in_force_text": "1) İnvazif mantar enfeksiyonu gelişme riski yüksek olan ve uzun süreli nötropeni oluşabileceği düşünülen akut miyeloid lösemi (AML) veya miyelodisplastik sendrom (MDS) nedeniyle remisyon-indüksiyon kemoterapisi alan hastalarda.",
+      "text_sha256": "9dd6786c049442c2bdd6baf2f298fb4804aa77e790cf704c27b4a2402366e320",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(1)#ed3dd5ea",
+      "clause_coordinate": "4.2.23.(1)",
+      "section_id": "4.2.23",
+      "in_force_text": "1) İmmun yetmezliği olan flukonazole dirençli orofarengeal kandiyazis tedavisinde (Ek:RG-09/09/2017- 30175/23-b md. Yürürlük:  23/09/2017) yalnızca oral süspansiyon formu kullanılır.",
+      "text_sha256": "ed3dd5eabff35024f5dafad41bf36367e0c56e71427c485ef39840af57200af2",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(2)#4b9ca2bb",
+      "clause_coordinate": "4.2.23.(2)",
+      "section_id": "4.2.23",
+      "in_force_text": "2) Amfoterisin B, lipozomal amfoterisin B veya vorikonazol tedavilerine refrakter invazif aspergilozis tedavisinde.",
+      "text_sha256": "4b9ca2bb3d18b22843b39d40fefaad1adcb865ff90500aae932259de8968d977",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(2)#9e75077a",
+      "clause_coordinate": "4.2.23.(2)",
+      "section_id": "4.2.23",
+      "in_force_text": "2) Allojenik hematopoietik kök hücre nakli (HSCT) yapılan hastalarda veya akut lenfositer lösemi (ALL) hastalarında nötropenik dönemde ve takip eden bir hafta içinde veya mukoziti olan otolog hematopoietik kök hücre nakli yapılan hastalarda nötropenik dönemde aspergilloz ve candida enfeksiyonlarının profilaksisinde kullanılır.",
+      "text_sha256": "9e75077a3a7dde3af2b59cec1f3901ae9398efbeb5b2eb9bd60e551e53add781",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(2)#fe3010eb",
+      "clause_coordinate": "4.2.23.(2)",
+      "section_id": "4.2.23",
+      "in_force_text": "2) İnvazif mantar enfeksiyonu gelişme riski yüksek olan ve Graft versus host hastalığına yönelik olarak yüksek doz immünsupresif tedavi alan allojenik hematopoetik kök hücre transplantı (HSCT) alıcısı olan hastalarda.",
+      "text_sha256": "fe3010ebd4dc9a6598c6e9c4108a1ba7e8b369a9bc25c0174f5a949d252697fd",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(3)#84014798",
+      "clause_coordinate": "4.2.23.(3)",
+      "section_id": "4.2.23",
+      "in_force_text": "3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.",
+      "text_sha256": "840147986968e5728767e33ecf2c7e5306748ddfc3f273e9560c6dca83f63a03",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(3)#cf0aee43",
+      "clause_coordinate": "4.2.23.(3)",
+      "section_id": "4.2.23",
+      "in_force_text": "3) 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez.",
+      "text_sha256": "cf0aee431d5fc2d3513d4268fde929fbd413d13d748c0b69fa70d38d2c0729e5",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(4)#06a1b9aa",
+      "clause_coordinate": "4.2.23.(4)",
+      "section_id": "4.2.23",
+      "in_force_text": "4) Itrakonazol ile tedaviye refrakter ya da itrakonazol’u tolere edemeyen kromoblastomikoz ve micetoma hastalığı olan hastalarda.",
+      "text_sha256": "06a1b9aa4d1ae98225cb58d40d0e0d2c3b4854cef73e508bdbddbb26dee2f2d7",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(5)#1234522e",
+      "clause_coordinate": "4.2.23.(5)",
+      "section_id": "4.2.23",
+      "in_force_text": "(5) Anidulofungin, nötropenik olmayan (Mutlak nötrofil sayısı ≥ 500/mm3 olacak ve laboratuvar sonucu aranacaktır.) erişkin hastalarda, invazif kandidiyazis vakalarında reçetelendirilebilir.",
+      "text_sha256": "1234522ed81b00533f7ec4f91ef7ff17ca4b0c62ea677d49c6ab0012235dc12a",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.(5)#2fe8e460",
+      "clause_coordinate": "4.2.23.(5)",
+      "section_id": "4.2.23",
+      "in_force_text": "5) Amfoterisin B ya da ıtrakonazol veya flukonazol ile tedaviye refrakter ya da bu tıbbi ürünleri tolere edemeyen koksidiodomikoz hastalığı olan hastalarda.",
+      "text_sha256": "2fe8e4607560b908b5c3c3394be06df847ded0378fccb2a495a77eb3f42e6685",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.a#70ca881f",
+      "clause_coordinate": "4.2.23.a",
+      "section_id": "4.2.23",
+      "in_force_text": "a) Aşağıda tanımlanan hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. (Mülga: RG-21/03/2018- 30367/ 26-c md. Yürürlük: 01/04/2018)  (Ek: RG-21/03/2018-30367/ 26-c md. Yürürlük:01/04/2018) Posakonazolün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir.",
+      "text_sha256": "70ca881fd52f8dc688367d47ef1d5f90f848a433542735aa258ba8d795e37064",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.a#77f6ee8f",
+      "clause_coordinate": "4.2.23.a",
+      "section_id": "4.2.23",
+      "in_force_text": "a) HIV pozitif veya bağışıklığı bozulan hastalardaki flukonazole dirençli özofajiyal kandidozun tedavisinde kullanılır.",
+      "text_sha256": "77f6ee8fa7c3f211f298de77af57d69e129fd01fd9d2106307459989ebf50acf",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.23.b#1b49d136",
+      "clause_coordinate": "4.2.23.b",
+      "section_id": "4.2.23",
+      "in_force_text": "b) Hematolojik malignitesi olan veya kemik iliği transplantasyonu yapılan ve nötropeni geliştirmesi beklenen (<500 hücre/ml) hastalardaki derin fungal (mantar) enfeksiyonlarının profilaksisinde kullanılır.",
+      "text_sha256": "1b49d136e6c13135475421aee3da4a5a10343098e4dc4479c8cae1ac94962f3c",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "antifungal_micafungin": "antifungal_micafungin.clinical.2026-10-02",
+    "antifungal_other": "antifungal_other.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "antifungal_micafungin": "2018-04-01",
+    "antifungal_other": null
+  }
+}

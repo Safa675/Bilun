@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.8.A.b#5c30b19e",
+      "clause_coordinate": "4.2.8.A.b",
+      "section_id": "4.2.8.A",
+      "in_force_text": "b) Yatan hastalarda, doğuştan metabolik hastalığı olanlarda, kanser hastalarında, kistikfibroziste, crohn hastalarında, yanık hastalarında veya orogastrik sonda/nazogastrik sonda/nazoenterik sonda veya gastrostomi/jejunostomi ile beslenen hastalarda yukarıda belirtilen malnütrisyon koşulları aranmaz. Yatan hastalar dışında bu durumların belirtildiği uzman hekimler tarafından düzenlenen 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+      "text_sha256": "5c30b19edf3931d435801bf91c1dcc3f50baa0477ef28f8b3460da76eb43720a",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "prose:4.2.8.A#99f29955",
+      "clause_coordinate": "4.2.8.A",
+      "section_id": "4.2.8.A",
+      "in_force_text": "olmasıdır. Malnütrisyon gelişmiş hastalarda bu durumların belirtildiği çocuk hastalıkları (Ek:RG-09/05/2024-32541/8 md. Yürürlük: 17/05/2024) ve çocuk cerrahi uzman hekimleri tarafından düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporuna dayanılarak başlanır. Bu sürenin sonunda; yukarıda belirtilen malnütrisyon koşullarının devam etmesi durumunda çocuk gastroenteroloji, çocuk nöroloji, çocuk metabolizma (Ek:RG-16/03/2023-32134/22 md. Yürürlük:24/03/2023), çocuk cerrahisi (Ek:RG-25/03/2025-32852/6-a md. Yürürlük:04/04/2025), çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzman hekimlerince düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli rapora dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+      "text_sha256": "99f29955d538c88f1670d7e2ab89fdf92ba6d7fb1b43e21773dfb2b56db96fc7",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "enteral": "enteral.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "enteral": "2026-09-05"
+  }
+}

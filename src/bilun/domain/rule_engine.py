@@ -20,10 +20,13 @@ Usage:
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
 import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any
+from src.bilun.domain.prose_rules._drug_indication.temporal import parse_service_date
 
 from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
 from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
@@ -102,6 +105,9 @@ def _run_drug_indication_checks(
     from decimal import Decimal
 
     from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+    from src.bilun.domain.claims.clinical_evidence import (
+        EnteralEvidence, RavulizumabEvidence, parse_clinical_evidence,
+    )
     from src.bilun.domain.prose_rules.drug_indication import (
         evaluate_drug_indication_line,
         list_drug_indication_rules,
@@ -150,7 +156,7 @@ def _run_drug_indication_checks(
             claim_id=claim_header.claim_id,
             patient_id="",
             episode_id="",
-            drug_claim_date=date.today(),
+            drug_claim_date=parse_service_date(drug_ctx.get("service_date")),
             drug_name=drug_name,
             drug_code=str(mat.get("code", "")),
             barkod="",
@@ -169,6 +175,9 @@ def _run_drug_indication_checks(
             is_loading_phase=mat.get("is_loading_phase"),
             biomarkers=tuple(biomarkers) if biomarkers else None,
             prior_therapies=tuple(prior_therapies) if prior_therapies else None,
+            **parse_growth_hormone_inputs(mat),
+            enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
+            ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
         )
         hit = evaluate_drug_indication_line(
             drug_line=drug_line,

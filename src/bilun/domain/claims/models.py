@@ -7,6 +7,9 @@ from datetime import date
 from decimal import Decimal
 
 
+from .clinical_evidence import AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
+
+
 Money = Decimal
 
 
@@ -252,7 +255,7 @@ class DrugClaimLine:
     claim_id: str
     patient_id: str
     episode_id: str
-    drug_claim_date: date
+    drug_claim_date: date | None
     drug_name: str
     drug_code: str
     barkod: str
@@ -278,6 +281,65 @@ class DrugClaimLine:
     biomarkers: tuple[dict[str, str], ...] | None = None
     # prior_therapies: [{"drug_or_class": "imatinib", "outcome": "resistant"}]
     prior_therapies: tuple[dict[str, str], ...] | None = None
+    # Explicit §4.2.6.A-3 continuation facts; never inferred from Q96.
+    gh_treatment_phase: str | None = None
+    epiphyses_closed: bool | None = None
+    annual_growth_velocity_cm: float | None = None
+    height_cm: float | None = None
+    bone_age_years: float | None = None
+    # Recorded SUT patient/height reference categories; never inferred from ICD.
+    gh_patient_group: str | None = None
+    gh_height_reference_sex: str | None = None
+    # Recorded genetic-PWS scope and continuation stopping assessments.
+    pws_genetic_diagnosis_confirmed: bool | None = None
+    pws_uncontrolled_diabetes: bool | None = None
+    pws_untreatable_obstructive_sleep_apnea: bool | None = None
+    pws_active_cancer: bool | None = None
+    pws_active_psychosis: bool | None = None
+    pws_progressive_scoliosis: bool | None = None
+    # Explicit SUT ideal-weight criterion assessment; never derive from BMI/weight.
+    pws_severe_obesity_source_criterion_present: bool | None = None
+    # Explicit CKD-associated pediatric growth-disorder evidence.
+    ckd_growth_disorder_confirmed: bool | None = None
+    ckd_persistent_severe_secondary_hyperparathyroidism: bool | None = None
+    ckd_proliferative_or_severe_nonproliferative_retinopathy: bool | None = None
+    ckd_first_post_transplant_year: bool | None = None
+    ckd_active_cancer: bool | None = None
+    ckd_parathyroid_hormone_pg_ml: float | None = None
+    gh_daily_dose_mg_per_kg: float | None = None
+    mecasermin_laron_syndrome_confirmed: bool | None = None
+    pretreatment_annual_growth_velocity_cm: float | None = None
+    height_percentile: float | None = None
+    mecasermin_daily_dose_mcg_per_kg: float | None = None
+    gh_initiation_pathway: str | None = None
+    gh_reported_growth_age_band: str | None = None
+    gh_chronological_age_years: float | None = None
+    # Clinician-recorded SUT onset: boys testicular volume >=4 ml / girls T2 thelarche.
+    # Generic/uncertain assessments stay unknown; no age/height-reference-sex inference.
+    gh_pubertal_status: str | None = None
+    gh_pubertal_growth_assessment_completed: bool | None = None
+    gh_birth_weight_for_gestational_age_sds: float | None = None
+    gh_birth_length_for_gestational_age_sds: float | None = None
+    gh_last_year_growth_velocity_sds: float | None = None
+    gh_current_height_sds: float | None = None
+    gh_parent_adjusted_height_sds: float | None = None
+    gh_sga_birth_status_confirmed: bool | None = None
+    ckd_height_age_sex_percentile: float | None = None
+    ckd_height_age_sex_sds: float | None = None
+    ckd_annual_growth_velocity_percentile: float | None = None
+    ckd_persistent_growth_failure_confirmed: bool | None = None
+    ckd_post_transplant_one_year_elapsed: bool | None = None
+    ckd_steroid_treatment_absent: bool | None = None
+    ckd_spontaneous_growth_absent: bool | None = None
+    ckd_nephropathic_cystinosis_related_confirmed: bool | None = None
+
+    sma_evidence: SmaEvidence | None = None
+    antifungal_evidence: AntifungalEvidence | None = None
+    renal_evidence: RenalEvidence | None = None
+    followup_evidence: FollowupEvidence | None = None
+    indication_evidence: IndicationEvidence | None = None
+    enteral_evidence: EnteralEvidence | None = None
+    ravulizumab_evidence: RavulizumabEvidence | None = None
 
 
 @dataclass(frozen=True)

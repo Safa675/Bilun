@@ -1,0 +1,68 @@
+{
+  "review_id": "sgk-rg-clinical-2026-10-03T070400Z",
+  "checked_at": "2026-10-03T07:04:00Z",
+  "checked_through": "2026-10-03",
+  "scope": "named_clinical_report_checks_only",
+  "schema_version": 1,
+  "named_families": [
+    "sma",
+    "antifungal_micafungin",
+    "antifungal_other",
+    "renal",
+    "enteral",
+    "ravulizumab",
+    "followup",
+    "indication_sc_ig",
+    "indication_hbv",
+    "indication_hcv",
+    "indication_bone",
+    "mecasermin"
+  ],
+  "no_affecting_clinical_amendment_found": true,
+  "excluded_dependencies": [
+    "pricing",
+    "reference/equivalent groups",
+    "market-share mechanisms",
+    "EK-4/A listing and product availability",
+    "full reimbursement eligibility",
+    "later publications after observation"
+  ],
+  "observations": [
+    {
+      "kind": "sgk_sut_listing",
+      "source_url": "https://www.sgk.gov.tr/birimler/duyurular/GENEL-SAGLIK-SIGORTASI-GENEL-MUDURLUGU-2026-01-28-02-00-42",
+      "observed_at": "2026-10-03T07:01:03Z",
+      "capture": {
+        "path": "data/gazette/source_authority/official_review_2026_10_03.json",
+        "sha256": "f2ed092afebf80c1be1e8661dd626917c0e97e10ba882ebb7b5ccc822b03c4e2"
+      }
+    },
+    {
+      "kind": "gazette_daily_contents",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.htm",
+      "observed_at": "2026-10-03T07:01:28Z",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-20261003-daily-contents-observer-text.txt",
+        "sha256": "541ab604cbdb777b8fcaef0ca753afe2fb4d7c766fa698f23180d3a036f65a10"
+      }
+    },
+    {
+      "kind": "gazette_supplement_index",
+      "source_url": "https://www.resmigazete.gov.tr/",
+      "observed_at": "2026-10-03T07:02:24Z",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-homepage-current-issue-supplement-observer-excerpt.txt",
+        "sha256": "5c9a458ea25eea930954e125e5f3ea20caca0da9ee2e08c8e7dcd5665742bbe2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at": "2026-10-03T07:01:54Z",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-20261003-3-regulation-observer-text.txt",
+        "sha256": "14dd3b0eb6cbbb6e8e3624f67a1e5d3370362481e363ec728c9caa68b8ccaa34"
+      }
+    }
+  ]
+}

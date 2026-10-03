@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.49.(2)#d31c4d8c",
+      "clause_coordinate": "4.2.49.(2)",
+      "section_id": "4.2.49",
+      "in_force_text": "(2) Nusinersen tedavisi için hastalarda lomber ponksiyon prosedürleri, BOS sirkülasyonu veya güvenlilik değerlendirmelerini engelleyebilecek bir beyin veya spinal kord hastalığı veya öyküsü olmamalıdır.",
+      "text_sha256": "d31c4d8ca6e842dae9dc3af4942aa61d83b596c5afc4b2c78cada15ad63ea2e5",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.49.(3)#88014037",
+      "clause_coordinate": "4.2.49.(3)",
+      "section_id": "4.2.49",
+      "in_force_text": "(3) Nusinersen tedavisi için hastalarda BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir.",
+      "text_sha256": "88014037bbe0356088a8c2f5e5b9042ea8d6624cad5f40cde00769b616a6a254",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.49.(4)#d9c6cd1d",
+      "clause_coordinate": "4.2.49.(4)",
+      "section_id": "4.2.49",
+      "in_force_text": "(4) Nusinersen tedavisi için hastalarda bakteriyel menenjit veya viral ensefalit hastalığı veya öyküsü olmamalıdır.",
+      "text_sha256": "d9c6cd1d1e40633042e02e56fa097476524bec6e597f545a646a1f316c37e21f",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.49.(5)#597ea9c2",
+      "clause_coordinate": "4.2.49.(5)",
+      "section_id": "4.2.49",
+      "in_force_text": "(5) Nusinersen ve risdiplam tedavileri için hastalarda hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "text_sha256": "597ea9c2e250c19acafd8b12fb692f29c465b5ee480d91c683e296ae7603ef48",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.49.A#c2df3999",
+      "clause_coordinate": "4.2.49.A",
+      "section_id": "4.2.49.A",
+      "in_force_text": "4.2.49.A.2- Risdiplam kullanım ilkeleri",
+      "text_sha256": "c2df3999ccf22b0b4cac9b62fbdc757ec8e788f23002f1f1783871351f226e40",
+      "context_anchor": true
+    },
+    {
+      "source_ref": "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999",
+      "clause_coordinate": "4.2.49.A.(2)",
+      "section_id": "4.2.49.A",
+      "in_force_text": "(2) Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi, yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi gereklidir.",
+      "text_sha256": "481b9b26a8c5384023b87e73ee7f47e13daa8b61662be75d9a01addccdce2f36",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.49.B#1a8f10e4",
+      "clause_coordinate": "4.2.49.B",
+      "section_id": "4.2.49.B",
+      "in_force_text": "4.2.49.B.1- Nusinersen kullanım ilkeleri",
+      "text_sha256": "1a8f10e4e917c47025004c74285a8018b89ddb661afb5ac614b1188913bd2eae",
+      "context_anchor": true
+    },
+    {
+      "source_ref": "4.2.49.B.e#927a1a83@within:4.2.49.B#1a8f10e4",
+      "clause_coordinate": "4.2.49.B.e",
+      "section_id": "4.2.49.B",
+      "in_force_text": "e) Lomber ponksiyon uygulanmasına engel bir durum olmadığının sağlık kurulu raporunda belirtilmiş olması gerekmektedir.",
+      "text_sha256": "927a1a83384649d30e362e4812587feeb039c750e24170d4f7afc882a0525f28",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "sma": "sma.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "sma": "2025-05-06"
+  }
+}

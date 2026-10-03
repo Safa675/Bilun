@@ -1,0 +1,91 @@
+{
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "verified_through": "2026-10-02",
+  "verification_status": "ai_generated_pending_review",
+  "families": [
+    {
+      "constraint_set": "enteral_pediatric_reports_2026",
+      "valid_from": "2026-09-05",
+      "amendment_url": "https://sgd.sgk.gov.tr/Download/DownloadFile?f=873126b6-2250-4c64-b0a4-fe910055fe11.docx&d=658f4ba1-b0e8-4dfb-8504-fa0b09e353e0",
+      "amendment_sha256": "ffd269486c0fb75a65321c0ebafb898bc74193125a49a916842bcc457c6ea491",
+      "source_refs": [
+        "prose:4.2.8.A#99f29955",
+        "4.2.8.A.b#5c30b19e"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 4441,
+          "text": "4.2.8.A - Enteral beslenme ürünleri",
+          "sha256": "7cd352ef48d3f2e5e9861616e6a23a650ecde99841ee5f3386a18b66325c6e87"
+        },
+        {
+          "paragraph_index": 4442,
+          "text": "(1) Çocukluk yaş grubunda;",
+          "sha256": "f5fb0e1f7431df5f364ab3d4bc13c940f26d11bb6dec64eef543434182a756e9"
+        },
+        {
+          "paragraph_index": 4443,
+          "text": "a) Malnütrisyon gelişmesi halinde enteral beslenme ürünleri verilir. Malnütrisyon tanımı;",
+          "sha256": "96028c050aeed135695b07f8524fc22adf9cb93a74ec25f0a0d9737960d0b3da"
+        },
+        {
+          "paragraph_index": 4448,
+          "text": "olmasıdır. Malnütrisyon gelişmiş hastalarda bu durumların belirtildiği çocuk hastalıkları (Ek:RG-09/05/2024-32541/8 md. Yürürlük: 17/05/2024) ve çocuk cerrahi uzman hekimleri tarafından düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporuna dayanılarak başlanır. Bu sürenin sonunda; yukarıda belirtilen malnütrisyon koşullarının devam etmesi durumunda çocuk gastroenteroloji, çocuk nöroloji, çocuk metabolizma (Ek:RG-16/03/2023-32134/22 md. Yürürlük:24/03/2023), çocuk cerrahisi (Ek:RG-25/03/2025-32852/6-a md. Yürürlük:04/04/2025), çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzman hekimlerince düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli rapora dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+          "sha256": "99f29955d538c88f1670d7e2ab89fdf92ba6d7fb1b43e21773dfb2b56db96fc7"
+        },
+        {
+          "paragraph_index": 4449,
+          "text": "b) Yatan hastalarda, doğuştan metabolik hastalığı olanlarda, kanser hastalarında, kistikfibroziste, crohn hastalarında, yanık hastalarında veya orogastrik sonda/nazogastrik sonda/nazoenterik sonda veya gastrostomi/jejunostomi ile beslenen hastalarda yukarıda belirtilen malnütrisyon koşulları aranmaz. Yatan hastalar dışında bu durumların belirtildiği uzman hekimler tarafından düzenlenen 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+          "sha256": "5c30b19edf3931d435801bf91c1dcc3f50baa0477ef28f8b3460da76eb43720a"
+        }
+      ]
+    },
+    {
+      "constraint_set": "ravulizumab_nmosd_continuation_2026",
+      "valid_from": "2026-07-07",
+      "source_refs": [
+        "4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+        "4.2.14.C.a#43c9dfb5@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+        "4.2.14.C.(2)#d0db489d@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5"
+      ],
+      "source_paragraphs": [
+        {
+          "paragraph_index": 6105,
+          "text": "(Ek: RG-29/06/2026- 33295/ 6 md. Yürürlük: 07/07/2026)",
+          "sha256": "4729bc4a8e7235b287ab3857d2d80815cc9ed1496cbbc11426aecca43a0ec073"
+        },
+        {
+          "paragraph_index": 6106,
+          "text": "yyy) Ravulizumab yalnızca;",
+          "sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834"
+        },
+        {
+          "paragraph_index": 6118,
+          "text": "2) Yüksek hastalık aktivitesi gösteren, relapslarla seyreden yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde;",
+          "sha256": "d0db489d801929ce899e89bb8a64964e6d59ff8b65ddb6d0372edeb999ac5ea0"
+        },
+        {
+          "paragraph_index": 6119,
+          "text": "a) Aşağıda yer alan kriterleri birlikte sağlayan hastalarda tedaviye başlanılması ve üçüncü basamak sağlık hizmeti sunucularında üç nöroloji uzman hekiminin yer aldığı ve aşağıdaki durumların belirtildiği en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Her düzenlenen reçetede hastanın güncel vücut ağırlığı belirtilmelidir.",
+          "sha256": "43c9dfb51d2896b9ecade5775f5a09105dda3bc4ee46e633aab9b08af6b3d82b"
+        },
+        {
+          "paragraph_index": 6123,
+          "text": "b) NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda; EDSS 8 ve üzerinde ise tedavi sonlandırılır. EDSS her sağlık kurulu raporunda belirtilmelidir.",
+          "sha256": "769b2a2056f20507ab2044120848675aaad28546d73dfc5cef99e46c258fdc9b"
+        },
+        {
+          "paragraph_index": 6126,
+          "text": "zzz) Tiyotepa;",
+          "sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7"
+        }
+      ],
+      "duplicate_text_outside_scope": {
+        "paragraph_index": 6134,
+        "text": "b) NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda; EDSS 8 ve üzerinde ise tedavi sonlandırılır. EDSS her sağlık kurulu raporunda belirtilmelidir.",
+        "sha256": "769b2a2056f20507ab2044120848675aaad28546d73dfc5cef99e46c258fdc9b"
+      }
+    }
+  ]
+}

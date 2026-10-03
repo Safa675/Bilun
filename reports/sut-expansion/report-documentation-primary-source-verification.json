@@ -1,0 +1,88 @@
+{
+  "current_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "august_docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+  "amendment_sha256": "ffd269486c0fb75a65321c0ebafb898bc74193125a49a916842bcc457c6ea491",
+  "index_basis": "Enteral/renal use all word/document.xml w:p elements including tables; pediatric GH uses direct body paragraphs. Active renal text excludes struck runs, normalized whitespace only for content hashes.",
+  "verified_clauses": [
+    {
+      "family": "enteral",
+      "paragraph": 4441,
+      "text": "4.2.8.A - Enteral beslenme ürünleri",
+      "active_text_verified": true,
+      "normalized_text_sha256": "7cd352ef48d3f2e5e9861616e6a23a650ecde99841ee5f3386a18b66325c6e87",
+      "text_sha256": "7cd352ef48d3f2e5e9861616e6a23a650ecde99841ee5f3386a18b66325c6e87"
+    },
+    {
+      "family": "enteral",
+      "paragraph": 4442,
+      "text": "(1) Çocukluk yaş grubunda;",
+      "active_text_verified": true,
+      "normalized_text_sha256": "f5fb0e1f7431df5f364ab3d4bc13c940f26d11bb6dec64eef543434182a756e9",
+      "text_sha256": "f5fb0e1f7431df5f364ab3d4bc13c940f26d11bb6dec64eef543434182a756e9"
+    },
+    {
+      "family": "enteral",
+      "paragraph": 4443,
+      "text": "a) Malnütrisyon gelişmesi halinde enteral beslenme ürünleri verilir. Malnütrisyon tanımı;",
+      "active_text_verified": true,
+      "normalized_text_sha256": "96028c050aeed135695b07f8524fc22adf9cb93a74ec25f0a0d9737960d0b3da",
+      "text_sha256": "96028c050aeed135695b07f8524fc22adf9cb93a74ec25f0a0d9737960d0b3da"
+    },
+    {
+      "family": "enteral",
+      "paragraph": 4448,
+      "text": "olmasıdır. Malnütrisyon gelişmiş hastalarda bu durumların belirtildiği çocuk hastalıkları (Ek:RG-09/05/2024-32541/8 md. Yürürlük: 17/05/2024) ve çocuk cerrahi uzman hekimleri tarafından düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporuna dayanılarak başlanır. Bu sürenin sonunda; yukarıda belirtilen malnütrisyon koşullarının devam etmesi durumunda çocuk gastroenteroloji, çocuk nöroloji, çocuk metabolizma (Ek:RG-16/03/2023-32134/22 md. Yürürlük:24/03/2023), çocuk cerrahisi (Ek:RG-25/03/2025-32852/6-a md. Yürürlük:04/04/2025), çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzman hekimlerince düzenlenen en fazla 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli rapora dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+      "active_text_verified": true,
+      "normalized_text_sha256": "99f29955d538c88f1670d7e2ab89fdf92ba6d7fb1b43e21773dfb2b56db96fc7",
+      "text_sha256": "99f29955d538c88f1670d7e2ab89fdf92ba6d7fb1b43e21773dfb2b56db96fc7"
+    },
+    {
+      "family": "enteral",
+      "paragraph": 4449,
+      "text": "b) Yatan hastalarda, doğuştan metabolik hastalığı olanlarda, kanser hastalarında, kistikfibroziste, crohn hastalarında, yanık hastalarında veya orogastrik sonda/nazogastrik sonda/nazoenterik sonda veya gastrostomi/jejunostomi ile beslenen hastalarda yukarıda belirtilen malnütrisyon koşulları aranmaz. Yatan hastalar dışında bu durumların belirtildiği uzman hekimler tarafından düzenlenen 6 ay (Ek:RG-29/08/2026-33355/6-a md. Yürürlük:05/09/2026) (nörolojik hastalıklarda 1 yıl) süreli sağlık kurulu raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde Kurumca bedelleri ödenir.",
+      "active_text_verified": true,
+      "normalized_text_sha256": "5c30b19edf3931d435801bf91c1dcc3f50baa0477ef28f8b3460da76eb43720a",
+      "text_sha256": "5c30b19edf3931d435801bf91c1dcc3f50baa0477ef28f8b3460da76eb43720a"
+    },
+    {
+      "family": "phosphate",
+      "paragraph": 4493,
+      "text": "(1) Tedaviye başlamak için diğer fosfor düşürücü ilaçların en az 3 ay süreyle kullanılmış olması ve bu hususun raporda belirtilmiş olması gerekir. Bu süre sonunda:",
+      "clause_key": "4.2.9.B.(1)#00052268",
+      "active_text_verified": true,
+      "normalized_text_sha256": "000522682b84a52b4f318c45527659877206125ef7109a528ca670328604e98d",
+      "text_sha256": "000522682b84a52b4f318c45527659877206125ef7109a528ca670328604e98d"
+    },
+    {
+      "family": "phosphate",
+      "paragraph": 4501,
+      "text": "(4) Fosfor düzeyinin (Değişik: RG- 07/10/2016- 29850/ 18-c md. Yürürlük: 15/10/2016)  4 mg/dl'nin üzerine çıkması durumunda tedaviye ilk başlama kriterleri aranarak tekrar başlanabilir.",
+      "clause_key": "4.2.9.B.(4)#e346bde0",
+      "active_text_verified": true,
+      "normalized_text_sha256": "e346bde02b897996736581b3873638209138b93c35d70699ca4ac73f74926705",
+      "text_sha256": "5c9e4fffe2a905f0c143dd22172b26fc886c88c4ce381527092b3106feb79026"
+    },
+    {
+      "family": "puberty",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraph": 4247,
+      "text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+      "active_text_verified": true,
+      "normalized_text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b",
+      "text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b"
+    },
+    {
+      "family": "puberty",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraph": 4255,
+      "text": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+      "active_text_verified": true,
+      "normalized_text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b",
+      "text_sha256": "0c2b0e3ff8b3725eeacabff0ad65bad23d0d97f3ed5659e019565764c7b5576b"
+    }
+  ],
+  "source_urls": {
+    "current_consolidated": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+    "enteral_amendment": "https://sgd.sgk.gov.tr/Download/DownloadFile?f=873126b6-2250-4c64-b0a4-fe910055fe11.docx&d=658f4ba1-b0e8-4dfb-8504-fa0b09e353e0"
+  }
+}

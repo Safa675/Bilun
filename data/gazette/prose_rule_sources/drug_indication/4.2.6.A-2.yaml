@@ -11,20 +11,19 @@ rules:
   - 4.2.6.A-2.(4)
   drug_names:
   - somatropin
-  - büyüme hormonu
   report_required: true
   action:
-    enforcement: insülin tolerans testine göre GH eksikliği tanısı için pik GH cevabının <3 mcg/L olduğunun raporda belirtilmesi
-      gereklidir
-    message_tr: İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3 mcg/L'den
-      küçük olduğunun raporda belirtilmesi gereklidir (§4.2.6.A-2).
+    enforcement: insülin tolerans testine göre GH eksikliği tanısı için pik GH cevabının <3 mcg/L olduğunun
+      raporda belirtilmesi gereklidir
+    message_tr: İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu
+      cevabının 3 mcg/L'den küçük olduğunun raporda belirtilmesi gereklidir (§4.2.6.A-2).
+  gh_patient_group: adult
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/adult_gh_closed_epiphysis_context.json
 - rule_id: 4.2.6.adult_somatropin_board_report
   sut_section: 4.2.6.A-2
   drug_names:
   - somatropin
-  - somatrogon
-  - büyüme hormonu
-  - buyume hormonu
   - genotropin
   - norditropin
   - omnitrope
@@ -35,8 +34,8 @@ rules:
   - E23.1
   - E23.7
   - E34.3
-  message_tr: Erişkin büyüme hormonu — erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl)
-    ve endokrinoloji veya iç hastalıkları uzman hekim reçetesi gerekir (§4.2.6.A-2).
+  message_tr: Erişkin büyüme hormonu — erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu
+    raporu (en fazla 1 yıl) ve endokrinoloji veya iç hastalıkları uzman hekim reçetesi gerekir (§4.2.6.A-2).
   gate_b_sources:
   - 4.2.6.A-2.(5)
   report_required: true
@@ -46,4 +45,11 @@ rules:
   - endokrinoloji
   - iç hastalıkları
   report_duration_months: 12
+  gh_patient_group: adult
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/adult_gh_closed_epiphysis_context.json
+  source_fragment_keys:
+  - 4.2.6.A-2.(2)#5589013c
+  - 4.2.6.A-2.a#80b6dded
+  - 4.2.6.A-2.b#9b0bad75
 source_note: Exported from drug_indication_prose.json (YAML source migration)

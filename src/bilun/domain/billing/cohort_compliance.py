@@ -13,6 +13,9 @@ from typing import Any
 import polars as pl
 
 from .rule_findings import build_evaluation_id, build_finding_id
+from .drug_clinical_evidence import (
+    bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
+)
 from ..money import money_round_half_up_opt as _money
 
 # Billing surface → Compliance subtab id. Copay exemption rows stay on
@@ -340,6 +343,8 @@ def _include_action(action: Mapping[str, Any]) -> bool:
 
 
 def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, Any]:
+    authority = source_authority_payload(action.get("source_authority"))
+    clinical = clinical_evidence_payload(bounded_clinical_restrictions(action.get("clinical_restrictions")))
     surface = str(action.get("surface") or "")
     billed = None if surface in _NONFINANCIAL_SURFACES else action.get("billed_try")
     if billed is None and surface not in _NONFINANCIAL_SURFACES:
@@ -371,6 +376,9 @@ def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, An
         "matched_icd10_codes": action.get("matched_icd10_codes"),
         "unmatched_icd10_codes": action.get("unmatched_icd10_codes"),
         "eligible_routes": action.get("eligible_routes"),
+        **clinical,
+        **authority,
+        **({"selected_rule_id": action.get("selected_rule_id")} if clinical or authority else {}),
         "eligible_route_count": action.get("eligible_route_count"),
         "eligible_routes_truncated": action.get("eligible_routes_truncated"),
         "observed_icd10_count": action.get("observed_icd10_count"),

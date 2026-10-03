@@ -1,0 +1,70 @@
+{
+  "fields": [
+    {
+      "name": "ckd_height_age_sex_percentile",
+      "type": "float | None",
+      "required": false,
+      "unit": "percentile (finite0..100)"
+    },
+    {
+      "name": "ckd_height_age_sex_sds",
+      "type": "float | None",
+      "required": false,
+      "unit": "SD score (finite signed)"
+    },
+    {
+      "name": "ckd_annual_growth_velocity_percentile",
+      "type": "float | None",
+      "required": false,
+      "unit": "percentile (finite0..100)"
+    },
+    {
+      "name": "ckd_persistent_growth_failure_confirmed",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    },
+    {
+      "name": "ckd_post_transplant_one_year_elapsed",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    },
+    {
+      "name": "ckd_steroid_treatment_absent",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    },
+    {
+      "name": "ckd_spontaneous_growth_absent",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    },
+    {
+      "name": "ckd_nephropathic_cystinosis_related_confirmed",
+      "type": "bool | None",
+      "required": false,
+      "unit": null
+    }
+  ],
+  "scope": "Pediatric CKD-associated growth disorder, explicit initiation, identified somatropin, service date>=2024-05-17. No initiation growth predicates applied to continuation.",
+  "hints": {
+    "ckd_height_age_sex_percentile": "Recorded height percentile adjusted for age and sex. No conversion from centimetres or SDS.",
+    "ckd_height_age_sex_sds": "Recorded age/sex-adjusted height SD score, finite signed. No conversion from percentile. Source notation agreement requires review when discordant or only one reference is recorded; both tests are not claimed legally mandatory.",
+    "ckd_annual_growth_velocity_percentile": "Recorded annual growth velocity percentile, not centimetres/year or calculated from diagnosis.",
+    "ckd_persistent_growth_failure_confirmed": "Recorded persistent growth failure assessment, never inferred from a single low measurement.",
+    "ckd_post_transplant_one_year_elapsed": "Recorded source-defined completed post-transplant year assessment; no anniversary calculation or inference from first-year=false.",
+    "ckd_steroid_treatment_absent": "Recorded absence of steroid treatment in the post-transplant source branch.",
+    "ckd_spontaneous_growth_absent": "Recorded absence of spontaneous growth in the post-transplant source branch.",
+    "ckd_nephropathic_cystinosis_related_confirmed": "Confirmed CKD related to nephropathic cystinosis, not inferred from a broad kidney diagnosis."
+  },
+  "review_only_identifiers": [
+    "ckd_height_source_notation_verification",
+    "ckd_height_reference_reconciliation",
+    "ckd_transplant_timing_reconciliation"
+  ],
+  "partial_eligibility_always": true,
+  "source_height_notation_equivalence_verified": false
+}

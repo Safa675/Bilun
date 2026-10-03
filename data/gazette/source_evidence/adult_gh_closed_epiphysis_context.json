@@ -1,0 +1,416 @@
+{
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "parent_source_key": "4.2.6.A-2.(2)#5589013c",
+  "child_source_keys": [
+    "4.2.6.A-2.a#80b6dded",
+    "4.2.6.A-2.b#9b0bad75"
+  ],
+  "source_applicability_condition": {
+    "field": "epiphyses_closed",
+    "value": true,
+    "inferred_from_adult_age": false
+  },
+  "source_only": true,
+  "predicate_ids": [],
+  "runtime_branch_eligibility_implemented": false,
+  "scope_note": "Parent introduces only the closed-epiphysis branch and is not a standalone clinical predicate. ChildGH tests and organic/laboratory diagnosis are not automatically evaluated. Adult open-epiphysis patients reference pediatric rules under a separate source paragraph; adult patient group alone does not establish closed epiphyses. Existing report-only route is not full adult eligibility. Unsupported generic hormone and somatrogon aliases removed from current somatropin-only adult rules. No new clinical denial or historical enactment interval introduced.",
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4261,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-ç md. Yürürlük: 17/05/2024)",
+          "text_sha256": "b9357c225c490747e46d3c975e46f0ec1348b44a660ed843bba01425d24ceaaa",
+          "active_text": "(Değişik: RG- 09/05/2024- 32541/7-ç md. Yürürlük: 17/05/2024)",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-ç ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4262,
+          "text": "4.2.6.A-2 - Erişkinlerde;",
+          "text_sha256": "b8c91299863eae80116101eac31c8b7e7dfe321630b360274dd91d4d0236e0f1",
+          "active_text": "",
+          "runs": [
+            {
+              "text": " ",
+              "struck": true
+            },
+            {
+              "text": "4.2.6.A-",
+              "struck": true
+            },
+            {
+              "text": "2",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": true
+            },
+            {
+              "text": "-",
+              "struck": true
+            },
+            {
+              "text": " Erişkinlerde; ",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4263,
+          "text": "4.2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri;",
+          "text_sha256": "6d58e6d85a75101964305c1750384812331c650fd3b1af9d9efc63dbd07578a4",
+          "active_text": "4.2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri;",
+          "runs": [
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-2 – Erişkinlerde ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri",
+              "struck": false
+            },
+            {
+              "text": "; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4264,
+          "text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır.",
+          "text_sha256": "d447f26b038c2a4f3a76be30bf1f8f5b1de67cafe05497724c774a148bca19f0",
+          "active_text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır.",
+          "runs": [
+            {
+              "text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4265,
+          "text": "(2) Epifiz hatları kapalı olan hastalarda:",
+          "text_sha256": "5589013cf2695f8bafa21f7570ec2535352624b0488b4afbfbcd10a3889e7e1b",
+          "active_text": "(2) Epifiz hatları kapalı olan hastalarda:",
+          "runs": [
+            {
+              "text": "(2) Epifiz hatları kapalı olan hastalarda: ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4266,
+          "text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "text_sha256": "80b6dded934f6919ed8b77598dc26b367515f16620be8db808d322141445fe6f",
+          "active_text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "runs": [
+            {
+              "text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4267,
+          "text": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "text_sha256": "9b0bad7597bdb8f0a7aeaf559ce72afaff7f2694b90ea0078c851daef9e27acd",
+          "active_text": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "runs": [
+            {
+              "text": "b) Erişkin yaş grubunda ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamohipofizer",
+              "struck": false
+            },
+            {
+              "text": " hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4268,
+          "text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+          "text_sha256": "3c09494073472c853e98614056687835dedbd249fafee44afdc9a73821a1580e",
+          "active_text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+          "runs": [
+            {
+              "text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4269,
+          "text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir.",
+          "text_sha256": "e9d92dbac88d938159baea3ffd701f349bdbc8ecaebbc7bd647bf9fa0c97677c",
+          "active_text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir.",
+          "runs": [
+            {
+              "text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4270,
+          "text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+          "text_sha256": "2cdeafe783425c81b8174d82b21b67a68da04cf34d0f7d15133ed3299ff62fa7",
+          "active_text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+          "runs": [
+            {
+              "text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4269,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-ç md. Yürürlük: 17/05/2024)",
+          "text_sha256": "b9357c225c490747e46d3c975e46f0ec1348b44a660ed843bba01425d24ceaaa",
+          "active_text": "(Değişik: RG- 09/05/2024- 32541/7-ç md. Yürürlük: 17/05/2024)",
+          "runs": [
+            {
+              "text": "             ",
+              "struck": false
+            },
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-ç ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4270,
+          "text": "4.2.6.A-2 - Erişkinlerde;",
+          "text_sha256": "b8c91299863eae80116101eac31c8b7e7dfe321630b360274dd91d4d0236e0f1",
+          "active_text": "",
+          "runs": [
+            {
+              "text": " ",
+              "struck": true
+            },
+            {
+              "text": "4.2.6.A-",
+              "struck": true
+            },
+            {
+              "text": "2",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": true
+            },
+            {
+              "text": "-",
+              "struck": true
+            },
+            {
+              "text": " Erişkinlerde; ",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4271,
+          "text": "4.2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri;",
+          "text_sha256": "6d58e6d85a75101964305c1750384812331c650fd3b1af9d9efc63dbd07578a4",
+          "active_text": "4.2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri;",
+          "runs": [
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-2 – Erişkinlerde ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri",
+              "struck": false
+            },
+            {
+              "text": "; ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4272,
+          "text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır.",
+          "text_sha256": "d447f26b038c2a4f3a76be30bf1f8f5b1de67cafe05497724c774a148bca19f0",
+          "active_text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır.",
+          "runs": [
+            {
+              "text": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4273,
+          "text": "(2) Epifiz hatları kapalı olan hastalarda:",
+          "text_sha256": "5589013cf2695f8bafa21f7570ec2535352624b0488b4afbfbcd10a3889e7e1b",
+          "active_text": "(2) Epifiz hatları kapalı olan hastalarda:",
+          "runs": [
+            {
+              "text": "(2) Epifiz hatları kapalı olan hastalarda: ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4274,
+          "text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "text_sha256": "80b6dded934f6919ed8b77598dc26b367515f16620be8db808d322141445fe6f",
+          "active_text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "runs": [
+            {
+              "text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4275,
+          "text": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "text_sha256": "9b0bad7597bdb8f0a7aeaf559ce72afaff7f2694b90ea0078c851daef9e27acd",
+          "active_text": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+          "runs": [
+            {
+              "text": "b) Erişkin yaş grubunda ",
+              "struck": false
+            },
+            {
+              "text": "hipotalamohipofizer",
+              "struck": false
+            },
+            {
+              "text": " hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4276,
+          "text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+          "text_sha256": "3c09494073472c853e98614056687835dedbd249fafee44afdc9a73821a1580e",
+          "active_text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+          "runs": [
+            {
+              "text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4277,
+          "text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir.",
+          "text_sha256": "e9d92dbac88d938159baea3ffd701f349bdbc8ecaebbc7bd647bf9fa0c97677c",
+          "active_text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir.",
+          "runs": [
+            {
+              "text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4278,
+          "text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+          "text_sha256": "2cdeafe783425c81b8174d82b21b67a68da04cf34d0f7d15133ed3299ff62fa7",
+          "active_text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+          "runs": [
+            {
+              "text": "(5) Büyüme hormonu, büyüme hormonu tedavisine karar verilen hastalara erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak erişkin endokrinoloji veya iç hastalıkları uzman hekimleri tarafından reçete edildiğinde bedeli ödenecektir. Rapora tedavi şeması ile ilgili ayrıntılı bilgi yazılacaktır. Bu rapor en fazla 1 yıl süreyle geçerli olacaktır.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

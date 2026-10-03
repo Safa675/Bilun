@@ -8,6 +8,9 @@ and several pricing endpoints pass through gazette-derived dicts.
 
 from __future__ import annotations
 
+from src.bilun.domain.sut.runtime_coverage_schema import RuntimeCoverageResponse as DrugRuntimeCoverageResponse
+from src.bilun.domain.sut.source_authority_schema import ClinicalSourceAuthorityEvidence
+
 from collections.abc import Mapping
 from datetime import date
 from typing import Literal
@@ -355,7 +358,55 @@ class DrugIndicationRouteEvidenceResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class DrugTemporalCheckResponse(BaseModel):
+    field: str
+    status: str
+    marker: str | None = None
+
+
+class DrugTemporalEvidenceResponse(BaseModel):
+    status: str
+    service_date: date | None = None
+    version_id: str | None = None
+    successor_version_id: str | None = None
+    candidate_version_ids: list[str] = Field(default_factory=list)
+    excluded_rule_ids: list[str] = Field(default_factory=list)
+    repeal_effective_date: date | None = None
+    valid_from: date | None = None
+    valid_until: date | None = None
+    publication_date: date
+    source_url: str
+    source_sha256: str
+    source_text_sha256: str
+    date_basis: str
+    verification_status: str | None = None
+    clinical_eligibility_complete: bool = False
+    supported_checks: list[DrugTemporalCheckResponse] = Field(default_factory=list)
+
+
+class DrugClinicalCheckResponse(BaseModel):
+    field: str
+    status: str
+
+
+class DrugClinicalRestrictionResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
+    constraint_set: str
+    criterion_status: str
+    missing_inputs: list[str] = Field(default_factory=list)
+    checks: list[DrugClinicalCheckResponse] = Field(default_factory=list)
+    source_refs: list[str] = Field(default_factory=list)
+    clinical_eligibility_complete: Literal[False] = False
+    verification_status: str = 'ai_generated_pending_review'
+    checks_truncated: bool = False
+    source_refs_truncated: bool = False
+
+
 class DrugIndicationFindingResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
+    temporal_evidence: DrugTemporalEvidenceResponse | None = None
     finding_id: str = Field(...)
     patient_id: str = Field(...)
     claim_id: str = Field(...)
@@ -380,10 +431,16 @@ class DrugIndicationFindingResponse(BaseModel):
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
 
+    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)
+    clinical_eligibility_complete: bool | None = None
+
     model_config = ConfigDict(extra="allow")
 
 
 class DrugIndicationEvaluationResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
+    temporal_evidence: DrugTemporalEvidenceResponse | None = None
     patient_id: str = Field(...)
     claim_id: str | None = Field(...)
     drug_claim_line_id: str = Field(...)
@@ -404,6 +461,9 @@ class DrugIndicationEvaluationResponse(BaseModel):
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+
+    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)
+    clinical_eligibility_complete: bool | None = None
 
     model_config = ConfigDict(extra="allow")
 

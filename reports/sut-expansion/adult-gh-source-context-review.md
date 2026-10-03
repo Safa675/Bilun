@@ -1,0 +1,7 @@
+# Adult closed-epiphysis source context
+
+Original gap C004047 is §4.2.6.A-2(2), a list introduction: closed epiphyses qualify the following two source branches. It is now preserved through source_fragment_keys and a pinned source graph with two children, the explicit epiphyses_closed=true source condition, source_only=true and runtime_branch_eligibility_implemented=false. Adult age is never asserted to establish closed epiphyses. The parent is not promoted into gate_b_sources or counted as a clinical predicate.
+
+Both original DOCX editions match ten paragraph/run records including the current adult somatropin heading and its explicit17.05.2024 annotation. The existing adult rules incorrectly included generic growth hormone and/or somatrogon aliases; those aliases are removed. Supported somatropin report behavior remains unchanged. No new adult clinical threshold, full eligibility, or historical applicability interval is claimed. Adult open-epiphysis treatment's reference to pediatric principles remains a separate, unimplemented clinical pathway.
+
+Verification:72 focused adult/pediatric/4206 tests pass, including6 new source/negative-selector cases; changed-test Ruff passes and target compiler check verifies128 byte-identical artifacts. Merge as additive rule/source/test changes over the pediatric-initiation-v2 dependency, preserving later clinical/routing/date work. No new UI inputs or runtime hooks.

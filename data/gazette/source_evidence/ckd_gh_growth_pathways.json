@@ -1,0 +1,592 @@
+{
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "date_basis": "RG-09/05/2024-32541/7-f current somatropin-only heading. Struck runs in current heading are whitespace only. No historical validity before this bound asserted.",
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4293,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-f md. Yürürlük: 17/05/2024)",
+          "text_sha256": "4df43c606350070ed3c212f840e1950df4e47cd6ef40100ecdb43a6550f50982",
+          "runs": [
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-f ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4294,
+          "text": "4.2.6.A-5- Çocuklarda kronik böbrek yetmezliği (KBY) ile ilişkili büyüme bozukluklarında;",
+          "text_sha256": "6ba68725bad3b9fd6d19e1009fd4bdb8c58b0623cc04cf6f3815209dc9b27837",
+          "runs": [
+            {
+              "text": "4.2.6.A-5-",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Çocuklarda kronik böbrek yetmezliği (KBY) ile ilişkili büyüme bozukluklarında;",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4295,
+          "text": "4.2.6.A-5- Çocuklarda Kronik Böbrek Yetmezliği (KBY) ile ilişkili büyüme bozukluklarında somatropin kullanım ilkeleri;",
+          "text_sha256": "db7924ef39bb77d908ed4a7d50991324f60418d1d8801feb375c77f8e944a6ac",
+          "runs": [
+            {
+              "text": "4.2.6.A-5- Çocuklarda Kronik Böbrek Yetmezliği (KBY) ile ilişkili büyüme bozukluklarında ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri;",
+              "struck": false
+            },
+            {
+              "text": "          ",
+              "struck": true
+            },
+            {
+              "text": "                                         ",
+              "struck": false
+            },
+            {
+              "text": "                                                                            ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4296,
+          "text": "(1) KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan, paratiroid hormonu 500 pikogram(pg)/ml altında olan çocuk hastalarda; malnutrisyonu, metabolik asidozu, sıvı elektrolit dengesizliği, anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+          "text_sha256": "c50ec607fb41ea46c5bf65d320a1833c47445d5a3e530f21b0dcd2dd471fab8e",
+          "runs": [
+            {
+              "text": "(1) KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan, paratiroid hormonu 500 ",
+              "struck": false
+            },
+            {
+              "text": "pikogram",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "pg",
+              "struck": false
+            },
+            {
+              "text": ")/ml altında olan çocuk hastalarda; ",
+              "struck": false
+            },
+            {
+              "text": "malnutrisyonu",
+              "struck": false
+            },
+            {
+              "text": ", metabolik asidozu, sıvı elektrolit dengesizliği, anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4297,
+          "text": "a) Persistan büyüme geriliği olması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+          "text_sha256": "7420864e046478e454578aa1c7c46c6114b770722a037c043d782344be951b52",
+          "runs": [
+            {
+              "text": "a) Persistan büyüme geriliği olması (boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması) veya",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4298,
+          "text": "b) Böbrek naklinden 1 yıl sonra steroid tedavisi almaksızın spontan büyümenin olmaması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+          "text_sha256": "7b829f92a1c1619b6d4d125a09d4603aac36f5514caea677adbdac2473ab512c",
+          "runs": [
+            {
+              "text": "b) Böbrek naklinden 1 yıl sonra steroid tedavisi almaksızın ",
+              "struck": false
+            },
+            {
+              "text": "spontan",
+              "struck": false
+            },
+            {
+              "text": " büyümenin olmaması (boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması) veya",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4299,
+          "text": "c) Nefropatik sistinozise bağlı KBY hastası çocuklarda boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması halinde büyüme hormonu tedavisine başlanabilir.",
+          "text_sha256": "843b4071f444aef2688038527b4c09f4fdde23da703a614effedbb0ef56303c5",
+          "runs": [
+            {
+              "text": "c) ",
+              "struck": false
+            },
+            {
+              "text": "Nefropatik",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "sistinozise",
+              "struck": false
+            },
+            {
+              "text": " bağlı KBY hastası çocuklarda boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması halinde büyüme hormonu tedavisine başlanabilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4300,
+          "text": "(2) Epifiz hatları kapalı olanlara, persistan ağır sekonder hiperparatiroidizmi olanlara (Paratiroid hormonun 500 pikogram(pg)/ml ve üzerinde olması), proliferatif veya şiddetli nonproliferatif diyabetik retinopatisi olanlara, renal transplantasyonun ilk 1 yıl içerisindeki hastalara veya aktif kanserlilere tedavi başlanmaz.",
+          "text_sha256": "583eda787b01f2ff75a7e64b37eb70afd5e91fd350a73abad91d38721afddd7f",
+          "runs": [
+            {
+              "text": "(2) Epifiz hatları kapalı olanlara, persistan ağır sekonder hiperparatiroidizmi olanlara (Paratiroid hormonun 500 ",
+              "struck": false
+            },
+            {
+              "text": "pikogram",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "pg",
+              "struck": false
+            },
+            {
+              "text": ")/ml ve üzerinde olması), proliferatif veya şiddetli ",
+              "struck": false
+            },
+            {
+              "text": "nonproliferatif",
+              "struck": false
+            },
+            {
+              "text": " diyabetik retinopatisi olanlara, renal transplantasyonun ilk 1 yıl içerisindeki hastalara veya aktif kanserlilere tedavi başlanmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4301,
+          "text": "(3) Tedavi dozu 0,045-0,05 mg/kg/gündür.",
+          "text_sha256": "a8cf7ca9df422797b17169eba85acaf4c89190b80f98ab693456dc49db0e2cc6",
+          "runs": [
+            {
+              "text": "(3) Tedavi dozu 0,045-0,05 mg/kg/gündür. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4302,
+          "text": "(4) Üçüncü basamak hastanelerde en az bir çocuk nefroloji ve çocuk endokrinoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilir.",
+          "text_sha256": "5cdc40bd4e2c4fcc5fe66c2a8fa69f0c1b958202f0a4a39a24c5ef6b503be2ee",
+          "runs": [
+            {
+              "text": "(4) Üçüncü basamak hastanelerde en az bir çocuk nefroloji ve çocuk endokrinoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilir. ",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4301,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-f md. Yürürlük: 17/05/2024)",
+          "text_sha256": "4df43c606350070ed3c212f840e1950df4e47cd6ef40100ecdb43a6550f50982",
+          "runs": [
+            {
+              "text": "(Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-f ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4302,
+          "text": "4.2.6.A-5- Çocuklarda kronik böbrek yetmezliği (KBY) ile ilişkili büyüme bozukluklarında;",
+          "text_sha256": "6ba68725bad3b9fd6d19e1009fd4bdb8c58b0623cc04cf6f3815209dc9b27837",
+          "runs": [
+            {
+              "text": "4.2.6.A-5-",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Çocuklarda kronik böbrek yetmezliği (KBY) ile ilişkili büyüme bozukluklarında;",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4303,
+          "text": "4.2.6.A-5- Çocuklarda Kronik Böbrek Yetmezliği (KBY) ile ilişkili büyüme bozukluklarında somatropin kullanım ilkeleri;",
+          "text_sha256": "db7924ef39bb77d908ed4a7d50991324f60418d1d8801feb375c77f8e944a6ac",
+          "runs": [
+            {
+              "text": "4.2.6.A-5- Çocuklarda Kronik Böbrek Yetmezliği (KBY) ile ilişkili büyüme bozukluklarında ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri;",
+              "struck": false
+            },
+            {
+              "text": "          ",
+              "struck": true
+            },
+            {
+              "text": "                                         ",
+              "struck": false
+            },
+            {
+              "text": "                                                                            ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4304,
+          "text": "(1) KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan, paratiroid hormonu 500 pikogram(pg)/ml altında olan çocuk hastalarda; malnutrisyonu, metabolik asidozu, sıvı elektrolit dengesizliği, anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+          "text_sha256": "c50ec607fb41ea46c5bf65d320a1833c47445d5a3e530f21b0dcd2dd471fab8e",
+          "runs": [
+            {
+              "text": "(1) KBY evresi evre III, IV, V olan veya 6 aydan fazla süredir diyalizde olan, epifiz hatları açık olan, paratiroid hormonu 500 ",
+              "struck": false
+            },
+            {
+              "text": "pikogram",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "pg",
+              "struck": false
+            },
+            {
+              "text": ")/ml altında olan çocuk hastalarda; ",
+              "struck": false
+            },
+            {
+              "text": "malnutrisyonu",
+              "struck": false
+            },
+            {
+              "text": ", metabolik asidozu, sıvı elektrolit dengesizliği, anemisi olmaması ve aşağıdaki koşulların sağlanması durumunda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4305,
+          "text": "a) Persistan büyüme geriliği olması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+          "text_sha256": "7420864e046478e454578aa1c7c46c6114b770722a037c043d782344be951b52",
+          "runs": [
+            {
+              "text": "a) Persistan büyüme geriliği olması (boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması) veya",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4306,
+          "text": "b) Böbrek naklinden 1 yıl sonra steroid tedavisi almaksızın spontan büyümenin olmaması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+          "text_sha256": "7b829f92a1c1619b6d4d125a09d4603aac36f5514caea677adbdac2473ab512c",
+          "runs": [
+            {
+              "text": "b) Böbrek naklinden 1 yıl sonra steroid tedavisi almaksızın ",
+              "struck": false
+            },
+            {
+              "text": "spontan",
+              "struck": false
+            },
+            {
+              "text": " büyümenin olmaması (boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması) veya",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4307,
+          "text": "c) Nefropatik sistinozise bağlı KBY hastası çocuklarda boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması halinde büyüme hormonu tedavisine başlanabilir.",
+          "text_sha256": "843b4071f444aef2688038527b4c09f4fdde23da703a614effedbb0ef56303c5",
+          "runs": [
+            {
+              "text": "c) ",
+              "struck": false
+            },
+            {
+              "text": "Nefropatik",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "sistinozise",
+              "struck": false
+            },
+            {
+              "text": " bağlı KBY hastası çocuklarda boyun yaş ve cinsiyete göre 3 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında (-2 SD altında) ve yıllık büyüme hızının 25 ",
+              "struck": false
+            },
+            {
+              "text": "persentilin",
+              "struck": false
+            },
+            {
+              "text": " altında olması halinde büyüme hormonu tedavisine başlanabilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4308,
+          "text": "(2) Epifiz hatları kapalı olanlara, persistan ağır sekonder hiperparatiroidizmi olanlara (Paratiroid hormonun 500 pikogram(pg)/ml ve üzerinde olması), proliferatif veya şiddetli nonproliferatif diyabetik retinopatisi olanlara, renal transplantasyonun ilk 1 yıl içerisindeki hastalara veya aktif kanserlilere tedavi başlanmaz.",
+          "text_sha256": "583eda787b01f2ff75a7e64b37eb70afd5e91fd350a73abad91d38721afddd7f",
+          "runs": [
+            {
+              "text": "(2) Epifiz hatları kapalı olanlara, persistan ağır sekonder hiperparatiroidizmi olanlara (Paratiroid hormonun 500 ",
+              "struck": false
+            },
+            {
+              "text": "pikogram",
+              "struck": false
+            },
+            {
+              "text": "(",
+              "struck": false
+            },
+            {
+              "text": "pg",
+              "struck": false
+            },
+            {
+              "text": ")/ml ve üzerinde olması), proliferatif veya şiddetli ",
+              "struck": false
+            },
+            {
+              "text": "nonproliferatif",
+              "struck": false
+            },
+            {
+              "text": " diyabetik retinopatisi olanlara, renal transplantasyonun ilk 1 yıl içerisindeki hastalara veya aktif kanserlilere tedavi başlanmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4309,
+          "text": "(3) Tedavi dozu 0,045-0,05 mg/kg/gündür.",
+          "text_sha256": "a8cf7ca9df422797b17169eba85acaf4c89190b80f98ab693456dc49db0e2cc6",
+          "runs": [
+            {
+              "text": "(3) Tedavi dozu 0,045-0,05 mg/kg/gündür. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4310,
+          "text": "(4) Üçüncü basamak hastanelerde en az bir çocuk nefroloji ve çocuk endokrinoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilir.",
+          "text_sha256": "5cdc40bd4e2c4fcc5fe66c2a8fa69f0c1b958202f0a4a39a24c5ef6b503be2ee",
+          "runs": [
+            {
+              "text": "(4) Üçüncü basamak hastanelerde en az bir çocuk nefroloji ve çocuk endokrinoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilir. ",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source_keys": [
+    "4.2.6.A-5.a#7420864e",
+    "4.2.6.A-5.b#7b829f92",
+    "4.2.6.A-5.c#843b4071"
+  ],
+  "height_notation_equivalence_verified": false,
+  "height_interpretation": "Source prints age/sexheight<3rd percentile (below−2SD). No conversion or exact equivalence is asserted. Both separately recorded classifications agreeing is sufficient for this limited condition check; both failing proves failure under either reading. Discordance or a missing reference remains source review. Both measures are NOT claimed to be a statutory testing requirement.",
+  "pathways": "Persistent growth failure OR (documented completed post-transplant year AND absence of steroid therapy AND absence of spontaneous growth) OR nephropathic cystinosis-related CKD; common annual growth velocity percentile<25 and height condition. No single branch is mandatory if another is explicitly confirmed.",
+  "scope": "Necessary initiation conditions only. Three alternative branch flags do not establish parent CKD stage/dialysis duration/nutrition/metabolic conditions. Scope, date, known exclusions and dose remain separate. Never derive persistence, a transplant anniversary or clinical state; never apply initiation conditions to continuation."
+}

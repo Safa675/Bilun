@@ -1,0 +1,170 @@
+{
+  "protocol_id": "pediatric_gh_v1",
+  "rule_ids": [
+    "4.2.6.pediatric_gh_monitoring_board",
+    "4.2.6.pediatric_gh_renewal_board"
+  ],
+  "sut_section": "4.2.6.A-1(3)",
+  "verification_status": "ai_generated_pending_review",
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "date_basis": "RG-09/05/2024-32541/7-a current somatropin/somatrogon heading; explicit 7-b repeal of pediatric bone-age stopping criterion, both effective 17/05/2024. No assertion about earlier historical applicability.",
+  "scope": "Only pediatric continuation stop criteria. Patient group and height-reference sex category must be recorded explicitly, not inferred from ICD, name or specialist. Adult closed-epiphysis therapy and initiation pathways remain outside this check. Bone age is not a pediatric stopping condition. Passing this check is not overall eligibility.",
+  "stop_if_any": [
+    {
+      "field": "epiphyses_closed",
+      "operator": "eq",
+      "value": true,
+      "source_key": "4.2.6.A-1.a#592aef98"
+    },
+    {
+      "field": "annual_growth_velocity_cm",
+      "operator": "le",
+      "value": 4,
+      "source_key": "4.2.6.A-1.b#bbd37380"
+    },
+    {
+      "field": "height_cm",
+      "operator": "ge",
+      "value_by_gh_height_reference_sex": {
+        "female": 157,
+        "male": 168
+      },
+      "source_key": "4.2.6.A-1.c#b5a513b6"
+    }
+  ],
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4235,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "text_sha256": "cc9e57a82a474ef0e01a1ca8138b7a356e9a1d45048f4b121d35fbd3858ba852",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4236,
+          "text": "4.2.6.A-1 - Çocuklarda;",
+          "text_sha256": "7f8c846ef34296a990f9b4e338190d28c215158a02de8667f905daac84a8bd81",
+          "has_struck_runs": true
+        },
+        {
+          "docx_paragraph_index_zero_based": 4237,
+          "text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "text_sha256": "45cb2c1e4792dd101c3b5e062af4d34ac804487d0a49dde8fb632fef7a8cdb66",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4254,
+          "text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "text_sha256": "a3b772ffa12b25cb0017a632f40882fe9fb061f38dc4eb6525cd202ba1a0f6ea",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4255,
+          "text": "(3) Tedaviler aşağıda yer alan kriterlerin herhangi birinin varlığında sonlandırılır.",
+          "text_sha256": "b3d97c76fb8a11856333e4b39a4ac9dc1868bc28e82dad35734d80695792282d",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4256,
+          "text": "a) Epifiz hattı kapandığında,",
+          "text_sha256": "592aef980a3c3fcc2d792fe85fd392562704b55d55e5bb369597f502c4152445",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4257,
+          "text": "b) Yıllık büyüme hızı 4 cm ve altında olduğunda,",
+          "text_sha256": "bbd37380af5b45064745c60e917011c6f1b03ab38ce65baf5bef08adfd2773bf",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4258,
+          "text": "c) Boy uzunluğu kızlarda 157 cm’ye erkeklerde 168 cm’ye ulaştığında,",
+          "text_sha256": "b5a513b65400266743eae6cf277bf46bb4d319fc993b7bb628fb991d7e4e50b7",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4259,
+          "text": "(Mülga: RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024)",
+          "text_sha256": "790f57e314b001de164e8e5b32a35a4d8765e5d176dd1988625a5fec4cb3cd29",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4260,
+          "text": "ç) Kemik yaşı kızlarda 14, erkeklerde 16 yaşa ulaştığında.",
+          "text_sha256": "207b153595b7a52f5dadf6edda28b4b9ffa4f9672f1b4a0a7b3e33726e6e76d3",
+          "has_struck_runs": true
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4243,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-a md. Yürürlük: 17/05/2024)",
+          "text_sha256": "cc9e57a82a474ef0e01a1ca8138b7a356e9a1d45048f4b121d35fbd3858ba852",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4244,
+          "text": "4.2.6.A-1 - Çocuklarda;",
+          "text_sha256": "7f8c846ef34296a990f9b4e338190d28c215158a02de8667f905daac84a8bd81",
+          "has_struck_runs": true
+        },
+        {
+          "docx_paragraph_index_zero_based": 4245,
+          "text": "4.2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri;",
+          "text_sha256": "45cb2c1e4792dd101c3b5e062af4d34ac804487d0a49dde8fb632fef7a8cdb66",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4262,
+          "text": "(2) Büyüme hormonu ile tedavisine başlanmış hastalarda epifiz hatlarının açık olması tedavinin devamı için yeterli olup kemik yaşı geriliği şartı aranmaz. Bu hususlar yeni düzenlenecek 1 yıl süreli sağlık kurulu raporunda belirtilir.",
+          "text_sha256": "a3b772ffa12b25cb0017a632f40882fe9fb061f38dc4eb6525cd202ba1a0f6ea",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4263,
+          "text": "(3) Tedaviler aşağıda yer alan kriterlerin herhangi birinin varlığında sonlandırılır.",
+          "text_sha256": "b3d97c76fb8a11856333e4b39a4ac9dc1868bc28e82dad35734d80695792282d",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4264,
+          "text": "a) Epifiz hattı kapandığında,",
+          "text_sha256": "592aef980a3c3fcc2d792fe85fd392562704b55d55e5bb369597f502c4152445",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4265,
+          "text": "b) Yıllık büyüme hızı 4 cm ve altında olduğunda,",
+          "text_sha256": "bbd37380af5b45064745c60e917011c6f1b03ab38ce65baf5bef08adfd2773bf",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4266,
+          "text": "c) Boy uzunluğu kızlarda 157 cm’ye erkeklerde 168 cm’ye ulaştığında,",
+          "text_sha256": "b5a513b65400266743eae6cf277bf46bb4d319fc993b7bb628fb991d7e4e50b7",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4267,
+          "text": "(Mülga: RG- 09/05/2024- 32541/7-b md. Yürürlük: 17/05/2024)",
+          "text_sha256": "790f57e314b001de164e8e5b32a35a4d8765e5d176dd1988625a5fec4cb3cd29",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4268,
+          "text": "ç) Kemik yaşı kızlarda 14, erkeklerde 16 yaşa ulaştığında.",
+          "text_sha256": "207b153595b7a52f5dadf6edda28b4b9ffa4f9672f1b4a0a7b3e33726e6e76d3",
+          "has_struck_runs": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,760 @@
+{
+  "scope": "Static authored binding map, not a per-request execution count. Complete-clause mapping is absent.",
+  "families": [
+    "sma",
+    "antifungal"
+  ],
+  "predicate_bindings": [
+    {
+      "predicate_id": "anidulafungin.adult",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#1234522e"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.adult",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "anidulafungin.anc_at_least_500_per_mm3",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#1234522e"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.anc_per_mm3",
+      "operator": ">=",
+      "expected": 500,
+      "unit": "cells/mm3"
+    },
+    {
+      "predicate_id": "anidulafungin.anc_lab_documented",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#1234522e"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.anc_lab_result_present",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "anidulafungin.intent_treatment",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#1234522e"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.intent",
+      "operator": "one_of",
+      "expected": [
+        "treatment"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "anidulafungin.invasive_candidiasis",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#1234522e"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "invasive_candidiasis"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "itraconazole.prophylaxis.bone_marrow_transplant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.bone_marrow_transplant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.prophylaxis.deep_fungal_indication",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "deep_fungal_infection_prophylaxis"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "itraconazole.prophylaxis.hematologic_malignancy",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.hematological_malignancy",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.prophylaxis.neutropenia_development_expected",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.neutropenia_development_expected",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.treatment.esophageal_candidiasis",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.a#77f6ee8f"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "esophageal_candidiasis"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "itraconazole.treatment.fluconazole_resistant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.a#77f6ee8f"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.fluconazole_resistant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.treatment.hiv_positive",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.a#77f6ee8f"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.hiv_positive",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.treatment.immunodeficiency",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.a#77f6ee8f"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.immunodeficiency",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.other.expected_neutropenia_days",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(3)#cf0aee43"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.expected_neutropenia_days",
+      "operator": ">=",
+      "expected": 10,
+      "unit": "days"
+    },
+    {
+      "predicate_id": "micafungin.other.prophylaxis_indication",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(3)#cf0aee43"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "==",
+      "expected": "aspergillus_candida_prophylaxis",
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.all",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.acute_lymphoblastic_leukemia",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.allogeneic_hsct",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.allogeneic_hsct",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.autologous_hsct",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.autologous_hsct",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.indication",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "aspergillus_candida_prophylaxis"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.mucositis",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.mucositis",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.route_a.current_neutropenia",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.current_neutropenia",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.route_a.within_seven_days",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_fields": [
+        "drug_claim_date",
+        "antifungal_evidence.neutropenia_end_date"
+      ],
+      "operator": "elapsed_days<=",
+      "expected": 7,
+      "unit": "days"
+    },
+    {
+      "predicate_id": "micafungin.prophylaxis.route_b.current_neutropenia",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#9e75077a"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.current_neutropenia",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "micafungin.treatment.candidiasis_indication",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#7976531d"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "invasive_candidiasis",
+        "esophageal_candidiasis"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "posaconazole.aspergillosis.amphotericin_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#4b9ca2bb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.amphotericin_b_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.aspergillosis.liposomal_amphotericin_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#4b9ca2bb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.liposomal_amphotericin_b_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.aspergillosis.voriconazole_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#4b9ca2bb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.voriconazole_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.chromoblastomycosis_mycetoma.itraconazole_intolerant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(4)#06a1b9aa"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.itraconazole_intolerant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.chromoblastomycosis_mycetoma.itraconazole_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(4)#06a1b9aa"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.itraconazole_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.amphotericin_b_intolerant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.amphotericin_b_intolerant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.amphotericin_b_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.amphotericin_b_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.fluconazole_intolerant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.fluconazole_intolerant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.fluconazole_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.fluconazole_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.itraconazole_intolerant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.itraconazole_intolerant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.coccidioidomycosis.itraconazole_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(5)#2fe8e460"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.itraconazole_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.fusariosis.amphotericin_intolerant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(3)#84014798"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.amphotericin_b_intolerant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.fusariosis.amphotericin_refractory",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(3)#84014798"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.amphotericin_b_refractory",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.oropharyngeal.fluconazole_resistant",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#ed3dd5ea"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.fluconazole_resistant",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.oropharyngeal.immunodeficiency",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#ed3dd5ea"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.immunodeficiency",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.oropharyngeal.oral_suspension",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#ed3dd5ea"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.formulation",
+      "operator": "one_of",
+      "expected": [
+        "oral_suspension"
+      ],
+      "unit": "enum"
+    },
+    {
+      "predicate_id": "posaconazole.parenteral.oral_unusable",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.a#70ca881f"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.oral_form_unusable",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.allogeneic_hsct",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#fe3010eb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.allogeneic_hsct",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.aml_or_mds",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#9dd6786c"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.aml_or_mds",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.gvhd_immunosuppression",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(2)#fe3010eb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.gvhd_high_dose_immunosuppression",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.high_fungal_risk",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#9dd6786c",
+        "4.2.23.(2)#fe3010eb"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.high_invasive_fungal_risk",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.induction",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#9dd6786c"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.remission_induction_chemotherapy",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "posaconazole.prophylaxis.prolonged_neutropenia",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.(1)#9dd6786c"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.prolonged_neutropenia_expected",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.nusinersen.lumbar_puncture_suitability",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.B.e#927a1a83@within:4.2.49.B#1a8f10e4"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.lumbar_puncture_suitability_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.nusinersen.no_bacterial_meningitis",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(4)#d9c6cd1d"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.bacterial_meningitis_history",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.nusinersen.no_csf_shunt_or_catheter",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(3)#88014037"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.csf_shunt_or_catheter",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.nusinersen.no_impeding_brain_spinal_history",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(2)#d31c4d8c"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.brain_spinal_history_impeding_procedure",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.nusinersen.no_viral_encephalitis",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(4)#d9c6cd1d"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.viral_encephalitis_history",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_cognitive_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_cognitive_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_monitoring_assessment_in_health_board_report",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_monitoring_assessment_in_health_board_report",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_motor_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_motor_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_nutritional_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_nutritional_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_orthopedic_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_orthopedic_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_rehabilitation_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_rehabilitation_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_respiratory_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_respiratory_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.shared.no_hypoxic_birth_sequelae",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(5)#597ea9c2"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.hypoxic_birth_neurological_sequelae",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.shared.no_hypoxic_ischemic_encephalopathy",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.(5)#597ea9c2"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.hypoxic_ischemic_encephalopathy",
+      "operator": "is",
+      "expected": false,
+      "unit": "boolean"
+    }
+  ]
+}

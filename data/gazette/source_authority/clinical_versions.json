@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "deployed_source_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+  "verification_status": "ai_generated_pending_review",
+  "scope": "named_clinical_report_checks_only",
+  "legacy_unchanged_modes": [
+    "non_mecasermin_gh_heading_lower_bound_without_reviewed_upper_bound"
+  ],
+  "official_reviews": [
+    {
+      "review_id": "sgk-rg-clinical-2026-10-03T070400Z",
+      "checked_at": "2026-10-03T07:04:00Z",
+      "checked_through": "2026-10-03",
+      "scope": "named_clinical_report_checks_only",
+      "positive_currentness_evidence": true,
+      "evidence": [
+        {
+          "path": "data/gazette/source_authority/official_review_2026_10_03.json",
+          "sha256": "f2ed092afebf80c1be1e8661dd626917c0e97e10ba882ebb7b5ccc822b03c4e2"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-20261003-3-regulation-observer-text.txt",
+          "sha256": "14dd3b0eb6cbbb6e8e3624f67a1e5d3370362481e363ec728c9caa68b8ccaa34"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-20261003-daily-contents-observer-text.txt",
+          "sha256": "541ab604cbdb777b8fcaef0ca753afe2fb4d7c766fa698f23180d3a036f65a10"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-homepage-current-issue-supplement-observer-excerpt.txt",
+          "sha256": "5c9a458ea25eea930954e125e5f3ea20caca0da9ee2e08c8e7dcd5665742bbe2"
+        }
+      ],
+      "receipt": {
+        "path": "data/gazette/source_authority/review_receipt_2026_10_03.json",
+        "sha256": "0d773cc4348fbdf802e5e2aebe67737f5342f36f14302f669e323d83e1c68ccc"
+      }
+    }
+  ],
+  "versions": [
+    {
+      "family_id": "sma",
+      "version_id": "sma.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2025-05-06",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_sma_bindings.json",
+        "sha256": "0229c60c49851d6ddef49d18d5d0e8c4c335e19814574f7dcdbf87003c3b3037"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2025-05-06",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "antifungal_micafungin",
+      "version_id": "antifungal_micafungin.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2018-04-01",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_antifungal_bindings.json",
+        "sha256": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2018-04-01",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "antifungal_other",
+      "version_id": "antifungal_other.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_antifungal_bindings.json",
+        "sha256": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "renal",
+      "version_id": "renal.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_renal_bindings.json",
+        "sha256": "c1ee1b74e2c2000b1311ab2590fbd704e35284d27b9cd49209734dcefa4c7555"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "enteral",
+      "version_id": "enteral.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2026-09-05",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_enteral_bindings.json",
+        "sha256": "84ac91bab846af948eb8f3cc77d81eb908b6245657a94af6b5d19acc3896bb90"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-09-05",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "ravulizumab",
+      "version_id": "ravulizumab.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2026-07-07",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_ravulizumab_bindings.json",
+        "sha256": "c0895bc523c50dc37e388460c03d0ec1f0ada0618046d843ecbf8a0e74d53536"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-07-07",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "followup",
+      "version_id": "followup.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_followup_bindings.json",
+        "sha256": "446a38c9996db56ae5bbd8d6228de54ae74f718487ab4b2b7b98607ffec7719c"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_sc_ig",
+      "version_id": "indication_sc_ig.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2024-11-09",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2024-11-09",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_hbv",
+      "version_id": "indication_hbv.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": "2024-11-09",
+      "lower_bound_basis": "Existing source-verified clause-specific lower bound retained; not first enactment of every criterion.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2024-11-09",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_hcv",
+      "version_id": "indication_hcv.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_bone",
+      "version_id": "indication_bone.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "historical_evidence": [],
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    },
+    {
+      "family_id": "mecasermin",
+      "version_id": "mecasermin.clinical.2026-10-02",
+      "source_observed_on": "2026-10-02",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "legal_effective_from": null,
+      "lower_bound_basis": "Unknown legal commencement; observation points do not establish missing historical intervals.",
+      "known_successor_from": null,
+      "evidence": {
+        "path": "data/gazette/source_authority/mecasermin_bindings.json",
+        "sha256": "b666d72a2fbbd5115e5cf75fca79e4e5b21d10d4c3e9e7a07691d6b60d8175b5"
+      },
+      "historical_evidence": [
+        {
+          "path": "data/gazette/source_evidence/mecasermin_known_as_of_continuation.json",
+          "sha256": "71d43430b4976e0658d6d81c60e1c52618356600f16cb40622d6baa15ab1947f"
+        }
+      ],
+      "windows": [
+        {
+          "start": "2026-08-29",
+          "through": "2026-08-29",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821"
+        },
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        }
+      ]
+    }
+  ]
+}

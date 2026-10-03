@@ -1,0 +1,34 @@
+SOURCE URL: https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.htm
+OBSERVED AT UTC: 2026-10-03T07:01:28Z
+CAPTURE TYPE: Complete regular-issue contents transcribed from the successful live cloud Chrome accessibility-tree tool result. This is observer evidence, not original HTML or official downloadable raw bytes. Numeric node labels and layout-only containers are omitted; rendered content and order are preserved. Link targets below are those returned by the browser observation.
+
+3 Ekim 2026 Tarihli ve 33389 Sayılı Resmî Gazete
+MEVZUAT
+Daily PDF link: https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.pdf
+
+YÜRÜTME VE İDARE BÖLÜMÜ
+YÖNETMELİKLER
+–– Rüzgar Kaynağına Dayalı Elektrik Üretimi Başvurularının Teknik Değerlendirmesi Hakkında Yönetmelikte Değişiklik Yapılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-1.htm
+–– Tarım Ürünleri Lisanslı Depoculuk Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-2.htm
+–– Sosyal Güvenlik Kurumu İlaç Geri Ödeme Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm
+–– KOSGEB İnsan Kaynakları Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-4.htm
+–– Küçük ve Orta Ölçekli İşletmeleri Geliştirme ve Destekleme İdaresi Başkanlığı Disiplin Yönetmeliğinin Yürürlükten Kaldırılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-5.htm
+–– Türk Mühendis ve Mimar Odaları Birliği Şehir Plancıları Odası Ana Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-6.htm
+
+TEBLİĞ
+–– NXT Elektronik Para ve Ödeme Hizmetleri A.Ş.’ye Elektronik Para Kuruluşu Olarak Faaliyet Göstermek Üzere Faaliyet İzni Verilmesine İlişkin Karar
+https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-7.pdf
+
+İLÂN BÖLÜMÜ
+a - Yargı İlânları
+b - Artırma, Eksiltme ve İhale İlânları
+c - Çeşitli İlânlar
+– T.C. Merkez Bankasınca Belirlenen Döviz Kurları ve Devlet İç Borçlanma Senetlerinin Günlük Değerleri
+
+Resmî Gazete'nin kurumsal mobil uygulaması Android ve Apple marketlerde "T.C. Resmî Gazete" adıyla yerini almıştır.

@@ -30,3 +30,25 @@ overrides:
   C000856: {clause_type: fikra}
   C000859: {clause_type: fikra}
   C003078: {clause_type: fikra}
+
+  # Verified original Word list: numId=47, level=2, lowerLetter in both 2026
+  # snapshots. The extractor lost a/b/c prefixes; match text, never shifted IDs.
+  "4.2.6.B-3#dde3c8f6":
+    clause_type: bent
+    clause_letter: a
+    verification_status: ai_generated_pending_review
+    source_evidence: data/gazette/source_evidence/mecasermin_known_as_of_continuation.json
+  "4.2.6.B-3#11e1f077":
+    clause_type: bent
+    clause_letter: b
+    verification_status: ai_generated_pending_review
+    source_evidence: data/gazette/source_evidence/mecasermin_known_as_of_continuation.json
+  "4.2.6.B-3#de2f2b31":
+    clause_type: bent
+    clause_letter: c
+    verification_status: ai_generated_pending_review
+    source_evidence: data/gazette/source_evidence/mecasermin_known_as_of_continuation.json
+
+  # Official Oct2 Word paragraphs4893/4894 contain literal1-/2- bullets.
+  "4.2.13.1#2076b8bd": {clause_type: numbered_item, clause_number: 1}
+  "4.2.13.1#50f88a7d": {clause_type: numbered_item, clause_number: 2}

@@ -1,4 +1,8 @@
+import type { SutIndicationEvidence } from "./clinicalEvidence";
+import type { SutFollowupEvidence } from "./clinicalEvidence";
 import { postJSON, requestJSON } from "./request";
+import type { SutEnteralEvidence, SutRavulizumabEvidence, SutClinicalRestriction, SutClinicalSourceAuthority } from "./clinicalEvidence";
+import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
   PatientOptimization,
@@ -33,23 +37,32 @@ function buildPatientAlertsPath(params: PatientAlertsRequestParams = {}): string
   return `/api/patient-alerts?${query.toString()}`;
 }
 
-export interface SutMaterialItem {
+export interface SutMaterialItem extends SutGrowthHormoneEvidence {
+  enteral_evidence?: SutEnteralEvidence | null;
+  ravulizumab_evidence?: SutRavulizumabEvidence | null;
+  sma_evidence?: SutSmaEvidence | null;
+  antifungal_evidence?: SutAntifungalEvidence | null;
+  renal_evidence?: SutRenalEvidence | null;
+  followup_evidence?: SutFollowupEvidence | null;
+  indication_evidence?: SutIndicationEvidence | null;
   name: string;
   unit_price: number;
   quantity: number;
   code?: string;
   // §4.2.33 anti-VEGF dose protocol (intravitreal injection counts).
   // Optional; only meaningful when validate-claim runs drug_indication checks.
-  annual_application_count?: number;
-  is_loading_phase?: boolean;
+  annual_application_count?: number | null;
+  is_loading_phase?: boolean | null;
   // §4.2.14.C oncology biomarker + prior-therapy gating.
   // biomarkers: [{ marker: "HER2", status: "3+" }]
-  biomarkers?: Array<{ marker: string; status: string }>;
+  biomarkers?: Array<{ marker: string; status: string }> | null;
   // prior_therapies: [{ drug_or_class: "imatinib", outcome: "resistant" }]
-  prior_therapies?: Array<{ drug_or_class: string; outcome: string }>;
+  prior_therapies?: Array<{ drug_or_class: string; outcome: string }> | null;
 }
 
 export interface SutDrugContext {
+  /** Actual service date, never inferred from the request time. */
+  service_date?: string | null;
   /** Primary ICD-10 diagnosis code (required for drug_indication checks). */
   primary_icd10: string;
   /** Prescriber's medical specialty (e.g. "tıbbi onkoloji", "göz hastalıkları"). */
@@ -144,6 +157,11 @@ export interface SutLegacyValidationResult {
 }
 
 export interface SutValidationEvidence {
+  source_authority?: SutClinicalSourceAuthority | null;
+  clinical_restrictions?: SutClinicalRestriction[];
+  clinical_eligibility_complete?: false | null;
+  selected_rule_id?: string | null;
+  missing_inputs?: string[];
   evidence_id: string;
   rule: string;
   rule_id?: string | null;
@@ -688,7 +706,22 @@ export interface CoverageSummaryMeta {
   unavailable_reason: string | null;
 }
 
+export interface CoverageEvidence {
+  schema_version: number;
+  available: boolean;
+  unavailable_reason?: string;
+  source_clause_count?: number;
+  source_represented_clause_count?: number;
+  executable_predicate_rule_count?: number;
+  executable_predicate_scope?: string;
+  inputs_available_count?: number | null;
+  actually_evaluated_count?: number | null;
+  runtime_unavailable_reason?: string;
+  clinical_completion_pct?: null;
+}
+
 export interface PartialEngineCoverage {
+  coverage_evidence?: CoverageEvidence;
   rule_id: string;
   registry_status: string;
   prose_engine_status: string;

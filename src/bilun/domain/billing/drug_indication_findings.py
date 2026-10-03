@@ -14,6 +14,12 @@ from urllib.parse import quote
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules import drug_indication as prose
+from src.bilun.domain.sut.runtime_coverage_contract import bounded_runtime_coverage, runtime_coverage_payload
+from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
+from src.bilun.domain.sut.source_authority_schema import bounded_source_authority
+from .drug_clinical_evidence import (
+    DrugClinicalRestriction, bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
+)
 
 
 _MAX_ROUTE_EVIDENCE = 24
@@ -139,6 +145,12 @@ class DrugIndicationFinding:
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+    temporal_evidence: dict[str, Any] | None = None
+
+
+    clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
+    runtime_coverage: dict[str, Any] | None = None
+    source_authority: dict[str, Any] | None = None
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -147,6 +159,7 @@ class DrugIndicationFinding:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"temporal_evidence": self.temporal_evidence} if self.temporal_evidence else {}),
             "finding_id": self.finding_id,
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
@@ -170,11 +183,16 @@ class DrugIndicationFinding:
             "eligible_routes_truncated": self.eligible_routes_truncated,
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
+            **clinical_evidence_payload(self.clinical_restrictions),
+            **runtime_coverage_payload(self.runtime_coverage),
+            **source_authority_payload(self.source_authority),
         }
 
     def to_legacy_violation(self) -> dict[str, Any]:
         """Project the canonical finding into the pre-typed violation shape."""
         legacy = dict(self._legacy_base)
+        legacy.pop("source_authority", None)
+        legacy.pop("clinical_restrictions", None)
         legacy.update(
             {
                 "finding_id": self.finding_id,
@@ -213,6 +231,9 @@ class DrugIndicationFinding:
                 "eligible_routes_truncated": self.eligible_routes_truncated,
             }
         )
+        legacy.update(clinical_evidence_payload(self.clinical_restrictions))
+        legacy.update(runtime_coverage_payload(self.runtime_coverage))
+        legacy.update(source_authority_payload(self.source_authority))
         return legacy
 
 
@@ -238,9 +259,15 @@ class DrugIndicationLineEvaluation:
     eligible_routes_truncated: bool = False
     observed_icd10_count: int = 0
     observed_icd10_truncated: bool = False
+    clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
+    runtime_coverage: dict[str, Any] | None = None
+    source_authority: dict[str, Any] | None = None
+
+    temporal_evidence: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"temporal_evidence": self.temporal_evidence} if self.temporal_evidence else {}),
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
             "drug_claim_line_id": self.drug_claim_line_id,
@@ -261,6 +288,9 @@ class DrugIndicationLineEvaluation:
             "eligible_routes_truncated": self.eligible_routes_truncated,
             "observed_icd10_count": self.observed_icd10_count,
             "observed_icd10_truncated": self.observed_icd10_truncated,
+            **clinical_evidence_payload(self.clinical_restrictions),
+            **runtime_coverage_payload(self.runtime_coverage),
+            **source_authority_payload(self.source_authority),
         }
 
 
@@ -277,6 +307,24 @@ _LEGACY_PAYLOAD_EVIDENCE_REASON = (
 )
 
 
+def _normalize_cached_evidence(row: Any) -> Any:
+    if not isinstance(row, Mapping):
+        return row
+    output = dict(row)
+    if "runtime_coverage" in row:
+        output.update(runtime_coverage_payload(row.get("runtime_coverage")))
+    if "source_authority" in row:
+        output.pop("source_authority", None)
+        output.update(source_authority_payload(row.get("source_authority")))
+        output["clinical_eligibility_complete"] = False
+    if "clinical_restrictions" in row:
+        restrictions = bounded_clinical_restrictions(row.get("clinical_restrictions"))
+        output["clinical_restrictions"] = [item.to_dict() for item in restrictions]
+        if restrictions:
+            output["clinical_eligibility_complete"] = False
+    return output
+
+
 def normalize_drug_indication_payload(value: Mapping[str, Any]) -> dict[str, Any]:
     """Normalize live and cached Drug Indication payloads to one contract.
 
@@ -285,6 +333,14 @@ def normalize_drug_indication_payload(value: Mapping[str, Any]) -> dict[str, Any
     creates a finding, route, diagnosis, or canonical identity.
     """
     payload = dict(value)
+    # Cached measurement metadata uses the same bounded contract as live rows.
+    # Missing old-cache metadata stays absent; it cannot become measured zero.
+    for kind in ("findings", "evaluations", "violations"):
+        if isinstance(payload.get(kind), list):
+            payload[kind] = [
+                _normalize_cached_evidence(row)
+                for row in payload[kind]
+            ]
     findings = payload.get("findings")
     evaluations = payload.get("evaluations")
     violations = payload.get("violations")
@@ -434,6 +490,8 @@ def _explanation_tr(
         ", ".join(value for route in routes for value in (*route.icd10_codes, *route.icd10_ranges))
         or "kodlanmış tanı yolu"
     )
+    if violation.get("clinical_restrictions") and violation.get("message_tr"):
+        return str(violation["message_tr"])
     if kind == "indication_mismatch":
         return (
             f"Faturada {observed} tanıları bulundu. {drug_name} için kodlanmış SGK "
@@ -521,8 +579,15 @@ def evaluate_drug_indication_findings(
     ctx: PatientClaimContext | None,
     *,
     rules: list[dict[str, Any]] | None = None,
+    runtime_sink: RequestDrugRuntimeSink | None = None,
 ) -> DrugIndicationEvaluationBatch:
     """Evaluate every drug line once and return all pure family projections."""
+    if runtime_sink is not None and (
+            not isinstance(runtime_sink, RequestDrugRuntimeSink) or not runtime_sink.fresh
+            or ctx is None or not runtime_sink.matches_context(ctx.drug_lines)):
+        raise ValueError("Runtime sink must belong to this exact fresh request context")
+    if runtime_sink is not None:
+        runtime_sink.begin(ctx.drug_lines)
     if ctx is None or not ctx.drug_lines:
         return DrugIndicationEvaluationBatch()
 
@@ -570,6 +635,11 @@ def evaluate_drug_indication_findings(
         evaluation_status = str(detailed.get("evaluation_status") or "unavailable")
         selected_rule_id = detailed.get("selected_rule_id")
         selected_rule_id = str(selected_rule_id) if selected_rule_id else None
+        clinical_restrictions = bounded_clinical_restrictions(detailed.get("clinical_restrictions"))
+        runtime_coverage = bounded_runtime_coverage(detailed.get("runtime_coverage"))
+        source_authority = bounded_source_authority(detailed.get("source_authority"))
+        if runtime_sink is not None:
+            runtime_sink.capture(line, selected_rule_id, runtime_coverage)
         violation = detailed.get("violation")
         finding_id: str | None = None
         finding_kind: str | None = None
@@ -589,6 +659,7 @@ def evaluate_drug_indication_findings(
                 drug_name=line.drug_name,
             )
             finding = DrugIndicationFinding(
+                temporal_evidence=detailed.get("temporal_evidence"),
                 finding_id=finding_id,
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
@@ -603,6 +674,9 @@ def evaluate_drug_indication_findings(
                 matched_icd10_codes=matched_codes,
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
+                clinical_restrictions=clinical_restrictions,
+                runtime_coverage=runtime_coverage,
+                source_authority=source_authority,
                 selected_rule_id=selected_rule_id,
                 explanation_tr=explanation,
                 recommended_action_tr=_recommended_action(finding_kind),
@@ -627,6 +701,7 @@ def evaluate_drug_indication_findings(
 
         evaluations.append(
             DrugIndicationLineEvaluation(
+                temporal_evidence=detailed.get("temporal_evidence"),
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
                 drug_claim_line_id=line.drug_claim_line_id,
@@ -638,6 +713,9 @@ def evaluate_drug_indication_findings(
                 matched_icd10_codes=matched_codes,
                 unmatched_icd10_codes=unmatched_codes,
                 eligible_routes=routes,
+                clinical_restrictions=clinical_restrictions,
+                runtime_coverage=runtime_coverage,
+                source_authority=source_authority,
                 selected_rule_id=selected_rule_id,
                 finding_id=finding_id,
                 finding_kind=finding_kind,

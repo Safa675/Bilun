@@ -213,6 +213,7 @@
       "heuristic_inn": "",
       "linked_rule_ids": [
         "4.2.13.1.3.transplant_oral_antiviral_coverage",
+        "4.2.13.1.clinical_path_a_initiation",
         "4.2.13.hbv_dna_initiation_board"
       ]
     },

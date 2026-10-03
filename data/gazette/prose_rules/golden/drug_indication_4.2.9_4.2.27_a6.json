@@ -38,17 +38,19 @@
       "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
       "primary_icd10": "D46.9",
       "report_present": false,
-      "expect_violation": "missing_board_report",
-      "rule_id": "4.2.9.mds_esa_hematology_report"
+      "expect_violation": "needs_clinical_verification",
+      "rule_id": "4.2.9.mds_esa_hematology_report",
+      "source_review_reason": "The source requires an individual hematology-specialist report plus unimplemented clinical/lab criteria; a generic board-report flag alone cannot prove or disprove this route."
     },
     {
       "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
       "primary_icd10": "D46.9",
       "report_present": true,
       "prescriber_specialty": "hematoloji",
-      "expect_violation": null,
+      "expect_violation": "needs_clinical_verification",
       "rule_id": "4.2.9.mds_esa_hematology_report",
-      "report_duration_months": 1
+      "report_duration_months": 1,
+      "source_review_reason": "The source requires an individual hematology-specialist report plus unimplemented clinical/lab criteria; a generic board-report flag alone cannot prove or disprove this route."
     },
     {
       "drug_name": "MIMPARA 30 MG (ETELCALCETIDE)",

@@ -35,7 +35,7 @@ def validate_claim_endpoint(
             },
         )
     return typed_validation_payload(validate_claim_v2(
-        req.model_dump(), supplied_claim=req.model_dump(exclude_unset=True)
+        req.model_dump(mode="json"), supplied_claim=req.model_dump(mode="json", exclude_unset=True)
     ))
 
 
@@ -46,7 +46,7 @@ def validate_claim_legacy_endpoint(req: ClaimValidationRequest):
     Authentication is enforced by the same application middleware as v2. These
     rows retain the previous semantics and are not typed Compliance findings.
     """
-    return serialize_legacy_validation_result(sut_validate_claim(req.model_dump()))
+    return serialize_legacy_validation_result(sut_validate_claim(req.model_dump(mode="json")))
 
 
 @router.get("/bundled-consumables", response_model=BundledConsumablesResponse)

@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
+from src.bilun.domain.claims.clinical_evidence import (
+    AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+    parse_clinical_evidence,
+)
+
+
 from dataclasses import fields
 from datetime import date
 
@@ -336,6 +344,13 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
                 row.get("drug_report_duration_months")
             ),
             drug_inpatient_supply=optional_bool(row.get("drug_inpatient_supply")),
+            sma_evidence=parse_clinical_evidence(row.get("sma_evidence"), SmaEvidence),
+            antifungal_evidence=parse_clinical_evidence(row.get("antifungal_evidence"), AntifungalEvidence),
+            renal_evidence=parse_clinical_evidence(row.get("renal_evidence"), RenalEvidence),
+            followup_evidence=parse_clinical_evidence(row.get("followup_evidence"), FollowupEvidence),
+            indication_evidence=parse_clinical_evidence(row.get("indication_evidence"), IndicationEvidence),
+            enteral_evidence=parse_clinical_evidence(row.get("enteral_evidence"), EnteralEvidence),
+            ravulizumab_evidence=parse_clinical_evidence(row.get("ravulizumab_evidence"), RavulizumabEvidence),
             annual_application_count=(
                 None if is_missing(annual_count)
                 else parse_integer(annual_count, "annual_application_count", line_id, errors)
@@ -347,6 +362,7 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             prior_therapies=optional_string_records(
                 row, "prior_therapies", line_id, errors,
             ),
+            **parse_growth_hormone_inputs(row, row_id=line_id, errors=errors),
             prescriber_specialty=parse_text(
                 {**row, "prescriber_specialty": row.get("prescriber_specialty") or ""},
                 "prescriber_specialty",

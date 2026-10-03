@@ -26,9 +26,18 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.2.
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
+from src.bilun.domain.claims.clinical_evidence import (
+    AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+    parse_clinical_evidence,
+)
+
+
 from datetime import date
 from decimal import Decimal
 from typing import Any
+from src.bilun.domain.prose_rules._drug_indication.temporal import parse_service_date
 
 from src.bilun.domain.claims.dataset_builder import _enrich_material_regulatory_flags
 from src.bilun.domain.claims.models import (
@@ -217,7 +226,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     claim_id=claim_id,
                     patient_id="",
                     episode_id="",
-                    drug_claim_date=date.today(),
+                    drug_claim_date=parse_service_date(drug_ctx.get("service_date")),
                     drug_name=drug_name,
                     drug_code=str(mat.get("code", "") or ""),
                     barkod="",
@@ -236,6 +245,15 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     is_loading_phase=mat.get("is_loading_phase"),
                     biomarkers=tuple(biomarkers) if biomarkers else None,
                     prior_therapies=tuple(prior_therapies) if prior_therapies else None,
+                    **parse_growth_hormone_inputs(mat),
+
+                    sma_evidence=parse_clinical_evidence(mat.get("sma_evidence"), SmaEvidence),
+                    antifungal_evidence=parse_clinical_evidence(mat.get("antifungal_evidence"), AntifungalEvidence),
+                    renal_evidence=parse_clinical_evidence(mat.get("renal_evidence"), RenalEvidence),
+                    followup_evidence=parse_clinical_evidence(mat.get("followup_evidence"), FollowupEvidence),
+                    indication_evidence=parse_clinical_evidence(mat.get("indication_evidence"), IndicationEvidence),
+                    enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
+                    ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
                 )
             )
 

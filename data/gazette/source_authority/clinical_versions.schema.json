@@ -1,0 +1,279 @@
+{
+  "$defs": {
+    "AdmissionWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Start",
+          "type": "string"
+        },
+        "through": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Through",
+          "type": "string"
+        },
+        "basis": {
+          "enum": [
+            "established_history",
+            "observed_snapshot",
+            "reviewed_continuity"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "review_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Id"
+        },
+        "observed_source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Source Sha256"
+        }
+      },
+      "required": [
+        "start",
+        "through",
+        "basis"
+      ],
+      "title": "AdmissionWindow",
+      "type": "object"
+    },
+    "EvidenceFile": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "title": "EvidenceFile",
+      "type": "object"
+    },
+    "OfficialReview": {
+      "additionalProperties": false,
+      "properties": {
+        "review_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Review Id",
+          "type": "string"
+        },
+        "checked_at": {
+          "title": "Checked At",
+          "type": "string"
+        },
+        "checked_through": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Checked Through",
+          "type": "string"
+        },
+        "scope": {
+          "const": "named_clinical_report_checks_only",
+          "title": "Scope",
+          "type": "string"
+        },
+        "positive_currentness_evidence": {
+          "const": true,
+          "title": "Positive Currentness Evidence",
+          "type": "boolean"
+        },
+        "receipt": {
+          "$ref": "#/$defs/EvidenceFile"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceFile"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "review_id",
+        "checked_at",
+        "checked_through",
+        "scope",
+        "positive_currentness_evidence",
+        "receipt",
+        "evidence"
+      ],
+      "title": "OfficialReview",
+      "type": "object"
+    },
+    "SourceVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "family_id": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Family Id",
+          "type": "string"
+        },
+        "version_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Version Id",
+          "type": "string"
+        },
+        "source_observed_on": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Source Observed On",
+          "type": "string"
+        },
+        "source_docx_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Docx Sha256",
+          "type": "string"
+        },
+        "legal_effective_from": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Legal Effective From"
+        },
+        "lower_bound_basis": {
+          "minLength": 1,
+          "title": "Lower Bound Basis",
+          "type": "string"
+        },
+        "known_successor_from": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Known Successor From"
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceFile"
+        },
+        "historical_evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceFile"
+          },
+          "title": "Historical Evidence",
+          "type": "array"
+        },
+        "windows": {
+          "items": {
+            "$ref": "#/$defs/AdmissionWindow"
+          },
+          "minItems": 1,
+          "title": "Windows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "family_id",
+        "version_id",
+        "source_observed_on",
+        "source_docx_sha256",
+        "legal_effective_from",
+        "lower_bound_basis",
+        "known_successor_from",
+        "evidence",
+        "windows"
+      ],
+      "title": "SourceVersion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verification_status": {
+      "const": "ai_generated_pending_review",
+      "title": "Verification Status",
+      "type": "string"
+    },
+    "scope": {
+      "const": "named_clinical_report_checks_only",
+      "title": "Scope",
+      "type": "string"
+    },
+    "deployed_source_corpus_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Deployed Source Corpus Sha256",
+      "type": "string"
+    },
+    "legacy_unchanged_modes": {
+      "items": {
+        "const": "non_mecasermin_gh_heading_lower_bound_without_reviewed_upper_bound",
+        "type": "string"
+      },
+      "title": "Legacy Unchanged Modes",
+      "type": "array"
+    },
+    "official_reviews": {
+      "items": {
+        "$ref": "#/$defs/OfficialReview"
+      },
+      "minItems": 1,
+      "title": "Official Reviews",
+      "type": "array"
+    },
+    "versions": {
+      "items": {
+        "$ref": "#/$defs/SourceVersion"
+      },
+      "minItems": 1,
+      "title": "Versions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "verification_status",
+    "scope",
+    "deployed_source_corpus_sha256",
+    "legacy_unchanged_modes",
+    "official_reviews",
+    "versions"
+  ],
+  "title": "AuthorityCatalog",
+  "type": "object"
+}

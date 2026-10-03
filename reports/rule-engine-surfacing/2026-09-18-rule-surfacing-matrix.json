@@ -21,13 +21,13 @@
   },
   "counts": {
     "aggregate_only_findings": 5,
-    "cohort_visible_findings": 1298,
-    "distinct_emitted_rule_ids_or_kinds": 1933,
-    "duplicate_surfaced_findings": 1392,
+    "cohort_visible_findings": 1307,
+    "distinct_emitted_rule_ids_or_kinds": 1942,
+    "duplicate_surfaced_findings": 1401,
     "financial_findings": 359,
     "hidden_runtime_findings": 535,
-    "nonfinancial_findings": 1574,
-    "patient_visible_findings": 1393,
+    "nonfinancial_findings": 1583,
+    "patient_visible_findings": 1402,
     "registry_rule_families": 46,
     "runtime_detectors_adapters": 82
   },
@@ -53,7 +53,7 @@
     "tracked_rule_ids": 32
   },
   "independent_rerun_debt": {
-    "distinct_overlap_rule_ids_or_kinds": 1278,
+    "distinct_overlap_rule_ids_or_kinds": 1287,
     "relationship_count": 9,
     "relationships": [
       {
@@ -63,7 +63,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_bundling_violations_for_context",
         "analyzer_source_lines": [
-          168
+          177
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -89,7 +89,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_bundling_for_context",
         "analyzer_source_lines": [
-          174
+          183
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -197,7 +197,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_specialty_materials_for_context",
         "analyzer_source_lines": [
-          177
+          186
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -424,7 +424,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_preauth_for_context",
         "analyzer_source_lines": [
-          187
+          196
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -450,7 +450,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_miat_for_context",
         "analyzer_source_lines": [
-          190
+          199
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -476,7 +476,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
         "analyzer_source_lines": [
-          215
+          224
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -503,7 +503,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_pairing_for_context",
         "analyzer_source_lines": [
-          219
+          228
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -540,7 +540,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:check_procedure_pairing_for_context",
         "analyzer_source_lines": [
-          217
+          226
         ],
         "architectural_debt": true,
         "classification_basis": "manual_semantic_equivalence_with_fail_closed_runtime_and_emission_validation",
@@ -573,7 +573,7 @@
         ],
         "analyzer_runtime_id": "analyze_claim:evaluate_drug_indication_findings",
         "analyzer_source_lines": [
-          152
+          161
         ],
         "architectural_debt": true,
         "classification_basis": "source_direct_call",
@@ -587,7 +587,7 @@
           "src/bilun/domain/billing/engine.py",
           "src/bilun/domain/billing/patient_report.py"
         ],
-        "overlap_count": 968,
+        "overlap_count": 977,
         "overlap_rule_ids_or_kinds": [
           "4.1.1.family_medicine_contracted_prescribe_coverage",
           "4.1.1.prescription_diagnosis_mandatory",
@@ -792,9 +792,11 @@
           "4.2.12.B-1.immunglob.ivig_cidp_steroid_failure",
           "4.2.12.B-1.immunglob.ivig_guillain_barre_loading",
           "4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy",
+          "4.2.12.B-2.clinical_secondary_immunodeficiency",
           "4.2.12.B-2.immunglob.ivig_board_report_1mo_dose",
           "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
           "4.2.13.1.3.transplant_oral_antiviral_coverage",
+          "4.2.13.1.clinical_path_a_initiation",
           "4.2.13.1.lamivudine_telbivudine_wk24_switch",
           "4.2.13.1.paediatric_lamivudine_wk24_switch",
           "4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch",
@@ -803,6 +805,7 @@
           "4.2.13.1.tdf_taf_entecavir_year1_switch",
           "4.2.13.3.2.B.bucket_b.C004920",
           "4.2.13.3.2.B.bucket_b.C004922",
+          "4.2.13.3.2.B.clinical_rna_genotype_initiation",
           "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
           "4.2.13.3.2.B.hcv_ifn_ribavirin_combination",
           "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn",
@@ -1046,6 +1049,7 @@
           "4.2.14.C.pemetrexed_mesothelioma_board",
           "4.2.14.C.pnh_board_hematology_6m",
           "4.2.14.C.pre_transplant_blast_clearance_max2cycles",
+          "4.2.14.C.raltitrexed_colorectal_board",
           "4.2.14.C.raltitrexed_mesothelioma_board",
           "4.2.14.C.ravulizumab_meningococcal_vaccination",
           "4.2.14.C.ravulizumab_nmosb_3neurology_6m",
@@ -1120,8 +1124,6 @@
           "4.2.15.ranolazin_stable_angina_board",
           "4.2.15.Ç.bucket_a.c005817",
           "4.2.16.adult_metabolic_3yr_report_all_prescribe",
-          "4.2.16.amount_paid_coverage_a",
-          "4.2.16.amount_paid_coverage_b",
           "4.2.16.celiac_gluten_free_1yr_gastro_report",
           "4.2.16.celiac_gluten_free_3yr_board",
           "4.2.16.celiac_gluten_free_report",
@@ -1142,6 +1144,7 @@
           "4.2.16.special_formula_all_prescriber_with_report",
           "4.2.16.special_formula_ek4b_specialist_report",
           "4.2.17.A.active_vitamin_d_osteoporosis_nopay",
+          "4.2.17.A.clinical_glucocorticoid_bone_loss",
           "4.2.17.A.hormone_ablation_cancer_high_fracture",
           "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
           "4.2.17.B.calcitonin_first_6mo_only",
@@ -1397,21 +1400,22 @@
           "4.2.46.B.ipf_report_criteria_b",
           "4.2.46.C.ssc_ild_nintedanib_criteria",
           "4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr",
+          "4.2.46.clinical_annual_reassessment",
           "4.2.47.bucket_b.C006896",
           "4.2.47.bucket_b.C006898",
           "4.2.47.bucket_b.C006903",
           "4.2.48.metabolic.bile_acid_zellweger_mandatory_report",
-          "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a",
-          "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b",
-          "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a",
-          "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b",
-          "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
-          "4.2.49.B.neuro.risdiplam_all_criteria_coverage",
-          "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b",
-          "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
-          "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b",
-          "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
-          "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
+          "4.2.49.A.1.nusinersen_all_criteria_coverage",
+          "4.2.49.A.1.nusinersen_multidisciplinary_monitoring",
+          "4.2.49.A.1.nusinersen_no_csf_shunt_catheter",
+          "4.2.49.A.2.risdiplam_all_criteria_coverage",
+          "4.2.49.A.2.risdiplam_multidisciplinary_monitoring",
+          "4.2.49.B.1.nusinersen_all_criteria_coverage",
+          "4.2.49.B.1.nusinersen_multidisciplinary_monitoring",
+          "4.2.49.B.1.nusinersen_no_implanted_csf_shunt",
+          "4.2.49.B.1.nusinersen_no_lumbar_puncture_contraindication",
+          "4.2.49.B.2.risdiplam_all_criteria_coverage",
+          "4.2.49.B.2.risdiplam_multidisciplinary_monitoring",
           "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
           "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
           "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
@@ -1440,6 +1444,7 @@
           "4.2.57.atopic_dermatitis_dupilumab_risk_factor",
           "4.2.57.atopic_dermatitis_jak_after_12wk",
           "4.2.57.atopic_dermatitis_malignancy_risk",
+          "4.2.57.clinical_16_week_response",
           "4.2.57.tertiary_3derm_4mo_report_combo_nopay",
           "4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage",
           "4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage",
@@ -1507,13 +1512,16 @@
           "4.2.8.A.paediatric_dysphagia_special_enteral_2boxes",
           "4.2.8.A.paediatric_malnutrition_enteral_6mo_report",
           "4.2.8.B.parenteral_nutrition_30day_report",
+          "4.2.9.A-2.darbepoetin_mds_source_review",
           "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
+          "4.2.9.B.clinical_phosphate_necessary_restrictions",
           "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
           "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage",
           "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited",
           "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant",
           "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
           "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage",
+          "4.2.9.D.clinical_nutrition_necessary_restrictions",
           "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
           "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
           "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage",
@@ -1529,6 +1537,7 @@
           "4.2.9.paricalcitol_oral_pd_nephrology_report",
           "4.2.9.roksadustat_esa_switch_dialysis_report",
           "4.2.9.Ç.bucket_b.C004176",
+          "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions",
           "4.3.ek4c_ek4d_copay_exempt",
           "4.3.ek4c_self_procured_bank_payment_coverage",
           "4.3.non_ek4c_overseas_drug_nopay",
@@ -1639,7 +1648,7 @@
       "runtime_id": "analyze_claim:FocusedLegacyMaterializer",
       "runtime_status": "executed",
       "source_lines": [
-        156
+        165
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1684,7 +1693,7 @@
       "runtime_id": "analyze_claim:check_bundling_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        168
+        177
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1747,7 +1756,7 @@
       "runtime_id": "analyze_claim:check_dental_2_4_1_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        184
+        193
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1796,7 +1805,7 @@
       "runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        215
+        224
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1896,7 +1905,7 @@
       "runtime_id": "analyze_claim:check_drug_combination_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        209
+        218
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -1941,7 +1950,7 @@
       "runtime_id": "analyze_claim:check_exclusion_violations_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        171
+        180
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2076,7 +2085,7 @@
       "runtime_id": "analyze_claim:check_fatura_inceleme_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        200
+        209
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2178,7 +2187,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_misc_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        193
+        202
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2277,7 +2286,7 @@
       "runtime_id": "analyze_claim:check_gap_closing_treatment_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        194
+        203
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2405,7 +2414,7 @@
       "runtime_id": "analyze_claim:check_material_bundling_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        174
+        183
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2445,7 +2454,7 @@
       "runtime_id": "analyze_claim:check_material_miat_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        190
+        199
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2509,7 +2518,7 @@
       "runtime_id": "analyze_claim:check_material_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        219
+        228
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2549,7 +2558,7 @@
       "runtime_id": "analyze_claim:check_material_preauth_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        187
+        196
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2643,7 +2652,7 @@
       "runtime_id": "analyze_claim:check_payment_method_traceability_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        205
+        214
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2697,7 +2706,7 @@
       "runtime_id": "analyze_claim:check_procedure_pairing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        217
+        226
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -2943,7 +2952,7 @@
       "runtime_id": "analyze_claim:check_specialty_materials_for_context",
       "runtime_status": "executed",
       "source_lines": [
-        177
+        186
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3191,7 +3200,7 @@
       "runtime_id": "analyze_claim:check_treatment_pricing_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        223
+        232
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3231,7 +3240,7 @@
       "runtime_id": "analyze_claim:detect_admission_billing_window",
       "runtime_status": "gated",
       "source_lines": [
-        293
+        302
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3280,7 +3289,7 @@
       "runtime_id": "analyze_claim:detect_blood_component_isbt128_violations",
       "runtime_status": "gated",
       "source_lines": [
-        268
+        277
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3324,7 +3333,7 @@
       "runtime_id": "analyze_claim:detect_conditional_addon_ek2d_opportunities",
       "runtime_status": "gated",
       "source_lines": [
-        238
+        247
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3368,7 +3377,7 @@
       "runtime_id": "analyze_claim:detect_dental_ga_uplift_violations",
       "runtime_status": "gated",
       "source_lines": [
-        321
+        330
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3410,7 +3419,7 @@
       "runtime_id": "analyze_claim:detect_diagnosis_procedure_mismatch_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        337
+        346
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3453,7 +3462,7 @@
       "runtime_id": "analyze_claim:detect_donor_prep_as_exam",
       "runtime_status": "gated",
       "source_lines": [
-        305
+        314
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3496,7 +3505,7 @@
       "runtime_id": "analyze_claim:detect_drug_quantity_error",
       "runtime_status": "gated",
       "source_lines": [
-        315
+        324
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3539,7 +3548,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_exam_10day",
       "runtime_status": "gated",
       "source_lines": [
-        284
+        293
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3582,7 +3591,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_tests",
       "runtime_status": "gated",
       "source_lines": [
-        285
+        294
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3623,7 +3632,7 @@
       "runtime_id": "analyze_claim:detect_exam_admission_date_mismatch",
       "runtime_status": "gated",
       "source_lines": [
-        286
+        295
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3666,7 +3675,7 @@
       "runtime_id": "analyze_claim:detect_green_area_bundled_extras",
       "runtime_status": "gated",
       "source_lines": [
-        299
+        308
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3709,7 +3718,7 @@
       "runtime_id": "analyze_claim:detect_inpatient_on_outpatient",
       "runtime_status": "gated",
       "source_lines": [
-        303
+        312
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3751,7 +3760,7 @@
       "runtime_id": "analyze_claim:detect_los_procedure_density_anomaly_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        352
+        361
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3794,7 +3803,7 @@
       "runtime_id": "analyze_claim:detect_material_preauth_missing",
       "runtime_status": "gated",
       "source_lines": [
-        310
+        319
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3837,7 +3846,7 @@
       "runtime_id": "analyze_claim:detect_material_type_missing",
       "runtime_status": "gated",
       "source_lines": [
-        312
+        321
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3879,7 +3888,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_imaging_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        342
+        351
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3921,7 +3930,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_surgery_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        345
+        354
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3962,7 +3971,7 @@
       "runtime_id": "analyze_claim:detect_never_principal_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        331
+        340
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4005,7 +4014,7 @@
       "runtime_id": "analyze_claim:detect_normal_poliklinik_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        297
+        306
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4047,7 +4056,7 @@
       "runtime_id": "analyze_claim:detect_procedure_time_overlap_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        349
+        358
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4101,7 +4110,7 @@
       "runtime_id": "analyze_claim:detect_radiation_oncology_violations",
       "runtime_status": "gated",
       "source_lines": [
-        273
+        282
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4143,7 +4152,7 @@
       "runtime_id": "analyze_claim:detect_sct_temporal_window_violations_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        277
+        286
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4184,7 +4193,7 @@
       "runtime_id": "analyze_claim:detect_traffic_accident_billing",
       "runtime_status": "gated",
       "source_lines": [
-        325
+        334
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4227,7 +4236,7 @@
       "runtime_id": "analyze_claim:detect_transplant_package_scope_violations",
       "runtime_status": "gated",
       "source_lines": [
-        244
+        253
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4268,7 +4277,7 @@
       "runtime_id": "analyze_claim:detect_unnecessary_additional_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        333
+        342
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4311,7 +4320,7 @@
       "runtime_id": "analyze_claim:detect_vakabasi_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        296
+        305
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4360,7 +4369,7 @@
       "runtime_id": "analyze_claim:detect_yatak_icu_overlap",
       "runtime_status": "gated",
       "source_lines": [
-        259
+        268
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4575,9 +4584,11 @@
         "4.2.12.B-1.immunglob.ivig_cidp_steroid_failure",
         "4.2.12.B-1.immunglob.ivig_guillain_barre_loading",
         "4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy",
+        "4.2.12.B-2.clinical_secondary_immunodeficiency",
         "4.2.12.B-2.immunglob.ivig_board_report_1mo_dose",
         "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
         "4.2.13.1.3.transplant_oral_antiviral_coverage",
+        "4.2.13.1.clinical_path_a_initiation",
         "4.2.13.1.lamivudine_telbivudine_wk24_switch",
         "4.2.13.1.paediatric_lamivudine_wk24_switch",
         "4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch",
@@ -4586,6 +4597,7 @@
         "4.2.13.1.tdf_taf_entecavir_year1_switch",
         "4.2.13.3.2.B.bucket_b.C004920",
         "4.2.13.3.2.B.bucket_b.C004922",
+        "4.2.13.3.2.B.clinical_rna_genotype_initiation",
         "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
         "4.2.13.3.2.B.hcv_ifn_ribavirin_combination",
         "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn",
@@ -4829,6 +4841,7 @@
         "4.2.14.C.pemetrexed_mesothelioma_board",
         "4.2.14.C.pnh_board_hematology_6m",
         "4.2.14.C.pre_transplant_blast_clearance_max2cycles",
+        "4.2.14.C.raltitrexed_colorectal_board",
         "4.2.14.C.raltitrexed_mesothelioma_board",
         "4.2.14.C.ravulizumab_meningococcal_vaccination",
         "4.2.14.C.ravulizumab_nmosb_3neurology_6m",
@@ -4903,8 +4916,6 @@
         "4.2.15.ranolazin_stable_angina_board",
         "4.2.15.Ç.bucket_a.c005817",
         "4.2.16.adult_metabolic_3yr_report_all_prescribe",
-        "4.2.16.amount_paid_coverage_a",
-        "4.2.16.amount_paid_coverage_b",
         "4.2.16.celiac_gluten_free_1yr_gastro_report",
         "4.2.16.celiac_gluten_free_3yr_board",
         "4.2.16.celiac_gluten_free_report",
@@ -4925,6 +4936,7 @@
         "4.2.16.special_formula_all_prescriber_with_report",
         "4.2.16.special_formula_ek4b_specialist_report",
         "4.2.17.A.active_vitamin_d_osteoporosis_nopay",
+        "4.2.17.A.clinical_glucocorticoid_bone_loss",
         "4.2.17.A.hormone_ablation_cancer_high_fracture",
         "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
         "4.2.17.B.calcitonin_first_6mo_only",
@@ -5180,21 +5192,22 @@
         "4.2.46.B.ipf_report_criteria_b",
         "4.2.46.C.ssc_ild_nintedanib_criteria",
         "4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr",
+        "4.2.46.clinical_annual_reassessment",
         "4.2.47.bucket_b.C006896",
         "4.2.47.bucket_b.C006898",
         "4.2.47.bucket_b.C006903",
         "4.2.48.metabolic.bile_acid_zellweger_mandatory_report",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b",
-        "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b",
-        "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
-        "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
+        "4.2.49.A.1.nusinersen_all_criteria_coverage",
+        "4.2.49.A.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.A.1.nusinersen_no_csf_shunt_catheter",
+        "4.2.49.A.2.risdiplam_all_criteria_coverage",
+        "4.2.49.A.2.risdiplam_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_all_criteria_coverage",
+        "4.2.49.B.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_no_implanted_csf_shunt",
+        "4.2.49.B.1.nusinersen_no_lumbar_puncture_contraindication",
+        "4.2.49.B.2.risdiplam_all_criteria_coverage",
+        "4.2.49.B.2.risdiplam_multidisciplinary_monitoring",
         "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
         "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
         "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
@@ -5223,6 +5236,7 @@
         "4.2.57.atopic_dermatitis_dupilumab_risk_factor",
         "4.2.57.atopic_dermatitis_jak_after_12wk",
         "4.2.57.atopic_dermatitis_malignancy_risk",
+        "4.2.57.clinical_16_week_response",
         "4.2.57.tertiary_3derm_4mo_report_combo_nopay",
         "4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage",
         "4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage",
@@ -5290,13 +5304,16 @@
         "4.2.8.A.paediatric_dysphagia_special_enteral_2boxes",
         "4.2.8.A.paediatric_malnutrition_enteral_6mo_report",
         "4.2.8.B.parenteral_nutrition_30day_report",
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
+        "4.2.9.B.clinical_phosphate_necessary_restrictions",
         "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
         "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage",
         "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited",
         "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant",
         "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
         "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage",
+        "4.2.9.D.clinical_nutrition_necessary_restrictions",
         "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
         "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
         "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage",
@@ -5312,6 +5329,7 @@
         "4.2.9.paricalcitol_oral_pd_nephrology_report",
         "4.2.9.roksadustat_esa_switch_dialysis_report",
         "4.2.9.Ç.bucket_b.C004176",
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions",
         "4.3.ek4c_ek4d_copay_exempt",
         "4.3.ek4c_self_procured_bank_payment_coverage",
         "4.3.non_ek4c_overseas_drug_nopay",
@@ -5373,7 +5391,7 @@
       "runtime_id": "analyze_claim:evaluate_drug_indication_findings",
       "runtime_status": "gated",
       "source_lines": [
-        152
+        161
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5418,7 +5436,7 @@
       "runtime_id": "analyze_claim:evaluate_rule_findings",
       "runtime_status": "gated",
       "source_lines": [
-        149
+        158
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5457,7 +5475,7 @@
       "runtime_id": "analyze_claim:validate_focused_context_ownership",
       "runtime_status": "gated",
       "source_lines": [
-        146
+        155
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -5885,9 +5903,11 @@
         "4.2.12.B-1.immunglob.ivig_cidp_steroid_failure",
         "4.2.12.B-1.immunglob.ivig_guillain_barre_loading",
         "4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy",
+        "4.2.12.B-2.clinical_secondary_immunodeficiency",
         "4.2.12.B-2.immunglob.ivig_board_report_1mo_dose",
         "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
         "4.2.13.1.3.transplant_oral_antiviral_coverage",
+        "4.2.13.1.clinical_path_a_initiation",
         "4.2.13.1.lamivudine_telbivudine_wk24_switch",
         "4.2.13.1.paediatric_lamivudine_wk24_switch",
         "4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch",
@@ -5896,6 +5916,7 @@
         "4.2.13.1.tdf_taf_entecavir_year1_switch",
         "4.2.13.3.2.B.bucket_b.C004920",
         "4.2.13.3.2.B.bucket_b.C004922",
+        "4.2.13.3.2.B.clinical_rna_genotype_initiation",
         "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
         "4.2.13.3.2.B.hcv_ifn_ribavirin_combination",
         "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn",
@@ -6139,6 +6160,7 @@
         "4.2.14.C.pemetrexed_mesothelioma_board",
         "4.2.14.C.pnh_board_hematology_6m",
         "4.2.14.C.pre_transplant_blast_clearance_max2cycles",
+        "4.2.14.C.raltitrexed_colorectal_board",
         "4.2.14.C.raltitrexed_mesothelioma_board",
         "4.2.14.C.ravulizumab_meningococcal_vaccination",
         "4.2.14.C.ravulizumab_nmosb_3neurology_6m",
@@ -6213,8 +6235,6 @@
         "4.2.15.ranolazin_stable_angina_board",
         "4.2.15.Ç.bucket_a.c005817",
         "4.2.16.adult_metabolic_3yr_report_all_prescribe",
-        "4.2.16.amount_paid_coverage_a",
-        "4.2.16.amount_paid_coverage_b",
         "4.2.16.celiac_gluten_free_1yr_gastro_report",
         "4.2.16.celiac_gluten_free_3yr_board",
         "4.2.16.celiac_gluten_free_report",
@@ -6235,6 +6255,7 @@
         "4.2.16.special_formula_all_prescriber_with_report",
         "4.2.16.special_formula_ek4b_specialist_report",
         "4.2.17.A.active_vitamin_d_osteoporosis_nopay",
+        "4.2.17.A.clinical_glucocorticoid_bone_loss",
         "4.2.17.A.hormone_ablation_cancer_high_fracture",
         "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
         "4.2.17.B.calcitonin_first_6mo_only",
@@ -6490,21 +6511,22 @@
         "4.2.46.B.ipf_report_criteria_b",
         "4.2.46.C.ssc_ild_nintedanib_criteria",
         "4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr",
+        "4.2.46.clinical_annual_reassessment",
         "4.2.47.bucket_b.C006896",
         "4.2.47.bucket_b.C006898",
         "4.2.47.bucket_b.C006903",
         "4.2.48.metabolic.bile_acid_zellweger_mandatory_report",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b",
-        "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b",
-        "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
-        "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
+        "4.2.49.A.1.nusinersen_all_criteria_coverage",
+        "4.2.49.A.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.A.1.nusinersen_no_csf_shunt_catheter",
+        "4.2.49.A.2.risdiplam_all_criteria_coverage",
+        "4.2.49.A.2.risdiplam_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_all_criteria_coverage",
+        "4.2.49.B.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_no_implanted_csf_shunt",
+        "4.2.49.B.1.nusinersen_no_lumbar_puncture_contraindication",
+        "4.2.49.B.2.risdiplam_all_criteria_coverage",
+        "4.2.49.B.2.risdiplam_multidisciplinary_monitoring",
         "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
         "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
         "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
@@ -6533,6 +6555,7 @@
         "4.2.57.atopic_dermatitis_dupilumab_risk_factor",
         "4.2.57.atopic_dermatitis_jak_after_12wk",
         "4.2.57.atopic_dermatitis_malignancy_risk",
+        "4.2.57.clinical_16_week_response",
         "4.2.57.tertiary_3derm_4mo_report_combo_nopay",
         "4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage",
         "4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage",
@@ -6600,13 +6623,16 @@
         "4.2.8.A.paediatric_dysphagia_special_enteral_2boxes",
         "4.2.8.A.paediatric_malnutrition_enteral_6mo_report",
         "4.2.8.B.parenteral_nutrition_30day_report",
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
+        "4.2.9.B.clinical_phosphate_necessary_restrictions",
         "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
         "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage",
         "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited",
         "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant",
         "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
         "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage",
+        "4.2.9.D.clinical_nutrition_necessary_restrictions",
         "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
         "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
         "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage",
@@ -6622,6 +6648,7 @@
         "4.2.9.paricalcitol_oral_pd_nephrology_report",
         "4.2.9.roksadustat_esa_switch_dialysis_report",
         "4.2.9.Ç.bucket_b.C004176",
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions",
         "4.3.ek4c_ek4d_copay_exempt",
         "4.3.ek4c_self_procured_bank_payment_coverage",
         "4.3.non_ek4c_overseas_drug_nopay",
@@ -9151,9 +9178,11 @@
         "4.2.12.B-1.immunglob.ivig_cidp_steroid_failure",
         "4.2.12.B-1.immunglob.ivig_guillain_barre_loading",
         "4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy",
+        "4.2.12.B-2.clinical_secondary_immunodeficiency",
         "4.2.12.B-2.immunglob.ivig_board_report_1mo_dose",
         "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
         "4.2.13.1.3.transplant_oral_antiviral_coverage",
+        "4.2.13.1.clinical_path_a_initiation",
         "4.2.13.1.lamivudine_telbivudine_wk24_switch",
         "4.2.13.1.paediatric_lamivudine_wk24_switch",
         "4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch",
@@ -9162,6 +9191,7 @@
         "4.2.13.1.tdf_taf_entecavir_year1_switch",
         "4.2.13.3.2.B.bucket_b.C004920",
         "4.2.13.3.2.B.bucket_b.C004922",
+        "4.2.13.3.2.B.clinical_rna_genotype_initiation",
         "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
         "4.2.13.3.2.B.hcv_ifn_ribavirin_combination",
         "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn",
@@ -9405,6 +9435,7 @@
         "4.2.14.C.pemetrexed_mesothelioma_board",
         "4.2.14.C.pnh_board_hematology_6m",
         "4.2.14.C.pre_transplant_blast_clearance_max2cycles",
+        "4.2.14.C.raltitrexed_colorectal_board",
         "4.2.14.C.raltitrexed_mesothelioma_board",
         "4.2.14.C.ravulizumab_meningococcal_vaccination",
         "4.2.14.C.ravulizumab_nmosb_3neurology_6m",
@@ -9479,8 +9510,6 @@
         "4.2.15.ranolazin_stable_angina_board",
         "4.2.15.Ç.bucket_a.c005817",
         "4.2.16.adult_metabolic_3yr_report_all_prescribe",
-        "4.2.16.amount_paid_coverage_a",
-        "4.2.16.amount_paid_coverage_b",
         "4.2.16.celiac_gluten_free_1yr_gastro_report",
         "4.2.16.celiac_gluten_free_3yr_board",
         "4.2.16.celiac_gluten_free_report",
@@ -9501,6 +9530,7 @@
         "4.2.16.special_formula_all_prescriber_with_report",
         "4.2.16.special_formula_ek4b_specialist_report",
         "4.2.17.A.active_vitamin_d_osteoporosis_nopay",
+        "4.2.17.A.clinical_glucocorticoid_bone_loss",
         "4.2.17.A.hormone_ablation_cancer_high_fracture",
         "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
         "4.2.17.B.calcitonin_first_6mo_only",
@@ -9756,21 +9786,22 @@
         "4.2.46.B.ipf_report_criteria_b",
         "4.2.46.C.ssc_ild_nintedanib_criteria",
         "4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr",
+        "4.2.46.clinical_annual_reassessment",
         "4.2.47.bucket_b.C006896",
         "4.2.47.bucket_b.C006898",
         "4.2.47.bucket_b.C006903",
         "4.2.48.metabolic.bile_acid_zellweger_mandatory_report",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_a",
-        "4.2.49.A.neuro.nusinersen_all_criteria_coverage_b",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a",
-        "4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b",
-        "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage",
-        "4.2.49.B.neuro.risdiplam_all_criteria_coverage_b",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
-        "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b",
-        "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
-        "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
+        "4.2.49.A.1.nusinersen_all_criteria_coverage",
+        "4.2.49.A.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.A.1.nusinersen_no_csf_shunt_catheter",
+        "4.2.49.A.2.risdiplam_all_criteria_coverage",
+        "4.2.49.A.2.risdiplam_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_all_criteria_coverage",
+        "4.2.49.B.1.nusinersen_multidisciplinary_monitoring",
+        "4.2.49.B.1.nusinersen_no_implanted_csf_shunt",
+        "4.2.49.B.1.nusinersen_no_lumbar_puncture_contraindication",
+        "4.2.49.B.2.risdiplam_all_criteria_coverage",
+        "4.2.49.B.2.risdiplam_multidisciplinary_monitoring",
         "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
         "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
         "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
@@ -9799,6 +9830,7 @@
         "4.2.57.atopic_dermatitis_dupilumab_risk_factor",
         "4.2.57.atopic_dermatitis_jak_after_12wk",
         "4.2.57.atopic_dermatitis_malignancy_risk",
+        "4.2.57.clinical_16_week_response",
         "4.2.57.tertiary_3derm_4mo_report_combo_nopay",
         "4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage",
         "4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage",
@@ -9866,13 +9898,16 @@
         "4.2.8.A.paediatric_dysphagia_special_enteral_2boxes",
         "4.2.8.A.paediatric_malnutrition_enteral_6mo_report",
         "4.2.8.B.parenteral_nutrition_30day_report",
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
+        "4.2.9.B.clinical_phosphate_necessary_restrictions",
         "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
         "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage",
         "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited",
         "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant",
         "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
         "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage",
+        "4.2.9.D.clinical_nutrition_necessary_restrictions",
         "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
         "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
         "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage",
@@ -9888,6 +9923,7 @@
         "4.2.9.paricalcitol_oral_pd_nephrology_report",
         "4.2.9.roksadustat_esa_switch_dialysis_report",
         "4.2.9.Ç.bucket_b.C004176",
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions",
         "4.3.ek4c_ek4d_copay_exempt",
         "4.3.ek4c_self_procured_bank_payment_coverage",
         "4.3.non_ek4c_overseas_drug_nopay",

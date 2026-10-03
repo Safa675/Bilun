@@ -10,28 +10,52 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: itrakonazol'ün oral formları (solüsyon hariç) SUT eki EK-4/E 10.5 maddesinde belirtildiği şekilde reçetelenir
-    message_tr: Itrakonazol'ün oral formları (solüsyon formları hariç), SUT eki Sistemik Antimikrobik ve Diğer İlaçların Reçeteleme
-      Kuralları Listesi'nin (EK-4/E) 10.5 maddesinde belirtildiği şekilde reçetelenebilecektir (§4.2.23).
+    enforcement: itrakonazol'ün oral formları (solüsyon hariç) SUT eki EK-4/E 10.5 maddesinde belirtildiği şekilde
+      reçetelenir
+    message_tr: Itrakonazol'ün oral formları (solüsyon formları hariç), SUT eki Sistemik Antimikrobik ve Diğer İlaçların
+      Reçeteleme Kuralları Listesi'nin (EK-4/E) 10.5 maddesinde belirtildiği şekilde reçetelenebilecektir (§4.2.23).
+  clinical_constraint_set: antifungal_source_constraints
+  clinical_constraint_drugs:
+  - anidilofungin
+  - anidulafungin
+  - anidulofungin
+  - itraconazole
+  - itrakonazol
+  - micafungin
+  - mikafungin
+  - posaconazole
+  - posakonazol
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.23.neutropenia_prophylaxis_nopay
   sut_section: 4.2.23
   gate_b_sources:
-  - 4.2.23.a#77f6ee8f
-  - 4.2.23.(4)#06a1b9aa
-  - 4.2.23.(5)#2fe8e460
   - 4.2.23.(3)#cf0aee43
-  - 4.2.23.(8)
   drug_names:
-  - posakonazol
-  - itrakonazol
-  - vorikonazol
-  - flukonazol
+  - mikafungin
+  - micafungin
   pay: false
   action:
-    enforcement: 'no-pay condition: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve
-      candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez'
-    message_tr: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida enfeksiyonlarının
-      profilaksisi endikasyonunda ödenmez (§4.2.23).
+    enforcement: 'no-pay condition: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz
+      ve candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez'
+    message_tr: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida
+      enfeksiyonlarının profilaksisi endikasyonunda ödenmez (§4.2.23).
+  source_subsection: 4.2.23.(6)
+  source_heading_key: 4.2.23.(6)#1df4e6b7
+  source_effective_date: '2018-04-01'
+  verification_status: ai_generated_pending_review
+  source_scope_note: Corrected medication and source attribution; clinical conjunctions are evaluated only by the
+    separately typed source-scoped clinical gates.
+  clinical_constraint_set: antifungal_source_constraints
+  clinical_constraint_drugs:
+  - anidilofungin
+  - anidulafungin
+  - anidulofungin
+  - itraconazole
+  - itrakonazol
+  - micafungin
+  - mikafungin
+  - posaconazole
+  - posakonazol
 - rule_id: 4.2.23.posaconazole_parenteral_oral_unable
   sut_section: 4.2.23
   gate_b_sources:
@@ -40,10 +64,22 @@ rules:
   - posakonazol
   report_required: true
   action:
-    enforcement: posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir; invazif
-      mantar enfeksiyonu profilaksisi endikasyonu
-    message_tr: Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün parenteral
-      formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23).
+    enforcement: posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir;
+      invazif mantar enfeksiyonu profilaksisi endikasyonu
+    message_tr: Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün
+      parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23).
+  clinical_constraint_set: antifungal_source_constraints
+  clinical_constraint_drugs:
+  - anidilofungin
+  - anidulafungin
+  - anidulofungin
+  - itraconazole
+  - itrakonazol
+  - micafungin
+  - mikafungin
+  - posaconazole
+  - posakonazol
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.23.systemic_fungal_infection_coverage
   sut_section: 4.2.23
   gate_b_sources:
@@ -59,6 +95,11 @@ rules:
   - kasopofungin
   - anidulafungin
   - mikafungin
+  - anidulofungin
+  - anidilofungin
+  - micafungin
+  - posaconazole
+  - itraconazole
   icd10_codes:
   - B37
   - B44
@@ -70,8 +111,20 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: bu maddedeki etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanımı bedelleri Kurumca
-      karşılanır
-    message_tr: Bu maddede belirtilen etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanılması halinde
-      bedelleri Kurumca karşılanır (§4.2.23).
+    enforcement: bu maddedeki etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanımı bedelleri
+      Kurumca karşılanır
+    message_tr: Bu maddede belirtilen etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanılması
+      halinde bedelleri Kurumca karşılanır (§4.2.23).
+  clinical_constraint_set: antifungal_source_constraints
+  clinical_constraint_drugs:
+  - anidilofungin
+  - anidulafungin
+  - anidulofungin
+  - itraconazole
+  - itrakonazol
+  - micafungin
+  - mikafungin
+  - posaconazole
+  - posakonazol
+  verification_status: ai_generated_pending_review
 source_note: Exported from drug_indication_prose.json (YAML source migration)

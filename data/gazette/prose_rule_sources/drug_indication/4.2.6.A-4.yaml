@@ -4,27 +4,40 @@ rules:
   sut_section: 4.2.6.A-4
   gate_b_sources:
   - 4.2.6.A-4.(1)
+  - 4.2.6.A-4.(2)
+  - 4.2.6.A-4.(5)
+  - 4.2.6.A-4.(6)
+  - 4.2.6.A-4.b#c166b1e4
   drug_names:
   - somatropin
-  - büyüme hormonu
   icd10_codes:
   - Q87.1
   report_required: true
   condition:
     coverage_note: true
   action:
-    enforcement: genetik Prader-Willi tanılı epifiz hatları açık çocuklarda GH uyarı testi aranmaksızın koşullar sağlanırsa
-      GH ödenir
-    message_tr: Genetik olarak Prader-Willi sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı
-      testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca
-      karşılanır (§4.2.6.A-4).
+    enforcement: genetik Prader-Willi tanılı epifiz hatları açık çocuklarda GH uyarı testi aranmaksızın koşullar
+      sağlanırsa GH ödenir
+    message_tr: Genetik olarak Prader-Willi sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu
+      uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde
+      bedelleri Kurumca karşılanır (§4.2.6.A-4).
+  report_specialties: &id001
+  - çocuk endokrinoloji
+  - çocuk endokrinolojisi ve metabolizma
+  prescriber_specialties: &id002
+  - çocuk endokrinoloji
+  report_duration_months: 3
+  pws_continuation_protocol: pws_somatropin_v1
+  report_duration_by_phase: &id003
+    initiation: 3
+    continuation: 6
+  gh_patient_group: pediatric
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/pws_somatropin_continuation.json
 - rule_id: 4.2.6.pws_somatropin_tertiary_board
   sut_section: 4.2.6.A-4
   drug_names:
   - somatropin
-  - somatrogon
-  - büyüme hormonu
-  - buyume hormonu
   - genotropin
   - norditropin
   - omnitrope
@@ -33,14 +46,20 @@ rules:
   icd10_ranges:
   - Q87.1
   report_required: true
-  message_tr: Prader-Willi sendromu somatropin — üçüncü basamak kurumda çocuk endokrinoloji uzman hekiminin yer aldığı 3 aylık
-    sağlık kurulu raporu gerekir (§4.2.6.A-4).
+  message_tr: Prader-Willi somatropin — genetik tanılı çocukta üçüncü basamak kurum raporu başlangıçta 3 ay, devamda
+    6 ay düzenlenir; diğer klinik koşullar ayrıca doğrulanmalıdır (§4.2.6.A-4).
   gate_b_sources:
   - 4.2.6.A-4.(2)
-  report_specialties:
-  - çocuk endokrinoloji
-  - çocuk endokrinolojisi ve metabolizma
-  prescriber_specialties:
-  - çocuk endokrinoloji
+  - 4.2.6.A-4.(1)
+  - 4.2.6.A-4.(5)
+  - 4.2.6.A-4.(6)
+  - 4.2.6.A-4.b#c166b1e4
+  report_specialties: *id001
+  prescriber_specialties: *id002
   report_duration_months: 3
+  pws_continuation_protocol: pws_somatropin_v1
+  report_duration_by_phase: *id003
+  gh_patient_group: pediatric
+  verification_status: ai_generated_pending_review
+  source_evidence: data/gazette/source_evidence/pws_somatropin_continuation.json
 source_note: Exported from drug_indication_prose.json (YAML source migration)

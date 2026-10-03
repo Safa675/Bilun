@@ -97,7 +97,9 @@ def test_authored_cstar_inventory_is_frozen() -> None:
     expected = {
         # 2026-08-29: two duplicate YAML C003750 cites collapsed to one hashed
         # twin (4.2.1.C-5.(4)#4804adef) → 217 → 215.
-        "gate_b_sources": 215,
+        # 2026-10-02: prior clinical-source repair removed C007082/C007088;
+        # enteral continuation C004140 is replaced by content-pinned prose:...99f29955.
+        "gate_b_sources": 208,
         "deferral": 694,
         "gate_b_sections": 30,
         "wave_config": 15,
@@ -108,8 +110,9 @@ def test_authored_cstar_inventory_is_frozen() -> None:
             f"{surface} C* inventory moved: {len(refs)} != {expected[surface]} "
             f"(new cites need an explicit exception decision)"
         )
+    assert not ({"C007082", "C007088"} & per_surface["gate_b_sources"])
     total = sum(len(refs) for refs in per_surface.values())
-    assert total == 955, f"total authored C* moved: {total}"
+    assert total == 948, f"total authored C* moved: {total}"
 
 
 def test_every_remaining_cstar_exists_in_parquet() -> None:

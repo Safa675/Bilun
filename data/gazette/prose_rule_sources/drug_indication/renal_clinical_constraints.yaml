@@ -1,0 +1,69 @@
+section_id: 4.2.9
+rules:
+- rule_id: 4.2.9.B.clinical_phosphate_necessary_restrictions
+  sut_section: 4.2.9.B
+  drug_names:
+  - sevelamer
+  - lantanyum karbonat
+  - alüminyum klorür hidroksit
+  gate_b_sources:
+  - 4.2.9.B.(1)#00052268
+  - 4.2.9.B.a#2cbf02e7
+  - 4.2.9.B.b#1438d4b8
+  - 4.2.9.B.c#44af65a8
+  - 4.2.9.B.ç#4843bec7
+  - 4.2.9.B.(3)#cbdee244
+  - 4.2.9.B.(4)#e346bde0
+  clinical_constraint_set: renal_source_constraints
+  clinical_constraint_drugs:
+  - sevelamer
+  - lantanyum karbonat
+  - alüminyum klorür hidroksit
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary typed renal constraints only; no diagnosis route or complete payment eligibility.
+    Historical source effectiveness unverified; source snapshot 2026-10-02 only.
+  message_tr: Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir.
+- rule_id: 4.2.9.Ç.clinical_cinacalcet_necessary_restrictions
+  sut_section: 4.2.9.Ç
+  drug_names:
+  - cinacalcet
+  gate_b_sources:
+  - 4.2.9.Ç.(1)#d5f6d259
+  - 4.2.9.Ç.(2)#ab7653a8
+  - 4.2.9.Ç.(3)#0a00af38
+  - 4.2.9.Ç.(5)#deb19c81
+  - 4.2.9.Ç.a#afe54fee
+  - 4.2.9.Ç.b#568549ff
+  clinical_constraint_set: renal_source_constraints
+  clinical_constraint_drugs:
+  - cinacalcet
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary typed renal constraints only; no diagnosis route or complete payment eligibility.
+    Historical source effectiveness unverified; source snapshot 2026-10-02 only.
+  message_tr: Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir.
+- rule_id: 4.2.9.D.clinical_nutrition_necessary_restrictions
+  sut_section: 4.2.9.D
+  drug_names:
+  - oral esansiyel aminoasit
+  - oral esansiyel aminoasit preparatları
+  - oral esansiyel aminoasit preperatları
+  - keto analogları
+  - keto analog
+  gate_b_sources:
+  - 4.2.9.D.(1)#4dc7d730
+  - 4.2.9.D.a#f13a1cdd
+  - 4.2.9.D.b#914a33c4
+  - 4.2.9.D.a#7aa28a33
+  - 4.2.9.D.b#a3749cdc
+  - 4.2.9.D.c#6a824531
+  clinical_constraint_set: renal_source_constraints
+  clinical_constraint_drugs:
+  - oral esansiyel aminoasit
+  - oral esansiyel aminoasit preparatları
+  - oral esansiyel aminoasit preperatları
+  - keto analogları
+  - keto analog
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary typed renal constraints only; no diagnosis route or complete payment eligibility.
+    Historical source effectiveness unverified; source snapshot 2026-10-02 only.
+  message_tr: Kaynağa bağlı böbrek tedavisi koşulları; tanı ve tüm ödeme koşulları ayrıca değerlendirilmelidir.

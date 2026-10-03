@@ -4,19 +4,20 @@ rules:
   sut_section: 4.2.57
   gate_b_sources:
   - 4.2.57.(2)#af1ccf61
+  - 4.2.57.(1)#d711a1b9
+  - 4.2.57.(2)#62f546f9
+  - 4.2.57.(3)#6147427c
   drug_names:
-  - abrositinib
-  - barisitinib
-  - upadasitinib
   - dupilumab
   icd10_codes:
   - L20
   report_required: true
   action:
-    enforcement: 16 haftalık kullanım sonunda tedavi başlangıcına göre tanımlı kriterlerden en az biri sağlanırsa tedaviye
-      devam edilebilir
-    message_tr: 16 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre belirlenen kriterlerden en az birinin sağlanması
-      durumunda tedaviye devam edilebilir (§4.2.57).
+    enforcement: 16 haftalık kullanım sonunda tedavi başlangıcına göre tanımlı kriterlerden en az biri sağlanırsa
+      tedaviye devam edilebilir
+    message_tr: 16 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre belirlenen kriterlerden en az
+      birinin sağlanması durumunda tedaviye devam edilebilir (§4.2.57).
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.57.atopic_dermatitis_dupilumab_risk_factor
   sut_section: 4.2.57
   gate_b_sources:
@@ -29,12 +30,13 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: '>2 ay sistemik kortikosteroid/siklosporin yanıtsız/tolere edemeyen/kontrendike + risk faktörlerinden en
-      az biri olan 18 yaş ve üzeri orta-şiddetli atopik dermatitte dupilumab başlanması koşullar raporda belirtilirse ödenir'
-    message_tr: İki aydan uzun süreli sistemik kortikosteroid ve siklosporin kullanımından yarar görmeyen veya bu ilaçları
-      tolere edemeyen veya bu ilaçların kontrendike olduğu ve belirtilen risk faktörlerinden en az birine sahip olan 18 yaş
-      ve üzeri orta ve şiddetli atopik dermatitli hastalarda bu durumların sağlık kurulu raporunda belirtilmesi koşuluyla
-      tedaviye Dupilumab ile başlanması halinde bedelleri Kurumca karşılanır (§4.2.57).
+    enforcement: '>2 ay sistemik kortikosteroid/siklosporin yanıtsız/tolere edemeyen/kontrendike + risk faktörlerinden
+      en az biri olan 18 yaş ve üzeri orta-şiddetli atopik dermatitte dupilumab başlanması koşullar raporda belirtilirse
+      ödenir'
+    message_tr: İki aydan uzun süreli sistemik kortikosteroid ve siklosporin kullanımından yarar görmeyen veya bu
+      ilaçları tolere edemeyen veya bu ilaçların kontrendike olduğu ve belirtilen risk faktörlerinden en az birine
+      sahip olan 18 yaş ve üzeri orta ve şiddetli atopik dermatitli hastalarda bu durumların sağlık kurulu raporunda
+      belirtilmesi koşuluyla tedaviye Dupilumab ile başlanması halinde bedelleri Kurumca karşılanır (§4.2.57).
 - rule_id: 4.2.57.atopic_dermatitis_jak_after_12wk
   sut_section: 4.2.57
   gate_b_sources:
@@ -51,10 +53,10 @@ rules:
   action:
     enforcement: abrositinib/baricitinib/upadacitinib'ten en az birini 12 hafta kullanıp yanıtsız/tolere edemeyen/kontrendike
       18 yaş ve üzeri orta-şiddetli atopik dermatit; koşullar sağlık kurulu raporunda belirtilirse ödenir
-    message_tr: Abrositinib, baricitinib veya upadasitinib tedavilerinden en az birini 12 hafta süre ile kullanmış olmasına
-      rağmen yanıt vermeyen veya bu tedavileri tolere edemeyen veya bu ilaçların kontrendike olduğu 18 yaş ve üzeri orta ve
-      şiddetli atopik dermatitli hastalarda, bu durumların sağlık kurulu raporunda belirtilmesi koşuluyla tedaviye başlanması
-      halinde bedelleri Kurumca karşılanır (§4.2.57).
+    message_tr: Abrositinib, baricitinib veya upadasitinib tedavilerinden en az birini 12 hafta süre ile kullanmış
+      olmasına rağmen yanıt vermeyen veya bu tedavileri tolere edemeyen veya bu ilaçların kontrendike olduğu 18
+      yaş ve üzeri orta ve şiddetli atopik dermatitli hastalarda, bu durumların sağlık kurulu raporunda belirtilmesi
+      koşuluyla tedaviye başlanması halinde bedelleri Kurumca karşılanır (§4.2.57).
 - rule_id: 4.2.57.atopic_dermatitis_malignancy_risk
   sut_section: 4.2.57
   gate_b_sources:
@@ -70,10 +72,10 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: son 5 yılda malignite hikayesi (non melanom deri kanseri hariç) veya artmış kanser riski değerlendirme kriteri
-      olarak alınır
-    message_tr: Son 5 yılda malignite hikayesi (non melanom deri kanseri hariç) veya artmış kanser riski değerlendirme kriteri
-      olarak alınır (§4.2.57).
+    enforcement: son 5 yılda malignite hikayesi (non melanom deri kanseri hariç) veya artmış kanser riski değerlendirme
+      kriteri olarak alınır
+    message_tr: Son 5 yılda malignite hikayesi (non melanom deri kanseri hariç) veya artmış kanser riski değerlendirme
+      kriteri olarak alınır (§4.2.57).
 - rule_id: 4.2.57.tertiary_3derm_4mo_report_combo_nopay
   sut_section: 4.2.57
   gate_b_sources:
@@ -94,9 +96,12 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: üçüncü basmakta üç deri ve zührevi hastalıkları uzmanının yer aldığı 4 ay süreli sağlık kurulu raporuyla
-      deri uzmanlarınca reçete edilirse ödenir; upadasitinib/abrositinib/barisitinib ve dupilumab birlikte kullanılamaz
-    message_tr: Üçüncü basamak resmi sağlık hizmet sunucularında üç deri ve zührevi hastalıkları uzman hekiminin yer aldığı
-      4 ay süreli sağlık kurulu raporuna dayanılarak deri ve zührevi hastalıkları uzman hekimlerince reçete edilmesi halinde
-      bedelleri Kurumca karşılanır. Upadasitinib, abrositinib, barisitinib ve dupilumab birlikte kullanılamaz (§4.2.57).
+    enforcement: üçüncü basmakta üç deri ve zührevi hastalıkları uzmanının yer aldığı 4 ay süreli sağlık kurulu
+      raporuyla deri uzmanlarınca reçete edilirse ödenir; upadasitinib/abrositinib/barisitinib ve dupilumab birlikte
+      kullanılamaz
+    message_tr: Üçüncü basamak resmi sağlık hizmet sunucularında üç deri ve zührevi hastalıkları uzman hekiminin
+      yer aldığı 4 ay süreli sağlık kurulu raporuna dayanılarak deri ve zührevi hastalıkları uzman hekimlerince
+      reçete edilmesi halinde bedelleri Kurumca karşılanır. Upadasitinib, abrositinib, barisitinib ve dupilumab
+      birlikte kullanılamaz (§4.2.57).
 source_note: Exported from drug_indication_prose.json (YAML source migration)
+
