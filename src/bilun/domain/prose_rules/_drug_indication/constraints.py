@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from .pediatric_gh_initiation import evaluate_pediatric_gh_initiation_checks
 from .growth_hormone import evaluate_growth_hormone_continuation
 from .prader_willi import PWS_PROTOCOL, evaluate_pws_clinical_checks
 from .ckd_growth_hormone import evaluate_ckd_gh_checks
@@ -501,6 +502,9 @@ def _evaluate_selected_rule_constraints(
     mecasermin_hit = evaluate_mecasermin_checks(rule=rule, drug_line=drug_line)
     if mecasermin_hit is not None:
         return mecasermin_hit
+    pediatric_initiation_hit = evaluate_pediatric_gh_initiation_checks(rule=rule, drug_line=drug_line)
+    if pediatric_initiation_hit is not None:
+        return pediatric_initiation_hit
     if _has_dose_protocol(rule):
         dose_hit = _evaluate_dose_protocol(
             rule=rule, drug_line=drug_line, claim=claim, icd_codes=icd_codes

@@ -4,6 +4,8 @@ from __future__ import annotations
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
+from .ckd_growth_pathways import evaluate_ckd_growth_pathways
+
 from ...claims.growth_hormone import (
     CKD_GH_BOOLEAN_FIELDS, CKD_GH_NUMERIC_FIELDS, validated_growth_hormone_value,
 )
@@ -14,12 +16,13 @@ if TYPE_CHECKING:
 CKD_GH_PROTOCOL = "ckd_somatropin_v1"
 
 
-def _review(rule: dict[str, Any], missing: list[str], message: str) -> dict[str, Any]:
+def _review(rule: dict[str, Any], missing: list[str], message: str,
+            *, extra_fields: tuple[str, ...] = ()) -> dict[str, Any]:
     return {
         "rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
         "violation_kind": "needs_growth_hormone_verification", "severity": "review",
         "required_inputs": ["drug_claim_date", "gh_patient_group", "gh_treatment_phase",
-                            "epiphyses_closed", *CKD_GH_BOOLEAN_FIELDS, *CKD_GH_NUMERIC_FIELDS],
+                            "epiphyses_closed", *CKD_GH_BOOLEAN_FIELDS, *CKD_GH_NUMERIC_FIELDS, *extra_fields],
         "missing_inputs": missing, "message_tr": message,
     }
 
@@ -42,6 +45,13 @@ def evaluate_ckd_gh_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimL
     if missing:
         return _review(rule, missing, "Çocuk hastada KBY ile ilişkili büyüme bozukluğu ve tedavi "
                        "aşaması açıkça doğrulanmalı; böbrek/diyaliz tanı kodu tek başına yeterli değildir (§4.2.6.A-5).")
+    if (drug_line.gh_treatment_phase == "initiation"
+            and validated_growth_hormone_value("ckd_first_post_transplant_year", drug_line.ckd_first_post_transplant_year) is True
+            and validated_growth_hormone_value("ckd_post_transplant_one_year_elapsed", drug_line.ckd_post_transplant_one_year_elapsed) is True):
+        return _review(rule, ["ckd_transplant_timing_reconciliation"],
+                       "Nakil sonrası ilk yıl ile bir yılın dolduğu kayıtları çelişiyor; "
+                       "başlangıç koşullarından önce nakil zamanlaması doğrulanmalı (§4.2.6.A-5).",
+                       extra_fields=("ckd_post_transplant_one_year_elapsed",))
     return None
 
 
@@ -93,7 +103,19 @@ def evaluate_ckd_gh_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) ->
                               f"kayıtlı doz {dose:g} mg/kg/gün (§4.2.6.A-5(3))."}
     if dose is None:
         missing.append("gh_daily_dose_mg_per_kg")
+    extra_fields: tuple[str, ...] = ()
+    if drug_line.gh_treatment_phase == "initiation":
+        growth = evaluate_ckd_growth_pathways(drug_line)
+        extra_fields = tuple(growth["required_inputs"])
+        if growth["failed_criteria"]:
+            return {**base, "violation_kind": "growth_hormone_initiation_criterion_not_met",
+                    "required_inputs": [*base["required_inputs"], *extra_fields],
+                    "growth_hormone_failed_criteria": growth["failed_criteria"],
+                    "message_tr": "KBY somatropin başlangıcında büyüme veya kaynak alternatifleri "
+                                  "koşulu karşılanmıyor; uzman incelemesi gerekir (§4.2.6.A-5(1)(a)-(c))."}
+        missing.extend(growth["missing_inputs"])
     missing.append("ckd_growth_initiation_clinical_assessment" if drug_line.gh_treatment_phase == "initiation"
                    else "ckd_growth_continuation_clinical_assessment")
     return _review(rule, missing, "KBY somatropin için diğer evre, büyüme, beslenme, rapor ve faza özgü "
-                   "klinik koşullar ayrıca değerlendirilmelidir; bu kısmi kontrol tek başına uygunluk göstermez (§4.2.6.A-5).")
+                   "klinik koşullar ayrıca değerlendirilmelidir; bu kısmi kontrol tek başına uygunluk göstermez (§4.2.6.A-5).",
+                   extra_fields=extra_fields)

@@ -4,14 +4,26 @@
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
-  "section_clause_total": 56,
-  "encoded_clause_count": 35,
+  "section_clause_total": 69,
+  "encoded_clause_count": 50,
   "encoded_clause_ids": [
     "C003995",
     "C003996",
     "C004020",
+    "C004021",
+    "C004022",
+    "C004023",
+    "C004024",
+    "C004025",
+    "C004026",
+    "C004027",
+    "C004028",
+    "C004029",
     "C004031",
+    "C004032",
     "C004033",
+    "C004034",
+    "C004035",
     "C004036",
     "C004037",
     "C004038",
@@ -31,6 +43,9 @@
     "C004073",
     "C004074",
     "C004078",
+    "C004079",
+    "C004080",
+    "C004081",
     "C004082",
     "C004083",
     "C004084",
@@ -47,9 +62,11 @@
     "4.2.6.A-1.(1)",
     "4.2.6.A-1.(2)",
     "4.2.6.A-1.(3)",
+    "4.2.6.A-1.(4)",
     "4.2.6.A-1.a",
     "4.2.6.A-1.b",
     "4.2.6.A-1.c",
+    "4.2.6.A-1.d",
     "4.2.6.A-1.e",
     "4.2.6.A-1.ç",
     "4.2.6.A-2.(4)",
@@ -69,6 +86,9 @@
     "4.2.6.A-5.(2)",
     "4.2.6.A-5.(3)",
     "4.2.6.A-5.(4)",
+    "4.2.6.A-5.a",
+    "4.2.6.A-5.b",
+    "4.2.6.A-5.c",
     "4.2.6.A.(1)",
     "4.2.6.A.(2)",
     "4.2.6.B-1.(2)",
@@ -84,7 +104,6 @@
     "C003994",
     "C004019",
     "C004030",
-    "C004032",
     "C004045",
     "C004046",
     "C004048",
@@ -96,7 +115,6 @@
     "C004071",
     "C004072",
     "C004077",
-    "C004081",
     "C004085",
     "C004086",
     "C004089",
@@ -107,7 +125,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 21,
+  "tier_c_deferred_count": 19,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -165,6 +183,96 @@
       ]
     },
     {
+      "clause_id": "C004021",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yıllık büyüme hızı",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004022",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "0-2 yaş aralığında 10 cm’nin altında",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004023",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004024",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "4",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004025",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Puberte’de",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004026",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kemik yaşı",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004027",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "4 yaş öncesi veya puberte döneminde kemik yaşı geriliği dikkate alınmayacaktır.",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004028",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "4 yaş ve puberte arası kronolojik yaşa göre en az 2 yıl geri olması",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004029",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Pubertal dönem için sadece epifizlerin açık olması",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
       "clause_id": "C004030",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
@@ -189,15 +297,34 @@
       "clause_id": "C004032",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Epifizlerin açık olması dışında başkaca şartlar aranmaksızın",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
     },
     {
       "clause_id": "C004033",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.6.A1.somatropin_listed_cases_no_condition"
+      ]
+    },
+    {
+      "clause_id": "C004034",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.6.A1.somatropin_listed_cases_no_condition"
+      ]
+    },
+    {
+      "clause_id": "C004035",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -532,15 +659,37 @@
       ]
     },
     {
+      "clause_id": "C004079",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
+    },
+    {
+      "clause_id": "C004080",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
+    },
+    {
       "clause_id": "C004081",
       "section_id": "4.2.6.A-5",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage",
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
     },
     {
       "clause_id": "C004082",
@@ -715,7 +864,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 21,
+  "encode_tier_C_deferred_count": 19,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 62.5
+  "encoded_clause_pct": 72.5
 }

@@ -20,6 +20,8 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     ckd_active_cancer, ckd_parathyroid_hormone_pg_ml, gh_daily_dose_mg_per_kg,
     mecasermin_laron_syndrome_confirmed, pretreatment_annual_growth_velocity_cm,
     height_percentile, mecasermin_daily_dose_mcg_per_kg,
+    gh_initiation_pathway, gh_reported_growth_age_band, gh_chronological_age_years, gh_pubertal_status, gh_pubertal_growth_assessment_completed, gh_birth_weight_for_gestational_age_sds, gh_birth_length_for_gestational_age_sds, gh_last_year_growth_velocity_sds, gh_current_height_sds, gh_parent_adjusted_height_sds, gh_sga_birth_status_confirmed,
+    ckd_height_age_sex_percentile, ckd_height_age_sex_sds, ckd_annual_growth_velocity_percentile, ckd_persistent_growth_failure_confirmed, ckd_post_transplant_one_year_elapsed, ckd_steroid_treatment_absent, ckd_spontaneous_growth_absent, ckd_nephropathic_cystinosis_related_confirmed,
     ...base } = material;
   if (!enabled) return base;
   return {
@@ -58,6 +60,25 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     pretreatment_annual_growth_velocity_cm: pretreatment_annual_growth_velocity_cm ?? null,
     height_percentile: height_percentile ?? null,
     mecasermin_daily_dose_mcg_per_kg: mecasermin_daily_dose_mcg_per_kg ?? null,
+    gh_initiation_pathway: gh_initiation_pathway ?? null,
+    gh_reported_growth_age_band: gh_reported_growth_age_band ?? null,
+    gh_chronological_age_years: gh_chronological_age_years ?? null,
+    gh_pubertal_status: gh_pubertal_status ?? null,
+    gh_pubertal_growth_assessment_completed: gh_pubertal_growth_assessment_completed ?? null,
+    gh_birth_weight_for_gestational_age_sds: gh_birth_weight_for_gestational_age_sds ?? null,
+    gh_birth_length_for_gestational_age_sds: gh_birth_length_for_gestational_age_sds ?? null,
+    gh_last_year_growth_velocity_sds: gh_last_year_growth_velocity_sds ?? null,
+    gh_current_height_sds: gh_current_height_sds ?? null,
+    gh_parent_adjusted_height_sds: gh_parent_adjusted_height_sds ?? null,
+    gh_sga_birth_status_confirmed: gh_sga_birth_status_confirmed ?? null,
+    ckd_height_age_sex_percentile: ckd_height_age_sex_percentile ?? null,
+    ckd_height_age_sex_sds: ckd_height_age_sex_sds ?? null,
+    ckd_annual_growth_velocity_percentile: ckd_annual_growth_velocity_percentile ?? null,
+    ckd_persistent_growth_failure_confirmed: ckd_persistent_growth_failure_confirmed ?? null,
+    ckd_post_transplant_one_year_elapsed: ckd_post_transplant_one_year_elapsed ?? null,
+    ckd_steroid_treatment_absent: ckd_steroid_treatment_absent ?? null,
+    ckd_spontaneous_growth_absent: ckd_spontaneous_growth_absent ?? null,
+    ckd_nephropathic_cystinosis_related_confirmed: ckd_nephropathic_cystinosis_related_confirmed ?? null,
     // Incomplete edits are unknown facts, not negative clinical findings.
     biomarkers: biomarkers?.filter(row => row.marker.trim() && row.status.trim())
       .map(row => ({ marker: row.marker.trim(), status: row.status.trim() })) ?? null,

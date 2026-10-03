@@ -1,0 +1,266 @@
+{
+  "purpose": "Selected actual HTTP boundaries from the independently checked30-case GH matrix.",
+  "common_request": {
+    "materials": [
+      {
+        "name": "SOMATROPIN",
+        "quantity": 1,
+        "unit_price": 1
+      }
+    ],
+    "drug_context": {
+      "primary_icd10": "E23.0",
+      "service_date": "2026-10-02",
+      "board_report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "çocuk endokrinoloji"
+    }
+  },
+  "bases": {
+    "pediatric_standard": {
+      "gh_patient_group": "pediatric",
+      "gh_treatment_phase": "initiation",
+      "gh_initiation_pathway": "standard",
+      "gh_pubertal_status": "prepubertal",
+      "gh_reported_growth_age_band": "4_1_prepubertal",
+      "gh_chronological_age_years": 8.2,
+      "bone_age_years": 6.2,
+      "annual_growth_velocity_cm": 4.99
+    },
+    "sga_case_1": {
+      "gh_patient_group": "pediatric",
+      "gh_treatment_phase": "initiation",
+      "gh_initiation_pathway": "sga_case_1",
+      "gh_birth_weight_for_gestational_age_sds": -2.01,
+      "gh_chronological_age_years": 4,
+      "gh_last_year_growth_velocity_sds": -0.01
+    },
+    "sga_case_2": {
+      "gh_patient_group": "pediatric",
+      "gh_treatment_phase": "initiation",
+      "gh_initiation_pathway": "sga_case_2",
+      "gh_sga_birth_status_confirmed": true,
+      "gh_current_height_sds": -2.51,
+      "gh_parent_adjusted_height_sds": -1.01
+    },
+    "ckd_initiation": {
+      "gh_patient_group": "pediatric",
+      "gh_treatment_phase": "initiation",
+      "ckd_growth_disorder_confirmed": true,
+      "epiphyses_closed": false,
+      "ckd_persistent_severe_secondary_hyperparathyroidism": false,
+      "ckd_proliferative_or_severe_nonproliferative_retinopathy": false,
+      "ckd_first_post_transplant_year": false,
+      "ckd_active_cancer": false,
+      "ckd_parathyroid_hormone_pg_ml": 499,
+      "gh_daily_dose_mg_per_kg": 0.05,
+      "ckd_height_age_sex_percentile": 2.9,
+      "ckd_height_age_sex_sds": -2.1,
+      "ckd_annual_growth_velocity_percentile": 24.9,
+      "ckd_persistent_growth_failure_confirmed": true
+    }
+  },
+  "cases": [
+    {
+      "name": "source date unavailable or prior heading",
+      "base": "pediatric_standard",
+      "material_patch": {
+        "annual_growth_velocity_cm": 100
+      },
+      "drug_context_patch": {
+        "service_date": null
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "drug_claim_date"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "source date unavailable or prior heading",
+      "base": "pediatric_standard",
+      "material_patch": {
+        "annual_growth_velocity_cm": 100
+      },
+      "drug_context_patch": {
+        "service_date": "2024-05-16"
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "historical_sut_version"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "missing explicit pathway is not inferred",
+      "base": "pediatric_standard",
+      "material_patch": {
+        "gh_initiation_pathway": null
+      },
+      "drug_context_patch": {},
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "gh_initiation_pathway"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "clear age-band contradiction before threshold",
+      "base": "pediatric_standard",
+      "material_patch": {
+        "gh_chronological_age_years": 1.5,
+        "gh_reported_growth_age_band": "2_1_4_years",
+        "annual_growth_velocity_cm": 8
+      },
+      "drug_context_patch": {},
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "gh_growth_stage_reconciliation"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "negative SGA measurements remain valid",
+      "base": "sga_case_1",
+      "material_patch": {},
+      "drug_context_patch": {},
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "gh_initiation_clinical_assessment"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "SGA strict zero catchup boundary",
+      "base": "sga_case_1",
+      "material_patch": {
+        "gh_last_year_growth_velocity_sds": 0
+      },
+      "drug_context_patch": {},
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "failed_contains": "gh_last_year_growth_velocity_sds"
+      }
+    },
+    {
+      "name": "CKD cystinosis alternative",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "ckd_persistent_growth_failure_confirmed": false,
+        "ckd_nephropathic_cystinosis_related_confirmed": true
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "ckd_growth_initiation_clinical_assessment"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "CKD all three branches false",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "ckd_persistent_growth_failure_confirmed": false,
+        "ckd_nephropathic_cystinosis_related_confirmed": false,
+        "ckd_post_transplant_one_year_elapsed": false,
+        "ckd_steroid_treatment_absent": false,
+        "ckd_spontaneous_growth_absent": false
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "failed_contains": "ckd_growth_source_alternatives"
+      }
+    },
+    {
+      "name": "CKD height one reference only",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "ckd_height_age_sex_sds": null
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_contains": "ckd_height_source_notation_verification",
+        "severity": "review"
+      }
+    },
+    {
+      "name": "CKD height discordance needs source review",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "ckd_height_age_sex_sds": -1.9
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_contains": "ckd_height_reference_reconciliation",
+        "severity": "review"
+      }
+    },
+    {
+      "name": "CKD contradictory transplant timing before exclusion",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "ckd_first_post_transplant_year": true,
+        "ckd_post_transplant_one_year_elapsed": true
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "ckd_transplant_timing_reconciliation"
+        ],
+        "severity": "review"
+      }
+    },
+    {
+      "name": "CKD continuation ignores initiation growth",
+      "base": "ckd_initiation",
+      "material_patch": {
+        "gh_treatment_phase": "continuation",
+        "ckd_annual_growth_velocity_percentile": 100,
+        "ckd_height_age_sex_percentile": 100,
+        "ckd_height_age_sex_sds": 100
+      },
+      "drug_context_patch": {
+        "primary_icd10": "N18.5",
+        "report_duration_months": 6
+      },
+      "medicine": "SOMATROPIN",
+      "expected_internal": {
+        "missing_inputs": [
+          "ckd_growth_continuation_clinical_assessment"
+        ],
+        "severity": "review"
+      }
+    }
+  ]
+}

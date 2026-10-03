@@ -28,7 +28,14 @@ def payload():
 
 
 @pytest.mark.parametrize('changes,day,kind,missing', [
-    ({}, '2026-10-02', 'needs_growth_hormone_verification', ['ckd_growth_initiation_clinical_assessment']),
+    # Earlier exclusion/dose facts do not establish the new growth pathways.
+    # Keep the complete explicit review set in both internal and public output.
+    ({}, '2026-10-02', 'needs_growth_hormone_verification', [
+        'ckd_annual_growth_velocity_percentile', 'ckd_growth_initiation_clinical_assessment',
+        'ckd_height_source_notation_verification', 'ckd_nephropathic_cystinosis_related_confirmed',
+        'ckd_persistent_growth_failure_confirmed', 'ckd_post_transplant_one_year_elapsed',
+        'ckd_spontaneous_growth_absent', 'ckd_steroid_treatment_absent',
+    ]),
     ({'gh_daily_dose_mg_per_kg': 0}, '2026-10-02', 'growth_hormone_dose_out_of_range', []),
     ({'ckd_parathyroid_hormone_pg_ml': 500}, '2026-10-02', 'growth_hormone_initiation_exclusion', []),
     ({'ckd_growth_disorder_confirmed': None}, '2026-10-02', 'needs_growth_hormone_verification', ['ckd_growth_disorder_confirmed']),

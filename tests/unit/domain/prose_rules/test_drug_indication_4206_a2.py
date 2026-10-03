@@ -5,6 +5,7 @@ from __future__ import annotations
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -13,14 +14,13 @@ import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
 from tests.unit._helpers.gate_b_cites import (
-    cite_in_sources,
     cites_covered_by_encoded,
-    resolve_gate_b_cites_to_clause_ids,
 )
 
 from scripts.sut.rule_sources import load_legacy_drug_batch
 BATCH_A2_RULES = load_legacy_drug_batch("drug_indication_4206_a2_batch_rules.py:BATCH_A2_RULES")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
 pytestmark = pytest.mark.unit
@@ -112,12 +112,12 @@ def test_a2_golden_samples(sample: dict) -> None:
     rule_id = sample["rule_id"]
     assert rule_id in _A2_RULE_IDS
     hit = evaluate_drug_indication_line(
-        drug_line=_drug_line(
+        drug_line=replace(_drug_line(
             drug_name=sample["drug_name"],
             report_present=sample.get("report_present"),
             report_duration_months=sample.get("report_duration_months"),
             prescriber_specialty=sample.get("prescriber_specialty"),
-        ),
+        ), **{field: sample.get(field) for field in GROWTH_HORMONE_INPUT_FIELDS}),
         claim=_claim(primary_icd10=sample["primary_icd10"]),
         diagnoses=(),
         rules=[_a2_rule(rule_id)],

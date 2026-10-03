@@ -1,7 +1,7 @@
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { indicationFields, followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { ckdGrowthPathwayFields, pediatricInitiationFields, indicationFields, followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   optionalClinicalNumber, type ClinicalField } from "./clinicalFields";
 
 type ClinicalValue = string | number | boolean | null | undefined;
@@ -38,10 +38,10 @@ function ClinicalGroup({ group, fields, value, onChange }: {
                 : t(`${prefix}.options.${option}`)}</option>)}
           </select> : <input aria-label={label} className={inputClass}
             type={field.kind === "date" ? "date" : "number"}
-            min={field.kind === "number" ? 0 : undefined} max={field.max} step={field.kind === "number" ? "any" : undefined}
+            min={field.kind === "number" && !field.signed ? 0 : undefined} max={field.max} step={field.kind === "number" ? "any" : undefined}
             placeholder={unknown} value={typeof current === "boolean" ? "" : current ?? ""}
             onChange={e => update(field.name, field.kind === "number"
-              ? optionalClinicalNumber(e.target.value, field.positiveOnly, field.max) : e.target.value || null)} />}
+              ? optionalClinicalNumber(e.target.value, field.positiveOnly, field.max, field.signed) : e.target.value || null)} />}
         </label>;
       })}
     </div>
@@ -60,6 +60,10 @@ export function ClinicalMaterialInputs({ material, onChange }: {
     <ClinicalGroup group="ckdGrowthHormone" fields={ckdGrowthHormoneFields} value={material}
       onChange={onChange} />
     <ClinicalGroup group="mecasermin" fields={mecaserminFields} value={material}
+      onChange={onChange} />
+    <ClinicalGroup group="pediatricInitiation" fields={pediatricInitiationFields} value={material}
+      onChange={onChange} />
+    <ClinicalGroup group="ckdGrowthPathways" fields={ckdGrowthPathwayFields} value={material}
       onChange={onChange} />
     <ClinicalGroup group="sma" fields={smaFields} value={material.sma_evidence}
       onChange={value => onChange({ sma_evidence: value })} />

@@ -88,6 +88,8 @@ def _semantic_route_signature(rule: dict[str, Any]) -> str:
         "report_duration_by_phase",
         "gh_patient_group",
         "gh_treatment_phase",
+        "pediatric_gh_initiation_protocol",
+        "gh_initiation_pathways",
         "pay",
     )
     return json.dumps(
@@ -162,6 +164,14 @@ def _select_route_rule(
                 return None, ["gh_treatment_phase"]
         elif len(phases) > 1:
             return None, ["gh_treatment_phase"]
+
+    if any(r.get("gh_initiation_pathways") for r in pool):
+        pathway = validated_growth_hormone_value("gh_initiation_pathway", drug_line.gh_initiation_pathway)
+        if pathway is None:
+            return None, ["gh_initiation_pathway"]
+        pool = [r for r in pool if pathway in (r.get("gh_initiation_pathways") or [])]
+        if not pool:
+            return None, ["gh_initiation_pathway"]
 
     # An explicitly supplied field, including an empty tuple, is evidence that
     # the corresponding gated route should be considered.  An unavailable

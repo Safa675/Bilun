@@ -311,6 +311,25 @@ class DrugClaimLine:
     pretreatment_annual_growth_velocity_cm: float | None = None
     height_percentile: float | None = None
     mecasermin_daily_dose_mcg_per_kg: float | None = None
+    gh_initiation_pathway: str | None = None
+    gh_reported_growth_age_band: str | None = None
+    gh_chronological_age_years: float | None = None
+    gh_pubertal_status: str | None = None
+    gh_pubertal_growth_assessment_completed: bool | None = None
+    gh_birth_weight_for_gestational_age_sds: float | None = None
+    gh_birth_length_for_gestational_age_sds: float | None = None
+    gh_last_year_growth_velocity_sds: float | None = None
+    gh_current_height_sds: float | None = None
+    gh_parent_adjusted_height_sds: float | None = None
+    gh_sga_birth_status_confirmed: bool | None = None
+    ckd_height_age_sex_percentile: float | None = None
+    ckd_height_age_sex_sds: float | None = None
+    ckd_annual_growth_velocity_percentile: float | None = None
+    ckd_persistent_growth_failure_confirmed: bool | None = None
+    ckd_post_transplant_one_year_elapsed: bool | None = None
+    ckd_steroid_treatment_absent: bool | None = None
+    ckd_spontaneous_growth_absent: bool | None = None
+    ckd_nephropathic_cystinosis_related_confirmed: bool | None = None
 
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None

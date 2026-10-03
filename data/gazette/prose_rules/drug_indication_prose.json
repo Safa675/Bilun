@@ -20912,8 +20912,7 @@
         "4.2.6.A-1.(2)#a3b772ff"
       ],
       "drug_names": [
-        "somatropin",
-        "büyüme hormonu"
+        "somatropin"
       ],
       "report_required": true,
       "action": {
@@ -20928,17 +20927,23 @@
       ],
       "gh_patient_group": "pediatric",
       "verification_status": "ai_generated_pending_review",
-      "gh_treatment_phase": "initiation"
+      "gh_treatment_phase": "initiation",
+      "pediatric_gh_initiation_protocol": "pediatric_gh_initiation_v1",
+      "gh_initiation_pathways": [
+        "neurosecretory_bioinactive"
+      ],
+      "source_evidence": "data/gazette/source_evidence/pediatric_gh_initiation.json"
     },
     {
       "rule_id": "4.2.6.A1.somatropin_listed_cases_no_condition",
       "sut_section": "4.2.6.A-1",
       "gate_b_sources": [
-        "4.2.6.A-1.e"
+        "4.2.6.A-1.e",
+        "4.2.6.A-1.(1)#52b1f15a",
+        "4.2.6.A-1.(2)#75f092ee"
       ],
       "drug_names": [
-        "somatropin",
-        "büyüme hormonu"
+        "somatropin"
       ],
       "report_required": true,
       "condition": {
@@ -20956,7 +20961,13 @@
       ],
       "gh_patient_group": "pediatric",
       "verification_status": "ai_generated_pending_review",
-      "gh_treatment_phase": "initiation"
+      "gh_treatment_phase": "initiation",
+      "pediatric_gh_initiation_protocol": "pediatric_gh_initiation_v1",
+      "gh_initiation_pathways": [
+        "sga_case_1",
+        "sga_case_2"
+      ],
+      "source_evidence": "data/gazette/source_evidence/pediatric_gh_initiation.json"
     },
     {
       "rule_id": "4.2.6.A2.insulin_tolerance_test_peak_gh_report",
@@ -20965,8 +20976,7 @@
         "4.2.6.A-2.(4)"
       ],
       "drug_names": [
-        "somatropin",
-        "büyüme hormonu"
+        "somatropin"
       ],
       "report_required": true,
       "action": {
@@ -20980,7 +20990,8 @@
         "E34.3"
       ],
       "gh_patient_group": "adult",
-      "verification_status": "ai_generated_pending_review"
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/adult_gh_closed_epiphysis_context.json"
     },
     {
       "rule_id": "4.2.6.A4.prader_willi_gh_no_stimulation_test",
@@ -21030,7 +21041,10 @@
         "4.2.6.A-5.(1)",
         "4.2.6.A-5.(2)",
         "4.2.6.A-5.(3)",
-        "4.2.6.A-5.(4)"
+        "4.2.6.A-5.(4)",
+        "4.2.6.A-5.a#7420864e",
+        "4.2.6.A-5.b#7b829f92",
+        "4.2.6.A-5.c#843b4071"
       ],
       "drug_names": [
         "somatropin"
@@ -21061,16 +21075,16 @@
       "ckd_growth_hormone_protocol": "ckd_somatropin_v1",
       "gh_patient_group": "pediatric",
       "verification_status": "ai_generated_pending_review",
-      "source_evidence": "data/gazette/source_evidence/ckd_somatropin_partial_checks.json"
+      "source_evidence": "data/gazette/source_evidence/ckd_somatropin_partial_checks.json",
+      "additional_source_evidence": [
+        "data/gazette/source_evidence/ckd_gh_growth_pathways.json"
+      ]
     },
     {
       "rule_id": "4.2.6.adult_somatropin_board_report",
       "sut_section": "4.2.6.A-2",
       "drug_names": [
         "somatropin",
-        "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -21097,7 +21111,13 @@
       ],
       "report_duration_months": 12,
       "gh_patient_group": "adult",
-      "verification_status": "ai_generated_pending_review"
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/adult_gh_closed_epiphysis_context.json",
+      "source_fragment_keys": [
+        "4.2.6.A-2.(2)#5589013c",
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75"
+      ]
     },
     {
       "rule_id": "4.2.6.ckd_gh_nephro_endo_board",
@@ -21121,7 +21141,10 @@
         "4.2.6.A-5.(4)",
         "4.2.6.A-5.(1)",
         "4.2.6.A-5.(2)",
-        "4.2.6.A-5.(3)"
+        "4.2.6.A-5.(3)",
+        "4.2.6.A-5.a#7420864e",
+        "4.2.6.A-5.b#7b829f92",
+        "4.2.6.A-5.c#843b4071"
       ],
       "report_specialties": [
         "çocuk nefroloji",
@@ -21134,7 +21157,10 @@
       "ckd_growth_hormone_protocol": "ckd_somatropin_v1",
       "gh_patient_group": "pediatric",
       "verification_status": "ai_generated_pending_review",
-      "source_evidence": "data/gazette/source_evidence/ckd_somatropin_partial_checks.json"
+      "source_evidence": "data/gazette/source_evidence/ckd_somatropin_partial_checks.json",
+      "additional_source_evidence": [
+        "data/gazette/source_evidence/ckd_gh_growth_pathways.json"
+      ]
     },
     {
       "rule_id": "4.2.6.general_gh_age_group_board",
@@ -21337,8 +21363,6 @@
       "drug_names": [
         "somatropin",
         "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -21354,7 +21378,17 @@
       "report_required": true,
       "message_tr": "Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "4.2.6.A-1.(1)#e947d7a0"
+        "4.2.6.A-1.(1)#e947d7a0",
+        "4.2.6.A-1.a#9787d587",
+        "4.2.6.A-1.(1)#72e47d24",
+        "4.2.6.A-1.(2)#30e012d8",
+        "4.2.6.A-1.(3)#89477346",
+        "4.2.6.A-1.(4)#dcfc2909",
+        "4.2.6.A-1.b#3b2664e6",
+        "4.2.6.A-1.(1)#8539914f",
+        "4.2.6.A-1.(2)#13f4b28c",
+        "4.2.6.A-1.(3)#0c2b0e3f",
+        "4.2.6.A-1.d#378dc004"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -21366,7 +21400,13 @@
       "report_duration_months": 12,
       "gh_patient_group": "pediatric",
       "verification_status": "ai_generated_pending_review",
-      "gh_treatment_phase": "initiation"
+      "gh_treatment_phase": "initiation",
+      "pediatric_gh_initiation_protocol": "pediatric_gh_initiation_v1",
+      "gh_initiation_pathways": [
+        "standard",
+        "organic_or_surgical"
+      ],
+      "source_evidence": "data/gazette/source_evidence/pediatric_gh_initiation.json"
     },
     {
       "rule_id": "4.2.6.pws_somatropin_tertiary_board",

@@ -94,8 +94,9 @@ def test_missing_phase_cannot_choose_pediatric_initiation_or_continuation():
 
 def test_explicit_initiation_does_not_apply_continuation_stop():
     result = evaluate(gh_treatment_phase="initiation", epiphyses_closed=True)
-    assert result["selected_rule_id"] == "4.2.6.pediatric_somatropin_initiation_board"
-    assert result["violation"] is None
+    assert result["selected_rule_id"] is None
+    assert result["missing_inputs"] == ["gh_initiation_pathway"]
+    assert result["violation"]["severity"] == "review"
 
 
 def test_adult_closed_epiphyses_do_not_receive_pediatric_stop():

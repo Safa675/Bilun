@@ -41,6 +41,8 @@
           "items": { "type": "string" }
         },
         "growth_hormone_continuation_protocol": { "type": "string", "enum": ["turner_somatropin_v1", "pediatric_gh_v1"] },
+        "pediatric_gh_initiation_protocol": { "type": "string", "const": "pediatric_gh_initiation_v1" },
+        "gh_initiation_pathways": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "enum": ["standard", "neurosecretory_bioinactive", "organic_or_surgical", "sga_case_1", "sga_case_2"] } },
         "gh_patient_group": { "type": "string", "enum": ["pediatric", "adult"] },
         "gh_treatment_phase": { "type": "string", "enum": ["initiation", "continuation"] },
         "ckd_growth_hormone_protocol": { "type": "string", "enum": ["ckd_somatropin_v1"] },

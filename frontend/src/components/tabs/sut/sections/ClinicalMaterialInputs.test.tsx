@@ -9,14 +9,16 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, indicationFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { ckdGrowthPathwayFields, pediatricInitiationFields, mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, indicationFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
 vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
-const groups = { indication: indicationFields, followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+const ghFields = [...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields, ...mecaserminFields, ...pediatricInitiationFields, ...ckdGrowthPathwayFields];
+const labels: Record<string, string> = en.claimValidator.clinical.fields;
+const groups = { ckdGrowthPathways: ckdGrowthPathwayFields, pediatricInitiation: pediatricInitiationFields, indication: indicationFields, followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
   antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
@@ -48,6 +50,8 @@ it("leaves every clinical input unknown until explicitly entered", async () => {
     }
   }
   const payload = await submit();
+  expect(ghFields).toHaveLength(44);
+  for (const field of ghFields) expect(payload.materials[0][field.name]).toBeNull();
   expect(payload.materials[0].followup_evidence).toBeNull();
   expect(payload.materials[0].indication_evidence).toBeNull();
   expect(payload.materials[0]).toMatchObject({ gh_patient_group: null, gh_height_reference_sex: null,
@@ -107,7 +111,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
   const disabled = await submit();
   expect(disabled).not.toHaveProperty("drug_context");
-  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "indication_evidence", "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), ...pediatricInitiationFields.map(row => row.name), ...ckdGrowthPathwayFields.map(row => row.name), "indication_evidence", "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
     expect(disabled.materials[0]).not.toHaveProperty(field);
   }
   await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
@@ -382,4 +386,93 @@ it.each([
     .toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
   expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: 0, biopsy_fibrosis_stage: 0 }))
     .toMatchObject({ biopsy_hai: 0, biopsy_fibrosis_stage: 0 });
+});
+
+
+it("retains signed SDS and clinician-recorded pathway/stage without deriving classifications", async () => {
+  await change("pediatricInitiation", "gh_chronological_age_years", "2.05");
+  let material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_initiation_pathway: null, gh_reported_growth_age_band: null,
+    gh_pubertal_status: null, gh_sga_birth_status_confirmed: null });
+  await change("pediatricInitiation", "gh_initiation_pathway", "sga_case_1");
+  await change("pediatricInitiation", "gh_reported_growth_age_band", "2_1_4_years");
+  await change("pediatricInitiation", "gh_pubertal_status", "prepubertal");
+  await change("pediatricInitiation", "gh_pubertal_growth_assessment_completed", "false");
+  await change("pediatricInitiation", "gh_birth_weight_for_gestational_age_sds", "-2.1");
+  await change("pediatricInitiation", "gh_birth_length_for_gestational_age_sds", "0");
+  await change("pediatricInitiation", "gh_last_year_growth_velocity_sds", "-0.01");
+  await change("pediatricInitiation", "gh_current_height_sds", "-2.5");
+  await change("pediatricInitiation", "gh_parent_adjusted_height_sds", "-1.01");
+  await change("pediatricInitiation", "gh_sga_birth_status_confirmed", "true");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ gh_initiation_pathway: "sga_case_1", gh_reported_growth_age_band: "2_1_4_years",
+    gh_chronological_age_years: 2.05, gh_pubertal_status: "prepubertal", gh_pubertal_growth_assessment_completed: false,
+    gh_birth_weight_for_gestational_age_sds: -2.1, gh_birth_length_for_gestational_age_sds: 0,
+    gh_last_year_growth_velocity_sds: -0.01, gh_current_height_sds: -2.5, gh_parent_adjusted_height_sds: -1.01,
+    gh_sga_birth_status_confirmed: true });
+  expect(renderer.root.findByProps({ "aria-label": labels.gh_current_height_sds }).props.min).toBeUndefined();
+  expect(renderer.root.findByProps({ "aria-label": labels.gh_chronological_age_years }).props.min).toBe(0);
+  await change("pediatricInitiation", "gh_initiation_pathway", ""); await change("pediatricInitiation", "gh_current_height_sds", "");
+  expect((await submit()).materials[0]).toMatchObject({ gh_initiation_pathway: null, gh_current_height_sds: null });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  const disabled = (await submit()).materials[0];
+  for (const field of ghFields) expect(disabled).not.toHaveProperty(field.name);
+});
+
+it.each([["-2.5", -2.5], ["0", 0], ["2.5", 2.5], ["", null], ["Infinity", null], ["NaN", null]])(
+  "accepts finite signed SDS %s without changing the nonnegative measurement contract", (input, expected) => {
+    expect(optionalClinicalNumber(String(input), false, undefined, true)).toBe(expected);
+    expect(optionalClinicalNumber("-2.5")).toBeNull();
+  },
+);
+
+it("explains that source bands and puberty are recorded facts, with no inferred source authority", () => {
+  expect(en.claimValidator.clinical.hints.pediatricInitiation).toContain("Do not calculate");
+  expect(tr.claimValidator.clinical.options["2_1_4_years"]).toContain("2,1–4");
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("pediatric initiation");
+});
+
+
+it("records CKD growth alternatives without deriving percentile, persistence or transplant timing", async () => {
+  await change("growthHormone", "height_cm", "150"); await change("growthHormone", "annual_growth_velocity_cm", "7.1");
+  await change("ckdGrowthHormone", "ckd_first_post_transplant_year", "false");
+  let material = (await submit()).materials[0];
+  for (const field of ckdGrowthPathwayFields) expect(material[field.name]).toBeNull();
+  await change("ckdGrowthPathways", "ckd_height_age_sex_sds", "-2.1");
+  expect((await submit()).materials[0].ckd_height_age_sex_percentile).toBeNull();
+  await change("ckdGrowthPathways", "ckd_height_age_sex_percentile", "2.9");
+  await change("ckdGrowthPathways", "ckd_annual_growth_velocity_percentile", "0");
+  await change("ckdGrowthPathways", "ckd_persistent_growth_failure_confirmed", "true");
+  await change("ckdGrowthPathways", "ckd_post_transplant_one_year_elapsed", "false");
+  await change("ckdGrowthPathways", "ckd_steroid_treatment_absent", "false");
+  await change("ckdGrowthPathways", "ckd_spontaneous_growth_absent", "false");
+  await change("ckdGrowthPathways", "ckd_nephropathic_cystinosis_related_confirmed", "false");
+  material = (await submit()).materials[0];
+  expect(material).toMatchObject({ ckd_height_age_sex_percentile: 2.9, ckd_height_age_sex_sds: -2.1,
+    ckd_annual_growth_velocity_percentile: 0, ckd_persistent_growth_failure_confirmed: true,
+    ckd_post_transplant_one_year_elapsed: false, ckd_steroid_treatment_absent: false,
+    ckd_spontaneous_growth_absent: false, ckd_nephropathic_cystinosis_related_confirmed: false,
+    ckd_first_post_transplant_year: false, annual_growth_velocity_cm: 7.1 });
+  await change("ckdGrowthPathways", "ckd_height_age_sex_sds", ""); await change("ckdGrowthPathways", "ckd_post_transplant_one_year_elapsed", "");
+  expect((await submit()).materials[0]).toMatchObject({ ckd_height_age_sex_sds: null, ckd_post_transplant_one_year_elapsed: null });
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  const disabled = (await submit()).materials[0];
+  for (const field of ghFields) expect(disabled).not.toHaveProperty(field.name);
+});
+
+it.each(["ckd_height_age_sex_percentile", "ckd_annual_growth_velocity_percentile"] as const)(
+  "enforces the structural %s range while retaining a noncompliant clinical value", async field => {
+    for (const [raw, expected] of [["0", 0], ["25", 25], ["100", 100], ["100.001", null], ["-0.1", null], ["", null]] as const) {
+      await change("ckdGrowthPathways", field, raw); expect((await submit()).materials[0][field]).toBe(expected);
+    }
+    expect(renderer.root.findByProps({ "aria-label": labels[field] }).props.max).toBe(100);
+    expect(renderer.root.findByProps({ "aria-label": labels.ckd_height_age_sex_sds }).props.min).toBeUndefined();
+  },
+);
+
+it("keeps height-source ambiguity as review and both reference inputs optional", () => {
+  expect(en.claimValidator.clinical.hints.ckdGrowthPathways).toContain("both fields are optional");
+  expect(en.claimValidator.clinical.hints.ckdGrowthPathways).toContain("source percentile/SDS notation needs review");
+  expect(tr.claimValidator.clinical.hints.ckdGrowthPathways).toContain("isteğe bağlıdır");
+  expect(ckdGrowthPathwayFields.some(field => String(field.name) === "ckd_height_source_notation_verification")).toBe(false);
 });

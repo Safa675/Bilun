@@ -39,7 +39,11 @@ def test_negative_partial_checks_never_claim_complete_eligibility(reverse, phase
     result = evaluate(reverse=reverse, gh_treatment_phase=phase)
     assert result["violation"]["severity"] == "review"
     assert result["evaluation_status"] == "missing_inputs"
-    assert result["missing_inputs"] == [f"ckd_growth_{phase}_clinical_assessment"]
+    assert f"ckd_growth_{phase}_clinical_assessment" in result["missing_inputs"]
+    if phase == "continuation":
+        assert result["missing_inputs"] == ["ckd_growth_continuation_clinical_assessment"]
+    else:
+        assert "ckd_annual_growth_velocity_percentile" in result["missing_inputs"]
 
 
 @pytest.mark.parametrize("field", FLAGS)

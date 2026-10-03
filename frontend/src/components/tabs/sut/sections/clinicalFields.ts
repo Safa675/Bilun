@@ -9,6 +9,7 @@ export interface ClinicalField {
   options?: readonly string[];
   positiveOnly?: boolean;
   max?: number;
+  signed?: boolean;
 }
 
 export const growthHormoneFields = [
@@ -48,10 +49,10 @@ export const mecaserminFields = [
   { name: "mecasermin_daily_dose_mcg_per_kg", kind: "number" },
 ] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
 
-export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number): number | null {
+export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number, signed = false): number | null {
   if (!value.trim()) return null;
   const number = Number(value);
-  return Number.isFinite(number) && (positiveOnly ? number > 0 : number >= 0)
+  return Number.isFinite(number) && (positiveOnly ? number > 0 : signed || number >= 0)
     && (max == null || number <= max) ? number : null;
 }
 
@@ -68,6 +69,8 @@ export const clinicalReviewFields = [
   "exception_path_requires_review", "adult_path_requires_review", "six_month_edss_stop",
   "ckd_growth_initiation_clinical_assessment", "ckd_growth_continuation_clinical_assessment", "ckd_parathyroid_status_reconciliation",
   "mecasermin_source_version", "mecasermin_remaining_clinical_criteria",
+  "gh_initiation_clinical_assessment", "gh_growth_stage_reconciliation",
+  "ckd_height_source_notation_verification", "ckd_height_reference_reconciliation", "ckd_transplant_timing_reconciliation",
 ] as const;
 
 export const smaFields = [
@@ -159,7 +162,7 @@ export function clinicalMissingInputLabel(field: string, t: (key: string) => str
     const groupLabel = t(`sections.claimValidator.clinical.groups.${groups[root]}`);
     return detail ? `${groupLabel}: ${t(`sections.claimValidator.clinical.fields.${detail}`)}` : groupLabel;
   }
-  if ([...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields, ...mecaserminFields].some(row => row.name === root) || clinicalReviewFields.some(name => name === root)) {
+  if ([...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields, ...mecaserminFields, ...pediatricInitiationFields, ...ckdGrowthPathwayFields].some(row => row.name === root) || clinicalReviewFields.some(name => name === root)) {
     return t(`sections.claimValidator.clinical.fields.${root}`);
   }
   return null;
@@ -244,3 +247,28 @@ export const indicationFields = [
   { name: "bisphosphonate_inadequate_response", kind: "boolean" },
   { name: "bisphosphonate_renal_contraindication", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutIndicationEvidence }>;
+
+export const pediatricInitiationFields = [
+  { name: "gh_initiation_pathway", kind: "select", options: ["standard", "neurosecretory_bioinactive", "organic_or_surgical", "sga_case_1", "sga_case_2"] },
+  { name: "gh_reported_growth_age_band", kind: "select", options: ["0_2_years", "2_1_4_years", "4_1_prepubertal", "pubertal"] },
+  { name: "gh_chronological_age_years", kind: "number" },
+  { name: "gh_pubertal_status", kind: "select", options: ["prepubertal", "pubertal"] },
+  { name: "gh_pubertal_growth_assessment_completed", kind: "boolean" },
+  { name: "gh_birth_weight_for_gestational_age_sds", kind: "number", signed: true },
+  { name: "gh_birth_length_for_gestational_age_sds", kind: "number", signed: true },
+  { name: "gh_last_year_growth_velocity_sds", kind: "number", signed: true },
+  { name: "gh_current_height_sds", kind: "number", signed: true },
+  { name: "gh_parent_adjusted_height_sds", kind: "number", signed: true },
+  { name: "gh_sga_birth_status_confirmed", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
+
+export const ckdGrowthPathwayFields = [
+  { name: "ckd_height_age_sex_percentile", kind: "number", max: 100 },
+  { name: "ckd_height_age_sex_sds", kind: "number", signed: true },
+  { name: "ckd_annual_growth_velocity_percentile", kind: "number", max: 100 },
+  { name: "ckd_persistent_growth_failure_confirmed", kind: "boolean" },
+  { name: "ckd_post_transplant_one_year_elapsed", kind: "boolean" },
+  { name: "ckd_steroid_treatment_absent", kind: "boolean" },
+  { name: "ckd_spontaneous_growth_absent", kind: "boolean" },
+  { name: "ckd_nephropathic_cystinosis_related_confirmed", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;

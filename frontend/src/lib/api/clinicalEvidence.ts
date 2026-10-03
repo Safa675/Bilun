@@ -25,6 +25,25 @@ export interface SutGrowthHormoneEvidence {
   annual_growth_velocity_cm?: number | null;
   height_cm?: number | null;
   bone_age_years?: number | null;
+  gh_initiation_pathway?: "standard" | "neurosecretory_bioinactive" | "organic_or_surgical" | "sga_case_1" | "sga_case_2" | null;
+  gh_reported_growth_age_band?: "0_2_years" | "2_1_4_years" | "4_1_prepubertal" | "pubertal" | null;
+  gh_chronological_age_years?: number | null;
+  gh_pubertal_status?: "prepubertal" | "pubertal" | null;
+  gh_pubertal_growth_assessment_completed?: boolean | null;
+  gh_birth_weight_for_gestational_age_sds?: number | null;
+  gh_birth_length_for_gestational_age_sds?: number | null;
+  gh_last_year_growth_velocity_sds?: number | null;
+  gh_current_height_sds?: number | null;
+  gh_parent_adjusted_height_sds?: number | null;
+  gh_sga_birth_status_confirmed?: boolean | null;
+  ckd_height_age_sex_percentile?: number | null;
+  ckd_height_age_sex_sds?: number | null;
+  ckd_annual_growth_velocity_percentile?: number | null;
+  ckd_persistent_growth_failure_confirmed?: boolean | null;
+  ckd_post_transplant_one_year_elapsed?: boolean | null;
+  ckd_steroid_treatment_absent?: boolean | null;
+  ckd_spontaneous_growth_absent?: boolean | null;
+  ckd_nephropathic_cystinosis_related_confirmed?: boolean | null;
 }
 
 export interface SutDatedClinicalEvidence {
