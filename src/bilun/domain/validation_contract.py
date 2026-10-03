@@ -4,6 +4,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .sut.runtime_coverage_schema import RuntimeCoverageResponse
+
 
 ValidationDisposition = Literal[
     "not_matched", "missing_inputs", "unavailable", "review_only",
@@ -35,6 +37,7 @@ class ValidationClinicalCheck(_StrictContract):
 
 
 class ValidationClinicalRestriction(_StrictContract):
+    runtime_coverage: RuntimeCoverageResponse | None = None
     constraint_set: str = Field(min_length=1, max_length=240)
     criterion_status: Literal['not_evaluated', 'unknown', 'criterion_clear', 'restriction_not_met']
     missing_inputs: list[str] = Field(default_factory=list, max_length=64)

@@ -8,6 +8,8 @@ and several pricing endpoints pass through gazette-derived dicts.
 
 from __future__ import annotations
 
+from src.bilun.domain.sut.runtime_coverage_schema import RuntimeCoverageResponse as DrugRuntimeCoverageResponse
+
 from collections.abc import Mapping
 from datetime import date
 from typing import Literal
@@ -387,6 +389,7 @@ class DrugClinicalCheckResponse(BaseModel):
 
 
 class DrugClinicalRestrictionResponse(BaseModel):
+    runtime_coverage: DrugRuntimeCoverageResponse | None = None
     constraint_set: str
     criterion_status: str
     missing_inputs: list[str] = Field(default_factory=list)

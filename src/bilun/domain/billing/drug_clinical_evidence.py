@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 from typing import Any
 
+from ..sut.runtime_coverage_contract import bounded_runtime_coverage
+
 MAX_CONSTRAINTS = 8
 MAX_CHECKS = 64
 MAX_SOURCES = 32
@@ -42,9 +44,12 @@ class DrugClinicalRestriction:
     verification_status: str
     checks_truncated: bool = False
     source_refs_truncated: bool = False
+    runtime_coverage: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {'constraint_set': self.constraint_set, 'criterion_status': self.criterion_status,
+        return {**({'runtime_coverage': bounded_runtime_coverage(self.runtime_coverage)}
+                    if self.runtime_coverage is not None else {}),
+                'constraint_set': self.constraint_set, 'criterion_status': self.criterion_status,
                 'missing_inputs': list(self.missing_inputs),
                 'checks': [c.to_dict() for c in self.checks], 'source_refs': list(self.source_refs),
                 'clinical_eligibility_complete': False, 'verification_status': self.verification_status,
@@ -71,6 +76,7 @@ def bounded_clinical_restrictions(raw: Any) -> tuple[DrugClinicalRestriction, ..
             verification_status='ai_generated_pending_review',
             checks_truncated=len(checks) > MAX_CHECKS,
             source_refs_truncated=isinstance(row.get('source_refs'), (list, tuple)) and len(row['source_refs']) > MAX_SOURCES,
+            runtime_coverage=bounded_runtime_coverage(row.get('runtime_coverage')),
         ))
     return tuple(outcomes)
 

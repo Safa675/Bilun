@@ -21,7 +21,13 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
     if 'antifungal_source_constraints' in kinds:
         evaluations.append(evaluate_antifungal(line))
     if 'renal_source_constraints' in kinds:
-        evaluations.append(evaluate_renal(line))
+        from ...sut.rules_catalog import _load_sut_clauses_frame
+        from .runtime_observations import ClinicalObservationCollector
+
+        observer = ClinicalObservationCollector(line, 'renal', 'renal.atomic.v1.2026-10-02')
+        outcome = evaluate_renal(line, observer=observer)
+        outcome['runtime_coverage'] = observer.summary(_load_sut_clauses_frame())
+        evaluations.append(outcome)
     if 'followup_source_constraints' in kinds:
         evaluations.append(evaluate_followup(line))
     if 'other_indication_source_constraints' in kinds:
