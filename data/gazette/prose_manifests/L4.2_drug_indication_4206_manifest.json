@@ -4,8 +4,8 @@
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
-  "section_clause_total": 49,
-  "encoded_clause_count": 28,
+  "section_clause_total": 55,
+  "encoded_clause_count": 34,
   "encoded_clause_ids": [
     "C003995",
     "C003996",
@@ -34,7 +34,13 @@
     "C004083",
     "C004084",
     "C004087",
-    "C004093"
+    "C004090",
+    "C004093",
+    "C004096",
+    "C004097",
+    "C004098",
+    "C004099",
+    "C004100"
   ],
   "encoded_clause_coordinates": [
     "4.2.6.A-1.(1)",
@@ -63,7 +69,11 @@
     "4.2.6.A-5.(4)",
     "4.2.6.A.(1)",
     "4.2.6.A.(2)",
+    "4.2.6.B-1.(2)",
     "4.2.6.B-2.(1)",
+    "4.2.6.B-3",
+    "4.2.6.B-3.(1)",
+    "4.2.6.B-3.ç",
     "4.2.6.B.(1)"
   ],
   "tier_a_pending_clause_ids": [],
@@ -583,6 +593,7 @@
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
         "4.2.6.A.max_3_month_supply_daily_dose",
+        "4.2.6.laron_mecasermin_continuation_board",
         "4.2.6.laron_mecasermin_initiation_board"
       ]
     },
@@ -596,6 +607,16 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004090",
+      "section_id": "4.2.6.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Başlangıç dozu 120 mcg/kg/gün’e kadar çıkılabilir.",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_initiation_board"
+      ]
     },
     {
       "clause_id": "C004091",
@@ -628,10 +649,60 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004096",
+      "section_id": "4.2.6.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavi",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
+    },
+    {
+      "clause_id": "C004097",
+      "section_id": "4.2.6.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Epifiz hattı kapandığında veya",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
+    },
+    {
+      "clause_id": "C004098",
+      "section_id": "4.2.6.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yıllık büyüme hızı tedavi öncesi hıza göre + 2 cm’den düşük olduğunda veya",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
+    },
+    {
+      "clause_id": "C004099",
+      "section_id": "4.2.6.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Boy uzunluğu kızlarda 155 cm ve erkeklerde 165 cm’ye ulaştığında veya",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
+    },
+    {
+      "clause_id": "C004100",
+      "section_id": "4.2.6.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavi esnasında boy 25 persentile ulaştığında",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
     }
   ],
   "clause_trace_complete": true,
   "encode_tier_C_deferred_count": 21,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 57.1
+  "encoded_clause_pct": 61.8
 }

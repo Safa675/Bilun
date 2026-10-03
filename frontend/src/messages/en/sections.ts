@@ -259,6 +259,7 @@ const sections = {
         "enteral": "Enteral nutrition evidence",
         "ravulizumab": "Ravulizumab evidence",
 
+        "mecasermin": "Mecasermin evidence",
         "ckdGrowthHormone": "CKD growth-hormone evidence",
         "praderWilli": "Prader–Willi evidence",
         "growthHormone": "Growth-hormone evidence",
@@ -270,6 +271,7 @@ const sections = {
         "enteral": "Choose the documented malnutrition or exempt pathway. Report authorship is separate from the prescriber; dates remain explicit.",
         "ravulizumab": "Choose the documented indication. Enter completed treatment duration without inferring months from dates; EDSS must be a recorded score.",
 
+        "mecasermin": "Enter recorded percentile and pretreatment growth directly. Mecasermin uses mcg/kg/day, separate from CKD mg/kg/day. Only the 29 August and 2 October 2026 source snapshots are verified; other actual service dates require source review.",
         "ckdGrowthHormone": "CKD somatropin only. Enter the prescribed mg/kg/day directly. A PTH result never sets the persistent-disease flag or any other clinical finding.",
         "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria.",
         "growthHormone": "Only supported source criteria are checked; these partial checks do not establish full eligibility. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown.",
@@ -289,6 +291,13 @@ const sections = {
         "exception_path_requires_review": "Exempt nutrition pathway requires source review",
         "adult_path_requires_review": "Adult nutrition pathway requires source review",
         "six_month_edss_stop": "Six-month EDSS continuation requirement",
+        "mecasermin_laron_syndrome_confirmed": "Laron syndrome confirmed",
+        "pretreatment_annual_growth_velocity_cm": "Recorded pretreatment annual growth velocity (cm/year)",
+        "height_percentile": "Recorded height percentile (0–100)",
+        "mecasermin_daily_dose_mcg_per_kg": "Prescribed mecasermin initiation daily dose (mcg/kg/day)",
+        "mecasermin_source_version": "Verified mecasermin source for the actual service date",
+        "mecasermin_remaining_clinical_criteria": "Remaining mecasermin clinical and monitoring criteria",
+
         "ckd_growth_disorder_confirmed": "CKD-associated growth disorder confirmed",
         "ckd_persistent_severe_secondary_hyperparathyroidism": "Documented persistent severe secondary hyperparathyroidism",
         "ckd_proliferative_or_severe_nonproliferative_retinopathy": "Proliferative or severe nonproliferative diabetic retinopathy",

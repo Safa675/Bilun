@@ -611,6 +611,14 @@ def build_manifest(
     cites in ``gate_b_sources`` can resolve even when the export frame is filtered.
     """
     resolve_frame = resolve_clauses if resolve_clauses is not None else gate_b_frame
+    # Re-extracted C IDs can move. Only content-pinned overrides are safe to
+    # apply at this read boundary; legacy positional corrections belong to
+    # their authored extraction snapshot and are already in its parquet.
+    from scripts.sut.prose.clause_type_overrides import (
+        apply_clause_type_overrides, load_clause_type_overrides,
+    )
+    stable_overrides = {key: spec for key, spec in load_clause_type_overrides().items() if "#" in key}
+    resolve_frame = apply_clause_type_overrides(resolve_frame, stable_overrides)
     encoded_ids = _encoded_clause_ids_from_rules(rules, resolve_frame)
     frame_ids = {
         str(x) for x in gate_b_frame["clause_id"].to_list() if x is not None and str(x).strip()

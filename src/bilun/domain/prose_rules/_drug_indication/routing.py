@@ -83,6 +83,8 @@ def _semantic_route_signature(rule: dict[str, Any]) -> str:
         "growth_hormone_continuation_protocol",
         "pws_continuation_protocol",
         "ckd_growth_hormone_protocol",
+        "mecasermin_source_scope",
+        "mecasermin_source_authority",
         "report_duration_by_phase",
         "gh_patient_group",
         "gh_treatment_phase",
@@ -151,15 +153,15 @@ def _select_route_rule(
                 return None, ["gh_patient_group"]
         elif len(groups) > 1:
             return None, ["gh_patient_group"]
-        phases = {r["gh_treatment_phase"] for r in pool if r.get("gh_treatment_phase")}
-        if phases:
-            phase = validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase)
-            if phase is not None:
-                pool = [r for r in pool if r.get("gh_treatment_phase") == phase]
-                if not pool:
-                    return None, ["gh_treatment_phase"]
-            elif len(phases) > 1:
+    phases = {r["gh_treatment_phase"] for r in pool if r.get("gh_treatment_phase")}
+    if phases:
+        phase = validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase)
+        if phase is not None:
+            pool = [r for r in pool if r.get("gh_treatment_phase") == phase]
+            if not pool:
                 return None, ["gh_treatment_phase"]
+        elif len(phases) > 1:
+            return None, ["gh_treatment_phase"]
 
     # An explicitly supplied field, including an empty tuple, is evidence that
     # the corresponding gated route should be considered.  An unavailable

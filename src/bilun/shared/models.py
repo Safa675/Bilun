@@ -51,6 +51,10 @@ class MaterialItem(BaseModel):
     ckd_active_cancer: bool | None = None
     ckd_parathyroid_hormone_pg_ml: float | None = None
     gh_daily_dose_mg_per_kg: float | None = None
+    mecasermin_laron_syndrome_confirmed: bool | None = None
+    pretreatment_annual_growth_velocity_cm: float | None = None
+    height_percentile: float | None = None
+    mecasermin_daily_dose_mcg_per_kg: float | None = None
 
     @field_validator(
         "gh_treatment_phase", "epiphyses_closed", "annual_growth_velocity_cm",
@@ -69,6 +73,8 @@ class MaterialItem(BaseModel):
         "ckd_active_cancer",
         "ckd_parathyroid_hormone_pg_ml",
         "gh_daily_dose_mg_per_kg",
+        "mecasermin_laron_syndrome_confirmed", "pretreatment_annual_growth_velocity_cm",
+        "height_percentile", "mecasermin_daily_dose_mcg_per_kg",
         mode="before",
     )
     @classmethod

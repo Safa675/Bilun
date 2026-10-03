@@ -259,6 +259,7 @@ const sections = {
         "enteral": "Enteral beslenme bilgileri",
         "ravulizumab": "Ravulizumab bilgileri",
 
+        "mecasermin": "Mecasermin bilgileri",
         "ckdGrowthHormone": "KBY büyüme hormonu bilgileri",
         "praderWilli": "Prader-Willi bilgileri",
         "growthHormone": "Büyüme hormonu bilgileri",
@@ -270,6 +271,7 @@ const sections = {
         "enteral": "Belgelenmiş malnütrisyon veya muafiyet yolunu seçin. Raporu düzenleyen hekim ve reçete eden hekim ayrıdır; tarihleri açıkça girin.",
         "ravulizumab": "Belgelenmiş endikasyonu seçin. Tarihlerden ay hesabı çıkarmadan tamamlanmış tedavi süresini girin; EDSS kayıtlı bir ölçüm olmalıdır.",
 
+        "mecasermin": "Kayıtlı persentili ve tedavi öncesi büyümeyi doğrudan girin. Mecasermin mcg/kg/gün birimi, KBY için mg/kg/gün biriminden ayrıdır. Yalnız 29 Ağustos ve 2 Ekim 2026 kaynak sürümleri doğrulanmıştır; diğer gerçek hizmet tarihleri kaynak incelemesi gerektirir.",
         "ckdGrowthHormone": "Yalnız KBY somatropin koşulları içindir. Reçetelenen mg/kg/gün değerini doğrudan girin. PTH sonucundan persistan hastalık veya diğer klinik bulgular çıkarılmaz.",
         "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir.",
         "growthHormone": "Yalnız desteklenen kaynak koşulları kontrol edilir; bu kısmi kontroller tam uygunluk sağlamaz. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir.",
@@ -289,6 +291,13 @@ const sections = {
         "exception_path_requires_review": "Muaf beslenme yolu için kaynak incelemesi gerekli",
         "adult_path_requires_review": "Erişkin beslenme yolu için kaynak incelemesi gerekli",
         "six_month_edss_stop": "Altıncı ay EDSS devam tedavisi koşulu",
+        "mecasermin_laron_syndrome_confirmed": "Laron sendromu doğrulanmış",
+        "pretreatment_annual_growth_velocity_cm": "Kayıtlı tedavi öncesi yıllık büyüme hızı (cm/yıl)",
+        "height_percentile": "Kayıtlı boy persentili (0–100)",
+        "mecasermin_daily_dose_mcg_per_kg": "Reçetelenen mecasermin başlangıç günlük dozu (mcg/kg/gün)",
+        "mecasermin_source_version": "Gerçek hizmet tarihi için doğrulanmış mecasermin kaynağı",
+        "mecasermin_remaining_clinical_criteria": "Diğer mecasermin klinik ve izlem koşulları",
+
         "ckd_growth_disorder_confirmed": "Kronik böbrek yetmezliği ile ilişkili büyüme bozukluğu doğrulandı",
         "ckd_persistent_severe_secondary_hyperparathyroidism": "Belgelenmiş persistan ağır sekonder hiperparatiroidizm",
         "ckd_proliferative_or_severe_nonproliferative_retinopathy": "Proliferatif veya şiddetli nonproliferatif diyabetik retinopati",

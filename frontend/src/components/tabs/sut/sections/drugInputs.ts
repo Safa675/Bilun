@@ -17,6 +17,8 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     ckd_growth_disorder_confirmed, ckd_persistent_severe_secondary_hyperparathyroidism,
     ckd_proliferative_or_severe_nonproliferative_retinopathy, ckd_first_post_transplant_year,
     ckd_active_cancer, ckd_parathyroid_hormone_pg_ml, gh_daily_dose_mg_per_kg,
+    mecasermin_laron_syndrome_confirmed, pretreatment_annual_growth_velocity_cm,
+    height_percentile, mecasermin_daily_dose_mcg_per_kg,
     ...base } = material;
   if (!enabled) return base;
   return {
@@ -48,6 +50,10 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     ckd_active_cancer: ckd_active_cancer ?? null,
     ckd_parathyroid_hormone_pg_ml: ckd_parathyroid_hormone_pg_ml ?? null,
     gh_daily_dose_mg_per_kg: gh_daily_dose_mg_per_kg ?? null,
+    mecasermin_laron_syndrome_confirmed: mecasermin_laron_syndrome_confirmed ?? null,
+    pretreatment_annual_growth_velocity_cm: pretreatment_annual_growth_velocity_cm ?? null,
+    height_percentile: height_percentile ?? null,
+    mecasermin_daily_dose_mcg_per_kg: mecasermin_daily_dose_mcg_per_kg ?? null,
     // Incomplete edits are unknown facts, not negative clinical findings.
     biomarkers: biomarkers?.filter(row => row.marker.trim() && row.status.trim())
       .map(row => ({ marker: row.marker.trim(), status: row.status.trim() })) ?? null,

@@ -305,6 +305,10 @@ class DrugClaimLine:
     ckd_active_cancer: bool | None = None
     ckd_parathyroid_hormone_pg_ml: float | None = None
     gh_daily_dose_mg_per_kg: float | None = None
+    mecasermin_laron_syndrome_confirmed: bool | None = None
+    pretreatment_annual_growth_velocity_cm: float | None = None
+    height_percentile: float | None = None
+    mecasermin_daily_dose_mcg_per_kg: float | None = None
 
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None

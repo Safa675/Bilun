@@ -33,9 +33,11 @@ CKD_GH_BOOLEAN_FIELDS = (
 )
 CKD_GH_NUMERIC_FIELDS = ("ckd_parathyroid_hormone_pg_ml", "gh_daily_dose_mg_per_kg")
 
+MECASERMIN_FIELDS = ("mecasermin_laron_syndrome_confirmed", "pretreatment_annual_growth_velocity_cm", "height_percentile", "mecasermin_daily_dose_mcg_per_kg")
+
 GROWTH_HORMONE_INPUT_FIELDS = (
     *GROWTH_HORMONE_FIELDS, "gh_patient_group", "gh_height_reference_sex", *PWS_FIELDS,
-    *CKD_GH_BOOLEAN_FIELDS, *CKD_GH_NUMERIC_FIELDS,
+    *CKD_GH_BOOLEAN_FIELDS, *CKD_GH_NUMERIC_FIELDS, *MECASERMIN_FIELDS,
 )
 
 def validated_growth_hormone_value(field: str, value: Any) -> Any:
@@ -46,9 +48,9 @@ def validated_growth_hormone_value(field: str, value: Any) -> Any:
         return value if isinstance(value, str) and value in {"pediatric", "adult"} else None
     if field == "gh_height_reference_sex":
         return value if isinstance(value, str) and value in {"female", "male"} else None
-    if field == "epiphyses_closed" or field in (*PWS_FIELDS, *CKD_GH_BOOLEAN_FIELDS):
+    if field in {"epiphyses_closed", "mecasermin_laron_syndrome_confirmed", *PWS_FIELDS, *CKD_GH_BOOLEAN_FIELDS}:
         return value if type(value) is bool else None
-    if field in {"annual_growth_velocity_cm", "height_cm", "bone_age_years", *CKD_GH_NUMERIC_FIELDS}:
+    if field in {"annual_growth_velocity_cm", "height_cm", "bone_age_years", "pretreatment_annual_growth_velocity_cm", "height_percentile", "mecasermin_daily_dose_mcg_per_kg", *CKD_GH_NUMERIC_FIELDS}:
         if type(value) not in {int, float}:
             return None
         try:
@@ -56,6 +58,8 @@ def validated_growth_hormone_value(field: str, value: Any) -> Any:
         except (ValueError, OverflowError):
             return None
         if not isfinite(numeric) or numeric < 0 or (field == "height_cm" and numeric == 0):
+            return None
+        if field == "height_percentile" and numeric > 100:
             return None
         return numeric
     raise ValueError(f"Unknown growth-hormone field: {field}")

@@ -57,6 +57,7 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "route_discriminator",
         "ckd_growth_initiation_clinical_assessment", "ckd_growth_continuation_clinical_assessment",
         "ckd_parathyroid_status_reconciliation",
+        "mecasermin_source_version", "mecasermin_remaining_clinical_criteria",
         "drug_claim_date", "age", "weight_kg", "edss", "cancer_stage", "treatment_setting",
         "historical_rule_version", "effective_rule_version", "prior_taxane_anti_her2_cycles",
         "residual_invasive_disease", "treatment_cycle_count", "disease_progression",

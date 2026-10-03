@@ -8,14 +8,14 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
 vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
-const groups = { ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+const groups = { mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
   antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
@@ -102,7 +102,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
   const disabled = await submit();
   expect(disabled).not.toHaveProperty("drug_context");
-  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
     expect(disabled.materials[0]).not.toHaveProperty(field);
   }
   await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
@@ -207,4 +207,40 @@ it("does not describe the partial GH checks as continuation-only after adding CK
   expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
   expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation");
   expect(tr.claimValidator.clinical.hints.growthHormone).toContain("tam uygunluk sağlamaz");
+});
+
+it("keeps mecasermin facts and mcg dose separate from CKD mg dose without inferring source facts", async () => {
+  await change("mecasermin", "mecasermin_laron_syndrome_confirmed", "false");
+  await change("mecasermin", "pretreatment_annual_growth_velocity_cm", "0");
+  await change("growthHormone", "height_cm", "155");
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "120");
+  await change("ckdGrowthHormone", "gh_daily_dose_mg_per_kg", "0.045");
+  expect((await submit()).materials[0]).toMatchObject({
+    mecasermin_laron_syndrome_confirmed: false, pretreatment_annual_growth_velocity_cm: 0,
+    mecasermin_daily_dose_mcg_per_kg: 120, gh_daily_dose_mg_per_kg: 0.045,
+    height_percentile: null, gh_treatment_phase: null, gh_height_reference_sex: null,
+  });
+  // A dose above the clinical ceiling must be evaluated, not erased or converted.
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "120.001");
+  expect((await submit()).materials[0].mecasermin_daily_dose_mcg_per_kg).toBe(120.001);
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "0");
+  expect((await submit()).materials[0].mecasermin_daily_dose_mcg_per_kg).toBe(0);
+  await change("mecasermin", "mecasermin_daily_dose_mcg_per_kg", "");
+  await change("mecasermin", "mecasermin_laron_syndrome_confirmed", "");
+  expect((await submit()).materials[0]).toMatchObject({
+    mecasermin_daily_dose_mcg_per_kg: null, mecasermin_laron_syndrome_confirmed: null,
+    gh_daily_dose_mg_per_kg: 0.045,
+  });
+});
+
+it.each([["0", 0], ["100", 100], ["100.01", null], ["-0.01", null], ["", null]])(
+  "bounds recorded height percentile %s without calculating it from height", async (input, expected) => {
+    await change("mecasermin", "height_percentile", input);
+    expect((await submit()).materials[0].height_percentile).toBe(expected);
+  },
+);
+
+it("keeps mecasermin facts unknown without deriving percentile from recorded height", async () => {
+  const material = (await submit()).materials[0];
+  for (const field of mecaserminFields) expect(material[field.name]).toBeNull();
 });

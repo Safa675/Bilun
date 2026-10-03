@@ -38,6 +38,13 @@ export const ckdGrowthHormoneFields = [
   { name: "gh_daily_dose_mg_per_kg", kind: "number" },
 ] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
 
+export const mecaserminFields = [
+  { name: "mecasermin_laron_syndrome_confirmed", kind: "boolean" },
+  { name: "pretreatment_annual_growth_velocity_cm", kind: "number" },
+  { name: "height_percentile", kind: "number", max: 100 },
+  { name: "mecasermin_daily_dose_mcg_per_kg", kind: "number" },
+] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
+
 export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number): number | null {
   if (!value.trim()) return null;
   const number = Number(value);
@@ -55,6 +62,7 @@ export const clinicalReviewFields = [
   "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
   "exception_path_requires_review", "adult_path_requires_review", "six_month_edss_stop",
   "ckd_growth_initiation_clinical_assessment", "ckd_growth_continuation_clinical_assessment", "ckd_parathyroid_status_reconciliation",
+  "mecasermin_source_version", "mecasermin_remaining_clinical_criteria",
 ] as const;
 
 export const smaFields = [
@@ -146,7 +154,7 @@ export function clinicalMissingInputLabel(field: string, t: (key: string) => str
     const groupLabel = t(`sections.claimValidator.clinical.groups.${groups[root]}`);
     return detail ? `${groupLabel}: ${t(`sections.claimValidator.clinical.fields.${detail}`)}` : groupLabel;
   }
-  if ([...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields].some(row => row.name === root) || clinicalReviewFields.some(name => name === root)) {
+  if ([...growthHormoneFields, ...praderWilliFields, ...ckdGrowthHormoneFields, ...mecaserminFields].some(row => row.name === root) || clinicalReviewFields.some(name => name === root)) {
     return t(`sections.claimValidator.clinical.fields.${root}`);
   }
   return null;

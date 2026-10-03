@@ -44,6 +44,17 @@
         "gh_patient_group": { "type": "string", "enum": ["pediatric", "adult"] },
         "gh_treatment_phase": { "type": "string", "enum": ["initiation", "continuation"] },
         "ckd_growth_hormone_protocol": { "type": "string", "enum": ["ckd_somatropin_v1"] },
+        "mecasermin_source_scope": { "type": "string", "const": "mecasermin_laron_v1" },
+        "mecasermin_source_authority": {
+          "type": "object", "required": ["legal_valid_from", "known_as_of_dates", "coverage_kind"],
+          "additionalProperties": false,
+          "properties": {
+            "legal_valid_from": { "type": "null" },
+            "known_as_of_dates": { "type": "array", "uniqueItems": true, "minItems": 1,
+              "items": { "type": "string", "format": "date" } },
+            "coverage_kind": { "const": "verified_snapshot_dates_only" }
+          }
+        },
         "pws_continuation_protocol": { "type": "string", "enum": ["pws_somatropin_v1"] },
         "report_duration_by_phase": {
           "type": "object", "required": ["initiation", "continuation"], "additionalProperties": false,

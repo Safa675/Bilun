@@ -1,0 +1,111 @@
+"""Mecasermin stop checks on verified snapshot dates, never invented legal intervals."""
+from __future__ import annotations
+
+from datetime import date
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any
+
+from ...claims.growth_hormone import validated_growth_hormone_value
+
+if TYPE_CHECKING:
+    from ...claims.models import DrugClaimLine
+
+MECASERMIN_SCOPE = "mecasermin_laron_v1"
+_FIELDS = ("epiphyses_closed", "annual_growth_velocity_cm", "pretreatment_annual_growth_velocity_cm",
+           "height_cm", "gh_height_reference_sex", "height_percentile")
+
+
+def _review(rule: dict[str, Any], missing: list[str], message: str) -> dict[str, Any]:
+    phase_inputs = (["mecasermin_daily_dose_mcg_per_kg"] if rule.get("gh_treatment_phase") == "initiation"
+                    else list(_FIELDS))
+    return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+            "violation_kind": "needs_growth_hormone_verification", "severity": "review",
+            "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed", "gh_treatment_phase", *phase_inputs],
+            "missing_inputs": missing, "message_tr": message}
+
+
+def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+    if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
+        return None
+    authority = rule.get("mecasermin_source_authority")
+    if not isinstance(authority, dict):
+        authority = {}
+    known_dates = authority.get("known_as_of_dates")
+    when = drug_line.drug_claim_date
+    if type(when) is not date:
+        return _review(rule, ["drug_claim_date"], "Mecasermin hizmet tarihi açıkça belirtilmeli; "
+                       "tarih yerine bugünün tarihi kullanılamaz (§4.2.6.B).")
+    # Matching a verified source snapshot is deliberately not an enactment date
+    # or a claim about any unreviewed date between / outside the snapshots.
+    if ("legal_valid_from" not in authority or authority["legal_valid_from"] is not None
+        or authority.get("coverage_kind") != "verified_snapshot_dates_only"
+        or not isinstance(known_dates, list) or not all(isinstance(value, str) for value in known_dates)
+        or when.isoformat() not in known_dates):
+        return _review(rule, ["mecasermin_source_version"], "Mecasermin için bu hizmet gününe uygun "
+                       "kaynak sürümü doğrulanmalı. Mevcut kontrol yalnızca 29.08.2026 ve 02.10.2026 "
+                       "kaynak günlerini kapsar; bu tarihler yasal yürürlük başlangıcı sayılmaz (§4.2.6.B-3).")
+    missing = []
+    if validated_growth_hormone_value("mecasermin_laron_syndrome_confirmed", drug_line.mecasermin_laron_syndrome_confirmed) is not True:
+        missing.append("mecasermin_laron_syndrome_confirmed")
+    if validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase) is None:
+        missing.append("gh_treatment_phase")
+    if missing:
+        return _review(rule, missing, "Laron sendromu ve tedavi aşaması açıkça doğrulanmalı; "
+                       "E34.3 tanı kodundan veya diğer ölçümlerden çıkarılamaz (§4.2.6.B).")
+    return None
+
+
+def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any] | None:
+    if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
+        return None
+    precondition = evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line)
+    if precondition is not None:
+        return precondition
+    if drug_line.gh_treatment_phase != "continuation":
+        dose = validated_growth_hormone_value(
+            "mecasermin_daily_dose_mcg_per_kg", drug_line.mecasermin_daily_dose_mcg_per_kg)
+        if dose is not None and dose > 120:
+            return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+                    "violation_kind": "mecasermin_initial_dose_exceeded", "severity": "error",
+                    "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed",
+                                        "gh_treatment_phase", "mecasermin_daily_dose_mcg_per_kg"],
+                    "missing_inputs": [], "message_tr": "Mecasermin başlangıç dozu kaynakta verilen "
+                    f"120 mcg/kg/gün üst sınırını aşıyor (kayıtlı {dose:g} mcg/kg/gün); kontrol "
+                    f"{drug_line.drug_claim_date.isoformat()} kaynak gününe bağlıdır (§4.2.6.B-1(2))."}
+        missing = ["mecasermin_remaining_clinical_criteria"]
+        if dose is None:
+            missing.append("mecasermin_daily_dose_mcg_per_kg")
+        return _review(rule, missing, "Mecasermin başlangıcına ilişkin klinik ve izlem "
+                       "koşulları ayrıca değerlendirilmelidir; doz üst sınırı kontrolü tek başına "
+                       "uygunluk göstermez (§4.2.6.B-1).")
+    values = {field: validated_growth_hormone_value(field, getattr(drug_line, field)) for field in _FIELDS}
+    stopped = []
+    if values["epiphyses_closed"] is True:
+        stopped.append("epiphyses_closed")
+    current = values["annual_growth_velocity_cm"]
+    baseline = values["pretreatment_annual_growth_velocity_cm"]
+    if current is not None and baseline is not None and Decimal(str(current)) < Decimal(str(baseline)) + Decimal("2"):
+        stopped.append("growth_velocity_gain_under_2_cm_per_year")
+    limit = {"female": 155, "male": 165}.get(values["gh_height_reference_sex"])
+    if limit is not None and values["height_cm"] is not None and values["height_cm"] >= limit:
+        stopped.append("height_cm")
+    if values["height_percentile"] is not None and values["height_percentile"] >= 25:
+        stopped.append("height_percentile")
+    if stopped:
+        labels = {"epiphyses_closed": "epifiz hattının kapanması",
+                  "growth_velocity_gain_under_2_cm_per_year": "yıllık büyüme hızı artışının tedavi öncesine göre 2 cm altında kalması",
+                  "height_cm": f"boyun {limit} cm veya üzerinde olması",
+                  "height_percentile": "boyun 25. persentile ulaşması veya geçmesi"}
+        return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+                "violation_kind": "growth_hormone_continuation_stop", "severity": "error",
+                "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed", "gh_treatment_phase", *_FIELDS],
+                "missing_inputs": [], "growth_hormone_stop_criteria": stopped,
+                "message_tr": "Mecasermin devam tedavisinde sonlandırma kriteri mevcut "
+                              f"({'; '.join(labels[field] for field in stopped)}). Kontrol doğrulanan "
+                              f"{drug_line.drug_claim_date.isoformat()} kaynak gününe bağlıdır; "
+                              "geri ödeme uygunluğu uzman incelemesi gerektirir (§4.2.6.B-3)."}
+    missing = [field for field, value in values.items() if value is None]
+    missing.append("mecasermin_remaining_clinical_criteria")
+    return _review(rule, missing, "Mecasermin devamında izlem, radyolojik epifiz belgesi, rapor ve "
+                   "diğer klinik koşullar ayrıca doğrulanmalı; negatif sonlandırma kontrolü tek "
+                   "başına geri ödeme uygunluğu göstermez (§4.2.6.B-2/B-3).")

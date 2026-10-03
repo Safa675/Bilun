@@ -21024,11 +21024,8 @@
       "sut_section": "4.2.6.B-2",
       "drug_names": [
         "mecasermin",
-        "rhigf",
-        "rh igf",
-        "igf-1",
-        "igf1",
-        "increlex"
+        "increlex",
+        "rhigf-i"
       ],
       "icd10_ranges": [
         "E34.31",
@@ -21036,25 +21033,47 @@
       ],
       "message_tr": "Laron sendromu rhIGF-I (mecasermin) devam tedavisi — epifiz hatları açık hastalarda yılda bir yenilenen sağlık kurulu raporu gerekir (§4.2.6.B-2).",
       "gate_b_sources": [
-        "4.2.6.B-2.(1)"
+        "4.2.6.B-2.(1)",
+        "4.2.6.B.(1)",
+        "4.2.6.B-3.(1)#f26d9b57",
+        "4.2.6.B-3#dde3c8f6",
+        "4.2.6.B-3#11e1f077",
+        "4.2.6.B-3#de2f2b31",
+        "4.2.6.B-3.ç#269f3195"
       ],
       "report_required": true,
       "report_specialties": [
         "çocuk endokrinoloji",
         "çocuk endokrinolojisi ve metabolizma"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "gh_treatment_phase": "continuation",
+      "mecasermin_source_scope": "mecasermin_laron_v1",
+      "mecasermin_source_authority": {
+        "legal_valid_from": null,
+        "known_as_of_dates": [
+          "2026-08-29",
+          "2026-10-02"
+        ],
+        "coverage_kind": "verified_snapshot_dates_only"
+      },
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/mecasermin_known_as_of_continuation.json",
+      "prescriber_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "source_fragment_keys": [
+        "4.2.6.B-3#46acd2ab"
+      ]
     },
     {
       "rule_id": "4.2.6.laron_mecasermin_initiation_board",
       "sut_section": "4.2.6.B",
       "drug_names": [
         "mecasermin",
-        "rhigf",
-        "rh igf",
-        "igf-1",
-        "igf1",
-        "increlex"
+        "increlex",
+        "rhigf-i"
       ],
       "icd10_ranges": [
         "E34.31",
@@ -21063,7 +21082,8 @@
       "report_required": true,
       "message_tr": "Laron sendromu rhIGF-I (mecasermin) başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ve reçete gerekir (§4.2.6.B).",
       "gate_b_sources": [
-        "4.2.6.B.(1)"
+        "4.2.6.B.(1)",
+        "4.2.6.B-1.(2)#df3e5cd0"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -21071,7 +21091,19 @@
       ],
       "prescriber_specialties": [
         "çocuk endokrinoloji"
-      ]
+      ],
+      "gh_treatment_phase": "initiation",
+      "mecasermin_source_scope": "mecasermin_laron_v1",
+      "mecasermin_source_authority": {
+        "legal_valid_from": null,
+        "known_as_of_dates": [
+          "2026-08-29",
+          "2026-10-02"
+        ],
+        "coverage_kind": "verified_snapshot_dates_only"
+      },
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/mecasermin_known_as_of_continuation.json"
     },
     {
       "rule_id": "4.2.6.pediatric_gh_monitoring_board",

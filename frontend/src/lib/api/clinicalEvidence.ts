@@ -1,5 +1,9 @@
 /** Explicit source-specific facts. Null never asserts a negative clinical finding. */
 export interface SutGrowthHormoneEvidence {
+  mecasermin_laron_syndrome_confirmed?: boolean | null;
+  pretreatment_annual_growth_velocity_cm?: number | null;
+  height_percentile?: number | null;
+  mecasermin_daily_dose_mcg_per_kg?: number | null;
   ckd_growth_disorder_confirmed?: boolean | null;
   ckd_persistent_severe_secondary_hyperparathyroidism?: boolean | null;
   ckd_proliferative_or_severe_nonproliferative_retinopathy?: boolean | null;

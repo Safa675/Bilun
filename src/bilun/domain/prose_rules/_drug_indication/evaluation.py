@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from .prader_willi import evaluate_pws_preconditions
 from .ckd_growth_hormone import evaluate_ckd_gh_preconditions
+from .mecasermin import evaluate_mecasermin_preconditions
 
 from .matching import (
     _collect_icd10_codes,
@@ -256,7 +257,8 @@ def evaluate_drug_indication_line_with_rules(
     rule = resolution.get("selected_rule")
     if violation is None and rule is not None:
         precondition_hit = (evaluate_pws_preconditions(rule=rule, drug_line=drug_line)
-                            or evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line))
+                            or evaluate_ckd_gh_preconditions(rule=rule, drug_line=drug_line)
+                            or evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line))
         report_hit = (None if precondition_hit is not None else
                       _evaluate_report_requirement(rule=rule, drug_line=drug_line, claim=claim))
         if precondition_hit is not None:
