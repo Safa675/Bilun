@@ -248,6 +248,7 @@ const sections = {
           "fail": "Requirement not met"
         },
         "sets": {
+          "followup_source_constraints": "Treatment response and annual reassessment conditions",
           "sma_safety_2025": "SMA safety restrictions",
           "antifungal_source_constraints": "Antifungal source conditions",
           "renal_source_constraints": "Renal source conditions",
@@ -256,6 +257,7 @@ const sections = {
         }
       },
       "groups": {
+        "followup": "Treatment response and reassessment evidence",
         "enteral": "Enteral nutrition evidence",
         "ravulizumab": "Ravulizumab evidence",
 
@@ -268,6 +270,7 @@ const sections = {
         "renal": "Renal evidence"
       },
       "hints": {
+        "followup": "Enter recorded scores and report dates. Document 16 completed treatment weeks explicitly; elapsed calendar time never supplies that fact. FVC values remain in percent-predicted units.",
         "enteral": "Choose the documented malnutrition or exempt pathway. Report authorship is separate from the prescriber; dates remain explicit.",
         "ravulizumab": "Choose the documented indication. Enter completed treatment duration without inferring months from dates; EDSS must be a recorded score.",
 
@@ -280,6 +283,23 @@ const sections = {
         "renal": "Use documented source-unit values and treatment checkpoints. Six-month albumin is the historical checkpoint, not the current result."
       },
       "fields": {
+        "treatment_start_date": "Treatment start date",
+        "baseline_assessment_date": "Baseline score assessment date",
+        "response_assessment_date": "Documented week-16 response assessment date",
+        "week16_checkpoint_documented": "Scores document 16 completed treatment weeks",
+        "baseline_easi": "Recorded baseline EASI (0–72)",
+        "response_easi": "EASI at the week-16 checkpoint (0–72)",
+        "baseline_dlqi": "Recorded baseline DLQI (0–30)",
+        "response_dlqi": "DLQI at the week-16 checkpoint (0–30)",
+        "baseline_pruritus_nrs": "Recorded baseline Pruritus NRS (0–10)",
+        "response_pruritus_nrs": "Pruritus NRS at week 16 (0–10)",
+        "previous_report_date": "Previous board report date",
+        "current_report_date": "Current board report date",
+        "previous_fvc_percent_predicted": "Previous report FVC (% predicted)",
+        "current_fvc_percent_predicted": "Current report FVC (% predicted)",
+        "fvc_assessment_outside_exacerbation": "FVC comparison measured outside exacerbation",
+        "report_documents_fvc_response": "Report documents the FVC continuation response",
+        "documented_16_week_response": "Documented response after 16 completed treatment weeks",
         "pediatric": "Documented pediatric patient status",
         "malnutrition_path": "Documented nutrition pathway",
         "neurological_disease": "Neurological disease",
@@ -408,6 +428,9 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "EK-4/E requirements for other itraconazole forms"
       },
       "options": {
+        "atopic_dermatitis": "Atopic dermatitis",
+        "progressive_fibrosing_ild": "Progressive fibrosing interstitial lung disease",
+        "systemic_sclerosis_ild": "Systemic-sclerosis-associated interstitial lung disease",
         "renewal": "Report renewal",
         "malnutrition": "Malnutrition pathway",
         "exemption": "Exempt pathway",

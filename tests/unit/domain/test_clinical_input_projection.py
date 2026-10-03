@@ -5,7 +5,7 @@ import pytest
 
 from src.bilun.domain.claim_validation_v2 import _drug_missing_inputs
 from src.bilun.domain.claims.clinical_evidence import (
-    AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+    AntifungalEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
 )
 from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.validation_contract import ValidationAdvisory
@@ -16,7 +16,7 @@ pytestmark = pytest.mark.unit
 def test_every_declared_clinical_field_survives_projection_and_public_schema():
     missing = {*GROWTH_HORMONE_INPUT_FIELDS, "historical_sut_version"}
     for prefix, cls in [("sma_evidence", SmaEvidence), ("antifungal_evidence", AntifungalEvidence),
-                        ("renal_evidence", RenalEvidence), ("enteral_evidence", EnteralEvidence),
+                        ("renal_evidence", RenalEvidence), ("followup_evidence", FollowupEvidence), ("enteral_evidence", EnteralEvidence),
                         ("ravulizumab_evidence", RavulizumabEvidence)]:
         missing.add(prefix)
         missing.update(f"{prefix}.{field.name}" for field in fields(cls))
@@ -31,6 +31,7 @@ def test_every_declared_clinical_field_survives_projection_and_public_schema():
 
 
 @pytest.mark.parametrize("identifier", [
+    "followup_evidence.documented_16_week_response", "followup_evidence.single_supported_medicine_family",
     "verified_source_for_service_date", "remaining_sut_clinical_criteria",
     "micafungin_prophylaxis_route", "itraconazole_source_neutrophil_unit_verification",
     "itraconazole_non_solution_EK4E_requirements", "renal_evidence.source_supported_treatment_phase",

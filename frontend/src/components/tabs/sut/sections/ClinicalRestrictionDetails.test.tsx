@@ -63,3 +63,15 @@ it("labels the ravulizumab computed EDSS stop check without exposing it as a use
   expect(english).not.toContain("<input");
   expect(english).not.toContain("Fully eligible");
 });
+
+it("renders response prerequisites and a limited follow-up check without a payment conclusion", () => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "followup_source_constraints",
+    checks: [{ field: "followup_evidence.response_easi", status: "pass" }],
+    missing_inputs: ["followup_evidence.documented_16_week_response"], source_refs: ["4.2.57.(2)#af1ccf61"] };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />);
+  expect(html).toContain("Treatment response and annual reassessment conditions");
+  expect(html).toContain("EASI at the week-16 checkpoint");
+  expect(html).toContain("Documented response after 16 completed treatment weeks");
+  expect(html).toContain("do not establish full clinical or reimbursement eligibility");
+  expect(html).not.toContain("sections.claimValidator.");
+});

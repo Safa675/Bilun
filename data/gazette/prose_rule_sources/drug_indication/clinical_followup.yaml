@@ -1,0 +1,36 @@
+section_id: '4.2'
+rules:
+- rule_id: 4.2.57.clinical_16_week_response
+  sut_section: 4.2.57
+  drug_names:
+  - dupilumab
+  gate_b_sources:
+  - 4.2.57.(2)#af1ccf61
+  - 4.2.57.(1)#d711a1b9
+  - 4.2.57.(2)#62f546f9
+  - 4.2.57.(3)#6147427c
+  clinical_constraint_set: followup_source_constraints
+  clinical_constraint_drugs:
+  - dupilumab
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary dated continuation checkpoints only; no diagnosis/payment route. Historical original
+    effective date unverified; exact2026-10-02 snapshot review only.
+  message_tr: Tedaviye devam için kaynakta belirtilen yanıt ve yeniden değerlendirme koşulları doğrulanmalıdır.
+- rule_id: 4.2.46.clinical_annual_reassessment
+  sut_section: 4.2.46
+  drug_names:
+  - nintedanib
+  gate_b_sources:
+  - 4.2.46.B.(3)#cac79ad7
+  - 4.2.46.B.a#89e9c50d
+  - 4.2.46.B.b#aa27b4a1
+  - 4.2.46.C.(3)#cac79ad7
+  - 4.2.46.C.a#89e9c50d
+  - 4.2.46.C.b#aa27b4a1
+  clinical_constraint_set: followup_source_constraints
+  clinical_constraint_drugs:
+  - nintedanib
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary dated continuation checkpoints only; no diagnosis/payment route. Historical original
+    effective date unverified; exact2026-10-02 snapshot review only.
+  message_tr: Tedaviye devam için kaynakta belirtilen yanıt ve yeniden değerlendirme koşulları doğrulanmalıdır.

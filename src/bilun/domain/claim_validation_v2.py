@@ -22,7 +22,7 @@ from src.bilun.domain.billing.drug_clinical_evidence import (
 )
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
 from src.bilun.domain.claims.clinical_evidence import (
-    AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+    AntifungalEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
 )
 from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
@@ -76,10 +76,11 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
     }
     clinical = {name: {field.name for field in fields(model)} for name, model in (
         ("sma_evidence", SmaEvidence), ("antifungal_evidence", AntifungalEvidence),
-        ("renal_evidence", RenalEvidence),
+        ("renal_evidence", RenalEvidence), ("followup_evidence", FollowupEvidence),
         ("enteral_evidence", EnteralEvidence), ("ravulizumab_evidence", RavulizumabEvidence),
     )}
     clinical["enteral_evidence"].update({"exception_path_requires_review", "adult_path_requires_review"})
+    clinical["followup_evidence"].update({"documented_16_week_response", "single_supported_medicine_family"})
     clinical["antifungal_evidence"].add("single_supported_medicine_family")
     clinical["renal_evidence"].update({
         "source_supported_treatment_phase", "source_continuation_checkpoint",

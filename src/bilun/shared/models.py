@@ -10,7 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, field_validator
 
 from src.bilun.domain.claims.clinical_evidence import (
-    AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
+    AntifungalEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
 )
 
 
@@ -94,6 +94,7 @@ class MaterialItem(BaseModel):
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None
     renal_evidence: RenalEvidence | None = None
+    followup_evidence: FollowupEvidence | None = None
     enteral_evidence: EnteralEvidence | None = None
     ravulizumab_evidence: RavulizumabEvidence | None = None
 
@@ -106,6 +107,11 @@ class MaterialItem(BaseModel):
     @classmethod
     def parse_ravulizumab_evidence(cls, value):
         return parse_clinical_evidence(value, RavulizumabEvidence)
+
+    @field_validator("followup_evidence", mode="before")
+    @classmethod
+    def parse_followup_evidence(cls, value):
+        return parse_clinical_evidence(value, FollowupEvidence)
 
     @field_validator('sma_evidence', mode='before')
     @classmethod

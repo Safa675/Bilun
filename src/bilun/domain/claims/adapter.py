@@ -29,7 +29,7 @@ from __future__ import annotations
 from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
 
 from src.bilun.domain.claims.clinical_evidence import (
-    AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
+    AntifungalEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
     parse_clinical_evidence,
 )
 
@@ -250,6 +250,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     sma_evidence=parse_clinical_evidence(mat.get("sma_evidence"), SmaEvidence),
                     antifungal_evidence=parse_clinical_evidence(mat.get("antifungal_evidence"), AntifungalEvidence),
                     renal_evidence=parse_clinical_evidence(mat.get("renal_evidence"), RenalEvidence),
+                    followup_evidence=parse_clinical_evidence(mat.get("followup_evidence"), FollowupEvidence),
                     enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
                     ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
                 )

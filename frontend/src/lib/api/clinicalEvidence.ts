@@ -145,3 +145,26 @@ export interface SutClinicalRestriction {
   checks_truncated: boolean;
   source_refs_truncated: boolean;
 }
+
+export interface SutFollowupEvidence {
+  applies_on?: string | null;
+  assessment_date?: string | null;
+  phase?: "continuation" | "initiation" | "restart" | null;
+  indication?: "atopic_dermatitis" | "other" | "progressive_fibrosing_ild" | "systemic_sclerosis_ild" | null;
+  treatment_start_date?: string | null;
+  baseline_assessment_date?: string | null;
+  response_assessment_date?: string | null;
+  week16_checkpoint_documented?: boolean | null;
+  baseline_easi?: number | null;
+  response_easi?: number | null;
+  baseline_dlqi?: number | null;
+  response_dlqi?: number | null;
+  baseline_pruritus_nrs?: number | null;
+  response_pruritus_nrs?: number | null;
+  previous_report_date?: string | null;
+  current_report_date?: string | null;
+  previous_fvc_percent_predicted?: number | null;
+  current_fvc_percent_predicted?: number | null;
+  fvc_assessment_outside_exacerbation?: boolean | null;
+  report_documents_fvc_response?: boolean | null;
+}

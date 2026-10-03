@@ -8,14 +8,14 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
 vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
-const groups = { mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+const groups = { followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
   antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
@@ -47,6 +47,7 @@ it("leaves every clinical input unknown until explicitly entered", async () => {
     }
   }
   const payload = await submit();
+  expect(payload.materials[0].followup_evidence).toBeNull();
   expect(payload.materials[0]).toMatchObject({ gh_patient_group: null, gh_height_reference_sex: null,
     gh_treatment_phase: null, epiphyses_closed: null, annual_growth_velocity_cm: null,
     height_cm: null, bone_age_years: null, sma_evidence: null, antifungal_evidence: null, renal_evidence: null });
@@ -103,7 +104,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
   const disabled = await submit();
   expect(disabled).not.toHaveProperty("drug_context");
-  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
     expect(disabled.materials[0]).not.toHaveProperty(field);
   }
   await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
@@ -129,7 +130,7 @@ describe("clinical contract metadata", () => {
   });
   it("covers every exact family field declared by the backend contract", () => {
     const source = readFileSync(resolve(process.cwd(), "../src/bilun/domain/claims/clinical_evidence.py"), "utf8");
-    for (const [cls, fields] of [["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
+    for (const [cls, fields] of [["FollowupEvidence", followupFields], ["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
       const body = source.split(`class ${cls}:`)[1].split("\n\n")[0];
       const names = [...body.matchAll(/^    (\w+): (?:date|bool|float|str) \| None/gm)].map(match => match[1]);
       expect(fields.map(row => row.name).sort(), cls).toEqual(names.sort());
@@ -260,4 +261,51 @@ it("preserves the recorded initiation obesity flag without deriving it from othe
   expect(en.claimValidator.clinical.hints.praderWilli).toContain("initiation-only");
   expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
   expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation criteria");
+});
+
+it("records follow-up scores and completed-treatment checkpoint without assuming calendar continuity", async () => {
+  await change("followup", "phase", "continuation");
+  await change("followup", "indication", "atopic_dermatitis");
+  await change("followup", "applies_on", "2026-10-02");
+  await change("followup", "treatment_start_date", "2026-06-12");
+  await change("followup", "baseline_assessment_date", "2026-06-12");
+  await change("followup", "response_assessment_date", "2026-10-02");
+  await change("followup", "baseline_easi", "40");
+  await change("followup", "response_easi", "20");
+  expect((await submit()).materials[0].followup_evidence).not.toHaveProperty("week16_checkpoint_documented");
+  await change("followup", "week16_checkpoint_documented", "true");
+  await change("followup", "response_dlqi", "0");
+  const payload = await submit();
+  expect(payload.materials[0].followup_evidence).toMatchObject({ phase: "continuation", indication: "atopic_dermatitis",
+    applies_on: "2026-10-02", treatment_start_date: "2026-06-12", baseline_assessment_date: "2026-06-12",
+    response_assessment_date: "2026-10-02", baseline_easi: 40, response_easi: 20, response_dlqi: 0,
+    week16_checkpoint_documented: true });
+  expect(payload.drug_context?.service_date).toBeNull();
+  await change("followup", "week16_checkpoint_documented", "false");
+  expect((await submit()).materials[0].followup_evidence?.week16_checkpoint_documented).toBe(false);
+  await change("followup", "week16_checkpoint_documented", "");
+  expect((await submit()).materials[0].followup_evidence?.week16_checkpoint_documented).toBeNull();
+});
+
+it.each([["baseline_easi", 72], ["response_easi", 72], ["baseline_dlqi", 30], ["response_dlqi", 30],
+  ["baseline_pruritus_nrs", 10], ["response_pruritus_nrs", 10]] as const)("honors inclusive %s instrument bounds", async (field, maximum) => {
+  await change("followup", field, String(maximum));
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBe(maximum);
+  await change("followup", field, String(maximum + 0.01));
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBeNull();
+  await change("followup", field, "0");
+  expect((await submit()).materials[0].followup_evidence?.[field]).toBe(0);
+});
+
+it("keeps FVC percent-predicted values and explicit out-of-attack evidence separate", async () => {
+  await change("followup", "indication", "progressive_fibrosing_ild");
+  await change("followup", "previous_report_date", "2025-10-02");
+  await change("followup", "current_report_date", "2026-10-02");
+  await change("followup", "previous_fvc_percent_predicted", "110");
+  await change("followup", "current_fvc_percent_predicted", "99");
+  await change("followup", "fvc_assessment_outside_exacerbation", "false");
+  await change("followup", "report_documents_fvc_response", "false");
+  expect((await submit()).materials[0].followup_evidence).toMatchObject({ previous_report_date: "2025-10-02",
+    current_report_date: "2026-10-02", previous_fvc_percent_predicted: 110, current_fvc_percent_predicted: 99,
+    fvc_assessment_outside_exacerbation: false, report_documents_fvc_response: false });
 });

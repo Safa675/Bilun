@@ -1,0 +1,313 @@
+{
+  "verification_status": "ai_generated_pending_review",
+  "verified_source_date": "2026-10-02",
+  "historical_effective_lower_bound": "unverified",
+  "clauses": [
+    {
+      "clause_key": "4.2.46.B#64fedb67",
+      "content_hash": "64fedb67",
+      "paragraph_index": 7259,
+      "in_force_text": "4.2.46.B. Progresif fenotipli diğer kronik fibrozan interstisyel akciğer hastalıklarında nintedanib kullanım ilkeleri;",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.(1)#7626d753",
+      "content_hash": "7626d753",
+      "paragraph_index": 7260,
+      "in_force_text": "(1) Karbonmonoksit difüzyon kapasitesi (DLCO) ≥%30, Forced Vital Kapasitesi (FVC) ≥%50 ve toraks yüksek çözünürlüklü bilgisayarlı tomografi (HRCT) ile %10’dan fazla fibrozis alanı varlığı gösteren atak dışında aşağıda tanımlanan progresif pulmoner fibrozis kriterlerinden en az ikisini karşılayan progresif fenotipli diğer kronik fibrozan interstisyel akciğer hastalarında nintedanib ile tedaviye başlanması halinde bedeli Kurumca karşılanır:",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.a#0bc79e47",
+      "content_hash": "0bc79e47",
+      "paragraph_index": 7261,
+      "in_force_text": "a) Solunum semptomlarında kötüleşme,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.b#5aa04723",
+      "content_hash": "5aa04723",
+      "paragraph_index": 7262,
+      "in_force_text": "b) Forced Vital Kapasitesi (FVC)’nde %5 ve üzerinde ve/veya Karbonmonoksit difüzyon kapasitesi (DLCO)’nde %10 ve üzerinde düşüş olması,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.c#409eb423",
+      "content_hash": "409eb423",
+      "paragraph_index": 7263,
+      "in_force_text": "c) Radyolojik progresyon; Bir önceki görüntüleme ile kıyaslamalı değerlendirme sonucu sağlık kurulu raporunda belirtilmelidir. Aşağıdaki Radyolojik Progresyon Kriterlerinden en az birinin gösterilmesi gerekmektedir:",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#4b1a9567",
+      "content_hash": "4b1a9567",
+      "paragraph_index": 7264,
+      "in_force_text": "i. traksiyon bronşiektazisi ve bronşiolektazisi yaygınlığı veya şiddetinde artış,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#b965d91c",
+      "content_hash": "b965d91c",
+      "paragraph_index": 7265,
+      "in_force_text": "ii. yeni gelişen buzlu cam alanları veya traksiyon bronşiektazileri,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#a36aba72",
+      "content_hash": "a36aba72",
+      "paragraph_index": 7266,
+      "in_force_text": "iii. yeni gelişen ince retikülasyon,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#7186284b",
+      "content_hash": "7186284b",
+      "paragraph_index": 7267,
+      "in_force_text": "iv. retiküler anormalliğin yaygınlığı veya yoğunluğunda artış,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#90f4ebcc",
+      "content_hash": "90f4ebcc",
+      "paragraph_index": 7268,
+      "in_force_text": "v. yeni gelişen veya artan bal peteği görünümü,",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B#55a462a0",
+      "content_hash": "55a462a0",
+      "paragraph_index": 7269,
+      "in_force_text": "vi. volüm kaybında artış.",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.(2)#857ead46",
+      "content_hash": "857ead46",
+      "paragraph_index": 7270,
+      "in_force_text": "(2) Bu durumların belirtildiği üçüncü basamak sağlık kurumlarında göğüs hastalıkları hekimlerince 1 yıl süreli sağlık kurulu raporuna dayanılarak göğüs hastalıkları uzman hekimlerince reçetelenmesi halinde Kurumca bedeli karşılanır. Sağlık kurulu raporunda DLCO, FVC değerlerinin tarihi ile HRCT görüntüleme raporunun tarihi belirtilmesi gerekmektedir.",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.(3)#cac79ad7",
+      "content_hash": "cac79ad7",
+      "paragraph_index": 7271,
+      "in_force_text": "(3) Hastalar her 12 ayda bir yeniden değerlendirilmelidir. Bu değerlendirmelerde;",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.a#89e9c50d",
+      "content_hash": "89e9c50d",
+      "paragraph_index": 7272,
+      "in_force_text": "a) FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olması ilaca yanıtsızlık olarak kabul edilir ve tedavi sonlandırılır.",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.B.b#aa27b4a1",
+      "content_hash": "aa27b4a1",
+      "paragraph_index": 7273,
+      "in_force_text": "b) Tedavinin devamı için düzenlenen raporlarda ilaç başlama kriterleri aranmaz. Tedavinin devamı için FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olmadığı her raporda belirtilmelidir.",
+      "section_id": "4.2.46.B"
+    },
+    {
+      "clause_key": "4.2.46.C#915c7f18",
+      "content_hash": "915c7f18",
+      "paragraph_index": 7274,
+      "in_force_text": "4.2.46.C. Sistemik skleroza bağlı interstisyel akciğer hastalarında nintedanib kullanım ilkeleri;",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.46.C.(1)#891395c0",
+      "content_hash": "891395c0",
+      "paragraph_index": 7275,
+      "in_force_text": "(1) Karbonmonoksit difüzyon kapasitesi (DLCO) ≥%30, Forced Vital Kapasitesi (FVC) ≥%50 ve toraks yüksek çözünürlüklü bilgisayarlı tomografi (HRCT) ile %10’dan fazla fibrozis alanı varlığı gösteren sistemik skleroza bağlı interstisyel akciğer hastalarında nintedanib ile tedaviye başlanması halinde bedeli Kurumca karşılanır.",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.46.C.(2)#9628a21f",
+      "content_hash": "9628a21f",
+      "paragraph_index": 7276,
+      "in_force_text": "(2) Bu durumların belirtildiği üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekimi ve en az bir göğüs hastalıkları uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna dayanılarak göğüs hastalıkları, romatoloji veya iç hastalıkları uzman hekimlerince reçetelenir. Sağlık kurulu raporunda DLCO, FVC değerlerinin tarihi ile HRCT görüntüleme raporunun tarihi belirtilmesi gerekmektedir.",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.46.C.(3)#cac79ad7",
+      "content_hash": "cac79ad7",
+      "paragraph_index": 7277,
+      "in_force_text": "(3) Hastalar her 12 ayda bir yeniden değerlendirilmelidir. Bu değerlendirmelerde;",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.46.C.a#89e9c50d",
+      "content_hash": "89e9c50d",
+      "paragraph_index": 7278,
+      "in_force_text": "a) FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olması ilaca yanıtsızlık olarak kabul edilir ve tedavi sonlandırılır.",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.46.C.b#aa27b4a1",
+      "content_hash": "aa27b4a1",
+      "paragraph_index": 7279,
+      "in_force_text": "b) Tedavinin devamı için düzenlenen raporlarda ilaç başlama kriterleri aranmaz. Tedavinin devamı için FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olmadığı her raporda belirtilmelidir.",
+      "section_id": "4.2.46.C"
+    },
+    {
+      "clause_key": "4.2.57#e7776d1a",
+      "content_hash": "e7776d1a",
+      "paragraph_index": 7493,
+      "in_force_text": "4.2.57- Dupilumab kullanım ilkeleri",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(1)#2ef9a68f",
+      "content_hash": "2ef9a68f",
+      "paragraph_index": 7494,
+      "in_force_text": "(1) Dupilumab orta/şiddetli atopik dermatitli hastalarda;",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.a#6774f221",
+      "content_hash": "6774f221",
+      "paragraph_index": 7495,
+      "in_force_text": "a) Abrositinib (Ek:RG- 26/04/2025- 32882/ 8 md. Yürürlük: 04/04/2025), barisitinib veya upadasitinib tedavilerinden en az birini 12 hafta süre ile kullanmış olmasına rağmen yanıt vermeyen veya bu tedavileri tolere edemeyen veya bu ilaçların kontrendike olduğu 18 yaş ve üzeri orta ve şiddetli atopik dermatitli hastalarda, bu durumların sağlık kurulu raporunda belirtilmesi koşuluyla tedaviye başlanması halinde bedelleri Kurumca karşılanır.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.b#21e99a4c",
+      "content_hash": "21e99a4c",
+      "paragraph_index": 7496,
+      "in_force_text": "b) Ancak iki aydan uzun süreli sistemik kortikosteroid ve siklosporin kullanımından yarar görmeyen veya bu ilaçları tolere edemeyen veya bu ilaçların kontrendike olduğu ve aşağıda belirtilen risk faktörlerinden en az birine sahip olan 18 yaş ve üzeri orta ve şiddetli atopik dermatitli hastalarda bu durumların sağlık kurulu raporunda belirtilmesi koşuluyla tedaviye Dupilumab ile başlanması halinde bedelleri Kurumca karşılanır.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(1)#8736ac46",
+      "content_hash": "8736ac46",
+      "paragraph_index": 7497,
+      "in_force_text": "1) Aktif veya latent tüberküloz enfeksiyonu,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(2)#4b75a101",
+      "content_hash": "4b75a101",
+      "paragraph_index": 7498,
+      "in_force_text": "2) Hepatit B veya C enfeksiyonu,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(3)#44e6b87b",
+      "content_hash": "44e6b87b",
+      "paragraph_index": 7499,
+      "in_force_text": "3) Son 5 yılda malignite hikayesi (non melanom deri kanseri hariç), veya artmış kanser riski",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(4)#7367c0e7",
+      "content_hash": "7367c0e7",
+      "paragraph_index": 7500,
+      "in_force_text": "4) HIV enfeksiyonu,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(5)#9f883f7a",
+      "content_hash": "9f883f7a",
+      "paragraph_index": 7501,
+      "in_force_text": "5) Karaciğer yetmezliği (Child Pugh C) veya böbrek yetmezliği (GFR <30),",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(6)#477b408a",
+      "content_hash": "477b408a",
+      "paragraph_index": 7502,
+      "in_force_text": "6) Arteriyel veya venöz tromboemboli öyküsü,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(7)#6abe5078",
+      "content_hash": "6abe5078",
+      "paragraph_index": 7503,
+      "in_force_text": "7) Tromboza eğilim ya da trombofili varlığı,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(8)#b3af643d",
+      "content_hash": "b3af643d",
+      "paragraph_index": 7504,
+      "in_force_text": "8) 65 yaş ve üzeri kişiler.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(2)#af1ccf61",
+      "content_hash": "af1ccf61",
+      "paragraph_index": 7505,
+      "in_force_text": "(2) 16 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre aşağıdaki kriterlerden en az birinin sağlanması durumunda tedaviye devam edilebilir;",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(1)#d711a1b9",
+      "content_hash": "d711a1b9",
+      "paragraph_index": 7506,
+      "in_force_text": "1) EASI skorunda en az %50 azalma,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(2)#62f546f9",
+      "content_hash": "62f546f9",
+      "paragraph_index": 7507,
+      "in_force_text": "2) Dermatoloji Yaşam Kalite İndeksinde en az 4 puanlık azalma,",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(3)#6147427c",
+      "content_hash": "6147427c",
+      "paragraph_index": 7508,
+      "in_force_text": "3) Pruritus NRS skorunda en az 3 puanlık düşüş.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57#c7562ab5",
+      "content_hash": "c7562ab5",
+      "paragraph_index": 7509,
+      "in_force_text": "Yukarıdaki kriterlerin hiçbirinin sağlanamaması durumu tedavide yanıtsızlık olarak değerlendirilir ve tedaviye son verilir.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(3)#122a9f29",
+      "content_hash": "122a9f29",
+      "paragraph_index": 7510,
+      "in_force_text": "(3) Üçüncü basamak resmi sağlık hizmet sunucularında, üç deri ve zührevi hastalıkları uzman hekiminin yer aldığı 4 ay süreli sağlık kurulu raporuna dayanılarak deri ve zührevi hastalıkları uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır. Upadasitinib, abrositinib (Ek:RG- 26/04/2025- 32882/ 8 md. Yürürlük: 04/04/2025), barisitinib ve dupilumab birlikte kullanılamaz.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57.(4)#2ee2f085",
+      "content_hash": "2ee2f085",
+      "paragraph_index": 7511,
+      "in_force_text": "(4) Dupilumab tedavisine yanıtsızlık durumunda dupilumab öncesinde kullanılmamış olması şartıyla abrositinib (Ek:RG- 26/04/2025- 32882/ 8 md. Yürürlük: 04/04/2025), barisitinib veya upadasitinib tedavilerinden herhangi birine geçilebilir.",
+      "section_id": "4.2.57"
+    },
+    {
+      "clause_key": "4.2.57#7942517d",
+      "content_hash": "7942517d",
+      "paragraph_index": 7512,
+      "in_force_text": "(Ek: RG- 04/09/2019- 30878/ 41 md. Yürürlük: 12/09/2019)",
+      "section_id": "4.2.57"
+    }
+  ],
+  "instrument_domains": {
+    "easi": {
+      "minimum": 0,
+      "maximum": 72,
+      "source_url": "https://www.homeforeczema.org/documents/easi-user-guide-dec-2016-v2.pdf"
+    },
+    "dlqi": {
+      "minimum": 0,
+      "maximum": 30,
+      "source_url": "https://www.cardiff.ac.uk/medicine/resources/quality-of-life-questionnaires/dermatology-life-quality-index"
+    },
+    "pruritus_nrs": {
+      "minimum": 0,
+      "maximum": 10,
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6850643/",
+      "corroboration_url": "https://www.homeforeczema.org/documents/home-xi-meeting-report.pdf"
+    },
+    "integer_only_restriction": "Not imposed; applicability to stored/aggregated scores has not been verified."
+  }
+}

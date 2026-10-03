@@ -6,6 +6,7 @@ from .clinical_enteral import evaluate_enteral_reports
 from .clinical_ravulizumab import evaluate_ravulizumab_continuation
 from .clinical_antifungal import evaluate_antifungal
 from .clinical_renal import evaluate_renal
+from .clinical_followup import evaluate_followup
 from .matching import _drug_name_matches
 
 
@@ -20,6 +21,8 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
         evaluations.append(evaluate_antifungal(line))
     if 'renal_source_constraints' in kinds:
         evaluations.append(evaluate_renal(line))
+    if 'followup_source_constraints' in kinds:
+        evaluations.append(evaluate_followup(line))
     if 'enteral_pediatric_reports_2026' in kinds:
         item = evaluate_enteral_reports(line, selected_rule_id)
         if item is not None:
@@ -75,7 +78,8 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
             'rule_id': source['constraint_set'],
             'selected_rule_id': source['constraint_set'],
             'sut_section': source.get('sut_section') or ('4.2.49' if source['constraint_set'].startswith('sma_')
-                            else '4.2.23' if source['constraint_set'].startswith('antifungal_') else '4.2.9'),
+                            else '4.2.23' if source['constraint_set'].startswith('antifungal_')
+                            else '4.2.9' if source['constraint_set'].startswith('renal_') else '4.2'),
             'violation_kind': 'clinical_restriction_not_met' if failed else 'needs_clinical_verification',
             'severity': 'error' if failed else 'review',
             'message_tr': ('Kaynakta belirtilen klinik kısıt sağlanmıyor; diğer geri ödeme koşulları ayrıca değerlendirilmelidir.'

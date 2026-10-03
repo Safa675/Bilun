@@ -131,7 +131,35 @@ class RavulizumabEvidence:
     edss: float | None = None
     edss_in_report: bool | None = None
 
+@dataclass(frozen=True)
+class FollowupEvidence:
+    applies_on: date | None = None
+    assessment_date: date | None = None
+    phase: str | None = None
+    indication: str | None = None
+    treatment_start_date: date | None = None
+    baseline_assessment_date: date | None = None
+    response_assessment_date: date | None = None
+    week16_checkpoint_documented: bool | None = None
+    baseline_easi: float | None = None
+    response_easi: float | None = None
+    baseline_dlqi: float | None = None
+    response_dlqi: float | None = None
+    baseline_pruritus_nrs: float | None = None
+    response_pruritus_nrs: float | None = None
+    previous_report_date: date | None = None
+    current_report_date: date | None = None
+    previous_fvc_percent_predicted: float | None = None
+    current_fvc_percent_predicted: float | None = None
+    fvc_assessment_outside_exacerbation: bool | None = None
+    report_documents_fvc_response: bool | None = None
+
+
 _ENUMS = {
+    FollowupEvidence: {
+        'phase': {'initiation', 'continuation', 'restart'},
+        'indication': {'atopic_dermatitis', 'progressive_fibrosing_ild', 'systemic_sclerosis_ild', 'other'},
+    },
     EnteralEvidence: {
         'phase': {'initiation', 'renewal'},
         'malnutrition_path': {'malnutrition', 'exemption'},
@@ -155,7 +183,14 @@ _ENUMS = {
     },
 }
 
-_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence, EnteralEvidence, RavulizumabEvidence)
+# Instrument domains, independently checked against primary EASI/DLQI/NRS guides.
+_NUMERIC_MAX = {FollowupEvidence: {
+    'baseline_easi': 72, 'response_easi': 72,
+    'baseline_dlqi': 30, 'response_dlqi': 30,
+    'baseline_pruritus_nrs': 10, 'response_pruritus_nrs': 10,
+}}
+
+_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence, EnteralEvidence, RavulizumabEvidence, FollowupEvidence)
 
 
 def _finite_nonnegative(raw: Any) -> float | None:
@@ -193,6 +228,9 @@ def parse_clinical_evidence(value: Any, cls: type[_E]) -> _E | None:
         elif f.type == 'float | None':
             number = _finite_nonnegative(raw)
             parsed[f.name] = None if cls is RavulizumabEvidence and f.name == 'edss' and number is not None and number > 10 else number
+            maximum = _NUMERIC_MAX.get(cls, {}).get(f.name)
+            if parsed[f.name] is not None and maximum is not None and parsed[f.name] > maximum:
+                parsed[f.name] = None
         elif f.type == 'str | None':
             parsed[f.name] = raw if isinstance(raw, str) and raw in _ENUMS.get(cls, {}).get(f.name, ()) else None
     return cls(**parsed)

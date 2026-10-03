@@ -1,3 +1,4 @@
+import type { SutFollowupEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutEnteralEvidence, SutRavulizumabEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "@/lib/api/clinicalEvidence";
 
@@ -54,6 +55,7 @@ export function optionalClinicalNumber(value: string, positiveOnly = false, max?
 }
 
 export const clinicalReviewFields = [
+  "documented_16_week_response",
   "historical_sut_version", "verified_source_for_service_date", "remaining_sut_clinical_criteria",
   "micafungin_prophylaxis_route", "itraconazole_source_neutrophil_unit_verification",
   "itraconazole_non_solution_EK4E_requirements", "source_supported_treatment_phase",
@@ -148,7 +150,7 @@ export const renalFields = [
 export function clinicalMissingInputLabel(field: string, t: (key: string) => string): string | null {
   const [root, detail] = field.split(".");
   const groups: Record<string, string> = {
-    sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
+    followup_evidence: "followup", sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
     enteral_evidence: "enteral", ravulizumab_evidence: "ravulizumab",
   };
   if (groups[root]) {
@@ -182,3 +184,26 @@ export const ravulizumabFields = [
   { name: "edss", kind: "number", max: 10 },
   { name: "edss_in_report", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutRavulizumabEvidence }>;
+
+export const followupFields = [
+  { name: "applies_on", kind: "date" },
+  { name: "assessment_date", kind: "date" },
+  { name: "phase", kind: "select", options: ["continuation", "initiation", "restart"] },
+  { name: "indication", kind: "select", options: ["atopic_dermatitis", "other", "progressive_fibrosing_ild", "systemic_sclerosis_ild"] },
+  { name: "treatment_start_date", kind: "date" },
+  { name: "baseline_assessment_date", kind: "date" },
+  { name: "response_assessment_date", kind: "date" },
+  { name: "week16_checkpoint_documented", kind: "boolean" },
+  { name: "baseline_easi", kind: "number", max: 72 },
+  { name: "response_easi", kind: "number", max: 72 },
+  { name: "baseline_dlqi", kind: "number", max: 30 },
+  { name: "response_dlqi", kind: "number", max: 30 },
+  { name: "baseline_pruritus_nrs", kind: "number", max: 10 },
+  { name: "response_pruritus_nrs", kind: "number", max: 10 },
+  { name: "previous_report_date", kind: "date" },
+  { name: "current_report_date", kind: "date" },
+  { name: "previous_fvc_percent_predicted", kind: "number" },
+  { name: "current_fvc_percent_predicted", kind: "number" },
+  { name: "fvc_assessment_outside_exacerbation", kind: "boolean" },
+  { name: "report_documents_fvc_response", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutFollowupEvidence }>;

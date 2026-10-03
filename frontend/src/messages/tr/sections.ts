@@ -248,6 +248,7 @@ const sections = {
           "fail": "Koşul karşılanmadı"
         },
         "sets": {
+          "followup_source_constraints": "Tedavi yanıtı ve yıllık yeniden değerlendirme koşulları",
           "sma_safety_2025": "SMA güvenlik koşulları",
           "antifungal_source_constraints": "Antifungal kaynak koşulları",
           "renal_source_constraints": "Renal kaynak koşulları",
@@ -256,6 +257,7 @@ const sections = {
         }
       },
       "groups": {
+        "followup": "Tedavi yanıtı ve yeniden değerlendirme bilgileri",
         "enteral": "Enteral beslenme bilgileri",
         "ravulizumab": "Ravulizumab bilgileri",
 
@@ -268,6 +270,7 @@ const sections = {
         "renal": "Renal bilgiler"
       },
       "hints": {
+        "followup": "Kayıtlı puanları ve rapor tarihlerini girin. Tamamlanmış 16 haftalık tedaviyi açıkça belgeleyin; takvimde geçen süre bu bilgiyi sağlamaz. FVC değerleri beklenenin yüzdesi biriminde kalır.",
         "enteral": "Belgelenmiş malnütrisyon veya muafiyet yolunu seçin. Raporu düzenleyen hekim ve reçete eden hekim ayrıdır; tarihleri açıkça girin.",
         "ravulizumab": "Belgelenmiş endikasyonu seçin. Tarihlerden ay hesabı çıkarmadan tamamlanmış tedavi süresini girin; EDSS kayıtlı bir ölçüm olmalıdır.",
 
@@ -280,6 +283,23 @@ const sections = {
         "renal": "Belgelenmiş kaynak birimlerini ve tedavi kontrollerini kullanın. Altıncı ay albümini geçmiş kontrol ölçümüdür; güncel sonuç değildir."
       },
       "fields": {
+        "treatment_start_date": "Tedavi başlangıç tarihi",
+        "baseline_assessment_date": "Başlangıç puanlarının değerlendirme tarihi",
+        "response_assessment_date": "Belgelenmiş 16. hafta yanıt değerlendirme tarihi",
+        "week16_checkpoint_documented": "Puanlar tamamlanmış 16 haftalık tedaviyi belgeliyor",
+        "baseline_easi": "Kayıtlı başlangıç EASI puanı (0–72)",
+        "response_easi": "16. hafta kontrolünde EASI (0–72)",
+        "baseline_dlqi": "Kayıtlı başlangıç DLQI puanı (0–30)",
+        "response_dlqi": "16. hafta kontrolünde DLQI (0–30)",
+        "baseline_pruritus_nrs": "Kayıtlı başlangıç Pruritus NRS puanı (0–10)",
+        "response_pruritus_nrs": "16. hafta kontrolünde Pruritus NRS (0–10)",
+        "previous_report_date": "Önceki kurul raporu tarihi",
+        "current_report_date": "Güncel kurul raporu tarihi",
+        "previous_fvc_percent_predicted": "Önceki rapordaki FVC (beklenenin yüzdesi)",
+        "current_fvc_percent_predicted": "Güncel rapordaki FVC (beklenenin yüzdesi)",
+        "fvc_assessment_outside_exacerbation": "FVC karşılaştırması atak dışında ölçülmüş",
+        "report_documents_fvc_response": "Rapor FVC devam tedavisi yanıtını belgeliyor",
+        "documented_16_week_response": "Tamamlanmış 16 haftalık tedavi sonrası belgelenmiş yanıt",
         "pediatric": "Belgelenmiş çocuk hasta durumu",
         "malnutrition_path": "Belgelenmiş beslenme yolu",
         "neurological_disease": "Nörolojik hastalık",
@@ -408,6 +428,9 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "Diğer itrakonazol formları için EK-4/E koşulları"
       },
       "options": {
+        "atopic_dermatitis": "Atopik dermatit",
+        "progressive_fibrosing_ild": "Progresif fibrozan interstisyel akciğer hastalığı",
+        "systemic_sclerosis_ild": "Sistemik skleroza bağlı interstisyel akciğer hastalığı",
         "renewal": "Rapor yenileme",
         "malnutrition": "Malnütrisyon yolu",
         "exemption": "Muaf yol",
