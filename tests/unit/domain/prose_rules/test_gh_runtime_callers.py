@@ -23,7 +23,7 @@ from src.bilun.domain.validation_contract import ValidateClaimV2Response
 from src.bilun.api.public_responses import project_public_response
 from src.bilun.api.schemas import DrugIndicationReviewResponse
 from src.bilun.shared.models import ClaimValidationRequest
-from tests.unit.domain.test_growth_hormone_public_request import payload
+from tests.unit.domain.test_gh_request_integration import payload
 from tests.unit.api.test_validation_contract_v2 import client, _login  # noqa: F401
 
 
