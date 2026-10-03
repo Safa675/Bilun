@@ -11,15 +11,27 @@ from .clinical_indications import evaluate_indications
 from .matching import _drug_name_matches
 
 
+def _observed_family(line: Any, family: str, evaluator) -> dict[str, Any]:
+    from ...sut.rules_catalog import _load_sut_clauses_frame
+    from .runtime_observations import ClinicalObservationCollector
+
+    observer = ClinicalObservationCollector(line, family, f'{family}.atomic.v1.2026-10-02')
+    # This function is reached only after the real name-scoped rule selection.
+    observer.context('drug_name')
+    outcome = evaluator(line, observer=observer)
+    outcome['runtime_coverage'] = observer.summary(_load_sut_clauses_frame())
+    return outcome
+
+
 def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes: list[str] | None = None, selected_rule_id: str | None = None) -> list[dict[str, Any]]:
     kinds = {r.get('clinical_constraint_set') for r in rules
              if _drug_name_matches(line.drug_name, r.get('drug_names') or [])
              and _drug_name_matches(line.drug_name, r.get('clinical_constraint_drugs') or r.get('drug_names') or [])}
     evaluations = []
     if 'sma_safety_2025' in kinds:
-        evaluations.append(evaluate_sma_safety(line))
+        evaluations.append(_observed_family(line, 'sma', evaluate_sma_safety))
     if 'antifungal_source_constraints' in kinds:
-        evaluations.append(evaluate_antifungal(line))
+        evaluations.append(_observed_family(line, 'antifungal', evaluate_antifungal))
     if 'renal_source_constraints' in kinds:
         from ...sut.rules_catalog import _load_sut_clauses_frame
         from .runtime_observations import ClinicalObservationCollector

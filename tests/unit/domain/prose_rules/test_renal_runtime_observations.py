@@ -107,11 +107,12 @@ def test_invalid_stage_is_input_block_and_not_an_executed_sut_threshold():
     assert report['predicate_attempted_count']==0
 
 
-def test_unrelated_uninstrumented_families_never_receive_renal_measurements():
+def test_unrelated_families_never_receive_renal_measurements():
     drug=replace(_drug_line(drug_name='nusinersen'),drug_claim_date=DAY)
     result=evaluate_drug_indication_line_detailed(drug_line=drug,claim=_claim(primary_icd10='G12.0'),diagnoses=[])
     assert result['clinical_restrictions']
-    assert all('runtime_coverage' not in x for x in result['clinical_restrictions'])
+    assert all('renal' not in (x.get('runtime_coverage') or {}).get('instrumented_families', [])
+               for x in result['clinical_restrictions'])
 
 
 def test_real_request_billing_public_model_and_duckdb_roundtrip_keep_measured_counts():

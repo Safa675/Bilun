@@ -70,6 +70,22 @@ class ObservedClinicalReader(Reader):
             self.observer.route('renal.input_validation.' + field, 'blocked_inputs',
                                 [reason], [self.prefix + '.' + field])
 
+    def record_source_gate(self, route_id: str, missing: list[str]) -> None:
+        """Observe the already executed scope_missing gate without rechecking it."""
+        if self.observer is None:
+            return
+        if 'drug_claim_date' not in missing:
+            self.observer.context('drug_claim_date')
+        if 'verified_source_for_service_date' not in missing and 'drug_claim_date' not in missing:
+            for field in ('applies_on', 'assessment_date'):
+                if self.prefix + '.' + field not in missing:
+                    self.observer.context(self.prefix + '.' + field)
+        if missing:
+            blocked_source = 'verified_source_for_service_date' in missing
+            self.observer.route(route_id, 'blocked_source' if blocked_source else 'blocked_inputs',
+                ['unsupported_source_date' if blocked_source else 'missing_or_invalid_scope_fact'],
+                [] if blocked_source else missing)
+
 
 class BoundClinicalPredicate:
     def __init__(self, reader: ObservedClinicalReader, predicate_id: str, source_refs: list[str]):
@@ -88,6 +104,9 @@ class BoundClinicalPredicate:
 
     def number(self, field: str, op: str, bound: float) -> Predicate:
         return self._record(field, self.reader.number(field, op, bound))
+
+    def one_of(self, field: str, values: tuple[str, ...]) -> Predicate:
+        return self._record(field, self.reader.one_of(field, values))
 
     def unknown(self, field: str, predicate: Predicate) -> Predicate:
         return self._record(field, predicate)
