@@ -5,7 +5,7 @@
   "effective_date": "2026-06-29",
   "rules_in_json": 59,
   "section_clause_total": 115,
-  "encoded_clause_count": 63,
+  "encoded_clause_count": 69,
   "encoded_clause_ids": [
     "C004167",
     "C004179",
@@ -20,13 +20,19 @@
     "C004191",
     "C004195",
     "C004201",
+    "C004202",
     "C004205",
     "C004220",
     "C004221",
     "C004222",
+    "C004224",
+    "C004225",
     "C004227",
     "C004230",
     "C004233",
+    "C004235",
+    "C004240",
+    "C004241",
     "C004251",
     "C004253",
     "C004254",
@@ -105,16 +111,22 @@
     "4.2.9.A.(4)",
     "4.2.9.B.(1)",
     "4.2.9.B.(2)",
+    "4.2.9.B.(3)",
     "4.2.9.B.(5)",
     "4.2.9.C.(3)",
     "4.2.9.C.(4)",
     "4.2.9.C.(5)",
+    "4.2.9.D.(1)",
+    "4.2.9.D.a",
+    "4.2.9.D.b",
     "4.2.9.E.(3)",
     "4.2.9.E.(5)",
     "4.2.9.E.(6)",
     "4.2.9.E.(7)",
     "4.2.9.F.(1)",
     "4.2.9.F.(2)",
+    "4.2.9.Ç.(1)",
+    "4.2.9.Ç.(2)",
     "4.2.9.Ç.(4)",
     "4.2.9.Ç.(6)",
     "4.2.9.Ç.b"
@@ -128,16 +140,10 @@
   "tier_c_deferred_clause_ids": [
     "C004178",
     "C004183",
-    "C004202",
     "C004216",
     "C004217",
-    "C004224",
-    "C004225",
     "C004231",
-    "C004235",
     "C004239",
-    "C004240",
-    "C004241",
     "C004242",
     "C004244",
     "C004247",
@@ -181,7 +187,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 1,
   "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 50,
+  "tier_c_deferred_count": 44,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -348,6 +354,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.9.B.clinical_phosphate_necessary_restrictions",
         "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory"
       ]
     },
@@ -365,12 +372,11 @@
       "clause_id": "C004202",
       "section_id": "4.2.9.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.B.clinical_phosphate_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004205",
@@ -438,23 +444,21 @@
       "clause_id": "C004224",
       "section_id": "4.2.9.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004225",
       "section_id": "4.2.9.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004227",
@@ -473,7 +477,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Opere olmuş ancak nüks olan hastalardan",
       "linked_rule_ids": [
-        "4.2.9.Ç.bucket_b.C004176"
+        "4.2.9.Ç.bucket_b.C004176",
+        "4.2.9.Ç.clinical_cinacalcet_necessary_restrictions"
       ]
     },
     {
@@ -501,12 +506,11 @@
       "clause_id": "C004235",
       "section_id": "4.2.9.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Serum albumin düzeyi < 3",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.D.clinical_nutrition_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004239",
@@ -523,23 +527,21 @@
       "clause_id": "C004240",
       "section_id": "4.2.9.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.D.clinical_nutrition_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004241",
       "section_id": "4.2.9.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.D.clinical_nutrition_necessary_restrictions"
+      ]
     },
     {
       "clause_id": "C004242",
@@ -1414,7 +1416,7 @@
   "section_4.2.27_clause_total": 71,
   "section_4.2.27_tier_a_count": 16,
   "section_4.2.27_tier_c_count": 51,
-  "encode_tier_C_deferred_count": 50,
+  "encode_tier_C_deferred_count": 44,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 54.8
+  "encoded_clause_pct": 60.0
 }
