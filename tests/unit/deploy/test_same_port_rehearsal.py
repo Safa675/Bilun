@@ -6,7 +6,12 @@ import copy
 import hashlib
 import shutil
 import json
+import os
+import runpy
 import sys
+import subprocess
+import sysconfig
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -95,21 +100,41 @@ def full_report():
     }
 
 
+def fabricated_transport(monkeypatch, reports, *, code_sha="a" * 40, repository=Path("/fixture"), runtime=None):
+    """Fabricated orchestration seam; real source workers are covered separately."""
+    source = {"repository": str(repository), "code_sha": code_sha, "source_sha256": "c" * 64,
+              "source_file_count": 1, "runtime_sha256": runtime}
+    monkeypatch.setattr(rehearsal, "_source_binding", lambda root, sha, runtime=None: {
+        **source, "repository": str(root), "code_sha": sha, "runtime_sha256": runtime})
+    raw = json.dumps(reports, sort_keys=True)
+    complete = raw
+    draft = json.dumps({path: rehearsal._draft_payload(value) for path, value in reports.items()}, sort_keys=True)
+    binding = json.dumps({"source": source, "contract": "wavea-evidence-v2", "cache_sha256": "d" * 64,
+        "build_id": "fixture", **{name + "_sha256": hashlib.sha256(value.encode()).hexdigest()
+        for name, value in (("raw", raw), ("complete", complete), ("draft", draft))}}, sort_keys=True)
+    seal = object()
+    rehearsal._TRANSPORT_BINDINGS[seal] = binding
+    return rehearsal.PinnedReportTransport(binding, raw, complete, draft, seal)
+
+
 @pytest.mark.parametrize("capability", ["draft", "complete-25-v1"])
-def test_current_api_contract_supports_draft_and_repeat_activated_release(capability):
+def test_current_api_contract_supports_draft_and_repeat_activated_release(capability, monkeypatch):
     path = "/api/billing-report/P1"
     full = full_report()
     draft = rehearsal._draft_payload(full)
     before = full if capability == "complete-25-v1" else draft
+    transport = fabricated_transport(monkeypatch, {path: full})
     rehearsal.compare_reports({path: before}, {path: draft}, contract="wavea-evidence-v2",
-                              old_capability=capability, old_persisted={path: full})
+                              old_capability=capability, old_persisted={path: full},
+                              old_transport=transport, candidate_transport=transport)
     assert full["claim_reviews"]["available"] is True
 
 
 @pytest.mark.parametrize("fault", ["old_finance", "old_evidence", "new_finance", "new_gate", "new_unknown", "missing_bill", "old_capability"])
-def test_current_api_comparison_never_hides_mutations(fault):
+def test_current_api_comparison_never_hides_mutations(fault, monkeypatch):
     path = "/api/billing-report/P1"
     full = full_report()
+    transport = fabricated_transport(monkeypatch, {path: full})
     old, new = {path: copy.deepcopy(full)}, {path: rehearsal._draft_payload(full)}
     capability = "complete-25-v1"
     if fault == "old_finance":
@@ -128,7 +153,8 @@ def test_current_api_comparison_never_hides_mutations(fault):
         capability = "guess"
     with pytest.raises(ValueError):
         rehearsal.compare_reports(old, new, contract="wavea-evidence-v2",
-                                  old_capability=capability, old_persisted={path: full})
+                                  old_capability=capability, old_persisted={path: full},
+                                  old_transport=transport, candidate_transport=transport)
 
 
 def test_original_five_is_explicit_and_type_sensitive():
@@ -157,7 +183,7 @@ def test_expected_draft_dto_matches_real_api_serializer_and_gate():
     assert rehearsal._draft_payload(persisted_dto) == actual_draft_dto
 
 
-def test_only_independently_attested_source_paths_can_differ():
+def test_only_independently_attested_source_paths_can_differ(monkeypatch):
     path = "/api/billing-report/P1"
     before = full_report()
     after = copy.deepcopy(before)
@@ -167,11 +193,13 @@ def test_only_independently_attested_source_paths_can_differ():
         "candidate": {"claim_source": "new-claims", "clinical_source": "new-clean"},
     }}
     arguments = dict(contract="wavea-evidence-v2", old_capability="complete-25-v1",
-                     old_persisted={path: before})
+                     old_persisted={path: before}, old_transport=fabricated_transport(monkeypatch, {path: before}),
+                     candidate_transport=fabricated_transport(monkeypatch, {path: after}))
     rehearsal.compare_reports({path: before}, {path: rehearsal._draft_payload(after)}, same_input=proof, **arguments)
     with pytest.raises(ValueError, match="parity"):
         rehearsal.compare_reports({path: before}, {path: rehearsal._draft_payload(after)}, **arguments)
     after["data_source"]["claim_source"] = "unattested"
+    arguments["candidate_transport"] = fabricated_transport(monkeypatch, {path: after})
     with pytest.raises(ValueError, match="attested input"):
         rehearsal.compare_reports({path: before}, {path: rehearsal._draft_payload(after)}, same_input=proof, **arguments)
 
@@ -180,10 +208,200 @@ def test_only_independently_attested_source_paths_can_differ():
 def test_public_guard_rejects_real_or_unproven_data_before_access_probes(mode, synthetic):
     report = full_report()
     report["data_source"] = {"mode": mode, "is_synthetic": synthetic}
-    with pytest.raises(ValueError, match="synthetic-only"):
+    with pytest.raises(ValueError, match="identity"):
         rehearsal._public_data_guard({"BILUN_PUBLIC_BILLING_ENABLED": "true",
                                       "BILUN_DATA_MODE": "synthetic_demo"}, {"report": report})
     assert rehearsal._public_data_guard({"BILUN_PUBLIC_BILLING_ENABLED": "false"}, {"report": report}) is False
+
+
+def fixture_git_commit(root):
+    def git(*arguments, **kwargs):
+        return subprocess.run(["git", "-C", str(root), *arguments], check=True,
+                              capture_output=True, text=True, **kwargs).stdout.strip()
+    if not (root / ".git").exists():
+        subprocess.run(["git", "init", "-q", "--object-format=sha1", str(root)], check=True)
+    git("add", "src")
+    if (root / "scripts").is_dir():
+        git("add", "scripts")
+    tree = git("write-tree")
+    env = {**os.environ, "GIT_AUTHOR_NAME": "Unit fixture", "GIT_COMMITTER_NAME": "Unit fixture",
+           "GIT_AUTHOR_EMAIL": "fixture@example.invalid", "GIT_COMMITTER_EMAIL": "fixture@example.invalid"}
+    sha = git("commit-tree", tree, "-m", "Pinned public fixture", env=env)
+    git("update-ref", "HEAD", sha)
+    return sha
+
+
+@pytest.fixture
+def known_mode_source(tmp_path):
+    root = tmp_path / "source"
+    file = root / "src/bilun/domain/claims/config.py"
+    file.parent.mkdir(parents=True)
+    file.write_bytes((Path(rehearsal.__file__).parents[2] / "src/bilun/domain/claims/config.py").read_bytes())
+    return SimpleNamespace(root=root, config=file, sha=fixture_git_commit(root),
+                           runtime=rehearsal._runtime_digest(root, backend=True))
+
+
+def mode_context(source, values):
+    return {"repository": source.root, "expected_code_sha": source.sha,
+            "expected_runtime_sha256": source.runtime,
+            "expected_environment_sha256": rehearsal.env_digest(values)}
+
+
+@pytest.mark.parametrize("settings", [{}, {"BILUN_DATA_MODE": "synthetic_demo"},
+    {"SUT_DATA_MODE": "synthetic_demo"},
+    {"BILUN_DATA_MODE": "synthetic_demo", "SUT_DATA_MODE": "synthetic_demo"}])
+def test_public_guard_uses_exact_known_source_effective_mode_without_rewriting_environment(known_mode_source, settings):
+    values = {"BILUN_PUBLIC_BILLING_ENABLED": "true", **settings}
+    before = copy.deepcopy(values)
+    assert rehearsal._public_data_guard(values, {"patient": full_report(), "bill": full_report()},
+                                         **mode_context(known_mode_source, values)) is True
+    assert values == before
+
+
+@pytest.mark.parametrize("settings", [{"BILUN_DATA_MODE": "real_claims"}, {"SUT_DATA_MODE": "real_claims"},
+    {"BILUN_DATA_MODE": "unknown"}, {"SUT_DATA_MODE": "unknown"},
+    {"BILUN_DATA_MODE": "synthetic_demo", "SUT_DATA_MODE": "real_claims"},
+    {"BILUN_DATA_MODE": "real_claims", "SUT_DATA_MODE": "synthetic_demo"}])
+def test_public_guard_rejects_real_unknown_and_conflicting_fallback(known_mode_source, settings):
+    values = {"BILUN_PUBLIC_BILLING_ENABLED": "true", **settings}
+    with pytest.raises(ValueError):
+        rehearsal._public_data_guard(values, {"patient": full_report()}, **mode_context(known_mode_source, values))
+
+
+@pytest.mark.parametrize("fault", ["empty", "missing", "non_object", "real_mode", "unknown_mode", "false", "null", "one"])
+def test_public_guard_requires_every_report_strict_synthetic_provenance(known_mode_source, fault):
+    values = {"BILUN_PUBLIC_BILLING_ENABLED": "true"}
+    reports = {"patient": full_report(), "bill": full_report()}
+    if fault == "empty":
+        reports.clear()
+    elif fault == "missing":
+        reports["bill"].pop("data_source")
+    elif fault == "non_object":
+        reports["bill"]["data_source"] = None
+    elif fault.endswith("mode"):
+        reports["bill"]["data_source"]["mode"] = "real_claims" if fault == "real_mode" else "unknown"
+    else:
+        reports["bill"]["data_source"]["is_synthetic"] = {"false": False, "null": None, "one": 1}[fault]
+    with pytest.raises(ValueError, match="synthetic-only"):
+        rehearsal._public_data_guard(values, reports, **mode_context(known_mode_source, values))
+
+
+@pytest.mark.parametrize("fault", ["environment", "runtime", "source_bytes", "source_identity", "extra_source", "unknown_resolver"])
+def test_public_guard_rejects_stale_independent_identity_and_unknown_resolver(known_mode_source, fault):
+    values = {"BILUN_PUBLIC_BILLING_ENABLED": "true"}
+    context = mode_context(known_mode_source, values)
+    if fault == "environment":
+        values["PIPELINE_MODE"] = "changed-after-capture"
+    elif fault == "runtime":
+        (known_mode_source.root / "untracked-runtime").write_text("changed-after-capture")
+    elif fault == "source_identity":
+        context["expected_code_sha"] = "0" * 40
+    elif fault == "extra_source":
+        (known_mode_source.root / "src/extra.py").write_text("extra = True")
+    else:
+        known_mode_source.config.write_bytes(known_mode_source.config.read_bytes() + b"\n# changed source\n")
+        if fault == "unknown_resolver":
+            context.update(expected_code_sha=fixture_git_commit(known_mode_source.root),
+                           expected_runtime_sha256=rehearsal._runtime_digest(known_mode_source.root, backend=True))
+    with pytest.raises(ValueError):
+        rehearsal._public_data_guard(values, {"patient": full_report()}, **context)
+
+
+@pytest.mark.parametrize("flag", ["--old-environment-sha256", "--candidate-environment-sha256"])
+def test_same_port_rejects_stale_captured_environment_before_start(tmp_path, monkeypatch, flag):
+    arguments, _, events, _ = fixture_rehearsal(tmp_path, monkeypatch)
+    arguments[arguments.index(flag) + 1] = "0" * 64
+    with pytest.raises(ValueError, match="environment differs"):
+        rehearsal.main(arguments)
+    assert events == []
+
+
+def test_transport_rejects_rehashed_self_consistent_package_mutation(monkeypatch):
+    transport = fabricated_transport(monkeypatch, {"/api/billing-report/P1": full_report()})
+    changed = transport.complete_reports
+    changed["/api/billing-report/P1"]["total_recoverable_try"] = False
+    encoded = json.dumps(changed, sort_keys=True)
+    evidence = transport.evidence
+    evidence["complete_sha256"] = hashlib.sha256(encoded.encode()).hexdigest()
+    forged = replace(transport, _complete_json=encoded, _binding_json=json.dumps(evidence, sort_keys=True))
+    with pytest.raises(ValueError, match="generated by pinned source"):
+        forged.validate()
+
+
+def test_actual_source_worker_keeps_existing_bytecode_and_runtime_untouched(monkeypatch):
+    repository = Path(rehearsal.__file__).resolve().parents[2]
+    code_sha = subprocess.check_output(["git", "-C", str(repository), "rev-parse", "HEAD"]).decode().strip()
+    before = rehearsal._source_binding(repository, code_sha)
+    provenance = {**full_report()["data_source"], "label": "Public synthetic fixture", "notice": "Fixture only"}
+    original = subprocess.run
+    observations = []
+
+    def run(argv, **kwargs):
+        if "-c" in argv and rehearsal._PROJECTION_WORKER in argv:
+            observations.append((argv, kwargs["env"]))
+            assert "BILUN_AUTH_PASSWORD" not in kwargs["env"]
+            assert "-I" in argv and "-S" in argv and "-B" in argv
+            assert any(value.startswith("pycache_prefix=") for value in argv)
+        return original(argv, **kwargs)
+
+    monkeypatch.setenv("BILUN_AUTH_PASSWORD", "public-unit-never-forwarded")
+    monkeypatch.setattr(rehearsal.subprocess, "run", run)
+    cli_namespace = runpy.run_path(rehearsal.__file__, run_name="source_projection_cli_fixture")
+    assert cli_namespace["PinnedReportTransport"] is not rehearsal.PinnedReportTransport
+    transport = cli_namespace["project_report_transport"]({"/api/billing-report/P1": full_report()}, provenance,
+        repository=repository, expected_code_sha=code_sha, python_executable=Path(sys.executable),
+        dependency_roots=(Path(sysconfig.get_path("stdlib")), Path(sysconfig.get_path("purelib"))),
+        cache_sha256="a" * 64, build_id="public-unit", contract="wavea-evidence-v2")
+    transport.validate()
+    assert observations
+    assert type(transport) is rehearsal.PinnedReportTransport
+    assert rehearsal._source_binding(repository, code_sha) == before
+
+
+@pytest.mark.parametrize("fault", ["environment_file", "filesystem_write", "source_change_after_worker"])
+def test_source_worker_rejects_environment_side_effects_and_post_worker_source_drift(tmp_path, monkeypatch, fault):
+    base = Path(rehearsal.__file__).resolve().parents[2]
+    source = tmp_path / "independent-public-source"
+    ignored = shutil.ignore_patterns("__pycache__", "*.pyc", ".env", ".env.*")
+    shutil.copytree(base / "src", source / "src", ignore=ignored)
+    shutil.copytree(base / "scripts/sut", source / "scripts/sut", ignore=ignored)
+    shutil.copyfile(base / "scripts/__init__.py", source / "scripts/__init__.py")
+    billing = source / "src/bilun/api/routes/billing.py"
+    if fault != "source_change_after_worker":
+        action = ('__import__("pathlib").Path(".env").read_text()' if fault == "environment_file"
+                  else '__import__("pathlib").Path("worker-created").mkdir()')
+        needle = "    if dataclasses.is_dataclass(report):"
+        assert billing.read_text().count(needle) == 1
+        billing.write_text(billing.read_text().replace(needle, "    " + action + "\n" + needle))
+    if fault == "environment_file":
+        (source / ".env").write_text("PUBLIC_UNIT_PLACEHOLDER=never_read")
+    code_sha = fixture_git_commit(source)
+    original = subprocess.run
+    failures = []
+
+    def run(argv, **kwargs):
+        result = original(argv, **kwargs)
+        if rehearsal._PROJECTION_WORKER in argv:
+            failures.append(result.stderr.decode())
+            if fault == "source_change_after_worker":
+                assert result.returncode == 0
+                config = source / "src/bilun/domain/claims/config.py"
+                config.write_bytes(config.read_bytes() + b"\n# changed after projection\n")
+        return result
+
+    monkeypatch.setattr(rehearsal.subprocess, "run", run)
+    provenance = {**full_report()["data_source"], "label": "Public synthetic fixture", "notice": "Fixture only"}
+    with pytest.raises(ValueError):
+        rehearsal.project_report_transport({"/api/billing-report/P1": full_report()}, provenance,
+            repository=source, expected_code_sha=code_sha, python_executable=Path(sys.executable),
+            dependency_roots=(Path(sysconfig.get_path("stdlib")), Path(sysconfig.get_path("purelib"))),
+            cache_sha256="a" * 64, build_id="public-unit", contract="wavea-evidence-v2")
+    assert failures
+    if fault == "environment_file":
+        assert "cannot read environment files" in failures[0]
+    elif fault == "filesystem_write":
+        assert "cannot mutate filesystem entries" in failures[0]
+        assert not (source / "worker-created").exists()
 
 
 def _old_scope_cache(path, pointers):
@@ -261,7 +479,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     cache.write_bytes(b"candidate-cache-fixture")
     roster.write_bytes(b"fixture-roster")
     baseline_roster = tmp_path / "baseline-roster.json"
-    baseline_roster.write_bytes(b"fixture-baseline-roster")
+    baseline_roster.write_text(json.dumps({"code_sha": "b" * 40, "checkout": str(snapshot / "backend")}))
     old = {**candidate_auth(), "BILUN_SESSION_SECRET": "old-fixture-secret",
            "BILUN_HEALTH_PROBE_TOKEN": "o" * 32}
     old.pop("BILUN_SESSION_TOKEN_PURPOSE")
@@ -271,10 +489,16 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     backend_env = write_env(tmp_path / "candidate-backend.nul", new)
     frontend_env = write_env(tmp_path / "candidate-frontend.nul", {"NODE_ENV": "production"})
     full = {path: full_report() for path in ("/api/billing-report/P1", "/api/billing-report/P1/bills/B1")}
-    monkeypatch.setattr(rehearsal, "_cache_reports", lambda path, **_: (
-        "old-build" if path.parent == replay else "candidate-build", "source",
-        "wavea-evidence-v2", full, 1, 1,
-    ))
+    fabricated_transport(monkeypatch, full)
+
+    def cache_reports(path, **context):
+        context["transport_out"].append(fabricated_transport(monkeypatch, full,
+            code_sha=context["expected_code_sha"], repository=context["repository"],
+            runtime=context.get("expected_runtime_sha256")))
+        return ("old-build" if path.parent == replay else "candidate-build", "source",
+                "wavea-evidence-v2", full, 1, 1)
+
+    monkeypatch.setattr(rehearsal, "_cache_reports", cache_reports)
     monkeypatch.setattr(rehearsal, "_same_input_proof", lambda *_, **kwargs: {
         "status": "same_input_bytes_verified", "paths": {
             side: {"claim_source": "claims", "clinical_source": "clean"}
@@ -290,7 +514,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal, "_verify_assets", lambda *_: 10)
     monkeypatch.setattr(rehearsal, "inspect_assets", lambda *_a, **_k: {"ok": True})
     monkeypatch.setattr(rehearsal, "_process_observation", lambda *_a, **_k: {"argv_sha256": "d" * 64})
-    monkeypatch.setattr(rehearsal, "_candidate_access", lambda *_: 20)
+    monkeypatch.setattr(rehearsal, "_candidate_access", lambda *_, **__: 20)
     events, processes, contexts = [], [], {}
     state = {"pair": None, "recovered": False}
     clock = SimpleNamespace(now=1000)
@@ -362,6 +586,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal, "observe_candidate_tuple", observe)
     args = ["--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
             "--old-backend-runtime-sha256", old_context.runtime_sha256,
+            "--old-environment-sha256", rehearsal.env_digest(old),
+            "--candidate-environment-sha256", rehearsal.env_digest(new),
             "--candidate-backend-environment", str(backend_env), "--candidate-frontend-environment", str(frontend_env),
             "--candidate-checkout", str(checkout), "--candidate-db", str(cache), "--candidate-roster", str(roster),
             "--baseline-roster", str(baseline_roster),

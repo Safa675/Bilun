@@ -8,9 +8,13 @@ private retained-cache regression separately runs the genuine pinned runtimes.
 from __future__ import annotations
 
 import copy
+import ast
 import hashlib
 import json
+import shutil
 import subprocess
+import sys
+import sysconfig
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 
@@ -86,6 +90,23 @@ def test_production_source_pins_remain_exact():
     assert transition.BASELINE_SOURCE_HASH == "c211fa8490d12db89b5456a071e6a20775c271ade49270776374c0f292b49b92"
     assert transition.BASELINE_CONFIG_HASH == "474642a8400d820435d8dbe3f40524ffd357edf8d40cc77a9621fd56b6b5921b"
     assert ".github/workflows/deploy.yml" not in transition.AUTHORIZED_TOOLING_PATHS
+
+
+@pytest.mark.parametrize("path,authorized", [
+    ("src/bilun/api/wavea_activation.py", True),
+    ("tests/integration/deploy/test_signed_transition_startup.py", True),
+    ("src/bilun/api/schemas.py", False),
+    ("src/bilun/api/wavea_activation_extra.py", False),
+    ("tests/integration/deploy/test_signed_transition_startup_extra.py", False),
+])
+def test_startup_source_exception_is_an_exact_approved_path(source_history, path, authorized):
+    checkout, _, _, _, _ = source_history
+    candidate = _commit(checkout, path, "# source-closed fixture\n", "startup boundary fixture")
+    if authorized:
+        assert transition._verify_candidate_history(checkout, candidate)
+    else:
+        with pytest.raises(ValueError):
+            transition._verify_candidate_history(checkout, candidate)
 
 
 def _retained_meta() -> dict:
@@ -756,11 +777,14 @@ def test_consistently_changed_inputs_pass_pair_equality_but_not_production_trans
         )
 
 
-def _proof(projections: dict) -> transition.ClinicalTransitionProof:
+def _proof(projections: dict, *, baseline_sha: str = transition.BASELINE_CODE_SHA,
+           candidate_sha: str = transition.PRODUCT_ANCHOR_SHA) -> transition.ClinicalTransitionProof:
     return transition.ClinicalTransitionProof(
         _report_json=json.dumps({
             "status": "clinical_semantic_transition_verified",
             "contract": transition.TRANSITION_CONTRACT,
+            "baseline_code_sha": baseline_sha,
+            "candidate_code_sha": candidate_sha,
         }, sort_keys=True),
         _projections_json=json.dumps(projections, sort_keys=True),
     )
@@ -846,26 +870,123 @@ def test_owned_projection_cannot_hide_additional_fields_or_report_rows(mutation)
         )
 
 
-def _http_fixture():
-    old, new, proof = _replay_double()
+@pytest.fixture(scope="module")
+def transport_sources(tmp_path_factory):
+    """Run actual public serializers/models in independent source-only Git trees.
+
+    CI has a shallow checkout. Reconstruct the old schema's exact Git blob
+    from the unchanged current file and the five reviewed schema additions;
+    this fixture is a transport regression, not a complete production replay.
+    """
+    repository = Path(__file__).resolve().parents[3]
+    schema = (repository / "src/bilun/api/schemas.py").read_text()
+    old_schema = schema.replace(
+        "from src.bilun.domain.sut.runtime_coverage_schema import RuntimeCoverageResponse as DrugRuntimeCoverageResponse\n"
+        "from src.bilun.domain.sut.source_authority_schema import ClinicalSourceAuthorityEvidence\n\n", "",
+    )
+    start = old_schema.index("class DrugTemporalCheckResponse(BaseModel):")
+    end = old_schema.index("class DrugIndicationFindingResponse(BaseModel):")
+    old_schema = old_schema[:start] + old_schema[end:]
+    for addition in (
+        "    source_authority: ClinicalSourceAuthorityEvidence | None = None\n",
+        "    runtime_coverage: DrugRuntimeCoverageResponse | None = None\n",
+        "    temporal_evidence: DrugTemporalEvidenceResponse | None = None\n",
+        "    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)\n"
+        "    clinical_eligibility_complete: bool | None = None\n\n",
+    ):
+        assert old_schema.count(addition) == 2
+        old_schema = old_schema.replace(addition, "")
+    raw = old_schema.encode()
+    assert hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest() == "c7d2e3d5bb738c83de23f83f7541d0acc20014f7"
+    serializer = (repository / "src/bilun/api/routes/billing.py").read_bytes()
+    assert hashlib.sha1(b"blob " + str(len(serializer)).encode() + b"\0" + serializer).hexdigest() == "6cd6f86c92f1deb533692090def668fb00e2bb1d"
+    normalizer_path = "src/bilun/domain/billing/drug_indication_findings.py"
+    old_normalizer = (repository / normalizer_path).read_text().replace(
+        "    # Cached measurement metadata uses the same bounded contract as live rows.\n"
+        "    # Missing old-cache metadata stays absent; it cannot become measured zero.\n"
+        '    for kind in ("findings", "evaluations", "violations"):\n'
+        "        if isinstance(payload.get(kind), list):\n"
+        "            payload[kind] = [\n"
+        "                _normalize_cached_evidence(row)\n"
+        "                for row in payload[kind]\n"
+        "            ]\n", "",
+    )
+    old_node = next(node for node in ast.parse(old_normalizer).body
+                    if isinstance(node, ast.FunctionDef) and node.name == "normalize_drug_indication_payload")
+    assert hashlib.sha256(ast.get_source_segment(old_normalizer, old_node).encode()).hexdigest() == "1b0f6cf4c0e56683882e459c90bf07f51f58cdc3dba1e3240edddb15ae580203"
+    result = {}
+    for side in ("baseline", "candidate"):
+        root = tmp_path_factory.mktemp("pinned-transport-" + side)
+        shutil.copytree(repository / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        shutil.copytree(repository / "scripts/sut", root / "scripts/sut", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        shutil.copyfile(repository / "scripts/__init__.py", root / "scripts/__init__.py")
+        if side == "baseline":
+            (root / "src/bilun/api/schemas.py").write_text(old_schema)
+            (root / normalizer_path).write_text(old_normalizer)
+        _git(root, "init", "-q")
+        _git(root, "config", "user.name", "Bilun Transport Test")
+        _git(root, "config", "user.email", "transport@example.invalid")
+        _git(root, "config", "commit.gpgsign", "false")
+        _git(root, "add", "src", "scripts")
+        _git(root, "commit", "-qm", "independent public serializer fixture")
+        result[side] = root, _git(root, "rev-parse", "HEAD")
+    return result
+
+
+def _transport_packages(transport_sources, old: dict, new: dict):
+    provenance = {
+        "mode": "synthetic_demo", "is_synthetic": True, "label": "Synthetic test",
+        "notice": "Public authored synthetic fixture", "claim_source": "claims", "clinical_source": "clean",
+    }
     paths = ("/api/billing-report/P1", "/api/billing-report/P1/bills/C1")
-    persisted = {path: copy.deepcopy(old) for path in paths}
-    before = {path: rehearsal._draft_payload(payload) for path, payload in persisted.items()}
-    after = {path: rehearsal._draft_payload(copy.deepcopy(new)) for path in paths}
-    return before, after, persisted, proof
+    projections, packages = {}, {}
+    for side, report in (("baseline", old), ("candidate", new)):
+        raw = {path: copy.deepcopy(report) for path in paths}
+        raw[paths[1]].update(patient_id="P1", claim_id="C1", report_scope="bill")
+        projections[side] = {
+            family: {key: {
+                "drug_indication": copy.deepcopy(report["drug_indication"]),
+                "recommended_actions": [copy.deepcopy(row) for row in report["recommended_actions"]
+                                        if row.get("surface") == "drug_indication"],
+            }}
+            for family, key in (("patients", "P1"), ("bills", "P1::C1"))
+        }
+        repository, sha = transport_sources[side]
+        packages[side] = rehearsal.project_report_transport(
+            raw, provenance, repository=repository, expected_code_sha=sha,
+            python_executable=Path(sys.executable),
+            dependency_roots=(Path(sys.base_prefix), Path(sysconfig.get_path("purelib"))),
+            cache_sha256=("a" if side == "baseline" else "b") * 64,
+            build_id=side + "-fixture-build", contract="wavea-evidence-v2",
+        )
+    proof = _proof(projections, baseline_sha=transport_sources["baseline"][1],
+                   candidate_sha=transport_sources["candidate"][1])
+    return packages["baseline"], packages["candidate"], proof
 
 
-def test_http_transition_still_binds_complete_patient_bill_dtos():
-    old, new, persisted, proof = _http_fixture()
+@pytest.fixture(scope="module")
+def http_transport_pair(transport_sources):
+    old, new, proof = _replay_double()
+    return _transport_packages(transport_sources, old, new)
+
+
+def _http_fixture(http_transport_pair):
+    baseline, candidate, proof = http_transport_pair
+    return baseline.draft_reports, candidate.draft_reports, baseline.complete_reports, proof, baseline, candidate
+
+
+def test_http_transition_still_binds_complete_patient_bill_dtos(http_transport_pair):
+    old, new, persisted, proof, baseline, candidate = _http_fixture(http_transport_pair)
     rehearsal.compare_reports(
         old, new, contract="wavea-evidence-v2", old_capability="draft",
         old_persisted=persisted, clinical_transition=proof,
+        old_transport=baseline, candidate_transport=candidate,
     )
 
 
 @pytest.mark.parametrize("mutation", ["third_coverage", "money_null", "money_bool", "money_integer", "unknown_field", "missing_bill", "unknown_path", "duplicate_encoded_identity"])
-def test_http_transition_does_not_hide_money_fields_or_routing_mutations(mutation):
-    old, new, persisted, proof = _http_fixture()
+def test_http_transition_does_not_hide_money_fields_or_routing_mutations(http_transport_pair, mutation):
+    old, new, persisted, proof, baseline, candidate = _http_fixture(http_transport_pair)
     path = "/api/billing-report/P1"
     if mutation == "third_coverage":
         new[path]["drug_indication"]["coverage_scope"]["pilot_rule_count"] = 3
@@ -885,6 +1006,172 @@ def test_http_transition_does_not_hide_money_fields_or_routing_mutations(mutatio
         rehearsal.compare_reports(
             old, new, contract="wavea-evidence-v2", old_capability="draft",
             old_persisted=persisted, clinical_transition=proof,
+            old_transport=baseline, candidate_transport=candidate,
+        )
+
+
+@pytest.fixture(scope="module", params=["unenriched", "source", "coverage", "temporal", "restrictions"])
+def drug_http_transport_pair(transport_sources, request):
+    with pytest.MonkeyPatch.context() as patch:
+        old, new = _authored_route_pair(patch)
+    metadata = {
+        "unenriched": {},
+        "source": {
+            "source_authority": {
+                "schema_version": 1, "status": "review_required", "reason": "missing_service_date",
+                "family_id": "drug_indication", "next_action": "Review source and service date",
+                "clinical_eligibility_complete": False,
+            }, "clinical_eligibility_complete": False,
+        },
+        "coverage": {
+            "runtime_coverage": {"schema_version": 1, "available": False,
+                                 "instrumented_families": [], "unavailable_reason": "Not measured"},
+        },
+        "temporal": {
+            "temporal_evidence": {
+                "status": "review_required", "publication_date": "2026-10-01",
+                "source_url": "https://example.invalid/public-authored-fixture",
+                "source_sha256": "a" * 64, "source_text_sha256": "b" * 64,
+                "date_basis": "service_date", "clinical_eligibility_complete": False,
+            },
+        },
+        "restrictions": {
+            "clinical_restrictions": [{"constraint_set": "authored-check", "criterion_status": "missing_inputs",
+                                       "missing_inputs": ["report"], "clinical_eligibility_complete": False}],
+            "clinical_eligibility_complete": False,
+        },
+    }[request.param]
+    for report in (old, new):
+        report.update(patient_id="P1", sgk_uplift_try=0.0)
+        report.pop("alias_predicates")
+        report["recommended_actions"].insert(0, {"action_id": "lab-first", "surface": "lab", "savings_try": 12.5})
+        report["recommended_actions"].append({"action_id": "lab-last", "surface": "lab", "savings_try": None})
+        for collection in ("findings", "evaluations"):
+            row = report["drug_indication"][collection][0]
+            row.update(finding_kind="indication_mismatch", matched_icd10_codes=[], unmatched_icd10_codes=["Z01"],
+                       required_inputs=[], missing_inputs=[], **copy.deepcopy(metadata))
+            if collection == "findings":
+                row["recommended_action_tr"] = "Review report"
+            for route in row["eligible_routes"]:
+                route.update(regulatory_summary_tr="Public authored inventory", report_duration_months=None,
+                             report_specialties=[], prescriber_specialties=[], icd10_code_count=0,
+                             icd10_codes_truncated=False, icd10_range_count=len(route["icd10_ranges"]),
+                             icd10_ranges_truncated=False)
+    return (*_transport_packages(transport_sources, old, new), request.param)
+
+
+@pytest.mark.parametrize("view", ["draft", "legacy"])
+def test_real_old_new_dto_models_normalize_only_source_bound_drug_slice(drug_http_transport_pair, view):
+    baseline, candidate, proof, metadata = drug_http_transport_pair
+    old = baseline.draft_reports if view == "draft" else {
+        path: rehearsal._legacy_report(row) for path, row in baseline.complete_reports.items()
+    }
+    new = candidate.draft_reports if view == "draft" else {
+        path: rehearsal._legacy_report(row) for path, row in candidate.complete_reports.items()
+    }
+    normalized_old = transition.normalize_transition_http_reports(
+        old, side="baseline", proof=proof, transport=baseline, baseline_transport=baseline, view=view,
+    )
+    normalized_new = transition.normalize_transition_http_reports(
+        new, side="candidate", proof=proof, transport=candidate, baseline_transport=baseline, view=view,
+    )
+    assert normalized_old == old
+    assert transition._canonical(normalized_new) == transition._canonical(old)
+    for path in new:
+        assert normalized_new[path]["recommended_actions"][0] == new[path]["recommended_actions"][0]
+        assert normalized_new[path]["recommended_actions"][-1] == new[path]["recommended_actions"][-1]
+        assert normalized_new[path]["data_source"] == new[path]["data_source"]
+    if metadata == "unenriched":
+        for collection in ("findings", "evaluations"):
+            row = old["/api/billing-report/P1"]["drug_indication"][collection][0]
+            assert "source_authority" not in row
+            after = new["/api/billing-report/P1"]["drug_indication"][collection][0]
+            assert after["source_authority"] is None
+            assert after["clinical_restrictions"] == []
+            assert after["clinical_eligibility_complete"] is None
+    # Wire defaults do not weaken the exact raw-cache producer contract.
+    for side, package in (("baseline", baseline), ("candidate", candidate)):
+        with pytest.raises(ValueError, match="cached drug producer replay"):
+            transition.normalize_transition_content(
+                "patient_billing_report_rows", {"P1": package.draft_reports["/api/billing-report/P1"]},
+                side=side, proof=proof,
+            )
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("mutation", [
+    "null_vs_absent", "new_default_absent", "source_changed", "money_bool", "money_int",
+    "third_coverage", "route_id", "clinical_status", "unexpected_metadata", "action_position",
+])
+def test_source_projected_http_defaults_are_exact_not_a_value_allowlist(drug_http_transport_pair, side, mutation):
+    baseline, candidate, proof, _ = drug_http_transport_pair
+    package = baseline if side == "baseline" else candidate
+    reports = package.draft_reports
+    row = reports["/api/billing-report/P1/bills/C1"]
+    finding = row["drug_indication"]["findings"][0]
+    if mutation == "null_vs_absent":
+        if "source_authority" in finding:
+            finding.pop("source_authority")
+        else:
+            finding["source_authority"] = None
+    elif mutation == "new_default_absent":
+        if "clinical_restrictions" in finding:
+            finding.pop("clinical_restrictions")
+        else:
+            finding["clinical_restrictions"] = []
+    elif mutation == "source_changed":
+        row["data_source"]["is_synthetic"] = False
+    elif mutation == "money_bool":
+        row["sgk_uplift_try"] = False
+    elif mutation == "money_int":
+        row["sgk_uplift_try"] = 0
+    elif mutation == "third_coverage":
+        row["drug_indication"]["coverage_scope"]["pilot_rule_count"] = 3
+    elif mutation == "route_id":
+        finding["eligible_routes"][0]["rule_id"] = "unreviewed"
+    elif mutation == "clinical_status":
+        finding["evaluation_status"] = "unavailable"
+    elif mutation == "unexpected_metadata":
+        finding["clinical_eligibility_complete"] = True
+    else:
+        row["recommended_actions"].reverse()
+    with pytest.raises(ValueError, match="HTTP pinned serializer/model projection"):
+        transition.normalize_transition_http_reports(
+            reports, side=side, proof=proof, transport=package, baseline_transport=baseline,
+        )
+
+
+@pytest.mark.parametrize("mutation", ["mapping", "unsealed", "wrong_sha", "wrong_baseline_sha", "unknown_view", "old_dto_from_new_model", "raw_changed"])
+def test_http_transition_rejects_unbound_or_wrong_source_transport(http_transport_pair, mutation):
+    baseline, candidate, proof = http_transport_pair
+    supplied, old_supplied, view = candidate, baseline, "draft"
+    reports = candidate.draft_reports
+    if mutation == "mapping":
+        supplied = {"code_sha": candidate.code_sha, "draft_reports": reports}
+    elif mutation == "unsealed":
+        supplied = rehearsal.PinnedReportTransport(candidate._binding_json, candidate._raw_json,
+                                                   candidate._complete_json, candidate._draft_json)
+    elif mutation in {"wrong_sha", "wrong_baseline_sha"}:
+        info = proof.report
+        info[("candidate" if mutation == "wrong_sha" else "baseline") + "_code_sha"] = "f" * 40
+        proof = transition.ClinicalTransitionProof(json.dumps(info), json.dumps(proof.projections))
+    elif mutation == "unknown_view":
+        view = "remove_defaults"
+    elif mutation == "old_dto_from_new_model":
+        supplied = baseline
+    else:
+        altered = candidate.raw_reports
+        altered["/api/billing-report/P1"]["drug_indication"]["coverage_scope"]["pilot_rule_count"] = 3
+        binding = json.loads(candidate._binding_json)
+        raw_json = transition._canonical(altered)
+        binding["raw_sha256"] = hashlib.sha256(raw_json.encode()).hexdigest()
+        # Even a sealed, internally self-consistent package must match fresh
+        # producer replay; changing only its raw payload cannot forge ownership.
+        supplied = rehearsal.PinnedReportTransport(json.dumps(binding), raw_json,
+            candidate._complete_json, candidate._draft_json, candidate._seal)
+    with pytest.raises(ValueError):
+        transition.normalize_transition_http_reports(
+            reports, side="candidate", proof=proof, transport=supplied, baseline_transport=old_supplied, view=view,
         )
 
 

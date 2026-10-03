@@ -120,7 +120,7 @@ def _replace_link(path: Path, target: str) -> None:
 
 
 def _verify_rehearsed_environments(backend: dict, frontend: dict, receipt: dict,
-                                   candidate_db: Path, observed: dict) -> None:
+                                   candidate_db: Path, observed: dict) -> tuple[dict, dict]:
     from scripts.deploy.rehearse_wavea_pair import env_digest
     rehearsed_backend = {**backend,
         "BILUN_CACHE_DB_PATH": str(candidate_db),
@@ -135,6 +135,7 @@ def _verify_rehearsed_environments(backend: dict, frontend: dict, receipt: dict,
     if any(observed["logical_tuple"][role]["effective_environment_sha256"] != env_digest(values)
            for role, values in (("backend", rehearsed_backend), ("frontend", rehearsed_frontend))):
         raise ValueError("Candidate effective environment differs from signed rehearsal")
+    return rehearsed_backend, rehearsed_frontend
 
 
 class SingleVpsDriver:
@@ -223,14 +224,10 @@ class SingleVpsDriver:
         if (rehearsal.get("schema_version") != "wavea-same-port-rehearsal-v2"
                 or rehearsal.get("profile") != "single-vps-same-port-v2"):
             raise ValueError("Same-port candidate must have a same-port private rehearsal")
-        backend, frontend = candidate_environments(
-            Path(self.config["candidate_backend_environment"]),
-            Path(self.config["candidate_frontend_environment"]),
-        )
-        observed, _ = _load_private_json(Path(receipt["tuple_observation_path"]),
-                                         root=Path(receipt["tuple_observation_path"]).parent)
-        _verify_rehearsed_environments(backend, frontend, receipt, self.candidate_db, observed)
-        self._public_data_guard(backend, self.candidate_db)
+        backend, frontend, observed = self._rehearsed_environments(receipt)
+        self._public_data_guard(backend, self.candidate_db, receipt=receipt, observed=observed,
+                               expected_environment_sha256=observed["logical_tuple"]["backend"][
+                                   "effective_environment_sha256"])
         _verify_frontend_api_rewrite(self.frontend, 8001)
         if not inspect_assets(self.frontend, secrets=(
             values.get(name, "") for values in (backend, frontend) for name in _SECRET_ENV
@@ -255,14 +252,71 @@ class SingleVpsDriver:
         if ledger and (ledger not in pins["external_state"] or Path(ledger) != Path(ledger).resolve()):
             raise ValueError("Configured mutable chat ledger is not independently pinned")
 
-    @staticmethod
-    def _public_data_guard(environment: dict, cache: Path) -> None:
+    def _rehearsed_environments(self, receipt: dict) -> tuple[dict, dict, dict]:
+        backend, frontend = candidate_environments(
+            Path(self.config["candidate_backend_environment"]),
+            Path(self.config["candidate_frontend_environment"]),
+        )
+        path = Path(receipt["tuple_observation_path"])
+        observed, digest = _load_private_json(path, root=path.parent)
+        if digest != receipt["tuple_observation_sha256"]:
+            raise ValueError("Candidate tuple observation changed after signature validation")
+        backend, frontend = _verify_rehearsed_environments(
+            backend, frontend, receipt, self.candidate_db, observed,
+        )
+        return backend, frontend, observed
+
+    def _public_data_guard(self, environment: dict, cache: Path, *, receipt: dict,
+                           observed: dict, expected_environment_sha256: str) -> None:
         from scripts.deploy.rehearse_wavea_same_port import _cache_reports, _public_data_guard
         # Avoid materializing every payload when public access is disabled. The
         # signed structural/semantic gates still validate every candidate row.
         enabled = environment.get("BILUN_PUBLIC_BILLING_ENABLED", "").strip().lower() in {"1", "true", "yes"}
         if enabled:
-            _public_data_guard(environment, _cache_reports(cache)[3])
+            pins, digest = _load_private_json(self.paths["preparation_pins_path"],
+                                              root=self.paths["preparation_pins_path"].parent)
+            if digest != self.manifest["preparation_pins_sha256"]:
+                raise ValueError("Public data projection dependency pins changed")
+            context = {
+                "repository": self.backend, "expected_code_sha": receipt["code_sha"],
+                "expected_runtime_sha256": observed["logical_tuple"]["backend_runtime_sha256"],
+            }
+            reports = _cache_reports(
+                cache, **context, python_executable=Path(self.config["backend_python"]),
+                dependency_roots=tuple(Path(path) for path in pins.get("dependency_roots", ())),
+            )[3]
+            _public_data_guard(environment, reports, **context,
+                               expected_environment_sha256=expected_environment_sha256)
+
+    def _serving_launch_context(self, receipt: dict) -> tuple[dict, dict, dict]:
+        """Bind launcher output to the independently observed rehearsal environment."""
+        from scripts.deploy.launch_wavea_candidate import candidate_command
+        from scripts.deploy.rehearse_wavea_pair import env_digest
+
+        launch, launch_sha = _load_private_json(self.root / "launch.json", root=self.root)
+        if launch != {**self.config, "cache_path": str(self.paths["live_cache_path"]),
+                      "activation_receipt_path": str(self.root / "serving-receipt.json")}:
+            raise ValueError("Final serving launcher differs from the prepared candidate")
+        rehearsed, _, observed = self._rehearsed_environments(receipt)
+        expected = {**rehearsed, "BILUN_CACHE_DB_PATH": str(self.paths["live_cache_path"]),
+                    "BILUN_WAVEA_ACTIVATION_RECEIPT": str(self.root / "serving-receipt.json"),
+                    "BILUN_WAVEA_ACTIVATION_KEY_FILE": str(self.key)}
+        _, _, runtime, environment = candidate_command("backend", launch)
+        if runtime != self.backend or env_digest(environment) != env_digest(expected):
+            raise ValueError("Final serving environment differs from signed rehearsal and launcher paths")
+        proof = {
+            "schema_version": "bilun-serving-launch-proof-v1", "code_sha": receipt["code_sha"],
+            "backend_runtime_sha256": observed["logical_tuple"]["backend_runtime_sha256"],
+            "effective_environment_sha256": env_digest(expected), "launch_config_sha256": launch_sha,
+            "candidate_receipt_sha256": _stable_file_hash(self.candidate_receipt),
+            "serving_receipt_sha256": _stable_file_hash(self.root / "serving-receipt.json"),
+            "tuple_observation_sha256": receipt["tuple_observation_sha256"],
+            "candidate_environment_sha256": {
+                name: _stable_file_hash(Path(self.config[name]))
+                for name in ("candidate_backend_environment", "candidate_frontend_environment")
+            },
+        }
+        return environment, observed, proof
 
     @staticmethod
     def _service_record(service) -> dict:
@@ -471,6 +525,10 @@ class SingleVpsDriver:
         launch = {**self.config, "cache_path": str(self.paths["live_cache_path"]),
                   "activation_receipt_path": str(self.root / "serving-receipt.json")}
         atomic_json(self.root / "launch.json", launch)
+        _, _, launch_proof = self._serving_launch_context(receipt)
+        _seal_file(self.root / "serving-launch-proof.json", (json.dumps(
+            launch_proof, sort_keys=True, allow_nan=False,
+        ) + "\n").encode())
         for role in ("backend", "frontend"):
             runtime = self.backend if role == "backend" else self.frontend
             values = (self.config["backend_python"], str(runtime), str(self.root / "launch.json"), str(self.backend))
@@ -487,7 +545,7 @@ class SingleVpsDriver:
                 "final_validation_and_signing": result["validation_and_signing_seconds"]}
 
     def install_candidate(self) -> None:
-        self._candidate_gate()
+        receipt = self._candidate_gate()
         prepared = self._prepared()
         if (_stable_file_hash(self.candidate_receipt) != prepared["candidate_receipt_sha256"]
                 or self.config_sha != prepared["candidate_config_sha256"]):
@@ -496,11 +554,13 @@ class SingleVpsDriver:
             if _stable_file_hash(Path(self.config[name])) != digest:
                 raise ValueError("Candidate environment changed before installation")
         self._configuration_unchanged()
-        backend_environment, _ = candidate_environments(
-            Path(self.config["candidate_backend_environment"]),
-            Path(self.config["candidate_frontend_environment"]),
-        )
-        self._public_data_guard(backend_environment, self.root / "serving.duckdb")
+        backend_environment, observed, fresh_proof = self._serving_launch_context(receipt)
+        launch_proof, _ = _load_private_json(self.root / "serving-launch-proof.json", root=self.root)
+        if launch_proof != fresh_proof:
+            raise ValueError("Final serving launcher environment proof changed before installation")
+        self._public_data_guard(backend_environment, self.root / "serving.duckdb", receipt=receipt,
+                               observed=observed, expected_environment_sha256=launch_proof[
+                                   "effective_environment_sha256"])
         snapshot, _ = _load_private_json(self.root / "stopped-snapshot.json", root=self.root)
         live = self.paths["live_cache_path"]
         # Stop proof is repeated immediately before the first byte swap.
