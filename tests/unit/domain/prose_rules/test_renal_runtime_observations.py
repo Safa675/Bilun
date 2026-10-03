@@ -67,12 +67,42 @@ def test_one_fact_used_by_two_real_predicates_does_not_inflate_available_fact_co
 
 
 @pytest.mark.parametrize('day,status',[ (None,'blocked_inputs'),(date(2026,10,1),'blocked_source'),
-                                     (date(2026,10,3),'blocked_source')])
+                                     (date(2026,10,4),'blocked_source')])
 def test_date_block_never_fabricates_downstream_comparison_attempts(day,status):
-    _,collector=observe(replace(line(),drug_claim_date=day))
+    # Align the supplied evidence so the source/date gate is the only blocker.
+    outcome,collector=observe(replace(line(applies_on=day,assessment_date=day),drug_claim_date=day))
     report=collector.summary(source())
     assert report['predicate_attempted_count']==report['predicate_evaluated_count']==0
     assert collector.receipts[0]['kind']=='route' and collector.receipts[0]['status']==status
+    assert outcome['checks']==[]
+    assert outcome['source_authority']['status']=='review_required'
+    assert outcome['missing_inputs']==(['drug_claim_date'] if day is None
+                                      else ['verified_source_for_service_date'])
+
+
+@pytest.mark.parametrize('evidence_day', [DAY, date(2026,10,3)])
+def test_october_third_admission_still_requires_applicable_evidence(evidence_day):
+    service=date(2026,10,3)
+    outcome,collector=observe(replace(line(applies_on=evidence_day,assessment_date=evidence_day),
+                                      drug_claim_date=service))
+    report=collector.summary(source())
+    assert outcome['source_authority']['status']=='admitted'
+    assert outcome['clinical_eligibility_complete'] is False
+    assert report['source_clauses_fully_evaluated_count'] is None
+    if evidence_day==DAY:
+        assert outcome['criterion_status']=='not_evaluated'
+        assert outcome['missing_inputs']==['renal_evidence.applies_on']
+        assert outcome['checks']==[]
+        assert report['predicate_attempted_count']==report['predicate_evaluated_count']==0
+        assert len(collector.receipts)==1
+        assert collector.receipts[0]['kind']=='route'
+        assert collector.receipts[0]['status']=='blocked_inputs'
+        assert collector.receipts[0]['missing_input_fields']==['renal_evidence.applies_on']
+    else:
+        assert outcome['criterion_status']=='criterion_clear'
+        assert outcome['missing_inputs']==[]
+        assert len(outcome['checks'])==10
+        assert report['predicate_attempted_count']==report['predicate_evaluated_count']==10
 
 
 def test_unknown_phase_blocks_before_comparison_and_missing_fact_is_explicit():

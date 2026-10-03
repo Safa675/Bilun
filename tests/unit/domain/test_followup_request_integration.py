@@ -9,17 +9,19 @@ from src.bilun.domain.claims.adapter import build_context_from_material_dict
 from src.bilun.domain.prose_rules._drug_indication.clinical_followup import evaluate_followup
 
 
-@pytest.mark.parametrize('name,indication,checkpoint,outside,current,day,status,reason', [
-    ('dupilumab', 'atopic_dermatitis', False, False, 99, '2026-10-02', 'unknown', 'followup_evidence.week16_checkpoint_documented'),
-    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-02', 'criterion_clear', None),
-    ('dupilumab', 'atopic_dermatitis', True, False, 99, None, 'not_evaluated', 'drug_claim_date'),
-    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-03', 'not_evaluated', 'verified_source_for_service_date'),
-    ('nintedanib', 'progressive_fibrosing_ild', False, True, 100, '2026-10-02', 'criterion_clear', None),
-    ('nintedanib', 'progressive_fibrosing_ild', False, True, 99, '2026-10-02', 'restriction_not_met', None),
-    ('nintedanib', 'systemic_sclerosis_ild', False, False, 50, '2026-10-02', 'unknown', 'followup_evidence.fvc_assessment_outside_exacerbation'),
+@pytest.mark.parametrize('name,indication,checkpoint,outside,current,day,evidence_day,status,reason', [
+    ('dupilumab', 'atopic_dermatitis', False, False, 99, '2026-10-02', '2026-10-02', 'unknown', 'followup_evidence.week16_checkpoint_documented'),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-02', '2026-10-02', 'criterion_clear', None),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, None, '2026-10-02', 'not_evaluated', 'drug_claim_date'),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-03', '2026-10-02', 'not_evaluated', 'followup_evidence.applies_on'),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-03', '2026-10-03', 'criterion_clear', None),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-04', '2026-10-04', 'not_evaluated', 'verified_source_for_service_date'),
+    ('nintedanib', 'progressive_fibrosing_ild', False, True, 100, '2026-10-02', '2026-10-02', 'criterion_clear', None),
+    ('nintedanib', 'progressive_fibrosing_ild', False, True, 99, '2026-10-02', '2026-10-02', 'restriction_not_met', None),
+    ('nintedanib', 'systemic_sclerosis_ild', False, False, 50, '2026-10-02', '2026-10-02', 'unknown', 'followup_evidence.fvc_assessment_outside_exacerbation'),
 ])
-def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, indication, checkpoint, outside, current, day, status, reason):
-    facts = {'applies_on': '2026-10-02', 'assessment_date': '2026-10-02', 'phase': 'continuation',
+def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, indication, checkpoint, outside, current, day, evidence_day, status, reason):
+    facts = {'applies_on': evidence_day, 'assessment_date': evidence_day, 'phase': 'continuation',
         'indication': indication, 'treatment_start_date': '2026-06-12', 'baseline_assessment_date': '2026-06-12',
         'response_assessment_date': '2026-10-02', 'week16_checkpoint_documented': checkpoint,
         'baseline_easi': 72, 'response_easi': 0, 'baseline_dlqi': 30, 'response_dlqi': 0,
@@ -47,6 +49,15 @@ def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, ind
         assert outcome['criterion_status'] == status
         if reason:
             assert reason in outcome['missing_inputs']
+        if status == 'not_evaluated':
+            assert outcome['checks'] == []
+            assert outcome['missing_inputs'] == [reason]
+        if day == '2026-10-03':
+            assert outcome['source_authority']['status'] == 'admitted'
+            if evidence_day == day:
+                assert len(outcome['checks']) == 3
+        elif day == '2026-10-04':
+            assert outcome['source_authority']['status'] == 'review_required'
     app = FastAPI()
     app.include_router(router, prefix='/api')
     with TestClient(app) as client:
@@ -57,6 +68,12 @@ def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, ind
     observation = next(o for o in row['clinical_restrictions'] if o['constraint_set'] == 'followup_source_constraints')
     assert observation['criterion_status'] == status
     assert observation['clinical_eligibility_complete'] is False
+    assert observation['source_authority'] == outcome['source_authority']
+    if status == 'not_evaluated':
+        assert observation['checks'] == []
+        assert observation['missing_inputs'] == [reason]
+    elif day == '2026-10-03':
+        assert len(observation['checks']) == 3
     assert row['disposition'] == 'review_only' and public['is_valid'] is None
     if reason:
         assert reason in row['missing_inputs']

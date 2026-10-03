@@ -72,11 +72,21 @@ def test_exempt_and_adult_paths_are_not_forced_through_malnutrition_rule():
 
 
 @pytest.mark.parametrize('day,status', [('2026-09-04', 'not_evaluated'), ('2026-09-05', 'criterion_clear'),
-                                       ('2026-09-06', 'criterion_clear'), ('2026-10-03', 'not_evaluated')])
+                                       ('2026-09-06', 'criterion_clear'), ('2026-10-03', 'criterion_clear'),
+                                       ('2026-10-04', 'not_evaluated')])
 def test_enteral_provision_date_not_publication_date(day, status):
     service = date.fromisoformat(day)
     line = replace(enteral(applies_on=service, assessment_date=service), drug_claim_date=service)
-    assert evaluate_enteral_reports(line)['criterion_status'] == status
+    result = evaluate_enteral_reports(line)
+    assert result['criterion_status'] == status
+    assert result['clinical_eligibility_complete'] is False
+    if status == 'not_evaluated':
+        assert result['checks'] == []
+        assert result['missing_inputs'] == ['verified_source_for_service_date']
+        assert result['source_authority']['status'] == 'review_required'
+    else:
+        assert result['checks']
+        assert result['source_authority']['status'] == 'admitted'
 
 
 @pytest.mark.parametrize('months,edss,stop,status', [
@@ -99,11 +109,21 @@ def test_edss_must_be_on_each_report_even_before_six_months(documented, status):
 
 
 @pytest.mark.parametrize('day,status', [('2026-07-06','not_evaluated'), ('2026-07-07','criterion_clear'),
-                                       ('2026-07-08','criterion_clear'), ('2026-10-03','not_evaluated')])
+                                       ('2026-07-08','criterion_clear'), ('2026-10-03','criterion_clear'),
+                                       ('2026-10-04','not_evaluated')])
 def test_ravulizumab_source_date(day, status):
     service=date.fromisoformat(day)
     line=replace(ravu(applies_on=service,assessment_date=service),drug_claim_date=service)
-    assert evaluate_ravulizumab_continuation(line,['G36.0'])['criterion_status'] == status
+    result = evaluate_ravulizumab_continuation(line, ['G36.0'])
+    assert result['criterion_status'] == status
+    assert result['clinical_eligibility_complete'] is False
+    if status == 'not_evaluated':
+        assert result['checks'] == []
+        assert result['missing_inputs'] == ['verified_source_for_service_date']
+        assert result['source_authority']['status'] == 'review_required'
+    else:
+        assert result['checks']
+        assert result['source_authority']['status'] == 'admitted'
 
 
 @pytest.mark.parametrize('factory,evaluator,prefix',[(enteral,evaluate_enteral_reports,'enteral_evidence'),
