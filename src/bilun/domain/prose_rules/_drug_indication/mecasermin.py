@@ -1,4 +1,4 @@
-"""Mecasermin stop checks on verified snapshot dates, never invented legal intervals."""
+"""Mecasermin checks on observed points and explicitly reviewed source continuity."""
 from __future__ import annotations
 
 from datetime import date
@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from ...claims.growth_hormone import validated_growth_hormone_value
 
 from .gh_observations import gh_context, gh_route, gh_scope_block, gh_violation
+from .source_authority import load_source_authority, resolve_source_authority
 
 if TYPE_CHECKING:
     from .runtime_observations import ClinicalObservationCollector
@@ -18,17 +19,20 @@ _FIELDS = ("epiphyses_closed", "annual_growth_velocity_cm", "pretreatment_annual
            "height_cm", "gh_height_reference_sex", "height_percentile")
 
 
-def _review(rule: dict[str, Any], missing: list[str], message: str) -> dict[str, Any]:
+def _review(rule: dict[str, Any], missing: list[str], message: str,
+            source_authority: dict[str, Any] | None = None) -> dict[str, Any]:
     phase_inputs = (["mecasermin_daily_dose_mcg_per_kg"] if rule.get("gh_treatment_phase") == "initiation"
                     else list(_FIELDS))
-    return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+    return {**({"source_authority": source_authority} if source_authority else {}),
+            "rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
             "violation_kind": "needs_growth_hormone_verification", "severity": "review",
             "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed", "gh_treatment_phase", *phase_inputs],
             "missing_inputs": missing, "message_tr": message}
 
 
 def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugClaimLine,
-                               observer: ClinicalObservationCollector | None = None) -> dict[str, Any] | None:
+                               observer: ClinicalObservationCollector | None = None,
+                               authority_output: dict[str, Any] | None = None) -> dict[str, Any] | None:
     if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
         gh_route(observer, "gh.mecasermin.preconditions.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
@@ -37,21 +41,36 @@ def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugCl
         authority = {}
     known_dates = authority.get("known_as_of_dates")
     when = drug_line.drug_claim_date
+    source_decision = resolve_source_authority('mecasermin', when if type(when) is date else None)
+    source_evidence = source_decision.model_dump()
+    if authority_output is not None:
+        authority_output.update(source_evidence)
     gh_context(observer, drug_claim_date=when if type(when) is date else None)
     if type(when) is not date:
         gh_route(observer, "gh.mecasermin.source", "blocked_inputs", "service_date_unavailable", ["drug_claim_date"])
         return _review(rule, ["drug_claim_date"], "Mecasermin hizmet tarihi açıkça belirtilmeli; "
-                       "tarih yerine bugünün tarihi kullanılamaz (§4.2.6.B).")
-    # Matching a verified source snapshot is deliberately not an enactment date
-    # or a claim about any unreviewed date between / outside the snapshots.
+                       "tarih yerine bugünün tarihi kullanılamaz (§4.2.6.B).", source_evidence)
+    # Declaration and immutable catalog must agree. Neither a new arbitrary
+    # point in a caller-supplied rule nor calendar passage grants authority.
+    try:
+        version = next(row for row in load_source_authority().versions if row.family_id == 'mecasermin')
+        observed_dates = {window.start for window in version.windows if window.basis == 'observed_snapshot'}
+    except (OSError, ValueError, TypeError, StopIteration):
+        observed_dates = set()
     if ("legal_valid_from" not in authority or authority["legal_valid_from"] is not None
-        or authority.get("coverage_kind") != "verified_snapshot_dates_only"
+        or authority.get("coverage_kind") != "verified_snapshot_dates_plus_reviewed_continuity"
+        or authority.get("continuity_authority_id") != "mecasermin"
         or not isinstance(known_dates, list) or not all(isinstance(value, str) for value in known_dates)
-        or when.isoformat() not in known_dates):
+        or len(known_dates) != len(set(known_dates)) or set(known_dates) != observed_dates):
+        source_evidence.update(status='review_required', reason='source_authority_unavailable', admission_basis=None)
+        if authority_output is not None:
+            authority_output.update(source_evidence)
+    if source_evidence['status'] != 'admitted':
         gh_route(observer, "gh.mecasermin.source", "blocked_source", "source_snapshot_unverified")
         return _review(rule, ["mecasermin_source_version"], "Mecasermin için bu hizmet gününe uygun "
-                       "kaynak sürümü doğrulanmalı. Mevcut kontrol yalnızca 29.08.2026 ve 02.10.2026 "
-                       "kaynak günlerini kapsar; bu tarihler yasal yürürlük başlangıcı sayılmaz (§4.2.6.B-3).")
+                       "kaynak sürümü doğrulanmalı. Kaynak gözlem günleri yasal yürürlük başlangıcı "
+                       "sayılmaz; sonraki hizmet günleri ayrıca belgelenmiş güncel kaynak incelemesi "
+                       "gerektirir (§4.2.6.B-3).", source_evidence)
     missing = []
     if validated_growth_hormone_value("mecasermin_laron_syndrome_confirmed", drug_line.mecasermin_laron_syndrome_confirmed) is not True:
         missing.append("mecasermin_laron_syndrome_confirmed")
@@ -63,7 +82,7 @@ def evaluate_mecasermin_preconditions(*, rule: dict[str, Any], drug_line: DrugCl
     if missing:
         gh_scope_block(observer, "gh.mecasermin.scope", scope_values, missing)
         return _review(rule, missing, "Laron sendromu ve tedavi aşaması açıkça doğrulanmalı; "
-                       "E34.3 tanı kodundan veya diğer ölçümlerden çıkarılamaz (§4.2.6.B).")
+                       "E34.3 tanı kodundan veya diğer ölçümlerden çıkarılamaz (§4.2.6.B).", source_evidence)
     return None
 
 
@@ -72,7 +91,9 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
     if rule.get("mecasermin_source_scope") != MECASERMIN_SCOPE:
         gh_route(observer, "gh.mecasermin.checks.protocol", "skipped_not_applicable", "protocol_not_selected")
         return None
-    precondition = evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line, observer=observer)
+    source_evidence = {}
+    precondition = evaluate_mecasermin_preconditions(rule=rule, drug_line=drug_line, observer=observer,
+                                                    authority_output=source_evidence)
     if precondition is not None:
         return precondition
     if drug_line.gh_treatment_phase != "continuation":
@@ -80,7 +101,8 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
             "mecasermin_daily_dose_mcg_per_kg", drug_line.mecasermin_daily_dose_mcg_per_kg)
         if gh_violation(observer, "gh.mecasermin.initiation.dose_at_most_120", ["4.2.6.B-1.(2)#df3e5cd0"],
                         {"mecasermin_daily_dose_mcg_per_kg": dose}, lambda value: value > 120):
-            return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+            return {"source_authority": source_evidence,
+                    "rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
                     "violation_kind": "mecasermin_initial_dose_exceeded", "severity": "error",
                     "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed",
                                         "gh_treatment_phase", "mecasermin_daily_dose_mcg_per_kg"],
@@ -92,7 +114,7 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
             missing.append("mecasermin_daily_dose_mcg_per_kg")
         return _review(rule, missing, "Mecasermin başlangıcına ilişkin klinik ve izlem "
                        "koşulları ayrıca değerlendirilmelidir; doz üst sınırı kontrolü tek başına "
-                       "uygunluk göstermez (§4.2.6.B-1).")
+                       "uygunluk göstermez (§4.2.6.B-1).", source_evidence)
     values = {field: validated_growth_hormone_value(field, getattr(drug_line, field)) for field in _FIELDS}
     stopped = []
     if gh_violation(observer, "gh.mecasermin.continuation.epiphyses_open", ["4.2.6.B-3#dde3c8f6"],
@@ -117,7 +139,8 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
                   "growth_velocity_gain_under_2_cm_per_year": "yıllık büyüme hızı artışının tedavi öncesine göre 2 cm altında kalması",
                   "height_cm": f"boyun {limit} cm veya üzerinde olması",
                   "height_percentile": "boyun 25. persentile ulaşması veya geçmesi"}
-        return {"rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
+        return {"source_authority": source_evidence,
+                "rule_id": rule["rule_id"], "sut_section": rule["sut_section"],
                 "violation_kind": "growth_hormone_continuation_stop", "severity": "error",
                 "required_inputs": ["drug_claim_date", "mecasermin_laron_syndrome_confirmed", "gh_treatment_phase", *_FIELDS],
                 "missing_inputs": [], "growth_hormone_stop_criteria": stopped,
@@ -129,4 +152,4 @@ def evaluate_mecasermin_checks(*, rule: dict[str, Any], drug_line: DrugClaimLine
     missing.append("mecasermin_remaining_clinical_criteria")
     return _review(rule, missing, "Mecasermin devamında izlem, radyolojik epifiz belgesi, rapor ve "
                    "diğer klinik koşullar ayrıca doğrulanmalı; negatif sonlandırma kontrolü tek "
-                   "başına geri ödeme uygunluğu göstermez (§4.2.6.B-2/B-3).")
+                   "başına geri ödeme uygunluğu göstermez (§4.2.6.B-2/B-3).", source_evidence)

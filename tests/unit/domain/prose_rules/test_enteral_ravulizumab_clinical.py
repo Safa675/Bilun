@@ -22,6 +22,7 @@ def enteral(**changes):
     evidence = EnteralEvidence(applies_on=DAY, assessment_date=DAY, pediatric=True,
         phase='initiation', malnutrition_path='malnutrition', neurological_disease=True,
         malnutrition_criteria_met=True, specialist_report_present=True,
+        malnutrition_conditions_documented_in_report=True,
         report_author_specialty='pediatrics')
     return replace(_drug_line(drug_name='çocuk enteral beslenme', report_present=False,
                               report_duration_months=12), drug_claim_date=DAY,

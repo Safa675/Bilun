@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.bilun.domain.sut.source_authority_schema import bounded_source_authority
+
 _DEFINITIONS = json.loads(Path(__file__).with_name("public_contracts.json").read_text())
 _DROP = object()
 
@@ -112,6 +114,11 @@ def _project(value: Any, schema: Any) -> Any:
     if schema is True:
         return value if isinstance(value, (str, int, float, bool)) else _DROP
     if "$ref" in schema:
+        if schema["$ref"] == "ClinicalSourceAuthorityEvidence":
+            # Validate before selecting fields: stripping arbitrary fields first
+            # could turn an untrusted cached claim into apparently valid proof.
+            authority = bounded_source_authority(value)
+            return authority if authority is not None else _DROP
         return _project(value, _DEFINITIONS[schema["$ref"]])
     if "$statusCountsSummary" in schema:
         if not isinstance(value, dict):

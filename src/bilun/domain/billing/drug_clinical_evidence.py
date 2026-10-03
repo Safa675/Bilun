@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from ..sut.runtime_coverage_contract import bounded_runtime_coverage
+from ..sut.source_authority_schema import bounded_source_authority
 
 MAX_CONSTRAINTS = 8
 MAX_CHECKS = 64
@@ -45,9 +46,11 @@ class DrugClinicalRestriction:
     checks_truncated: bool = False
     source_refs_truncated: bool = False
     runtime_coverage: dict[str, Any] | None = None
+    source_authority: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {**({'runtime_coverage': bounded_runtime_coverage(self.runtime_coverage)}
+        return {**source_authority_payload(self.source_authority),
+                **({'runtime_coverage': bounded_runtime_coverage(self.runtime_coverage)}
                     if self.runtime_coverage is not None else {}),
                 'constraint_set': self.constraint_set, 'criterion_status': self.criterion_status,
                 'missing_inputs': list(self.missing_inputs),
@@ -74,11 +77,19 @@ def bounded_clinical_restrictions(raw: Any) -> tuple[DrugClinicalRestriction, ..
             missing_inputs=_strings(row.get('missing_inputs'), MAX_MISSING), checks=checked,
             source_refs=_strings(row.get('source_refs'), MAX_SOURCES),
             verification_status='ai_generated_pending_review',
-            checks_truncated=len(checks) > MAX_CHECKS,
-            source_refs_truncated=isinstance(row.get('source_refs'), (list, tuple)) and len(row['source_refs']) > MAX_SOURCES,
+            checks_truncated=row.get('checks_truncated') is True or len(checks) > MAX_CHECKS,
+            source_refs_truncated=row.get('source_refs_truncated') is True or (
+                isinstance(row.get('source_refs'), (list, tuple)) and len(row['source_refs']) > MAX_SOURCES),
             runtime_coverage=bounded_runtime_coverage(row.get('runtime_coverage')),
+            source_authority=bounded_source_authority(row.get('source_authority')),
         ))
     return tuple(outcomes)
+
+
+def source_authority_payload(raw: Any) -> dict[str, Any]:
+    """Keep legacy absence absent and reject malformed provenance in every projection."""
+    authority = bounded_source_authority(raw)
+    return {'source_authority': authority, 'clinical_eligibility_complete': False} if authority is not None else {}
 
 
 def clinical_evidence_payload(outcomes: tuple[DrugClinicalRestriction, ...]) -> dict[str, Any]:

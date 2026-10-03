@@ -19,12 +19,13 @@ from src.bilun.domain.sut.runtime_coverage_contract import bounded_runtime_cover
 from tests.unit.domain.prose_rules.test_drug_indication import _claim,_drug_line
 
 DAY=date(2026,10,2)
-VERSION='renal.atomic.v1.2026-10-02'
+VERSION='renal.atomic.v2.2026-10-02'
 
 
 def line(**changes):
     facts=RenalEvidence(applies_on=DAY,assessment_date=DAY,indication='phosphate_binding',
         phase='initiation',dialysis=True,other_phosphate_therapy_months=3,
+        prior_phosphate_therapy_documented_in_report=True,
         calcium_phosphorus_product=72,corrected_calcium_phosphorus_product=55,
         pth_pg_ml=150,adynamic_bone_disease=False,kt_v=1.4)
     return replace(_drug_line(drug_name='sevelamer',report_present=True),drug_claim_date=DAY,
@@ -47,22 +48,22 @@ def test_actual_eager_or_path_records_every_reached_comparison_not_just_winning_
     assert outcome==evaluate_renal(line())  # Instrumentation cannot alter the clinical result.
     report=collector.summary(source())
     assert outcome['criterion_status']=='criterion_clear'
-    assert report['predicate_attempted_count']==report['predicate_evaluated_count']==9
-    assert report['predicate_passed_count']==3 and report['predicate_failed_count']==6
-    assert report['input_facts_available_count']==13  # 7 clinical plus 6 date/route/name context facts.
+    assert report['predicate_attempted_count']==report['predicate_evaluated_count']==10
+    assert report['predicate_passed_count']==4 and report['predicate_failed_count']==6
+    assert report['input_facts_available_count']==14  # 8 clinical plus 6 date/route/name context facts.
     assert report['source_clauses_touched_count']==6
     assert report['source_clauses_fully_evaluated_count'] is None
-    assert len({r['predicate_id'] for r in collector.receipts})==9
+    assert len({r['predicate_id'] for r in collector.receipts})==10
     assert report['clinical_eligibility_complete'] is False
 
 
 def test_one_fact_used_by_two_real_predicates_does_not_inflate_available_fact_count():
     _,collector=observe(line(pth_pg_ml=None))
     report=collector.summary(source())
-    assert report['predicate_attempted_count']==9 and report['predicate_evaluated_count']==7
+    assert report['predicate_attempted_count']==10 and report['predicate_evaluated_count']==8
     assert report['predicate_missing_inputs_count']==2
     assert report['input_facts_missing_count']==1
-    assert report['input_facts_available_count']==12
+    assert report['input_facts_available_count']==13
 
 
 @pytest.mark.parametrize('day,status',[ (None,'blocked_inputs'),(date(2026,10,1),'blocked_source'),
@@ -123,16 +124,16 @@ def test_real_request_billing_public_model_and_duckdb_roundtrip_keep_measured_co
     payload={'evaluations':[e.to_dict() for e in batch.evaluations],
              'findings':[e.to_dict() for e in batch.findings], 'violations':list(batch.legacy_violations)}
     model=DrugIndicationReviewResponse.model_validate(payload)
-    assert model.evaluations[0].clinical_restrictions[0].runtime_coverage.predicate_evaluated_count==9
+    assert model.evaluations[0].clinical_restrictions[0].runtime_coverage.predicate_evaluated_count==10
     for key in ('evaluations','findings','violations'):
         row=payload[key][0]['clinical_restrictions'][0]['runtime_coverage']
-        assert row['input_facts_available_count']==13
+        assert row['input_facts_available_count']==14
         row['private_raw_clinical_values']={'PTH':150}
     public=project_public_response({'drug_indication':payload},'get_billing_report')
     assert 'private_raw_clinical_values' not in json.dumps(public)
     for key in ('evaluations','findings','violations'):
         report=public['drug_indication'][key][0]['clinical_restrictions'][0]['runtime_coverage']
-        assert report['predicate_evaluated_count']==9
+        assert report['predicate_evaluated_count']==10
         assert report['source_clause_ids']==['C004195','C004196','C004197','C004198','C004199','C004201']
         assert report['source_clauses_fully_evaluated_count'] is None
     with duckdb.connect(':memory:') as db:
@@ -178,7 +179,7 @@ def test_real_v2_request_exposes_only_observed_runtime_summary():
     result=validate_claim_endpoint(request,contract_version='2')
     advisory=next(row for row in result['advisories'] if row['rule']=='drug_indication')
     runtime=advisory['clinical_restrictions'][0]['runtime_coverage']
-    assert runtime['available'] is True and runtime['predicate_evaluated_count']==9
+    assert runtime['available'] is True and runtime['predicate_evaluated_count']==10
     assert runtime['instrumented_families']==['renal']
     assert advisory['clinical_eligibility_complete'] is False
     assert advisory['disposition']=='review_only'
@@ -196,13 +197,13 @@ def test_distinct_lines_keep_separate_receipt_identity_but_same_clauses():
         instrumented_families=['renal'],execution_scope=ca.execution_scope,
         allowed_contexts={(ca.claim_id,ca.line_id),(cb.claim_id,cb.line_id)},
         source_clauses=source())
-    assert combined['predicate_evaluated_count']==18
-    assert combined['input_facts_available_count']==26
+    assert combined['predicate_evaluated_count']==20
+    assert combined['input_facts_available_count']==28
     assert combined['source_clauses_touched_count']==6
     duplicate=build_runtime_coverage(ca.receipts+ca.receipts,
         instrumented_families=['renal'],execution_scope=ca.execution_scope,
         allowed_contexts={(ca.claim_id,ca.line_id)},source_clauses=source())
-    assert duplicate['predicate_evaluated_count']==9
+    assert duplicate['predicate_evaluated_count']==10
 
 
 def test_anonymous_ad_hoc_claim_is_measured_only_inside_registered_request_scope():
@@ -211,7 +212,7 @@ def test_anonymous_ad_hoc_claim_is_measured_only_inside_registered_request_scope
     _,a=observe(drug);_,b=observe(drug)
     assert a.execution_scope != b.execution_scope
     report=a.summary(source())
-    assert report['available'] is True and report['predicate_evaluated_count']==9
+    assert report['available'] is True and report['predicate_evaluated_count']==10
     assert 'execution_scope' not in report
     assert a.summary(source())['receipt_sha256']==b.summary(source())['receipt_sha256']
     mixed=build_runtime_coverage(a.receipts+b.receipts,instrumented_families=['renal'],
@@ -255,7 +256,7 @@ def test_actual_v2_anonymous_request_is_measured_without_inventing_claim_identit
     result=validate_claim_endpoint(request,contract_version='2')
     row=next(a for a in result['advisories'] if a['rule']=='drug_indication')
     report=row['clinical_restrictions'][0]['runtime_coverage']
-    assert report['available'] is True and report['predicate_evaluated_count']==9
+    assert report['available'] is True and report['predicate_evaluated_count']==10
     assert 'execution_scope' not in report and result['claim_id']==''
 
 

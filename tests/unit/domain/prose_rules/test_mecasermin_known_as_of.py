@@ -47,7 +47,7 @@ def test_negative_screen_on_supported_source_dates_is_still_partial_review(when,
 
 @pytest.mark.parametrize("when", [date(2013, 3, 24), date(2017, 9, 23), date(2026, 8, 28),
                                   date(2026, 8, 30), date(2026, 9, 15), date(2026, 10, 1),
-                                  date(2026, 10, 3), date(2027, 1, 1)])
+                                  date(2026, 10, 4), date(2027, 1, 1)])
 def test_every_unverified_service_date_is_review_including_between_snapshots(when):
     result = evaluate(drug_claim_date=when, epiphyses_closed=True,
                       drug_specialty_board_report_present=False)

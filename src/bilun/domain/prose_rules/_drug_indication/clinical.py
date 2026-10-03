@@ -15,7 +15,7 @@ def _observed_family(line: Any, family: str, evaluator) -> dict[str, Any]:
     from ...sut.rules_catalog import _load_sut_clauses_frame
     from .runtime_observations import ClinicalObservationCollector
 
-    observer = ClinicalObservationCollector(line, family, f'{family}.atomic.v1.2026-10-02')
+    observer = ClinicalObservationCollector(line, family, f'{family}.atomic.v2.2026-10-03')
     # This function is reached only after the real name-scoped rule selection.
     observer.context('drug_name')
     outcome = evaluator(line, observer=observer)
@@ -36,7 +36,7 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
         from ...sut.rules_catalog import _load_sut_clauses_frame
         from .runtime_observations import ClinicalObservationCollector
 
-        observer = ClinicalObservationCollector(line, 'renal', 'renal.atomic.v1.2026-10-02')
+        observer = ClinicalObservationCollector(line, 'renal', 'renal.atomic.v2.2026-10-02')
         outcome = evaluate_renal(line, observer=observer)
         outcome['runtime_coverage'] = observer.summary(_load_sut_clauses_frame())
         evaluations.append(outcome)

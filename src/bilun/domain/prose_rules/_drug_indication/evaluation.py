@@ -320,6 +320,9 @@ def evaluate_drug_indication_line_with_rules(
         if violation.get("clinical_restrictions"):
             common["clinical_restrictions"] = violation["clinical_restrictions"]
             common["clinical_eligibility_complete"] = False
+        if violation.get("source_authority"):
+            common["source_authority"] = violation["source_authority"]
+            common["clinical_eligibility_complete"] = False
     result = {**common, "violation": violation}
     if temporal_evidence is not None:
         from .temporal import guard_historical_evaluation

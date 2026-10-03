@@ -57,7 +57,7 @@ export function optionalClinicalNumber(value: string, positiveOnly = false, max?
 }
 
 export const clinicalReviewFields = [
-  "histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping",
+  "risdiplam_age_disease_assessment_standards_review", "histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping",
   "documented_16_week_response",
   "historical_sut_version", "verified_source_for_service_date", "remaining_sut_clinical_criteria",
   "micafungin_prophylaxis_route", "itraconazole_source_neutrophil_unit_verification",
@@ -84,13 +84,21 @@ export const smaFields = [
   { name: "hypoxic_ischemic_encephalopathy", kind: "boolean" },
   { name: "hypoxic_birth_neurological_sequelae", kind: "boolean" },
   { name: "lumbar_puncture_suitability_documented", kind: "boolean" },
+  { name: "risdiplam_treatment_period", kind: "select", options: ["not_started", "during_treatment"] },
+  { name: "risdiplam_motor_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_cognitive_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_nutritional_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_respiratory_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_rehabilitation_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_orthopedic_monitoring_assessment_documented", kind: "boolean" },
+  { name: "risdiplam_monitoring_assessment_in_health_board_report", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutSmaEvidence }>;
 
 export const antifungalFields = [
   { name: "applies_on", kind: "date" },
   { name: "assessment_date", kind: "date" },
   { name: "intent", kind: "select", options: ["prophylaxis", "treatment"] },
-  { name: "indication", kind: "select", options: ["aspergillus_candida_prophylaxis", "chromoblastomycosis", "coccidioidomycosis", "esophageal_candidiasis", "fusariosis", "invasive_aspergillosis", "invasive_candidiasis", "mycetoma", "oropharyngeal_candidiasis", "other"] },
+  { name: "indication", kind: "select", options: ["aspergillus_candida_prophylaxis", "chromoblastomycosis", "coccidioidomycosis", "esophageal_candidiasis", "fusariosis", "invasive_aspergillosis", "invasive_candidiasis", "mycetoma", "oropharyngeal_candidiasis", "deep_fungal_infection_prophylaxis", "other"] },
   { name: "formulation", kind: "select", options: ["oral_solution", "oral_suspension", "oral_tablet", "parenteral"] },
   { name: "adult", kind: "boolean" },
   { name: "anc_per_mm3", kind: "number" },
@@ -99,6 +107,7 @@ export const antifungalFields = [
   { name: "aml_or_mds", kind: "boolean" },
   { name: "remission_induction_chemotherapy", kind: "boolean" },
   { name: "prolonged_neutropenia_expected", kind: "boolean" },
+  { name: "neutropenia_development_expected", kind: "boolean" },
   { name: "allogeneic_hsct", kind: "boolean" },
   { name: "autologous_hsct", kind: "boolean" },
   { name: "acute_lymphoblastic_leukemia", kind: "boolean" },
@@ -130,6 +139,7 @@ export const renalFields = [
   { name: "indication", kind: "select", options: ["dialysis_shpt", "other", "phosphate_binding", "primary_hpt", "renal_nutrition"] },
   { name: "dialysis", kind: "boolean" },
   { name: "other_phosphate_therapy_months", kind: "number" },
+  { name: "prior_phosphate_therapy_documented_in_report", kind: "boolean" },
   { name: "calcium_phosphorus_product", kind: "number" },
   { name: "corrected_calcium_phosphorus_product", kind: "number" },
   { name: "pth_pg_ml", kind: "number" },
@@ -176,6 +186,7 @@ export const enteralFields = [
   { name: "malnutrition_path", kind: "select", options: ["exemption", "malnutrition"] },
   { name: "neurological_disease", kind: "boolean" },
   { name: "malnutrition_criteria_met", kind: "boolean" },
+  { name: "malnutrition_conditions_documented_in_report", kind: "boolean" },
   { name: "specialist_report_present", kind: "boolean" },
   { name: "report_author_specialty", kind: "select", options: ["other", "pediatric_endocrinology", "pediatric_endocrinology_metabolism", "pediatric_gastroenterology", "pediatric_metabolism", "pediatric_neurology", "pediatric_surgery", "pediatrics"] },
 ] satisfies Array<ClinicalField & { name: keyof SutEnteralEvidence }>;

@@ -314,6 +314,8 @@ class DrugClaimLine:
     gh_initiation_pathway: str | None = None
     gh_reported_growth_age_band: str | None = None
     gh_chronological_age_years: float | None = None
+    # Clinician-recorded SUT onset: boys testicular volume >=4 ml / girls T2 thelarche.
+    # Generic/uncertain assessments stay unknown; no age/height-reference-sex inference.
     gh_pubertal_status: str | None = None
     gh_pubertal_growth_assessment_completed: bool | None = None
     gh_birth_weight_for_gestational_age_sds: float | None = None

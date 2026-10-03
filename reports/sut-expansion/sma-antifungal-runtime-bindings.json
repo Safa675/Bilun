@@ -82,6 +82,20 @@
       "unit": "boolean"
     },
     {
+      "predicate_id": "itraconazole.prophylaxis.deep_fungal_indication",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.indication",
+      "operator": "one_of",
+      "expected": [
+        "deep_fungal_infection_prophylaxis"
+      ],
+      "unit": "enum"
+    },
+    {
       "predicate_id": "itraconazole.prophylaxis.hematologic_malignancy",
       "family": "antifungal",
       "source_refs": [
@@ -89,6 +103,18 @@
       ],
       "clause_predicate_complete": false,
       "input_field": "antifungal_evidence.hematological_malignancy",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "itraconazole.prophylaxis.neutropenia_development_expected",
+      "family": "antifungal",
+      "source_refs": [
+        "4.2.23.b#1b49d136"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "antifungal_evidence.neutropenia_development_expected",
       "operator": "is",
       "expected": true,
       "unit": "boolean"
@@ -620,6 +646,90 @@
       "input_field": "sma_evidence.viral_encephalitis_history",
       "operator": "is",
       "expected": false,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_cognitive_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_cognitive_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_monitoring_assessment_in_health_board_report",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_monitoring_assessment_in_health_board_report",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_motor_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_motor_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_nutritional_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_nutritional_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_orthopedic_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_orthopedic_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_rehabilitation_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_rehabilitation_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
+      "unit": "boolean"
+    },
+    {
+      "predicate_id": "sma.risdiplam_respiratory_monitoring_assessment_documented",
+      "family": "sma",
+      "source_refs": [
+        "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999"
+      ],
+      "clause_predicate_complete": false,
+      "input_field": "sma_evidence.risdiplam_respiratory_monitoring_assessment_documented",
+      "operator": "is",
+      "expected": true,
       "unit": "boolean"
     },
     {

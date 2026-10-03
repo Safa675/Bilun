@@ -1,7 +1,7 @@
 import type { SutIndicationEvidence } from "./clinicalEvidence";
 import type { SutFollowupEvidence } from "./clinicalEvidence";
 import { postJSON, requestJSON } from "./request";
-import type { SutEnteralEvidence, SutRavulizumabEvidence, SutClinicalRestriction } from "./clinicalEvidence";
+import type { SutEnteralEvidence, SutRavulizumabEvidence, SutClinicalRestriction, SutClinicalSourceAuthority } from "./clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
@@ -157,6 +157,7 @@ export interface SutLegacyValidationResult {
 }
 
 export interface SutValidationEvidence {
+  source_authority?: SutClinicalSourceAuthority | null;
   clinical_restrictions?: SutClinicalRestriction[];
   clinical_eligibility_complete?: false | null;
   selected_rule_id?: string | null;
@@ -705,7 +706,22 @@ export interface CoverageSummaryMeta {
   unavailable_reason: string | null;
 }
 
+export interface CoverageEvidence {
+  schema_version: number;
+  available: boolean;
+  unavailable_reason?: string;
+  source_clause_count?: number;
+  source_represented_clause_count?: number;
+  executable_predicate_rule_count?: number;
+  executable_predicate_scope?: string;
+  inputs_available_count?: number | null;
+  actually_evaluated_count?: number | null;
+  runtime_unavailable_reason?: string;
+  clinical_completion_pct?: null;
+}
+
 export interface PartialEngineCoverage {
+  coverage_evidence?: CoverageEvidence;
   rule_id: string;
   registry_status: string;
   prose_engine_status: string;

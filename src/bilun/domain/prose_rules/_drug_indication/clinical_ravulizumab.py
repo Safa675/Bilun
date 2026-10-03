@@ -1,5 +1,4 @@
 """Ravulizumab yyy NMOSD continuation; not the identical satralizumab sentence."""
-from datetime import date
 import math
 from typing import Any
 
@@ -22,7 +21,7 @@ def evaluate_ravulizumab_continuation(line: Any, codes: list[str] | None = None)
         return None
     reader = Reader(evidence, 'ravulizumab_evidence')
     missing = scope_missing(evidence, 'ravulizumab_evidence', line.drug_claim_date,
-                            date(2026, 7, 7), date(2026, 10, 2))
+                            'ravulizumab', reader=reader)
     if missing:
         return {**result(KIND, reader, Predicate(None), SOURCE_REFS, date_missing=missing),
                 'sut_section': '4.2.14.C(3)(yyy)(2)', 'stop_required': None}

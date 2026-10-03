@@ -4,7 +4,6 @@ The explicit clinical indication selects the branch; a drug name/ICD code alone
 never establishes dialysis, surgical suitability, or nutritional eligibility.
 Clear thresholds remain partial clinical review, not reimbursement approval.
 """
-from datetime import date
 from typing import Any
 
 from ...claims.clinical_evidence import RenalEvidence, parse_clinical_evidence
@@ -12,7 +11,6 @@ from .clinical_common import Predicate, Reader, all_of, any_of, result, scope_mi
 from .runtime_observations import ClinicalObservationCollector, ObservedClinicalReader
 from .matching import _drug_name_matches
 
-VERIFIED = date(2026, 10, 2)
 PHOSPHATE_DRUGS = ('sevelamer', 'lantanyum karbonat', 'alüminyum klorür hidroksit')
 CINACALCET_DRUGS = ('cinacalcet',)
 NUTRITION_DRUGS = ('oral esansiyel aminoasit', 'oral esansiyel aminoasit preparatları',
@@ -41,7 +39,8 @@ def _phosphate(reader: Reader) -> tuple[Predicate, list[str]]:
         return _unknown('phosphate_binding_indication'), PHOSPHATE_INITIAL
     if phase in ('initiation', 'restart'):
         # The four criteria are alternatives, all following >=3 months of
-        # another phosphate-lowering therapy. Corrected and raw Ca×P differ.
+        # another phosphate-lowering therapy, explicitly documented in the
+        # report. Restart imports both requirements. Corrected and raw Ca×P differ.
         alternatives = any_of(
             reader.bound('phosphate.initial.raw_product', ['4.2.9.B.a#2cbf02e7']).number('calcium_phosphorus_product', '>=', 72),
             all_of(reader.bound('phosphate.initial.adynamic_bone', ['4.2.9.B.b#1438d4b8']).bool('adynamic_bone_disease'), reader.bound('phosphate.initial.low_pth', ['4.2.9.B.b#1438d4b8']).number('pth_pg_ml', '<', 100)),
@@ -50,7 +49,8 @@ def _phosphate(reader: Reader) -> tuple[Predicate, list[str]]:
             all_of(reader.bound('phosphate.initial.ktv_for_pth', ['4.2.9.B.ç#4843bec7']).number('kt_v', '>', 1.4), reader.bound('phosphate.initial.high_pth', ['4.2.9.B.ç#4843bec7']).number('pth_pg_ml', '>=', 300)),
         )
         predicate = all_of(reader.bound('phosphate.initial.dialysis', ['4.2.9.B.(2)#8c267281']).bool('dialysis'),
-            reader.bound('phosphate.initial.prior_months', ['4.2.9.B.(1)#00052268']).number('other_phosphate_therapy_months', '>=', 3), alternatives)
+            reader.bound('phosphate.initial.prior_months', ['4.2.9.B.(1)#00052268']).number('other_phosphate_therapy_months', '>=', 3),
+            reader.bound('phosphate.initial.prior_therapy_report', ['4.2.9.B.(1)#00052268']).bool('prior_phosphate_therapy_documented_in_report'), alternatives)
         sources = PHOSPHATE_INITIAL + ['4.2.9.B.(2)#8c267281']
         if phase == 'restart':
             predicate = all_of(predicate, reader.bound('phosphate.restart.phosphorus', ['4.2.9.B.(4)#e346bde0']).number('phosphorus_mg_dl', '>', 4))
@@ -154,7 +154,8 @@ def evaluate_renal(line: Any, *, observer: ClinicalObservationCollector | None =
     sources = (PHOSPHATE_INITIAL + PHOSPHATE_STOP + PHOSPHATE_RESTART if families == ['phosphate']
                else CINACALCET_INITIAL + CINACALCET_STOP + CINACALCET_PRIMARY if families == ['cinacalcet']
                else NUTRITION_INITIAL + NUTRITION_STOP + NUTRITION_RESTART if families == ['nutrition'] else [])
-    date_missing = scope_missing(evidence, 'renal_evidence', line.drug_claim_date, None, VERIFIED)
+    date_missing = scope_missing(evidence, 'renal_evidence', line.drug_claim_date,
+                                 'renal', reader=reader)
     if observer is not None:
         if 'drug_claim_date' not in date_missing:
             observer.context('drug_claim_date')

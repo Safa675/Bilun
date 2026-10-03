@@ -14,7 +14,8 @@ from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indicatio
     ('2026-10-02', 'initiation', 120.001, False, None, 'mecasermin_initial_dose_exceeded'),
     ('2026-10-02', 'continuation', 120, True, None, 'growth_hormone_continuation_stop'),
     ('2026-09-15', 'continuation', 120, True, 'mecasermin_source_version', None),
-    ('2026-10-03', 'continuation', 120, True, 'mecasermin_source_version', None),
+    ('2026-10-03', 'continuation', 120, True, None, 'growth_hormone_continuation_stop'),
+    ('2026-10-04', 'continuation', 120, True, 'mecasermin_source_version', None),
     (None, 'continuation', 120, True, 'drug_claim_date', None),
 ])
 def test_actual_http_preserves_source_points_units_and_partial_review(day, phase, dose, closed, missing, kind):

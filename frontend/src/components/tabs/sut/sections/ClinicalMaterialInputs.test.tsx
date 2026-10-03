@@ -476,3 +476,74 @@ it("keeps height-source ambiguity as review and both reference inputs optional",
   expect(tr.claimValidator.clinical.hints.ckdGrowthPathways).toContain("isteğe bağlıdır");
   expect(ckdGrowthPathwayFields.some(field => String(field.name) === "ckd_height_source_notation_verification")).toBe(false);
 });
+
+
+it("keeps report-content facts distinct from clinical qualification and prior duration", async () => {
+  await change("enteral", "malnutrition_criteria_met", "true");
+  await change("enteral", "specialist_report_present", "true");
+  await change("renal", "other_phosphate_therapy_months", "3");
+  let payload = await submit();
+  expect(payload.materials[0].enteral_evidence?.malnutrition_conditions_documented_in_report).toBeUndefined();
+  expect(payload.materials[0].renal_evidence?.prior_phosphate_therapy_documented_in_report).toBeUndefined();
+  for (const value of ["true", "false", ""]) {
+    await change("enteral", "malnutrition_conditions_documented_in_report", value);
+    await change("renal", "prior_phosphate_therapy_documented_in_report", value);
+    payload = await submit();
+    const expected = value === "" ? null : value === "true";
+    expect(payload.materials[0].enteral_evidence).toMatchObject({ malnutrition_criteria_met: true,
+      specialist_report_present: true, malnutrition_conditions_documented_in_report: expected });
+    expect(payload.materials[0].renal_evidence).toMatchObject({ other_phosphate_therapy_months: 3,
+      prior_phosphate_therapy_documented_in_report: expected });
+  }
+});
+
+it("localizes the new missing report-content inputs in English and Turkish", () => {
+  for (const messages of [en, tr]) {
+    const t = (key: string) => key.split(".").reduce<unknown>((value, part) =>
+      (value as Record<string, unknown>)[part], { sections: messages }) as string;
+    for (const [prefix, name] of [["enteral_evidence", "malnutrition_conditions_documented_in_report"],
+      ["renal_evidence", "prior_phosphate_therapy_documented_in_report"]]) {
+      expect(clinicalMissingInputLabel(`${prefix}.${name}`, t))
+        .toContain((messages.claimValidator.clinical.fields as Record<string, string>)[name]);
+    }
+  }
+});
+
+it("shows the source-defined clinician puberty contract without collecting measurements", async () => {
+  expect(group("pediatricInitiation").findByType("p").children.join("")).toContain("testicular volume ≥4 ml in boys or T2 thelarche in girls");
+  expect(tr.claimValidator.clinical.hints.pediatricInitiation).toContain("testis hacminin ≥4 ml");
+  expect(tr.claimValidator.clinical.hints.pediatricInitiation).toContain("T2 düzeyinde telarş");
+  expect(pediatricInitiationFields.some(field => /testicular|tanner/.test(field.name))).toBe(false);
+  await change("growthHormone", "gh_height_reference_sex", "male");
+  expect((await submit()).materials[0].gh_pubertal_status).toBeNull();
+  await change("pediatricInitiation", "gh_pubertal_status", "pubertal");
+  await change("growthHormone", "gh_height_reference_sex", "female");
+  expect((await submit()).materials[0].gh_pubertal_status).toBe("pubertal");
+  await change("pediatricInitiation", "gh_pubertal_status", "");
+  expect((await submit()).materials[0].gh_pubertal_status).toBeNull();
+});
+
+
+it("submits and clears exact itraconazole prophylaxis and risdiplam documentary facts", async () => {
+  await change("antifungal", "neutropenia_development_expected", "true");
+  await change("antifungal", "indication", "deep_fungal_infection_prophylaxis");
+  await change("sma", "sma_type", "type_1");
+  const documentary = smaFields.filter(field => field.name.startsWith("risdiplam_") && field.kind === "boolean");
+  expect(documentary).toHaveLength(7);
+  await change("sma", "risdiplam_treatment_period", "during_treatment");
+  for (const field of documentary) await change("sma", field.name, "false");
+  const payload = await submit();
+  expect(payload.materials[0].antifungal_evidence).toMatchObject({
+    neutropenia_development_expected: true, indication: "deep_fungal_infection_prophylaxis" });
+  for (const field of documentary) expect(payload.materials[0].sma_evidence?.[field.name]).toBe(false);
+  expect(payload.materials[0].sma_evidence?.risdiplam_treatment_period).toBe("during_treatment");
+  await change("sma", "risdiplam_treatment_period", "not_started");
+  expect((await submit()).materials[0].sma_evidence?.risdiplam_treatment_period).toBe("not_started");
+  await change("sma", "risdiplam_treatment_period", "");
+  for (const field of documentary) await change("sma", field.name, "");
+  await change("antifungal", "neutropenia_development_expected", "");
+  const cleared = await submit();
+  for (const field of documentary) expect(cleared.materials[0].sma_evidence?.[field.name]).toBeNull();
+  expect(cleared.materials[0].antifungal_evidence?.neutropenia_development_expected).toBeNull();
+  expect(cleared.materials[0].sma_evidence?.risdiplam_treatment_period).toBeNull();
+});

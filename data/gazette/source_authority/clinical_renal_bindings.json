@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.9.B.(1)#00052268",
+      "clause_coordinate": "4.2.9.B.(1)",
+      "section_id": "4.2.9.B",
+      "in_force_text": "(1) Tedaviye başlamak için diğer fosfor düşürücü ilaçların en az 3 ay süreyle kullanılmış olması ve bu hususun raporda belirtilmiş olması gerekir. Bu süre sonunda:",
+      "text_sha256": "000522682b84a52b4f318c45527659877206125ef7109a528ca670328604e98d",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.(2)#8c267281",
+      "clause_coordinate": "4.2.9.B.(2)",
+      "section_id": "4.2.9.B",
+      "in_force_text": "(2) Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalara nefroloji (Değişik:RG-16/03/2023-32134/23-a md. Yürürlük:24/03/2023) , iç hastalıkları veya çocuk sağlığı ve hastalıkları  uzman hekimlerinden birinin düzenlediği ve yukarıdaki durumlardan sevelamer (Ek:RG-07/10/2016-29850/18-b md. Yürürlük: 15/10/2016) , lantanyum karbonat veya alüminyum klorür hidroksit kullanımını gerektiren durumun belirtildiği uzman hekim raporuna dayanılarak bu hekimlerce veya diyaliz sertifikalı tüm hekimler tarafından reçete edildiğinde bedeli ödenir.",
+      "text_sha256": "8c2672811f5e234398e3dfdfc2aa461c7822491e4c331d32206b57cf3ce5a5e5",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.(3)#cbdee244",
+      "clause_coordinate": "4.2.9.B.(3)",
+      "section_id": "4.2.9.B",
+      "in_force_text": "(3) Her reçetede fosfor düzeyini gösterir son 1 ay içinde yapılmış tetkik sonuç belgesinin tarihi ve sonucu belirtilir. Bir defada en fazla (Değişik: RG- 25/07/2014- 29071/ 23 md. Yürürlük: 07/08/2014 )  bir aylık dozda ilaç verilir. Fosfor düzeyi 3,5 mg/dl'nin altında olduğu durumlarda tedavi kesilir.",
+      "text_sha256": "cbdee2448d6654d8899f6b23ea5ed3a55d28ee02295a30dcda810fb8c3144f1f",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.(4)#e346bde0",
+      "clause_coordinate": "4.2.9.B.(4)",
+      "section_id": "4.2.9.B",
+      "in_force_text": "(4) Fosfor düzeyinin (Değişik: RG- 07/10/2016- 29850/ 18-c md. Yürürlük: 15/10/2016)  4 mg/dl'nin üzerine çıkması durumunda tedaviye ilk başlama kriterleri aranarak tekrar başlanabilir.",
+      "text_sha256": "e346bde02b897996736581b3873638209138b93c35d70699ca4ac73f74926705",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.a#2cbf02e7",
+      "clause_coordinate": "4.2.9.B.a",
+      "section_id": "4.2.9.B",
+      "in_force_text": "a) Kalsiyum ve fosfor çarpımı 72 ve üzerinde olan veya",
+      "text_sha256": "2cbf02e70984fd72662e2e4a6e47f59556607912941dc922e2cdaf4e5893e772",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.b#1438d4b8",
+      "clause_coordinate": "4.2.9.B.b",
+      "section_id": "4.2.9.B",
+      "in_force_text": "b) PTH düzeyinin 100 pg/ml değerinin altında olan adinamik kemik hastalığı olguları veya",
+      "text_sha256": "1438d4b8288570fb6e2ce8af173200d19ba0719dfab7d7a361543e9aed6f3630",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.c#44af65a8",
+      "clause_coordinate": "4.2.9.B.c",
+      "section_id": "4.2.9.B",
+      "in_force_text": "c) Kt/V değeri 1,4’ün üzerinde olmasına rağmen düzeltilmiş kalsiyum ve fosfor çarpımı 55’in üzerinde olan veya",
+      "text_sha256": "44af65a85d4a1758aadc894393be93751a45b58cbbca5818c3a06388da9f7b61",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.B.ç#4843bec7",
+      "clause_coordinate": "4.2.9.B.ç",
+      "section_id": "4.2.9.B",
+      "in_force_text": "ç) Kt/V değeri 1,4’ün üzerinde olan hastanın PTH değeri 300 pg/ml ve üzerinde olan,",
+      "text_sha256": "4843bec7b27b2b4f1fcd284e9799d95121eb331d029495ca6104ee919239083d",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.(1)#4dc7d730",
+      "clause_coordinate": "4.2.9.D.(1)",
+      "section_id": "4.2.9.D",
+      "in_force_text": "(1) Serum albumin düzeyi < 3,5 g/dL olan; Evre 4 KBH (glomerüler filtrasyon hızı <30 ml/dak) veya Evre 5 KBH  (diyaliz hastaları dahil) hastalarında;",
+      "text_sha256": "4dc7d7300b48a3701521fb95605c4a5119c27233e670cb543536dedf311ad908",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.a#7aa28a33",
+      "clause_coordinate": "4.2.9.D.a",
+      "section_id": "4.2.9.D",
+      "in_force_text": "a) Tedavinin ilk 6 ayının sonunda başlangıç serum albümin düzeyinde %25’lik artış sağlanamayan hastalarda veya",
+      "text_sha256": "7aa28a3392d304a5ac5a67b5acec23cc776c5940115986b305e5468b7a17c4b6",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.a#f13a1cdd",
+      "clause_coordinate": "4.2.9.D.a",
+      "section_id": "4.2.9.D",
+      "in_force_text": "a) Son 3 ayda ağırlığında %10 ve daha fazla kilo kaybı olması veya",
+      "text_sha256": "f13a1cdd7efde962afce67a464530948748916971dbf2e38d0d8075e386588d6",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.b#914a33c4",
+      "clause_coordinate": "4.2.9.D.b",
+      "section_id": "4.2.9.D",
+      "in_force_text": "b) Vücut Kitle İndeksi ( BMI = Body Mass Index ) 19’un altında olması,",
+      "text_sha256": "914a33c4082748b7913672e66c180abd7c54415bd57ec4c7f3cfd825753dcc3a",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.b#a3749cdc",
+      "clause_coordinate": "4.2.9.D.b",
+      "section_id": "4.2.9.D",
+      "in_force_text": "b) Tedavinin ilk 3 ayının sonunda ve/veya tedavinin devamında serum albümin düzeyi 4 g/dL’nin üzerine çıkan tüm hastalarda,",
+      "text_sha256": "a3749cdcd11c629bc0eeba4466a6cedc107d7abc325c280ca11e57e4eb8eaec2",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.D.c#6a824531",
+      "clause_coordinate": "4.2.9.D.c",
+      "section_id": "4.2.9.D",
+      "in_force_text": "c) Tedavisi kesilen hastalarda yeniden tedaviye başlarken tedavi başlangıç kriterleri aranır.",
+      "text_sha256": "6a8245312ce87cfc23af570cf20cc19564ae53c31c83dc506e74453f632ad7ff",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.(1)#d5f6d259",
+      "clause_coordinate": "4.2.9.Ç.(1)",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "(1) Hemodiyaliz ya da periton diyaliz tedavisi altında bulunan (Mülga: RG-21/03/2018-30367/18-a md. Yürürlük: 01/04/2018)  albumin ile düzeltilmiş serum kalsiyum değeri (Değişik: RG- 21/03/2018-30367/ 18-a md. Yürürlük: 01/04/2018)    ≥8,5 mg/dl, parathormon (PTH) düzeyi (Değişik: RG-28/04/2021-31468/11-c md. Yürürlük:06/05/2021)  600 pg/ml ve üzerinde olduğu belgelenen hastalarda cinacalcet tedavisi başlanabilir.",
+      "text_sha256": "d5f6d2592e5a1bd1a47e9f24a7ed15367e1cb8cd8f4fab226d16e86110e371d9",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.(2)#ab7653a8",
+      "clause_coordinate": "4.2.9.Ç.(2)",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "(2) (Değişik: RG-21/03/2018-30367/ 18-b md. Yürürlük: 01/04/2018)  Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalardan albumin ile düzeltilmiş serum kalsiyum değeri ≤8,4 mg/dl olanlarda cinacalcet tedavisi kesilir.",
+      "text_sha256": "ab7653a8e89afe53dbdec68eacd7b35f1f4515c5f7826ac78e38acba6d17fb67",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.(3)#0a00af38",
+      "clause_coordinate": "4.2.9.Ç.(3)",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "(3) Yukarıdaki hasta gruplarında PTH düzeyi (Değişik: RG-28/04/2021-31468/11-c md. Yürürlük:06/05/2021)  300 pg/ml’nin altına düşen hastalarda cinacalcet tedavisi kesilir.",
+      "text_sha256": "0a00af38020b3b0e72a467e81c6a54328f060874dc56f9f86e28718f85f8309d",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.(5)#deb19c81",
+      "clause_coordinate": "4.2.9.Ç.(5)",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "(5) Serum kalsiyum düzeyleri temelinde paratroidektomi endike olduğu halde (ilgili tedavi kılavuzlarında tanımlandığı şekilde) paratiroidektominin klinik açıdan uygun olmadığı veya kontrendike olduğu primer hiperparatiroidili hastalarda hiperkalseminin düşürülmesi endikasyonunda;",
+      "text_sha256": "deb19c81e3b614b089a81d05d52c587b2b16136b7aff6a53cc0bd70920a90c15",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.a#afe54fee",
+      "clause_coordinate": "4.2.9.Ç.a",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "a) ASA-IV grubu hastalar veya",
+      "text_sha256": "afe54fee5cd46cceda394c232d3dd9765b3756bd1fd76b277c5e92dbaab7e162",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.9.Ç.b#568549ff",
+      "clause_coordinate": "4.2.9.Ç.b",
+      "section_id": "4.2.9.Ç",
+      "in_force_text": "b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış ve albümin ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,",
+      "text_sha256": "568549ff4a07a211f746e11a4fc3a7474fa7e1c1b9f1f5175d8f3af56cf2ed67",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "renal": "renal.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "renal": null
+  }
+}

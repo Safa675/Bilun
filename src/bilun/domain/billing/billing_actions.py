@@ -7,6 +7,9 @@ from typing import Any
 from ..money import money_round_half_up_opt as _money
 from ..sut.clause_reference import RULE_TYPE_COPAY_WAIVER, sut_clause_reference
 from .types import BillingActionReport, CopayOptimization
+from .drug_clinical_evidence import (
+    bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
+)
 
 _MATERIAL_KIND_SUT_SECTION: dict[str, str] = {
     "material_pre_auth": "3.1.2",
@@ -127,6 +130,7 @@ def _action_row(
     observed_icd10_count: int | None = None,
     observed_icd10_truncated: bool | None = None,
     clinical_restrictions: list[dict[str, Any]] | None = None,
+    source_authority: dict[str, Any] | None = None,
     selected_rule_id: str | None = None,
     recommended_action_tr: str | None = None,
     sgk_uplift_try: float | None = None,
@@ -141,6 +145,8 @@ def _action_row(
     message_code: str | None = None,
     message_params: dict | None = None,
 ) -> dict[str, Any]:
+    authority = source_authority_payload(source_authority)
+    clinical = clinical_evidence_payload(bounded_clinical_restrictions(clinical_restrictions))
     return {
         "action_id": action_id,
         "surface": surface,
@@ -164,8 +170,9 @@ def _action_row(
         "eligible_routes_truncated": eligible_routes_truncated,
         "observed_icd10_count": observed_icd10_count,
         "observed_icd10_truncated": observed_icd10_truncated,
-        **({"clinical_restrictions": clinical_restrictions, "clinical_eligibility_complete": False,
-            "selected_rule_id": selected_rule_id} if clinical_restrictions else {}),
+        **clinical,
+        **authority,
+        **({"selected_rule_id": selected_rule_id} if clinical or authority else {}),
         "recommended_action_tr": recommended_action_tr,
         "sgk_uplift_try": _money(sgk_uplift_try),
         "audit_risk_try": _money(audit_risk_try),
@@ -409,6 +416,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     observed_icd10_count=finding.observed_icd10_count,
                     observed_icd10_truncated=finding.observed_icd10_truncated,
                     clinical_restrictions=[x.to_dict() for x in finding.clinical_restrictions],
+                    source_authority=finding.source_authority,
                     selected_rule_id=finding.selected_rule_id,
                     detail=finding.explanation_tr,
                     recommended_action_tr=finding.recommended_action_tr,
@@ -437,6 +445,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     unmatched_icd10_codes=row.get("unmatched_icd10_codes"),
                     eligible_routes=row.get("eligible_routes"),
                     clinical_restrictions=row.get("clinical_restrictions"),
+                    source_authority=row.get("source_authority"),
                     selected_rule_id=row.get("selected_rule_id"),
                     eligible_route_count=row.get("eligible_route_count"),
                     eligible_routes_truncated=row.get("eligible_routes_truncated"),

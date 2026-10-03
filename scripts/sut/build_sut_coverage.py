@@ -10,6 +10,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
+
+import polars as pl
 import sys
 from pathlib import Path
 
@@ -54,7 +57,19 @@ def main() -> None:
         args.output_dir,
     )
 
+    from src.bilun.domain.prose_rules.drug_indication import list_drug_indication_rules
+    from src.bilun.domain.sut.coverage_evidence import (
+        build_drug_coverage_evidence,
+        coverage_dependency_hashes,
+    )
+
+    evidence = build_drug_coverage_evidence(pl.from_pandas(coverage), list_drug_indication_rules())
+    evidence["file_sha256"] = coverage_dependency_hashes(_PROJECT_ROOT, args.clauses)
+    report_path = args.output_dir / "sut_coverage_evidence.json"
+    report_path.write_text(json.dumps(evidence, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+
     print(f"Wrote coverage artifacts -> {args.output_dir}")
+    print("  sut_coverage_evidence.json: source inventory; runtime counts unavailable")
     print(f"  sut_clause_coverage.parquet: {len(coverage):,} rows")
     print(f"  sut_coverage_by_rule.parquet: {len(rule_summary):,} rows")
     print(f"  sut_coverage_by_section.parquet: {len(section_summary):,} rows")

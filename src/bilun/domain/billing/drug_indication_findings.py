@@ -16,8 +16,9 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules import drug_indication as prose
 from src.bilun.domain.sut.runtime_coverage_contract import bounded_runtime_coverage, runtime_coverage_payload
 from src.bilun.domain.sut.runtime_coverage_export import RequestDrugRuntimeSink
+from src.bilun.domain.sut.source_authority_schema import bounded_source_authority
 from .drug_clinical_evidence import (
-    DrugClinicalRestriction, bounded_clinical_restrictions, clinical_evidence_payload,
+    DrugClinicalRestriction, bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
 )
 
 
@@ -149,6 +150,7 @@ class DrugIndicationFinding:
 
     clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
     runtime_coverage: dict[str, Any] | None = None
+    source_authority: dict[str, Any] | None = None
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -183,11 +185,14 @@ class DrugIndicationFinding:
             "observed_icd10_truncated": self.observed_icd10_truncated,
             **clinical_evidence_payload(self.clinical_restrictions),
             **runtime_coverage_payload(self.runtime_coverage),
+            **source_authority_payload(self.source_authority),
         }
 
     def to_legacy_violation(self) -> dict[str, Any]:
         """Project the canonical finding into the pre-typed violation shape."""
         legacy = dict(self._legacy_base)
+        legacy.pop("source_authority", None)
+        legacy.pop("clinical_restrictions", None)
         legacy.update(
             {
                 "finding_id": self.finding_id,
@@ -228,6 +233,7 @@ class DrugIndicationFinding:
         )
         legacy.update(clinical_evidence_payload(self.clinical_restrictions))
         legacy.update(runtime_coverage_payload(self.runtime_coverage))
+        legacy.update(source_authority_payload(self.source_authority))
         return legacy
 
 
@@ -255,6 +261,7 @@ class DrugIndicationLineEvaluation:
     observed_icd10_truncated: bool = False
     clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
     runtime_coverage: dict[str, Any] | None = None
+    source_authority: dict[str, Any] | None = None
 
     temporal_evidence: dict[str, Any] | None = None
 
@@ -283,6 +290,7 @@ class DrugIndicationLineEvaluation:
             "observed_icd10_truncated": self.observed_icd10_truncated,
             **clinical_evidence_payload(self.clinical_restrictions),
             **runtime_coverage_payload(self.runtime_coverage),
+            **source_authority_payload(self.source_authority),
         }
 
 
@@ -299,6 +307,24 @@ _LEGACY_PAYLOAD_EVIDENCE_REASON = (
 )
 
 
+def _normalize_cached_evidence(row: Any) -> Any:
+    if not isinstance(row, Mapping):
+        return row
+    output = dict(row)
+    if "runtime_coverage" in row:
+        output.update(runtime_coverage_payload(row.get("runtime_coverage")))
+    if "source_authority" in row:
+        output.pop("source_authority", None)
+        output.update(source_authority_payload(row.get("source_authority")))
+        output["clinical_eligibility_complete"] = False
+    if "clinical_restrictions" in row:
+        restrictions = bounded_clinical_restrictions(row.get("clinical_restrictions"))
+        output["clinical_restrictions"] = [item.to_dict() for item in restrictions]
+        if restrictions:
+            output["clinical_eligibility_complete"] = False
+    return output
+
+
 def normalize_drug_indication_payload(value: Mapping[str, Any]) -> dict[str, Any]:
     """Normalize live and cached Drug Indication payloads to one contract.
 
@@ -312,8 +338,7 @@ def normalize_drug_indication_payload(value: Mapping[str, Any]) -> dict[str, Any
     for kind in ("findings", "evaluations", "violations"):
         if isinstance(payload.get(kind), list):
             payload[kind] = [
-                {**row, **runtime_coverage_payload(row.get("runtime_coverage"))}
-                if isinstance(row, Mapping) and "runtime_coverage" in row else row
+                _normalize_cached_evidence(row)
                 for row in payload[kind]
             ]
     findings = payload.get("findings")
@@ -612,6 +637,7 @@ def evaluate_drug_indication_findings(
         selected_rule_id = str(selected_rule_id) if selected_rule_id else None
         clinical_restrictions = bounded_clinical_restrictions(detailed.get("clinical_restrictions"))
         runtime_coverage = bounded_runtime_coverage(detailed.get("runtime_coverage"))
+        source_authority = bounded_source_authority(detailed.get("source_authority"))
         if runtime_sink is not None:
             runtime_sink.capture(line, selected_rule_id, runtime_coverage)
         violation = detailed.get("violation")
@@ -650,6 +676,7 @@ def evaluate_drug_indication_findings(
                 eligible_routes=routes,
                 clinical_restrictions=clinical_restrictions,
                 runtime_coverage=runtime_coverage,
+                source_authority=source_authority,
                 selected_rule_id=selected_rule_id,
                 explanation_tr=explanation,
                 recommended_action_tr=_recommended_action(finding_kind),
@@ -688,6 +715,7 @@ def evaluate_drug_indication_findings(
                 eligible_routes=routes,
                 clinical_restrictions=clinical_restrictions,
                 runtime_coverage=runtime_coverage,
+                source_authority=source_authority,
                 selected_rule_id=selected_rule_id,
                 finding_id=finding_id,
                 finding_kind=finding_kind,

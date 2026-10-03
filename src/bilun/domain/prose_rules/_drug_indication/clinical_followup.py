@@ -12,7 +12,6 @@ from ...claims.clinical_evidence import FollowupEvidence, parse_clinical_evidenc
 from .clinical_common import Predicate, Reader, all_of, any_of, result, scope_missing
 from .matching import _drug_name_matches
 
-VERIFIED = date(2026, 10, 2)
 DUPILUMAB_REFS = ['4.2.57.(2)#af1ccf61','4.2.57.(1)#d711a1b9',
                  '4.2.57.(2)#62f546f9','4.2.57.(3)#6147427c']
 
@@ -102,7 +101,8 @@ def evaluate_followup(line: Any) -> dict[str, Any]:
         refs = [prefix+suffix for prefix in ('4.2.46.B','4.2.46.C')
                 for suffix in ('.(3)#cac79ad7','.a#89e9c50d','.b#aa27b4a1')]
     # Original legal lower bounds remain unverified in this narrow packet.
-    missing_dates = scope_missing(evidence,'followup_evidence',line.drug_claim_date,None,VERIFIED)
+    missing_dates = scope_missing(evidence,'followup_evidence',line.drug_claim_date,
+                                 'followup', reader=reader)
     if missing_dates:
         return {**result('followup_source_constraints',reader,Predicate(None),refs,date_missing=missing_dates),
                 'sut_section':section}

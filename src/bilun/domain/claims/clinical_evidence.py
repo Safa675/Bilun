@@ -37,6 +37,15 @@ class SmaEvidence:
     hypoxic_ischemic_encephalopathy: bool | None = None
     hypoxic_birth_neurological_sequelae: bool | None = None
     lumbar_puncture_suitability_documented: bool | None = None
+    risdiplam_treatment_period: str | None = None  # not_started, during_treatment
+    # Both monitoring and assessment are documented; adequacy/cadence are not inferred.
+    risdiplam_motor_monitoring_assessment_documented: bool | None = None
+    risdiplam_cognitive_monitoring_assessment_documented: bool | None = None
+    risdiplam_nutritional_monitoring_assessment_documented: bool | None = None
+    risdiplam_respiratory_monitoring_assessment_documented: bool | None = None
+    risdiplam_rehabilitation_monitoring_assessment_documented: bool | None = None
+    risdiplam_orthopedic_monitoring_assessment_documented: bool | None = None
+    risdiplam_monitoring_assessment_in_health_board_report: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -53,6 +62,7 @@ class AntifungalEvidence:
     aml_or_mds: bool | None = None
     remission_induction_chemotherapy: bool | None = None
     prolonged_neutropenia_expected: bool | None = None
+    neutropenia_development_expected: bool | None = None
     allogeneic_hsct: bool | None = None
     autologous_hsct: bool | None = None
     acute_lymphoblastic_leukemia: bool | None = None
@@ -85,6 +95,8 @@ class RenalEvidence:
     indication: str | None = None  # dialysis_shpt, primary_hpt, renal_nutrition, phosphate_binding
     dialysis: bool | None = None
     other_phosphate_therapy_months: float | None = None
+    # Report explicitly documents the source-required >=3 months of prior therapy.
+    prior_phosphate_therapy_documented_in_report: bool | None = None
     calcium_phosphorus_product: float | None = None
     corrected_calcium_phosphorus_product: float | None = None
     pth_pg_ml: float | None = None
@@ -117,6 +129,8 @@ class EnteralEvidence:
     malnutrition_path: str | None = None  # malnutrition, exemption
     neurological_disease: bool | None = None
     malnutrition_criteria_met: bool | None = None
+    # Initiation report content; distinct from whether clinical criteria are met.
+    malnutrition_conditions_documented_in_report: bool | None = None
     specialist_report_present: bool | None = None
     report_author_specialty: str | None = None
 
@@ -214,14 +228,15 @@ _ENUMS = {
             'pediatric_endocrinology_metabolism', 'other'},
     },
     RavulizumabEvidence: {'indication': {'nmosd', 'pnh', 'ahus'}},
-    SmaEvidence: {'sma_type': {'type_1', 'type_2', 'type_3', 'newborn_screening'}},
+    SmaEvidence: {'sma_type': {'type_1', 'type_2', 'type_3', 'newborn_screening'},
+                  'risdiplam_treatment_period': {'not_started', 'during_treatment'}},
     AntifungalEvidence: {
         'intent': {'treatment', 'prophylaxis'},
         'formulation': {'oral_solution', 'oral_suspension', 'oral_tablet', 'parenteral'},
         'indication': {'invasive_candidiasis', 'esophageal_candidiasis',
                        'aspergillus_candida_prophylaxis', 'oropharyngeal_candidiasis',
                        'invasive_aspergillosis', 'fusariosis', 'chromoblastomycosis',
-                       'mycetoma', 'coccidioidomycosis', 'other'},
+                       'mycetoma', 'coccidioidomycosis', 'deep_fungal_infection_prophylaxis', 'other'},
     },
     RenalEvidence: {
         'phase': {'initiation', 'continuation', 'restart'},

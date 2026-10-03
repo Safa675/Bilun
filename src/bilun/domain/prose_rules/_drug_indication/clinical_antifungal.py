@@ -12,7 +12,6 @@ from .clinical_common import Predicate, all_of, any_of, result, scope_missing
 from .runtime_observations import ClinicalObservationCollector, ObservedClinicalReader
 from .matching import _drug_name_matches
 
-VERIFIED = date(2026, 10, 2)
 MICA_PROPHYLAXIS = '4.2.23.(2)#9e75077a'
 
 
@@ -75,8 +74,9 @@ def evaluate_antifungal(line: Any, *, observer: ClinicalObservationCollector | N
                else ['4.2.23.(5)#1234522e'] if anidulafungin
                else ['4.2.23.a#70ca881f', '4.2.23.(1)#9dd6786c', '4.2.23.(2)#fe3010eb'] if posaconazole
                else ['4.2.23.b#1b49d136'])
-    lower = date(2018, 4, 1) if micafungin else None
-    missing_dates = scope_missing(evidence, 'antifungal_evidence', line.drug_claim_date, lower, VERIFIED)
+    authority_id = 'antifungal_micafungin' if micafungin else 'antifungal_other'
+    missing_dates = scope_missing(evidence, 'antifungal_evidence', line.drug_claim_date,
+                                  authority_id, reader=reader)
     reader.record_source_gate('antifungal.source_date', missing_dates)
     if missing_dates:
         return result('antifungal_source_constraints', reader, Predicate(None), sources,
@@ -189,7 +189,10 @@ def evaluate_antifungal(line: Any, *, observer: ClinicalObservationCollector | N
             population = any_of(reader.bound('itraconazole.prophylaxis.hematologic_malignancy', ref).bool('hematological_malignancy'),
                 reader.bound('itraconazole.prophylaxis.bone_marrow_transplant', ref).bool('bone_marrow_transplant'))
             # Even a supplied ANC/mm3 is not the source's literally stated cells/ml.
-            predicate = all_of(population, Predicate(None, ('itraconazole_source_neutrophil_unit_verification',)))
+            predicate = all_of(population,
+                reader.bound('itraconazole.prophylaxis.neutropenia_development_expected', ref).bool('neutropenia_development_expected'),
+                reader.bound('itraconazole.prophylaxis.deep_fungal_indication', ref).one_of('indication', ('deep_fungal_infection_prophylaxis',)),
+                Predicate(None, ('itraconazole_source_neutrophil_unit_verification',)))
             if observer is not None:
                 observer.route('itraconazole.prophylaxis.neutrophil_unit', 'blocked_source', ['unverified_source_neutrophil_unit'])
         elif reader.get('intent') == 'treatment' and reader.get('formulation') == 'oral_solution':

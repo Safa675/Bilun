@@ -83,7 +83,8 @@ def test_posaconazole_alternative_branches_and_parenteral_only_oral_restriction(
 
 def test_itraconazole_literal_source_unit_stays_unresolved():
     outcome = run('itrakonazol', intent='prophylaxis', formulation='oral_solution',
-                  hematological_malignancy=True, anc_per_mm3=499)
+                  hematological_malignancy=True, anc_per_mm3=499,
+                  neutropenia_development_expected=True, indication='deep_fungal_infection_prophylaxis')
     assert outcome['criterion_status'] == 'unknown'
     assert outcome['missing_inputs'] == ['itraconazole_source_neutrophil_unit_verification']
 

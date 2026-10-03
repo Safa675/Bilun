@@ -31,7 +31,7 @@ def check(row,dialysis):
  assert renal['criterion_status']==('criterion_clear' if dialysis else 'restriction_not_met')
  coverage=renal['runtime_coverage']
  assert coverage['available'] is True and coverage['instrumented_families']==['renal']
- assert coverage['predicate_attempted_count']==coverage['predicate_evaluated_count']==9
+ assert coverage['predicate_attempted_count']==coverage['predicate_evaluated_count']==10
  assert coverage['predicate_failed_count']==(6 if dialysis else 7)
  assert coverage['source_clauses_touched_count']==6
  assert coverage['source_clauses_fully_evaluated_count'] is None

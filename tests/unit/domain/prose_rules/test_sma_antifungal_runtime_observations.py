@@ -41,7 +41,7 @@ def observe(line,family):
 @pytest.mark.parametrize('drug,sma_type,predicates,clauses,skipped',[
  ('nusinersen','type_2',7,5,0),('nusinersen','type_3',7,5,0),
  ('nusinersen','type_1',6,4,1),('nusinersen','newborn_screening',6,4,1),
- ('risdiplam','type_2',2,1,1),
+ ('risdiplam','type_2',2,1,2),
 ])
 def test_sma_actual_medicine_and_type_paths(drug,sma_type,predicates,clauses,skipped):
  outcome,_,report=observe(sma_line(drug,replace(sma_facts(),sma_type=sma_type)),'sma')
@@ -105,7 +105,7 @@ def test_invalid_end_date_is_a_route_block_not_a_fabricated_elapsed_comparison()
 
 def test_itraconazole_unit_authority_never_becomes_an_anc_predicate():
  _,collector,report=observe(af_line('itraconazole',intent='prophylaxis',formulation='oral_solution',hematological_malignancy=True,bone_marrow_transplant=False,anc_per_mm3=499),'antifungal')
- assert report['predicate_attempted_count']==2 and report['routes_blocked_source_count']==1
+ assert report['predicate_attempted_count']==4 and report['routes_blocked_source_count']==1
  assert not any('anc_per_mm3' in field for r in collector.receipts for field in r['observed_input_fields'])
  assert report['source_clauses_touched_count']==1
 
@@ -177,7 +177,7 @@ from tests.unit.api.test_validation_contract_v2 import client, _login  # noqa: E
  ('antifungal',af_line(intent='treatment',indication='invasive_candidiasis',adult=True,anc_per_mm3=500,anc_lab_result_present=True),'B37.7',5),
  ('antifungal',af_line('micafungin',**micro()),'C91.0',8),
  ('antifungal',af_line('posaconazole',**{**posa(),'formulation':'parenteral','oral_form_unusable':True}),'C92.0',7),
- ('antifungal',af_line('itraconazole',intent='prophylaxis',formulation='oral_solution',hematological_malignancy=True,bone_marrow_transplant=False,anc_per_mm3=499),'C92.0',2),
+ ('antifungal',af_line('itraconazole',intent='prophylaxis',formulation='oral_solution',hematological_malignancy=True,bone_marrow_transplant=False,anc_per_mm3=499),'C92.0',4),
 ])
 @pytest.mark.parametrize('claim_id',['','observed-family-http'])
 def test_real_http_named_anonymous_and_repeated_family_summaries(client,family,drug,diagnosis,count,claim_id):  # noqa: F811

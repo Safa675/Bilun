@@ -365,6 +365,10 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
     )
     from src.bilun.domain.sut.rule_registry import RULE_BY_ID
 
+    from .coverage_evidence import build_drug_coverage_evidence, coverage_evidence_summary
+    from ..prose_rules.drug_indication import list_drug_indication_rules
+
+    evidence = build_drug_coverage_evidence(clause_frame, list_drug_indication_rules())
     scope = drug_indication_coverage_scope()
     registry_status = RULE_BY_ID["drug_indication_prose"].coverage_status
     di = clause_frame.filter(pl.col("primary_rule_id") == "drug_indication_prose")
@@ -414,6 +418,7 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         "unencoded_gap_rows": unencoded_gap_rows,
         "emr_blocked_rows": emr_blocked_rows,
         "registry_promotion_gate": promotion,
+        "coverage_evidence": coverage_evidence_summary(evidence),
         "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
         if classified_rows
         else 0.0,

@@ -9,6 +9,7 @@ and several pricing endpoints pass through gazette-derived dicts.
 from __future__ import annotations
 
 from src.bilun.domain.sut.runtime_coverage_schema import RuntimeCoverageResponse as DrugRuntimeCoverageResponse
+from src.bilun.domain.sut.source_authority_schema import ClinicalSourceAuthorityEvidence
 
 from collections.abc import Mapping
 from datetime import date
@@ -389,19 +390,21 @@ class DrugClinicalCheckResponse(BaseModel):
 
 
 class DrugClinicalRestrictionResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
     runtime_coverage: DrugRuntimeCoverageResponse | None = None
     constraint_set: str
     criterion_status: str
     missing_inputs: list[str] = Field(default_factory=list)
     checks: list[DrugClinicalCheckResponse] = Field(default_factory=list)
     source_refs: list[str] = Field(default_factory=list)
-    clinical_eligibility_complete: bool = False
+    clinical_eligibility_complete: Literal[False] = False
     verification_status: str = 'ai_generated_pending_review'
     checks_truncated: bool = False
     source_refs_truncated: bool = False
 
 
 class DrugIndicationFindingResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
     runtime_coverage: DrugRuntimeCoverageResponse | None = None
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
     finding_id: str = Field(...)
@@ -435,6 +438,7 @@ class DrugIndicationFindingResponse(BaseModel):
 
 
 class DrugIndicationEvaluationResponse(BaseModel):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
     runtime_coverage: DrugRuntimeCoverageResponse | None = None
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
     patient_id: str = Field(...)

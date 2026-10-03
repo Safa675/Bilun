@@ -1,0 +1,336 @@
+{
+  "review_kind": "Read-only official-source date-applicability review; no repository or remote modifications",
+  "review_window_utc": {
+    "start": "2026-10-03T06:58:54Z",
+    "end": "2026-10-03T07:04:00Z"
+  },
+  "legal_jurisdiction_timezone": "Europe/Istanbul",
+  "observation_is_not_legal_effective_date": true,
+  "conclusion": {
+    "latest_direct_SUT_amendment_found": {
+      "publication_date": "2026-10-02",
+      "gazette_issue": "33388"
+    },
+    "october_3_regular_issue_checked": true,
+    "october_3_regular_issue_contains_SUT_amendment": false,
+    "october_3_sgk_regulation_amendment_exists": true,
+    "october_3_supplement_advertised_at_observation": false,
+    "later_publication_guarantee": false,
+    "bounded_statement": "As of the observation window, the official October 3 regular Gazette issue and live homepage showed no new SUT Tebligi amendment. The SGK GSS announcement listing showed October 2 as its newest SUT publication. The October 3 SGK Ilac Geri Odeme Yonetmeligi amendment is a distinct regulation with relevant pricing/list/group dependencies. This supports only a bounded current-source review and does not automatically admit any rule manifest or full reimbursement engine."
+  },
+  "sources": [
+    {
+      "id": "RG_20261003_index",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.htm",
+      "observed_at_utc": "2026-10-03T07:01:28Z",
+      "method": "Successful live cloud Chrome accessibility-tree observation",
+      "title": "3 Ekim 2026 Tarihli ve 33389 Sayili Resmi Gazete",
+      "issue": "33389",
+      "finding": "Full regular daily contents reviewed: six regulations, one unrelated payment-institution authorization teblig, notices. No SUT amendment title. SGK Ilac Geri Odeme Yonetmeligi amendment present.",
+      "pinned_observer_evidence_path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-20261003-daily-contents-observer-text.txt",
+      "pinned_observer_evidence_sha256": "541ab604cbdb777b8fcaef0ca753afe2fb4d7c766fa698f23180d3a036f65a10"
+    },
+    {
+      "id": "RG_current_home",
+      "url": "https://www.resmigazete.gov.tr/",
+      "observed_at_utc": "2026-10-03T07:02:24Z",
+      "method": "Successful live cloud Chrome accessibility-tree observation",
+      "finding": "Current issue heading 03 Ekim 2026 / 33389. Son Mukerrer link targets 2026-09-06, mukerrer=1. No October 3 supplement advertised.",
+      "last_supplement_link_observed": "https://www.resmigazete.gov.tr/fihrist?tarih=2026-09-06&mukerrer=1",
+      "limit": "Observed homepage signal only; no guarantee against a supplement or correction published later on October 3.",
+      "pinned_observer_evidence_path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-homepage-current-issue-supplement-observer-excerpt.txt",
+      "pinned_observer_evidence_sha256": "5c9a458ea25eea930954e125e5f3ea20caca0da9ee2e08c8e7dcd5665742bbe2"
+    },
+    {
+      "id": "RG_20261003_SGK_regulation",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at_utc": "2026-10-03T07:01:54Z",
+      "method": "Successful live cloud Chrome full-text accessibility-tree observation",
+      "title": "Sosyal Guvenlik Kurumu Ilac Geri Odeme Yonetmeliginde Degisiklik Yapilmasina Dair Yonetmelik",
+      "publication_date": "2026-10-03",
+      "issue": "33389",
+      "effective_date": "2026-10-03",
+      "effective_authority": "Article 8: publication date",
+      "direct_clinical_report_clause_amendment": false,
+      "pinned_observer_evidence_path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-20261003-3-regulation-observer-text.txt",
+      "pinned_observer_evidence_sha256": "14dd3b0eb6cbbb6e8e3624f67a1e5d3370362481e363ec728c9caa68b8ccaa34"
+    },
+    {
+      "id": "SGK_GSS_live_listing",
+      "url": "https://www.sgk.gov.tr/birimler/duyurular/GENEL-SAGLIK-SIGORTASI-GENEL-MUDURLUGU-2026-01-28-02-00-42",
+      "observed_at_utc": "2026-10-03T07:01:03Z",
+      "method": "Successful direct HTTP 200; response Date Sat, 03 Oct 2026 07:01:03 GMT; separately rendered by web tool",
+      "finding": "Newest two GSS SUT announcements are October 2 amendment and October 2 consolidated 2013 SUT.",
+      "limit": "A prior non-www web snapshot showed September 30; it was not used as proof of completeness. Even a live SGK announcement listing does not replace checking Gazette."
+    },
+    {
+      "id": "SGK_20261002_amendment_announcement",
+      "url": "https://www.sgk.gov.tr/duyuru/detay/02102026-Tarihli-ve-33388-Sayili-Resm-Gazetede-Yayimlanan-Sosyal-Guvenlik-Kurumu-Saglik-Uygulama-Tebliginde-Degisiklik-Yapilmasina-Dair-Teblig-2026-10-02-02-48-55",
+      "observed_at_utc": "2026-10-03T07:03:26Z",
+      "method": "Successful direct HTTP and web rendering",
+      "publication_date": "2026-10-02",
+      "issue": "33388"
+    },
+    {
+      "id": "SGK_20261002_amendment_docx",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at_utc": "2026-10-03T07:03:31Z",
+      "method": "Direct successful re-fetch; bytes equal pinned prior-audit file",
+      "sha256": "a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb",
+      "bytes": 35919,
+      "local_evidence": "/workspace/shared/bilun-sut-coverage-audit/2026-10-02-SGK-amendment.docx"
+    },
+    {
+      "id": "SGK_20261002_consolidated_announcement",
+      "url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+      "observed_at_utc": "2026-10-03T07:00:08Z",
+      "method": "Successful web rendering",
+      "finding": "Official October 2 consolidated SUT announcement; consolidation includes future-effective provisions and historical strikethroughs."
+    },
+    {
+      "id": "SGK_20261002_consolidated_zip",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "method": "Pinned prior-audit ZIP and DOCX inspected locally; full ZIP not re-downloaded in this review",
+      "local_evidence": "/workspace/shared/bilun-sut-coverage-audit/2026-10-02-SGK-consolidated.docx"
+    },
+    {
+      "id": "SGK_20261002_EK4A",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=16719888-4814-4358-96a0-93f557cc7303.xlsx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "method": "Exact download URL verified in official announcement HTML at 07:03:26 UTC; rows not reviewed",
+      "status": "Per-drug date/dependency review remains necessary"
+    },
+    {
+      "id": "RG_20261002_index",
+      "url": "https://www.resmigazete.gov.tr/02.10.2026",
+      "observed_at_utc": "2026-10-03T07:03:30Z",
+      "method": "Successful live cloud Chrome accessibility-tree observation",
+      "finding": "Issue 33388 lists SUT amendment and a separate Saglik Hizmetleri Fiyatlandirma Komisyonu Karari."
+    },
+    {
+      "id": "RG_20261002_SUT_pdf",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261002-6.pdf",
+      "method": "Exact official link verified in daily contents; web PDF opening failed; equivalent official SGK DOCX reviewed"
+    },
+    {
+      "id": "RG_20261002_pricing_decision_pdf",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261002-7.pdf",
+      "method": "Exact official link verified in daily contents; content not reviewed",
+      "status": "Separate pricing dependency; not evidence that clinical report clauses changed"
+    }
+  ],
+  "october_2_effective_date_matrix": [
+    {
+      "article": "1",
+      "subject": "SUT 2.4.2.A organ and tissue transplant replacement",
+      "effective_rule": "30 days after publication",
+      "effective_date_from_SGK_consolidated_annotation": "2026-11-02",
+      "active_on_2026_10_03": false,
+      "annotation_paragraph_index_zero_based": 1096
+    },
+    {
+      "article": "2(a)",
+      "subject": "4.2.14.C(3)(ff), trastuzumab emtansine",
+      "effective_rule": "5 business days after publication",
+      "effective_date_from_SGK_consolidated_annotation": "2026-10-10",
+      "active_on_2026_10_03": false,
+      "annotation_paragraph_index_zero_based": 5572
+    },
+    {
+      "article": "2(b)",
+      "subject": "4.2.14.C(3)(gg), pertuzumab and trastuzumab/pertuzumab combination",
+      "effective_rule": "5 business days after publication",
+      "effective_date_from_SGK_consolidated_annotation": "2026-10-10",
+      "active_on_2026_10_03": false,
+      "annotation_paragraph_index_zero_based": 5579
+    },
+    {
+      "article": "2(c)",
+      "subject": "4.2.14.C(3)(aaaa), satralizumab added",
+      "effective_rule": "5 business days after publication",
+      "effective_date_from_SGK_consolidated_annotation": "2026-10-10",
+      "active_on_2026_10_03": false,
+      "annotation_paragraph_index_zero_based": 6056
+    },
+    {
+      "article": "3, 4(a), 4(c), 7",
+      "subject": "EK-2/B bronchoscopy and thoracoscopic esophageal atresia; EK-2/C corresponding rows; satralizumab EK-4/G",
+      "effective_rule": "5 business days after publication, same article 8(b) trigger as article 2",
+      "effective_date_using_shared_SGK_trigger": "2026-10-10",
+      "active_on_2026_10_03": false
+    },
+    {
+      "article": "4(b)",
+      "subject": "EK-2/C bone marrow transplant package clarification",
+      "entry_into_force_date": "2026-10-02",
+      "applies_from_date": "2026-09-05",
+      "effective_rule": "On publication, valid from 5 September 2026",
+      "active_on_2026_10_03": true
+    },
+    {
+      "article": "5",
+      "subject": "EK-3/O HO1000 adds reference to SUT 2.4.4.C-with-cedilla",
+      "effective_rule": "5 days after publication",
+      "computed_date_not_admitted": true,
+      "active_on_2026_10_03": false
+    },
+    {
+      "article": "6",
+      "subject": "EK-4/A reimbursed-drug annex",
+      "effective_rule": "Per-drug entry/activation/deactivation dates where given; otherwise publication; entry-date (*) or drug-name (**) after 5 business days; drug-name (***) on publication",
+      "single_effective_date_valid": false,
+      "row_level_review_complete": false
+    },
+    {
+      "article": "Other provisions",
+      "effective_rule": "Publication date",
+      "effective_date": "2026-10-02"
+    }
+  ],
+  "named_family_clinical_report_assessment": {
+    "no_direct_amendment_in_Oct2_articles_1_to_7": [
+      "SMA/nusinersen/risdiplam",
+      "systemic antifungal clauses",
+      "growth hormone",
+      "renal drug/report clauses",
+      "enteral nutrition",
+      "ravulizumab",
+      "SC-related clauses as separately scoped by parent",
+      "HBV",
+      "HCV",
+      "denosumab",
+      "dupilumab",
+      "nintedanib"
+    ],
+    "no_direct_amendment_in_Oct3_regulation": true,
+    "warning": "No direct amendment is not equivalent to all dependencies unchanged. October 2 EK-4/A row changes, separate pricing decisions, general prescription/report dependencies, product/list snapshots, and October 3 reference-group rules must be considered for any broader reimbursement conclusion.",
+    "illustrative_prior_annotations_not_exhaustive_admission": [
+      {
+        "family": "SMA",
+        "source_annotation": "26/04/2025 article 7 effective 06/05/2025; 29/06/2026 article 7 addition at 4.2.49.C(4) effective 07/07/2026"
+      },
+      {
+        "family": "growth hormone",
+        "source_annotation": "09/05/2024 article 7 changes effective 17/05/2024"
+      },
+      {
+        "family": "enteral",
+        "source_annotation": "23/05/2026 article 2 addition effective 04/06/2026; 29/08/2026 article 6(a),(b) additions effective 05/09/2026"
+      },
+      {
+        "family": "ravulizumab",
+        "source_annotation": "29/06/2026 article 6 addition effective 07/07/2026; the nearby 29/08/2026 article 8(d) annotation belongs to following thiotepa paragraph, not ravulizumab"
+      },
+      {
+        "family": "HBV",
+        "source_annotation": "02/11/2024 article 13 annotations effective 09/11/2024; finer provision history remains necessary"
+      },
+      {
+        "family": "denosumab",
+        "source_annotation": "25/03/2025 article 12 annotation effective 04/04/2025; older subparagraph annotations remain relevant"
+      },
+      {
+        "family": "dupilumab",
+        "source_annotation": "05/08/2024 article 9 replacement effective 13/08/2024; 26/04/2025 article 8 additions annotated effective 04/04/2025 (retroactive)"
+      },
+      {
+        "family": "nintedanib",
+        "source_annotation": "25/09/2024 article 9 additions effective 03/10/2024; 25/03/2025 article 21 addition effective 04/04/2025"
+      }
+    ]
+  },
+  "october_3_regulation_dependency_assessment": {
+    "articles": [
+      {
+        "article": "1",
+        "impact": "Replaces definitions in regulation article 3(1)(a),(i),(p): payable unit-price range, internal reference group including equivalent groups, drug market ratio."
+      },
+      {
+        "article": "2",
+        "impact": "Regulation article 5: Medula data wording and authority to establish internal-reference/equivalent groups."
+      },
+      {
+        "article": "3",
+        "impact": "Regulation article 6(1)(c-with-cedilla): list/internal-reference/equivalent-group terminology."
+      },
+      {
+        "article": "4",
+        "impact": "Committee representation under article 8 adds Ilac, Eczacilik, Saglik Bilim ve Teknolojileri Vakfi and changes 4 to 5."
+      },
+      {
+        "article": "5",
+        "impact": "Article 9: Medula data, internal-reference/equivalent-group opinions and payable-unit-price terminology."
+      },
+      {
+        "article": "6",
+        "impact": "Article 10 internal-reference/equivalent-group terminology."
+      },
+      {
+        "article": "7",
+        "impact": "Article 12 application/list/market mechanism changes. New cheapest-unit-price drugs excluded from price-band calculation until reaching 1% market ratio, checked monthly. Cheapest drugs that did not reach 1% in any of last five months removed from calculation and re-included when monthly ratio reaches 1%. Distribution-document requirement and Current Market Status terminology also changed."
+      },
+      {
+        "article": "8",
+        "impact": "Effective on publication, 2026-10-03."
+      },
+      {
+        "article": "9",
+        "impact": "Execution by SGK President."
+      }
+    ],
+    "clinical_rule_implication": "No disease-specific report, specialist, dose, test, or clinical eligibility criterion was changed by this regulation text.",
+    "pricing_and_list_implication": "Potentially material. Keep reference/equivalent-group composition, band calculations, market-share handling, pricing/list provenance and downstream reimbursement conclusions outside any unchanged-clinical-only admission unless separately verified.",
+    "implementation_status": "Not inspected or changed in this subtask; parent must map dependencies before admitting manifests."
+  },
+  "limits": [
+    "Observation completed during October 3, not after the day closes. Review cannot certify later publications or corrections.",
+    "Web tool and direct HTTP failed to fetch Gazette; live browser successfully showed complete relevant regular contents, homepage supplement pointer and full October 3 regulation. These failures were not treated as absence evidence.",
+    "October 2 consolidated ZIP was inspected from pinned local evidence, not re-downloaded; amendment DOCX was re-fetched and hash-compared successfully.",
+    "Consolidation includes historical struck-through text and future-effective text. Raw extraction alone is not a current-law parser.",
+    "Prior family annotation examples do not establish complete legal histories or all generic dependencies. No universal latest-source date should replace per-provision entry-into-force dates.",
+    "EK-4/A row dates and separate October 2 Pricing Commission Decision content were not reviewed in this targeted clinical/date source task.",
+    "No report-date, prescription-date, service-date, dispensing-date or transaction-date policy was inferred beyond the actual amendment wording.",
+    "No frozen repository or remote files were modified. This JSON is evidence for review, not approval to implement."
+  ],
+  "pinned_observer_evidence": [
+    {
+      "path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-20261003-3-regulation-observer-text.txt",
+      "sha256": "14dd3b0eb6cbbb6e8e3624f67a1e5d3370362481e363ec728c9caa68b8ccaa34",
+      "bytes": 5816,
+      "source_id": "RG_20261003_SGK_regulation",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at_utc": "2026-10-03T07:01:54Z",
+      "saved_at_utc": "2026-10-03T07:11:03.075085+00:00",
+      "scope": "complete regulation text",
+      "capture_type": "Transcription from preserved successful live browser accessibility-tree tool output",
+      "is_official_downloadable_raw_bytes": false,
+      "provenance_limit": "Content observation is from official live page. The saved bytes are observer text, not official HTML/PDF bytes; no raw-download hash is claimed. Numeric nodes/layout omitted except homepage excerpt."
+    },
+    {
+      "path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-20261003-daily-contents-observer-text.txt",
+      "sha256": "541ab604cbdb777b8fcaef0ca753afe2fb4d7c766fa698f23180d3a036f65a10",
+      "bytes": 2415,
+      "source_id": "RG_20261003_index",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.htm",
+      "observed_at_utc": "2026-10-03T07:01:28Z",
+      "saved_at_utc": "2026-10-03T07:11:03.075127+00:00",
+      "scope": "complete regular-issue contents",
+      "capture_type": "Transcription from preserved successful live browser accessibility-tree tool output",
+      "is_official_downloadable_raw_bytes": false,
+      "provenance_limit": "Content observation is from official live page. The saved bytes are observer text, not official HTML/PDF bytes; no raw-download hash is claimed. Numeric nodes/layout omitted except homepage excerpt."
+    },
+    {
+      "path": "/workspace/shared/sut-date-authority-2026-10-03-primary-evidence/rg-homepage-current-issue-supplement-observer-excerpt.txt",
+      "sha256": "5c9a458ea25eea930954e125e5f3ea20caca0da9ee2e08c8e7dcd5665742bbe2",
+      "bytes": 2016,
+      "source_id": "RG_current_home",
+      "source_url": "https://www.resmigazete.gov.tr/",
+      "observed_at_utc": "2026-10-03T07:02:24Z",
+      "saved_at_utc": "2026-10-03T07:11:03.075150+00:00",
+      "scope": "current issue and latest-supplement excerpt",
+      "capture_type": "Transcription from preserved successful live browser accessibility-tree tool output",
+      "is_official_downloadable_raw_bytes": false,
+      "provenance_limit": "Content observation is from official live page. The saved bytes are observer text, not official HTML/PDF bytes; no raw-download hash is claimed. Numeric nodes/layout omitted except homepage excerpt."
+    }
+  ],
+  "evidence_saving_note": "Original ephemeral browser tabs closed at end of prior turn. On 2026-10-03T07:08:13Z re-reading tab 3 returned Unknown CDP tab 3. Saved already captured full text and relevant homepage excerpt from prior successful tool outputs without new legal research. These are reproducible hashed observer transcripts, distinguished from official downloadable bytes."
+}

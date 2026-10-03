@@ -18,7 +18,7 @@ from src.bilun.domain.billing.broad_rule_materializer import (
 )
 from src.bilun.domain.billing.engine import analyze_claim
 from src.bilun.domain.billing.drug_clinical_evidence import (
-    bounded_clinical_restrictions, clinical_evidence_payload,
+    bounded_clinical_restrictions, clinical_evidence_payload, source_authority_payload,
 )
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
 from src.bilun.domain.claims.clinical_evidence import (
@@ -222,10 +222,11 @@ def validate_claim_v2(
             "missing_inputs": _drug_missing_inputs(raw) if family == "drug_indication" else [],
 
 
+            **(source_authority_payload(raw.get('source_authority')) if family == 'drug_indication' else {}),
             **(clinical_evidence_payload(bounded_clinical_restrictions(raw.get('clinical_restrictions')))
                if family == 'drug_indication' else {}),
             **({'selected_rule_id': raw.get('selected_rule_id')}
-               if family == 'drug_indication' and raw.get('clinical_restrictions') else {}),
+               if family == 'drug_indication' and (raw.get('clinical_restrictions') or raw.get('source_authority')) else {}),
         })
     unresolved = counts["missing_inputs"] + counts["unavailable"]
     status = (

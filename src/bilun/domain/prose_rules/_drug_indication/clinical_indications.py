@@ -13,7 +13,6 @@ from ...claims.clinical_evidence import IndicationEvidence, parse_clinical_evide
 from .clinical_common import Predicate, Reader, all_of, any_of, result, scope_missing
 from .matching import _drug_name_matches, _normalize_tr, _specialty_matches
 
-VERIFIED = date(2026, 10, 2)
 SC_IG_DRUGS = ["immünglobulin", "immunglobulin", "immunoglobulin", "scig"]
 HBV_DRUGS = [
     "entekavir",
@@ -251,9 +250,8 @@ def evaluate_indications(line: Any) -> dict[str, Any]:
     # Official RG02/11/2024-32710 articles12/13(b), commencement32(a),
     # corroborated by SGK consolidated annotations:09/11/2024. These dates
     # govern the unchanged necessary branches, not every current report rule.
-    valid_from = date(2024, 11, 9) if family in ("sc_ig", "hbv") else None
     missing_dates = scope_missing(
-        evidence, "indication_evidence", line.drug_claim_date, valid_from, VERIFIED
+        evidence, "indication_evidence", line.drug_claim_date, 'indication_' + family, reader=reader
     )
     section = {"sc_ig": "4.2.12.B-2", "hbv": "4.2.13.1", "hcv": "4.2.13.3.2.B", "bone": "4.2.17.A"}[
         family

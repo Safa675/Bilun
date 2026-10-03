@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
@@ -59,7 +59,7 @@ class MaterialItem(BaseModel):
     gh_initiation_pathway: str | None = None
     gh_reported_growth_age_band: str | None = None
     gh_chronological_age_years: float | None = None
-    gh_pubertal_status: str | None = None
+    gh_pubertal_status: str | None = Field(default=None, description='Clinician-recorded assessment using SUT §4.2.6.A-1(1)(b)(3): onset is testicular volume >=4 ml in boys or T2 thelarche in girls. Enter prepubertal/pubertal only when the recorded assessment uses that definition; otherwise leave unknown. Do not infer from age, diagnosis or height-reference sex; no raw measurements are requested.')
     gh_pubertal_growth_assessment_completed: bool | None = None
     gh_birth_weight_for_gestational_age_sds: float | None = None
     gh_birth_length_for_gestational_age_sds: float | None = None

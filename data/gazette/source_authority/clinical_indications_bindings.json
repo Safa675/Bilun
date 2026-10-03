@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.12.B-2#954d11cb",
+      "clause_coordinate": "4.2.12.B-2",
+      "section_id": "4.2.12.B-2",
+      "in_force_text": "düzenlenen, yukarıdaki bentlerde belirtilen ilgili uzman hekimlerin yer aldığı sağlık kurulu raporuna istinaden, ilgili bentlerde belirtilen uzman hekimlerce 1 aylık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır. (Birdshot retinokoroidopati endikasyonu ödenmez.)",
+      "text_sha256": "954d11cbb75168a59b08f70f6119d4cdf391f0c716c0f7b0aa6d5293e81a799b",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.12.B-2.b#34366508",
+      "clause_coordinate": "4.2.12.B-2.b",
+      "section_id": "4.2.12.B-2",
+      "in_force_text": "b) Profilaktik antibiyotiklerin başarısız veya kontrendike olduğu Kronik Lenfositik Lösemi (KLL) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya Multipl Miyelom (MM) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya allojenik hematopoietik kök hücre transplantasyonu öncesinde veya sonrasında hipogamaglobulinemi endikasyonlarında 1 yıl süre ile hematoloji veya çocuk hematolojisi ve onkolojisi uzman hekimleri tarafından,",
+      "text_sha256": "34366508739885529e462e8fb5e7d97d266ddb4f28a8c5d6d7f7c41656468954",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.13.1#2076b8bd",
+      "clause_coordinate": "4.2.13.1",
+      "section_id": "4.2.13.1",
+      "in_force_text": "1- Erişkin hastalarda; karaciğer biyopsisinde Histolojik Aktivite İndeksi (HAI) ≥6 veya fibrozis ≥2 olanlar ile 2-18 yaş grubu hastalarda; “ALT normalin üst sınırının 2 katından daha yüksek ve karaciğer biyopsisinde HAI ≥4” veya “ALT düzeyine bakılmaksızın fibrozis ≥ 2” olan hastalarda veya,",
+      "text_sha256": "2076b8bdc73256c37d4efc59b89d05c13371b31a1601793a3c163c4bfd79023b",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.13.1#50f88a7d",
+      "clause_coordinate": "4.2.13.1",
+      "section_id": "4.2.13.1",
+      "in_force_text": "2- Erişkin hastalarda; en az 3 ay ara ile tekrarlanan testlerde ALT normalin üst sınırının üzerinde ve FIB-4 skoru >1.45 veya APRI > 0.5 üzerinde olanlarda,",
+      "text_sha256": "50f88a7dd34eb08debc9533f342de1d4e3cfbf7b12094ff23413977fdf4d8fc2",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.13.1.a#3a85da7e",
+      "clause_coordinate": "4.2.13.1.a",
+      "section_id": "4.2.13.1",
+      "in_force_text": "a) HBV DNA seviyesi 10.000 (10) kopya/ml (2.000 IU/ml) veya üzerinde olan hastalarda, bu durumun belirtildiği rapor ve eki tetkik sonuçlarına göre;",
+      "text_sha256": "3a85da7ec5fb13eb82a6012f32a06122e3de0fbe6788ccf0132b2b4628f3169a",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.13.3.2.B.(1)#d4fbff46",
+      "clause_coordinate": "4.2.13.3.2.B.(1)",
+      "section_id": "4.2.13.3.2.B",
+      "in_force_text": "(1) HCV RNA’sı pozitif hastalarda Genotip tayini ile tedaviye başlanabilir.",
+      "text_sha256": "d4fbff461860d7186af1e55a6fb9771b05f553418b52e6ea0776806fe9d71bd3",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.17.A.(2)#ec5a2641",
+      "clause_coordinate": "4.2.17.A.(2)",
+      "section_id": "4.2.17.A",
+      "in_force_text": "2) Bifosfonatları tolere edemeyen veya yeterli yanıt alınamayan (Ek:RG-16/03/2023-32134/27-a md.Yürürlük: 24/03/2023) veya renal yetmezlik nedeniyle bifosfonatları kullanamayan osteoporozlu hastalardan;",
+      "text_sha256": "ec5a264158c1a5046eabc6b4f48660a4a21bad2f00aec23455e4a76583ef0a58",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.17.A.b#21d7b36c",
+      "clause_coordinate": "4.2.17.A.b",
+      "section_id": "4.2.17.A",
+      "in_force_text": "b) Yüksek kırık riski olan yetişkin hastalarda uzun dönem glukokortikoid tedavisiyle ilişkili kemik kaybının tedavisinde",
+      "text_sha256": "21d7b36c6fc14a6925600c0b1888cd03d5b607e1a4b687470ec419d866e6d8f9",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "indication_sc_ig": "indication_sc_ig.clinical.2026-10-02",
+    "indication_hbv": "indication_hbv.clinical.2026-10-02",
+    "indication_hcv": "indication_hcv.clinical.2026-10-02",
+    "indication_bone": "indication_bone.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "indication_sc_ig": "2024-11-09",
+    "indication_hbv": "2024-11-09",
+    "indication_hcv": null,
+    "indication_bone": null
+  }
+}

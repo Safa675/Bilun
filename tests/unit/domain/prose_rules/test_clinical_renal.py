@@ -26,7 +26,8 @@ def check(name='sevelamer', **facts):
 
 def phosphate(**facts):
     base = dict(indication='phosphate_binding', phase='initiation', dialysis=True,
-        other_phosphate_therapy_months=3, calcium_phosphorus_product=71,
+        other_phosphate_therapy_months=3, prior_phosphate_therapy_documented_in_report=True,
+        calcium_phosphorus_product=71,
         corrected_calcium_phosphorus_product=55, pth_pg_ml=150,
         adynamic_bone_disease=False, kt_v=1.4)
     return check(**{**base, **facts})
@@ -57,7 +58,8 @@ def test_phosphate_four_alternatives_and_global_prerequisites(changes, expected)
 
 def test_one_known_true_alternative_does_not_require_other_alternatives():
     result = check(indication='phosphate_binding', phase='initiation', dialysis=True,
-                   other_phosphate_therapy_months=3, calcium_phosphorus_product=72)
+                   other_phosphate_therapy_months=3, prior_phosphate_therapy_documented_in_report=True,
+                   calcium_phosphorus_product=72)
     assert result['criterion_status'] == 'criterion_clear'
     assert result['missing_inputs'] == []
     assert result['clinical_eligibility_complete'] is False

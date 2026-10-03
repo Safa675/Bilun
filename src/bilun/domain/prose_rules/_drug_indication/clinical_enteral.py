@@ -3,7 +3,6 @@
 The exempt (1)(b) pathway is distinct and is never subjected to malnutrition
 criteria here. Passing these necessary checks does not establish reimbursement.
 """
-from datetime import date
 import math
 from typing import Any
 
@@ -27,7 +26,7 @@ def evaluate_enteral_reports(line: Any, selected_rule_id: str | None = None) -> 
                          date_missing=['enteral_evidence.adult_path_requires_review']),
                 'sut_section': '4.2.8.A'}
     missing = scope_missing(evidence, 'enteral_evidence', line.drug_claim_date,
-                            date(2026, 9, 5), date(2026, 10, 2))
+                            'enteral', reader=reader)
     if missing:
         return {**result(KIND, reader, Predicate(None), SOURCE_REFS, date_missing=missing),
                 'sut_section': '4.2.8.A'}
@@ -48,6 +47,11 @@ def evaluate_enteral_reports(line: Any, selected_rule_id: str | None = None) -> 
     if phase not in {'initiation', 'renewal'}:
         predicate = all_of(predicate, Predicate(None, ('enteral_evidence.phase',)))
     else:
+        if phase == 'initiation':
+            # The source explicitly requires the initiating specialist report
+            # to state these conditions. Do not infer this from clinical status
+            # or extend that wording to the separate renewal sentence.
+            predicate = all_of(predicate, reader.bool('malnutrition_conditions_documented_in_report'))
         allowed = INITIATION_AUTHORS if phase == 'initiation' else RENEWAL_AUTHORS
         predicate = all_of(predicate, reader.one_of('report_author_specialty', tuple(sorted(allowed))))
     duration = line.drug_report_duration_months

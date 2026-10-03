@@ -48,13 +48,14 @@
         "ckd_growth_hormone_protocol": { "type": "string", "enum": ["ckd_somatropin_v1"] },
         "mecasermin_source_scope": { "type": "string", "const": "mecasermin_laron_v1" },
         "mecasermin_source_authority": {
-          "type": "object", "required": ["legal_valid_from", "known_as_of_dates", "coverage_kind"],
+          "type": "object", "required": ["legal_valid_from", "known_as_of_dates", "coverage_kind", "continuity_authority_id"],
           "additionalProperties": false,
           "properties": {
             "legal_valid_from": { "type": "null" },
             "known_as_of_dates": { "type": "array", "uniqueItems": true, "minItems": 1,
               "items": { "type": "string", "format": "date" } },
-            "coverage_kind": { "const": "verified_snapshot_dates_only" }
+            "coverage_kind": { "const": "verified_snapshot_dates_plus_reviewed_continuity" },
+            "continuity_authority_id": { "const": "mecasermin" }
           }
         },
         "pws_continuation_protocol": { "type": "string", "enum": ["pws_somatropin_v1"] },

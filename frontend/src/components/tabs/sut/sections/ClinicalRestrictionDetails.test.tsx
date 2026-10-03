@@ -102,3 +102,59 @@ it.each(["en", "tr"] as const)("renders the source-context guard as incomplete r
   expect(html).not.toContain("sections.claimValidator.");
   expect(html).not.toContain("PRIVATE_CLINICAL_SENTINEL");
 });
+
+const authority = {
+  schema_version: 1 as const, status: "admitted" as const, reason: "covered" as const,
+  family_id: "sma", version_id: "reviewed-source-version", service_date: "2026-10-03",
+  legal_effective_from: "2025-03-25", source_observed_on: "2026-10-02",
+  admission_basis: "reviewed_continuity" as const,
+  admitted_from: "2026-10-03", admitted_through: "2026-10-03",
+  official_review_checked_at: "2026-10-03T06:00:00Z", review_id: "test-review",
+  next_action: "Retrieve and review the official source for the service date.",
+  scope: "named_clinical_report_checks_only" as const,
+  clinical_eligibility_complete: false as const,
+  verification_status: "ai_generated_pending_review" as const,
+};
+
+it.each(["en", "tr"] as const)("separates observed, legal and admission dates with limited authority in %s", locale => {
+  const source = { ...authority, raw_evidence: "PRIVATE_SOURCE_SENTINEL", savings_try: 987654321 };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[
+    { ...restriction, source_authority: source },
+  ]} />, locale);
+  const labels = locale === "en" ? [
+    "Source admitted for these limited checks", "Only the named necessary clinical/report checks are covered.",
+    "Source observed on: 2026-10-02", "Recorded legal effective date: 2025-03-25",
+    "Source admission starts: 2026-10-03", "Source admission checked through: 2026-10-03",
+    "Official-source review checked at: 2026-10-03T06:00:00Z",
+  ] : [
+    "Kaynak bu sınırlı kontroller için kabul edildi", "Yalnızca belirtilen gerekli klinik/rapor kontrollerini kapsar.",
+    "Kaynağın gözlemlendiği tarih: 2026-10-02", "Kayıtlı hukuki yürürlük tarihi: 2025-03-25",
+    "Kaynak kabul başlangıcı: 2026-10-03", "Kaynak kabulünün kontrol edildiği son tarih: 2026-10-03",
+    "Resmi kaynak inceleme zamanı: 2026-10-03T06:00:00Z",
+  ];
+  for (const label of labels) expect(html).toContain(label);
+  expect(html).not.toContain("PRIVATE_SOURCE_SENTINEL");
+  expect(html).not.toContain("987654321");
+  expect(html).not.toContain("Fully eligible");
+  expect(html).not.toContain("sections.claimValidator.");
+});
+
+it.each(["en", "tr"] as const)("shows blocked-source action and last checked admission date in %s", locale => {
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[]}
+    sourceAuthority={{ ...authority, status: "review_required", reason: "uncovered_service_date",
+      admission_basis: null, service_date: "2026-10-04" }} />, locale);
+  expect(html).toContain(locale === "en" ? "Source and service date require review" : "Kaynak ve hizmet tarihi için inceleme gerekli");
+  expect(html).toContain(locale === "en" ? "Next action" : "Sonraki adım");
+  expect(html).toContain(authority.next_action);
+  expect(html).toContain("2026-10-04");
+  expect(html).toContain("2026-10-03");
+  expect(html).not.toContain("Source admitted for these limited checks");
+  expect(html).not.toContain("This limited check passed");
+});
+
+it("keeps legacy source absence absent instead of inventing currentness", () => {
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[restriction]} />);
+  expect(html).not.toContain("Source admitted for these limited checks");
+  expect(html).not.toContain("Source observed on");
+  expect(html).not.toContain("Source admission checked through");
+});

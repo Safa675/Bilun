@@ -27,7 +27,8 @@ rules:
     known_as_of_dates:
     - '2026-08-29'
     - '2026-10-02'
-    coverage_kind: verified_snapshot_dates_only
+    coverage_kind: verified_snapshot_dates_plus_reviewed_continuity
+    continuity_authority_id: mecasermin
   verification_status: ai_generated_pending_review
   source_evidence: data/gazette/source_evidence/mecasermin_known_as_of_continuation.json
 source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.46.B.(3)#cac79ad7",
+      "clause_coordinate": "4.2.46.B.(3)",
+      "section_id": "4.2.46.B",
+      "in_force_text": "(3) Hastalar her 12 ayda bir yeniden değerlendirilmelidir. Bu değerlendirmelerde;",
+      "text_sha256": "cac79ad794e119975385688e96a3ba595c8f451d01992fe85fec577717733387",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.46.B.a#89e9c50d",
+      "clause_coordinate": "4.2.46.B.a",
+      "section_id": "4.2.46.B",
+      "in_force_text": "a) FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olması ilaca yanıtsızlık olarak kabul edilir ve tedavi sonlandırılır.",
+      "text_sha256": "89e9c50d7367d60f7020e8cb75a7a0ba7e0f1d0111775ff1376f8cbe37a583e3",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.46.B.b#aa27b4a1",
+      "clause_coordinate": "4.2.46.B.b",
+      "section_id": "4.2.46.B",
+      "in_force_text": "b) Tedavinin devamı için düzenlenen raporlarda ilaç başlama kriterleri aranmaz. Tedavinin devamı için FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olmadığı her raporda belirtilmelidir.",
+      "text_sha256": "aa27b4a1fc20fbcb270cc1a9b58b20286147fd8043924afef3ca0199722c0b21",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.46.C.(3)#cac79ad7",
+      "clause_coordinate": "4.2.46.C.(3)",
+      "section_id": "4.2.46.C",
+      "in_force_text": "(3) Hastalar her 12 ayda bir yeniden değerlendirilmelidir. Bu değerlendirmelerde;",
+      "text_sha256": "cac79ad794e119975385688e96a3ba595c8f451d01992fe85fec577717733387",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.46.C.a#89e9c50d",
+      "clause_coordinate": "4.2.46.C.a",
+      "section_id": "4.2.46.C",
+      "in_force_text": "a) FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olması ilaca yanıtsızlık olarak kabul edilir ve tedavi sonlandırılır.",
+      "text_sha256": "89e9c50d7367d60f7020e8cb75a7a0ba7e0f1d0111775ff1376f8cbe37a583e3",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.46.C.b#aa27b4a1",
+      "clause_coordinate": "4.2.46.C.b",
+      "section_id": "4.2.46.C",
+      "in_force_text": "b) Tedavinin devamı için düzenlenen raporlarda ilaç başlama kriterleri aranmaz. Tedavinin devamı için FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olmadığı her raporda belirtilmelidir.",
+      "text_sha256": "aa27b4a1fc20fbcb270cc1a9b58b20286147fd8043924afef3ca0199722c0b21",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.57.(1)#d711a1b9",
+      "clause_coordinate": "4.2.57.(1)",
+      "section_id": "4.2.57",
+      "in_force_text": "1) EASI skorunda en az %50 azalma,",
+      "text_sha256": "d711a1b9f5bb7404e546c6bdc23c7c76c60b8081eca21d84c42bebe960d3aab0",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.57.(2)#62f546f9",
+      "clause_coordinate": "4.2.57.(2)",
+      "section_id": "4.2.57",
+      "in_force_text": "2) Dermatoloji Yaşam Kalite İndeksinde en az 4 puanlık azalma,",
+      "text_sha256": "62f546f97d8286ba5627a20bd6fe158e075416d59a221c93cbe8c079c8d3a705",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.57.(2)#af1ccf61",
+      "clause_coordinate": "4.2.57.(2)",
+      "section_id": "4.2.57",
+      "in_force_text": "(2) 16 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre aşağıdaki kriterlerden en az birinin sağlanması durumunda tedaviye devam edilebilir;",
+      "text_sha256": "af1ccf61e6218ea70d9d7e86457d011a264186d39ba49e44da6b42389e390030",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.57.(3)#6147427c",
+      "clause_coordinate": "4.2.57.(3)",
+      "section_id": "4.2.57",
+      "in_force_text": "3) Pruritus NRS skorunda en az 3 puanlık düşüş.",
+      "text_sha256": "6147427cbf9dce99bc006729d0f8f2d19e3024b37e508815f60f5eedad98ddfe",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "followup": "followup.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "followup": null
+  }
+}

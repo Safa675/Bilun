@@ -28,6 +28,7 @@ export interface SutGrowthHormoneEvidence {
   gh_initiation_pathway?: "standard" | "neurosecretory_bioinactive" | "organic_or_surgical" | "sga_case_1" | "sga_case_2" | null;
   gh_reported_growth_age_band?: "0_2_years" | "2_1_4_years" | "4_1_prepubertal" | "pubertal" | null;
   gh_chronological_age_years?: number | null;
+  /** Clinician-recorded assessment using SUT §4.2.6.A-1(1)(b)(3): onset is testicular volume >=4 ml in boys or T2 thelarche in girls. Enter prepubertal/pubertal only when the recorded assessment uses that definition; otherwise leave unknown. Do not infer from age, diagnosis or height-reference sex; no raw measurements are requested. */
   gh_pubertal_status?: "prepubertal" | "pubertal" | null;
   gh_pubertal_growth_assessment_completed?: boolean | null;
   gh_birth_weight_for_gestational_age_sds?: number | null;
@@ -62,13 +63,21 @@ export interface SutSmaEvidence {
   hypoxic_ischemic_encephalopathy?: boolean | null;
   hypoxic_birth_neurological_sequelae?: boolean | null;
   lumbar_puncture_suitability_documented?: boolean | null;
+  risdiplam_treatment_period?: "not_started" | "during_treatment" | null;
+  risdiplam_motor_monitoring_assessment_documented?: boolean | null;
+  risdiplam_cognitive_monitoring_assessment_documented?: boolean | null;
+  risdiplam_nutritional_monitoring_assessment_documented?: boolean | null;
+  risdiplam_respiratory_monitoring_assessment_documented?: boolean | null;
+  risdiplam_rehabilitation_monitoring_assessment_documented?: boolean | null;
+  risdiplam_orthopedic_monitoring_assessment_documented?: boolean | null;
+  risdiplam_monitoring_assessment_in_health_board_report?: boolean | null;
 }
 
 export interface SutAntifungalEvidence {
   applies_on?: string | null;
   assessment_date?: string | null;
   intent?: "prophylaxis" | "treatment" | null;
-  indication?: "aspergillus_candida_prophylaxis" | "chromoblastomycosis" | "coccidioidomycosis" | "esophageal_candidiasis" | "fusariosis" | "invasive_aspergillosis" | "invasive_candidiasis" | "mycetoma" | "oropharyngeal_candidiasis" | "other" | null;
+  indication?: "aspergillus_candida_prophylaxis" | "chromoblastomycosis" | "coccidioidomycosis" | "esophageal_candidiasis" | "fusariosis" | "invasive_aspergillosis" | "invasive_candidiasis" | "mycetoma" | "oropharyngeal_candidiasis" | "deep_fungal_infection_prophylaxis" | "other" | null;
   formulation?: "oral_solution" | "oral_suspension" | "oral_tablet" | "parenteral" | null;
   adult?: boolean | null;
   anc_per_mm3?: number | null;
@@ -77,6 +86,7 @@ export interface SutAntifungalEvidence {
   aml_or_mds?: boolean | null;
   remission_induction_chemotherapy?: boolean | null;
   prolonged_neutropenia_expected?: boolean | null;
+  neutropenia_development_expected?: boolean | null;
   allogeneic_hsct?: boolean | null;
   autologous_hsct?: boolean | null;
   acute_lymphoblastic_leukemia?: boolean | null;
@@ -108,6 +118,8 @@ export interface SutRenalEvidence {
   indication?: "dialysis_shpt" | "other" | "phosphate_binding" | "primary_hpt" | "renal_nutrition" | null;
   dialysis?: boolean | null;
   other_phosphate_therapy_months?: number | null;
+  /** Report documents at least three months of prior phosphate-lowering therapy. */
+  prior_phosphate_therapy_documented_in_report?: boolean | null;
   calcium_phosphorus_product?: number | null;
   corrected_calcium_phosphorus_product?: number | null;
   pth_pg_ml?: number | null;
@@ -138,6 +150,8 @@ export interface SutEnteralEvidence {
   malnutrition_path?: "exemption" | "malnutrition" | null;
   neurological_disease?: boolean | null;
   malnutrition_criteria_met?: boolean | null;
+  /** Initiating specialist report states the malnutrition conditions. */
+  malnutrition_conditions_documented_in_report?: boolean | null;
   specialist_report_present?: boolean | null;
   report_author_specialty?: "other" | "pediatric_endocrinology" | "pediatric_endocrinology_metabolism" | "pediatric_gastroenterology" | "pediatric_metabolism" | "pediatric_neurology" | "pediatric_surgery" | "pediatrics" | null;
 }
@@ -152,8 +166,31 @@ export interface SutRavulizumabEvidence {
   edss_in_report?: boolean | null;
 }
 
+/** Admission is restricted to the named necessary clinical/report checks. */
+export interface SutClinicalSourceAuthority {
+  schema_version: 1;
+  status: "admitted" | "review_required";
+  reason: "covered" | "missing_service_date" | "uncovered_service_date" | "source_authority_unavailable" | "source_content_changed" | "known_successor";
+  family_id: string;
+  version_id?: string | null;
+  service_date?: string | null;
+  legal_effective_from?: string | null;
+  admission_basis?: "established_history" | "observed_snapshot" | "reviewed_continuity" | null;
+  admitted_from?: string | null;
+  admitted_through?: string | null;
+  source_observed_on?: string | null;
+  official_review_checked_at?: string | null;
+  source_docx_sha256?: string | null;
+  review_id?: string | null;
+  next_action: string;
+  scope: "named_clinical_report_checks_only";
+  clinical_eligibility_complete: false;
+  verification_status: "ai_generated_pending_review";
+}
+
 /** Bounded identifiers/statuses only; no raw medical values or payment conclusion. */
 export interface SutClinicalRestriction {
+  source_authority?: SutClinicalSourceAuthority | null;
   constraint_set: string;
   criterion_status: "not_evaluated" | "unknown" | "criterion_clear" | "restriction_not_met";
   missing_inputs: string[];

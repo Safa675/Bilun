@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 from typing import Any
 
 from ...claims.clinical_evidence import clinical_date
+from .source_authority import resolve_source_authority
 
 
 @dataclass(frozen=True)
@@ -32,6 +32,7 @@ class Reader:
         self.evidence = evidence
         self.prefix = prefix
         self.checks: list[dict[str, Any]] = []
+        self.source_authority: dict[str, Any] | None = None
 
     def get(self, name: str) -> Any:
         return getattr(self.evidence, name, None)
@@ -57,13 +58,14 @@ class Reader:
 
 
 def scope_missing(evidence: Any, prefix: str, service_date: Any,
-                  valid_from: date | None, verified_through: date) -> list[str]:
-    """No wall-clock, arbitrary freshness threshold, or invented historical start."""
+                  authority_id: str, *, reader: Reader) -> list[str]:
+    """Require a pinned admitted source window before evaluating dated facts."""
     service = clinical_date(service_date)
+    authority = resolve_source_authority(authority_id, service)
+    reader.source_authority = authority.model_dump()
     if service is None:
         return ['drug_claim_date']
-    if (valid_from is None and service != verified_through) or (
-            valid_from is not None and service < valid_from) or service > verified_through:
+    if authority.status != 'admitted':
         return ['verified_source_for_service_date']
     missing = []
     if getattr(evidence, 'applies_on', None) != service:
@@ -79,7 +81,8 @@ def result(kind: str, reader: Reader, predicate: Predicate, sources: list[str],
     missing = sorted(set(date_missing or predicate.missing))
     status = ('not_evaluated' if date_missing else 'unknown' if predicate.value is None
               else 'criterion_clear' if predicate.value else 'restriction_not_met')
-    return {'constraint_set': kind, 'criterion_status': status, 'missing_inputs': missing,
+    return {**({'source_authority': reader.source_authority} if reader.source_authority else {}),
+            'constraint_set': kind, 'criterion_status': status, 'missing_inputs': missing,
             'checks': [] if date_missing else reader.checks, 'source_refs': sources,
             'clinical_eligibility_complete': False,
             'verification_status': 'ai_generated_pending_review'}

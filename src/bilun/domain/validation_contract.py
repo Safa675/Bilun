@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .sut.runtime_coverage_schema import RuntimeCoverageResponse
+from .sut.source_authority_schema import ClinicalSourceAuthorityEvidence
 
 
 ValidationDisposition = Literal[
@@ -37,6 +38,7 @@ class ValidationClinicalCheck(_StrictContract):
 
 
 class ValidationClinicalRestriction(_StrictContract):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
     runtime_coverage: RuntimeCoverageResponse | None = None
     constraint_set: str = Field(min_length=1, max_length=240)
     criterion_status: Literal['not_evaluated', 'unknown', 'criterion_clear', 'restriction_not_met']
@@ -50,6 +52,7 @@ class ValidationClinicalRestriction(_StrictContract):
 
 
 class ValidationAdvisory(_ValidationEvidence):
+    source_authority: ClinicalSourceAuthorityEvidence | None = None
     missing_inputs: list[str] = Field(default_factory=list)
     disposition: Literal[
         "unavailable", "review_only", "information_only", "permission_or_instruction",

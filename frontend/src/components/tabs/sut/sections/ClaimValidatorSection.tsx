@@ -436,6 +436,7 @@ function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
           </div>
         )}
         <ClinicalRestrictionDetails restrictions={evidence.clinical_restrictions ?? []}
+          sourceAuthority={evidence.source_authority}
           selectedRuleId={evidence.selected_rule_id} />
         {annexReviewKey && (
           <div className="text-xs mt-1" style={{ color: "#B45309" }}>

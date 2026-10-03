@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "bindings": [
+    {
+      "source_ref": "4.2.14.C#024594a5",
+      "clause_coordinate": "4.2.14.C",
+      "section_id": "4.2.14.C",
+      "in_force_text": "zzz) Tiyotepa;",
+      "text_sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7",
+      "context_anchor": true
+    },
+    {
+      "source_ref": "4.2.14.C#c36e5ca4",
+      "clause_coordinate": "4.2.14.C",
+      "section_id": "4.2.14.C",
+      "in_force_text": "yyy) Ravulizumab yalnızca;",
+      "text_sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834",
+      "context_anchor": true
+    },
+    {
+      "source_ref": "4.2.14.C.(2)#d0db489d@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+      "clause_coordinate": "4.2.14.C.(2)",
+      "section_id": "4.2.14.C",
+      "in_force_text": "2) Yüksek hastalık aktivitesi gösteren, relapslarla seyreden yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde;",
+      "text_sha256": "d0db489d801929ce899e89bb8a64964e6d59ff8b65ddb6d0372edeb999ac5ea0",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.14.C.a#43c9dfb5@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+      "clause_coordinate": "4.2.14.C.a",
+      "section_id": "4.2.14.C",
+      "in_force_text": "a) Aşağıda yer alan kriterleri birlikte sağlayan hastalarda tedaviye başlanılması ve üçüncü basamak sağlık hizmeti sunucularında üç nöroloji uzman hekiminin yer aldığı ve aşağıdaki durumların belirtildiği en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Her düzenlenen reçetede hastanın güncel vücut ağırlığı belirtilmelidir.",
+      "text_sha256": "43c9dfb51d2896b9ecade5775f5a09105dda3bc4ee46e633aab9b08af6b3d82b",
+      "context_anchor": false
+    },
+    {
+      "source_ref": "4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+      "clause_coordinate": "4.2.14.C.b",
+      "section_id": "4.2.14.C",
+      "in_force_text": "b) NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda; EDSS 8 ve üzerinde ise tedavi sonlandırılır. EDSS her sağlık kurulu raporunda belirtilmelidir.",
+      "text_sha256": "769b2a2056f20507ab2044120848675aaad28546d73dfc5cef99e46c258fdc9b",
+      "context_anchor": false
+    }
+  ],
+  "source_observed_on": "2026-10-02",
+  "permitted_family_versions": {
+    "ravulizumab": "ravulizumab.clinical.2026-10-02"
+  },
+  "established_history_from": {
+    "ravulizumab": "2026-07-07"
+  }
+}
