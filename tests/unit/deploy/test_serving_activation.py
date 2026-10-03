@@ -20,13 +20,33 @@ import duckdb
 import pytest
 
 from scripts.deploy import paired_release as paired
+from scripts.deploy.capture_release_preflight import _runtime_digest
+from scripts.deploy.launch_wavea_candidate import candidate_command
 from scripts.deploy.paired_release_transaction import atomic_json
+from scripts.deploy.rehearse_wavea_pair import env_digest
 from src.bilun.api import release_identity, startup, wavea_activation
 from tests.unit.deploy.test_derive_serving_cache import _initialize
 from tests.unit.deploy.test_verify_candidate_cache import BUILD_ID, CODE_SHA, _cache_fixture
 
 
 def _sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+_BACKEND_ENVIRONMENT = {
+    "BILUN_AUTH_USERNAME": "fixture-developer",
+    "BILUN_AUTH_PASSWORD": "fixture-only-password",
+    "BILUN_SESSION_SECRET": "fixture-only-session-secret" * 2,
+    "BILUN_SESSION_TOKEN_PURPOSE": "bilun-developer-v1",
+    "BILUN_DEV_USERNAMES": "fixture-developer",
+    "BILUN_PUBLIC_BILLING_ENABLED": "false",
+    "BILUN_DATA_MODE": "synthetic_demo",
+}
+_FRONTEND_ENVIRONMENT = {"FIXTURE_FRONTEND": "serving-test"}
+
+
+def _write_environment(path, values):
+    path.write_bytes(b"".join(f"{key}={value}\0".encode() for key, value in sorted(values.items())))
+    path.chmod(0o600)
 
 
 @pytest.fixture
@@ -43,16 +63,37 @@ def host(tmp_path, monkeypatch):
     os.chmod(live, 0o640)
     backend, frontend, old_frontend = (tmp_path / name for name in ("backend", "frontend", "old-frontend"))
     for path in (backend, frontend, old_frontend): path.mkdir()
+    (backend / "fixture_runtime.py").write_text("# Synthetic serving fixture runtime.\n")
+    (frontend / "server.js").write_text("// Synthetic serving fixture frontend.\n")
+    (frontend / ".next").mkdir()
+    (frontend / ".next" / "routes-manifest.json").write_text(json.dumps({"rewrites": {
+        "beforeFiles": [], "afterFiles": [{"source": "/api/:path*",
+            "destination": "http://127.0.0.1:8001/api/:path*"}], "fallback": [],
+    }}))
     current = tmp_path / "current"
     current.symlink_to(old_frontend)
     key = root / "key"
     key.write_bytes(b"fixture only existing signing key" * 2)
     key.chmod(0o600)
+    tuple_path = root / "candidate-tuple.json"
+    # Expected environments come from fixed fixture inputs, independently of
+    # the sanitizer and launcher whose output the paired gate must validate.
+    atomic_json(tuple_path, {"logical_tuple": {
+        "backend_runtime_sha256": _runtime_digest(backend, backend=True),
+        "backend": {"effective_environment_sha256": env_digest({**_BACKEND_ENVIRONMENT,
+            "BILUN_CACHE_DB_PATH": str(candidate), "BILUN_RELEASE_CODE_SHA": CODE_SHA,
+            "BILUN_RELEASE_SOURCE_MANIFEST_SHA256": _sha(roster),
+            "BILUN_STARTUP_POLICY": "verified-load-only", "PYTHONDONTWRITEBYTECODE": "1"})},
+        "frontend": {"effective_environment_sha256": env_digest({**_FRONTEND_ENVIRONMENT,
+            "PORT": "3000", "HOSTNAME": "127.0.0.1", "NODE_ENV": "production",
+            "API_PROXY_TARGET": "http://127.0.0.1:8001", "BILUN_RELEASE_CODE_SHA": CODE_SHA})},
+    }})
     original = {
         "schema_version": wavea_activation.RECEIPT_VERSION,
         "cache_build_id": BUILD_ID, "cache_sha256": _sha(candidate),
         "code_sha": CODE_SHA, "source_roster_path": str(roster),
         "source_roster_sha256": _sha(roster),
+        "tuple_observation_path": str(tuple_path), "tuple_observation_sha256": _sha(tuple_path),
     }
     original_path = root / "candidate-receipt.json"
     atomic_json(original_path, original)
@@ -87,15 +128,25 @@ def host(tmp_path, monkeypatch):
         config_files[str(dropin)] = None
     backend_environment = root / "backend.nul"
     frontend_environment = root / "frontend.nul"
-    for path in (backend_environment, frontend_environment):
-        path.write_bytes(b"KEY=value\0"); path.chmod(0o600)
+    _write_environment(backend_environment, {**_BACKEND_ENVIRONMENT,
+        "PYTHONPATH": "/fixture-untrusted-import-root", "BILUN_CACHE_DB_PATH": "/fixture-stale.duckdb"})
+    _write_environment(frontend_environment, {**_FRONTEND_ENVIRONMENT,
+        "API_PROXY_TARGET": "http://127.0.0.1:8002", "PORT": "3099"})
+    node = root / "fixture-node"
+    node.write_text("#!/bin/sh\nexit 0\n")
+    node.chmod(0o700)
     driver.config = {
-        "backend_python": sys.executable, "cache_path": str(candidate),
-        "activation_receipt_path": str(original_path),
+        "backend_python": sys.executable, "node": str(node), "cache_path": str(candidate),
+        "backend_runtime": str(backend), "frontend_runtime": str(frontend),
+        "source_roster_path": str(roster), "code_sha": CODE_SHA,
+        "profile": "single-vps-same-port-v2",
+        "activation_receipt_path": str(original_path), "activation_key_path": str(key),
         "candidate_backend_environment": str(backend_environment),
         "candidate_frontend_environment": str(frontend_environment),
     }
-    driver.config_sha = "b" * 64
+    driver.paths["candidate_launch_config"] = root / "candidate-launch.json"
+    atomic_json(driver.paths["candidate_launch_config"], driver.config)
+    driver.config_sha = _sha(driver.paths["candidate_launch_config"])
     atomic_json(root / "prepared-pair.json", {
         "configuration": config_files, "old_link": str(old_frontend),
         "candidate_config_sha256": driver.config_sha,
@@ -108,7 +159,6 @@ def host(tmp_path, monkeypatch):
     monkeypatch.setattr(driver, "_known_route_gate", lambda: None)
     monkeypatch.setattr(driver, "_require_maintenance", lambda: None)
     monkeypatch.setattr(driver, "_verify_old_artifacts", lambda: None)
-    monkeypatch.setattr(paired, "candidate_environments", lambda *_: ({}, {}))
     monkeypatch.setattr(driver, "stop_pair", lambda: None)
     monkeypatch.setattr(paired, "_run", lambda *_: "")
     monkeypatch.setattr(paired, "observe_service", lambda *_: SimpleNamespace(active_state="active"))
@@ -191,6 +241,22 @@ def test_generated_units_declare_actual_role_cwd_and_pinned_import_root(host):
         assert f"WorkingDirectory={runtime}\n" in unit
         assert f"Environment=PYTHONPATH={driver.backend}\n" in unit
         assert f"scripts.deploy.launch_wavea_candidate {role}" in unit
+    launch = json.loads((driver.root / "launch.json").read_text())
+    _, argv, cwd, environment = candidate_command("backend", launch)
+    assert cwd == driver.backend
+    assert argv[-2:] == ["--port", "8001"]
+    assert environment == {**_BACKEND_ENVIRONMENT,
+        "BILUN_CACHE_DB_PATH": str(driver.paths["live_cache_path"]), "BILUN_RELEASE_CODE_SHA": CODE_SHA,
+        "BILUN_RELEASE_SOURCE_MANIFEST_SHA256": _sha(Path(driver.config["source_roster_path"])),
+        "BILUN_STARTUP_POLICY": "verified-load-only", "PYTHONDONTWRITEBYTECODE": "1",
+        "BILUN_WAVEA_ACTIVATION_RECEIPT": str(driver.root / "serving-receipt.json"),
+        "BILUN_WAVEA_ACTIVATION_KEY_FILE": str(driver.key),
+    }
+    _, _, cwd, environment = candidate_command("frontend", launch)
+    assert cwd == driver.frontend
+    assert environment == {**_FRONTEND_ENVIRONMENT, "PORT": "3000", "HOSTNAME": "127.0.0.1",
+        "NODE_ENV": "production", "API_PROXY_TARGET": "http://127.0.0.1:8001", "BILUN_RELEASE_CODE_SHA": CODE_SHA,
+    }
 
 
 def test_unsigned_v2_never_authorizes_extra_pointer_startup(host, monkeypatch):
