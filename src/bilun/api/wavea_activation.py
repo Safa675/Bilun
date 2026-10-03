@@ -113,6 +113,56 @@ def _signed_payload(receipt: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in receipt.items() if key != "signature_sha256"}
 
 
+def _sealed_semantic_transition(
+    sidecar: dict[str, Any], *, evidence_root: Path, candidate: dict[str, Any],
+) -> tuple[dict[str, Any] | None, list[tuple[Path, str]]]:
+    """Follow signed evidence bytes; the rehearsal cannot authorize a transition."""
+    entry = sidecar["evidence"]["semantic_cache"]
+    envelope_path = _artifact_path(entry["path"])
+    envelope, envelope_sha = _load_private_json(envelope_path, root=evidence_root)
+    if envelope_sha != entry["sha256"]:
+        raise ValueError("Wave A semantic evidence digest differs")
+    raw_path = _artifact_path(envelope["raw_report_path"])
+    raw, raw_sha = _load_private_json(raw_path, root=evidence_root)
+    if raw_sha != envelope["raw_report_sha256"]:
+        raise ValueError("Wave A semantic raw report digest differs")
+    pinned = [(envelope_path, envelope_sha), (raw_path, raw_sha)]
+    if "source_report_path" not in raw:
+        if "source_report_sha256" in raw:
+            raise ValueError("Wave A semantic source report locator is missing")
+        # Earlier strict sidecars contain no source locator or transition proof.
+        # A transition-bearing rehearsal still fails the existing verifier.
+        return None, pinned
+    semantic_path = _artifact_path(raw["source_report_path"])
+    _private_file(semantic_path)
+    semantic, semantic_sha = _load_private_json(semantic_path, root=semantic_path.parent)
+    if raw.get("source_report_sha256") != semantic_sha:
+        raise ValueError("Wave A semantic source report digest differs")
+    pinned.append((semantic_path, semantic_sha))
+    if (
+        semantic.get("status") != "semantic_checkpoint_verified"
+        or semantic.get("candidate_identity") != {
+            field: candidate[field] for field in (
+                "build_id", "code_sha", "source_hash", "source_roster_sha256", "cache_sha256",
+            )
+        }
+    ):
+        raise ValueError("Wave A semantic source report identity differs")
+    transition = semantic.get("clinical_transition")
+    if transition is None:
+        return None, pinned
+    same_input = semantic.get("same_input")
+    if (
+        not isinstance(transition, dict)
+        or not isinstance(same_input, dict)
+        or same_input.get("status") != "same_input_bytes_verified"
+        or not isinstance(transition.get("same_input"), dict)
+        or _canonical(same_input) != _canonical(transition["same_input"])
+    ):
+        raise ValueError("Wave A semantic transition source/config/input binding differs")
+    return transition, pinned
+
+
 def load_startup_activation(
     environ: Mapping[str, str],
     *,
@@ -205,12 +255,13 @@ def load_startup_activation(
     ):
         raise ValueError("Wave A activation artifact bytes differ")
     try:
-        sidecar = json.loads(
-            sidecar_path.read_text(encoding="utf-8"),
-            object_pairs_hook=_unique_pairs, parse_constant=_reject_constant,
+        sidecar, sidecar_sha = _load_private_json(
+            sidecar_path, root=sidecar_path.parent,
         )
     except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError("Wave A release sidecar is malformed") from exc
+    if sidecar_sha != receipt["sidecar_sha256"]:
+        raise ValueError("Wave A activation artifact bytes differ")
     candidate = sidecar.get("candidate") if isinstance(sidecar, dict) else None
     if not isinstance(candidate, dict) or any(
         candidate.get(field) != receipt[receipt_field]
@@ -231,6 +282,9 @@ def load_startup_activation(
         backend_runtime=backend_runtime, frontend_runtime=frontend_runtime,
     )
     result = verify_release_sidecar(sidecar_path, expected)
+    clinical_transition, semantic_files = _sealed_semantic_transition(
+        sidecar, evidence_root=sidecar_path.parent, candidate=candidate,
+    )
     trace_attestation, trace_attestation_sha = _load_private_json(
         trace_attestation_path, root=trace_attestation_path.parent
     )
@@ -247,6 +301,7 @@ def load_startup_activation(
     rehearsal = verify_private_rehearsal(
         rehearsal_path, tuple_observation_path,
         candidate=candidate, backend_runtime=backend_runtime,
+        clinical_transition=clinical_transition,
     )
     if (
         rehearsal["rehearsal_sha256"] != receipt["rehearsal_sha256"]
@@ -257,6 +312,7 @@ def load_startup_activation(
     if (
         result["status"] != "release_sidecar_consistent"
         or result["sidecar_sha256"] != receipt["sidecar_sha256"]
+        or any(_stable_file_hash(path) != digest for path, digest in semantic_files)
         or _stable_file_hash(receipt_path) != receipt_sha_before
     ):
         raise ValueError("Wave A release sidecar changed during activation check")
