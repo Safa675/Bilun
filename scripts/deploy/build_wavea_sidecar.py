@@ -121,6 +121,7 @@ def build_wavea_sidecar(
     rehearsal = verify_private_rehearsal(
         rehearsal_path, tuple_observation_path,
         candidate=candidate, backend_runtime=backend_runtime,
+        clinical_transition=semantic.get("clinical_transition"),
     )
     original_reports = {
         "structural_cache": (structural_report_path, structural_sha),

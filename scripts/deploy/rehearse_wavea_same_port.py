@@ -176,6 +176,7 @@ def compare_reports(
     old: dict[str, dict], new: dict[str, dict], *, contract: str,
     old_capability: str | None, old_persisted: dict[str, dict],
     same_input: dict | None = None,
+    clinical_transition: Any = None,
 ) -> None:
     """Compare observed DTOs without using API visibility as cache versioning.
 
@@ -188,6 +189,7 @@ def compare_reports(
         raise ValueError("All-patient/bill API inventory differs")
     if contract not in {"original-five", FULL_EVIDENCE_SCHEMA_VERSION}:
         raise ValueError("Unknown rehearsal baseline contract")
+    old_comparable, new_comparable = {}, {}
     for path, before in old.items():
         after = new[path]
         _draft_report(after)
@@ -205,6 +207,15 @@ def compare_reports(
                 raise ValueError("Current old API capability is unknown")
         else:
             left, right = _legacy_report(before), _legacy_report(after)
+        old_comparable[path], new_comparable[path] = left, right
+    if clinical_transition is not None:
+        if contract != FULL_EVIDENCE_SCHEMA_VERSION:
+            raise ValueError("Clinical transition requires complete current HTTP/cache ownership")
+        from scripts.deploy.verify_clinical_semantic_transition import normalize_transition_http_reports
+        old_comparable = normalize_transition_http_reports(old_comparable, side="baseline", proof=clinical_transition)
+        new_comparable = normalize_transition_http_reports(new_comparable, side="candidate", proof=clinical_transition)
+    for path, left in old_comparable.items():
+        right = new_comparable[path]
         if same_input is not None:
             if same_input.get("status") != "same_input_bytes_verified":
                 raise ValueError("HTTP comparison lacks independent same-input proof")
@@ -329,6 +340,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--code-sha", required=True)
     parser.add_argument("--patient-id", required=True)
     parser.add_argument("--baseline-build-config-environment", type=Path)
+    parser.add_argument("--clinical-transition", type=Path)
+    parser.add_argument("--dependency-root", type=Path, action="append", default=[])
     args = parser.parse_args(argv)
     if not _CODE_SHA.fullmatch(args.code_sha) or any(
         not value.is_absolute() or value.is_symlink()
@@ -374,6 +387,31 @@ def main(argv: list[str] | None = None) -> None:
         baseline_build_config_environment=baseline_environment,
     )
     same_input_sha = write_private_json(args.work_dir / "same-input-rehearsal.json", same_input)
+    transition_proof = None
+    transition_report_sha = None
+    if args.clinical_transition is not None:
+        from scripts.deploy.release_sidecar import _load_private_json
+        from scripts.deploy.verify_clinical_semantic_transition import (
+            validate_transition_request, verify_clinical_semantic_transition,
+        )
+        request, _ = _load_private_json(args.clinical_transition, root=args.clinical_transition.parent)
+        request = validate_transition_request(request)
+        if request["expected_candidate_sha"] != args.code_sha or request["expected_verifier_sha"] != args.code_sha:
+            raise ValueError("Namespace transition identities must equal the exact candidate tooling head")
+        with duckdb.connect(str(replay / "cache.duckdb"), read_only=True) as db:
+            baseline_meta = _build_metadata(db, old_build)
+        with duckdb.connect(str(args.candidate_db), read_only=True) as db:
+            candidate_meta = _build_metadata(db, new_build)
+        transition_proof = verify_clinical_semantic_transition(
+            baseline_roster=args.baseline_roster, candidate_roster=args.candidate_roster,
+            baseline_meta=baseline_meta, candidate_meta=candidate_meta, same_input=same_input,
+            python_executable=args.backend_python, dependency_roots=tuple(args.dependency_root),
+            expected_candidate_sha=request["expected_candidate_sha"],
+            expected_verifier_sha=request["expected_verifier_sha"],
+        )
+        transition_report_sha = write_private_json(
+            args.work_dir / "clinical-transition-rehearsal.json", transition_proof.report,
+        )
     _verify_frontend_api_rewrite(replay / "frontend", 8001)
     _verify_frontend_api_rewrite(frontend, 8001)
     old_backend = environment(args.old_snapshot / "backend-effective-env.nul")
@@ -457,7 +495,7 @@ def main(argv: list[str] | None = None) -> None:
             raise ValueError("Candidate draft API differs from persisted full-v2 report")
         compare_reports(old_reports, new_reports, contract=contract,
                         old_capability=old_health.get("wavea_capability"), old_persisted=old_persisted,
-                        same_input=same_input)
+                        same_input=same_input, clinical_transition=transition_proof)
         access_checks = _candidate_access(new_backend, candidate_session, new_reports)
         for path in ("/api/compliance-index", "/api/revenue-recovery", "/api/wavea-evidence-index"):
             if _canonical_digest(_json(8001, path, candidate_session)) != _canonical_digest(_json(3000, path, candidate_session)):
@@ -517,6 +555,8 @@ def main(argv: list[str] | None = None) -> None:
             "old_route_sha256": SAME_PORT_ROUTE_SHA256, "candidate_route_sha256": SAME_PORT_ROUTE_SHA256,
             "public_activation_ready": False, "remaining_gate": "independent_signed_release_attestation",
         }
+        if transition_proof is not None:
+            report["clinical_transition_report_sha256"] = transition_report_sha
         if _stable_file_hash(Path(__file__)) != producer_sha:
             raise ValueError("Same-port rehearsal producer changed during rehearsal")
         write_private_json(args.work_dir / "real-candidate-namespace-rehearsal.json", report)

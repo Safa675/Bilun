@@ -29,6 +29,7 @@ def verify_private_rehearsal(
     *,
     candidate: dict[str, Any],
     backend_runtime: Path,
+    clinical_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     rehearsal, rehearsal_sha = _load_private_json(
         rehearsal_path, root=rehearsal_path.parent
@@ -48,6 +49,35 @@ def verify_private_rehearsal(
     if not isinstance(cache, dict) or not isinstance(health, dict):
         raise ValueError("Private candidate cache or health observation is missing")
     schema = rehearsal.get("schema_version")
+    if clinical_transition is None and "clinical_transition_report_sha256" in rehearsal:
+        raise ValueError("Private rehearsal has an unrequested clinical transition")
+    if clinical_transition is not None:
+        from scripts.deploy.verify_clinical_semantic_transition import TRANSITION_CONTRACT
+        if schema != "wavea-same-port-rehearsal-v2":
+            raise ValueError("Clinical transition requires the complete same-port rehearsal")
+        transition, transition_sha = _load_private_json(
+            rehearsal_path.parent / "clinical-transition-rehearsal.json", root=rehearsal_path.parent,
+        )
+        if (clinical_transition.get("status") != "clinical_semantic_transition_verified"
+                or clinical_transition.get("contract") != TRANSITION_CONTRACT
+                or clinical_transition.get("candidate_code_sha") != candidate["code_sha"]
+                or clinical_transition.get("verifier", {}).get("verifier_sha") != candidate["code_sha"]
+                or _canonical_digest(transition) != _canonical_digest(clinical_transition)
+                or rehearsal.get("clinical_transition_report_sha256") != transition_sha):
+            raise ValueError("Private rehearsal clinical transition differs from fresh semantic proof")
+        files = clinical_transition.get("verifier", {}).get("files")
+        if not isinstance(files, dict) or not files:
+            raise ValueError("Private rehearsal clinical verifier closure is missing")
+        for relative, digest in files.items():
+            if (not isinstance(relative, str)
+                    or not (relative.startswith(("scripts/", "src/", "data/"))
+                            or relative in {"pyproject.toml", "requirements.txt"})
+                    or Path(relative).is_absolute() or ".." in Path(relative).parts
+                    or not isinstance(digest, str) or not _SHA256.fullmatch(digest)):
+                raise ValueError("Private rehearsal clinical verifier locator is malformed")
+            source = backend_runtime / relative
+            if source.is_symlink() or not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != digest:
+                raise ValueError("Private rehearsal clinical verifier bytes differ from candidate tooling")
     if schema == "wavea-real-pair-rehearsal-v1":
         producer_name, ports = "rehearse_wavea_pair.py", (8002, 3099)
     elif schema == "wavea-same-port-rehearsal-v2":
@@ -90,6 +120,8 @@ def verify_private_rehearsal(
             or rehearsal.get("candidate_route_sha256") != _SAME_PORT_ROUTE_SHA256
         ):
             raise ValueError("Same-port rehearsal profile or sequential proof differs")
+        if clinical_transition is not None and _canonical_digest(same_input) != _canonical_digest(clinical_transition.get("same_input")):
+            raise ValueError("Private rehearsal clinical source/config/input binding differs")
     else:
         raise ValueError("Unknown private rehearsal schema")
     producer = backend_runtime / "scripts/deploy" / producer_name
