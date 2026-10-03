@@ -4,17 +4,20 @@ import base64
 import hashlib
 import hmac
 import json
+import shutil
 import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.deploy import rehearse_wavea_pair as rehearsal
+from scripts.deploy.http_release_probes import HttpReleaseProbes
 from scripts.deploy.launch_wavea_candidate import _CONFIG_PATHS, candidate_command
 from scripts.deploy.probe_auth import probe_cookie
 from src.bilun.api import auth
 from src.bilun.api.public_responses import project_public_response
 from tests.unit.deploy.test_candidate_environment import candidate_auth, write_env
+from tests.unit.deploy.probe_auth_fixtures import source_context, source_verifier
 
 
 class FixtureDB:
@@ -52,6 +55,87 @@ def test_purpose_enabled_same_version_baseline_control(tmp_path, monkeypatch):
     assert rehearsal.legacy_api_parity(session, session, tmp_path / "fixture.db") == (1, 1)
 
 
+@pytest.mark.parametrize("old_format", ["legacy", "distinct_secret", "current"])
+@pytest.mark.parametrize("public_enabled", [False, True])
+def test_old_route_public_parity_is_not_developer_authentication(
+    tmp_path, monkeypatch, old_format, public_enabled,
+):
+    """The older single-factory route path proves auth only when billing is private."""
+    monkeypatch.setattr(auth.time, "time", lambda: 1000)
+    candidate = {**candidate_auth(), "BILUN_PUBLIC_BILLING_ENABLED": str(public_enabled).lower()}
+    old = {**candidate}
+    old.pop("BILUN_SESSION_TOKEN_PURPOSE")
+    if old_format == "distinct_secret":
+        old["BILUN_SESSION_SECRET"] = "fixture-old-secret"
+    legacy = old_format == "legacy"
+    context = source_context(tmp_path / "old-runtime", legacy=legacy)
+    old_auth = source_verifier(monkeypatch, legacy=legacy)
+    old_cookie = probe_cookie(old, old_context=context, now=1000)
+    candidate_cookie = probe_cookie(candidate, now=1000)
+    environments, verifiers = {"old": old, "candidate": candidate}, {"old": old_auth, "candidate": auth}
+
+    def verify_session(pair, session):
+        with monkeypatch.context() as patch:
+            for key, value in environments[pair].items():
+                patch.setenv(key, value)
+            return verifiers[pair].verify_session_token(session.split("=", 1)[1]) if session else None
+
+    for pair, session in (("old", old_cookie), ("candidate", candidate_cookie)):
+        with monkeypatch.context() as patch:
+            for key, value in environments[pair].items():
+                patch.setenv(key, value)
+            assert verifiers[pair].issue_session_token(
+                environments[pair]["BILUN_AUTH_USERNAME"], ttl_seconds=300,
+            ) == session.split("=", 1)[1]
+        claims = verify_session(pair, session)
+        assert claims.username == environments[pair]["BILUN_AUTH_USERNAME"]
+        assert claims.expires_at == 1300
+    compatible = old_format == "current"
+    assert (verify_session("candidate", old_cookie) is not None) is compatible
+
+    public = "https://app.bilun.tech"
+    state, calls = {"route": "old"}, []
+    assets = {pair: [f"/_next/static/{pair}-{number}.js" for number in range(10)]
+              for pair in ("old", "candidate")}
+    report = {"patient_id": "fixture-patient", "total_recoverable_try": 12.34,
+              "data_source": {"mode": "synthetic_demo", "is_synthetic": True}}
+
+    def fetch(base, path, session):
+        pair = (state["route"] if base == public else
+                "old" if base in ("http://127.0.0.1:8001", "http://127.0.0.1:3000") else "candidate")
+        if base == public and path in assets["old"]:
+            pair = "old"
+        if path == "/health":
+            return 200, json.dumps({"pair": pair}).encode()
+        if path == "/login":
+            return 200, ("<html>" + "".join(f'<script src="{item}"></script>' for item in assets[pair]) + "</html>").encode()
+        if path in assets[pair]:
+            return 200, path.encode()
+        if path.startswith(("/api/", "/patient/")):
+            claims = verify_session(pair, session)
+            calls.append((pair, claims is not None, session))
+            if claims is None and not public_enabled:
+                return 401, b"{}"
+            body = report if claims else project_public_response(report, "/api/billing-report/{patient_id}")
+            return 200, json.dumps(body).encode()
+        return 404, b"missing"
+
+    probes = HttpReleaseProbes(
+        public_base=public, patient_id="fixture-patient",
+        old_tuple=lambda: {"status": "protected_old_pair_observed", "tuple_sha256": "a" * 64},
+        candidate_tuple=lambda: {"status": "candidate_tuple_observed", "tuple_sha256": "b" * 64,
+                                 "private_activation_verified": True},
+        activation_gate=lambda _: True,
+        cookie_factory=lambda: probe_cookie(old, old_context=context, now=1000), fetch=fetch,
+    )
+    assert probes.public_tuple_sha256("old") == "a" * 64
+    state["route"] = "candidate"
+    assert probes.public_tuple_sha256("candidate") == ("b" * 64 if compatible or public_enabled else None)
+    candidate_calls = [(authenticated, session) for pair, authenticated, session in calls if pair == "candidate"]
+    assert candidate_calls and all(session == old_cookie for _, session in candidate_calls)
+    assert all(authenticated is compatible for authenticated, _ in candidate_calls)
+
+
 @pytest.mark.parametrize("old_purpose", ["", "bilun-developer-v1"])
 @pytest.mark.parametrize("public_enabled", [False, True])
 def test_legacy_parity_uses_both_sessions_and_never_accepts_public_dto(
@@ -60,7 +144,9 @@ def test_legacy_parity_uses_both_sessions_and_never_accepts_public_dto(
     candidate = candidate_auth()
     old = {**candidate, "BILUN_SESSION_SECRET": "fixture-old-secret",
            "BILUN_SESSION_TOKEN_PURPOSE": old_purpose}
-    old_cookie, candidate_cookie = probe_cookie(old), probe_cookie(candidate)
+    context = source_context(tmp_path / "old-runtime", legacy=not old_purpose)
+    old_cookie = probe_cookie(old, old_context=context)
+    candidate_cookie = probe_cookie(candidate)
     for key, value in candidate.items():
         monkeypatch.setenv(key, value)
     assert auth.verify_session_token(old_cookie.split("=", 1)[1]) is None
@@ -84,6 +170,9 @@ def test_legacy_parity_uses_both_sessions_and_never_accepts_public_dto(
             assert hmac.compare_digest(decode(signature), hmac.new(
                 old["BILUN_SESSION_SECRET"].encode(), decode(payload), hashlib.sha256,
             ).digest())
+            assert decode(payload).decode().split(".")[0] == (
+                (old_purpose + ":" if old_purpose else "") + old["BILUN_AUTH_USERNAME"]
+            )
             assert session == old_cookie
             return 200, json.dumps(report).encode()
         assert port == 8002
@@ -115,6 +204,8 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
         directory.mkdir(parents=True)
     (checkout / "scripts/deploy/rehearse_wavea_pair.py").write_bytes(Path(rehearsal.__file__).read_bytes())
     (replay / "cache.duckdb").write_bytes(b"fixture-old-cache")
+    old_context = source_context(replay / "backend", legacy=not old_purpose)
+    shutil.copytree(replay / "backend", snapshot / "backend")
     (replay / "frontend/.next/BUILD_ID").write_text("fixture-old-build")
     (frontend / ".next/BUILD_ID").write_text("fixture-frontend-build")
     (frontend / "server.js").write_text("// fixture only")
@@ -179,7 +270,8 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
     monkeypatch.setattr(rehearsal, "CaddyRouteDriver", Driver)
     # Freeze token expiry without reading or using any operator authentication.
     monkeypatch.setattr(rehearsal.time, "time", lambda: 1000)
-    old_cookie, candidate_cookie = probe_cookie(old), probe_cookie(candidate_auth())
+    old_cookie = probe_cookie(old, old_context=old_context)
+    candidate_cookie = probe_cookie(candidate_auth())
     calls = []
 
     def fetch(port, path, session=None):
@@ -197,6 +289,7 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
     monkeypatch.setattr(rehearsal, "fetch", fetch)
     rehearsal.main([
         "--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
+        "--old-backend-runtime-sha256", old_context.runtime_sha256,
         "--candidate-backend-environment", str(candidate_backend_path),
         "--candidate-frontend-environment", str(candidate_frontend_path),
         "--candidate-checkout", str(checkout), "--candidate-db", str(cache),

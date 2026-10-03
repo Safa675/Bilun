@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.unit.deploy.probe_auth_fixtures import write_old_auth
+
 import duckdb
 import pytest
 
@@ -59,6 +61,7 @@ def machine(tmp_path: Path, monkeypatch):
     for key in ("candidate_backend_environment", "candidate_frontend_environment"):
         Path(spec[key]).write_bytes(b"EXISTING=value\0")
     Path(spec["live_cache_path"]).unlink()
+    write_old_auth(Path(spec["live_backend_runtime"]))
     cache(Path(spec["live_cache_path"]), "old", OLD)
     Path(spec["frontend_current"]).symlink_to(spec["live_frontend_runtime"])
     dependency = inputs / "dependencies"
@@ -86,7 +89,8 @@ def machine(tmp_path: Path, monkeypatch):
     def observe(spec):
         event("observe")
         return {"cache": module._candidate_db_hash(Path(spec["live_cache_path"])),
-                "frontend": str(Path(spec["frontend_current"]).resolve()), "services": "unchanged"}
+                "frontend": str(Path(spec["frontend_current"]).resolve()), "services": "unchanged",
+                "backend_runtime_sha256": module._runtime_digest(Path(spec["live_backend_runtime"]), backend=True)}
 
     def snapshot(spec, before):
         event("snapshot")
@@ -104,6 +108,7 @@ def machine(tmp_path: Path, monkeypatch):
         out = root / "candidate-backend"
         out.mkdir()
         (out / "code.py").write_text("# exact target\n")
+        write_old_auth(out)
         claims, clean = out / "claims", out / "clean"
         claims.mkdir()
         clean.mkdir()
@@ -483,10 +488,11 @@ def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkey
     fresh = module_from_spec(definition)
     definition.loader.exec_module(fresh)
     monkeypatch.setattr(fresh, "_run", lambda argv, **kwargs: calls.append((argv, kwargs)))
-    fresh._rehearse(spec, spec["bundle_root"] / "backend", spec["bundle_root"] / "frontend")
+    fresh._rehearse(spec, spec["bundle_root"] / "backend", spec["bundle_root"] / "frontend", "a" * 64)
     argv, kwargs = calls[0]
     assert argv[:3] == ["unshare", "--net", "--"]
     assert "scripts.deploy.rehearse_wavea_same_port" in argv
+    assert argv[argv.index("--old-backend-runtime-sha256") + 1] == "a" * 64
     assert "systemctl" not in argv and "--profile" not in argv
     assert kwargs["env"]["PYTHONDONTWRITEBYTECODE"] == "1"
 

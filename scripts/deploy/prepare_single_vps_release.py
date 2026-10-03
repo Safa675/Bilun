@@ -635,7 +635,8 @@ def _build_frontend(spec: dict[str, Any], checkout: Path) -> Path:
     return runtime
 
 
-def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path) -> None:
+def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path,
+              old_backend_runtime_sha256: str) -> None:
     root = spec["bundle_root"]
     work = root / "rehearsal"
     work.mkdir(mode=0o700)
@@ -643,6 +644,7 @@ def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path) -> None:
             "scripts.deploy.rehearse_wavea_same_port"]
     fields = {
         "work-dir": work, "old-snapshot": root / "old-snapshot",
+        "old-backend-runtime-sha256": old_backend_runtime_sha256,
         "old-replay": root / "old-replay", "candidate-checkout": checkout,
         "candidate-db": root / "candidate.duckdb", "candidate-roster": root / "source-roster.json",
         "baseline-roster": root / "baseline-roster.json",
@@ -826,7 +828,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     source_roster_path=root / "source-roster.json", cache_path=root / "candidate.duckdb",
                     trace_path=root / "build.trace", log_path=root / "cache-build.log")
         _save(root / "trace-attestation.json", trace)
-        _rehearse(spec, checkout, frontend)
+        _rehearse(spec, checkout, frontend, before["backend_runtime_sha256"])
         rehearsal = root / "rehearsal/real-candidate-namespace-rehearsal.json"
         observed = root / "rehearsal/candidate-tuple-observation.json"
         evidence = root / "evidence"

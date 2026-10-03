@@ -140,12 +140,13 @@ def _http(port: int, path: str, cookie: str | None) -> tuple[int, bytes]:
         raise ValueError("Legacy endpoint request failed") from exc
 
 
-def _cookie(environment: dict[bytes, bytes]) -> str:
+def _cookie(environment: dict[bytes, bytes], *, old_context) -> str:
     from scripts.deploy.probe_auth import probe_cookie
 
     if any(not environment.get(key) for key in _AUTH_KEYS):
         raise ValueError("Protected authentication configuration is incomplete")
-    return probe_cookie({key.decode(): value.decode() for key, value in environment.items()})
+    return probe_cookie({key.decode(): value.decode() for key, value in environment.items()},
+                        old_context=old_context)
 
 
 def _cache(path: Path) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -251,7 +252,10 @@ def verify_legacy_equivalence(spec: LegacyEquivalenceSpec, *, proc_root: Path = 
     if len({path.resolve() for path in (spec.live_cache, spec.protected_cache, spec.replay_cache)}) != 3 or cache_results[0] != cache_results[1] or cache_results[0] != cache_results[2]:
         raise ValueError("Full protected/live/replay cached payload parity failed")
     cache, patients, bills = cache_results[0]
-    cookie = _cookie(envs["backend"])
+    from scripts.deploy.probe_auth import old_probe_context
+    context = old_probe_context(spec.backend.protected_runtime,
+                                expected_runtime_sha256=runtime_digests["backend"]["runtime_sha256"])
+    cookie = _cookie(envs["backend"], old_context=context)
     backend_ports = (spec.backend.live_observation["port"], spec.backend.replay_port)
     for port in backend_ports:
         status, raw = fetch(port, "/health", None)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import shutil
 import json
 import sys
 from pathlib import Path
@@ -13,10 +14,12 @@ import pytest
 import duckdb
 
 from scripts.deploy import rehearse_wavea_same_port as rehearsal
+from scripts.deploy import probe_auth as probe
 from scripts.deploy.launch_wavea_candidate import SAME_PORT_PROFILE, _CONFIG_PATHS, candidate_command
 from scripts.deploy.observe_candidate_tuple import _canonical_digest
 from scripts.deploy.verify_private_rehearsal import verify_private_rehearsal
 from tests.unit.deploy.test_candidate_environment import candidate_auth, write_env
+from tests.unit.deploy.probe_auth_fixtures import source_context, source_verifier
 
 
 def private_json(path: Path, value: dict) -> str:
@@ -247,6 +250,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     snapshot.mkdir()
     (replay / "backend/.venv/bin").mkdir(parents=True)
     (replay / "backend/.venv/bin/python").write_text("fixture executable")
+    old_context = source_context(replay / "backend")
+    shutil.copytree(replay / "backend", snapshot / "backend")
     (checkout / "scripts/deploy").mkdir(parents=True)
     (checkout / "scripts/deploy/rehearse_wavea_same_port.py").write_bytes(Path(rehearsal.__file__).read_bytes())
     frontend(replay / "frontend")
@@ -259,6 +264,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     baseline_roster.write_bytes(b"fixture-baseline-roster")
     old = {**candidate_auth(), "BILUN_SESSION_SECRET": "old-fixture-secret",
            "BILUN_HEALTH_PROBE_TOKEN": "o" * 32}
+    old.pop("BILUN_SESSION_TOKEN_PURPOSE")
     write_env(snapshot / "backend-effective-env.nul", old)
     write_env(snapshot / "frontend-effective-env.nul", {"NODE_ENV": "production"})
     new = {**candidate_auth(), "BILUN_HEALTH_PROBE_TOKEN": "n" * 32}
@@ -278,14 +284,17 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal.os, "readlink", lambda path: "private" if "self" in path else "host")
     monkeypatch.setattr(rehearsal.subprocess, "run", lambda *_a, **_k: SimpleNamespace(stdout=""))
     monkeypatch.setattr(rehearsal, "ready", lambda *_: None)
-    monkeypatch.setattr(rehearsal, "_runtime_digest", lambda *_a, **_k: "b" * 64)
+    monkeypatch.setattr(rehearsal, "_runtime_digest", lambda root, **_k:
+                        old_context.runtime_sha256 if root == replay / "backend" else "b" * 64)
     monkeypatch.setattr(rehearsal, "_static_assets", lambda *_: (10, "c" * 64))
     monkeypatch.setattr(rehearsal, "_verify_assets", lambda *_: 10)
     monkeypatch.setattr(rehearsal, "inspect_assets", lambda *_a, **_k: {"ok": True})
     monkeypatch.setattr(rehearsal, "_process_observation", lambda *_a, **_k: {"argv_sha256": "d" * 64})
     monkeypatch.setattr(rehearsal, "_candidate_access", lambda *_: 20)
     events, processes, contexts = [], [], {}
-    state = {"pair": None}
+    state = {"pair": None, "recovered": False}
+    clock = SimpleNamespace(now=1000)
+    monkeypatch.setattr(probe.time, "time", lambda: clock.now)
 
     class Process:
         def __init__(self, name):
@@ -301,6 +310,10 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
 
     def start(argv, cwd, values, name, _work):
         pair = "candidate" if name.startswith("candidate") else "old"
+        state["recovered"] = name.startswith("recovered-old")
+        if name == "recovered-old-backend":
+            # Recovery must mint a fresh session after the initial one expires.
+            clock.now = 1301
         if name.endswith("backend"):
             assert all(process.stopped for process in processes)
             assert argv[-1] == "8001"
@@ -317,7 +330,9 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal.os, "killpg", lambda pid, _signal: next(
         process for process in processes if process.pid == pid
     ).terminate())
-    old_cookie, candidate_cookie = rehearsal.cookie(old), rehearsal.cookie(new)
+    old_cookie = rehearsal.cookie(old, old_context=old_context)
+    candidate_cookie = rehearsal.cookie(new)
+    recovered_old_cookie = probe.probe_cookie(old, old_context=old_context, now=1301)
 
     def fetch(port, path, session=None):
         assert port in (8001, 3000)
@@ -325,7 +340,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
         if path == "/health":
             return 200, json.dumps({"active_build": pair + "-build", "wavea_capability":
                                    "draft" if pair == "candidate" else old_capability}).encode()
-        assert session == (candidate_cookie if pair == "candidate" else old_cookie)
+        expected_old_cookie = recovered_old_cookie if state["recovered"] else old_cookie
+        assert session == (candidate_cookie if pair == "candidate" else expected_old_cookie)
         if path == "/api/auth/me":
             return 200, json.dumps({"authenticated": True, "username": old["BILUN_AUTH_USERNAME"]}).encode()
         value = full.get(path, {})
@@ -345,6 +361,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
 
     monkeypatch.setattr(rehearsal, "observe_candidate_tuple", observe)
     args = ["--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
+            "--old-backend-runtime-sha256", old_context.runtime_sha256,
             "--candidate-backend-environment", str(backend_env), "--candidate-frontend-environment", str(frontend_env),
             "--candidate-checkout", str(checkout), "--candidate-db", str(cache), "--candidate-roster", str(roster),
             "--baseline-roster", str(baseline_roster),
@@ -369,6 +386,57 @@ def test_sequential_same_port_old_capture_candidate_and_recovery(tmp_path, monke
     assert report["legacy_api_patients_checked"] == report["legacy_api_bills_checked"] == 1
     assert report["old_route_sha256"] == report["candidate_route_sha256"]
     assert len(json.loads((work / "old-api-capture.json").read_text())) == 2
+
+
+def test_recovered_old_session_is_reminted_with_same_verified_context(tmp_path, monkeypatch):
+    args, _, _, _ = fixture_rehearsal(tmp_path, monkeypatch)
+    mint = rehearsal.cookie
+    contexts = []
+    sessions = []
+
+    def record(values, *, old_context=None):
+        contexts.append(old_context)
+        session = mint(values, old_context=old_context)
+        sessions.append((dict(values), session.split("=", 1)[1]))
+        return session
+
+    monkeypatch.setattr(rehearsal, "cookie", record)
+    rehearsal.main(args)
+    assert len(contexts) == 3
+    assert contexts[0] is contexts[2]
+    assert contexts[0].purpose == "bilun-developer-v1"
+    assert contexts[1] is None
+    old_values, initial_token = sessions[0]
+    _, recovered_token = sessions[2]
+    assert initial_token != recovered_token
+    assert "BILUN_SESSION_TOKEN_PURPOSE" not in old_values
+    for key, value in old_values.items():
+        monkeypatch.setenv(key, value)
+    module = source_verifier(monkeypatch)
+    with monkeypatch.context() as initial_clock:
+        initial_clock.setattr(probe.time, "time", lambda: 1000)
+        assert module.verify_session_token(initial_token) == module.TokenClaims(
+            old_values["BILUN_AUTH_USERNAME"], 1300,
+        )
+        assert module.issue_session_token(old_values["BILUN_AUTH_USERNAME"], ttl_seconds=300) == initial_token
+    assert module.verify_session_token(initial_token) is None
+    assert module.verify_session_token(recovered_token) == module.TokenClaims(
+        old_values["BILUN_AUTH_USERNAME"], 1601,
+    )
+    assert module.issue_session_token(old_values["BILUN_AUTH_USERNAME"], ttl_seconds=300) == recovered_token
+    with monkeypatch.context() as wrong_purpose:
+        wrong_purpose.setattr(module, "SESSION_PURPOSE", "wrong-purpose")
+        wrong_token = module.issue_session_token(old_values["BILUN_AUTH_USERNAME"], ttl_seconds=300)
+    assert module.verify_session_token(wrong_token) is None
+    payload, signature = recovered_token.split(".")
+    tampered_signature = ("A" if signature[0] != "A" else "B") + signature[1:]
+    assert module.verify_session_token(payload + "." + tampered_signature) is None
+    with monkeypatch.context() as candidate_secret:
+        candidate_secret.setenv("BILUN_SESSION_SECRET", sessions[1][0]["BILUN_SESSION_SECRET"])
+        assert module.verify_session_token(recovered_token) is None
+    with monkeypatch.context() as expired_clock:
+        expired_clock.setattr(probe.time, "time", lambda: 1602)
+        assert module.verify_session_token(recovered_token) is None
 
 
 def test_failed_candidate_stops_children_and_never_emits_pass(tmp_path, monkeypatch):

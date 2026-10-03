@@ -163,6 +163,21 @@ def test_tooling_descendant_uses_external_head_identity(source_history):
     transition._verify_candidate_history(checkout, candidate)
 
 
+def test_ordered_auth_tooling_descendant_uses_external_head_identity(source_history):
+    checkout, _, _, semantic_head, semantic_path = source_history
+    source_root = Path(transition.__file__).resolve().parents[2]
+    auth_paths = ("scripts/deploy/probe_auth.py", "scripts/deploy/paired_release.py")
+    auth_commits = [
+        _commit(checkout, path, (source_root / path).read_text(), "reviewed auth tooling")
+        for path in auth_paths
+    ]
+    report = transition._verify_candidate_history(checkout, auth_commits[-1])
+    assert report["descendant_commits"] == [semantic_head, *auth_commits]
+    assert set(report["authorized_changed_paths"]) == {semantic_path, *auth_paths}
+    with pytest.raises(ValueError, match="explicit candidate SHA"):
+        transition._verify_candidate_history(checkout, semantic_head)
+
+
 def test_history_rejects_wrong_external_head(source_history):
     checkout, baseline, _, _, _ = source_history
     with pytest.raises(ValueError):
@@ -175,6 +190,11 @@ def test_history_rejects_wrong_external_head(source_history):
     "data/synthetic/sut/claims/drug_claim_lines.parquet",
     ".github/workflows/deploy.yml",
     "scripts/deploy/unrelated_security_bypass.py",
+    "scripts/deploy/future_probe_auth.py",
+    "src/bilun/api/auth.py",
+    "frontend/src/middleware.ts",
+    ".venv/lib/python3.13/site-packages/sitecustomize.py",
+    "tasks/todo.md",
 ])
 def test_history_rejects_unrelated_source_input_and_deployment_changes(source_history, path):
     checkout, _, _, _, _ = source_history

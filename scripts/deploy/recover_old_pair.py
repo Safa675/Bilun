@@ -452,7 +452,10 @@ def _probe_api(spec: OldRecoverySpec) -> tuple[int, int, str]:
     ):
         raise ValueError("Recovered old cache build or bytes differ")
     backend_env = _environment((spec.snapshot_root / "backend-effective-env.nul").read_bytes())
-    cookie = _cookie(backend_env)
+    from scripts.deploy.probe_auth import old_probe_context
+    context = old_probe_context(spec.recovery_root / "backend",
+                                expected_runtime_sha256=spec.backend_runtime_sha256)
+    cookie = _cookie(backend_env, old_context=context)
     status, raw = _http(8001, "/health", None)
     try:
         health = _strict_json(raw)

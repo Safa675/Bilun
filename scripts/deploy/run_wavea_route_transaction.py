@@ -235,7 +235,10 @@ def _build_transaction(
         )
 
     def cookie_factory() -> str:
-        return cookie(environment(paths["old_environment_snapshot"]))
+        from scripts.deploy.probe_auth import old_probe_context
+        context = old_probe_context(recovery_spec.snapshot_root / "backend",
+                                    expected_runtime_sha256=recovery_spec.backend_runtime_sha256)
+        return cookie(environment(paths["old_environment_snapshot"]), old_context=context)
 
     def old_recovery() -> dict[str, str]:
         recovered = recover_old_pair(

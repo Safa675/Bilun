@@ -319,6 +319,7 @@ class FabricatedHost:
         self.proc.mkdir()
         (self.proc / "stat").write_text("btime 2100000000\n")
         self.old_environment = {**candidate_auth(), "BILUN_CACHE_DB_PATH": str(bundle.live)}
+        self.old_environment.pop("BILUN_SESSION_TOKEN_PURPOSE")
         self.environments = {"backend": self.old_environment, "frontend": {"NODE_ENV": "production"}}
         self.working_dirs = {role: Path(self.spec[f"live_{role}_runtime"]) for role in self.running}
         self.arguments = {"backend": (sys.executable, "-m", "uvicorn", "old.app"),
@@ -586,6 +587,36 @@ def assert_old_restored(fake, driver, transaction):
     assert driver.paths["frontend_current"].resolve() == Path(fake.spec["live_frontend_runtime"])
     assert not driver.paths["backend_dropin"].exists()
     assert not driver.paths["frontend_dropin"].exists()
+
+
+def test_real_rollback_probes_verify_unmarked_purpose_bound_old_sessions(host, monkeypatch):
+    from src.bilun.api import auth
+    from scripts.deploy.rehearse_wavea_pair import env_digest
+
+    fake, driver, transaction = host
+    original = fake._env_bytes(fake.old_environment), env_digest(fake.old_environment)
+    fetch = fake.fetch
+    verified = []
+
+    def authenticated_fetch(base, path, cookie=None):
+        if cookie and cookie.startswith("bilun:session="):
+            values = fake.environments["backend"]
+            with pytest.MonkeyPatch.context() as patch:
+                for key, value in values.items():
+                    patch.setenv(key, value)
+                claims = auth.verify_session_token(cookie.split("=", 1)[1])
+                assert claims and claims.username == values["BILUN_AUTH_USERNAME"]
+            verified.append((fake.active_launch is None, path))
+        return fetch(base, path, cookie)
+
+    fake.fetch = authenticated_fetch
+    monkeypatch.setattr(http, "_fetch", authenticated_fetch)
+    assert transaction.activate()["state"] == "active"
+    assert transaction.rollback()["state"] == "rolled_back"
+    assert_old_restored(fake, driver, transaction)
+    assert {old for old, _ in verified} == {False, True}
+    assert (fake._env_bytes(fake.old_environment), env_digest(fake.old_environment)) == original
+    assert (driver.root / "old-backend-env.nul").read_bytes() == original[0]
 
 
 @pytest.mark.parametrize("point", ["route-installed-barrier", "route-loaded-barrier", "stop-backend",
