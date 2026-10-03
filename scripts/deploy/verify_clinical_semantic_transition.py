@@ -21,7 +21,9 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote
 
-from scripts.deploy.generate_candidate_source_roster import validate_runtime_read_trace
+from scripts.deploy.generate_candidate_source_roster import (
+    _REPO_FILES, _REPO_ROOTS, _selected, validate_runtime_read_trace,
+)
 from scripts.deploy.verify_candidate_cache import _parse_json, _stable_file_hash
 from scripts.deploy.verify_same_input import _roster
 
@@ -198,6 +200,50 @@ def _guard_code_binding(checkout: Path, expected_sha: str) -> dict[str, Any]:
     if "scripts/deploy/verify_clinical_semantic_transition.py" not in entries:
         raise ValueError("Reviewed tooling does not include this transition guard")
     return {"verifier_sha": expected_sha, "source_sha256": _digest(entries), "files": entries}
+
+
+def _replay_checkout_binding(roster: dict) -> dict[str, Any]:
+    """Bind replay disk bytes to pinned Git blobs independently of the index."""
+    checkout = Path(roster["checkout"])
+    code_sha = roster["code_sha"]
+    if (checkout.is_symlink() or not checkout.is_dir() or checkout != checkout.resolve(strict=True)
+            or _git(checkout, "rev-parse", "HEAD").decode().strip() != code_sha):
+        raise ValueError("Transition replay checkout differs from its pinned Git identity")
+    rows = [row for row in roster["sources"] if row["label"].startswith("repo:")]
+    sources = {row["label"][5:]: row for row in rows}
+    if len(rows) != len(sources):
+        raise ValueError("Transition replay roster repeats a Git source identity")
+    entries = {}
+    for record in _git(checkout, "ls-tree", "-r", "-z", code_sha,
+                       "--", *_REPO_ROOTS, *_REPO_FILES).split(b"\0"):
+        if not record:
+            continue
+        metadata, name = record.split(b"\t", 1)
+        relative = os.fsdecode(name)
+        if not _selected(relative):
+            continue
+        mode, kind, blob = metadata.decode().split()
+        if kind != "blob" or mode not in {"100644", "100755"} or relative not in sources:
+            raise ValueError("Transition replay roster differs from pinned Git sources")
+        row = sources[relative]
+        source = checkout / relative
+        if (Path(row["path"]) != source or source.is_symlink() or not source.is_file()
+                or source != source.resolve(strict=True) or source.stat().st_nlink != 1):
+            raise ValueError("Transition replay Git source is not an independent canonical file")
+        before = _stable_file_hash(source)
+        contents = source.read_bytes()
+        # Git's object identity hashes the blob header and exact contents. This
+        # comparison never asks the index or its stat/assume-unchanged flags.
+        if (hashlib.sha1(f"blob {len(contents)}\0".encode() + contents).hexdigest() != blob
+                or before != row["sha256"] or len(contents) != row["size_bytes"]
+                or _stable_file_hash(source) != before):
+            raise ValueError("Transition replay source bytes differ from pinned Git objects")
+        entries[relative] = before
+    if not entries or set(entries) != set(sources):
+        raise ValueError("Transition replay roster has an unknown or missing Git source")
+    if _git(checkout, "rev-parse", "HEAD").decode().strip() != code_sha:
+        raise ValueError("Transition replay checkout identity changed during Git binding")
+    return {"code_sha": code_sha, "source_sha256": _digest(entries), "file_count": len(entries)}
 
 
 _WORKER = r'''
@@ -524,11 +570,15 @@ def verify_clinical_semantic_transition(
     if verifier_sha != expected_candidate_sha:
         _verify_candidate_history(verifier_checkout, verifier_sha)
     binding = _guard_code_binding(verifier_checkout, verifier_sha)
+    replay_rosters = {"baseline": old_roster, "candidate": new_roster}
+    replay_bindings = {side: _replay_checkout_binding(roster) for side, roster in replay_rosters.items()}
     projections = {}
     for label, roster, data in (("baseline", old_roster, old_data), ("candidate", new_roster, new_data)):
         claims = Path(next(row["path"] for name, row in data.items() if name.startswith("claim:"))).parent
         projections[label] = _replay_projection(Path(roster["checkout"]), claims, roster["data_mode"],
                     python_executable, roster=roster, dependency_roots=dependency_roots)
+        for side, bound_roster in replay_rosters.items():
+            _same(_replay_checkout_binding(bound_roster), replay_bindings[side], "post-replay pinned Git source bytes")
     intent = _source_intent(old_roster, new_roster, projections["baseline"], projections["candidate"])
     _check_coverage_pair(projections["baseline"]["coverage_scope"], projections["candidate"]["coverage_scope"])
     for side, projected in projections.items():
@@ -547,10 +597,13 @@ def verify_clinical_semantic_transition(
             _check_projection_pair(left[key], right[key])
     if _roster(baseline_roster, BASELINE_CODE_SHA)[0] != old_roster or _roster(candidate_roster, expected_candidate_sha)[0] != new_roster:
         raise ValueError("Transition source bytes changed during independent replay")
+    for side, roster in replay_rosters.items():
+        _same(_replay_checkout_binding(roster), replay_bindings[side], "final pinned Git source bytes")
     _same(_guard_code_binding(verifier_checkout, verifier_sha), binding, "verifier source binding")
     identity = {"contract": TRANSITION_CONTRACT, "baseline_code_sha": BASELINE_CODE_SHA,
                 "candidate_code_sha": expected_candidate_sha, "history": history,
-                "verifier": binding, "same_input": dict(same_input), "source_intent": intent,
+                "verifier": binding, "replay_checkouts": replay_bindings,
+                "same_input": dict(same_input), "source_intent": intent,
                 "baseline_replay_sha256": _digest(projections["baseline"]),
                 "candidate_replay_sha256": _digest(projections["candidate"])}
     report = {"status": "clinical_semantic_transition_verified", **identity,

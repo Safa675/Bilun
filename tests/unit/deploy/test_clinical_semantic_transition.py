@@ -282,6 +282,252 @@ def test_running_controller_rejects_source_links(controller_guard, relative):
 
 
 @pytest.fixture
+def replay_checkout_pair(tmp_path):
+    """Independent real Git objects and disk rosters for both replay sources."""
+    records = {}
+    for side in ("baseline", "candidate"):
+        root = tmp_path / side
+        root.mkdir()
+        checkout, sha, claims, clean = _candidate(root)
+        if side == "candidate":
+            sha = _commit(checkout, "src/bilun/domain/rules.py",
+                          "# reviewed candidate source\n", "reviewed candidate source")
+        for filename in ("performed_procedure_lines.parquet", "medula_rejection_events.parquet"):
+            (claims / filename).write_bytes(b"public synthetic input fixture")
+        candidate = checkout, sha, claims, clean
+        roster = _roster(candidate)
+        roster_path = root / "roster.json"
+        private_json(roster_path, roster)
+        records[side] = {"candidate": candidate, "roster": roster, "roster_path": roster_path}
+    return records
+
+
+def _hidden_replay_source_change(record: dict, *, relative="src/bilun/domain/rules.py") -> dict:
+    """Make Git diff and a freshly self-consistent roster miss object-byte drift."""
+    checkout, sha, _, _ = record["candidate"]
+    _git(checkout, "update-index", "--assume-unchanged", relative)
+    path = checkout / relative
+    path.write_text("unreviewed replay source bytes\n", encoding="utf-8")
+    assert _git(checkout, "diff", "--name-only", sha, "--", relative) == ""
+    committed = subprocess.run(
+        ["git", "-C", str(checkout), "show", f"{sha}:{relative}"],
+        capture_output=True, check=True,
+    ).stdout
+    assert committed != path.read_bytes()
+    regenerated = _roster(record["candidate"])
+    private_json(record["roster_path"], regenerated)
+    # The existing real roster loader checks Git diff and all disk hashes;
+    # its success is deliberately insufficient proof of the Git source bytes.
+    loaded, _ = transition._roster(record["roster_path"], sha)
+    assert loaded == regenerated
+    return regenerated
+
+
+def test_both_replay_checkouts_bind_their_own_git_objects_without_writes(replay_checkout_pair):
+    for record in replay_checkout_pair.values():
+        roster = record["roster"]
+        source_paths = [Path(row["path"]) for row in roster["sources"] if row["label"].startswith("repo:")]
+        before = {path: path.read_bytes() for path in source_paths}
+        binding = transition._replay_checkout_binding(roster)
+        assert binding["code_sha"] == roster["code_sha"]
+        assert binding["file_count"] == len(source_paths)
+        assert len(binding["source_sha256"]) == 64
+        assert {path: path.read_bytes() for path in source_paths} == before
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("relative", ["src/bilun/domain/rules.py", "data/gazette/prose_rules/rule.json"])
+def test_clean_git_diff_and_current_roster_cannot_replace_git_object_bytes(replay_checkout_pair, side, relative):
+    regenerated = _hidden_replay_source_change(replay_checkout_pair[side], relative=relative)
+    with pytest.raises(ValueError, match="Git"):
+        transition._replay_checkout_binding(regenerated)
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing_repo_row", "additional_repo_row", "duplicate_repo_row", "wrong_code_sha",
+    "wrong_checkout", "wrong_row_path", "wrong_row_hash", "wrong_row_size", "changed_head",
+    "checkout_link", "source_link", "source_hardlink", "missing_source",
+])
+def test_replay_git_binding_requires_exact_roster_root_identity_and_files(replay_checkout_pair, tmp_path, mutation):
+    record = replay_checkout_pair["baseline"]
+    roster = copy.deepcopy(record["roster"])
+    checkout, _, _, _ = record["candidate"]
+    row = next(item for item in roster["sources"] if item["label"] == "repo:src/bilun/domain/rules.py")
+    if mutation == "missing_repo_row":
+        roster["sources"].remove(row)
+    elif mutation == "additional_repo_row":
+        roster["sources"].append({**row, "label": "repo:src/bilun/unreviewed.py"})
+    elif mutation == "duplicate_repo_row":
+        roster["sources"].append(copy.deepcopy(row))
+    elif mutation == "wrong_code_sha":
+        roster["code_sha"] = "f" * 40
+    elif mutation == "wrong_checkout":
+        roster["checkout"] = replay_checkout_pair["candidate"]["roster"]["checkout"]
+    elif mutation == "wrong_row_path":
+        row["path"] = str(tmp_path / "outside-source.py")
+        Path(row["path"]).write_bytes(b"fixture")
+    elif mutation == "wrong_row_hash":
+        row["sha256"] = "f" * 64
+    elif mutation == "wrong_row_size":
+        row["size_bytes"] += 1
+    elif mutation == "changed_head":
+        _commit(checkout, "README.md", "unchanged source, different HEAD\n", "another identity")
+    elif mutation == "checkout_link":
+        linked = tmp_path / "linked-checkout"
+        linked.symlink_to(checkout, target_is_directory=True)
+        roster["checkout"] = str(linked)
+    elif mutation == "source_link":
+        path = Path(row["path"])
+        path.unlink()
+        path.symlink_to(replay_checkout_pair["candidate"]["candidate"][0] / "src/__init__.py")
+    elif mutation == "source_hardlink":
+        path = Path(row["path"])
+        shared = tmp_path / "shared-source.py"
+        shared.write_bytes(path.read_bytes())
+        path.unlink()
+        path.hardlink_to(shared)
+    else:
+        Path(row["path"]).unlink()
+    with pytest.raises(ValueError):
+        transition._replay_checkout_binding(roster)
+
+
+@pytest.fixture
+def replay_binding_case(replay_checkout_pair, monkeypatch):
+    """Keep real roster/Git binding; isolate only the pure replay and other gates."""
+    records = replay_checkout_pair
+    old, new = _authored_route_pair(monkeypatch)
+    expected = {}
+    for side, projection in (("baseline", old), ("candidate", new)):
+        expected[side] = {
+            "patients": {"P1": projection}, "bills": {"P1::C1": projection},
+            "rules": {}, "source_routes": {},
+            "coverage_scope": projection["drug_indication"]["coverage_scope"],
+        }
+    old_sha = records["baseline"]["roster"]["code_sha"]
+    new_sha = records["candidate"]["roster"]["code_sha"]
+    monkeypatch.setattr(transition, "BASELINE_CODE_SHA", old_sha)
+    monkeypatch.setattr(transition, "_verify_candidate_history", lambda *_args: {"fixture_history": True})
+    monkeypatch.setattr(transition, "_guard_code_binding", lambda *_args: {"verifier_sha": new_sha})
+    events = []
+    active_rosters = {}
+    original_binding = transition._replay_checkout_binding
+
+    def side_for(checkout):
+        return next(side for side, record in records.items() if Path(record["roster"]["checkout"]) == Path(checkout))
+
+    def bind(roster):
+        side = side_for(roster["checkout"])
+        active_rosters[side] = roster
+        events.append(("binding", side))
+        return original_binding(roster)
+
+    def replay(checkout, *_args, **_kwargs):
+        side = side_for(checkout)
+        events.append(("replay", side))
+        return copy.deepcopy(expected[side])
+
+    def intent(*_args):
+        events.append(("intent", None))
+        return {"public_fixture_intent": True}
+
+    monkeypatch.setattr(transition, "_replay_checkout_binding", bind)
+    monkeypatch.setattr(transition, "_replay_projection", replay)
+    monkeypatch.setattr(transition, "_source_intent", intent)
+    metas = {
+        "baseline": _retained_meta(),
+        "candidate": {"code_sha": new_sha, "source_hash": "c" * 64, "config_hash": "d" * 64},
+    }
+    same_input = {
+        "status": "same_input_bytes_verified", "input_bytes_sha256": transition.INPUT_BYTES_SHA256,
+        "input_file_count": 12, "data_mode": "synthetic_demo",
+        **{side: {
+            "roster_sha256": hashlib.sha256(record["roster_path"].read_bytes()).hexdigest(),
+            "source_hash": metas[side]["source_hash"], "config_hash": metas[side]["config_hash"],
+        } for side, record in records.items()},
+    }
+    arguments = {
+        "baseline_roster": records["baseline"]["roster_path"],
+        "candidate_roster": records["candidate"]["roster_path"],
+        "baseline_meta": metas["baseline"], "candidate_meta": metas["candidate"],
+        "same_input": same_input, "python_executable": Path("/usr/bin/python3"),
+        "dependency_roots": (), "expected_candidate_sha": new_sha,
+    }
+    return records, arguments, events, active_rosters, replay, intent
+
+
+def test_transition_binds_both_git_checkouts_before_workers_and_after_each_worker(replay_binding_case):
+    records, arguments, events, _, _, _ = replay_binding_case
+    proof = transition.verify_clinical_semantic_transition(**arguments)
+    assert proof.report["status"] == "clinical_semantic_transition_verified"
+    for side, record in records.items():
+        sources = {row["label"][5:]: row["sha256"] for row in record["roster"]["sources"]
+                   if row["label"].startswith("repo:")}
+        assert proof.report["replay_checkouts"][side] == {
+            "code_sha": record["roster"]["code_sha"],
+            "source_sha256": _json_sha256(sources), "file_count": len(sources),
+        }
+    assert set(events[:2]) == {("binding", "baseline"), ("binding", "candidate")}
+    assert events[2] == ("replay", "baseline")
+    second_worker = events.index(("replay", "candidate"))
+    assert {("binding", "baseline"), ("binding", "candidate")} <= set(events[3:second_worker])
+    for side in ("baseline", "candidate"):
+        assert events.count(("binding", side)) >= 4
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+def test_transition_rejects_hidden_git_object_drift_before_any_worker(replay_binding_case, side):
+    records, arguments, events, _, _, _ = replay_binding_case
+    regenerated = _hidden_replay_source_change(records[side])
+    arguments["same_input"][side]["roster_sha256"] = hashlib.sha256(records[side]["roster_path"].read_bytes()).hexdigest()
+    records[side]["roster"] = regenerated
+    with pytest.raises(ValueError, match="Git"):
+        transition.verify_clinical_semantic_transition(**arguments)
+    assert not any(kind in {"replay", "intent"} for kind, _ in events)
+
+
+@pytest.mark.parametrize("worker_side", ["baseline", "candidate"])
+@pytest.mark.parametrize("mutated_side", ["baseline", "candidate"])
+def test_transition_rechecks_both_git_objects_when_either_worker_mutates_either_checkout(
+    replay_binding_case, monkeypatch, worker_side, mutated_side,
+):
+    records, arguments, events, active_rosters, replay, _ = replay_binding_case
+
+    def mutate_during_worker(checkout, *args, **kwargs):
+        result = replay(checkout, *args, **kwargs)
+        if events[-1] == ("replay", worker_side):
+            regenerated = _hidden_replay_source_change(records[mutated_side])
+            active_rosters[mutated_side].clear()
+            active_rosters[mutated_side].update(regenerated)
+        return result
+
+    monkeypatch.setattr(transition, "_replay_projection", mutate_during_worker)
+    with pytest.raises(ValueError, match="Git"):
+        transition.verify_clinical_semantic_transition(**arguments)
+    assert ("intent", None) not in events
+    expected_workers = ["baseline"] if worker_side == "baseline" else ["baseline", "candidate"]
+    assert [side for kind, side in events if kind == "replay"] == expected_workers
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+def test_transition_rechecks_both_git_objects_before_issuing_final_proof(replay_binding_case, monkeypatch, side):
+    records, arguments, events, active_rosters, _, intent = replay_binding_case
+
+    def mutate_after_workers(*args):
+        result = intent(*args)
+        regenerated = _hidden_replay_source_change(records[side])
+        active_rosters[side].clear()
+        active_rosters[side].update(regenerated)
+        return result
+
+    monkeypatch.setattr(transition, "_source_intent", mutate_after_workers)
+    with pytest.raises(ValueError, match="Git"):
+        transition.verify_clinical_semantic_transition(**arguments)
+    assert [side for kind, side in events if kind == "replay"] == ["baseline", "candidate"]
+    assert ("intent", None) in events
+
+
+@pytest.fixture
 def public_source_intent(tmp_path, monkeypatch):
     """Real Git blobs and reviewed public YAML, independent of cached payloads."""
     root = Path(__file__).resolve().parents[3]
