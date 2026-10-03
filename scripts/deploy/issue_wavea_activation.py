@@ -123,6 +123,7 @@ def issue_wavea_activation(
     serving_code_sha: str | None = None,
     baseline_build_config_environment: dict[str, str] | None = None,
     old_backend_environment_path: Path | None = None,
+    clinical_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Seal one exact main-CI candidate after cache, trace, and rollback proof."""
     if any(type(value) is not int or not 1 <= value <= 8 for value in (
@@ -150,6 +151,11 @@ def issue_wavea_activation(
     )
     verify_release_sidecar(sidecar_path, expected)
     code_sha = candidate["code_sha"]
+    from scripts.deploy.verify_clinical_semantic_transition import validate_transition_request
+    request = validate_transition_request(clinical_transition)
+    if request is not None and any(request[key] != code_sha
+                                   for key in ("expected_candidate_sha", "expected_verifier_sha")):
+        raise ValueError("Activation transition must bind the exact candidate/tooling CI head")
     _candidate_db_hash(baseline_db)
     with duckdb.connect(str(baseline_db), read_only=True) as db:
         rows = db.execute(
@@ -172,6 +178,8 @@ def issue_wavea_activation(
         source_roster=source_roster_path, baseline_roster=baseline_roster_path,
         build_config_environment=_CONFIG_ENVIRONMENT,
         baseline_build_config_environment=baseline_build_config_environment,
+        clinical_transition=request, python_executable=python_executable,
+        dependency_roots=dependency_roots,
     )
     identity = {
         "build_id": candidate["build_id"], "code_sha": code_sha,
@@ -206,6 +214,20 @@ def issue_wavea_activation(
         }
     ):
         raise ValueError("Wave A cache or same-input semantic gate differs")
+    if request is not None:
+        # Follow the already hash-verified envelope, rather than an operator
+        # supplied saved-proof path. A receipt covers this exact fresh replay.
+        envelope, _ = _load_private_json(Path(sidecar["evidence"]["semantic_cache"]["path"]),
+                                         root=sidecar_path.parent)
+        raw, _ = _load_private_json(Path(envelope["raw_report_path"]), root=sidecar_path.parent)
+        source = raw.get("source_report_path")
+        if not isinstance(source, str) or not Path(source).is_absolute():
+            raise ValueError("Activation transition has no sealed semantic source report")
+        saved_semantic, saved_semantic_sha = _load_private_json(Path(source), root=Path(source).parent)
+        from scripts.deploy.verify_clinical_semantic_transition import _digest
+        if (raw.get("source_report_sha256") != saved_semantic_sha
+                or _digest(saved_semantic) != _digest(semantic)):
+            raise ValueError("Activation transition fresh proof differs from the sealed semantic report")
     traced = verify_traced_build_attestation(
         record_path=trace_record_path, checkout=backend_runtime, code_sha=code_sha,
         source_roster_path=source_roster_path, data_mode=data_mode,
@@ -229,6 +251,7 @@ def issue_wavea_activation(
     rehearsal = verify_private_rehearsal(
         rehearsal_path, tuple_observation_path,
         candidate=candidate, backend_runtime=backend_runtime,
+        clinical_transition=semantic.get("clinical_transition"),
     )
     if old_backend_environment_path is None:
         old_health = _live_health("http://127.0.0.1:8001/health")
@@ -389,7 +412,7 @@ def main(argv: list[str] | None = None) -> int:
         # Older manifests intentionally mean the historical default, never counts
         # inferred from the untrusted recorded invocation. Unknown fields still fail.
         workers = {key: manifest.get(key, 2) for key in ("payload_workers", "billing_workers")}
-        optional = {"use_existing_key", "serving_code_sha", "baseline_build_config_environment", "old_backend_environment_path"}
+        optional = {"use_existing_key", "serving_code_sha", "baseline_build_config_environment", "old_backend_environment_path", "clinical_transition"}
         if set(manifest) - workers.keys() - optional != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
             raise ValueError("Activation manifest has missing or extra fields")
         if any(

@@ -94,7 +94,7 @@ def _canonical_path(value: Any, *, executable: bool = False) -> Path:
 
 def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False) -> dict[str, Any]:
     value, _ = _load_private_json(path, root=path.parent)
-    if (set(value) - {"snapshot_mode"} != _FIELDS
+    if (set(value) - {"snapshot_mode", "clinical_transition"} != _FIELDS
             or value.get("schema_version") not in (SCHEMA, DEPENDENCY_FILE_SCHEMA, DEPENDENCY_CHAIN_SCHEMA)):
         raise ValueError("Preparation manifest has missing, extra, or unsupported fields")
     if any(not isinstance(value[key], str) or not value[key] for key in _STRINGS):
@@ -103,6 +103,13 @@ def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False
         "target_sha", "baseline_code_sha", "serving_code_sha",
     )) or not value["ci_run_id"].isdecimal() or int(value["ci_run_id"]) < 1:
         raise ValueError("Preparation requires exact immutable SHA and CI identities")
+    if "clinical_transition" in value:
+        from scripts.deploy.verify_clinical_semantic_transition import validate_transition_request
+        request = validate_transition_request(value["clinical_transition"])
+        if request is None or any(request[key] != value["target_sha"]
+                                 for key in ("expected_candidate_sha", "expected_verifier_sha")):
+            raise ValueError("Preparation transition must bind the exact target/tooling head")
+        value["clinical_transition"] = request
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,95}", value["release_id"]):
         raise ValueError("Preparation release ID is malformed")
     if value["data_mode"] not in {"synthetic_demo", "real_claims"}:
@@ -648,6 +655,12 @@ def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path) -> None:
     }
     for key, value in fields.items():
         argv.extend((f"--{key}", str(value)))
+    if spec.get("clinical_transition") is not None:
+        request_path = root / "clinical-transition-request.json"
+        _save(request_path, spec["clinical_transition"])
+        argv.extend(("--clinical-transition", str(request_path)))
+        for dependency in spec["dependency_roots"]:
+            argv.extend(("--dependency-root", str(dependency)))
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
@@ -805,7 +818,9 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     baseline_build_id=spec["old_build_id"], candidate_db=root / "candidate.duckdb",
                     candidate_build_id=build_id, source_roster=root / "source-roster.json",
                     baseline_roster=root / "baseline-roster.json", build_config_environment=_CONFIG,
-                    baseline_build_config_environment=spec["baseline_build_config_environment"])
+                    baseline_build_config_environment=spec["baseline_build_config_environment"],
+                    clinical_transition=spec.get("clinical_transition"),
+                    python_executable=spec["backend_python"], dependency_roots=spec["dependency_roots"])
         _save(root / "semantic.json", semantic)
         trace = verify_traced_build_attestation(**common, record_path=root / "traced-build.json",
                     source_roster_path=root / "source-roster.json", cache_path=root / "candidate.duckdb",
@@ -850,6 +865,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     receipt_path=root / "candidate-receipt.json", use_existing_key=True,
                     old_backend_environment_path=root / "old-snapshot/backend-effective-env.nul",
                     baseline_build_config_environment=spec["baseline_build_config_environment"],
+                    clinical_transition=spec.get("clinical_transition"),
                     payload_workers=spec["payload_workers"], billing_workers=spec["billing_workers"])
         if (_observe_live(spec) != before
                 or _pin_inputs(pins, executables, **pin_options) != pinned

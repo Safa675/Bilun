@@ -225,6 +225,7 @@ def _current_content_parity(
     candidate_build: str,
     *,
     same_input: dict[str, Any] | None = None,
+    clinical_transition: Any = None,
 ) -> tuple[dict[str, str], dict[str, dict[str, Any]], int]:
     """Compare all current payloads, including every unbounded evidence row.
 
@@ -272,6 +273,13 @@ def _current_content_parity(
                 )
                 if _digest(_without_data_source(value)) != _digest(expected_cohort):
                     raise ValueError(f"Current {side} cohort compliance disagrees with patient rows")
+            if clinical_transition is not None:
+                from scripts.deploy.verify_clinical_semantic_transition import normalize_transition_content
+                value = normalize_transition_content(
+                    table, value, side=side, proof=clinical_transition,
+                    patient_reports=(_payload_rows(con, "patient_billing_report_rows", build_id)
+                                     if table == "cohort_compliance_index" else None),
+                )
             if table in _EVIDENCE_TABLES:
                 payloads = {"index": value} if table == "wavea_evidence_index" else value
                 normalized = {}
@@ -401,6 +409,7 @@ def _check_legacy_parity(
     candidate_build: str,
     *,
     same_input: dict[str, Any] | None = None,
+    clinical_transition: Any = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     old_meta = _build_metadata(baseline, baseline_build)
     new_meta = _build_metadata(candidate, candidate_build)
@@ -429,6 +438,7 @@ def _check_legacy_parity(
     if contract == FULL_EVIDENCE_SCHEMA_VERSION:
         digests, reports, bill_count = _current_content_parity(
             baseline, baseline_build, candidate, candidate_build, same_input=same_input,
+            clinical_transition=clinical_transition,
         )
         _check_evidence(
             baseline, baseline_build,
@@ -446,6 +456,8 @@ def _check_legacy_parity(
             "financial_rounding_and_null_parity": "verified_all_legacy_rows",
             "full_evidence_parity": "verified_all_current_rows",
         }, reports
+    if clinical_transition is not None:
+        raise ValueError("Clinical transition requires the complete current nineteen-table contract")
     reports: dict[str, dict[str, Any]] = {}
     table_digests: dict[str, str] = {}
     for table in (*_PATIENT_TABLES, "patient_bill_billing_report_rows"):
@@ -773,6 +785,9 @@ def verify_candidate_semantic_checkpoint(
     baseline_roster: Path | None = None,
     build_config_environment: dict[str, str] | None = None,
     baseline_build_config_environment: dict[str, str] | None = None,
+    clinical_transition: dict[str, Any] | None = None,
+    python_executable: Path | None = None,
+    dependency_roots: tuple[Path, ...] = (),
 ) -> dict[str, Any]:
     """Compare complete cached datasets while leaving release readiness false."""
     if baseline_db.resolve() == candidate_db.resolve():
@@ -785,6 +800,11 @@ def verify_candidate_semantic_checkpoint(
         raise ValueError("Same-input proof needs the candidate source roster")
     if baseline_build_config_environment is not None and baseline_roster is None:
         raise ValueError("Baseline configuration proof needs a baseline source roster")
+    from scripts.deploy.verify_clinical_semantic_transition import (
+        validate_transition_request, verify_clinical_semantic_transition,
+    )
+    transition_request = validate_transition_request(clinical_transition)
+    transition_proof = None
     with duckdb.connect(str(baseline_db), read_only=True) as baseline:
         with duckdb.connect(str(candidate_db), read_only=True) as candidate:
             same_input = (
@@ -798,12 +818,25 @@ def verify_candidate_semantic_checkpoint(
                 )
                 if baseline_roster is not None else None
             )
+            if transition_request is not None:
+                if same_input is None or python_executable is None:
+                    raise ValueError("Clinical transition requires source/config/input proof and an explicit runtime")
+                transition_proof = verify_clinical_semantic_transition(
+                    baseline_roster=baseline_roster, candidate_roster=source_roster,
+                    baseline_meta=_build_metadata(baseline, baseline_build_id),
+                    candidate_meta=_build_metadata(candidate, candidate_build_id),
+                    same_input=same_input, python_executable=python_executable,
+                    dependency_roots=dependency_roots,
+                    expected_candidate_sha=transition_request["expected_candidate_sha"],
+                    expected_verifier_sha=transition_request["expected_verifier_sha"],
+                )
             legacy, reports = _check_legacy_parity(
                 baseline,
                 baseline_build_id,
                 candidate,
                 candidate_build_id,
                 same_input=same_input,
+                clinical_transition=transition_proof,
             )
             evidence, blockers = _check_evidence(
                 candidate, candidate_build_id, reports, source_roster
@@ -815,7 +848,7 @@ def verify_candidate_semantic_checkpoint(
     if same_input is None:
         blockers.append("same_input_baseline_byte_attestation_missing")
     blockers.append("candidate_api_browser_and_rollback_rehearsal_pending")
-    return {
+    result = {
         "status": "semantic_checkpoint_verified",
         "release_ready": False,
         "remaining_gates": sorted(set(blockers)),
@@ -834,3 +867,6 @@ def verify_candidate_semantic_checkpoint(
         "same_input": same_input,
         "wavea_evidence": evidence,
     }
+    if transition_proof is not None:
+        result["clinical_transition"] = transition_proof.report
+    return result
