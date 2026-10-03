@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 
 from scripts.deploy import issue_wavea_activation as issuer
+from scripts.deploy.release_sidecar import _load_private_json
+from scripts.deploy.verify_clinical_semantic_transition import TRANSITION_CONTRACT
 
 
 class _BaselineDB:
@@ -152,6 +154,158 @@ def _issuer_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, workers=(2,
         key_path=protected / "activation.key", receipt_path=protected / "activation.json",
     )
     return arguments, code_sha, old_health, old_preflight
+
+
+def _allow_release_ci(monkeypatch: pytest.MonkeyPatch, code_sha: str) -> None:
+    monkeypatch.setattr(issuer, "fetch_successful_release_ci", lambda **_: {
+        "status": "release_ci_verified", "code_sha": code_sha, "ci_run_id": "123",
+    })
+    monkeypatch.setattr(issuer.secrets, "token_bytes", lambda _: b"fixture-only-key-for-test-00000000")
+
+
+def _write_private_json(path: Path, report: dict) -> str:
+    contents = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False).encode()
+    path.write_bytes(contents)
+    path.chmod(0o600)
+    return hashlib.sha256(contents).hexdigest()
+
+
+def _issuer_transition_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    arguments, code_sha, _, _ = _issuer_fixture(tmp_path, monkeypatch)
+    request = {
+        "contract": TRANSITION_CONTRACT,
+        "expected_candidate_sha": code_sha, "expected_verifier_sha": code_sha,
+    }
+    arguments["clinical_transition"] = request
+    fresh = issuer.verify_candidate_semantic_checkpoint()
+    fresh["clinical_transition"] = {
+        "status": "clinical_semantic_transition_verified", "contract": TRANSITION_CONTRACT,
+        "candidate_code_sha": code_sha, "transition_sha256": "5" * 64,
+        "verifier": {"verifier_sha": code_sha, "source_sha256": "6" * 64,
+                     "files": {"scripts/deploy/rehearse_wavea_same_port.py": "7" * 64}},
+        "same_input": {"input_bytes_sha256": "8" * 64},
+    }
+    protected = arguments["sidecar_path"].parent
+    source_path = protected / "saved-semantic.json"
+    source_sha = _write_private_json(source_path, fresh)
+    raw_path = protected / "semantic-raw.json"
+    _write_private_json(raw_path, {
+        "source_report_path": str(source_path), "source_report_sha256": source_sha,
+    })
+    envelope_path = protected / "semantic-envelope.json"
+    _write_private_json(envelope_path, {"raw_report_path": str(raw_path)})
+    original_loader = issuer._load_private_json
+
+    def load_bound_report(path, **kwargs):
+        if path == arguments["sidecar_path"]:
+            sidecar, digest = original_loader(path, **kwargs)
+            return {**sidecar, "evidence": {"semantic_cache": {"path": str(envelope_path)}}}, digest
+        if path in (source_path, raw_path, envelope_path):
+            return _load_private_json(path, **kwargs)
+        return original_loader(path, **kwargs)
+
+    monkeypatch.setattr(issuer, "_load_private_json", load_bound_report)
+    monkeypatch.setattr(issuer, "verify_candidate_semantic_checkpoint", lambda *_args, **_kwargs: fresh)
+    _allow_release_ci(monkeypatch, code_sha)
+    return arguments, request, fresh, source_path, raw_path
+
+
+def test_issuer_keeps_semantic_replay_and_rehearsal_transition_opt_in(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    arguments, code_sha, _, _ = _issuer_fixture(tmp_path, monkeypatch)
+    original_semantic = issuer.verify_candidate_semantic_checkpoint
+    original_rehearsal = issuer.verify_private_rehearsal
+    calls = []
+
+    def verify_semantic(*args, **kwargs):
+        assert kwargs["clinical_transition"] is None
+        calls.append("semantic")
+        return original_semantic(*args, **kwargs)
+
+    def verify_rehearsal(*args, **kwargs):
+        assert kwargs["clinical_transition"] is None
+        calls.append("rehearsal")
+        return original_rehearsal(*args, **kwargs)
+
+    monkeypatch.setattr(issuer, "verify_candidate_semantic_checkpoint", verify_semantic)
+    monkeypatch.setattr(issuer, "verify_private_rehearsal", verify_rehearsal)
+    _allow_release_ci(monkeypatch, code_sha)
+    assert issuer.issue_wavea_activation(**arguments)["status"] == "private_activation_receipt_issued"
+    assert calls == ["semantic", "rehearsal"]
+
+
+def test_issuer_hands_fresh_authenticated_transition_to_rehearsal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    arguments, request, fresh, source_path, _ = _issuer_transition_fixture(tmp_path, monkeypatch)
+    saved, _ = _load_private_json(source_path, root=source_path.parent)
+    assert saved == fresh
+    assert saved["clinical_transition"] is not fresh["clinical_transition"]
+    canonical = json.dumps(fresh, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    assert source_path.read_text() != canonical
+    original_rehearsal = issuer.verify_private_rehearsal
+    calls = []
+
+    def verify_semantic(*_args, **kwargs):
+        assert kwargs["clinical_transition"] == request
+        assert kwargs["python_executable"] == arguments["python_executable"]
+        calls.append("semantic")
+        return fresh
+
+    def verify_rehearsal(*args, **kwargs):
+        assert kwargs["clinical_transition"] is fresh["clinical_transition"]
+        assert kwargs["candidate"]["code_sha"] == request["expected_candidate_sha"]
+        assert kwargs["backend_runtime"] == arguments["backend_runtime"]
+        calls.append("rehearsal")
+        return original_rehearsal(*args, **kwargs)
+
+    monkeypatch.setattr(issuer, "verify_candidate_semantic_checkpoint", verify_semantic)
+    monkeypatch.setattr(issuer, "verify_private_rehearsal", verify_rehearsal)
+    assert issuer.issue_wavea_activation(**arguments)["status"] == "private_activation_receipt_issued"
+    assert calls == ["semantic", "rehearsal"]
+
+
+@pytest.mark.parametrize("identity", ["expected_candidate_sha", "expected_verifier_sha"])
+def test_issuer_rejects_transition_request_for_a_different_ci_head_before_replay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, identity: str,
+) -> None:
+    arguments, request, _, _, _ = _issuer_transition_fixture(tmp_path, monkeypatch)
+    arguments["clinical_transition"] = {**request, identity: "f" * 40}
+
+    def unexpected_gate(*_args, **_kwargs):
+        raise AssertionError("A mismatched transition identity must fail before replay or rehearsal")
+
+    monkeypatch.setattr(issuer, "verify_candidate_semantic_checkpoint", unexpected_gate)
+    monkeypatch.setattr(issuer, "verify_private_rehearsal", unexpected_gate)
+    with pytest.raises(ValueError, match="exact candidate/tooling CI head"):
+        issuer.issue_wavea_activation(**arguments)
+    assert not arguments["key_path"].exists()
+    assert not arguments["receipt_path"].exists()
+
+
+@pytest.mark.parametrize("missing", ["source_locator", "sealed_transition"])
+def test_issuer_requires_the_fresh_transition_in_the_sealed_semantic_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, missing: str,
+) -> None:
+    arguments, _, _, source_path, raw_path = _issuer_transition_fixture(tmp_path, monkeypatch)
+    raw, _ = _load_private_json(raw_path, root=raw_path.parent)
+    if missing == "source_locator":
+        raw.pop("source_report_path")
+    else:
+        saved, _ = _load_private_json(source_path, root=source_path.parent)
+        saved.pop("clinical_transition")
+        raw["source_report_sha256"] = _write_private_json(source_path, saved)
+    _write_private_json(raw_path, raw)
+
+    def unexpected_rehearsal(*_args, **_kwargs):
+        raise AssertionError("An unsealed transition must fail before rehearsal")
+
+    monkeypatch.setattr(issuer, "verify_private_rehearsal", unexpected_rehearsal)
+    with pytest.raises(ValueError, match="Activation transition"):
+        issuer.issue_wavea_activation(**arguments)
+    assert not arguments["key_path"].exists()
+    assert not arguments["receipt_path"].exists()
 
 
 @pytest.mark.parametrize("workers", [(1, 1), (1, 3), (3, 2), (2, 2), (8, 8)])

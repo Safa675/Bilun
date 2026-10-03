@@ -636,7 +636,8 @@ def _build_frontend(spec: dict[str, Any], checkout: Path) -> Path:
 
 
 def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path,
-              old_backend_runtime_sha256: str) -> None:
+              old_backend_runtime_sha256: str, old_environment_sha256: str,
+              candidate_environment_sha256: str) -> None:
     root = spec["bundle_root"]
     work = root / "rehearsal"
     work.mkdir(mode=0o700)
@@ -645,6 +646,8 @@ def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path,
     fields = {
         "work-dir": work, "old-snapshot": root / "old-snapshot",
         "old-backend-runtime-sha256": old_backend_runtime_sha256,
+        "old-environment-sha256": old_environment_sha256,
+        "candidate-environment-sha256": candidate_environment_sha256,
         "old-replay": root / "old-replay", "candidate-checkout": checkout,
         "candidate-db": root / "candidate.duckdb", "candidate-roster": root / "source-roster.json",
         "baseline-roster": root / "baseline-roster.json",
@@ -661,8 +664,8 @@ def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path,
         request_path = root / "clinical-transition-request.json"
         _save(request_path, spec["clinical_transition"])
         argv.extend(("--clinical-transition", str(request_path)))
-        for dependency in spec["dependency_roots"]:
-            argv.extend(("--dependency-root", str(dependency)))
+    for dependency in spec["dependency_roots"]:
+        argv.extend(("--dependency-root", str(dependency)))
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
@@ -753,6 +756,8 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
     token = _github_read_token()
     ci = fetch_successful_release_ci(code_sha=spec["target_sha"], run_id=spec["ci_run_id"], token=token)
     candidate_backend, _ = candidate_environments(spec["candidate_backend_environment"], spec["candidate_frontend_environment"])
+    from scripts.deploy.rehearse_wavea_pair import env_digest
+    candidate_environment_sha256 = env_digest(candidate_backend)
     from src.bilun.api.wavea_activation import _private_file
     _private_file(spec["signing_key_path"])
     if len(spec["signing_key_path"].read_bytes()) < 32:
@@ -828,7 +833,8 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     source_roster_path=root / "source-roster.json", cache_path=root / "candidate.duckdb",
                     trace_path=root / "build.trace", log_path=root / "cache-build.log")
         _save(root / "trace-attestation.json", trace)
-        _rehearse(spec, checkout, frontend, before["backend_runtime_sha256"])
+        _rehearse(spec, checkout, frontend, before["backend_runtime_sha256"],
+                  before["backend"]["effective_environment_sha256"], candidate_environment_sha256)
         rehearsal = root / "rehearsal/real-candidate-namespace-rehearsal.json"
         observed = root / "rehearsal/candidate-tuple-observation.json"
         evidence = root / "evidence"

@@ -88,6 +88,7 @@ AUTHORIZED_TOOLING_PATHS = frozenset({
     "scripts/deploy/rehearse_wavea_pair.py",
     "scripts/deploy/run_wavea_route_transaction.py",
     "scripts/deploy/verify_legacy_equivalence.py",
+    "src/bilun/api/wavea_activation.py",
     "tests/unit/deploy/test_clinical_semantic_transition.py",
     "tests/unit/deploy/test_verify_candidate_semantics.py",
     "tests/unit/deploy/test_same_port_rehearsal.py",
@@ -101,6 +102,8 @@ AUTHORIZED_TOOLING_PATHS = frozenset({
     "tests/unit/deploy/test_rehearsal_auth_contexts.py",
     "tests/unit/deploy/test_rehearse_wavea_pair.py",
     "tests/unit/deploy/test_single_vps_release_integration.py",
+    "tests/unit/deploy/test_serving_activation.py",
+    "tests/integration/deploy/test_signed_transition_startup.py",
     "docs/operations/semantic-transition-3f5540cf-3e0e0c6d.md",
 })
 _REPORT_TABLES = {
@@ -667,12 +670,15 @@ def normalize_transition_content(table: str, value: Any, *, side: str,
     return value
 
 
-def normalize_transition_http_reports(reports: dict[str, dict], *, side: str,
-                                      proof: ClinicalTransitionProof) -> dict[str, dict]:
-    """Bind every captured DTO to the same complete independent producer replay."""
+def _http_report_scopes(reports: dict[str, dict]) -> tuple[dict, dict]:
+    """Decode the complete HTTP inventory without changing report contents."""
+    if not isinstance(reports, dict):
+        raise ValueError("Transition HTTP report inventory is malformed")
     scopes = {"patient_billing_report_rows": {}, "patient_bill_billing_report_rows": {}}
     identities = {}
     for path, report in reports.items():
+        if not isinstance(path, str) or not isinstance(report, dict):
+            raise ValueError("Transition HTTP report inventory is malformed")
         matched = re.fullmatch(r"/api/billing-report/([^/]+)(?:/bills/([^/]+))?", path)
         if not matched:
             raise ValueError("Transition HTTP report has an unknown ownership path")
@@ -683,6 +689,75 @@ def normalize_transition_http_reports(reports: dict[str, dict], *, side: str,
             raise ValueError("Transition HTTP report repeats a source identity")
         scopes[table][key] = report
         identities[path] = (table, key)
-    normalized = {table: normalize_transition_content(table, value, side=side, proof=proof)
-                  for table, value in scopes.items()}
-    return {path: normalized[table][key] for path, (table, key) in identities.items()}
+    return scopes, identities
+
+
+def normalize_transition_http_reports(reports: dict[str, dict], *, side: str,
+                                      proof: ClinicalTransitionProof,
+                                      transport: Any, baseline_transport: Any,
+                                      view: str = "draft") -> dict[str, dict]:
+    """Bind wire DTOs to their own source model before normalizing ownership.
+
+    The independently pinned serializer may add model defaults to raw cache
+    rows. They are validated as that source's exact transport output, never
+    stripped heuristically or accepted by the raw producer-replay normalizer.
+    """
+    from scripts.deploy.rehearse_wavea_same_port import PinnedReportTransport
+    from scripts.deploy.verify_candidate_semantics import _legacy_report
+
+    if (not isinstance(proof, ClinicalTransitionProof)
+            or proof.report.get("status") != "clinical_semantic_transition_verified"
+            or proof.report.get("contract") != TRANSITION_CONTRACT
+            or side not in {"baseline", "candidate"} or view not in {"draft", "legacy"}):
+        raise ValueError("Transition HTTP content lacks a verified bound proof or view")
+    for label, package in (("baseline", baseline_transport), (side, transport)):
+        expected_sha = proof.report.get(label + "_code_sha")
+        if (not isinstance(package, PinnedReportTransport)
+                or not isinstance(expected_sha, str) or not _SHA.fullmatch(expected_sha)
+                or package.code_sha != expected_sha or package.contract != "wavea-evidence-v2"):
+            raise ValueError("Transition HTTP transport differs from pinned source identity")
+        package.validate()
+        raw_scopes, _ = _http_report_scopes(package.raw_reports)
+        for table, raw in raw_scopes.items():
+            # Preserve strict raw semantics. Even a self-consistent transport
+            # cannot authorize raw clinical fields absent from the fresh proof.
+            normalize_transition_content(table, raw, side=label, proof=proof)
+
+    def projected(package: Any) -> dict[str, dict]:
+        return (package.draft_reports if view == "draft" else
+                {path: _legacy_report(row) for path, row in package.complete_reports.items()})
+
+    expected = projected(transport)
+    baseline = projected(baseline_transport)
+    scopes, identities = _http_report_scopes(reports)
+    expected_scopes, _ = _http_report_scopes(expected)
+    baseline_scopes, _ = _http_report_scopes(baseline)
+    _same(reports, expected, "HTTP pinned serializer/model projection")
+    projections = proof.projections
+    for table, family in _REPORT_TABLES.items():
+        if (scopes[table].keys() != projections[side][family].keys()
+                or baseline_scopes[table].keys() != projections["baseline"][family].keys()):
+            raise ValueError("Transition HTTP report inventory differs from pinned inputs")
+    output = json.loads(_canonical(reports))
+    for path, (table, key) in identities.items():
+        row = expected_scopes[table][key]
+        old = baseline_scopes[table][key]
+        actions = row.get("recommended_actions")
+        old_actions = old.get("recommended_actions")
+        if (not isinstance(row.get("drug_indication"), dict)
+                or not isinstance(old.get("drug_indication"), dict)
+                or not isinstance(actions, list) or not isinstance(old_actions, list)
+                or any(not isinstance(action, dict) for action in (*actions, *old_actions))):
+            raise ValueError("Transition HTTP transport drug/action projection is malformed")
+        drug = [action for action in actions if action.get("surface") == "drug_indication"]
+        old_drug = [action for action in old_actions if action.get("surface") == "drug_indication"]
+        if len(drug) != len(old_drug):
+            raise ValueError("Transition HTTP transport action ownership differs")
+        if side == "candidate":
+            output[path]["drug_indication"] = old["drug_indication"]
+            replacements = iter(old_drug)
+            output[path]["recommended_actions"] = [
+                next(replacements) if action.get("surface") == "drug_indication" else action
+                for action in actions
+            ]
+    return output

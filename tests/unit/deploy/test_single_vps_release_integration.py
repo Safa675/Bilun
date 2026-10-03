@@ -509,12 +509,18 @@ class FabricatedHost:
             return 200, b"console.log('fabricated asset')"
         if path == "/api/auth/me":
             dev = bool(cookie and cookie.startswith("bilun:session="))
-            payload = {"authenticated": dev, "public_billing_enabled": False,
-                       "capabilities": ["developer"] if dev else []}
+            public = self.environments["backend"].get("BILUN_PUBLIC_BILLING_ENABLED", "").lower() in {
+                "1", "true", "yes",
+            }
+            payload = {"authenticated": dev, "public_billing_enabled": public,
+                       "capabilities": (["developer"] if dev else []) + (["billing"] if public else [])}
         elif path.startswith("/api/rules"):
             return (200 if cookie and cookie.startswith("bilun:session=") else 401), b"{}"
         elif path == "/api/patients" and cookie is None:
-            return 401, b"{}"
+            public = self.environments["backend"].get("BILUN_PUBLIC_BILLING_ENABLED", "").lower() in {
+                "1", "true", "yes",
+            }
+            return (200, b'{"patients":["P1"]}') if public else (401, b"{}")
         elif path == "/health":
             payload = self.health()
         else:
@@ -545,6 +551,125 @@ def host(bundle, monkeypatch):
                                            manifest_sha256=sha(bundle.manifest), driver=driver)
     transaction.prepare()
     return fake, driver, transaction
+
+
+def test_paired_public_guards_forward_signed_source_and_captured_environment_context(tmp_path, monkeypatch):
+    """The real receipt chain binds the shared source projector's caller inputs."""
+    from scripts.deploy import rehearse_wavea_same_port as rehearsal
+    from scripts.deploy.rehearse_wavea_pair import env_digest
+
+    auth = candidate_auth()
+    monkeypatch.setattr(sys.modules[__name__], "candidate_auth", lambda: {
+        **auth, "BILUN_PUBLIC_BILLING_ENABLED": "true",
+    })
+    bundle = make_bundle(tmp_path, monkeypatch)
+    fake = FabricatedHost(bundle, monkeypatch)
+    driver = paired.SingleVpsDriver(json.loads(bundle.manifest.read_text()))
+    before = {name: Path(driver.config[name]).read_bytes()
+              for name in ("candidate_backend_environment", "candidate_frontend_environment")}
+    projections, guards = [], []
+    reports = [{"data_source": {"mode": "synthetic_demo", "is_synthetic": True}}] * 2
+
+    def project(cache, **kwargs):
+        projections.append((cache, kwargs))
+        return None, None, None, reports, None, None
+
+    def guard(environment, materialized, **context):
+        assert materialized is reports
+        assert "BILUN_DATA_MODE" not in environment and "SUT_DATA_MODE" not in environment
+        assert env_digest(environment) == context["expected_environment_sha256"]
+        guards.append((dict(environment), context))
+        return True
+
+    # Projection/source-resolver internals have separate real-source tests. Only
+    # this boundary is substituted; original v1/v2 loaders and startup stay real.
+    monkeypatch.setattr(rehearsal, "_cache_reports", project)
+    monkeypatch.setattr(rehearsal, "_public_data_guard", guard)
+    transaction = PairedReleaseTransaction(state_dir=driver.root, lock_path=driver.paths["lock_path"],
+                                           manifest_sha256=sha(bundle.manifest), driver=driver)
+    transaction.prepare()
+    assert transaction.activate()["state"] == "active"
+    final = json.loads((driver.root / "serving-launch-proof.json").read_text())
+    candidate_receipt = json.loads(driver.candidate_receipt.read_text())
+    observed = json.loads(Path(candidate_receipt["tuple_observation_path"]).read_text())
+    assert any(cache == driver.candidate_db for cache, _ in projections)
+    assert any(cache == driver.root / "serving.duckdb" for cache, _ in projections)
+    for _, context in guards:
+        assert context["repository"] == driver.backend
+        assert context["expected_code_sha"] == driver.config["code_sha"]
+        assert context["expected_runtime_sha256"] == observed["logical_tuple"]["backend_runtime_sha256"]
+    assert guards[-1][0]["BILUN_WAVEA_ACTIVATION_RECEIPT"] == str(driver.root / "serving-receipt.json")
+    assert guards[-1][0]["BILUN_WAVEA_ACTIVATION_KEY_FILE"] == str(driver.key)
+    assert guards[-1][1]["expected_environment_sha256"] == final["effective_environment_sha256"]
+    assert "fixture-candidate-secret" not in json.dumps(final)
+    assert (driver.root / "serving-launch-proof.json").stat().st_mode & 0o777 == 0o600
+    assert {name: Path(driver.config[name]).read_bytes() for name in before} == before
+    assert wavea_activation.activation_for_build("candidate") is not None
+    assert transaction.rollback()["state"] == "rolled_back"
+    assert fake.loaded_route == OLD_CADDYFILE
+    shutil.rmtree(tmp_path)
+
+
+@pytest.mark.parametrize("setting", [
+    "BILUN_PUBLIC_CHAT_BUDGET_DB", "BILUN_DATA_MODE", "BILUN_CLAIMS_DIR", "BILUN_CLEAN_DIR",
+])
+def test_paired_prepare_keeps_all_four_raw_persistent_settings_equal(bundle, monkeypatch, setting):
+    fake = FabricatedHost(bundle, monkeypatch)
+    fake.environments["backend"][setting] = "different-raw-setting"
+    fake._write_processes()
+    driver = paired.SingleVpsDriver(json.loads(bundle.manifest.read_text()))
+    with pytest.raises(ValueError, match=f"Candidate changes persistent input/state setting: {setting}"):
+        driver.prepare()
+    assert not (driver.root / "prepared-pair.json").exists()
+    assert fake.events == []
+    assert bundle.live.read_bytes() == bundle.old_bytes
+
+
+@pytest.mark.parametrize("field", [
+    "code_sha", "backend_runtime_sha256", "effective_environment_sha256", "launch_config_sha256",
+    "candidate_receipt_sha256", "serving_receipt_sha256", "tuple_observation_sha256",
+    "candidate_environment_sha256", "missing",
+])
+def test_final_serving_launch_proof_drift_stops_before_replacement(host, field):
+    fake, driver, _ = host
+    driver.maintenance()
+    driver.stop_pair()
+    driver.snapshot()
+    driver.derive_and_sign()
+    path = driver.root / "serving-launch-proof.json"
+    if field == "missing":
+        path.unlink()
+    else:
+        value = json.loads(path.read_text())
+        value[field] = {} if field == "candidate_environment_sha256" else "0" * 64
+        save(path, value)
+    with pytest.raises(ValueError, match="Final serving launcher environment proof|Release evidence"):
+        driver.install_candidate()
+    assert fake.bundle.live.read_bytes() == fake.bundle.old_bytes
+    assert driver.paths["frontend_current"].resolve() == Path(fake.spec["live_frontend_runtime"])
+    assert not driver.paths["backend_dropin"].exists()
+
+
+def test_final_launcher_cannot_self_attest_an_extra_environment_setting(host, monkeypatch):
+    from scripts.deploy import launch_wavea_candidate as launcher
+
+    fake, driver, _ = host
+    original = launcher.candidate_command
+
+    def changed(role, config):
+        executable, argv, runtime, environment = original(role, config)
+        if role == "backend":
+            environment["SUT_DATA_MODE"] = "real_claims"
+        return executable, argv, runtime, environment
+
+    monkeypatch.setattr(launcher, "candidate_command", changed)
+    driver.maintenance()
+    driver.stop_pair()
+    driver.snapshot()
+    with pytest.raises(ValueError, match="Final serving environment differs"):
+        driver.derive_and_sign()
+    assert not (driver.root / "serving-launch-proof.json").exists()
+    assert fake.bundle.live.read_bytes() == fake.bundle.old_bytes
 
 
 def test_real_prepare_driver_transaction_signature_startup_observer_and_rollback(host):

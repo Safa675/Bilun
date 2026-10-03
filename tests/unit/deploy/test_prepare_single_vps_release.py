@@ -90,6 +90,7 @@ def machine(tmp_path: Path, monkeypatch):
         event("observe")
         return {"cache": module._candidate_db_hash(Path(spec["live_cache_path"])),
                 "frontend": str(Path(spec["frontend_current"]).resolve()), "services": "unchanged",
+                "backend": {"effective_environment_sha256": "e" * 64},
                 "backend_runtime_sha256": module._runtime_digest(Path(spec["live_backend_runtime"]), backend=True)}
 
     def snapshot(spec, before):
@@ -488,13 +489,72 @@ def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkey
     fresh = module_from_spec(definition)
     definition.loader.exec_module(fresh)
     monkeypatch.setattr(fresh, "_run", lambda argv, **kwargs: calls.append((argv, kwargs)))
-    fresh._rehearse(spec, spec["bundle_root"] / "backend", spec["bundle_root"] / "frontend", "a" * 64)
+    fresh._rehearse(spec, spec["bundle_root"] / "backend", spec["bundle_root"] / "frontend",
+                    "a" * 64, "b" * 64, "c" * 64)
     argv, kwargs = calls[0]
     assert argv[:3] == ["unshare", "--net", "--"]
     assert "scripts.deploy.rehearse_wavea_same_port" in argv
     assert argv[argv.index("--old-backend-runtime-sha256") + 1] == "a" * 64
+    assert argv[argv.index("--old-environment-sha256") + 1] == "b" * 64
+    assert argv[argv.index("--candidate-environment-sha256") + 1] == "c" * 64
+    assert "--clinical-transition" not in argv
+    assert [argv[index + 1] for index, value in enumerate(argv) if value == "--dependency-root"] == [
+        str(path) for path in spec["dependency_roots"]
+    ]
     assert "systemctl" not in argv and "--profile" not in argv
     assert kwargs["env"]["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
+def test_rehearsal_receives_initial_candidate_and_independently_observed_old_environment_hashes(machine, monkeypatch):
+    from scripts.deploy.rehearse_wavea_pair import env_digest
+
+    manifest, _, _, _ = machine
+    candidate_base = {"BILUN_PUBLIC_BILLING_ENABLED": "true"}
+    captured = env_digest(candidate_base)
+    monkeypatch.setattr(module, "candidate_environments", lambda *_: (candidate_base, {}))
+    checkout = module._create_checkout
+    rehearsal = module._rehearse
+    calls = []
+
+    def changed_after_initial_capture(spec):
+        candidate_base["SUT_DATA_MODE"] = "real_claims"
+        return checkout(spec)
+
+    def record(*args):
+        calls.append(args[-2:])
+        return rehearsal(*args)
+
+    monkeypatch.setattr(module, "_create_checkout", changed_after_initial_capture)
+    monkeypatch.setattr(module, "_rehearse", record)
+    module.prepare_release_bundle(manifest)
+    assert calls == [("e" * 64, captured)]
+    assert captured != env_digest(candidate_base)
+
+
+def test_late_candidate_environment_change_cannot_replace_original_rehearsal_expectation(machine, monkeypatch):
+    from scripts.deploy.rehearse_wavea_pair import env_digest
+
+    manifest, spec, _, _ = machine
+    candidate_base = {"BILUN_PUBLIC_BILLING_ENABLED": "true"}
+    expected = env_digest(candidate_base)
+    monkeypatch.setattr(module, "candidate_environments", lambda *_: (candidate_base, {}))
+    checkout = module._create_checkout
+
+    def change(spec):
+        result = checkout(spec)
+        candidate_base["SUT_DATA_MODE"] = "real_claims"
+        return result
+
+    def reject_changed_capture(*args):
+        assert args[-1] == expected
+        if env_digest(candidate_base) != args[-1]:
+            raise ValueError("Candidate base environment differs from independent initial capture")
+
+    monkeypatch.setattr(module, "_create_checkout", change)
+    monkeypatch.setattr(module, "_rehearse", reject_changed_capture)
+    with pytest.raises(ValueError, match="independent initial capture"):
+        module.prepare_release_bundle(manifest)
+    assert not (Path(spec["bundle_root"]) / "prepared.json").exists()
 
 
 @pytest.fixture
