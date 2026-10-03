@@ -232,7 +232,33 @@ const sections = {
     validating: "Doğrulanıyor...",
     validateClaim: "Talebi Doğrula",
     clinical: {
+      "output": {
+        "title": "Klinik kaynak kontrolleri",
+        "partial": "Bu sınırlı kontroller, tüm klinik veya geri ödeme koşullarının sağlandığı anlamına gelmez.",
+        "pending": "Kaynak yorumunun incelemesi bekleniyor",
+        "sources": "Kaynak referansları",
+        "truncated": "Bazı kanıt ayrıntıları gösterilmiyor.",
+        "selectedRule": "Seçilen kaynak kuralı",
+        "statuses": {
+          "not_evaluated": "Değerlendirilmedi",
+          "unknown": "Eksik kanıt",
+          "criterion_clear": "Bu sınırlı kontrol karşılandı",
+          "restriction_not_met": "Koşul karşılanmadı",
+          "pass": "Kontrol karşılandı",
+          "fail": "Koşul karşılanmadı"
+        },
+        "sets": {
+          "sma_safety_2025": "SMA güvenlik koşulları",
+          "antifungal_source_constraints": "Antifungal kaynak koşulları",
+          "renal_source_constraints": "Renal kaynak koşulları",
+          "enteral_pediatric_reports_2026": "Pediatrik enteral rapor koşulları",
+          "ravulizumab_nmosd_continuation_2026": "Ravulizumab NMOSD devam tedavisi koşulları"
+        }
+      },
       "groups": {
+        "enteral": "Enteral beslenme bilgileri",
+        "ravulizumab": "Ravulizumab bilgileri",
+
         "praderWilli": "Prader-Willi bilgileri",
         "growthHormone": "Büyüme hormonu bilgileri",
         "sma": "SMA bilgileri",
@@ -240,6 +266,9 @@ const sections = {
         "renal": "Renal bilgiler"
       },
       "hints": {
+        "enteral": "Belgelenmiş malnütrisyon veya muafiyet yolunu seçin. Raporu düzenleyen hekim ve reçete eden hekim ayrıdır; tarihleri açıkça girin.",
+        "ravulizumab": "Belgelenmiş endikasyonu seçin. Tarihlerden ay hesabı çıkarmadan tamamlanmış tedavi süresini girin; EDSS kayıtlı bir ölçüm olmalıdır.",
+
         "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir.",
         "growthHormone": "Yalnız kodlanmış devam tedavisi koşulları kontrol edilir. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir.",
         "sma": "Belgelenmiş değerlendirme tarihlerini ve öyküyü girin. Bilinmeyen öykü, durumun olmadığı anlamına gelmez.",
@@ -247,6 +276,18 @@ const sections = {
         "renal": "Belgelenmiş kaynak birimlerini ve tedavi kontrollerini kullanın. Altıncı ay albümini geçmiş kontrol ölçümüdür; güncel sonuç değildir."
       },
       "fields": {
+        "pediatric": "Belgelenmiş çocuk hasta durumu",
+        "malnutrition_path": "Belgelenmiş beslenme yolu",
+        "neurological_disease": "Nörolojik hastalık",
+        "malnutrition_criteria_met": "Malnütrisyon koşullarının karşılandığı belgelenmiş",
+        "specialist_report_present": "Uzman hekim raporu mevcut",
+        "report_author_specialty": "Raporu düzenleyen hekimin uzmanlığı",
+        "edss": "EDSS puanı (0–10)",
+        "edss_in_report": "EDSS raporda kayıtlı",
+        "exception_path_requires_review": "Muaf beslenme yolu için kaynak incelemesi gerekli",
+        "adult_path_requires_review": "Erişkin beslenme yolu için kaynak incelemesi gerekli",
+        "six_month_edss_stop": "Altıncı ay EDSS devam tedavisi koşulu",
+
         "pws_genetic_diagnosis_confirmed": "Prader-Willi genetik tanısı doğrulanmış",
         "pws_uncontrolled_diabetes": "Kontrol edilemeyen diyabet",
         "pws_untreatable_obstructive_sleep_apnea": "Tedavi edilemeyen obstrüktif uyku apnesi",
@@ -255,6 +296,7 @@ const sections = {
         "pws_progressive_scoliosis": "İlerleyici skolyoz",
         "pws_initiation_clinical_assessment": "Diğer Prader-Willi başlangıç değerlendirmeleri",
         "pws_remaining_clinical_criteria": "İnceleme gerektiren diğer Prader-Willi klinik koşulları",
+
         "source_supported_treatment_phase": "Kaynakta desteklenen tedavi aşaması incelenmeli",
         "source_continuation_checkpoint": "Kaynaktaki devam tedavisi kontrol noktası incelenmeli",
         "supported_renal_indication": "Kaynakta desteklenen renal endikasyon incelenmeli",
@@ -263,6 +305,7 @@ const sections = {
         "renal_nutrition_indication": "Renal beslenme endikasyonu doğrulanmalı",
         "valid_ckd_stage": "Geçerli ve belgelenmiş KBH evresi gerekli",
         "positive_baseline_albumin_g_dl": "Sıfırdan büyük başlangıç albümin değeri gerekli",
+
         "gh_patient_group": "Belgelenmiş büyüme hormonu hasta grubu",
         "gh_height_reference_sex": "Kaydedilmiş SUT boy referans kategorisi",
         "gh_treatment_phase": "Büyüme hormonu tedavi aşaması",
@@ -343,6 +386,20 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "Diğer itrakonazol formları için EK-4/E koşulları"
       },
       "options": {
+        "renewal": "Rapor yenileme",
+        "malnutrition": "Malnütrisyon yolu",
+        "exemption": "Muaf yol",
+        "pediatrics": "Çocuk sağlığı ve hastalıkları",
+        "pediatric_surgery": "Çocuk cerrahisi",
+        "pediatric_gastroenterology": "Çocuk gastroenterolojisi",
+        "pediatric_neurology": "Çocuk nörolojisi",
+        "pediatric_metabolism": "Çocuk metabolizma",
+        "pediatric_endocrinology": "Çocuk endokrinolojisi",
+        "pediatric_endocrinology_metabolism": "Çocuk endokrinolojisi ve metabolizma",
+        "nmosd": "NMOSD",
+        "pnh": "PNH",
+        "ahus": "aHÜS",
+
         "initiation": "Başlangıç",
         "continuation": "Devam",
         "restart": "Yeniden başlama",
@@ -374,27 +431,6 @@ const sections = {
         "renal_nutrition": "Renal beslenme",
         "phosphate_binding": "Fosfat bağlama",
         "other": "Diğer"
-      },
-      "output": {
-        "title": "Klinik kaynak kontrolleri",
-        "partial": "Bu sınırlı kontroller, tüm klinik veya geri ödeme koşullarının sağlandığı anlamına gelmez.",
-        "pending": "Kaynak yorumunun incelemesi bekleniyor",
-        "sources": "Kaynak referansları",
-        "truncated": "Bazı kanıt ayrıntıları gösterilmiyor.",
-        "selectedRule": "Seçilen kaynak kuralı",
-        "statuses": {
-          "not_evaluated": "Değerlendirilmedi",
-          "unknown": "Eksik kanıt",
-          "criterion_clear": "Bu sınırlı kontrol karşılandı",
-          "restriction_not_met": "Koşul karşılanmadı",
-          "pass": "Kontrol karşılandı",
-          "fail": "Koşul karşılanmadı"
-        },
-        "sets": {
-          "sma_safety_2025": "SMA güvenlik koşulları",
-          "antifungal_source_constraints": "Antifungal kaynak koşulları",
-          "renal_source_constraints": "Renal kaynak koşulları"
-        }
       }
     },
     drugContext: {

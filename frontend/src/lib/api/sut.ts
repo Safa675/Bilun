@@ -1,5 +1,5 @@
 import { postJSON, requestJSON } from "./request";
-import type { SutClinicalRestriction } from "./clinicalEvidence";
+import type { SutEnteralEvidence, SutRavulizumabEvidence, SutClinicalRestriction } from "./clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
@@ -36,6 +36,8 @@ function buildPatientAlertsPath(params: PatientAlertsRequestParams = {}): string
 }
 
 export interface SutMaterialItem extends SutGrowthHormoneEvidence {
+  enteral_evidence?: SutEnteralEvidence | null;
+  ravulizumab_evidence?: SutRavulizumabEvidence | null;
   sma_evidence?: SutSmaEvidence | null;
   antifungal_evidence?: SutAntifungalEvidence | null;
   renal_evidence?: SutRenalEvidence | null;

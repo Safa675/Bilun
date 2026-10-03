@@ -8,7 +8,7 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields,
+import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
@@ -16,7 +16,7 @@ vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlin
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
 const groups = { growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
-  antifungal: antifungalFields, renal: renalFields };
+  antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
 const change = async (name: keyof typeof groups, field: string, value: string, index = 0) => {
@@ -50,6 +50,7 @@ it("leaves every clinical input unknown until explicitly entered", async () => {
   expect(payload.materials[0]).toMatchObject({ gh_patient_group: null, gh_height_reference_sex: null,
     gh_treatment_phase: null, epiphyses_closed: null, annual_growth_velocity_cm: null,
     height_cm: null, bone_age_years: null, sma_evidence: null, antifungal_evidence: null, renal_evidence: null });
+  expect(payload.materials[0]).toMatchObject({ enteral_evidence: null, ravulizumab_evidence: null });
 });
 
 it("submits explicit GH categories, negative histories, zero counts, source units and scoped dates", async () => {
@@ -101,7 +102,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
   const disabled = await submit();
   expect(disabled).not.toHaveProperty("drug_context");
-  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), "sma_evidence", "antifungal_evidence", "renal_evidence"]) {
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
     expect(disabled.materials[0]).not.toHaveProperty(field);
   }
   await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
@@ -120,9 +121,14 @@ describe("clinical contract metadata", () => {
     expect(optionalClinicalNumber(String(raw))).toBe(expected);
   });
   it("does not accept zero as a measured height", () => { expect(optionalClinicalNumber("0", true)).toBeNull(); });
+  it("preserves EDSS boundaries but does not accept out-of-range measurements", () => {
+    expect(optionalClinicalNumber("0", false, 10)).toBe(0);
+    expect(optionalClinicalNumber("10", false, 10)).toBe(10);
+    expect(optionalClinicalNumber("10.1", false, 10)).toBeNull();
+  });
   it("covers every exact family field declared by the backend contract", () => {
     const source = readFileSync(resolve(process.cwd(), "../src/bilun/domain/claims/clinical_evidence.py"), "utf8");
-    for (const [cls, fields] of [["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields]] as const) {
+    for (const [cls, fields] of [["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
       const body = source.split(`class ${cls}:`)[1].split("\n\n")[0];
       const names = [...body.matchAll(/^    (\w+): (?:date|bool|float|str) \| None/gm)].map(match => match[1]);
       expect(fields.map(row => row.name).sort(), cls).toEqual(names.sort());
@@ -145,4 +151,29 @@ describe("clinical contract metadata", () => {
       expect(clinicalMissingInputLabel("renal_evidence.source_supported_treatment_phase", t)).toContain(labels.source_supported_treatment_phase);
     }
   });
+});
+
+it("submits distinct enteral and ravulizumab facts without copying dates or inferring an indication", async () => {
+  await change("enteral", "pediatric", "false");
+  await change("enteral", "phase", "renewal");
+  await change("enteral", "malnutrition_path", "exemption");
+  await change("enteral", "report_author_specialty", "pediatric_neurology");
+  await change("enteral", "neurological_disease", "true");
+  await change("enteral", "applies_on", "2026-09-05");
+  await change("ravulizumab", "indication", "pnh");
+  await change("ravulizumab", "adult", "false");
+  await change("ravulizumab", "therapy_months", "0");
+  await change("ravulizumab", "edss", "8");
+  await change("ravulizumab", "edss_in_report", "false");
+  const payload = await submit();
+  expect(payload.materials[0]).toMatchObject({
+    enteral_evidence: { pediatric: false, phase: "renewal", malnutrition_path: "exemption",
+      report_author_specialty: "pediatric_neurology", neurological_disease: true, applies_on: "2026-09-05" },
+    ravulizumab_evidence: { indication: "pnh", adult: false, therapy_months: 0, edss: 8, edss_in_report: false },
+  });
+  expect(payload.materials[0].ravulizumab_evidence).not.toHaveProperty("applies_on");
+  expect(payload.drug_context?.service_date).toBeNull();
+  await change("ravulizumab", "edss", "10.1");
+  await change("enteral", "pediatric", "");
+  expect((await submit()).materials[0]).toMatchObject({ enteral_evidence: { pediatric: null }, ravulizumab_evidence: { edss: null } });
 });

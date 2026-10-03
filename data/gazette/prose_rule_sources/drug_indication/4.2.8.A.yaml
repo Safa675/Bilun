@@ -180,7 +180,7 @@ rules:
 - rule_id: 4.2.8.A.paediatric_malnutrition_enteral_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004140
+  - prose:4.2.8.A#99f29955
   drug_names:
   - enteral beslenme ürünü
   - çocuk enteral beslenme
@@ -191,8 +191,9 @@ rules:
   - E43
   - E44
   - E46
-  report_required: true
-  report_duration_months: 6
+  verification_status: ai_generated_pending_review
+  clinical_constraint_set: enteral_pediatric_reports_2026
+  report_required: false
   report_specialties:
   - çocuk hastalıkları
   - çocuk cerrahi
@@ -204,11 +205,11 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: malnütrisyon gelişmiş çocukta çocuk hastalıkları/çocuk cerrahi uzmanlarınca en fazla 6 ay süreli raporla
+    enforcement: malnütrisyon gelişmiş çocukta çocuk hastalıkları/çocuk cerrahi uzmanlarınca en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla
       başlanır; süre sonunda koşullar devam ederse çocuk gastroenteroloji/nöroloji/metabolizma/cerrahi/endokrinoloji uzmanınca
-      en fazla 6 ay süreli raporla tüm hekimlerce
+      en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla tüm hekimlerce
     message_tr: Malnütrisyon gelişmiş çocuklarda bu durumların belirtildiği çocuk hastalıkları ve çocuk cerrahi uzmanlarınca
-      düzenlenen en fazla 6 ay süreli raporla başlanır; bu sürenin sonunda malnütrisyon koşulları devam ederse çocuk gastroenteroloji,
+      düzenlenen en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla başlanır; bu sürenin sonunda malnütrisyon koşulları devam ederse çocuk gastroenteroloji,
       çocuk nöroloji, çocuk metabolizma, çocuk cerrahisi, çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzmanlarınca
-      düzenlenen en fazla 6 ay süreli raporla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
+      düzenlenen en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
 source_note: Exported from drug_indication_prose.json (YAML source migration)

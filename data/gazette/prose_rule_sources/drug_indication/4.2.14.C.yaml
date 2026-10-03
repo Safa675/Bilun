@@ -4479,7 +4479,7 @@ rules:
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - 6.4.(2)
+  - 4.2.14.C.a#43c9dfb5@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5
   drug_names:
   - ravulizumab
   icd10_ranges:
@@ -4487,7 +4487,6 @@ rules:
   report_required: true
   report_specialties:
   - nöroloji
-  report_duration_months: 6
   prescriber_specialties:
   - nöroloji
   condition:
@@ -4506,10 +4505,11 @@ rules:
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - 6.5.(1)
+  - 4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5
   drug_names:
   - ravulizumab
-  icd10_ranges:
+  clinical_constraint_set: ravulizumab_nmosd_continuation_2026
+  clinical_constraint_icd10_ranges:
   - G36.0
   report_required: true
   report_specialties:

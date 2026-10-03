@@ -1,3 +1,4 @@
+import type { SutEnteralEvidence, SutRavulizumabEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "@/lib/api/clinicalEvidence";
 
 export interface ClinicalField {
@@ -5,6 +6,7 @@ export interface ClinicalField {
   kind: "boolean" | "number" | "date" | "select";
   options?: readonly string[];
   positiveOnly?: boolean;
+  max?: number;
 }
 
 export const growthHormoneFields = [
@@ -26,10 +28,11 @@ export const praderWilliFields = [
   { name: "pws_progressive_scoliosis", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
 
-export function optionalClinicalNumber(value: string, positiveOnly = false): number | null {
+export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number): number | null {
   if (!value.trim()) return null;
   const number = Number(value);
-  return Number.isFinite(number) && (positiveOnly ? number > 0 : number >= 0) ? number : null;
+  return Number.isFinite(number) && (positiveOnly ? number > 0 : number >= 0)
+    && (max == null || number <= max) ? number : null;
 }
 
 export const clinicalReviewFields = [
@@ -40,6 +43,7 @@ export const clinicalReviewFields = [
   "phosphate_binding_indication", "renal_nutrition_indication", "valid_ckd_stage",
   "positive_baseline_albumin_g_dl",
   "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
+  "exception_path_requires_review", "adult_path_requires_review", "six_month_edss_stop",
 ] as const;
 
 export const smaFields = [
@@ -125,6 +129,7 @@ export function clinicalMissingInputLabel(field: string, t: (key: string) => str
   const [root, detail] = field.split(".");
   const groups: Record<string, string> = {
     sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
+    enteral_evidence: "enteral", ravulizumab_evidence: "ravulizumab",
   };
   if (groups[root]) {
     const groupLabel = t(`sections.claimValidator.clinical.groups.${groups[root]}`);
@@ -135,3 +140,25 @@ export function clinicalMissingInputLabel(field: string, t: (key: string) => str
   }
   return null;
 }
+
+export const enteralFields = [
+  { name: "applies_on", kind: "date" },
+  { name: "assessment_date", kind: "date" },
+  { name: "pediatric", kind: "boolean" },
+  { name: "phase", kind: "select", options: ["initiation", "renewal"] },
+  { name: "malnutrition_path", kind: "select", options: ["exemption", "malnutrition"] },
+  { name: "neurological_disease", kind: "boolean" },
+  { name: "malnutrition_criteria_met", kind: "boolean" },
+  { name: "specialist_report_present", kind: "boolean" },
+  { name: "report_author_specialty", kind: "select", options: ["other", "pediatric_endocrinology", "pediatric_endocrinology_metabolism", "pediatric_gastroenterology", "pediatric_metabolism", "pediatric_neurology", "pediatric_surgery", "pediatrics"] },
+] satisfies Array<ClinicalField & { name: keyof SutEnteralEvidence }>;
+
+export const ravulizumabFields = [
+  { name: "applies_on", kind: "date" },
+  { name: "assessment_date", kind: "date" },
+  { name: "indication", kind: "select", options: ["ahus", "nmosd", "pnh"] },
+  { name: "adult", kind: "boolean" },
+  { name: "therapy_months", kind: "number" },
+  { name: "edss", kind: "number", max: 10 },
+  { name: "edss_in_report", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutRavulizumabEvidence }>;

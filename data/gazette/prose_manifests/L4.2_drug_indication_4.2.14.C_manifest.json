@@ -5,7 +5,7 @@
   "effective_date": "2026-07-25",
   "rules_in_json": 936,
   "section_clause_total": 642,
-  "encoded_clause_count": 400,
+  "encoded_clause_count": 402,
   "encoded_clause_ids": [
     "C004989",
     "C004990",
@@ -375,6 +375,8 @@
     "C005804",
     "C005805",
     "C005806",
+    "C005810",
+    "C005814",
     "C005819",
     "C005821",
     "C005822",
@@ -454,8 +456,7 @@
   ],
   "tier_a_pending_clause_ids": [
     "C005124",
-    "C005150",
-    "C005814"
+    "C005150"
   ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
@@ -598,7 +599,6 @@
     "C005807",
     "C005808",
     "C005809",
-    "C005810",
     "C005811",
     "C005812",
     "C005813",
@@ -703,9 +703,9 @@
     "C005845",
     "C005851"
   ],
-  "tier_a_pending_count": 3,
+  "tier_a_pending_count": 2,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 148,
+  "tier_c_deferred_count": 147,
   "emr_blocked_count": 15,
   "non_actionable_count": 76,
   "clause_traces": [
@@ -6896,12 +6896,11 @@
       "clause_id": "C005810",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_nmosb_3neurology_6m"
+      ]
     },
     {
       "clause_id": "C005811",
@@ -6940,8 +6939,11 @@
       "clause_id": "C005814",
       "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda"
+      "manifest_status": "encoded",
+      "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda",
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_nmosb_edss8_stop"
+      ]
     },
     {
       "clause_id": "C005815",
@@ -7341,7 +7343,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 148,
+  "encode_tier_C_deferred_count": 147,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 62.3
+  "encoded_clause_pct": 62.6
 }

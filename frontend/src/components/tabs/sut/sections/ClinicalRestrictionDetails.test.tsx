@@ -50,3 +50,16 @@ describe("bounded clinical evidence display", () => {
     expect(renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[]} />)).toBe("");
   });
 });
+
+it("labels the ravulizumab computed EDSS stop check without exposing it as a user input", () => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "ravulizumab_nmosd_continuation_2026",
+    checks: [{ field: "ravulizumab_evidence.six_month_edss_stop", status: "fail" }],
+    missing_inputs: ["ravulizumab_evidence.edss_in_report"], source_refs: [] };
+  const english = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />);
+  const turkish = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />, "tr");
+  expect(english).toContain("Six-month EDSS continuation requirement");
+  expect(english).toContain("Requirement not met");
+  expect(turkish).toContain("Altıncı ay EDSS devam tedavisi koşulu");
+  expect(english).not.toContain("<input");
+  expect(english).not.toContain("Fully eligible");
+});

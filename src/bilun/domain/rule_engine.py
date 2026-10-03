@@ -105,6 +105,9 @@ def _run_drug_indication_checks(
     from decimal import Decimal
 
     from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+    from src.bilun.domain.claims.clinical_evidence import (
+        EnteralEvidence, RavulizumabEvidence, parse_clinical_evidence,
+    )
     from src.bilun.domain.prose_rules.drug_indication import (
         evaluate_drug_indication_line,
         list_drug_indication_rules,
@@ -173,6 +176,8 @@ def _run_drug_indication_checks(
             biomarkers=tuple(biomarkers) if biomarkers else None,
             prior_therapies=tuple(prior_therapies) if prior_therapies else None,
             **parse_growth_hormone_inputs(mat),
+            enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
+            ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
         )
         hit = evaluate_drug_indication_line(
             drug_line=drug_line,

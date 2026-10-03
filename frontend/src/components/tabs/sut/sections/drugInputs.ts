@@ -13,6 +13,7 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     gh_patient_group, gh_height_reference_sex, sma_evidence, antifungal_evidence, renal_evidence,
     pws_genetic_diagnosis_confirmed, pws_uncontrolled_diabetes, pws_untreatable_obstructive_sleep_apnea,
     pws_active_cancer, pws_active_psychosis, pws_progressive_scoliosis,
+    enteral_evidence, ravulizumab_evidence,
     ...base } = material;
   if (!enabled) return base;
   return {
@@ -29,6 +30,8 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     sma_evidence: sma_evidence ?? null,
     antifungal_evidence: antifungal_evidence ?? null,
     renal_evidence: renal_evidence ?? null,
+    enteral_evidence: enteral_evidence ?? null,
+    ravulizumab_evidence: ravulizumab_evidence ?? null,
     pws_genetic_diagnosis_confirmed: pws_genetic_diagnosis_confirmed ?? null,
     pws_uncontrolled_diabetes: pws_uncontrolled_diabetes ?? null,
     pws_untreatable_obstructive_sleep_apnea: pws_untreatable_obstructive_sleep_apnea ?? null,

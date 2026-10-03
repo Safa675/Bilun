@@ -7,7 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 
-from .clinical_evidence import AntifungalEvidence, RenalEvidence, SmaEvidence
+from .clinical_evidence import AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
 
 
 Money = Decimal
@@ -301,6 +301,8 @@ class DrugClaimLine:
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None
     renal_evidence: RenalEvidence | None = None
+    enteral_evidence: EnteralEvidence | None = None
+    ravulizumab_evidence: RavulizumabEvidence | None = None
 
 
 @dataclass(frozen=True)

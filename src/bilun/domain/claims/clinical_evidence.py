@@ -107,7 +107,39 @@ class RenalEvidence:
     therapy_months: float | None = None
 
 
+
+@dataclass(frozen=True)
+class EnteralEvidence:
+    applies_on: date | None = None
+    assessment_date: date | None = None
+    pediatric: bool | None = None
+    phase: str | None = None  # initiation, renewal
+    malnutrition_path: str | None = None  # malnutrition, exemption
+    neurological_disease: bool | None = None
+    malnutrition_criteria_met: bool | None = None
+    specialist_report_present: bool | None = None
+    report_author_specialty: str | None = None
+
+
+@dataclass(frozen=True)
+class RavulizumabEvidence:
+    applies_on: date | None = None
+    assessment_date: date | None = None
+    indication: str | None = None  # nmosd, pnh, ahus
+    adult: bool | None = None
+    therapy_months: float | None = None
+    edss: float | None = None
+    edss_in_report: bool | None = None
+
 _ENUMS = {
+    EnteralEvidence: {
+        'phase': {'initiation', 'renewal'},
+        'malnutrition_path': {'malnutrition', 'exemption'},
+        'report_author_specialty': {'pediatrics', 'pediatric_surgery', 'pediatric_gastroenterology',
+            'pediatric_neurology', 'pediatric_metabolism', 'pediatric_endocrinology',
+            'pediatric_endocrinology_metabolism', 'other'},
+    },
+    RavulizumabEvidence: {'indication': {'nmosd', 'pnh', 'ahus'}},
     SmaEvidence: {'sma_type': {'type_1', 'type_2', 'type_3', 'newborn_screening'}},
     AntifungalEvidence: {
         'intent': {'treatment', 'prophylaxis'},
@@ -123,7 +155,7 @@ _ENUMS = {
     },
 }
 
-_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence)
+_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence, EnteralEvidence, RavulizumabEvidence)
 
 
 def _finite_nonnegative(raw: Any) -> float | None:
@@ -159,7 +191,8 @@ def parse_clinical_evidence(value: Any, cls: type[_E]) -> _E | None:
         elif f.type == 'bool | None':
             parsed[f.name] = raw if type(raw) is bool else None
         elif f.type == 'float | None':
-            parsed[f.name] = _finite_nonnegative(raw)
+            number = _finite_nonnegative(raw)
+            parsed[f.name] = None if cls is RavulizumabEvidence and f.name == 'edss' and number is not None and number > 10 else number
         elif f.type == 'str | None':
             parsed[f.name] = raw if isinstance(raw, str) and raw in _ENUMS.get(cls, {}).get(f.name, ()) else None
     return cls(**parsed)

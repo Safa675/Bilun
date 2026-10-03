@@ -1,7 +1,7 @@
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields,
+import { growthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   optionalClinicalNumber, type ClinicalField } from "./clinicalFields";
 
 type ClinicalValue = string | number | boolean | null | undefined;
@@ -38,10 +38,10 @@ function ClinicalGroup({ group, fields, value, onChange }: {
                 : t(`${prefix}.options.${option}`)}</option>)}
           </select> : <input aria-label={label} className={inputClass}
             type={field.kind === "date" ? "date" : "number"}
-            min={field.kind === "number" ? 0 : undefined} step={field.kind === "number" ? "any" : undefined}
+            min={field.kind === "number" ? 0 : undefined} max={field.max} step={field.kind === "number" ? "any" : undefined}
             placeholder={unknown} value={typeof current === "boolean" ? "" : current ?? ""}
             onChange={e => update(field.name, field.kind === "number"
-              ? optionalClinicalNumber(e.target.value, field.positiveOnly) : e.target.value || null)} />}
+              ? optionalClinicalNumber(e.target.value, field.positiveOnly, field.max) : e.target.value || null)} />}
         </label>;
       })}
     </div>
@@ -63,5 +63,9 @@ export function ClinicalMaterialInputs({ material, onChange }: {
       onChange={value => onChange({ antifungal_evidence: value })} />
     <ClinicalGroup group="renal" fields={renalFields} value={material.renal_evidence}
       onChange={value => onChange({ renal_evidence: value })} />
+    <ClinicalGroup group="enteral" fields={enteralFields} value={material.enteral_evidence}
+      onChange={value => onChange({ enteral_evidence: value })} />
+    <ClinicalGroup group="ravulizumab" fields={ravulizumabFields} value={material.ravulizumab_evidence}
+      onChange={value => onChange({ ravulizumab_evidence: value })} />
   </div>;
 }

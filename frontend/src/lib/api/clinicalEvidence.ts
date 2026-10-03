@@ -99,6 +99,29 @@ export interface SutRenalEvidence {
   therapy_months?: number | null;
 }
 
+export interface SutEnteralEvidence {
+  applies_on?: string | null;
+  assessment_date?: string | null;
+  pediatric?: boolean | null;
+  phase?: "initiation" | "renewal" | null;
+  malnutrition_path?: "exemption" | "malnutrition" | null;
+  neurological_disease?: boolean | null;
+  malnutrition_criteria_met?: boolean | null;
+  specialist_report_present?: boolean | null;
+  report_author_specialty?: "other" | "pediatric_endocrinology" | "pediatric_endocrinology_metabolism" | "pediatric_gastroenterology" | "pediatric_metabolism" | "pediatric_neurology" | "pediatric_surgery" | "pediatrics" | null;
+}
+
+export interface SutRavulizumabEvidence {
+  applies_on?: string | null;
+  assessment_date?: string | null;
+  indication?: "ahus" | "nmosd" | "pnh" | null;
+  adult?: boolean | null;
+  therapy_months?: number | null;
+  edss?: number | null;
+  edss_in_report?: boolean | null;
+}
+
+/** Bounded identifiers/statuses only; no raw medical values or payment conclusion. */
 export interface SutClinicalRestriction {
   constraint_set: string;
   criterion_status: "not_evaluated" | "unknown" | "criterion_clear" | "restriction_not_met";

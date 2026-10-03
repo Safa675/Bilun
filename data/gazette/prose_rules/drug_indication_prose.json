@@ -11011,7 +11011,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "6.4.(2)"
+        "4.2.14.C.a#43c9dfb5@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5"
       ],
       "drug_names": [
         "ravulizumab"
@@ -11023,7 +11023,6 @@
       "report_specialties": [
         "nöroloji"
       ],
-      "report_duration_months": 6,
       "prescriber_specialties": [
         "nöroloji"
       ],
@@ -11041,13 +11040,10 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "6.5.(1)"
+        "4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5"
       ],
       "drug_names": [
         "ravulizumab"
-      ],
-      "icd10_ranges": [
-        "G36.0"
       ],
       "report_required": true,
       "report_specialties": [
@@ -11060,7 +11056,11 @@
         "billable": false,
         "enforcement": "NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda belirtilmelidir",
         "message_tr": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b)."
-      }
+      },
+      "clinical_constraint_set": "ravulizumab_nmosd_continuation_2026",
+      "clinical_constraint_icd10_ranges": [
+        "G36.0"
+      ]
     },
     {
       "rule_id": "4.2.14.C.ravulizumab_pnh_6mo_continuation",
@@ -22427,7 +22427,7 @@
       "rule_id": "4.2.8.A.paediatric_malnutrition_enteral_6mo_report",
       "sut_section": "4.2.8.A",
       "gate_b_sources": [
-        "C004140"
+        "prose:4.2.8.A#99f29955"
       ],
       "drug_names": [
         "enteral beslenme ürünü",
@@ -22441,8 +22441,7 @@
         "E44",
         "E46"
       ],
-      "report_required": true,
-      "report_duration_months": 6,
+      "report_required": false,
       "report_specialties": [
         "çocuk hastalıkları",
         "çocuk cerrahi",
@@ -22456,9 +22455,11 @@
         "coverage_note": true
       },
       "action": {
-        "enforcement": "malnütrisyon gelişmiş çocukta çocuk hastalıkları/çocuk cerrahi uzmanlarınca en fazla 6 ay süreli raporla başlanır; süre sonunda koşullar devam ederse çocuk gastroenteroloji/nöroloji/metabolizma/cerrahi/endokrinoloji uzmanınca en fazla 6 ay süreli raporla tüm hekimlerce",
-        "message_tr": "Malnütrisyon gelişmiş çocuklarda bu durumların belirtildiği çocuk hastalıkları ve çocuk cerrahi uzmanlarınca düzenlenen en fazla 6 ay süreli raporla başlanır; bu sürenin sonunda malnütrisyon koşulları devam ederse çocuk gastroenteroloji, çocuk nöroloji, çocuk metabolizma, çocuk cerrahisi, çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzmanlarınca düzenlenen en fazla 6 ay süreli raporla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A)."
-      }
+        "enforcement": "malnütrisyon gelişmiş çocukta çocuk hastalıkları/çocuk cerrahi uzmanlarınca en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla başlanır; süre sonunda koşullar devam ederse çocuk gastroenteroloji/nöroloji/metabolizma/cerrahi/endokrinoloji uzmanınca en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla tüm hekimlerce",
+        "message_tr": "Malnütrisyon gelişmiş çocuklarda bu durumların belirtildiği çocuk hastalıkları ve çocuk cerrahi uzmanlarınca düzenlenen en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla başlanır; bu sürenin sonunda malnütrisyon koşulları devam ederse çocuk gastroenteroloji, çocuk nöroloji, çocuk metabolizma, çocuk cerrahisi, çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzmanlarınca düzenlenen en fazla 6 ay (05/09/2026 tarihinden itibaren nörolojik hastalıklarda 1 yıl) süreli uzman hekim raporla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A)."
+      },
+      "verification_status": "ai_generated_pending_review",
+      "clinical_constraint_set": "enteral_pediatric_reports_2026"
     },
     {
       "rule_id": "4.2.8.B.parenteral_nutrition_30day_report",

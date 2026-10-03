@@ -159,6 +159,9 @@ def is_clause_coordinate(ref: str) -> bool:
 def is_gate_b_source_ref(ref: str) -> bool:
     """True if ``ref`` is a valid dual-period gate_b_sources entry."""
     text = str(ref).strip()
+    if text.startswith("prose:"):
+        coordinate, digest = split_clause_key(text.removeprefix("prose:"))
+        return bool(coordinate and is_clause_coordinate(coordinate) and digest and is_content_hash(digest))
     return (
         is_clause_id(text)
         or is_clause_coordinate(text)
@@ -286,6 +289,52 @@ def resolve_gate_b_ref_to_clause_ids(
     # A paragraph can repeat verbatim under different medication headings. A
     # content hash alone cannot establish its legal scope. Keep heading scope in
     # the reference itself so every existing source consumer resolves it.
+    if text.startswith("prose:"):
+        # Explicit analogue of the existing opaque-C prose cite, with stable
+        # content identity. Never broaden ordinary encode-eligible matching.
+        key = text.removeprefix("prose:")
+        coordinate, digest = split_clause_key(key)
+        needed = {"clause_coordinate", "content_hash", "clause_type", "is_in_force"}
+        if not coordinate or not digest or not is_content_hash(digest) or not is_clause_key(key) or not needed.issubset(clauses.columns):
+            raise UnknownClauseCiteError(f"invalid explicit prose cite: {text!r}")
+        hits = clauses.filter((pl.col("clause_coordinate") == coordinate)
+                              & (pl.col("content_hash") == digest) & pl.col("is_in_force"))
+        if hits.height != 1:
+            raise UnknownClauseCiteError(f"explicit prose cite is not unique and active: {text!r}")
+        if hits["clause_type"][0] != "prose":
+            raise NonEncodeEligibleCiteError(f"explicit prose cite must identify prose: {text!r}")
+        return [str(hits["clause_id"][0])]
+
+    if "@between:" in text:
+        child_ref, _, bounds = text.partition("@between:")
+        anchors = bounds.split("|")
+        needed = {"paragraph_index", "clause_coordinate", "content_hash", "is_in_force"}
+        if (len(anchors) != 2 or not is_clause_key(child_ref)
+                or any("@" in anchor for anchor in anchors) or not needed.issubset(clauses.columns)):
+            raise UnknownClauseCiteError(f"invalid bounded-context cite: {text!r}")
+        positions = []
+        for anchor in anchors:
+            coordinate, digest = split_clause_key(anchor)
+            if not coordinate or not digest or not is_content_hash(digest):
+                raise UnknownClauseCiteError(f"bounded-context anchor requires a clause key: {text!r}")
+            hits = clauses.filter(
+                (pl.col("clause_coordinate") == coordinate)
+                & (pl.col("content_hash") == digest) & pl.col("is_in_force")
+            )
+            if hits.height != 1:
+                raise UnknownClauseCiteError(f"bounded-context anchor is not unique and active: {text!r}")
+            positions.append(hits["paragraph_index"][0])
+        if positions[0] is None or positions[1] is None or positions[0] >= positions[1]:
+            raise UnknownClauseCiteError(f"bounded-context anchors are not ordered: {text!r}")
+        scoped = clauses.filter((pl.col("paragraph_index") > positions[0])
+                                & (pl.col("paragraph_index") < positions[1]))
+        ids = resolve_gate_b_ref_to_clause_ids(child_ref, scoped, in_force_only=in_force_only,
+                                              encode_eligible_only=encode_eligible_only,
+                                              allow_ambiguous=False)
+        if len(ids) != 1:
+            raise AmbiguousClauseCiteError(f"bounded-context cite is not unique: {text!r}: {ids}")
+        return ids
+
     if "@within:" in text:
         child_ref, separator, heading_ref = text.partition("@within:")
         if not separator or "@within:" in heading_ref or not is_clause_key(child_ref):

@@ -232,7 +232,33 @@ const sections = {
     validating: "Validating...",
     validateClaim: "Validate Claim",
     clinical: {
+      "output": {
+        "title": "Clinical source checks",
+        "partial": "These limited checks do not establish full clinical or reimbursement eligibility.",
+        "pending": "Source interpretation pending review",
+        "sources": "Source references",
+        "truncated": "Some evidence details are omitted.",
+        "selectedRule": "Selected source rule",
+        "statuses": {
+          "not_evaluated": "Not evaluated",
+          "unknown": "Missing evidence",
+          "criterion_clear": "This limited check passed",
+          "restriction_not_met": "Requirement not met",
+          "pass": "Check passed",
+          "fail": "Requirement not met"
+        },
+        "sets": {
+          "sma_safety_2025": "SMA safety restrictions",
+          "antifungal_source_constraints": "Antifungal source conditions",
+          "renal_source_constraints": "Renal source conditions",
+          "enteral_pediatric_reports_2026": "Pediatric enteral report conditions",
+          "ravulizumab_nmosd_continuation_2026": "Ravulizumab NMOSD continuation conditions"
+        }
+      },
       "groups": {
+        "enteral": "Enteral nutrition evidence",
+        "ravulizumab": "Ravulizumab evidence",
+
         "praderWilli": "Prader–Willi evidence",
         "growthHormone": "Growth-hormone evidence",
         "sma": "SMA evidence",
@@ -240,6 +266,9 @@ const sections = {
         "renal": "Renal evidence"
       },
       "hints": {
+        "enteral": "Choose the documented malnutrition or exempt pathway. Report authorship is separate from the prescriber; dates remain explicit.",
+        "ravulizumab": "Choose the documented indication. Enter completed treatment duration without inferring months from dates; EDSS must be a recorded score.",
+
         "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria.",
         "growthHormone": "Only supported continuation criteria are checked. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown.",
         "sma": "Enter documented assessment dates and history. Unknown history does not mean the condition is absent.",
@@ -247,6 +276,18 @@ const sections = {
         "renal": "Use documented source-unit values and treatment checkpoints. Six-month albumin is the historical checkpoint, not the current result."
       },
       "fields": {
+        "pediatric": "Documented pediatric patient status",
+        "malnutrition_path": "Documented nutrition pathway",
+        "neurological_disease": "Neurological disease",
+        "malnutrition_criteria_met": "Malnutrition criteria documented as met",
+        "specialist_report_present": "Specialist report present",
+        "report_author_specialty": "Report author specialty",
+        "edss": "EDSS score (0–10)",
+        "edss_in_report": "EDSS recorded in report",
+        "exception_path_requires_review": "Exempt nutrition pathway requires source review",
+        "adult_path_requires_review": "Adult nutrition pathway requires source review",
+        "six_month_edss_stop": "Six-month EDSS continuation requirement",
+
         "pws_genetic_diagnosis_confirmed": "Prader–Willi genetic diagnosis confirmed",
         "pws_uncontrolled_diabetes": "Diabetes that cannot be controlled",
         "pws_untreatable_obstructive_sleep_apnea": "Obstructive sleep apnea that cannot be treated",
@@ -255,6 +296,7 @@ const sections = {
         "pws_progressive_scoliosis": "Progressive scoliosis",
         "pws_initiation_clinical_assessment": "Remaining Prader–Willi initiation assessment",
         "pws_remaining_clinical_criteria": "Remaining Prader–Willi clinical criteria requiring review",
+
         "source_supported_treatment_phase": "Source-supported treatment phase requires review",
         "source_continuation_checkpoint": "Source continuation checkpoint requires review",
         "supported_renal_indication": "Source-supported renal indication requires review",
@@ -263,6 +305,7 @@ const sections = {
         "renal_nutrition_indication": "Renal-nutrition indication must be verified",
         "valid_ckd_stage": "A valid documented CKD stage is required",
         "positive_baseline_albumin_g_dl": "A positive baseline albumin value is required",
+
         "gh_patient_group": "Documented growth-hormone patient group",
         "gh_height_reference_sex": "Recorded SUT height-reference category",
         "gh_treatment_phase": "Growth-hormone treatment phase",
@@ -343,6 +386,20 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "EK-4/E requirements for other itraconazole forms"
       },
       "options": {
+        "renewal": "Report renewal",
+        "malnutrition": "Malnutrition pathway",
+        "exemption": "Exempt pathway",
+        "pediatrics": "Pediatrics",
+        "pediatric_surgery": "Pediatric surgery",
+        "pediatric_gastroenterology": "Pediatric gastroenterology",
+        "pediatric_neurology": "Pediatric neurology",
+        "pediatric_metabolism": "Pediatric metabolism",
+        "pediatric_endocrinology": "Pediatric endocrinology",
+        "pediatric_endocrinology_metabolism": "Pediatric endocrinology and metabolism",
+        "nmosd": "NMOSD",
+        "pnh": "PNH",
+        "ahus": "aHUS",
+
         "initiation": "Initiation",
         "continuation": "Continuation",
         "restart": "Restart",
@@ -374,27 +431,6 @@ const sections = {
         "renal_nutrition": "Renal nutrition",
         "phosphate_binding": "Phosphate binding",
         "other": "Other"
-      },
-      "output": {
-        "title": "Clinical source checks",
-        "partial": "These limited checks do not establish full clinical or reimbursement eligibility.",
-        "pending": "Source interpretation pending review",
-        "sources": "Source references",
-        "truncated": "Some evidence details are omitted.",
-        "selectedRule": "Selected source rule",
-        "statuses": {
-          "not_evaluated": "Not evaluated",
-          "unknown": "Missing evidence",
-          "criterion_clear": "This limited check passed",
-          "restriction_not_met": "Requirement not met",
-          "pass": "Check passed",
-          "fail": "Requirement not met"
-        },
-        "sets": {
-          "sma_safety_2025": "SMA safety restrictions",
-          "antifungal_source_constraints": "Antifungal source conditions",
-          "renal_source_constraints": "Renal source conditions"
-        }
       }
     },
     drugContext: {

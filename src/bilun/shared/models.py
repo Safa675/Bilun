@@ -10,7 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, field_validator
 
 from src.bilun.domain.claims.clinical_evidence import (
-    AntifungalEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
+    AntifungalEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
 )
 
 
@@ -73,6 +73,18 @@ class MaterialItem(BaseModel):
     sma_evidence: SmaEvidence | None = None
     antifungal_evidence: AntifungalEvidence | None = None
     renal_evidence: RenalEvidence | None = None
+    enteral_evidence: EnteralEvidence | None = None
+    ravulizumab_evidence: RavulizumabEvidence | None = None
+
+    @field_validator('enteral_evidence', mode='before')
+    @classmethod
+    def parse_enteral_evidence(cls, value):
+        return parse_clinical_evidence(value, EnteralEvidence)
+
+    @field_validator('ravulizumab_evidence', mode='before')
+    @classmethod
+    def parse_ravulizumab_evidence(cls, value):
+        return parse_clinical_evidence(value, RavulizumabEvidence)
 
     @field_validator('sma_evidence', mode='before')
     @classmethod
@@ -117,6 +129,12 @@ class DrugContext(BaseModel):
     prescriber_specialty: str = ""
     board_report_present: bool | None = None
     report_duration_months: int | None = None
+
+    @field_validator("report_duration_months", mode="before")
+    @classmethod
+    def keep_boolean_report_duration_unknown(cls, value):
+        # A report-duration boolean is not the observed count 0 or 1.
+        return None if type(value) is bool else value
 
 
 class ClaimValidationRequest(BaseModel):
