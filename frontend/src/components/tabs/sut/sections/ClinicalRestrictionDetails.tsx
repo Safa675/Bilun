@@ -2,7 +2,7 @@ import type { SutClinicalRestriction } from "@/lib/api/clinicalEvidence";
 import { useT } from "@/lib/i18n/useTranslations";
 import { clinicalMissingInputLabel } from "./clinicalFields";
 
-const knownSets = new Set(["followup_source_constraints", "sma_safety_2025", "antifungal_source_constraints", "renal_source_constraints",
+const knownSets = new Set(["other_indication_source_constraints", "followup_source_constraints", "sma_safety_2025", "antifungal_source_constraints", "renal_source_constraints",
   "enteral_pediatric_reports_2026", "ravulizumab_nmosd_continuation_2026"]);
 
 export function ClinicalRestrictionDetails({ restrictions, selectedRuleId }: {

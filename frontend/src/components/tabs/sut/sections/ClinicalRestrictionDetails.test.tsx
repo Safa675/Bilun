@@ -75,3 +75,16 @@ it("renders response prerequisites and a limited follow-up check without a payme
   expect(html).toContain("do not establish full clinical or reimbursement eligibility");
   expect(html).not.toContain("sections.claimValidator.");
 });
+
+
+it.each(["en", "tr"] as const)("renders indication source uncertainties and computed ALT interval in %s", locale => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "other_indication_source_constraints",
+    criterion_status: "unknown", checks: [{ field: "indication_evidence.alt_retest_interval", status: "unknown" }],
+    missing_inputs: ["indication_evidence.histology_scoring_source_compatibility", "indication_evidence.hbv_noninvasive_boolean_grouping"],
+    source_refs: ["4.2.13.1.(1)"] };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />, locale);
+  expect(html).toContain(locale === "en" ? "needs source review" : "kaynak incelemesi gerektiriyor");
+  expect(html).toContain(locale === "en" ? "between the two ALT measurements" : "İki ALT ölçümü");
+  expect(html).not.toContain("sections.claimValidator.");
+  expect(html).not.toContain("PRIVATE_CLINICAL_SENTINEL");
+});

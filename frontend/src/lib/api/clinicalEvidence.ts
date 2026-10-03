@@ -168,3 +168,38 @@ export interface SutFollowupEvidence {
   fvc_assessment_outside_exacerbation?: boolean | null;
   report_documents_fvc_response?: boolean | null;
 }
+
+export interface SutIndicationEvidence {
+  applies_on?: string | null;
+  assessment_date?: string | null;
+  phase?: "continuation" | "initiation" | "restart" | null;
+  indication?: "glucocorticoid_bone_loss" | "hbv_initiation_path_a" | "other" | "pediatric_chronic_hcv" | "sc_ig_allogeneic_hsct" | "sc_ig_cll" | "sc_ig_mm" | null;
+  administration_route?: "intramuscular" | "intravenous" | "oral" | "other" | "subcutaneous" | null;
+  age_group?: "adult" | "age_2_18" | "child" | "other" | null;
+  hypogammaglobulinemia?: boolean | null;
+  recurrent_bacterial_infections?: boolean | null;
+  prophylactic_antibiotics_failed?: boolean | null;
+  prophylactic_antibiotics_contraindicated?: boolean | null;
+  allogeneic_hsct_before_or_after?: boolean | null;
+  report_author_specialty?: "hematology" | "other" | "pediatric_hematology_oncology" | null;
+  prescribed_supply_months?: number | null;
+  hbv_dna_iu_ml?: number | null;
+  biopsy_scoring_system?: "ishak_modified_hai" | "knodell_hai" | "metavir" | "other" | null;
+  biopsy_hai?: number | null;
+  biopsy_fibrosis_stage?: number | null;
+  first_alt_uln_ratio?: number | null;
+  second_alt_uln_ratio?: number | null;
+  first_alt_date?: string | null;
+  second_alt_date?: string | null;
+  fib4_score?: number | null;
+  apri_score?: number | null;
+  hcv_rna_positive?: boolean | null;
+  hcv_genotype_result_present?: boolean | null;
+  osteoporosis_diagnosed?: boolean | null;
+  high_fracture_risk?: boolean | null;
+  long_term_glucocorticoid_treatment?: boolean | null;
+  glucocorticoid_associated_bone_loss?: boolean | null;
+  bisphosphonate_intolerant?: boolean | null;
+  bisphosphonate_inadequate_response?: boolean | null;
+  bisphosphonate_renal_contraindication?: boolean | null;
+}

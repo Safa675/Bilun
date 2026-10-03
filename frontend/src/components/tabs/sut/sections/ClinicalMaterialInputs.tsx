@@ -1,7 +1,7 @@
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { indicationFields, followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   optionalClinicalNumber, type ClinicalField } from "./clinicalFields";
 
 type ClinicalValue = string | number | boolean | null | undefined;
@@ -73,5 +73,7 @@ export function ClinicalMaterialInputs({ material, onChange }: {
       onChange={value => onChange({ ravulizumab_evidence: value })} />
     <ClinicalGroup group="followup" fields={followupFields} value={material.followup_evidence}
       onChange={value => onChange({ followup_evidence: value })} />
+    <ClinicalGroup group="indication" fields={indicationFields} value={material.indication_evidence}
+      onChange={value => onChange({ indication_evidence: value })} />
   </div>;
 }

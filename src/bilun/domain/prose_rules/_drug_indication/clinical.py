@@ -7,6 +7,7 @@ from .clinical_ravulizumab import evaluate_ravulizumab_continuation
 from .clinical_antifungal import evaluate_antifungal
 from .clinical_renal import evaluate_renal
 from .clinical_followup import evaluate_followup
+from .clinical_indications import evaluate_indications
 from .matching import _drug_name_matches
 
 
@@ -23,6 +24,8 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
         evaluations.append(evaluate_renal(line))
     if 'followup_source_constraints' in kinds:
         evaluations.append(evaluate_followup(line))
+    if 'other_indication_source_constraints' in kinds:
+        evaluations.append(evaluate_indications(line))
     if 'enteral_pediatric_reports_2026' in kinds:
         item = evaluate_enteral_reports(line, selected_rule_id)
         if item is not None:
@@ -60,7 +63,11 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
         and any(x['constraint_set'] == 'enteral_pediatric_reports_2026' for x in outcomes)
     )
     dates_supported = all(x['criterion_status'] != 'not_evaluated' for x in outcomes)
-    if incomplete_icd_route and failed is None:
+    if existing and existing.get('violation_kind') == 'ambiguous_route' and failed is None:
+        # Necessary checks do not choose among unresolved indication routes.
+        # Keep their original identity and explanation alongside the observations.
+        violation = dict(existing)
+    elif incomplete_icd_route and failed is None:
         # Preserve the fact that the currently encoded ICD subset did not match,
         # while withholding a denial where new prophylaxis facts/source scope
         # are unresolved. No unrelated diagnosis is promoted into a valid route.

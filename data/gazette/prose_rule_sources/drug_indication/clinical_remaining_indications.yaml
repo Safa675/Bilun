@@ -1,0 +1,73 @@
+section_id: '4.2'
+rules:
+- rule_id: 4.2.12.B-2.clinical_secondary_immunodeficiency
+  sut_section: 4.2.12.B-2
+  drug_names: &id001
+  - immünglobulin
+  - immunglobulin
+  - immunoglobulin
+  - scig
+  gate_b_sources:
+  - 4.2.12.B-2.b#34366508
+  clinical_constraint_set: other_indication_source_constraints
+  clinical_constraint_drugs: *id001
+  verification_status: ai_generated_pending_review
+  source_scope_note: Unchanged necessary branch verified from RG02/11/2024-32710 articles12 or13(b), effective09/11/2024.
+    Not full current report/indication eligibility; prior-report and later approved-indication requirements remain
+    review-only.
+  message_tr: Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.
+  source_effective_date: '2024-11-09'
+  source_verified_through: '2026-10-02'
+- rule_id: 4.2.13.1.clinical_path_a_initiation
+  sut_section: 4.2.13.1
+  drug_names: &id002
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  - peginterferon
+  - pegile interferon
+  gate_b_sources:
+  - 4.2.13.1.a#3a85da7e
+  - 4.2.13.1#2076b8bd
+  - 4.2.13.1#50f88a7d
+  clinical_constraint_set: other_indication_source_constraints
+  clinical_constraint_drugs: *id002
+  verification_status: ai_generated_pending_review
+  source_scope_note: Unchanged necessary branch verified from RG02/11/2024-32710 articles12 or13(b), effective09/11/2024.
+    Not full current report/indication eligibility; prior-report and later approved-indication requirements remain
+    review-only.
+  message_tr: Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.
+  source_effective_date: '2024-11-09'
+  source_verified_through: '2026-10-02'
+- rule_id: 4.2.13.3.2.B.clinical_rna_genotype_initiation
+  sut_section: 4.2.13.3.2.B
+  drug_names: &id003
+  - interferon
+  - peginterferon
+  - pegile interferon
+  - ribavirin
+  gate_b_sources:
+  - 4.2.13.3.2.B.(1)#d4fbff46
+  clinical_constraint_set: other_indication_source_constraints
+  clinical_constraint_drugs: *id003
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary source-scoped clinical predicates only, explicit indication/phase; no ICD/payment
+    route. Unknown historical effective lower bound; verified2026-10-02 snapshot only.
+  message_tr: Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.
+- rule_id: 4.2.17.A.clinical_glucocorticoid_bone_loss
+  sut_section: 4.2.17.A
+  drug_names: &id004
+  - denosumab
+  - prolia
+  gate_b_sources:
+  - 4.2.17.A.(2)#ec5a2641
+  - 4.2.17.A.b#21d7b36c
+  clinical_constraint_set: other_indication_source_constraints
+  clinical_constraint_drugs: *id004
+  verification_status: ai_generated_pending_review
+  source_scope_note: Necessary source-scoped clinical predicates only, explicit indication/phase; no ICD/payment
+    route. Unknown historical effective lower bound; verified2026-10-02 snapshot only.
+  message_tr: Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.
+

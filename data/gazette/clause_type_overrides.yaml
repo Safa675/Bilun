@@ -48,3 +48,7 @@ overrides:
     clause_letter: c
     verification_status: ai_generated_pending_review
     source_evidence: data/gazette/source_evidence/mecasermin_known_as_of_continuation.json
+
+  # Official Oct2 Word paragraphs4893/4894 contain literal1-/2- bullets.
+  "4.2.13.1#2076b8bd": {clause_type: numbered_item, clause_number: 1}
+  "4.2.13.1#50f88a7d": {clause_type: numbered_item, clause_number: 2}

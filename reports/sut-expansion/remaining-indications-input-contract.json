@@ -1,0 +1,275 @@
+{
+  "nested_field": "indication_evidence",
+  "fields": [
+    {
+      "name": "applies_on",
+      "type": "datetime.date | None",
+      "required": false
+    },
+    {
+      "name": "assessment_date",
+      "type": "datetime.date | None",
+      "required": false
+    },
+    {
+      "name": "phase",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "continuation",
+        "initiation",
+        "restart"
+      ]
+    },
+    {
+      "name": "indication",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "glucocorticoid_bone_loss",
+        "hbv_initiation_path_a",
+        "other",
+        "pediatric_chronic_hcv",
+        "sc_ig_allogeneic_hsct",
+        "sc_ig_cll",
+        "sc_ig_mm"
+      ]
+    },
+    {
+      "name": "administration_route",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "intramuscular",
+        "intravenous",
+        "oral",
+        "other",
+        "subcutaneous"
+      ]
+    },
+    {
+      "name": "age_group",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "adult",
+        "age_2_18",
+        "child",
+        "other"
+      ]
+    },
+    {
+      "name": "hypogammaglobulinemia",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "recurrent_bacterial_infections",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "prophylactic_antibiotics_failed",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "prophylactic_antibiotics_contraindicated",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "allogeneic_hsct_before_or_after",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "report_author_specialty",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "hematology",
+        "other",
+        "pediatric_hematology_oncology"
+      ]
+    },
+    {
+      "name": "prescribed_supply_months",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "hbv_dna_iu_ml",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "biopsy_scoring_system",
+      "type": "str | None",
+      "required": false,
+      "values": [
+        "ishak_modified_hai",
+        "knodell_hai",
+        "metavir",
+        "other"
+      ]
+    },
+    {
+      "name": "biopsy_hai",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "biopsy_fibrosis_stage",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "first_alt_uln_ratio",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "second_alt_uln_ratio",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "first_alt_date",
+      "type": "datetime.date | None",
+      "required": false
+    },
+    {
+      "name": "second_alt_date",
+      "type": "datetime.date | None",
+      "required": false
+    },
+    {
+      "name": "fib4_score",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "apri_score",
+      "type": "float | None",
+      "required": false
+    },
+    {
+      "name": "hcv_rna_positive",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "hcv_genotype_result_present",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "osteoporosis_diagnosed",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "high_fracture_risk",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "long_term_glucocorticoid_treatment",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "glucocorticoid_associated_bone_loss",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "bisphosphonate_intolerant",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "bisphosphonate_inadequate_response",
+      "type": "bool | None",
+      "required": false
+    },
+    {
+      "name": "bisphosphonate_renal_contraindication",
+      "type": "bool | None",
+      "required": false
+    }
+  ],
+  "date_contract": "Strict civil dates. applies_on must equal actual service date; assessment_date must not follow it. No default date or invented freshness interval. Only first/second ALT use an explicit minimum calendar interval.",
+  "numeric_contract": "Finite nonnegative real numbers; blank/invalid stay unknown, zero is preserved. Histology values use the declared instrument domain: modified Ishak HAI0–18/fibrosis0–6; Knodell HAI0–22/fibrosis0–4; METAVIR has fibrosis0–4 and no HAI. Unknown method keeps both histology quantities unknown. No conversion or integer-only assertion.",
+  "other_missing_identifiers": [
+    "indication_evidence.single_supported_medicine_family",
+    "prescriber_specialty",
+    "drug_report_duration_months",
+    "drug_claim_date",
+    "verified_source_for_service_date",
+    "remaining_sut_clinical_criteria",
+    "indication_evidence.histology_scoring_source_compatibility",
+    "indication_evidence.hbv_noninvasive_boolean_grouping"
+  ],
+  "derived_check_identifiers": [
+    "indication_evidence.alt_retest_interval"
+  ],
+  "supported_paths": {
+    "sc_ig_cll": [
+      "administration_route",
+      "hypogammaglobulinemia",
+      "recurrent_bacterial_infections",
+      "prophylactic_antibiotics_failed",
+      "prophylactic_antibiotics_contraindicated",
+      "report_author_specialty",
+      "prescribed_supply_months"
+    ],
+    "sc_ig_mm": [
+      "administration_route",
+      "hypogammaglobulinemia",
+      "recurrent_bacterial_infections",
+      "report_author_specialty",
+      "prescribed_supply_months"
+    ],
+    "sc_ig_allogeneic_hsct": [
+      "administration_route",
+      "hypogammaglobulinemia",
+      "allogeneic_hsct_before_or_after",
+      "report_author_specialty",
+      "prescribed_supply_months"
+    ],
+    "hbv_initiation_path_a": [
+      "phase",
+      "age_group",
+      "hbv_dna_iu_ml",
+      "biopsy_scoring_system",
+      "biopsy_hai",
+      "biopsy_fibrosis_stage",
+      "first_alt_date",
+      "second_alt_date",
+      "first_alt_uln_ratio",
+      "second_alt_uln_ratio",
+      "fib4_score",
+      "apri_score"
+    ],
+    "pediatric_chronic_hcv": [
+      "phase",
+      "age_group",
+      "hcv_rna_positive",
+      "hcv_genotype_result_present"
+    ],
+    "glucocorticoid_bone_loss": [
+      "age_group",
+      "osteoporosis_diagnosed",
+      "high_fracture_risk",
+      "long_term_glucocorticoid_treatment",
+      "glucocorticoid_associated_bone_loss",
+      "bisphosphonate_intolerant",
+      "bisphosphonate_inadequate_response",
+      "bisphosphonate_renal_contraindication"
+    ]
+  },
+  "payment_eligibility_complete": false,
+  "source_review_contract": "These two identifiers are legal-source interpretation uncertainty, not user inputs. Histology method domain validity alone cannot clear or deny the histology route; named methods are not silently equated. The noninvasive shared-sufficient ALT AND (FIB4 OR APRI) conjunction can clear. APRI-positive with ALT not established remains review because the source lacks parentheses."
+}

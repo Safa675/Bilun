@@ -1,3 +1,4 @@
+import type { SutIndicationEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutMaterialItem } from "@/lib/api/sut";
 
 /** Blank optional numbers are unknown, never an observed zero. */
@@ -13,7 +14,7 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     gh_patient_group, gh_height_reference_sex, sma_evidence, antifungal_evidence, renal_evidence,
     pws_genetic_diagnosis_confirmed, pws_uncontrolled_diabetes, pws_untreatable_obstructive_sleep_apnea,
     pws_active_cancer, pws_active_psychosis, pws_progressive_scoliosis, pws_severe_obesity_source_criterion_present,
-    enteral_evidence, ravulizumab_evidence, followup_evidence,
+    enteral_evidence, ravulizumab_evidence, followup_evidence, indication_evidence,
     ckd_growth_disorder_confirmed, ckd_persistent_severe_secondary_hyperparathyroidism,
     ckd_proliferative_or_severe_nonproliferative_retinopathy, ckd_first_post_transplant_year,
     ckd_active_cancer, ckd_parathyroid_hormone_pg_ml, gh_daily_dose_mg_per_kg,
@@ -36,6 +37,7 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     antifungal_evidence: antifungal_evidence ?? null,
     renal_evidence: renal_evidence ?? null,
     followup_evidence: followup_evidence ?? null,
+    indication_evidence: indicationEvidencePayload(indication_evidence),
     enteral_evidence: enteral_evidence ?? null,
     ravulizumab_evidence: ravulizumab_evidence ?? null,
     pws_genetic_diagnosis_confirmed: pws_genetic_diagnosis_confirmed ?? null,
@@ -65,4 +67,18 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
       drug_or_class: row.drug_or_class.trim(), outcome: row.outcome.trim(),
     })) ?? null,
   };
+}
+
+/** Structural instrument domains only; this never asserts SUT source compatibility. */
+export function indicationEvidencePayload(value: SutIndicationEvidence | null | undefined): SutIndicationEvidence | null {
+  if (!value) return null;
+  const domains: Record<string, { hai?: number; fibrosis: number }> = {
+    ishak_modified_hai: { hai: 18, fibrosis: 6 }, knodell_hai: { hai: 22, fibrosis: 4 },
+    metavir: { fibrosis: 4 },
+  };
+  const domain = domains[value.biopsy_scoring_system ?? ""];
+  const bounded = (raw: number | null | undefined, maximum?: number) =>
+    maximum != null && typeof raw === "number" && Number.isFinite(raw) && raw >= 0 && raw <= maximum ? raw : null;
+  return { ...value, biopsy_hai: bounded(value.biopsy_hai, domain?.hai),
+    biopsy_fibrosis_stage: bounded(value.biopsy_fibrosis_stage, domain?.fibrosis) };
 }

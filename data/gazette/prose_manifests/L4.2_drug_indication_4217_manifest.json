@@ -3,9 +3,9 @@
   "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.17",
   "effective_date": "2026-06-27",
-  "rules_in_json": 17,
+  "rules_in_json": 18,
   "section_clause_total": 30,
-  "encoded_clause_count": 18,
+  "encoded_clause_count": 19,
   "encoded_clause_ids": [
     "C006106",
     "C006107",
@@ -15,6 +15,7 @@
     "C006118",
     "C006119",
     "C006123",
+    "C006124",
     "C006127",
     "C006128",
     "C006129",
@@ -56,7 +57,6 @@
     "C006111",
     "C006112",
     "C006122",
-    "C006124",
     "C006125",
     "C006133",
     "C006140"
@@ -65,7 +65,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 12,
+  "tier_c_deferred_count": 11,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "clause_traces": [
@@ -243,12 +243,11 @@
       "clause_id": "C006124",
       "section_id": "4.2.17.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.17.A.clinical_glucocorticoid_bone_loss"
+      ]
     },
     {
       "clause_id": "C006125",
@@ -386,7 +385,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 12,
+  "encode_tier_C_deferred_count": 11,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 60.0
+  "encoded_clause_pct": 63.3
 }

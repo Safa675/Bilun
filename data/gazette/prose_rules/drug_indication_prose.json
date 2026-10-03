@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "R5 TierB remap — 938 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
+  "coverage_note": "R5 TierB remap — 942 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
@@ -5219,26 +5219,52 @@
       }
     },
     {
+      "rule_id": "4.2.12.B-2.clinical_secondary_immunodeficiency",
+      "sut_section": "4.2.12.B-2",
+      "drug_names": [
+        "immünglobulin",
+        "immunglobulin",
+        "immunoglobulin",
+        "scig"
+      ],
+      "gate_b_sources": [
+        "4.2.12.B-2.b#34366508"
+      ],
+      "clinical_constraint_set": "other_indication_source_constraints",
+      "clinical_constraint_drugs": [
+        "immünglobulin",
+        "immunglobulin",
+        "immunoglobulin",
+        "scig"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Unchanged necessary branch verified from RG02/11/2024-32710 articles12 or13(b), effective09/11/2024. Not full current report/indication eligibility; prior-report and later approved-indication requirements remain review-only.",
+      "message_tr": "Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.",
+      "source_effective_date": "2024-11-09",
+      "source_verified_through": "2026-10-02"
+    },
+    {
       "rule_id": "4.2.12.B-2.immunglob.ivig_board_report_1mo_dose",
       "sut_section": "4.2.12.B-2",
       "gate_b_sources": [
         "C004551"
       ],
       "drug_names": [
-        "intravenöz immünglobulin",
-        "ivig"
+        "subkutan immünglobulin",
+        "subkutan immunglobulin",
+        "subcutaneous immunoglobulin",
+        "scig"
       ],
       "report_required": true,
-      "prescriber_specialties": [
-        "uzman hekimler"
-      ],
       "condition": {
         "coverage_note": true
       },
       "action": {
         "enforcement": "ilgili bentlerdeki uzman hekimlerin yer aldığı sağlık kurulu raporuyla ilgili uzmanlarca 1 aylık dozda reçete edilirse ödenir; Birdshot retinokoroidopati ödenmez",
         "message_tr": "Düzenlenen, yukarıdaki bentlerde belirtilen ilgili uzman hekimlerin yer aldığı sağlık kurulu raporuna istinaden, ilgili bentlerde belirtilen uzman hekimlerce 1 aylık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır. (Birdshot retinokoroidopati endikasyonu ödenmez.) (§4.2.12.B-2)."
-      }
+      },
+      "source_scope_note": "B-2 source is subcutaneous-only. Legacy IVIG ID retained for compatibility; the relevant b-branch specialty is checked by typed clinical evidence. Positional closing-prose cite retained until stable prose reference support.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
@@ -5297,6 +5323,39 @@
         "enforcement": "HBV'ye bağlı karaciğer hastalığından transplant veya anti-HBc(+) graft alanlara biyopsi/seroloji/ALT/DNA aranmadan oral antiviral",
         "message_tr": "HBV'ye bağlı karaciğer hastalığından dolayı karaciğer transplantasyonu yapılan veya anti-HBc(+) kişiden karaciğer alan hastalara biyopsi/viral seroloji/ALT/HBV DNA bakılmaksızın oral antiviral tedavi verilebilir (§4.2.13.1.3)."
       }
+    },
+    {
+      "rule_id": "4.2.13.1.clinical_path_a_initiation",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir",
+        "peginterferon",
+        "pegile interferon"
+      ],
+      "gate_b_sources": [
+        "4.2.13.1.a#3a85da7e",
+        "4.2.13.1#2076b8bd",
+        "4.2.13.1#50f88a7d"
+      ],
+      "clinical_constraint_set": "other_indication_source_constraints",
+      "clinical_constraint_drugs": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir",
+        "peginterferon",
+        "pegile interferon"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Unchanged necessary branch verified from RG02/11/2024-32710 articles12 or13(b), effective09/11/2024. Not full current report/indication eligibility; prior-report and later approved-indication requirements remain review-only.",
+      "message_tr": "Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır.",
+      "source_effective_date": "2024-11-09",
+      "source_verified_through": "2026-10-02"
     },
     {
       "rule_id": "4.2.13.1.lamivudine_telbivudine_wk24_switch",
@@ -5499,6 +5558,29 @@
           ]
         }
       ]
+    },
+    {
+      "rule_id": "4.2.13.3.2.B.clinical_rna_genotype_initiation",
+      "sut_section": "4.2.13.3.2.B",
+      "drug_names": [
+        "interferon",
+        "peginterferon",
+        "pegile interferon",
+        "ribavirin"
+      ],
+      "gate_b_sources": [
+        "4.2.13.3.2.B.(1)#d4fbff46"
+      ],
+      "clinical_constraint_set": "other_indication_source_constraints",
+      "clinical_constraint_drugs": [
+        "interferon",
+        "peginterferon",
+        "pegile interferon",
+        "ribavirin"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Necessary source-scoped clinical predicates only, explicit indication/phase; no ICD/payment route. Unknown historical effective lower bound; verified2026-10-02 snapshot only.",
+      "message_tr": "Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır."
     },
     {
       "rule_id": "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
@@ -13584,6 +13666,26 @@
         "enforcement": "no-pay condition: aktif D vitaminleri (kalsitriol ve alfakalsidol) osteoporoz tedavisinde ödenmez (EK-4/D düzenlemeleri hariç)",
         "message_tr": "Aktif D vitaminleri (kalsitriol ve alfakalsidol) osteoporoz tedavisinde ödenmez (EK-4/D Listesindeki düzenlemeler hariç) (§4.2.17.A)."
       }
+    },
+    {
+      "rule_id": "4.2.17.A.clinical_glucocorticoid_bone_loss",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "denosumab",
+        "prolia"
+      ],
+      "gate_b_sources": [
+        "4.2.17.A.(2)#ec5a2641",
+        "4.2.17.A.b#21d7b36c"
+      ],
+      "clinical_constraint_set": "other_indication_source_constraints",
+      "clinical_constraint_drugs": [
+        "denosumab",
+        "prolia"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Necessary source-scoped clinical predicates only, explicit indication/phase; no ICD/payment route. Unknown historical effective lower bound; verified2026-10-02 snapshot only.",
+      "message_tr": "Belirtilen endikasyona özgü klinik koşullar ve eksik bilgiler doğrulanmalıdır."
     },
     {
       "rule_id": "4.2.17.A.hormone_ablation_cancer_high_fracture",

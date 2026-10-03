@@ -155,7 +155,53 @@ class FollowupEvidence:
     report_documents_fvc_response: bool | None = None
 
 
+@dataclass(frozen=True)
+class IndicationEvidence:
+    applies_on: date | None = None
+    assessment_date: date | None = None
+    phase: str | None = None
+    indication: str | None = None
+    administration_route: str | None = None
+    age_group: str | None = None
+    hypogammaglobulinemia: bool | None = None
+    recurrent_bacterial_infections: bool | None = None
+    prophylactic_antibiotics_failed: bool | None = None
+    prophylactic_antibiotics_contraindicated: bool | None = None
+    allogeneic_hsct_before_or_after: bool | None = None
+    report_author_specialty: str | None = None
+    prescribed_supply_months: float | None = None
+    hbv_dna_iu_ml: float | None = None
+    biopsy_scoring_system: str | None = None
+    biopsy_hai: float | None = None
+    biopsy_fibrosis_stage: float | None = None
+    first_alt_uln_ratio: float | None = None
+    second_alt_uln_ratio: float | None = None
+    first_alt_date: date | None = None
+    second_alt_date: date | None = None
+    fib4_score: float | None = None
+    apri_score: float | None = None
+    hcv_rna_positive: bool | None = None
+    hcv_genotype_result_present: bool | None = None
+    osteoporosis_diagnosed: bool | None = None
+    high_fracture_risk: bool | None = None
+    long_term_glucocorticoid_treatment: bool | None = None
+    glucocorticoid_associated_bone_loss: bool | None = None
+    bisphosphonate_intolerant: bool | None = None
+    bisphosphonate_inadequate_response: bool | None = None
+    bisphosphonate_renal_contraindication: bool | None = None
+
+
 _ENUMS = {
+    IndicationEvidence: {
+        'phase': {'initiation', 'continuation', 'restart'},
+        'indication': {'sc_ig_cll', 'sc_ig_mm', 'sc_ig_allogeneic_hsct',
+                       'hbv_initiation_path_a', 'pediatric_chronic_hcv', 'glucocorticoid_bone_loss', 'other'},
+        'administration_route': {'subcutaneous', 'intravenous', 'intramuscular', 'oral', 'other'},
+        'age_group': {'adult', 'age_2_18', 'child', 'other'},
+        'biopsy_scoring_system': {'ishak_modified_hai', 'knodell_hai', 'metavir', 'other'},
+        'report_author_specialty': {'hematology', 'pediatric_hematology_oncology', 'other'},
+    },
+
     FollowupEvidence: {
         'phase': {'initiation', 'continuation', 'restart'},
         'indication': {'atopic_dermatitis', 'progressive_fibrosing_ild', 'systemic_sclerosis_ild', 'other'},
@@ -190,7 +236,7 @@ _NUMERIC_MAX = {FollowupEvidence: {
     'baseline_pruritus_nrs': 10, 'response_pruritus_nrs': 10,
 }}
 
-_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence, EnteralEvidence, RavulizumabEvidence, FollowupEvidence)
+_E = TypeVar('_E', SmaEvidence, AntifungalEvidence, RenalEvidence, EnteralEvidence, RavulizumabEvidence, FollowupEvidence, IndicationEvidence)
 
 
 def _finite_nonnegative(raw: Any) -> float | None:
@@ -233,4 +279,13 @@ def parse_clinical_evidence(value: Any, cls: type[_E]) -> _E | None:
                 parsed[f.name] = None
         elif f.type == 'str | None':
             parsed[f.name] = raw if isinstance(raw, str) and raw in _ENUMS.get(cls, {}).get(f.name, ()) else None
+    if cls is IndicationEvidence:
+        # Do not confuse different ordinal systems or silently reinterpret a
+        # fibrosis stage as an activity score. Unknown scales stay unknown.
+        method = parsed.get('biopsy_scoring_system')
+        hai_max = {'ishak_modified_hai': 18, 'knodell_hai': 22}.get(method)
+        fibrosis_max = {'ishak_modified_hai': 6, 'knodell_hai': 4, 'metavir': 4}.get(method)
+        for name, maximum in (('biopsy_hai', hai_max), ('biopsy_fibrosis_stage', fibrosis_max)):
+            if maximum is None or (parsed.get(name) is not None and parsed[name] > maximum):
+                parsed[name] = None
     return cls(**parsed)

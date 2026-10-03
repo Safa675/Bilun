@@ -7,7 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 
-from .clinical_evidence import AntifungalEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
+from .clinical_evidence import AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
 
 
 Money = Decimal
@@ -316,6 +316,7 @@ class DrugClaimLine:
     antifungal_evidence: AntifungalEvidence | None = None
     renal_evidence: RenalEvidence | None = None
     followup_evidence: FollowupEvidence | None = None
+    indication_evidence: IndicationEvidence | None = None
     enteral_evidence: EnteralEvidence | None = None
     ravulizumab_evidence: RavulizumabEvidence | None = None
 

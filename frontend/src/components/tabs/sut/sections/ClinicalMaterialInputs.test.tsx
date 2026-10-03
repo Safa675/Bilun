@@ -1,3 +1,4 @@
+import { indicationEvidencePayload } from "./drugInputs";
 import { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { readFileSync } from "node:fs";
@@ -8,14 +9,14 @@ import { validateSutClaim } from "@/lib/api/sut";
 import en from "@/messages/en/sections";
 import tr from "@/messages/tr/sections";
 import { ClaimValidatorSection } from "./ClaimValidatorSection";
-import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { mecaserminFields, ckdGrowthHormoneFields, growthHormoneFields, praderWilliFields, followupFields, indicationFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
   clinicalReviewFields, clinicalMissingInputLabel, optionalClinicalNumber } from "./clinicalFields";
 
 vi.mock("@/lib/api/sut", () => ({ validateSutClaim: vi.fn(), getSutProcedureInfo: vi.fn() }));
 vi.mock("@/components/sut/MaterialBundlingScopeNotice", () => ({ MaterialBundlingScopeNotice: () => null }));
 vi.mock("@/components/sut/SpecialtyProseScopeNotice", () => ({ SpecialtyProseScopeNotice: () => null }));
 let renderer: ReactTestRenderer;
-const groups = { followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
+const groups = { indication: indicationFields, followup: followupFields, mecasermin: mecaserminFields, ckdGrowthHormone: ckdGrowthHormoneFields, growthHormone: growthHormoneFields, praderWilli: praderWilliFields, sma: smaFields,
   antifungal: antifungalFields, renal: renalFields, enteral: enteralFields, ravulizumab: ravulizumabFields };
 const group = (name: keyof typeof groups, index = 0) => renderer.root.findAllByType("details")
   .filter(row => row.findByType("summary").children.join("") === en.claimValidator.clinical.groups[name])[index];
@@ -48,6 +49,7 @@ it("leaves every clinical input unknown until explicitly entered", async () => {
   }
   const payload = await submit();
   expect(payload.materials[0].followup_evidence).toBeNull();
+  expect(payload.materials[0].indication_evidence).toBeNull();
   expect(payload.materials[0]).toMatchObject({ gh_patient_group: null, gh_height_reference_sex: null,
     gh_treatment_phase: null, epiphyses_closed: null, annual_growth_velocity_cm: null,
     height_cm: null, bone_age_years: null, sma_evidence: null, antifungal_evidence: null, renal_evidence: null });
@@ -96,6 +98,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await change("sma", "applies_on", "2026-10-02");
   await change("antifungal", "intent", "treatment");
   await change("renal", "phase", "continuation");
+  await change("indication", "hcv_rna_positive", "false");
   await change("praderWilli", "pws_severe_obesity_source_criterion_present", "false");
   await change("growthHormone", "height_cm", "");
   await change("sma", "applies_on", "");
@@ -104,7 +107,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
   const disabled = await submit();
   expect(disabled).not.toHaveProperty("drug_context");
-  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
+  for (const field of [...growthHormoneFields.map(row => row.name), ...praderWilliFields.map(row => row.name), ...ckdGrowthHormoneFields.map(row => row.name), ...mecaserminFields.map(row => row.name), "indication_evidence", "followup_evidence", "sma_evidence", "antifungal_evidence", "renal_evidence", "enteral_evidence", "ravulizumab_evidence"]) {
     expect(disabled.materials[0]).not.toHaveProperty(field);
   }
   await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
@@ -130,7 +133,7 @@ describe("clinical contract metadata", () => {
   });
   it("covers every exact family field declared by the backend contract", () => {
     const source = readFileSync(resolve(process.cwd(), "../src/bilun/domain/claims/clinical_evidence.py"), "utf8");
-    for (const [cls, fields] of [["FollowupEvidence", followupFields], ["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
+    for (const [cls, fields] of [["IndicationEvidence", indicationFields], ["FollowupEvidence", followupFields], ["SmaEvidence", smaFields], ["AntifungalEvidence", antifungalFields], ["RenalEvidence", renalFields], ["EnteralEvidence", enteralFields], ["RavulizumabEvidence", ravulizumabFields]] as const) {
       const body = source.split(`class ${cls}:`)[1].split("\n\n")[0];
       const names = [...body.matchAll(/^    (\w+): (?:date|bool|float|str) \| None/gm)].map(match => match[1]);
       expect(fields.map(row => row.name).sort(), cls).toEqual(names.sort());
@@ -308,4 +311,75 @@ it("keeps FVC percent-predicted values and explicit out-of-attack evidence separ
   expect((await submit()).materials[0].followup_evidence).toMatchObject({ previous_report_date: "2025-10-02",
     current_report_date: "2026-10-02", previous_fvc_percent_predicted: 110, current_fvc_percent_predicted: 99,
     fvc_assessment_outside_exacerbation: false, report_documents_fvc_response: false });
+});
+
+it("transports indication scope, separate dates, explicit negative and zero without inventing clinical facts", async () => {
+  await change("indication", "indication", "hbv_initiation_path_a");
+  await change("indication", "phase", "initiation");
+  await change("indication", "age_group", "adult");
+  await change("indication", "applies_on", "2026-10-02");
+  await change("indication", "assessment_date", "2026-10-01");
+  await change("indication", "first_alt_date", "2026-06-01");
+  await change("indication", "second_alt_date", "2026-09-01");
+  await change("indication", "hbv_dna_iu_ml", "0");
+  await change("indication", "first_alt_uln_ratio", "0");
+  await change("indication", "hcv_rna_positive", "false");
+  const payload = await submit();
+  expect(payload.materials[0].indication_evidence).toMatchObject({ indication: "hbv_initiation_path_a",
+    phase: "initiation", age_group: "adult", applies_on: "2026-10-02", assessment_date: "2026-10-01",
+    first_alt_date: "2026-06-01", second_alt_date: "2026-09-01", hbv_dna_iu_ml: 0,
+    first_alt_uln_ratio: 0, hcv_rna_positive: false });
+  expect(payload.drug_context?.service_date).toBeNull();
+  expect(payload.materials[0].indication_evidence).not.toHaveProperty("hcv_genotype_result_present");
+  for (const field of ["histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping", "alt_retest_interval"]) {
+    expect(indicationFields.some(row => row.name === (field as string))).toBe(false);
+  }
+});
+
+it("never equates histology systems and restores edits only when their explicit method supports them", async () => {
+  await change("indication", "biopsy_hai", "18");
+  await change("indication", "biopsy_fibrosis_stage", "6");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+  await change("indication", "biopsy_scoring_system", "ishak_modified_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 18, biopsy_fibrosis_stage: 6 });
+  await change("indication", "biopsy_scoring_system", "knodell_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 18, biopsy_fibrosis_stage: null });
+  await change("indication", "biopsy_hai", "22");
+  await change("indication", "biopsy_fibrosis_stage", "4");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: 22, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_scoring_system", "metavir");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_scoring_system", "ishak_modified_hai");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: 4 });
+  await change("indication", "biopsy_hai", "0");
+  expect((await submit()).materials[0].indication_evidence?.biopsy_hai).toBe(0);
+  await change("indication", "biopsy_scoring_system", "");
+  expect((await submit()).materials[0].indication_evidence).toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+});
+
+it("keeps board-author, medication supply and route distinct from prescriber and report validity", async () => {
+  await change("indication", "indication", "sc_ig_cll");
+  await change("indication", "administration_route", "subcutaneous");
+  await change("indication", "report_author_specialty", "hematology");
+  await change("indication", "prescribed_supply_months", "3");
+  await change("indication", "prophylactic_antibiotics_failed", "false");
+  await change("indication", "prophylactic_antibiotics_contraindicated", "true");
+  const payload = await submit();
+  expect(payload.materials[0].indication_evidence).toMatchObject({ indication: "sc_ig_cll", administration_route: "subcutaneous",
+    report_author_specialty: "hematology", prescribed_supply_months: 3, prophylactic_antibiotics_failed: false,
+    prophylactic_antibiotics_contraindicated: true });
+  expect(payload.drug_context?.prescriber_specialty).toBe("");
+  expect(payload.drug_context?.report_duration_months).toBeNull();
+});
+
+
+it.each([
+  ["ishak_modified_hai", 18, 6], ["knodell_hai", 22, 4],
+] as const)("retains inclusive recorded %s domains and makes impossible values unknown", (method, haiMax, fibrosisMax) => {
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: haiMax, biopsy_fibrosis_stage: fibrosisMax }))
+    .toMatchObject({ biopsy_hai: haiMax, biopsy_fibrosis_stage: fibrosisMax });
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: haiMax + 0.01, biopsy_fibrosis_stage: fibrosisMax + 0.01 }))
+    .toMatchObject({ biopsy_hai: null, biopsy_fibrosis_stage: null });
+  expect(indicationEvidencePayload({ biopsy_scoring_system: method, biopsy_hai: 0, biopsy_fibrosis_stage: 0 }))
+    .toMatchObject({ biopsy_hai: 0, biopsy_fibrosis_stage: 0 });
 });

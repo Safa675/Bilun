@@ -1,3 +1,4 @@
+import type { SutIndicationEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutFollowupEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutEnteralEvidence, SutRavulizumabEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "@/lib/api/clinicalEvidence";
@@ -55,6 +56,7 @@ export function optionalClinicalNumber(value: string, positiveOnly = false, max?
 }
 
 export const clinicalReviewFields = [
+  "histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping",
   "documented_16_week_response",
   "historical_sut_version", "verified_source_for_service_date", "remaining_sut_clinical_criteria",
   "micafungin_prophylaxis_route", "itraconazole_source_neutrophil_unit_verification",
@@ -150,7 +152,7 @@ export const renalFields = [
 export function clinicalMissingInputLabel(field: string, t: (key: string) => string): string | null {
   const [root, detail] = field.split(".");
   const groups: Record<string, string> = {
-    followup_evidence: "followup", sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
+    followup_evidence: "followup", indication_evidence: "indication", sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
     enteral_evidence: "enteral", ravulizumab_evidence: "ravulizumab",
   };
   if (groups[root]) {
@@ -207,3 +209,38 @@ export const followupFields = [
   { name: "fvc_assessment_outside_exacerbation", kind: "boolean" },
   { name: "report_documents_fvc_response", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutFollowupEvidence }>;
+
+export const indicationFields = [
+  { name: "applies_on", kind: "date" },
+  { name: "assessment_date", kind: "date" },
+  { name: "phase", kind: "select", options: ["continuation", "initiation", "restart"] },
+  { name: "indication", kind: "select", options: ["glucocorticoid_bone_loss", "hbv_initiation_path_a", "other", "pediatric_chronic_hcv", "sc_ig_allogeneic_hsct", "sc_ig_cll", "sc_ig_mm"] },
+  { name: "administration_route", kind: "select", options: ["intramuscular", "intravenous", "oral", "other", "subcutaneous"] },
+  { name: "age_group", kind: "select", options: ["adult", "age_2_18", "child", "other"] },
+  { name: "hypogammaglobulinemia", kind: "boolean" },
+  { name: "recurrent_bacterial_infections", kind: "boolean" },
+  { name: "prophylactic_antibiotics_failed", kind: "boolean" },
+  { name: "prophylactic_antibiotics_contraindicated", kind: "boolean" },
+  { name: "allogeneic_hsct_before_or_after", kind: "boolean" },
+  { name: "report_author_specialty", kind: "select", options: ["hematology", "other", "pediatric_hematology_oncology"] },
+  { name: "prescribed_supply_months", kind: "number" },
+  { name: "hbv_dna_iu_ml", kind: "number" },
+  { name: "biopsy_scoring_system", kind: "select", options: ["ishak_modified_hai", "knodell_hai", "metavir", "other"] },
+  { name: "biopsy_hai", kind: "number", max: 22 },
+  { name: "biopsy_fibrosis_stage", kind: "number", max: 6 },
+  { name: "first_alt_uln_ratio", kind: "number" },
+  { name: "second_alt_uln_ratio", kind: "number" },
+  { name: "first_alt_date", kind: "date" },
+  { name: "second_alt_date", kind: "date" },
+  { name: "fib4_score", kind: "number" },
+  { name: "apri_score", kind: "number" },
+  { name: "hcv_rna_positive", kind: "boolean" },
+  { name: "hcv_genotype_result_present", kind: "boolean" },
+  { name: "osteoporosis_diagnosed", kind: "boolean" },
+  { name: "high_fracture_risk", kind: "boolean" },
+  { name: "long_term_glucocorticoid_treatment", kind: "boolean" },
+  { name: "glucocorticoid_associated_bone_loss", kind: "boolean" },
+  { name: "bisphosphonate_intolerant", kind: "boolean" },
+  { name: "bisphosphonate_inadequate_response", kind: "boolean" },
+  { name: "bisphosphonate_renal_contraindication", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutIndicationEvidence }>;
