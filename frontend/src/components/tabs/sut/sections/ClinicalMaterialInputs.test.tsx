@@ -95,6 +95,7 @@ it("clears facts to unknown and strips all clinical evidence when drug mode is d
   await change("sma", "applies_on", "2026-10-02");
   await change("antifungal", "intent", "treatment");
   await change("renal", "phase", "continuation");
+  await change("praderWilli", "pws_severe_obesity_source_criterion_present", "false");
   await change("growthHormone", "height_cm", "");
   await change("sma", "applies_on", "");
   expect((await submit()).materials[0]).toMatchObject({ height_cm: null,
@@ -243,4 +244,20 @@ it.each([["0", 0], ["100", 100], ["100.01", null], ["-0.01", null], ["", null]])
 it("keeps mecasermin facts unknown without deriving percentile from recorded height", async () => {
   const material = (await submit()).materials[0];
   for (const field of mecaserminFields) expect(material[field.name]).toBeNull();
+});
+
+
+it("preserves the recorded initiation obesity flag without deriving it from other measurements", async () => {
+  await change("growthHormone", "height_cm", "155");
+  await change("praderWilli", "pws_progressive_scoliosis", "true");
+  expect((await submit()).materials[0].pws_severe_obesity_source_criterion_present).toBeNull();
+  for (const [input, expected] of [["true", true], ["false", false], ["", null]] as const) {
+    await change("praderWilli", "pws_severe_obesity_source_criterion_present", input);
+    expect((await submit()).materials[0].pws_severe_obesity_source_criterion_present).toBe(expected);
+  }
+  expect(tr.claimValidator.clinical.fields.pws_severe_obesity_source_criterion_present)
+    .toBe("Şiddetli obezite (ideal ağırlığının %225 üzerinde olması)");
+  expect(en.claimValidator.clinical.hints.praderWilli).toContain("initiation-only");
+  expect(en.claimValidator.clinical.hints.growthHormone).toContain("partial checks");
+  expect(en.claimValidator.clinical.hints.growthHormone).not.toContain("continuation criteria");
 });

@@ -297,6 +297,8 @@ class DrugClaimLine:
     pws_active_cancer: bool | None = None
     pws_active_psychosis: bool | None = None
     pws_progressive_scoliosis: bool | None = None
+    # Explicit SUT ideal-weight criterion assessment; never derive from BMI/weight.
+    pws_severe_obesity_source_criterion_present: bool | None = None
     # Explicit CKD-associated pediatric growth-disorder evidence.
     ckd_growth_disorder_confirmed: bool | None = None
     ckd_persistent_severe_secondary_hyperparathyroidism: bool | None = None

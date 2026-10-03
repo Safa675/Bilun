@@ -26,6 +26,7 @@ export const praderWilliFields = [
   { name: "pws_active_cancer", kind: "boolean" },
   { name: "pws_active_psychosis", kind: "boolean" },
   { name: "pws_progressive_scoliosis", kind: "boolean" },
+  { name: "pws_severe_obesity_source_criterion_present", kind: "boolean" },
 ] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
 
 export const ckdGrowthHormoneFields = [

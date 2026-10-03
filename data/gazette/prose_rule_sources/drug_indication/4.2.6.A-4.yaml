@@ -7,6 +7,7 @@ rules:
   - 4.2.6.A-4.(2)
   - 4.2.6.A-4.(5)
   - 4.2.6.A-4.(6)
+  - 4.2.6.A-4.b#c166b1e4
   drug_names:
   - somatropin
   icd10_codes:
@@ -52,6 +53,7 @@ rules:
   - 4.2.6.A-4.(1)
   - 4.2.6.A-4.(5)
   - 4.2.6.A-4.(6)
+  - 4.2.6.A-4.b#c166b1e4
   report_specialties: *id001
   prescriber_specialties: *id002
   report_duration_months: 3

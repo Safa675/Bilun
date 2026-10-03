@@ -8,8 +8,8 @@ from src.bilun.domain.validation_contract import ValidationAdvisory
 pytestmark = pytest.mark.unit
 
 
-def test_all_twenty_four_growth_hormone_fields_and_review_gates_stay_visible():
-    assert len(GROWTH_HORMONE_INPUT_FIELDS) == 24
+def test_all_twenty_five_growth_hormone_fields_and_review_gates_stay_visible():
+    assert len(GROWTH_HORMONE_INPUT_FIELDS) == 25
     expected = {*GROWTH_HORMONE_INPUT_FIELDS, "historical_sut_version",
                 "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
                 "ckd_growth_initiation_clinical_assessment", "ckd_growth_continuation_clinical_assessment",

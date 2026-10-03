@@ -273,7 +273,7 @@ const sections = {
 
         "mecasermin": "Enter recorded percentile and pretreatment growth directly. Mecasermin uses mcg/kg/day, separate from CKD mg/kg/day. Only the 29 August and 2 October 2026 source snapshots are verified; other actual service dates require source review.",
         "ckdGrowthHormone": "CKD somatropin only. Enter the prescribed mg/kg/day directly. A PTH result never sets the persistent-disease flag or any other clinical finding.",
-        "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria.",
+        "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria. The source-defined obesity assessment is initiation-only; progressive scoliosis is continuation-only. Never derive this assessment from BMI or weight.",
         "growthHormone": "Only supported source criteria are checked; these partial checks do not establish full eligibility. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown.",
         "sma": "Enter documented assessment dates and history. Unknown history does not mean the condition is absent.",
         "antifungal": "Keep treatment, prophylaxis and formulation distinct. Use recorded laboratory units and outcomes without conversion or inference.",
@@ -315,6 +315,7 @@ const sections = {
         "pws_active_cancer": "Active cancer",
         "pws_active_psychosis": "Active psychosis",
         "pws_progressive_scoliosis": "Progressive scoliosis",
+        "pws_severe_obesity_source_criterion_present": "Severe obesity, recorded SUT 225% ideal-weight criterion",
         "pws_initiation_clinical_assessment": "Remaining Prader–Willi initiation assessment",
         "pws_remaining_clinical_criteria": "Remaining Prader–Willi clinical criteria requiring review",
 

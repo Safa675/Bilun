@@ -4,8 +4,8 @@
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
-  "section_clause_total": 55,
-  "encoded_clause_count": 34,
+  "section_clause_total": 56,
+  "encoded_clause_count": 35,
   "encoded_clause_ids": [
     "C003995",
     "C003996",
@@ -26,6 +26,7 @@
     "C004061",
     "C004062",
     "C004067",
+    "C004069",
     "C004070",
     "C004073",
     "C004074",
@@ -63,6 +64,7 @@
     "4.2.6.A-4.(2)",
     "4.2.6.A-4.(5)",
     "4.2.6.A-4.(6)",
+    "4.2.6.A-4.b",
     "4.2.6.A-5.(1)",
     "4.2.6.A-5.(2)",
     "4.2.6.A-5.(3)",
@@ -441,6 +443,17 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C004069",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Şiddetli obezite (ideal ağırlığının %225 üzerinde olması)",
+      "linked_rule_ids": [
+        "4.2.6.A4.prader_willi_gh_no_stimulation_test",
+        "4.2.6.pws_somatropin_tertiary_board"
+      ]
+    },
+    {
       "clause_id": "C004070",
       "section_id": "4.2.6.A-4",
       "encode_tier": "A",
@@ -704,5 +717,5 @@
   "clause_trace_complete": true,
   "encode_tier_C_deferred_count": 21,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 61.8
+  "encoded_clause_pct": 62.5
 }

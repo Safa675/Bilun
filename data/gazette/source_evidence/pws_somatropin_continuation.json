@@ -9,7 +9,7 @@
   "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
   "verified_current_heading_from": "2024-05-17",
   "date_basis": "RG-09/05/2024-32541/7-e explicit current somatropin-only heading. No inference of earlier validity. New-heading struck runs contain only whitespace; all heading text is unstruck.",
-  "scope": "Necessary partial checks only. Specific genetic PWS confirmation and pediatric group are explicit inputs, never inferred from Q87.1. Confirm phase before selecting3-month initiation or6-month continuation report. All-negative continuation stop flags still require unimplemented IGF1/dose/resumption and facility assessment; no full eligibility pass. Initiation clinical contraindication thresholds are not implemented.",
+  "scope": "Necessary partial checks only. Specific genetic PWS confirmation and pediatric group are explicit inputs, never inferred from Q87.1. Confirm phase before selecting3-month initiation or6-month continuation report. All-negative continuation stop flags still require unimplemented IGF1/dose/resumption and facility assessment; no full eligibility pass. The explicit initiation exclusion list is now evaluated from recorded source-defined clinical flags. Negative initiation screens still require IGF1 and other eligibility review; no full eligibility pass.",
   "report_duration_months": {
     "initiation": 3,
     "continuation": 6
@@ -477,5 +477,17 @@
         }
       ]
     }
-  ]
+  ],
+  "initiation_exclusion_if_any_true": [
+    "pws_severe_obesity_source_criterion_present",
+    "pws_uncontrolled_diabetes",
+    "pws_untreatable_obstructive_sleep_apnea",
+    "pws_active_cancer",
+    "pws_active_psychosis",
+    "epiphyses_closed"
+  ],
+  "field_semantics": {
+    "pws_severe_obesity_source_criterion_present": "An explicit recorded clinical assessment of the exact SUT criterion: Şiddetli obezite (ideal ağırlığının %225 üzerinde olması). Never calculated from BMI, actual weight, ideal weight, diagnosis, or an assumed percent convention.",
+    "phase_separation": "Severe obesity belongs to initiation exclusions; progressive scoliosis belongs to continuation stopping. Neither list is inferred from all available PWS fields."
+  }
 }

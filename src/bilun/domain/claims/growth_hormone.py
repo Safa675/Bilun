@@ -22,6 +22,17 @@ PWS_FIELDS = (
     "pws_active_cancer",
     "pws_active_psychosis",
     "pws_progressive_scoliosis",
+    "pws_severe_obesity_source_criterion_present",
+)
+
+# Phase-specific statutory lists, deliberately not inferred from all PWS inputs.
+PWS_CONTINUATION_STOP_FIELDS = (
+    "pws_uncontrolled_diabetes", "pws_untreatable_obstructive_sleep_apnea",
+    "pws_active_cancer", "pws_active_psychosis", "pws_progressive_scoliosis",
+)
+PWS_INITIATION_EXCLUSION_FIELDS = (
+    "pws_severe_obesity_source_criterion_present", "pws_uncontrolled_diabetes",
+    "pws_untreatable_obstructive_sleep_apnea", "pws_active_cancer", "pws_active_psychosis",
 )
 
 CKD_GH_BOOLEAN_FIELDS = (

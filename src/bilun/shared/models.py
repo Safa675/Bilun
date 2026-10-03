@@ -44,6 +44,7 @@ class MaterialItem(BaseModel):
     pws_active_cancer: bool | None = None
     pws_active_psychosis: bool | None = None
     pws_progressive_scoliosis: bool | None = None
+    pws_severe_obesity_source_criterion_present: bool | None = None
     ckd_growth_disorder_confirmed: bool | None = None
     ckd_persistent_severe_secondary_hyperparathyroidism: bool | None = None
     ckd_proliferative_or_severe_nonproliferative_retinopathy: bool | None = None
@@ -65,7 +66,7 @@ class MaterialItem(BaseModel):
         "pws_untreatable_obstructive_sleep_apnea",
         "pws_active_cancer",
         "pws_active_psychosis",
-        "pws_progressive_scoliosis",
+        "pws_progressive_scoliosis", "pws_severe_obesity_source_criterion_present",
         "ckd_growth_disorder_confirmed",
         "ckd_persistent_severe_secondary_hyperparathyroidism",
         "ckd_proliferative_or_severe_nonproliferative_retinopathy",

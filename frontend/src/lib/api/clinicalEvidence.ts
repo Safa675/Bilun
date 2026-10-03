@@ -17,6 +17,7 @@ export interface SutGrowthHormoneEvidence {
   pws_active_cancer?: boolean | null;
   pws_active_psychosis?: boolean | null;
   pws_progressive_scoliosis?: boolean | null;
+  pws_severe_obesity_source_criterion_present?: boolean | null;
   gh_patient_group?: "pediatric" | "adult" | null;
   gh_height_reference_sex?: "female" | "male" | null;
   gh_treatment_phase?: "initiation" | "continuation" | null;

@@ -273,7 +273,7 @@ const sections = {
 
         "mecasermin": "Kayıtlı persentili ve tedavi öncesi büyümeyi doğrudan girin. Mecasermin mcg/kg/gün birimi, KBY için mg/kg/gün biriminden ayrıdır. Yalnız 29 Ağustos ve 2 Ekim 2026 kaynak sürümleri doğrulanmıştır; diğer gerçek hizmet tarihleri kaynak incelemesi gerektirir.",
         "ckdGrowthHormone": "Yalnız KBY somatropin koşulları içindir. Reçetelenen mg/kg/gün değerini doğrudan girin. PTH sonucundan persistan hastalık veya diğer klinik bulgular çıkarılmaz.",
-        "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir.",
+        "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir. Kaynakta tanımlı obezite değerlendirmesi yalnız başlangıç; progresif skolyoz yalnız devam aşaması içindir. Bu değerlendirme BKİ veya ağırlıktan hesaplanmaz.",
         "growthHormone": "Yalnız desteklenen kaynak koşulları kontrol edilir; bu kısmi kontroller tam uygunluk sağlamaz. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir.",
         "sma": "Belgelenmiş değerlendirme tarihlerini ve öyküyü girin. Bilinmeyen öykü, durumun olmadığı anlamına gelmez.",
         "antifungal": "Tedavi, profilaksi ve ilaç formunu ayrı belirtin. Kaydedilmiş laboratuvar birimlerini ve sonuçları dönüşüm veya çıkarım yapmadan kullanın.",
@@ -315,6 +315,7 @@ const sections = {
         "pws_active_cancer": "Aktif kanser",
         "pws_active_psychosis": "Aktif psikoz",
         "pws_progressive_scoliosis": "İlerleyici skolyoz",
+        "pws_severe_obesity_source_criterion_present": "Şiddetli obezite (ideal ağırlığının %225 üzerinde olması)",
         "pws_initiation_clinical_assessment": "Diğer Prader-Willi başlangıç değerlendirmeleri",
         "pws_remaining_clinical_criteria": "İnceleme gerektiren diğer Prader-Willi klinik koşulları",
 

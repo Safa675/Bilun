@@ -11,7 +11,7 @@ import pytest
 from pydantic import ValidationError
 
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
-from src.bilun.domain.claims.growth_hormone import PWS_FIELDS
+from src.bilun.domain.claims.growth_hormone import PWS_FIELDS, PWS_CONTINUATION_STOP_FIELDS
 from src.bilun.domain.claims.parsing.row_parsers import parse_drug_line
 from src.bilun.domain.prose_rules.drug_indication import (
     evaluate_drug_indication_line_detailed, list_drug_indication_rules,
@@ -21,9 +21,10 @@ from tests.unit.domain.prose_rules.test_growth_hormone_continuation import line,
 
 pytestmark = pytest.mark.unit
 ROOT = Path(__file__).resolve().parents[4]
-STOP_FIELDS = (*PWS_FIELDS[1:], "epiphyses_closed")
+STOP_FIELDS = (*PWS_CONTINUATION_STOP_FIELDS, "epiphyses_closed")
 BASE = {"gh_patient_group": "pediatric", "pws_genetic_diagnosis_confirmed": True,
-        "drug_report_duration_months": 6, **dict.fromkeys(STOP_FIELDS, False)}
+        "drug_report_duration_months": 6, "pws_severe_obesity_source_criterion_present": False,
+        **dict.fromkeys(STOP_FIELDS, False)}
 
 
 def evaluate(*, reverse=False, **overrides):
@@ -115,7 +116,7 @@ def test_non_somatropin_or_unknown_identity_never_gets_pws_stop(drug):
     assert (result["violation"] or {}).get("violation_kind") != "growth_hormone_continuation_stop"
 
 
-@pytest.mark.parametrize("field", PWS_FIELDS)
+@pytest.mark.parametrize("field", ("pws_genetic_diagnosis_confirmed", *PWS_CONTINUATION_STOP_FIELDS))
 def test_clinical_flags_are_strict_and_cannot_coerce_false_strings(field):
     with pytest.raises(ValidationError):
         MaterialItem(name="somatropin", **{field: "false"})
