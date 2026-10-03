@@ -14,6 +14,7 @@ from scripts.deploy import launch_old_recovery as launcher
 from scripts.deploy import recover_old_pair as recovery
 from scripts.deploy.capture_release_preflight import _runtime_digest
 from scripts.deploy.verify_legacy_equivalence import _canonical, _environment, _env_hash, _sha
+from tests.unit.deploy.probe_auth_fixtures import source_verifier, write_old_auth
 
 
 def _write(path: Path, data: bytes, *, mode: int = 0o600) -> None:
@@ -22,7 +23,7 @@ def _write(path: Path, data: bytes, *, mode: int = 0o600) -> None:
     path.chmod(mode)
 
 
-def _fixture(tmp_path: Path) -> recovery.OldRecoverySpec:
+def _fixture(tmp_path: Path, *, legacy=False) -> recovery.OldRecoverySpec:
     private = tmp_path / "private"
     private.mkdir(mode=0o700, parents=True)
     snapshot = private / "snapshot"
@@ -31,6 +32,7 @@ def _fixture(tmp_path: Path) -> recovery.OldRecoverySpec:
     frontend = snapshot / "frontend"
     _write(backend / ".venv/bin/python", b"old-python", mode=0o755)
     _write(backend / "src/app.py", b"old-backend")
+    write_old_auth(backend, legacy=legacy)
     _write(backend / ".env", b"old-dot-env")
     _write(frontend / "server.js", b"old-frontend")
     _write(frontend / ".next/BUILD_ID", b"old-next")
@@ -298,11 +300,19 @@ def test_restart_needs_barrier_and_reobserves_after_coordinator_crash(
     assert second == first and len(events) == before
 
 
+@pytest.mark.parametrize("legacy", [False, True])
 def test_api_inventory_must_match_protected_old_report(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, legacy,
 ) -> None:
-    spec = _fixture(tmp_path)
+    spec = _fixture(tmp_path, legacy=legacy)
     recovery.stage_old_recovery(spec)
+    verifier = source_verifier(monkeypatch, legacy=legacy)
+    values = _environment((spec.snapshot_root / "backend-effective-env.nul").read_bytes())
+    for key, value in values.items():
+        monkeypatch.setenv(key.decode(), value.decode())
+    captured_bytes = (spec.snapshot_root / "backend-effective-env.nul").read_bytes()
+    captured_hash = _env_hash(values)
+    authenticated = []
     paths = [
         "/api/billing-report/P1", "/api/billing-report/P1/bills/C1",
         "/api/revenue-recovery", "/api/compliance-index",
@@ -316,6 +326,9 @@ def test_api_inventory_must_match_protected_old_report(
     monkeypatch.setattr(recovery, "_assets", lambda _: {"chunks/a.js": _sha(b"asset")})
 
     def fetch(port: int, path: str, cookie: str | None):
+        if cookie is not None:
+            assert verifier.verify_session_token(cookie.split("=", 1)[1]).username == values[b"BILUN_AUTH_USERNAME"].decode()
+            authenticated.append(path)
         if path == "/health":
             return 200, b'{"status":"ok","cache_ready":true,"active_build":"old-build"}'
         if path == "/login" or path == "/patient/P1":
@@ -328,6 +341,9 @@ def test_api_inventory_must_match_protected_old_report(
 
     monkeypatch.setattr(recovery, "_http", fetch)
     assert recovery._probe_api(spec) == (1, 1, expected)
+    assert set(paths) <= set(authenticated)
+    assert (spec.snapshot_root / "backend-effective-env.nul").read_bytes() == captured_bytes
+    assert _env_hash(values) == captured_hash
     monkeypatch.setattr(recovery, "_http", lambda p, path, cookie: (
         (200, b"wrong") if path == "/_next/static/chunks/a.js" else fetch(p, path, cookie)
     ))

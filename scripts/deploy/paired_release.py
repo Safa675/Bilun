@@ -693,7 +693,7 @@ class SingleVpsDriver:
 
     def verify_pair(self, *, candidate: bool, public: bool) -> None:
         from scripts.deploy.http_release_probes import HttpReleaseProbes, _fetch, _strict_json
-        from scripts.deploy.probe_auth import probe_cookie
+        from scripts.deploy.probe_auth import old_probe_context, probe_cookie
         from scripts.deploy.verify_frontend_assets import verify_entrypoint
         from scripts.deploy.verify_public_billing_access import verify
 
@@ -701,6 +701,7 @@ class SingleVpsDriver:
         services = [observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))]
         if any(item.active_state != "active" for item in services):
             raise ValueError("Paired listeners are not both active")
+        old_context = None
         if candidate:
             self._verify_candidate_listeners(services)
             environment, _ = candidate_environments(Path(self.config["candidate_backend_environment"]),
@@ -715,10 +716,12 @@ class SingleVpsDriver:
             if (os.readlink(self.paths["frontend_current"]) != prepared["old_link"]
                     or self._health(environment).get("active_build") != self.manifest["old_build_id"]):
                 raise ValueError("Restored old frontend/cache identity differs")
+            old_context = old_probe_context(services[0].process_working_directory,
+                                            expected_runtime_sha256=prepared["old_runtime_sha256"][0])
         bases = ["http://127.0.0.1:8001", "http://127.0.0.1:3000"]
         if public:
             bases.append("https://app.bilun.tech")
-        session = probe_cookie(environment)
+        session = probe_cookie(environment, old_context=old_context)
         public_enabled = environment.get("BILUN_PUBLIC_BILLING_ENABLED", "").strip().lower() in {"1", "true", "yes"}
         for base in bases:
             verify(base, session, public=public_enabled)

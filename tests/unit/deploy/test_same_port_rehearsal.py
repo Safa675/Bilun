@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import shutil
 import json
 import sys
 from pathlib import Path
@@ -17,6 +18,7 @@ from scripts.deploy.launch_wavea_candidate import SAME_PORT_PROFILE, _CONFIG_PAT
 from scripts.deploy.observe_candidate_tuple import _canonical_digest
 from scripts.deploy.verify_private_rehearsal import verify_private_rehearsal
 from tests.unit.deploy.test_candidate_environment import candidate_auth, write_env
+from tests.unit.deploy.probe_auth_fixtures import source_context
 
 
 def private_json(path: Path, value: dict) -> str:
@@ -247,6 +249,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     snapshot.mkdir()
     (replay / "backend/.venv/bin").mkdir(parents=True)
     (replay / "backend/.venv/bin/python").write_text("fixture executable")
+    old_context = source_context(replay / "backend")
+    shutil.copytree(replay / "backend", snapshot / "backend")
     (checkout / "scripts/deploy").mkdir(parents=True)
     (checkout / "scripts/deploy/rehearse_wavea_same_port.py").write_bytes(Path(rehearsal.__file__).read_bytes())
     frontend(replay / "frontend")
@@ -259,6 +263,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     baseline_roster.write_bytes(b"fixture-baseline-roster")
     old = {**candidate_auth(), "BILUN_SESSION_SECRET": "old-fixture-secret",
            "BILUN_HEALTH_PROBE_TOKEN": "o" * 32}
+    old.pop("BILUN_SESSION_TOKEN_PURPOSE")
     write_env(snapshot / "backend-effective-env.nul", old)
     write_env(snapshot / "frontend-effective-env.nul", {"NODE_ENV": "production"})
     new = {**candidate_auth(), "BILUN_HEALTH_PROBE_TOKEN": "n" * 32}
@@ -278,7 +283,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal.os, "readlink", lambda path: "private" if "self" in path else "host")
     monkeypatch.setattr(rehearsal.subprocess, "run", lambda *_a, **_k: SimpleNamespace(stdout=""))
     monkeypatch.setattr(rehearsal, "ready", lambda *_: None)
-    monkeypatch.setattr(rehearsal, "_runtime_digest", lambda *_a, **_k: "b" * 64)
+    monkeypatch.setattr(rehearsal, "_runtime_digest", lambda root, **_k:
+                        old_context.runtime_sha256 if root == replay / "backend" else "b" * 64)
     monkeypatch.setattr(rehearsal, "_static_assets", lambda *_: (10, "c" * 64))
     monkeypatch.setattr(rehearsal, "_verify_assets", lambda *_: 10)
     monkeypatch.setattr(rehearsal, "inspect_assets", lambda *_a, **_k: {"ok": True})
@@ -317,7 +323,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal.os, "killpg", lambda pid, _signal: next(
         process for process in processes if process.pid == pid
     ).terminate())
-    old_cookie, candidate_cookie = rehearsal.cookie(old), rehearsal.cookie(new)
+    old_cookie = rehearsal.cookie(old, old_context=old_context)
+    candidate_cookie = rehearsal.cookie(new)
 
     def fetch(port, path, session=None):
         assert port in (8001, 3000)
@@ -345,6 +352,7 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
 
     monkeypatch.setattr(rehearsal, "observe_candidate_tuple", observe)
     args = ["--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
+            "--old-backend-runtime-sha256", old_context.runtime_sha256,
             "--candidate-backend-environment", str(backend_env), "--candidate-frontend-environment", str(frontend_env),
             "--candidate-checkout", str(checkout), "--candidate-db", str(cache), "--candidate-roster", str(roster),
             "--baseline-roster", str(baseline_roster),
@@ -369,6 +377,23 @@ def test_sequential_same_port_old_capture_candidate_and_recovery(tmp_path, monke
     assert report["legacy_api_patients_checked"] == report["legacy_api_bills_checked"] == 1
     assert report["old_route_sha256"] == report["candidate_route_sha256"]
     assert len(json.loads((work / "old-api-capture.json").read_text())) == 2
+
+
+def test_recovered_old_session_is_reminted_with_same_verified_context(tmp_path, monkeypatch):
+    args, _, _, _ = fixture_rehearsal(tmp_path, monkeypatch)
+    mint = rehearsal.cookie
+    contexts = []
+
+    def record(values, *, old_context=None):
+        contexts.append(old_context)
+        return mint(values, old_context=old_context)
+
+    monkeypatch.setattr(rehearsal, "cookie", record)
+    rehearsal.main(args)
+    assert len(contexts) == 3
+    assert contexts[0] is contexts[2]
+    assert contexts[0].purpose == "bilun-developer-v1"
+    assert contexts[1] is None
 
 
 def test_failed_candidate_stops_children_and_never_emits_pass(tmp_path, monkeypatch):

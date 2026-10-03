@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from scripts.deploy.probe_auth import probe_cookie
 from src.bilun.api import auth
 from src.bilun.api.public_responses import project_public_response
 from tests.unit.deploy.test_candidate_environment import candidate_auth, write_env
+from tests.unit.deploy.probe_auth_fixtures import source_context
 
 
 class FixtureDB:
@@ -60,7 +62,9 @@ def test_legacy_parity_uses_both_sessions_and_never_accepts_public_dto(
     candidate = candidate_auth()
     old = {**candidate, "BILUN_SESSION_SECRET": "fixture-old-secret",
            "BILUN_SESSION_TOKEN_PURPOSE": old_purpose}
-    old_cookie, candidate_cookie = probe_cookie(old), probe_cookie(candidate)
+    context = source_context(tmp_path / "old-runtime", legacy=not old_purpose)
+    old_cookie = probe_cookie(old, old_context=context)
+    candidate_cookie = probe_cookie(candidate)
     for key, value in candidate.items():
         monkeypatch.setenv(key, value)
     assert auth.verify_session_token(old_cookie.split("=", 1)[1]) is None
@@ -84,6 +88,9 @@ def test_legacy_parity_uses_both_sessions_and_never_accepts_public_dto(
             assert hmac.compare_digest(decode(signature), hmac.new(
                 old["BILUN_SESSION_SECRET"].encode(), decode(payload), hashlib.sha256,
             ).digest())
+            assert decode(payload).decode().split(".")[0] == (
+                (old_purpose + ":" if old_purpose else "") + old["BILUN_AUTH_USERNAME"]
+            )
             assert session == old_cookie
             return 200, json.dumps(report).encode()
         assert port == 8002
@@ -115,6 +122,8 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
         directory.mkdir(parents=True)
     (checkout / "scripts/deploy/rehearse_wavea_pair.py").write_bytes(Path(rehearsal.__file__).read_bytes())
     (replay / "cache.duckdb").write_bytes(b"fixture-old-cache")
+    old_context = source_context(replay / "backend", legacy=not old_purpose)
+    shutil.copytree(replay / "backend", snapshot / "backend")
     (replay / "frontend/.next/BUILD_ID").write_text("fixture-old-build")
     (frontend / ".next/BUILD_ID").write_text("fixture-frontend-build")
     (frontend / "server.js").write_text("// fixture only")
@@ -179,7 +188,8 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
     monkeypatch.setattr(rehearsal, "CaddyRouteDriver", Driver)
     # Freeze token expiry without reading or using any operator authentication.
     monkeypatch.setattr(rehearsal.time, "time", lambda: 1000)
-    old_cookie, candidate_cookie = probe_cookie(old), probe_cookie(candidate_auth())
+    old_cookie = probe_cookie(old, old_context=old_context)
+    candidate_cookie = probe_cookie(candidate_auth())
     calls = []
 
     def fetch(port, path, session=None):
@@ -197,6 +207,7 @@ def test_entire_rehearsal_routes_old_and_candidate_sessions_and_launch_uses_same
     monkeypatch.setattr(rehearsal, "fetch", fetch)
     rehearsal.main([
         "--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
+        "--old-backend-runtime-sha256", old_context.runtime_sha256,
         "--candidate-backend-environment", str(candidate_backend_path),
         "--candidate-frontend-environment", str(candidate_frontend_path),
         "--candidate-checkout", str(checkout), "--candidate-db", str(cache),

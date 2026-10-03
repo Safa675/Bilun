@@ -24,6 +24,7 @@ import duckdb
 
 from scripts.deploy.candidate_environment import _environment as environment, candidate_environments
 from scripts.deploy.capture_release_preflight import _runtime_digest
+from scripts.deploy.probe_auth import old_probe_context
 from scripts.deploy.http_release_probes import _fetch, _strict_json
 from scripts.deploy.health_request import open_probe
 from scripts.deploy.launch_wavea_candidate import SAME_PORT_PROFILE
@@ -338,6 +339,7 @@ def main(argv: list[str] | None = None) -> None:
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--node", type=Path, default=Path("/usr/bin/node"))
     parser.add_argument("--code-sha", required=True)
+    parser.add_argument("--old-backend-runtime-sha256", required=True)
     parser.add_argument("--patient-id", required=True)
     parser.add_argument("--baseline-build-config-environment", type=Path)
     parser.add_argument("--clinical-transition", type=Path)
@@ -365,7 +367,11 @@ def main(argv: list[str] | None = None) -> None:
             runtime, allowed_external_file=(replay / "backend/.venv/bin/python").resolve()
             if runtime.name == "backend" else None,
         )
-    old_backend_runtime_sha = _runtime_digest(replay / "backend", backend=True)
+    old_probe_context(args.old_snapshot / "backend",
+                      expected_runtime_sha256=args.old_backend_runtime_sha256)
+    old_context = old_probe_context(replay / "backend",
+                                    expected_runtime_sha256=args.old_backend_runtime_sha256)
+    old_backend_runtime_sha = old_context.runtime_sha256
     old_frontend_runtime_sha = _runtime_digest(replay / "frontend", backend=False)
     old_cache_sha = _candidate_db_hash(replay / "cache.duckdb")
     candidate_cache_sha = _candidate_db_hash(args.candidate_db)
@@ -437,7 +443,8 @@ def main(argv: list[str] | None = None) -> None:
     # Every path/identity/compiled target is checked before namespace commands.
     subprocess.run(["ip", "link", "set", "lo", "up"], check=True, capture_output=True)
     children: list[subprocess.Popen] = []
-    old_session, candidate_session = cookie(old_backend), cookie(new_backend)
+    old_session = cookie(old_backend, old_context=old_context)
+    candidate_session = cookie(new_backend)
     backend_argv = [str(args.backend_python), "-m", "uvicorn", "src.bilun.api:app",
                     "--host", "127.0.0.1", "--port", "8001"]
     frontend_argv = [str(args.node), str(frontend / "server.js")]
@@ -507,8 +514,9 @@ def main(argv: list[str] | None = None) -> None:
             raise ValueError("Candidate tuple changed during rehearsal")
         _stop(children)
         old_start("recovered-old")
-        _old_identity(old_backend, cookie(old_backend))
-        if _json(8001, "/health") != old_health or _capture_reports(old_persisted, cookie(old_backend)) != old_reports:
+        restored_session = cookie(old_backend, old_context=old_context)
+        _old_identity(old_backend, restored_session)
+        if _json(8001, "/health") != old_health or _capture_reports(old_persisted, restored_session) != old_reports:
             raise ValueError("Recovered old pair differs from initial captured pair")
         if _verify_assets(replay / "frontend") != old_assets:
             raise ValueError("Recovered old frontend assets differ")

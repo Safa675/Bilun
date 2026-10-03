@@ -25,6 +25,7 @@ import duckdb
 from scripts.deploy.candidate_environment import candidate_environments
 from scripts.deploy.caddy_route_driver import CaddyRouteDriver, _adapt, _digest
 from scripts.deploy.capture_release_preflight import _runtime_digest, _stable_file_digest
+from scripts.deploy.probe_auth import OldProbeContext, old_probe_context
 from scripts.deploy.observe_candidate_tuple import (
     CandidateSpec, _loopback_listener_pid, _process_observation,
     _static_assets, observe_candidate_tuple,
@@ -43,10 +44,10 @@ def environment(path: Path) -> dict[str, str]:
     }
 
 
-def cookie(values: dict[str, str]) -> str:
+def cookie(values: dict[str, str], *, old_context: OldProbeContext | None = None) -> str:
     from scripts.deploy.probe_auth import probe_cookie
 
-    return probe_cookie(values)
+    return probe_cookie(values, old_context=old_context)
 
 
 def fetch(port: int, path: str, session: str | None = None) -> tuple[int, bytes]:
@@ -156,6 +157,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--work-dir", type=Path, required=True)
     parser.add_argument("--old-snapshot", type=Path, required=True)
     parser.add_argument("--old-replay", type=Path, required=True)
+    parser.add_argument("--old-backend-runtime-sha256", required=True)
     parser.add_argument("--candidate-backend-environment", type=Path, required=True)
     parser.add_argument("--candidate-frontend-environment", type=Path, required=True)
     parser.add_argument("--candidate-checkout", type=Path, required=True)
@@ -202,6 +204,9 @@ def main(argv: list[str] | None = None) -> None:
     new_backend, new_frontend = candidate_environments(
         args.candidate_backend_environment, args.candidate_frontend_environment,
     )
+    old_probe_context(snapshot / "backend", expected_runtime_sha256=args.old_backend_runtime_sha256)
+    old_context = old_probe_context(replay / "backend",
+                                    expected_runtime_sha256=args.old_backend_runtime_sha256)
     subprocess.run(["ip", "link", "set", "lo", "up"], check=True, capture_output=True)
     old_backend = environment(snapshot / "backend-effective-env.nul")
     old_frontend = environment(snapshot / "frontend-effective-env.nul")
@@ -302,7 +307,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         if not old_assets_ok or not candidate_assets_ok:
             raise ValueError("Private frontend static assets are incomplete")
-        old_session = cookie(old_backend)
+        old_session = cookie(old_backend, old_context=old_context)
         candidate_session = cookie(new_backend)
         patient = args.patient_id
         paths = (
@@ -359,10 +364,11 @@ def main(argv: list[str] | None = None) -> None:
             raise ValueError("Candidate public patient page is unavailable")
         driver.install("barrier")
         driver.install("old")
+        restored_session = cookie(old_backend, old_context=old_context)
         if fetch(8090, "/health") != fetch(8001, "/health"):
             raise ValueError("Restored old health differs")
         for path in paths:
-            same_api(8001, 8090, path, old_session)
+            same_api(8001, 8090, path, restored_session)
         old_health_payload = json.loads(fetch(8001, "/health")[1])
         old_frontend_probe_sha = write_private_json(
             work_dir / "old-frontend-probe.json",
