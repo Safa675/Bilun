@@ -10999,15 +10999,13 @@
         "C45"
       ],
       "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji",
-        "göğüs hastalıkları",
-        "genel cerrahi"
-      ],
-      "message_tr": "Pemetreksed — malign plevral mezotelyom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "message_tr": "Malign plevral mezotelyom: üç uzman hekimli sağlık kurulu, tedavi protokolü ve uzman hekim reçetesi ayrıca doğrulanmalıdır (§4.2.14.C).",
       "gate_b_sources": [
-        "4.2.14.C.(4)#109cc8e0"
-      ]
+        "4.2.14.C.(2)#db104a38@under:4.2.14.C.m#ceda5531|4.2.14.C.n#37b794b9"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Pleural mesothelioma only; three specialist board members, documented treatment protocol and specialist prescribing remain unimplemented. No named specialty requirement is inferred from another branch.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.pnh_board_hematology_6m",
@@ -11053,6 +11051,28 @@
       }
     },
     {
+      "rule_id": "4.2.14.C.raltitrexed_colorectal_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "raltitreksed",
+        "raltitrexed"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "4.2.14.C.(1)#20c2be9a@under:4.2.14.C.ö#c0b8128e|4.2.14.C.p#8ad3f65a"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Preserves the independent colorectal branch. Oncology board member and (oncology prescriber OR specialist prescriber in secondary/tertiary institution) need branch-specific verification. No mesothelioma three-member requirement is transferred.",
+      "verification_status": "ai_generated_pending_review",
+      "message_tr": "Kolorektal kanser: onkoloji uzmanı içeren sağlık kurulu ve reçeteleyen uzman/kurum koşulları ayrıca doğrulanmalıdır (§4.2.14.C)."
+    },
+    {
       "rule_id": "4.2.14.C.raltitrexed_mesothelioma_board",
       "sut_section": "4.2.14.C",
       "drug_names": [
@@ -11060,17 +11080,16 @@
         "raltitrexed"
       ],
       "icd10_ranges": [
-        "C45",
-        "C18-C20"
+        "C45"
       ],
       "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "message_tr": "Raltitreksed — mezotelyom/kolorektal endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "message_tr": "Malign plevral mezotelyom: üç uzman hekimli sağlık kurulu, tedavi protokolü ve uzman hekim reçetesi ayrıca doğrulanmalıdır (§4.2.14.C).",
       "gate_b_sources": [
-        "C005138"
-      ]
+        "4.2.14.C.(2)#db104a38@under:4.2.14.C.ö#c0b8128e|4.2.14.C.p#8ad3f65a"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Pleural mesothelioma only; three specialist board members, documented treatment protocol and specialist prescribing remain unimplemented. No named specialty requirement is inferred from another branch.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.ravulizumab_meningococcal_vaccination",
@@ -13047,34 +13066,6 @@
       "action": {
         "enforcement": "erişkin endokrinoloji/metabolizma veya gastroenteroloji uzmanınca (yoksa iç hastalıkları) düzenlenen 3 yıl süreli uzman raporuyla tüm hekimlerce reçete edilebilir",
         "message_tr": "Erişkin endokrinoloji ve metabolizma hastalıkları ya da erişkin gastroenteroloji uzman hekimi tarafından, bu uzman hekimlerin bulunmadığı hastanelerde iç hastalıkları uzman hekimlerince düzenlenen 3 yıl süreli uzman hekim raporuna dayanılarak tüm hekimler tarafından reçete edilebilir (§4.2.16)."
-      }
-    },
-    {
-      "rule_id": "4.2.16.amount_paid_coverage_a",
-      "sut_section": "4.2.16",
-      "gate_b_sources": [
-        "C006062"
-      ],
-      "condition": {
-        "coverage_note": true
-      },
-      "action": {
-        "enforcement": "tutar Kurumca ödenir",
-        "message_tr": "Tutar Kurumca ödenir (§4.2.16)."
-      }
-    },
-    {
-      "rule_id": "4.2.16.amount_paid_coverage_b",
-      "sut_section": "4.2.16",
-      "gate_b_sources": [
-        "C006062"
-      ],
-      "condition": {
-        "coverage_note": true
-      },
-      "action": {
-        "enforcement": "tutar Kurumca ödenir",
-        "message_tr": "Tutar Kurumca ödenir (§4.2.16)."
       }
     },
     {
@@ -22461,7 +22452,18 @@
       "action": {
         "enforcement": "üçüncü basamakta en az bir çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzmanının yer aldığı 1 yıl süreli sağlık kurulu raporuyla çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma uzmanlarınca reçete edilirse ödenir",
         "message_tr": "Üçüncü basamak resmi sağlık hizmet sunucularında düzenlenen en az bir çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.75)."
-      }
+      },
+      "source_context_refs": [
+        "4.2.75#785f1d4a",
+        "4.2.75.(1)#67678436"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Initiation label and medication heading are contextual only. FGFR3, achondroplasia, open epiphyses, age/bone age, baseline measures, continuation and previously-treated routes remain unimplemented; report metadata alone cannot clear eligibility.",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "vosoritide",
+        "vosoritid"
+      ]
     },
     {
       "rule_id": "4.2.8.A.adult_dysphagia_special_enteral_2boxes",
@@ -22496,7 +22498,7 @@
       "rule_id": "4.2.8.A.adult_malnutrition_1200kcal_3mo_report",
       "sut_section": "4.2.8.A",
       "gate_b_sources": [
-        "C004158"
+        "prose:4.2.8.A#e728e39f"
       ],
       "drug_names": [
         "enteral beslenme ürünü"
@@ -22517,7 +22519,13 @@
       "action": {
         "enforcement": "diyetetik tedavi/obezite cerrahisi kilo kayıpları malnütrisyon sayılmaz; bu durumların belirtildiği 3 ay süreli sağlık kurulu raporuyla tüm hekimlerce günlük en fazla 1200 kcal dozda reçete edilirse ödenir",
         "message_tr": "Diyetetik tedaviler ve/veya obezite cerrahisi sonucu oluşan kilo kayıpları malnütrisyon olarak değerlendirilmez; tanımlanan malnütrisyon durumlarının belirtildiği 3 ay süreli sağlık kurulu raporuna dayanılarak tüm hekimlerce günlük en fazla 1200 kcal dozda reçete edilirse bedeli Kurumca ödenir (§4.2.8.A)."
-      }
+      },
+      "source_context_refs": [
+        "4.2.8.A.a#96028c05@under:4.2.8.A.(2)#f89a403a|4.2.8.A.(3)#577070ca"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Adult definition context only. Weight-loss/BMI alternative AND causal disease/trauma AND intake/absorption conditions, exclusions and dose remain incomplete. Does not change independent waived-malnutrition routes.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.8.A.adult_malnutrition_waived_6mo_report",
@@ -22724,6 +22732,34 @@
         "enforcement": "yatan hastalar dışında oral ve tüple beslenemeyenlere bu durumun sağlık kurulu raporunda belirtilmesi koşuluyla uzman hekimce en fazla 30 günlük dozda reçete edilirse ödenir",
         "message_tr": "Yatan hastalar dışında, oral ve tüple beslenemeyen hastalara bu durumun sağlık kurulu raporunda belirtilmesi kaydıyla uzman hekim tarafından en fazla 30 günlük dozda reçete edilmesi halinde parenteral beslenme ürünlerinin bedeli ödenir (§4.2.8.B)."
       }
+    },
+    {
+      "rule_id": "4.2.9.A-2.darbepoetin_mds_source_review",
+      "sut_section": "4.2.9.A-2",
+      "drug_names": [
+        "darbepoetin",
+        "aranesp"
+      ],
+      "icd10_ranges": [
+        "D46",
+        "D47"
+      ],
+      "gate_b_sources": [
+        "prose:4.2.9.A-2#17efb08b",
+        "4.2.9.A.(1)#d8313b78",
+        "4.2.9.A.(3)#a9d0cf5b",
+        "4.2.9.A.(4)#ed1d5fdf"
+      ],
+      "source_context_refs": [
+        "4.2.9.A-2#678e9289"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_review_change_date": "2024-05-17",
+      "source_review_verified_through": "2026-10-02",
+      "source_scope_note": "Review quarantine, never a prohibition or coverage grant. Drug-specific darbepoetin body mentions were deleted effective17/05/2024 while the general MDS/ESA-equivalence clauses still name it. The cross-clause clinical/report scope is not fully implemented. Earlier, missing or later source dates require the corresponding source version. CKD-only routes are not constrained by this row.",
+      "verification_status": "ai_generated_pending_review",
+      "message_tr": "Darbepoetin ve MDS: değişen özel hüküm ile genel ESA hükümleri birlikte doğrulanmalıdır; bu inceleme ödeme uygunluğu veya mutlak ödeme yasağı belirlemez.",
+      "source_review_quarantine": true
     },
     {
       "rule_id": "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
@@ -23290,9 +23326,12 @@
       "drug_names": [
         "eritropoietin",
         "epoetin",
-        "darbepoetin",
-        "aranesp",
-        "binocrit"
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon",
+        "metoksipolietilen glikol"
       ],
       "icd10_ranges": [
         "D46",
@@ -23300,11 +23339,10 @@
       ],
       "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram sonucu reçetede belirtilir (§4.2.9.A-2).",
       "gate_b_sources": [
-        "C004191",
-        "4.2.9.A-2.(1)",
-        "C004191",
+        "prose:4.2.9.A-2#17efb08b",
         "4.2.9.A.(1)#d8313b78",
-        "4.2.9.A.(3)#a9d0cf5b"
+        "4.2.9.A.(3)#a9d0cf5b",
+        "4.2.9.A.(4)#ed1d5fdf"
       ],
       "report_required": true,
       "report_specialties": [
@@ -23313,7 +23351,14 @@
       "prescriber_specialties": [
         "hematoloji",
         "iç hastalıkları"
-      ]
+      ],
+      "source_context_refs": [
+        "4.2.9.A-2#678e9289",
+        "4.2.9.A-2#17efb08b"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Existing recognized ESA aliases trigger neutral review of the general indication/equivalence/report clauses together with the specific MDS body. This does not establish an MDS indication for every brand or equivalence of its clinical criteria. Hb/blast/EPO thresholds, substance-specific dose and hemogram/report conditions remain unimplemented. Darbepoetin retains its separate date-scoped review.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.9.mds_esa_initiation_hematology_report",
@@ -23321,9 +23366,12 @@
       "drug_names": [
         "eritropoietin",
         "epoetin",
-        "darbepoetin",
-        "aranesp",
-        "binocrit"
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon",
+        "metoksipolietilen glikol"
       ],
       "icd10_ranges": [
         "D46",
@@ -23331,7 +23379,10 @@
       ],
       "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram reçetede belirtilir (§4.2.9.A-2).",
       "gate_b_sources": [
-        "4.2.9.A-2.(1)"
+        "prose:4.2.9.A-2#17efb08b",
+        "4.2.9.A.(1)#d8313b78",
+        "4.2.9.A.(3)#a9d0cf5b",
+        "4.2.9.A.(4)#ed1d5fdf"
       ],
       "report_required": true,
       "report_specialties": [
@@ -23340,7 +23391,14 @@
       "prescriber_specialties": [
         "hematoloji",
         "iç hastalıkları"
-      ]
+      ],
+      "source_context_refs": [
+        "4.2.9.A-2#678e9289",
+        "4.2.9.A-2#17efb08b"
+      ],
+      "source_clinical_scope_incomplete": true,
+      "source_scope_note": "Existing recognized ESA aliases trigger neutral review of the general indication/equivalence/report clauses together with the specific MDS body. This does not establish an MDS indication for every brand or equivalence of its clinical criteria. Hb/blast/EPO thresholds, substance-specific dose and hemogram/report conditions remain unimplemented. Darbepoetin retains its separate date-scoped review.",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.9.paricalcitol_oral_pd_nephrology_report",

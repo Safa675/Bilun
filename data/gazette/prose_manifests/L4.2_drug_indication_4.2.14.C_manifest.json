@@ -74,7 +74,6 @@
     "C005107",
     "C005108",
     "C005109",
-    "C005112",
     "C005114",
     "C005115",
     "C005116",
@@ -82,9 +81,9 @@
     "C005119",
     "C005120",
     "C005121",
+    "C005124",
     "C005130",
     "C005135",
-    "C005138",
     "C005139",
     "C005140",
     "C005141",
@@ -94,6 +93,7 @@
     "C005147",
     "C005148",
     "C005149",
+    "C005150",
     "C005151",
     "C005152",
     "C005153",
@@ -454,10 +454,7 @@
     "4.2.14.C.ı",
     "4.2.14.C.ş"
   ],
-  "tier_a_pending_clause_ids": [
-    "C005124",
-    "C005150"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C004988",
@@ -477,6 +474,7 @@
     "C005082",
     "C005102",
     "C005110",
+    "C005112",
     "C005117",
     "C005125",
     "C005129",
@@ -638,6 +636,7 @@
     "C005126",
     "C005136",
     "C005137",
+    "C005138",
     "C005189",
     "C005195",
     "C005198",
@@ -703,11 +702,11 @@
     "C005845",
     "C005851"
   ],
-  "tier_a_pending_count": 2,
+  "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 147,
+  "tier_c_deferred_count": 148,
   "emr_blocked_count": 15,
-  "non_actionable_count": 76,
+  "non_actionable_count": 77,
   "clause_traces": [
     {
       "clause_id": "C004988",
@@ -1707,11 +1706,12 @@
       "clause_id": "C005112",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.pemetrexed_mesothelioma_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C005113",
@@ -1830,8 +1830,11 @@
       "clause_id": "C005124",
       "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Malign plevral mezotelyomada"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Malign plevral mezotelyomada",
+      "linked_rule_ids": [
+        "4.2.14.C.pemetrexed_mesothelioma_board"
+      ]
     },
     {
       "clause_id": "C005125",
@@ -1905,11 +1908,9 @@
       "clause_id": "C005138",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.raltitrexed_mesothelioma_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005139",
@@ -2030,15 +2031,19 @@
         "4.2.14.C.(3).sirolimus_oncology_board",
         "4.2.14.C.(3).sorafenib_hcc_rcc_board",
         "4.2.14.C.(3).sunitinib_rcc_board",
-        "4.2.14.C.(3).temsirolimus_rcc_board"
+        "4.2.14.C.(3).temsirolimus_rcc_board",
+        "4.2.14.C.raltitrexed_colorectal_board"
       ]
     },
     {
       "clause_id": "C005150",
       "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Malign plevral mezotelyomada"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Malign plevral mezotelyomada",
+      "linked_rule_ids": [
+        "4.2.14.C.raltitrexed_mesothelioma_board"
+      ]
     },
     {
       "clause_id": "C005151",
@@ -7343,7 +7348,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 147,
+  "encode_tier_C_deferred_count": 148,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 62.6
 }

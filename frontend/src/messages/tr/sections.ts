@@ -248,6 +248,7 @@ const sections = {
           "fail": "Koşul karşılanmadı"
         },
         "sets": {
+          "source_context_clinical_review": "Diğer SUT klinik koşulları için inceleme gerekli",
           "other_indication_source_constraints": "Diğer endikasyon kaynak koşulları",
           "followup_source_constraints": "Tedavi yanıtı ve yıllık yeniden değerlendirme koşulları",
           "sma_safety_2025": "SMA güvenlik koşulları",

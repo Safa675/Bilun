@@ -319,6 +319,35 @@ def _validate_compile_invariants(
         if not rule_id:
             raise ValueError(f"{prefix}: missing rule_id")
 
+        if ("source_clinical_scope_incomplete" in rule
+                and type(rule["source_clinical_scope_incomplete"]) is not bool):
+            raise ValueError(f"{prefix} ({rule_id}): source_clinical_scope_incomplete must be boolean")
+        if "source_review_quarantine" in rule:
+            if (type(rule["source_review_quarantine"]) is not bool
+                    or (rule["source_review_quarantine"] is True and (
+                        rule.get("source_clinical_scope_incomplete") is not True
+                        or not rule.get("source_review_change_date")
+                        or not rule.get("drug_names")
+                        or not (rule.get("icd10_codes") or rule.get("icd10_ranges"))
+                    ))):
+                raise ValueError(f"{prefix} ({rule_id}): quarantine requires explicit medicine/diagnosis review scope")
+        contexts = rule.get("source_context_refs")
+        if contexts is not None and (
+            not isinstance(contexts, list) or not contexts
+            or any(not isinstance(ref, str) or not ref.strip() for ref in contexts)
+        ):
+            raise ValueError(f"{prefix} ({rule_id}): source_context_refs must be nonempty source strings")
+        if "source_review_change_date" in rule or "source_review_verified_through" in rule:
+            from datetime import date
+            try:
+                bounds = [rule[name] for name in ("source_review_change_date", "source_review_verified_through")]
+                if any(type(value) is not str or date.fromisoformat(value).isoformat() != value for value in bounds):
+                    raise ValueError("strict ISO dates required")
+                if bounds[0] > bounds[1] or rule.get("source_clinical_scope_incomplete") is not True:
+                    raise ValueError("ordered review-only interval required")
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError(f"{prefix} ({rule_id}): invalid source-review date interval") from exc
+
         sources = rule.get("gate_b_sources")
         if require_gate_b_sources and not sources:
             raise ValueError(f"{prefix} ({rule_id}): gate_b_sources is required and must be non-empty")

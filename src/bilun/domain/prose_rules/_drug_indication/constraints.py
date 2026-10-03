@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from datetime import date
 
 from .pediatric_gh_initiation import evaluate_pediatric_gh_initiation_checks
 from .growth_hormone import evaluate_growth_hormone_continuation
@@ -19,6 +20,48 @@ from .matching import (
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+
+
+def _remaining_source_scope_review(
+    *, rule: dict[str, Any], drug_line: DrugClaimLine, claim: ClaimHeader,
+) -> dict[str, Any] | None:
+    """Keep explicitly unimplemented source conditions review-only.
+
+    This guard observes no clinical predicate and claims no executable clinical
+    coverage. It runs only for the selected or justified supplemental route.
+    """
+    if rule.get("source_clinical_scope_incomplete") is not True:
+        return None
+    missing = ["remaining_sut_clinical_criteria"]
+    if rule.get("source_review_change_date"):
+        # A source change is not a no-pay rule. Outside the verified review
+        # interval, explicitly request the appropriate historical/future source.
+        service = getattr(drug_line, "drug_claim_date", None)
+        if type(service) is not date:
+            missing.append("drug_claim_date")
+        else:
+            change = date.fromisoformat(rule["source_review_change_date"])
+            through = date.fromisoformat(rule["source_review_verified_through"])
+            if service < change or service > through:
+                missing.append("verified_source_for_service_date")
+    source_refs = list(dict.fromkeys([*(rule.get("gate_b_sources") or []),
+                                     *(rule.get("source_context_refs") or [])]))
+    return {
+        "drug_claim_line_id": drug_line.drug_claim_line_id,
+        "claim_id": claim.claim_id, "drug_name": drug_line.drug_name,
+        "rule_id": rule.get("rule_id"), "sut_section": rule.get("sut_section"),
+        "primary_icd10": claim.primary_icd10,
+        "violation_kind": "needs_clinical_verification", "severity": "review",
+        "missing_inputs": missing, "clinical_eligibility_complete": False,
+        "clinical_restrictions": [{
+            "constraint_set": "source_context_clinical_review",
+            "criterion_status": "unknown", "missing_inputs": missing,
+            "checks": [], "source_refs": source_refs,
+            "clinical_eligibility_complete": False,
+            "verification_status": "ai_generated_pending_review",
+        }],
+        "message_tr": "Kaynakta belirtilen diğer klinik ve rapor koşulları doğrulanmalıdır; raporun varlığı tek başına ödeme uygunluğunu kesinleştirmez.",
+    }
 
 
 def _evaluate_tier_b_constraints(
@@ -392,6 +435,9 @@ def _evaluate_supplemental_constraints(
     icd_codes: list[str],
 ) -> dict[str, Any] | None:
     """Evaluate a justified no-ICD family constraint after route matching."""
+    source_review = _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)
+    if source_review is not None:
+        return source_review
     if rule.get("report_required"):
         report_present = drug_line.drug_specialty_board_report_present
         if report_present is False:
@@ -440,13 +486,16 @@ def _evaluate_supplemental_constraints(
         )
         if hit is not None:
             return hit
-    return None
+    return _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)
 
 
 def _evaluate_report_requirement(
     *, rule: dict[str, Any], drug_line: DrugClaimLine, claim: ClaimHeader
 ) -> dict[str, Any] | None:
     """Return the raw report-presence violation before other constraints."""
+    source_review = _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)
+    if source_review is not None:
+        return source_review
     if rule.get("report_required"):
         report_present = drug_line.drug_specialty_board_report_present
         if report_present is False:
@@ -485,6 +534,9 @@ def _evaluate_selected_rule_constraints(
     *, rule: dict[str, Any], drug_line: DrugClaimLine, claim: ClaimHeader, icd_codes: list[str]
 ) -> dict[str, Any] | None:
     """Return the first tier-B, dose, biomarker, or prior-therapy violation."""
+    source_review = _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)
+    if source_review is not None:
+        return source_review
     tier_b_hit = _evaluate_tier_b_constraints(
         rule=rule, drug_line=drug_line, claim=claim, icd_codes=icd_codes
     )
@@ -523,4 +575,4 @@ def _evaluate_selected_rule_constraints(
         )
         if prior_hit is not None:
             return prior_hit
-    return None
+    return _remaining_source_scope_review(rule=rule, drug_line=drug_line, claim=claim)

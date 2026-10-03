@@ -3,9 +3,9 @@
   "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.9,4.2.27",
   "effective_date": "2026-06-29",
-  "rules_in_json": 58,
+  "rules_in_json": 59,
   "section_clause_total": 115,
-  "encoded_clause_count": 64,
+  "encoded_clause_count": 63,
   "encoded_clause_ids": [
     "C004167",
     "C004179",
@@ -17,7 +17,6 @@
     "C004186",
     "C004187",
     "C004188",
-    "C004190",
     "C004191",
     "C004195",
     "C004201",
@@ -100,7 +99,6 @@
     "4.2.9.A-1.(4)",
     "4.2.9.A-1.(5)",
     "4.2.9.A-2",
-    "4.2.9.A-2.(1)",
     "4.2.9.A.(1)",
     "4.2.9.A.(2)",
     "4.2.9.A.(3)",
@@ -121,7 +119,9 @@
     "4.2.9.Ç.(6)",
     "4.2.9.Ç.b"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C004190"
+  ],
   "tier_b_pending_clause_ids": [
     "C006298"
   ],
@@ -179,7 +179,7 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 1,
   "tier_b_pending_count": 1,
   "tier_c_deferred_count": 50,
   "emr_blocked_count": 0,
@@ -213,8 +213,10 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
-        "4.2.9.mds_esa_hematology_report"
+        "4.2.9.mds_esa_hematology_report",
+        "4.2.9.mds_esa_initiation_hematology_report"
       ]
     },
     {
@@ -234,9 +236,11 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.esa_ckd_monthly_nephrology_report",
         "4.2.9.esa_legacy_muadil_monthly_report",
-        "4.2.9.mds_esa_hematology_report"
+        "4.2.9.mds_esa_hematology_report",
+        "4.2.9.mds_esa_initiation_hematology_report"
       ]
     },
     {
@@ -246,9 +250,12 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin",
       "linked_rule_ids": [
+        "4.2.9.A-2.darbepoetin_mds_source_review",
         "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
         "4.2.9.esa_ckd_monthly_nephrology_report",
-        "4.2.9.esa_legacy_muadil_monthly_report"
+        "4.2.9.esa_legacy_muadil_monthly_report",
+        "4.2.9.mds_esa_hematology_report",
+        "4.2.9.mds_esa_initiation_hematology_report"
       ]
     },
     {
@@ -319,12 +326,8 @@
       "clause_id": "C004190",
       "section_id": "4.2.9.A-2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "esa",
-      "linked_rule_ids": [
-        "4.2.9.mds_esa_hematology_report",
-        "4.2.9.mds_esa_initiation_hematology_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "esa"
     },
     {
       "clause_id": "C004191",
@@ -333,7 +336,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Hemoglobin değeri 11 gr/dl'nin",
       "linked_rule_ids": [
-        "4.2.9.mds_esa_hematology_report"
+        "4.2.9.A-2.darbepoetin_mds_source_review",
+        "4.2.9.mds_esa_hematology_report",
+        "4.2.9.mds_esa_initiation_hematology_report"
       ]
     },
     {
@@ -1411,5 +1416,5 @@
   "section_4.2.27_tier_c_count": 51,
   "encode_tier_C_deferred_count": 50,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 55.7
+  "encoded_clause_pct": 54.8
 }

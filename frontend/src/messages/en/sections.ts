@@ -248,6 +248,7 @@ const sections = {
           "fail": "Requirement not met"
         },
         "sets": {
+          "source_context_clinical_review": "Remaining SUT clinical criteria require review",
           "other_indication_source_constraints": "Additional indication source conditions",
           "followup_source_constraints": "Treatment response and annual reassessment conditions",
           "sma_safety_2025": "SMA safety restrictions",

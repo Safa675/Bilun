@@ -300,6 +300,9 @@ def evaluate_drug_indication_line_with_rules(
         # projecting the actual constraint certainty to every downstream layer.
         for field in ("evaluation_status", "required_inputs", "missing_inputs"):
             common[field] = violation[field]
+        if violation.get("clinical_restrictions"):
+            common["clinical_restrictions"] = violation["clinical_restrictions"]
+            common["clinical_eligibility_complete"] = False
     result = {**common, "violation": violation}
     if temporal_evidence is not None:
         from .temporal import guard_historical_evaluation

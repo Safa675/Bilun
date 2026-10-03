@@ -88,3 +88,17 @@ it.each(["en", "tr"] as const)("renders indication source uncertainties and comp
   expect(html).not.toContain("sections.claimValidator.");
   expect(html).not.toContain("PRIVATE_CLINICAL_SENTINEL");
 });
+
+
+it.each(["en", "tr"] as const)("renders the source-context guard as incomplete review without fabricating checked criteria in %s", locale => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "source_context_clinical_review",
+    criterion_status: "unknown", checks: [], checks_truncated: false,
+    missing_inputs: ["remaining_sut_clinical_criteria"], source_refs: ["4.2.synthetic.source"] };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />, locale);
+  expect(html).toContain(locale === "en" ? "Remaining SUT clinical criteria require review" : "Diğer SUT klinik koşulları için inceleme gerekli");
+  expect(html).toContain(locale === "en" ? "Missing evidence" : "Eksik kanıt");
+  expect(html).not.toContain("This limited check passed");
+  expect(html).not.toContain("source_context_clinical_review");
+  expect(html).not.toContain("sections.claimValidator.");
+  expect(html).not.toContain("PRIVATE_CLINICAL_SENTINEL");
+});

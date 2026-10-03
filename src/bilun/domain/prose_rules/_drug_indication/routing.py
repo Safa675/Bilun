@@ -91,6 +91,10 @@ def _semantic_route_signature(rule: dict[str, Any]) -> str:
         "pediatric_gh_initiation_protocol",
         "gh_initiation_pathways",
         "pay",
+        "source_clinical_scope_incomplete",
+        "source_review_quarantine",
+        "source_review_change_date",
+        "source_review_verified_through",
     )
     return json.dumps(
         {key: rule.get(key) for key in constraint_fields},
@@ -143,6 +147,13 @@ def _select_route_rule(
     pool = list(routes)
     if not pool:
         return None, []
+    quarantined = [r for r in pool if r.get("source_review_quarantine") is True]
+    if quarantined:
+        # Scope was established from the medicine and diagnosis first. A
+        # broader report/dose discriminator cannot bypass a source-review
+        # quarantine; mixed diagnosis groups remain ambiguous upstream.
+        selected = _select_semantically_equivalent_route(quarantined)
+        return (selected, []) if selected is not None else (None, ["route_discriminator"])
 
     # GH age-group and phase are explicit source categories. A diagnosis or
     # prescriber specialty must not choose pediatric instead of adult criteria.
@@ -336,6 +347,24 @@ def _resolve_drug_indication_route(
         }
 
     if not specific_routes:
+        guarded = [rule for rule in supplemental_rules
+                   if rule.get("source_clinical_scope_incomplete") is True]
+        if guarded:
+            # The medicine identifies source context, not an established ICD
+            # indication. Keep its explicit manual-review guard in the full
+            # corpus without extending ordinary supplemental applicability.
+            selected_rule = _select_semantically_equivalent_route(guarded)
+            return {
+                "applicability_status": "supplemental_only" if selected_rule else "ambiguous_route",
+                "drug_hits": drug_hits,
+                "specific_routes": [],
+                "supplemental_rules": supplemental_rules,
+                "matched_routes": [],
+                "matched_icd10_codes": [],
+                "unmatched_icd10_codes": list(icd_codes),
+                "selected_rule": selected_rule,
+                "missing_inputs": [] if selected_rule else ["route_discriminator"],
+            }
         # A caller that supplies an isolated supplemental rule is retained for
         # backwards compatibility with direct unit-level rule evaluation.  The
         # full-corpus path always has diagnosis-specific candidates before any
@@ -449,7 +478,11 @@ def _resolve_drug_indication_route(
     unmatched_codes = [code for code in icd_codes if code not in matched_codes]
     effective_key = effective_keys[0] if len(effective_keys) == 1 else None
     matched_routes = list(groups[effective_key]) if effective_key is not None else []
-    if effective_key is not None:
+    if effective_key is not None and not any(
+        rule.get("source_clinical_scope_incomplete") is True for rule in matched_routes
+    ):
+        # An already-matched narrower source scope still requires review.
+        # Broader report fields cannot establish its unimplemented conditions.
         # A broader route may carry a structured downstream discriminator that
         # the narrower route does not (for example biomarker or inpatient
         # supply evidence).  It joins the constraint pool only when that field

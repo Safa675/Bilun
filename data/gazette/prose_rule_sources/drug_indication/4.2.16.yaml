@@ -16,29 +16,13 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: erişkin endokrinoloji/metabolizma veya gastroenteroloji uzmanınca (yoksa iç hastalıkları) düzenlenen 3 yıl
-      süreli uzman raporuyla tüm hekimlerce reçete edilebilir
-    message_tr: Erişkin endokrinoloji ve metabolizma hastalıkları ya da erişkin gastroenteroloji uzman hekimi tarafından,
-      bu uzman hekimlerin bulunmadığı hastanelerde iç hastalıkları uzman hekimlerince düzenlenen 3 yıl süreli uzman hekim
-      raporuna dayanılarak tüm hekimler tarafından reçete edilebilir (§4.2.16).
-- rule_id: 4.2.16.amount_paid_coverage_a
-  sut_section: 4.2.16
-  gate_b_sources:
-  - C006062
-  condition:
-    coverage_note: true
-  action:
-    enforcement: tutar Kurumca ödenir
-    message_tr: Tutar Kurumca ödenir (§4.2.16).
-- rule_id: 4.2.16.amount_paid_coverage_b
-  sut_section: 4.2.16
-  gate_b_sources:
-  - C006062
-  condition:
-    coverage_note: true
-  action:
-    enforcement: tutar Kurumca ödenir
-    message_tr: Tutar Kurumca ödenir (§4.2.16).
+    enforcement: erişkin endokrinoloji/metabolizma veya gastroenteroloji uzmanınca
+      (yoksa iç hastalıkları) düzenlenen 3 yıl süreli uzman raporuyla tüm hekimlerce
+      reçete edilebilir
+    message_tr: Erişkin endokrinoloji ve metabolizma hastalıkları ya da erişkin gastroenteroloji
+      uzman hekimi tarafından, bu uzman hekimlerin bulunmadığı hastanelerde iç hastalıkları
+      uzman hekimlerince düzenlenen 3 yıl süreli uzman hekim raporuna dayanılarak
+      tüm hekimler tarafından reçete edilebilir (§4.2.16).
 - rule_id: 4.2.16.celiac_gluten_free_1yr_gastro_report
   sut_section: 4.2.16
   drug_names:
@@ -52,7 +36,8 @@ rules:
   report_required: true
   report_specialties:
   - gastroenteroloji
-  message_tr: Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).
+  message_tr: Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor
+    gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(6)
   prescriber_specialties:
@@ -70,8 +55,8 @@ rules:
   report_required: true
   report_specialties:
   - gastroenteroloji
-  message_tr: Çölyak glutensiz ürün — gastroenteroloji (veya yoksa çocuk sağlığı/iç hastalıkları) 3 yıl süreli rapor gerekir
-    (§4.2.16).
+  message_tr: Çölyak glutensiz ürün — gastroenteroloji (veya yoksa çocuk sağlığı/iç
+    hastalıkları) 3 yıl süreli rapor gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(6)
   prescriber_specialties:
@@ -90,7 +75,8 @@ rules:
   report_required: true
   report_specialties:
   - gastroenteroloji
-  message_tr: Çölyak hastalığı glutensiz ürün — gastroenteroloji uzman hekim raporu gerekir (§4.2.16).
+  message_tr: Çölyak hastalığı glutensiz ürün — gastroenteroloji uzman hekim raporu
+    gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(6)
 - rule_id: 4.2.16.ckd_children_growth_sds_3bottles
@@ -112,12 +98,15 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: KBY evre 2-5, ≥3 yaş, boy/kilo SDS ≤-1; 6 ay süreli pediyatrik nefroloji raporuyla günlük en fazla 3 şişe;
-      boy SDS sıfıra yükselip 6 ay bu düzeyde seyrederse tedavi kesilir
-    message_tr: Kronik böbrek hastalığı (evre 2-5) tanısı olan 3 yaş ve üzeri ve boy SDS ve/veya kilo SDS -1 ve altında olan
-      çocuklarda; 6 ay süreli pediyatrik nefroloji uzman hekim raporuna istinaden pediyatrik nefroloji uzman hekimi tarafından
-      günlük en fazla 3 şişe reçete edilmesi halinde bedeli Kurumca karşılanır. Boy SDS değeri sıfıra yükselip altı ay süre
-      bu düzeyde seyretmesi halinde tedavi kesilir (§4.2.16).
+    enforcement: KBY evre 2-5, ≥3 yaş, boy/kilo SDS ≤-1; 6 ay süreli pediyatrik nefroloji
+      raporuyla günlük en fazla 3 şişe; boy SDS sıfıra yükselip 6 ay bu düzeyde seyrederse
+      tedavi kesilir
+    message_tr: Kronik böbrek hastalığı (evre 2-5) tanısı olan 3 yaş ve üzeri ve boy
+      SDS ve/veya kilo SDS -1 ve altında olan çocuklarda; 6 ay süreli pediyatrik nefroloji
+      uzman hekim raporuna istinaden pediyatrik nefroloji uzman hekimi tarafından
+      günlük en fazla 3 şişe reçete edilmesi halinde bedeli Kurumca karşılanır. Boy
+      SDS değeri sıfıra yükselip altı ay süre bu düzeyde seyretmesi halinde tedavi
+      kesilir (§4.2.16).
 - rule_id: 4.2.16.cystic_fibrosis_formula_report
   sut_section: 4.2.16
   drug_names:
@@ -129,7 +118,8 @@ rules:
   report_specialties:
   - gastroenteroloji
   - göğüs hastalıkları
-  message_tr: Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman hekim raporu gerekir (§4.2.16).
+  message_tr: Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman
+    hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(4)
 - rule_id: 4.2.16.ek4b_unlisted_products_nopay
@@ -138,9 +128,10 @@ rules:
   - 4.2.16.(8)
   pay: false
   action:
-    enforcement: 'no-pay condition: ilgili hastalıklarda EK-4/B listesinde yer almayan ürün bedelleri ödenmez'
-    message_tr: Yukarıda belirtilen hastalıklarda kullanılan ürünler EK-4/B Listesinde belirtilmiş olup bu listede yer almayan
-      ürün bedelleri Kurumca karşılanmaz (§4.2.16).
+    enforcement: 'no-pay condition: ilgili hastalıklarda EK-4/B listesinde yer almayan
+      ürün bedelleri ödenmez'
+    message_tr: Yukarıda belirtilen hastalıklarda kullanılan ürünler EK-4/B Listesinde
+      belirtilmiş olup bu listede yer almayan ürün bedelleri Kurumca karşılanmaz (§4.2.16).
 - rule_id: 4.2.16.glycogen_starch_products_2yr_4boxes
   sut_section: 4.2.16
   gate_b_sources:
@@ -159,11 +150,14 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: glikojen depo hastalığı diyetinde yüksek amilopektinli nişasta ürünleri; ≥2 yaş, ilgili uzman raporuyla reçete;
-      raporda ürün adı/günlük miktar, aylık en fazla 4 kutu
-    message_tr: Glikojen depo hastalığının diyet yönetiminde kullanılan yüksek amilopektin içeren nişastalı ürünler; 2 yaş
-      ve üzerindeki hastalarda ilgili uzmanın bulunduğu sağlık kurulu raporuna dayanılarak ilgili uzmanlarca reçete edilebilir;
-      raporda ürünün adı, günlük kullanım miktarı belirtilerek aylık en fazla dört kutu yazılır (§4.2.16).
+    enforcement: glikojen depo hastalığı diyetinde yüksek amilopektinli nişasta ürünleri;
+      ≥2 yaş, ilgili uzman raporuyla reçete; raporda ürün adı/günlük miktar, aylık
+      en fazla 4 kutu
+    message_tr: Glikojen depo hastalığının diyet yönetiminde kullanılan yüksek amilopektin
+      içeren nişastalı ürünler; 2 yaş ve üzerindeki hastalarda ilgili uzmanın bulunduğu
+      sağlık kurulu raporuna dayanılarak ilgili uzmanlarca reçete edilebilir; raporda
+      ürünün adı, günlük kullanım miktarı belirtilerek aylık en fazla dört kutu yazılır
+      (§4.2.16).
 - rule_id: 4.2.16.infant_cmpa_amino_acid_severe_formula
   sut_section: 4.2.16
   drug_names:
@@ -182,8 +176,8 @@ rules:
   - çocuk immünoloji
   - çocuk alerji
   - çocuk sağlığı
-  message_tr: Ağır CMPA vakalarında aminoasit/pirinç proteini bazlı mama — çocuk gastroenteroloji/immünoloji-alerji uzman
-    hekim raporu gerekir (§4.2.16).
+  message_tr: Ağır CMPA vakalarında aminoasit/pirinç proteini bazlı mama — çocuk gastroenteroloji/immünoloji-alerji
+    uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - C006067
   legacy_provision: true
@@ -209,8 +203,8 @@ rules:
   - çocuk immünoloji
   - çocuk alerji
   - çocuk sağlığı
-  message_tr: İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji (veya çocuk
-    sağlığı) uzman hekim raporu gerekir (§4.2.16).
+  message_tr: İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji
+    (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - C006067
   - 4.2.16.(5)
@@ -237,8 +231,8 @@ rules:
   - çocuk immünoloji
   - çocuk alerji
   - çocuk sağlığı
-  message_tr: İki yaşına kadar CMPA tıbbi mama — çocuk gastroenteroloji/alerji/immünoloji (veya çocuk sağlığı) uzman hekim
-    raporu gerekir (§4.2.16).
+  message_tr: İki yaşına kadar CMPA tıbbi mama — çocuk gastroenteroloji/alerji/immünoloji
+    (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(5)
   prescriber_specialties:
@@ -261,7 +255,8 @@ rules:
   - gastroenteroloji
   - çocuk metabolizma
   - metabolizma hastalıkları
-  message_tr: Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma uzman hekim raporu gerekir (§4.2.16).
+  message_tr: Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma
+    uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(1)
   prescriber_specialties:
@@ -288,7 +283,8 @@ rules:
   - metabolizma hastalıkları
   - endokrinoloji
   - gastroenteroloji
-  message_tr: Doğuştan metabolik hastalık özel formülü — metabolizma/gastroenteroloji uzman hekim raporu gerekir (§4.2.16).
+  message_tr: Doğuştan metabolik hastalık özel formülü — metabolizma/gastroenteroloji
+    uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.a#d52cf1b9
   report_duration_months: 36
@@ -318,8 +314,8 @@ rules:
   - gastroenteroloji
   - çocuk sağlığı
   - iç hastalıkları
-  message_tr: Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya iç hastalıkları uzman hekim raporu ile
-    reçete edilebilir (§4.2.16).
+  message_tr: Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya
+    iç hastalıkları uzman hekim raporu ile reçete edilebilir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(1)
   - 4.2.16.a#d52cf1b9
@@ -347,8 +343,8 @@ rules:
   - gastroenteroloji
   - çocuk endokrinoloji
   - çocuk gastroenteroloji
-  message_tr: Doğuştan metabolik hastalık özel formülü — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim 3 yıl
-    süreli rapor gerekir (§4.2.16).
+  message_tr: Doğuştan metabolik hastalık özel formülü — çocuk metabolizma/endokrinoloji/gastroenteroloji
+    uzman hekim 3 yıl süreli rapor gerekir (§4.2.16).
   gate_b_sources:
   - 4.2.16.a#d52cf1b9
   prescriber_specialties:
@@ -379,8 +375,9 @@ rules:
   - metabolizma hastalıkları
   - endokrinoloji
   - gastroenteroloji
-  message_tr: Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim
-    raporuna dayanılarak karşılanır (§4.2.16 (3)).
+  message_tr: Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle
+    hayati öneme haiz ürünler uzman hekim raporuna dayanılarak karşılanır (§4.2.16
+    (3)).
   gate_b_sources:
   - 4.2.16.(3)
   prescriber_specialties:
@@ -405,7 +402,8 @@ rules:
   - metabolizma hastalıkları
   - endokrinoloji
   - gastroenteroloji
-  message_tr: Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir (§4.2.16).
+  message_tr: Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir
+    (§4.2.16).
   gate_b_sources:
   - 4.2.16.(2)
   - 4.2.16.(3)
@@ -427,8 +425,8 @@ rules:
   - metabolizma hastalıkları
   - endokrinoloji
   - gastroenteroloji
-  message_tr: Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu
-    gerekir (§4.2.16 (2)).
+  message_tr: Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/gastroenteroloji
+    uzman hekim raporu gerekir (§4.2.16 (2)).
   gate_b_sources:
   - 4.2.16.(2)
   prescriber_specialties:
@@ -462,8 +460,8 @@ rules:
   - çocuk immünoloji
   - çocuk alerji
   - çocuk sağlığı
-  message_tr: Hastalığa özel özel mama — uzman hekim raporu olmadan reçete edilemez; rapor sonrası tüm hekimler reçete edebilir
-    (§4.2.16).
+  message_tr: Hastalığa özel özel mama — uzman hekim raporu olmadan reçete edilemez;
+    rapor sonrası tüm hekimler reçete edebilir (§4.2.16).
   gate_b_sources:
   - C006067
   legacy_provision: true
@@ -488,8 +486,8 @@ rules:
   - metabolizma hastalıkları
   - endokrinoloji
   - gastroenteroloji
-  message_tr: EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç
-    hastalıkları (§4.2.16).
+  message_tr: EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman
+    hekim raporu gerekir; yoksa çocuk sağlığı/iç hastalıkları (§4.2.16).
   gate_b_sources:
   - 4.2.16.(1)
   prescriber_specialties:

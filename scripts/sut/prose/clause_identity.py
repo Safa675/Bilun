@@ -159,6 +159,13 @@ def is_clause_coordinate(ref: str) -> bool:
 def is_gate_b_source_ref(ref: str) -> bool:
     """True if ``ref`` is a valid dual-period gate_b_sources entry."""
     text = str(ref).strip()
+    if "@under:" in text:
+        child, _, bounds = text.partition("@under:")
+        refs = [child, *bounds.split("|")]
+        return len(refs) == 3 and all(
+            coord and is_clause_coordinate(coord) and digest and is_content_hash(digest)
+            for coord, digest in (split_clause_key(ref) for ref in refs)
+        )
     if text.startswith("prose:"):
         coordinate, digest = split_clause_key(text.removeprefix("prose:"))
         return bool(coordinate and is_clause_coordinate(coordinate) and digest and is_content_hash(digest))
@@ -285,6 +292,57 @@ def resolve_gate_b_ref_to_clause_ids(
 
     if "clause_id" not in clauses.columns:
         raise ValueError("clauses frame missing clause_id column")
+
+    # Source parents can be bent/fikra rows rather than section headings. Make
+    # both exact bounds explicit, and require the next active structural/bent
+    # boundary so a caller cannot silently span another medicine's criteria.
+    if "@under:" in text:
+        child_ref, _, bounds = text.partition("@under:")
+        parts = [child_ref, *bounds.split("|")]
+        needed = {"paragraph_index", "clause_coordinate", "content_hash", "clause_type",
+                  "is_in_force", "section_id"}
+        if len(parts) != 3 or not needed.issubset(clauses.columns):
+            raise UnknownClauseCiteError(f"invalid parent-scoped cite or missing source context: {text!r}")
+        keys = [split_clause_key(part) for part in parts]
+        if any(not coord or not is_clause_coordinate(coord) or not chash
+               or not _CONTENT_HASH_RE.fullmatch(chash) for coord, chash in keys):
+            raise UnknownClauseCiteError(f"parent-scoped cite requires three exact clause keys: {text!r}")
+        anchors = []
+        for coord, chash in keys[1:]:
+            hit = clauses.filter(
+                (pl.col("clause_coordinate") == coord) & (pl.col("content_hash") == chash)
+                & pl.col("is_in_force") & pl.col("clause_type").is_in(["bent", "fikra"])
+            )
+            if hit.height != 1:
+                raise UnknownClauseCiteError(f"parent-scoped cite needs unique active bent bounds: {text!r}")
+            anchors.append(hit.row(0, named=True))
+        start, end = (anchor["paragraph_index"] for anchor in anchors)
+        section = anchors[0]["section_id"]
+        parent_type = anchors[0]["clause_type"]
+        if (type(start) is not int or type(end) is not int or start >= end
+                or not section or section != anchors[1]["section_id"]
+                or parent_type != anchors[1]["clause_type"]):
+            raise UnknownClauseCiteError(f"parent-scoped cite has invalid order or section: {text!r}")
+        boundary_types = ["fikra", "section_heading", "chapter"]
+        if parent_type == "bent":
+            boundary_types.append("bent")
+        next_bounds = clauses.filter(
+            pl.col("is_in_force") & (pl.col("paragraph_index") > start)
+            & pl.col("clause_type").is_in(boundary_types)
+        )
+        if next_bounds.is_empty() or next_bounds["paragraph_index"].min() != end:
+            raise UnknownClauseCiteError(f"parent-scoped cite crosses another source parent: {text!r}")
+        scoped = clauses.filter(
+            (pl.col("paragraph_index") > start) & (pl.col("paragraph_index") < end)
+            & (pl.col("section_id") == section) & pl.col("is_in_force")
+        )
+        ids = resolve_gate_b_ref_to_clause_ids(
+            child_ref, scoped, in_force_only=in_force_only,
+            encode_eligible_only=encode_eligible_only, allow_ambiguous=False,
+        )
+        if len(ids) != 1:
+            raise AmbiguousClauseCiteError(f"parent-scoped cite is not unique: {text!r}: {ids}")
+        return ids
 
     # A paragraph can repeat verbatim under different medication headings. A
     # content hash alone cannot establish its legal scope. Keep heading scope in
@@ -537,3 +595,15 @@ def assert_gate_b_sources_resolvable(
             except UnknownClauseCiteError as exc:
                 # Unknown coordinates are never allowed; C* was checked above.
                 raise UnknownClauseCiteError(f"{prefix}{rule_id}: {exc}") from exc
+        # Contextual headings/closing prose are legal provenance, not encoded
+        # predicates. Validate them through the actual resolver, but keep them
+        # out of gate_b_sources and encoded_clause_ids_from_rules.
+        for raw in rule.get("source_context_refs") or []:
+            if not isinstance(raw, str) or not raw.strip() or is_clause_id(raw):
+                raise UnknownClauseCiteError(f"{prefix}{rule_id}: context requires a stable source key")
+            active = clauses.filter(pl.col("is_in_force"))
+            ids = resolve_gate_b_ref_to_clause_ids(
+                raw, active, in_force_only=True, encode_eligible_only=False, allow_ambiguous=False,
+            )
+            if len(ids) != 1:
+                raise AmbiguousClauseCiteError(f"{prefix}{rule_id}: context source is not unique: {raw!r}")

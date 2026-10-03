@@ -1,0 +1,133 @@
+{
+  "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+  "verified_source_date": "2026-10-02",
+  "legal_effective_interval": "not established by this source-only packet",
+  "entries": [
+    {
+      "baseline_inventory_id": "C004154",
+      "clause_key": "4.2.8.A.a#96028c05",
+      "source_text": "a) Malnütrisyon gelişmesi halinde enteral beslenme ürünleri verilir. Malnütrisyon tanımı;",
+      "source_text_sha256": "96028c050aeed135695b07f8524fc22adf9cb93a74ec25f0a0d9737960d0b3da",
+      "source_context_refs": [
+        "4.2.8.A.a#96028c05@under:4.2.8.A.(2)#f89a403a|4.2.8.A.(3)#577070ca"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Definition requires (weight loss OR age-specific BMI) AND causal disease/trauma AND reduced intake/absorption, plus diet/bariatric exclusions, dosing and report details. D46 and followup-v2 encode these only as narrative. Later enteral packet is a separate authority; coordinate rather than duplicate."
+    },
+    {
+      "baseline_inventory_id": "C004189",
+      "clause_key": "4.2.9.A-2#678e9289",
+      "source_text": "4.2.9.A-2 - Myelodisplastik Sendrom endikasyonunda",
+      "source_text_sha256": "678e92896f51866861e763abc83a22619add16e80151605fbc8064d7bc618d78",
+      "source_context_refs": [
+        "4.2.9.A-2#678e9289"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Actual body 4.2.9.A-2#17efb08b requires initiation Hb<11 g/dl AND blasts<5% AND serum EPO<500 mu/ml; stop above Hb12, alpha/beta weekly cap900 IU/kg, report/prescriber/hemogram details. D46/followup-v2 has no marker or typed numeric checks. Confirm active drug identities against struck DOCX text before retaining darbepoetin brand aliases."
+    },
+    {
+      "baseline_inventory_id": "C005124",
+      "clause_key": "4.2.14.C.(2)#db104a38",
+      "source_text": "2) Malign plevral mezotelyomada; üç uzman hekim tarafından düzenlenen ve tedavi protokolünü gösterir sağlık kurulu raporuna dayanılarak uzman hekimlerce reçete edilir.",
+      "source_text_sha256": "db104a380650f7637808fbeb43943f2adaf85b485dc8ac4b97f974be77bd8224",
+      "source_context_refs": [
+        "4.2.14.C.(2)#db104a38@under:4.2.14.C.m#ceda5531|4.2.14.C.n#37b794b9"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Primary paragraph says three specialist board members AND treatment protocol documented AND specialist prescriber for malignant pleural mesothelioma. Existing report_specialties list may be interpreted as any-of, does not encode three members, and named specialties are not supported by this child. Existing C45 encompasses nonpleural sites. Keep these separate substantive checks; do not claim source repair closes them."
+    },
+    {
+      "baseline_inventory_id": "C005150",
+      "clause_key": "4.2.14.C.(2)#db104a38",
+      "source_text": "2) Malign plevral mezotelyomada; üç uzman hekim tarafından düzenlenen ve tedavi protokolünü gösterir sağlık kurulu raporuna dayanılarak uzman hekimlerce reçete edilir.",
+      "source_text_sha256": "db104a380650f7637808fbeb43943f2adaf85b485dc8ac4b97f974be77bd8224",
+      "source_context_refs": [
+        "4.2.14.C.(2)#db104a38@under:4.2.14.C.ö#c0b8128e|4.2.14.C.p#8ad3f65a"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Same three-specialist board/protocol/prescriber requirements for pleural mesothelioma. Colorectal branch separately specifies oncology member and prescribing/facility alternatives; no basis to transfer those specialties or facility constraints to mesothelioma."
+    },
+    {
+      "baseline_inventory_id": "C006086",
+      "clause_key": "4.2.16#4d0fcd51",
+      "source_text": "tutar ödenir.",
+      "source_text_sha256": "4d0fcd518546a61db41c75a2f760e01b4cdbe0b5d525c5ad1327bf608b40f959",
+      "source_context_refs": [
+        "4.2.16#4d0fcd51@under:4.2.16.(3)#018fa70d|4.2.16.(4)#57603688"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Fragment contains no independent numeric predicate. Executable monthly age-price entitlement needs verified effective-date amount table, age boundaries, product and indication, report validity, unit/month quantities; no pricing engine should be inferred from coverage_note:true. Keep C006086 structural even though surrounding priced benefit is substantive."
+    },
+    {
+      "baseline_inventory_id": "C006099",
+      "clause_key": "4.2.16#4d0fcd51",
+      "source_text": "tutar ödenir.",
+      "source_text_sha256": "4d0fcd518546a61db41c75a2f760e01b4cdbe0b5d525c5ad1327bf608b40f959",
+      "source_context_refs": [
+        "4.2.16#4d0fcd51@under:4.2.16.(6)#9ff041cd|4.2.16.(7)#4d4b4b80"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Same structural nonpredicate boundary; celiac report text separately includes three-year duration, absent-specialist alternatives and subsequent-family-medicine reports. Existing competing 1yr/3yr rows require independent date/source reconciliation, not an invented amount formula."
+    },
+    {
+      "baseline_inventory_id": "C007362",
+      "clause_key": "4.2.75.(1)#67678436",
+      "source_text": "(1) Başlangıç kriterleri:",
+      "source_text_sha256": "67678436387053150238d87b42e4af9b4dcd8ef07f5b129100d3986c0a22c592",
+      "source_context_refs": [
+        "4.2.75.(1)#67678436"
+      ],
+      "clinical_complete": false,
+      "remaining_substantive_scope": "Substantive child C007363 requires eligible FGFR3 variant OR alternatives within variant group, open epiphyses AND sex-specific bone-age threshold AND age>=4mo AND achondroplasia; C007364 documents baseline measures for >=24mo. Continuation/restart/stop and previously-treated branches differ (C007365 onward). A label repair cannot activate all of these or assume service-date authority."
+    }
+  ],
+  "retired_nonpredicate_rule_rows": [
+    {
+      "rule_id": "4.2.16.amount_paid_coverage_a",
+      "sut_section": "4.2.16",
+      "gate_b_sources": [],
+      "condition": {
+        "coverage_note": true
+      },
+      "action": {
+        "enforcement": "tutar Kurumca ödenir",
+        "message_tr": "Tutar Kurumca ödenir (§4.2.16)."
+      },
+      "source_context_refs": [
+        "4.2.16#4d0fcd51@under:4.2.16.(3)#018fa70d|4.2.16.(4)#57603688"
+      ],
+      "source_scope_note": "Nonpredicate closing fragment of its exact monthly benefit list. No amount, age boundary, payment eligibility or executable pricing is encoded here.",
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "4.2.16.amount_paid_coverage_b",
+      "sut_section": "4.2.16",
+      "gate_b_sources": [],
+      "condition": {
+        "coverage_note": true
+      },
+      "action": {
+        "enforcement": "tutar Kurumca ödenir",
+        "message_tr": "Tutar Kurumca ödenir (§4.2.16)."
+      },
+      "source_context_refs": [
+        "4.2.16#4d0fcd51@under:4.2.16.(6)#9ff041cd|4.2.16.(7)#4d4b4b80"
+      ],
+      "source_scope_note": "Nonpredicate closing fragment of its exact monthly benefit list. No amount, age boundary, payment eligibility or executable pricing is encoded here.",
+      "verification_status": "ai_generated_pending_review"
+    }
+  ],
+  "note": "Context records are not executable clinical predicates or payment rules. Retired closing-fragment rows had no drug selector or price algorithm.",
+  "mds_review_quarantine": {
+    "change_date": "2024-05-17",
+    "verified_through": "2026-10-02",
+    "scope": "darbepoetin/Aranesp with encoded MDS diagnosis ranges; no impact on pure CKD routing",
+    "source_refs": [
+      "prose:4.2.9.A-2#17efb08b",
+      "4.2.9.A.(1)#d8313b78",
+      "4.2.9.A.(3)#a9d0cf5b",
+      "4.2.9.A.(4)#ed1d5fdf"
+    ],
+    "interpretation_limit": "Deleted drug-specific MDS body mentions do not establish an absolute prohibition; broader current ESA/MDS equivalence context remains. Date-aware review only, never retrospective denial or payment clearance."
+  }
+}

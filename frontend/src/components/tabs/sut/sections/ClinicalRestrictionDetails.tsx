@@ -3,7 +3,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { clinicalMissingInputLabel } from "./clinicalFields";
 
 const knownSets = new Set(["other_indication_source_constraints", "followup_source_constraints", "sma_safety_2025", "antifungal_source_constraints", "renal_source_constraints",
-  "enteral_pediatric_reports_2026", "ravulizumab_nmosd_continuation_2026"]);
+  "enteral_pediatric_reports_2026", "ravulizumab_nmosd_continuation_2026", "source_context_clinical_review"]);
 
 export function ClinicalRestrictionDetails({ restrictions, selectedRuleId }: {
   restrictions: SutClinicalRestriction[];

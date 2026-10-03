@@ -16,10 +16,25 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: üçüncü basamakta en az bir çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzmanının
-      yer aldığı 1 yıl süreli sağlık kurulu raporuyla çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma uzmanlarınca
+    enforcement: üçüncü basamakta en az bir çocuk endokrinolojisi veya çocuk endokrinolojisi
+      ve metabolizma hastalıkları uzmanının yer aldığı 1 yıl süreli sağlık kurulu
+      raporuyla çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma uzmanlarınca
       reçete edilirse ödenir
-    message_tr: Üçüncü basamak resmi sağlık hizmet sunucularında düzenlenen en az bir çocuk endokrinolojisi veya çocuk endokrinolojisi
-      ve metabolizma hastalıkları uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden çocuk endokrinolojisi
-      veya çocuk endokrinolojisi ve metabolizma uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.75).
+    message_tr: Üçüncü basamak resmi sağlık hizmet sunucularında düzenlenen en az
+      bir çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları
+      uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden çocuk
+      endokrinolojisi veya çocuk endokrinolojisi ve metabolizma uzman hekimlerince
+      reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.75).
+  source_context_refs:
+  - 4.2.75#785f1d4a
+  - 4.2.75.(1)#67678436
+  source_clinical_scope_incomplete: true
+  source_scope_note: Initiation label and medication heading are contextual only.
+    FGFR3, achondroplasia, open epiphyses, age/bone age, baseline measures, continuation
+    and previously-treated routes remain unimplemented; report metadata alone cannot
+    clear eligibility.
+  verification_status: ai_generated_pending_review
+  drug_names:
+  - vosoritide
+  - vosoritid
 source_note: Exported from drug_indication_prose.json (YAML source migration)

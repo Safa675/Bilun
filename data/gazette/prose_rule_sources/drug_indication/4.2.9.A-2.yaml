@@ -5,45 +5,97 @@ rules:
   drug_names:
   - eritropoietin
   - epoetin
-  - darbepoetin
-  - aranesp
   - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  - metoksipolietilen glikol
   icd10_ranges:
   - D46
   - D47
-  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram
-    sonucu reçetede belirtilir (§4.2.9.A-2).
+  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu
+    ve hemogram sonucu reçetede belirtilir (§4.2.9.A-2).
   gate_b_sources:
-  - C004191
-  - 4.2.9.A-2.(1)
-  - C004191
+  - prose:4.2.9.A-2#17efb08b
   - 4.2.9.A.(1)#d8313b78
   - 4.2.9.A.(3)#a9d0cf5b
+  - 4.2.9.A.(4)#ed1d5fdf
   report_required: true
   report_specialties:
   - hematoloji
   prescriber_specialties:
   - hematoloji
   - iç hastalıkları
+  source_context_refs:
+  - 4.2.9.A-2#678e9289
+  - 4.2.9.A-2#17efb08b
+  source_clinical_scope_incomplete: true
+  source_scope_note: Existing recognized ESA aliases trigger neutral review of the general indication/equivalence/report
+    clauses together with the specific MDS body. This does not establish an MDS indication for every brand or equivalence
+    of its clinical criteria. Hb/blast/EPO thresholds, substance-specific dose and hemogram/report conditions remain
+    unimplemented. Darbepoetin retains its separate date-scoped review.
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.9.mds_esa_initiation_hematology_report
   sut_section: 4.2.9.A-2
   drug_names:
   - eritropoietin
   - epoetin
-  - darbepoetin
-  - aranesp
   - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  - metoksipolietilen glikol
   icd10_ranges:
   - D46
   - D47
-  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram
-    reçetede belirtilir (§4.2.9.A-2).
+  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu
+    ve hemogram reçetede belirtilir (§4.2.9.A-2).
   gate_b_sources:
-  - 4.2.9.A-2.(1)
+  - prose:4.2.9.A-2#17efb08b
+  - 4.2.9.A.(1)#d8313b78
+  - 4.2.9.A.(3)#a9d0cf5b
+  - 4.2.9.A.(4)#ed1d5fdf
   report_required: true
   report_specialties:
   - hematoloji
   prescriber_specialties:
   - hematoloji
   - iç hastalıkları
+  source_context_refs:
+  - 4.2.9.A-2#678e9289
+  - 4.2.9.A-2#17efb08b
+  source_clinical_scope_incomplete: true
+  source_scope_note: Existing recognized ESA aliases trigger neutral review of the general indication/equivalence/report
+    clauses together with the specific MDS body. This does not establish an MDS indication for every brand or equivalence
+    of its clinical criteria. Hb/blast/EPO thresholds, substance-specific dose and hemogram/report conditions remain
+    unimplemented. Darbepoetin retains its separate date-scoped review.
+  verification_status: ai_generated_pending_review
+- rule_id: 4.2.9.A-2.darbepoetin_mds_source_review
+  sut_section: 4.2.9.A-2
+  drug_names:
+  - darbepoetin
+  - aranesp
+  icd10_ranges:
+  - D46
+  - D47
+  gate_b_sources:
+  - prose:4.2.9.A-2#17efb08b
+  - 4.2.9.A.(1)#d8313b78
+  - 4.2.9.A.(3)#a9d0cf5b
+  - 4.2.9.A.(4)#ed1d5fdf
+  source_context_refs:
+  - 4.2.9.A-2#678e9289
+  source_clinical_scope_incomplete: true
+  source_review_change_date: '2024-05-17'
+  source_review_verified_through: '2026-10-02'
+  source_scope_note: Review quarantine, never a prohibition or coverage grant. Drug-specific darbepoetin body mentions
+    were deleted effective17/05/2024 while the general MDS/ESA-equivalence clauses still name it. The cross-clause
+    clinical/report scope is not fully implemented. Earlier, missing or later source dates require the corresponding
+    source version. CKD-only routes are not constrained by this row.
+  verification_status: ai_generated_pending_review
+  message_tr: 'Darbepoetin ve MDS: değişen özel hüküm ile genel ESA hükümleri birlikte doğrulanmalıdır; bu inceleme
+    ödeme uygunluğu veya mutlak ödeme yasağı belirlemez.'
+  source_review_quarantine: true
 source_note: Exported from drug_indication_prose.json (YAML source migration)

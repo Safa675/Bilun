@@ -42,6 +42,21 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
     outcomes = evaluate_clinical_restrictions(line, rules, base.get("observed_icd10_codes"), base.get("selected_rule_id"))
     if not outcomes:
         return base
+    existing = base.get('violation')
+    inherited = base.get('clinical_restrictions') or (
+        existing.get('clinical_restrictions') if isinstance(existing, dict) else None
+    ) or []
+    # Source-review guards are independent evidence, not a temporary message
+    # that another family can replace. Keep complete outcome dictionaries so
+    # optional observation receipts remain attached to their actual evaluator.
+    combined = []
+    for outcome in [*inherited, *outcomes]:
+        if outcome not in combined:
+            combined.append(outcome)
+    outcomes = combined
+    inherited_source_review = any(
+        item.get('constraint_set') == 'source_context_clinical_review' for item in inherited
+    )
     merged = dict(base)
     merged['clinical_restrictions'] = outcomes
     merged['clinical_eligibility_complete'] = False
@@ -51,7 +66,6 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
     # The review result prevents an empty violation being mistaken for payment.
     if failed is None:
         missing.append('remaining_sut_clinical_criteria')
-    existing = base.get('violation')
     # Legacy infection-only ICD routes cannot disprove source-authorized
     # prophylaxis for an underlying malignancy/transplant diagnosis.
     incomplete_icd_route = (existing and existing.get('violation_kind') == 'indication_mismatch'
@@ -66,6 +80,10 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
     if existing and existing.get('violation_kind') == 'ambiguous_route' and failed is None:
         # Necessary checks do not choose among unresolved indication routes.
         # Keep their original identity and explanation alongside the observations.
+        violation = dict(existing)
+    elif existing and inherited_source_review and failed is None:
+        # Retain the concrete selected route and its section; the generic
+        # guard kind cannot stand in for that source identity.
         violation = dict(existing)
     elif incomplete_icd_route and failed is None:
         # Preserve the fact that the currently encoded ICD subset did not match,
