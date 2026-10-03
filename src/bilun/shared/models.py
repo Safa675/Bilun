@@ -5,6 +5,7 @@ Pydantic request/response schemas for the BILUN API.
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -25,6 +26,43 @@ class MaterialItem(BaseModel):
     # indication-gated oncology drug claims; ignored otherwise.
     biomarkers: list[dict[str, str]] | None = None
     prior_therapies: list[dict[str, str]] | None = None
+    # Turner somatropin continuation evidence is optional and never defaulted.
+    gh_treatment_phase: Literal["initiation", "continuation"] | None = None
+    epiphyses_closed: bool | None = None
+    annual_growth_velocity_cm: float | None = None
+    height_cm: float | None = None
+    bone_age_years: float | None = None
+    gh_patient_group: Literal["pediatric", "adult"] | None = None
+    gh_height_reference_sex: Literal["female", "male"] | None = None
+    pws_genetic_diagnosis_confirmed: bool | None = None
+    pws_uncontrolled_diabetes: bool | None = None
+    pws_untreatable_obstructive_sleep_apnea: bool | None = None
+    pws_active_cancer: bool | None = None
+    pws_active_psychosis: bool | None = None
+    pws_progressive_scoliosis: bool | None = None
+
+    @field_validator(
+        "gh_treatment_phase", "epiphyses_closed", "annual_growth_velocity_cm",
+        "height_cm", "bone_age_years", "gh_patient_group",
+        "gh_height_reference_sex",
+        "pws_genetic_diagnosis_confirmed",
+        "pws_uncontrolled_diabetes",
+        "pws_untreatable_obstructive_sleep_apnea",
+        "pws_active_cancer",
+        "pws_active_psychosis",
+        "pws_progressive_scoliosis",
+        mode="before",
+    )
+    @classmethod
+    def validate_growth_hormone_evidence(cls, value, info):
+        from src.bilun.domain.claims.growth_hormone import validated_growth_hormone_value
+
+        if value is None:
+            return None
+        parsed = validated_growth_hormone_value(info.field_name, value)
+        if parsed is None:
+            raise ValueError(f"{info.field_name} requires explicit typed clinical evidence")
+        return parsed
 
 
 class DrugContext(BaseModel):

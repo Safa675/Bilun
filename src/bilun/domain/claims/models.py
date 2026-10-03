@@ -278,6 +278,22 @@ class DrugClaimLine:
     biomarkers: tuple[dict[str, str], ...] | None = None
     # prior_therapies: [{"drug_or_class": "imatinib", "outcome": "resistant"}]
     prior_therapies: tuple[dict[str, str], ...] | None = None
+    # Explicit §4.2.6.A-3 continuation facts; never inferred from Q96.
+    gh_treatment_phase: str | None = None
+    epiphyses_closed: bool | None = None
+    annual_growth_velocity_cm: float | None = None
+    height_cm: float | None = None
+    bone_age_years: float | None = None
+    # Recorded SUT patient/height reference categories; never inferred from ICD.
+    gh_patient_group: str | None = None
+    gh_height_reference_sex: str | None = None
+    # Recorded genetic-PWS scope and continuation stopping assessments.
+    pws_genetic_diagnosis_confirmed: bool | None = None
+    pws_uncontrolled_diabetes: bool | None = None
+    pws_untreatable_obstructive_sleep_apnea: bool | None = None
+    pws_active_cancer: bool | None = None
+    pws_active_psychosis: bool | None = None
+    pws_progressive_scoliosis: bool | None = None
 
 
 @dataclass(frozen=True)

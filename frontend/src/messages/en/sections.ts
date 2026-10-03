@@ -231,6 +231,42 @@ const sections = {
     addMaterial: "+ Add Material",
     validating: "Validating...",
     validateClaim: "Validate Claim",
+    clinical: {
+      "groups": {
+        "praderWilli": "Prader–Willi evidence",
+        "growthHormone": "Growth-hormone evidence"
+      },
+      "hints": {
+        "praderWilli": "Enter documented genetic and clinical facts only. A negative stop screen still requires review of remaining SUT criteria.",
+        "growthHormone": "Only supported continuation criteria are checked. Enter the recorded height-reference category; bone age applies to Turner checks. Blank means unknown."
+      },
+      "fields": {
+        "pws_genetic_diagnosis_confirmed": "Prader–Willi genetic diagnosis confirmed",
+        "pws_uncontrolled_diabetes": "Diabetes that cannot be controlled",
+        "pws_untreatable_obstructive_sleep_apnea": "Obstructive sleep apnea that cannot be treated",
+        "pws_active_cancer": "Active cancer",
+        "pws_active_psychosis": "Active psychosis",
+        "pws_progressive_scoliosis": "Progressive scoliosis",
+        "pws_initiation_clinical_assessment": "Remaining Prader–Willi initiation assessment",
+        "pws_remaining_clinical_criteria": "Remaining Prader–Willi clinical criteria requiring review",
+        "gh_patient_group": "Documented growth-hormone patient group",
+        "gh_height_reference_sex": "Recorded SUT height-reference category",
+        "gh_treatment_phase": "Growth-hormone treatment phase",
+        "epiphyses_closed": "Epiphyses closed",
+        "annual_growth_velocity_cm": "Annual growth velocity (cm/year)",
+        "height_cm": "Height (cm)",
+        "bone_age_years": "Bone age (years), Turner checks",
+        "historical_sut_version": "Verified historical SUT version"
+      },
+      "options": {
+        "initiation": "Initiation",
+        "continuation": "Continuation",
+        "pediatric": "Pediatric",
+        "adult": "Adult",
+        "female": "Female height reference",
+        "male": "Male height reference"
+      }
+    },
     drugContext: {
       age: "Age",
       weight_kg: "Weight (kg)",

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DrugMaterialInputs } from "./DrugMaterialInputs";
 import { drugMaterialPayload, optionalCount } from "./drugInputs";
+import { clinicalMissingInputLabel } from "./clinicalFields";
 import { theme } from "@/lib/theme";
 import { validateSutClaim, getSutProcedureInfo } from "@/lib/api/sut";
 import type {
@@ -423,6 +424,8 @@ function ValidationEvidenceRow({ evidence, confirmed = false, t }: {
         {(evidence.missing_inputs?.length ?? 0) > 0 && (
           <div className="text-xs mt-1" style={{ color: "#B45309" }}>
             {t("sections.claimValidator.drugContext.missingInputs")}: {evidence.missing_inputs!.map(field => {
+              const clinicalLabel = clinicalMissingInputLabel(field, t);
+              if (clinicalLabel) return clinicalLabel;
               const [key, detail] = field.split(".");
               const label = ["service_date", "drug_claim_date"].includes(key) ? "serviceDate" : key;
               const detailLabel = key === "prior_therapies" && detail === "drug_or_class"

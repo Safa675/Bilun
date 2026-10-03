@@ -29,7 +29,7 @@
       "primary_icd10": "E23.1",
       "report_present": true,
       "report_duration_months": 12,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.pediatric_gh_monitoring_board"
     },
     {
@@ -61,7 +61,7 @@
       "primary_icd10": "E23.0",
       "report_present": true,
       "report_duration_months": 12,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.pediatric_gh_renewal_board"
     },
     {
@@ -69,7 +69,7 @@
       "primary_icd10": "Q87.1",
       "report_present": false,
       "prescriber_specialty": "çocuk endokrinoloji",
-      "expect_violation": "missing_board_report",
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.pws_somatropin_tertiary_board"
     },
     {
@@ -78,7 +78,7 @@
       "report_present": true,
       "prescriber_specialty": "çocuk endokrinoloji",
       "report_duration_months": 3,
-      "expect_violation": null,
+      "expect_violation": "needs_growth_hormone_verification",
       "rule_id": "4.2.6.pws_somatropin_tertiary_board"
     },
     {

@@ -2,6 +2,7 @@ import type { SutMaterialItem } from "@/lib/api/sut";
 import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { optionalCount } from "./drugInputs";
+import { ClinicalMaterialInputs } from "./ClinicalMaterialInputs";
 
 export function DrugMaterialInputs({ material, onChange }: {
   material: SutMaterialItem;
@@ -48,5 +49,6 @@ export function DrugMaterialInputs({ material, onChange }: {
       <Button variant="secondary" onClick={() => onChange({ prior_therapies: [...(material.prior_therapies ?? []), { drug_or_class: "", outcome: "" }] })}>{label("addTherapy")}</Button>
     </fieldset>
     <p className="text-xs text-[var(--text-muted)]">{label("clinicalUnknownHint")}</p>
+    <ClinicalMaterialInputs material={material} onChange={onChange} />
   </div>;
 }

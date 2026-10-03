@@ -1,0 +1,481 @@
+{
+  "protocol_id": "pws_somatropin_v1",
+  "rule_ids": [
+    "4.2.6.A4.prader_willi_gh_no_stimulation_test",
+    "4.2.6.pws_somatropin_tertiary_board"
+  ],
+  "sut_section": "4.2.6.A-4(1),(2),(5),(6)",
+  "verification_status": "ai_generated_pending_review",
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "date_basis": "RG-09/05/2024-32541/7-e explicit current somatropin-only heading. No inference of earlier validity. New-heading struck runs contain only whitespace; all heading text is unstruck.",
+  "scope": "Necessary partial checks only. Specific genetic PWS confirmation and pediatric group are explicit inputs, never inferred from Q87.1. Confirm phase before selecting3-month initiation or6-month continuation report. All-negative continuation stop flags still require unimplemented IGF1/dose/resumption and facility assessment; no full eligibility pass. Initiation clinical contraindication thresholds are not implemented.",
+  "report_duration_months": {
+    "initiation": 3,
+    "continuation": 6
+  },
+  "continuation_stop_if_any_true": [
+    "pws_uncontrolled_diabetes",
+    "pws_untreatable_obstructive_sleep_apnea",
+    "pws_active_cancer",
+    "pws_active_psychosis",
+    "pws_progressive_scoliosis",
+    "epiphyses_closed"
+  ],
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4282,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-e md. Yürürlük: 17/05/2024)",
+          "text_sha256": "0253eecb84df798821cfe664c5258516abae4b022af12cae412386930b9493ba",
+          "runs": [
+            {
+              "text": "            (",
+              "struck": false
+            },
+            {
+              "text": "Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-e ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4283,
+          "text": "4.2.6.A-4- Çocuklarda Prader-Willi Sendromunda (PWS);",
+          "text_sha256": "36076d98462c8c45517993ba31b025cf11a591cdb72a10e463e9940458876c0c",
+          "runs": [
+            {
+              "text": "            ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-4-",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Çocuklarda ",
+              "struck": true
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": true
+            },
+            {
+              "text": " Sendromunda (PWS);",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4284,
+          "text": "4.2.6.A-4- Çocuklarda Prader-Willi Sendromunda (PWS) somatropin kullanım ilkeleri;",
+          "text_sha256": "ea4ef81b05b6899fd011eb361cf8a5b0bab67e7acdd91b5f6216406fac7192ce",
+          "runs": [
+            {
+              "text": "           ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-4- Çocuklarda ",
+              "struck": false
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": false
+            },
+            {
+              "text": " Sendromunda (PWS) ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri;",
+              "struck": false
+            },
+            {
+              "text": "  ",
+              "struck": false
+            },
+            {
+              "text": "  ",
+              "struck": true
+            },
+            {
+              "text": "                                                                                                                            ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4285,
+          "text": "(1) Genetik olarak Prader-Willi sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+          "text_sha256": "83cfa4bc52e41b2fdb6c0d92d6b11b9ba516addf68c15ef953559ca6e4863251",
+          "runs": [
+            {
+              "text": "(1) Genetik olarak ",
+              "struck": false
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": false
+            },
+            {
+              "text": " sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4286,
+          "text": "a) Serum IGF1 düzeyinin +2 SD altında olması ve",
+          "text_sha256": "f46c38fc66f2d7300717f85d7a58bfede6526c66e61702bd8cb0b48a0a79e749",
+          "runs": [
+            {
+              "text": "a) Serum IGF1 düzeyinin +2 SD altında olması ve",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4287,
+          "text": "b) Şiddetli obezite (ideal ağırlığının %225 üzerinde olması), kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikozu olmaması.",
+          "text_sha256": "c166b1e4347118f2896155d5c684018cebfe744acbd428c934ed35d433db626d",
+          "runs": [
+            {
+              "text": "b) Şiddetli obezite (ideal ağırlığının ",
+              "struck": false
+            },
+            {
+              "text": "%225",
+              "struck": false
+            },
+            {
+              "text": " üzerinde olması), kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikozu olmaması.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4288,
+          "text": "(2) Üçüncü basamak hastanelerde en az bir çocuk endokrinoloji uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilmesi halinde büyüme hormonu bedelleri Kurumca karşılanır.  Tedavinin devamında raporlar 6 ay süreli düzenlenir.",
+          "text_sha256": "c79efbb20d76dbcb21d3a7b8678ab265c4258853c7e868a1cc7c398fa49bd514",
+          "runs": [
+            {
+              "text": "(2) Üçüncü basamak hastanelerde en az bir çocuk endokrinoloji uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilmesi halinde büyüme hormonu bedelleri Kurumca karşılanır.  Tedavinin devamında raporlar 6 ay süreli düzenlenir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4289,
+          "text": "(3) Büyüme hormonu infant ve çocuklarda 0,5 mg/m²/gün dozunda başlanır. Klinik cevaba göre ve serum IGF1 düzeyi fizyolojik düzeylerde kalmak şartıyla 3-6 ayda bir 1 mg/ m²/gün dozuna geçilebilir.",
+          "text_sha256": "e2fdac9afa8925bfdb72da141a673f7d2799a1a5855dbd1f494bdc27b1f0d172",
+          "runs": [
+            {
+              "text": "(3) Büyüme hormonu infant ve çocuklarda 0,5 mg/m²/gün dozunda başlanır. Klinik cevaba göre ve serum IGF1 düzeyi fizyolojik düzeylerde kalmak şartıyla 3-6 ayda bir 1 mg/ m²/gün dozuna geçilebilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4290,
+          "text": "(4) Serum IGF1 düzeyi +2 SD üzerine çıktığında tedaviye ara verilir.  Serum IGF1 düzeyi +2 SD altına düştüğünde tedaviye yukarıdaki koşullarda yeniden başlanabilir. Solunum yolu enfeksiyonlarında iyileşme sağlanıncaya kadar tedavi başlanmaz.",
+          "text_sha256": "446615d78e91040b876e93f6e6b015ae280d557c01214ccdc3544fc7208cc94f",
+          "runs": [
+            {
+              "text": "(4) Serum IGF1 düzeyi +2 SD üzerine çıktığında tedaviye ara verilir.  Serum IGF1 düzeyi +2 SD altına düştüğünde tedaviye yukarıdaki koşullarda yeniden başlanabilir. Solunum yolu enfeksiyonlarında iyileşme sağlanıncaya kadar tedavi başlanmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4291,
+          "text": "(5) Kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikoz, progresyon gösteren skolyoz durumlarında tedavi kesilir.",
+          "text_sha256": "b34205e7afd6c2a11ae29fdf6eb5e11d1e62ce507f1c22a46e5ad70c93858ff6",
+          "runs": [
+            {
+              "text": "(5) Kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikoz, progresyon gösteren skolyoz durumlarında tedavi kesilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4292,
+          "text": "(6) Epifiz hatları kapandığında tedavi sonlandırılır.",
+          "text_sha256": "b1fc17e10fac7b08b64382f7bfc01828babb5670c459992b818fc85abb0274a6",
+          "runs": [
+            {
+              "text": "(6) Epifiz hatları kapandığında tedavi sonlandırılır.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4290,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-e md. Yürürlük: 17/05/2024)",
+          "text_sha256": "0253eecb84df798821cfe664c5258516abae4b022af12cae412386930b9493ba",
+          "runs": [
+            {
+              "text": "            (",
+              "struck": false
+            },
+            {
+              "text": "Değişik: ",
+              "struck": false
+            },
+            {
+              "text": "RG- 09/05/2024- 32541",
+              "struck": false
+            },
+            {
+              "text": "/7-e ",
+              "struck": false
+            },
+            {
+              "text": "md.",
+              "struck": false
+            },
+            {
+              "text": " Yürürlük: 1",
+              "struck": false
+            },
+            {
+              "text": "7",
+              "struck": false
+            },
+            {
+              "text": "/05/2024)",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4291,
+          "text": "4.2.6.A-4- Çocuklarda Prader-Willi Sendromunda (PWS);",
+          "text_sha256": "36076d98462c8c45517993ba31b025cf11a591cdb72a10e463e9940458876c0c",
+          "runs": [
+            {
+              "text": "            ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-4-",
+              "struck": true
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "Çocuklarda ",
+              "struck": true
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": true
+            },
+            {
+              "text": " Sendromunda (PWS);",
+              "struck": true
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4292,
+          "text": "4.2.6.A-4- Çocuklarda Prader-Willi Sendromunda (PWS) somatropin kullanım ilkeleri;",
+          "text_sha256": "ea4ef81b05b6899fd011eb361cf8a5b0bab67e7acdd91b5f6216406fac7192ce",
+          "runs": [
+            {
+              "text": "           ",
+              "struck": false
+            },
+            {
+              "text": " ",
+              "struck": false
+            },
+            {
+              "text": "4.2.6.A-4- Çocuklarda ",
+              "struck": false
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": false
+            },
+            {
+              "text": " Sendromunda (PWS) ",
+              "struck": false
+            },
+            {
+              "text": "somatropin",
+              "struck": false
+            },
+            {
+              "text": " kullanım ilkeleri;",
+              "struck": false
+            },
+            {
+              "text": "  ",
+              "struck": false
+            },
+            {
+              "text": "  ",
+              "struck": true
+            },
+            {
+              "text": "                                                                                                                            ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4293,
+          "text": "(1) Genetik olarak Prader-Willi sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+          "text_sha256": "83cfa4bc52e41b2fdb6c0d92d6b11b9ba516addf68c15ef953559ca6e4863251",
+          "runs": [
+            {
+              "text": "(1) Genetik olarak ",
+              "struck": false
+            },
+            {
+              "text": "Prader-Willi",
+              "struck": false
+            },
+            {
+              "text": " sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır:",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4294,
+          "text": "a) Serum IGF1 düzeyinin +2 SD altında olması ve",
+          "text_sha256": "f46c38fc66f2d7300717f85d7a58bfede6526c66e61702bd8cb0b48a0a79e749",
+          "runs": [
+            {
+              "text": "a) Serum IGF1 düzeyinin +2 SD altında olması ve",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4295,
+          "text": "b) Şiddetli obezite (ideal ağırlığının %225 üzerinde olması), kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikozu olmaması.",
+          "text_sha256": "c166b1e4347118f2896155d5c684018cebfe744acbd428c934ed35d433db626d",
+          "runs": [
+            {
+              "text": "b) Şiddetli obezite (ideal ağırlığının ",
+              "struck": false
+            },
+            {
+              "text": "%225",
+              "struck": false
+            },
+            {
+              "text": " üzerinde olması), kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikozu olmaması.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4296,
+          "text": "(2) Üçüncü basamak hastanelerde en az bir çocuk endokrinoloji uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilmesi halinde büyüme hormonu bedelleri Kurumca karşılanır.  Tedavinin devamında raporlar 6 ay süreli düzenlenir.",
+          "text_sha256": "c79efbb20d76dbcb21d3a7b8678ab265c4258853c7e868a1cc7c398fa49bd514",
+          "runs": [
+            {
+              "text": "(2) Üçüncü basamak hastanelerde en az bir çocuk endokrinoloji uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporu ile çocuk endokrinoloji uzman hekimince reçete edilmesi halinde büyüme hormonu bedelleri Kurumca karşılanır.  Tedavinin devamında raporlar 6 ay süreli düzenlenir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4297,
+          "text": "(3) Büyüme hormonu infant ve çocuklarda 0,5 mg/m²/gün dozunda başlanır. Klinik cevaba göre ve serum IGF1 düzeyi fizyolojik düzeylerde kalmak şartıyla 3-6 ayda bir 1 mg/ m²/gün dozuna geçilebilir.",
+          "text_sha256": "e2fdac9afa8925bfdb72da141a673f7d2799a1a5855dbd1f494bdc27b1f0d172",
+          "runs": [
+            {
+              "text": "(3) Büyüme hormonu infant ve çocuklarda 0,5 mg/m²/gün dozunda başlanır. Klinik cevaba göre ve serum IGF1 düzeyi fizyolojik düzeylerde kalmak şartıyla 3-6 ayda bir 1 mg/ m²/gün dozuna geçilebilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4298,
+          "text": "(4) Serum IGF1 düzeyi +2 SD üzerine çıktığında tedaviye ara verilir.  Serum IGF1 düzeyi +2 SD altına düştüğünde tedaviye yukarıdaki koşullarda yeniden başlanabilir. Solunum yolu enfeksiyonlarında iyileşme sağlanıncaya kadar tedavi başlanmaz.",
+          "text_sha256": "446615d78e91040b876e93f6e6b015ae280d557c01214ccdc3544fc7208cc94f",
+          "runs": [
+            {
+              "text": "(4) Serum IGF1 düzeyi +2 SD üzerine çıktığında tedaviye ara verilir.  Serum IGF1 düzeyi +2 SD altına düştüğünde tedaviye yukarıdaki koşullarda yeniden başlanabilir. Solunum yolu enfeksiyonlarında iyileşme sağlanıncaya kadar tedavi başlanmaz. ",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4299,
+          "text": "(5) Kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikoz, progresyon gösteren skolyoz durumlarında tedavi kesilir.",
+          "text_sha256": "b34205e7afd6c2a11ae29fdf6eb5e11d1e62ce507f1c22a46e5ad70c93858ff6",
+          "runs": [
+            {
+              "text": "(5) Kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikoz, progresyon gösteren skolyoz durumlarında tedavi kesilir.",
+              "struck": false
+            }
+          ]
+        },
+        {
+          "docx_paragraph_index_zero_based": 4300,
+          "text": "(6) Epifiz hatları kapandığında tedavi sonlandırılır.",
+          "text_sha256": "b1fc17e10fac7b08b64382f7bfc01828babb5670c459992b818fc85abb0274a6",
+          "runs": [
+            {
+              "text": "(6) Epifiz hatları kapandığında tedavi sonlandırılır.",
+              "struck": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

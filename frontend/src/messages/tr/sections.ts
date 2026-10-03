@@ -231,6 +231,42 @@ const sections = {
     addMaterial: "+ Malzeme Ekle",
     validating: "Doğrulanıyor...",
     validateClaim: "Talebi Doğrula",
+    clinical: {
+      "groups": {
+        "praderWilli": "Prader-Willi bilgileri",
+        "growthHormone": "Büyüme hormonu bilgileri"
+      },
+      "hints": {
+        "praderWilli": "Yalnız belgelenmiş genetik ve klinik bilgileri girin. Sonlandırma koşulu bulunmaması halinde de diğer SUT koşulları incelenmelidir.",
+        "growthHormone": "Yalnız kodlanmış devam tedavisi koşulları kontrol edilir. Kaydedilmiş boy referans kategorisini girin; kemik yaşı Turner kontrolleri içindir. Boş alan bilinmiyor demektir."
+      },
+      "fields": {
+        "pws_genetic_diagnosis_confirmed": "Prader-Willi genetik tanısı doğrulanmış",
+        "pws_uncontrolled_diabetes": "Kontrol edilemeyen diyabet",
+        "pws_untreatable_obstructive_sleep_apnea": "Tedavi edilemeyen obstrüktif uyku apnesi",
+        "pws_active_cancer": "Aktif kanser",
+        "pws_active_psychosis": "Aktif psikoz",
+        "pws_progressive_scoliosis": "İlerleyici skolyoz",
+        "pws_initiation_clinical_assessment": "Diğer Prader-Willi başlangıç değerlendirmeleri",
+        "pws_remaining_clinical_criteria": "İnceleme gerektiren diğer Prader-Willi klinik koşulları",
+        "gh_patient_group": "Belgelenmiş büyüme hormonu hasta grubu",
+        "gh_height_reference_sex": "Kaydedilmiş SUT boy referans kategorisi",
+        "gh_treatment_phase": "Büyüme hormonu tedavi aşaması",
+        "epiphyses_closed": "Epifizler kapalı",
+        "annual_growth_velocity_cm": "Yıllık büyüme hızı (cm/yıl)",
+        "height_cm": "Boy (cm)",
+        "bone_age_years": "Kemik yaşı (yıl), Turner kontrolleri",
+        "historical_sut_version": "Geçmiş SUT sürümünün doğrulanması"
+      },
+      "options": {
+        "initiation": "Başlangıç",
+        "continuation": "Devam",
+        "pediatric": "Pediatrik",
+        "adult": "Erişkin",
+        "female": "Kadın boy referansı",
+        "male": "Erkek boy referansı"
+      }
+    },
     drugContext: {
       age: "Yaş",
       weight_kg: "Ağırlık (kg)",

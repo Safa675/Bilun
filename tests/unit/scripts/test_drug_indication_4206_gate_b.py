@@ -22,7 +22,13 @@ _ALL_TIER_A_ENCODED = frozenset({
     "C003995", "C004020", "C004036", "C004052",
     "C004057", "C004070", "C004084", "C004087", "C004093",
 })
-_ALL_ENCODED = _ALL_TIER_A_ENCODED
+# Exact current-source stop clauses are now executable despite having no drug
+# keyword of their own; the two list introductions are source links, not extra predicates.
+_ALL_STOP_SOURCE_IDS = frozenset({
+    "C004037", "C004038", "C004039", "C004040", "C004058",
+    "C004059", "C004060", "C004061", "C004062", "C004073", "C004074",
+})
+_ALL_ENCODED = _ALL_TIER_A_ENCODED | _ALL_STOP_SOURCE_IDS | {"C004067"}
 
 
 def _all_4206_batch_rules() -> list[dict[str, Any]]:
@@ -72,7 +78,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
-    assert manifest["tier_c_deferred_count"] >= 27
+    assert {"C004068", "C004071", "C004072"} <= set(manifest["tier_c_deferred_clause_ids"])
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)

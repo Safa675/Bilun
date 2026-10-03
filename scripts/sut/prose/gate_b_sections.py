@@ -67,6 +67,22 @@ SECTION_4201 = GateBSection(
 SECTION_4206 = GateBSection(
     name="4206",
     match=SectionMatch(prefixes=("4.2.6.",)),
+    # These explicitly encoded stop predicates do not repeat drug keywords.
+    # Pin full identities: repeated a/b/c coordinates include initiation clauses.
+    force_include_ids={
+        "4.2.6.A-1": frozenset({
+            "4.2.6.A-1.(3)#b3d97c76", "4.2.6.A-1.a#592aef98",
+            "4.2.6.A-1.b#bbd37380", "4.2.6.A-1.c#b5a513b6",
+        }),
+        "4.2.6.A-4": frozenset({
+            "4.2.6.A-4.(5)#b34205e7", "4.2.6.A-4.(6)#b1fc17e1",
+        }),
+        "4.2.6.A-3": frozenset({
+            "4.2.6.A-3.(2)#7ed65fce", "4.2.6.A-3.a#ae56e068",
+            "4.2.6.A-3.b#30c6f092", "4.2.6.A-3.c#62c61a16",
+            "4.2.6.A-3.ç#89b3cb7c",
+        }),
+    },
     drug_keywords=(
         "buyume hormonu", "büyüme hormonu", "somatropin", "somatrogon",
         "mecasermin", "rhigf", "igf-1", "igf1", "increlex", "turner",

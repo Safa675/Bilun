@@ -20,6 +20,8 @@ Usage:
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -170,6 +172,7 @@ def _run_drug_indication_checks(
             is_loading_phase=mat.get("is_loading_phase"),
             biomarkers=tuple(biomarkers) if biomarkers else None,
             prior_therapies=tuple(prior_therapies) if prior_therapies else None,
+            **parse_growth_hormone_inputs(mat),
         )
         hit = evaluate_drug_indication_line(
             drug_line=drug_line,

@@ -20497,7 +20497,10 @@
         "E23.1",
         "E23.7",
         "E34.3"
-      ]
+      ],
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "gh_treatment_phase": "initiation"
     },
     {
       "rule_id": "4.2.6.A1.somatropin_listed_cases_no_condition",
@@ -20522,7 +20525,10 @@
         "E23.1",
         "E23.7",
         "E34.3"
-      ]
+      ],
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "gh_treatment_phase": "initiation"
     },
     {
       "rule_id": "4.2.6.A2.insulin_tolerance_test_peak_gh_report",
@@ -20544,17 +20550,21 @@
         "E23.1",
         "E23.7",
         "E34.3"
-      ]
+      ],
+      "gh_patient_group": "adult",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.6.A4.prader_willi_gh_no_stimulation_test",
       "sut_section": "4.2.6.A-4",
       "gate_b_sources": [
-        "4.2.6.A-4.(1)"
+        "4.2.6.A-4.(1)",
+        "4.2.6.A-4.(2)",
+        "4.2.6.A-4.(5)",
+        "4.2.6.A-4.(6)"
       ],
       "drug_names": [
-        "somatropin",
-        "büyüme hormonu"
+        "somatropin"
       ],
       "icd10_codes": [
         "Q87.1"
@@ -20566,7 +20576,23 @@
       "action": {
         "enforcement": "genetik Prader-Willi tanılı epifiz hatları açık çocuklarda GH uyarı testi aranmaksızın koşullar sağlanırsa GH ödenir",
         "message_tr": "Genetik olarak Prader-Willi sendromu tanısı almış epifiz hatları açık olan çocuklarda büyüme hormonu uyarı testi yapılması koşulu aranmaksızın aşağıdaki durumlarda büyüme hormonu tedavisine başlanması halinde bedelleri Kurumca karşılanır (§4.2.6.A-4)."
-      }
+      },
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3,
+      "pws_continuation_protocol": "pws_somatropin_v1",
+      "report_duration_by_phase": {
+        "initiation": 3,
+        "continuation": 6
+      },
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/pws_somatropin_continuation.json"
     },
     {
       "rule_id": "4.2.6.A5.ckd_dialysis_children_gh_coverage",
@@ -20626,7 +20652,9 @@
         "endokrinoloji",
         "iç hastalıkları"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "gh_patient_group": "adult",
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.6.ckd_gh_nephro_endo_board",
@@ -20755,8 +20783,6 @@
       "drug_names": [
         "somatropin",
         "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -20772,12 +20798,22 @@
       "report_required": true,
       "message_tr": "Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "4.2.6.A-1.(2)#a3b772ff"
+        "4.2.6.A-1.(2)#a3b772ff",
+        "4.2.6.A-1.(3)#b3d97c76",
+        "4.2.6.A-1.a#592aef98",
+        "4.2.6.A-1.b#bbd37380",
+        "4.2.6.A-1.c#b5a513b6"
       ],
       "report_specialties": [
-        "endokrinoloji"
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "gh_treatment_phase": "continuation",
+      "growth_hormone_continuation_protocol": "pediatric_gh_v1",
+      "source_evidence": "data/gazette/source_evidence/pediatric_gh_continuation.json"
     },
     {
       "rule_id": "4.2.6.pediatric_gh_renewal_board",
@@ -20785,8 +20821,6 @@
       "drug_names": [
         "somatropin",
         "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -20802,13 +20836,22 @@
       "report_required": true,
       "message_tr": "Pediatrik büyüme hormonu yenileme — epifiz hatları açık hastalarda 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "4.2.6.A-1.(2)#a3b772ff"
+        "4.2.6.A-1.(2)#a3b772ff",
+        "4.2.6.A-1.(3)#b3d97c76",
+        "4.2.6.A-1.a#592aef98",
+        "4.2.6.A-1.b#bbd37380",
+        "4.2.6.A-1.c#b5a513b6"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
         "çocuk endokrinolojisi ve metabolizma"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "gh_treatment_phase": "continuation",
+      "growth_hormone_continuation_protocol": "pediatric_gh_v1",
+      "source_evidence": "data/gazette/source_evidence/pediatric_gh_continuation.json"
     },
     {
       "rule_id": "4.2.6.pediatric_somatropin_initiation_board",
@@ -20842,16 +20885,16 @@
       "prescriber_specialties": [
         "çocuk endokrinoloji"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "gh_treatment_phase": "initiation"
     },
     {
       "rule_id": "4.2.6.pws_somatropin_tertiary_board",
       "sut_section": "4.2.6.A-4",
       "drug_names": [
         "somatropin",
-        "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -20862,9 +20905,12 @@
         "Q87.1"
       ],
       "report_required": true,
-      "message_tr": "Prader-Willi sendromu somatropin — üçüncü basamak kurumda çocuk endokrinoloji uzman hekiminin yer aldığı 3 aylık sağlık kurulu raporu gerekir (§4.2.6.A-4).",
+      "message_tr": "Prader-Willi somatropin — genetik tanılı çocukta üçüncü basamak kurum raporu başlangıçta 3 ay, devamda 6 ay düzenlenir; diğer klinik koşullar ayrıca doğrulanmalıdır (§4.2.6.A-4).",
       "gate_b_sources": [
-        "4.2.6.A-4.(2)"
+        "4.2.6.A-4.(2)",
+        "4.2.6.A-4.(1)",
+        "4.2.6.A-4.(5)",
+        "4.2.6.A-4.(6)"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -20873,16 +20919,21 @@
       "prescriber_specialties": [
         "çocuk endokrinoloji"
       ],
-      "report_duration_months": 3
+      "report_duration_months": 3,
+      "pws_continuation_protocol": "pws_somatropin_v1",
+      "report_duration_by_phase": {
+        "initiation": 3,
+        "continuation": 6
+      },
+      "gh_patient_group": "pediatric",
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/pws_somatropin_continuation.json"
     },
     {
       "rule_id": "4.2.6.turner_somatropin_pediatric_board",
       "sut_section": "4.2.6.A-3",
       "drug_names": [
         "somatropin",
-        "somatrogon",
-        "büyüme hormonu",
-        "buyume hormonu",
         "genotropin",
         "norditropin",
         "omnitrope",
@@ -20894,7 +20945,12 @@
       ],
       "message_tr": "Turner sendromu somatropin — epifizleri açık, klinik/genetik tanılı hastada en az bir çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve çocuk endokrinoloji uzman reçetesi gerekir (§4.2.6.A-3).",
       "gate_b_sources": [
-        "4.2.6.A-3.(1)"
+        "4.2.6.A-3.(1)",
+        "4.2.6.A-3.(2)",
+        "4.2.6.A-3.a",
+        "4.2.6.A-3.b",
+        "4.2.6.A-3.c",
+        "4.2.6.A-3.ç"
       ],
       "report_required": true,
       "report_specialties": [
@@ -20903,7 +20959,10 @@
       "prescriber_specialties": [
         "çocuk endokrinoloji"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "growth_hormone_continuation_protocol": "turner_somatropin_v1",
+      "verification_status": "ai_generated_pending_review",
+      "source_evidence": "data/gazette/source_evidence/turner_somatropin_continuation.json"
     },
     {
       "rule_id": "4.2.60.bucket_b.C007124",

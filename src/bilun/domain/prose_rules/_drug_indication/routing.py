@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
+from ...claims.growth_hormone import validated_growth_hormone_value
+
 from .matching import (
     _diagnosis_matches_specific_rule,
     _drug_name_matches,
@@ -78,6 +80,11 @@ def _semantic_route_signature(rule: dict[str, Any]) -> str:
         "min_gap_months_after_antivegf",
         "required_biomarkers",
         "requires_prior_therapy",
+        "growth_hormone_continuation_protocol",
+        "pws_continuation_protocol",
+        "report_duration_by_phase",
+        "gh_patient_group",
+        "gh_treatment_phase",
         "pay",
     )
     return json.dumps(
@@ -131,6 +138,27 @@ def _select_route_rule(
     pool = list(routes)
     if not pool:
         return None, []
+
+    # GH age-group and phase are explicit source categories. A diagnosis or
+    # prescriber specialty must not choose pediatric instead of adult criteria.
+    groups = {r["gh_patient_group"] for r in pool if r.get("gh_patient_group")}
+    if groups:
+        group = validated_growth_hormone_value("gh_patient_group", drug_line.gh_patient_group)
+        if group is not None:
+            pool = [r for r in pool if r.get("gh_patient_group") == group]
+            if not pool:
+                return None, ["gh_patient_group"]
+        elif len(groups) > 1:
+            return None, ["gh_patient_group"]
+        phases = {r["gh_treatment_phase"] for r in pool if r.get("gh_treatment_phase")}
+        if phases:
+            phase = validated_growth_hormone_value("gh_treatment_phase", drug_line.gh_treatment_phase)
+            if phase is not None:
+                pool = [r for r in pool if r.get("gh_treatment_phase") == phase]
+                if not pool:
+                    return None, ["gh_treatment_phase"]
+            elif len(phases) > 1:
+                return None, ["gh_treatment_phase"]
 
     # An explicitly supplied field, including an empty tuple, is evidence that
     # the corresponding gated route should be considered.  An unavailable

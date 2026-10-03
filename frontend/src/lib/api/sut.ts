@@ -1,4 +1,5 @@
 import { postJSON, requestJSON } from "./request";
+import type { SutGrowthHormoneEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
   PatientOptimization,
@@ -33,7 +34,7 @@ function buildPatientAlertsPath(params: PatientAlertsRequestParams = {}): string
   return `/api/patient-alerts?${query.toString()}`;
 }
 
-export interface SutMaterialItem {
+export interface SutMaterialItem extends SutGrowthHormoneEvidence {
   name: string;
   unit_price: number;
   quantity: number;

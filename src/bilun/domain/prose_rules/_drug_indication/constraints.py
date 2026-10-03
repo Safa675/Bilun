@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from .growth_hormone import evaluate_growth_hormone_continuation
+from .prader_willi import PWS_PROTOCOL, evaluate_pws_clinical_checks
+
 from .matching import (
     _has_biomarker_requirement,
     _has_dose_protocol,
@@ -22,7 +25,11 @@ def _evaluate_tier_b_constraints(
     claim: ClaimHeader,
     icd_codes: list[str],
 ) -> dict[str, Any] | None:
+    section = rule.get("sut_section") or "4.2"
     duration_required = rule.get("report_duration_months")
+    if rule.get("pws_continuation_protocol") == PWS_PROTOCOL:
+        # Scope/phase were validated before report checks at the public boundary.
+        duration_required = rule["report_duration_by_phase"].get(drug_line.gh_treatment_phase)
     if duration_required is not None:
         actual_duration = drug_line.drug_report_duration_months
         if actual_duration is None:
@@ -38,7 +45,7 @@ def _evaluate_tier_b_constraints(
                 "severity": "review",
                 "missing_inputs": ["drug_report_duration_months"],
                 "message_tr": (
-                    f"Sağlık kurulu rapor süresi ({duration_required} ay) doğrulanmalı (§4.2.14.C)."
+                    f"Sağlık kurulu rapor süresi ({duration_required} ay) doğrulanmalı (§{section})."
                 ),
             }
         if actual_duration != duration_required:
@@ -56,7 +63,7 @@ def _evaluate_tier_b_constraints(
                 "actual_report_duration_months": actual_duration,
                 "message_tr": (
                     f"Sağlık kurulu rapor süresi {duration_required} ay olmalı; "
-                    f"faturada {actual_duration} ay (§4.2.14.C)."
+                    f"faturada {actual_duration} ay (§{section})."
                 ),
             }
 
@@ -480,6 +487,12 @@ def _evaluate_selected_rule_constraints(
     )
     if tier_b_hit is not None:
         return tier_b_hit
+    growth_hit = evaluate_growth_hormone_continuation(rule=rule, drug_line=drug_line)
+    if growth_hit is not None:
+        return growth_hit
+    pws_hit = evaluate_pws_clinical_checks(rule=rule, drug_line=drug_line)
+    if pws_hit is not None:
+        return pws_hit
     if _has_dose_protocol(rule):
         dose_hit = _evaluate_dose_protocol(
             rule=rule, drug_line=drug_line, claim=claim, icd_codes=icd_codes

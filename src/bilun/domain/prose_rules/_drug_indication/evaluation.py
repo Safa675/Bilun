@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from .prader_willi import evaluate_pws_preconditions
+
 from .matching import (
     _collect_icd10_codes,
     _rule_icd_selectors,
@@ -252,8 +254,12 @@ def evaluate_drug_indication_line_with_rules(
     decoration_resolution = resolution
     rule = resolution.get("selected_rule")
     if violation is None and rule is not None:
-        report_hit = _evaluate_report_requirement(rule=rule, drug_line=drug_line, claim=claim)
-        if report_hit is not None:
+        precondition_hit = evaluate_pws_preconditions(rule=rule, drug_line=drug_line)
+        report_hit = (None if precondition_hit is not None else
+                      _evaluate_report_requirement(rule=rule, drug_line=drug_line, claim=claim))
+        if precondition_hit is not None:
+            violation = precondition_hit
+        elif report_hit is not None:
             # Primary report failures have always included the common evidence;
             # raw clinical and supplemental failures intentionally do not.
             violation = {**common, **report_hit}

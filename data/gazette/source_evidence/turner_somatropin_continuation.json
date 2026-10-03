@@ -1,0 +1,158 @@
+{
+  "protocol_id": "turner_somatropin_v1",
+  "rule_id": "4.2.6.turner_somatropin_pediatric_board",
+  "sut_section": "4.2.6.A-3(2)",
+  "verification_status": "ai_generated_pending_review",
+  "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+  "verified_current_heading_from": "2024-05-17",
+  "date_basis": "RG-09/05/2024-32541/7-d heading amendment, effective 17/05/2024. Stop predicates also appear under the earlier heading; this implementation makes no claim about historical coverage before the verified somatropin-only heading.",
+  "scope": "Turner somatropin continuation only. Any one known stop predicate suffices; all four must be known and negative to pass this constraint. Passing is not overall reimbursement eligibility. Phase, epiphyses, growth velocity, height, and bone age are explicit inputs, never inferred from Q96. Initiation eligibility and clinical/genetic diagnosis are not encoded.",
+  "stop_if_any": [
+    {
+      "field": "epiphyses_closed",
+      "operator": "eq",
+      "value": true,
+      "source_coordinate": "4.2.6.A-3.a"
+    },
+    {
+      "field": "annual_growth_velocity_cm",
+      "operator": "le",
+      "value": 4,
+      "source_coordinate": "4.2.6.A-3.b"
+    },
+    {
+      "field": "height_cm",
+      "operator": "ge",
+      "value": 155,
+      "source_coordinate": "4.2.6.A-3.c"
+    },
+    {
+      "field": "bone_age_years",
+      "operator": "ge",
+      "value": 14,
+      "source_coordinate": "4.2.6.A-3.ç"
+    }
+  ],
+  "sources": [
+    {
+      "file_name": "sut-aug29.docx",
+      "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4271,
+          "text": "(Ek:RG-21/03/2018-30367/ 17 md. Yürürlük: 01/04/2018)",
+          "text_sha256": "75f8b42406408f2148631c3552488b5d74666a31cf0617f89475739c9b4236ae",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4272,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-d md. Yürürlük: 17/05/2024)",
+          "text_sha256": "f849ff6aa1d4976aec6afd0626d3e6a7c538795dff6281575c55ac6e5bc4e2e5",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4273,
+          "text": "4.2.6.A-3- Turner sendromunda;",
+          "text_sha256": "a0a29f35087248c409973aafe9f67075bca49d319847cce4bd2b0df6a91f8172",
+          "has_struck_runs": true
+        },
+        {
+          "docx_paragraph_index_zero_based": 4274,
+          "text": "4.2.6.A-3- Turner sendromunda somatropin kullanım ilkeleri;",
+          "text_sha256": "29011fe2b87de4a0cbcfe9ba206680317f361708973e4e0a1413afc20e10e902",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4276,
+          "text": "(2) Aşağıdaki kriterlerin herhangi biri sağlandığında tedavi sonlandırılır:",
+          "text_sha256": "7ed65fce58cfd2c22df0a4202b68993b95c76e253c9accda466c02c81ea4c221",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4277,
+          "text": "a) Epifiz hattı kapandığında.",
+          "text_sha256": "ae56e068bb5f79de555fcae69fde51da1b31b7cdfc6e17fd1cae1a77cebce35e",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4278,
+          "text": "b) Yıllık büyüme hızı 4 cm. ve altında olduğunda.",
+          "text_sha256": "30c6f092f8e8be6bd3df44d8d0c1b5973b52ae2d68761e435f7ceb128f8d73f9",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4279,
+          "text": "c) Boy uzunluğu 155 cm.’ ye ulaştığında.",
+          "text_sha256": "62c61a163b3e977feafb1917174dbda2104a07ae5e0abb1d285552938b6669fd",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4280,
+          "text": "ç) Kemik yaşı 14’ e ulaştığında.",
+          "text_sha256": "89b3cb7c5d1545af9df3ef791a21e3c6f9b3237fdfeb4487b5bef741d6aa2f19",
+          "has_struck_runs": false
+        }
+      ]
+    },
+    {
+      "file_name": "2026-10-02-SGK-consolidated.docx",
+      "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "paragraphs": [
+        {
+          "docx_paragraph_index_zero_based": 4279,
+          "text": "(Ek:RG-21/03/2018-30367/ 17 md. Yürürlük: 01/04/2018)",
+          "text_sha256": "75f8b42406408f2148631c3552488b5d74666a31cf0617f89475739c9b4236ae",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4280,
+          "text": "(Değişik: RG- 09/05/2024- 32541/7-d md. Yürürlük: 17/05/2024)",
+          "text_sha256": "f849ff6aa1d4976aec6afd0626d3e6a7c538795dff6281575c55ac6e5bc4e2e5",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4281,
+          "text": "4.2.6.A-3- Turner sendromunda;",
+          "text_sha256": "a0a29f35087248c409973aafe9f67075bca49d319847cce4bd2b0df6a91f8172",
+          "has_struck_runs": true
+        },
+        {
+          "docx_paragraph_index_zero_based": 4282,
+          "text": "4.2.6.A-3- Turner sendromunda somatropin kullanım ilkeleri;",
+          "text_sha256": "29011fe2b87de4a0cbcfe9ba206680317f361708973e4e0a1413afc20e10e902",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4284,
+          "text": "(2) Aşağıdaki kriterlerin herhangi biri sağlandığında tedavi sonlandırılır:",
+          "text_sha256": "7ed65fce58cfd2c22df0a4202b68993b95c76e253c9accda466c02c81ea4c221",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4285,
+          "text": "a) Epifiz hattı kapandığında.",
+          "text_sha256": "ae56e068bb5f79de555fcae69fde51da1b31b7cdfc6e17fd1cae1a77cebce35e",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4286,
+          "text": "b) Yıllık büyüme hızı 4 cm. ve altında olduğunda.",
+          "text_sha256": "30c6f092f8e8be6bd3df44d8d0c1b5973b52ae2d68761e435f7ceb128f8d73f9",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4287,
+          "text": "c) Boy uzunluğu 155 cm.’ ye ulaştığında.",
+          "text_sha256": "62c61a163b3e977feafb1917174dbda2104a07ae5e0abb1d285552938b6669fd",
+          "has_struck_runs": false
+        },
+        {
+          "docx_paragraph_index_zero_based": 4288,
+          "text": "ç) Kemik yaşı 14’ e ulaştığında.",
+          "text_sha256": "89b3cb7c5d1545af9df3ef791a21e3c6f9b3237fdfeb4487b5bef741d6aa2f19",
+          "has_struck_runs": false
+        }
+      ]
+    }
+  ]
+}

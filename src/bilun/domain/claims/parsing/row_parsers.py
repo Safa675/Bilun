@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
 from dataclasses import fields
 from datetime import date
 
@@ -347,6 +349,7 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             prior_therapies=optional_string_records(
                 row, "prior_therapies", line_id, errors,
             ),
+            **parse_growth_hormone_inputs(row, row_id=line_id, errors=errors),
             prescriber_specialty=parse_text(
                 {**row, "prescriber_specialty": row.get("prescriber_specialty") or ""},
                 "prescriber_specialty",

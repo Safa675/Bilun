@@ -17,6 +17,7 @@ from src.bilun.domain.billing.broad_rule_materializer import (
 )
 from src.bilun.domain.billing.engine import analyze_claim
 from src.bilun.domain.claims.adapter import build_context_from_material_dict
+from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
     assess_bundled_material,
     assess_excluded_material,
@@ -47,6 +48,8 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "drug_report_duration_months", "annual_application_count", "is_loading_phase",
         "biomarkers", "prior_therapies", "drug_inpatient_supply", "service_date",
         "route_discriminator",
+        *GROWTH_HORMONE_INPUT_FIELDS, "historical_sut_version",
+        "pws_initiation_clinical_assessment", "pws_remaining_clinical_criteria",
         "drug_claim_date", "age", "weight_kg", "edss", "cancer_stage", "treatment_setting",
         "historical_rule_version", "effective_rule_version", "prior_taxane_anti_her2_cycles",
         "residual_invasive_disease", "treatment_cycle_count", "disease_progression",

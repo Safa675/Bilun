@@ -26,6 +26,8 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.2.
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
+
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -237,6 +239,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     is_loading_phase=mat.get("is_loading_phase"),
                     biomarkers=tuple(biomarkers) if biomarkers else None,
                     prior_therapies=tuple(prior_therapies) if prior_therapies else None,
+                    **parse_growth_hormone_inputs(mat),
                 )
             )
 
