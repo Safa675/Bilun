@@ -22,6 +22,7 @@ def _typed_validator_stub():
         "contract_version": 2, "request_id": "request:1", "claim_id": "C1",
         "validation_status": "partially_evaluated", "is_valid": None,
         "violations": [], "advisories": [], "material_applicability": [],
+        "drug_runtime_coverage": None,
         "coverage": {"evaluation_count": 496, "authored_rule_count": 496,
                      "unresolved_count": 496, "disposition_counts": {"missing_inputs": 496},
                      "scope": "submitted_request_facts_only"},
