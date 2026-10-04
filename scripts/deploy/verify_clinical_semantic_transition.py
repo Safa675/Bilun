@@ -90,6 +90,8 @@ AUTHORIZED_TOOLING_PATHS = frozenset({
     "scripts/deploy/verify_private_rehearsal.py",
     "scripts/deploy/build_wavea_sidecar.py",
     "scripts/deploy/paired_release.py",
+    "scripts/deploy/snapshot_maintenance.py",
+    "scripts/deploy/paired_release_transaction.py",
     "scripts/deploy/probe_auth.py",
     "scripts/deploy/recover_old_pair.py",
     "scripts/deploy/rehearse_wavea_pair.py",

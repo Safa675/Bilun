@@ -137,6 +137,22 @@ def test_startup_source_exception_is_an_exact_approved_path(source_history, path
             transition._verify_candidate_history(checkout, candidate)
 
 
+@pytest.mark.parametrize("path,authorized", [
+    ("scripts/deploy/snapshot_maintenance.py", True),
+    ("scripts/deploy/paired_release_transaction.py", True),
+    ("scripts/deploy/snapshot_maintenance_extra.py", False),
+    ("scripts/deploy/paired_release_transaction_extra.py", False),
+])
+def test_maintenance_source_exception_is_an_exact_approved_path(source_history, path, authorized):
+    checkout, _, _, _, _ = source_history
+    candidate = _commit(checkout, path, "# source-closed fixture\n", "maintenance boundary fixture")
+    if authorized:
+        assert transition._verify_candidate_history(checkout, candidate)
+    else:
+        with pytest.raises(ValueError):
+            transition._verify_candidate_history(checkout, candidate)
+
+
 def _retained_meta() -> dict:
     return {
         "code_sha": transition.BASELINE_CODE_SHA,
