@@ -234,6 +234,50 @@ def _stopped_capture(host):
     return capture
 
 
+@pytest.mark.parametrize("change", ["late_image", "revived_frontend"])
+def test_held_precopy_rechecks_full_runtime_and_stopped_pair(tmp_path, monkeypatch, change):
+    host = _held_host(tmp_path, monkeypatch)
+    capture, original_observe = _stopped_capture(host), host.observe
+    sealed, ready, cut = [], [], []
+
+    def observe():
+        value = original_observe()
+        if sealed:
+            assert all(host.running.values()) and host.barrier()
+            ready.append(True)
+        return value
+
+    def changed_after_capture():
+        captured = capture()
+        sealed.append(captured)
+        assert _runtime_digest(host.output.parent / "frontend", backend=False) == captured["frontend_runtime_sha256"]
+        if change == "late_image":
+            image = host.root / "frontend/.next/cache/images/postseal/optimized.png"
+            image.parent.mkdir(parents=True)
+            image.write_bytes(b"synthetic image written after the full runtime seal")
+            assert _runtime_digest(host.root / "frontend", backend=False) != captured["frontend_runtime_sha256"]
+        else:
+            host.running["frontend"] = True  # Independent PID/state/listener observations reappear.
+        cut[:] = host.calls
+        return captured
+
+    host.observe = observe
+    with pytest.raises(snapshot.SnapshotMaintenanceError):
+        host.execute(hold_barrier=True, stopped_runtime_capture=changed_after_capture)
+    assert len(sealed) == 1 and "copy" not in host.calls and not host.output.exists()
+    value = snapshot.inspect_snapshot(host.journal)
+    assert value["snapshot_complete"] is False and value["state"] in {"blocked", "restored"}
+    if change == "late_image":
+        assert value["state"] == "blocked" and host.calls == cut
+        assert not any(host.running.values()) and host.barrier()
+    elif value["state"] == "restored":
+        assert ready and all(host.running.values())
+        assert (host.root / "Caddyfile").read_bytes() == OLD_CADDYFILE
+        assert host.loaded_route == {"apps": {"fixture_caddyfile": OLD_CADDYFILE.decode()}}
+    else:
+        assert host.barrier() and "route_old" not in host.calls
+
+
 def test_held_capture_seals_cold_image_write_after_frontend_stops(tmp_path, monkeypatch):
     host = _held_host(tmp_path, monkeypatch)
     frontend = tmp_path / "frontend"
@@ -597,11 +641,12 @@ def test_held_abort_never_publishes_old_frontend_after_image_cache_drift(tmp_pat
     owner = host.lock.parent / "paired-release-owner.json"
     owner_bytes = owner.read_bytes()
     image = tmp_path / "frontend" / ".next" / "cache" / "images" / "probe" / "optimized.png"
-    original = host.observe
+    original, cut = host.observe, {}
 
     def image_write():
         image.parent.mkdir(parents=True, exist_ok=True)
         image.write_bytes(b"synthetic recovery probe optimizer output")
+        cut.update(calls=host.calls[:], running=host.running.copy())
 
     def ready():
         assert all(host.running.values()) and host.barrier()
@@ -615,7 +660,8 @@ def test_held_abort_never_publishes_old_frontend_after_image_cache_drift(tmp_pat
     with pytest.raises(snapshot.SnapshotMaintenanceError, match="blocked"):
         snapshot.recover_snapshot(host.journal, observe_pair=ready)
     assert "route_old" not in host.calls
-    assert host.barrier() and not any(host.running.values())
+    assert cut and host.calls == cut["calls"] and host.running == cut["running"]
+    assert host.barrier()
     assert owner.read_bytes() == owner_bytes
     assert image.read_bytes() == b"synthetic recovery probe optimizer output"
     assert snapshot.inspect_snapshot(host.journal)["state"] == "blocked"
