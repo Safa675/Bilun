@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   output: "standalone",
   productionBrowserSourceMaps: false,
+  images: { maximumDiskCacheSize: 0 },
   outputFileTracingRoot: REPO_ROOT,
   turbopack: {
     root: REPO_ROOT,
