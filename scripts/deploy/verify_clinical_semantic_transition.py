@@ -103,6 +103,7 @@ AUTHORIZED_TOOLING_PATHS = frozenset({
     "tests/unit/deploy/test_same_port_rehearsal.py",
     "tests/unit/deploy/test_issue_wavea_activation.py",
     "tests/unit/deploy/test_prepare_single_vps_release.py",
+    "tests/unit/deploy/test_snapshot_maintenance.py",
     "tests/unit/deploy/test_verify_private_rehearsal.py",
     "tests/unit/deploy/probe_auth_fixtures.py",
     "tests/unit/deploy/test_probe_auth.py",

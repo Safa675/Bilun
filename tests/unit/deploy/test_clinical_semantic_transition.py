@@ -140,8 +140,10 @@ def test_startup_source_exception_is_an_exact_approved_path(source_history, path
 @pytest.mark.parametrize("path,authorized", [
     ("scripts/deploy/snapshot_maintenance.py", True),
     ("scripts/deploy/paired_release_transaction.py", True),
+    ("tests/unit/deploy/test_snapshot_maintenance.py", True),
     ("scripts/deploy/snapshot_maintenance_extra.py", False),
     ("scripts/deploy/paired_release_transaction_extra.py", False),
+    ("tests/unit/deploy/test_snapshot_maintenance_extra.py", False),
 ])
 def test_maintenance_source_exception_is_an_exact_approved_path(source_history, path, authorized):
     checkout, _, _, _, _ = source_history
