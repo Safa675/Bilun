@@ -103,6 +103,7 @@ AUTHORIZED_TOOLING_PATHS = frozenset({
     "tests/unit/deploy/test_rehearse_wavea_pair.py",
     "tests/unit/deploy/test_single_vps_release_integration.py",
     "tests/unit/deploy/test_serving_activation.py",
+    "tests/integration/deploy/test_generated_launcher_startup.py",
     "tests/integration/deploy/test_signed_transition_startup.py",
     "docs/operations/semantic-transition-3f5540cf-3e0e0c6d.md",
 })

@@ -95,9 +95,12 @@ def test_production_source_pins_remain_exact():
 @pytest.mark.parametrize("path,authorized", [
     ("src/bilun/api/wavea_activation.py", True),
     ("tests/integration/deploy/test_signed_transition_startup.py", True),
+    ("tests/integration/deploy/test_generated_launcher_startup.py", True),
     ("src/bilun/api/schemas.py", False),
     ("src/bilun/api/wavea_activation_extra.py", False),
     ("tests/integration/deploy/test_signed_transition_startup_extra.py", False),
+    ("tests/integration/deploy/test_generated_launcher_startup_extra.py", False),
+    ("tests/integration/deploy/generated_launcher_startup.py", False),
 ])
 def test_startup_source_exception_is_an_exact_approved_path(source_history, path, authorized):
     checkout, _, _, _, _ = source_history
