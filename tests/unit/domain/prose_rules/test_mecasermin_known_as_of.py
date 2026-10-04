@@ -36,7 +36,7 @@ def evaluate(*, reverse=False, rules=None, **overrides):
         diagnoses=[], rules=list(reversed(chosen)) if reverse else chosen)
 
 
-@pytest.mark.parametrize("when", [date(2026, 8, 29), date(2026, 10, 2)])
+@pytest.mark.parametrize("when", [date(2026, 8, 29), date(2026, 10, 2), date(2026, 10, 4)])
 @pytest.mark.parametrize("reverse", [False, True])
 def test_negative_screen_on_supported_source_dates_is_still_partial_review(when, reverse):
     result = evaluate(drug_claim_date=when, reverse=reverse)
@@ -47,7 +47,7 @@ def test_negative_screen_on_supported_source_dates_is_still_partial_review(when,
 
 @pytest.mark.parametrize("when", [date(2013, 3, 24), date(2017, 9, 23), date(2026, 8, 28),
                                   date(2026, 8, 30), date(2026, 9, 15), date(2026, 10, 1),
-                                  date(2026, 10, 4), date(2027, 1, 1)])
+                                  date(2026, 10, 5), date(2027, 1, 1)])
 def test_every_unverified_service_date_is_review_including_between_snapshots(when):
     result = evaluate(drug_claim_date=when, epiphyses_closed=True,
                       drug_specialty_board_report_present=False)

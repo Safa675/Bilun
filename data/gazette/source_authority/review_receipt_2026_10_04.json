@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "review_id": "sgk-rg-clinical-2026-10-04T182213Z",
+  "checked_at": "2026-10-04T18:22:13Z",
+  "checked_through": "2026-10-04",
+  "scope": "named_clinical_report_checks_only",
+  "named_families": [
+    "sma",
+    "antifungal_micafungin",
+    "antifungal_other",
+    "renal",
+    "enteral",
+    "ravulizumab",
+    "followup",
+    "indication_sc_ig",
+    "indication_hbv",
+    "indication_hcv",
+    "indication_bone",
+    "mecasermin"
+  ],
+  "no_affecting_clinical_amendment_found": true,
+  "excluded_dependencies": [
+    "pricing",
+    "reference/equivalent groups",
+    "market-share mechanisms",
+    "EK-4/A listing and product availability",
+    "general prescription and report dependencies beyond the pinned named checks",
+    "full reimbursement eligibility",
+    "later publications after observation"
+  ],
+  "observations": [
+    {
+      "kind": "gazette_supplement_index",
+      "source_url": "https://www.resmigazete.gov.tr/",
+      "observed_at": "2026-10-04T18:16:11.879606+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-homepage-20261004-observer-text.txt",
+        "sha256": "58509899d25641a5bddec314873d941018c9b65f4285bfa65fc8bcd402762a90"
+      }
+    },
+    {
+      "kind": "gazette_daily_contents",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261004.htm",
+      "observed_at": "2026-10-04T18:16:11.713064+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-20261004-daily-contents-observer-text.txt",
+        "sha256": "394a335fe25aaeddc5347b3e5b706ecea8c504189feabfb887607e8e62fa954b"
+      }
+    },
+    {
+      "kind": "sgk_sut_listing",
+      "source_url": "https://www.sgk.gov.tr/birimler/duyurular/GENEL-SAGLIK-SIGORTASI-GENEL-MUDURLUGU-2026-01-28-02-00-42",
+      "observed_at": "2026-10-04T18:16:11.925020+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-gss-listing-20261004-observer-text.txt",
+        "sha256": "1775465ae0252fa6d8b753841d099b7d550c4ab0d9766e9f02fa59945431d72d"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at": "2026-10-04T18:16:11.775259+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261004-text.txt",
+        "sha256": "cfabc290a83696d3013eec90ab2c05581454e650a82b0852a40a71ab9e03f1b9"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at": "2026-10-04T18:09:34.837168Z",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-20261002-amendment-observed-20261004-text.txt",
+        "sha256": "d8a512e78e2a737af831175a9f5a8cac81ffd8669a5396806d4adb6203a9d152"
+      }
+    }
+  ]
+}

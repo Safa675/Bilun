@@ -342,6 +342,9 @@ def resolve_source_authority(family_id: str, service_date) -> ClinicalSourceAuth
                 payload.update(status="admitted", reason="covered", admission_basis=window.basis,
                                admitted_from=window.start, admitted_through=window.through,
                                next_action="Only the named necessary clinical/report checks are source-admitted; remaining reimbursement conditions still require review.")
+                if window.basis == "reviewed_continuity":
+                    review = next(row for row in catalog.official_reviews if row.review_id == window.review_id)
+                    payload.update(review_id=review.review_id, official_review_checked_at=review.checked_at)
                 if window.basis == "observed_snapshot":
                     payload.update(source_observed_on=window.start, source_docx_sha256=window.observed_source_sha256)
     except (OSError, ValueError, TypeError, KeyError, StopIteration, AttributeError, pl.exceptions.PolarsError):

@@ -1,0 +1,23 @@
+Source URL: https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a
+Observed at UTC: 2026-10-04T18:10:41.246988Z
+Official consolidated DOCX SHA256: 227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573
+Capture type: derived exact paragraph text; zero-based body/w:p indices, not all w:p indices; no current-law parsing claimed.
+Scope: explicit commencement annotations and corresponding replacement/addition headings; historical struck paragraphs may intervene. Historical strikethroughs and future-effective text coexist in the DOCX.
+
+1095: 2.4.2 - Organ, doku ve kök hücre nakli tedavileri
+
+1096:          (Değişik: RG-02/10/2026- 33388/ 1 md. Yürürlük: 02/11/2026)
+
+1110:        2.4.2.A - Organ ve doku nakli                
+
+5572:                (Değişik: RG-02/10/2026- 33388/ 2-a md. Yürürlük: 10/10/2026)
+
+5575: ff) Trastuzumab emtansin;  
+
+5579:                (Değişik: RG-02/10/2026- 33388/ 2-b md. Yürürlük: 10/10/2026)
+
+5582: gg) Pertuzumab, trastuzumab ve pertuzumab kombinasyonu;
+
+6056:                (Ek: RG-02/10/2026- 33388/ 2-c md. Yürürlük: 10/10/2026)
+
+6057:                aaaa) Satralizumab yalnızca; yüksek hastalık aktivitesi gösteren, relapslarla seyreden vücut ağırlığı 40 kg veya üzerinde olan 12 yaşından itibaren adolesan ve yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde; 

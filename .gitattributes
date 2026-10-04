@@ -7,3 +7,7 @@ data/gazette/raw/**/*.parquet linguist-generated=true
 
 # Raw data directory (gitignored but hygiene)
 "raw data/" linguist-vendored=true
+
+# Keep the hash-pinned documentary text, including source trailing spaces.
+data/gazette/source_authority/sgk-20261002-amendment-observed-20261004-text.txt whitespace=-blank-at-eol
+data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261004-text.txt whitespace=-blank-at-eol

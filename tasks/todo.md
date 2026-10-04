@@ -1388,3 +1388,40 @@ No merge, deployment, VPS access, invented clinical criteria, blanket source dat
 
 ### Verified implementation contract
 The service date is optional `drug_context.service_date`, mapped to the actual drug line, never the server date. Date-aware selection uses half-open validity intervals and fails closed on absent, invalid, overlapping or unsupported versions. The three explicitly annotated October 10 successor clauses are source-backed partial evaluations, not complete eligibility decisions. Legacy clinical checks may still run before that boundary, with an explicit unverified historical-version review. Thiotepa stays quarantined; no active amendment is inferred from consolidation. Temporal records do not inflate encoded-rule coverage. Public evidence is bounded and allowlisted, with source IDs/dates/hashes but no raw rule payload. Stream B owns the form/type; this stream owns backend contracts and domain tests.
+## Task: 4 Ekim 2026 sınırlı klinik kaynak incelemesi
+
+### Goal
+Resmî pozitif kanıt varsa yalnız desteklenen klinik inceleme gününü eklemek; kanıt yetersizse 4 Ekim inceleme gerekliliğini koruyan, kaynak ve yürürlük sınırları doğrulanmış dar sonuç teslim etmek.
+
+### Subtasks
+- [x] Ana dizüstü kirli dosyalarını koru; 499dff4 tabanında bağımsız worktree oluştur ve repo talimatlarını oku.
+- [x] 4 Ekim SGK ilan dizini, Resmî Gazete günlük içerik ve mükerrer göstergesini canlı resmî kaynaklardan gözle.
+- [x] PR128 49af201 başındaki 10 Ekim ilaç / 2 Kasım organ nakli sınırlarını resmî belgeyle eşleştir.
+- [x] Kanıt ve ortak dosya sahipliğini üst göreve bildir; clinical_versions.json sahipliği çözülmeden yazma. Üst görev tek yazarlığı 4 Ekim'de açıkça verdi; corpus sahibi patch aktaracak.
+- [x] Yeterli kanıt halinde yeni gözlem/makbuz ve tek günlük pencereyi ekle; yetersizse salt inceleme kanıtını ve açık engeli kaydet.
+- [x] Tarihsel boşluk, hukuki alt sınır, klinik kapsam, ertesi gün ve tahrif edilmiş kanıt kontrollerini hedefli çalıştır.
+- [x] Bağımsız inceleme yaptır; doğrulanmış dar sonucu ve kalan engelleri Türkçe teslim et.
+
+- [x] Yeni pencere eklendiğinde geçmiş continuity günü kendi makbuz kimliğini korusun; dar provenance düzeltmesini regresyonla doğrula.
+
+### Out of Scope
+Corpus/parquet yenilemesi, genel mimari, tam tıbbi ödeme uygunluğu, merge, VPS ve deploy.
+
+### Specification and plan review
+Kullanıcının devredilen talimatı kapsamı ve küçük taslak PR akışını onaylıyor. Yeni hukuki tarih veya hash çıkarımı yapılmayacak. 12 mevcut aile, Python kaynak otoritesi kataloğu ve hedefli pytest katmanı kullanılacak. Başarı: yalnız gözlenen gün için pozitif resmî kanıt veya dürüst kapalı sonuç; tarihi boşlukları doldurmayan ve clinical_eligibility_complete=false sonucunu koruyan doğrulama. Ortak dosya yazımı üst görevin sahiplik paylaşımına bağlı.
+
+### Progress evidence
+Baseline gerçekten çalıştırıldı: `/home/safa/Documents/Bilun/.venv/bin/python -m pytest tests/unit/domain/prose_rules/test_clinical_source_authority.py -q`: 100 passed (2.70s). Aynı runtime ile `scripts/sut/verify_clinical_source_authority.py --check`: 12 aile, 17 yerel asset, through 2026-10-03, exit 0. Yarım fetch commit nesnesi kontrol edildi: 49af201 mevcut. Geçici transport kesintisinde belirsiz yazım tekrarlanmadı; tek yazım bu plan.
+
+New-window implementation review: Yeni pozitif 4 Ekim kanıtı aynı gün ve dört gerekli kategori için dondurulduktan sonra ayrı tek günlük pencere eklenecek. İncelemede mevcut resolver'ın geçmiş continuity gününe son makbuz metadata'sını atadığı görüldü; yalnız eşleşen continuity penceresinin makbuz kimliğini koruyan dar düzeltme kapsamda. Bu, evaluator değişikliği veya yeni mimari değil.
+
+Frozen source result: 4 Ekim RG normal sayı 33390 günlük içerik, current homepage/Son Mükerrer göstergesi (6 Eylül), SGK GSS yeni SUT ilanları (2 Ekim) ve 3 Ekim ayrı ilaç geri ödeme yönetmeliği aynı gün 18:16:11 UTC'de başarılı HTTP200 gözlemlerle donduruldu. Canlı SGK değişiklik DOCX SHA a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb ve konsolide DOCX SHA227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573 önceki proof ile bayt düzeyinde aynı. Yeni strict makbuz sgk-rg-clinical-2026-10-04T182213Z: 12 aile, 5 gözlem/4 tür, aynı İstanbul günü, tüm capture ve raw-byte hash kontrolleri exit0. Kanıt bütünlüğü ve resmî dijital imza farklıdır; birlikte yeniden yazılıp pinlenen tüm veriyi runtime bağımsız resmî doğruluk diye onaylamaz.
+
+Commencement result: Resmî SGK konsolide body/w:p indeks1096 organ 02/11/2026;5572/5579/6056 ff/gg/aaaa ilaç10/10/2026. Takvim hesabıyla tarih üretilmedi. Gerçek ilaç temporal suite34 passed; helper suite2 passed; üç ilaç×09/10/11Ekim/None=12 doğrudan assertion geçti. Organ tarih alan runtime selector bulunmadı; PR128 yeni GateB(4)/(5) çıplak koordinatları eski transfer/donör anlamlarıyla çarpışabilir. Bu veri uyumluluğu görevinin açık inceleme konusu, bu kaynak PR'ı çözmez.
+
+### Review
+Son dokuz dosyalık hedefli paket, kaynak/HTTP/evaluator/observation testleri ve ilaç temporal testleriyle gerçekten çalıştı: **538 passed, 3 warnings, 17.82s**. Normal sandbox'ta TestClient/AnyIO portal askısı görüldü; izin incelemesinden geçen minimal in-process client 0.34s'de geçti ve aynı tam paket onaylanan ortamda exit0 tamamlandı. Gerçek server/port veya VPS kullanılmadı. Scoped Ruff ve `git diff --check` exit0. Final verifier:12 aile/25 repo-local asset/through2026-10-04, clinical_eligibility_complete=false; `/tmp/bilun-source-authority-assets-20261004.json`.
+
+Bağımsız final diff incelemesinde P1/P2 bulgu yok. Eski katalog tüm alanları/pencereleri korunmuş; yalnız12 tek günlük pencere ve bir makbuz eklenmiş. Bağımsız36 gerçek3/4/5Ekim tarih kontrolü ve final8proof hash kontrolü geçti; ayrı HTTP dışı hedefli koşu394passed39deselected. İncelemecinin yarım HTTP koşusu exit130 ile durduruldu, pass sayılmadı. Kaynak sahibi full HTTP538pass sonucunu yukarıda ayrı doğruladı.
+
+Yayın sırası: Bu kaynak yenilemesi mevcut9639c457 corpus üzerinde bağımsız dar taslak PR olacak. Corpus sahibinin gerçek veri geçişi+catalog seam paketi bunun üstüne ikinci taslak PR olarak taşınacak; ilk kaynak PR'ında corpus veya binding değişikliği yok. Merge/deploy yok.
