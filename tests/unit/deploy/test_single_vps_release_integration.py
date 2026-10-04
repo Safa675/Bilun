@@ -1012,16 +1012,17 @@ def test_adopted_prepared_abort_refuses_operator_context_drift_without_machine_a
              transaction.owner_path, transaction.journal_path, journal, driver.root / "old-backend-env.nul")
     before = {str(path): path.read_bytes() for path in paths}
     events, loaded, pointer = list(fake.events), fake.loaded_route, os.readlink(driver.paths["frontend_current"])
-    with pytest.raises((ValueError, PairedReleaseError, snapshot.SnapshotMaintenanceError)):
-        transaction.rollback()
-    assert fake.events == events
-    assert {str(path): path.read_bytes() for path in paths} == before
-    assert fake.loaded_route == loaded
-    assert os.readlink(driver.paths["frontend_current"]) == pointer
-    assert not any(fake.running.values())
-    assert not driver.paths["backend_dropin"].exists() and not driver.paths["frontend_dropin"].exists()
-    assert not (driver.root / "serving-receipt.json").exists()
-    assert not (driver.root / "serving-launch-proof.json").exists()
+    for _ in range(2):
+        with pytest.raises((ValueError, PairedReleaseError, snapshot.SnapshotMaintenanceError)):
+            transaction.rollback()
+        assert fake.events == events
+        assert {str(path): path.read_bytes() for path in paths} == before
+        assert fake.loaded_route == loaded
+        assert os.readlink(driver.paths["frontend_current"]) == pointer
+        assert not any(fake.running.values())
+        assert not driver.paths["backend_dropin"].exists() and not driver.paths["frontend_dropin"].exists()
+        assert not (driver.root / "serving-receipt.json").exists()
+        assert not (driver.root / "serving-launch-proof.json").exists()
 
 
 def test_another_release_cannot_claim_adopted_prepared_held_pair(held_host):

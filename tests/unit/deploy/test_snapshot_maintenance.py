@@ -314,7 +314,9 @@ def test_held_preseal_rejects_non_image_frontend_source_mutation(tmp_path, monke
     with pytest.raises(snapshot.SnapshotMaintenanceError):
         host.execute(hold_barrier=True, stopped_runtime_capture=stopped_capture)
     assert len(owner_bytes) == 1 and owner.read_bytes() == owner_bytes[0]
-    assert host.calls == cut["calls"] and attempts == cut["attempts"]
+    # The callback's diagnostic capture event is not a service/route/cache mutation.
+    assert [call for call in host.calls if call != "capture"] == [call for call in cut["calls"] if call != "capture"]
+    assert attempts == cut["attempts"]
     assert "copy" not in host.calls and "route_old" not in host.calls
     # The already-entered frontend stop may finish. Stale source identity does
     # not authorize stopping the still-running backend as defensive cleanup.
@@ -407,12 +409,13 @@ def test_held_recovery_rejects_operator_drift_before_any_mutation(tmp_path, monk
 
     monkeypatch.setattr(snapshot, "_run", run)
     monkeypatch.setattr(CaddyRouteDriver, "install", install)
-    with pytest.raises(snapshot.SnapshotMaintenanceError):
-        snapshot.recover_snapshot(host.journal, observe_pair=host.observe)
-    assert attempts == [] and host.calls == calls
-    assert host.loaded_route == loaded and host.running == running
-    assert os.readlink(pointer) == link
-    assert {path: path.read_bytes() for path in protected} == protected
+    for _ in range(2):
+        with pytest.raises(snapshot.SnapshotMaintenanceError):
+            snapshot.recover_snapshot(host.journal, observe_pair=host.observe)
+        assert attempts == [] and host.calls == calls
+        assert host.loaded_route == loaded and host.running == running
+        assert os.readlink(pointer) == link
+        assert {path: path.read_bytes() for path in protected} == protected
 
 
 def test_held_capture_failure_is_not_a_prepared_snapshot(tmp_path, monkeypatch):
@@ -657,6 +660,61 @@ def test_held_recovery_owner_loss_has_no_further_service_or_route_actions(tmp_pa
     assert host.barrier() and "route_old" not in host.calls
     assert marker.exists() is (change == "foreign")
     assert (marker.read_bytes() if marker.exists() else None) == marker_bytes[0]
+
+
+@pytest.mark.parametrize("failure", ["start", "owner_release"])
+def test_held_recovery_retries_owned_io_failure(tmp_path, monkeypatch, failure):
+    host = _held_host(tmp_path, monkeypatch)
+    host.execute(hold_barrier=True, stopped_runtime_capture=_stopped_capture(host))
+    owner = host.lock.parent / "paired-release-owner.json"
+    owner_bytes = owner.read_bytes()
+    protected = {path: path.read_bytes() for path in tmp_path.rglob("*")
+                 if path.is_file() and path not in {host.journal, owner, tmp_path / "Caddyfile"}}
+    injected = []
+    if failure == "start":
+        host.failure, host.phase, host.error = "start_backend", "before", OSError
+    else:
+        original_unlink = Path.unlink
+
+        def unlink(path, *, missing_ok=False):
+            if path == owner and not injected:
+                assert json.loads(host.journal.read_text())["state"] == "releasing"
+                assert all(host.running.values()) and owner.read_bytes() == owner_bytes
+                assert (tmp_path / "Caddyfile").read_bytes() == OLD_CADDYFILE
+                assert host.loaded_route == {"apps": {"fixture_caddyfile": OLD_CADDYFILE.decode()}}
+                injected.append("owner_release")
+                raise OSError("injected owner unlink failure before effect")
+            return original_unlink(path, missing_ok=missing_ok)
+
+        monkeypatch.setattr(Path, "unlink", unlink)
+    with pytest.raises(snapshot.SnapshotMaintenanceError, match="blocked"):
+        snapshot.recover_snapshot(host.journal, observe_pair=host.observe)
+    if failure == "start":
+        assert host.failure is None and "start_backend" in host.calls
+        assert "route_old" not in host.calls
+    else:
+        assert injected == ["owner_release"]
+    value = snapshot.inspect_snapshot(host.journal)
+    assert value["state"] == "blocked" and value["snapshot_complete"] is True
+    assert host.barrier() and not any(host.running.values())
+    assert owner.read_bytes() == owner_bytes
+    assert {path: path.read_bytes() for path in protected} == protected
+    capture_count, copy_count = host.calls.count("capture"), host.calls.count("copy")
+    original_observe = host.observe
+
+    def ready():
+        assert all(host.running.values()) and host.barrier()
+        host.calls.append("ready")
+        return original_observe()
+
+    result = snapshot.recover_snapshot(host.journal, observe_pair=ready)
+    assert result["state"] == "restored" and result["live_readiness"] == "verified"
+    assert host.calls[-4:] == ["start_backend", "start_frontend", "ready", "route_old"]
+    assert all(host.running.values()) and not owner.exists()
+    assert (tmp_path / "Caddyfile").read_bytes() == OLD_CADDYFILE
+    assert host.loaded_route == {"apps": {"fixture_caddyfile": OLD_CADDYFILE.decode()}}
+    assert (host.calls.count("capture"), host.calls.count("copy")) == (capture_count, copy_count)
+    assert {path: path.read_bytes() for path in protected} == protected
 
 
 def test_success_checkpoint_and_restart_identity_are_refreshed(tmp_path, monkeypatch):
