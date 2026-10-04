@@ -538,7 +538,7 @@ class SingleVpsDriver:
             # This import root belongs only to the short-lived Python launcher;
             # candidate_environments strips it before exec of either real service.
             contents = (f"[Service]\nWorkingDirectory={cwd}\nEnvironment=PYTHONPATH={import_root}\n"
-                        f"ExecStart=\nExecStart={python} -m "
+                        f"ExecStart=\nExecStart={python} -B -m "
                         f"scripts.deploy.launch_wavea_candidate {role} --config {config}\n")
             _new_private_file(self.root / f"{role}.conf", contents.encode())
         return {"derivation": merge_seconds,
