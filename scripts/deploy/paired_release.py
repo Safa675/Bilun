@@ -19,6 +19,7 @@ import time
 from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
+from urllib.parse import urlparse
 
 from scripts.deploy.caddy_route_driver import CaddyRouteDriver, _adapt, _digest, _validate
 from scripts.deploy.candidate_environment import _environment, candidate_environments
@@ -39,6 +40,25 @@ _FIELDS = _PATH_FIELDS | {"schema_version", "release_id", "old_build_id", "prepa
 _SNAPSHOT_FIELDS = {"snapshot_journal_path", "snapshot_journal_identity_sha256"}
 _UNITS = ("bilun-backend.service", "bilun-frontend.service")
 _SYSTEMD_PATH = re.compile(r"/[A-Za-z0-9_./-]+\Z")
+
+
+def _read_only_asset_paths(base: str, html: bytes) -> set[str]:
+    from scripts.deploy.http_release_probes import _asset_paths
+    from scripts.deploy.verify_frontend_assets import extract_assets_from_html, is_local_asset
+
+    for raw in extract_assets_from_html(html.decode("utf-8")):
+        parsed = urlparse(raw)
+        if (not is_local_asset(raw, base) or parsed.scheme not in {"", urlparse(base).scheme}
+                or parsed.params or any(part in {".", ".."} for part in parsed.path.split("/"))):
+            raise ValueError("Frontend asset URL is not a reviewed read-only path")
+    paths = _asset_paths(base, html)
+    for asset in paths:
+        path = urlparse(asset).path
+        if (not _SYSTEMD_PATH.fullmatch(path) or "//" in path
+                or not (path.startswith("/_next/static/")
+                        or path in {"/favicon.ico", "/brand/full.png", "/brand/nameless.png"})):
+            raise ValueError("Frontend asset URL is not a reviewed read-only path")
+    return paths
 
 
 def _run(*args: str) -> str:
@@ -936,9 +956,8 @@ class SingleVpsDriver:
             raise ValueError("Restored Caddy configuration is not loaded and restart-persistent")
 
     def verify_pair(self, *, candidate: bool, public: bool) -> None:
-        from scripts.deploy.http_release_probes import HttpReleaseProbes, _fetch, _strict_json
+        from scripts.deploy.http_release_probes import _fetch, _strict_json
         from scripts.deploy.probe_auth import old_probe_context, probe_cookie
-        from scripts.deploy.verify_frontend_assets import verify_entrypoint
         from scripts.deploy.verify_public_billing_access import verify
 
         prepared = self._prepared()
@@ -969,20 +988,32 @@ class SingleVpsDriver:
         public_enabled = environment.get("BILUN_PUBLIC_BILLING_ENABLED", "").strip().lower() in {"1", "true", "yes"}
         for base in bases:
             verify(base, session, public=public_enabled)
+        asset_paths = {}
         for base in bases[1:]:
-            if not verify_entrypoint(base + "/login", min_assets=10, verbose=False)[0]:
+            status, html = _fetch(base, "/login", None)
+            if status != 200:
                 raise ValueError("Frontend public assets are unavailable")
+            asset_paths[base] = _read_only_asset_paths(base, html)
+        if public and asset_paths[bases[1]] != asset_paths[bases[2]]:
+            raise ValueError("Public frontend references the wrong build assets")
+        # Validate every discovered URL before the first asset GET. Reuse the
+        # exact lists from this HTML; another parse could introduce optimizer GETs.
+        asset_hashes = {}
+        for base in bases[1:]:
+            asset_hashes[base] = {}
+            for path in sorted(asset_paths[base]):
+                status, body = _fetch(base, path, None)
+                if status != 200 or not body:
+                    raise ValueError("Frontend public assets are unavailable")
+                asset_hashes[base][path] = hashlib.sha256(body).digest()
             for path in ("/api/auth/me", "/api/patients", "/api/compliance-index", "/api/revenue-recovery"):
                 direct = _fetch(bases[0], path, session)
                 proxied = _fetch(base, path, session)
                 if direct[0] != 200 or proxied[0] != 200 or _strict_json(direct[1]) != _strict_json(proxied[1]):
                     raise ValueError("Frontend/public API does not reach the attested pair")
-        if public:
-            # Reuse the exact public/direct HTML asset-set and byte comparison.
-            probe = object.__new__(HttpReleaseProbes)
-            probe.public_base, probe.fetch = "https://app.bilun.tech", _fetch
-            probe._equal_assets("http://127.0.0.1:3000")
-        # Asset/optimizer GETs are observable writes on old Next runtimes. The
+        if public and asset_hashes[bases[1]] != asset_hashes[bases[2]]:
+            raise ValueError("Public frontend asset bytes differ from the direct pair")
+        # HTTP probes can be observable writes on old Next runtimes. The
         # final strict hash proof follows every probe, including public probes.
         services = [observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))]
         if candidate:

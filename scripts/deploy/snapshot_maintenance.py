@@ -58,6 +58,10 @@ class SnapshotMaintenanceError(RuntimeError):
     pass
 
 
+class _RecoveryInputChanged(SnapshotMaintenanceError):
+    pass
+
+
 def _private_directory(path: Path) -> None:
     if (not path.is_absolute() or path != path.resolve() or not path.is_dir()
             or path.stat().st_mode & 0o077):
@@ -312,7 +316,7 @@ def _assert_barrier(value: dict) -> None:
         raise SnapshotMaintenanceError("Owned maintenance is not both loaded and restart-persistent")
 
 
-def _ensure_barrier(path: Path, value: dict) -> None:
+def _ensure_barrier(path: Path, value: dict, *, recovery: bool = False) -> None:
     _assert_owner(path, value)
     route = _routes(value)
     route.verify_sealed_routes()
@@ -321,9 +325,17 @@ def _ensure_barrier(path: Path, value: dict) -> None:
         raise SnapshotMaintenanceError("Unrelated Caddy route change blocks snapshot recovery")
     digest = value["routes"]["barrier"]["route_sha256"]
     if route.loaded_route_sha256() != digest or route.installed_route_sha256() != digest:
+        if recovery:
+            _assert_recovery_inputs(path, value)
+            before = (route.loaded_route_sha256(), route.installed_route_sha256())
         _assert_owner(path, value)
         _record(path, value, "entering_maintenance")
-        _assert_owner(path, value)
+        if recovery:
+            _assert_recovery_inputs(path, value)
+            if (route.loaded_route_sha256(), route.installed_route_sha256()) != before:
+                raise _RecoveryInputChanged("Recovery route changed during its maintenance intent")
+        else:
+            _assert_owner(path, value)
         route.install("barrier")
     _assert_owner(path, value)
     _assert_barrier(value)
@@ -338,6 +350,30 @@ def _assert_cache(value: dict) -> None:
         if _candidate_db_hash(cache) != value["expected_pair"]["cache_sha256"]:
             raise SnapshotMaintenanceError("Held old cache bytes changed")
         _cache_meta(cache, value["build_id"])
+
+
+def _assert_recovery_inputs(path: Path, value: dict) -> None:
+    """An owner marker alone never authorizes rewriting an operator's pair."""
+    try:
+        _assert_owner(path, value)
+        _assert_static(value)
+        if value["snapshot_complete"]:
+            _assert_cache(value)
+        route = _routes(value)
+        route.verify_sealed_routes()
+        known = {item["route_sha256"] for item in value["routes"].values()}
+        phase = value["state"]
+        if phase == "blocked":
+            phase = ("held" if value["reason"] == _RecoveryInputChanged.__name__ else
+                     next(event for event in reversed(value["events"]) if event != "blocked"))
+        if phase not in {"entering_maintenance", "restoring_route"}:
+            name = "old" if phase in {"snapshot_prepared", "releasing", "restored"} else "barrier"
+            known = {value["routes"][name]["route_sha256"]}
+        if route.loaded_route_sha256() not in known or route.installed_route_sha256() not in known:
+            raise SnapshotMaintenanceError("Old recovery route changed outside the sealed transaction")
+        _assert_owner(path, value)
+    except Exception as exc:
+        raise _RecoveryInputChanged("Sealed old recovery inputs changed; no mutation is authorized") from exc
 
 
 def assert_held_snapshot(journal_path: Path, *, expected_identity_sha256: str | None = None,
@@ -583,10 +619,12 @@ def _stop_owned(path: Path, value: dict) -> None:
     """Fail closed after lost maintenance/readiness, only while ownership is ours."""
     failure = None
     for role in ("frontend", "backend"):
-        _assert_owner(path, value)
+        _assert_recovery_inputs(path, value)
+        _assert_barrier(value)
         _record(path, value, f"stopping_{role}")
         try:
-            _assert_owner(path, value)
+            _assert_recovery_inputs(path, value)
+            _assert_barrier(value)
             _run("systemctl", "stop", f"bilun-{role}.service")
         except Exception as exc:
             # A timeout can happen after a successful stop. Still stop the
@@ -598,17 +636,24 @@ def _stop_owned(path: Path, value: dict) -> None:
 
 
 def _restore_held(path: Path, value: dict, observe_pair: Callable[[], dict]) -> dict:
+    mutation_authorized = False
     try:
-        _ensure_barrier(path, value)
+        _assert_recovery_inputs(path, value)
+        mutation_authorized = True
+        _ensure_barrier(path, value, recovery=True)
         for role in ("backend", "frontend"):
+            mutation_authorized = False
             _assert_owner(path, value)
             _assert_static(value)
             _assert_barrier(value)
             _record(path, value, f"starting_{role}")
-            _assert_owner(path, value)
+            _assert_recovery_inputs(path, value)
+            _assert_barrier(value)
+            mutation_authorized = True
             _run("systemctl", "start", f"bilun-{role}.service")
         _record(path, value, "verifying")
         observed = _wait_ready(value, observe_pair, journal_path=path)
+        mutation_authorized = False
         _assert_owner(path, value)
         # A readiness probe can itself populate the optimizer cache. Hash after
         # the last probe, before making the unchanged old pair public again.
@@ -617,32 +662,50 @@ def _restore_held(path: Path, value: dict, observe_pair: Callable[[], dict]) -> 
             _assert_cache(value)
         _assert_barrier(value)
         _record(path, value, "restoring_route")
-        _assert_owner(path, value)
+        _assert_recovery_inputs(path, value)
+        _assert_barrier(value)
         route = _routes(value)
+        mutation_authorized = True
         route.install("old")
+        mutation_authorized = False
         digest = value["routes"]["old"]["route_sha256"]
         if route.loaded_route_sha256() != digest or route.installed_route_sha256() != digest:
             raise SnapshotMaintenanceError("Restored old route is not both loaded and restart-persistent")
         _assert_static(value)
+        mutation_authorized = True
         _record(path, value, "releasing")
         _release_owner(path, value)
         _record(path, value, "restored")
         return observed
     except BaseException as exc:
+        inputs_changed = not mutation_authorized or isinstance(exc, _RecoveryInputChanged)
         _, raw = _owner_value(_owner_path(value))
         previous = base64.b64decode(value["previous_owner"], validate=True) if value["previous_owner"] is not None else None
         if value["state"] in {"releasing", "restored"} and raw == previous:
             raise SnapshotMaintenanceError("Old pair restored; snapshot journal finalization requires retry") from exc
-        if _owner_value(_owner_path(value))[0] == _own_marker(path, value):
+        if (mutation_authorized and not isinstance(exc, _RecoveryInputChanged)
+                and _owner_value(_owner_path(value))[0] == _own_marker(path, value)):
             try:
-                _ensure_barrier(path, value)
-            except Exception:
-                pass
-            try:
-                _stop_owned(path, value)
-            except Exception:
-                pass
-        _record(path, value, "blocked", reason=type(exc).__name__)
+                _assert_recovery_inputs(path, value)
+            except _RecoveryInputChanged:
+                inputs_changed = True
+            else:
+                cleanup_authorized = True
+                try:
+                    _ensure_barrier(path, value, recovery=True)
+                except _RecoveryInputChanged:
+                    cleanup_authorized = False
+                    inputs_changed = True
+                except Exception:
+                    pass
+                if cleanup_authorized:
+                    try:
+                        _stop_owned(path, value)
+                    except _RecoveryInputChanged:
+                        inputs_changed = True
+                    except Exception:
+                        pass
+        _record(path, value, "blocked", reason=(_RecoveryInputChanged.__name__ if inputs_changed else type(exc).__name__))
         raise SnapshotMaintenanceError("Snapshot recovery blocked; old pair remains unpublished") from exc
 
 
@@ -719,6 +782,9 @@ def snapshot_with_maintenance(*, journal_path: Path, machine_lock: Path,
                 _assert_owner(journal_path, value)
                 _assert_barrier(value)
                 captured = stopped_runtime_capture()
+                _assert_owner(journal_path, value)
+                _assert_static(value, before_capture=True)
+                _assert_barrier(value)
                 old, new = _normal_pair(expected_pair), _normal_pair(captured)
                 old.pop("frontend_runtime_sha256")
                 new.pop("frontend_runtime_sha256")
