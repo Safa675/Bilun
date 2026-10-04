@@ -128,8 +128,8 @@ describe("mesothelioma form through the API request boundary", () => {
     await act(async () => {
       renderer.root.findByProps({ placeholder: en.claimValidator.drugContext.icd10Placeholder }).props.onChange({ target: { value: "C45" } });
       renderer.root.findByProps({ placeholder: en.claimValidator.drugContext.prescriberPlaceholder }).props.onChange({ target: { value: "tıbbi onkoloji" } });
-      renderer.root.findAllByType("select").find(select => select.findAllByType("option").some(option => option.props.value === "yes"))!
-        .props.onChange({ target: { value: "yes" } });
+      renderer.root.findAllByType("label").find(label => label.children.join("") === en.claimValidator.drugContext.boardReport)!
+        .parent!.findByType("select").props.onChange({ target: { value: "yes" } });
     });
     const request = await submit();
     expect(request.drug_context).toMatchObject({ primary_icd10: "C45", prescriber_specialty: "tıbbi onkoloji", board_report_present: true });
