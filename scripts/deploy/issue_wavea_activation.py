@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import stat
 import subprocess
@@ -86,6 +87,153 @@ def _existing_private_key(path: Path) -> bytes:
     return key
 
 
+def _held_old_preflight(
+    *, journal_path: Path, journal_identity_sha256: str, old_snapshot: Path,
+    frontend_current: Path, caddy_config: Path, serving_old_build_id: str,
+    serving_code_sha: str, old_backend_environment_path: Path | None,
+    rehearsal_path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Bind copied rollback artifacts to the exact owned, stopped old pair."""
+    from scripts.deploy.snapshot_maintenance import SnapshotMaintenanceError, assert_held_snapshot
+    from scripts.deploy.capture_release_preflight import (
+        _build_id, _private_probe, _runtime_digest, _snapshot_build_id,
+    )
+    from scripts.deploy.candidate_environment import _environment
+    from scripts.deploy.prepare_wavea_routes import OLD_CADDYFILE
+
+    if (not isinstance(journal_path, Path) or not journal_path.is_absolute()
+            or journal_path != old_snapshot.parent / "snapshot-maintenance/transaction.json"
+            or old_snapshot != old_snapshot.resolve() or not old_snapshot.is_dir()
+            or old_backend_environment_path not in (None, old_snapshot / "backend-effective-env.nul")):
+        raise ValueError("Held rollback snapshot paths do not bind the protected bundle")
+    try:
+        value = assert_held_snapshot(journal_path, expected_identity_sha256=journal_identity_sha256)
+    except SnapshotMaintenanceError as exc:
+        raise ValueError("Held old-pair snapshot ownership, maintenance or static proof failed") from exc
+    expected, spec = value["expected_pair"], value["recovery_spec"]
+    if (Path(value["output_cache"]) != old_snapshot / "cache.duckdb"
+            or value["build_id"] != serving_old_build_id
+            or spec["serving_code_sha"] != serving_code_sha
+            or Path(spec["frontend_current"]) != frontend_current
+            or Path(spec["caddy_config"]) != caddy_config
+            or not frontend_current.is_symlink()
+            or os.readlink(frontend_current) != value["frontend_link"]
+            or str(frontend_current.resolve()) != expected["frontend_target"]):
+        raise ValueError("Held old-pair machine, build or source inventory differs")
+    old_health = expected["health_identity"]
+    if (old_health.get("status") != "ok" or old_health.get("cache_ready") is not True
+            or old_health.get("active_build") != serving_old_build_id
+            or old_health.get("code_sha") not in (None, serving_code_sha)):
+        raise ValueError("Held old-pair historical health identity differs")
+    artifacts, frozen_files = {}, {}
+    configs = {str(caddy_config)}
+    for role in ("backend", "frontend"):
+        identity = expected[role]
+        runtime = old_snapshot / role
+        if identity.get("unit_files_modified_since_start") or identity.get("environment_files_modified_since_start"):
+            raise ValueError("Held old configuration was modified after its listener started")
+        if (runtime.resolve() == Path(spec[f"live_{role}_runtime"]).resolve()
+                or _runtime_digest(runtime, backend=role == "backend") != expected[f"{role}_runtime_sha256"]):
+            raise ValueError("Held old runtime copy differs from sealed snapshot")
+        if role == "backend" and not (runtime / ".venv/bin/python").exists():
+            raise ValueError("Held old backend copy lacks its runnable Python environment")
+        if role == "frontend" and not (
+            (runtime / "server.js").is_file()
+            or ((runtime / "package.json").is_file()
+                and (runtime / "node_modules/next/dist/bin/next").exists())
+        ):
+            raise ValueError("Held old frontend copy is not a runnable Next runtime")
+        env_path = old_snapshot / f"{role}-effective-env.nul"
+        environment = _environment(env_path)
+        raw_environment = env_path.read_bytes()
+        environment_sha = hashlib.sha256(b"\0".join(sorted(
+            item for item in raw_environment.split(b"\0") if item
+        ))).hexdigest()
+        service_path = old_snapshot / f"{role}-service.json"
+        service, service_sha = _load_private_json(service_path, root=old_snapshot)
+        argv_sha = hashlib.sha256(b"\0".join(arg.encode() for arg in service["process_argv"])).hexdigest()
+        if (environment_sha != identity["effective_environment_sha256"]
+                or service["environment_sha256"] != environment_sha
+                or argv_sha != identity["process_argv_sha256"]
+                or service["environment_files"] != identity["environment_file_paths"]
+                or any(service[key] != identity[key] for key in (
+                    "unit", "active_state", "main_pid", "listener_pid", "declared_working_directory",
+                    "process_working_directory", "process_executable", "unit_sha256", "unit_fragment",
+                    "unit_files", "selected_environment", "process_started_at_utc",
+                ))):
+            raise ValueError("Held old full environment, service or argv copy differs")
+        if role == "backend":
+            cache = Path(environment.get("BILUN_CACHE_DB_PATH") or
+                         Path(spec["live_backend_runtime"]) / ".cache/bilun.duckdb")
+            if not cache.is_absolute():
+                cache = Path(spec["live_backend_runtime"]) / cache
+            if str(cache) != value["live_cache"]:
+                raise ValueError("Held old full environment selects a different cache")
+        frozen_files[str(env_path)] = _stable_file_hash(env_path)
+        frozen_files[str(service_path)] = service_sha
+        configs.update(identity["unit_files"])
+        configs.update(identity["environment_file_paths"])
+        if not identity["unit_files"]:
+            raise ValueError("Held old effective unit inventory is empty")
+        artifacts[role] = {"path": str(runtime), "runtime_sha256": expected[f"{role}_runtime_sha256"]}
+        probe_identity = {"runtime_sha256": expected[f"{role}_runtime_sha256"],
+                          "effective_environment_sha256": environment_sha}
+        checks = {"health", "representative_api"} if role == "backend" else {"login_assets"}
+        if role == "backend":
+            probe_identity.update(cache_sha256=expected["cache_sha256"], active_build=serving_old_build_id)
+        else:
+            build_id = _build_id(runtime)
+            if not build_id:
+                raise ValueError("Held old frontend copy has no build identity")
+            artifacts[role]["build_id"] = build_id
+            probe_identity["build_id"] = build_id
+        probe = rehearsal_path.parent / f"old-{role}-probe.json"
+        _private_file(probe)
+        artifacts[role]["private_probe"] = _private_probe(probe, probe_identity, checks)
+    cache_path = old_snapshot / "cache.duckdb"
+    if (_candidate_db_hash(cache_path) != expected["cache_sha256"]
+            or _snapshot_build_id(cache_path) != serving_old_build_id):
+        raise ValueError("Held old cache copy or build differs")
+    artifacts["cache"] = {"path": str(cache_path), "sha256": expected["cache_sha256"],
+                          "active_build": serving_old_build_id}
+    config_root = old_snapshot / "config"
+    if not config_root.is_dir() or config_root.is_symlink():
+        raise ValueError("Held old configuration snapshot is not independent")
+    copied_configs = set()
+    for copied in config_root.rglob("*"):
+        if copied.is_symlink() or copied != copied.resolve():
+            raise ValueError("Held old configuration copy has a symlink or alias")
+        if copied.is_file():
+            copied_configs.add("/" + copied.relative_to(config_root).as_posix())
+    if copied_configs != configs:
+        raise ValueError("Held old configuration copy inventory differs")
+    artifacts["service_and_proxy_configuration"] = {}
+    for raw_path in sorted(configs):
+        copied = config_root / Path(raw_path).relative_to("/")
+        saved = value["configuration"].get(raw_path)
+        _private_file(copied)
+        if saved is None or _stable_file_hash(copied) != saved["sha256"]:
+            raise ValueError("Held old configuration copy bytes differ")
+        if raw_path == str(caddy_config) and (
+            copied.read_bytes() != OLD_CADDYFILE
+            or saved["sha256"] != value["routes"]["old"]["file_sha256"]
+        ):
+            raise ValueError("Held old canonical Caddy copy differs")
+        artifacts["service_and_proxy_configuration"][raw_path] = {
+            "path": str(copied), "sha256": saved["sha256"],
+        }
+    verified_code = old_health.get("code_sha") == serving_code_sha
+    preflight = {
+        "observed": {"backend": {"observed_checkout_head": spec["serving_code_sha"],
+                                    "serving_code_sha_verified": verified_code,
+                                    "health_code_sha": old_health.get("code_sha")}},
+        "rollback": {"blockers": [] if verified_code else ["serving_backend_code_sha_unverified"],
+                     "artifacts": artifacts},
+        "frozen_files_sha256": frozen_files,
+    }
+    return preflight, old_health
+
+
 def issue_wavea_activation(
     *,
     release_id: str,
@@ -124,6 +272,8 @@ def issue_wavea_activation(
     baseline_build_config_environment: dict[str, str] | None = None,
     old_backend_environment_path: Path | None = None,
     clinical_transition: dict[str, Any] | None = None,
+    old_snapshot_journal_path: Path | None = None,
+    old_snapshot_journal_identity_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Seal one exact main-CI candidate after cache, trace, and rollback proof."""
     if any(type(value) is not int or not 1 <= value <= 8 for value in (
@@ -132,6 +282,23 @@ def issue_wavea_activation(
         raise ValueError("Private build worker count is invalid")
     if type(use_existing_key) is not bool:
         raise ValueError("Existing signing key selection must be a boolean")
+    if (old_snapshot_journal_path is None) != (old_snapshot_journal_identity_sha256 is None):
+        raise ValueError("Held old snapshot requires its journal and exact identity together")
+    held_arguments = None
+    held_preflight = None
+    if old_snapshot_journal_path is not None:
+        if (not isinstance(old_snapshot_journal_identity_sha256, str)
+                or not re.fullmatch(r"[0-9a-f]{64}", old_snapshot_journal_identity_sha256)):
+            raise ValueError("Held old snapshot identity must be an exact SHA256")
+        held_arguments = dict(
+            journal_path=old_snapshot_journal_path,
+            journal_identity_sha256=old_snapshot_journal_identity_sha256,
+            old_snapshot=old_snapshot, frontend_current=frontend_current, caddy_config=caddy_config,
+            serving_old_build_id=serving_old_build_id,
+            serving_code_sha=baseline_code_sha if serving_code_sha is None else serving_code_sha,
+            old_backend_environment_path=old_backend_environment_path, rehearsal_path=rehearsal_path,
+        )
+        held_preflight, held_health = _held_old_preflight(**held_arguments)
     if (
         key_path.resolve() == receipt_path.resolve()
         or receipt_path.exists() or receipt_path.is_symlink()
@@ -253,26 +420,33 @@ def issue_wavea_activation(
         candidate=candidate, backend_runtime=backend_runtime,
         clinical_transition=semantic.get("clinical_transition"),
     )
-    if old_backend_environment_path is None:
-        old_health = _live_health("http://127.0.0.1:8001/health")
+    if held_arguments is not None:
+        old_preflight, old_health = held_preflight, held_health
+        for role in ("backend", "frontend"):
+            if (old_preflight["rollback"]["artifacts"][role]["private_probe"]["report_sha256"]
+                    != rehearsal[f"old_{role}_probe_sha256"]):
+                raise ValueError("Held old private probe differs from verified rehearsal")
     else:
-        from scripts.deploy.candidate_environment import _environment
-        if old_backend_environment_path != old_snapshot / "backend-effective-env.nul":
-            raise ValueError("Old health environment must be the protected serving snapshot")
-        old_health = read_loopback_health(_environment(old_backend_environment_path))
-    old_preflight = assess_release_preflight(
-        observe_service("bilun-frontend.service", 3000),
-        observe_service("bilun-backend.service", 8001),
-        old_health,
-        frontend_current=frontend_current,
-        frontend_snapshot=old_snapshot / "frontend",
-        backend_snapshot=old_snapshot / "backend",
-        cache_snapshot=old_snapshot / "cache.duckdb",
-        frontend_probe=rehearsal_path.parent / "old-frontend-probe.json",
-        backend_probe=rehearsal_path.parent / "old-backend-probe.json",
-        config_snapshot_dir=old_snapshot / "config",
-        caddy_config=caddy_config,
-    )
+        if old_backend_environment_path is None:
+            old_health = _live_health("http://127.0.0.1:8001/health")
+        else:
+            from scripts.deploy.candidate_environment import _environment
+            if old_backend_environment_path != old_snapshot / "backend-effective-env.nul":
+                raise ValueError("Old health environment must be the protected serving snapshot")
+            old_health = read_loopback_health(_environment(old_backend_environment_path))
+        old_preflight = assess_release_preflight(
+            observe_service("bilun-frontend.service", 3000),
+            observe_service("bilun-backend.service", 8001),
+            old_health,
+            frontend_current=frontend_current,
+            frontend_snapshot=old_snapshot / "frontend",
+            backend_snapshot=old_snapshot / "backend",
+            cache_snapshot=old_snapshot / "cache.duckdb",
+            frontend_probe=rehearsal_path.parent / "old-frontend-probe.json",
+            backend_probe=rehearsal_path.parent / "old-backend-probe.json",
+            config_snapshot_dir=old_snapshot / "config",
+            caddy_config=caddy_config,
+        )
     rollback = old_preflight.get("rollback", {})
     artifacts = rollback.get("artifacts", {})
     verified_code = verified_old_backend_identity(
@@ -319,6 +493,14 @@ def issue_wavea_activation(
         )[1] != saved_trace_sha
     ):
         raise ValueError("Release evidence changed before receipt issuance")
+    if held_arguments is not None:
+        fresh_preflight, fresh_health = _held_old_preflight(**held_arguments)
+        if (fresh_preflight != held_preflight or fresh_health != held_health
+                or _load_private_json(rehearsal_path, root=rehearsal_path.parent)[1]
+                != rehearsal["rehearsal_sha256"]
+                or _load_private_json(tuple_observation_path, root=tuple_observation_path.parent)[1]
+                != rehearsal["tuple_observation_sha256"]):
+            raise ValueError("Held old rollback evidence changed before receipt issuance")
     payload = {
         "schema_version": RECEIPT_VERSION,
         "release_id": release_id, "ci_run_id": ci_run_id,
@@ -412,7 +594,9 @@ def main(argv: list[str] | None = None) -> int:
         # Older manifests intentionally mean the historical default, never counts
         # inferred from the untrusted recorded invocation. Unknown fields still fail.
         workers = {key: manifest.get(key, 2) for key in ("payload_workers", "billing_workers")}
-        optional = {"use_existing_key", "serving_code_sha", "baseline_build_config_environment", "old_backend_environment_path", "clinical_transition"}
+        optional = {"use_existing_key", "serving_code_sha", "baseline_build_config_environment",
+                    "old_backend_environment_path", "clinical_transition", "old_snapshot_journal_path",
+                    "old_snapshot_journal_identity_sha256"}
         if set(manifest) - workers.keys() - optional != _MANIFEST_PATHS | _MANIFEST_STRINGS | {"dependency_roots"}:
             raise ValueError("Activation manifest has missing or extra fields")
         if any(
@@ -436,11 +620,21 @@ def main(argv: list[str] | None = None) -> int:
             "old_backend_environment_path" in manifest
             and (not isinstance(manifest["old_backend_environment_path"], str)
                  or not Path(manifest["old_backend_environment_path"]).is_absolute())
+        ) or (
+            ("old_snapshot_journal_path" in manifest) != ("old_snapshot_journal_identity_sha256" in manifest)
+        ) or (
+            "old_snapshot_journal_path" in manifest
+            and (not isinstance(manifest["old_snapshot_journal_path"], str)
+                 or not Path(manifest["old_snapshot_journal_path"]).is_absolute()
+                 or not isinstance(manifest["old_snapshot_journal_identity_sha256"], str)
+                 or not re.fullmatch(r"[0-9a-f]{64}", manifest["old_snapshot_journal_identity_sha256"]))
         ):
             raise ValueError("Activation manifest optional field type is invalid")
         paths = {key: Path(manifest[key]) for key in _MANIFEST_PATHS}
         if "old_backend_environment_path" in manifest:
             manifest["old_backend_environment_path"] = Path(manifest["old_backend_environment_path"])
+        if "old_snapshot_journal_path" in manifest:
+            manifest["old_snapshot_journal_path"] = Path(manifest["old_snapshot_journal_path"])
         if any(not path.is_absolute() for path in paths.values()):
             raise ValueError("Activation manifest paths must be absolute")
         result = issue_wavea_activation(

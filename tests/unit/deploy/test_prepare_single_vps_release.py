@@ -10,6 +10,10 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from datetime import UTC, datetime
+from importlib.util import module_from_spec, spec_from_file_location
+from dataclasses import replace
+from functools import wraps
 
 from tests.unit.deploy.probe_auth_fixtures import write_old_auth
 
@@ -170,7 +174,18 @@ def machine(tmp_path: Path, monkeypatch):
         save(kwargs["evidence_dir"] / "sidecar.json", {"passed": True})
         return {"status": "wavea_sidecar_built"}
 
-    def issue(**kwargs):
+    def issue(*, old_snapshot_journal_path=None, old_snapshot_journal_identity_sha256=None, **kwargs):
+        if spec.get("snapshot_mode") == "early-owned-maintenance":
+            from scripts.deploy.snapshot_maintenance import assert_held_snapshot
+
+            assert old_snapshot_journal_path == root / "snapshot-maintenance/transaction.json"
+            assert old_snapshot_journal_identity_sha256 is not None
+            held = assert_held_snapshot(old_snapshot_journal_path,
+                                        expected_identity_sha256=old_snapshot_journal_identity_sha256)
+            assert held["state"] == "held"
+            assert held["identity_sha256"] == old_snapshot_journal_identity_sha256
+        else:
+            assert old_snapshot_journal_path is None and old_snapshot_journal_identity_sha256 is None
         event("issue")
         assert events.count("ci") == 2
         assert kwargs["use_existing_key"] is True
@@ -201,6 +216,7 @@ def test_constructs_all_artifacts_in_dependency_order(machine):
                       "build", "structural", "bridge", "semantic", "trace", "rehearse", "sidecar",
                       "observe", "baseline", "roster", "ci", "issue", "observe"]
     assert result["production_mutated"] is False
+    assert result["snapshot_mode"] == "online-read-lock"
     assert result["public_activation_ready"] is False
     assert json.loads((root / "prepared.json").read_text()) == result
     paired = json.loads(Path(result["paired_manifest_path"]).read_text())
@@ -212,6 +228,25 @@ def test_constructs_all_artifacts_in_dependency_order(machine):
     assert Path(spec["live_cache_path"]).read_bytes() == original
     assert Path(spec["signing_key_path"]).read_bytes() == b"x" * 32
     assert Path(spec["frontend_current"]).resolve() == Path(spec["live_frontend_runtime"])
+
+
+def test_early_owned_maintenance_requires_explicit_manifest_opt_in(machine):
+    manifest, spec, events, _ = machine
+    assert module.load_preparation_manifest(manifest)["snapshot_mode"] == "online-read-lock"
+    spec["snapshot_mode"] = "early-owned-maintenance"
+    save(manifest, spec)
+    assert module.load_preparation_manifest(manifest)["snapshot_mode"] == "early-owned-maintenance"
+    assert events == [] and not Path(spec["bundle_root"]).exists()
+
+
+@pytest.mark.parametrize("mode", [True, None, "early_owned_maintenance", "early-owned-maintenance "])
+def test_ambiguous_early_maintenance_mode_has_no_service_or_capture_effect(machine, mode):
+    manifest, spec, events, _ = machine
+    spec["snapshot_mode"] = mode
+    save(manifest, spec)
+    with pytest.raises(ValueError, match="Snapshot mode"):
+        module.prepare_release_bundle(manifest)
+    assert events == [] and not Path(spec["bundle_root"]).exists()
 
 
 def test_handoff_dependency_pin_rejects_postprepare_external_venv_change(machine):
@@ -475,6 +510,387 @@ def test_snapshot_rejects_state_drift_during_copy(tmp_path, monkeypatch, change)
     monkeypatch.setattr(module.shutil, "copyfileobj", changed)
     with pytest.raises(ValueError, match="WAL|moved"):
         module._copy_cache_consistently(source, copy, "old")
+
+
+def test_frontend_snapshot_retains_settled_image_cache_bytes_and_strict_digest(tmp_path):
+    source, destination = tmp_path / "frontend", tmp_path / "snapshot"
+    image = source / ".next/cache/images/authored-key/fixture.webp"
+    image.parent.mkdir(parents=True)
+    image.write_bytes(b"authored synthetic stopped image cache")
+    (source / "server.js").write_bytes(b"authored synthetic standalone")
+    before = module._runtime_digest(source, backend=False)
+    module._copy_runtime(source, destination, backend=False)
+    assert (destination / image.relative_to(source)).read_bytes() == image.read_bytes()
+    assert module._runtime_digest(source, backend=False) == before
+    assert module._runtime_digest(destination, backend=False) == before
+
+
+@pytest.mark.parametrize("existed", [False, True])
+def test_frontend_snapshot_rejects_image_cache_write_during_real_copy(tmp_path, monkeypatch, existed):
+    source, destination = tmp_path / "frontend", tmp_path / "snapshot"
+    image = source / ".next/cache/images/authored-key/fixture.webp"
+    image.parent.mkdir(parents=True)
+    (source / "server.js").write_bytes(b"authored synthetic standalone")
+    if existed:
+        image.write_bytes(b"settled authored image cache")
+    copytree = module.shutil.copytree
+
+    def late_write(*args, **kwargs):
+        result = copytree(*args, **kwargs)
+        if Path(args[0]) == source:
+            image.write_bytes(b"late authored image cache")
+        return result
+
+    monkeypatch.setattr(module.shutil, "copytree", late_write)
+    with pytest.raises(ValueError, match="runtime changed"):
+        module._copy_runtime(source, destination, backend=False)
+    assert image.read_bytes() == b"late authored image cache"
+
+
+def _early_private_capture(tmp_path, monkeypatch):
+    """Reuse real held maintenance; only OS/process observations are fabricated.
+
+    The fresh preparer executes its original snapshot/private inventory logic,
+    copies and hash functions. The sibling helper runs original ownership and
+    loaded/installed route checks with disposable systemd/Caddy observations.
+    """
+    from scripts.deploy import paired_release as paired
+    from scripts.deploy import snapshot_maintenance as maintenance
+    from scripts.deploy.capture_release_preflight import ServiceObservation
+    from scripts.deploy.service_identity import stable_environment_sha256
+    from tests.unit.deploy.test_observe_candidate_tuple import _process
+    from tests.unit.deploy.test_snapshot_maintenance import _held_host
+
+    definition = spec_from_file_location("private_stopped_capture_test", module.__file__)
+    fresh = module_from_spec(definition)
+    definition.loader.exec_module(fresh)
+    host = _held_host(tmp_path, monkeypatch)
+    bundle = tmp_path / "bundle"
+    bundle.mkdir(mode=0o700)
+    host.journal = bundle / "snapshot-maintenance/transaction.json"
+    host.output = bundle / "old-snapshot/cache.duckdb"
+    spec = {**host.spec, "bundle_root": bundle, "lock_path": host.lock,
+            "snapshot_mode": "early-owned-maintenance"}
+    proc = tmp_path / "proc"
+    proc.mkdir(mode=0o700)
+    services, environments = {}, {}
+    for role, pid in (("backend", 101), ("frontend", 202)):
+        raw = f"AUTH_SECRET=authored-{role}-only\0BILUN_CACHE_DB_PATH={host.live}\0".encode()
+        argv = (str(Path(sys.executable).resolve()), str(tmp_path / role / "source"))
+        _process(proc, pid, tmp_path / role, b"\0".join(arg.encode() for arg in argv) + b"\0", raw)
+        (proc / str(pid) / "status").write_text("Uid:\t0\t0\t0\t0\n")
+        service = ServiceObservation(
+            unit=f"bilun-{role}.service", active_state="active", main_pid=pid, listener_pid=pid,
+            declared_working_directory=tmp_path / role, process_working_directory=tmp_path / role,
+            process_executable=Path(sys.executable).resolve(), process_argv=argv,
+            unit_sha256=hashlib.sha256((tmp_path / f"{role}.service").read_bytes()).hexdigest(),
+            unit_fragment=str(tmp_path / f"{role}.service"), unit_files=(tmp_path / f"{role}.service",),
+            environment_files=(tmp_path / f"{role}.env",), selected_environment={"BILUN_STARTUP_POLICY": "load-only"},
+            environment_sha256=hashlib.sha256(b"\0".join(sorted(raw[:-1].split(b"\0")))).hexdigest(),
+            process_started_at_utc=datetime.now(UTC),
+        )
+        services[role] = service
+        environments[role] = raw
+        host.expected[role] = {**fresh._public_service(service), "stable_environment_sha256": stable_environment_sha256(raw)}
+
+    def path(*args, **kwargs):
+        value = Path(*args, **kwargs)
+        return proc / value.relative_to("/proc") if value.is_relative_to("/proc") else value
+
+    monkeypatch.setattr(fresh, "Path", path)
+    def observe(unit, _port):
+        role = unit.removeprefix("bilun-").removesuffix(".service")
+        service = services[role]
+        current = proc / str(service.listener_pid)
+        return replace(service, unit_sha256=hashlib.sha256((tmp_path / f"{role}.service").read_bytes()).hexdigest(),
+                       process_argv=tuple(item.decode() for item in (current / "cmdline").read_bytes().split(b"\0") if item),
+                       process_executable=(current / "exe").resolve(strict=True))
+
+    monkeypatch.setattr(fresh, "observe_service", observe)
+    monkeypatch.setattr(fresh, "_observe_live", lambda _spec: host.observe())
+    gate = paired.SingleVpsDriver._service_access_gate
+
+    def access_run(*args):
+        assert args[:2] == ("systemctl", "show")
+        assert args[3] in {"--property=User", "--property=DynamicUser"}
+        return "root" if args[3] == "--property=User" else "no"
+
+    monkeypatch.setattr(paired, "_run", access_run)
+    def access_gate(values):
+        with monkeypatch.context() as process_identity:
+            process_identity.setattr(paired.os, "geteuid", lambda: 0)
+            gate(values, proc_root=proc)
+
+    monkeypatch.setattr(paired.SingleVpsDriver, "_service_access_gate", staticmethod(access_gate))
+    run = maintenance._run
+
+    def stop(*args):
+        result = run(*args)
+        if args[:2] == ("systemctl", "stop"):
+            role = args[2].removeprefix("bilun-").removesuffix(".service")
+            shutil.rmtree(proc / str(services[role].listener_pid))
+        return result
+
+    monkeypatch.setattr(maintenance, "_run", stop)
+    digest = fresh._runtime_digest
+
+    def stopped_digest(root, *, backend):
+        if root in {spec["live_backend_runtime"], spec["live_frontend_runtime"]}:
+            assert host.barrier() and not any(host.running.values())
+            assert not any(proc.iterdir()), "original process inventory must be gone before runtime capture"
+            assert maintenance._run("systemctl", "show", "bilun-frontend.service", "--property=MainPID", "--value") == "0"
+            assert maintenance._run("systemctl", "show", "bilun-frontend.service", "--property=ActiveState", "--value") == "inactive"
+            assert maintenance._run("ss", "-H", "-ltn", "sport = :3000") == ""
+            host.calls.append("capture_runtime")
+        return digest(root, backend=backend)
+
+    monkeypatch.setattr(fresh, "_runtime_digest", stopped_digest)
+    return fresh, spec, host, proc, services, environments
+
+
+def test_early_capture_seals_private_inventory_before_proc_disappears(tmp_path, monkeypatch):
+    fresh, spec, host, proc, services, environments = _early_private_capture(tmp_path, monkeypatch)
+    before = json.loads(json.dumps(host.expected))
+    captured = fresh._snapshot_old(spec, before)
+    assert captured == before and not any(proc.iterdir())
+    assert not any(host.running.values()) and host.barrier()
+    assert host.calls.index("route_barrier") < host.calls.index("stop_frontend") < host.calls.index("stop_backend") < host.calls.index("capture_runtime")
+    assert "start_backend" not in host.calls and "start_frontend" not in host.calls
+    journal = json.loads(host.journal.read_text())
+    assert journal["state"] == "held" and journal["snapshot_complete"] is True
+    assert (host.lock.parent / "paired-release-owner.json").is_file()
+    for role in ("backend", "frontend"):
+        private = spec["bundle_root"] / "old-snapshot"
+        assert (private / f"{role}-effective-env.nul").read_bytes() == environments[role]
+        service = json.loads((private / f"{role}-service.json").read_text())
+        assert service["process_argv"] == list(services[role].process_argv)
+        assert service["process_executable"] == str(services[role].process_executable)
+        assert fresh._runtime_digest(private / role, backend=role == "backend") == captured[f"{role}_runtime_sha256"]
+    assert fresh._observe_preparation(spec) == captured
+
+
+@pytest.mark.parametrize("changed", ["environment", "unit"])
+def test_early_capture_rejects_private_process_or_configuration_drift_before_stop(tmp_path, monkeypatch, changed):
+    fresh, spec, host, proc, _, _ = _early_private_capture(tmp_path, monkeypatch)
+    if changed == "environment":
+        (proc / "101/environ").write_bytes(b"AUTH_SECRET=unexpected-authored-change\0")
+    else:
+        (tmp_path / "backend.service").write_bytes(b"changed authored unit")
+    with pytest.raises(ValueError, match="environment moved|service moved"):
+        fresh._snapshot_old(spec, host.expected)
+    assert host.calls == [] and all(host.running.values())
+    assert not host.journal.exists() and not (spec["bundle_root"] / "old-snapshot/backend").exists()
+
+
+@pytest.mark.parametrize("changed", ["environment", "argv", "executable", "runtime"])
+def test_held_preparation_rejects_frozen_private_inventory_tampering(tmp_path, monkeypatch, changed):
+    fresh, spec, host, _, _, _ = _early_private_capture(tmp_path, monkeypatch)
+    fresh._snapshot_old(spec, host.expected)
+    private = spec["bundle_root"] / "old-snapshot"
+    if changed == "environment":
+        (private / "frontend-effective-env.nul").write_bytes(b"AUTH_SECRET=changed-authored-capture\0")
+    elif changed == "runtime":
+        (private / "frontend/source").write_bytes(b"changed authored runtime")
+    else:
+        service = json.loads((private / "frontend-service.json").read_text())
+        if changed == "argv":
+            service["process_argv"] = ["changed-authored-executable"]
+        else:
+            service["process_executable"] = str(tmp_path / "frontend.exe")
+        save(private / "frontend-service.json", service)
+    calls = list(host.calls)
+    with pytest.raises(ValueError, match="Frozen old"):
+        fresh._observe_preparation(spec)
+    assert host.calls == calls and not any(host.running.values()) and host.barrier()
+    assert (host.lock.parent / "paired-release-owner.json").is_file()
+
+
+@pytest.mark.parametrize("changed", ["unit", "environment", "route"])
+def test_held_preparation_rejects_operator_configuration_drift_without_writes(tmp_path, monkeypatch, changed):
+    from scripts.deploy import snapshot_maintenance as maintenance
+
+    fresh, spec, host, proc, _, _ = _early_private_capture(tmp_path, monkeypatch)
+    fresh._snapshot_old(spec, host.expected)
+    owner = host.lock.parent / "paired-release-owner.json"
+    journal_before, owner_before = host.journal.read_bytes(), owner.read_bytes()
+    target = {"unit": tmp_path / "frontend.service", "environment": tmp_path / "frontend.env",
+              "route": spec["caddy_config"]}[changed]
+    target.write_bytes(b"authored operator configuration change")
+    calls, loaded_route = list(host.calls), json.loads(json.dumps(host.loaded_route))
+    with pytest.raises(maintenance.SnapshotMaintenanceError, match="changed"):
+        fresh._observe_preparation(spec)
+    assert host.calls == calls and not any(host.running.values()) and not any(proc.iterdir())
+    assert host.loaded_route == loaded_route
+    assert host.journal.read_bytes() == journal_before and owner.read_bytes() == owner_before
+    assert target.read_bytes() == b"authored operator configuration change"
+
+
+def _early_pipeline(machine, tmp_path, monkeypatch):
+    """Keep the existing fabricated build gates with a genuine held snapshot."""
+    from scripts.deploy import snapshot_maintenance as maintenance
+
+    manifest, spec, events, original = machine
+    old_pair = tmp_path / "controlled-old-pair"
+    old_pair.mkdir(mode=0o700)
+    fresh, capture_spec, host, _, _, _ = _early_private_capture(old_pair, monkeypatch)
+    capture_spec["bundle_root"].rmdir()
+    root = Path(spec["bundle_root"])
+    host.journal, host.output = root / "snapshot-maintenance/transaction.json", root / "old-snapshot/cache.duckdb"
+    spec.update({key: str(value) for key, value in capture_spec.items() if key in module._PATHS})
+    spec.update(bundle_root=str(root), snapshot_mode="early-owned-maintenance", old_build_id="old-build",
+                serving_code_sha=OLD)
+    save(manifest, spec)
+    run = maintenance._run
+    monkeypatch.setattr(maintenance, "_run", lambda *args: OLD if args[0] == "git" else run(*args))
+
+    def observe(_spec):
+        events.append("observe")
+        return host.observe()
+
+    def capture(parsed, before):
+        events.append("snapshot")
+        return fresh._snapshot_old(parsed, before)
+
+    def held(parsed):
+        events.append("held_observe")
+        return fresh._observe_preparation(parsed)
+
+    monkeypatch.setattr(module, "_observe_live", observe)
+    monkeypatch.setattr(module, "_snapshot_old", capture)
+    monkeypatch.setattr(module, "_observe_preparation", held)
+    return manifest, spec, events, original, host
+
+
+def test_long_prepare_build_sign_and_handoff_remain_held_without_proc(machine, tmp_path, monkeypatch):
+    from scripts.deploy import snapshot_maintenance as maintenance
+
+    manifest, spec, events, original, host = _early_pipeline(machine, tmp_path, monkeypatch)
+    checked = []
+    for name in ("_build_frontend", "build_traced_candidate", "_rehearse", "issue_wavea_activation", "_handoff"):
+        callback = getattr(module, name)
+
+        @wraps(callback)
+        def held_stage(*args, _name=name, _callback=callback, **kwargs):
+            assert host.barrier() and not any(host.running.values())
+            assert not any((host.root / "proc").iterdir())
+            assert maintenance.assert_held_snapshot(host.journal)["state"] == "held"
+            checked.append(_name)
+            return _callback(*args, **kwargs)
+
+        monkeypatch.setattr(module, name, held_stage)
+    result = module.prepare_release_bundle(manifest)
+    assert checked == ["_build_frontend", "build_traced_candidate", "_rehearse", "issue_wavea_activation", "_handoff"]
+    assert result["snapshot_mode"] == "early-owned-maintenance" and result["production_mutated"] is True
+    assert result["production_artifacts_changed"] is False and result["public_activation_ready"] is False
+    paired = json.loads(Path(result["paired_manifest_path"]).read_text())
+    held = maintenance.assert_held_snapshot(host.journal)
+    assert paired["snapshot_journal_path"] == str(host.journal)
+    assert paired["snapshot_journal_identity_sha256"] == held["identity_sha256"]
+    assert host.barrier() and not any(host.running.values())
+    assert "start_backend" not in host.calls and "start_frontend" not in host.calls
+    assert events.count("ci") == 2 and events.count("observe") == 1
+    assert Path(spec["live_cache_path"]).read_bytes() == (Path(spec["bundle_root"]) / "old-snapshot/cache.duckdb").read_bytes()
+    assert Path(machine[1]["signing_key_path"]).read_bytes() == b"x" * 32
+
+
+@pytest.mark.parametrize("stage", ["_build_frontend", "build_traced_candidate", "_rehearse", "issue_wavea_activation", "_handoff"])
+def test_early_prepare_failure_retains_owned_barrier_and_never_publishes(machine, tmp_path, monkeypatch, stage):
+    from scripts.deploy import snapshot_maintenance as maintenance
+
+    manifest, spec, events, _, host = _early_pipeline(machine, tmp_path, monkeypatch)
+
+    @wraps(getattr(module, stage))
+    def fail(*args, **kwargs):
+        assert maintenance.assert_held_snapshot(host.journal)["state"] == "held"
+        raise ValueError("authored early preparation failure")
+
+    monkeypatch.setattr(module, stage, fail)
+    with pytest.raises(ValueError, match="authored early"):
+        module.prepare_release_bundle(manifest)
+    root = Path(spec["bundle_root"])
+    assert not (root / "prepared.json").exists() and not (root / "paired-manifest.json").exists()
+    assert (root / "failed.json").is_file()
+    assert maintenance.assert_held_snapshot(host.journal)["state"] == "held"
+    assert host.barrier() and not any(host.running.values())
+    assert "start_backend" not in host.calls and "start_frontend" not in host.calls
+    if stage not in {"issue_wavea_activation", "_handoff"}:
+        assert "issue" not in events
+
+
+@pytest.mark.parametrize("stage,changed", [
+    ("build_traced_candidate", "owner_missing"), ("_build_frontend", "owner_foreign"),
+    ("_rehearse", "loaded_barrier"), ("_rehearse", "installed_barrier"),
+])
+def test_lost_held_proof_inside_long_build_prevents_signing_and_handoff(machine, tmp_path, monkeypatch, stage, changed):
+    from scripts.deploy import snapshot_maintenance as maintenance
+    from scripts.deploy.prepare_wavea_routes import OLD_CADDYFILE
+
+    manifest, spec, events, _, host = _early_pipeline(machine, tmp_path, monkeypatch)
+    build = getattr(module, stage)
+    calls_at_loss = []
+    owner = host.lock.parent / "paired-release-owner.json"
+
+    def lose_proof(*args, **kwargs):
+        result = build(*args, **kwargs)
+        assert maintenance.assert_held_snapshot(host.journal)["state"] == "held"
+        if changed == "owner_missing":
+            owner.unlink()
+        elif changed == "owner_foreign":
+            value = json.loads(owner.read_text())
+            value["manifest_sha256"] = "f" * 64
+            save(owner, value)
+        elif changed == "loaded_barrier":
+            host.loaded_route = {"apps": {"fixture_caddyfile": OLD_CADDYFILE.decode()}}
+        else:
+            host.spec["caddy_config"].write_bytes(OLD_CADDYFILE)
+        calls_at_loss.extend(host.calls)
+        return result
+
+    monkeypatch.setattr(module, stage, lose_proof)
+    with pytest.raises(maintenance.SnapshotMaintenanceError):
+        module.prepare_release_bundle(manifest)
+    root = Path(spec["bundle_root"])
+    assert "issue" not in events and not (root / "candidate-receipt.json").exists()
+    assert not (root / "prepared.json").exists() and not (root / "paired-manifest.json").exists()
+    assert host.calls == calls_at_loss and not any(host.running.values())
+    if changed == "owner_missing":
+        assert not owner.exists()
+    elif changed == "owner_foreign":
+        assert json.loads(owner.read_text())["manifest_sha256"] == "f" * 64
+
+
+@pytest.mark.parametrize("missing", ["both", "identity"])
+def test_early_prepare_rejects_missing_issuer_protocol_before_live_effects(machine, monkeypatch, missing):
+    manifest, spec, events, original = machine
+    spec["snapshot_mode"] = "early-owned-maintenance"
+    save(manifest, spec)
+
+    def generic(**kwargs):
+        pytest.fail("Issuer without the held protocol must not run")
+
+    def missing_identity(*, old_snapshot_journal_path=None, **kwargs):
+        pytest.fail("Issuer without the held identity parameter must not run")
+
+    monkeypatch.setattr(module, "issue_wavea_activation", generic if missing == "both" else missing_identity)
+    with pytest.raises(ValueError, match="Receipt issuer lacks the stopped old-pair journal interface"):
+        module.prepare_release_bundle(manifest)
+    assert events == [] and not Path(spec["bundle_root"]).exists()
+    assert Path(spec["live_cache_path"]).read_bytes() == original
+    assert Path(spec["frontend_current"]).resolve() == Path(spec["live_frontend_runtime"])
+
+
+def test_online_prepare_retains_generic_legacy_issuer_interface(machine, monkeypatch):
+    manifest, _, events, _ = machine
+    issue = module.issue_wavea_activation
+
+    def generic(**kwargs):
+        assert "old_snapshot_journal_path" not in kwargs
+        assert "old_snapshot_journal_identity_sha256" not in kwargs
+        return issue(**kwargs)
+
+    monkeypatch.setattr(module, "issue_wavea_activation", generic)
+    assert module.prepare_release_bundle(manifest)["snapshot_mode"] == "online-read-lock"
+    assert events.count("issue") == 1
 
 
 def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkeypatch):

@@ -1,9 +1,10 @@
-"""Construct a private release bundle without changing the serving pair.
+"""Construct a private release bundle with explicitly selected snapshot policy.
 
 The strict machine/input manifest is an input inventory, not a receipt assembled
 by an operator. Every candidate artifact is made here. Online cache snapshots
 require a DuckDB-supported read lock and no WAL. Snapshot maintenance, when
-explicitly authorized, is a separate bounded stop/snapshot/restore operation.
+explicitly authorized, either restores the pair or holds owned maintenance until
+the prepared pair transaction adopts it.
 """
 
 from __future__ import annotations
@@ -11,12 +12,14 @@ from __future__ import annotations
 import argparse
 import fcntl
 import hashlib
+import inspect
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -115,8 +118,10 @@ def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False
     if value["data_mode"] not in {"synthetic_demo", "real_claims"}:
         raise ValueError("Preparation data mode must be explicit")
     value.setdefault("snapshot_mode", "online-read-lock")
-    if not isinstance(value["snapshot_mode"], str) or value["snapshot_mode"] not in {"online-read-lock", "brief-maintenance"}:
-        raise ValueError("Snapshot mode must explicitly select online-read-lock or brief-maintenance")
+    if not isinstance(value["snapshot_mode"], str) or value["snapshot_mode"] not in {
+        "online-read-lock", "brief-maintenance", "early-owned-maintenance",
+    }:
+        raise ValueError("Snapshot mode must explicitly select a supported snapshot policy")
     if any(type(value[key]) is not int or not 1 <= value[key] <= 8
            for key in ("payload_workers", "billing_workers")):
         raise ValueError("Preparation worker count is invalid")
@@ -510,24 +515,69 @@ def _snapshot_old(spec: dict[str, Any], before: dict[str, Any]) -> dict[str, Any
     snapshot, replay = root / "old-snapshot", root / "old-replay"
     snapshot.mkdir(mode=0o700)
     replay.mkdir(mode=0o700)
-    for role in ("backend", "frontend"):
-        _copy_runtime(spec[f"live_{role}_runtime"], snapshot / role, backend=role == "backend")
-        _copy_runtime(snapshot / role, replay / role, backend=role == "backend")
-    configs = {spec["caddy_config"]}
-    for role in ("backend", "frontend"):
-        configs.update(Path(path) for path in before[role]["unit_files"])
-        configs.update(Path(path) for path in before[role]["environment_file_paths"])
-    for path in sorted(configs):
-        output = snapshot / "config" / path.relative_to("/")
-        output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        expected = _stable_file_hash(path)
-        _new_private_file(output, path.read_bytes())
-        if _stable_file_hash(output) != expected or _stable_file_hash(path) != expected:
-            raise ValueError("Serving configuration moved during snapshot")
-    if spec["snapshot_mode"] == "brief-maintenance":
+    early = spec["snapshot_mode"] == "early-owned-maintenance"
+    journal = root / "snapshot-maintenance" / "transaction.json"
+
+    def environments() -> None:
+        observed_services = []
+        for role in ("backend", "frontend"):
+            pid = before[role]["listener_pid"]
+            raw = Path(f"/proc/{pid}/environ").read_bytes()
+            digest = hashlib.sha256(b"\0".join(sorted(item for item in raw.split(b"\0") if item))).hexdigest()
+            if digest != before[role]["effective_environment_sha256"]:
+                raise ValueError("Serving environment moved during snapshot")
+            if early:
+                service = observe_service(f"bilun-{role}.service", 8001 if role == "backend" else 3000)
+                public = _public_service(service)
+                if any(before[role].get(key) != item for key, item in public.items()):
+                    raise ValueError("Serving service moved before stopped capture")
+                observed_services.append(service)
+                record = json.loads(json.dumps(asdict(service), default=str))
+                record["process_started_at_utc"] = service.process_started_at_utc.isoformat()
+                _save(snapshot / f"{role}-service.json", record)
+            _new_private_file(snapshot / f"{role}-effective-env.nul", raw)
+        if early:
+            from scripts.deploy.paired_release import SingleVpsDriver
+            SingleVpsDriver._service_access_gate(observed_services)
+
+    def capture() -> dict[str, Any]:
+        captured = json.loads(json.dumps(before))
+        for role in ("backend", "frontend"):
+            live = spec[f"live_{role}_runtime"]
+            digest = _runtime_digest(live, backend=role == "backend")
+            if role == "backend" and digest != before["backend_runtime_sha256"]:
+                raise ValueError("Serving backend changed before stopped capture")
+            _copy_runtime(live, snapshot / role, backend=role == "backend")
+            _copy_runtime(snapshot / role, replay / role, backend=role == "backend")
+            captured[f"{role}_runtime_sha256"] = digest
+        configs = {spec["caddy_config"]}
+        for role in ("backend", "frontend"):
+            configs.update(Path(path) for path in before[role]["unit_files"])
+            configs.update(Path(path) for path in before[role]["environment_file_paths"])
+        held = _load_private_json(journal, root=journal.parent)[0] if early else None
+        for path in sorted(configs):
+            source = Path(held["routes"]["old"]["path"]) if early and path == spec["caddy_config"] else path
+            output = snapshot / "config" / path.relative_to("/")
+            output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            expected = _stable_file_hash(source)
+            if early and expected != held["configuration"][str(path)]["sha256"]:
+                raise ValueError("Stopped old configuration differs from captured inventory")
+            _new_private_file(output, source.read_bytes())
+            if _stable_file_hash(output) != expected or _stable_file_hash(source) != expected:
+                raise ValueError("Serving configuration moved during snapshot")
+        if early:
+            captured["cache_sha256"] = _candidate_db_hash(spec["live_cache_path"])
+        return captured
+
+    if early:
+        # The original PIDs disappear after stop; freeze their private identity first.
+        environments()
+    else:
+        capture()
+    if spec["snapshot_mode"] in {"brief-maintenance", "early-owned-maintenance"}:
         from scripts.deploy.snapshot_maintenance import snapshot_with_maintenance
-        journal = root / "snapshot-maintenance" / "transaction.json"
         journal.parent.mkdir(mode=0o700)
+        options = {"hold_barrier": True, "stopped_runtime_capture": capture} if early else {}
         before = snapshot_with_maintenance(
             journal_path=journal, machine_lock=spec["lock_path"],
             live_cache=spec["live_cache_path"], output_cache=snapshot / "cache.duckdb",
@@ -536,22 +586,53 @@ def _snapshot_old(spec: dict[str, Any], before: dict[str, Any]) -> dict[str, Any
             recovery_spec={key: spec[key] for key in (
                 "live_backend_runtime", "live_frontend_runtime", "live_cache_path",
                 "frontend_current", "caddy_config", "serving_code_sha", "old_build_id",
-            )},
+            )}, **options,
         )
     else:
         _copy_cache_consistently(spec["live_cache_path"], snapshot / "cache.duckdb", spec["old_build_id"])
-    for role in ("backend", "frontend"):
-        pid = before[role]["listener_pid"]
-        raw = Path(f"/proc/{pid}/environ").read_bytes()
-        digest = hashlib.sha256(b"\0".join(sorted(item for item in raw.split(b"\0") if item))).hexdigest()
-        if digest != before[role]["effective_environment_sha256"]:
-            raise ValueError("Serving environment moved during snapshot")
-        _new_private_file(snapshot / f"{role}-effective-env.nul", raw)
+    if not early:
+        environments()
     for destination in (replay / "cache.duckdb", root / "baseline.duckdb"):
         _copy_cache_consistently(snapshot / "cache.duckdb", destination, spec["old_build_id"])
-    if _observe_live(spec) != before:
+    if _observe_preparation(spec) != before:
         raise ValueError("Serving pair changed during snapshot")
     return before
+
+
+def _observe_preparation(spec: dict[str, Any]) -> dict[str, Any]:
+    if spec["snapshot_mode"] != "early-owned-maintenance":
+        return _observe_live(spec)
+    from scripts.deploy.snapshot_maintenance import assert_held_snapshot
+    journal = spec["bundle_root"] / "snapshot-maintenance" / "transaction.json"
+    value = assert_held_snapshot(journal)
+    expected = value["expected_pair"]
+    snapshot = spec["bundle_root"] / "old-snapshot"
+    for role in ("backend", "frontend"):
+        raw = (snapshot / f"{role}-effective-env.nul").read_bytes()
+        digest = hashlib.sha256(b"\0".join(sorted(item for item in raw.split(b"\0") if item))).hexdigest()
+        if digest != expected[role]["effective_environment_sha256"]:
+            raise ValueError("Frozen old process environment changed")
+        service, _ = _load_private_json(snapshot / f"{role}-service.json", root=snapshot)
+        argv_sha = hashlib.sha256(b"\0".join(arg.encode() for arg in service["process_argv"])).hexdigest()
+        if (argv_sha != expected[role]["process_argv_sha256"]
+                or service["environment_sha256"] != digest
+                or any(service[key] != expected[role][key] for key in (
+                    "unit", "active_state", "main_pid", "listener_pid", "declared_working_directory",
+                    "process_working_directory", "process_executable", "unit_sha256", "unit_fragment",
+                    "unit_files", "selected_environment", "process_started_at_utc",
+                ))
+                or service["environment_files"] != expected[role]["environment_file_paths"]):
+            raise ValueError("Frozen old process/service inventory changed")
+        if _runtime_digest(snapshot / role, backend=role == "backend") != expected[f"{role}_runtime_sha256"]:
+            raise ValueError("Frozen old runtime snapshot changed")
+    if _candidate_db_hash(snapshot / "cache.duckdb") != expected["cache_sha256"]:
+        raise ValueError("Frozen old cache snapshot changed")
+    return expected
+
+
+def _check_held_preparation(spec: dict[str, Any], before: dict[str, Any]) -> None:
+    if spec["snapshot_mode"] == "early-owned-maintenance" and _observe_preparation(spec) != before:
+        raise ValueError("Owned maintenance or frozen old pair changed during preparation")
 
 
 def _baseline_roster(spec: dict[str, Any]) -> dict[str, Any]:
@@ -694,6 +775,12 @@ def _handoff(spec: dict[str, Any], checkout: Path, frontend: Path) -> Path:
                   candidate_launch_config=str(root / "candidate-launch.json"),
                   preparation_pins_path=str(root / "preparation-pins.json"),
                   preparation_pins_sha256=_stable_file_hash(root / "preparation-pins.json"))
+    if spec["snapshot_mode"] == "early-owned-maintenance":
+        from scripts.deploy.snapshot_maintenance import assert_held_snapshot
+        journal = root / "snapshot-maintenance" / "transaction.json"
+        held = assert_held_snapshot(journal)
+        paired.update(snapshot_journal_path=str(journal),
+                      snapshot_journal_identity_sha256=held["identity_sha256"])
     output = root / "paired-manifest.json"
     _save(output, paired)
     return output
@@ -745,6 +832,8 @@ def prepare_release_bundle(manifest_path: Path) -> dict[str, Any]:
                 raise ValueError("Existing bundle belongs to a different preparation request")
             paired, _ = _load_private_json(Path(result["paired_manifest_path"]), root=spec["bundle_root"])
             verify_preparation_pins(Path(paired["preparation_pins_path"]), paired["preparation_pins_sha256"])
+            if spec["snapshot_mode"] == "early-owned-maintenance":
+                _observe_preparation(spec)
             return result
         return _prepare_release_bundle(manifest_path, spec)
     finally:
@@ -753,6 +842,10 @@ def prepare_release_bundle(manifest_path: Path) -> dict[str, Any]:
 
 def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[str, Any]:
     manifest_sha = _stable_file_hash(manifest_path)
+    if spec["snapshot_mode"] == "early-owned-maintenance":
+        required = {"old_snapshot_journal_path", "old_snapshot_journal_identity_sha256"}
+        if not required.issubset(inspect.signature(issue_wavea_activation).parameters):
+            raise ValueError("Receipt issuer lacks the stopped old-pair journal interface")
     token = _github_read_token()
     ci = fetch_successful_release_ci(code_sha=spec["target_sha"], run_id=spec["ci_run_id"], token=token)
     candidate_backend, _ = candidate_environments(spec["candidate_backend_environment"], spec["candidate_frontend_environment"])
@@ -793,10 +886,13 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         before = _snapshot_old(spec, before)
         _save(root / "live-after-snapshot.json", before)
         baseline = _baseline_roster(spec)
+        _check_held_preparation(spec, before)
         _save(root / "baseline-roster.json", baseline)
         _save(root / "baseline-build-config-environment.json", spec["baseline_build_config_environment"])
         checkout, claims, clean = _create_checkout(spec)
+        _check_held_preparation(spec, before)
         frontend = _build_frontend(spec, checkout)
+        _check_held_preparation(spec, before)
         # No build step may modify runtime files after these rosters/digests.
         source = generate_source_roster(checkout, code_sha=spec["target_sha"],
                                        data_mode=spec["data_mode"], claims_dir=claims, clean_dir=clean)
@@ -812,6 +908,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         build = build_traced_candidate(**common, roster_path=root / "source-roster.json",
                                        db_path=root / "candidate.duckdb", trace_path=root / "build.trace",
                                        log_path=root / "cache-build.log", report_path=root / "traced-build.json")
+        _check_held_preparation(spec, before)
         build_id = build["build_id"]
         _cache_meta(root / "candidate.duckdb", build_id)
         structural = verify_candidate_cache(root / "candidate.duckdb", build_id=build_id,
@@ -833,6 +930,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     source_roster_path=root / "source-roster.json", cache_path=root / "candidate.duckdb",
                     trace_path=root / "build.trace", log_path=root / "cache-build.log")
         _save(root / "trace-attestation.json", trace)
+        _check_held_preparation(spec, before)
         _rehearse(spec, checkout, frontend, before["backend_runtime_sha256"],
                   before["backend"]["effective_environment_sha256"], candidate_environment_sha256)
         rehearsal = root / "rehearsal/real-candidate-namespace-rehearsal.json"
@@ -848,7 +946,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         # Reconcile external mutable state and live pair before any receipt can exist.
         if (_pin_inputs(pins, executables, **pin_options) != pinned
                 or _external_identities(spec["external_state_paths"]) != external
-                or _observe_live(spec) != before or _stable_file_hash(manifest_path) != manifest_sha
+                or _observe_preparation(spec) != before or _stable_file_hash(manifest_path) != manifest_sha
                 or _baseline_roster(spec) != baseline
                 or generate_source_roster(checkout, code_sha=spec["target_sha"], data_mode=spec["data_mode"],
                                           claims_dir=claims, clean_dir=clean) != source
@@ -857,6 +955,13 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
             raise ValueError("Preparation source, external state, or live pair changed")
         ci_after = fetch_successful_release_ci(code_sha=spec["target_sha"], run_id=spec["ci_run_id"], token=token)
         _save(root / "ci-after.json", ci_after)
+        issue_options = {}
+        if spec["snapshot_mode"] == "early-owned-maintenance":
+            from scripts.deploy.snapshot_maintenance import assert_held_snapshot
+            journal = root / "snapshot-maintenance" / "transaction.json"
+            held = assert_held_snapshot(journal)
+            issue_options = {"old_snapshot_journal_path": journal,
+                             "old_snapshot_journal_identity_sha256": held["identity_sha256"]}
         issued = issue_wavea_activation(release_id=spec["release_id"], ci_run_id=spec["ci_run_id"],
                     github_token=token, sidecar_path=evidence / "sidecar.json",
                     baseline_db=root / "baseline.duckdb", baseline_build_id=spec["old_build_id"],
@@ -874,8 +979,9 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                     old_backend_environment_path=root / "old-snapshot/backend-effective-env.nul",
                     baseline_build_config_environment=spec["baseline_build_config_environment"],
                     clinical_transition=spec.get("clinical_transition"),
-                    payload_workers=spec["payload_workers"], billing_workers=spec["billing_workers"])
-        if (_observe_live(spec) != before
+                    payload_workers=spec["payload_workers"], billing_workers=spec["billing_workers"],
+                    **issue_options)
+        if (_observe_preparation(spec) != before
                 or _pin_inputs(pins, executables, **pin_options) != pinned
                 or _external_identities(spec["external_state_paths"]) != external):
             raise ValueError("Serving pair or pinned external state changed before preparation completed")
@@ -885,7 +991,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
                   "ci_run_id": spec["ci_run_id"], "candidate_build_id": build_id,
                   "paired_manifest_path": str(paired), "receipt": issued,
                   "input_manifest_sha256": manifest_sha,
-                  "production_mutated": spec["snapshot_mode"] == "brief-maintenance",
+                  "production_mutated": spec["snapshot_mode"] in {"brief-maintenance", "early-owned-maintenance"},
                   "production_artifacts_changed": False, "public_activation_ready": False,
                   "snapshot_mode": spec["snapshot_mode"],
                   "payload_workers": spec["payload_workers"], "billing_workers": spec["billing_workers"]}

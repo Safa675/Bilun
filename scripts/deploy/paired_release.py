@@ -16,8 +16,10 @@ import shutil
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
+from urllib.parse import urlparse
 
 from scripts.deploy.caddy_route_driver import CaddyRouteDriver, _adapt, _digest, _validate
 from scripts.deploy.candidate_environment import _environment, candidate_environments
@@ -35,8 +37,28 @@ _PATH_FIELDS = frozenset({
     "preparation_pins_path",
 })
 _FIELDS = _PATH_FIELDS | {"schema_version", "release_id", "old_build_id", "preparation_pins_sha256"}
+_SNAPSHOT_FIELDS = {"snapshot_journal_path", "snapshot_journal_identity_sha256"}
 _UNITS = ("bilun-backend.service", "bilun-frontend.service")
 _SYSTEMD_PATH = re.compile(r"/[A-Za-z0-9_./-]+\Z")
+
+
+def _read_only_asset_paths(base: str, html: bytes) -> set[str]:
+    from scripts.deploy.http_release_probes import _asset_paths
+    from scripts.deploy.verify_frontend_assets import extract_assets_from_html, is_local_asset
+
+    for raw in extract_assets_from_html(html.decode("utf-8")):
+        parsed = urlparse(raw)
+        if (not is_local_asset(raw, base) or parsed.scheme not in {"", urlparse(base).scheme}
+                or parsed.params or any(part in {".", ".."} for part in parsed.path.split("/"))):
+            raise ValueError("Frontend asset URL is not a reviewed read-only path")
+    paths = _asset_paths(base, html)
+    for asset in paths:
+        path = urlparse(asset).path
+        if (not _SYSTEMD_PATH.fullmatch(path) or "//" in path
+                or not (path.startswith("/_next/static/")
+                        or path in {"/favicon.ico", "/brand/full.png", "/brand/nameless.png"})):
+            raise ValueError("Frontend asset URL is not a reviewed read-only path")
+    return paths
 
 
 def _run(*args: str) -> str:
@@ -140,7 +162,8 @@ def _verify_rehearsed_environments(backend: dict, frontend: dict, receipt: dict,
 
 class SingleVpsDriver:
     def __init__(self, manifest: dict):
-        if set(manifest) != _FIELDS or manifest.get("schema_version") != "bilun-single-vps-pair-v1":
+        if (set(manifest) not in (_FIELDS, _FIELDS | _SNAPSHOT_FIELDS)
+                or manifest.get("schema_version") != "bilun-single-vps-pair-v1"):
             raise ValueError("Unsupported single-VPS manifest schema")
         if (not isinstance(manifest["release_id"], str)
                 or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", manifest["release_id"])
@@ -163,6 +186,20 @@ class SingleVpsDriver:
                     or not path.parent.is_dir() or path.parent.is_symlink()):
                 raise ValueError("Create the reviewed bilun service drop-in directories first")
         self.root = self.paths["state_dir"]
+        self.snapshot_journal = None
+        self.snapshot_identity = None
+        self._owner_check: Callable[[], None] | None = None
+        self._paired_owner: dict | None = None
+        if _SNAPSHOT_FIELDS <= set(manifest):
+            journal = Path(manifest["snapshot_journal_path"])
+            identity = manifest["snapshot_journal_identity_sha256"]
+            if (self.root.name != "transaction"
+                    or journal != self.root.parent / "snapshot-maintenance" / "transaction.json"
+                    or not journal.is_absolute() or journal.parent != journal.parent.resolve()
+                    or journal.is_symlink() or not isinstance(identity, str)
+                    or not re.fullmatch(r"[0-9a-f]{64}", identity)):
+                raise ValueError("Held snapshot needs the exact private bundle journal and identity")
+            self.snapshot_journal, self.snapshot_identity = journal, identity
         self.config, self.config_sha = _load_private_json(
             self.paths["candidate_launch_config"], root=self.paths["candidate_launch_config"].parent,
         )
@@ -183,6 +220,32 @@ class SingleVpsDriver:
             raise ValueError("Systemd release paths need simple absolute path names")
         if self.candidate_db.resolve() == self.paths["live_cache_path"].resolve():
             raise ValueError("Candidate must be separate from serving database")
+
+    def bind_owner_check(self, check: Callable[[], None], owner: dict) -> None:
+        self._owner_check = check
+        self._paired_owner = owner
+
+    def _mutation_owner(self) -> None:
+        check = getattr(self, "_owner_check", None)
+        if check is not None:
+            check()
+        elif getattr(self, "snapshot_journal", None) is not None:
+            raise ValueError("Held snapshot service mutation requires paired machine ownership")
+
+    def _held_snapshot(self) -> dict:
+        from scripts.deploy.snapshot_maintenance import assert_held_snapshot
+        value = assert_held_snapshot(self.snapshot_journal,
+                                     expected_identity_sha256=self.snapshot_identity,
+                                     adopted_owner=self._paired_owner)
+        spec = value["recovery_spec"]
+        if (Path(value["machine_lock"]) != self.paths["lock_path"]
+                or Path(value["live_cache"]) != self.paths["live_cache_path"]
+                or value["build_id"] != self.manifest["old_build_id"]
+                or Path(value["output_cache"]) != self.root.parent / "old-snapshot/cache.duckdb"
+                or Path(spec["frontend_current"]) != self.paths["frontend_current"]
+                or Path(spec["caddy_config"]) != self.paths["caddy_config"]):
+            raise ValueError("Held snapshot machine inventory differs from paired manifest")
+        return value
 
     def _prepared(self) -> dict:
         return _load_private_json(self.root / "prepared-pair.json", root=self.root)[0]
@@ -330,6 +393,31 @@ class SingleVpsDriver:
         )
         return json.loads(json.dumps(value, default=str))
 
+    def _old_service_record(self, service) -> dict:
+        if self._prepared().get("old_service_profile") != "public-frozen-v1":
+            return self._service_record(service)
+        from scripts.deploy.capture_release_preflight import _public_service
+        from scripts.deploy.service_identity import stable_environment_sha256
+
+        record = _public_service(service)
+        raw = Path(f"/proc/{service.listener_pid}/environ").read_bytes()
+        record["stable_environment_sha256"] = stable_environment_sha256(raw)
+        values = dict(item.decode("utf-8", "surrogateescape").split("=", 1)
+                      for item in raw.split(b"\0") if item)
+        record["persistent_state_settings"] = {
+            "BILUN_PUBLIC_CHAT_BUDGET_DB": values.get("BILUN_PUBLIC_CHAT_BUDGET_DB", ""),
+        }
+        return record
+
+    def _old_service_matches(self, service, expected: dict) -> bool:
+        observed = self._old_service_record(service)
+        if self._prepared().get("old_service_profile") == "public-frozen-v1":
+            transient = {"main_pid", "listener_pid", "process_started_at_utc",
+                         "effective_environment_sha256"}
+            observed = {key: value for key, value in observed.items() if key not in transient}
+            expected = {key: value for key, value in expected.items() if key not in transient}
+        return observed == expected
+
     @staticmethod
     def _service_access_gate(services, *, proc_root: Path = Path("/proc")) -> None:
         # Existing VPS bootstrap runs root services. Supporting an application
@@ -345,10 +433,95 @@ class SingleVpsDriver:
             if user not in {"", "root"} or dynamic != "no" or uid != ["0", "0", "0", "0"]:
                 raise ValueError("Existing service identity cannot read the private release bundle")
 
+    def _prepare_held(self) -> dict:
+        from scripts.deploy.service_identity import stable_environment_sha256
+
+        value = self._held_snapshot()
+        expected = value["expected_pair"]
+        if os.geteuid() != 0:
+            raise ValueError("This private single-VPS profile requires the existing root service context")
+        receipt = self._candidate_gate()
+        env_path = self.root / "old-backend-env.nul"
+        snapshot_root = Path(value["output_cache"]).parent
+        raw = (snapshot_root / "backend-effective-env.nul").read_bytes()
+        if stable_environment_sha256(raw) != expected["backend"]["stable_environment_sha256"]:
+            raise ValueError("Frozen old backend environment differs from snapshot identity")
+        _seal_file(env_path, raw)
+        old_environment = _environment(env_path)
+        configured = old_environment.get("BILUN_CACHE_DB_PATH")
+        old_cache = (Path(configured) if configured else
+                     Path(expected["backend"]["process_working_directory"]) / ".cache/bilun.duckdb")
+        if old_cache != self.paths["live_cache_path"]:
+            raise ValueError("Frozen old backend cache path differs from machine manifest")
+        backend_env, _ = candidate_environments(Path(self.config["candidate_backend_environment"]),
+                                                Path(self.config["candidate_frontend_environment"]))
+        for key in ("BILUN_PUBLIC_CHAT_BUDGET_DB", "BILUN_DATA_MODE", "BILUN_CLAIMS_DIR", "BILUN_CLEAN_DIR"):
+            if backend_env.get(key, "") != old_environment.get(key, ""):
+                raise ValueError(f"Candidate changes persistent input/state setting: {key}")
+        ledger = backend_env.get("BILUN_PUBLIC_CHAT_BUDGET_DB", "")
+        if ledger and (not Path(ledger).is_absolute() or Path(ledger).is_symlink()
+                       or Path(ledger).is_relative_to(self.backend)
+                       or Path(ledger).is_relative_to(self.frontend)):
+            raise ValueError("Mutable chat ledger must use an unchanged external absolute path")
+        routes = {}
+        for name, saved in value["routes"].items():
+            source = Path(saved["path"])
+            if name == "old" and source.read_bytes() != OLD_CADDYFILE:
+                raise ValueError("Frozen old Caddy layout differs from reviewed same-port layout")
+            path = self.root / f"{name}.caddy"
+            _seal_file(path, source.read_bytes())
+            routes[name] = {**saved, "path": str(path)}
+        config = {}
+        files = set().union(*(set(expected[role]["unit_files"])
+                              | set(expected[role]["environment_file_paths"])
+                              for role in ("backend", "frontend")))
+        files.update(str(self.paths[f"{role}_dropin"]) for role in ("backend", "frontend"))
+        for index, raw_path in enumerate(sorted(files)):
+            path = Path(raw_path)
+            if path.is_symlink():
+                raise ValueError("Service configuration symlink needs explicit review")
+            if not os.path.lexists(path):
+                config[raw_path] = None
+                continue
+            saved = value["configuration"].get(raw_path)
+            if saved is None or _stable_file_hash(path) != saved["sha256"]:
+                raise ValueError("Old service configuration differs from held snapshot")
+            backup = self.root / f"old-config-{index}"
+            source = snapshot_root / "config" / path.relative_to("/")
+            _seal_file(backup, source.read_bytes())
+            if _stable_file_hash(backup) != saved["sha256"]:
+                raise ValueError("Protected old configuration copy differs")
+            config[raw_path] = {"backup": str(backup), "sha256": saved["sha256"],
+                                "mode": saved["mode"] & 0o777,
+                                "uid": saved["uid"], "gid": saved["gid"]}
+        caddy = value["configuration"][str(self.paths["caddy_config"])]
+        report = {
+            "routes": routes, "configuration": config, "old_link": value["frontend_link"],
+            "caddy_metadata": {"mode": caddy["mode"] & 0o777, "uid": caddy["uid"], "gid": caddy["gid"]},
+            "old_services": [expected[role] for role in ("backend", "frontend")],
+            "old_service_profile": "public-frozen-v1",
+            "old_runtime_sha256": [expected[f"{role}_runtime_sha256"] for role in ("backend", "frontend")],
+            "old_executable_sha256": [value["configuration"][expected[role]["process_executable"]]["sha256"]
+                                      for role in ("backend", "frontend")],
+            "snapshot_journal_identity_sha256": self.snapshot_identity,
+            "candidate_config_sha256": self.config_sha,
+            "candidate_receipt_sha256": _stable_file_hash(self.candidate_receipt),
+            "candidate_environment_sha256": {
+                name: _stable_file_hash(Path(self.config[name]))
+                for name in ("candidate_backend_environment", "candidate_frontend_environment")
+            },
+        }
+        self._held_snapshot()
+        atomic_json(self.root / "prepared-pair.json", report)
+        self.activation_gate()
+        return report
+
     def prepare(self) -> dict:
         if os.path.lexists(self.root / "prepared-pair.json"):
             self.activation_gate()
             return self._prepared()
+        if getattr(self, "snapshot_journal", None) is not None:
+            return self._prepare_held()
         receipt = self._candidate_gate()
         old_services = [observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))]
         self._service_access_gate(old_services)
@@ -450,8 +623,18 @@ class SingleVpsDriver:
 
     def activation_gate(self) -> None:
         self._candidate_gate()
-        self._service_access_gate([observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))])
+        held = self._held_snapshot() if getattr(self, "snapshot_journal", None) is not None else None
+        if held is None:
+            self._service_access_gate([observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))])
         prepared = self._prepared()
+        if held is not None:
+            expected_pair = held["expected_pair"]
+            if (prepared.get("snapshot_journal_identity_sha256") != self.snapshot_identity
+                    or prepared.get("old_service_profile") != "public-frozen-v1"
+                    or prepared["old_services"] != [expected_pair[role] for role in ("backend", "frontend")]
+                    or prepared["old_runtime_sha256"] != [expected_pair[f"{role}_runtime_sha256"]
+                                                         for role in ("backend", "frontend")]):
+                raise ValueError("Prepared old pair differs from exact held snapshot")
         if (_stable_file_hash(self.candidate_receipt) != prepared["candidate_receipt_sha256"]
                 or self.config_sha != prepared["candidate_config_sha256"]):
             raise ValueError("Candidate bundle changed after preparation")
@@ -459,16 +642,20 @@ class SingleVpsDriver:
             if _stable_file_hash(Path(self.config[name])) != digest:
                 raise ValueError("Candidate environment changed after preparation")
         self._configuration_unchanged()
-        self.verify_pair(candidate=False, public=False)
+        if held is None:
+            self.verify_pair(candidate=False, public=False)
+        else:
+            self._verify_old_artifacts()
         route = self._routes()
         route.verify_sealed_routes()
-        expected = prepared["routes"]["old"]["route_sha256"]
+        expected = prepared["routes"]["barrier" if held is not None else "old"]["route_sha256"]
         if route.loaded_route_sha256() != expected or route.installed_route_sha256() != expected:
             raise ValueError("Loaded and installed serving Caddy routes differ")
 
     def maintenance(self) -> None:
         self._known_route_gate()
         route = self._routes()
+        self._mutation_owner()
         route.install("barrier")
         expected = self._prepared()["routes"]["barrier"]["route_sha256"]
         if route.loaded_route_sha256() != expected or route.installed_route_sha256() != expected:
@@ -479,6 +666,7 @@ class SingleVpsDriver:
             raise ValueError("Public API/pages are not behind maintenance")
 
     def stop_pair(self) -> None:
+        self._mutation_owner()
         _run("systemctl", "stop", *_UNITS)
         for unit, port in zip(_UNITS, (8001, 3000)):
             if (_run("systemctl", "show", unit, "--property=MainPID", "--value") != "0"
@@ -486,6 +674,9 @@ class SingleVpsDriver:
                 raise ValueError("Pair did not stop completely; cache remains untouched")
 
     def snapshot(self) -> None:
+        self._mutation_owner()
+        self._verify_old_artifacts()
+        self._require_maintenance()
         files = {}
         live = self.paths["live_cache_path"]
         for suffix in ("", ".wal"):
@@ -573,21 +764,28 @@ class SingleVpsDriver:
                     raise ValueError("Stopped database WAL unexpectedly appeared")
             elif _stable_file_hash(path) != saved["sha256"]:
                 raise ValueError("Stopped serving database changed before replacement")
+        self._mutation_owner()
         _replace_file(self.root / "serving.duckdb", live, snapshot["files"][""]["mode"])
         wal = Path(str(live) + ".wal")
         if os.path.lexists(wal):
+            self._mutation_owner()
             wal.unlink()
             _sync_directory(wal.parent)
         for role in ("backend", "frontend"):
+            self._mutation_owner()
             _replace_file(self.root / f"{role}.conf", self.paths[f"{role}_dropin"], 0o600)
+        self._mutation_owner()
         _replace_link(self.paths["frontend_current"], str(self.frontend))
+        self._mutation_owner()
         _run("systemctl", "daemon-reload")
 
     def start_pair(self) -> None:
         if self.paths["frontend_current"].resolve() == self.frontend:
             self._verify_pins()
         self._require_maintenance()
+        self._mutation_owner()
         _run("systemctl", "daemon-reload")
+        self._mutation_owner()
         _run("systemctl", "start", *_UNITS)
         deadline = time.monotonic() + 90
         while True:
@@ -613,12 +811,14 @@ class SingleVpsDriver:
                 if saved is None:
                     if target.is_symlink():
                         raise ValueError("Unexpected WAL symlink during rollback")
+                    self._mutation_owner()
                     target.unlink(missing_ok=True)
                     _sync_directory(target.parent)
                 else:
                     source = self.root / ("stopped.duckdb" + suffix)
                     if _stable_file_hash(source) != saved["sha256"]:
                         raise ValueError("Protected rollback database was changed")
+                    self._mutation_owner()
                     _replace_file(source, target, saved["mode"], owner=(saved["uid"], saved["gid"]))
         else:
             # Interrupted before snapshot completion: no database installation was authorized.
@@ -631,13 +831,16 @@ class SingleVpsDriver:
             if saved is None:
                 if target.is_symlink():
                     raise ValueError("Unexpected configuration symlink during rollback")
+                self._mutation_owner()
                 target.unlink(missing_ok=True)
                 _sync_directory(target.parent)
             else:
                 source = Path(saved["backup"])
                 if _stable_file_hash(source) != saved["sha256"]:
                     raise ValueError("Protected rollback configuration changed")
+                self._mutation_owner()
                 _replace_file(source, target, saved["mode"], owner=(saved["uid"], saved["gid"]))
+        self._mutation_owner()
         _replace_link(self.paths["frontend_current"], self._prepared()["old_link"])
         self._configuration_unchanged()
 
@@ -746,15 +949,15 @@ class SingleVpsDriver:
     def restore_route(self) -> None:
         self._known_route_gate()
         route = self._routes()
+        self._mutation_owner()
         route.install("old")
         expected = self._prepared()["routes"]["old"]["route_sha256"]
         if route.loaded_route_sha256() != expected or route.installed_route_sha256() != expected:
             raise ValueError("Restored Caddy configuration is not loaded and restart-persistent")
 
     def verify_pair(self, *, candidate: bool, public: bool) -> None:
-        from scripts.deploy.http_release_probes import HttpReleaseProbes, _fetch, _strict_json
+        from scripts.deploy.http_release_probes import _fetch, _strict_json
         from scripts.deploy.probe_auth import old_probe_context, probe_cookie
-        from scripts.deploy.verify_frontend_assets import verify_entrypoint
         from scripts.deploy.verify_public_billing_access import verify
 
         prepared = self._prepared()
@@ -769,7 +972,7 @@ class SingleVpsDriver:
         else:
             environment = _environment(self.root / "old-backend-env.nul")
             for index, service in enumerate(services):
-                if (self._service_record(service) != prepared["old_services"][index]
+                if (not self._old_service_matches(service, prepared["old_services"][index])
                         or _runtime_digest(service.process_working_directory, backend=index == 0)
                         != prepared["old_runtime_sha256"][index]):
                     raise ValueError("Restored old source/runtime/service identity differs")
@@ -785,19 +988,41 @@ class SingleVpsDriver:
         public_enabled = environment.get("BILUN_PUBLIC_BILLING_ENABLED", "").strip().lower() in {"1", "true", "yes"}
         for base in bases:
             verify(base, session, public=public_enabled)
+        asset_paths = {}
         for base in bases[1:]:
-            if not verify_entrypoint(base + "/login", min_assets=10, verbose=False)[0]:
+            status, html = _fetch(base, "/login", None)
+            if status != 200:
                 raise ValueError("Frontend public assets are unavailable")
+            asset_paths[base] = _read_only_asset_paths(base, html)
+        if public and asset_paths[bases[1]] != asset_paths[bases[2]]:
+            raise ValueError("Public frontend references the wrong build assets")
+        # Validate every discovered URL before the first asset GET. Reuse the
+        # exact lists from this HTML; another parse could introduce optimizer GETs.
+        asset_hashes = {}
+        for base in bases[1:]:
+            asset_hashes[base] = {}
+            for path in sorted(asset_paths[base]):
+                status, body = _fetch(base, path, None)
+                if status != 200 or not body:
+                    raise ValueError("Frontend public assets are unavailable")
+                asset_hashes[base][path] = hashlib.sha256(body).digest()
             for path in ("/api/auth/me", "/api/patients", "/api/compliance-index", "/api/revenue-recovery"):
                 direct = _fetch(bases[0], path, session)
                 proxied = _fetch(base, path, session)
                 if direct[0] != 200 or proxied[0] != 200 or _strict_json(direct[1]) != _strict_json(proxied[1]):
                     raise ValueError("Frontend/public API does not reach the attested pair")
-        if public:
-            # Reuse the exact public/direct HTML asset-set and byte comparison.
-            probe = object.__new__(HttpReleaseProbes)
-            probe.public_base, probe.fetch = "https://app.bilun.tech", _fetch
-            probe._equal_assets("http://127.0.0.1:3000")
+        if public and asset_hashes[bases[1]] != asset_hashes[bases[2]]:
+            raise ValueError("Public frontend asset bytes differ from the direct pair")
+        # HTTP probes can be observable writes on old Next runtimes. The
+        # final strict hash proof follows every probe, including public probes.
+        services = [observe_service(unit, port) for unit, port in zip(_UNITS, (8001, 3000))]
+        if candidate:
+            self._verify_candidate_listeners(services)
+        else:
+            self._verify_old_artifacts()
+            if any(not self._old_service_matches(service, prepared["old_services"][index])
+                   for index, service in enumerate(services)):
+                raise ValueError("Old service identity changed during verification probes")
 
     def _verify_candidate_listeners(self, services) -> None:
         from scripts.deploy.launch_wavea_candidate import candidate_command
@@ -839,6 +1064,72 @@ class SingleVpsDriver:
             raise ValueError("Serving cache changed after candidate startup")
 
 
+def _manifest_snapshot(manifest: dict) -> Path | None:
+    """Bind a recovery/handoff to exact private journal bytes before candidate parsing."""
+    if not (_SNAPSHOT_FIELDS & set(manifest)):
+        return None
+    if not _SNAPSHOT_FIELDS <= set(manifest):
+        raise ValueError("Snapshot handoff fields must be supplied together")
+    from scripts.deploy.snapshot_maintenance import inspect_snapshot
+
+    journal = Path(manifest["snapshot_journal_path"])
+    state = Path(manifest["state_dir"])
+    if (set(manifest) != _FIELDS | _SNAPSHOT_FIELDS
+            or manifest.get("schema_version") != "bilun-single-vps-pair-v1"
+            or state.name != "transaction" or not state.is_absolute()
+            or state.parent != state.parent.resolve()
+            or journal != state.parent / "snapshot-maintenance/transaction.json"):
+        raise ValueError("Paired manifest does not bind its own held snapshot")
+    inspected = inspect_snapshot(journal)
+    if inspected.get("identity_sha256") != manifest["snapshot_journal_identity_sha256"]:
+        raise ValueError("Paired manifest snapshot identity differs")
+    value, _ = _load_private_json(journal, root=journal.parent)
+    spec = value["recovery_spec"]
+    if (value["machine_lock"] != manifest["lock_path"]
+            or value["live_cache"] != manifest["live_cache_path"]
+            or value["build_id"] != manifest["old_build_id"]
+            or spec["frontend_current"] != manifest["frontend_current"]
+            or spec["caddy_config"] != manifest["caddy_config"]
+            or Path(value["output_cache"]) != state.parent / "old-snapshot/cache.duckdb"):
+        raise ValueError("Paired manifest old recovery inventory differs from held snapshot")
+    return journal
+
+
+def _recover_prepared_handoff(manifest: dict, digest: str) -> dict | None:
+    """Recover a CAS-only interruption without parsing any candidate artifact."""
+    journal = _manifest_snapshot(manifest)
+    if journal is None:
+        return None
+    from scripts.deploy.snapshot_maintenance import inspect_snapshot, recover_prepared_adoption
+
+    snapshot = inspect_snapshot(journal)
+    if snapshot.get("adoption") is None:
+        return None
+    state = Path(manifest["state_dir"])
+    transaction = PairedReleaseTransaction(
+        state_dir=state, lock_path=Path(manifest["lock_path"]), manifest_sha256=digest,
+        driver=object(), snapshot_journal_path=journal,
+        snapshot_journal_identity_sha256=manifest["snapshot_journal_identity_sha256"],
+    )
+    with transaction._locked():
+        snapshot = inspect_snapshot(journal)
+        if snapshot.get("identity_sha256") != manifest["snapshot_journal_identity_sha256"]:
+            raise ValueError("Prepared recovery snapshot identity changed")
+        prepared = transaction._read()
+        if prepared is None or prepared["state"] != "prepared" or prepared["events"] != ["prepared"]:
+            return None
+        target = {"manifest_sha256": digest, "state_dir": str(state)}
+        if snapshot.get("adoption") != target:
+            raise ValueError("Prepared snapshot adoption differs from exact paired manifest")
+        # The snapshot helper repeats the journal/owner checks under this lock;
+        # recovery retries accept only its recorded exact CAS participants.
+        result = recover_prepared_adoption(
+            journal, expected_identity_sha256=manifest["snapshot_journal_identity_sha256"],
+            expected_manifest_sha256=digest, state_dir=state,
+        )
+    return {"state": "rolled_back", "recovery": "prepared_snapshot_handoff", "snapshot": result}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("prepare", "status", "activate", "rollback"))
@@ -846,6 +1137,9 @@ def main(argv: list[str] | None = None) -> int:
     source.add_argument("--manifest", type=Path)
     source.add_argument("--snapshot-journal", type=Path)
     args = parser.parse_args(argv)
+    bound_snapshot = None
+    paired_manifest = None
+    paired_digest = None
     try:
         if args.snapshot_journal is not None:
             if args.action not in {"status", "rollback"}:
@@ -863,11 +1157,23 @@ def main(argv: list[str] | None = None) -> int:
             )
             pending = inspect_preparation_snapshot(args.manifest)
             if pending and (pending.get("recovery_needed") or pending.get("recovery_required")):
-                if args.action == "activate":
-                    raise ValueError("Snapshot maintenance recovery is required before candidate activation")
-                result = pending if args.action == "status" else recover_preparation_snapshot(args.manifest)
-                print(json.dumps(result, sort_keys=True))
-                return 0
+                paired_path = Path(manifest["bundle_root"]) / "paired-manifest.json"
+                handoff = (manifest.get("snapshot_mode") == "early-owned-maintenance"
+                           and pending.get("state") in {"held", "adopting", "adopted", "reclaiming"}
+                           and os.path.lexists(paired_path)
+                           and not (args.action == "rollback" and pending.get("state") == "held"))
+                if handoff:
+                    paired, _ = _load_private_json(paired_path, root=paired_path.parent)
+                    bound_snapshot = _manifest_snapshot(paired)
+                    if (bound_snapshot != Path(manifest["bundle_root"]) / "snapshot-maintenance/transaction.json"
+                            or paired["snapshot_journal_identity_sha256"] != pending.get("identity_sha256")):
+                        raise ValueError("Preparation manifest does not bind the exact held handoff")
+                else:
+                    if args.action == "activate":
+                        raise ValueError("Snapshot maintenance recovery is required before candidate activation")
+                    result = pending if args.action == "status" else recover_preparation_snapshot(args.manifest)
+                    print(json.dumps(result, sort_keys=True))
+                    return 0
             if args.action == "prepare":
                 output = prepare_release_bundle(args.manifest)
                 paired_path = Path(output["paired_manifest_path"])
@@ -880,13 +1186,32 @@ def main(argv: list[str] | None = None) -> int:
                     }, sort_keys=True))
                     return 0
             manifest, digest = _load_private_json(paired_path, root=paired_path.parent)
+        bound_snapshot = _manifest_snapshot(manifest)
+        paired_manifest, paired_digest = manifest, digest
+        if args.action == "rollback" and bound_snapshot is not None:
+            recovered = _recover_prepared_handoff(manifest, digest)
+            if recovered is not None:
+                print(json.dumps(recovered, sort_keys=True))
+                return 0
         driver = SingleVpsDriver(manifest)
+        handoff = ({"snapshot_journal_path": driver.snapshot_journal,
+                    "snapshot_journal_identity_sha256": driver.snapshot_identity}
+                   if getattr(driver, "snapshot_journal", None) is not None else {})
         transaction = PairedReleaseTransaction(
             state_dir=driver.root, lock_path=driver.paths["lock_path"],
-            manifest_sha256=digest, driver=driver,
+            manifest_sha256=digest, driver=driver, **handoff,
         )
         result = getattr(transaction, args.action)()
     except Exception as exc:
+        if bound_snapshot is not None and args.action in {"prepare", "activate"}:
+            from scripts.deploy.snapshot_maintenance import inspect_snapshot, recover_snapshot
+            try:
+                if inspect_snapshot(bound_snapshot)["state"] == "held":
+                    recover_snapshot(bound_snapshot)
+                elif paired_manifest is not None:
+                    _recover_prepared_handoff(paired_manifest, paired_digest)
+            except Exception as recovery_error:
+                print(f"Snapshot recovery remains blocked: {recovery_error}", file=sys.stderr)
         print(f"Paired release failed closed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))

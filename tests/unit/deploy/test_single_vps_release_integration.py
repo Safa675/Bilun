@@ -10,6 +10,7 @@ machine, derivation, v2 signing, startup, and tuple observation remain real.
 from __future__ import annotations
 
 import asyncio
+import copy
 import hashlib
 import json
 import os
@@ -30,6 +31,7 @@ from scripts.deploy import issue_wavea_activation as issuer
 from scripts.deploy import observe_candidate_tuple as observer
 from scripts.deploy import paired_release as paired
 from scripts.deploy import prepare_single_vps_release as preparer
+from scripts.deploy import snapshot_maintenance as snapshot
 from scripts.deploy import verify_frontend_assets as assets
 from scripts.deploy import verify_public_billing_access as access
 from scripts.deploy import verify_candidate_semantics as semantics
@@ -404,13 +406,20 @@ class FabricatedHost:
             declared_working_directory=declared, process_working_directory=self.working_dirs[role],
             process_executable=Path(sys.executable).resolve(), process_argv=self.arguments[role],
             unit_sha256=hashlib.sha256(b"".join(path.read_bytes() for path in files)).hexdigest(),
-            unit_fragment=str(self.unit_files[role]), unit_files=files, environment_files=(),
+            unit_fragment=str(self.unit_files[role]), unit_files=files,
+            environment_files=getattr(self, "environment_files", {}).get(role, ()),
             selected_environment=dict(self.environments[role]),
             environment_sha256=hashlib.sha256(self._env_bytes(self.environments[role])).hexdigest(),
             process_started_at_utc=datetime(2037, 1, 1, tzinfo=UTC),
         )
 
     def run(self, *args):
+        if args[0] == "git":
+            assert args == ("git", "-C", self.spec["live_backend_runtime"], "rev-parse", "HEAD")
+            return self.spec["serving_code_sha"]
+        if args[:2] == ("systemctl", "cat"):
+            role = args[2].removeprefix("bilun-").removesuffix(".service")
+            return self.unit_files[role].read_text()
         if args[:2] == ("systemctl", "daemon-reload"):
             self.event("daemon-reload")
         elif args[:2] == ("systemctl", "show"):
@@ -419,16 +428,18 @@ class FabricatedHost:
             if "--property=DynamicUser" in args:
                 return "no"
             role = "backend" if "backend" in args[2] else "frontend"
+            if "--property=ActiveState" in args:
+                return "active" if self.running[role] else "inactive"
             return "1001" if self.running[role] else "0"
         elif args[0] == "ss":
             role = "backend" if args[-1].endswith("8001") else "frontend"
             return "fabricated-listener" if self.running[role] else ""
         elif args[:2] == ("systemctl", "stop"):
-            for role in ("backend", "frontend"):
+            for role in (unit.removeprefix("bilun-").removesuffix(".service") for unit in args[2:]):
                 self.running[role] = False
                 self.event("stop-" + role)
         elif args[:2] == ("systemctl", "start"):
-            for role in ("backend", "frontend"):
+            for role in (unit.removeprefix("bilun-").removesuffix(".service") for unit in args[2:]):
                 dropin = Path(self.spec[f"{role}_dropin"])
                 if dropin.exists():
                     launch_path = Path(dropin.read_text().split(" --config ")[1].strip())
@@ -477,7 +488,8 @@ class FabricatedHost:
         class Routes:
             def verify_sealed_routes(self):
                 for key, path in kwargs["route_files"].items():
-                    assert sha(path) == kwargs["expected_file_digests"][key]
+                    if sha(path) != kwargs["expected_file_digests"][key]:
+                        raise ValueError(f"Caddy {key} recovery route differs")
 
             def loaded_route_sha256(self):
                 return paired._digest({"fixture_caddy_bytes": host.loaded_route.decode()})
@@ -551,6 +563,85 @@ def host(bundle, monkeypatch):
                                            manifest_sha256=sha(bundle.manifest), driver=driver)
     transaction.prepare()
     return fake, driver, transaction
+
+
+@pytest.fixture
+def held_host(bundle, monkeypatch):
+    """Real held snapshot and paired handoff over the existing fabricated host."""
+    monkeypatch.setattr(startup, "_startup_ready", False)
+    monkeypatch.setattr(wavea_activation, "_startup_activation", None)
+    fake = FabricatedHost(bundle, monkeypatch)
+    environment_file = bundle.root / "original-backend.env"
+    environment_file.write_text("# Existing old service environment file\n")
+    environment_file.chmod(0o600)
+    fake.environment_files = {"backend": (environment_file,)}
+    with fake.unit_files["backend"].open("a") as unit:
+        unit.write(f"EnvironmentFile={environment_file}\n")
+    journal = bundle.root / "snapshot-maintenance/transaction.json"
+    journal.parent.mkdir(mode=0o700)
+    output = bundle.root / "old-snapshot/cache.duckdb"
+    output.unlink()  # Replace only this disposable fixture's independent copy.
+    expected = {"health_identity": {key: fake.health().get(key) for key in (
+        "status", "cache_ready", "active_build", "code_sha", "source_manifest_sha256",
+    )}, "cache_sha256": sha(bundle.live), "caddy_sha256": sha(fake.spec["caddy_config"]),
+        "frontend_target": str(Path(fake.spec["frontend_current"]).resolve())}
+    for role, port in (("backend", 8001), ("frontend", 3000)):
+        expected[role] = preparer._public_service(fake.observe(f"bilun-{role}.service", port))
+        expected[role]["stable_environment_sha256"] = preparer.stable_environment_sha256(
+            fake._env_bytes(fake.environments[role]))
+        expected[role]["persistent_state_settings"] = {
+            "BILUN_PUBLIC_CHAT_BUDGET_DB": fake.environments[role].get("BILUN_PUBLIC_CHAT_BUDGET_DB", ""),
+        }
+        expected[f"{role}_runtime_sha256"] = _runtime_digest(
+            Path(fake.spec[f"live_{role}_runtime"]), backend=role == "backend")
+    spec = {key: fake.spec[key] for key in (
+        "live_backend_runtime", "live_frontend_runtime", "live_cache_path", "frontend_current",
+        "caddy_config", "serving_code_sha", "old_build_id",
+    )}
+    monkeypatch.setattr(snapshot, "_run", fake.run)
+    monkeypatch.setattr(snapshot, "_adapt", paired._adapt)
+    monkeypatch.setattr(snapshot, "_validate", paired._validate)
+    monkeypatch.setattr(snapshot, "CaddyRouteDriver", fake.route_adapter)
+
+    def captured():
+        assert not any(fake.running.values())
+        value = copy.deepcopy(expected)
+        for role in ("backend", "frontend"):
+            value[f"{role}_runtime_sha256"] = _runtime_digest(
+                Path(fake.spec[f"live_{role}_runtime"]), backend=role == "backend")
+            write_env(output.parent / f"{role}-effective-env.nul", fake.environments[role])
+            for raw in set(expected[role]["unit_files"]) | set(expected[role]["environment_file_paths"]):
+                path = Path(raw)
+                target = output.parent / "config" / path.relative_to("/")
+                target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                target.write_bytes(path.read_bytes())
+        value["cache_sha256"] = sha(bundle.live)
+        return value
+
+    with PairedReleaseTransaction(state_dir=journal.parent, lock_path=Path(fake.spec["lock_path"]),
+                                  manifest_sha256="0" * 64, driver=None)._locked():
+        snapshot.snapshot_with_maintenance(
+            journal_path=journal, machine_lock=Path(fake.spec["lock_path"]), live_cache=bundle.live,
+            output_cache=output, build_id=fake.spec["old_build_id"],
+            copy_cache=preparer._copy_cache_consistently, expected_pair=expected,
+            observe_pair=lambda: copy.deepcopy(expected), recovery_spec=spec,
+            hold_barrier=True, stopped_runtime_capture=captured,
+        )
+    saved = json.loads(journal.read_text())
+    assert saved["state"] == "held"
+    manifest = json.loads(bundle.manifest.read_text())
+    manifest.update(snapshot_journal_path=str(journal), snapshot_journal_identity_sha256=saved["identity_sha256"])
+    save(bundle.manifest, manifest)
+    driver = paired.SingleVpsDriver(manifest)
+    transaction = PairedReleaseTransaction(
+        state_dir=driver.root, lock_path=driver.paths["lock_path"], manifest_sha256=sha(bundle.manifest),
+        driver=driver, snapshot_journal_path=journal, snapshot_journal_identity_sha256=saved["identity_sha256"],
+    )
+    # Model the same existing root service context as FabricatedHost's access adapter.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(paired.os, "geteuid", lambda: 0)
+        transaction.prepare()
+    return fake, driver, transaction, journal
 
 
 def test_paired_public_guards_forward_signed_source_and_captured_environment_context(tmp_path, monkeypatch):
@@ -631,20 +722,22 @@ def test_paired_prepare_keeps_all_four_raw_persistent_settings_equal(bundle, mon
     "candidate_environment_sha256", "missing",
 ])
 def test_final_serving_launch_proof_drift_stops_before_replacement(host, field):
-    fake, driver, _ = host
-    driver.maintenance()
-    driver.stop_pair()
-    driver.snapshot()
-    driver.derive_and_sign()
-    path = driver.root / "serving-launch-proof.json"
-    if field == "missing":
-        path.unlink()
-    else:
-        value = json.loads(path.read_text())
-        value[field] = {} if field == "candidate_environment_sha256" else "0" * 64
-        save(path, value)
-    with pytest.raises(ValueError, match="Final serving launcher environment proof|Release evidence"):
-        driver.install_candidate()
+    fake, driver, transaction = host
+    with transaction._locked():
+        transaction._claim()
+        driver.maintenance()
+        driver.stop_pair()
+        driver.snapshot()
+        driver.derive_and_sign()
+        path = driver.root / "serving-launch-proof.json"
+        if field == "missing":
+            path.unlink()
+        else:
+            value = json.loads(path.read_text())
+            value[field] = {} if field == "candidate_environment_sha256" else "0" * 64
+            save(path, value)
+        with pytest.raises(ValueError, match="Final serving launcher environment proof|Release evidence"):
+            driver.install_candidate()
     assert fake.bundle.live.read_bytes() == fake.bundle.old_bytes
     assert driver.paths["frontend_current"].resolve() == Path(fake.spec["live_frontend_runtime"])
     assert not driver.paths["backend_dropin"].exists()
@@ -653,7 +746,7 @@ def test_final_serving_launch_proof_drift_stops_before_replacement(host, field):
 def test_final_launcher_cannot_self_attest_an_extra_environment_setting(host, monkeypatch):
     from scripts.deploy import launch_wavea_candidate as launcher
 
-    fake, driver, _ = host
+    fake, driver, transaction = host
     original = launcher.candidate_command
 
     def changed(role, config):
@@ -663,11 +756,13 @@ def test_final_launcher_cannot_self_attest_an_extra_environment_setting(host, mo
         return executable, argv, runtime, environment
 
     monkeypatch.setattr(launcher, "candidate_command", changed)
-    driver.maintenance()
-    driver.stop_pair()
-    driver.snapshot()
-    with pytest.raises(ValueError, match="Final serving environment differs"):
-        driver.derive_and_sign()
+    with transaction._locked():
+        transaction._claim()
+        driver.maintenance()
+        driver.stop_pair()
+        driver.snapshot()
+        with pytest.raises(ValueError, match="Final serving environment differs"):
+            driver.derive_and_sign()
     assert not (driver.root / "serving-launch-proof.json").exists()
     assert fake.bundle.live.read_bytes() == fake.bundle.old_bytes
 
@@ -712,6 +807,397 @@ def assert_old_restored(fake, driver, transaction):
     assert driver.paths["frontend_current"].resolve() == Path(fake.spec["live_frontend_runtime"])
     assert not driver.paths["backend_dropin"].exists()
     assert not driver.paths["frontend_dropin"].exists()
+
+
+@pytest.mark.parametrize("kind", ["missing_journal", "missing_identity", "malformed_identity",
+                                  "nonabsolute_journal", "unrelated_extra"])
+def test_paired_snapshot_manifest_fields_are_strict_before_machine_actions(bundle, monkeypatch, kind):
+    manifest = json.loads(bundle.manifest.read_text())
+    manifest.update(snapshot_journal_path=str(bundle.root / "snapshot-maintenance/transaction.json"),
+                    snapshot_journal_identity_sha256="1" * 64)
+    if kind == "missing_journal":
+        manifest.pop("snapshot_journal_path")
+    elif kind == "missing_identity":
+        manifest.pop("snapshot_journal_identity_sha256")
+    elif kind == "malformed_identity":
+        manifest["snapshot_journal_identity_sha256"] = "not-a-sha256"
+    elif kind == "nonabsolute_journal":
+        manifest["snapshot_journal_path"] = "snapshot-maintenance/transaction.json"
+    else:
+        manifest["operator_note"] = "unreviewed manifest field"
+    events = list(bundle.events)
+    before = {str(path): path.read_bytes() for path in (bundle.live, Path(bundle.spec["caddy_config"]),
+                                                     bundle.manifest)}
+    current = Path(bundle.spec["frontend_current"])
+    pointer = os.readlink(current)
+
+    def unexpected(*args):
+        pytest.fail(f"Manifest validation must precede machine actions: {args}")
+
+    monkeypatch.setattr(paired, "_run", unexpected)
+    with pytest.raises(ValueError):
+        paired.SingleVpsDriver(manifest)
+    assert bundle.events == events
+    assert {path: Path(path).read_bytes() for path in before} == before
+    assert os.readlink(current) == pointer
+    assert not list((bundle.root / "transaction").iterdir())
+    assert not Path(bundle.spec["backend_dropin"]).exists()
+    assert not Path(bundle.spec["frontend_dropin"]).exists()
+
+
+def test_held_prepare_gate_and_activate_preserve_barrier_until_real_pair_ready(held_host):
+    fake, driver, transaction, journal = held_host
+    owner = json.loads(transaction.owner_path.read_text())
+    saved = json.loads(journal.read_text())
+    assert owner == {"manifest_sha256": saved["owner_identity_sha256"], "state_dir": str(journal.parent)}
+    status = transaction.status()
+    assert status["state"] == "prepared" and status["live_readiness"] == "not_checked"
+    assert status["snapshot"]["state"] == "held"
+    assert not any(fake.running.values())
+    assert fake.loaded_route == Path(fake.spec["caddy_config"]).read_bytes() == (journal.parent / "barrier.caddy").read_bytes()
+    before = list(fake.events)
+    assert transaction.prepare()["state"] == "prepared"
+    driver.activation_gate()
+    assert fake.events == before
+    assert transaction.activate()["state"] == "active"
+    assert json.loads(transaction.owner_path.read_text()) == {
+        "manifest_sha256": sha(fake.bundle.manifest), "state_dir": str(driver.root),
+    }
+    assert json.loads(journal.read_text())["state"] == "adopted"
+    events = fake.events[len(before):]
+    assert events.index("start-frontend") < events.index("route-loaded-old")
+    assert transaction.rollback()["state"] == "rolled_back"
+    assert_old_restored(fake, driver, transaction)
+
+
+@pytest.mark.parametrize("interrupt", [None, "before", "after"])
+def test_held_owner_adoption_is_atomic_and_interruption_replays_exact_handoff(held_host, monkeypatch, interrupt):
+    fake, driver, transaction, journal = held_host
+    original = snapshot.atomic_json
+    old_owner = json.loads(transaction.owner_path.read_text())
+    target = {"manifest_sha256": sha(fake.bundle.manifest), "state_dir": str(driver.root)}
+    observed = []
+    interrupted = False
+
+    def written(path, value):
+        nonlocal interrupted
+        if path == transaction.owner_path and value == target:
+            observed.append(json.loads(path.read_text()))
+            if interrupt == "before" and not interrupted:
+                interrupted = True
+                raise KeyboardInterrupt("before owner CAS")
+            original(path, value)
+            observed.append(json.loads(path.read_text()))
+            if interrupt == "after" and not interrupted:
+                interrupted = True
+                raise KeyboardInterrupt("after owner CAS")
+        else:
+            original(path, value)
+
+    real_unlink = Path.unlink
+
+    def unlinked(path, *args, **kwargs):
+        assert path != transaction.owner_path, "Handoff must replace the exact owner without an absent interval"
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(snapshot, "atomic_json", written)
+    monkeypatch.setattr(Path, "unlink", unlinked)
+    if interrupt:
+        with pytest.raises(KeyboardInterrupt, match="owner CAS"):
+            transaction.activate()
+        assert transaction.status()["state"] == "prepared"
+        assert json.loads(journal.read_text())["state"] == "adopting"
+        assert json.loads(transaction.owner_path.read_text()) == (old_owner if interrupt == "before" else target)
+        assert not any(fake.running.values())
+        driver = paired.SingleVpsDriver(json.loads(fake.bundle.manifest.read_text()))
+        transaction = PairedReleaseTransaction(
+            state_dir=driver.root, lock_path=driver.paths["lock_path"], manifest_sha256=sha(fake.bundle.manifest),
+            driver=driver, snapshot_journal_path=journal,
+            snapshot_journal_identity_sha256=json.loads(journal.read_text())["identity_sha256"],
+        )
+    assert transaction.activate()["state"] == "active"
+    assert observed[0] == old_owner and observed[-1] == target
+    assert all(owner in (old_owner, target) for owner in observed)
+    assert json.loads(transaction.owner_path.read_text()) == target
+
+
+@pytest.mark.parametrize("kind", ["missing", "foreign", "newer"])
+def test_held_activation_refuses_lost_owner_without_any_machine_write(held_host, kind):
+    fake, driver, transaction, journal = held_host
+    if kind == "missing":
+        transaction.owner_path.unlink()
+    else:
+        directory = driver.root / kind
+        directory.mkdir(mode=0o700)
+        save(directory / "transaction.json", {"state": "active" if kind == "newer" else "prepared"})
+        save(transaction.owner_path, {"manifest_sha256": "f" * 64, "state_dir": str(directory)})
+    paths = (fake.bundle.live, Path(fake.spec["caddy_config"]), transaction.journal_path, journal,
+             driver.candidate_receipt, Path(driver.config["candidate_backend_environment"]))
+    before = {str(path): path.read_bytes() for path in paths}
+    before_owner = transaction.owner_path.read_bytes() if transaction.owner_path.exists() else None
+    events = list(fake.events)
+    for action in (transaction.activate, transaction.rollback, driver.stop_pair, driver.maintenance,
+                   driver.start_pair, driver.restore_old, driver.restore_route):
+        with pytest.raises((ValueError, PairedReleaseError, snapshot.SnapshotMaintenanceError)):
+            action()
+        assert fake.events == events
+        assert {str(path): path.read_bytes() for path in paths} == before
+        assert (transaction.owner_path.read_bytes() if transaction.owner_path.exists() else None) == before_owner
+    assert fake.events == events
+    assert {str(path): path.read_bytes() for path in paths} == before
+    assert (transaction.owner_path.read_bytes() if transaction.owner_path.exists() else None) == before_owner
+    assert not any(fake.running.values())
+    assert driver.paths["frontend_current"].resolve() == Path(fake.spec["live_frontend_runtime"])
+    assert not driver.paths["backend_dropin"].exists() and not driver.paths["frontend_dropin"].exists()
+
+
+@pytest.mark.parametrize("kind", ["loaded", "installed", "sealed", "identity"])
+def test_held_barrier_and_identity_drift_fail_closed_before_signing_or_handoff(held_host, kind):
+    fake, driver, transaction, journal = held_host
+    if kind == "loaded":
+        fake.loaded_route = OLD_CADDYFILE
+    elif kind == "installed":
+        Path(fake.spec["caddy_config"]).write_bytes(OLD_CADDYFILE)
+    elif kind == "sealed":
+        (journal.parent / "barrier.caddy").write_bytes(b"foreign sealed maintenance bytes")
+    else:
+        manifest = json.loads(fake.bundle.manifest.read_text())
+        manifest["snapshot_journal_identity_sha256"] = "0" * 64
+        driver = paired.SingleVpsDriver(manifest)
+        transaction = PairedReleaseTransaction(
+            state_dir=driver.root, lock_path=driver.paths["lock_path"], manifest_sha256=sha(fake.bundle.manifest),
+            driver=driver, snapshot_journal_path=journal, snapshot_journal_identity_sha256="0" * 64,
+        )
+    events = list(fake.events)
+    before = {str(path): path.read_bytes() for path in (
+        fake.bundle.live, transaction.journal_path, transaction.owner_path, journal, driver.candidate_receipt,
+    )}
+    with pytest.raises((ValueError, PairedReleaseError, snapshot.SnapshotMaintenanceError)):
+        transaction.activate()
+    assert fake.events == events
+    assert {path: Path(path).read_bytes() for path in before} == before
+    assert not (driver.root / "serving-receipt.json").exists()
+    assert not (driver.root / "serving-launch-proof.json").exists()
+    assert not any(fake.running.values())
+
+
+def test_held_prepared_abort_restores_verified_old_pair_without_candidate_install(held_host):
+    fake, driver, transaction, _ = held_host
+    before = len(fake.events)
+    assert transaction.rollback()["state"] == "rolled_back"
+    assert_old_restored(fake, driver, transaction)
+    assert "route-loaded-old" in fake.events[before:]
+    assert fake.events[before:].index("start-frontend") < fake.events[before:].index("route-loaded-old")
+    assert not (driver.root / "serving-receipt.json").exists()
+    assert not (driver.root / "serving-launch-proof.json").exists()
+
+
+@pytest.mark.parametrize("kind", ["unit", "environment", "foreign_loaded", "foreign_installed",
+                                  "old_loaded", "old_installed"])
+def test_adopted_prepared_abort_refuses_operator_context_drift_without_machine_actions(held_host, kind):
+    fake, driver, transaction, journal = held_host
+    with transaction._locked():
+        transaction._claim()
+    environment = fake.environment_files["backend"][0]
+    caddy = Path(fake.spec["caddy_config"])
+    if kind == "unit":
+        fake.unit_files["backend"].write_text("operator changed existing service unit\n")
+    elif kind == "environment":
+        environment.write_text("FIXTURE_ENVIRONMENT=operator-change\n")
+    elif kind.endswith("loaded"):
+        fake.loaded_route = OLD_CADDYFILE if kind == "old_loaded" else b"unrelated operator loaded route"
+    else:
+        caddy.write_bytes(OLD_CADDYFILE if kind == "old_installed" else b"unrelated operator installed route")
+    paths = (fake.bundle.live, caddy, fake.unit_files["backend"], environment,
+             transaction.owner_path, transaction.journal_path, journal, driver.root / "old-backend-env.nul")
+    before = {str(path): path.read_bytes() for path in paths}
+    events, loaded, pointer = list(fake.events), fake.loaded_route, os.readlink(driver.paths["frontend_current"])
+    for _ in range(2):
+        with pytest.raises((ValueError, PairedReleaseError, snapshot.SnapshotMaintenanceError)):
+            transaction.rollback()
+        assert fake.events == events
+        assert {str(path): path.read_bytes() for path in paths} == before
+        assert fake.loaded_route == loaded
+        assert os.readlink(driver.paths["frontend_current"]) == pointer
+        assert not any(fake.running.values())
+        assert not driver.paths["backend_dropin"].exists() and not driver.paths["frontend_dropin"].exists()
+        assert not (driver.root / "serving-receipt.json").exists()
+        assert not (driver.root / "serving-launch-proof.json").exists()
+
+
+def test_another_release_cannot_claim_adopted_prepared_held_pair(held_host):
+    fake, driver, transaction, journal = held_host
+    with transaction._locked():
+        transaction._claim()
+    assert json.loads(journal.read_text())["state"] == "adopted"
+    other_root = driver.root / "contender"
+    other_root.mkdir(mode=0o700)
+    contender = PairedReleaseTransaction(state_dir=other_root, lock_path=driver.paths["lock_path"],
+                                        manifest_sha256="c" * 64, driver=None)
+    events = list(fake.events)
+    owner = transaction.owner_path.read_bytes()
+    with contender._locked(), pytest.raises(PairedReleaseError, match="recovery"):
+        contender._claim()
+    assert transaction.owner_path.read_bytes() == owner
+    assert fake.events == events
+    assert not any(fake.running.values())
+    assert transaction.status()["state"] == "prepared"
+
+
+def test_held_interrupted_install_recovers_real_old_pair_with_recreated_transaction(held_host, monkeypatch):
+    fake, driver, transaction, journal = held_host
+    original = paired._replace_file
+    interrupted = False
+
+    def replaced(source, target, mode, **kwargs):
+        nonlocal interrupted
+        original(source, target, mode, **kwargs)
+        if target == fake.bundle.live and not interrupted:
+            interrupted = True
+            raise KeyboardInterrupt("held candidate database installed")
+
+    monkeypatch.setattr(paired, "_replace_file", replaced)
+    with pytest.raises(KeyboardInterrupt, match="held candidate database"):
+        transaction.activate()
+    assert transaction.status()["state"] == "installing"
+    assert not any(fake.running.values())
+    assert fake.loaded_route == Path(fake.spec["caddy_config"]).read_bytes() == (driver.root / "barrier.caddy").read_bytes()
+    driver = paired.SingleVpsDriver(json.loads(fake.bundle.manifest.read_text()))
+    resumed = PairedReleaseTransaction(
+        state_dir=driver.root, lock_path=driver.paths["lock_path"], manifest_sha256=sha(fake.bundle.manifest),
+        driver=driver, snapshot_journal_path=journal,
+        snapshot_journal_identity_sha256=json.loads(journal.read_text())["identity_sha256"],
+    )
+    assert resumed.activate()["state"] == "rolled_back"
+    assert_old_restored(fake, driver, resumed)
+
+
+def _old_frontend_probe_requests(fake, monkeypatch, *, image_preload=False, malicious_second_html=False):
+    """Keep real discovery; an optimizer request is a forbidden disk-write trap."""
+    requests, html_bodies = [], []
+    original = fake.urlopen
+    original_fetch = http._fetch
+    image_url = "http://127.0.0.1:3000/_next/image?url=%2Fprobe.png&w=64&q=75"
+    old_frontend = Path(fake.spec["live_frontend_runtime"])
+
+    def content(url, body):
+        requests.append(url)
+        path = urlparse(url).path
+        if path == "/login":
+            repeated = sum(request == url for request in requests) > 1
+            if image_preload or (malicious_second_html and repeated):
+                body += f'<link rel="preload" as="image" href="{image_url}">'.encode()
+            html_bodies.append(body)
+        elif path == "/_next/image":
+            cache = old_frontend / ".next/cache/images/probe/optimized.webp"
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_bytes(b"synthetic old image optimizer cache bytes")
+        return body
+
+    def fetched(request, **kwargs):
+        response = original(request, **kwargs)
+        body = content(request.full_url, response.read())
+        response.read = lambda *args: body
+        return response
+
+    def fetched_http(base, path, cookie):
+        status, body = original_fetch(base, path, cookie)
+        if status == 200:
+            body = content(base.rstrip("/") + path, body)
+        return status, body
+
+    monkeypatch.setattr(assets, "urlopen", fetched)
+    monkeypatch.setattr(http, "_fetch", fetched_http)
+    return requests, html_bodies
+
+
+def _frontend_probe_inventory(frontend):
+    return {path.relative_to(frontend).as_posix():
+            ("link", os.readlink(path)) if path.is_symlink() else ("directory",) if path.is_dir()
+            else ("file", sha(path)) for path in frontend.rglob("*")}
+
+
+def test_old_readiness_probes_preserve_real_frontend_runtime(host, monkeypatch):
+    fake, driver, _ = host
+    frontend = Path(fake.spec["live_frontend_runtime"])
+    before = _runtime_digest(frontend, backend=False)
+    inventory = _frontend_probe_inventory(frontend)
+    requests, _ = _old_frontend_probe_requests(fake, monkeypatch)
+    driver.verify_pair(candidate=False, public=True)
+    assert "http://127.0.0.1:3000/login" in requests
+    assert {urlparse(url).path for url in requests if "/_next/static/" in url} == {
+        f"/_next/static/{index}.js" for index in range(10)
+    }
+    assert _runtime_digest(frontend, backend=False) == before
+    assert _frontend_probe_inventory(frontend) == inventory
+    assert fake.events == []
+
+
+def test_old_readiness_rejects_late_sorted_optimizer_url_before_any_asset_request(host, monkeypatch):
+    fake, driver, _ = host
+    frontend = Path(fake.spec["live_frontend_runtime"])
+    before = _runtime_digest(frontend, backend=False)
+    inventory = _frontend_probe_inventory(frontend)
+    requests, html = _old_frontend_probe_requests(fake, monkeypatch, image_preload=True)
+    with pytest.raises(ValueError):
+        driver.verify_pair(candidate=False, public=False)
+    discovered = assets.extract_assets_from_html(html[0].decode())
+    assert discovered[:-1] == sorted(f"/_next/static/{index}.js" for index in range(10))
+    assert discovered[-1] == "http://127.0.0.1:3000/_next/image?url=%2Fprobe.png&w=64&q=75"
+    assert not any(urlparse(url).path.startswith("/_next/") for url in requests)
+    assert not (frontend / ".next/cache/images").exists()
+    assert _runtime_digest(frontend, backend=False) == before
+    assert _frontend_probe_inventory(frontend) == inventory
+    assert fake.events == []
+
+
+def test_rollback_optimizer_preload_rejection_keeps_recovery_blocked_behind_503(host, monkeypatch):
+    fake, driver, transaction = host
+    assert transaction.activate()["state"] == "active"
+    before_events = len(fake.events)
+    frontend = Path(fake.spec["live_frontend_runtime"])
+    digest, inventory = _runtime_digest(frontend, backend=False), _frontend_probe_inventory(frontend)
+    requests, html = _old_frontend_probe_requests(fake, monkeypatch, image_preload=True)
+    with pytest.raises(PairedReleaseError, match="Rollback blocked"):
+        transaction.rollback()
+    assert requests.count("http://127.0.0.1:3000/login") == 1 and len(html) == 1
+    discovered = assets.extract_assets_from_html(html[0].decode())
+    assert discovered[:-1] == sorted(f"/_next/static/{index}.js" for index in range(10))
+    assert discovered[-1] == "http://127.0.0.1:3000/_next/image?url=%2Fprobe.png&w=64&q=75"
+    assert not any(urlparse(url).path.startswith("/_next/") for url in requests)
+    assert not (frontend / ".next/cache/images").exists()
+    assert _runtime_digest(frontend, backend=False) == digest
+    assert _frontend_probe_inventory(frontend) == inventory
+    assert transaction.status()["state"] == "blocked"
+    assert "route-loaded-old" not in fake.events[before_events:]
+    assert fake.loaded_route == Path(fake.spec["caddy_config"]).read_bytes() == (
+        driver.root / "barrier.caddy"
+    ).read_bytes()
+    for path in ("/health", "/login", "/api/patients"):
+        assert fake.fetch("https://app.bilun.tech", path)[0] == 503
+    retry_events = len(fake.events)
+    with pytest.raises(PairedReleaseError, match="Rollback blocked"):
+        transaction.rollback()
+    assert "route-loaded-old" not in fake.events[retry_events:]
+    assert transaction.status()["state"] == "blocked"
+
+
+def test_old_readiness_uses_one_html_read_and_the_same_validated_static_urls(host, monkeypatch):
+    fake, driver, _ = host
+    frontend = Path(fake.spec["live_frontend_runtime"])
+    digest, inventory = _runtime_digest(frontend, backend=False), _frontend_probe_inventory(frontend)
+    requests, html = _old_frontend_probe_requests(fake, monkeypatch, malicious_second_html=True)
+    driver.verify_pair(candidate=False, public=False)
+    assert requests.count("http://127.0.0.1:3000/login") == 1
+    assert len(html) == 1
+    expected = {f"/_next/static/{index}.js" for index in range(10)}
+    assert set(assets.extract_assets_from_html(html[0].decode())) == expected
+    asset_urls = [url for url in requests if urlparse(url).path.startswith("/_next/")]
+    assert sorted(asset_urls) == sorted("http://127.0.0.1:3000" + path for path in expected)
+    assert not (frontend / ".next/cache/images").exists()
+    assert _runtime_digest(frontend, backend=False) == digest
+    assert _frontend_probe_inventory(frontend) == inventory
+    assert fake.events == []
 
 
 def test_real_rollback_probes_verify_unmarked_purpose_bound_old_sessions(host, monkeypatch):

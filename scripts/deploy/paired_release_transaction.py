@@ -66,11 +66,21 @@ def atomic_json(path: Path, value: dict) -> None:
 
 class PairedReleaseTransaction:
     def __init__(self, *, state_dir: Path, lock_path: Path, manifest_sha256: str,
-                 driver: PairDriver):
+                 driver: PairDriver, snapshot_journal_path: Path | None = None,
+                 snapshot_journal_identity_sha256: str | None = None):
         self.state_dir, self.lock_path = state_dir, lock_path
         self.journal_path = state_dir / "transaction.json"
         self.owner_path = lock_path.parent / "paired-release-owner.json"
         self.manifest_sha256, self.driver = manifest_sha256, driver
+        if (snapshot_journal_path is None) != (snapshot_journal_identity_sha256 is None):
+            raise PairedReleaseError("Snapshot handoff requires its exact journal and identity")
+        self.snapshot_handoff = ({"journal_path": str(snapshot_journal_path),
+                                  "identity_sha256": snapshot_journal_identity_sha256}
+                                 if snapshot_journal_path is not None else None)
+        if hasattr(driver, "bind_owner_check"):
+            driver.bind_owner_check(self._assert_owner, {
+                "manifest_sha256": self.manifest_sha256, "state_dir": str(self.state_dir),
+            })
 
     def _owner(self) -> dict | None:
         if not os.path.lexists(self.owner_path):
@@ -86,11 +96,21 @@ class PairedReleaseTransaction:
             raise PairedReleaseError("A newer release owns this pair; refusing stale rollback")
 
     def _claim(self) -> None:
+        if self.snapshot_handoff is not None:
+            from scripts.deploy.snapshot_maintenance import adopt_held_snapshot
+            adopt_held_snapshot(
+                Path(self.snapshot_handoff["journal_path"]),
+                expected_identity_sha256=self.snapshot_handoff["identity_sha256"],
+                expected_manifest_sha256=self.manifest_sha256, state_dir=self.state_dir,
+            )
+            self._assert_owner()
+            return
         owner = self._owner()
         if owner and owner["manifest_sha256"] != self.manifest_sha256:
             directory = Path(owner["state_dir"])
             previous, _ = _load_private_json(directory / "transaction.json", root=directory)
-            if previous.get("state") not in {"prepared", "active", "rolled_back"}:
+            if (previous.get("state") not in {"prepared", "active", "rolled_back"}
+                    or (previous.get("state") == "prepared" and previous.get("snapshot_handoff"))):
                 raise PairedReleaseError("Another interrupted release needs recovery first")
         atomic_json(self.owner_path, {"manifest_sha256": self.manifest_sha256,
                                      "state_dir": str(self.state_dir)})
@@ -115,14 +135,18 @@ class PairedReleaseTransaction:
         if not os.path.lexists(self.journal_path):
             return None
         value, _ = _load_private_json(self.journal_path, root=self.state_dir)
-        if (set(value) != {"schema_version", "manifest_sha256", "state", "events",
-                           "timings_seconds", "reason"}
+        fields = {"schema_version", "manifest_sha256", "state", "events", "timings_seconds", "reason"}
+        if self.snapshot_handoff is not None:
+            fields.add("snapshot_handoff")
+        if (set(value) != fields
                 or value["schema_version"] != "bilun-paired-transaction-v1"
                 or value["manifest_sha256"] != self.manifest_sha256
                 or not isinstance(value["events"], list)
                 or not value["events"] or value["events"][-1] != value["state"]
                 or not isinstance(value["timings_seconds"], dict)):
             raise PairedReleaseError("Paired release journal identity/schema differs")
+        if self.snapshot_handoff is not None and value["snapshot_handoff"] != self.snapshot_handoff:
+            raise PairedReleaseError("Paired snapshot handoff identity differs")
         if value["state"] not in {
             "prepared", "entering_maintenance", "stopping", "snapshotting",
             "deriving", "installing", "starting", "verifying", "publishing",
@@ -150,6 +174,8 @@ class PairedReleaseTransaction:
             "events": [], "timings_seconds": {},
         }
         value.update(state=state, reason=reason)
+        if self.snapshot_handoff is not None:
+            value["snapshot_handoff"] = self.snapshot_handoff
         value["events"].append(state)
         value["timings_seconds"].update(timings or {})
         atomic_json(self.journal_path, value)
@@ -162,6 +188,11 @@ class PairedReleaseTransaction:
                 return {"state": "unprepared", "manifest_sha256": self.manifest_sha256,
                         "live_readiness": "not_checked"}
             result = {**value, "live_readiness": "maintenance_or_recovery_required"}
+            if value["state"] == "prepared" and self.snapshot_handoff is not None:
+                from scripts.deploy.snapshot_maintenance import inspect_snapshot
+                result["snapshot"] = inspect_snapshot(Path(self.snapshot_handoff["journal_path"]))
+                result["live_readiness"] = "not_checked"
+                return result
             if value["state"] in {"prepared", "active", "rolled_back"}:
                 try:
                     self.driver.verify_pair(candidate=value["state"] == "active", public=True)
@@ -184,28 +215,38 @@ class PairedReleaseTransaction:
     def _rollback(self) -> dict:
         try:
             self._record("rollback_maintenance")
+            self._assert_owner()
             self.driver.maintenance()
             self._record("rollback_stopping")
+            self._assert_owner()
             self.driver.stop_pair()
             self._record("restoring")
+            self._assert_owner()
             self.driver.restore_old()
             self._record("rollback_starting")
+            self._assert_owner()
             self.driver.start_pair()
             self._record("rollback_verifying")
+            self._assert_owner()
             self.driver.verify_pair(candidate=False, public=False)
             self._record("rollback_publishing")
+            self._assert_owner()
             self.driver.restore_route()
+            self._assert_owner()
             self.driver.verify_pair(candidate=False, public=True)
             return self._record("rolled_back")
         except Exception as exc:
-            # Do not expose an unverified pair even if restoring Caddy failed.
+            # Ownership loss forbids even a defensive stop of someone else's pair.
             try:
+                self._assert_owner()
                 self.driver.maintenance()
             except Exception:
-                try:
-                    self.driver.stop_pair()
-                except Exception:
-                    pass
+                pass
+            try:
+                self._assert_owner()
+                self.driver.stop_pair()
+            except Exception:
+                pass
             self._record("blocked", reason=f"{type(exc).__name__}: {str(exc)[:500]}")
             raise PairedReleaseError("Rollback blocked; inspect private state, maintenance remains required") from exc
 
@@ -234,18 +275,25 @@ class PairedReleaseTransaction:
                     ("snapshotting", self.driver.snapshot),
                 ):
                     self._record(state)
+                    self._assert_owner()
                     action()
                 self._record("deriving")
+                self._assert_owner()
                 timings = self.driver.derive_and_sign()
                 self._record("installing", timings=timings)
+                self._assert_owner()
                 self.driver.install_candidate()
                 self._record("starting")
+                self._assert_owner()
                 readiness_started = time.monotonic()
                 self.driver.start_pair()
                 self._record("verifying", timings={"service_readiness": time.monotonic() - readiness_started})
+                self._assert_owner()
                 self.driver.verify_pair(candidate=True, public=False)
                 self._record("publishing")
+                self._assert_owner()
                 self.driver.restore_route()
+                self._assert_owner()
                 self.driver.verify_pair(candidate=True, public=True)
                 return self._record("active", timings={"maintenance_total": time.monotonic() - started})
             except Exception:
@@ -255,8 +303,10 @@ class PairedReleaseTransaction:
     def rollback(self) -> dict:
         with self._locked():
             value = self._read()
-            if value is None or value["state"] == "prepared":
+            if value is None or (value["state"] == "prepared" and self.snapshot_handoff is None):
                 raise PairedReleaseError("No activation has started")
+            if value["state"] == "prepared":
+                self._claim()
             self._assert_owner()
             if value["state"] == "rolled_back":
                 self.driver.verify_pair(candidate=False, public=True)
