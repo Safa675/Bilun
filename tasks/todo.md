@@ -1425,3 +1425,30 @@ Son dokuz dosyalık hedefli paket, kaynak/HTTP/evaluator/observation testleri ve
 Bağımsız final diff incelemesinde P1/P2 bulgu yok. Eski katalog tüm alanları/pencereleri korunmuş; yalnız12 tek günlük pencere ve bir makbuz eklenmiş. Bağımsız36 gerçek3/4/5Ekim tarih kontrolü ve final8proof hash kontrolü geçti; ayrı HTTP dışı hedefli koşu394passed39deselected. İncelemecinin yarım HTTP koşusu exit130 ile durduruldu, pass sayılmadı. Kaynak sahibi full HTTP538pass sonucunu yukarıda ayrı doğruladı.
 
 Yayın sırası: Bu kaynak yenilemesi mevcut9639c457 corpus üzerinde bağımsız dar taslak PR olacak. Corpus sahibinin gerçek veri geçişi+catalog seam paketi bunun üstüne ikinci taslak PR olarak taşınacak; ilk kaynak PR'ında corpus veya binding değişikliği yok. Merge/deploy yok.
+
+## Task: PR150 kaynak CI onarımı
+
+### Goal
+Mevcut c4f736b kaynak ağacındaki üç doğrulanmış CI hatasını yalnız desteklenmeyen gün fixture'ı ve türetilmiş coverage kanıt hashleriyle düzeltmek; corpus ve dört coverage parquet dosyasını byte düzeyinde korumak.
+
+### Subtasks
+- [x] future_source SMA/antifungal fixture'ını ilk desteklenmeyen 5 Ekim'e taşı; not_evaluated ve sıfır predicate beklentilerini koru.
+- [x] Mevcut coverage generator'ını geçici dizine çalıştır; dört özgün parquet dosyasının Git HEAD byte eşitliğini ve geçici çıktıyla tam schema/frame eşitliğini doğrula, yalnız mevcut helper'larla sut_coverage_evidence.json dosyasını yenile.
+- [x] Coverage evidence ve documentary facts testlerini, anlamlı kaynak paketini, compile_rules.py --check ve 23 manifest parity kapısını çalıştır.
+- [x] Değişen dosyaların dar kapsamını, corpus/parquet hashlerinin korunduğunu ve gerçek test sonuçlarını üst göreve teslim et.
+- [x] Üst görevin açık yetkisiyle kaynak pencere uzatması, future fixture ve coverage hash kapanışı için kısa önleyici ders kaydı ekle.
+
+### Out of Scope
+Corpus geçişi, diğer branch dosyaları, runtime klinik veya tarih penceresi değişiklikleri, frontend kodu, commit/push/merge/deploy. Git işlemleri üst görevin sorumluluğunda.
+
+### Specification and plan review
+Üst görev üç hatanın düzeltmesini açıkça yetkilendirdi. DAY+2=4 Ekim artık geçerli kaynak günüdür; ilk desteklenmeyen gün 5 Ekim'dir. Kanıt yenilemesi yalnız dört kalıcı parquet dosyasının Git HEAD ile byte eşitliği ve generator çıktısıyla tam schema/frame eşitliği doğrulandığında uygulanacak; input corpus SHA256 9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac korunacak. Kaynak kapsamı sekiz yeni 4 Ekim gözlem/makbuz dosyasıyla kapalıdır. Plan uygulamadan önce mevcut generator ve CI komutlarıyla doğrulandı.
+
+Plan refinement before evidence write: Geçici generator Arrow24.0.0 kullanıyor, kayıtlı parquet writer Arrow25.0.1; schema ve frame eşit olsa da serileştirilmiş byte farklı. Bu ayrım üst göreve bildirildi ve yalnız evidence yenilemesi açıkça yeniden yetkilendirildi. Dört özgün parquet ve input corpus Git HEAD ile byte düzeyinde aynı doğrulandı; evidence mevcut build_drug_coverage_evidence helper'ına özgün kalıcı coverage frame verilerek ve coverage_dependency_hashes helper'ıyla gerçek repo dosyaları hashlenerek oluşturuldu. Geçici parquet dosyalarının hiçbiri repo'ya yazılmadı.
+
+### Review
+Tek birleşik 11 dosyalık kaynak/ilaç temporal/documentary/coverage paketi gerçekten çalıştı: **721 passed, 2 warnings, 36.17s**. Normal sandbox'taki önceki documentary-only HTTP koşusu asılı kaldığı için exit130 ile durduruldu ve pass sayılmadı; birleşik koşu izin incelemesinden geçen süreç içi TestClient ortamında exit0 tamamlandı. Full backend suite yeniden çalıştırılmadı.
+
+`compile_rules.py --check`: **134 rule/manifest artifacts byte-identical**, exit0. `audit_manifest_parity.py --drug-only`: **23 scanned, 23 with traces, 0 issues**, exit0. Kaynak verifier: **12 families, 25 repository-local assets, through2026-10-04**, exit0. Scoped Ruff ve git diff --check geçti. Dört kalıcı coverage parquet ve 9639 corpus Git HEAD byte hashleriyle aynı; JSON envanteri file_sha256 dışında değişmedi. Kaynak/test/evidence düzeltmesi ve görev/ders belgeleri dışında yazım yok; commit/push üst göreve bırakıldı.
+
+Frontend job111504177367 yalnız bir kez individual rerun edildi; aynı c4f736b kaynak başını kullanan job111510110080'de **83 files/575 tests, typecheck, build, public-assets52files** geçti. Backend yeniden çalıştırılmadı; ilk run'ın başarısız backend sonucu tam CI başarısı sayılmaz. Bağımsız final kaynak diff incelemesi üst görev tarafından atandı.
