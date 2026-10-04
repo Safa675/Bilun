@@ -245,6 +245,7 @@ const sections = {
         "title": "Clinical source checks",
         "partial": "These limited checks do not establish full clinical or reimbursement eligibility.",
         "pending": "Source interpretation pending review",
+        "mesotheliomaDraft": "EXPERIMENTAL / REVIEW REQUIRED. Exact source/date admission and independent documentary interpretation are pending. These documentary checks remain unevaluated in runtime, even with every fact supplied; no clinical or payment eligibility is established.",
         "sources": "Source references",
         "truncated": "Some evidence details are omitted.",
         "selectedRule": "Selected source rule",
@@ -269,6 +270,7 @@ const sections = {
           "fail": "Requirement not met"
         },
         "sets": {
+          "pleural_mesothelioma_documents": "Pleural mesothelioma documents — EXPERIMENTAL / REVIEW REQUIRED",
           "source_context_clinical_review": "Remaining SUT clinical criteria require review",
           "other_indication_source_constraints": "Additional indication source conditions",
           "followup_source_constraints": "Treatment response and annual reassessment conditions",
@@ -280,6 +282,7 @@ const sections = {
         }
       },
       "groups": {
+        "mesothelioma": "Pleural mesothelioma documents — EXPERIMENTAL / REVIEW REQUIRED",
         "ckdGrowthPathways": "CKD initiation growth alternatives",
         "pediatricInitiation": "Pediatric initiation and SGA evidence",
         "indication": "Additional indication evidence",
@@ -296,6 +299,7 @@ const sections = {
         "renal": "Renal evidence"
       },
       "hints": {
+        "mesothelioma": "Pemetrexed/raltitrexed pleural branches only. Exact source/date admission and independent interpretation are pending; every result requires review, even with all facts supplied. Enter the recorded site, report, distinct specialist count, protocol in the report and specialist prescribing separately. C45, report presence and the generic prescriber specialty do not supply these facts. Draft reading of ‘three’: 2 is insufficient, exactly 3 is a literal candidate, more than 3 remains unknown for review; this is not a legal determination. These inputs do not establish clinical or payment eligibility.",
         "ckdGrowthPathways": "Initiation only. Record available independent height references; both fields are optional. The source percentile/SDS notation needs review when a reference is unavailable or they disagree. Do not convert measurements, infer persistence from a low value, or infer an elapsed transplant year from the first-year flag.",
         "pediatricInitiation": "Choose the recorded source pathway and literal age band. Do not calculate a band or pubertal status from age or diagnosis. SDS scores can be negative; enter recorded values without conversion. Exception pathways and remaining clinical criteria still require review. SUT defines onset as testicular volume ≥4 ml in boys or T2 thelarche in girls. Select only the clinician-recorded assessment using this definition; otherwise leave unknown. No raw measurements are requested. Do not infer puberty from age, diagnosis or height-reference sex.",
         "indication": "Select the documented indication, route and age group. For subcutaneous immunoglobulin, report-author specialty means the relevant specialist on the required board; it is distinct from the prescriber. Enter recorded scores and units without conversion; histology scores without a matching method become unknown, and method compatibility with SUT remains source review. ALT dates never imply uninterrupted therapy or fill the service date.",
@@ -312,6 +316,14 @@ const sections = {
         "renal": "Use documented source-unit values and treatment checkpoints. Six-month albumin is the historical checkpoint, not the current result."
       },
       "fields": {
+        "diagnosis_site": "Recorded mesothelioma site",
+        "board_report_present": "Mesothelioma health-board report present, documented",
+        "report_distinct_specialist_count": "Recorded number of distinct specialists on the report (integer)",
+        "treatment_protocol_documented_in_report": "Treatment protocol stated in the mesothelioma report",
+        "prescribed_by_specialist": "Specialist prescribing explicitly documented",
+        "mesothelioma_documentary_interpretation_release": "Independent documentary interpretation and exact source/date admission pending",
+        "report_board_composition_interpretation": "Interpretation of more than three report specialists requires independent review",
+        "diagnosis_context_reconciliation": "Recorded pleural site conflicts with the diagnosis code and requires review",
         "ckd_height_age_sex_percentile": "Recorded age/sex-adjusted height percentile (0–100)",
         "ckd_height_age_sex_sds": "Recorded age/sex-adjusted height (SDS)",
         "ckd_annual_growth_velocity_percentile": "Recorded annual growth velocity percentile (0–100)",
@@ -523,6 +535,9 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "EK-4/E requirements for other itraconazole forms"
       },
       "options": {
+        "pleural": "Pleural, documented",
+        "nonpleural": "Nonpleural, documented",
+        "unknown": "Site unknown",
         "standard": "Standard source pathway",
         "neurosecretory_bioinactive": "Neurosecretory dysfunction / bioinactive growth hormone, clinical review",
         "organic_or_surgical": "Organic or surgical deficiency pathway, clinical review",

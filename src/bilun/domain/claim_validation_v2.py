@@ -24,6 +24,7 @@ from src.bilun.domain.claims.adapter import build_context_from_material_dict
 from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
 )
+from src.bilun.domain.claims.mesothelioma_evidence import MesotheliomaEvidence
 from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
     assess_bundled_material,
@@ -68,6 +69,7 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "three_neurologist_board", "ek4g_inpatient_supply", "transplant_preparation_indication",
         "historical_sut_version", "verified_source_for_service_date",
         "remaining_sut_clinical_criteria", "micafungin_prophylaxis_route",
+        "mesothelioma_documentary_interpretation_release",
         "itraconazole_source_neutrophil_unit_verification", "itraconazole_non_solution_EK4E_requirements",
         *GROWTH_HORMONE_INPUT_FIELDS,
         "ckd_height_source_notation_verification", "ckd_height_reference_reconciliation",
@@ -81,12 +83,16 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         ("sma_evidence", SmaEvidence), ("antifungal_evidence", AntifungalEvidence),
         ("renal_evidence", RenalEvidence), ("followup_evidence", FollowupEvidence), ("indication_evidence", IndicationEvidence),
         ("enteral_evidence", EnteralEvidence), ("ravulizumab_evidence", RavulizumabEvidence),
+        ("mesothelioma_evidence", MesotheliomaEvidence),
     )}
     clinical["enteral_evidence"].update({"exception_path_requires_review", "adult_path_requires_review"})
     clinical["indication_evidence"].update({"single_supported_medicine_family",
         "histology_scoring_source_compatibility", "hbv_noninvasive_boolean_grouping"})
     clinical["followup_evidence"].update({"documented_16_week_response", "single_supported_medicine_family"})
     clinical["antifungal_evidence"].add("single_supported_medicine_family")
+    clinical["mesothelioma_evidence"].update({
+        "report_board_composition_interpretation", "diagnosis_context_reconciliation",
+    })
     clinical["renal_evidence"].update({
         "source_supported_treatment_phase", "source_continuation_checkpoint",
         "supported_renal_indication", "single_supported_medicine_family",

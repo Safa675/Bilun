@@ -8,6 +8,7 @@ from decimal import Decimal
 
 
 from .clinical_evidence import AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
+from .mesothelioma_evidence import MesotheliomaEvidence
 
 
 Money = Decimal
@@ -340,6 +341,7 @@ class DrugClaimLine:
     indication_evidence: IndicationEvidence | None = None
     enteral_evidence: EnteralEvidence | None = None
     ravulizumab_evidence: RavulizumabEvidence | None = None
+    mesothelioma_evidence: MesotheliomaEvidence | None = None
 
 
 @dataclass(frozen=True)

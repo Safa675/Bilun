@@ -245,6 +245,7 @@ const sections = {
         "title": "Klinik kaynak kontrolleri",
         "partial": "Bu sınırlı kontroller, tüm klinik veya geri ödeme koşullarının sağlandığı anlamına gelmez.",
         "pending": "Kaynak yorumunun incelemesi bekleniyor",
+        "mesotheliomaDraft": "DENEYSEL / İNCELEME GEREKLİ. Kesin kaynak/tarih kabulü ve bağımsız belge yorumu bekleniyor. Tüm bilgiler girilse bile bu belge kontrolleri çalışma zamanında değerlendirilmez; klinik veya ödeme uygunluğu belirlenmez.",
         "sources": "Kaynak referansları",
         "truncated": "Bazı kanıt ayrıntıları gösterilmiyor.",
         "selectedRule": "Seçilen kaynak kuralı",
@@ -269,6 +270,7 @@ const sections = {
           "fail": "Koşul karşılanmadı"
         },
         "sets": {
+          "pleural_mesothelioma_documents": "Plevral mezotelyoma belgeleri — DENEYSEL / İNCELEME GEREKLİ",
           "source_context_clinical_review": "Diğer SUT klinik koşulları için inceleme gerekli",
           "other_indication_source_constraints": "Diğer endikasyon kaynak koşulları",
           "followup_source_constraints": "Tedavi yanıtı ve yıllık yeniden değerlendirme koşulları",
@@ -280,6 +282,7 @@ const sections = {
         }
       },
       "groups": {
+        "mesothelioma": "Plevral mezotelyoma belgeleri — DENEYSEL / İNCELEME GEREKLİ",
         "ckdGrowthPathways": "KBY başlangıç büyüme alternatifleri",
         "pediatricInitiation": "Pediatrik başlangıç ve SGA bilgileri",
         "indication": "Diğer endikasyon bilgileri",
@@ -296,6 +299,7 @@ const sections = {
         "renal": "Renal bilgiler"
       },
       "hints": {
+        "mesothelioma": "Yalnız pemetrexed/raltitrexed plevral dalları içindir. Kesin kaynak/tarih kabulü ve bağımsız yorum bekleniyor; tüm bilgiler girilse de her sonuç inceleme gerektirir. Kayıtlı tanı yerini, raporu, rapordaki farklı uzman sayısını, raporda belirtilen protokolü ve uzman tarafından reçetelemeyi ayrı girin. C45, rapor varlığı ve genel reçeteleyen uzmanlık alanı bu bilgileri sağlamaz. ‘Üç’ sözcüğünün taslak okumasında 2 yetersiz, tam 3 metne uyan bir adaydır; 3’ten fazlası inceleme için bilinmeyen kalır. Bu bir hukuki karar değildir. Bu girdiler klinik veya ödeme uygunluğunu belirlemez.",
         "ckdGrowthPathways": "Yalnız başlangıç aşaması içindir. Mevcut bağımsız boy referanslarını kaydedin; her iki alan da isteğe bağlıdır. Bir referans yoksa veya uyuşmazlık varsa kaynaktaki persentil/SDS gösterimi incelenmelidir. Ölçümler dönüştürülmez; düşük değerden persistan gerilik veya ilk yıl bilgisinden nakil sonrası bir yılın dolduğu çıkarılmaz.",
         "pediatricInitiation": "Kayıtlı kaynak yolunu ve kaynaktaki yaş bandını seçin. Yaş veya tanıdan bant ya da pubertal durum hesaplanmaz. SDS puanları negatif olabilir; kayıtlı değerleri dönüştürmeden girin. İstisna yolları ve diğer klinik koşullar inceleme gerektirir. SUT puberte başlangıcını erkeklerde testis hacminin ≥4 ml olması, kızlarda T2 düzeyinde telarş olarak tanımlar. Yalnızca bu tanımı kullanan kayıtlı hekim değerlendirmesini seçin; aksi halde bilinmiyor bırakın. Ham ölçüm istenmez. Yaş, tanı veya boy referans cinsiyetinden puberte çıkarımı yapmayın.",
         "indication": "Kayıtlı endikasyonu, uygulama yolunu ve yaş grubunu seçin. Subkutan immünoglobulin için rapor yazarı uzmanlığı, gerekli kuruldaki ilgili uzmanı belirtir; reçeteleyen uzmanlıktan ayrıdır. Puanları ve birimleri dönüştürmeden girin; eşleşen yöntemi olmayan histoloji puanları bilinmeyen kalır ve yöntemin SUT uyumu kaynak incelemesi gerektirir. ALT tarihleri kesintisiz tedaviyi varsaymaz veya hizmet tarihini doldurmaz.",
@@ -312,6 +316,14 @@ const sections = {
         "renal": "Belgelenmiş kaynak birimlerini ve tedavi kontrollerini kullanın. Altıncı ay albümini geçmiş kontrol ölçümüdür; güncel sonuç değildir."
       },
       "fields": {
+        "diagnosis_site": "Kayıtlı mezotelyoma yeri",
+        "board_report_present": "Mezotelyoma sağlık kurulu raporu varlığı belgelenmiş",
+        "report_distinct_specialist_count": "Rapordaki kayıtlı farklı uzman sayısı (tamsayı)",
+        "treatment_protocol_documented_in_report": "Tedavi protokolü mezotelyoma raporunda belirtilmiş",
+        "prescribed_by_specialist": "Uzman tarafından reçeteleme açıkça belgelenmiş",
+        "mesothelioma_documentary_interpretation_release": "Bağımsız belge yorumu ve kesin kaynak/tarih kabulü bekleniyor",
+        "report_board_composition_interpretation": "Raporda üçten fazla uzman olmasının yorumu bağımsız inceleme gerektiriyor",
+        "diagnosis_context_reconciliation": "Kayıtlı plevral yer tanı koduyla çelişiyor; inceleme gerekli",
         "ckd_height_age_sex_percentile": "Yaş/cinsiyete göre kayıtlı boy persentili (0–100)",
         "ckd_height_age_sex_sds": "Yaş/cinsiyete göre kayıtlı boy (SDS)",
         "ckd_annual_growth_velocity_percentile": "Kayıtlı yıllık büyüme hızı persentili (0–100)",
@@ -523,6 +535,9 @@ const sections = {
         "itraconazole_non_solution_EK4E_requirements": "Diğer itrakonazol formları için EK-4/E koşulları"
       },
       "options": {
+        "pleural": "Plevral, belgelenmiş",
+        "nonpleural": "Plevral dışı, belgelenmiş",
+        "unknown": "Yer bilinmiyor",
         "standard": "Standart kaynak yolu",
         "neurosecretory_bioinactive": "Nörosekretuar disfonksiyon / biyoinaktif büyüme hormonu, klinik inceleme",
         "organic_or_surgical": "Organik veya cerrahi eksiklik yolu, klinik inceleme",

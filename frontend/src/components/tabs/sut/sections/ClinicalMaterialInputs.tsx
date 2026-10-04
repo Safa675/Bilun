@@ -1,7 +1,7 @@
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import { ckdGrowthPathwayFields, pediatricInitiationFields, indicationFields, followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields,
+import { ckdGrowthPathwayFields, pediatricInitiationFields, indicationFields, followupFields, growthHormoneFields, mecaserminFields, ckdGrowthHormoneFields, praderWilliFields, smaFields, antifungalFields, renalFields, enteralFields, ravulizumabFields, mesotheliomaFields,
   optionalClinicalNumber, type ClinicalField } from "./clinicalFields";
 
 type ClinicalValue = string | number | boolean | null | undefined;
@@ -38,10 +38,10 @@ function ClinicalGroup({ group, fields, value, onChange }: {
                 : t(`${prefix}.options.${option}`)}</option>)}
           </select> : <input aria-label={label} className={inputClass}
             type={field.kind === "date" ? "date" : "number"}
-            min={field.kind === "number" && !field.signed ? 0 : undefined} max={field.max} step={field.kind === "number" ? "any" : undefined}
+            min={field.kind === "number" && !field.signed ? 0 : undefined} max={field.max} step={field.kind === "number" ? field.integerOnly ? 1 : "any" : undefined}
             placeholder={unknown} value={typeof current === "boolean" ? "" : current ?? ""}
             onChange={e => update(field.name, field.kind === "number"
-              ? optionalClinicalNumber(e.target.value, field.positiveOnly, field.max, field.signed) : e.target.value || null)} />}
+              ? optionalClinicalNumber(e.target.value, field.positiveOnly, field.max, field.signed, field.integerOnly) : e.target.value || null)} />}
         </label>;
       })}
     </div>
@@ -79,5 +79,7 @@ export function ClinicalMaterialInputs({ material, onChange }: {
       onChange={value => onChange({ followup_evidence: value })} />
     <ClinicalGroup group="indication" fields={indicationFields} value={material.indication_evidence}
       onChange={value => onChange({ indication_evidence: value })} />
+    <ClinicalGroup group="mesothelioma" fields={mesotheliomaFields} value={material.mesothelioma_evidence}
+      onChange={value => onChange({ mesothelioma_evidence: value })} />
   </div>;
 }
