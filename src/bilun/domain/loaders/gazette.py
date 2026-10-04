@@ -211,7 +211,7 @@ def _read_ek2c_dental_frame() -> pd.DataFrame | None:
     if EK2C_DENTAL_CURATED_HISTORY_PATH.exists():
         return pd.read_parquet(EK2C_DENTAL_CURATED_HISTORY_PATH)
 
-    if not _EK2C_DENTAL_XLS_FALLBACK.exists():
+    if _EK2C_DENTAL_XLS_FALLBACK is None or not _EK2C_DENTAL_XLS_FALLBACK.exists():
         return None
 
     try:

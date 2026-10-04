@@ -7,12 +7,9 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
-from tests.unit._helpers.brittle_guards import (
-    assert_audit_report_consistent,
-    assert_manifest_consistent,
-    soft_floor,
-)
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
@@ -24,14 +21,14 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4234_mani
 
 _SECTION = "4234"
 
-_TIER_A_IDS = {
+_TIER_A_IDS = reviewed_clause_ids(
     "C006716",
     "C006724",
     "C006730",
     "C006736",
     "C006760",
     "C006766",
-}
+)
 
 
 def test_gate_b_exports_4234_candidates() -> None:

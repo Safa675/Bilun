@@ -25687,11 +25687,15 @@
     "data/gazette/prose_rules/deferral_table.yaml": "070b9fd8f63bf20705d5559424ef223742c99c6c5f749a701988e475ed415de5",
     "data/gazette/source_authority/corpus_migration_pr128.json": "3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde",
     "data/gazette/temporal/drug_amendments_2026_10.json": "c75e3fef61a1dc24f3a58b20a073526f21ea04f543417272aa276daa3d5c6d2e",
+    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md": "7626a93a1c63d71307b1323987e427703e29098af499b693153c7c78eea36543",
+    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json": "48f88bc47892ea6816524c060ea62a08fbab1ef1e326f8ace6eb6337a144a7ae",
+    "scripts/agent/pipeline_smoke.py": "35b6ede6cc293b1c4488dc0849f41d0603dc1933a3b4013947d1d04e46f1ba3b",
     "scripts/sut/close_algorithmic_gaps.py": "1e793c18288f0482e5f187dda821f344db5c019b5d5faab69cba63a2b18475d1",
     "scripts/sut/compile_rules.py": "7fe37c5ae55380fe3c1c1a62d055145ce84fd61ffc33bb22e59f982f24c0106b",
     "scripts/sut/gate_b_wave_config.py": "fd5492843dc5b2f56239c42db5b30457e3b21d72e4476a8bcf90bd7da301de28",
     "scripts/sut/prose/clause_identity.py": "020f6c1918977496031c2c7b5f4bc169e8d794c3c175a2bccf2ec6b23bb14b6a",
     "scripts/sut/prose/clause_type_overrides.py": "c67aec2a7879737ae63ee275dae5e229b8527aa1aaec14817f16c05a0c0edd94",
+    "scripts/sut/prose/coverage.py": "604f940954a9014d3adf0ddf1911d40f63009749a2276fc6444a8870dac3cb11",
     "scripts/sut/prose/gate_b_generic.py": "f2490255a476955153f146c1ff8e3050dd7b82edd38217ae8f944e91b4a7e865",
     "scripts/sut/prose/gate_b_sections.py": "d77b1ce7201b7f37ece26abf72b76e67b18b5bb4016391afc89a9a1ebd7a8ae8",
     "scripts/sut/prose/manifest_clause_ids.py": "5c503116021cb008ee38f1f0ac85c05f981034764e2923b389d63048e5fe9c79",
@@ -25699,15 +25703,21 @@
     "src/bilun/domain/billing/broad_rule_catalog.py": "715f788231f0118f46e737c99492e0ef0369600ff00532431391c894d3240532",
     "src/bilun/domain/billing/broad_rule_classification.py": "1ff3fb8ac38a6ff2dd53f8110bd41477d574bd80e72f741e100bc2a70b471828",
     "src/bilun/domain/billing/treatment_pricing_evaluations.py": "291f462c49e00e281c3ee2d77831d1a6bfe9b90c7e816ace2987d17ee6a02ea2",
+    "src/bilun/domain/loaders/gazette.py": "725191e186823713221e7f19cc3128535f1769ae331b29532ce4c8f2ec933c94",
     "src/bilun/domain/prose_rules/_drug_indication/temporal.py": "632b3b93088771d2b176ffaf5a695713562837da3bf3280bb39473f21c566afe",
     "src/bilun/domain/prose_rules/treatment_pricing.py": "b626a58f7419e12ea6a7d3636fbf8891622d742d36aa84aace42e78bc589f63c",
-    "scripts/sut/prose/coverage.py": "604f940954a9014d3adf0ddf1911d40f63009749a2276fc6444a8870dac3cb11"
+    "tests/unit/_helpers/reviewed_clause_identities_pr128.json": "156a42cf34f1e592887bac38d5406d9a46a372049a309033814dc6c0b25ea79b",
+    "tests/unit/_helpers/reviewed_clause_ids.py": "f7a814e6692c0268547fa8bc1556cea8ddbeb812560182fc24b44b0d53bb8e29",
+    "tests/unit/_helpers/test_reviewed_clause_ids.py": "08082d8d52db245a600f7283fe0394b1e596f7e2bd31daba2ce76f8988bb8f46",
+    "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/baseline_coverage_scope.json": "b6aea63e88377d8f898072bf60589176301fa5e52e383d8cc19b1bf9f3c97793",
+    "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/product_coverage_scope.json": "d62713ef8c85a808f3124313ec93264a14669e4368ea2bec9a39d097c4e6648a",
+    "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/provenance.json": "9c4b22629d9fe163cb87e460f29b22d12fc8e7996dc4c2ac3993e82e1c0ab8d3"
   },
   "final_generation_scope": "Rules and manifests only: existing 43-target compiler completed, 134 monitored artifacts (including intentionally absent skipped golden paths) reproduce byte-identically; policy digests synchronized. Coverage is downstream.",
   "downstream_coverage_generation": {
     "status": "pending_at_report_freeze",
     "closure_record": "data/gazette/sut_coverage_evidence.json",
-    "instruction": "Regenerate the four coverage artifacts and coverage evidence after this final report is pinned by the catalog owner, then run the existing compiler check once and independent targeted consumer tests to validate that separate closure. No dependent coverage artifact/catalog hash is embedded here."
+    "instruction": "Refresh downstream coverage evidence after this CI repair report is pinned. The four coverage parquet payloads remain byte-identical to the CI484 head. Then perform the existing compiler/source/independent checks. No dependent coverage artifact/catalog hash is embedded here."
   },
   "actual_validation": {
     "compiler_write": {
@@ -25812,38 +25822,150 @@
       "in_memory_normalized_producer_compiler_inventory_disagreements": 0,
       "changed_source_trace_manifest_issues": 0,
       "all_manifest_preexisting_copay_issues": 2
+    },
+    "ci484_repair_owner_targeted_validations": {
+      "domain_source_fixtures": {
+        "baseline_red": {
+          "failed": 13,
+          "passed": 371,
+          "warnings": 2,
+          "seconds": 13.0
+        },
+        "final_green": {
+          "passed": 393,
+          "warnings": 2,
+          "seconds": 13.18,
+          "exit_code": 0,
+          "command": "TESTING=1 BILUN_AUTH_OPTIONAL=1 BILUN_AUTH_USERNAME= BILUN_AUTH_PASSWORD= BILUN_SESSION_SECRET= PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 POLARS_MAX_THREADS=1 /home/safa/Documents/Bilun/.venv/bin/python -m pytest --confcutdir=tests/unit --basetemp=/home/safa/Documents/Codex/2026-10-04/task-2/authority-ci-fixture-green-final-tmp -p no:cacheprovider -o faulthandler_timeout=30 tests/unit/_helpers/test_reviewed_clause_ids.py tests/unit/domain/prose_rules/test_clinical_remaining_indications.py tests/unit/domain/prose_rules/test_drug_indication_4201_w4_tier_b.py tests/unit/domain/prose_rules/test_drug_indication_4206.py tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py tests/unit/domain/prose_rules/test_drug_indication_4213_tier_b.py tests/unit/domain/prose_rules/test_drug_indication_4218_4236.py tests/unit/domain/prose_rules/test_drug_indication_4219.py tests/unit/domain/prose_rules/test_drug_indication_4233.py tests/unit/domain/prose_rules/test_drug_indication_4234.py tests/unit/domain/prose_rules/test_drug_indication_4235_4237.py tests/unit/domain/prose_rules/test_pediatric_gh_continuation.py tests/unit/domain/prose_rules/test_remaining_source_context.py tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py -q"
+        },
+        "ruff_exit_code": 0,
+        "diff_check_exit_code": 0
+      },
+      "script_gate_b_fixtures": {
+        "baseline_red": {
+          "command": "PYTHONDONTWRITEBYTECODE=1 python -m pytest --confcutdir=tests/unit -p no:cacheprovider tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py -q --tb=short -k 'not test_4214c_write_artifacts_partitions_in_force'",
+          "deselected": 1,
+          "duration_seconds": 13.94,
+          "exit_code": 1,
+          "failed": 19,
+          "omission_reason": "Old writer would overwrite committed manifest; fixed writer uses tmp_path and was included in GREEN.",
+          "passed": 47,
+          "warnings": 2
+        },
+        "final_green": {
+          "command": "PYTHONDONTWRITEBYTECODE=1 python -m pytest --confcutdir=tests/unit -p no:cacheprovider tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py -q --tb=short",
+          "duration_seconds": 16.68,
+          "exit_code": 0,
+          "failed": 0,
+          "passed": 68,
+          "warnings": 2
+        },
+        "ruff": {
+          "command": "python -m ruff check tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py",
+          "exit_code": 0
+        },
+        "diff_check": {
+          "command": "git diff --check -- tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py",
+          "exit_code": 0
+        }
+      },
+      "loader_projection_historical_and_surfacing": {
+        "final_green": {
+          "env": {
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+          },
+          "argv": [
+            "/home/safa/Documents/Bilun/.venv/bin/python",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--confcutdir=tests/unit",
+            "--basetemp=/home/safa/Documents/Codex/2026-10-04/task-2/boundary-final-test-tmp/boundary-ci484-final",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_production_source_pins_remain_exact",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_public_coverage_golden_snapshots_keep_exact_transition",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_transition_rejects_current_corpus_coverage",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_expected_route_fingerprints_are_reproducible_from_current_public_source_without_a_cache",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_coverage_permission_rejects_third_values_and_equal_mutations_on_both_replays",
+            "tests/unit/domain/billing/test_focused_legacy_materializer.py",
+            "tests/unit/domain/test_dental_catalog_loading.py",
+            "tests/unit/domain/sut/test_runtime_coverage.py",
+            "tests/unit/scripts/test_agent_checkers.py",
+            "tests/unit/scripts/test_rule_surfacing_cli.py",
+            "tests/unit/scripts/test_rule_surfacing_inventory.py",
+            "-q",
+            "--tb=short"
+          ],
+          "exit_code": 0,
+          "observed_output": "136 passed in 22.40s"
+        },
+        "scoped_ruff_and_diff_check_exit_code": 0
+      },
+      "interpretation": "These are three separately executed targeted owner runs, not a combined/full CI total. Script RED omitted the old committed-output writer; GREEN includes its safe temporary-output regression. CI484 remains the historical 41-failure full run."
     }
   },
   "validation_test_file_hashes": {
-    "tests/unit/scripts/test_verify_clinical_corpus_migration.py": "764eea39bcf2ef32becd5130ed21f5e9fab7ee6445fcb59e05d7f0e2b9d1b3b8",
-    "tests/unit/domain/prose_rules/test_clinical_corpus_migration.py": "62eadd1f97c431a00d41807542b0ec136993b909f744719c299d178692dad7de",
-    "tests/unit/scripts/test_sut_clause_diff.py": "97a2b44b5ee4809d7724e5ae8d3de9e86d7083420c6901dddcbb6287fcf2dad9",
-    "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "c064bbff785b28557f2b153029ad33c22d217dd17c0779a126b492eb903ac8ae",
-    "tests/unit/domain/test_mecasermin_request_integration.py": "039035fceb3070f0a323a845a0fedea92a1c0fe8e522a6c991e0e037b269a303",
-    "tests/unit/domain/test_source_authority_transport.py": "a46c6bcd9a881c757e58201f2eee58e5ef705e50e7b0ef916bcb9a6e69c84dac",
-    "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py": "61d2a12f13ae620b028c2f1b3dc93d6fa4419e87a84d008db8ecb6046224afda",
-    "tests/unit/domain/prose_rules/test_report_documentation_completion.py": "b9d1dd95fcb40d1294aef944307772e8c13b7e5cbbade29c29c7089bb8c5aecb",
-    "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py": "8ae49ec829e458a4c744834203a5769a5ea184b71f96a9c615576b4bae6a5afd",
-    "tests/unit/domain/test_followup_request_integration.py": "fe7e0b1684b66c56cd40c784f7a86cad5e93b0bc4352b2163f8b8f02b26a5a84",
-    "tests/unit/domain/prose_rules/test_renal_runtime_observations.py": "f1153bca363a0a5d8eedfa8561a26fd030c9161620694c11b4a434a19ccd7c68",
-    "tests/unit/domain/prose_rules/test_drug_temporal_amendments.py": "62b84fdf7bfcf338da7e80e850d8ab5d1925fc96f12c8d97a85027a110723ed6",
-    "tests/unit/scripts/test_deferral_source_pins.py": "2b78bf269d69bd34727386fc5608274434edf35b7e3f837ae1be0e5457f1a606",
-    "tests/unit/scripts/test_stable_clause_type_overrides.py": "bf57d308b174a0d378e024f9cf86982d72bc0e0b0f6b322e3dc35eb528b659b0",
-    "tests/unit/scripts/test_authored_cstar_inventory.py": "86d194fd55df3f612b5dbb0056fd71c538a1e0b7ad565469c505eabe2b2721cd",
-    "tests/unit/scripts/test_review_only_source_contract.py": "a3b746257a11d38fd74f986e73e8685793e7c4c902c420d93e395435d44985d6",
-    "tests/unit/scripts/test_clause_identity.py": "9bec9f9bd1c48eeec33efbec05e659bf36baf12fc5761816604d568adc7414b0",
-    "tests/unit/scripts/test_rule_sources.py": "e0e90d88cf35a6fb0183d6c25367aa025df93424c4b18250a888cc7dde98db3f",
-    "tests/unit/scripts/test_all_rule_family_yaml_sources.py": "7b870286d336e22b646f778a1588740201fc64db311cdeafaf2209b879ebad41",
+    "tests/unit/_helpers/test_reviewed_clause_ids.py": "08082d8d52db245a600f7283fe0394b1e596f7e2bd31daba2ce76f8988bb8f46",
+    "tests/unit/deploy/test_clinical_semantic_transition.py": "ac3469c5809e9b24dee11dc0590614d58b50dccf46fd5a12242eb6f9a294e863",
     "tests/unit/domain/billing/test_broad_rule_catalog.py": "0e9c335a2ed64114293fa31eb189bbaf4031194033e34f20db80c3303d7250f9",
     "tests/unit/domain/billing/test_broad_rule_classification.py": "92337ec55922c8acf7102f418c5d450fd774380a2f9e25385d0c40fd744c9b3a",
     "tests/unit/domain/billing/test_broad_rule_materializer.py": "8fa00dd8101379881f2844ddb83eaa2c7e5a7945e1fd4b1c4ce97ca31d289cd1",
+    "tests/unit/domain/billing/test_focused_legacy_materializer.py": "546a8f97a8fdf0885576eedfdabc612a9d59def1ed4d6584b78a261fa4824fc1",
     "tests/unit/domain/billing/test_treatment_pricing_evaluations.py": "019d5f561c3f45a2a4149100ece2cfdde900c5c898eacc66655033c8de1393bf",
+    "tests/unit/domain/prose_rules/test_clinical_corpus_migration.py": "62eadd1f97c431a00d41807542b0ec136993b909f744719c299d178692dad7de",
+    "tests/unit/domain/prose_rules/test_clinical_remaining_indications.py": "b9d940c538b925c8af167ce53bf877f42e3a722b40b403875380ac70e1c21228",
+    "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "c064bbff785b28557f2b153029ad33c22d217dd17c0779a126b492eb903ac8ae",
+    "tests/unit/domain/prose_rules/test_drug_indication_4201_w4_tier_b.py": "0fd8ca3c1efc266895f5ba3fea8937d5ed2a9900ed7ef8a06c695268d3f311d3",
+    "tests/unit/domain/prose_rules/test_drug_indication_4206.py": "8d7b72ed8ee08d7456f125e25190ae08cf8c1677cafc2b0087b76ca7dec53f88",
+    "tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py": "2a5fa071e9c06181d633c12db8bc2846acddce6dc69e30182f49087f499e081a",
+    "tests/unit/domain/prose_rules/test_drug_indication_4213_tier_b.py": "b387d46b5a36b952324dc7a5d627f97c8e34c9abd5e0240301596e0ad6dfca67",
+    "tests/unit/domain/prose_rules/test_drug_indication_4218_4236.py": "86e4d03181413b3bcc051752e03db94522bea9b9106c91da2fc5cf2a34053665",
+    "tests/unit/domain/prose_rules/test_drug_indication_4219.py": "c260f458229de2464e1c69bb78c6e6ab07fb5bf443a777ead8f492f75364f053",
+    "tests/unit/domain/prose_rules/test_drug_indication_4233.py": "775ee563931041ad2e643d92a42b798c3e92d7e71e269ae35693fb760d18ada7",
+    "tests/unit/domain/prose_rules/test_drug_indication_4234.py": "b483ee503f1c0cfbf2ef216c2af344936cf0e811f592c8bbfcd141a09775e1b4",
+    "tests/unit/domain/prose_rules/test_drug_indication_4235_4237.py": "c5b1ab28b059fd386dbc31b09de5737e2f5127471167dac9f2058cf5dfd85d7e",
+    "tests/unit/domain/prose_rules/test_drug_temporal_amendments.py": "62b84fdf7bfcf338da7e80e850d8ab5d1925fc96f12c8d97a85027a110723ed6",
+    "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py": "61d2a12f13ae620b028c2f1b3dc93d6fa4419e87a84d008db8ecb6046224afda",
+    "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py": "8ae49ec829e458a4c744834203a5769a5ea184b71f96a9c615576b4bae6a5afd",
+    "tests/unit/domain/prose_rules/test_pediatric_gh_continuation.py": "554768d9c07cb68750c76da12b271f926eafae7980b230b58289cf81536552d1",
+    "tests/unit/domain/prose_rules/test_remaining_source_context.py": "802d6ac97104d30c1edf27614b1acb189c833f6d529350c5d3420224fac70f8b",
+    "tests/unit/domain/prose_rules/test_renal_runtime_observations.py": "f1153bca363a0a5d8eedfa8561a26fd030c9161620694c11b4a434a19ccd7c68",
+    "tests/unit/domain/prose_rules/test_report_documentation_completion.py": "b9d1dd95fcb40d1294aef944307772e8c13b7e5cbbade29c29c7089bb8c5aecb",
+    "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py": "d4155c8da43b3383e2c753ac656fb6adf89c60a3665cea680e9d4f674b922676",
+    "tests/unit/domain/prose_rules/test_thiotepa_temporal.py": "dadd60b6937b414421a3a12f6bc751b239e0832024f7236b1a40654a00c40cd5",
     "tests/unit/domain/prose_rules/test_treatment_pricing_2_4.py": "18996463a0dd95e61ee7baa3e77543591d54e07ab12d1519cf14fda82bb2dd56",
     "tests/unit/domain/prose_rules/test_treatment_pricing_for_context.py": "f4e46ac8bf9fa6439909279e74c09bbd00f6b3987dc26708c8b9276891a7924e",
-    "tests/unit/domain/prose_rules/test_treatment_pricing_wiredness.py": "5740c36430fce81dc3b0afdea476c780982f3ce3d7b7e0fe932bf9899fc2e583",
     "tests/unit/domain/prose_rules/test_treatment_pricing_multicategory.py": "4a7ca46ce944035911e09ecbdecff7a2edc1b2f3ad70d3b8b02e0b09da23dd74",
     "tests/unit/domain/prose_rules/test_treatment_pricing_source_review.py": "01bbdc8ca6213d7726cd69df893aef7cad947018c4b1525eb864986268c4036a",
-    "tests/unit/domain/prose_rules/test_thiotepa_temporal.py": "dadd60b6937b414421a3a12f6bc751b239e0832024f7236b1a40654a00c40cd5"
+    "tests/unit/domain/prose_rules/test_treatment_pricing_wiredness.py": "5740c36430fce81dc3b0afdea476c780982f3ce3d7b7e0fe932bf9899fc2e583",
+    "tests/unit/domain/sut/test_runtime_coverage.py": "c6502c93d8e48a99c65ec7e4a9367dd7db76ba35a9bdb0e658a2eed9e8f1a1e0",
+    "tests/unit/domain/test_dental_catalog_loading.py": "f98e2137e0ce3dcffe0f010da0d373d46c5ad9a70f8fc7dd7e926bd25be4b472",
+    "tests/unit/domain/test_followup_request_integration.py": "fe7e0b1684b66c56cd40c784f7a86cad5e93b0bc4352b2163f8b8f02b26a5a84",
+    "tests/unit/domain/test_mecasermin_request_integration.py": "039035fceb3070f0a323a845a0fedea92a1c0fe8e522a6c991e0e037b269a303",
+    "tests/unit/domain/test_source_authority_transport.py": "a46c6bcd9a881c757e58201f2eee58e5ef705e50e7b0ef916bcb9a6e69c84dac",
+    "tests/unit/scripts/test_agent_checkers.py": "991ca4bb2326125afbf269fd18e30e555b98521a679a02e413fd5d6e2df006d7",
+    "tests/unit/scripts/test_all_rule_family_yaml_sources.py": "7b870286d336e22b646f778a1588740201fc64db311cdeafaf2209b879ebad41",
+    "tests/unit/scripts/test_authored_cstar_inventory.py": "86d194fd55df3f612b5dbb0056fd71c538a1e0b7ad565469c505eabe2b2721cd",
+    "tests/unit/scripts/test_bent_parent_source_scope.py": "11317568d1039d5444862f0e8ec5eeed6dbe111359af0d841bd1889d6843208d",
+    "tests/unit/scripts/test_bounded_clause_cites.py": "0466dd21643e66f666f540d309c95405acce5bee57d3975552d3260866867ebc",
+    "tests/unit/scripts/test_clause_identity.py": "9bec9f9bd1c48eeec33efbec05e659bf36baf12fc5761816604d568adc7414b0",
+    "tests/unit/scripts/test_deferral_source_pins.py": "2b78bf269d69bd34727386fc5608274434edf35b7e3f837ae1be0e5457f1a606",
+    "tests/unit/scripts/test_drug_indication_4206_gate_b.py": "7dde5611ba7844d202c6bd680a5405968cd2a2c8fe209ce35a40f2c8c3d59284",
+    "tests/unit/scripts/test_drug_indication_4210_gate_b.py": "49d63dd1372a065eb06ad13ba422a8a60c36cd434e54e3f4ee65c2398eb228c3",
+    "tests/unit/scripts/test_drug_indication_4213_gate_b.py": "4f0166e6430a72f6e61b1fd4f596861993bfa83c7daa4f540e6a7f98cdf4a249",
+    "tests/unit/scripts/test_drug_indication_4214c_gate_b.py": "2ea1a2bffd7012387e6b5b0d078c595b79a89006a7f159e21cb8d3a949189eae",
+    "tests/unit/scripts/test_drug_indication_4215_gate_b.py": "e828e489170f7e72140ec5ccba79105d6f344b1bdb24d9e05f981e57e0c3159a",
+    "tests/unit/scripts/test_drug_indication_4224_gate_b.py": "b0ba1e192008b42b6b6c45ad1ec0791b7e154d6bf86d2f25a4b74fb00d1f6830",
+    "tests/unit/scripts/test_drug_indication_4234_gate_b.py": "4947501a6bfc4d2bb1f65f777049d497209f812b76ec2249790ff34af3f7f353",
+    "tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py": "d443926d01eb17324bffd68c441ab2dd14118006a1f49709105b7391aee59e88",
+    "tests/unit/scripts/test_review_only_source_contract.py": "a3b746257a11d38fd74f986e73e8685793e7c4c902c420d93e395435d44985d6",
+    "tests/unit/scripts/test_rule_sources.py": "e0e90d88cf35a6fb0183d6c25367aa025df93424c4b18250a888cc7dde98db3f",
+    "tests/unit/scripts/test_rule_surfacing_cli.py": "5b4215e085a2eec6f2fa5d740df1b1ab9760c1987d38437ce9df429ec254b22e",
+    "tests/unit/scripts/test_rule_surfacing_inventory.py": "633291ae6c37d670852cb28a7f6d919bef439824bebe885d86d6d28f3eddb343",
+    "tests/unit/scripts/test_stable_clause_type_overrides.py": "bf57d308b174a0d378e024f9cf86982d72bc0e0b0f6b322e3dc35eb528b659b0",
+    "tests/unit/scripts/test_sut_clause_diff.py": "97a2b44b5ee4809d7724e5ae8d3de9e86d7083420c6901dddcbb6287fcf2dad9",
+    "tests/unit/scripts/test_verify_clinical_corpus_migration.py": "764eea39bcf2ef32becd5130ed21f5e9fab7ee6445fcb59e05d7f0e2b9d1b3b8"
   },
   "coverage_producer_compiler_dependency_refresh": {
     "prior_report_sha256": "2a80b5853718daaa54f27c27a538dd382a53b3274eb04a2527ec2786b39127b5",
@@ -28402,5 +28524,207 @@
     ],
     "clinical_eligibility_complete": false,
     "dates_or_criteria_changed": false
+  },
+  "ci484_repair_closure": {
+    "scope": "Existing source identity test fixtures, two narrow loader/package repairs, and existing surfacing output refresh; no clinical criteria/date/serving permission expansion.",
+    "previous_report_sha256": "e348650810218bed7e7c8eec18be7e4161d66feda859f8103fa51a4a2bec456d",
+    "hosted_failure_before_repairs": {
+      "exact_head": "e11bd142e20b2c0b255aa8b9053cf0eb445d45ad",
+      "ci_run": 37235497511,
+      "backend_job": 111533647864,
+      "result": {
+        "failed": 41,
+        "passed": 8239,
+        "warnings": 27,
+        "seconds": 1124.41
+      },
+      "failure_groups": {
+        "domain_source_identity": 13,
+        "scripts_source_identity": 20,
+        "critical_boundaries": 8
+      },
+      "compiler_and_manifest_hosted_steps": "Not reached because the backend test step failed."
+    },
+    "source_identity_fixture": {
+      "path": "tests/unit/_helpers/reviewed_clause_identities_pr128.json",
+      "baseline_commit": "58a73b117e71d9610d7e51cf854c3a23aba4fd7b",
+      "baseline_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+      "candidate_commit": "49af201926e42142c3d83986e50b7887491772c9",
+      "candidate_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+      "active_identity_count": 131,
+      "neighbor_disambiguated_identity_count": 10,
+      "inactive_historical_id_excluded_and_rejected": "C004584",
+      "proof": "Static independently reconstructed old Git corpus to actual candidate corpus full normalized body/in-force hashes, nine exact context fields, and pinned neighborhood contracts; actual physical ID lookup. No consumer/resolver output oracle or numeric offset inference.",
+      "domain_assertion_preservation": "AST undo check for all 13 existing files preserved predicates, assertion operators and dates; only source expectation wrappers/imports changed.",
+      "negative_guards": "Changed full body, in-force body, context, active status, duplicate/missing physical ID, wrong neighbor parent, unknown ID and inactive historical ID are rejected.",
+      "script_owner_independent_replay": {
+        "actual_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+        "baseline_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+        "baseline_git_commit": "58a73b117e71d9610d7e51cf854c3a23aba4fd7b",
+        "exit_code": 0,
+        "inactive_C004584_excluded": true,
+        "mismatches": 0,
+        "owned_static_identities": 103,
+        "verified_fields": [
+          "normalized_full_text_sha256",
+          "normalized_in_force_text_sha256",
+          "9_context_fields",
+          "pinned_neighborhood_contract"
+        ]
+      }
+    },
+    "narrow_runtime_repairs": {
+      "src/bilun/domain/loaders/gazette.py": "An absent XLS fallback (None) is handled as unavailable after curated-history precedence; real XLS fallback and curated precedence retain negative/positive tests.",
+      "scripts/agent/pipeline_smoke.py": "Explicit DOCX selection supplies its parent input directory to annex conversion so annex and prose extraction use the same selected source package."
+    },
+    "historical_public_coverage_fixtures": {
+      "directory": "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage",
+      "scope": "golden public generator metadata in CI; independently source-reproduced locally; not private cache replay or serving permission",
+      "test_contract": "Golden historical public coverage scopes preserve fixed digests; current corpus and third/equal-mutated values remain rejected. Current route fingerprints are reproduced separately. Runtime release verifier and serving permission checks are unchanged.",
+      "limitations": "Hosted shallow CI validates golden fixture metadata; it does not itself replay unavailable historical Git source generators. Provenance documents the separately executed local immutable-source reproduction."
+    },
+    "surfacing_refresh": {
+      "generator_argvs": [
+        [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/audits/build_rule_surfacing_inventory.py",
+          "--write"
+        ],
+        [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/audits/build_rule_surfacing_inventory.py",
+          "--check"
+        ]
+      ],
+      "generator_check_exit_code": 0,
+      "proof": {
+        "exact_unchanged_rows": 94,
+        "total_rows": 97,
+        "financial_findings_before_after": [
+          359,
+          359
+        ],
+        "removed_ids": [
+          "4.2.14.C.(1).trastuzumab_emtansine_board",
+          "4.2.14.C.tier_c_b.C005294.trastuzumab",
+          "4.2.61.onco.carmustine_offlabel_bmt_conditioning_coverage"
+        ]
+      }
+    },
+    "owner_targeted_validations": {
+      "domain_source_fixtures": {
+        "baseline_red": {
+          "failed": 13,
+          "passed": 371,
+          "warnings": 2,
+          "seconds": 13.0
+        },
+        "final_green": {
+          "passed": 393,
+          "warnings": 2,
+          "seconds": 13.18,
+          "exit_code": 0,
+          "command": "TESTING=1 BILUN_AUTH_OPTIONAL=1 BILUN_AUTH_USERNAME= BILUN_AUTH_PASSWORD= BILUN_SESSION_SECRET= PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 POLARS_MAX_THREADS=1 /home/safa/Documents/Bilun/.venv/bin/python -m pytest --confcutdir=tests/unit --basetemp=/home/safa/Documents/Codex/2026-10-04/task-2/authority-ci-fixture-green-final-tmp -p no:cacheprovider -o faulthandler_timeout=30 tests/unit/_helpers/test_reviewed_clause_ids.py tests/unit/domain/prose_rules/test_clinical_remaining_indications.py tests/unit/domain/prose_rules/test_drug_indication_4201_w4_tier_b.py tests/unit/domain/prose_rules/test_drug_indication_4206.py tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py tests/unit/domain/prose_rules/test_drug_indication_4213_tier_b.py tests/unit/domain/prose_rules/test_drug_indication_4218_4236.py tests/unit/domain/prose_rules/test_drug_indication_4219.py tests/unit/domain/prose_rules/test_drug_indication_4233.py tests/unit/domain/prose_rules/test_drug_indication_4234.py tests/unit/domain/prose_rules/test_drug_indication_4235_4237.py tests/unit/domain/prose_rules/test_pediatric_gh_continuation.py tests/unit/domain/prose_rules/test_remaining_source_context.py tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py -q"
+        },
+        "ruff_exit_code": 0,
+        "diff_check_exit_code": 0
+      },
+      "script_gate_b_fixtures": {
+        "baseline_red": {
+          "command": "PYTHONDONTWRITEBYTECODE=1 python -m pytest --confcutdir=tests/unit -p no:cacheprovider tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py -q --tb=short -k 'not test_4214c_write_artifacts_partitions_in_force'",
+          "deselected": 1,
+          "duration_seconds": 13.94,
+          "exit_code": 1,
+          "failed": 19,
+          "omission_reason": "Old writer would overwrite committed manifest; fixed writer uses tmp_path and was included in GREEN.",
+          "passed": 47,
+          "warnings": 2
+        },
+        "final_green": {
+          "command": "PYTHONDONTWRITEBYTECODE=1 python -m pytest --confcutdir=tests/unit -p no:cacheprovider tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py -q --tb=short",
+          "duration_seconds": 16.68,
+          "exit_code": 0,
+          "failed": 0,
+          "passed": 68,
+          "warnings": 2
+        },
+        "ruff": {
+          "command": "python -m ruff check tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py",
+          "exit_code": 0
+        },
+        "diff_check": {
+          "command": "git diff --check -- tests/unit/scripts/test_bent_parent_source_scope.py tests/unit/scripts/test_bounded_clause_cites.py tests/unit/scripts/test_drug_indication_4206_gate_b.py tests/unit/scripts/test_drug_indication_4210_gate_b.py tests/unit/scripts/test_drug_indication_4213_gate_b.py tests/unit/scripts/test_drug_indication_4214c_gate_b.py tests/unit/scripts/test_drug_indication_4215_gate_b.py tests/unit/scripts/test_drug_indication_4224_gate_b.py tests/unit/scripts/test_drug_indication_4234_gate_b.py tests/unit/scripts/test_drug_indication_4235_4237_gate_b.py",
+          "exit_code": 0
+        }
+      },
+      "loader_projection_historical_and_surfacing": {
+        "final_green": {
+          "env": {
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+          },
+          "argv": [
+            "/home/safa/Documents/Bilun/.venv/bin/python",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--confcutdir=tests/unit",
+            "--basetemp=/home/safa/Documents/Codex/2026-10-04/task-2/boundary-final-test-tmp/boundary-ci484-final",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_production_source_pins_remain_exact",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_public_coverage_golden_snapshots_keep_exact_transition",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_transition_rejects_current_corpus_coverage",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_expected_route_fingerprints_are_reproducible_from_current_public_source_without_a_cache",
+            "tests/unit/deploy/test_clinical_semantic_transition.py::test_coverage_permission_rejects_third_values_and_equal_mutations_on_both_replays",
+            "tests/unit/domain/billing/test_focused_legacy_materializer.py",
+            "tests/unit/domain/test_dental_catalog_loading.py",
+            "tests/unit/domain/sut/test_runtime_coverage.py",
+            "tests/unit/scripts/test_agent_checkers.py",
+            "tests/unit/scripts/test_rule_surfacing_cli.py",
+            "tests/unit/scripts/test_rule_surfacing_inventory.py",
+            "-q",
+            "--tb=short"
+          ],
+          "exit_code": 0,
+          "observed_output": "136 passed in 22.40s"
+        },
+        "scoped_ruff_and_diff_check_exit_code": 0
+      },
+      "interpretation": "These are three separately executed targeted owner runs, not a combined/full CI total. Script RED omitted the old committed-output writer; GREEN includes its safe temporary-output regression. CI484 remains the historical 41-failure full run."
+    },
+    "frontend_retry": {
+      "source": "Parent observed hosted individual frontend-job retry.",
+      "tests_passed": 575,
+      "build": "passed",
+      "frontend_code_changes": false,
+      "backend_or_new_full_ci_result": false
+    },
+    "new_repair_head_full_ci": "Not run at this report freeze; requires publication and hosted execution.",
+    "preservation": {
+      "compared_to_ci484_head": "e11bd142e20b2c0b255aa8b9053cf0eb445d45ad",
+      "corpus_embeddings_policy_migration_receipt_and_four_coverage_parquets_byte_identical": true,
+      "clinical_source_authority_runtime_and_release_verifier_byte_identical": true,
+      "catalog_edit": "Only the existing consumer report evidence SHA is replaced. All review/window/legal/history/corpus/other-evidence fields remain identical.",
+      "medical_eligibility_complete": false
+    },
+    "closure_hash_maps": {
+      "fixed_input_count": 467,
+      "test_file_count": 60,
+      "compiler_monitored_artifact_count": 134,
+      "compiler_monitored_artifact_payload_changes_from_previous_report": 0,
+      "new_direct_inputs": [
+        "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md",
+        "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json",
+        "scripts/agent/pipeline_smoke.py",
+        "src/bilun/domain/loaders/gazette.py",
+        "tests/unit/_helpers/reviewed_clause_identities_pr128.json",
+        "tests/unit/_helpers/reviewed_clause_ids.py",
+        "tests/unit/_helpers/test_reviewed_clause_ids.py",
+        "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/baseline_coverage_scope.json",
+        "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/product_coverage_scope.json",
+        "tests/unit/deploy/fixtures/clinical_semantic_transition_public_coverage/provenance.json"
+      ],
+      "no_circular_pins": "No consumer-report self hash, catalog hash or downstream coverage-evidence/output hash is embedded in this report."
+    }
   }
 }

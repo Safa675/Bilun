@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -112,9 +114,9 @@ def test_tier_b_oral_switch_in_force_sources() -> None:
         for rule in oral_switch
         for clause_id in (rule.get("gate_b_sources") or [])
     }
-    assert cite_in_sources("C004638", sources)
-    assert cite_in_sources("C004647", sources)
-    assert resolve_gate_b_cites_to_clause_ids(sources) >= frozenset({"C004638", "C004647"})
+    assert cite_in_sources(reviewed_clause_id("C004638"), sources)
+    assert cite_in_sources(reviewed_clause_id("C004647"), sources)
+    assert resolve_gate_b_cites_to_clause_ids(sources) >= frozenset({reviewed_clause_id("C004638"), reviewed_clause_id("C004647")})
 
 def test_tier_b_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))

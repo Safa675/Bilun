@@ -7,12 +7,9 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
 
-from tests.unit._helpers.brittle_guards import (
-    assert_audit_report_consistent,
-    assert_manifest_consistent,
-    soft_floor,
-)
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
@@ -90,7 +87,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
     on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("encoded_clause_ids") or [])
     assert encoded <= on_disk_encoded
-    assert "C006784" in on_disk_encoded
+    assert reviewed_clause_id("C006784") in on_disk_encoded
     soft_floor(int(manifest["tier_c_deferred_count"]), 9, label="test_drug_indication_4235_4237_gate_b tier_c_deferred")
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0

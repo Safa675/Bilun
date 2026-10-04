@@ -1,5 +1,7 @@
 """Source-specific necessary facts, never inferred complete payment eligibility."""
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from dataclasses import asdict, replace
 from datetime import date, timedelta
 import pytest
@@ -503,7 +505,7 @@ def test_hbv_numbered_source_items_are_stable_key_overrides_and_resolve_in_compi
 
     root = Path(__file__).resolve().parents[4]
     frame = pl.read_parquet(root / "data/gazette/sut_clauses.parquet")
-    keys = {"4.2.13.1#2076b8bd": ("C004595", 1), "4.2.13.1#50f88a7d": ("C004596", 2)}
+    keys = {"4.2.13.1#2076b8bd": (reviewed_clause_id("C004595"), 1), "4.2.13.1#50f88a7d": (reviewed_clause_id("C004596"), 2)}
     specs = {key: load_clause_type_overrides()[key] for key in keys}
     for prefix in ("", "shifted-"):
         changed = frame.with_columns((pl.lit(prefix) + pl.col("clause_id")).alias("clause_id"))

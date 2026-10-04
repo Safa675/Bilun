@@ -1,6 +1,8 @@
 """Pediatric source discrimination, current stop criteria, and repealed limits."""
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from dataclasses import replace
 from datetime import date
 import hashlib
@@ -144,8 +146,8 @@ def test_source_hashes_repeal_and_generated_manifest_are_pinned():
     manifest = json.loads((ROOT / "data/gazette/prose_manifests/L4.2_drug_indication_4206_manifest.json").read_text())
     encoded = set(manifest["encoded_clause_ids"])
     # Three pediatric stops + their OR introduction, four Turner stops + theirs.
-    assert {"C004037", "C004038", "C004039", "C004040", "C004058", "C004059",
-            "C004060", "C004061", "C004062"} <= encoded
+    assert {reviewed_clause_id("C004037"), reviewed_clause_id("C004038"), reviewed_clause_id("C004039"), reviewed_clause_id("C004040"), reviewed_clause_id("C004058"), reviewed_clause_id("C004059"),
+            reviewed_clause_id("C004060"), reviewed_clause_id("C004061"), reviewed_clause_id("C004062")} <= encoded
 
 
 def test_recorded_categories_survive_public_model_adapter_and_parquet_parser():

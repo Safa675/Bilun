@@ -1,0 +1,443 @@
+{
+  "canonical_json": "sort_keys=True, ensure_ascii=False, separators=(comma,colon), allow_nan=False; UTF-8; no trailing newline for digest",
+  "generation_method": "Read immutable local Git object bytes; execute the revision-specific corpus/matching/temporal source modules in memory; feed revision-specific public Parquet bytes through existing clause_frame parameter; use virtual read-only paths for JSON/manifests. No claim dataset, cache, HTTP, database, or release replay used.",
+  "limitations": "CI can validate these golden public outputs and existing fixed digests. CI does not independently reproduce historical generators when its fetch-depth=1 omits those revisions. The release verifier retains its independent pinned runtime/source/cache replay checks.",
+  "purpose": "Frozen public coverage metadata for the immutable PR143 contract; not cache evidence, a clinical approval, a new transition contract, or a serving receipt.",
+  "runtime": {
+    "polars": "1.41.2",
+    "python": "3.13.13"
+  },
+  "schema_version": 1,
+  "snapshots": [
+    {
+      "canonical_scope_sha256": "6ff61763030de04a3a49167da8c0cead216d726a22ae628b9b8c75d8348b3413",
+      "input_entry_count": 28,
+      "input_manifest_sha256": "c556eaf34839751970ae4c2e4375981eeb7ef023727fea4e784ab580a0e7ccb9",
+      "inputs": [
+        {
+          "git_blob": "f6aad0fdc5ecb701faee9c0295aca22ecd66c74a",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "3534de4ba8426b57020a82d51f3588ecfad51917101fc521f92988ba0c2b5c49",
+          "size_bytes": 222173
+        },
+        {
+          "git_blob": "6e5c4ef8ce940d363c841a9cf1fe7779c2388dd2",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4201_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "b5d06791fa0e5c08c737e8aa703acbb74ebf5cebf7d6e391461f34717f0b9b12",
+          "size_bytes": 108832
+        },
+        {
+          "git_blob": "513a9fad16c422ca89d75085197e18aadb99ed80",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4206_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "741301ae5ba75b4be4da719d68ca63ea997e20b3c7a27042437e3e7716bb8e3b",
+          "size_bytes": 14670
+        },
+        {
+          "git_blob": "bf0b707d2ab29097474216e3ff7fd2b799737f42",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4209_4227_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "b8b4670f2351f029e54d80c35659f6e28f9e9f22fc917c3f367837c7af6ef4a6",
+          "size_bytes": 42333
+        },
+        {
+          "git_blob": "d72813b74f88e43d4cf89c454cca79b0526ab0ab",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4210_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "f95c168ab4bf2d75e680dfe525bcb9550301ed4a38ae5071b28c477db12ec65a",
+          "size_bytes": 54255
+        },
+        {
+          "git_blob": "4b00b3c975cddbe52a0aceebcf23d794269f325b",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "f89fb16db186ed23051780065e15a795f7e0bec2cb84d17220e0f85ba46844e4",
+          "size_bytes": 33845
+        },
+        {
+          "git_blob": "a1c1ce7eb043822ae75aa563cd5424c491a9a3d4",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4215_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "220e32f7d217be773c294875d718fa4e45c3c37779c8e135e26b3509d4d862a8",
+          "size_bytes": 23179
+        },
+        {
+          "git_blob": "e82a7c283b6eef48de6cd7678057387957138fa0",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4217_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "5ee56f17bc5942ab3a235abd823477a2807b9e5cb2da894e94d08e8865d1b310",
+          "size_bytes": 11221
+        },
+        {
+          "git_blob": "fc061c9a8d0f585cb29f85a5bc175b0348195b18",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4218_4236_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "c3f17dadb55be5daf4aa74b7a14584b6e554a5b0be09a3638234c543f4dff6fe",
+          "size_bytes": 5016
+        },
+        {
+          "git_blob": "aa9001b5329b5ed25d478babd0b605b831ada72d",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "e70891b1f01b5aee604c04413623a9c2f91eeaf5cde4ec22d145829afbfd8ab1",
+          "size_bytes": 2082
+        },
+        {
+          "git_blob": "2f702e78317f78498f515d5fefe37df9b0803406",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4224_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "a2d881706d2b2dcd12f13ed6abe2726b65f80d2bb84c08fe8062a6cf86986051",
+          "size_bytes": 22431
+        },
+        {
+          "git_blob": "5c5b77541f26955b2f13dcf51be91b8b097063fe",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4234_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "8e1d7caa408bb853dbc4cf2ac598786b0af36a63166f7dca23e9a14641b0cbe9",
+          "size_bytes": 19406
+        },
+        {
+          "git_blob": "3d2e72fcb1fd70f21305553aa39d48b3703353c5",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4235_4237_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "8d7a803ebce52cf8b699a841d62021a808b68648d9e04e7c61b0666e83dfd910",
+          "size_bytes": 9018
+        },
+        {
+          "git_blob": "a6782946b46051bdb08b6737bc976d243249698d",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4238_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "ff4a89ee6a3210eb2b4977545a5a46d710603c0ded850f75a6b7129075823568",
+          "size_bytes": 8824
+        },
+        {
+          "git_blob": "f025b8ac4c0ddaa44510d12fb356d25eadfe6b80",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4_2_14_wave2_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "089564a82f10947b9c1a9a1fb31adc8f1bf69c4c51672743b92dda010c2af748",
+          "size_bytes": 5961
+        },
+        {
+          "git_blob": "2fc7b648fc780a926bc4a8fa535c75795919ec04",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_eye_mid_a_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "9fbe0997cb0a90c76ef2e3ececf4ac4c3a1894de4097833f86f514612cbebaf3",
+          "size_bytes": 3931
+        },
+        {
+          "git_blob": "afc2dc4c366e07804a51294e1420b8edc2912534",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_eye_mid_b_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "86378687e945393e2da3074e9d06bb46f020397b71ad37ad69d8d6c9b21df63b",
+          "size_bytes": 3466
+        },
+        {
+          "git_blob": "3ffa159defd801e873885312b8ed4eaf1239c40a",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_metabolic_mid_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "08dd90b6118173b33fe0bc879f3e87cb0840ee1ada7cf89bdebed44f49ad4bc3",
+          "size_bytes": 6746
+        },
+        {
+          "git_blob": "b817975ac6db8ecda2d8fe4a17d078eaaa8b673c",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_rheum_biologics_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "ec852e69c2092282f40557d967343910034f8bcb653b2fd739bfc4c0f333c0d7",
+          "size_bytes": 6562
+        },
+        {
+          "git_blob": "2206a79b98eb415e856e1aa8602205c31731ff17",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_small_mid_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "480698685ea5360d76eba4bfa9500a9ddc3684a5c039aad31463c93480c0680a",
+          "size_bytes": 7114
+        },
+        {
+          "git_blob": "760fd977c9c75667b2d0b7997167b5e51485425c",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_tail_a_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "7526b428a482ec390a129099d33e5599d8218e2a259f659a75b278fbcd13646a",
+          "size_bytes": 3277
+        },
+        {
+          "git_blob": "43ec79a016bebcfb1dbaf754df53d99cad30d434",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_tail_b_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "589eea9ab4b1b0aa7ede2761265cbf786b2a6b731c4cb05b00c7286d468001d5",
+          "size_bytes": 88883
+        },
+        {
+          "git_blob": "58561499289268b9e72c58ba1a9db589e858ffca",
+          "path": "data/gazette/prose_manifests/L4.33_anti_vegf_4.2.33_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "0157cc504e7fc54218b3e6859ffaf5ff55cbd9dfc788b9d7b90caf7fcf993c84",
+          "size_bytes": 15985
+        },
+        {
+          "git_blob": "719d01719f50183ec7ff18b252a9121cbafadcd8",
+          "path": "data/gazette/prose_rules/anti_vegf_prose.json",
+          "role": "public_generator_input",
+          "sha256": "df515b14bc70320fd4c556d8eaf5a351eabc32543dc5f8bd5d9344109eeed979",
+          "size_bytes": 28509
+        },
+        {
+          "git_blob": "37fb195bf2403a0a7d2967ba55a5d5ac5adcc853",
+          "path": "data/gazette/prose_rules/drug_indication_prose.json",
+          "role": "public_generator_input",
+          "sha256": "6b99f11a530e9ea191e7520b824a755c7fbd443eb01456f471190aa9a65f701e",
+          "size_bytes": 822517
+        },
+        {
+          "git_blob": "baba506e0899fd696cce8a9e7aa25501a652f7ab",
+          "path": "data/gazette/sut_clause_coverage.parquet",
+          "role": "public_generator_input",
+          "sha256": "f782ff8801b3e4edb32606497bd7dc7fedd0ca17ce791654f1073f8eab56e25e",
+          "size_bytes": 1164830
+        },
+        {
+          "git_blob": "5ae72c47e6e5493f694a683cb7501ea1985f7a27",
+          "path": "src/bilun/domain/prose_rules/_drug_indication/corpus.py",
+          "role": "public_generator_code",
+          "sha256": "0af9419ee85f6e5c9ea525f0cfcf968aa4910e9107e6c3cb65e01af2da2ad008",
+          "size_bytes": 17928
+        },
+        {
+          "git_blob": "c72c821a2083e5d6d96ef29fb6a8217f14ebd710",
+          "path": "src/bilun/domain/prose_rules/_drug_indication/matching.py",
+          "role": "public_generator_code",
+          "sha256": "9b5b41befc2cb333aa100ef7544d15ccb9c67393a513d4d0f2307bcffca54374",
+          "size_bytes": 6590
+        }
+      ],
+      "label": "baseline",
+      "snapshot_file": "baseline_coverage_scope.json",
+      "snapshot_size_bytes": 4043,
+      "source_revision": "3f5540cf199cb464b1fca1d7d7d6ff024d5edc3b",
+      "source_tree": "7acefd250cf56d06ff92ddd2e9933d28695f615a"
+    },
+    {
+      "canonical_scope_sha256": "375aed0840d735c9c53ab910e6cccfeb4b9d9868ea93449fface1696f95290ac",
+      "input_entry_count": 30,
+      "input_manifest_sha256": "fa4e9ce84282b5aada323d32cc1ec73f5afb98106f1663dd97ba8ad2c14c2ee1",
+      "inputs": [
+        {
+          "git_blob": "70934fc2b3838ff75ee468fd609e42604114b126",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "11d752c27c1772a467c5caef14e05f38bc4c16803876446b1f91f00b2bd4a815",
+          "size_bytes": 222518
+        },
+        {
+          "git_blob": "6e5c4ef8ce940d363c841a9cf1fe7779c2388dd2",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4201_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "b5d06791fa0e5c08c737e8aa703acbb74ebf5cebf7d6e391461f34717f0b9b12",
+          "size_bytes": 108832
+        },
+        {
+          "git_blob": "f9fe1fe2b7214eaedd52d8ea4e14a36c6e616e9f",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4206_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "b1a80417371a11e43d1419cafb413009fb0231f3147c4f2a654dd0a2c58b2ae6",
+          "size_bytes": 25693
+        },
+        {
+          "git_blob": "fa90cf8221012d0428f5a2be62353747e461ee60",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4209_4227_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "e917b3bd368175c54399c9b9ace011494000cea57ad1b146442a1ee954a6198b",
+          "size_bytes": 42202
+        },
+        {
+          "git_blob": "d72813b74f88e43d4cf89c454cca79b0526ab0ab",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4210_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "f95c168ab4bf2d75e680dfe525bcb9550301ed4a38ae5071b28c477db12ec65a",
+          "size_bytes": 54255
+        },
+        {
+          "git_blob": "92f87139bfe0014917644a090a6febd961519aeb",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "7f412f6ed2ec7606ffadf7dd680eb23f2e0a51c9d6494d81d6dd5e2d4da588e5",
+          "size_bytes": 33892
+        },
+        {
+          "git_blob": "a1c1ce7eb043822ae75aa563cd5424c491a9a3d4",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4215_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "220e32f7d217be773c294875d718fa4e45c3c37779c8e135e26b3509d4d862a8",
+          "size_bytes": 23179
+        },
+        {
+          "git_blob": "4cc93b52ce29968fea570e13c5afbd2fc00e6837",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4217_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "e7204bba17de1a32dd36ab56b39d3bcc188557f4e83b7c3972ced71a49660dc7",
+          "size_bytes": 11093
+        },
+        {
+          "git_blob": "fc061c9a8d0f585cb29f85a5bc175b0348195b18",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4218_4236_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "c3f17dadb55be5daf4aa74b7a14584b6e554a5b0be09a3638234c543f4dff6fe",
+          "size_bytes": 5016
+        },
+        {
+          "git_blob": "aa9001b5329b5ed25d478babd0b605b831ada72d",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "e70891b1f01b5aee604c04413623a9c2f91eeaf5cde4ec22d145829afbfd8ab1",
+          "size_bytes": 2082
+        },
+        {
+          "git_blob": "2f702e78317f78498f515d5fefe37df9b0803406",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4224_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "a2d881706d2b2dcd12f13ed6abe2726b65f80d2bb84c08fe8062a6cf86986051",
+          "size_bytes": 22431
+        },
+        {
+          "git_blob": "5c5b77541f26955b2f13dcf51be91b8b097063fe",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4234_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "8e1d7caa408bb853dbc4cf2ac598786b0af36a63166f7dca23e9a14641b0cbe9",
+          "size_bytes": 19406
+        },
+        {
+          "git_blob": "3d2e72fcb1fd70f21305553aa39d48b3703353c5",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4235_4237_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "8d7a803ebce52cf8b699a841d62021a808b68648d9e04e7c61b0666e83dfd910",
+          "size_bytes": 9018
+        },
+        {
+          "git_blob": "a6782946b46051bdb08b6737bc976d243249698d",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4238_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "ff4a89ee6a3210eb2b4977545a5a46d710603c0ded850f75a6b7129075823568",
+          "size_bytes": 8824
+        },
+        {
+          "git_blob": "f025b8ac4c0ddaa44510d12fb356d25eadfe6b80",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_4_2_14_wave2_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "089564a82f10947b9c1a9a1fb31adc8f1bf69c4c51672743b92dda010c2af748",
+          "size_bytes": 5961
+        },
+        {
+          "git_blob": "2fc7b648fc780a926bc4a8fa535c75795919ec04",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_eye_mid_a_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "9fbe0997cb0a90c76ef2e3ececf4ac4c3a1894de4097833f86f514612cbebaf3",
+          "size_bytes": 3931
+        },
+        {
+          "git_blob": "afc2dc4c366e07804a51294e1420b8edc2912534",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_eye_mid_b_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "86378687e945393e2da3074e9d06bb46f020397b71ad37ad69d8d6c9b21df63b",
+          "size_bytes": 3466
+        },
+        {
+          "git_blob": "2caf360cc3438edda035127413fad3f09dd68991",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_metabolic_mid_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "b9a8fc2842ec158c1b80b1186369c07b23aa9ecdf52725b9dab47f34d530ab6e",
+          "size_bytes": 6746
+        },
+        {
+          "git_blob": "7d6a8358c86c4e42136dc704c2e1bdb2c770e661",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_rheum_biologics_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "697560ebf4da596c0de9952cf66d48d90755e654f2d5f177d15e0ba113f8f4f8",
+          "size_bytes": 6562
+        },
+        {
+          "git_blob": "1ecffdc8d895ebde2ef86dfec1c21e53e7243754",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_small_mid_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "5f2fa8b3336debef88568572c0fb97f5533bacfbf2a372df508754b32c16c2f4",
+          "size_bytes": 7114
+        },
+        {
+          "git_blob": "760fd977c9c75667b2d0b7997167b5e51485425c",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_tail_a_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "7526b428a482ec390a129099d33e5599d8218e2a259f659a75b278fbcd13646a",
+          "size_bytes": 3277
+        },
+        {
+          "git_blob": "43ec79a016bebcfb1dbaf754df53d99cad30d434",
+          "path": "data/gazette/prose_manifests/L4.2_drug_indication_tail_b_r6_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "589eea9ab4b1b0aa7ede2761265cbf786b2a6b731c4cb05b00c7286d468001d5",
+          "size_bytes": 88883
+        },
+        {
+          "git_blob": "58561499289268b9e72c58ba1a9db589e858ffca",
+          "path": "data/gazette/prose_manifests/L4.33_anti_vegf_4.2.33_manifest.json",
+          "role": "public_generator_input",
+          "sha256": "0157cc504e7fc54218b3e6859ffaf5ff55cbd9dfc788b9d7b90caf7fcf993c84",
+          "size_bytes": 15985
+        },
+        {
+          "git_blob": "719d01719f50183ec7ff18b252a9121cbafadcd8",
+          "path": "data/gazette/prose_rules/anti_vegf_prose.json",
+          "role": "public_generator_input",
+          "sha256": "df515b14bc70320fd4c556d8eaf5a351eabc32543dc5f8bd5d9344109eeed979",
+          "size_bytes": 28509
+        },
+        {
+          "git_blob": "c072d7da811586633885ef8b5854d5eeacfdfee1",
+          "path": "data/gazette/prose_rules/drug_indication_prose.json",
+          "role": "public_generator_input",
+          "sha256": "2fca40ec8d0bda40019dec65ca6092edef13d085525ea9092b046026ba74fa35",
+          "size_bytes": 855641
+        },
+        {
+          "git_blob": "c35b6ecbd70d15fd4a3dfb23e734233dfe5c4e60",
+          "path": "data/gazette/sut_clause_coverage.parquet",
+          "role": "public_generator_input",
+          "sha256": "984bd57bb63288efc56a66dd3a40863d796c293c08e81cd43865346f9a8511c3",
+          "size_bytes": 1164799
+        },
+        {
+          "git_blob": "510750130ed39f18de4fa537d845603a9791997e",
+          "path": "data/gazette/temporal/drug_amendments_2026_10.json",
+          "role": "public_generator_input",
+          "sha256": "eb7f18ffdae0215156e770d48f7a3b04a90df15efcbb3ed2d87900a5493c8420",
+          "size_bytes": 16816
+        },
+        {
+          "git_blob": "14ea7a2389fe4baec5301633079905c2e8010f9f",
+          "path": "src/bilun/domain/prose_rules/_drug_indication/corpus.py",
+          "role": "public_generator_code",
+          "sha256": "a9a638f2030ca5206aff2d1b1f8448af0499b7179ec21421c346148d596e81e7",
+          "size_bytes": 18447
+        },
+        {
+          "git_blob": "c72c821a2083e5d6d96ef29fb6a8217f14ebd710",
+          "path": "src/bilun/domain/prose_rules/_drug_indication/matching.py",
+          "role": "public_generator_code",
+          "sha256": "9b5b41befc2cb333aa100ef7544d15ccb9c67393a513d4d0f2307bcffca54374",
+          "size_bytes": 6590
+        },
+        {
+          "git_blob": "54cfa1cb320e768d4fb4205a9b12d47d6154212c",
+          "path": "src/bilun/domain/prose_rules/_drug_indication/temporal.py",
+          "role": "public_generator_code",
+          "sha256": "2fa95e2bcc697838e24578d54e31ffbf8abfc61021d22696206be5d302a4cd7b",
+          "size_bytes": 13511
+        }
+      ],
+      "label": "product",
+      "snapshot_file": "product_coverage_scope.json",
+      "snapshot_size_bytes": 4121,
+      "source_revision": "3e0e0c6d88fdcd4817e0a7a84b3361184d78b1ea",
+      "source_tree": "6f102905fc1e150de89eefdac91fddbfdff10d10"
+    }
+  ]
+}

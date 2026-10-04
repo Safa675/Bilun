@@ -196,12 +196,15 @@ def test_non_scalar_source_kind_cannot_crash_source_metrics():
 def test_real_active_amended_clause_is_not_confused_with_full_repeal():
     from pathlib import Path
     frame=pl.read_parquet(Path(__file__).resolve().parents[4]/'data/gazette/sut_clauses.parquet')
-    row=frame.filter(pl.col('clause_id')=='C004224').row(0,named=True)
+    source_ref='4.2.9.Ç.(1)#d5f6d259'
+    matched=frame.filter(pl.col('clause_key')==source_ref)
+    assert matched.height==1
+    row=matched.row(0,named=True)
     assert row['is_in_force'] is True and row['is_superseded_marker'] is True
     assert row['clause_type']=='fikra' and row['is_amendment'] is False
-    result=build([receipt(source_refs=['4.2.9.Ç.(1)#d5f6d259'])],source_clauses=frame)
+    result=build([receipt(source_refs=[source_ref])],source_clauses=frame)
     assert result['source_metrics_available'] is True
-    assert result['source_clause_ids']==['C004224']
+    assert result['source_clause_ids']==[row['clause_id']]
 
 
 def test_whole_inactive_superseded_clause_still_has_no_runtime_source_count():

@@ -8,12 +8,9 @@ from typing import Any
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
-from tests.unit._helpers.brittle_guards import (
-    assert_audit_report_consistent,
-    assert_manifest_consistent,
-    soft_floor,
-)
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
@@ -90,7 +87,6 @@ def _write_shared_artifacts(
     effective_date: str,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
     """Write corpus CSV; merge §4.2.13 traces into the shared 4213+4216 manifest."""
-    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
     from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
@@ -294,15 +290,32 @@ def test_audit_gap_parity_zero_untraced() -> None:
     assert full["promoted_clause_ids"] == []
 
 
-def test_audit_oral_switch_tier_b_not_tier_c() -> None:
+def test_reviewed_treatment_start_heading_remains_tier_c_deferred() -> None:
     from scripts.sut.prose.gate_b_generic import export_candidates
     from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
-    oral_switch = frame.filter(pl.col("clause_id").is_in(["C004584", "C004593"]))
-    soft_floor(oral_switch.height, 1, label="4213 oral_switch")
-    assert (oral_switch["encode_tier"] == "C").all()
-    assert (oral_switch["encode_priority"] == "defer_tier_c").all()
+    # The old test's only active source was this heading; C004584 was
+    # already an inactive empty-body copy, not an oral-switch predicate.
+    source_ids = reviewed_clause_ids("C004593")
+    heading = frame.filter(pl.col("clause_id").is_in(source_ids))
+    assert set(heading["clause_id"].to_list()) == source_ids
+    assert heading.height == len(source_ids)
+    assert (heading["encode_tier"] == "C").all()
+    assert (heading["encode_priority"] == "defer_tier_c").all()
+
+
+def test_reviewed_oral_switch_sources_remain_tier_b() -> None:
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
+
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
+    source_ids = reviewed_clause_ids("C004638", "C004647")
+    oral_switch = frame.filter(pl.col("clause_id").is_in(source_ids))
+    assert set(oral_switch["clause_id"].to_list()) == source_ids
+    assert oral_switch.height == len(source_ids)
+    assert (oral_switch["encode_tier"] == "B").all()
+    assert (oral_switch["encode_priority"] == "p2_encode").all()
 
 
 def test_gate_b_artifacts_on_disk() -> None:

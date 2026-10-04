@@ -149,8 +149,8 @@ def test_all_group_rows_equal_the_current_engine_focused_subsequence() -> None:
     original = [row for row in flat if row.get("rule_id") in _RULE_IDS]
     collector = materializer.FocusedLegacyMaterializer(ctx)
 
-    # Baseline captured from the pre-materializer engine on this mixed claim.
-    # It pins focused/nonfocused interleaving as well as the focused subsequence.
+    # Pin focused/nonfocused interleaving on this mixed claim, including the
+    # three authored source-review rows that precede the focused subsequence.
     assert [row.get("rule_id") for row in flat] == [
         "3.1.2.(2).not_in_ek3c",
         "1.9.1.(1).extra_fee_permissible_scope",
@@ -161,6 +161,9 @@ def test_all_group_rows_equal_the_current_engine_focused_subsequence() -> None:
         "ORTAK-22.seans_kesi_kurali",
         "ORTAK-28.ek2b_tetkik_gereksiz",
         "2.2.1.B-1.(11).private_daily_visit_cap",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
         "radiation_oncology.course_cap.external_rt_design",
         "radiation_oncology.course_cap.external_rt_design",
         "tablo15_2_duplicate_exam_10day",
@@ -169,6 +172,14 @@ def test_all_group_rows_equal_the_current_engine_focused_subsequence() -> None:
         "never_principal_diagnosis_blocklist",
         "never_principal_diagnosis_blocklist",
     ]
+    for row in flat[9:12]:
+        assert row["severity"] == "review"
+        assert row["billable"] is None
+        assert row["material_outcome"] == "review_required"
+        assert row["annex_basis"] is None
+        assert row["savings_try"] == row["risk_amount"] == 0.0
+        assert row["details"]["source_status"] == "review_required"
+        assert row["details"]["clinical_eligibility_complete"] is False
     assert len(materializer.FOCUSED_GROUP_ORDER) == 18
     assert set(materializer.FOCUSED_GROUP_ORDER) == {spec.group for spec in FOCUSED_RULE_SPECS}
     assert [

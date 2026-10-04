@@ -3,6 +3,7 @@
 from pathlib import Path
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
 from scripts.sut.prose.clause_identity import (
     resolve_gate_b_ref_to_clause_ids,
     UnknownClauseCiteError,
@@ -21,9 +22,11 @@ def corpus():
 
 def test_real_compiler_resolver_selects_each_distinct_medication_parent():
     frame = corpus()
-    assert resolve_gate_b_ref_to_clause_ids(CHILD, frame) == ["C005124", "C005150"]
-    assert resolve_gate_b_ref_to_clause_ids(PEM, frame, encode_eligible_only=True) == ["C005124"]
-    assert resolve_gate_b_ref_to_clause_ids(RAL, frame, encode_eligible_only=True) == ["C005150"]
+    assert resolve_gate_b_ref_to_clause_ids(CHILD, frame) == [
+        reviewed_clause_id("C005124"), reviewed_clause_id("C005150")
+    ]
+    assert resolve_gate_b_ref_to_clause_ids(PEM, frame, encode_eligible_only=True) == [reviewed_clause_id("C005124")]
+    assert resolve_gate_b_ref_to_clause_ids(RAL, frame, encode_eligible_only=True) == [reviewed_clause_id("C005150")]
 
 
 def test_source_reference_survives_shifted_ids_positions_and_frame_order():
@@ -35,8 +38,8 @@ def test_source_reference_survives_shifted_ids_positions_and_frame_order():
         )
         .reverse()
     )
-    assert resolve_gate_b_ref_to_clause_ids(PEM, frame) == ["new-C005124"]
-    assert resolve_gate_b_ref_to_clause_ids(RAL, frame) == ["new-C005150"]
+    assert resolve_gate_b_ref_to_clause_ids(PEM, frame) == ["new-" + reviewed_clause_id("C005124")]
+    assert resolve_gate_b_ref_to_clause_ids(RAL, frame) == ["new-" + reviewed_clause_id("C005150")]
 
 
 @pytest.mark.parametrize(
@@ -56,7 +59,7 @@ def test_malformed_missing_reversed_or_nonadjacent_bounds_fail_closed(reference)
 
 def test_duplicate_active_parent_and_missing_source_order_fail_closed():
     frame = corpus()
-    duplicate = frame.filter(pl.col("clause_id") == "C005122").with_columns(
+    duplicate = frame.filter(pl.col("clause_id") == reviewed_clause_id("C005122")).with_columns(
         pl.lit("duplicate").alias("clause_id")
     )
     with pytest.raises((UnknownClauseCiteError, AmbiguousClauseCiteError)):
@@ -67,7 +70,7 @@ def test_duplicate_active_parent_and_missing_source_order_fail_closed():
 
 def test_repealed_parent_never_supplies_current_medication_scope():
     frame = corpus().with_columns(
-        pl.when(pl.col("clause_id") == "C005122")
+        pl.when(pl.col("clause_id") == reviewed_clause_id("C005122"))
         .then(False)
         .otherwise(pl.col("is_in_force"))
         .alias("is_in_force")
@@ -83,7 +86,7 @@ def test_fikra_bounds_separate_adult_definition_and_two_closing_fragments():
         "4.2.16#4d0fcd51@under:4.2.16.(6)#9ff041cd|4.2.16.(7)#4d4b4b80": "C006099",
     }
     for ref, id in cases.items():
-        assert resolve_gate_b_ref_to_clause_ids(ref, corpus()) == [id]
+        assert resolve_gate_b_ref_to_clause_ids(ref, corpus()) == [reviewed_clause_id(id)]
 
 
 def test_context_refs_are_compiler_validated_but_never_count_as_encoded_predicates():
@@ -110,7 +113,7 @@ def test_context_refs_are_compiler_validated_but_never_count_as_encoded_predicat
 
 def test_repealed_child_cannot_fall_back_inside_current_parent():
     frame = corpus().with_columns(
-        pl.when(pl.col("clause_id") == "C005124")
+        pl.when(pl.col("clause_id") == reviewed_clause_id("C005124"))
         .then(False)
         .otherwise(pl.col("is_in_force"))
         .alias("is_in_force")
