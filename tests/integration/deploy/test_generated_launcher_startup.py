@@ -361,11 +361,16 @@ def test_actual_generated_units_cold_signed_v1_v2_startup(tmp_path, monkeypatch,
     assert all(Path(path).is_relative_to(driver.backend) for path in baseline_started["origins"].values())
     assert _signed_tree_inventory(driver.backend) == backend_before
     assert signed_before == {str(path): integration.sha(path) for path in signed_paths}
-    driver.maintenance()
-    driver.stop_pair()
-    driver.snapshot()
-    driver.derive_and_sign()
-    driver.install_candidate()
+    # Match activate's pre-maintenance ownership setup while retaining direct
+    # stages so the original generated units can be exercised independently.
+    with transaction._locked():
+        driver.activation_gate()
+        transaction._claim()
+        driver.maintenance()
+        driver.stop_pair()
+        driver.snapshot()
+        driver.derive_and_sign()
+        driver.install_candidate()
     signed_paths += (driver.root / "serving-receipt.json", driver.root / "derivation.json",
                      driver.root / "launch.json", driver.paths["live_cache_path"])
     signed_before = {str(path): integration.sha(path) for path in signed_paths}
