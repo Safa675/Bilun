@@ -74,6 +74,13 @@ REMOVED_RULE_IDS = frozenset({
     "4.2.9.mds_esa_hematology_report",
     "4.2.9.mds_esa_initiation_hematology_report",
 })
+FRONTEND_CONFIG_PATH = "frontend/next.config.ts"
+FRONTEND_CONFIG_BASELINE_BLOB = "d4b1241ba2e8a2bef5fbfb69e1a0a05c652182cc"
+FRONTEND_CONFIG_CANDIDATE_BLOB = "cbc2b7e615dba97135d1221375eac00c41e2ca05"
+_FRONTEND_CONFIG_SHA256 = {
+    FRONTEND_CONFIG_BASELINE_BLOB: "fd6785328e47d801e0ff70e715b42f5823dacce290f2df81ac94b4ca6f526d1a",
+    FRONTEND_CONFIG_CANDIDATE_BLOB: "b5c2bf140e79eb8f0cb19f713f26e53a09ea32ebef8338c29ff3752c70669da3",
+}
 AUTHORIZED_TOOLING_PATHS = frozenset({
     "scripts/deploy/verify_clinical_semantic_transition.py",
     "scripts/deploy/verify_candidate_semantics.py",
@@ -142,6 +149,46 @@ def _git(checkout: Path, *args: str) -> bytes:
     return result.stdout
 
 
+def _frontend_config_blob(checkout: Path, sha: str) -> str | None:
+    parent = _git(checkout, "ls-tree", "-z", sha, "--", "frontend").split(b"\0")[0]
+    if parent and parent.split(b"\t", 1)[0].decode().split()[:2] != ["040000", "tree"]:
+        raise ValueError("Transition frontend config Git parent is not a directory")
+    records = [row for row in _git(checkout, "ls-tree", "-z", sha,
+                                  "--", FRONTEND_CONFIG_PATH).split(b"\0") if row]
+    if not records:
+        return None
+    if len(records) != 1:
+        raise ValueError("Transition frontend config Git locator is ambiguous")
+    metadata, name = records[0].split(b"\t", 1)
+    mode, kind, blob = metadata.decode().split()
+    if mode != "100644" or kind != "blob" or os.fsdecode(name) != FRONTEND_CONFIG_PATH:
+        raise ValueError("Transition frontend config requires the exact regular Git file")
+    return blob
+
+
+def _bind_frontend_config(checkout: Path, sha: str) -> dict[str, str] | None:
+    """Bind only the two reviewed config blobs, independently of index flags."""
+    blob = _frontend_config_blob(checkout, sha)
+    source = checkout / FRONTEND_CONFIG_PATH
+    if blob is None:
+        if os.path.lexists(source) or source.parent.is_symlink():
+            raise ValueError("Transition frontend config disk path has no reviewed Git file")
+        return None
+    if blob not in _FRONTEND_CONFIG_SHA256:
+        raise ValueError("Transition frontend config has an unreviewed Git blob")
+    if (source.is_symlink() or not source.is_file() or source != source.resolve(strict=True)
+            or source.stat().st_nlink != 1 or source.stat().st_mode & 0o111):
+        raise ValueError("Transition frontend config is not an independent regular disk file")
+    before = _stable_file_hash(source)
+    contents = source.read_bytes()
+    if (hashlib.sha1(f"blob {len(contents)}\0".encode() + contents).hexdigest() != blob
+            or hashlib.sha256(contents).hexdigest() != _FRONTEND_CONFIG_SHA256[blob]
+            or _stable_file_hash(source) != before):
+        raise ValueError("Transition frontend config disk bytes differ from reviewed Git")
+    return {"path": FRONTEND_CONFIG_PATH, "git_mode": "100644", "git_blob": blob,
+            "sha256": before}
+
+
 def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> dict[str, Any]:
     """Check every descendant commit, including changes later reverted."""
     if not _SHA.fullmatch(expected_candidate_sha):
@@ -158,24 +205,45 @@ def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> di
     commits = _git(checkout, "rev-list", "--reverse", "--ancestry-path",
                    f"{PRODUCT_ANCHOR_SHA}..{expected_candidate_sha}").decode().splitlines()
     previous = PRODUCT_ANCHOR_SHA
+    config_transition = None
     for sha in commits:
         parents = _git(checkout, "show", "-s", "--format=%P", sha).decode().split()
         if parents != [previous]:
             raise ValueError("Transition requires a linear tooling-only descendant history")
         names = {os.fsdecode(name) for name in _git(checkout, "diff-tree", "--no-commit-id",
                     "--name-only", "-r", "-z", previous, sha).split(b"\0") if name}
-        if not names or not names <= AUTHORIZED_TOOLING_PATHS:
+        if FRONTEND_CONFIG_PATH in names:
+            if (config_transition is not None
+                    or (_frontend_config_blob(checkout, previous), _frontend_config_blob(checkout, sha))
+                    != (FRONTEND_CONFIG_BASELINE_BLOB, FRONTEND_CONFIG_CANDIDATE_BLOB)):
+                raise ValueError("Transition frontend config is not the single reviewed blob change")
+            config_transition = {"commit_sha": sha, "path": FRONTEND_CONFIG_PATH,
+                                 "baseline_blob": FRONTEND_CONFIG_BASELINE_BLOB,
+                                 "candidate_blob": FRONTEND_CONFIG_CANDIDATE_BLOB}
+        if not names or not names - {FRONTEND_CONFIG_PATH} <= AUTHORIZED_TOOLING_PATHS:
             raise ValueError("Transition descendant contains an unauthorized change")
         previous = sha
     if previous != expected_candidate_sha:
         raise ValueError("Transition descendant history is incomplete")
     changed = {os.fsdecode(name) for name in _git(checkout, "diff", "--name-only", "-z",
                PRODUCT_ANCHOR_SHA, expected_candidate_sha).split(b"\0") if name}
-    if not changed <= AUTHORIZED_TOOLING_PATHS:
+    if not changed - {FRONTEND_CONFIG_PATH} <= AUTHORIZED_TOOLING_PATHS:
         raise ValueError("Transition candidate changes product/source/catalog bytes")
-    return {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
-            "candidate_sha": expected_candidate_sha, "descendant_commits": commits,
-            "authorized_changed_paths": sorted(changed)}
+    if ((FRONTEND_CONFIG_PATH in changed) != (config_transition is not None)
+            or config_transition is not None
+            and (_frontend_config_blob(checkout, PRODUCT_ANCHOR_SHA),
+                 _frontend_config_blob(checkout, expected_candidate_sha))
+            != (FRONTEND_CONFIG_BASELINE_BLOB, FRONTEND_CONFIG_CANDIDATE_BLOB)):
+        raise ValueError("Transition aggregate frontend config differs from reviewed history")
+    report = {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
+              "candidate_sha": expected_candidate_sha, "descendant_commits": commits,
+              "authorized_changed_paths": sorted(changed)}
+    config = _bind_frontend_config(checkout, expected_candidate_sha)
+    if config is not None:
+        report["frontend_config"] = config
+    if config_transition is not None:
+        report["frontend_config_transition"] = config_transition
+    return report
 
 
 def _guard_code_binding(checkout: Path, expected_sha: str) -> dict[str, Any]:
@@ -216,7 +284,14 @@ def _guard_code_binding(checkout: Path, expected_sha: str) -> dict[str, Any]:
                 raise ValueError("Running transition verifier has an unreviewed Python/source closure")
     if "scripts/deploy/verify_clinical_semantic_transition.py" not in entries:
         raise ValueError("Reviewed tooling does not include this transition guard")
-    return {"verifier_sha": expected_sha, "source_sha256": _digest(entries), "files": entries}
+    binding = {"verifier_sha": expected_sha, "source_sha256": _digest(entries), "files": entries}
+    config = _bind_frontend_config(running_root, expected_sha)
+    if config is not None:
+        # The signed transition includes this exact config binding. Keep it
+        # separate from the existing Python/source verifier locator contract.
+        binding["frontend_config"] = config
+        binding["source_sha256"] = _digest({"files": entries, "frontend_config": config})
+    return binding
 
 
 def _replay_checkout_binding(roster: dict) -> dict[str, Any]:
@@ -616,6 +691,8 @@ def verify_clinical_semantic_transition(
         raise ValueError("Transition source bytes changed during independent replay")
     for side, roster in replay_rosters.items():
         _same(_replay_checkout_binding(roster), replay_bindings[side], "final pinned Git source bytes")
+    _same(_verify_candidate_history(Path(new_roster["checkout"]), expected_candidate_sha), history,
+          "final candidate history/config binding")
     _same(_guard_code_binding(verifier_checkout, verifier_sha), binding, "verifier source binding")
     identity = {"contract": TRANSITION_CONTRACT, "baseline_code_sha": BASELINE_CODE_SHA,
                 "candidate_code_sha": expected_candidate_sha, "history": history,

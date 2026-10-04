@@ -60,6 +60,25 @@ def _commit(checkout: Path, path: str, content: str, message: str) -> str:
     return _git(checkout, "rev-parse", "HEAD")
 
 
+def _approved_frontend_configs() -> tuple[str, str]:
+    root = Path(transition.__file__).resolve().parents[2]
+    source = (root / "frontend/next.config.ts").read_text(encoding="utf-8")
+    line = "  images: { maximumDiskCacheSize: 0 },\n"
+    before = source.replace(line, "")
+    after = before.replace("  productionBrowserSourceMaps: false,\n",
+                           "  productionBrowserSourceMaps: false,\n" + line)
+    for content, blob, digest in (
+        (before, "d4b1241ba2e8a2bef5fbfb69e1a0a05c652182cc",
+         "fd6785328e47d801e0ff70e715b42f5823dacce290f2df81ac94b4ca6f526d1a"),
+        (after, "cbc2b7e615dba97135d1221375eac00c41e2ca05",
+         "b5c2bf140e79eb8f0cb19f713f26e53a09ea32ebef8338c29ff3752c70669da3"),
+    ):
+        raw = content.encode()
+        assert hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() == blob
+        assert hashlib.sha256(raw).hexdigest() == digest
+    return before, after
+
+
 @pytest.fixture
 def source_history(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Use real Git history without requiring old objects in shallow CI."""
@@ -69,6 +88,7 @@ def source_history(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     _git(checkout, "config", "user.name", "Bilun Transition Test")
     _git(checkout, "config", "user.email", "transition@example.invalid")
     _git(checkout, "config", "commit.gpgsign", "false")
+    _commit(checkout, transition.FRONTEND_CONFIG_PATH, _approved_frontend_configs()[0], "original config")
     baseline = _commit(checkout, "src/bilun/product.py", "old source\n", "baseline")
     baseline_tree = _git(checkout, "rev-parse", "HEAD^{tree}")
     anchor = _commit(checkout, "src/bilun/product.py", "reviewed source\n", "reviewed product")
@@ -90,6 +110,11 @@ def test_production_source_pins_remain_exact():
     assert transition.BASELINE_SOURCE_HASH == "c211fa8490d12db89b5456a071e6a20775c271ade49270776374c0f292b49b92"
     assert transition.BASELINE_CONFIG_HASH == "474642a8400d820435d8dbe3f40524ffd357edf8d40cc77a9621fd56b6b5921b"
     assert ".github/workflows/deploy.yml" not in transition.AUTHORIZED_TOOLING_PATHS
+    assert transition.FRONTEND_CONFIG_PATH == "frontend/next.config.ts"
+    assert transition.FRONTEND_CONFIG_PATH not in transition.AUTHORIZED_TOOLING_PATHS
+    assert transition.FRONTEND_CONFIG_BASELINE_BLOB == "d4b1241ba2e8a2bef5fbfb69e1a0a05c652182cc"
+    assert transition.FRONTEND_CONFIG_CANDIDATE_BLOB == "cbc2b7e615dba97135d1221375eac00c41e2ca05"
+    _approved_frontend_configs()
 
 
 @pytest.mark.parametrize("path,authorized", [
@@ -187,6 +212,155 @@ def test_tooling_descendant_uses_external_head_identity(source_history):
     transition._verify_candidate_history(checkout, candidate)
 
 
+def test_reviewed_frontend_config_has_exact_history_and_disk_binding(source_history):
+    checkout, _, _, original, tooling_path = source_history
+    untouched = transition._verify_candidate_history(checkout, original)
+    assert untouched["frontend_config"]["git_blob"] == transition.FRONTEND_CONFIG_BASELINE_BLOB
+    assert "frontend_config_transition" not in untouched
+    config = transition.FRONTEND_CONFIG_PATH
+    changed = _commit(checkout, config, _approved_frontend_configs()[1], "disable image disk cache")
+    candidate = _commit(checkout, tooling_path, "# reviewed follow-up test\n", "reviewed tooling")
+    before = (checkout / config).read_bytes()
+    report = transition._verify_candidate_history(checkout, candidate)
+    assert report["frontend_config_transition"] == {
+        "commit_sha": changed, "path": config,
+        "baseline_blob": transition.FRONTEND_CONFIG_BASELINE_BLOB,
+        "candidate_blob": transition.FRONTEND_CONFIG_CANDIDATE_BLOB,
+    }
+    assert report["frontend_config"] == {
+        "path": config, "git_mode": "100644", "git_blob": transition.FRONTEND_CONFIG_CANDIDATE_BLOB,
+        "sha256": "b5c2bf140e79eb8f0cb19f713f26e53a09ea32ebef8338c29ff3752c70669da3",
+    }
+    assert set(report["authorized_changed_paths"]) == {config, tooling_path}
+    assert (checkout / config).read_bytes() == before
+
+
+@pytest.mark.parametrize("mutation", ["nonzero", "remove", "format", "proxy", "sourcemaps"])
+def test_frontend_config_rejects_every_other_content_blob(source_history, mutation):
+    checkout, _, _, _, _ = source_history
+    before, after = _approved_frontend_configs()
+    content = {
+        "nonzero": after.replace("maximumDiskCacheSize: 0", "maximumDiskCacheSize: 1"),
+        "remove": before.replace("  productionBrowserSourceMaps: false,\n", ""),
+        "format": after + "\n",
+        "proxy": after.replace("http://localhost:8001", "http://localhost:8002"),
+        "sourcemaps": after.replace("productionBrowserSourceMaps: false", "productionBrowserSourceMaps: true"),
+    }[mutation]
+    candidate = _commit(checkout, transition.FRONTEND_CONFIG_PATH, content, "unreviewed config")
+    with pytest.raises(ValueError, match="single reviewed blob change"):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+def test_frontend_config_rejects_an_unreviewed_predecessor(source_history, monkeypatch):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    before, after = _approved_frontend_configs()
+    anchor = _commit(checkout, config, before + "\n", "different predecessor")
+    monkeypatch.setattr(transition, "PRODUCT_ANCHOR_SHA", anchor)
+    monkeypatch.setattr(transition, "PRODUCT_ANCHOR_TREE", _git(checkout, "rev-parse", "HEAD^{tree}"))
+    candidate = _commit(checkout, config, after, "otherwise reviewed successor")
+    with pytest.raises(ValueError, match="single reviewed blob change"):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+def test_frontend_config_cannot_be_added_without_the_reviewed_predecessor(source_history, monkeypatch):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    _git(checkout, "rm", config)
+    _git(checkout, "commit", "-qm", "anchor without config")
+    monkeypatch.setattr(transition, "PRODUCT_ANCHOR_SHA", _git(checkout, "rev-parse", "HEAD"))
+    monkeypatch.setattr(transition, "PRODUCT_ANCHOR_TREE", _git(checkout, "rev-parse", "HEAD^{tree}"))
+    candidate = _commit(checkout, config, _approved_frontend_configs()[1], "add reviewed successor")
+    with pytest.raises(ValueError, match="single reviewed blob change"):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("mutation", ["revert", "bad_then_reviewed", "reviewed_then_bad_then_reviewed",
+                                    "delete_then_reviewed", "rename_then_reviewed"])
+def test_frontend_config_rejects_intermediate_mutations_even_with_valid_final_bytes(source_history, mutation):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    before, after = _approved_frontend_configs()
+    if mutation != "bad_then_reviewed":
+        _commit(checkout, config, after, "reviewed config")
+    if mutation == "revert":
+        candidate = _commit(checkout, config, before, "revert reviewed config")
+    else:
+        if mutation == "delete_then_reviewed":
+            _git(checkout, "rm", config)
+            _git(checkout, "commit", "-qm", "delete config")
+        elif mutation == "rename_then_reviewed":
+            _git(checkout, "mv", config, "frontend/next.config.extra.ts")
+            _git(checkout, "commit", "-qm", "rename config")
+            _git(checkout, "rm", "frontend/next.config.extra.ts")
+        else:
+            _commit(checkout, config, after.replace("maximumDiskCacheSize: 0", "maximumDiskCacheSize: 9"),
+                    "unreviewed temporary config")
+        candidate = _commit(checkout, config, after, "restore exact reviewed bytes")
+    with pytest.raises(ValueError):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("mutation", ["executable", "symlink", "deleted", "parent_symlink"])
+def test_frontend_config_rejects_non_regular_git_entries(source_history, mutation):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    source = checkout / config
+    if mutation == "executable":
+        source.write_text(_approved_frontend_configs()[1])
+        source.chmod(0o755)
+    elif mutation == "symlink":
+        source.unlink()
+        source.symlink_to("next.config.other.ts")
+    elif mutation == "parent_symlink":
+        _git(checkout, "rm", config)
+        source.parent.symlink_to("missing-frontend", target_is_directory=True)
+    else:
+        source.unlink()
+    _git(checkout, "add", "frontend")
+    _git(checkout, "commit", "-qm", "unreviewed config entry")
+    candidate = _git(checkout, "rev-parse", "HEAD")
+    with pytest.raises(ValueError):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("index_flag", ["--assume-unchanged", "--skip-worktree"])
+def test_frontend_config_disk_bytes_cannot_hide_behind_index_flags(source_history, index_flag):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    after = _approved_frontend_configs()[1]
+    candidate = _commit(checkout, config, after, "reviewed config")
+    _git(checkout, "update-index", index_flag, config)
+    (checkout / config).write_text(after.replace("maximumDiskCacheSize: 0", "maximumDiskCacheSize: 1"))
+    assert _git(checkout, "diff", "--name-only") == ""
+    with pytest.raises(ValueError, match="disk bytes differ"):
+        transition._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("mutation", ["symlink", "hardlink", "missing", "executable", "parent_symlink"])
+def test_frontend_config_disk_identity_is_independent_and_canonical(source_history, tmp_path, mutation):
+    checkout, _, _, _, _ = source_history
+    config = transition.FRONTEND_CONFIG_PATH
+    after = _approved_frontend_configs()[1]
+    candidate = _commit(checkout, config, after, "reviewed config")
+    source = checkout / config
+    shared = tmp_path / "shared-config.ts"
+    shared.write_text(after)
+    if mutation in {"symlink", "hardlink", "missing"}:
+        source.unlink()
+        if mutation == "symlink":
+            source.symlink_to(shared)
+        elif mutation == "hardlink":
+            source.hardlink_to(shared)
+    elif mutation == "parent_symlink":
+        source.parent.rename(checkout / "linked-frontend")
+        source.parent.symlink_to("linked-frontend", target_is_directory=True)
+    else:
+        source.chmod(0o755)
+    with pytest.raises(ValueError, match="independent regular disk file"):
+        transition._verify_candidate_history(checkout, candidate)
+
+
 def test_ordered_auth_tooling_descendant_uses_external_head_identity(source_history):
     checkout, _, _, semantic_head, semantic_path = source_history
     source_root = Path(transition.__file__).resolve().parents[2]
@@ -217,6 +391,8 @@ def test_history_rejects_wrong_external_head(source_history):
     "scripts/deploy/future_probe_auth.py",
     "src/bilun/api/auth.py",
     "frontend/src/middleware.ts",
+    "frontend/next.config.extra.ts",
+    "frontend/next.config.ts.extra",
     ".venv/lib/python3.13/site-packages/sitecustomize.py",
     "tasks/todo.md",
 ])
@@ -253,6 +429,7 @@ def controller_guard(tmp_path, monkeypatch):
     relative = "scripts/deploy/verify_clinical_semantic_transition.py"
     source = Path(transition.__file__).read_text(encoding="utf-8")
     running_root = tmp_path / "running"
+    _commit(checkout, transition.FRONTEND_CONFIG_PATH, _approved_frontend_configs()[0], "original config")
     for path in (
         "src/bilun/product.py", "data/gazette/catalog.json",
         "scripts/bilun/generate.py", "scripts/sut/generate.py",
@@ -280,6 +457,87 @@ def test_running_guard_must_match_exact_committed_tooling_bytes(controller_guard
     _git(running_root, "update-ref", "HEAD", changed)
     with pytest.raises(ValueError, match="source/catalog bytes differ from reviewed Git"):
         transition._guard_code_binding(checkout, changed)
+
+
+@pytest.mark.parametrize("successor", [False, True])
+def test_controller_closure_binds_the_frontend_config_outside_generic_files(controller_guard, successor):
+    checkout, running_root, sha, _, _ = controller_guard
+    config = transition.FRONTEND_CONFIG_PATH
+    if successor:
+        sha = _commit(checkout, config, _approved_frontend_configs()[1], "reviewed config")
+        _git(running_root, "fetch", "-q", "origin", sha)
+        _git(running_root, "checkout", "-q", "--detach", sha)
+    binding = transition._guard_code_binding(checkout, sha)
+    assert config not in binding["files"]
+    assert binding["frontend_config"]["git_blob"] == (
+        transition.FRONTEND_CONFIG_CANDIDATE_BLOB if successor else transition.FRONTEND_CONFIG_BASELINE_BLOB
+    )
+    assert binding["source_sha256"] == transition._digest({
+        "files": binding["files"], "frontend_config": binding["frontend_config"],
+    })
+
+
+@pytest.mark.parametrize("mutation", ["hidden_bytes", "symlink", "hardlink", "parent_symlink",
+                                    "executable", "missing"])
+def test_running_controller_frontend_config_rejects_disk_identity_and_byte_drift(controller_guard, tmp_path, mutation):
+    checkout, running_root, sha, _, _ = controller_guard
+    config = transition.FRONTEND_CONFIG_PATH
+    source = running_root / config
+    before = source.read_bytes()
+    shared = tmp_path / "independent-config.ts"
+    shared.write_bytes(before)
+    if mutation == "hidden_bytes":
+        _git(running_root, "update-index", "--assume-unchanged", config)
+        source.write_bytes(before + b"\n")
+        assert _git(running_root, "diff", "--name-only") == ""
+    elif mutation in {"symlink", "hardlink", "missing"}:
+        source.unlink()
+        if mutation == "symlink":
+            source.symlink_to(shared)
+        elif mutation == "hardlink":
+            source.hardlink_to(shared)
+    elif mutation == "parent_symlink":
+        source.parent.rename(running_root / "linked-frontend")
+        source.parent.symlink_to("linked-frontend", target_is_directory=True)
+    else:
+        source.chmod(0o755)
+    with pytest.raises(ValueError, match="frontend config"):
+        transition._guard_code_binding(checkout, sha)
+
+
+def test_running_controller_rejects_an_unknown_frontend_config_git_blob(controller_guard):
+    checkout, running_root, _, _, _ = controller_guard
+    config = transition.FRONTEND_CONFIG_PATH
+    sha = _commit(checkout, config, _approved_frontend_configs()[1] + "\n", "unreviewed config bytes")
+    _git(running_root, "fetch", "-q", "origin", sha)
+    _git(running_root, "checkout", "-q", "--detach", sha)
+    with pytest.raises(ValueError, match="unreviewed Git blob"):
+        transition._guard_code_binding(checkout, sha)
+
+
+@pytest.mark.parametrize("mutation", ["regular", "symlink", "parent_symlink"])
+def test_absent_git_config_cannot_hide_an_untracked_disk_config(controller_guard, tmp_path, mutation):
+    checkout, running_root, _, _, _ = controller_guard
+    config = transition.FRONTEND_CONFIG_PATH
+    _git(checkout, "rm", config)
+    _git(checkout, "commit", "-qm", "legacy fixture without config")
+    sha = _git(checkout, "rev-parse", "HEAD")
+    _git(running_root, "fetch", "-q", "origin", sha)
+    _git(running_root, "checkout", "-q", "--detach", sha)
+    assert "frontend_config" not in transition._guard_code_binding(checkout, sha)
+    source = running_root / config
+    if mutation == "parent_symlink":
+        target = tmp_path / "external-frontend"
+        target.mkdir()
+        source.parent.symlink_to(target, target_is_directory=True)
+    else:
+        source.parent.mkdir()
+        if mutation == "regular":
+            source.write_text("untracked config\n")
+        else:
+            source.symlink_to("missing-config.ts")
+    with pytest.raises(ValueError, match="no reviewed Git file"):
+        transition._guard_code_binding(checkout, sha)
 
 
 def test_running_guard_requires_its_own_explicit_head(controller_guard):
@@ -1201,6 +1459,35 @@ def test_private_rehearsal_binds_saved_transition_to_fresh_proof_and_source_byte
         path, observed, candidate=candidate, backend_runtime=runtime, clinical_transition=fresh,
     )
     assert result["status"] == "private_pair_rehearsal_verified"
+
+
+@pytest.mark.parametrize("blob", [transition.FRONTEND_CONFIG_BASELINE_BLOB,
+                                  transition.FRONTEND_CONFIG_CANDIDATE_BLOB])
+def test_private_rehearsal_authenticates_separate_frontend_config_binding(tmp_path, blob):
+    path, observed, candidate, runtime, report, fresh = _private_transition_fixture(tmp_path)
+    verifier = fresh["verifier"]
+    verifier["frontend_config"] = {
+        "path": transition.FRONTEND_CONFIG_PATH, "git_mode": "100644", "git_blob": blob,
+        "sha256": transition._FRONTEND_CONFIG_SHA256[blob],
+    }
+    verifier["source_sha256"] = transition._digest({
+        "files": verifier["files"], "frontend_config": verifier["frontend_config"],
+    })
+    assert transition.FRONTEND_CONFIG_PATH not in verifier["files"]
+    report["clinical_transition_report_sha256"] = private_json(
+        tmp_path / "clinical-transition-rehearsal.json", fresh,
+    )
+    private_json(path, report)
+    result = verify_private_rehearsal(
+        path, observed, candidate=candidate, backend_runtime=runtime, clinical_transition=fresh,
+    )
+    assert result["status"] == "private_pair_rehearsal_verified"
+    altered = copy.deepcopy(fresh)
+    altered["verifier"]["frontend_config"]["sha256"] = "f" * 64
+    with pytest.raises(ValueError, match="clinical|Clinical"):
+        verify_private_rehearsal(
+            path, observed, candidate=candidate, backend_runtime=runtime, clinical_transition=altered,
+        )
 
 
 @pytest.mark.parametrize("mutation", [
