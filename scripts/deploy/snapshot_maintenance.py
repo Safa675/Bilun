@@ -793,6 +793,11 @@ def snapshot_with_maintenance(*, journal_path: Path, machine_lock: Path,
                 _validate_spec(spec, captured, live_cache, build_id)
                 value["expected_pair"] = captured
                 value["identity_sha256"] = _identity(value)
+                _assert_owner(journal_path, value)
+                _assert_static(value)
+                _prove_stopped()
+                _assert_barrier(value)
+                _assert_owner(journal_path, value)
             _record(journal_path, value, "copying")
             copy_cache(live_cache, output_cache, build_id)
             value["snapshot_complete"] = True
