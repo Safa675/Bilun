@@ -13,7 +13,7 @@ rules:
       Bakanlığınca her hasta için ayrı ayrı onaylanarak izin verilmesi halinde Kurumca karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000864
+  - C000872
 - rule_id: 2.4.2.B-2.(3).mesenchymal_704_981_production_center_required
   sut_section: 2.4.2.B-2
   condition:

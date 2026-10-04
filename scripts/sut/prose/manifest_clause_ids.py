@@ -16,69 +16,69 @@ GATE_B_STILL_DEFERRED_CLAUSE_IDS: frozenset[str] = frozenset()
 
 EK3C_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002833",
+    "C002841",
 }
 )
 
 EK3_SCOPE_ONLY_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002708",
-    "C002745",
+    "C002716",
+    "C002753",
 }
 )
 
 SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002690",
+    "C002698",
 }
 )
 
 MALZEME_SCOPE_ONLY_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002683",
+    "C002691",
 }
 )
 
 R5_AMENDMENT_HEADER_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002731",
-    "C002738",
-    "C002763",
+    "C002739",
+    "C002746",
+    "C002771",
 }
 )
 
 R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002822",
-    "C002826",
-    "C002829",
+    "C002830",
+    "C002834",
+    "C002837",
 }
 )
 
 KDV_PRICING_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002692",
+    "C002700",
 }
 )
 
 WOUND_331_PILOT_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002856",
+    "C002864",
 }
 )
 
 SPECIALTY_334_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002934",
-    "C002936",
-    "C002937",
-    "C002939",
-    "C002953",
-    "C002962",
-    "C002964",
-    "C002966",
-    "C002967",
+    "C002942",
+    "C002944",
+    "C002945",
+    "C002947",
+    "C002961",
     "C002970",
+    "C002972",
+    "C002974",
+    "C002975",
+    "C002978",
 }
 )
 
@@ -86,53 +86,53 @@ SPECIALTY_338_BATCH_CLAUSE_IDS: frozenset[str] = frozenset()
 
 SPECIALTY_336_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002997",
-    "C003030",
+    "C003005",
+    "C003038",
 }
 )
 
 GLUCOSE_METER_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002875",
+    "C002883",
 }
 )
 
 SPECIALTY_337_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C003072",
-    "C003073",
+    "C003080",
+    "C003081",
 }
 )
 
 OTHER_3_3_TAIL_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C003146",
-    "C003159",
+    "C003154",
+    "C003167",
 }
 )
 
 SPECIALTY_R5_HEADER_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002857",
-    "C002858",
-    "C003124",
+    "C002865",
+    "C002866",
+    "C003132",
 }
 )
 
 VISION_OPTIK_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
 {
-    "C002888",
-    "C002890",
-    "C002893",
-    "C002907",
-    "C002917",
-    "C002918",
-    "C003289",
-    "C003302",
-    "C003346",
-    "C003363",
-    "C003384",
-    "C003394",
+    "C002896",
+    "C002898",
+    "C002901",
+    "C002915",
+    "C002925",
+    "C002926",
+    "C003297",
+    "C003310",
+    "C003354",
+    "C003371",
+    "C003392",
+    "C003402",
 }
 )
 

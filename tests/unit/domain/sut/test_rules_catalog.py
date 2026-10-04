@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
+import polars as pl
 import pytest
 
+from scripts.sut.prose.clause_identity import normalize_for_hash
 from src.bilun.domain.constants import SUT_CLAUSE_COVERAGE_PATH
 from src.bilun.domain.sut import rules_catalog as rc
 from src.bilun.domain.sut.rule_registry import RULE_BY_ID, RULE_REGISTRY
@@ -12,6 +18,24 @@ _HAS_COVERAGE = SUT_CLAUSE_COVERAGE_PATH.exists()
 _needs_coverage = pytest.mark.skipif(
     not _HAS_COVERAGE, reason="sut_clause_coverage.parquet not present"
 )
+_SEARCH_CLAUSE_KEY = "4.2.1.B.(1)#38e4441b"
+
+
+@pytest.fixture
+def search_source():
+    """Keep the former C003615 source body when positional IDs are reused."""
+    root = Path(__file__).resolve().parents[4]
+    frame = pl.read_parquet(root / "data/gazette/sut_clauses.parquet")
+    matches = frame.filter(pl.col("is_in_force") & (pl.col("clause_key") == _SEARCH_CLAUSE_KEY))
+    assert matches.height == 1
+    row = matches.row(0, named=True)
+    assert hashlib.sha256(normalize_for_hash(row["in_force_text"]).encode()).hexdigest() == (
+        "38e4441b81df8113c03aabe49d45f101b4731ddd040e406e5acbda227f602c35"
+    )
+    assert (row["clause_coordinate"], row["section_id"], row["parent_section_id"], row["section_path"]) == (
+        "4.2.1.B.(1)", "4.2.1.B", "4.2.1", "4.2/4.2.1/4.2.1.B",
+    )
+    return row
 
 
 @pytest.fixture(autouse=True)
@@ -177,13 +201,13 @@ class TestGlobalClauseSearch:
         assert total > 0
         assert any("azasitidin" in c["text_tr"].lower() for c in clauses)
 
-    def test_clause_key_search(self) -> None:
-        clause = rc.get_clause("C003615")
+    def test_clause_key_search(self, search_source) -> None:
+        clause = rc.get_clause(_SEARCH_CLAUSE_KEY)
         assert clause is not None
-        key = clause["clause_key"]
-        clauses, total = rc.list_clauses(q=key)
+        assert clause["text_tr"] == search_source["in_force_text"]
+        clauses, total = rc.list_clauses(q=_SEARCH_CLAUSE_KEY)
         assert total >= 1
-        assert any(c["clause_key"] == key for c in clauses)
+        assert any(c["clause_key"] == _SEARCH_CLAUSE_KEY for c in clauses)
 
     def test_pagination_disjoint(self) -> None:
         page1, total = rc.list_clauses(limit=5, offset=0)
@@ -216,30 +240,29 @@ class TestGlobalClauseSearch:
         assert filtered_total == all_total - ref_only
         assert all(c["coverage_status"] != "non_algorithmic" for c in filtered)
 
-    def test_matched_rules_resolved_to_registry_labels(self) -> None:
-        clause = rc.get_clause("C003615")
+    def test_matched_rules_resolved_to_registry_labels(self, search_source) -> None:
+        clause = rc.get_clause(_SEARCH_CLAUSE_KEY)
         assert clause is not None
+        assert clause["text_tr"] == search_source["in_force_text"]
         assert "matched_rules" in clause
         # Every resolved entry carries its registry category label.
         for ref in clause["matched_rules"]:
             assert ref["rule_id"] in RULE_BY_ID
             assert "rule_category_tr" in ref
 
-    def test_get_clause_returns_dict(self) -> None:
-        clause = rc.get_clause("C003615")
+    def test_get_clause_returns_dict(self, search_source) -> None:
+        clause = rc.get_clause(_SEARCH_CLAUSE_KEY)
         assert clause is not None
-        assert clause["clause_key"] is not None
-        assert "text_tr" in clause
+        assert clause["clause_key"] == _SEARCH_CLAUSE_KEY
+        assert clause["text_tr"] == search_source["in_force_text"]
 
     def test_get_clause_missing_returns_none(self) -> None:
         assert rc.get_clause("DOESNOTEXIST") is None
 
-    def test_clause_coordinate_search(self) -> None:
-        clause = rc.get_clause("C003615")
+    def test_clause_coordinate_search(self, search_source) -> None:
+        clause = rc.get_clause(_SEARCH_CLAUSE_KEY)
         assert clause is not None
-        coord = clause.get("clause_coordinate")
-        if not coord:
-            return
+        coord = search_source["clause_coordinate"]
         by_coord = rc.get_clause(str(coord))
         assert by_coord is not None
         assert by_coord["clause_key"] == clause["clause_key"]
@@ -336,7 +359,27 @@ class TestCoverageSummary:
         assert di["classified_clause_rows"] > 0
         assert di["encoded_clause_rows"] > 0
         assert di["prose_rules_on_disk"] >= 188
-        assert di["encode_tier_c_deferred_count"] >= 650
+        root = Path(__file__).resolve().parents[4]
+        source_ids = set(pl.read_parquet(root / "data/gazette/sut_clauses.parquet")["clause_id"])
+        deferred_count = 0
+        trace_count = 0
+        for pattern in ("L4.2_drug_indication_*.json", "L4.33_anti_vegf_*.json"):
+            for path in (root / "data/gazette/prose_manifests").glob(pattern):
+                manifest = json.loads(path.read_text())
+                traces = manifest.get("clause_traces") or []
+                if not traces:
+                    continue
+                ids = manifest.get("tier_c_deferred_clause_ids") or []
+                assert len(ids) == len(set(ids))
+                assert set(ids) <= source_ids
+                assert set(ids) == {
+                    trace["clause_id"] for trace in traces
+                    if trace.get("manifest_status") == "tier_c_deferred"
+                }
+                deferred_count += len(ids)
+                trace_count += len(traces)
+        assert 0 < deferred_count <= trace_count
+        assert di["encode_tier_c_deferred_count"] == deferred_count
         subsections = di.get("subsection_coverage") or {}
         assert "4.2.14.C" in subsections
         assert subsections["4.2.14.C"]["encoded_clause_count"] > 0

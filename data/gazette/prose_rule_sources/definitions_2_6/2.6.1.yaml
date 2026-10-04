@@ -25,7 +25,7 @@ rules:
 - rule_id: 2.6.1.(1).conditions_required
   sut_section: 2.6.1
   gate_b_sources:
-  - C001523
+  - C001531
   condition:
     definition_scope: Ödeme için (a)-(b)-(c) koşullarının tamamı gerekmektedir
     applies_to: Yol/gündelik/refakatçi gideri

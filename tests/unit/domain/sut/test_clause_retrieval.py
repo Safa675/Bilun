@@ -7,9 +7,11 @@ supersession guard, and metadata filtering.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 import pytest
 
@@ -62,6 +64,36 @@ def _clear_cache():
 
 def _load_gold() -> list[dict]:
     return [json.loads(line) for line in _GOLD_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+@pytest.mark.skipif(not _HAS_INDEX, reason="clause/embedding artifacts missing")
+def test_committed_embeddings_match_current_embeddable_corpus() -> None:
+    """Reject stale sidecars offline, regardless of the query provider's API key."""
+    from scripts.sut.build_clause_embeddings import select_embeddable
+
+    clauses = select_embeddable(pl.read_parquet(SUT_CLAUSES_PATH))
+    embeds = pl.read_parquet(SUT_CLAUSE_EMBEDDINGS_PATH)
+    assert embeds["clause_id"].n_unique() == embeds.height
+    assert set(embeds["clause_id"]) == set(clauses["clause_id"]), (
+        "Embedding IDs differ from current embeddable clauses"
+    )
+    required = embeds.select("clause_id", "content_hash", "embedding", "embed_model", "embed_dims")
+    assert required.null_count().sum_horizontal()[0] == 0
+    assert embeds["embed_model"].n_unique() == 1 and embeds["embed_model"][0]
+    assert embeds["embed_dims"].n_unique() == 1
+    dims = embeds["embed_dims"][0]
+    assert dims > 0 and embeds["embedding"].list.len().unique().to_list() == [dims]
+    assert np.isfinite(np.asarray(embeds["embedding"].to_list(), dtype=np.float32)).all()
+
+    text_col = "in_force_text" if "in_force_text" in clauses.columns else "text_tr"
+    expected = clauses.select("clause_id", pl.col(text_col).map_elements(
+        lambda text: hashlib.blake2b(text.encode("utf-8"), digest_size=16).hexdigest(),
+        return_dtype=pl.String,
+    ).alias("expected_body_hash"))
+    joined = expected.join(embeds.select("clause_id", "content_hash"), on="clause_id")
+    assert joined.filter(pl.col("expected_body_hash") != pl.col("content_hash")).height == 0, (
+        "Embedding body hashes differ from current corpus text"
+    )
 
 
 @_needs_index

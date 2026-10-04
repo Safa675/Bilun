@@ -15,6 +15,8 @@ from the legacy drug_indication_gate_b module and are reused as-is.
 
 from __future__ import annotations
 
+import hashlib
+import io
 import json
 import re
 import sys
@@ -58,7 +60,78 @@ def build_defer_reason(themes: list[str]) -> str:
 # ── Deferral table loader (Phase 3 — first-class data file) ──────────────────
 
 _DEFERRAL_TABLE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/deferral_table.yaml"
+_DEFERRAL_CLAUSES_PATH = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
 _deferral_cache: dict[str, dict[str, Any]] | None = None
+_deferral_cache_table_sha256: str | None = None
+_DEFERRAL_SOURCE_FIELDS = (
+    "clause_key", "clause_coordinate", "section_id", "parent_section_id",
+    "section_path", "section_title", "clause_letter", "clause_number",
+    "is_in_force", "text_tr", "in_force_text",
+)
+
+
+def _deferral_source_contract_sha256(row: dict[str, Any]) -> str:
+    """Pin complete source text and context, excluding derived classification."""
+    from scripts.sut.prose.clause_identity import normalize_for_hash
+
+    missing = set(_DEFERRAL_SOURCE_FIELDS) - row.keys()
+    if missing:
+        raise ValueError(f"Pinned deferral source missing fields: {sorted(missing)}")
+    contract = {key: row[key] for key in _DEFERRAL_SOURCE_FIELDS}
+    for key in ("text_tr", "in_force_text"):
+        contract[key] = normalize_for_hash(contract[key])
+    serialized = json.dumps(contract, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _validate_deferral_source_pins(
+    entries: list[dict[str, Any]], clauses: pl.DataFrame | None,
+) -> pl.DataFrame | None:
+    pinned = [entry for entry in entries
+              if "source_contract_sha256" in entry or "source_corpus_sha256" in entry]
+    if not pinned:
+        return None
+    for entry in pinned:
+        for pin_field in ("source_contract_sha256", "source_corpus_sha256"):
+            value = entry.get(pin_field)
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                raise ValueError(f"Pinned deferral requires valid paired {pin_field}")
+        if not str(entry.get("clause_id") or "").strip():
+            raise ValueError("Pinned deferral requires an opaque clause_id")
+    try:
+        source_bytes = _DEFERRAL_CLAUSES_PATH.read_bytes()
+    except OSError as exc:
+        raise ValueError("Pinned deferral source corpus unavailable") from exc
+    corpus_hash = hashlib.sha256(source_bytes).hexdigest()
+    if any(entry["source_corpus_sha256"] != corpus_hash for entry in pinned):
+        raise ValueError("Pinned deferral source corpus SHA256 mismatch")
+    source = pl.read_parquet(io.BytesIO(source_bytes))
+    ids = {str(entry["clause_id"]).strip() for entry in pinned}
+    frames = [("actual", source)]
+    if clauses is not None:
+        frames.append(("injected", clauses))
+    rows_by_frame: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for label, frame in frames:
+        if "clause_id" not in frame.columns:
+            raise ValueError(f"Pinned deferral {label} source missing clause_id")
+        matching = frame.filter(pl.col("clause_id").cast(pl.Utf8).is_in(ids))
+        by_id: dict[str, list[dict[str, Any]]] = {}
+        for row in matching.iter_rows(named=True):
+            by_id.setdefault(str(row["clause_id"]), []).append(row)
+        rows_by_frame[label] = by_id
+    for entry in pinned:
+        clause_id = str(entry["clause_id"]).strip()
+        for label, by_id in rows_by_frame.items():
+            rows = by_id.get(clause_id, [])
+            if not rows and label == "injected":
+                # A section export may omit the target; the actual full corpus
+                # still has to establish its identity and complete contract.
+                continue
+            if len(rows) != 1:
+                raise ValueError(f"Pinned deferral {label} source must identify one {clause_id}")
+            if _deferral_source_contract_sha256(rows[0]) != entry["source_contract_sha256"]:
+                raise ValueError(f"Pinned deferral {label} source contract mismatch: {clause_id}")
+    return source
 
 
 def load_deferral_table(
@@ -71,16 +144,19 @@ def load_deferral_table(
     provided (or when ``sut_clauses.parquet`` is readable). Ambiguous coordinates
     are skipped (entry ignored) so a bad cite cannot poison the whole table.
 
+    Paired source pins on opaque entries bind the actual corpus bytes and the
+    complete source body/context, including when a frame or cache is supplied.
+    ``review_pending_entries`` is retained data outside this active entries list.
+
     Cached at module level. The table is the canonical source of human-encoded
     clinical judgment about which clauses are EMR-blocked / tier-C-deferred /
     non-actionable. The reconciler and manifest builder read this instead of
     backfilling from text heuristics.
     """
-    global _deferral_cache
-    if _deferral_cache is not None and clauses is None:
-        return _deferral_cache
+    global _deferral_cache, _deferral_cache_table_sha256
     if not _DEFERRAL_TABLE_PATH.is_file():
         _deferral_cache = {}
+        _deferral_cache_table_sha256 = None
         return _deferral_cache
     import yaml
 
@@ -91,16 +167,23 @@ def load_deferral_table(
         resolve_gate_b_ref_to_clause_ids,
     )
 
+    table_bytes = _DEFERRAL_TABLE_PATH.read_bytes()
+    table_hash = hashlib.sha256(table_bytes).hexdigest()
     payload = yaml.load(
-        _DEFERRAL_TABLE_PATH.read_text(encoding="utf-8"),
+        table_bytes.decode("utf-8"),
         Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader),
     )
     entries = payload.get("entries") or []
+    source = _validate_deferral_source_pins(entries, clauses)
+    if (_deferral_cache is not None and clauses is None
+            and _deferral_cache_table_sha256 == table_hash):
+        return _deferral_cache
     frame = clauses
     if frame is None:
-        clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-        if clauses_path.is_file():
-            frame = pl.read_parquet(clauses_path)
+        if source is not None:
+            frame = source
+        elif _DEFERRAL_CLAUSES_PATH.is_file():
+            frame = pl.read_parquet(_DEFERRAL_CLAUSES_PATH)
 
     resolved: dict[str, dict[str, Any]] = {}
     for entry in entries:
@@ -155,6 +238,7 @@ def load_deferral_table(
             }
     if clauses is None:
         _deferral_cache = resolved
+        _deferral_cache_table_sha256 = table_hash
     return resolved
 
 # ── Shared constants (byte-identical across all 14 legacy modules) ────────────
@@ -834,7 +918,7 @@ def _extra_manifest_fields(
         return {
             "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
             "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
-            "separate_billing_allowlist_clause_ids": ["C001823"],
+            "separate_billing_allowlist_clause_ids": ["C001831"],
             "ek3c_list_price_ceiling_clause_ids": sorted(EK3C_LIST_PRICE_CEILING_CLAUSE_IDS),
             "sut_material_list_price_ceiling_clause_ids": sorted(
                 SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS

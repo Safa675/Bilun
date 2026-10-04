@@ -131,10 +131,24 @@ def test_dental_gate_b_sources_exist(dental_rules, clauses_frame, clauses_polars
 
 
 def test_all_rules_have_provenance(treatment_rules, dental_rules):
-    """Every rule must trace to ≥1 SUT clause (the audit-trail contract)."""
+    """Executable rows have active sources; three review rows have inert history."""
+    documentary_reviews = {
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+    }
+    observed_reviews = set()
     for r in treatment_rules + dental_rules:
         srcs = r.get("gate_b_sources") or []
-        assert len(srcs) >= 1, f"{r['rule_id']}: no gate_b_sources provenance"
+        if r["rule_id"] in documentary_reviews:
+            observed_reviews.add(r["rule_id"])
+            assert r["gate_b_sources"] == []
+            assert r["source_review_required"] is True
+            assert r["verification_status"] == "ai_generated_pending_review"
+            assert "Historical documentary source" in r["source_scope_note"]
+        else:
+            assert len(srcs) >= 1, f"{r['rule_id']}: no gate_b_sources provenance"
+    assert observed_reviews == documentary_reviews
 
 
 # ── Section coverage tests ────────────────────────────────────────────────

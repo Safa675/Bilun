@@ -226,19 +226,14 @@ def apply_temporal_source_corrections(*, drug_line: Any, claim: Any, diagnoses: 
     """
     corrections = [r for r in rules if r.get("temporal_source_correction")]
     excluded_ids = {rule_id for row in corrections for rule_id in row["excluded_rule_ids"]}
-    excluded = [r for r in rules if r.get("rule_id") in excluded_ids]
     retained = [r for r in rules if r.get("rule_id") not in excluded_ids]
-    if not excluded:
+    if not corrections:
         return retained, None
     codes = _collect_icd10_codes(claim, diagnoses)
-    family_ids = {
-        rule_id for correction in corrections
-        if _drug_name_matches(drug_line.drug_name, correction.get("drug_names") or [])
-        for rule_id in correction["excluded_rule_ids"]
-    }
-    # The mis-targeted rule may itself have an incomplete alias list. Guard the
-    # independently verified medicine family, not just that defective spelling.
-    affected = [r for r in excluded if r.get("rule_id") in family_ids
+    # The reviewed correction owns the exact legacy quarantine scope even
+    # after its invalid executable row has been removed from the corpus.
+    affected = [r for r in corrections
+                if _drug_name_matches(drug_line.drug_name, r.get("drug_names") or [])
                 and (not codes or _diagnosis_matches_specific_rule(codes, r))]
     if not affected:
         return retained, None
@@ -247,8 +242,8 @@ def apply_temporal_source_corrections(*, drug_line: Any, claim: Any, diagnoses: 
                      and _diagnosis_matches_specific_rule(codes, r) for r in retained)
     if legitimate:
         return retained, None
-    affected_ids = {r["rule_id"] for r in affected}
-    correction = next(r for r in corrections if affected_ids.intersection(r["excluded_rule_ids"]))
+    affected_ids = {rule_id for row in affected for rule_id in row["excluded_rule_ids"]}
+    correction = affected[0]
     evidence = _evidence(correction, parse_service_date(drug_line.drug_claim_date), "source_target_mismatch")
     evidence["excluded_rule_ids"] = sorted(affected_ids)
     evidence["repeal_effective_date"] = correction["temporal"]["repeal_effective_date"]

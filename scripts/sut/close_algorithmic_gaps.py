@@ -65,11 +65,11 @@ _SNAPSHOT_PATH = (
 # Clause IDs encoded by Wave 0 YAML patches (do not Tier-C defer).
 _WAVE0_ENCODE_IDS = frozenset(
     {
-        "C004926",
-        "C005065",
-        "C005292",
-        "C005373",
-        "C005663",
+        "C004934",
+        "C005073",
+        "C005300",
+        "C005391",
+        "C005681",
     }
 )
 

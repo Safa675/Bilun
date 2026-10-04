@@ -219,14 +219,28 @@ def test_procedure_category_rule_negative() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 3. Empty procedure_lines → [] (no crash)
+# 3. Empty procedure lines preserve only explicit source reviews (no crash)
 # ---------------------------------------------------------------------------
 
 
-def test_empty_procedure_lines_returns_empty() -> None:
-    """A claim with no procedure lines must not crash and yields no violations."""
+def test_empty_procedure_lines_returns_only_documentary_source_reviews() -> None:
+    """The source gate precedes predicates and makes no financial finding."""
     ctx = _make_ctx(procedure_lines=())
-    assert check_treatment_pricing_for_context(ctx) == []
+    rows = check_treatment_pricing_for_context(ctx)
+    assert {row["rule_id"] for row in rows} == {
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+    }
+    assert len(rows) == len({row["rule_id"] for row in rows})
+    for row in rows:
+        assert row["severity"] == "review"
+        assert row["billable"] is None
+        assert row["material_outcome"] == "review_required"
+        assert row["annex_basis"] is None
+        assert row["risk_amount"] == row["savings_try"] == 0
+        assert row["details"]["source_status"] == "review_required"
+        assert row["details"]["clinical_eligibility_complete"] is False
 
 
 def test_empty_context_returns_empty() -> None:

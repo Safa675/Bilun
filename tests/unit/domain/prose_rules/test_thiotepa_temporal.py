@@ -85,6 +85,58 @@ def test_exact_id_correction_does_not_remove_other_rule_on_same_section():
     assert result["violation"] is None
 
 
+@pytest.mark.parametrize("day", ["2026-10-04", "2026-10-09", "2026-10-10", None])
+@pytest.mark.parametrize("name", ["karmustin", "carmustine", "BICNU (CARMUSTINE)"])
+def test_removed_executable_rule_keeps_scoped_source_review_at_public_boundary(day, name):
+    from src.bilun.api.public_responses import project_public_response
+    from src.bilun.api.schemas import DrugTemporalEvidenceResponse
+
+    rules = list_drug_indication_rules()
+    assert not any(row["rule_id"] == WRONG for row in rules)
+    correction = next(row for row in rules if row.get("temporal_source_correction"))
+    assert correction["icd10_codes"] == ["C81", "C82", "C83", "C84", "C85"]
+    result = evaluate(name, day, "C83.3", rules=rules)
+    assert result["selected_rule_id"] is None
+    assert result["eligible_route_rule_ids"] == []
+    assert result["matched_icd10_codes"] == []
+    assert result["violation"]["severity"] == "review"
+    assert result["violation"]["violation_kind"] == "needs_temporal_clinical_verification"
+    evidence = result["temporal_evidence"]
+    assert evidence["status"] == "source_target_mismatch"
+    assert evidence["clinical_eligibility_complete"] is False
+    assert "supported_checks" not in evidence
+    assert DrugTemporalEvidenceResponse.model_validate(evidence).excluded_rule_ids == [WRONG]
+    public = project_public_response({"drug_indication": {"violations": [result["violation"]]}},
+                                     "get_billing_report")
+    shown = public["drug_indication"]["violations"][0]["temporal_evidence"]
+    assert shown["status"] == "source_target_mismatch"
+    assert shown["excluded_rule_ids"] == [WRONG]
+    assert shown["clinical_eligibility_complete"] is False
+
+
+@pytest.mark.parametrize("name,code", [
+    ("unrelated_medicine", "C83.3"), ("carmustinemab", "C83.3"),
+    ("karmustinol", "C83.3"), ("carmustine", "A00.9"),
+    ("karmustin", "C80.9"), ("karmustin", "C86.9"),
+])
+def test_removed_rule_correction_preserves_unrelated_medicine_and_diagnosis(name, code):
+    rules = list_drug_indication_rules()
+    expected = evaluate(name, "2026-10-04", code,
+                        rules=[row for row in rules if not row.get("temporal_source_correction")])
+    actual = evaluate(name, "2026-10-04", code, rules=rules)
+    assert actual == expected
+    assert actual.get("temporal_evidence", {}).get("status") != "source_target_mismatch"
+
+
+def test_explicit_rules_without_correction_remain_self_contained():
+    route = {"rule_id": WRONG, "sut_section": "4.2.61", "drug_names": ["karmustin"],
+             "icd10_codes": ["C83"], "report_required": False}
+    result = evaluate("karmustin", "2026-10-04", "C83.3", rules=[route])
+    assert result["selected_rule_id"] == WRONG
+    assert result["violation"] is None
+    assert "temporal_evidence" not in result
+
+
 @pytest.mark.parametrize("months,status", [(None, "unknown"), (0, "fail"), (5, "fail"), (6, "pass"), (7, "fail")])
 def test_six_month_report_is_exact_and_still_not_clinical_clearance(months, status):
     line = replace(_drug_line(drug_name="thiotepa", report_present=True,

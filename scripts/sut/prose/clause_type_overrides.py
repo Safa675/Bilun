@@ -83,7 +83,7 @@ def apply_clause_type_overrides(
         if "is_heading" in out.columns:
             out = out.with_columns(
                 pl.when(mask)
-                .then(pl.lit(False))
+                .then(pl.lit(str(new_type) in {"chapter", "section_heading"}))
                 .otherwise(pl.col("is_heading"))
                 .alias("is_heading")
             )
@@ -131,5 +131,5 @@ def apply_clause_type_overrides_pandas(frame):  # type: ignore[no-untyped-def]
                 out["clause_letter"] = None
             out.loc[mask, "clause_letter"] = str(spec["clause_letter"])
         if "is_heading" in out.columns:
-            out.loc[mask, "is_heading"] = False
+            out.loc[mask, "is_heading"] = str(new_type) in {"chapter", "section_heading"}
     return out

@@ -137,9 +137,7 @@
     "C000308",
     "C000310",
     "C000315",
-    "C000316",
     "C000317",
-    "C000318",
     "C000319",
     "C000320",
     "C000322",
@@ -173,14 +171,16 @@
     "C000236",
     "C000258",
     "C000307",
+    "C000316",
+    "C000318",
     "C000354",
     "C000388"
   ],
   "tier_a_pending_count": 1,
   "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 43,
+  "tier_c_deferred_count": 41,
   "emr_blocked_count": 0,
-  "non_actionable_count": 11,
+  "non_actionable_count": 13,
   "clause_traces": [
     {
       "clause_id": "C000224",
@@ -567,12 +567,9 @@
       "clause_id": "C000316",
       "section_id": "1.8.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
     },
     {
       "clause_id": "C000317",
@@ -589,12 +586,9 @@
       "clause_id": "C000318",
       "section_id": "1.8.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "tahsil edilir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
     },
     {
       "clause_id": "C000319",

@@ -6,16 +6,19 @@
     "text_sha256": "10e6c764fd9f71cff7e1f8ef9e1bc5b700da119ac7f82d4916add48143c72ba3",
     "reviewed_snapshot_versions": [
       "2026-07-01",
-      "2026-08-29"
+      "2026-08-29",
+      "2026-10-02"
     ],
     "applicability": "Exact snapshot text agreement only; no legal service-date interval is inferred. Promotion requires a separate release-reviewed source-applicability attestation.",
     "official_announcements": [
       "https://www.sgk.gov.tr/duyuru/detay/01072026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-07-01-02-55-17",
-      "https://www.sgk.gov.tr/duyuru/detay/29082026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-08-31-03-06-04"
+      "https://www.sgk.gov.tr/duyuru/detay/29082026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-08-31-03-06-04",
+      "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06"
     ],
     "official_docx_sha256": [
       "69c23915d027588588d6b34ab8f216467aadd47305a850379d1da35b19ac335c",
-      "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821"
+      "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+      "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
     ],
     "source_named_materials": [
       "altın",
@@ -470,7 +473,7 @@
     {
       "rule_id": "4.2.12.B-1.(ivig_indication_required)",
       "family": "drug_combination_4_2",
-      "authored_sha256": "0792faf81c4c9ffc0802859b54ecf671838517544a8e4730624295bcf72e2744",
+      "authored_sha256": "61ee4c4f4142315501ba1845a6e89a5ff963413a27e0e5c6d37693b32a2c43b5",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -484,7 +487,7 @@
     {
       "rule_id": "4.2.12.B-2.(birdshot_retinochoroidopathy_no_pay)",
       "family": "drug_combination_4_2",
-      "authored_sha256": "dfcf63d9fe71a9e045181860011fcffa429e0cb39ea02dd92b0e5ca11f45bd5a",
+      "authored_sha256": "3867fb9c04c5ca9a66d094b66ac3237cf91000d368d9b9b5b4e5630207a782af",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -498,7 +501,7 @@
     {
       "rule_id": "4.2.14.C.(breast).ribociclib_palbociclib_after_ai_progression",
       "family": "drug_combination_4_2",
-      "authored_sha256": "eeee545f04b809f6cb540130ec7786f4111a565e911340e78d5f70c4d107fb38",
+      "authored_sha256": "b244a9e6a1e851334f5e18ef29c70f361210154f6666d511670ad6c1d22db3d0",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -525,7 +528,7 @@
     {
       "rule_id": "4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay",
       "family": "drug_combination_4_2",
-      "authored_sha256": "c4573ed23b42279474a1239d42627d18638ff166e8ddefcb09f8455d7327fdcf",
+      "authored_sha256": "632f9bc1626a1226356c363d3add0e595d36c9e582ac90d94f512a73de4335a2",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -580,7 +583,7 @@
     {
       "rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
       "family": "drug_combination_4_2",
-      "authored_sha256": "65be2f4258adf31718b799e31d6cf09a3a6ea8b3260a84473b19363550bba777",
+      "authored_sha256": "731670cb5e7c247386890a57931df7f69b3d18f592ce8d4ac3d75984611c764b",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -2734,7 +2737,7 @@
     {
       "rule_id": "5.2.2.(separate).prescriptions_billed_separately",
       "family": "gap_closing_misc",
-      "authored_sha256": "ca9db84a1008690d8ce9e209cecf064bc37d70e8ac325e75f286ce8eb8769753",
+      "authored_sha256": "aba8427e8787628f628672ba804e897c921209ab2a3c21dc4f8c270168c7968c",
       "authored_meaning": "administrative_or_conduct_obligation",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -4788,7 +4791,7 @@
     {
       "rule_id": "2.4.4.F-1.health_report_required",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "77d58e288e1bceff6d17ebe57bdc06893d63e26c79af5e6e6074e96a5005c549",
+      "authored_sha256": "553c36322a9620c7cef6e90e0c7474026fba3f296f979c4bfa9f49e53b06e621",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -5520,7 +5523,7 @@
     {
       "rule_id": "2.4.4.L.(3).diskoplasty_covered_when_conditions_met",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "36b2eff9308c6aacdf4ea80ffb58bf06d03ab02ebaa14cb91b927cb2e0a85af4",
+      "authored_sha256": "c0b88586bab9d16795ccd7b9888db13812a372f2fae4b2af51d7065723a95438",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -5660,7 +5663,7 @@
     {
       "rule_id": "2.4.4.C-c.(2).photopheresis_covered_for_indication",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "5ff5cadaefb04c87fbdaa041ac744afa81f4d7747b8799e791f066905e5edb13",
+      "authored_sha256": "8a9fcecefd710e0f04f665869c41423ee1ddd74f7eab51a569c24dcb6335620a",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -5714,7 +5717,7 @@
     {
       "rule_id": "2.4.4.G-u.(1).risk_scored_coverage_via_annex",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "3d8c4ee31560ec1dbf9e0d1724dc859d7d107fb4c7520b0a506731fe816c355e",
+      "authored_sha256": "11c4b928962453bcb00432c9737ba1c865b3594c59ae98bc7cc0695d7f9a64f5",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -5797,7 +5800,7 @@
     {
       "rule_id": "2.4.4.I-1.(4).ivf_report_conditions_specified",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "4a3c5d00a9062211e8951206eea681d74880576b00a0973aa1a99c3da8112596",
+      "authored_sha256": "d0cf26eed960c0bfeef459cdfef54c56c33321c0dd64302bb422885339eb2c2d",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -6219,7 +6222,7 @@
     {
       "rule_id": "2.4.2.A.(1).organ_tissue_transplant_recipient_donor_covered",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "1c242ca642da4c63fc39f222012e764a9076395d826a018abdd15a0b5d9f656c",
+      "authored_sha256": "4082303192aa0d76fba490a0edb911d05e892d91ad5b548cbb4bb6390b8c5011",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6232,10 +6235,10 @@
     {
       "rule_id": "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "4c9d6694e5b225fea087dfea880b339fc4af2b932c1e7db07dd14645af477153",
+      "authored_sha256": "469fa8ac9fcc090f451b49f30b414624f4f1875a5b28ce9c2e95e42ddae33a6a",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
-      "authored_verification_status": "unspecified",
+      "authored_verification_status": "ai_generated_pending_review",
       "gates": [
         "builder_does_not_derive:organ_found_in_country,service_category",
         "effective_source_and_full_exceptions_must_be_verified_for_service_date",
@@ -6245,10 +6248,10 @@
     {
       "rule_id": "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "a5fdc921839f0b83edcc4249f2b2d9e36866c3b0a8ed45323664494836856892",
+      "authored_sha256": "8820a90dc4f5ac5e5be70acb32d178b2e7e64e5c5cfc35da142a598d112af873",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
-      "authored_verification_status": "unspecified",
+      "authored_verification_status": "ai_generated_pending_review",
       "gates": [
         "builder_does_not_derive:donor_reported_by_national_coordination_center",
         "effective_source_and_full_exceptions_must_be_verified_for_service_date",
@@ -6258,7 +6261,7 @@
     {
       "rule_id": "2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "371c59e7e2f0328d40ce4aefa904682191c76015991576e98b7107ca94fc1e75",
+      "authored_sha256": "dcd10e532cc7f363717e1f0cf382f189b2e1b991c3b14c2218b52303da26610a",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",
@@ -6377,7 +6380,7 @@
     {
       "rule_id": "2.4.2.B-2.(1).mesenchymal_stem_cell_transplant_moh_approval",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "d6f1491d06b8767ba57ee73d9dac3227a57ca4f2ed6df907c071677b58892573",
+      "authored_sha256": "8a95db31c6a7617233f6fba646bdce41bfd67c2aeddfe02ac91ff29b946a8449",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6418,7 +6421,7 @@
     {
       "rule_id": "2.4.3.(A).non_eip_vaccines_high_risk_report",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "804527bd1d7cdbc65f1bcb574f50e1f6a776688a7395490acd9512432951c933",
+      "authored_sha256": "4b3397be1d9b4640a2b8885cadc69da84271239964e8a700707d49681c843e26",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6432,7 +6435,7 @@
     {
       "rule_id": "2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "0cb615a2131d7a274847e248abce1722915bce945fd262870bfdaf5248fe664c",
+      "authored_sha256": "fabe3ec1c72936931424dca5eba1ced5da5d6d2afcf9e7a9c4bfc0564539bfcc",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6445,7 +6448,7 @@
     {
       "rule_id": "2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "8e586cbecd7ffe0968452ed3024e2aa7bfb0562d00a67a56ca9405268d6a3edb",
+      "authored_sha256": "fb2663dd5459d748053f9f22a1b39330deba1f9450242d52b4bff49e26b77397",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6458,7 +6461,7 @@
     {
       "rule_id": "2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "4496f4ead6bb592ea45a3fd7f0cb0ae8bf99b0e138a20e948eff7f7627ba3efb",
+      "authored_sha256": "5ac2065f4c9f277ee2dd412c7adccb1616530983cc2901099630a2d3838db849",
       "authored_meaning": "permission_or_instruction_as_authored_not_must_bill",
       "matched_surface": "permission_or_instruction",
       "authored_verification_status": "unspecified",
@@ -6554,7 +6557,7 @@
     {
       "rule_id": "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "310a7e40ecbf8a2da7324ac09bebfec3e2f74ec70521377bfb4eac9aa4d15ff9",
+      "authored_sha256": "d88f8df7e2406bd99230622170a901a5ec32b90a0badaf158e5d26b1c86a3692",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "ai_generated_pending_review",
@@ -6747,7 +6750,7 @@
     {
       "rule_id": "2.4.4.R.pulmoner_rehab_5_biz_day_gap_excluding_chronic_failure",
       "family": "treatment_pricing_2_4",
-      "authored_sha256": "fb5d658692d61fb51bfc2f48019a627d5b9afeddea3b80ccfe56544cb3db0d66",
+      "authored_sha256": "9ed35f5beecbf912fdcf4f1ffb1669f063f0c94827db547e52e4c6b4aab165d1",
       "authored_meaning": "payment_or_billing_restriction_candidate",
       "matched_surface": "withheld_adverse",
       "authored_verification_status": "unspecified",

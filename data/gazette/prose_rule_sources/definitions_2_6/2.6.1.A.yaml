@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.1.A.(2).travel_by_nearest_provider_distance
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001535
+  - C001543
   condition:
     definition_scope: Yerleşim yeri mesafesi esas alınarak yol giderinin karşılanması
     applies_to: Yerleşim yeri dışı sevk (en yakın sunucu)
@@ -24,7 +24,7 @@ rules:
 - rule_id: 2.6.1.A.(2a).third_step_referral_distance_waived
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001542
+  - C001550
   condition:
     definition_scope: En yakın üçüncü basamak resmi sunucuya sevk için yerleşim yeri mesafesi aranmaz
     applies_to: Tıbbi/zorunlu nedenle üçüncü basamağa sevk

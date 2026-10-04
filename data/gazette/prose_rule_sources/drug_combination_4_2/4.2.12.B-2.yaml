@@ -11,4 +11,4 @@ rules:
     denial_tr: Birdshot retinokoroidopati endikasyonu ödenmez
     severity: error
   gate_b_sources:
-  - C004551
+  - C004559

@@ -36,6 +36,33 @@ ENCODE_ELIGIBLE_TYPES = frozenset({"fikra", "bent", "numbered_item"})
 # ``prose`` / ``amendment`` may still be cited via opaque C* (not via coordinates).
 STRUCTURAL_NON_LINKABLE_TYPES = frozenset({"chapter", "section_heading"})
 
+# These existing treatment consumers emit neutral review before predicates.
+# Historical documentary evidence must never become an executable source cite.
+_REVIEW_ONLY_TREATMENT_RULE_IDS = frozenset({
+    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+    "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+    "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+})
+
+
+def validate_review_only_source(rule: dict[str, Any], *, rule_set_id: str = "") -> bool:
+    """Accept only guarded documentary rows with zero executable citations."""
+    if "source_review_required" not in rule:
+        return False
+    marker = rule["source_review_required"]
+    if type(marker) is not bool:
+        raise ValueError("source_review_required must be boolean")
+    if marker is False:
+        return False
+    if (rule_set_id != "treatment_pricing_2_4"
+            or rule.get("rule_id") not in _REVIEW_ONLY_TREATMENT_RULE_IDS):
+        raise ValueError("Review-only source requires an existing guarded treatment rule")
+    if type(rule.get("gate_b_sources")) is not list or rule["gate_b_sources"] != []:
+        raise ValueError("Review-only source requires gate_b_sources: []")
+    if rule.get("verification_status") != "ai_generated_pending_review":
+        raise ValueError("Review-only source requires pending verification status")
+    return True
+
 # ---------------------------------------------------------------------------
 # Track E — stable clause identity (content hash).
 #
@@ -562,6 +589,7 @@ def assert_gate_b_sources_resolvable(
         if not isinstance(rule, dict):
             continue
         rule_id = str(rule.get("rule_id") or f"rules[{index}]")
+        validate_review_only_source(rule, rule_set_id=rule_set_id)
         for raw in rule.get("gate_b_sources") or []:
             if raw is None or not str(raw).strip():
                 raise UnknownClauseCiteError(

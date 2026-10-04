@@ -188,7 +188,7 @@ rules:
   message_tr: Denosumab — bifosfonat yanıtsız/tolere edilemeyen veya renal yetmezlik nedeniyle bifosfonat kullanılamayan osteoporozda
     sağlık kurulu raporu gerekir (§4.2.17.A).
   gate_b_sources:
-  - C006127
+  - C006152
 - rule_id: 4.2.17.osteoporosis_bmd_planning
   sut_section: 4.2.17.A
   drug_names:

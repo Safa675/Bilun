@@ -120,7 +120,7 @@ rules:
   - 4.2.13.3.2.(6)
   - 4.2.13.3.2.A.(4)
   - 4.2.13.3.2.B.a
-  - C004975
+  - C004983
   prescriber_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları

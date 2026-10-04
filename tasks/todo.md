@@ -1452,3 +1452,80 @@ Tek birleşik 11 dosyalık kaynak/ilaç temporal/documentary/coverage paketi ger
 `compile_rules.py --check`: **134 rule/manifest artifacts byte-identical**, exit0. `audit_manifest_parity.py --drug-only`: **23 scanned, 23 with traces, 0 issues**, exit0. Kaynak verifier: **12 families, 25 repository-local assets, through2026-10-04**, exit0. Scoped Ruff ve git diff --check geçti. Dört kalıcı coverage parquet ve 9639 corpus Git HEAD byte hashleriyle aynı; JSON envanteri file_sha256 dışında değişmedi. Kaynak/test/evidence düzeltmesi ve görev/ders belgeleri dışında yazım yok; commit/push üst göreve bırakıldı.
 
 Frontend job111504177367 yalnız bir kez individual rerun edildi; aynı c4f736b kaynak başını kullanan job111510110080'de **83 files/575 tests, typecheck, build, public-assets52files** geçti. Backend yeniden çalıştırılmadı; ilk run'ın başarısız backend sonucu tam CI başarısı sayılmaz. Bağımsız final kaynak diff incelemesi üst görev tarafından atandı.
+
+
+## Task: PR128 corpus'unu kaynak PR'ı üstünde mekanik doğrulamayla taşı
+
+### Consumer scope update and ownership — 2026-10-04
+Üst görev, konumsal consumer uyumluluğunu mevcut veri uyumluluğu kapsamına açıkça aldı: eski coverage ile yeni corpus arasında toplam 4.177 key/4.174 hash uyumsuzluğu ve 36 manifestte 3.066 farklı kayda kayan C* atfı doğrulandı. Provisional dosyalar nihai diye kopyalanmaz. Aşağıdaki gerekli bağımlılıklar önceki beş dosyalık başlangıç kapsamını tamamlar; genel mimari ve klinik tarih/sınır/predicate değişiklikleri eklenmez.
+
+- [x] authority_audit: aynı metnin bent/prose kaymasını mevcut canonical override ile düzelt; compiler ve gerekli manifest/rule çıktılarını mevcut üreticilerle yenile. Tam metin/parent/context değişen atıfları otomatik taşıma; kesin engeli raporla.
+- [x] corpus_seam_review: nihai manifest/rule/catalog/source-authority kapanışından mevcut build_sut_coverage.py ile sut_clause_coverage.parquet, sut_coverage_by_rule.parquet, sut_coverage_by_section.parquet, sut_registry_coverage.parquet ve sut_coverage_evidence.json dosyalarını yeniden üret; gerçek consumer ID/key/fullhash ve negatif eski artifact testlerini doğrula.
+- [x] independent_review: gerçek corpus40b2 ile hazır local-hash-v1/512 embedding dosyasının 4.090 ID/body/vector eşitliğini bağımsız doğrula ve exact dosyayı kur; 14 retrieval testi ve sıcak indeks kontrolünü çalıştır. Runtime mimarisini genişletme.
+- [x] root: kaynak PR'ın bağımsız coverage_evidence pin kapanışını doğrula, gerekiyorsa kaynak corpus'u değiştirmeyen dar evidence düzeltmesini ayrı tut; ortak plan/katalog ve son Git yayını sahipliğini koru.
+- [ ] Nihai source/migration/consumer testleri, scoped Ruff, compile --check, manifest parity, evidence closure ve bağımsız inceleme sonucundan sonra ikinci draft PR/full CI durumunu kaydet.
+
+Coverage üretimi diğer girdi sahiplerinin FINALmanifestready sinyaline kadar bekler. Kaynak PR bağımsızdır; merge/deploy/VPS yapılmaz. Mevcut görevde Git yayını yalnız root tarafından yapılır.
+
+### Existing consumer gates — scope confirmed for the night run
+Üst görev mevcut veri uyumluluğu kod/test/inceleme/CI akışını tekrar onay almadan tamamlamayı onayladı. Negatif gerçek tüketici kanıtı organ kaynaklarının yalnız pending metadata ile korunmadığını, kaldırılan Carmustine guard-rule'ın ise mevcut correction kapısını atladığını gösterdi. Gerekli düzeltme mevcut iki tüketicinin dar kaynak kapısındadır; yeni klinik aile, genel admission mimarisi, tarih penceresi veya tıbbi predicate eklenmez.
+
+- [x] boundary_audit: treatment_pricing mevcut legacy ve typed tüketicisinde explicit source_review_required durumunu predicate/ödeme sonucu öncesinde tarafsız review çıktısına taşı; kaynak inceleme flag'i olmayan kuralları koru, negatif ve normal tüketici regresyonlarını çalıştır.
+- [x] authority_audit: organ kaynak locators/pending marker/policy digest verisini mevcut kapı sözleşmesiyle koordine et; değişen criteria'yı encoded sayma. İlaç correction guard'ının kaldırılmış geçersiz cite-rule'a bağlı olmadan source_target_mismatch davranışını korumasını mevcut temporal seam'de doğrula/düzelt.
+- [x] authority_audit: deferral kaynak geçmişiyle kanıtlanan kayıtları mevcut canonical/ID sözleşmesiyle taşı; aynı key'deki farklı body/context veya çelişen judgment'ı otomatik medikal sınıfa atama, belirsiz kalanları açık raporla.
+- [x] authority_audit: değişmeyen 2.4.1.(1) dental tam metin/context'i resmî October2 DOCX ile doğrula; mevcut dental_source_proof içinde yalnız gözlenen October2 snapshot sürümünü destekle ve ilgili mevcut policy digestini yenile. Hizmet tarihi/attestation alt sınırlarını, kaynak body hash'ini ve parasal davranışı değiştirme; unsupported snapshot/değişmiş body negatiflerini koru.
+
+### Changed-source compiler contract — reviewed before implementation
+
+Yalnız mevcut treatment_pricing_2_4 ailesinin üç değişmiş kaynak kaydı source_review_required=true, pending verification ve boş gate_b_sources ile derlenecek; tarihsel atıflar inert açıklama/makbuzda korunacak. İki mevcut consumer flag'i predicate öncesi tarafsız review olarak ele alır. Guard'ı olmayan ailelerde review-only marker kabul edilmez; normal encoded atıfların active/fullkey/heading kuralları gevşetilmez. İki değişmiş ff/gg kaydı ve bir yanlış hedefli Carmustine executable kaydı kaldırılırken mevcut temporal correction review davranışı korunur. Bu veri/derleyici sınırına pozitif/negatif test ve bağımsız inceleme gerekir.
+
+Kaynak PR150 exact head58a73b117e71d9610d7e51cf854c3a23aba4fd7b tam CI476 başarılı:8069 backend/575 frontend,134 byte-identical artifacts,23 manifest/0issue. Corpus çalışma ağacı bu head'e ff edilmiş, başlangıç mekanik makbuzunun c4f736be baseline kanıtı değişmemiştir.
+
+### Goal
+Kaynak PR c4f736be tabanından PR128 corpus40b2 geçişini aynı klinik tarih ve binding sözleşmesiyle doğrulayıp ikinci dar PR için incelemeye hazır dosya paketi teslim etmek.
+
+### Subtasks
+- [x] Temiz corpus-transition worktree tabanı c4f736be ve 17f3694c kod/test kapsamını doğrula; mevcut repo talimatlarını oku.
+- [x] Yalnız 17f3694c içindeki beş verifier/diff/test dosyasını ve iki clause-delta açıklama düzeltmesini taşı.
+- [x] Gerçek PR128 candidate corpus ve tek atıf yapılan October2 DOCX baytlarını/hash'lerini doğrula; gerekli dosyaları seçerek hazırla.
+- [x] Henüz değişmemiş c4f736be baseline katalog/corpus'u üzerinde yeni mechanical migration receipt üret; eski owner receipt'ini kopyalama.
+- [x] Gerçek candidate corpus'u kur, katalogda yalnız corpus pinini ve Oct4 review evidence'e yeni receipt pinini ekle; tüm aile/pencere/hukuk/source alanlarını aynen koru.
+- [x] Migration verifier/testleri ve kaynak PR'ın 538 hedefli testini onaylanan in-process ortamda gerçekten çalıştır; asset closure ve diff kontrollerini kaydet.
+- [x] Exact CI generated gate engelini mevcut dar override/dependency yüzeyinde incele; önerilen ek dosya kapsamını yazmadan önce üst göreve bildir.
+- [x] Aynı fulltext ve literal b) Word maddesi kanıtıyla mevcut YAML'da yalnız 4.2.8.A.b#2882a47a türünü bent olarak sabitle; başka key/opaque ID'ye taşınmadığını test et ve generated gate'i yeniden çalıştır.
+- [x] Son dosya listesini, gerçek test sonuçlarını ve kalan engelleri üst göreve teslim et; bağımsız incelemeyi bekle.
+
+### Out of Scope
+Merge, deploy, VPS, commit/push, PR yayınlama; owner/parent repo yazımı; ingest_state, genel manifest/annex ve tüm442 PR asset'inin taşınması; klinik tarih, hukukî sınır, binding, schema/runtime değişiklikleri ve yeni ödeme uygunluğu iddiası.
+
+### Specification and plan review
+Üst görev iki PR sırasını ve bu dar implement paketini açıkça onayladı. Hedef Python3.13 mevcut Bilun .venv'dir. Başarı: c4f736be baseline ile gerçek PR128 Git blobu arasında72 unique binding/8 proof dosyası/12 aile bağlam uyumu; actual installed corpus40b2 ve yeniden üretilmiş makbuzla verifier/test geçişi;5Ekim fail-closed ve source PR continuity receipt fix'i aynen kalır. Plan kapsamı delegated talimatla eşleştirilerek implement öncesi gözden geçirildi.
+
+### Progress evidence
+Narrow dependency plan reviewed before write: Üst görev mevcut canonical YAML override desteği ile tek tür düzeltmesini gerekli corpus dependency olarak onayladı. Eski C004159 ve yeni C004167 için full normalized text SHA256 `2882a47a74ff4d7ab0194f6eb1ed4a2aeef8653bd3e370268280d125cc395d24`, coordinate4.2.8.A.b,section4.2.8.A,parent4.2.8,letterb,in_force ve non-heading aynıdır. Git DOCX direct body w:p indeksleri4377/4385 literal `b)` ile başlar ve full normalize edilmiş Word metni corpus'a birebir eşittir. Öneri yalnız `data/gazette/clause_type_overrides.yaml` canonical key→bent ve `tests/unit/scripts/test_stable_clause_type_overrides.py` persistent regression guard'dır; corpus, runtime/schema/strict encode şartı veya generated çıktı değiştirilmez. Kesin dosya/kanıt üst göreve yazmadan önce bildirildi.
+
+Fresh receipt `corpus_migration_pr128.json` c4f736be kaynak baseline'ından gerçek49af2019 candidate Git blobu ile yeniden üretildi:12 aile/8 binding dosyası/72 unique binding; SHA256 `3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde`. Kurulu corpus gerçek40b2,8413 satır,1421343 bayt. Katalogu yalnız corpus pinini ve Oct4 makbuz evidence satırını geri alarak karşılaştıran assertion tüm eski alanların birebir korunduğunu doğruladı; source_authority.py c4f736be ile bayt düzeyinde aynı. Yalnız tek October2 DOCX taşındı; ingest_state, annexler ve genel manifestler değişmedi.
+
+Son 12 dosyalık birleşik pytest koşusu onaylanan in-process ortamda gerçekten tamamlandı: **579 passed, 3 warnings, 28.54s**. `TESTING=1 BILUN_AUTH_OPTIONAL=1 BILUN_AUTH_USERNAME= BILUN_AUTH_PASSWORD= BILUN_SESSION_SECRET= PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`, pytest `--confcutdir=tests/unit -p no:cacheprovider -o faulthandler_timeout=30` kullanıldı. İlk koşudaki tek hata renal testin eski opaque ID beklentisiydi; beklenti runtime collector'dan değil sabit6 canonical clause key ve kurulu corpus lookup'tan türetildi. Oct4 parity günü migration testlerine eklendi; Oct5 review_required kaldı. Scoped Ruff ve `git diff --check` exit0. Kaynak verifier `--check --json-output /tmp/bilun-corpus-transition-source-assets-20261004.json`:12 aile/26 asset/through2026-10-04, exit0.
+
+Exact CI `scripts/sut/audit_manifest_parity.py --drug-only`:23 manifest/23 trace/0 issue, exit0. `scripts/sut/compile_rules.py --check`:exit1, `csv_wave_clause_ids_metabolic_mid` hedefinde `4.2.8.A.b#2882a47a` candidate C004167(prose) strict encode-eligible şartını karşılamıyor. Aynı metin/key eski corpus'ta C004159(bent); candidate raw Git blobu da prose. Compiler finally bloğu önceden var olan çıktıları geri yükledi; git durumunda generated artifact değişikliği yok. Engelin dar dependency teşhisi sürüyor, bu gate başarılı diye sayılmadı.
+
+### Final producer dependency closure — 2026-10-04
+
+Üst görev, gerekli consumer source guard, runtime/code ve Git/draft PR akışını yetkilendirdi. Başlangıç owner paketinin Out of Scope listesi bu sonraki yetkiyi kısıtlamaz. Genel mimari, yeni medikal predicate/eligibility, tarih uzatması, merge/deploy/VPS kapsam dışında kalır.
+
+Yenilenmiş coverage engine-owned ID envanteri yedi mevcut GateB manifestinin çıktısını değiştirdi. Mevcut compiler WRITE 43 hedefte exit 0; CHECK 134 artifact için byte eşitliği ve drug parity 23/23, sıfır issue ile tamamlandı. Mevcut 939 kural JSON'u byte düzeyinde değişmedi. Eklenen 214 trace aynı baseline full body/parent/context kaynaklarına eşleşti: 80 encoded trace mevcut kural cite'lerinden, 134 deferred trace mevcut authored judgment'tan geldi. Dört trace, existing other-engine primary ownership filtresiyle export'tan çıktı; eski trace payload değişimi sıfır. Provisional/current envanter ile final in-memory normalized producer, yedi engine-owned ID kümesinde birebir aynı doğrulandı.
+
+Consumer report SHA256 `e348650810218bed7e7c8eec18be7e4161d66feda859f8103fa51a4a2bec456d`; catalog SHA256 `07d86ce0a1a978683a72457abe9400a954b0b1e69e9e8ce94b8d308ae2e24471`. 457 fixed input ve 134 monitored output pini kapalıdır (128 mevcut, 6 açıkça absent). Yalnız Oct4 review içindeki mekanik report pini yenilendi; kaynak pencereleri, hukukî sınırlar, tarihsel boşluklar ve clinical_eligibility_complete=false korundu. Kaynak verifier 12 family/27 asset, through Oct4 ile exit 0.
+
+Önceki birleşik author testi **1.662 passed, 3 warnings, 33.65s** ayrı aşamadır. Coverage üreticisinin mevcut authored normalizer çağrısı ve stable source catalog fixture paketi **101 passed, 1 warning, 6.41s** tamamlandı.
+
+Son beş coverage dosyası existing CLI ile final girdilerden üretildi; **124 passed, 1 warning, 7.57s**. 150 dependency hash'i freeze öncesi/sonrası ve evidence içinde birebir aynı; source corpus 40b2 değişmedi. 4.781 aktif satırın immutable ID/key/full body/context alanları ve production-normalized 31 kaynak alanında sıfır uyuşmazlık var. Meşru duplicate-key ekstra 111 satırın multiplicity'si korundu. Root final coverage sonrası compiler --check (134 byte-identical), global Ruff src/scripts, git diff --check ve 58-parent catalog deep comparison exit 0. Yalnız corpus pini ve iki mekanik evidence kaydı geri alınınca katalog tamamen parent ile eşit: version/date/legal/history/receipt alanları değişmedi.
+
+Final coverage evidence SHA256 `6a4d26407b1c3ad8d365a523912aaff5dc4b2002562b07fffef1ea150c4d3092`; diğer dört parquet hash'i bu dosyada gerçek dosya baytlarıyla kayıtlıdır. Bağımsız final test hükmü ve hosted full CI henüz bu kayıtta başarı sayılmadı.
+
+### Independent final review
+
+Tek bağımsız birleşik paket gerçekten **468 passed, 2 mevcut RefResolver warnings, 25.25s** tamamlandı; failure/skip yok, 15 retrieval testi dahil. HTTP/fullsuite veya generator çalıştırılmadı; ayrı task-2 basetemp kullanıldı. Bağımsız source verifier 12 family/27 asset, through Oct4 exit 0. Son read-only assertions exit 0: 457 input, 29 test hash'i, 134 output (128 mevcut/6 deliberate absent) ve 150 coverage dependency hash'i birebir eşit. Katalog 58-parent ile yalnız corpus pini ve iki mekanik kanıt kaydı dışında tamamen aynı. 36 family/date kontrolünde Oct3–4 admitted, Oct5 uncovered_service_date/review_required, clinical_eligibility_complete=false. 4.781 coverage satırının 31 normalized kaynak alanı eşit; gerçek PR128 corpus 8.413 satır/40b2 byte uyumlu. Embedding 4.090×512 local-hash vektörlerinin tamamı yeniden hesaplanarak birebir eşleşti; body hash mismatch sıfır, cold/warm index aynı ve beş query kaynakla uyumlu. Runtime retrieval hash guard eklenmedi; doğrulanan mevcut artifact ve CI coherency testidir.
+
+Bağımsız code/data review P1/P2 bulgu yok; yedi manifestin ek 214 atfı ve 500 mevcut trace payload eşitliği ayrı salt okunur incelemede doğrulandı. Geniş 44-manifest audit'indeki iki copay sorunu 58-parent ile aynı ve bu değişiklikte giderilmiş sayılmadı. Hosted full CI hâlâ bekleniyor; merge/deploy/VPS yapılmadı.

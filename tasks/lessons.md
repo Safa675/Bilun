@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-04 — Corpus compatibility includes every positional consumer
+
+**Pattern:** Bounded clinical bindings and focused tests stayed valid after a corpus replacement, but old coverage, manifest traces and retrieval artifacts still joined positional C* IDs to different clause bodies. Updating a renal test literal alone would conceal the wider dependency break.
+
+**Rule:** Before publishing a corpus replacement, inventory all ID-based derived artifacts and consumers. Compare canonical keys and full body hashes against the actual new corpus, regenerate manifests before coverage, refresh the final source evidence closure, and verify retrieval artifacts. Require negative stale-artifact/consumer checks; do not call a provisional table or a bounded-family test result complete corpus compatibility.
+
 Format per entry:
 - Date
 - Mistake pattern (not just the incident)

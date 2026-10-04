@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "deployed_source_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+  "deployed_source_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
   "verification_status": "ai_generated_pending_review",
   "scope": "named_clinical_report_checks_only",
   "legacy_unchanged_modes": [
@@ -70,6 +70,14 @@
         {
           "path": "data/gazette/source_authority/sgk-gss-listing-20261004-observer-text.txt",
           "sha256": "1775465ae0252fa6d8b753841d099b7d550c4ab0d9766e9f02fa59945431d72d"
+        },
+        {
+          "path": "data/gazette/source_authority/corpus_migration_pr128.json",
+          "sha256": "3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde"
+        },
+        {
+          "path": "data/gazette/source_authority/corpus_consumer_review_pr128.json",
+          "sha256": "e348650810218bed7e7c8eec18be7e4161d66feda859f8103fa51a4a2bec456d"
         }
       ],
       "receipt": {

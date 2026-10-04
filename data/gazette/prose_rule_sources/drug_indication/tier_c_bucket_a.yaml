@@ -37,7 +37,7 @@ rules:
   - enzim replasman tedavisi
   - replasman enzimi
   gate_b_sources:
-  - C004275
+  - C004283
   report_required: false
   message_tr: kriterlerinden en az birisinin varlığında hastaya 2 haftada bir gün en fazla 30 IU/kg dozunda uygulanacaktır;
   encode_bucket: A

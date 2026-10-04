@@ -162,10 +162,16 @@ def test_real_request_billing_public_model_and_duckdb_roundtrip_keep_measured_co
         row['private_raw_clinical_values']={'PTH':150}
     public=project_public_response({'drug_indication':payload},'get_billing_report')
     assert 'private_raw_clinical_values' not in json.dumps(public)
+    expected_keys = ['4.2.9.B.(1)#00052268', '4.2.9.B.a#2cbf02e7', '4.2.9.B.b#1438d4b8',
+                     '4.2.9.B.c#44af65a8', '4.2.9.B.ç#4843bec7', '4.2.9.B.(2)#8c267281']
+    expected_rows = source().filter(pl.col('clause_key').is_in(expected_keys) & pl.col('is_in_force'))
+    assert expected_rows.height == len(expected_keys)
+    # Corpus renewal may move positional IDs; the six content-pinned clauses remain the same.
+    expected_ids = sorted(expected_rows['clause_id'].to_list())
     for key in ('evaluations','findings','violations'):
         report=public['drug_indication'][key][0]['clinical_restrictions'][0]['runtime_coverage']
         assert report['predicate_evaluated_count']==10
-        assert report['source_clause_ids']==['C004195','C004196','C004197','C004198','C004199','C004201']
+        assert report['source_clause_ids']==expected_ids
         assert report['source_clauses_fully_evaluated_count'] is None
     with duckdb.connect(':memory:') as db:
         db.execute('CREATE TABLE reports(payload JSON)')

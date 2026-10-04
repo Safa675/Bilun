@@ -48,4 +48,4 @@ rules:
     enforcement: coverage
     message_tr: uygun şartlarda yapılan işlemin bedeli Kurumca karşılanır
   gate_b_sources:
-  - C001379
+  - C001387

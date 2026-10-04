@@ -65,7 +65,7 @@ _DIFF_COLS = [
 
 # How many snippet characters to show per row in the markdown triage list.
 _SNIPPET_LEN = 120
-# How many rows per status to list in the markdown (full detail stays in JSON).
+# How many rows per status/side to list in markdown (full detail stays in JSON).
 _MD_LIST_CAP = 40
 
 
@@ -190,7 +190,11 @@ def diff_clause_corpora(old: pl.DataFrame, new: pl.DataFrame) -> pl.DataFrame:
 
 
 def summarize(diff: pl.DataFrame) -> dict[str, int]:
-    """Counts per status plus total row counts."""
+    """Diff row counts; AMENDED includes both old and new corpus rows.
+
+    Inferred totals cannot recover new-side STABLE duplicate multiplicity;
+    callers with the original corpora should use their actual heights.
+    """
     counts: dict[str, int] = {}
     for status in ("STABLE", "AMENDED", "NEW", "REMOVED"):
         counts[status.lower()] = diff.filter(pl.col("status") == status).height
@@ -208,10 +212,20 @@ def render_markdown(diff: pl.DataFrame, summary: dict[str, int], *, old_name: st
     p("# SUT clause corpus diff (Track E clause_key)\n")
     p(f"**Old:** `{old_name}`  |  **New:** `{new_name}`\n")
     p("## Summary\n")
-    p(f"- STABLE (refs survive): **{summary['stable']:,}**")
-    p(f"- AMENDED (content changed → triage): **{summary['amended']:,}**")
+    amended_old = diff.filter((pl.col("status") == "AMENDED") & (pl.col("side") == "old")).height
+    amended_new = diff.filter((pl.col("status") == "AMENDED") & (pl.col("side") == "new")).height
+    p(f"- STABLE (old corpus rows; refs survive): **{summary['stable']:,}**")
+    p(
+        f"- AMENDED (old + new corpus rows → triage): **{summary['amended']:,}** "
+        f"(**{amended_old:,} old** + **{amended_new:,} new**)"
+    )
     p(f"- NEW (added): **{summary['new']:,}**")
     p(f"- REMOVED (refs may dangle): **{summary['removed']:,}**\n")
+    p(
+        "_Counts describe corpus rows, not a count of distinct legal amendments. "
+        "Multiple rows can share a coordinate; source review must establish the "
+        "legal changes._\n"
+    )
     p(
         "_STABLE clauses keep the same `clause_key` (coord#hash) across "
         "re-extraction — references to them remain valid. Everything else "
@@ -226,20 +240,21 @@ def render_markdown(diff: pl.DataFrame, summary: dict[str, int], *, old_name: st
         "is_in_force",
         "text_snippet",
     ]
-    for status, title in (
-        ("AMENDED", "## AMENDED — content changed (re-triage references)\n"),
-        ("REMOVED", "## REMOVED — clause no longer present (re-point references)\n"),
-        ("NEW", "## NEW — clause added\n"),
+    for status, side, title in (
+        ("AMENDED", "old", "## AMENDED — old corpus rows (re-triage references)\n"),
+        ("AMENDED", "new", "## AMENDED — new corpus rows (review replacement text)\n"),
+        ("REMOVED", "old", "## REMOVED — clause no longer present (re-point references)\n"),
+        ("NEW", "new", "## NEW — clause added\n"),
     ):
         sub = diff.filter(
-            (pl.col("status") == status) & (pl.col("side") == ("old" if status in ("AMENDED", "REMOVED") else "new"))
+            (pl.col("status") == status) & (pl.col("side") == side)
         ).sort(["section_id", "clause_key"])
         p(title)
         if sub.height == 0:
             p("_(none)_\n")
             p("---\n")
             continue
-        p(f"**{sub.height:,}** clause(s)" + (f" (showing first {_MD_LIST_CAP})" if sub.height > _MD_LIST_CAP else "") + ":\n")
+        p(f"**{sub.height:,}** corpus row(s)" + (f" (showing first {_MD_LIST_CAP})" if sub.height > _MD_LIST_CAP else "") + ":\n")
         shown = sub.select([c for c in display_cols if c in sub.columns]).head(_MD_LIST_CAP)
         rows = shown.select([pl.col(c).cast(pl.Utf8).fill_null("") for c in shown.columns]).rows()
         p("| " + " | ".join(shown.columns) + " |")
@@ -255,9 +270,10 @@ def render_markdown(diff: pl.DataFrame, summary: dict[str, int], *, old_name: st
 def format_summary(summary: dict[str, int]) -> str:
     """One-line-ish GITHUB_OUTPUT summary for the auto-PR body."""
     return (
-        f"SUT clause diff: {summary['stable']:,} stable, "
-        f"{summary['amended']:,} amended, {summary['new']:,} new, "
-        f"{summary['removed']:,} removed"
+        f"SUT clause diff: {summary['stable']:,} stable old corpus rows, "
+        f"{summary['amended']:,} amended corpus rows (old + new), "
+        f"{summary['new']:,} new corpus rows, {summary['removed']:,} removed corpus rows; "
+        "not distinct legal amendments"
     )
 
 
@@ -291,6 +307,10 @@ def main() -> int:
 
     diff = diff_clause_corpora(old, new)
     summary = summarize(diff)
+    # Diff emits STABLE only from the old side, which loses any new-side
+    # duplicate multiplicity. Corpus totals must come from the inputs.
+    summary["total_old_side"] = old.height
+    summary["total_new_side"] = new.height
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     json_path = args.output_dir / f"{date_tag}_clause_diff.json"

@@ -1,13 +1,14 @@
 """Track E — authored C* inventory must never grow (Paket 1, subtask 1.4).
 
-Every remaining authored C* cite is a documented exception: non-eligible
-(prose/amendment/structural) rows or identical-content duplicates that cannot
-be losslessly keyed. This test locks the current inventory so new C* cites
-cannot be added without an explicit decision.
+Every remaining authored C* cite is a reviewed exception. This test locks the
+active inventory and the deferred source judgments so new opaque cites or
+source assignments require an explicit review.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from pathlib import Path
 
@@ -99,8 +100,11 @@ def test_authored_cstar_inventory_is_frozen() -> None:
         # twin (4.2.1.C-5.(4)#4804adef) → 217 → 215.
         # 2026-10-02: prior clinical-source repair removed C007082/C007088;
         # enteral continuation C004140 is replaced by content-pinned prose:...99f29955.
-        "gate_b_sources": 208,
-        "deferral": 694,
+        # 2026-10-04: two source-unsafe executable rows were withdrawn; 490
+        # deferrals now use canonical keys, 149 opaque exceptions have source
+        # pins, and 55 unchanged judgments await review outside active entries.
+        "gate_b_sources": 206,
+        "deferral": 149,
         "gate_b_sections": 30,
         "wave_config": 15,
         "payment_stub": 1,
@@ -111,8 +115,40 @@ def test_authored_cstar_inventory_is_frozen() -> None:
             f"(new cites need an explicit exception decision)"
         )
     assert not ({"C007082", "C007088"} & per_surface["gate_b_sources"])
+    assert not ({"C005346", "C005348"} & per_surface["gate_b_sources"])
     total = sum(len(refs) for refs in per_surface.values())
-    assert total == 948, f"total authored C* moved: {total}"
+    assert total == 401, f"total authored C* moved: {total}"
+
+
+def test_deferral_cstar_pins_and_original_pending_judgments_are_frozen() -> None:
+    payload = yaml.safe_load(_DEFERRAL.read_text(encoding="utf-8"))
+    active = payload["entries"]
+    pending = payload["review_pending_entries"]
+    opaque = [entry for entry in active if entry.get("clause_id")]
+    pin_fields = ("source_contract_sha256", "source_corpus_sha256")
+    pinned = [entry for entry in active if any(field in entry for field in pin_fields)]
+    assert len(active) == 1490
+    assert len(opaque) == len(_cstar_refs_in_deferral()) == 149
+    assert pinned == opaque, "Every active opaque deferral needs the paired source pins"
+    corpus_hash = "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec"
+    for entry in opaque:
+        assert _CSTAR.fullmatch(str(entry["clause_id"]))
+        assert set(pin_fields) <= entry.keys()
+        assert entry["source_corpus_sha256"] == corpus_hash
+        assert re.fullmatch(r"[0-9a-f]{64}", entry["source_contract_sha256"])
+
+    assert len(pending) == 55
+    original_fields = {
+        "clause_id", "clause_coordinate", "section_id", "status",
+        "defer_themes", "defer_reason", "source_manifest",
+    }
+    assert all(set(entry) == original_fields and entry not in active for entry in pending)
+    # Full original dictionaries, including their historical source identity and
+    # authored status/themes/reason, are retained without a new body assignment.
+    serialized = json.dumps(pending, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    assert hashlib.sha256(serialized.encode("utf-8")).hexdigest() == (
+        "df5de7e889d97e7e745043a2a034f3a1b736ba5a98afee451db0d8eef3af49e8"
+    )
 
 
 def test_every_remaining_cstar_exists_in_parquet() -> None:
@@ -138,10 +174,9 @@ def test_every_remaining_cstar_exists_in_parquet() -> None:
 def test_eligible_cstars_are_identical_duplicates_only() -> None:
     """1.5 guard: freeze the eligible C* inventory after PR61 corpus remap.
 
-    After the 2026-07-01 remap, most eligible C* are now unique-content clauses
-    (non_identical) — they cannot be losslessly keyed to coord#hash because their
-    content is distinct. Only identical-content duplicates (31) remain keyable.
-    Both categories are frozen; new eligible C* require an explicit decision.
+    Both unique-content and identical-duplicate exception counts are frozen;
+    new eligible opaque citations require an explicit decision. This is a
+    technical source inventory, not a clinical payment-eligibility assertion.
     """
     import polars as pl
 
@@ -177,13 +212,10 @@ def test_eligible_cstars_are_identical_duplicates_only() -> None:
     for cid in eligible:
         row = by_id[cid]
         key = f"{row['clause_coordinate']}#{row['content_hash']}"
-        try:
-            ids = resolve_gate_b_ref_to_clause_ids(
-                key, frame, in_force_only=True, encode_eligible_only=True
-            )
-        except Exception:
-            non_identical.append(cid)
-            continue
+        ids = resolve_gate_b_ref_to_clause_ids(
+            key, frame, in_force_only=True, encode_eligible_only=True
+        )
+        assert cid in ids, f"eligible opaque cite lost its source body: {cid} ({key})"
         if ids == [cid]:
             non_identical.append(cid)
         else:
@@ -196,7 +228,10 @@ def test_eligible_cstars_are_identical_duplicates_only() -> None:
     # duplicate — the wrong 4.4.1.(12) clause) so identical dropped 31 -> 30.
     # Updated 2026-08-29: positional C* id shift left remaining eligible C*
     # on distinct in-force fikra/bent rows (249 unique-content + 15 identical).
-    assert len(non_identical) == 249, (
-        f"unique-content eligible C* inventory moved: {len(non_identical)} != 249"
+    # 2026-10-04: the 490 canonical / 149 pinned / 55 pending deferral migration
+    # removes 235 deferral-only eligible old C slots from this opaque inventory.
+    # The reviewed live source/config exceptions retain 27 unique + 2 identical.
+    assert len(non_identical) == 27, (
+        f"unique-content eligible C* inventory moved: {len(non_identical)} != 27"
     )
-    assert identical == 15, f"eligible identical-duplicate C* inventory moved: {identical}"
+    assert identical == 2, f"eligible identical-duplicate C* inventory moved: {identical}"
