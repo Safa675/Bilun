@@ -5,7 +5,7 @@
   "effective_date": "2026-08-01",
   "rules_in_json": 30,
   "section_clause_total": 106,
-  "encoded_clause_count": 58,
+  "encoded_clause_count": 50,
   "encoded_clause_ids": [
     "C000237",
     "C000296",
@@ -19,7 +19,6 @@
     "C000309",
     "C000323",
     "C000325",
-    "C000326",
     "C000332",
     "C000333",
     "C000334",
@@ -35,20 +34,13 @@
     "C000349",
     "C000351",
     "C000352",
-    "C000355",
     "C000357",
-    "C000359",
-    "C000360",
-    "C000361",
-    "C000362",
     "C000363",
     "C000364",
-    "C000365",
     "C000366",
     "C000367",
     "C000368",
     "C000369",
-    "C000370",
     "C000371",
     "C000374",
     "C000375",
@@ -1256,32 +1248,27 @@
   "clause_trace_complete": true,
   "compositor_clause_traces": {
     "copay_exemption_ek1a": [
-      "C000361"
+      "C000372"
     ],
     "copay_exemption_ek4d": [
-      "C000326",
-      "C000362"
+      "C000337",
+      "C000373"
     ],
     "copay_exemption_visit_type": [
-      "C000359",
-      "C000360"
+      "C000370",
+      "C000371"
     ],
     "copay_exemption_occupational": [
-      "C000355"
+      "C000366"
     ],
     "copay_exemption_patient_status": [
-      "C000365",
-      "C000366",
-      "C000367",
-      "C000369",
-      "C000370",
-      "C000375",
+      "C000376",
+      "C000377",
       "C000378",
-      "C000379"
+      "C000380",
+      "C000381",
+      "C000389"
     ]
   },
-  "ek4d_overlap_clause_ids": [
-    "C000326",
-    "C000362"
-  ]
+  "ek4d_overlap_clause_ids": []
 }

@@ -131,7 +131,14 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
     assert mapping["1.8.5.(10).organ_nakli"] == ["C000375"]
 
 
-def test_manifest_has_encoded_clause_ids_union(tmp_path: Path) -> None:
+def test_manifest_keeps_rule_encodings_and_compositor_traces_consistent(
+    tmp_path: Path,
+) -> None:
+    from scripts.sut.prose.gate_b_generic import _encoded_clause_ids_from_rules
+    from scripts.sut.prose.gate_b_generic import (
+        _resolve_copay_compositor_clause_traces,
+    )
+
     _, manifest = write_artifacts(
         clauses_path=_CLAUSES,
         section=SECTION_COPAY_18,
@@ -140,19 +147,104 @@ def test_manifest_has_encoded_clause_ids_union(tmp_path: Path) -> None:
         manifest_path=tmp_path / _MANIFEST.name,
         write_corpus=False,
     )
-    encoded = manifest["encoded_clause_ids"]
+
+    clauses = pl.read_parquet(_CLAUSES)
+    rules_payload = json.loads(_RULES.read_text(encoding="utf-8"))
+    rule_encoded = _encoded_clause_ids_from_rules(rules_payload["rules"], clauses)
+    _, runtime_encoded = _resolve_copay_compositor_clause_traces(clauses)
+    encoded = set(manifest["encoded_clause_ids"])
     soft_floor(len(encoded), 30, label="copay encoded_clause_ids")
-    assert "C000364" in encoded
-    assert "C000361" in encoded
-    assert "C000326" in encoded
-    assert "C000362" in encoded
-    assert "C000355" in manifest["compositor_clause_traces"]["copay_exemption_occupational"]
-    patient_status = manifest["compositor_clause_traces"]["copay_exemption_patient_status"]
-    assert "C000378" in patient_status
-    assert "C000365" in patient_status
-    assert "C000379" in patient_status
-    assert "C000355" not in manifest["compositor_clause_traces"]["copay_exemption_visit_type"]
+    assert not runtime_encoded
+    assert encoded == rule_encoded
+    assert manifest["encoded_clause_count"] == len(encoded)
+
+    id_by_key = dict(
+        clauses.select("clause_key", "clause_id").iter_rows()
+    )
+    header_id = id_by_key["1.8.5#e0af4502"]
+    emergency_id = id_by_key["1.8.5.(5)#424f9787"]
+    ek4d_id = id_by_key["1.8.2.(3)#04043a39"]
+    ek1a_id = id_by_key["1.8.5.(7)#fb187fbe"]
+    assert header_id not in encoded
+    assert emergency_id not in encoded
+    assert ek4d_id not in encoded
+    assert ek1a_id not in encoded
+    assert header_id in manifest["tier_c_deferred_clause_ids"]
+    assert emergency_id in manifest["tier_c_deferred_clause_ids"]
+    assert ek4d_id in manifest["tier_c_deferred_clause_ids"]
+    assert ek1a_id in manifest["tier_a_pending_clause_ids"]
+    # Emergency behavior is present in the runtime trace, but this long clause
+    # also covers other service contexts, so the trace does not promote it.
+    assert emergency_id in manifest["compositor_clause_traces"][
+        "copay_exemption_visit_type"
+    ]
+
+    frame_ids = set(export_candidates(_CLAUSES, SECTION_COPAY_18)["clause_id"])
+    trace_statuses = {
+        trace["clause_id"]: trace["manifest_status"]
+        for trace in manifest["clause_traces"]
+    }
+    assert len(trace_statuses) == len(manifest["clause_traces"])
+    assert set(trace_statuses) == frame_ids
+    assert {
+        clause_id
+        for clause_id, status in trace_statuses.items()
+        if status == "encoded"
+    } == encoded & frame_ids
+    assert manifest["clause_trace_complete"] is True
     soft_floor(int(manifest["rules_in_json"]), 21, label="test_copay_exemption_gate_b rules_in_json")
+
+
+def test_compositor_trace_mapping_uses_current_stable_source_identities() -> None:
+    from scripts.sut.prose.copay_compositor_traces import (
+        COMPOSITOR_CLAUSE_TRACE_KEYS,
+        COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS,
+    )
+    from scripts.sut.prose.gate_b_generic import (
+        _resolve_copay_compositor_clause_traces,
+    )
+
+    clauses = pl.read_parquet(_CLAUSES)
+    traces, runtime_encoded = _resolve_copay_compositor_clause_traces(clauses)
+    expected_patient_status_keys = {
+        "1.8.5.(11)#4c5d2bce",
+        "1.8.5.(12)#b67e143b",
+        "1.8.5.(13)#3697a89c",
+        "1.8.5.(15)#05de89cd",
+        "1.8.5.(16)#89cd1467",
+        "1.8.5.a#a2615b26",
+    }
+    assert set(COMPOSITOR_CLAUSE_TRACE_KEYS["copay_exemption_patient_status"]) == (
+        expected_patient_status_keys
+    )
+    assert "1.8.5.(21)#8b10e952" not in expected_patient_status_keys
+    assert "1.8.5.b#05a4369f" not in expected_patient_status_keys
+    assert COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS == set()
+
+    keys_by_id = dict(clauses.select("clause_id", "clause_key").iter_rows())
+    for category, ids in traces.items():
+        assert {keys_by_id[clause_id] for clause_id in ids} == set(
+            COMPOSITOR_CLAUSE_TRACE_KEYS[category]
+        )
+    assert {keys_by_id[clause_id] for clause_id in runtime_encoded} == (
+        COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS
+    )
+
+
+def test_compositor_trace_mapping_rejects_missing_source_identity() -> None:
+    from scripts.sut.prose.copay_compositor_traces import (
+        COMPOSITOR_CLAUSE_TRACE_KEYS,
+    )
+    from scripts.sut.prose.gate_b_generic import (
+        _resolve_copay_compositor_clause_traces,
+    )
+
+    clauses = pl.read_parquet(_CLAUSES)
+    missing_key = COMPOSITOR_CLAUSE_TRACE_KEYS["copay_exemption_visit_type"][0]
+    without_source = clauses.filter(pl.col("clause_key") != missing_key)
+
+    with pytest.raises(ValueError, match="expected one source row, found 0"):
+        _resolve_copay_compositor_clause_traces(without_source)
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
