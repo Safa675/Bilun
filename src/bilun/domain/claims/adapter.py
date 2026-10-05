@@ -32,6 +32,7 @@ from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
     parse_clinical_evidence,
 )
+from src.bilun.domain.claims.mesothelioma_evidence import parse_mesothelioma_evidence
 
 
 from datetime import date
@@ -254,6 +255,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     indication_evidence=parse_clinical_evidence(mat.get("indication_evidence"), IndicationEvidence),
                     enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
                     ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
+                    mesothelioma_evidence=parse_mesothelioma_evidence(mat.get("mesothelioma_evidence")),
                 )
             )
 

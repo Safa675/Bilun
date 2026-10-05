@@ -8,6 +8,7 @@ from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
     parse_clinical_evidence,
 )
+from src.bilun.domain.claims.mesothelioma_evidence import parse_mesothelioma_evidence
 
 
 from dataclasses import fields
@@ -351,6 +352,7 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             indication_evidence=parse_clinical_evidence(row.get("indication_evidence"), IndicationEvidence),
             enteral_evidence=parse_clinical_evidence(row.get("enteral_evidence"), EnteralEvidence),
             ravulizumab_evidence=parse_clinical_evidence(row.get("ravulizumab_evidence"), RavulizumabEvidence),
+            mesothelioma_evidence=parse_mesothelioma_evidence(row.get("mesothelioma_evidence")),
             annual_application_count=(
                 None if is_missing(annual_count)
                 else parse_integer(annual_count, "annual_application_count", line_id, errors)

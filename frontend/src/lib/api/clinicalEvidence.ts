@@ -52,6 +52,18 @@ export interface SutDatedClinicalEvidence {
   assessment_date?: string | null;
 }
 
+/** Experimental documentary facts only; source/date admission and independent interpretation remain pending. */
+export interface SutMesotheliomaEvidence extends SutDatedClinicalEvidence {
+  /** Explicit recorded site; C45 alone does not establish pleural disease. */
+  diagnosis_site?: "pleural" | "nonpleural" | "unknown" | null;
+  board_report_present?: boolean | null;
+  /** Recorded distinct specialists, an integer; composition is never inferred from report presence. */
+  report_distinct_specialist_count?: number | null;
+  treatment_protocol_documented_in_report?: boolean | null;
+  /** Explicit specialist-prescribing fact, separate from the generic specialty string. */
+  prescribed_by_specialist?: boolean | null;
+}
+
 export interface SutSmaEvidence {
   applies_on?: string | null;
   assessment_date?: string | null;

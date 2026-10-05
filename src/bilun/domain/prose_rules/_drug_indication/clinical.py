@@ -8,6 +8,7 @@ from .clinical_antifungal import evaluate_antifungal
 from .clinical_renal import evaluate_renal
 from .clinical_followup import evaluate_followup
 from .clinical_indications import evaluate_indications
+from .clinical_mesothelioma_documents import evaluate_mesothelioma_documents
 from .matching import _drug_name_matches
 
 
@@ -52,6 +53,11 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
         item = evaluate_ravulizumab_continuation(line, codes)
         if item is not None:
             evaluations.append(item)
+    # This documentary draft has its own exact selected-route and release gates.
+    # A medicine name or unrelated clinical family cannot select its branch.
+    item = evaluate_mesothelioma_documents(line, selected_rule_id, codes=codes)
+    if item is not None:
+        evaluations.append(item)
     return evaluations
 
 
