@@ -1,6 +1,6 @@
 import type { SutIndicationEvidence, SutMesotheliomaEvidence } from "@/lib/api/clinicalEvidence";
-import { adultGhEvidencePayload } from "@/lib/api/adultGhEvidence";
-import { mdsEvidencePayload } from "@/lib/api/mdsClinicalDraft";
+import { adultGhEvidencePayload } from "../../../../lib/api/adultGhEvidence.ts";
+import { mdsEvidencePayload } from "../../../../lib/api/mdsClinicalDraft.ts";
 import type { SutMaterialItem } from "@/lib/api/sut";
 
 /** Blank optional numbers are unknown, never an observed zero. */

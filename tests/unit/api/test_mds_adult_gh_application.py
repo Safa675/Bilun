@@ -243,3 +243,32 @@ def test_adult_age_and_diagnosis_never_supply_epiphyseal_closure_or_childhood_re
     data = post(client, raw)
     assert restriction(rows(data)[0], gh.KIND)['criterion_status'] == 'not_evaluated'
     assert data['is_valid'] is None
+
+
+@pytest.mark.parametrize('family', [gh.KIND, mds.KIND])
+def test_actual_native_typescript_payload_helper_roundtrips_both_new_evidence_groups(client, family):  # noqa: F811
+    from pathlib import Path
+    import shutil
+    import subprocess
+    node = shutil.which('node')
+    if not node or 'experimental-strip-types' not in subprocess.run(
+            [node, '--help'], capture_output=True, text=True).stdout:
+        pytest.skip('Native TypeScript stripping is unavailable')
+    raw = payload(family)
+    key = 'adult_gh_evidence' if family == gh.KIND else 'mds_evidence'
+    raw['materials'][0][key]['itt_contraindicated' if family == gh.KIND else 'specialist_report_present'] = False
+    root = Path(__file__).resolve().parents[3]
+    helper = (root / 'frontend/src/components/tabs/sut/sections/drugInputs.ts').as_uri()
+    script = f'''import {{drugMaterialPayload}} from {json.dumps(helper)};
+let input = ''; for await (const chunk of process.stdin) input += chunk;
+const material = JSON.parse(input);
+console.log(JSON.stringify([drugMaterialPayload(material, true), drugMaterialPayload(material, false)]));'''
+    completed = subprocess.run([node, '--experimental-strip-types', '--input-type=module', '-e', script],
+                               input=json.dumps(raw['materials'][0]), capture_output=True, text=True, check=False)
+    assert completed.returncode == 0, completed.stderr
+    enabled, disabled = json.loads(completed.stdout)
+    assert key in enabled and key not in disabled
+    raw['materials'] = [enabled]
+    typed = getattr(ClaimValidationRequest.model_validate(raw).materials[0], key)
+    assert getattr(typed, 'itt_contraindicated' if family == gh.KIND else 'specialist_report_present') is False
+    assert restriction(rows(post(client, raw))[0], family)['criterion_status'] == 'not_evaluated'
