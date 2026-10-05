@@ -67,7 +67,7 @@ def test_one_fact_used_by_two_real_predicates_does_not_inflate_available_fact_co
 
 
 @pytest.mark.parametrize('day,status',[ (None,'blocked_inputs'),(date(2026,10,1),'blocked_source'),
-                                     (date(2026,10,5),'blocked_source')])
+                                     (date(2026,10,6),'blocked_source')])
 def test_date_block_never_fabricates_downstream_comparison_attempts(day,status):
     # Align the supplied evidence so the source/date gate is the only blocker.
     outcome,collector=observe(replace(line(applies_on=day,assessment_date=day),drug_claim_date=day))
@@ -80,7 +80,7 @@ def test_date_block_never_fabricates_downstream_comparison_attempts(day,status):
                                       else ['verified_source_for_service_date'])
 
 
-@pytest.mark.parametrize('service', [date(2026,10,3), date(2026,10,4)])
+@pytest.mark.parametrize('service', [date(2026,10,3), date(2026,10,4), date(2026,10,5)])
 @pytest.mark.parametrize('matching_evidence', [False, True])
 def test_reviewed_admission_still_requires_applicable_evidence(service, matching_evidence):
     evidence_day = service if matching_evidence else DAY

@@ -1,0 +1,10 @@
+Source URL: https://www.resmigazete.gov.tr/
+Observed at UTC: 2026-10-05T06:08:50.162251+00:00
+HTTP status: 200
+Server Date: Mon, 05 Oct 2026 06:08:50 GMT
+Official downloaded raw bytes SHA256: 7e9d2ba17e49e01999320804788482597dc84972c0aef0ded65fd51a9cd6a5a9
+Capture type: derived readable text from saved official HTTP response bytes; not official downloadable raw bytes
+
+05 Ekim 2026 Tarihli ve 33391 Sayılı Resmî Gazete
+Son Mükerrer: /fihrist?tarih=2026-09-06&mukerrer=1
+Son Mükerrer: /fihrist?tarih=2026-09-06&mukerrer=1

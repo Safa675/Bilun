@@ -1,0 +1,15 @@
+Source URL: https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a
+Observed at UTC: 2026-10-05T06:11:40.626568+00:00
+HTTP status: 200
+Server Date: Mon, 05 Oct 2026 06:10:45 GMT
+Official downloaded raw bytes SHA256: 227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573
+Capture type: derived selected source XML paragraphs from official consolidated DOCX member of newly downloaded ZIP; not original DOCX bytes
+
+word/document.xml body/w:p zero-based 1096; selected text runs struck=False:          (Değişik: RG-02/10/2026- 33388/ 1 md. Yürürlük: 02/11/2026)
+word/document.xml body/w:p zero-based 1110; selected text runs struck=False:        2.4.2.A - Organ ve doku nakli                
+word/document.xml body/w:p zero-based 5572; selected text runs struck=False:                (Değişik: RG-02/10/2026- 33388/ 2-a md. Yürürlük: 10/10/2026)
+word/document.xml body/w:p zero-based 5575; selected text runs struck=False: ff) Trastuzumab emtansin;  
+word/document.xml body/w:p zero-based 5579; selected text runs struck=False:                (Değişik: RG-02/10/2026- 33388/ 2-b md. Yürürlük: 10/10/2026)
+word/document.xml body/w:p zero-based 5582; selected text runs struck=False: gg) Pertuzumab, trastuzumab ve pertuzumab kombinasyonu;
+word/document.xml body/w:p zero-based 6056; selected text runs struck=False:                (Ek: RG-02/10/2026- 33388/ 2-c md. Yürürlük: 10/10/2026)
+word/document.xml body/w:p zero-based 6057; selected text runs struck=False:                aaaa) Satralizumab yalnızca; yüksek hastalık aktivitesi gösteren, relapslarla seyreden vücut ağırlığı 40 kg veya üzerinde olan 12 yaşından itibaren adolesan ve yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde; 

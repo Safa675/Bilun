@@ -170,7 +170,7 @@ def test_actual_http_blocks_unverified_or_inconsistent_dates_before_documentatio
     _login(client); raw = request(prefix, factory, field, False)
     facts = raw['materials'][0][prefix]
     if date_mode in ('pre_source', 'after_verified'):
-        day = '2026-10-05' if date_mode == 'after_verified' else '2026-09-04' if prefix == 'enteral_evidence' else '2026-10-01'
+        day = '2026-10-06' if date_mode == 'after_verified' else '2026-09-04' if prefix == 'enteral_evidence' else '2026-10-01'
         raw['drug_context']['service_date'] = facts['applies_on'] = facts['assessment_date'] = day
     elif date_mode == 'mismatched_scope':
         facts['applies_on'] = '2026-10-01'

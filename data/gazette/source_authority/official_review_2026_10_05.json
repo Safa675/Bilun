@@ -1,0 +1,496 @@
+{
+  "review_kind": "Bounded official-source currentness and commencement review; source review is separate from mechanical admission",
+  "schema_version": 1,
+  "verification_status": "ai_generated_pending_review",
+  "review_id": "sgk-rg-clinical-2026-10-05T061959Z",
+  "checked_at": "2026-10-05T06:19:59Z",
+  "checked_through": "2026-10-05",
+  "review_window_utc": {
+    "start": "2026-10-05T06:08:50.096008+00:00",
+    "end": "2026-10-05T06:12:51.061200+00:00"
+  },
+  "legal_jurisdiction_timezone": "Europe/Istanbul",
+  "scope": "named_clinical_report_checks_only",
+  "source_review_completed": true,
+  "positive_currentness_evidence": true,
+  "clinical_eligibility_complete": false,
+  "observation_is_not_legal_effective_date": true,
+  "conclusion": {
+    "latest_direct_SUT_amendment_found": {
+      "publication_date": "2026-10-02",
+      "gazette_issue": "33388"
+    },
+    "october_5_regular_issue_checked": true,
+    "october_5_regular_issue": "33391",
+    "october_5_regular_contents": "Six university regulations and notices. Complete regular daily contents read. No SUT amendment title.",
+    "live_sgk_newest_sut_announcements": "October 2 amendment and October 2 consolidated 2013 SUT",
+    "current_homepage_issue": "05 Ekim 2026 / 33391",
+    "latest_supplement_link_observed": "https://www.resmigazete.gov.tr/fihrist?tarih=2026-09-06&mukerrer=1",
+    "later_publication_guarantee": false,
+    "bounded_statement": "Same-day complete regular contents, live homepage supplement pointer and SGK listing, freshly downloaded identical consolidated source and full relevant October 2 amendment/October 3 regulation were jointly reviewed. No direct amendment of the twelve pinned named clinical/report checks was found. This supports only one separately reviewed October 5 continuity window. It does not establish payment eligibility, certify later October 5 corrections/supplements, or admit October 6."
+  },
+  "sources": [
+    {
+      "id": "gazette_supplement_index",
+      "url": "https://www.resmigazete.gov.tr/",
+      "observed_at_utc": "2026-10-05T06:08:50.162251+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:08:50 GMT",
+      "official_raw_bytes": {
+        "sha256": "7e9d2ba17e49e01999320804788482597dc84972c0aef0ded65fd51a9cd6a5a9",
+        "bytes": 200426,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/rg-homepage-20261005.html",
+        "capture_type": "official downloaded raw bytes"
+      },
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/rg-homepage-20261005-observer-text.txt",
+        "sha256": "113dc94c858f29eb3d3771643524d0d671827ef6490bd09e7c224eae82daa9ca"
+      }
+    },
+    {
+      "id": "gazette_daily_contents",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261005.htm",
+      "observed_at_utc": "2026-10-05T06:08:50.096008+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:08:50 GMT",
+      "official_raw_bytes": {
+        "sha256": "6675635bf8271ed822d527e715c11447c1a4eecf2224d32b038e1064e8b0c3ca",
+        "bytes": 8788,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/rg-20261005-daily-contents.html",
+        "capture_type": "official downloaded raw bytes"
+      },
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/rg-20261005-daily-contents-observer-text.txt",
+        "sha256": "56f55d48cd648193c214d70dc0c7049bc5a858c71b6342f319cd6c845b8d9204"
+      }
+    },
+    {
+      "id": "sgk_sut_listing",
+      "url": "https://www.sgk.gov.tr/birimler/duyurular/GENEL-SAGLIK-SIGORTASI-GENEL-MUDURLUGU-2026-01-28-02-00-42",
+      "observed_at_utc": "2026-10-05T06:08:50.172186+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:08:49 GMT",
+      "official_raw_bytes": {
+        "sha256": "9f6fe55fc0d8354edbe99b6b148670227b5b559c3fe8b54a5cea8a852ead1e39",
+        "bytes": 80665,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-gss-listing-20261005.html",
+        "capture_type": "official downloaded raw bytes"
+      },
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/sgk-gss-listing-20261005-observer-text.txt",
+        "sha256": "4d5181469665524c7aab63bed800c7cdb74b7d7f5131553bc9bfef829169bbf1"
+      }
+    },
+    {
+      "id": "relevant_amendments",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at_utc": "2026-10-05T06:12:41.387877+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:12:41 GMT",
+      "official_raw_bytes": {
+        "sha256": "a05b61ebafe67fb3df50fa408da6a2579f55164b1e5c4779cb1c0e4f7a3e03e7",
+        "bytes": 33961,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/rg-20261003-3-regulation.html",
+        "capture_type": "official downloaded raw bytes"
+      },
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261005-text.txt",
+        "sha256": "cb7e176229b86f1ab7b5e72056a1865dfadcd85ae7aadb06227831e6797c66d5"
+      }
+    },
+    {
+      "id": "SGK_20261002_amendment_docx",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at_utc": "2026-10-05T06:10:45.713631+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:10:45 GMT",
+      "official_raw_bytes": {
+        "sha256": "a717ac7e9e932449461c353fcb3d3845ed834d104f35a75505c53185bbcfccbb",
+        "bytes": 35919,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-20261002-amendment.docx",
+        "capture_type": "official downloaded raw bytes"
+      },
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/sgk-20261002-amendment-observed-20261005-text.txt",
+        "sha256": "d5f5a21873829f1fee30d1812977a80e4f57ed3556022e5ebe29f67870e3b293"
+      }
+    },
+    {
+      "id": "SGK_20261002_consolidated_zip",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at_utc": "2026-10-05T06:11:40.626568+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:10:45 GMT",
+      "official_raw_bytes": {
+        "sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "bytes": 32973194,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-20261002-consolidated.zip",
+        "capture_type": "official downloaded raw bytes"
+      }
+    },
+    {
+      "id": "SGK_20261002_consolidated_docx",
+      "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at_utc": "2026-10-05T06:11:40.626568+00:00",
+      "method": "Exact root consolidated SUT DOCX member extracted from freshly downloaded official ZIP; no separate HTTP request",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:10:45 GMT",
+      "official_raw_bytes": {
+        "sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+        "bytes": 1200635,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-20261002-consolidated.docx",
+        "capture_type": "Official consolidated SUT DOCX member extracted from newly downloaded ZIP; not a separate HTTP request"
+      },
+      "zip_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
+      "derived_observer_transcript": {
+        "path": "data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261005-text.txt",
+        "sha256": "9ec30ebe1039f7d78ea871f4add6941c1fd65c70167e0ee0196da39e6126ba6d"
+      }
+    },
+    {
+      "id": "SGK_20261002_consolidated_announcement",
+      "url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+      "observed_at_utc": "2026-10-05T06:10:45.614984+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:10:45 GMT",
+      "official_raw_bytes": {
+        "sha256": "6c1f39610da7ca3c30f02a1b502ff5f48154fdd142c17c3e9c75539921328bd5",
+        "bytes": 69696,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-20261002-consolidated-announcement.html",
+        "capture_type": "official downloaded raw bytes"
+      }
+    },
+    {
+      "id": "SGK_20261002_amendment_announcement",
+      "url": "https://www.sgk.gov.tr/duyuru/detay/02102026-Tarihli-ve-33388-Sayili-Resm-Gazetede-Yayimlanan-Sosyal-Guvenlik-Kurumu-Saglik-Uygulama-Tebliginde-Degisiklik-Yapilmasina-Dair-Teblig-2026-10-02-02-48-55",
+      "observed_at_utc": "2026-10-05T06:10:45.637049+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:10:45 GMT",
+      "official_raw_bytes": {
+        "sha256": "95ee1e1c555ad9e09c159bb3d5ada4c94ac785fa91378aa19380bcf216271c01",
+        "bytes": 70971,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/sgk-20261002-amendment-announcement.html",
+        "capture_type": "official downloaded raw bytes"
+      }
+    },
+    {
+      "id": "RG_20261003_full_issue_crosscheck",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.pdf",
+      "observed_at_utc": "2026-10-05T06:12:51.061200+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:12:41 GMT",
+      "official_raw_bytes": {
+        "sha256": "307807df5a607994a5886fed2c030951c15719082a05791dbb3c3bc17815faa4",
+        "bytes": 12009028,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/rg-20261003-full-issue.pdf",
+        "capture_type": "official downloaded raw bytes"
+      }
+    },
+    {
+      "id": "RG_20261003_daily_contents_crosscheck",
+      "url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003.htm",
+      "observed_at_utc": "2026-10-05T06:12:41.383837+00:00",
+      "method": "Direct successful live HTTPS retrieval; exact official response bytes preserved for audit",
+      "http_status": 200,
+      "server_date": "Mon, 05 Oct 2026 06:12:41 GMT",
+      "official_raw_bytes": {
+        "sha256": "d3914a2cbc71927bfcd4da77619ad7c7b9752069e05fb690a77c96eac93689a0",
+        "bytes": 9688,
+        "local_audit_path": "/tmp/task-2-owned-oct5-evidence/rg-20261003-daily-contents.html",
+        "capture_type": "official downloaded raw bytes"
+      }
+    }
+  ],
+  "october_2_commencement_matrix": [
+    {
+      "article": "1",
+      "clause": "2.4.2.A",
+      "subject": "Organ and tissue transplant",
+      "legal_trigger": "30 days after publication",
+      "explicit_SGK_consolidated_effective_date": "2026-11-02",
+      "annotation_body_paragraph_zero_based": 1096,
+      "successor_heading_body_paragraph_zero_based": 1110
+    },
+    {
+      "article": "2(a)",
+      "clause": "4.2.14.C(3)(ff)",
+      "subject": "Trastuzumab emtansine",
+      "legal_trigger": "5 business days after publication",
+      "explicit_SGK_consolidated_effective_date": "2026-10-10",
+      "annotation_body_paragraph_zero_based": 5572,
+      "successor_heading_body_paragraph_zero_based": 5575
+    },
+    {
+      "article": "2(b)",
+      "clause": "4.2.14.C(3)(gg)",
+      "subject": "Pertuzumab and trastuzumab/pertuzumab combination",
+      "legal_trigger": "5 business days after publication",
+      "explicit_SGK_consolidated_effective_date": "2026-10-10",
+      "annotation_body_paragraph_zero_based": 5579,
+      "successor_heading_body_paragraph_zero_based": 5582
+    },
+    {
+      "article": "2(c)",
+      "clause": "4.2.14.C(3)(aaaa)",
+      "subject": "Satralizumab",
+      "legal_trigger": "5 business days after publication",
+      "explicit_SGK_consolidated_effective_date": "2026-10-10",
+      "annotation_body_paragraph_zero_based": 6056,
+      "successor_heading_body_paragraph_zero_based": 6057
+    }
+  ],
+  "named_family_assessment": [
+    {
+      "family_id": "sma",
+      "pinned_sections": [
+        "4.2.49",
+        "4.2.49.A",
+        "4.2.49.B"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_sma_bindings.json",
+        "sha256": "0229c60c49851d6ddef49d18d5d0e8c4c335e19814574f7dcdbf87003c3b3037"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2025-05-06",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "antifungal_micafungin",
+      "pinned_sections": [
+        "4.2.23"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_antifungal_bindings.json",
+        "sha256": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2018-04-01",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "antifungal_other",
+      "pinned_sections": [
+        "4.2.23"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_antifungal_bindings.json",
+        "sha256": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "renal",
+      "pinned_sections": [
+        "4.2.9.B",
+        "4.2.9.Ç",
+        "4.2.9.D"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_renal_bindings.json",
+        "sha256": "c1ee1b74e2c2000b1311ab2590fbd704e35284d27b9cd49209734dcefa4c7555"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "enteral",
+      "pinned_sections": [
+        "4.2.8.A"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_enteral_bindings.json",
+        "sha256": "84ac91bab846af948eb8f3cc77d81eb908b6245657a94af6b5d19acc3896bb90"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2026-09-05",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "ravulizumab",
+      "pinned_sections": [
+        "4.2.14.C(3)(yyy)"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_ravulizumab_bindings.json",
+        "sha256": "c0895bc523c50dc37e388460c03d0ec1f0ada0618046d843ecbf8a0e74d53536"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2026-07-07",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "followup",
+      "pinned_sections": [
+        "4.2.46.B",
+        "4.2.46.C",
+        "4.2.57"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_followup_bindings.json",
+        "sha256": "446a38c9996db56ae5bbd8d6228de54ae74f718487ab4b2b7b98607ffec7719c"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "indication_sc_ig",
+      "pinned_sections": [
+        "4.2.12.B-2"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2024-11-09",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "indication_hbv",
+      "pinned_sections": [
+        "4.2.13.1"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": "2024-11-09",
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "indication_hcv",
+      "pinned_sections": [
+        "4.2.13.3.2.B"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "indication_bone",
+      "pinned_sections": [
+        "4.2.17.A"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/clinical_indications_bindings.json",
+        "sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    },
+    {
+      "family_id": "mecasermin",
+      "pinned_sections": [
+        "4.2.6.B-1",
+        "4.2.6.B-3"
+      ],
+      "retained_binding_evidence": {
+        "path": "data/gazette/source_authority/mecasermin_bindings.json",
+        "sha256": "b666d72a2fbbd5115e5cf75fca79e4e5b21d10d4c3e9e7a07691d6b60d8175b5"
+      },
+      "source_docx_bytes_equal_existing_pin": true,
+      "no_direct_change_to_pinned_named_checks_in_reviewed_Oct2_and_Oct3_acts": true,
+      "proposed_reviewed_service_day": "2026-10-05",
+      "legal_effective_from_retained": null,
+      "historical_gaps_retained": true,
+      "clinical_eligibility_complete": false
+    }
+  ],
+  "source_context_assessment": {
+    "october_2_direct_clinical_changes": "Article 1 replaces 2.4.2.A. Article 2 replaces ff and gg and adds aaaa under 4.2.14.C(3). Ravulizumab yyy and its pinned continuation checks are separate from these exact amended bends; a thiotepa zzz context anchor is not a new ravulizumab criterion. Remaining Articles 3-7 affect annexes, procedure/package/material rows or satralizumab listing. No reviewed direct amendment targets the exact pinned named clinical/report checks.",
+    "october_3_regulation": "Separate Ilac Geri Odeme Yonetmeligi amendment, published in issue 33389; Article 8 makes it effective on publication (2026-10-03). Articles 1-7 concern internal-reference/equivalent groups, payable-unit-price bands, Medula data, committee membership, applications and market-share mechanisms. No disease-specific report, specialist, dose, test or clinical-eligibility criterion is amended by this text.",
+    "october_2_annex_date_limits": "Article 4(b) is effective on publication with validity from 2026-09-05. Article 5 uses a separate five-day trigger; no numerical date is newly inferred. Article 6 EK-4/A has row-specific dates and marker-dependent triggers; rows and the separate pricing decision remain outside scope.",
+    "exact_source_integrity": "Newly downloaded consolidated ZIP/DOCX, amendment DOCX and October 3 regulation HTML hashes equal their previous raw-byte pins. All twelve family source_docx_sha256 and eight retained binding-file hashes agree. The same deployed corpus passes exact clause/context binding verification. No binding, corpus, clinical criterion, historical interval or lower bound is rewritten.",
+    "mechanical_implementation_status": "This source review is distinct from application. Only an appended October 5 review and twelve single-day windows are proposed/applied in the source worktree; common corpus/consumer/coverage evidence closure belongs to the integration coordinator."
+  },
+  "excluded_dependencies": [
+    "pricing",
+    "reference/equivalent groups",
+    "market-share mechanisms",
+    "EK-4/A listing and product availability",
+    "general prescription and report dependencies beyond the pinned named checks",
+    "full reimbursement eligibility",
+    "later publications after observation"
+  ],
+  "limits": [
+    "The observation finished during October 5; later publications/corrections/supplements that day are not guaranteed. October 6 remains uncovered until a separate positive review.",
+    "A missing title search alone is insufficient. The conclusion uses all four same-day source categories, entire relevant acts, exact fresh source-byte equality and the existing named-clause binding scope.",
+    "Official downloaded raw-byte hashes and derived local observer-transcript hashes are separately labelled. Hashes establish integrity against these pins; no official digital signature or medical eligibility is claimed.",
+    "The consolidated source retains historical strikethroughs and future provisions. Explicit commencement annotations are read separately; ordinary full-text extraction or substring matching is not an in-force parser.",
+    "Unknown historical beginnings and the mecasermin historical gap are retained. Non-mecasermin GH legacy scope is unchanged.",
+    "No pricing/list/product availability, report/prescription/dispensing/transaction-date policy, complete reimbursement eligibility or future source-day admission is inferred.",
+    "Initial sandbox DNS restrictions and relevant-act web/HTTP timeouts were not evidence of absence. Approved read-only live requests succeeded for the final captures. Fresh October 3 content is not relabelled October 4 evidence."
+  ],
+  "independent_source_review": {
+    "status": "completed",
+    "completed_at_utc": "2026-10-05T06:22:29Z",
+    "scope": "Independent raw source/category/family/hash, full relevant-act and explicit commencement review; no medical eligibility or serving approval",
+    "raw_file_count": 11,
+    "derived_capture_count": 6,
+    "positive_observation_count": 5,
+    "required_category_count": 4,
+    "binding_file_count": 8,
+    "unique_bound_body_count": 72,
+    "repeated_body_context_limit": "Twelve repeated full bodies require the existing deployed clause/context verifier in addition to body existence. No new context mapping is inferred.",
+    "finding_repaired": "Narrowed the no-direct-amendment statement to exact pinned named clinical/report checks, since neighboring ff/gg/aaaa bends under the same upper section do change.",
+    "other_source_findings": []
+  },
+  "capture_serialization": {
+    "format": "UTF-8 readable transcripts with LF line endings",
+    "raw_official_bytes_unchanged": true,
+    "normalization_scope": "Only source HTML line endings in the two derived text transcripts; no textual content, URLs, observation times or official raw hashes change."
+  }
+}

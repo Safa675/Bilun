@@ -7,9 +7,9 @@ Main499dff4 tabanında PR154(150 dahil), PR153(152 dahil) ve PR151'i tek kez bir
 - [x] Güncel main/5PRhead/exactCI ve repoAGENTS/lessons doğrula; özgün dirtyfiles koru.
 - [x] Ayrı integration-2026-10-05 ve source-renewal-2026-10-05 çalışma ağaçlarını kur.
 - [x] Semantic child planını review et; PR153→PR152 exactdiff yalnız contextmemoization üç dosyadır; prioroutcome/evidence kodu aynı, ikinci taşıma yok.
-- [ ] Git merge sırasıyla PR154 → PR153 → PR151; ortak evidence çakışmasını geçici kapalı tut, final hash elle seçme.
-- [ ] Kaynak writer canlı RG5Ekim günlük/mükerrer ve SGKduyuru/primarydocument kanıtını gözlem saatiyle ayrı source worktree'de inceleyip yalnız desteklenen [5Ekim,5Ekim] continuity eklesin; 6Ekim review_required kalsın.
-- [ ] Yeni kaynak dosyaları ve sourcewriter sahipliğindeki dokuz dar date fixture/test/docs değişimini selected-path listesiyle integration tree'ye taşı; eski receipt/history kimlikleri değişmesin.
+- [x] Git merge sırasıyla PR154 → PR153 → PR151; üç ort merge temiz, b5beedda; ortak evidence final üretime kadar provisional.
+- [x] Kaynak writer RG33391/SGK resmî gözlemlerini 06:08:50–06:12:51UTC kaydetti; 12 [5Ekim,5Ekim] continuity eklendi, 6Ekim 12/12 review_required. Kaynak worktree'sinde dokuz tam dosya 691PASS/3warnings.
+- [x] Frozen20sourcepath gerçekSHA doğrulamasıyla integration tree'ye taşındı; source tasks/todo dışlandı, eski receipt/history kimlikleri değişmedi.
 - [ ] Compiler/manifests → normalized coverage/registry → consumer report actualpins/catalog → final evidenceJSON sırasını mevcut üreticilerle kapat; manifest/coverage feedback varsa envanter eşitliğini kanıtla.
 - [ ] Consumer/source/date API ve transport testleri, compiler --check/parity/Ruff, rawcorpus/vector/policy/pending/neutral invariants doğrula.
 - [ ] Ayrı incelemeci final tree/pins/source gözlemlerini ve negatifleri inceleyip gerçek komut/sayı kaydını versin.

@@ -180,7 +180,7 @@ def test_dates_block_all_documentary_comparisons(family, kind):
     if kind == 'missing_service':
         day = None
     elif kind == 'future_source':
-        day = date(2026, 10, 5)  # First unsupported day after the October 4 review.
+        day = date(2026, 10, 6)  # First unsupported day after the October 5 review.
     elif kind == 'before_source':
         day = date(2025, 5, 5) if family == 'sma' else DAY - timedelta(days=1)
     updates = {'applies_on': DAY-timedelta(days=1)} if kind == 'scope_mismatch' else (

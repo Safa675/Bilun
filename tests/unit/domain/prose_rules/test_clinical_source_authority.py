@@ -118,15 +118,18 @@ def test_changed_review_bytes_are_rejected_with_existing_hash(tmp_path, monkeypa
 
 @pytest.mark.parametrize('family', FAMILIES)
 @pytest.mark.parametrize('day,admitted', [('2026-10-02', True), ('2026-10-03', True),
-                                        ('2026-10-04', True), ('2026-10-05', False), ('2030-01-01', False)])
+                                        ('2026-10-04', True), ('2026-10-05', True),
+                                        ('2026-10-06', False), ('2030-01-01', False)])
 def test_all_capped_families_have_explicit_current_bounds(family, day, admitted):
     result = authority.resolve_source_authority(family, day)
     assert (result.status == 'admitted') is admitted
     assert result.clinical_eligibility_complete is False
     assert result.scope == 'named_clinical_report_checks_only'
-    expected_review = '2026-10-03T07:04:00Z' if day == '2026-10-03' else '2026-10-04T18:22:13Z'
+    reviews = json.loads(authority._CATALOG.read_text())['official_reviews']
+    expected_review = next((review['checked_at'] for review in reviews if review['checked_through'] == day),
+                           max(reviews, key=lambda review: review['checked_through'])['checked_at'])
     assert result.official_review_checked_at == expected_review
-    if day in ('2026-10-03', '2026-10-04'):
+    if day in ('2026-10-03', '2026-10-04', '2026-10-05'):
         assert result.admission_basis == 'reviewed_continuity'
         assert result.source_observed_on == '2026-10-02'
         assert result.admitted_from == result.admitted_through == day
@@ -151,6 +154,7 @@ def test_unknown_history_stays_unknown(family):
     assert result.status == 'review_required' and result.legal_effective_from is None
     assert authority.resolve_source_authority(family, '2026-10-03').legal_effective_from is None
     assert authority.resolve_source_authority(family, '2026-10-04').legal_effective_from is None
+    assert authority.resolve_source_authority(family, '2026-10-05').legal_effective_from is None
 
 
 def test_mecasermin_points_are_not_interpolated():
@@ -183,7 +187,9 @@ def test_strict_catalog_rejects_invented_authority(mutation):
     if mutation == 'extra': row['date_today_authority'] = True
     elif mutation == 'overlap': row['windows'].append(deepcopy(row['windows'][-1]))
     elif mutation == 'invalid_date': row['windows'][0]['start'] = '2026-02-30'
-    elif mutation == 'future_review': _latest_review(raw)['checked_through'] = '2026-10-05'
+    elif mutation == 'future_review':
+        review = _latest_review(raw)
+        review['checked_through'] = (date.fromisoformat(review['checked_through']) + timedelta(days=1)).isoformat()
     elif mutation == 'unknown_history':
         row['windows'][0].update(basis='established_history',observed_source_sha256=None)
     else: row['windows'][-1]['review_id'] = 'absent'
@@ -299,7 +305,7 @@ def test_later_positive_review_can_extend_without_evaluator_or_legal_date_edit(m
     assert result.status=='admitted' and result.legal_effective_from is None
 
 
-@pytest.mark.parametrize('day', ['2026-10-03', '2026-10-04'])
+@pytest.mark.parametrize('day', ['2026-10-03', '2026-10-04', '2026-10-05'])
 def test_public_evidence_rejects_inconsistent_or_invalid_dates(day):
     raw=authority.resolve_source_authority('renal',day).model_dump()
     service = date.fromisoformat(day)
@@ -390,19 +396,19 @@ def test_actual_family_gates_admit_today_and_preserve_stale_source_observations(
     }
     model,evaluator,field,facts=specs[family]
     outcomes=[]
-    for day in (date(2026,10,2),date(2026,10,3),date(2026,10,4),date(2026,10,5)):
+    for day in (date(2026,10,2),date(2026,10,3),date(2026,10,4),date(2026,10,5),date(2026,10,6)):
         line=SimpleNamespace(drug_name=drug,drug_claim_date=day,drug_report_duration_months=6,
             claim_id='SYNTHETIC-DATE-AUTHORITY',drug_claim_line_id='SYNTHETIC-LINE',
             **{field:model(applies_on=day,assessment_date=day,**facts)})
         observer=ClinicalObservationCollector(line,family,'source-authority-test')
         result=(evaluator(line,observer=observer) if family in ('sma','antifungal','renal') else evaluator(line))
         assert result['clinical_eligibility_complete'] is False
-        assert result['source_authority']['status']==('review_required' if day.day==5 else 'admitted')
-        if day.day==5:
+        assert result['source_authority']['status']==('review_required' if day.day==6 else 'admitted')
+        if day.day==6:
             assert result['criterion_status']=='not_evaluated' and result['checks']==[]
             assert result['missing_inputs']==['verified_source_for_service_date']
             if family in ('sma','antifungal','renal'):
                 assert all(row['kind']=='route' and row['status']=='blocked_source' for row in observer.receipts)
         else:
             outcomes.append({key:value for key,value in result.items() if key!='source_authority'})
-    assert outcomes[0]==outcomes[1]==outcomes[2]
+    assert outcomes[0]==outcomes[1]==outcomes[2]==outcomes[3]
