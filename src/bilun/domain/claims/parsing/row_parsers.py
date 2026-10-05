@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.adult_gh import parse_adult_gh_evidence
+from src.bilun.domain.claims.mds_evidence import parse_mds_evidence
 from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
 
 from src.bilun.domain.claims.clinical_evidence import (
@@ -352,6 +354,8 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             indication_evidence=parse_clinical_evidence(row.get("indication_evidence"), IndicationEvidence),
             enteral_evidence=parse_clinical_evidence(row.get("enteral_evidence"), EnteralEvidence),
             ravulizumab_evidence=parse_clinical_evidence(row.get("ravulizumab_evidence"), RavulizumabEvidence),
+            adult_gh_evidence=parse_adult_gh_evidence(row.get("adult_gh_evidence")),
+            mds_evidence=parse_mds_evidence(row.get("mds_evidence")),
             mesothelioma_evidence=parse_mesothelioma_evidence(row.get("mesothelioma_evidence")),
             annual_application_count=(
                 None if is_missing(annual_count)

@@ -1,4 +1,7 @@
 /** Explicit source-specific facts. Null never asserts a negative clinical finding. */
+export type { SutAdultGhEvidence, SutAdultGhStimulationTest } from "./adultGhEvidence";
+export type { MdsEvidence as SutMdsEvidence } from "./mdsClinicalDraft";
+
 export interface SutGrowthHormoneEvidence {
   mecasermin_laron_syndrome_confirmed?: boolean | null;
   pretreatment_annual_growth_velocity_cm?: number | null;

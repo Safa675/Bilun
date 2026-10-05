@@ -113,7 +113,16 @@ def test_a6_golden_samples(sample: dict) -> None:
     )
     expected = sample.get("expect_violation")
     if expected is None:
-        assert hit is None
+        if sample["rule_id"] == "4.2.6.adult_somatropin_board_report":
+            # Board-report presence alone cannot clear newly registered adult
+            # diagnosis/stimulation prerequisites or their closed releases.
+            assert hit["selected_rule_id"] == sample["rule_id"]
+            assert hit["clinical_eligibility_complete"] is False
+            adult = next(row for row in hit["clinical_restrictions"]
+                         if row["constraint_set"] == "adult_gh_closed_epiphysis")
+            assert adult["criterion_status"] == "not_evaluated" and adult["checks"] == []
+        else:
+            assert hit is None
     else:
         assert hit is not None
         assert hit["violation_kind"] == expected

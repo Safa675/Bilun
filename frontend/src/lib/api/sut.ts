@@ -1,3 +1,4 @@
+import type { SutAdultGhEvidence, SutMdsEvidence } from "./clinicalEvidence";
 import type { SutIndicationEvidence } from "./clinicalEvidence";
 import type { SutFollowupEvidence } from "./clinicalEvidence";
 import { postJSON, requestJSON } from "./request";
@@ -38,6 +39,8 @@ function buildPatientAlertsPath(params: PatientAlertsRequestParams = {}): string
 }
 
 export interface SutMaterialItem extends SutGrowthHormoneEvidence {
+  adult_gh_evidence?: SutAdultGhEvidence | null;
+  mds_evidence?: SutMdsEvidence | null;
   enteral_evidence?: SutEnteralEvidence | null;
   ravulizumab_evidence?: SutRavulizumabEvidence | null;
   sma_evidence?: SutSmaEvidence | null;

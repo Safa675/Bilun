@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import fields
+import re
 import time
 from typing import Any
 
@@ -24,6 +25,8 @@ from src.bilun.domain.claims.adapter import build_context_from_material_dict
 from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence,
 )
+from src.bilun.domain.claims.adult_gh import AdultGhEvidence, AdultGhStimulationTest
+from src.bilun.domain.claims.mds_evidence import MdsEvidence
 from src.bilun.domain.claims.mesothelioma_evidence import MesotheliomaEvidence
 from src.bilun.domain.claims.growth_hormone import GROWTH_HORMONE_INPUT_FIELDS
 from src.bilun.domain.materials.exclusions import (
@@ -70,6 +73,7 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "historical_sut_version", "verified_source_for_service_date",
         "remaining_sut_clinical_criteria", "micafungin_prophylaxis_route",
         "mesothelioma_documentary_interpretation_release",
+        "mds_clinical_interpretation_release", "adult_gh_clinical_interpretation_release",
         "itraconazole_source_neutrophil_unit_verification", "itraconazole_non_solution_EK4E_requirements",
         *GROWTH_HORMONE_INPUT_FIELDS,
         "ckd_height_source_notation_verification", "ckd_height_reference_reconciliation",
@@ -84,6 +88,7 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         ("renal_evidence", RenalEvidence), ("followup_evidence", FollowupEvidence), ("indication_evidence", IndicationEvidence),
         ("enteral_evidence", EnteralEvidence), ("ravulizumab_evidence", RavulizumabEvidence),
         ("mesothelioma_evidence", MesotheliomaEvidence),
+        ("adult_gh_evidence", AdultGhEvidence), ("mds_evidence", MdsEvidence),
     )}
     clinical["enteral_evidence"].update({"exception_path_requires_review", "adult_path_requires_review"})
     clinical["indication_evidence"].update({"single_supported_medicine_family",
@@ -100,8 +105,19 @@ def _drug_missing_inputs(raw: dict[str, Any]) -> list[str]:
         "positive_baseline_albumin_g_dl",
     })
 
+    clinical["mds_evidence"].update({"substance_context_reconciliation", "indication_context_reconciliation",
+        "phase_context_reconciliation", "phase_interpretation"})
+    clinical["adult_gh_evidence"].update({"itt_contraindication_context_reconciliation",
+        "clinical_interpretation_required", "stimulation_tests.count", "stimulation_tests.distinct_test_records",
+        "stimulation_tests.test_set_interpretation"})
+    test_fields = {field.name for field in fields(AdultGhStimulationTest)}
+
     def supported(value: str) -> bool:
         root, separator, detail = value.partition(".")
+        if root == "adult_gh_evidence" and separator:
+            indexed = re.fullmatch(r"stimulation_tests\[(0|[1-9]|1[0-9])\]\.([a-z_]+)", detail)
+            if indexed:
+                return indexed.group(2) in test_fields
         if root in clinical:
             return not separator or detail in clinical[root]
         if root == "biomarkers":

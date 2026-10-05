@@ -1,4 +1,6 @@
 import type { SutIndicationEvidence, SutMesotheliomaEvidence } from "@/lib/api/clinicalEvidence";
+import { adultGhEvidencePayload } from "@/lib/api/adultGhEvidence";
+import { mdsEvidencePayload } from "@/lib/api/mdsClinicalDraft";
 import type { SutMaterialItem } from "@/lib/api/sut";
 
 /** Blank optional numbers are unknown, never an observed zero. */
@@ -22,7 +24,7 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     height_percentile, mecasermin_daily_dose_mcg_per_kg,
     gh_initiation_pathway, gh_reported_growth_age_band, gh_chronological_age_years, gh_pubertal_status, gh_pubertal_growth_assessment_completed, gh_birth_weight_for_gestational_age_sds, gh_birth_length_for_gestational_age_sds, gh_last_year_growth_velocity_sds, gh_current_height_sds, gh_parent_adjusted_height_sds, gh_sga_birth_status_confirmed,
     ckd_height_age_sex_percentile, ckd_height_age_sex_sds, ckd_annual_growth_velocity_percentile, ckd_persistent_growth_failure_confirmed, ckd_post_transplant_one_year_elapsed, ckd_steroid_treatment_absent, ckd_spontaneous_growth_absent, ckd_nephropathic_cystinosis_related_confirmed,
-    ...base } = material;
+    adult_gh_evidence, mds_evidence, ...base } = material;
   if (!enabled) return base;
   return {
     ...base,
@@ -35,6 +37,8 @@ export function drugMaterialPayload(material: SutMaterialItem, enabled: boolean)
     annual_growth_velocity_cm: annual_growth_velocity_cm ?? null,
     height_cm: height_cm ?? null,
     bone_age_years: bone_age_years ?? null,
+    adult_gh_evidence: adultGhEvidencePayload(adult_gh_evidence),
+    mds_evidence: mdsEvidencePayload(mds_evidence),
     sma_evidence: sma_evidence ?? null,
     antifungal_evidence: antifungal_evidence ?? null,
     renal_evidence: renal_evidence ?? null,
