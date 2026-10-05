@@ -107,7 +107,7 @@ def load_preparation_manifest(path: Path, *, allow_existing_bundle: bool = False
     )) or not value["ci_run_id"].isdecimal() or int(value["ci_run_id"]) < 1:
         raise ValueError("Preparation requires exact immutable SHA and CI identities")
     if "clinical_transition" in value:
-        from scripts.deploy.verify_clinical_semantic_transition import validate_transition_request
+        from scripts.deploy.verify_final_source_refresh_transition import validate_transition_request
         request = validate_transition_request(value["clinical_transition"])
         if request is None or any(request[key] != value["target_sha"]
                                  for key in ("expected_candidate_sha", "expected_verifier_sha")):
