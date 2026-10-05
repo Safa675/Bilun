@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import polars as pl
 import pytest
 
+from scripts.sut import sut_delta
 from scripts.sut.sut_delta import (
     compute_all_deltas,
     compute_snapshot_delta,
@@ -257,3 +260,139 @@ def test_format_summary_handles_errors() -> None:
     assert "+5" in summary
     assert "ek3a materials" in summary
     assert "abc123" in summary
+
+
+@pytest.fixture
+def delta_report_inputs(tmp_path, monkeypatch):
+    history_path = _build_test_history(tmp_path)
+    snapshot_path = tmp_path / "snapshot.parquet"
+    pl.DataFrame({"code": ["X1", "X2"], "price": [100, 200]}).write_parquet(snapshot_path)
+    monkeypatch.setattr(sut_delta, "CURATED_DIR", tmp_path)
+    monkeypatch.setattr(sut_delta, "DELTA_DIR", tmp_path / "reports")
+    monkeypatch.setattr(sut_delta, "_TEMPORAL_SPECS", [_TEMPORAL_SPEC])
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    return history_path, snapshot_path, tmp_path / "reports" / "2026-06-29_delta.json"
+
+
+def _run_delta_report(monkeypatch, *, old_date="2026-01-01", legacy_proof=None):
+    argv = ["sut_delta", old_date, "2026-06-29"]
+    if legacy_proof is not None:
+        argv.extend(["--legacy-input-fingerprints", str(legacy_proof)])
+    monkeypatch.setattr("sys.argv", argv)
+    return sut_delta.main()
+
+
+def test_new_delta_report_records_typed_input_fingerprints(delta_report_inputs, monkeypatch):
+    _, _, report = delta_report_inputs
+    assert _run_delta_report(monkeypatch) == 0
+    payload = json.loads(report.read_text())
+    fingerprints = payload["input_fingerprints"]
+    assert fingerprints["algorithm"] == "sha256-typed-catalog-inputs-v1"
+    assert set(fingerprints["catalogs"]) == {"snapshot.parquet", "test_catalog_history.parquet"}
+    assert all(len(value) == 64 for value in fingerprints["catalogs"].values())
+
+
+def test_delta_rerun_preserves_bytes_across_row_order_and_encoding(delta_report_inputs, monkeypatch):
+    history, snapshot, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    original = report.read_bytes()
+    for path in (history, snapshot):
+        pl.read_parquet(path).reverse().write_parquet(path, compression="uncompressed")
+    assert _run_delta_report(monkeypatch) == 0
+    assert report.read_bytes() == original
+
+
+def test_delta_different_catalog_content_cannot_overwrite_history(delta_report_inputs, monkeypatch):
+    _, snapshot, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    original = report.read_bytes()
+    pl.DataFrame({"code": ["X1", "X2"], "price": [100, 999]}).write_parquet(snapshot)
+    with pytest.raises(ValueError, match="Refusing to overwrite historical delta report"):
+        _run_delta_report(monkeypatch)
+    assert report.read_bytes() == original
+
+
+def test_delta_fingerprint_detects_dtype_change_hidden_by_legacy_csv_hash(delta_report_inputs, monkeypatch):
+    _, snapshot, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    original = report.read_bytes()
+    before = compute_snapshot_delta("snapshot", snapshot.name, "2026-01-01", "2026-06-29")
+    pl.read_parquet(snapshot).with_columns(pl.col("price").cast(pl.String)).write_parquet(snapshot)
+    after = compute_snapshot_delta("snapshot", snapshot.name, "2026-01-01", "2026-06-29")
+    assert before == after  # The old string-cast hash alone cannot distinguish these inputs.
+    with pytest.raises(ValueError, match="source transition differs"):
+        _run_delta_report(monkeypatch)
+    assert report.read_bytes() == original
+
+
+def test_delta_self_comparison_cannot_erase_historical_transition(delta_report_inputs, monkeypatch):
+    _, _, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    original = report.read_bytes()
+    with pytest.raises(ValueError, match="Refusing to overwrite historical delta report"):
+        _run_delta_report(monkeypatch, old_date="2026-06-29")
+    assert report.read_bytes() == original
+
+
+def test_legacy_delta_same_comparison_is_byte_preserving(delta_report_inputs, monkeypatch, capsys):
+    _, _, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    payload = json.loads(report.read_text())
+    fingerprints = payload.pop("input_fingerprints")
+    report.write_text(json.dumps(payload))
+    proof = report.with_name("delta-input-fingerprints.json")
+    proof.write_text(json.dumps({
+        "report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+        "input_fingerprints": fingerprints,
+    }))
+    original = report.read_bytes()
+    capsys.readouterr()
+    assert _run_delta_report(monkeypatch, legacy_proof=proof) == 0
+    assert report.read_bytes() == original
+    assert "using verified typed input fingerprints" in capsys.readouterr().out
+
+
+def test_legacy_delta_conflict_preserves_existing_bytes(delta_report_inputs, monkeypatch):
+    _, snapshot, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    payload = json.loads(report.read_text())
+    payload.pop("input_fingerprints")
+    report.write_text(json.dumps(payload))
+    original = report.read_bytes()
+    pl.DataFrame({"code": ["X1", "X2"], "price": [100, 999]}).write_parquet(snapshot)
+    with pytest.raises(ValueError, match="cannot be verified"):
+        _run_delta_report(monkeypatch)
+    assert report.read_bytes() == original
+
+
+def test_legacy_delta_without_proof_cannot_claim_an_exact_rerun(delta_report_inputs, monkeypatch):
+    _, _, report = delta_report_inputs
+    _run_delta_report(monkeypatch)
+    payload = json.loads(report.read_text())
+    payload.pop("input_fingerprints")
+    report.write_text(json.dumps(payload))
+    original = report.read_bytes()
+    with pytest.raises(ValueError, match="cannot be verified"):
+        _run_delta_report(monkeypatch)
+    assert report.read_bytes() == original
+
+
+@pytest.mark.parametrize("first,second", [
+    (None, float("nan")), (None, float("inf")),
+    (None, -float("inf")), (float("nan"), float("inf")),
+])
+def test_delta_fingerprint_distinguishes_null_and_nonfinite_prices(
+    delta_report_inputs, monkeypatch, first, second,
+):
+    _, snapshot, report = delta_report_inputs
+    pl.DataFrame({
+        "code": ["X1", "X2"], "price": pl.Series([first, 100.0], dtype=pl.Float64),
+    }).write_parquet(snapshot)
+    _run_delta_report(monkeypatch)
+    original = report.read_bytes()
+    pl.DataFrame({
+        "code": ["X1", "X2"], "price": pl.Series([second, 100.0], dtype=pl.Float64),
+    }).write_parquet(snapshot)
+    with pytest.raises(ValueError, match="source transition differs"):
+        _run_delta_report(monkeypatch)
+    assert report.read_bytes() == original

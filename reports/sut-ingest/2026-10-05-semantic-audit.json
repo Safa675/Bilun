@@ -1,0 +1,1399 @@
+{
+  "audit_date": "2026-10-05",
+  "refs": {
+    "current_main": "3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e",
+    "pr128_parent": "d0337600f45a17aa635f6bbe8d584095a6f3e82e",
+    "pr128_head": "7be613251322d41ab15bbe29de56acaedf60ecfe"
+  },
+  "scope": "Read-only exact-source decoded semantic audit. Full October source snapshot is evidence, not activation-approved live data.",
+  "status": "exact_source_verified_future_activation_guard_required",
+  "exact_official_source": {
+    "url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+    "repository_url_evidence": "reports/sut-expansion/report-documentation-primary-source-verification.json:85",
+    "zip_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+    "current_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
+    "current_member_sha256": "927918fa6c7459c27bc01619722a9ee6f69cf6eb49ccb7d620534788b453935a",
+    "raw_rows": 8188,
+    "raw_data_columns": 16,
+    "extracted_rows_not_live": 8183,
+    "source_sheets": [
+      "EK-4A"
+    ],
+    "oct2_mulga_02_10_2026_member_sha256_equals_aug29_current": "e453d4c0f6a4b027bfd59c3de58a88f47a3dce17792fe8de6ead82ff23b5cbd6",
+    "oct2_current_member_differs_from_aug29_current": true,
+    "extractor_dropped_source_rows_zero_based": [
+      0,
+      8177,
+      8185,
+      8186,
+      8187
+    ],
+    "extractor_dropped_reasons": [
+      "header",
+      "empty kamu number ZZZ MAJISTRAL ILAC",
+      "effective-date source footer",
+      "trailing non-record",
+      "trailing non-record"
+    ]
+  },
+  "root_cause_proof": {
+    "main_curated_exactly_matches_june29_mulga_raw_extraction": true,
+    "main_matched_raw_path": "data/gazette/raw/annex=EK-4A/effective_date=2026-06-29/MULGA_EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI_Yur._29.06.2026__EK-4A.parquet",
+    "pr128_curated_exactly_matches_aug29_current_workbook_and_raw": true,
+    "aug29_current_workbook_path": "raw data/2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
+    "aug29_current_workbook_sha256": "e453d4c0f6a4b027bfd59c3de58a88f47a3dce17792fe8de6ead82ff23b5cbd6",
+    "aug29_raw_path": "data/gazette/raw/annex=EK-4A/effective_date=unknown/EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI__EK-4A.parquet",
+    "aug29_raw_sha256": "b50c359a50a6f2d2045ceac16729e3dfc0f4648964df0d5844bef0ad85ec2493",
+    "all_three_refs_have_same_aug29_source_workbook_and_raw_bytes": true,
+    "current_resolver_selects_aug29_unknown_partition": true,
+    "manifest_main_vs_pr128_full_decoded_equal": true,
+    "oct2_tracked_source_package_only_docx": true,
+    "oct2_tracked_source_package_proves_full_annex_ingestion": false,
+    "code_locations": [
+      "scripts/sut/_common.py:95",
+      "scripts/sut/build_curated_catalogs.py:163",
+      "scripts/sut/catalogs/simple_materials.py:147",
+      "src/bilun/domain/materials/drugs.py:40",
+      "src/bilun/domain/materials/drugs.py:78"
+    ]
+  },
+  "snapshot_semantic_churn_summary": {
+    "files": 35,
+    "strict_decoded_equal_current_to_pr128": 34,
+    "multiset_decoded_equal_current_to_pr128": 34,
+    "strict_decoded_equal_parent_to_current": 35,
+    "arrow_schema_types_equal_current_to_pr128": 35,
+    "arrow_table_allvalues_equal_current_to_pr128": 34
+  },
+  "snapshot_comparisons": [
+    {
+      "path": "data/gazette/curated/ek1a_chronic_exemptions.parquet",
+      "main_rows": 97,
+      "pr128_rows": 97,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "823d2fb0fda19de066c64da3603be2522106b87e9a03e36612135088b5038f0b",
+      "pr128_sha256": "a01a55e5b6c9176327e4b695d0894aa4b3862b6b5cd78b9fb3c0fff75dbe31f8"
+    },
+    {
+      "path": "data/gazette/curated/ek2a_outpatient_visits.parquet",
+      "main_rows": 87,
+      "pr128_rows": 87,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "aec0ba066ca0f2ffd4463f6061359947b28f03adec9bea6ef8234a028b8a7f90",
+      "pr128_sha256": "4683d8dcc41d66b31840d5e186fc6e5c53bd04587ab30b836de43ab3e7f868ee"
+    },
+    {
+      "path": "data/gazette/curated/ek2c1_copay_rates.parquet",
+      "main_rows": 465,
+      "pr128_rows": 465,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "b58ee269ba02effd7ca8c90fe70fa0538b88f58cb0d45f0bb5c57cb26898eb58",
+      "pr128_sha256": "5be4265ab12f6443bc7bc7bff1249374538131cfe370bfe24491b363497c0b5c"
+    },
+    {
+      "path": "data/gazette/curated/ek2g_no_surcharge.parquet",
+      "main_rows": 213,
+      "pr128_rows": 213,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "0d97bd15d76ab25449b3b40bfccc68e07acd2ae9870f321797bb338bf3c5eab0",
+      "pr128_sha256": "29a993b893b531ba65ef1b1041176239ef0955c69a1766a07e8427712aa36085"
+    },
+    {
+      "path": "data/gazette/curated/ek3a_multibranch_materials.parquet",
+      "main_rows": 401,
+      "pr128_rows": 401,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "0ef5f7ccd9d433f8ee681cbead982c9c761712e7df698f31a00522d324dec517",
+      "pr128_sha256": "83ebda91e821ef6e0609baed3be8b4eaf6091ca13f90745323198111723c0ef6"
+    },
+    {
+      "path": "data/gazette/curated/ek3b1_bundled_consumables.parquet",
+      "main_rows": 54,
+      "pr128_rows": 54,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "2203b8898844ad96e6b0a0cff9498e066e96b33fa4725202688a573469f69330",
+      "pr128_sha256": "6415ed6aaa5b1090c9c7ddebf53429d5b2a7356b7fb5ba8de62b3f089f35287b"
+    },
+    {
+      "path": "data/gazette/curated/ek3b2_non_reimbursable.parquet",
+      "main_rows": 13,
+      "pr128_rows": 13,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "8e9ddab2ceb97c0880b7aa37fe8295b860378c42ca9175c0c23bd9f87e39a0fb",
+      "pr128_sha256": "8a2821afb9798139ac902237a854cb13e73bd15727e606808a39c7e83fa18e7e"
+    },
+    {
+      "path": "data/gazette/curated/ek3c1_materials.parquet",
+      "main_rows": 506,
+      "pr128_rows": 506,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "bf58e27e988aacac3ac972f2191ebc3b3e781582ee58ecd36a8fb5dc0d466980",
+      "pr128_sha256": "c5b050205af646e6f738537b2f26d8db82222fd271bcfd062d6161b378afb3b1"
+    },
+    {
+      "path": "data/gazette/curated/ek3c2_materials.parquet",
+      "main_rows": 460,
+      "pr128_rows": 460,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "162c4530e4281f533367b618d7efdbba11c49981dddb488c44f747288285b89b",
+      "pr128_sha256": "34c4a02fb38499195873a8f7d1cc9a8f9115736a2ac5155814c1ed2176f326c6"
+    },
+    {
+      "path": "data/gazette/curated/ek3c3_materials.parquet",
+      "main_rows": 77,
+      "pr128_rows": 77,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "ee11d3cce8fe61455dde76b6026f82e1460baf51dafa15639dea95a06ecef4ea",
+      "pr128_sha256": "2f76e81521f3e35b2420f12116a8c3f8cb149d7728fefa08428ed53c114fb8f5"
+    },
+    {
+      "path": "data/gazette/curated/ek3c4_materials.parquet",
+      "main_rows": 99,
+      "pr128_rows": 99,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "3cbffc91cf17519146f50daeadd0d0c1fb6573b97ad9d149cbe7f8638f697aef",
+      "pr128_sha256": "50c045c1a1dd719ee76369ac6c156477226cbaec330a8df331a47322cc569ae4"
+    },
+    {
+      "path": "data/gazette/curated/ek3c5_materials.parquet",
+      "main_rows": 74,
+      "pr128_rows": 74,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "8fbf9f7911f9cd715b83c28cb33fc3a7109581a0fc0c055066f16ddea1a3121f",
+      "pr128_sha256": "979756f8be39606f6fc691a123b1cf6a8166519d434820f487d338ed14e1ed6a"
+    },
+    {
+      "path": "data/gazette/curated/ek3d_vision_materials.parquet",
+      "main_rows": 83,
+      "pr128_rows": 83,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "0002bb03084ec80d161affc5b445262e10e2ec61afc98f3ad80f8542d732eae9",
+      "pr128_sha256": "dc2897b204e87ebc27522ec4a1d7a09c2a78b0c12d9fde19c1cd1c6b6608eeb5"
+    },
+    {
+      "path": "data/gazette/curated/ek3e1_spine_surgery_materials.parquet",
+      "main_rows": 237,
+      "pr128_rows": 237,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "79f12008520fb5728f3ecfe6f21724e5786ad33bd62ec7496db56ac8def7bcbe",
+      "pr128_sha256": "0f10ecaf9cd68a6d335197e882bbf1da1f964d8c1bda6d45967ebd303d4d624c"
+    },
+    {
+      "path": "data/gazette/curated/ek3e2_cranial_surgery_materials.parquet",
+      "main_rows": 136,
+      "pr128_rows": 136,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "4d697f5dff926ba14e5294db622ad197603e140935488756f458974290299d07",
+      "pr128_sha256": "233de672c48361502047d0a7d36680687b9aacd3d6fb647e9fdf038e8c7c82b0"
+    },
+    {
+      "path": "data/gazette/curated/ek3f1_arthroplasty_materials.parquet",
+      "main_rows": 337,
+      "pr128_rows": 337,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "c608a0ea99f2e7fa1f2c62415eeee9bc993b66b4872a87b0ad3f2452135f5924",
+      "pr128_sha256": "cb1208e63afddf33fe0a7b533601c1cd0f823c5f1dae54211713ca587fea37c6"
+    },
+    {
+      "path": "data/gazette/curated/ek3f2_arthroscopy_materials.parquet",
+      "main_rows": 184,
+      "pr128_rows": 184,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "f654be32d7a9dd6b0e330dc9fca039c56f4cfba47a21eea49f5513efd2cc628e",
+      "pr128_sha256": "9a19e2062d78bbf5ed4f2c56120f176e55edad72cb8f608e22e0d56bc22d6d2b"
+    },
+    {
+      "path": "data/gazette/curated/ek3f3_tumor_resection_materials.parquet",
+      "main_rows": 185,
+      "pr128_rows": 185,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "cdbdfb0244c3923a9aeba977051ade2089099e745fe6c300a799d7cd3b062583",
+      "pr128_sha256": "49f0d2e53550ec7195f7a9cfcfe7584bba2663ceb700b72d36fd614727ff3596"
+    },
+    {
+      "path": "data/gazette/curated/ek3f4_trauma_reconstruction_materials.parquet",
+      "main_rows": 315,
+      "pr128_rows": 315,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "08ac3eda785913f16a226a6897ab2b94337053fe069283514d54756223f3283f",
+      "pr128_sha256": "fb7e17053753f63d05305db01075b1f4041ac3cb3f6238bb9aef5ed32c1ad643"
+    },
+    {
+      "path": "data/gazette/curated/ek3g_ophthalmology_materials.parquet",
+      "main_rows": 224,
+      "pr128_rows": 224,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "7bee004633ee0f7c9a581b296b3c1b0b1af61153ed6c7bceb817e6e263d4840f",
+      "pr128_sha256": "d4019b52c98849d3f50ba05f53166a538b8d4a857fbc1160868669094d536e47"
+    },
+    {
+      "path": "data/gazette/curated/ek3h_cardiology_materials.parquet",
+      "main_rows": 275,
+      "pr128_rows": 275,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "476b4ad7bb3f56259f4e68c44c1b318d6dabef051939dc071c9b05ef8f9ab02d",
+      "pr128_sha256": "2b9b4f22842b9775d45aec6d39c0ce2b493170b95cdb506ba56eb5cfff31729d"
+    },
+    {
+      "path": "data/gazette/curated/ek3i_cv_surgery_materials.parquet",
+      "main_rows": 424,
+      "pr128_rows": 424,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "df4ef09f779c2ffc5ea7c91a20041b6f369aaba1c45bede44efc17704f5f9521",
+      "pr128_sha256": "13d10e186e483cbbd4408e7713c21113b7c3cf9aa5ffcc1d2bc7ab6395bf6139"
+    },
+    {
+      "path": "data/gazette/curated/ek3j_ent_materials.parquet",
+      "main_rows": 23,
+      "pr128_rows": 23,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "0851d50beff61cebab900be6f2f21a304c2a58878babc7b2f20eda7060c3b6f5",
+      "pr128_sha256": "a63a27df0dd68ce0d1f28dc9b319cde0622ec67f6988600a6db3699d09d6f594"
+    },
+    {
+      "path": "data/gazette/curated/ek3k_obgyn_materials.parquet",
+      "main_rows": 21,
+      "pr128_rows": 21,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "c7485064352375fa2c82fbd3c849e79313fee898aa07bfcf845dd1b64bbd5392",
+      "pr128_sha256": "e52e734bd03e1b14bb1a8d4642d42eeac23280224952389b6b766ec8987e0c1d"
+    },
+    {
+      "path": "data/gazette/curated/ek3l_urology_materials.parquet",
+      "main_rows": 83,
+      "pr128_rows": 83,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "9ced83eb9eadbf53e33795f2c0ef42ad31e30a21b7b67bd200aef16c1625a629",
+      "pr128_sha256": "aa69e6f24731b02e3221632694fb595c77e490e9ced60ad8f70d9a61f060e438"
+    },
+    {
+      "path": "data/gazette/curated/ek3m_radiology_materials.parquet",
+      "main_rows": 297,
+      "pr128_rows": 297,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "4259779a81c3ec724a8f0d0b6cf2772fc0304db6b27e179998908711d059fe4e",
+      "pr128_sha256": "355731f11074c071ce6b903c256f5ce9dd98154c57adf477db9aa438f4a6bcfd"
+    },
+    {
+      "path": "data/gazette/curated/ek3n1_allograft_materials.parquet",
+      "main_rows": 102,
+      "pr128_rows": 102,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "c8f70a6dbdabd9702f25a834d6b012d9712e63a2f42edaffc6d38954166a1dc1",
+      "pr128_sha256": "fcfc94a303399999d0447af987f639b21e8ac22cc693415271b0700883d6b499"
+    },
+    {
+      "path": "data/gazette/curated/ek3n2_xenograft_materials.parquet",
+      "main_rows": 31,
+      "pr128_rows": 31,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "3437e810bbc0cb3b4906beb27b2d717c9d2c4e377c9ec70270a0bc9af68ba3dd",
+      "pr128_sha256": "3b8f1f0d4a9c163e4fd7cf8e7cf8af3ce2a34d4f9be5952ac7bb628f30809b66"
+    },
+    {
+      "path": "data/gazette/curated/ek3n3_synthetic_graft_materials.parquet",
+      "main_rows": 18,
+      "pr128_rows": 18,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "e3cb463bd1d77177c20b2eccb7c6ec8244a3394de7dfff41469b422f03a22256",
+      "pr128_sha256": "348e0bed338664b95d67e43e373b307dad941b1bc452f5603bca9acfbefdc595"
+    },
+    {
+      "path": "data/gazette/curated/ek3o_hematology_oncology_materials.parquet",
+      "main_rows": 21,
+      "pr128_rows": 21,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "9dc37d985e58a499e5ffbf2ea501ec6cd108031664538a0c0db9d4cac2de3790",
+      "pr128_sha256": "ff3d6a77c0d1b82cf4ae299ec2d807d224b2970ca5d62cdc876210ddd58803b0"
+    },
+    {
+      "path": "data/gazette/curated/ek3p_nephrology_materials.parquet",
+      "main_rows": 35,
+      "pr128_rows": 35,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "955c6020131f0007ad3a6f5949bf40571b1657ec8c3b8a3ee5f0facd6ca47283",
+      "pr128_sha256": "7837a459a01af89680588b01c610bf499404af0723330151039cdb01b6f5486a"
+    },
+    {
+      "path": "data/gazette/curated/ek3r_gastroenterology_materials.parquet",
+      "main_rows": 159,
+      "pr128_rows": 159,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "57e4c337fb2219ebcd90da983116e2c0f781ae2a83ca54e73a88e74ed3b49e87",
+      "pr128_sha256": "9db81fab269ec84be81d8512515c889efa25cdd1b73904a65e6202cfd5df8037"
+    },
+    {
+      "path": "data/gazette/curated/ek3s_pulmonology_materials.parquet",
+      "main_rows": 82,
+      "pr128_rows": 82,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "87d00857ba7e1272d04292356b2b97563e80ef0d9b562613f6b320f9fd51e4df",
+      "pr128_sha256": "36b0fa2952eb3da4b5134c3b80250fa6574cbc7f0bb907d3d075a8973d6a2e95"
+    },
+    {
+      "path": "data/gazette/curated/ek3t_anesthesiology_materials.parquet",
+      "main_rows": 39,
+      "pr128_rows": 39,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": true,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": true,
+      "main_sha256": "99da6117488933652aabbdcaf7d0551d81b20d59feec735840b90c5dda175cb4",
+      "pr128_sha256": "7444bc521e4862bc4e4d29a830615d3a0ee0e9ecb007206153790aab4fc2f4f5"
+    },
+    {
+      "path": "data/gazette/curated/ek4a_drugs.parquet",
+      "main_rows": 8078,
+      "pr128_rows": 8148,
+      "schema_dtype_equal": true,
+      "ordered_allvalues_equal": false,
+      "arrow_fields_types_equal": true,
+      "arrow_table_allvalues_equal": false,
+      "main_sha256": "6ed75694326342eb31e696304b82906a3e22a9f73b8648e6fbdbee1b69d739be",
+      "pr128_sha256": "a436671bbcda2e1d63e7aef08b5499dba8646fa28ed81d259ec1d2fd2ebf39ee"
+    }
+  ],
+  "complete_temporal_history_comparisons": [
+    {
+      "annex": "EK-2B",
+      "path": "data/gazette/curated/ek2b_catalog_history.parquet",
+      "rows": 76673,
+      "columns": 9,
+      "main_vs_pr128": {
+        "bytes_equal": false,
+        "schema_including_column_order_equal": true,
+        "row_order_equal": true,
+        "all_history_decoded_multiset_equal": true,
+        "per_column_positional_mismatch_counts": {
+          "code": 0,
+          "name": 0,
+          "puan": 0,
+          "price_try": 0,
+          "effective_date": 0,
+          "annex_code": 0,
+          "source_parquet": 0,
+          "valid_from": 0,
+          "valid_to": 0
+        },
+        "history_keys_left_only": 0,
+        "history_keys_right_only": 0,
+        "price_and_puan_mismatches": 0,
+        "name_mismatches": 0,
+        "date_mismatches": 0,
+        "byte_mismatch_count": 2,
+        "byte_mismatch_ranges": [
+          [
+            509487,
+            511211
+          ]
+        ],
+        "pandas_versions": [
+          "3.0.5",
+          "3.0.6"
+        ],
+        "pandas_metadata_equal_excluding_pandas_version": true,
+        "arrow_schema_fields_without_metadata_equal": true,
+        "arrow_schema_metadata_other_than_pandas_equal": true,
+        "parquet_footer_starts": [
+          506798,
+          506798
+        ],
+        "all_bytes_before_footer_equal": true,
+        "parquet_rowgroup_metadata_equal": true,
+        "byte_mismatch_offsets": [
+          509487,
+          511211
+        ]
+      },
+      "unchanged_preexisting_invalid_interval_count": 7127,
+      "unchanged_preexisting_duplicate_history_key_count": 7127
+    },
+    {
+      "annex": "EK-2C",
+      "path": "data/gazette/curated/ek2c_catalog_history.parquet",
+      "rows": 26584,
+      "columns": 13,
+      "main_vs_pr128": {
+        "bytes_equal": false,
+        "schema_including_column_order_equal": true,
+        "row_order_equal": true,
+        "all_history_decoded_multiset_equal": true,
+        "per_column_positional_mismatch_counts": {
+          "package_code": 0,
+          "name": 0,
+          "group": 0,
+          "description": 0,
+          "has_star": 0,
+          "prose_drg_locked": 0,
+          "puan": 0,
+          "price_try": 0,
+          "effective_date": 0,
+          "annex_code": 0,
+          "source_parquet": 0,
+          "valid_from": 0,
+          "valid_to": 0
+        },
+        "history_keys_left_only": 0,
+        "history_keys_right_only": 0,
+        "price_and_puan_mismatches": 0,
+        "name_mismatches": 0,
+        "date_mismatches": 0,
+        "byte_mismatch_count": 2,
+        "byte_mismatch_ranges": [
+          [
+            342403,
+            344765
+          ]
+        ],
+        "pandas_versions": [
+          "3.0.5",
+          "3.0.6"
+        ],
+        "pandas_metadata_equal_excluding_pandas_version": true,
+        "arrow_schema_fields_without_metadata_equal": true,
+        "arrow_schema_metadata_other_than_pandas_equal": true,
+        "parquet_footer_starts": [
+          338680,
+          338680
+        ],
+        "all_bytes_before_footer_equal": true,
+        "parquet_rowgroup_metadata_equal": true,
+        "byte_mismatch_offsets": [
+          342403,
+          344765
+        ]
+      },
+      "unchanged_preexisting_invalid_interval_count": 2522,
+      "unchanged_preexisting_duplicate_history_key_count": 2522
+    },
+    {
+      "annex": "EK-2Ç",
+      "path": "data/gazette/curated/ek2c_dental_catalog_history.parquet",
+      "rows": 1734,
+      "columns": 10,
+      "main_vs_pr128": {
+        "bytes_equal": false,
+        "schema_including_column_order_equal": true,
+        "row_order_equal": true,
+        "all_history_decoded_multiset_equal": true,
+        "per_column_positional_mismatch_counts": {
+          "code": 0,
+          "name": 0,
+          "description": 0,
+          "puan": 0,
+          "price_try": 0,
+          "effective_date": 0,
+          "annex_code": 0,
+          "source_parquet": 0,
+          "valid_from": 0,
+          "valid_to": 0
+        },
+        "history_keys_left_only": 0,
+        "history_keys_right_only": 0,
+        "price_and_puan_mismatches": 0,
+        "name_mismatches": 0,
+        "date_mismatches": 0,
+        "byte_mismatch_count": 2,
+        "byte_mismatch_ranges": [
+          [
+            22239,
+            24121
+          ]
+        ],
+        "pandas_versions": [
+          "3.0.5",
+          "3.0.6"
+        ],
+        "pandas_metadata_equal_excluding_pandas_version": true,
+        "arrow_schema_fields_without_metadata_equal": true,
+        "arrow_schema_metadata_other_than_pandas_equal": true,
+        "parquet_footer_starts": [
+          19391,
+          19391
+        ],
+        "all_bytes_before_footer_equal": true,
+        "parquet_rowgroup_metadata_equal": true,
+        "byte_mismatch_offsets": [
+          22239,
+          24121
+        ]
+      },
+      "unchanged_preexisting_invalid_interval_count": 46,
+      "unchanged_preexisting_duplicate_history_key_count": 46
+    }
+  ],
+  "ek4a_key_dtype_null_integrity": {
+    "current_main": {
+      "rows": 8078,
+      "schema": {
+        "kamu_no": "String",
+        "barcode": "String",
+        "drug_name": "String",
+        "old_barcodes": "String",
+        "equivalence_group": "String",
+        "therapeutic_group": "String",
+        "entry_date": "String",
+        "activation_date": "String",
+        "passivation_date": "String",
+        "discount_status": "String",
+        "discount_tier_1": "String",
+        "discount_tier_2": "String",
+        "discount_tier_3": "String",
+        "discount_tier_4": "String",
+        "special_discount": "String",
+        "pharmacist_discount": "String"
+      },
+      "null_counts": {
+        "kamu_no": 0,
+        "barcode": 0,
+        "drug_name": 0,
+        "old_barcodes": 0,
+        "equivalence_group": 0,
+        "therapeutic_group": 0,
+        "entry_date": 0,
+        "activation_date": 0,
+        "passivation_date": 0,
+        "discount_status": 0,
+        "discount_tier_1": 0,
+        "discount_tier_2": 0,
+        "discount_tier_3": 0,
+        "discount_tier_4": 0,
+        "special_discount": 0,
+        "pharmacist_discount": 0
+      },
+      "blank_identity_counts": {
+        "kamu_no": 0,
+        "barcode": 0,
+        "drug_name": 0
+      },
+      "kamu_no_unique": 8078,
+      "barcode_unique": 8078,
+      "barcode_non_digit_count": 0,
+      "barcode_length_counts": [
+        {
+          "length": 13,
+          "len": 8078
+        }
+      ],
+      "actual_leading_zero_barcode_count": 0
+    },
+    "exact_oct2_source_snapshot_not_live": {
+      "rows": 8183,
+      "schema": {
+        "kamu_no": "String",
+        "barcode": "String",
+        "drug_name": "String",
+        "old_barcodes": "String",
+        "equivalence_group": "String",
+        "therapeutic_group": "String",
+        "entry_date": "String",
+        "activation_date": "String",
+        "passivation_date": "String",
+        "discount_status": "String",
+        "discount_tier_1": "String",
+        "discount_tier_2": "String",
+        "discount_tier_3": "String",
+        "discount_tier_4": "String",
+        "special_discount": "String",
+        "pharmacist_discount": "String"
+      },
+      "null_counts": {
+        "kamu_no": 0,
+        "barcode": 0,
+        "drug_name": 0,
+        "old_barcodes": 0,
+        "equivalence_group": 0,
+        "therapeutic_group": 0,
+        "entry_date": 0,
+        "activation_date": 0,
+        "passivation_date": 0,
+        "discount_status": 0,
+        "discount_tier_1": 0,
+        "discount_tier_2": 0,
+        "discount_tier_3": 0,
+        "discount_tier_4": 0,
+        "special_discount": 0,
+        "pharmacist_discount": 0
+      },
+      "blank_identity_counts": {
+        "kamu_no": 0,
+        "barcode": 0,
+        "drug_name": 0
+      },
+      "kamu_no_unique": 8183,
+      "barcode_unique": 8183,
+      "barcode_non_digit_count": 0,
+      "barcode_length_counts": [
+        {
+          "length": 13,
+          "len": 8183
+        }
+      ],
+      "actual_leading_zero_barcode_count": 0
+    }
+  },
+  "main_to_exact_oct2_not_live_diff": {
+    "key": "kamu_no",
+    "old_unique": 8078,
+    "new_unique": 8183,
+    "old_barcode_unique": 8078,
+    "new_barcode_unique": 8183,
+    "common_keys": 7930,
+    "added_count": 253,
+    "removed_count": 148,
+    "modified_common_keys": 157,
+    "unchanged_common_keys": 7773,
+    "changed_field_counts": {
+      "barcode": 36,
+      "drug_name": 81,
+      "old_barcodes": 43,
+      "equivalence_group": 31,
+      "therapeutic_group": 1,
+      "entry_date": 3,
+      "activation_date": 3,
+      "passivation_date": 3,
+      "discount_status": 0,
+      "discount_tier_1": 11,
+      "discount_tier_2": 3,
+      "discount_tier_3": 0,
+      "discount_tier_4": 0,
+      "special_discount": 6,
+      "pharmacist_discount": 0
+    }
+  },
+  "pr128_to_exact_oct2_not_live_diff": {
+    "key": "kamu_no",
+    "old_unique": 8148,
+    "new_unique": 8183,
+    "old_barcode_unique": 8148,
+    "new_barcode_unique": 8183,
+    "common_keys": 8135,
+    "added_count": 48,
+    "removed_count": 13,
+    "modified_common_keys": 23,
+    "unchanged_common_keys": 8112,
+    "changed_field_counts": {
+      "barcode": 11,
+      "drug_name": 12,
+      "old_barcodes": 11,
+      "equivalence_group": 1,
+      "therapeutic_group": 0,
+      "entry_date": 3,
+      "activation_date": 2,
+      "passivation_date": 2,
+      "discount_status": 0,
+      "discount_tier_1": 1,
+      "discount_tier_2": 0,
+      "discount_tier_3": 0,
+      "discount_tier_4": 0,
+      "special_discount": 0,
+      "pharmacist_discount": 0
+    }
+  },
+  "price_scope": {
+    "amount_price_columns": [],
+    "discount_columns": [
+      "discount_status",
+      "discount_tier_1",
+      "discount_tier_2",
+      "discount_tier_3",
+      "discount_tier_4",
+      "special_discount",
+      "pharmacist_discount"
+    ],
+    "no_payability_interpretation": true
+  },
+  "date_history": {
+    "entry_date": {
+      "nonblank_rows": 5759,
+      "multiple_date_token_rows": 27,
+      "nonblank_without_date_token_rows": 3,
+      "unparsed_tokens": [],
+      "min_date": "2005-07-15",
+      "max_date": "2026-09-28"
+    },
+    "activation_date": {
+      "nonblank_rows": 721,
+      "multiple_date_token_rows": 287,
+      "nonblank_without_date_token_rows": 0,
+      "unparsed_tokens": [],
+      "min_date": "2018-04-19",
+      "max_date": "2026-09-25"
+    },
+    "passivation_date": {
+      "nonblank_rows": 717,
+      "multiple_date_token_rows": 287,
+      "nonblank_without_date_token_rows": 0,
+      "unparsed_tokens": [],
+      "min_date": "2018-04-05",
+      "max_date": "2026-08-29"
+    }
+  },
+  "source_effective_date_footer": {
+    "raw_zero_based_row": 8185,
+    "source_data_column": "BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (EK-4/A)",
+    "source_footer_text_normalized_whitespace": "RG-02/10/2026- 33388/ 6 md. Yürürlük: 1) Listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunan ilaçlar belirtilen tarihlerde, 2) Listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunmayan ilaçlar yayımları tarihlerinde, 3) Listeye giriş tarihinde (*) işareti bulunan ilaçlar 10/10/2026 tarihinde, 4) İlaç adında (**) işareti bulunan ilaçlar 10/10/2026 tarihinde, 5) İlaç adında (***) işareti bulunan ilaçlar yayımı tarihinde yürürlüğe girer.",
+    "raw_footer_text_utf8_sha256": "c437dff05d9b3df5b9397c50a37906fe2f7e223007554de980baeb31021eac6b",
+    "publication_date": "2026-10-02",
+    "star_marker_effective_date": "2026-10-10",
+    "date_column_token_scan_alone_proves_activation_safety": false,
+    "future_entry_exact_single_star_keys": [
+      "A20335",
+      "A20336",
+      "A20337"
+    ],
+    "future_name_exact_double_star_keys": [
+      "A15711",
+      "A15712",
+      "A15809"
+    ],
+    "publication_name_triple_star_keys": [
+      "A19064"
+    ],
+    "internal_dosage_star_not_marker_keys": [
+      "A20062"
+    ],
+    "existing_double_star_rows_only_name_changed_vs_main_and_pr128": true,
+    "footer_dropped_by_current_extractor": true,
+    "full8183_snapshot_blanket_activation_safe_on_2026_10_05": false
+  },
+  "recommended_regressions": [
+    "Reject wrong source: October current member cannot be replaced by August/MULGA member with a different SHA256.",
+    "Preserve string keys and synthetic leading-zero barcode literal; current actual corpus contains no leading-zero barcode.",
+    "Exact single-star entry and exactly double-star trailing name defer to October 10; October 9/10 boundary.",
+    "Exactly triple-star name uses explicit publication rule; internal 56*5 ML is not a source footnote marker.",
+    "Unknown/missing/conflicting source effective-date footer fails closed; non-marker future dates also defer.",
+    "Before effective date, new future keys are not admitted and existing amended records retain their prior active values.",
+    "Same-source rerun leaves decoded output/state unchanged and retains existing historical clause delta reports.",
+    "Incomplete DOCX-only directory must not prove full annex-package ingestion or overwrite verified August raw provenance."
+  ],
+  "unchanged_catalogs_to_exclude": 34,
+  "unchanged_temporal_catalogs_to_exclude": 3,
+  "runtime_or_data_materialization_approved_by_this_audit": false,
+  "no_new_clinical_or_payment_interpretation": true,
+  "full_suite_run_locally": false,
+  "bounded_admission": {
+    "status": "raw_verified_curated_deferred",
+    "manifest_rows": 327,
+    "manifest_sha256": "7edfbe183f044bb9470d169bc7acc03cf2c741197faa92a1a4001f4ec04b28b7",
+    "complete_package_date": "2026-08-29",
+    "pending_full_package_date": "2026-10-02",
+    "source_components": {
+      "prose": {
+        "source_docx": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
+        "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+        "corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+        "corpus_rows": 8413,
+        "source_snapshot_date": "2026-10-02",
+        "status": "verified_existing_corpus"
+      },
+      "EK-4A": {
+        "source_publication_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+        "source_zip_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+        "source_package_date": "2026-10-02",
+        "source_file": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
+        "source_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
+        "source_sha256": "927918fa6c7459c27bc01619722a9ee6f69cf6eb49ccb7d620534788b453935a",
+        "raw_parquet": "data/gazette/raw/annex=EK-4A/effective_date=unknown/EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI__EK-4A.parquet",
+        "raw_sha256": "57202f7b1b1c2e5eef3be315f6dbebb9243f02ee82919bfe77d1dcb810370cf0",
+        "raw_rows": 8188,
+        "raw_data_columns": 16,
+        "repealed_source_file": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 02.10.2026).xlsx",
+        "repealed_source_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 02.10.2026).xlsx",
+        "repealed_source_sha256": "e453d4c0f6a4b027bfd59c3de58a88f47a3dce17792fe8de6ead82ff23b5cbd6",
+        "repealed_raw_parquet": "data/gazette/raw/annex=EK-4A/effective_date=2026-10-02/MULGA_EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI_Yur._02.10.2026__EK-4A.parquet",
+        "repealed_raw_sha256": "478428b4c87ad0586c64d6367159e40507f1ea973aed99c1c05415d4b65b0ea8",
+        "source_snapshot_drug_rows": 8183,
+        "status": "raw_verified_curated_deferred",
+        "future_marker_effective_date": "2026-10-10",
+        "retained_runtime_curated_sha256": "6ed75694326342eb31e696304b82906a3e22a9f73b8648e6fbdbee1b69d739be",
+        "retained_runtime_curated_rows": 8078,
+        "runtime_catalog_matches_current_source": false,
+        "deferral_reason": "No service-date-safe projection across direct parquet consumers; explicit future footnotes must not activate early."
+      }
+    },
+    "protected_byte_identical_files": {
+      "data/gazette/curated/ek4a_drugs.parquet": "6ed75694326342eb31e696304b82906a3e22a9f73b8648e6fbdbee1b69d739be",
+      "data/gazette/sut_clauses.parquet": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+      "data/gazette/deltas/2026-10-02_clause_diff.json": "faa8909f9ff3fb5dd297ef82fe89b0a5e8c4e249fe0fa8cfba312d2b5f63d6e9",
+      "data/gazette/deltas/2026-10-02_clause_diff.md": "f4d9cbd85a5c8930e1ff21667f23599a9ea828ec55f2d0b3e1f77a281f0ed813"
+    },
+    "repeat_source_raw_manifest_state_bytes_equal": true,
+    "legacy_clause_transition_proof": {
+      "report_sha256": "faa8909f9ff3fb5dd297ef82fe89b0a5e8c4e249fe0fa8cfba312d2b5f63d6e9",
+      "input_fingerprints": {
+        "algorithm": "sha256-clause-diff-inputs-v1",
+        "old": "463c5acb9d2e8373cec508a9534173075ca56c44772075a69ef2c5bc2350f1e2",
+        "new": "e75c97a3b0721c8c1ce39982d3d64ccd31d5cea6f749dad51104c60a0c17fc58"
+      },
+      "verification": {
+        "old_commit": "c4f736be362a026eb4c9ae6013cd1f76d28c5e8c",
+        "old_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+        "new_commit": "3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e",
+        "new_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+        "summary_exactly_reproduced": true,
+        "all_actionable_rows_exactly_reproduced": true
+      }
+    }
+  },
+  "producer_verification": {
+    "unchanged_catalogs_temp_rebuild": {
+      "scope": "read-only repository inputs; writes restricted to disposable temporary catalog copies",
+      "results": [
+        {
+          "annex": "EK-2B",
+          "file": "ek2b_catalog_history.parquet",
+          "source": "raw_all_versions",
+          "rows": 76673,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "1aff20477fcf19d5a919a5dc66c16f6964a84dd7ecb1abc743ee0b0a4d824907",
+          "result_sha256": "1aff20477fcf19d5a919a5dc66c16f6964a84dd7ecb1abc743ee0b0a4d824907"
+        },
+        {
+          "annex": "EK-2C",
+          "file": "ek2c_catalog_history.parquet",
+          "source": "raw_all_versions",
+          "rows": 26584,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "97c33b3e4034e2044d5d05637cb0c610a2b7f268e95a42b2d07bbef7724c4f7c",
+          "result_sha256": "97c33b3e4034e2044d5d05637cb0c610a2b7f268e95a42b2d07bbef7724c4f7c"
+        },
+        {
+          "annex": "EK-2Ç",
+          "file": "ek2c_dental_catalog_history.parquet",
+          "source": "raw_all_versions",
+          "rows": 1734,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "72a534fbcaa96a9e1ad6ade9d8559a8a36210c078d732d516ec75dab884cdfbf",
+          "result_sha256": "72a534fbcaa96a9e1ad6ade9d8559a8a36210c078d732d516ec75dab884cdfbf"
+        },
+        {
+          "annex": "EK-3B-1",
+          "file": "ek3b1_bundled_consumables.parquet",
+          "source": "raw_latest",
+          "rows": 54,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "2203b8898844ad96e6b0a0cff9498e066e96b33fa4725202688a573469f69330",
+          "result_sha256": "2203b8898844ad96e6b0a0cff9498e066e96b33fa4725202688a573469f69330"
+        },
+        {
+          "annex": "EK-3B-2",
+          "file": "ek3b2_non_reimbursable.parquet",
+          "source": "raw_latest",
+          "rows": 13,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "8e9ddab2ceb97c0880b7aa37fe8295b860378c42ca9175c0c23bd9f87e39a0fb",
+          "result_sha256": "8e9ddab2ceb97c0880b7aa37fe8295b860378c42ca9175c0c23bd9f87e39a0fb"
+        },
+        {
+          "annex": "EK-2A",
+          "file": "ek2a_outpatient_visits.parquet",
+          "source": "raw_latest",
+          "rows": 87,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "aec0ba066ca0f2ffd4463f6061359947b28f03adec9bea6ef8234a028b8a7f90",
+          "result_sha256": "aec0ba066ca0f2ffd4463f6061359947b28f03adec9bea6ef8234a028b8a7f90"
+        },
+        {
+          "annex": "EK-3C-1",
+          "file": "ek3c1_materials.parquet",
+          "source": "raw_latest",
+          "rows": 506,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "bf58e27e988aacac3ac972f2191ebc3b3e781582ee58ecd36a8fb5dc0d466980",
+          "result_sha256": "bf58e27e988aacac3ac972f2191ebc3b3e781582ee58ecd36a8fb5dc0d466980"
+        },
+        {
+          "annex": "EK-3H",
+          "file": "ek3h_cardiology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 275,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "476b4ad7bb3f56259f4e68c44c1b318d6dabef051939dc071c9b05ef8f9ab02d",
+          "result_sha256": "476b4ad7bb3f56259f4e68c44c1b318d6dabef051939dc071c9b05ef8f9ab02d"
+        },
+        {
+          "annex": "EK-3I",
+          "file": "ek3i_cv_surgery_materials.parquet",
+          "source": "raw_latest",
+          "rows": 424,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "df4ef09f779c2ffc5ea7c91a20041b6f369aaba1c45bede44efc17704f5f9521",
+          "result_sha256": "df4ef09f779c2ffc5ea7c91a20041b6f369aaba1c45bede44efc17704f5f9521"
+        },
+        {
+          "annex": "EK-3C-2",
+          "file": "ek3c2_materials.parquet",
+          "source": "raw_latest",
+          "rows": 460,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "162c4530e4281f533367b618d7efdbba11c49981dddb488c44f747288285b89b",
+          "result_sha256": "162c4530e4281f533367b618d7efdbba11c49981dddb488c44f747288285b89b"
+        },
+        {
+          "annex": "EK-3C-3",
+          "file": "ek3c3_materials.parquet",
+          "source": "raw_latest",
+          "rows": 77,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "ee11d3cce8fe61455dde76b6026f82e1460baf51dafa15639dea95a06ecef4ea",
+          "result_sha256": "ee11d3cce8fe61455dde76b6026f82e1460baf51dafa15639dea95a06ecef4ea"
+        },
+        {
+          "annex": "EK-3C-4",
+          "file": "ek3c4_materials.parquet",
+          "source": "raw_latest",
+          "rows": 99,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "3cbffc91cf17519146f50daeadd0d0c1fb6573b97ad9d149cbe7f8638f697aef",
+          "result_sha256": "3cbffc91cf17519146f50daeadd0d0c1fb6573b97ad9d149cbe7f8638f697aef"
+        },
+        {
+          "annex": "EK-3C-5",
+          "file": "ek3c5_materials.parquet",
+          "source": "raw_latest",
+          "rows": 74,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "8fbf9f7911f9cd715b83c28cb33fc3a7109581a0fc0c055066f16ddea1a3121f",
+          "result_sha256": "8fbf9f7911f9cd715b83c28cb33fc3a7109581a0fc0c055066f16ddea1a3121f"
+        },
+        {
+          "annex": "EK-3A",
+          "file": "ek3a_multibranch_materials.parquet",
+          "source": "raw_latest",
+          "rows": 401,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "0ef5f7ccd9d433f8ee681cbead982c9c761712e7df698f31a00522d324dec517",
+          "result_sha256": "0ef5f7ccd9d433f8ee681cbead982c9c761712e7df698f31a00522d324dec517"
+        },
+        {
+          "annex": "EK-3E-1",
+          "file": "ek3e1_spine_surgery_materials.parquet",
+          "source": "raw_latest",
+          "rows": 237,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "79f12008520fb5728f3ecfe6f21724e5786ad33bd62ec7496db56ac8def7bcbe",
+          "result_sha256": "79f12008520fb5728f3ecfe6f21724e5786ad33bd62ec7496db56ac8def7bcbe"
+        },
+        {
+          "annex": "EK-3E-2",
+          "file": "ek3e2_cranial_surgery_materials.parquet",
+          "source": "raw_latest",
+          "rows": 136,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "4d697f5dff926ba14e5294db622ad197603e140935488756f458974290299d07",
+          "result_sha256": "4d697f5dff926ba14e5294db622ad197603e140935488756f458974290299d07"
+        },
+        {
+          "annex": "EK-3G",
+          "file": "ek3g_ophthalmology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 224,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "7bee004633ee0f7c9a581b296b3c1b0b1af61153ed6c7bceb817e6e263d4840f",
+          "result_sha256": "7bee004633ee0f7c9a581b296b3c1b0b1af61153ed6c7bceb817e6e263d4840f"
+        },
+        {
+          "annex": "EK-3J",
+          "file": "ek3j_ent_materials.parquet",
+          "source": "raw_latest",
+          "rows": 23,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "0851d50beff61cebab900be6f2f21a304c2a58878babc7b2f20eda7060c3b6f5",
+          "result_sha256": "0851d50beff61cebab900be6f2f21a304c2a58878babc7b2f20eda7060c3b6f5"
+        },
+        {
+          "annex": "EK-3K",
+          "file": "ek3k_obgyn_materials.parquet",
+          "source": "raw_latest",
+          "rows": 21,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "c7485064352375fa2c82fbd3c849e79313fee898aa07bfcf845dd1b64bbd5392",
+          "result_sha256": "c7485064352375fa2c82fbd3c849e79313fee898aa07bfcf845dd1b64bbd5392"
+        },
+        {
+          "annex": "EK-3L",
+          "file": "ek3l_urology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 83,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "9ced83eb9eadbf53e33795f2c0ef42ad31e30a21b7b67bd200aef16c1625a629",
+          "result_sha256": "9ced83eb9eadbf53e33795f2c0ef42ad31e30a21b7b67bd200aef16c1625a629"
+        },
+        {
+          "annex": "EK-3M",
+          "file": "ek3m_radiology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 297,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "4259779a81c3ec724a8f0d0b6cf2772fc0304db6b27e179998908711d059fe4e",
+          "result_sha256": "4259779a81c3ec724a8f0d0b6cf2772fc0304db6b27e179998908711d059fe4e"
+        },
+        {
+          "annex": "EK-3N-2",
+          "file": "ek3n2_xenograft_materials.parquet",
+          "source": "raw_latest",
+          "rows": 31,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "3437e810bbc0cb3b4906beb27b2d717c9d2c4e377c9ec70270a0bc9af68ba3dd",
+          "result_sha256": "3437e810bbc0cb3b4906beb27b2d717c9d2c4e377c9ec70270a0bc9af68ba3dd"
+        },
+        {
+          "annex": "EK-3N-3",
+          "file": "ek3n3_synthetic_graft_materials.parquet",
+          "source": "raw_latest",
+          "rows": 18,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "e3cb463bd1d77177c20b2eccb7c6ec8244a3394de7dfff41469b422f03a22256",
+          "result_sha256": "e3cb463bd1d77177c20b2eccb7c6ec8244a3394de7dfff41469b422f03a22256"
+        },
+        {
+          "annex": "EK-3O",
+          "file": "ek3o_hematology_oncology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 21,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "9dc37d985e58a499e5ffbf2ea501ec6cd108031664538a0c0db9d4cac2de3790",
+          "result_sha256": "9dc37d985e58a499e5ffbf2ea501ec6cd108031664538a0c0db9d4cac2de3790"
+        },
+        {
+          "annex": "EK-3P",
+          "file": "ek3p_nephrology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 35,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "955c6020131f0007ad3a6f5949bf40571b1657ec8c3b8a3ee5f0facd6ca47283",
+          "result_sha256": "955c6020131f0007ad3a6f5949bf40571b1657ec8c3b8a3ee5f0facd6ca47283"
+        },
+        {
+          "annex": "EK-3R",
+          "file": "ek3r_gastroenterology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 159,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "57e4c337fb2219ebcd90da983116e2c0f781ae2a83ca54e73a88e74ed3b49e87",
+          "result_sha256": "57e4c337fb2219ebcd90da983116e2c0f781ae2a83ca54e73a88e74ed3b49e87"
+        },
+        {
+          "annex": "EK-3S",
+          "file": "ek3s_pulmonology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 82,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "87d00857ba7e1272d04292356b2b97563e80ef0d9b562613f6b320f9fd51e4df",
+          "result_sha256": "87d00857ba7e1272d04292356b2b97563e80ef0d9b562613f6b320f9fd51e4df"
+        },
+        {
+          "annex": "EK-3T",
+          "file": "ek3t_anesthesiology_materials.parquet",
+          "source": "raw_latest",
+          "rows": 39,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "99da6117488933652aabbdcaf7d0551d81b20d59feec735840b90c5dda175cb4",
+          "result_sha256": "99da6117488933652aabbdcaf7d0551d81b20d59feec735840b90c5dda175cb4"
+        },
+        {
+          "annex": "EK-3N-1",
+          "file": "ek3n1_allograft_materials.parquet",
+          "source": "raw_latest",
+          "rows": 102,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "c8f70a6dbdabd9702f25a834d6b012d9712e63a2f42edaffc6d38954166a1dc1",
+          "result_sha256": "c8f70a6dbdabd9702f25a834d6b012d9712e63a2f42edaffc6d38954166a1dc1"
+        },
+        {
+          "annex": "EK-3F-1",
+          "file": "ek3f1_arthroplasty_materials.parquet",
+          "source": "raw_latest",
+          "rows": 337,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "c608a0ea99f2e7fa1f2c62415eeee9bc993b66b4872a87b0ad3f2452135f5924",
+          "result_sha256": "c608a0ea99f2e7fa1f2c62415eeee9bc993b66b4872a87b0ad3f2452135f5924"
+        },
+        {
+          "annex": "EK-3F-2",
+          "file": "ek3f2_arthroscopy_materials.parquet",
+          "source": "raw_latest",
+          "rows": 184,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "f654be32d7a9dd6b0e330dc9fca039c56f4cfba47a21eea49f5513efd2cc628e",
+          "result_sha256": "f654be32d7a9dd6b0e330dc9fca039c56f4cfba47a21eea49f5513efd2cc628e"
+        },
+        {
+          "annex": "EK-3F-3",
+          "file": "ek3f3_tumor_resection_materials.parquet",
+          "source": "raw_latest",
+          "rows": 185,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "cdbdfb0244c3923a9aeba977051ade2089099e745fe6c300a799d7cd3b062583",
+          "result_sha256": "cdbdfb0244c3923a9aeba977051ade2089099e745fe6c300a799d7cd3b062583"
+        },
+        {
+          "annex": "EK-3F-4",
+          "file": "ek3f4_trauma_reconstruction_materials.parquet",
+          "source": "raw_latest",
+          "rows": 315,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "08ac3eda785913f16a226a6897ab2b94337053fe069283514d54756223f3283f",
+          "result_sha256": "08ac3eda785913f16a226a6897ab2b94337053fe069283514d54756223f3283f"
+        },
+        {
+          "annex": "EK-3D",
+          "file": "ek3d_vision_materials.parquet",
+          "source": "raw_latest",
+          "rows": 83,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "0002bb03084ec80d161affc5b445262e10e2ec61afc98f3ad80f8542d732eae9",
+          "result_sha256": "0002bb03084ec80d161affc5b445262e10e2ec61afc98f3ad80f8542d732eae9"
+        },
+        {
+          "annex": "EK-1A",
+          "file": "ek1a_chronic_exemptions.parquet",
+          "source": "raw_latest",
+          "rows": 97,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "823d2fb0fda19de066c64da3603be2522106b87e9a03e36612135088b5038f0b",
+          "result_sha256": "823d2fb0fda19de066c64da3603be2522106b87e9a03e36612135088b5038f0b"
+        },
+        {
+          "annex": "EK-2G",
+          "file": "ek2g_no_surcharge.parquet",
+          "source": "raw_latest",
+          "rows": 213,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "0d97bd15d76ab25449b3b40bfccc68e07acd2ae9870f321797bb338bf3c5eab0",
+          "result_sha256": "0d97bd15d76ab25449b3b40bfccc68e07acd2ae9870f321797bb338bf3c5eab0"
+        },
+        {
+          "annex": "EK-2C-1",
+          "file": "ek2c1_copay_rates.parquet",
+          "source": "raw_latest",
+          "rows": 465,
+          "changed": false,
+          "bytes_preserved": true,
+          "decoded_schema_equal": true,
+          "decoded_values_equal": true,
+          "original_sha256": "b58ee269ba02effd7ca8c90fe70fa0538b88f58cb0d45f0bb5c57cb26898eb58",
+          "result_sha256": "b58ee269ba02effd7ca8c90fe70fa0538b88f58cb0d45f0bb5c57cb26898eb58"
+        }
+      ],
+      "count": 37,
+      "byte_preserved": 37,
+      "errors": [],
+      "changed": []
+    },
+    "official_source_boundary_parity": {
+      "rows": 8183,
+      "columns": 16,
+      "schema_equal": true,
+      "ordered_values_equal": true
+    }
+  }
+}

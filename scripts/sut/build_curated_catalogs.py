@@ -13,12 +13,14 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import sys
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable
 
 import pandas as pd
+import polars as pl
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
@@ -37,9 +39,6 @@ DEFAULT_PARQUET_ROOT = _PROJECT_ROOT / "data" / "gazette"
 def _relocate_parquet(parquet_root: Path, row: pd.Series) -> Path | None:
     """Return a usable path for the manifest row."""
     stored = Path(str(row["parquet_path"]))
-    if stored.exists():
-        return stored
-
     eff = row["effective_date"]
     if pd.isna(eff) or not str(eff).strip():
         eff = "unknown"
@@ -51,7 +50,26 @@ def _relocate_parquet(parquet_root: Path, row: pd.Series) -> Path | None:
         / f"effective_date={eff}"
         / stored.name
     )
-    return candidate if candidate.exists() else None
+    if candidate.exists():
+        return candidate
+    return stored if stored.exists() else None
+
+
+def _source_parquet_identity(parquet_root: Path, src: Path) -> str:
+    """Keep history provenance portable across worktrees and temporary builds."""
+    relative = src.resolve().relative_to(parquet_root.resolve())
+    return (DEFAULT_PARQUET_ROOT.relative_to(_PROJECT_ROOT) / relative).as_posix()
+
+
+def _write_curated_if_changed(out_path: Path, curated: pd.DataFrame) -> bool:
+    """Preserve existing bytes only when ordered schema, dtypes and values agree."""
+    if out_path.exists():
+        existing = pl.from_pandas(pd.read_parquet(out_path))
+        candidate = pl.from_pandas(curated)
+        if existing.columns == candidate.columns and existing.schema == candidate.schema and existing.equals(candidate):
+            return False
+    curated.to_parquet(out_path, index=False)
+    return True
 
 
 def _build_history(
@@ -71,7 +89,7 @@ def _build_history(
     for _, r in rows.iterrows():
         src = _relocate_parquet(parquet_root, r)
         if src is None:
-            continue
+            raise FileNotFoundError(f"Raw history parquet not found: {r['parquet_path']}")
         raw = pd.read_parquet(src)
         try:
             cur = extractor(raw)
@@ -83,7 +101,7 @@ def _build_history(
             pd.Timestamp(r["effective_date_parsed"]).date().isoformat()
         )
         cur["annex_code"] = annex_code
-        cur["source_parquet"] = str(src)
+        cur["source_parquet"] = _source_parquet_identity(parquet_root, src)
         outputs.append(cur)
 
     if skipped:
@@ -104,6 +122,11 @@ def parse_args() -> argparse.Namespace:
         "--parquet-root",
         default=str(DEFAULT_PARQUET_ROOT),
         help="Root folder containing raw parquet files (default: data/gazette)",
+    )
+    parser.add_argument(
+        "--as-of",
+        type=dt.date.fromisoformat,
+        help="Snapshot selection date (YYYY-MM-DD; default: UTC today). Histories retain all versions.",
     )
     parser.add_argument(
         "--overwrite",
@@ -161,12 +184,12 @@ def main() -> int:
 
         try:
             if source == "raw_latest":
-                raw = _read_raw(parquet_root, annex)
+                raw = _read_raw(parquet_root, annex, as_of=args.as_of)
                 if raw is None:
                     print(f"    FAIL -- raw parquet not found for annex={annex}")
                     results.append({"annex": annex, "status": "missing", "rows": 0})
                     continue
-                curated = extractor(raw)
+                curated = extractor(raw, as_of=args.as_of) if spec.get("snapshot_as_of") else extractor(raw)
             elif source == "raw_all_versions":
                 if manifest is None:
                     manifest = _load_manifest(parquet_root)
@@ -181,8 +204,9 @@ def main() -> int:
             else:
                 raise ValueError(f"Unknown source: {source}")
 
-            curated.to_parquet(out_path, index=False)
-            print(f"    OK   -- {len(curated):,} rows -> {output_name}")
+            changed = _write_curated_if_changed(out_path, curated)
+            action = "OK" if changed else "SAME"
+            print(f"    {action} -- {len(curated):,} rows -> {output_name}")
             results.append({"annex": annex, "status": "ok", "rows": len(curated)})
         except Exception as e:
             print(f"    FAIL -- {e}")
@@ -196,7 +220,7 @@ def main() -> int:
     print("BUILD SUMMARY")
     print("=" * 72)
     ok_count = sum(1 for r in results if r["status"] == "ok")
-    err_count = sum(1 for r in results if r["status"] == "error")
+    err_count = sum(1 for r in results if r["status"] in {"error", "missing"})
     total_rows = sum(r["rows"] for r in results)
     print(f"  {ok_count}/{len(results)} catalogs built, {total_rows:,} total rows")
     print()

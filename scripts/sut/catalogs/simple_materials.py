@@ -6,12 +6,20 @@ Covers: EK-3B-1, EK-3B-2, EK-2A, EK-4A, EK-3C-1.
 
 from __future__ import annotations
 
+import datetime as dt
 import re
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
-from scripts.sut._common import _data_cols, _safe_float, _safe_str
+from scripts.sut._common import (
+    _CONSOLIDATED_SUT_DIR_SUFFIX,
+    _DATE_PREFIX_RE,
+    _data_cols,
+    _safe_float,
+    _safe_str,
+)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -144,7 +152,52 @@ def extract_ek2a(df: pd.DataFrame) -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def extract_ek4a(df: pd.DataFrame) -> pd.DataFrame:
+_EK4A_FOOTNOTE = re.compile(
+    r"RG-(\d{2}/\d{2}/\d{4})-\s*\d+/\s*\d+ md\. Yürürlük: "
+    r"1\) Listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunan ilaçlar belirtilen tarihlerde, "
+    r"2\) Listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunmayan ilaçlar yayımları tarihlerinde, "
+    r"3\) Listeye giriş tarihinde \(\*\) işareti bulunan ilaçlar (\d{2}/\d{2}/\d{4}) tarihinde, "
+    r"4\) İlaç adında \(\*\*\) işareti bulunan ilaçlar (\d{2}/\d{2}/\d{4}) tarihinde, "
+    r"5\) İlaç adında \(\*\*\*\) işareti bulunan ilaçlar yayımı tarihinde yürürlüğe girer\."
+)
+
+
+def _validate_ek4a_source(df: pd.DataFrame, out: pd.DataFrame, cutoff: dt.date) -> None:
+    """Admit a current snapshot only after its source-bound marker dates."""
+    if "__is_mulga" in df and df["__is_mulga"].map(_safe_str).str.lower().isin({"true", "1"}).any():
+        raise ValueError("EK-4A source is MÜLGA; a current list is required")
+    if "__source_file" in df:
+        for source in df["__source_file"].dropna().unique():
+            if re.search(r"M[ÜU]LGA", str(source), re.IGNORECASE):
+                raise ValueError("EK-4A source path is MÜLGA; a current list is required")
+            for part in Path(str(source)).parts:
+                match = _DATE_PREFIX_RE.match(part)
+                if part.endswith(_CONSOLIDATED_SUT_DIR_SUFFIX) and match is not None:
+                    if dt.date(*(int(value) for value in match.groups())) > cutoff:
+                        raise ValueError("EK-4A source package is after the snapshot date")
+    if out.empty or out["kamu_no"].eq("").any() or out["kamu_no"].duplicated().any():
+        raise ValueError("EK-4A requires nonempty unique kamu_no keys")
+    entry_marker = out["entry_date"].eq("*").any()
+    name_marker = out["drug_name"].str.contains(r"(?<!\*)\*\*$", regex=True).any()
+    publication_marker = out["drug_name"].str.contains(r"(?<!\*)\*\*\*$", regex=True).any()
+    if not (entry_marker or name_marker or publication_marker):
+        return
+    footers = [" ".join(_safe_str(value).split()) for value in df[_data_cols(df)[0]] if "Yürürlük:" in _safe_str(value)]
+    match = _EK4A_FOOTNOTE.fullmatch(footers[0]) if len(footers) == 1 else None
+    if match is None:
+        raise ValueError("EK-4A marker applicability requires the complete recognized source footnote")
+    try:
+        publication, entry, name = (dt.datetime.strptime(value, "%d/%m/%Y").date() for value in match.groups())
+    except ValueError as exc:
+        raise ValueError("EK-4A source footnote has an invalid date") from exc
+    if entry < publication or name < publication:
+        raise ValueError("EK-4A source footnote dates precede publication")
+    required = [publication] + ([entry] if entry_marker else []) + ([name] if name_marker else [])
+    if max(required) > cutoff:
+        raise ValueError(f"EK-4A source markers are effective on {max(required)}; preserve the prior snapshot")
+
+
+def extract_ek4a(df: pd.DataFrame, *, as_of: dt.date | None = None) -> pd.DataFrame:
     """Extract drug reimbursement data from EK-4A raw parquet."""
     cols = _data_cols(df)
     body = df.iloc[1:]
@@ -152,9 +205,17 @@ def extract_ek4a(df: pd.DataFrame) -> pd.DataFrame:
     records: list[dict[str, Any]] = []
 
     for _, row in body.iterrows():
-        kamu_no = _safe_str(row.iloc[df.columns.get_loc(cols[0])])
+        key = row.iloc[df.columns.get_loc(cols[0])]
+        kamu_no = "" if pd.isna(key) else _safe_str(key)
         drug_name = _safe_str(row.iloc[df.columns.get_loc(cols[2])])
 
+        if drug_name and not kamu_no:
+            if len(cols) == 16:
+                summary = [""] * 16
+                summary[2], summary[9], summary[15] = "ZZZ MAJISTRAL ILAC", "MAJİSTRAL", "0-2,5%"
+                if [_safe_str(row[column]) for column in cols] == summary:
+                    continue
+            raise ValueError("EK-4A drug row is missing kamu_no")
         if not kamu_no or not drug_name:
             continue
         if len(kamu_no) > 20:
@@ -187,6 +248,7 @@ def extract_ek4a(df: pd.DataFrame) -> pd.DataFrame:
 
     out = pd.DataFrame(records)
     out = out.reset_index(drop=True)
+    _validate_ek4a_source(df, out, as_of if as_of is not None else dt.datetime.now(dt.UTC).date())
     return out
 
 
@@ -237,6 +299,7 @@ SPECS: list[dict] = [
         "output": "ek4a_drugs.parquet",
         "source": "raw_latest",
         "extractor": extract_ek4a,
+        "snapshot_as_of": True,
         "label": "EK-4A Reimbursable Drugs",
     },
     {

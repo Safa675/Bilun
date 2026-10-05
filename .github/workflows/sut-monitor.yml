@@ -6,6 +6,10 @@ on:
     - cron: "0 6,18 * * *"
   workflow_dispatch: # Manual trigger
 
+concurrency:
+  group: sut-monitor
+  cancel-in-progress: false
+
 jobs:
   monitor:
     runs-on: ubuntu-latest
@@ -36,6 +40,7 @@ jobs:
 
       - name: Fetch new SUT package
         if: steps.monitor.outputs.new_teblig != ''
+        id: fetch
         run: |
           python scripts/sut/sut_fetch.py \
             "${{ steps.monitor.outputs.new_teblig_url }}" \
@@ -45,9 +50,7 @@ jobs:
         if: steps.monitor.outputs.new_teblig != ''
         id: capture
         run: |
-          # MUST run BEFORE ingest — convert_xlsx_to_parquet.py overwrites
-          # ingest_state.json's last_ingested_date with the new date, which
-          # would otherwise make OLD_DATE == NEW_DATE and produce empty deltas.
+          # Keep the last complete-package date for the temporal annex delta.
           if [ -f data/gazette/ingest_state.json ]; then
             OLD_DATE=$(python3 -c "import json,sys; print(json.load(open('data/gazette/ingest_state.json')).get('last_ingested_date') or '')")
           else
@@ -68,9 +71,13 @@ jobs:
       - name: Run ingest pipeline
         if: steps.monitor.outputs.new_teblig != ''
         run: |
-          python scripts/sut/convert_xlsx_to_parquet.py
+          python scripts/sut/convert_xlsx_to_parquet.py \
+            --input-dir "${{ steps.fetch.outputs.input_dir }}" --defer-state
           python scripts/sut/build_curated_catalogs.py --overwrite
-          python scripts/sut/extract_sut_prose.py
+          # Extract the exact pinned DOCX; a semantic rerun preserves corpus bytes.
+          python scripts/sut/sut_ingest_state.py \
+            --input-dir "${{ steps.fetch.outputs.input_dir }}" \
+            --inventory "${{ steps.fetch.outputs.inventory_path }}" --prepare-corpus
 
       - name: Compute clause_key diff (Track E)
         if: steps.monitor.outputs.new_teblig != ''
@@ -79,16 +86,37 @@ jobs:
           # Track E Phase 5: compare old vs re-extracted corpus by clause_key
           # (coord#hash). STABLE clauses keep refs valid; AMENDED/NEW/REMOVED
           # rows become the human triage list in the PR body.
+          legacy_args=()
+          receipt="data/gazette/deltas/${{ steps.monitor.outputs.new_teblig_date }}_clause_diff_inputs.json"
+          if [ -f "$receipt" ]; then
+            legacy_args=(--legacy-input-fingerprints "$receipt")
+          fi
           python scripts/sut/sut_clause_diff.py \
             /tmp/sut_clauses_old.parquet \
             data/gazette/sut_clauses.parquet \
-            --new-date "${{ steps.monitor.outputs.new_teblig_date }}"
+            --new-date "${{ steps.monitor.outputs.new_teblig_date }}" \
+            "${legacy_args[@]}"
 
       - name: Compute delta
         if: steps.monitor.outputs.new_teblig != '' && steps.capture.outputs.old_date != ''
         id: delta
         run: |
-          python scripts/sut/sut_delta.py "${{ steps.capture.outputs.old_date }}" "${{ steps.monitor.outputs.new_teblig_date }}"
+          legacy_args=()
+          receipt="data/gazette/deltas/${{ steps.monitor.outputs.new_teblig_date }}_delta_inputs.json"
+          if [ -f "$receipt" ]; then
+            legacy_args=(--legacy-input-fingerprints "$receipt")
+          fi
+          python scripts/sut/sut_delta.py \
+            "${{ steps.capture.outputs.old_date }}" "${{ steps.monitor.outputs.new_teblig_date }}" \
+            "${legacy_args[@]}"
+
+      - name: Complete verified package ingestion
+        if: steps.monitor.outputs.new_teblig != ''
+        run: |
+          # This gate is reached only after conversion, curation, prose and reports succeed.
+          python scripts/sut/sut_ingest_state.py \
+            --input-dir "${{ steps.fetch.outputs.input_dir }}" \
+            --inventory "${{ steps.fetch.outputs.inventory_path }}"
 
       - name: Create PR
         if: steps.monitor.outputs.new_teblig != ''
