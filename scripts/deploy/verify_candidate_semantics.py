@@ -274,7 +274,7 @@ def _current_content_parity(
                 if _digest(_without_data_source(value)) != _digest(expected_cohort):
                     raise ValueError(f"Current {side} cohort compliance disagrees with patient rows")
             if clinical_transition is not None:
-                from scripts.deploy.verify_clinical_semantic_transition import normalize_transition_content
+                from scripts.deploy.verify_source_refresh_transition import normalize_transition_content
                 value = normalize_transition_content(
                     table, value, side=side, proof=clinical_transition,
                     patient_reports=(_payload_rows(con, "patient_billing_report_rows", build_id)
@@ -800,8 +800,8 @@ def verify_candidate_semantic_checkpoint(
         raise ValueError("Same-input proof needs the candidate source roster")
     if baseline_build_config_environment is not None and baseline_roster is None:
         raise ValueError("Baseline configuration proof needs a baseline source roster")
-    from scripts.deploy.verify_clinical_semantic_transition import (
-        validate_transition_request, verify_clinical_semantic_transition,
+    from scripts.deploy.verify_source_refresh_transition import (
+        validate_transition_request, verify_transition,
     )
     transition_request = validate_transition_request(clinical_transition)
     transition_proof = None
@@ -821,7 +821,8 @@ def verify_candidate_semantic_checkpoint(
             if transition_request is not None:
                 if same_input is None or python_executable is None:
                     raise ValueError("Clinical transition requires source/config/input proof and an explicit runtime")
-                transition_proof = verify_clinical_semantic_transition(
+                transition_proof = verify_transition(
+                    request=transition_request,
                     baseline_roster=baseline_roster, candidate_roster=source_roster,
                     baseline_meta=_build_metadata(baseline, baseline_build_id),
                     candidate_meta=_build_metadata(candidate, candidate_build_id),

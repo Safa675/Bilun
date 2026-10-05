@@ -1593,3 +1593,29 @@ Consumer report SHA256 b273b9b6a972d5e963a55bda0e5731b35c1b06d7ff6bcf491c63d414e
 Root compiler --check134byte-identical, drugparity23/23zeroissues, globalRuffsrc/scripts ve gitdiff--check gerçekten exit0. Tek son bağımsız pytest174passed/2mevcutwarnings/30.11s, exit0: CI484 original41failurenode (kanıtlı yeniden adlandırmalar dahil), helper/dental/pipeline negatives, historicalgolden/currentrejection, kaynak/coverageclosure ve11retrieval testi. JUnit sayımıyla ayrışan dört index initialization testi bu174 sayısında yoktur; yalnız bu eksik dört test ayrıca gerçekten4passed/0.20s ile tamamlandı. Son retrieval kapsamı11+4 ayrı koşudur. Independentfinalreadonly467/60/134/150hashpin,58-parentdeepcatalogcomparison,36family/date ve12family/27assetsourceclosure assertions exit0. Full hosted CI yenihead için henüz çalışmadı; bu174 sonuç CI484 history41fail/8239pass veya fullsuite sonucu ile toplanmaz. Merge/deploy/VPS yapılmadı.
 
 CI repair bağımsız final code/data review: P1/P2 bulgu yok; post-test pin/dış hash/diff kontrolleri geçti. Tam actual komutlar ve sonuçlar task-2/independent-ci484-final-commands.json, review makbuzu task-2/independent-ci484-review-result.json içinde. Hosted yenihead fullCI sonucu bu incelemeye dahil değildir.
+## Task: Source-bound 499 to d033 release transition
+
+### Goal
+Prepare a narrow reviewed PR that proves the exact source-derived coverage and three neutral organ-rule changes between serving 499 and the d033 product closure, preserves strict equality everywhere else, and supplies passing targeted tests and CI for its own immutable tooling/candidate commit.
+
+### Subtasks
+- [x] Verify exact old/new public producers and prove a derivation path from the same pinned inputs without treating candidate cache values as an oracle.
+- [x] Review the explicit transition contract and immutable product/tooling descendant allowlist before implementation.
+- [x] Add one bounded source-refresh verifier with each side's own coverage derivation, exact claim/rule evaluation ownership and all five table propagation checks.
+- [x] Connect the explicit opt-in contract through semantic verification, prepare, issue, same-port rehearsal and private proof validation; preserve the historical verifier and default strict comparison.
+- [x] Add focused positive and negative tests for wrong or forged identity/source/proof, extra product/tooling changes, non-approved status/null/list/money/rule/provenance drift and cross-table inconsistencies.
+- [x] Verify temporal boundaries, historical gaps, legal lower bounds, three neutral organ rules, closed MES gate and clinical_eligibility_complete=false remain unchanged.
+- [ ] Run applicable existing tests, lint, generated-artifact checks and full CI on the exact final head.
+- [ ] Obtain one independent exact-diff review and resolve concrete findings before the draft PR handoff.
+- [ ] Report concrete branch/head, CI evidence and a fresh absent-bundle prepare retry plan to the parent; preserve the failed d033 bundle as evidence.
+
+### Out of Scope
+No general release framework or refactor; no product/source-catalog/corpus/coverage/embedding/payment behavior changes; no imports from the parallel clinical or copay packages; no historical-contract changes; no private payload export; no credential-transfer permission expansion; no merge, maintenance, service stop, activation or deployment. Actual VPS comparisons remain read-only and require the already approved metadata-only boundary.
+
+### Specification and verification
+Baseline is exact499dff4c40298075d9c90d6254baf903266b6611. Product target is exactd0337600f45a17aa635f6bbe8d584095a6f3e82e/treecab00a2d077ab15fdbcf37a52533f4b85f21de76. New candidate/verifier identity is its own future reviewed commit and must not be relabeled d033. Complete saved diagnosis covers10631leaf differences in five tables, including seven evaluation paths in each detail; taxonomy alone is not admission. Arrays must be matched by stable claim/rule ownership for the exception and retain order for all other comparisons. Wrong/unknown identities, future changes, forged sources/proofs and every unproved field must fail closed. The implementation and tests use public synthetic fixtures; independent producer recomputation of protected inputs stays inside the VPS, with digest/count metadata only.
+
+### Plan review
+The user-authorized narrow fix and saved source-bound plan define scope. Source and gate scouts confirmed the plan before implementation: each immutable checkout can independently produce all five payloads with load_sut_build_context(billing_workers=1) from its own pinned nine claim and three clean inputs, including final cohort priority adjustments, without a cache writer or cache oracle. Three exact organ-rule evaluations explain the seven observed paths; full replay and stable identity matching must prove every occurrence. Exactly five existing wiring files require the explicit contract; startup consumers already use verify_private_rehearsal, so product API edits are unnecessary. The old verifier remains byte-for-byte unchanged. New verifier and wiring owners have separate file ownership; public negative tests and final exact-diff review are independent.
+
+Focused verification: actual final run1010passed/3existingwarnings in526.93s; independent clinical invariants266passed in5.07s. Core64ba0e03d726c0986cb4bce970cc6b9a6f011292d0c3961a6b167f9a53c7e06c and testd0534a93d50eb8ca87f8931e60dddbee5b164d013907e02a89f1f3c276658c38 are frozen. Ruff src/scripts passes. Complete backend run, final generated checks, committed exact-head review, hosted CI and real VPS producer replay are still pending; no merge or activation.
