@@ -1,5 +1,5 @@
 """Source, scope and clinical boundaries of the closed-epiphysis adult GH draft."""
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import date, datetime, timedelta
 import hashlib
 import json
@@ -11,7 +11,9 @@ import pytest
 
 from scripts.sut.prose.clause_identity import normalize_for_hash
 from src.bilun.domain.claims.adult_gh import AdultGhEvidence, AdultGhStimulationTest
-from src.bilun.domain.prose_rules._drug_indication import clinical_adult_gh as draft
+from src.bilun.domain.prose_rules import adult_gh_draft as draft
+from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
+from tests.unit.domain.prose_rules.test_drug_indication_4206 import _claim, _drug_line
 
 DAY = date(2026, 10, 5)
 RULE = "4.2.6.adult_somatropin_board_report"
@@ -415,3 +417,35 @@ def test_actual_twelve_family_renewal_does_not_admit_adult_gh_or_fill_history():
         assert "verified_source_for_service_date" in outcome["missing_inputs"]
         assert outcome["checks"] == []
         assert_incomplete(outcome)
+
+
+@pytest.mark.parametrize("report_present", [True, False])
+def test_active_somatropin_route_ignores_unregistered_adult_gh_candidate_facts(monkeypatch, report_present):
+    def forbidden(*args):
+        raise AssertionError("The production route must not execute the unregistered candidate")
+
+    monkeypatch.setattr(draft, "_candidate", forbidden)
+    # Open the mock gates so an accidental production registration cannot hide
+    # behind the draft's currently closed source/interpretation release checks.
+    authority(monkeypatch, "admitted")
+    monkeypatch.setattr(draft, "_ADULT_GH_INTERPRETATION_RELEASED", True)
+    recorded = replace(_drug_line(
+        drug_name="GENOTROPIN (SOMATROPIN)", report_present=report_present,
+        report_duration_months=12, prescriber_specialty="endokrinoloji",
+    ), drug_claim_date=DAY, gh_patient_group="adult", epiphyses_closed=True,
+        gh_treatment_phase="initiation")
+    active_line = SimpleNamespace(**asdict(recorded))
+    claim = _claim(primary_icd10="E23.0")
+
+    def production(supplied):
+        return evaluate_drug_indication_line_detailed(drug_line=supplied, claim=claim, diagnoses=[])
+
+    baseline = production(active_line)
+    assert baseline["selected_rule_id"] == RULE
+    for evidence in (None, facts(), facts(adult_hypothalamic_pituitary_gh_deficiency_suspected=False)):
+        supplied = SimpleNamespace(**vars(active_line), adult_gh_evidence=evidence)
+        assert production(supplied) == baseline
+    assert baseline.get("clinical_eligibility_complete") is not True
+    assert all(outcome.get("constraint_set") != draft.KIND
+               for outcome in baseline.get("clinical_restrictions", []))
+    assert all(name not in baseline for name in ("payable_try", "savings_try", "recoverable_uplift_try"))

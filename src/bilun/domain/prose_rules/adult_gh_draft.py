@@ -9,12 +9,12 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from ...claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
-from ...claims.clinical_evidence import clinical_date
-from ...claims.growth_hormone import validated_growth_hormone_value
-from .clinical_common import Predicate, Reader, all_of, result
-from .matching import _drug_name_matches
-from .source_authority import resolve_source_authority
+from ..claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
+from ..claims.clinical_evidence import clinical_date
+from ..claims.growth_hormone import validated_growth_hormone_value
+from ._drug_indication.clinical_common import Predicate, Reader, all_of, result
+from ._drug_indication.matching import _drug_name_matches
+from ._drug_indication.source_authority import resolve_source_authority
 
 KIND = "adult_gh_closed_epiphysis"
 AUTHORITY_ID = "adult_gh_closed_epiphysis"

@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 
 from src.bilun.domain.claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
 from src.bilun.domain.claims.clinical_evidence import clinical_date
-from src.bilun.domain.prose_rules._drug_indication.clinical_adult_gh import (
+from src.bilun.domain.prose_rules.adult_gh_draft import (
     evaluate_adult_gh_closed_epiphysis,
     evaluate_adult_gh_closed_epiphysis_candidate,
 )

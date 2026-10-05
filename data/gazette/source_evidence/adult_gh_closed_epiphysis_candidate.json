@@ -239,7 +239,7 @@
   "integration_ownership": {
     "isolated_preparation_paths": [
       "src/bilun/domain/claims/adult_gh.py",
-      "src/bilun/domain/prose_rules/_drug_indication/clinical_adult_gh.py",
+      "src/bilun/domain/prose_rules/adult_gh_draft.py",
       "src/bilun/api/adult_gh_clinical_draft.py",
       "frontend/src/lib/api/adultGhEvidence.ts",
       "frontend/src/components/tabs/sut/sections/AdultGhClinicalDraft.tsx"
