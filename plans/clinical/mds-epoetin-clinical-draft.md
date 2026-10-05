@@ -27,9 +27,9 @@
 - [x] §4.2.9.A genel ESA ve §4.2.9.A-2 özel MDS metnini XML run strike durumundan bağımsız oku.
 - [x] Yedi paragrafın yürürlükteki metni, paraId'si ve tam normalize hash'ini korpusla eşleştir.
 - [x] Aday kaynak kanıtını izole JSON'a kaydet; çizili darbepoetin parçalarını ve tarih sınırlarını koru.
-- [ ] Dar tipli evidence ve aday evaluatorü benzersiz backend dosyalarında tamamla.
-- [ ] Standalone API payload helperları ve bağlantısız frontend formunu tamamla.
-- [ ] Başlangıç/devam/durdurma sınırları, substance ayrımı, eksik/geçersiz evidence ve MDS/CKD ayrımını focused testlerle doğrula.
+- [x] Dar tipli evidence ve aday evaluatorü benzersiz backend dosyalarında tamamla.
+- [x] Standalone API payload helperları ve bağlantısız frontend formunu tamamla.
+- [x] Başlangıç/devam/durdurma sınırları, substance ayrımı, eksik/geçersiz evidence ve MDS/CKD ayrımını yeni focused testlerle doğrula.
 - [ ] Son exact HEAD üzerinde bağımsız kaynak/klinik yorum ve kod incelemesi yap.
 - [ ] Dar Draft PR oluştur; hosted full CI sonucunu exact PR HEAD ile kaydet.
 
@@ -119,7 +119,19 @@ print('MDS source proof PASS:', len(p['paragraphs']), 'paragraphs; no clinical a
 PY
 ```
 
-Focused backend/API/frontend regression sonuçları, exact final HEAD independent review, Draft PR ve hosted full CI bu planın yazıldığı sırada **pending**. Laptop full suite tekrar edilmeyecek; hosted full CI ayrı sonuç olarak raporlanacak. Clinical source/date admission ve merge/deploy bu taslağın tamamlanma ölçütü değildir.
+Uygulama dondurulduktan sonra owner focused sonuçları koordinatör tarafından doğrulandı:
+
+| Kontrol | Kanıt kapsamı | Sonuç |
+| --- | --- | --- |
+| Backend | `test_mds_evidence_transport.py`, `test_mds_clinical_draft.py` | **290 PASS** |
+| API | `test_mds_clinical_draft_api.py` | **63 PASS** |
+| Frontend | Dört focused test dosyası; `mdsClinicalDraft.test.tsx` içinde 27 yeni test dahil | **118 PASS** |
+| TypeScript | Frontend `tsc` | **exit 0** |
+| Scoped Ruff | Yeni Python backend/API/test dosyaları | **exit 0** |
+
+Bu sonuçlar ayrı owner koşularıdır; sayıları full-suite sonucu gibi toplanmaz. Kaynak proof commit'i `27ea41b9732072630fc28b8d0151a97042c44920` olup uygulama/test dosyaları sonraki bağımlı commit'lere hazırlanır; yukarıdaki sonuçlar henüz final commit HEAD için hosted CI veya bağımsız review sonucu değildir.
+
+Mevcut kaynak/context ve klinik güvenlik regresyonları **63 PASS**; mevcut validator API kontratı **28 PASS**. İlk sandbox koşusu TestClient/AnyIO portal fixture aşamasında bekledi; traceback ile ortam sınırı ayrıştırılıp aynı 28 test izinli normal ortamda 1,98 saniyede geçti. Kesilmiş koşunun kısmi çıktısı sayılmadı; kod değişikliği gerekmedi. Exact final HEAD bağımsız kaynak/klinik yorum ve kod incelemesi, Draft PR ve hosted full CI **pending** kalır. Laptop full suite tekrar edilmeyecek; hosted full CI ayrı sonuç olarak raporlanacak. Clinical source/date admission ve merge/deploy bu taslağın tamamlanma ölçütü değildir.
 
 ## Out of Scope
 

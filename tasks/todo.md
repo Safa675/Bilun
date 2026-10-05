@@ -7,8 +7,8 @@ Deliver an isolated, source-proven MDS candidate evidence/evaluator and reviewab
 - [x] Verify Safa675/Bilun main 3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e, isolate codex/mds-epoetin-clinical-draft, read AGENTS/lessons/roles and preserve original dirty files.
 - [x] Independently verify pinned October DOCX operative strike-aware MDS/general ESA source, alpha/beta bindings and date limits.
 - [x] Notify exact path ownership plan before writing code; shared clinical files remain unassigned and unwritten.
-- [ ] Add strict isolated mds_evidence and source-bound candidate/runtime gated evaluator with unique tests.
-- [ ] Add isolated API request/helper and frontend evidence/helper/review component; document inactive integration when shared ownership is unavailable.
+- [x] Add strict isolated mds_evidence and source-bound candidate/runtime gated evaluator with unique tests (290 passed).
+- [x] Add isolated API request/helper (63 passed) and frontend evidence/helper/review component (118 focused passed; TypeScript clean); document inactive integration when shared ownership is unavailable.
 - [ ] Run focused regression and source proof, no laptop full suite; review exact commit independently.
 - [ ] Check existing CI before push, publish narrow draft PR, attach it and verify hosted full CI for exact final head.
 - [ ] Record final findings, pending source/date/interpretation admission and parent integration handoff.
