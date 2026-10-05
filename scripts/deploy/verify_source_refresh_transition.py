@@ -270,7 +270,7 @@ def _replay_projection(checkout: Path, claims_dir: Path, clean_dir: Path, mode: 
                        python_executable: Path, *, roster: dict,
                        dependency_roots: tuple[Path, ...]) -> dict:
     if (not python_executable.is_absolute() or not python_executable.is_file()
-            or not dependency_roots or any(not path.is_absolute() or not path.is_dir()
+            or not dependency_roots or any(not path.is_absolute() or not (path.is_file() or path.is_dir())
                                            for path in dependency_roots)):
         raise ValueError("Source replay requires an explicit existing runtime and dependency roots")
     environment = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "TZ": "UTC",

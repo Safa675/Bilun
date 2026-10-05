@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from dataclasses import FrozenInstanceError
@@ -42,6 +43,216 @@ _ORGAN_RULES = (
 _UNRELATED_RULE = "public.unrelated_rule"
 _STATUSES = ("evaluated", "missing_inputs", "unavailable")
 _REAL_PREPARE_REHEARSE = preparation._rehearse
+
+
+@pytest.fixture
+def source_projection_wrapper_case(tmp_path, monkeypatch):
+    """Exercise the real wrapper and trace/Git gates with a public child double.
+
+    Only the strace child is replaced. Git subprocesses and trace validation
+    still execute; expected projections are handwritten public fixtures.
+    """
+    candidate = _candidate(tmp_path)
+    checkout, _, claims, clean = candidate
+    roster = _roster(candidate)
+    runtime = tmp_path / "public-runtime"
+    runtime.mkdir()
+    executable = runtime / "python"
+    executable.write_bytes(b"public executable fixture; subprocess is observed")
+    directory = runtime / "dependencies"
+    directory.mkdir()
+    directory_module = directory / "public_dependency.py"
+    directory_module.write_text("PUBLIC = True\n", encoding="utf-8")
+    file = runtime / "public-runtime-metadata.json"
+    file.write_text('{"public_runtime_fixture": true}\n', encoding="utf-8")
+    alias = runtime / "public-runtime-alias.json"
+    alias.symlink_to(file)
+    expected = _public_projection_pair()[0]
+    case = {
+        "checkout": checkout, "claims": claims, "clean": clean, "roster": roster,
+        "runtime": runtime, "executable": executable, "directory": directory,
+        "directory_module": directory_module, "file": file, "alias": alias,
+        "dependencies": (file, directory), "reads": [file, directory_module],
+        "extra_reads": [], "worker_calls": [], "trace_calls": [],
+        "expected": expected, "output": expected, "returncode": 0,
+    }
+    original_run = subprocess.run
+    original_validator = transition.validate_runtime_read_trace
+
+    def run(command, **kwargs):
+        if command[0] != "strace":
+            return original_run(command, **kwargs)
+        case["worker_calls"].append((list(command), kwargs))
+        trace = Path(command[command.index("-o") + 1])
+        reads = [checkout / "data/gazette/prose_rules/rule.json",
+                 claims / "claim_headers.parquet", *case["reads"], *case["extra_reads"]]
+        trace.write_text("\n".join(
+            [f'openat(AT_FDCWD, "public-fixture", O_RDONLY) = {number}<{path}>'
+             for number, path in enumerate(reads, 3)] + ["+++ exited with 0 +++"]
+        ) + "\n", encoding="utf-8")
+        return subprocess.CompletedProcess(
+            command, case["returncode"],
+            stdout=json.dumps(case["output"], allow_nan=False).encode(),
+            stderr=b"masked public fixture diagnostics",
+        )
+
+    def validate(trace, **kwargs):
+        case["trace_calls"].append(kwargs.copy())
+        return original_validator(trace, **kwargs)
+
+    def invoke():
+        return transition._replay_projection(
+            checkout, claims, clean, "synthetic_demo", case["executable"],
+            roster=roster, dependency_roots=case["dependencies"],
+        )
+
+    monkeypatch.setattr(transition.subprocess, "run", run)
+    monkeypatch.setattr(transition, "validate_runtime_read_trace", validate)
+    case["invoke"] = invoke
+    return case
+
+
+@pytest.mark.parametrize("dependency_kind", [
+    "directory", "file", "file_then_directory", "directory_then_file", "runtime_file_alias",
+])
+def test_source_projection_wrapper_preserves_each_explicit_dependency_and_order(
+    source_projection_wrapper_case, dependency_kind,
+):
+    case = source_projection_wrapper_case
+    dependencies, reads = {
+        "directory": ((case["directory"],), [case["directory_module"]]),
+        "file": ((case["file"],), [case["file"]]),
+        "file_then_directory": ((case["file"], case["directory"]),
+                                [case["file"], case["directory_module"]]),
+        "directory_then_file": ((case["directory"], case["file"]),
+                                [case["directory_module"], case["file"]]),
+        # Existing reviewed runtime aliases remain caller-owned. The trace
+        # gate resolves them and still applies the source/data boundary.
+        "runtime_file_alias": ((case["alias"],), [case["file"]]),
+    }[dependency_kind]
+    case["dependencies"], case["reads"] = dependencies, reads
+    result = case["invoke"]()
+    assert result == case["expected"]
+    assert len(case["worker_calls"]) == len(case["trace_calls"]) == 1
+    command, options = case["worker_calls"][0]
+    assert command[command.index("-c") + 1] == transition._WORKER
+    assert command[-4:] == [str(case["claims"]), str(case["clean"]), "synthetic_demo",
+                             json.dumps([str(path) for path in dependencies])]
+    assert str(case["executable"]) in command
+    assert all(flag in command for flag in ("-I", "-S", "-B"))
+    assert options["cwd"] == case["checkout"]
+    assert options["env"] == {
+        "PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "TZ": "UTC",
+        "PYTHONDONTWRITEBYTECODE": "1", "POLARS_MAX_THREADS": "1",
+    }
+    assert case["trace_calls"][0]["dependency_roots"] == dependencies
+    assert case["trace_calls"][0]["roster"] == case["roster"]
+
+
+@pytest.mark.parametrize("invalid", ["empty", "relative", "missing", "broken_alias", "fifo"])
+def test_source_projection_wrapper_rejects_invalid_dependency_before_starting_child(
+    source_projection_wrapper_case, invalid,
+):
+    case = source_projection_wrapper_case
+    if invalid == "empty":
+        dependencies = ()
+    elif invalid == "relative":
+        dependencies = (Path("relative-public-runtime.json"),)
+    elif invalid == "missing":
+        dependencies = (case["runtime"] / "missing.json",)
+    elif invalid == "broken_alias":
+        broken = case["runtime"] / "broken.json"
+        broken.symlink_to(case["runtime"] / "absent.json")
+        dependencies = (broken,)
+    else:
+        fifo = case["runtime"] / "public-fifo"
+        os.mkfifo(fifo)
+        dependencies = (fifo,)
+    case["dependencies"] = dependencies
+    with pytest.raises(ValueError, match="explicit existing runtime and dependency roots"):
+        case["invoke"]()
+    assert case["worker_calls"] == case["trace_calls"] == []
+
+
+@pytest.mark.parametrize("filename", [
+    ".env", ".env.production", "public-cache.duckdb", "public-cache.db",
+    "public-cache.sqlite3", "public-cache.sqlite3-wal", "public-cache.db-shm",
+])
+def test_source_projection_wrapper_never_uses_dependency_allowance_for_secrets_or_cache(
+    source_projection_wrapper_case, filename,
+):
+    case = source_projection_wrapper_case
+    forbidden = case["directory"] / filename
+    forbidden.write_bytes(b"masked public fixture")
+    case["extra_reads"] = [forbidden]
+    with pytest.raises(ValueError, match="environment file|database oracle"):
+        case["invoke"]()
+    assert len(case["worker_calls"]) == 1
+    assert case["trace_calls"] == []
+
+
+@pytest.mark.parametrize("overlap", [
+    "checkout", "source_file", "claims", "claim_file", "clean", "clean_file",
+    "broad_parent", "source_alias", "claims_alias",
+])
+def test_source_projection_wrapper_keeps_actual_trace_source_and_input_overlap_gate(
+    source_projection_wrapper_case, overlap,
+):
+    case = source_projection_wrapper_case
+    paths = {
+        "checkout": case["checkout"],
+        "source_file": case["checkout"] / "data/gazette/prose_rules/rule.json",
+        "claims": case["claims"], "claim_file": case["claims"] / "claim_headers.parquet",
+        "clean": case["clean"], "clean_file": next(case["clean"].iterdir()),
+        "broad_parent": case["checkout"].parent,
+    }
+    if overlap in {"source_alias", "claims_alias"}:
+        target = paths["source_file" if overlap == "source_alias" else "claims"]
+        alias = case["runtime"] / "source-or-input-alias"
+        alias.symlink_to(target, target_is_directory=target.is_dir())
+        dependency = alias
+    else:
+        dependency = paths[overlap]
+    case["dependencies"] = (dependency,)
+    case["reads"] = []
+    with pytest.raises(ValueError, match="must not overlap candidate source or data paths"):
+        case["invoke"]()
+    assert len(case["worker_calls"]) == len(case["trace_calls"]) == 1
+    assert case["trace_calls"][0]["dependency_roots"] == (dependency,)
+
+
+@pytest.mark.parametrize("unrostered", ["source", "claim", "clean", "foreign_source"])
+def test_source_projection_wrapper_rejects_unrostered_reads_through_actual_trace_gate(
+    source_projection_wrapper_case, unrostered,
+):
+    case = source_projection_wrapper_case
+    path = {
+        "source": case["checkout"] / "data/gazette/unreviewed.json",
+        "claim": case["claims"] / "unreviewed.parquet",
+        "clean": case["clean"] / "unreviewed.parquet",
+        "foreign_source": case["runtime"] / "unapproved_source.py",
+    }[unrostered]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"public unrostered fixture")
+    case["extra_reads"] = [path]
+    with pytest.raises(ValueError, match="Runtime read outside source roster"):
+        case["invoke"]()
+    assert len(case["worker_calls"]) == len(case["trace_calls"]) == 1
+
+
+@pytest.mark.parametrize("failure", ["exit", "unknown_output_contract"])
+def test_source_projection_wrapper_stops_before_trace_permission_for_failed_worker(
+    source_projection_wrapper_case, failure,
+):
+    case = source_projection_wrapper_case
+    if failure == "exit":
+        case["returncode"] = 1
+    else:
+        case["output"] = {**case["expected"], "allow_unknown_source": True}
+    with pytest.raises(ValueError, match="no transition permission|unknown ownership contract"):
+        case["invoke"]()
+    assert len(case["worker_calls"]) == 1
+    assert case["trace_calls"] == []
 
 
 def _git(checkout: Path, *arguments: str) -> str:
