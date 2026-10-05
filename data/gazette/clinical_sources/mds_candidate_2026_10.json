@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "mds_epoetin_candidate_source_proof",
+  "verification_status": "ai_generated_pending_review",
+  "candidate_only": true,
+  "clinical_eligibility_complete": false,
+  "mechanical_family_admission": false,
+  "admitted_service_date_windows": [],
+  "independent_interpretation_status": "pending",
+  "source_observed_on": "2026-10-02",
+  "proof_checked_on": "2026-10-05",
+  "legal_effective_from": null,
+  "source_docx": {
+    "path": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
+    "sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+    "bytes": 1200635,
+    "official_announcement_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+    "official_zip_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+    "official_zip_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
+    "web_verification": "Official announcement was accessible and identified the October 2 consolidated 2013 SUT ZIP. The web parser could not read the ZIP. Local DOCX bytes and the existing official raw-byte receipt agree; this proof does not represent a fresh remote ZIP capture."
+  },
+  "source_corpus": {
+    "path": "data/gazette/sut_clauses.parquet",
+    "sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec"
+  },
+  "proof_method": {
+    "paragraph_index_basis": "Zero-based document.xml order over every w:p, including paragraphs in tables; matches the deployed extractor.",
+    "operative_run_rule": "Exclude a run when w:rPr/w:strike or w:rPr/w:dstrike is enabled with absent w:val or true/1/on. False/0/off is not an active strike.",
+    "text_hash_normalization": "NFKC; normalize line endings; fold every whitespace run to one ASCII space; strip; preserve case.",
+    "checked_paragraph_count": 7,
+    "xml_operative_equals_corpus": true,
+    "normalized_hashes_match_clause_keys": true,
+    "checked_paragraphs_have_no_tracked_deletions_or_double_strikes": true,
+    "docx_styles_have_no_strike_or_double_strike": true
+  },
+  "paragraphs": [
+    {
+      "source_ref": "4.2.9.A.(1)#d8313b78",
+      "paragraph_index": 4477,
+      "xml_para_id": "28D52EBF",
+      "clause_id_at_pinned_corpus": "C004187",
+      "operative_text_sha256": "d8313b785e1a322ebf505f9eb39ce856a48a60b74f636eb641294134d443a09a",
+      "operative_text": "(1) Eritropoietin ve darbepoietin preparatları kronik böbrek yetmezliği ile ilişkili anemi ve myelodisplastik sendrom dışındaki endikasyonlarda, roksadustat preparatları ise kronik böbrek yetmezliği ile ilişkili anemi dışındaki endikasyonlarda Kurumca karşılanmaz.",
+      "struck_fragments": []
+    },
+    {
+      "source_ref": "4.2.9.A.(2)#8b36884a",
+      "paragraph_index": 4478,
+      "xml_para_id": "156F17DA",
+      "clause_id_at_pinned_corpus": "C004188",
+      "operative_text_sha256": "8b36884aa220de0e3c292adea7f2f09ddf7fa5dfcf5b5771952c0330f11eac43",
+      "operative_text": "(2) Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir.",
+      "struck_fragments": []
+    },
+    {
+      "source_ref": "4.2.9.A.(3)#a9d0cf5b",
+      "paragraph_index": 4479,
+      "xml_para_id": "61F2BE17",
+      "clause_id_at_pinned_corpus": "C004189",
+      "operative_text_sha256": "a9d0cf5b5f90cdb58664ba2a6fee5b8dad203f8981740c92659364a331d58345",
+      "operative_text": "(3) Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta, darbepoetin ve roksadustat, endikasyon muadili olarak birbirlerinin yerine kullanılabilirler.",
+      "struck_fragments": []
+    },
+    {
+      "source_ref": "4.2.9.A.(4)#ed1d5fdf",
+      "paragraph_index": 4480,
+      "xml_para_id": "38736587",
+      "clause_id_at_pinned_corpus": "C004190",
+      "operative_text_sha256": "ed1d5fdf03cf9995c797136275d01037ec9c740ebe92605d1757c4e8a2680ab5",
+      "operative_text": "(4) Eritropoietin, darbepoetin ve roksadustatın ilgili uzman hekim raporlarında ilacın kullanım dozu ve süresi belirtilir. Bir defada en fazla 1 aylık ilaç verilir.",
+      "struck_fragments": []
+    },
+    {
+      "source_ref": "4.2.9.A-2#678e9289",
+      "paragraph_index": 4487,
+      "xml_para_id": "40D6098F",
+      "clause_id_at_pinned_corpus": "C004197",
+      "operative_text_sha256": "678e92896f51866861e763abc83a22619add16e80151605fbc8064d7bc618d78",
+      "operative_text": "4.2.9.A-2 - Myelodisplastik Sendrom endikasyonunda",
+      "struck_fragments": []
+    },
+    {
+      "source_ref": "4.2.9.A-2.(1)#6369cafd",
+      "paragraph_index": 4488,
+      "xml_para_id": "6E398DFC",
+      "clause_id_at_pinned_corpus": "C004198",
+      "operative_text_sha256": "6369cafdca08262d399f5b94369d06eec50baf3c040fc639ffc7d2aa08056d40",
+      "operative_text": "(1) (Değişik: RG- 26/09/2013- 28777/ 3 md. Yürürlük: 04/10/2013)",
+      "struck_fragments": [
+        "Hemoglobin değeri 11 gr/dl'nin, blast oranı %5’in ve serum eritropoietin düzeyi 500 mu/ml’nin altında olan hastalarda tedaviye başlanır. Hedef hemoglobin değeri 12 gr/dl’dir. Hb seviyesi 12 gr/dl’yi aşınca tedavi kesilir. Maksimum doz haftada 900 IU/kg’ı aşmamalıdır Eritropoietin alfa-beta ve darbepoetin, hematoloji uzman hekimi tarafından düzenlenen uzman hekim raporuna dayanılarak, hematoloji veya iç hastalıkları uzman hekimlerince reçete edilebilir. Hemogram sonuç belgesinin tarihi ve sonucu reçetede belirtilir."
+      ]
+    },
+    {
+      "source_ref": "4.2.9.A-2#17efb08b",
+      "paragraph_index": 4489,
+      "xml_para_id": "3108F0FD",
+      "clause_id_at_pinned_corpus": "C004199",
+      "operative_text_sha256": "17efb08ba397a16ad5177e6c27ba7c34c565a4a436de28ff83a3ebf07f23207f",
+      "operative_text": "Hemoglobin değeri 11 gr/dl'nin, blast oranı %5’in ve serum eritropoietin düzeyi 500 mu/ml’nin altında olan hastalarda tedaviye başlanır. Hedef hemoglobin değeri 12 gr/dl’dir. Hb seviyesi 12 gr/dl’yi aşınca tedavi kesilir. Eritropoietin alfa-beta için maksimum doz haftada 900 IU/kg’ı (Mülga:RG-09/05/2024-32541/9 md. Yürürlük:17/05/2024 aşmamalıdır. Eritropoietin alfa-beta (Mülga:RG- 09/05/2024-32541/9 md. Yürürlük:17/05/2024) , hematoloji uzman hekimi tarafından düzenlenen uzman hekim raporuna dayanılarak, hematoloji veya iç hastalıkları uzman hekimlerince reçete edilebilir. Hemogram sonuç belgesinin tarihi ve sonucu reçetede belirtilir.",
+      "struck_fragments": [
+        "), darbepoetin için maksimum doz haftada 150 µg’ı",
+        "ve darbepoetin"
+      ],
+      "annotation_note": "Preserve the exact operative text, including the unbalanced parenthesis left by a struck closing character. The Mülga annotations attach to removed darbepoetin fragments; they do not remove the unstruck alfa-beta cap or grant historical eligibility."
+    }
+  ],
+  "candidate_interpretation": {
+    "exact_substance_scope": ["epoetin_alfa", "epoetin_beta"],
+    "source_substance_text": "Eritropoietin alfa-beta",
+    "no_product_alias_authority": true,
+    "start_only": {
+      "conjunction": "all",
+      "hemoglobin": {"comparison": "lt", "value": 11, "source_unit": "gr/dl"},
+      "blast_fraction": {"comparison": "lt", "value": 5, "source_unit": "%"},
+      "serum_erythropoietin": {"comparison": "lt", "value": 500, "source_unit": "mu/ml"}
+    },
+    "hemoglobin_stop": {"comparison": "gt", "value": 12, "source_unit": "gr/dl"},
+    "target_hemoglobin": {"value": 12, "source_unit": "gr/dl", "is_not_an_additional_stop_at_equality": true},
+    "maximum_weekly_dose": {"comparison": "lte", "value": 900, "source_unit": "IU/kg", "period": "week", "source_substances": ["eritropoietin alfa", "eritropoietin beta"]},
+    "report": {"kind": "specialist_report", "issuer_specialty": "hematoloji", "usage_dose_documented": true, "usage_duration_documented": true},
+    "prescriber_specialties_any_of": ["hematoloji", "iç hastalıkları"],
+    "general_lab_result_documentation": {
+      "source_ref": "4.2.9.A.(2)#8b36884a",
+      "required_result_document_date_and_result_location_any_of": ["prescription", "report"],
+      "applies_to_required_test_results": true,
+      "numeric_values_and_dates_do_not_prove_document_location": true,
+      "does_not_replace_mds_hemogram_prescription_requirement": true
+    },
+    "hemogram": {"result_document_date_in_prescription": true, "result_in_prescription": true, "maximum_age_days_established": false},
+    "dispensing": {"maximum_supply_calendar_months": 1, "thirty_day_equivalence_established": false},
+    "interpretation_limits": [
+      "General endikasyon muadili wording in 4.2.9.A.(3) does not independently transfer the alfa-beta weekly dose, typed clinical predicates or report scope to zeta, PEG epoetin beta, darbepoetin or roksadustat.",
+      "A brand name, generic ESA alias, or beta substring is not exact-substance evidence. Metoksipolietilen glikol epoetin beta is separately named in the general provision.",
+      "The source names MDS and supplies no ICD-10 range. D47 alone must not be treated as independent proof of MDS.",
+      "Start thresholds do not establish a continuation restart protocol, repeated blast/EPO testing cadence or a hemogram maximum age.",
+      "The source spells serum EPO units mu/ml. No silent conversion to IU, mIU, U/L or an unsupported unit is authorized by this packet.",
+      "No full reimbursement, price, product-listing, equivalence or payment-clearance determination is established."
+    ]
+  },
+  "darbepoetin_review": {
+    "status": "review_required",
+    "change_annotation_date": "2024-05-17",
+    "removed_specific_mentions": ["weekly maximum 150 µg", "ve darbepoetin"],
+    "retained_general_refs": ["4.2.9.A.(1)#d8313b78", "4.2.9.A.(3)#a9d0cf5b", "4.2.9.A.(4)#ed1d5fdf"],
+    "limit": "Specific deleted MDS mentions and retained general MDS/equivalence context require interpretation together. Keep darbepoetin/Aranesp in REVIEW; neither a categorical denial nor alfa-beta candidate eligibility follows. No CKD routing change."
+  },
+  "date_and_admission_limits": [
+    "The observed October DOCX and the source proof date are not a legal-effective interval or an admitted MDS service window.",
+    "The old 2013 annotation is attached to a superseded struck body; the 2024 annotation documents deletion fragments. Neither fills the historical MDS source gaps.",
+    "The existing clinical_versions catalog and October 5 review receipt contain twelve named families, without MDS. Renal bindings cover 4.2.9.B/Ç/D, and followup bindings are not exact MDS numeric authority.",
+    "A new MDS family requires exact binding proof, independent interpretation and explicit source-date admission before a production clinical evaluator is activated. Existing twelve-family continuity renewal is not admission permission.",
+    "Missing, invalid, historical or future service dates, units, treatment phase and evidence dates must retain unknown/review semantics. Today must never replace a missing service date.",
+    "Candidate predicates may be reviewed in the isolated draft; production routing and clinical eligibility remain gated."
+  ],
+  "supporting_existing_receipts": [
+    "data/gazette/source_authority/official_review_2026_10_05.json",
+    "data/gazette/source_authority/review_receipt_2026_10_05.json"
+  ]
+}
