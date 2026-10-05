@@ -42,7 +42,7 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
         outcome['runtime_coverage'] = observer.summary(_load_sut_clauses_frame())
         evaluations.append(outcome)
     if 'followup_source_constraints' in kinds:
-        evaluations.append(evaluate_followup(line))
+        evaluations.append(_observed_family(line, 'followup', evaluate_followup))
     if 'other_indication_source_constraints' in kinds:
         evaluations.append(evaluate_indications(line))
     if 'enteral_pediatric_reports_2026' in kinds:
