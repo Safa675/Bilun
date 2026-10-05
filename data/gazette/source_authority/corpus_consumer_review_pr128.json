@@ -25245,6 +25245,7 @@
     }
   },
   "fixed_author_artifact_hashes": {
+    ".gitattributes": "9d7d42d02d70806f3610e0b9c25df244d9ae0690f4b5c06dfa31ca9143a74d85",
     "data/gazette/broad_rule_classification_policy.json": "f3f107828e5cebd41749ad43b98288fc56fc2ba045dc8b43859a21ee139087c4",
     "data/gazette/clause_type_overrides.yaml": "2880da37d29c740c3b084b16a6377e55006c54b6ea549c95ef37c7505db044bd",
     "data/gazette/prose_rule_sources/anti_vegf/4.2.33.A.yaml": "4b3943f75ec1221de1ddc443f552306652633f08a517f2e28995dbb2549a04fc",
@@ -25686,9 +25687,27 @@
     "data/gazette/prose_rule_sources/treatment_pricing_2_4/2.4.4.İ.yaml": "73492c867f8035522de7da7d7de843215d9077753a544e7805f0a31db16385d1",
     "data/gazette/prose_rules/deferral_table.yaml": "070b9fd8f63bf20705d5559424ef223742c99c6c5f749a701988e475ed415de5",
     "data/gazette/source_authority/corpus_migration_pr128.json": "3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde",
+    "data/gazette/source_authority/official_review_2026_10_05.json": "ecf2dc2f5c841ed43a1f0b823a5cec7a829ed533c331ced371d9476b595f3968",
+    "data/gazette/source_authority/review_receipt_2026_10_05.json": "b93c8c0caee05e5dee622346576bdc4e5f34d114033ba40884a260354ee4029f",
+    "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261005-text.txt": "cb7e176229b86f1ab7b5e72056a1865dfadcd85ae7aadb06227831e6797c66d5",
+    "data/gazette/source_authority/rg-20261005-daily-contents-observer-text.txt": "56f55d48cd648193c214d70dc0c7049bc5a858c71b6342f319cd6c845b8d9204",
+    "data/gazette/source_authority/rg-homepage-20261005-observer-text.txt": "113dc94c858f29eb3d3771643524d0d671827ef6490bd09e7c224eae82daa9ca",
+    "data/gazette/source_authority/sgk-20261002-amendment-observed-20261005-text.txt": "d5f5a21873829f1fee30d1812977a80e4f57ed3556022e5ebe29f67870e3b293",
+    "data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261005-text.txt": "9ec30ebe1039f7d78ea871f4add6941c1fd65c70167e0ee0196da39e6126ba6d",
+    "data/gazette/source_authority/sgk-gss-listing-20261005-observer-text.txt": "4d5181469665524c7aab63bed800c7cdb74b7d7f5131553bc9bfef829169bbf1",
     "data/gazette/temporal/drug_amendments_2026_10.json": "c75e3fef61a1dc24f3a58b20a073526f21ea04f543417272aa276daa3d5c6d2e",
+    "docs/gazette/clinical-source-authority.md": "ca791dadb35e0bc6c55de13f158a982e8d65ee4ca6ea80504e411ea14e029015",
+    "frontend/src/components/tabs/sut/sections/ClinicalMaterialInputs.tsx": "5c05ea29f059132d8ba730dd019da9bfd580f92e500104a0d2fbd5fa9e7a1724",
+    "frontend/src/components/tabs/sut/sections/ClinicalRestrictionDetails.tsx": "a8c1ec6c35e66eff55c13055dcb424e1a133311fba715e7af6a9f5f509d2ac40",
+    "frontend/src/components/tabs/sut/sections/clinicalFields.ts": "184a396714467d529ec433774fbc615a6f5a4394f54e8e6ca1122d48d9468831",
+    "frontend/src/components/tabs/sut/sections/drugInputs.ts": "a95d748901c8d2435c11d9e2c77339486b50913ce4c92121dc8ed37e3a3b658e",
+    "frontend/src/lib/api/clinicalEvidence.ts": "33d835c1123db22795918a890b94ac5365152e405160beed4e4effcf6875e3ab",
+    "frontend/src/lib/api/sut.ts": "8c2e3a579b480e1d4823fdda51d159c0ad9f217802eaf6159a3a3a5ad499401d",
+    "frontend/src/messages/en/sections.ts": "ac41abbe74b80271f6ced3d56f624d54da8c7bc98095f90c915e864509a7a9d0",
+    "frontend/src/messages/tr/sections.ts": "af39f9fe237843da356dbe04029f8eabbb90413718f4f4f04521a44c632ea429",
     "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md": "7626a93a1c63d71307b1323987e427703e29098af499b693153c7c78eea36543",
     "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json": "48f88bc47892ea6816524c060ea62a08fbab1ef1e326f8ace6eb6337a144a7ae",
+    "reports/sut-expansion/2026-10-04-mesothelioma-documentary-draft.md": "a8364f592b27201488fda9e277a6151785689abc2e28fc9ec3aede7ffe14d1b6",
     "scripts/agent/pipeline_smoke.py": "35b6ede6cc293b1c4488dc0849f41d0603dc1933a3b4013947d1d04e46f1ba3b",
     "scripts/sut/close_algorithmic_gaps.py": "1e793c18288f0482e5f187dda821f344db5c019b5d5faab69cba63a2b18475d1",
     "scripts/sut/compile_rules.py": "7fe37c5ae55380fe3c1c1a62d055145ce84fd61ffc33bb22e59f982f24c0106b",
@@ -25703,9 +25722,19 @@
     "src/bilun/domain/billing/broad_rule_catalog.py": "715f788231f0118f46e737c99492e0ef0369600ff00532431391c894d3240532",
     "src/bilun/domain/billing/broad_rule_classification.py": "1ff3fb8ac38a6ff2dd53f8110bd41477d574bd80e72f741e100bc2a70b471828",
     "src/bilun/domain/billing/treatment_pricing_evaluations.py": "291f462c49e00e281c3ee2d77831d1a6bfe9b90c7e816ace2987d17ee6a02ea2",
+    "src/bilun/domain/claim_validation_v2.py": "e0f1f2f5edb4ef41d4789c39c4db1a812259aae93a0822e1aec6d9a0aa25cae5",
+    "src/bilun/domain/claims/adapter.py": "cfa9b41b69dbec26ab3feb9747b25f96cb96000deeaad519b7262ec4f2554ef9",
+    "src/bilun/domain/claims/mesothelioma_evidence.py": "885e63fd4ace81109937db1e4bc5bc394faa10f9c22307b53552e8cc53308413",
+    "src/bilun/domain/claims/models.py": "459fa5d7a0a93c15c9bd7026f5de3a70b63f58f73d1f0de6fa92fdc713c0668c",
+    "src/bilun/domain/claims/parsing/row_parsers.py": "c906fa353c704f7e32c5968ed81b83e53f7d801aa75c68492a5e11426c211bf6",
     "src/bilun/domain/loaders/gazette.py": "725191e186823713221e7f19cc3128535f1769ae331b29532ce4c8f2ec933c94",
+    "src/bilun/domain/prose_rules/_drug_indication/clinical.py": "6ea2e228c18f5cff795da9e8d35709fa6c1c51fc295ad31e41530d25bb450c19",
+    "src/bilun/domain/prose_rules/_drug_indication/clinical_mesothelioma_documents.py": "e1f45e83f96cd5fceba618f101103a11b6e0402133496af8d2bcd52a150d24ad",
+    "src/bilun/domain/prose_rules/_drug_indication/constraints.py": "e4eb0f2671bfea798e0ea0dbf6c173bf8b8d8688bd410a2a0deaeb3df7e50cd4",
     "src/bilun/domain/prose_rules/_drug_indication/temporal.py": "632b3b93088771d2b176ffaf5a695713562837da3bf3280bb39473f21c566afe",
+    "src/bilun/domain/prose_rules/gap_closing.py": "5bd330d4f762c814645869c251af9e131d66bd99bdb50ca648d9fb582e87361d",
     "src/bilun/domain/prose_rules/treatment_pricing.py": "b626a58f7419e12ea6a7d3636fbf8891622d742d36aa84aace42e78bc589f63c",
+    "src/bilun/shared/models.py": "b3c80ed84b71a676c3dc2106a1da1edd7403ce4e0712aafd2fd8f40e64ea5251",
     "tests/unit/_helpers/reviewed_clause_identities_pr128.json": "156a42cf34f1e592887bac38d5406d9a46a372049a309033814dc6c0b25ea79b",
     "tests/unit/_helpers/reviewed_clause_ids.py": "f7a814e6692c0268547fa8bc1556cea8ddbeb812560182fc24b44b0d53bb8e29",
     "tests/unit/_helpers/test_reviewed_clause_ids.py": "08082d8d52db245a600f7283fe0394b1e596f7e2bd31daba2ce76f8988bb8f46",
@@ -25906,16 +25935,21 @@
     }
   },
   "validation_test_file_hashes": {
+    "frontend/src/components/tabs/sut/sections/mesotheliomaDocumentary.test.tsx": "4c17ae1fef4699e7b41eb9f4c6274c9540660feb0fab85b50d8ffa27c5d985b2",
     "tests/unit/_helpers/test_reviewed_clause_ids.py": "08082d8d52db245a600f7283fe0394b1e596f7e2bd31daba2ce76f8988bb8f46",
+    "tests/unit/api/test_mesothelioma_documentary_api.py": "dddef49b2996a3f508bf5676db15b60da4dcc36c8b8ed6be1c1a2c713e02f18f",
+    "tests/unit/api/test_prior_therapy_context_cache_api.py": "e66a09d2dfb20a1bbc11a08a8e795e62a2423f175c097532be38f72a2151eb1e",
+    "tests/unit/api/test_prior_therapy_outcome_api.py": "b3c7c9028098432d896e1e2f0d173eaca78dca20abd218fb65a5d21b8fe7579b",
     "tests/unit/deploy/test_clinical_semantic_transition.py": "ac3469c5809e9b24dee11dc0590614d58b50dccf46fd5a12242eb6f9a294e863",
     "tests/unit/domain/billing/test_broad_rule_catalog.py": "0e9c335a2ed64114293fa31eb189bbaf4031194033e34f20db80c3303d7250f9",
     "tests/unit/domain/billing/test_broad_rule_classification.py": "92337ec55922c8acf7102f418c5d450fd774380a2f9e25385d0c40fd744c9b3a",
     "tests/unit/domain/billing/test_broad_rule_materializer.py": "8fa00dd8101379881f2844ddb83eaa2c7e5a7945e1fd4b1c4ce97ca31d289cd1",
     "tests/unit/domain/billing/test_focused_legacy_materializer.py": "546a8f97a8fdf0885576eedfdabc612a9d59def1ed4d6584b78a261fa4824fc1",
     "tests/unit/domain/billing/test_treatment_pricing_evaluations.py": "019d5f561c3f45a2a4149100ece2cfdde900c5c898eacc66655033c8de1393bf",
+    "tests/unit/domain/claims/test_mesothelioma_documentary_transport.py": "db7ccc20cc232b33190815d4ee4d9958e5a86c0f7cfed533f76a04fb4ff68ccb",
     "tests/unit/domain/prose_rules/test_clinical_corpus_migration.py": "62eadd1f97c431a00d41807542b0ec136993b909f744719c299d178692dad7de",
     "tests/unit/domain/prose_rules/test_clinical_remaining_indications.py": "b9d940c538b925c8af167ce53bf877f42e3a722b40b403875380ac70e1c21228",
-    "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "c064bbff785b28557f2b153029ad33c22d217dd17c0779a126b492eb903ac8ae",
+    "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "0358e169125e5e5fd6089b3dcdbb3f0a52578086288b47e1fd91cea44f3b3a5f",
     "tests/unit/domain/prose_rules/test_drug_indication_4201_w4_tier_b.py": "0fd8ca3c1efc266895f5ba3fea8937d5ed2a9900ed7ef8a06c695268d3f311d3",
     "tests/unit/domain/prose_rules/test_drug_indication_4206.py": "8d7b72ed8ee08d7456f125e25190ae08cf8c1677cafc2b0087b76ca7dec53f88",
     "tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py": "2a5fa071e9c06181d633c12db8bc2846acddce6dc69e30182f49087f499e081a",
@@ -25925,14 +25959,17 @@
     "tests/unit/domain/prose_rules/test_drug_indication_4233.py": "775ee563931041ad2e643d92a42b798c3e92d7e71e269ae35693fb760d18ada7",
     "tests/unit/domain/prose_rules/test_drug_indication_4234.py": "b483ee503f1c0cfbf2ef216c2af344936cf0e811f592c8bbfcd141a09775e1b4",
     "tests/unit/domain/prose_rules/test_drug_indication_4235_4237.py": "c5b1ab28b059fd386dbc31b09de5737e2f5127471167dac9f2058cf5dfd85d7e",
+    "tests/unit/domain/prose_rules/test_drug_indication_prior_therapy.py": "b227d031cc17a5467acec11a9b572ecf06669413cc041a9335ce57bcdb00df5c",
     "tests/unit/domain/prose_rules/test_drug_temporal_amendments.py": "62b84fdf7bfcf338da7e80e850d8ab5d1925fc96f12c8d97a85027a110723ed6",
-    "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py": "61d2a12f13ae620b028c2f1b3dc93d6fa4419e87a84d008db8ecb6046224afda",
-    "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py": "8ae49ec829e458a4c744834203a5769a5ea184b71f96a9c615576b4bae6a5afd",
+    "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py": "dcd75fa04f80af6f5056b8de359bf482d693fe6c51c29fae2f476ef9caa50d21",
+    "tests/unit/domain/prose_rules/test_gap_closing_context_memoization.py": "4598aa5faeb8c79f652dd318a6837d0ea23ced752d4a74fb945fb952f5cd73b4",
+    "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py": "8a486f26ac4af1a506db8ac9904a11e3c55b02d998fb4d230b03ae2ebd98e157",
+    "tests/unit/domain/prose_rules/test_mesothelioma_documentary_draft.py": "4e8ad22c7a676fa7a2f2f64d78a936d3791983ce32263c6e664b2d4c2d40d155",
     "tests/unit/domain/prose_rules/test_pediatric_gh_continuation.py": "554768d9c07cb68750c76da12b271f926eafae7980b230b58289cf81536552d1",
     "tests/unit/domain/prose_rules/test_remaining_source_context.py": "802d6ac97104d30c1edf27614b1acb189c833f6d529350c5d3420224fac70f8b",
-    "tests/unit/domain/prose_rules/test_renal_runtime_observations.py": "f1153bca363a0a5d8eedfa8561a26fd030c9161620694c11b4a434a19ccd7c68",
-    "tests/unit/domain/prose_rules/test_report_documentation_completion.py": "b9d1dd95fcb40d1294aef944307772e8c13b7e5cbbade29c29c7089bb8c5aecb",
-    "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py": "d4155c8da43b3383e2c753ac656fb6adf89c60a3665cea680e9d4f674b922676",
+    "tests/unit/domain/prose_rules/test_renal_runtime_observations.py": "f6464156cc2fc34698891028baeaecdca9bac22f241d504b4da26c799d20e6c7",
+    "tests/unit/domain/prose_rules/test_report_documentation_completion.py": "35192993e4a96370587e0f4fe02f0f27f0103e3d27f45b771eb6b5f83dd287cd",
+    "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py": "02f1afc128c825910bb8d519559fde83f5caa973ebad608a7218b788ec1d66f9",
     "tests/unit/domain/prose_rules/test_thiotepa_temporal.py": "dadd60b6937b414421a3a12f6bc751b239e0832024f7236b1a40654a00c40cd5",
     "tests/unit/domain/prose_rules/test_treatment_pricing_2_4.py": "18996463a0dd95e61ee7baa3e77543591d54e07ab12d1519cf14fda82bb2dd56",
     "tests/unit/domain/prose_rules/test_treatment_pricing_for_context.py": "f4e46ac8bf9fa6439909279e74c09bbd00f6b3987dc26708c8b9276891a7924e",
@@ -25941,9 +25978,9 @@
     "tests/unit/domain/prose_rules/test_treatment_pricing_wiredness.py": "5740c36430fce81dc3b0afdea476c780982f3ce3d7b7e0fe932bf9899fc2e583",
     "tests/unit/domain/sut/test_runtime_coverage.py": "c6502c93d8e48a99c65ec7e4a9367dd7db76ba35a9bdb0e658a2eed9e8f1a1e0",
     "tests/unit/domain/test_dental_catalog_loading.py": "f98e2137e0ce3dcffe0f010da0d373d46c5ad9a70f8fc7dd7e926bd25be4b472",
-    "tests/unit/domain/test_followup_request_integration.py": "fe7e0b1684b66c56cd40c784f7a86cad5e93b0bc4352b2163f8b8f02b26a5a84",
-    "tests/unit/domain/test_mecasermin_request_integration.py": "039035fceb3070f0a323a845a0fedea92a1c0fe8e522a6c991e0e037b269a303",
-    "tests/unit/domain/test_source_authority_transport.py": "a46c6bcd9a881c757e58201f2eee58e5ef705e50e7b0ef916bcb9a6e69c84dac",
+    "tests/unit/domain/test_followup_request_integration.py": "1cff213699073a057bb5ec95450a2746920ef7a225291f7810cb25dae2a978da",
+    "tests/unit/domain/test_mecasermin_request_integration.py": "e00bad5fc010d6f4822b992ecb987cb15713f6aea06e9a28df09594065eb4fcd",
+    "tests/unit/domain/test_source_authority_transport.py": "fadf4b18e2e6a1871519d407a6f32a56058ae06cc8e6609c0e90b82f911bdbb6",
     "tests/unit/scripts/test_agent_checkers.py": "991ca4bb2326125afbf269fd18e30e555b98521a679a02e413fd5d6e2df006d7",
     "tests/unit/scripts/test_all_rule_family_yaml_sources.py": "7b870286d336e22b646f778a1588740201fc64db311cdeafaf2209b879ebad41",
     "tests/unit/scripts/test_authored_cstar_inventory.py": "86d194fd55df3f612b5dbb0056fd71c538a1e0b7ad565469c505eabe2b2721cd",
@@ -28726,5 +28763,388 @@
       ],
       "no_circular_pins": "No consumer-report self hash, catalog hash or downstream coverage-evidence/output hash is embedded in this report."
     }
+  },
+  "integration_2026_10_05": {
+    "scope": "Final mechanical package and artifact closure; October 5 source admission is established by its separate official receipt and catalog window, not by this consumer report.",
+    "integration_parent_head": "5d0bdb478d5ec56a8ac7edaad3021e497c70211a",
+    "merged_package_head": "b5beeddaba58bf6a3ad64926b5da4fbb458772c8",
+    "package_heads": {
+      "PR150": "58a73b117e71d9610d7e51cf854c3a23aba4fd7b",
+      "PR154": "8f9cfce3b0a202d9be44fdc6dc9ca3e0cf4e74bd",
+      "PR151": "47ecbee393a01b1ec7d4ede9da89090698545786",
+      "PR152": "5d7895135af0d6216392cac857da9e8f70edece8",
+      "PR153": "b546e2980dbc84dc93678e05db5633c564fde9b8"
+    },
+    "package_relationships": {
+      "PR154_contains": "PR150 head ancestry",
+      "PR153_contains": "PR152 equivalent file content; exact PR152 head is not ancestor"
+    },
+    "historical_record_preservation": "The original c4f736be-to-49af2019 corpus comparison, October 4 consumer correspondence, CI484 repair records and mechanical currentness_extended=false remain historical records. New source continuity does not rebase those proofs.",
+    "separate_source_review": {
+      "review_id": "sgk-rg-clinical-2026-10-05T061959Z",
+      "checked_at": "2026-10-05T06:19:59Z",
+      "checked_through": "2026-10-05",
+      "official_observation_window_utc": {
+        "start": "2026-10-05T06:08:50.096008+00:00",
+        "end": "2026-10-05T06:12:51.061200+00:00"
+      },
+      "admitted_additive_window": [
+        "2026-10-05",
+        "2026-10-05"
+      ],
+      "first_unsupported_day": "2026-10-06",
+      "later_publication_guarantee": false,
+      "scope": "named_clinical_report_checks_only",
+      "clinical_eligibility_complete": false
+    },
+    "final_hash_map_scope": {
+      "fixed_input_count": 496,
+      "test_file_count": 68,
+      "compiler_monitored_artifact_count": 134,
+      "compiler_present_artifact_count": 128,
+      "compiler_intentionally_absent_artifact_count": 6,
+      "new_package_fixed_input_paths": [
+        "frontend/src/components/tabs/sut/sections/ClinicalMaterialInputs.tsx",
+        "frontend/src/components/tabs/sut/sections/ClinicalRestrictionDetails.tsx",
+        "frontend/src/components/tabs/sut/sections/clinicalFields.ts",
+        "frontend/src/components/tabs/sut/sections/drugInputs.ts",
+        "frontend/src/lib/api/clinicalEvidence.ts",
+        "frontend/src/lib/api/sut.ts",
+        "frontend/src/messages/en/sections.ts",
+        "frontend/src/messages/tr/sections.ts",
+        "reports/sut-expansion/2026-10-04-mesothelioma-documentary-draft.md",
+        "src/bilun/domain/claim_validation_v2.py",
+        "src/bilun/domain/claims/adapter.py",
+        "src/bilun/domain/claims/mesothelioma_evidence.py",
+        "src/bilun/domain/claims/models.py",
+        "src/bilun/domain/claims/parsing/row_parsers.py",
+        "src/bilun/domain/prose_rules/_drug_indication/clinical.py",
+        "src/bilun/domain/prose_rules/_drug_indication/clinical_mesothelioma_documents.py",
+        "src/bilun/domain/prose_rules/_drug_indication/constraints.py",
+        "src/bilun/domain/prose_rules/gap_closing.py",
+        "src/bilun/shared/models.py"
+      ],
+      "new_package_test_paths": [
+        "frontend/src/components/tabs/sut/sections/mesotheliomaDocumentary.test.tsx",
+        "tests/unit/api/test_mesothelioma_documentary_api.py",
+        "tests/unit/api/test_prior_therapy_context_cache_api.py",
+        "tests/unit/api/test_prior_therapy_outcome_api.py",
+        "tests/unit/domain/claims/test_mesothelioma_documentary_transport.py",
+        "tests/unit/domain/prose_rules/test_drug_indication_prior_therapy.py",
+        "tests/unit/domain/prose_rules/test_gap_closing_context_memoization.py",
+        "tests/unit/domain/prose_rules/test_mesothelioma_documentary_draft.py"
+      ],
+      "source_transport_fixed_input_paths": [
+        ".gitattributes",
+        "data/gazette/source_authority/official_review_2026_10_05.json",
+        "data/gazette/source_authority/review_receipt_2026_10_05.json",
+        "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261005-text.txt",
+        "data/gazette/source_authority/rg-20261005-daily-contents-observer-text.txt",
+        "data/gazette/source_authority/rg-homepage-20261005-observer-text.txt",
+        "data/gazette/source_authority/sgk-20261002-amendment-observed-20261005-text.txt",
+        "data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261005-text.txt",
+        "data/gazette/source_authority/sgk-gss-listing-20261005-observer-text.txt",
+        "docs/gazette/clinical-source-authority.md"
+      ],
+      "source_transport_updated_existing_test_paths": [
+        "tests/unit/domain/prose_rules/test_clinical_source_authority.py",
+        "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py",
+        "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py",
+        "tests/unit/domain/prose_rules/test_renal_runtime_observations.py",
+        "tests/unit/domain/prose_rules/test_report_documentation_completion.py",
+        "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py",
+        "tests/unit/domain/test_followup_request_integration.py",
+        "tests/unit/domain/test_mecasermin_request_integration.py",
+        "tests/unit/domain/test_source_authority_transport.py"
+      ],
+      "hash_method": "Every file hash is recomputed from the final repository-local bytes. Catalog, consumer-report self hash and downstream coverage artifact/evidence hashes are excluded to preserve an acyclic closure."
+    },
+    "canonical_producer_runs": [
+      {
+        "stage": "compiler_write_1",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/sut/compile_rules.py"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:35:03.470024+00:00",
+        "seconds": 10.623,
+        "exit_code": 0,
+        "log_sha256": "2b4aca2f2be24ba671fc5be762c8c374e04384cc25308ad271b1ff96ee657bc9"
+      },
+      {
+        "stage": "coverage_write_1",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/sut/build_sut_coverage.py",
+          "--clauses",
+          "data/gazette/sut_clauses.parquet",
+          "--output-dir",
+          "data/gazette"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:35:58.409993+00:00",
+        "seconds": 2.666,
+        "exit_code": 0,
+        "log_sha256": "7132e1f22ffb93f58a9f0847d484ac23690447774b870b15847bea8700f1bfaf"
+      },
+      {
+        "stage": "compiler_write_2",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/sut/compile_rules.py"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:36:01.313913+00:00",
+        "seconds": 10.567,
+        "exit_code": 0,
+        "log_sha256": "2b4aca2f2be24ba671fc5be762c8c374e04384cc25308ad271b1ff96ee657bc9"
+      },
+      {
+        "stage": "compiler_check_after_coverage",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/sut/compile_rules.py",
+          "--check"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:36:12.120199+00:00",
+        "seconds": 10.399,
+        "exit_code": 0,
+        "log_sha256": "82a18ef9d442f6a22aeab8dab23882251bd2b4ce2e78c4f9163b720f63e6dddb"
+      },
+      {
+        "stage": "drug_manifest_parity",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/sut/audit_manifest_parity.py",
+          "--drug-only"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:42:03.970771+00:00",
+        "seconds": 0.061,
+        "exit_code": 0,
+        "log_sha256": "e24d5c82be853beff67a162a7d2be416fff5b41a6c140a910a068defed04bc10",
+        "observed_output": "{\n  \"ok\": true,\n  \"manifests_scanned\": 23,\n  \"manifests_with_traces\": 23,\n  \"issue_count\": 0,\n  \"issues\": []\n}"
+      },
+      {
+        "stage": "surfacing_check",
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "scripts/audits/build_rule_surfacing_inventory.py",
+          "--check"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:42:03.971249+00:00",
+        "seconds": 0.77,
+        "exit_code": 0,
+        "log_sha256": "e5789a6cc6e484d5eb392a7cbc059b1ae7156013fa2cbaad59a41984f7659988",
+        "observed_output": "{\"aggregate_only_findings\": 5, \"cohort_visible_findings\": 1304, \"distinct_emitted_rule_ids_or_kinds\": 1939, \"duplicate_surfaced_findings\": 1398, \"financial_findings\": 359, \"hidden_runtime_findings\": 535, \"nonfinancial_findings\": 1580, \"patient_visible_findings\": 1399, \"registry_rule_families\": 46, \"runtime_detectors_adapters\": 82}"
+      },
+      {
+        "stage": "ruff",
+        "argv": [
+          "/home/safa/miniforge3/bin/ruff",
+          "check",
+          "src/",
+          "scripts/"
+        ],
+        "environment": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "POLARS_MAX_THREADS": "1"
+        },
+        "started_at_utc": "2026-10-05T06:42:03.971458+00:00",
+        "seconds": 0.03,
+        "exit_code": 0,
+        "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "observed_output": "All checks passed!"
+      }
+    ],
+    "coverage_regeneration": {
+      "canonical_cli_completed": true,
+      "compiler_after_candidate_coverage_fixed_point": true,
+      "compiler_artifact_payload_changes": 0,
+      "all_four_frames_equal_in_all_rows_columns_order_and_polars_dtypes": true,
+      "shapes": {
+        "sut_clause_coverage.parquet": [
+          4781,
+          44
+        ],
+        "sut_coverage_by_rule.parquet": [
+          58,
+          11
+        ],
+        "sut_coverage_by_section.parquet": [
+          956,
+          6
+        ],
+        "sut_registry_coverage.parquet": [
+          46,
+          7
+        ]
+      },
+      "serialization_difference": {
+        "reviewed_pandas_version": "2.3.3",
+        "current_pandas_version": "3.0.3",
+        "reviewed_arrow_string_type": "string",
+        "current_arrow_string_type": "large_string",
+        "same_arrow_writer_version": "24.0.0"
+      },
+      "persisted_reviewed_parquet_bytes_retained": true,
+      "limitation": "The real CLI serialized different Parquet bytes; equality refers to complete frames, not regenerated byte identity. Old/new serialized hashes and retained reviewed hashes are recorded separately in the integration QA evidence. Final coverage evidence is generated from the actual persisted frames and final dependency hashes."
+    },
+    "separately_executed_author_validations": {
+      "source": {
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "tests/unit/domain/prose_rules/test_clinical_source_authority.py",
+          "tests/unit/domain/test_source_authority_transport.py",
+          "tests/unit/domain/test_followup_request_integration.py",
+          "tests/unit/domain/test_mecasermin_request_integration.py",
+          "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py",
+          "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py",
+          "tests/unit/domain/prose_rules/test_report_documentation_completion.py",
+          "tests/unit/domain/prose_rules/test_renal_runtime_observations.py",
+          "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py",
+          "--confcutdir=tests/unit",
+          "-p",
+          "no:cacheprovider",
+          "-o",
+          "faulthandler_timeout=30",
+          "--basetemp=/home/safa/Documents/Codex/2026-10-04/task-2/oct5-source-pytest-final"
+        ],
+        "environment": {
+          "TESTING": "1",
+          "BILUN_AUTH_OPTIONAL": "1",
+          "BILUN_AUTH_USERNAME": "",
+          "BILUN_AUTH_PASSWORD": "",
+          "BILUN_SESSION_SECRET": "",
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+        },
+        "result": "691 passed, 3 warnings in 34.43s",
+        "exit_code": 0,
+        "asserted_paths_sha256": {
+          "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "0358e169125e5e5fd6089b3dcdbb3f0a52578086288b47e1fd91cea44f3b3a5f",
+          "tests/unit/domain/test_source_authority_transport.py": "fadf4b18e2e6a1871519d407a6f32a56058ae06cc8e6609c0e90b82f911bdbb6",
+          "tests/unit/domain/test_followup_request_integration.py": "1cff213699073a057bb5ec95450a2746920ef7a225291f7810cb25dae2a978da",
+          "tests/unit/domain/test_mecasermin_request_integration.py": "e00bad5fc010d6f4822b992ecb987cb15713f6aea06e9a28df09594065eb4fcd",
+          "tests/unit/domain/prose_rules/test_mecasermin_known_as_of.py": "8a486f26ac4af1a506db8ac9904a11e3c55b02d998fb4d230b03ae2ebd98e157",
+          "tests/unit/domain/prose_rules/test_enteral_ravulizumab_clinical.py": "dcd75fa04f80af6f5056b8de359bf482d693fe6c51c29fae2f476ef9caa50d21",
+          "tests/unit/domain/prose_rules/test_report_documentation_completion.py": "35192993e4a96370587e0f4fe02f0f27f0103e3d27f45b771eb6b5f83dd287cd",
+          "tests/unit/domain/prose_rules/test_renal_runtime_observations.py": "f6464156cc2fc34698891028baeaecdca9bac22f241d504b4da26c799d20e6c7",
+          "tests/unit/domain/prose_rules/test_sma_antifungal_documentary_facts.py": "02f1afc128c825910bb8d519559fde83f5caa973ebad608a7218b788ec1d66f9"
+        }
+      },
+      "integrated_semantics": {
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "--confcutdir=tests/unit",
+          "-p",
+          "no:cacheprovider",
+          "-o",
+          "faulthandler_timeout=30",
+          "--basetemp",
+          "/home/safa/Documents/Codex/2026-10-04/task-2/integration-semantics-2026-10-05-first-tmp",
+          "tests/unit/domain/prose_rules/test_drug_indication_prior_therapy.py",
+          "tests/unit/domain/prose_rules/test_gap_closing_context_memoization.py",
+          "tests/unit/domain/prose_rules/test_mesothelioma_documentary_draft.py",
+          "tests/unit/domain/claims/test_mesothelioma_documentary_transport.py",
+          "tests/unit/api/test_prior_therapy_outcome_api.py",
+          "tests/unit/api/test_prior_therapy_context_cache_api.py",
+          "tests/unit/api/test_mesothelioma_documentary_api.py"
+        ],
+        "environment": {
+          "TESTING": "1",
+          "BILUN_AUTH_OPTIONAL": "1",
+          "BILUN_AUTH_USERNAME": "",
+          "BILUN_AUTH_PASSWORD": "",
+          "BILUN_SESSION_SECRET": "",
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+        },
+        "exit_code": 0,
+        "head": "b5beeddaba58bf6a3ad64926b5da4fbb458772c8",
+        "observed_result": "306 passed, 1 warning in 4.50s",
+        "changed_artifacts": {}
+      },
+      "integrated_historical_and_organ_boundaries": {
+        "argv": [
+          "/home/safa/Documents/Bilun/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "--confcutdir=tests/unit",
+          "-p",
+          "no:cacheprovider",
+          "-o",
+          "faulthandler_timeout=30",
+          "--basetemp",
+          "/home/safa/Documents/Codex/2026-10-04/task-2/integration-semantics-2026-10-05-boundaries-tmp",
+          "tests/unit/domain/prose_rules/test_treatment_pricing_source_review.py",
+          "tests/unit/deploy/test_clinical_semantic_transition.py::test_production_source_pins_remain_exact",
+          "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_public_coverage_golden_snapshots_keep_exact_transition",
+          "tests/unit/deploy/test_clinical_semantic_transition.py::test_historical_transition_rejects_current_corpus_coverage",
+          "tests/unit/deploy/test_clinical_semantic_transition.py::test_expected_route_fingerprints_are_reproducible_from_current_public_source_without_a_cache"
+        ],
+        "environment": {
+          "TESTING": "1",
+          "BILUN_AUTH_OPTIONAL": "1",
+          "BILUN_AUTH_USERNAME": "",
+          "BILUN_AUTH_PASSWORD": "",
+          "BILUN_SESSION_SECRET": "",
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+        },
+        "exit_code": 0,
+        "head": "b5beeddaba58bf6a3ad64926b5da4fbb458772c8",
+        "observed_result": "26 passed in 1.59s",
+        "changed_artifacts": {}
+      },
+      "interpretation": "These are distinct actual targeted runs, not a combined or full-suite total. The source run precedes final common hash closure; integrated semantics/boundary runs precede the source-only date transport."
+    },
+    "preserved_invariants": {
+      "clinical_eligibility_complete": false,
+      "mesothelioma_interpretation_release": false,
+      "mesothelioma_source_family_added": false,
+      "review_pending_judgment_count": 55,
+      "pending_payload_sha256": "bf193ca69e822e7c741bc01cd9c46d1a631b22ec28c0cf3719e42695d37d3c85",
+      "neutral_organ_rule_ids": [
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c"
+      ],
+      "historical_migration_receipt_sha256": "3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde",
+      "raw_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+      "embedding_sha256": "683a4c187012af91656aa374476422443e787d8acaed41270618ff7beded07d6",
+      "historical_deployment_verifier_sha256": "73f20d6a5302aafe7456ec81a57fa515dbbb1084453f37110b199b9eaa1d36de",
+      "historical_lower_bounds_gaps_and_receipts_preserved": true,
+      "new_clinical_judgments_or_serving_permissions_admitted": false
+    },
+    "post_pin_validation_status": "Final persisted-frame coverage/source checks, independent review and exact-published-head full CI must run after this report/catalog/evidence freeze; their actual results are recorded outside this acyclic runtime report. No hosted CI success is claimed here."
   }
 }

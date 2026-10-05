@@ -10,9 +10,9 @@ Main499dff4 tabanında PR154(150 dahil), PR153(152 dahil) ve PR151'i tek kez bir
 - [x] Git merge sırasıyla PR154 → PR153 → PR151; üç ort merge temiz, b5beedda; ortak evidence final üretime kadar provisional.
 - [x] Kaynak writer RG33391/SGK resmî gözlemlerini 06:08:50–06:12:51UTC kaydetti; 12 [5Ekim,5Ekim] continuity eklendi, 6Ekim 12/12 review_required. Kaynak worktree'sinde dokuz tam dosya 691PASS/3warnings.
 - [x] Frozen20sourcepath gerçekSHA doğrulamasıyla integration tree'ye taşındı; source tasks/todo dışlandı, eski receipt/history kimlikleri değişmedi.
-- [ ] Compiler/manifests → normalized coverage/registry → consumer report actualpins/catalog → final evidenceJSON sırasını mevcut üreticilerle kapat; manifest/coverage feedback varsa envanter eşitliğini kanıtla.
-- [ ] Consumer/source/date API ve transport testleri, compiler --check/parity/Ruff, rawcorpus/vector/policy/pending/neutral invariants doğrula.
-- [ ] Ayrı incelemeci final tree/pins/source gözlemlerini ve negatifleri inceleyip gerçek komut/sayı kaydını versin.
+- [x] Mevcut compiler iki WRITE/iki CHECK134byte-stable; coverage bütün değer/order/dtype eşitliğiyle reviewed4parquet korundu (yerel pandas serialization farkı QA'da ayrı). Consumer496input/68test/134output → catalog yalnızreportpin → final159dependency evidence kapandı.
+- [x] Kaynak691PASS, birleşiksemantics306PASS ve boundaries26PASS; compiler/parity23/0/Ruff/surfacing/freshcoverage1PASS; rawcorpus40b2/vector683a/verifier73f/policy/pending55/organ3/CLOSED invariants korundu.
+- [x] Ayrı incelemeci final604PASS/2warnings/37.33s ve2410watchedfile0SHAchange bildirdi; finalhashaudit/code/source P1/P2none. YeniCI henüz çalışmadı, exactheadmapping mevcuttestedfileSHA'larıyla kaydedilecek.
 - [ ] CI beforepush kontrolünden sonra onaylı draft integration PR yayımla; exact final head hosted fullCI sonucunu gerçek loglarla doğrula.
 - [ ] Main'e merge yapmadan verifiedtree/head/CI ve tekrar etmeyen merge planını koordinatöre teslim et.
 
