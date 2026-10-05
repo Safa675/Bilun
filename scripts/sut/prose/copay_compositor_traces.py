@@ -32,13 +32,9 @@ COMPOSITOR_CLAUSE_TRACE_KEYS: dict[str, tuple[str, ...]] = {
     ),
 }
 
-# Supplement rule-backed manifest encoding only for these clauses, whose full
-# conditions and waived service scope are handled by the runtime paths. Other
-# traced clauses have broader or time-bounded conditions and stay pending unless
-# their Gate B source rules independently encode them.
-COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS = frozenset(
-    {
-        "1.8.2.(3)#04043a39",  # EK-4/D match requires the listed diagnosis, drug, and report.
-        "1.8.5.(7)#fb187fbe",  # EK-1/A outpatient specialist exam; report gates savings.
-    }
-)
+# No compositor trace currently proves full source-clause coverage. EK-4/D's
+# clause also excludes listed drugs from the box/item count, and EK-1/A's clause
+# restores copay when another diagnosis is detected or treated at the visit.
+# Keep both clauses in their authored deferred/pending buckets until runtime
+# implements those additional effects.
+COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS: frozenset[str] = frozenset()

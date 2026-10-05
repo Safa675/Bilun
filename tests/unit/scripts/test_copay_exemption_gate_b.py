@@ -154,7 +154,8 @@ def test_manifest_keeps_rule_encodings_and_compositor_traces_consistent(
     _, runtime_encoded = _resolve_copay_compositor_clause_traces(clauses)
     encoded = set(manifest["encoded_clause_ids"])
     soft_floor(len(encoded), 30, label="copay encoded_clause_ids")
-    assert encoded == rule_encoded | runtime_encoded
+    assert not runtime_encoded
+    assert encoded == rule_encoded
     assert manifest["encoded_clause_count"] == len(encoded)
 
     id_by_key = dict(
@@ -162,10 +163,16 @@ def test_manifest_keeps_rule_encodings_and_compositor_traces_consistent(
     )
     header_id = id_by_key["1.8.5#e0af4502"]
     emergency_id = id_by_key["1.8.5.(5)#424f9787"]
+    ek4d_id = id_by_key["1.8.2.(3)#04043a39"]
+    ek1a_id = id_by_key["1.8.5.(7)#fb187fbe"]
     assert header_id not in encoded
     assert emergency_id not in encoded
+    assert ek4d_id not in encoded
+    assert ek1a_id not in encoded
     assert header_id in manifest["tier_c_deferred_clause_ids"]
     assert emergency_id in manifest["tier_c_deferred_clause_ids"]
+    assert ek4d_id in manifest["tier_c_deferred_clause_ids"]
+    assert ek1a_id in manifest["tier_a_pending_clause_ids"]
     # Emergency behavior is present in the runtime trace, but this long clause
     # also covers other service contexts, so the trace does not promote it.
     assert emergency_id in manifest["compositor_clause_traces"][
@@ -212,10 +219,7 @@ def test_compositor_trace_mapping_uses_current_stable_source_identities() -> Non
     )
     assert "1.8.5.(21)#8b10e952" not in expected_patient_status_keys
     assert "1.8.5.b#05a4369f" not in expected_patient_status_keys
-    assert COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS == {
-        "1.8.2.(3)#04043a39",
-        "1.8.5.(7)#fb187fbe",
-    }
+    assert COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS == set()
 
     keys_by_id = dict(clauses.select("clause_id", "clause_key").iter_rows())
     for category, ids in traces.items():

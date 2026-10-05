@@ -1891,7 +1891,7 @@
   "file_sha256": {
     "data/gazette/clause_type_overrides.yaml": "2880da37d29c740c3b084b16a6377e55006c54b6ea549c95ef37c7505db044bd",
     "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json": "6b7d0ce1ca1152e6daa933838a2ccb15f6a2bdd7c0495e8852ae163f7dcdfb05",
-    "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json": "503df47fbfec222b264d056d40294e41d659bef4f7a566787d42b688d88c1582",
+    "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json": "3916d3c87406112800b9f2e7480b6f17c29847d66a6ef305ecf12463f776e25d",
     "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json": "057879535aca23fc680b002ee9a2e616f8c75c11a9ec5b4ea97943fb36846469",
     "data/gazette/prose_manifests/L2.2_procedure_pairing_encoded_manifest.json": "024ed7f515d3c2cf3fb5b785a926a44af0d405d39a4be9e711fd73e3712a8419",
     "data/gazette/prose_manifests/L2.2_session_pricing_2_2_2_B_encoded_manifest.json": "fb5ff63a4c6d22686691cac7ae11a451075b969f386d766b616e392460db1a56",
@@ -2002,7 +2002,7 @@
     "scripts/sut/prose/classify.py": "3d961fc5fab486a384fe6a3d251e1cbd21a5e3f2e4d39ad027d836d97757de07",
     "scripts/sut/prose/clause_identity.py": "020f6c1918977496031c2c7b5f4bc169e8d794c3c175a2bccf2ec6b23bb14b6a",
     "scripts/sut/prose/clause_type_overrides.py": "c67aec2a7879737ae63ee275dae5e229b8527aa1aaec14817f16c05a0c0edd94",
-    "scripts/sut/prose/copay_compositor_traces.py": "bbd28158c6f05036797712cefea0d3da9278917bc124067f8fd20c9c6f833130",
+    "scripts/sut/prose/copay_compositor_traces.py": "9d1b3b27b8d92735ad4ad29298777060f1c1f37610aa545e0ca0b2d3109051a9",
     "scripts/sut/prose/coverage.py": "604f940954a9014d3adf0ddf1911d40f63009749a2276fc6444a8870dac3cb11",
     "scripts/sut/prose/drug_indication_gate_b.py": "46f1286e083004e1e7671d9dd597eebf9030c4243dc3c5a3930ff556da04b01e",
     "scripts/sut/prose/extractor.py": "b5f816bf9926ce117f6840175447837385725653fc5668ffeafa5f09b3f24dae",
