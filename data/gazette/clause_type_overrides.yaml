@@ -7,29 +7,35 @@
 # navigational headings is unchanged; these rows carry normative text and are
 # already encoded by rules.
 #
-# NOTE: C* ids are positional per corpus snapshot; this file was re-mapped to
-# the 2026-08-29 corpus (clause-id shift from 2026-07-01). Each entry below
-# targets the same legal text as before, re-resolved by content hash/text.
+# Legacy Aug29 corrections follow full source keys after the Oct2 ID shift.
+# Each intended paragraph was matched by complete normalized text and source
+# context. Baked positional side effects below restore the unchanged old type;
+# exact PR128 parquet bytes and clinical dates remain unchanged.
 
 overrides:
-  C000869: {clause_type: prose}
-  C000872: {clause_type: prose}
-  C000873: {clause_type: prose}
-  C000874: {clause_type: prose}
-  C003122: {clause_type: prose}
-  C004167: {clause_type: prose}
-  C004189: {clause_type: prose}
-  C004311: {clause_type: prose}
-  C004353: {clause_type: prose}
-  C004417: {clause_type: prose}
-  C004425: {clause_type: prose}
-  C004433: {clause_type: prose}
-  C004982: {clause_type: prose}
-  C004984: {clause_type: prose}
-  C005958: {clause_type: prose}
-  C000856: {clause_type: fikra}
-  C000859: {clause_type: fikra}
-  C003078: {clause_type: fikra}
+  "2.4.3#11332073": {clause_type: prose}
+  "2.4.3#e9a09c5f": {clause_type: prose}
+  "2.4.3#3646712a": {clause_type: prose}
+  "2.4.3#22e2b2e8": {clause_type: prose}
+  "3.3.8#e98413f1": {clause_type: prose}
+  "4.2.9#a4f55c41": {clause_type: prose}
+  "4.2.9.A-2#678e9289": {clause_type: prose}
+  "4.2.10.A-4#6f7f8780": {clause_type: prose}
+  "4.2.10.B-3#23b74ecc": {clause_type: prose}
+  "4.2.10.C-3#ca978368": {clause_type: prose}
+  "4.2.10.Ç-2#a5f7f0b6": {clause_type: prose}
+  "4.2.10.D-2#cb259a12": {clause_type: prose}
+  "4.2.14.A#94d1ea7b": {clause_type: prose}
+  "4.2.14.B#42f7a714": {clause_type: prose}
+  "4.2.15.F#061b3662": {clause_type: prose}
+  "2.4.2.B-1.(10)#69220c7b": {clause_type: fikra}
+  "2.4.2.B-1.(12)#690b41d6": {clause_type: fikra}
+  "3.3.6.A-1.(10)#43d9dfaf": {clause_type: fikra}
+
+  # Same literal b) Word paragraph in Aug29/Oct2 body w:p 4377/4385 (zero-based).
+  # Full normalized text SHA256 2882a47a74ff4d7ab0194f6eb1ed4a2aeef8653bd3e370268280d125cc395d24.
+  # The old positional C004167 override hit this bent after the Oct2 ID shift.
+  "4.2.8.A.b#2882a47a": {clause_type: bent}
 
   # Verified original Word list: numId=47, level=2, lowerLetter in both 2026
   # snapshots. The extractor lost a/b/c prefixes; match text, never shifted IDs.
@@ -52,3 +58,24 @@ overrides:
   # Official Oct2 Word paragraphs4893/4894 contain literal1-/2- bullets.
   "4.2.13.1#2076b8bd": {clause_type: numbered_item, clause_number: 1}
   "4.2.13.1#50f88a7d": {clause_type: numbered_item, clause_number: 2}
+
+  # Restore misclassified bodies hit by reused positional IDs during extraction.
+  "2.4.2.B-2.(1)#a0c86992": {clause_type: fikra}
+
+  "2.4.2.B-2.(2)#79939404": {clause_type: fikra}
+
+  "2.4.2.B-2.(3)#caa45521": {clause_type: fikra}
+
+  "3.3.7.B#b01aa7dd": {clause_type: section_heading}
+
+  "4.2.9.A.(3)#a9d0cf5b": {clause_type: fikra}
+
+  "4.2.10.A-3.d#0ce89b17": {clause_type: bent}
+
+  "4.2.10.B-2.ç#7f584ba9": {clause_type: bent}
+
+  "4.2.10.C-2.(5)#b4581cb4": {clause_type: fikra}
+
+  "4.2.15.D-2.(3)#e3b0c442": {clause_type: fikra}
+
+  "3.3.6.A-1#6bd4ded8": {clause_type: amendment}

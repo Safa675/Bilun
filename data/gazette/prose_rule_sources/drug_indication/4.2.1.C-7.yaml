@@ -348,8 +348,8 @@ rules:
   message_tr: Anakinra/tosilizumab/kanakinumab — tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli;
     yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (2)).
   gate_b_sources:
-  - C003831
-  - C003831
+  - C003839
+  - C003839
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji

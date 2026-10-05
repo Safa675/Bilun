@@ -141,14 +141,19 @@ def request(prefix, factory, field, fact):
 @pytest.mark.parametrize('prefix,cls,field,factory,evaluator', CASES)
 @pytest.mark.parametrize('fact,status', [(True, 'criterion_clear'), (False, 'restriction_not_met'), (None, 'unknown')])
 @pytest.mark.parametrize('claim_id', ['', 'documentation-http'])
-def test_actual_http_preserves_documentation_status_missing_labels_and_privacy(client, prefix, cls, field, factory, evaluator, fact, status, claim_id):  # noqa: F811
+@pytest.mark.parametrize('service_date', [DAY, date(2026, 10, 4)])
+def test_actual_http_preserves_documentation_status_missing_labels_and_privacy(client, prefix, cls, field, factory, evaluator, fact, status, claim_id, service_date):  # noqa: F811
     _login(client); raw = request(prefix, factory, field, fact); raw['claim_id'] = claim_id
+    facts = raw['materials'][0][prefix]
+    raw['drug_context']['service_date'] = facts['applies_on'] = facts['assessment_date'] = service_date.isoformat()
     responses = [client.post('/api/validate-claim', json=raw, headers={'X-Bilun-Validation-Contract': '2'}) for _ in range(2)]
     for response in responses:
         assert response.status_code == 200, response.text
         data = response.json(); row = next(r for r in data['advisories'] if r['rule'] == 'drug_indication')
         outcome = next(r for r in row['clinical_restrictions'] if r['constraint_set'] == ('enteral_pediatric_reports_2026' if prefix == 'enteral_evidence' else 'renal_source_constraints'))
         assert outcome['criterion_status'] == status
+        assert outcome['source_authority']['status'] == 'admitted'
+        assert outcome['source_authority']['service_date'] == service_date.isoformat()
         assert (prefix + '.' + field in row['missing_inputs']) is (fact is None)
         assert data['is_valid'] is None and row['clinical_eligibility_complete'] is False
         assert row['disposition'] == 'review_only'
@@ -165,7 +170,7 @@ def test_actual_http_blocks_unverified_or_inconsistent_dates_before_documentatio
     _login(client); raw = request(prefix, factory, field, False)
     facts = raw['materials'][0][prefix]
     if date_mode in ('pre_source', 'after_verified'):
-        day = '2026-10-04' if date_mode == 'after_verified' else '2026-09-04' if prefix == 'enteral_evidence' else '2026-10-01'
+        day = '2026-10-06' if date_mode == 'after_verified' else '2026-09-04' if prefix == 'enteral_evidence' else '2026-10-01'
         raw['drug_context']['service_date'] = facts['applies_on'] = facts['assessment_date'] = day
     elif date_mode == 'mismatched_scope':
         facts['applies_on'] = '2026-10-01'

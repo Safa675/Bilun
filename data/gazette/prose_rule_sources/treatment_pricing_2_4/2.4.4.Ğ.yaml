@@ -15,9 +15,9 @@ rules:
     message_tr: risk puanına göre düşük risk grubunda %10 azaltma, yüksek risk grubunda %15 artırım uygulanarak ilgili işlem
       üzerinden karşılanır
   gate_b_sources:
-  - C001151
-  - C001153
-  - C001154
+  - C001159
+  - C001161
+  - C001162
 - rule_id: 2.4.4.G-u.(2).risk_score_records_kept_in_patient_file
   sut_section: 2.4.4.Ğ
   condition:

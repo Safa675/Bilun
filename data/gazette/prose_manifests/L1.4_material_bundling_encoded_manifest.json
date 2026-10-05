@@ -7,39 +7,39 @@
   "section_clause_total": 37,
   "encoded_clause_count": 33,
   "encoded_clause_ids": [
-    "C002732",
-    "C002733",
-    "C002734",
-    "C002735",
-    "C002737",
-    "C002738",
-    "C002739",
+    "C002740",
+    "C002741",
     "C002742",
     "C002743",
-    "C002744",
     "C002745",
     "C002746",
-    "C002755",
-    "C002766",
-    "C002768",
-    "C002771",
-    "C002772",
-    "C002775",
-    "C002781",
-    "C002782",
+    "C002747",
+    "C002750",
+    "C002751",
+    "C002752",
+    "C002753",
+    "C002754",
+    "C002763",
+    "C002774",
+    "C002776",
+    "C002779",
+    "C002780",
+    "C002783",
     "C002789",
     "C002790",
-    "C002791",
     "C002797",
-    "C002806",
-    "C002807",
-    "C002809",
-    "C002837",
+    "C002798",
+    "C002799",
+    "C002805",
+    "C002814",
+    "C002815",
+    "C002817",
     "C002845",
-    "C002846",
-    "C002872",
-    "C002876",
-    "C002879"
+    "C002853",
+    "C002854",
+    "C002880",
+    "C002884",
+    "C002887"
   ],
   "encoded_clause_coordinates": [
     "3.1.1.(12)",
@@ -77,10 +77,10 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
-    "C002740",
-    "C002842",
-    "C002843",
-    "C002844"
+    "C002748",
+    "C002850",
+    "C002851",
+    "C002852"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -91,7 +91,7 @@
   "non_actionable_count": 0,
   "clause_traces": [
     {
-      "clause_id": "C002732",
+      "clause_id": "C002740",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "clause_id": "C002733",
+      "clause_id": "C002741",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -112,7 +112,7 @@
       ]
     },
     {
-      "clause_id": "C002734",
+      "clause_id": "C002742",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -122,7 +122,7 @@
       ]
     },
     {
-      "clause_id": "C002735",
+      "clause_id": "C002743",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "clause_id": "C002737",
+      "clause_id": "C002745",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -143,7 +143,7 @@
       ]
     },
     {
-      "clause_id": "C002738",
+      "clause_id": "C002746",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -153,7 +153,7 @@
       ]
     },
     {
-      "clause_id": "C002739",
+      "clause_id": "C002747",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -163,7 +163,7 @@
       ]
     },
     {
-      "clause_id": "C002740",
+      "clause_id": "C002748",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -174,7 +174,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C002742",
+      "clause_id": "C002750",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -184,7 +184,7 @@
       ]
     },
     {
-      "clause_id": "C002743",
+      "clause_id": "C002751",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -194,7 +194,7 @@
       ]
     },
     {
-      "clause_id": "C002744",
+      "clause_id": "C002752",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -204,7 +204,7 @@
       ]
     },
     {
-      "clause_id": "C002745",
+      "clause_id": "C002753",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -214,7 +214,7 @@
       ]
     },
     {
-      "clause_id": "C002746",
+      "clause_id": "C002754",
       "section_id": "3.1.1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -224,7 +224,7 @@
       ]
     },
     {
-      "clause_id": "C002755",
+      "clause_id": "C002763",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -234,7 +234,7 @@
       ]
     },
     {
-      "clause_id": "C002766",
+      "clause_id": "C002774",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -244,7 +244,7 @@
       ]
     },
     {
-      "clause_id": "C002768",
+      "clause_id": "C002776",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -254,7 +254,7 @@
       ]
     },
     {
-      "clause_id": "C002771",
+      "clause_id": "C002779",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -264,7 +264,7 @@
       ]
     },
     {
-      "clause_id": "C002772",
+      "clause_id": "C002780",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -274,7 +274,7 @@
       ]
     },
     {
-      "clause_id": "C002775",
+      "clause_id": "C002783",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -284,7 +284,7 @@
       ]
     },
     {
-      "clause_id": "C002781",
+      "clause_id": "C002789",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -294,7 +294,7 @@
       ]
     },
     {
-      "clause_id": "C002782",
+      "clause_id": "C002790",
       "section_id": "3.1.2",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -304,7 +304,7 @@
       ]
     },
     {
-      "clause_id": "C002789",
+      "clause_id": "C002797",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -314,7 +314,7 @@
       ]
     },
     {
-      "clause_id": "C002790",
+      "clause_id": "C002798",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -324,7 +324,7 @@
       ]
     },
     {
-      "clause_id": "C002791",
+      "clause_id": "C002799",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -334,7 +334,7 @@
       ]
     },
     {
-      "clause_id": "C002797",
+      "clause_id": "C002805",
       "section_id": "3.1.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -344,7 +344,7 @@
       ]
     },
     {
-      "clause_id": "C002806",
+      "clause_id": "C002814",
       "section_id": "3.1.2.2",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -354,7 +354,7 @@
       ]
     },
     {
-      "clause_id": "C002807",
+      "clause_id": "C002815",
       "section_id": "3.1.2.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -364,7 +364,7 @@
       ]
     },
     {
-      "clause_id": "C002809",
+      "clause_id": "C002817",
       "section_id": "3.1.2.2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -374,7 +374,7 @@
       ]
     },
     {
-      "clause_id": "C002837",
+      "clause_id": "C002845",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -384,7 +384,7 @@
       ]
     },
     {
-      "clause_id": "C002842",
+      "clause_id": "C002850",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -395,7 +395,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C002843",
+      "clause_id": "C002851",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -406,7 +406,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C002844",
+      "clause_id": "C002852",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -417,7 +417,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C002845",
+      "clause_id": "C002853",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -428,7 +428,7 @@
       ]
     },
     {
-      "clause_id": "C002846",
+      "clause_id": "C002854",
       "section_id": "3.1.3",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -438,7 +438,7 @@
       ]
     },
     {
-      "clause_id": "C002872",
+      "clause_id": "C002880",
       "section_id": "3.2.1.A",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -448,7 +448,7 @@
       ]
     },
     {
-      "clause_id": "C002876",
+      "clause_id": "C002884",
       "section_id": "3.2.1.B",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -458,7 +458,7 @@
       ]
     },
     {
-      "clause_id": "C002879",
+      "clause_id": "C002887",
       "section_id": "3.2.1.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -471,34 +471,34 @@
   "clause_trace_complete": true,
   "gate_b_deferred_clause_ids": [],
   "kdv_pricing_clause_ids": [
-    "C002692"
+    "C002700"
   ],
   "separate_billing_allowlist_clause_ids": [
-    "C001823"
+    "C001831"
   ],
   "ek3c_list_price_ceiling_clause_ids": [
-    "C002833"
+    "C002841"
   ],
   "sut_material_list_price_ceiling_clause_ids": [
-    "C002690"
+    "C002698"
   ],
   "corpus_ek3_annex_header_clause_ids": [],
   "corpus_ek3_scope_clause_ids": [
-    "C002708",
-    "C002745"
+    "C002716",
+    "C002753"
   ],
   "corpus_malzeme_general_header_clause_ids": [],
   "corpus_malzeme_scope_clause_ids": [
-    "C002683"
+    "C002691"
   ],
   "r5_amendment_header_clause_ids": [
-    "C002731",
-    "C002738",
-    "C002763"
+    "C002739",
+    "C002746",
+    "C002771"
   ],
   "r5_manifest_header_only_clause_ids": [
-    "C002822",
-    "C002826",
-    "C002829"
+    "C002830",
+    "C002834",
+    "C002837"
   ]
 }

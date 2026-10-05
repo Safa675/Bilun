@@ -335,11 +335,20 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     return True
 
 
+def _source_review_required(rule: dict[str, Any]) -> bool:
+    """Read the explicit authored quarantine before comparing treatment facts."""
+    marker = rule.get("source_review_required", False)
+    if type(marker) is not bool:
+        raise ValueError("source_review_required must be a boolean")
+    return marker
+
+
 def _violation_from_rule(rule: dict[str, Any], ruleset_id: str) -> dict[str, Any]:
     """Build a violation dict from a firing rule (mirrors gap_closing shape)."""
     action = rule.get("action") or {}
-    billable = bool(action.get("billable", True))
-    message = (
+    source_review = _source_review_required(rule)
+    billable = None if source_review else bool(action.get("billable", True))
+    message = "Kaynak incelemesi tamamlanmadığı için bu kuralın değerlendirmesi ertelendi." if source_review else (
         action.get("denial_tr")
         or action.get("payment_tr")
         or action.get("message_tr")
@@ -347,17 +356,19 @@ def _violation_from_rule(rule: dict[str, Any], ruleset_id: str) -> dict[str, Any
     )
     return {
         "rule": ruleset_id,
-        "severity": action.get("severity", "warning"),
+        "severity": "review" if source_review else action.get("severity", "warning"),
         "message": message,
         "savings_try": 0.0,
         "risk_amount": 0.0,
         "sut_section": rule.get("sut_section", ""),
         "rule_id": rule.get("rule_id", ""),
         "billable": billable,
-        "material_outcome": "must_bill" if billable else "no_pay",
-        "annex_basis": action.get("annex_basis"),
+        "material_outcome": "review_required" if source_review else ("must_bill" if billable else "no_pay"),
+        "annex_basis": None if source_review else action.get("annex_basis"),
         "details": {
             "prose_rule_set": ruleset_id,
+            **({"source_status": "review_required", "clinical_eligibility_complete": False}
+               if source_review else {}),
         },
     }
 
@@ -366,6 +377,9 @@ def _evaluate(ruleset: dict[str, Any], context: dict[str, Any]) -> list[dict[str
     ruleset_id = ruleset.get("rule_set_id", _RULESET_ID)
     violations: list[dict[str, Any]] = []
     for rule in ruleset.get("rules") or []:
+        if _source_review_required(rule):
+            violations.append(_violation_from_rule(rule, ruleset_id))
+            continue
         condition = rule.get("condition") or {}
         if not _condition_matches(condition, context):
             continue

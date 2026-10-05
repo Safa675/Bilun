@@ -322,7 +322,15 @@
         "date_basis": "explicit consolidated SUT Yürürlük annotation",
         "historical_lower_bound_verified": false,
         "repeal_effective_date": "2026-09-05"
-      }
+      },
+      "icd10_codes": [
+        "C81",
+        "C82",
+        "C83",
+        "C84",
+        "C85"
+      ],
+      "source_scope_note": "Exact diagnosis selectors preserved from the removed legacy encoded route solely for neutral source-target quarantine; no clinical admissibility or replacement criterion is inferred."
     }
   ]
 }

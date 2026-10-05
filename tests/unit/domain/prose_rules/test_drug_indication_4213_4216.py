@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 import json
 from datetime import date
 from decimal import Decimal
@@ -167,8 +169,8 @@ def test_manifest_union_wires_encoded_clauses() -> None:
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C004557" in encoded
-    assert "C006069" in encoded
+    assert reviewed_clause_id("C004557") in encoded
+    assert reviewed_clause_id("C006069") in encoded
     # Track A3: heading/chapter ids may linger on older manifests; coverage union
     # only keeps encode-eligible cites from rule JSON.
     clauses = pl.read_parquet(_REPO / "data/gazette/sut_clauses.parquet")

@@ -24,7 +24,7 @@ carries the regulatory message.
 from __future__ import annotations
 
 import json
-from functools import lru_cache, cache
+from functools import lru_cache, cache, wraps
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
@@ -290,10 +290,11 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     most frequent conditions: ``procedure_category``, ``is_emergency``,
     ``care_setting``, ``payment_method``, ``facility_*``, ``procedure_code_any``,
 
-    Memoized: ``PatientClaimContext`` is frozen/hashable, and ``analyze_claim``
-    invokes this builder up to 3× per claim (misc + treatment + payment-method
-    traceability) with the same ``ctx``. The cached dict is treated read-only by
-    all consumers (``_condition_matches`` / ``check_*`` only call ``.get()``).
+    Memoized when all nested records are hashable. Dictionary-valued clinical
+    facts use the same builder without caching. ``analyze_claim`` invokes this
+    builder up to 3× per claim (misc + treatment + payment-method traceability).
+    The cached dict is treated read-only by all consumers
+    (``_condition_matches`` / ``check_*`` only call ``.get()``).
     Clear via ``_build_gap_closing_context.cache_clear()`` in tests that mutate
     claim data.
     ``drug_category``, ``health_report_present``.
@@ -498,6 +499,25 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
             if len(material_categories) == 1:
                 context["material_category"] = next(iter(material_categories))
     return context
+
+
+_build_gap_closing_context_cached = _build_gap_closing_context
+
+
+@wraps(_build_gap_closing_context_cached.__wrapped__)
+def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
+    try:
+        hash(ctx)
+    except TypeError:
+        # Frozen claim bundles can contain mutable clinical dictionaries.
+        # Catch only hashability failure; exceptions from the builder propagate.
+        return _build_gap_closing_context_cached.__wrapped__(ctx)
+    return _build_gap_closing_context_cached(ctx)
+
+
+_build_gap_closing_context.cache_clear = _build_gap_closing_context_cached.cache_clear
+_build_gap_closing_context.cache_info = _build_gap_closing_context_cached.cache_info
+_build_gap_closing_context.cache_parameters = _build_gap_closing_context_cached.cache_parameters
 
 
 def check_gap_closing_misc_for_context(ctx: Any) -> list[dict[str, Any]]:

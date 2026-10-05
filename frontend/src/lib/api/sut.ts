@@ -1,7 +1,7 @@
 import type { SutIndicationEvidence } from "./clinicalEvidence";
 import type { SutFollowupEvidence } from "./clinicalEvidence";
 import { postJSON, requestJSON } from "./request";
-import type { SutEnteralEvidence, SutRavulizumabEvidence, SutClinicalRestriction, SutClinicalSourceAuthority } from "./clinicalEvidence";
+import type { SutEnteralEvidence, SutRavulizumabEvidence, SutMesotheliomaEvidence, SutClinicalRestriction, SutClinicalSourceAuthority } from "./clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "./clinicalEvidence";
 import type {
   OptimizationSummary,
@@ -45,6 +45,7 @@ export interface SutMaterialItem extends SutGrowthHormoneEvidence {
   renal_evidence?: SutRenalEvidence | null;
   followup_evidence?: SutFollowupEvidence | null;
   indication_evidence?: SutIndicationEvidence | null;
+  mesothelioma_evidence?: SutMesotheliomaEvidence | null;
   name: string;
   unit_price: number;
   quantity: number;

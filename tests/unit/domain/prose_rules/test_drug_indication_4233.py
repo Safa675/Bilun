@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 import json
 from datetime import date
 from decimal import Decimal
@@ -99,9 +101,9 @@ def test_a2c_rules_present_in_anti_vegf_json() -> None:
 def test_a2c_manifest_encodes_new_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C006616" in encoded
-    assert "C006617" in encoded
-    assert "C006618" in encoded
+    assert reviewed_clause_id("C006616") in encoded
+    assert reviewed_clause_id("C006617") in encoded
+    assert reviewed_clause_id("C006618") in encoded
     assert manifest["rules_in_json"] >= 27
 
 

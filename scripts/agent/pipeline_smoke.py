@@ -103,6 +103,10 @@ def build_stages(temp_dir: Path, docx: Path | None, limit: int | None) -> list[t
         "--output-dir", str(raw_out),
         "--overwrite-manifest",
     ]
+    if docx is not None:
+        # Use the same selected package for annex conversion and prose extraction;
+        # a newer on-disk package may contain only the reviewed DOCX.
+        convert_cmd += ["--input-dir", str(docx.parent)]
     if limit is not None:
         convert_cmd += ["--limit", str(limit)]
 

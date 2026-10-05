@@ -8,6 +8,7 @@ from typing import Any
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
 from tests.unit._helpers.brittle_guards import (
     assert_audit_report_consistent,
@@ -27,7 +28,7 @@ _SECTION = "4210"
 _SECTION_PREFIX = "4.2.10"
 _EXCLUDE_PREFIX = "4.2.100"
 
-_TIER_A_IDS = {
+_TIER_A_IDS = reviewed_clause_ids(
     "C004263",
     "C004299",
     "C004306",
@@ -37,8 +38,8 @@ _TIER_A_IDS = {
     "C004418",
     "C004426",
     "C004434",
-}
-_ALL_ENCODED_IDS = frozenset({
+)
+_ALL_ENCODED_IDS = reviewed_clause_ids(
     "C004263",
     "C004289",
     "C004306",
@@ -59,7 +60,7 @@ _ALL_ENCODED_IDS = frozenset({
     "C004426",
     "C004433",
     "C004434",
-})
+)
 
 
 def _combined_rules() -> list[dict[str, Any]]:

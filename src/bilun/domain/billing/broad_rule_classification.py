@@ -33,7 +33,7 @@ from src.bilun.domain.constants import SUT_CLAUSES_PATH, _GAZETTE_DIR, _PROSE_RU
 from src.bilun.domain.prose_rules.dental_2_4_1 import _normalize_tr
 
 _POLICY_PATH = _GAZETTE_DIR / "broad_rule_classification_policy.json"
-_POLICY_SHA256 = "2f19c997d45816c2a776d4f0fc15c1395594c1d741a3caf1505df153818d7654"
+_POLICY_SHA256 = "f3f107828e5cebd41749ad43b98288fc56fc2ba045dc8b43859a21ee139087c4"
 _PRECIOUS = "2.4.1.(1).precious_metal_no_pay"
 _LOAD_LOCK = RLock()
 

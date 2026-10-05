@@ -1140,7 +1140,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001010"
+        "C001018"
       ]
     },
     {
@@ -2189,7 +2189,7 @@
         "message_tr": "uygun şartlarda yapılan işlemin bedeli Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C001379"
+        "C001387"
       ]
     },
     {
@@ -2385,7 +2385,7 @@
         "message_tr": "uygun endikasyon nedeniyle uygulanması halinde bedelleri Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C000941"
+        "C000949"
       ]
     },
     {
@@ -2466,9 +2466,9 @@
         "message_tr": "risk puanına göre düşük risk grubunda %10 azaltma, yüksek risk grubunda %15 artırım uygulanarak ilgili işlem üzerinden karşılanır"
       },
       "gate_b_sources": [
-        "C001151",
-        "C001153",
-        "C001154"
+        "C001159",
+        "C001161",
+        "C001162"
       ]
     },
     {
@@ -2579,7 +2579,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001303"
+        "C001311"
       ]
     },
     {
@@ -3189,7 +3189,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "2.4.2.A.(1)"
+        "2.4.2.A.(1)#7548a2e7"
       ]
     },
     {
@@ -3204,9 +3204,10 @@
         "payment_tr": "yurt içinde organın bulunması halinde hastanın organın bulunduğu yere veya organ nakli yapılacak merkezin bulunduğu yere getirilmesine ilişkin gidiş-dönüş nakliye/transfer masrafları SUT’un 2.6 maddesi doğrultusunda Kurumca karşılanır",
         "billing_method": "fee_for_service"
       },
-      "gate_b_sources": [
-        "2.4.2.A.(4)"
-      ]
+      "gate_b_sources": [],
+      "source_review_required": true,
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Historical documentary source 2.4.2.A.(4)#dd4afd03; no executable current source. Existing rule retained for neutral source review only."
     },
     {
       "rule_id": "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
@@ -3223,9 +3224,10 @@
         "billing_method": "fee_for_service",
         "annex_basis": "EK-2/C"
       },
-      "gate_b_sources": [
-        "2.4.2.A.(5)"
-      ]
+      "gate_b_sources": [],
+      "source_review_required": true,
+      "verification_status": "ai_generated_pending_review",
+      "source_scope_note": "Historical documentary source 2.4.2.A.(5)#5733887d; no executable current source. Existing rule retained for neutral source review only."
     },
     {
       "rule_id": "2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay",
@@ -3240,7 +3242,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.2.A.(6)"
+        "2.4.2.A.(6)#b195f0a7"
       ]
     },
     {
@@ -3413,7 +3415,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000864"
+        "C000872"
       ]
     },
     {
@@ -3465,7 +3467,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000869"
+        "C000877"
       ]
     },
     {
@@ -3483,7 +3485,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000872"
+        "C000880"
       ]
     },
     {
@@ -3502,7 +3504,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000873"
+        "C000881"
       ]
     },
     {
@@ -3526,7 +3528,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000874"
+        "C000882"
       ]
     },
     {
@@ -3665,9 +3667,9 @@
         "message_tr": "Kurumca saglik yardimlari karsilanmayan alici durumundaki kisilerin organ/doku vericisi olmasi halinde bu islemlere ait bedeller karsilanmaz",
         "severity": "error"
       },
-      "gate_b_sources": [
-        "2.4.2.A.(2)"
-      ]
+      "gate_b_sources": [],
+      "source_review_required": true,
+      "source_scope_note": "Historical documentary source 2.4.2.A.(2)#943077b8; no executable current source. Existing rule retained for neutral source review only."
     },
     {
       "rule_id": "2.4.4.B.(4).hbo_emergency_no_board_report_but_session_cap",
@@ -3940,7 +3942,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001447"
+        "C001455"
       ]
     }
   ]

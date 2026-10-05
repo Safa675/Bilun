@@ -121,7 +121,7 @@ rules:
     message_tr: sağlık kurulu raporunda IVF için gerekli şartların belirtilmiş olması gereklidir
     severity: error
   gate_b_sources:
-  - C001303
+  - C001311
 - rule_id: 2.4.4.I-1.(5).ivf_apply_within_6mo_or_new_report
   sut_section: 2.4.4.İ-1
   condition:

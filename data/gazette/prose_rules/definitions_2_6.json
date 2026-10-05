@@ -53,7 +53,7 @@
       "rule_id": "2.6.1.(1).conditions_required",
       "sut_section": "2.6.1",
       "gate_b_sources": [
-        "C001523"
+        "C001531"
       ],
       "condition": {
         "definition_scope": "Ödeme için (a)-(b)-(c) koşullarının tamamı gerekmektedir",
@@ -83,7 +83,7 @@
       "rule_id": "2.6.1.A.(2).travel_by_nearest_provider_distance",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001535"
+        "C001543"
       ],
       "condition": {
         "definition_scope": "Yerleşim yeri mesafesi esas alınarak yol giderinin karşılanması",
@@ -98,7 +98,7 @@
       "rule_id": "2.6.1.A.(2a).third_step_referral_distance_waived",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001542"
+        "C001550"
       ],
       "condition": {
         "definition_scope": "En yakın üçüncü basamak resmi sunucuya sevk için yerleşim yeri mesafesi aranmaz",
@@ -144,7 +144,7 @@
       "rule_id": "2.6.1.B.(3).referral_form_vehicle_required",
       "sut_section": "2.6.1.B",
       "gate_b_sources": [
-        "C001552"
+        "C001560"
       ],
       "condition": {
         "definition_scope": "Sevk formunda sevk vasıtasının belirtilmesi zorunluluğu",
@@ -255,7 +255,7 @@
       "rule_id": "2.6.1.B-3.(1b).non_routine_travel_accepted",
       "sut_section": "2.6.1.B-3",
       "gate_b_sources": [
-        "C001585"
+        "C001593"
       ],
       "condition": {
         "definition_scope": "Mutat taşıt dışı naklin Kurumca kabulü halinde yol giderinin ödenmesi",
@@ -381,7 +381,7 @@
       "rule_id": "2.6.2.(1a).outpatient_daily_allowance_window",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001609"
+        "C001617"
       ],
       "condition": {
         "definition_scope": "Ayakta tedavide müracaat ile tedavi bitişi arası, istirahat dışı günler için gündelik",
@@ -396,7 +396,7 @@
       "rule_id": "2.6.2.(1b).inpatient_daily_allowance_travel_days_only",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001610"
+        "C001618"
       ],
       "condition": {
         "definition_scope": "Yatarak tedavide hasta ve refakatçiye yalnızca gidiş/dönüş için gündelik",
@@ -411,7 +411,7 @@
       "rule_id": "2.6.2.(1c).no_bed_waiting_daily_cap_5",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001611"
+        "C001619"
       ],
       "condition": {
         "definition_scope": "Yatak yokluğu nedeniyle yatırılmadan geçen günler için 5 günü geçmemek üzere gündelik",
@@ -909,15 +909,15 @@
       "sut_section": "2.6.1.B-4",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001597",
+        "C001605",
         "2.6.1.B-4.a",
-        "C001599",
-        "C001600",
+        "C001607",
+        "C001608",
         "2.6.1.B-4.b",
-        "C001602",
-        "C001603",
-        "C001604",
-        "C001605"
+        "C001610",
+        "C001611",
+        "C001612",
+        "C001613"
       ],
       "condition": {
         "definition_scope": "Hava/deniz ambulansı uçuş/seyir saati başına TL+KDV tarife",

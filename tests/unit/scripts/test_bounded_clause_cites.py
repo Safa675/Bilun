@@ -1,6 +1,7 @@
 """Explicit context anchors disambiguate byte-identical medicine clauses."""
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
 from scripts.sut.prose.clause_identity import (
     resolve_gate_b_ref_to_clause_ids, UnknownClauseCiteError, AmbiguousClauseCiteError,
 )
@@ -100,4 +101,4 @@ def test_source_catalog_retains_context_and_normalized_document_text_hashes():
     from src.bilun.domain.prose_rules._drug_indication.clinical_ravulizumab import SOURCE_REFS
     assert SOURCE_REFS == ravu['source_refs']
     clauses = pl.read_parquet(Path(__file__).resolve().parents[3]/'data/gazette/sut_clauses.parquet')
-    assert resolve_gate_b_ref_to_clause_ids(SOURCE_REFS[-1], clauses) == ['C005809']
+    assert resolve_gate_b_ref_to_clause_ids(SOURCE_REFS[-1], clauses) == [reviewed_clause_id('C005809')]

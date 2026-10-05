@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -13,8 +15,6 @@ import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
 from tests.unit._helpers.gate_b_cites import (
-    cite_in_sources,
-    cites_covered_by_encoded,
     resolve_gate_b_cites_to_clause_ids,
 )
 
@@ -103,15 +103,15 @@ def test_w4_tier_b_batch_rule_count() -> None:
 
 def test_w4_tier_b_gate_b_sources_count() -> None:
     assert resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES) == frozenset({
-        "C003677",
-        "C003698",
-        "C003715",
-        "C003745",
-        "C003760",
-        "C003766",
-        "C003828",
-        "C003831",
-        "C003916",
+        reviewed_clause_id("C003677"),
+        reviewed_clause_id("C003698"),
+        reviewed_clause_id("C003715"),
+        reviewed_clause_id("C003745"),
+        reviewed_clause_id("C003760"),
+        reviewed_clause_id("C003766"),
+        reviewed_clause_id("C003828"),
+        reviewed_clause_id("C003831"),
+        reviewed_clause_id("C003916"),
     })
 
 def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:

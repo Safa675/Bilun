@@ -363,8 +363,9 @@ def _evaluate_prior_therapy_constraints(
     """§4.2.14.C prior-therapy-gated enforcement (imatinib-resistant, post-transplant).
 
     ``requires_prior_therapy`` is ``{drug_or_class, outcome}``. The claim's
-    ``prior_therapies`` is a tuple of ``{drug_or_class, outcome}``. A rule passes
-    when a prior therapy matching the required drug_or_class is present.
+    ``prior_therapies`` is a tuple of ``{drug_or_class, outcome}``. Only the
+    source-explicit imatinib resistance/intolerance pair has executable outcome
+    semantics. Other legacy placeholders retain their existing behavior.
     """
     required = rule.get("requires_prior_therapy")
     if not required:
@@ -374,22 +375,64 @@ def _evaluate_prior_therapy_constraints(
     req_drug = str(required.get("drug_or_class") or "").strip().lower()
     req_outcome = str(required.get("outcome", "")).lower()
     claim_prior = drug_line.prior_therapies or ()
+    # The two audited imatinib rows require resistance OR intolerance. SCT and
+    # generic prior-therapy/facility placeholders do not establish this predicate.
+    checks_outcome = (req_drug, req_outcome) == ("imatinib", "resistant_or_intolerant")
 
-    # Look for a matching prior therapy (drug_or_class match; outcome flexible)
     found = False
     has_unknown_identity = False
+    has_matching_identity = False
+    has_unknown_outcome = False
     for entry in claim_prior:
         prior_drug = str(entry.get("drug_or_class") or "").strip().lower()
         if not prior_drug:
             has_unknown_identity = True
             continue
-        if req_drug and (req_drug in prior_drug or prior_drug in req_drug):
-            found = True
-            break
+        matches_drug = (prior_drug.casefold() == req_drug.casefold() if checks_outcome
+                        else req_drug and (req_drug in prior_drug or prior_drug in req_drug))
+        if not matches_drug:
+            continue
+        has_matching_identity = True
+        if checks_outcome:
+            outcome = str(entry.get("outcome") or "").strip().casefold()
+            if outcome not in {"resistant", "intolerant", "resistant_or_intolerant"}:
+                # A reported response does not satisfy the encoded condition.
+                # Missing/unrecognized outcomes, including generic "failed",
+                # cannot establish resistance or intolerance and remain review.
+                if outcome != "responsive":
+                    has_unknown_outcome = True
+                continue
+        found = True
+        break
 
     if not found:
-        if not claim_prior or has_unknown_identity:
+        needs_review = not claim_prior or has_unknown_identity or has_unknown_outcome
+        missing = (["prior_therapies"] if not claim_prior or has_unknown_outcome else
+                   ["prior_therapies.drug_or_class"] if has_unknown_identity else [])
+        clinical_evidence = {}
+        if checks_outcome:
+            clinical_evidence = {
+                "clinical_eligibility_complete": False,
+                "clinical_restrictions": [{
+                    "constraint_set": "prior_therapy_outcome",
+                    "criterion_status": "unknown" if needs_review else "restriction_not_met",
+                    "missing_inputs": missing,
+                    "checks": [
+                        {"field": "prior_therapies.drug_or_class", "status": (
+                            "pass" if has_matching_identity else "unknown" if needs_review else "fail"
+                        )},
+                        {"field": "prior_therapies.outcome", "status": (
+                            "fail" if has_matching_identity and not has_unknown_outcome else "unknown"
+                        )},
+                    ],
+                    "source_refs": list(rule.get("gate_b_sources") or []),
+                    "clinical_eligibility_complete": False,
+                    "verification_status": "ai_generated_pending_review",
+                }],
+            }
+        if needs_review:
             return {
+                **clinical_evidence,
                 "drug_claim_line_id": drug_line.drug_claim_line_id,
                 "claim_id": claim.claim_id,
                 "drug_name": drug_line.drug_name,
@@ -399,9 +442,7 @@ def _evaluate_prior_therapy_constraints(
                 "matched_icd10_codes": icd_codes,
                 "violation_kind": "needs_prior_therapy_verification",
                 "severity": "review",
-                "missing_inputs": [
-                    "prior_therapies.drug_or_class" if claim_prior else "prior_therapies"
-                ],
+                "missing_inputs": missing,
                 "required_prior_therapy": req_drug,
                 "required_outcome": req_outcome,
                 "message_tr": (
@@ -410,6 +451,7 @@ def _evaluate_prior_therapy_constraints(
                 ),
             }
         return {
+            **clinical_evidence,
             "drug_claim_line_id": drug_line.drug_claim_line_id,
             "claim_id": claim.claim_id,
             "drug_name": drug_line.drug_name,

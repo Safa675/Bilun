@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 import json
 from datetime import date
 from decimal import Decimal
@@ -89,8 +91,8 @@ def test_a4_rules_merged(a4_rule_ids: set[str]) -> None:
 def test_a4_manifest_traces_encoded_clauses() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C006150" in encoded
-    assert "C006151" in encoded
+    assert reviewed_clause_id("C006150") in encoded
+    assert reviewed_clause_id("C006151") in encoded
     assert manifest["encoded_clause_count"] >= 2
 
 

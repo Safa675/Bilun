@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.15
   deontic: MUST_BILL
   gate_b_sources:
-  - C003216
+  - C003224
   condition:
     material_name_any:
     - trakeobronşiyal stent

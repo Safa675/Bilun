@@ -179,7 +179,7 @@ rules:
   message_tr: Ağır CMPA vakalarında aminoasit/pirinç proteini bazlı mama — çocuk gastroenteroloji/immünoloji-alerji
     uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C006067
+  - C006092
   legacy_provision: true
   prescriber_specialties:
   - çocuk gastroenteroloji
@@ -206,7 +206,7 @@ rules:
   message_tr: İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji
     (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C006067
+  - C006092
   - 4.2.16.(5)
   legacy_provision: true
   prescriber_specialties:
@@ -463,7 +463,7 @@ rules:
   message_tr: Hastalığa özel özel mama — uzman hekim raporu olmadan reçete edilemez;
     rapor sonrası tüm hekimler reçete edebilir (§4.2.16).
   gate_b_sources:
-  - C006067
+  - C006092
   legacy_provision: true
 - rule_id: 4.2.16.special_formula_ek4b_specialist_report
   sut_section: 4.2.16

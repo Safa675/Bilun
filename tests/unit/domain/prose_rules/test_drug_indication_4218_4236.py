@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -99,7 +101,7 @@ def test_a5_gate_b_sources_cover_all_tier_a_clauses() -> None:
         in_force_only=True,
         allow_ambiguous=True,
     )
-    assert encoded == {"C006147", "C006797", "C006798", "C006799", "C006801"}
+    assert encoded == {reviewed_clause_id("C006147"), reviewed_clause_id("C006797"), reviewed_clause_id("C006798"), reviewed_clause_id("C006799"), reviewed_clause_id("C006801")}
 
 def test_a5_manifest_section_counts() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))

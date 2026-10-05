@@ -19,6 +19,7 @@ from .clause_identity import (
     encoded_clause_ids_from_rules,
     resolve_gate_b_ref_to_clause_ids,
 )
+from .clause_type_overrides import apply_clause_type_overrides_pandas
 from .manifest_index import encoded_like_clause_ids, load_drug_bucket_clause_ids
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, CoverageStatus
 
@@ -611,6 +612,7 @@ def build_registry_coverage_summary(coverage: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_sut_coverage(clauses: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    clauses = apply_clause_type_overrides_pandas(clauses)
     if _IN_FORCE_ONLY and "is_in_force" in clauses.columns:
         clauses = clauses[clauses["is_in_force"]].copy()
     classified = classify_clauses(clauses)

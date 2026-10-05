@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.34
   deontic: MUST_BILL
   gate_b_sources:
-  - C003439
+  - C003447
   condition:
     material_name_any:
     - hasta alt bezi

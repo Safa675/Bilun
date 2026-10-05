@@ -1,6 +1,6 @@
 import type { SutIndicationEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutFollowupEvidence } from "@/lib/api/clinicalEvidence";
-import type { SutEnteralEvidence, SutRavulizumabEvidence } from "@/lib/api/clinicalEvidence";
+import type { SutEnteralEvidence, SutRavulizumabEvidence, SutMesotheliomaEvidence } from "@/lib/api/clinicalEvidence";
 import type { SutGrowthHormoneEvidence, SutSmaEvidence, SutAntifungalEvidence, SutRenalEvidence } from "@/lib/api/clinicalEvidence";
 
 export interface ClinicalField {
@@ -10,6 +10,7 @@ export interface ClinicalField {
   positiveOnly?: boolean;
   max?: number;
   signed?: boolean;
+  integerOnly?: boolean;
 }
 
 export const growthHormoneFields = [
@@ -49,11 +50,11 @@ export const mecaserminFields = [
   { name: "mecasermin_daily_dose_mcg_per_kg", kind: "number" },
 ] satisfies Array<ClinicalField & { name: keyof SutGrowthHormoneEvidence }>;
 
-export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number, signed = false): number | null {
+export function optionalClinicalNumber(value: string, positiveOnly = false, max?: number, signed = false, integerOnly = false): number | null {
   if (!value.trim()) return null;
   const number = Number(value);
   return Number.isFinite(number) && (positiveOnly ? number > 0 : signed || number >= 0)
-    && (max == null || number <= max) ? number : null;
+    && (max == null || number <= max) && (!integerOnly || Number.isSafeInteger(number)) ? number : null;
 }
 
 export const clinicalReviewFields = [
@@ -71,7 +72,18 @@ export const clinicalReviewFields = [
   "mecasermin_source_version", "mecasermin_remaining_clinical_criteria",
   "gh_initiation_clinical_assessment", "gh_growth_stage_reconciliation",
   "ckd_height_source_notation_verification", "ckd_height_reference_reconciliation", "ckd_transplant_timing_reconciliation",
+  "mesothelioma_documentary_interpretation_release",
 ] as const;
+
+export const mesotheliomaFields = [
+  { name: "applies_on", kind: "date" },
+  { name: "assessment_date", kind: "date" },
+  { name: "diagnosis_site", kind: "select", options: ["pleural", "nonpleural", "unknown"] },
+  { name: "board_report_present", kind: "boolean" },
+  { name: "report_distinct_specialist_count", kind: "number", integerOnly: true },
+  { name: "treatment_protocol_documented_in_report", kind: "boolean" },
+  { name: "prescribed_by_specialist", kind: "boolean" },
+] satisfies Array<ClinicalField & { name: keyof SutMesotheliomaEvidence }>;
 
 export const smaFields = [
   { name: "applies_on", kind: "date" },
@@ -167,6 +179,7 @@ export function clinicalMissingInputLabel(field: string, t: (key: string) => str
   const groups: Record<string, string> = {
     followup_evidence: "followup", indication_evidence: "indication", sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
     enteral_evidence: "enteral", ravulizumab_evidence: "ravulizumab",
+    mesothelioma_evidence: "mesothelioma",
   };
   if (groups[root]) {
     const groupLabel = t(`sections.claimValidator.clinical.groups.${groups[root]}`);

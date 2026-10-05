@@ -1,4 +1,6 @@
 """Bounded original85 facts do not certify source units, standards or payment."""
+
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
 from dataclasses import asdict, replace
 from datetime import date, timedelta
 import json
@@ -77,10 +79,10 @@ def test_original_pinned_source_and_scoped_risdiplam_reference():
         assert not any(r['struck'] for r in paragraphs[physical]['runs'])
     assert '<500 hücre/ml' in paragraphs[6425]['text']
     frame = pl.read_parquet(ROOT / 'data/gazette/sut_clauses.parquet')
-    assert resolve_gate_b_ref_to_clause_ids('4.2.23.b#1b49d136', frame, encode_eligible_only=True) == ['C006181']
+    assert resolve_gate_b_ref_to_clause_ids('4.2.23.b#1b49d136', frame, encode_eligible_only=True) == [reviewed_clause_id('C006181')]
     ids = resolve_gate_b_ref_to_clause_ids(RISDIPLAM_TYPE1_MONITORING, frame, encode_eligible_only=True)
     assert len(ids) == 1
-    assert ids == ['C007119']  # Baseline and October physical indexes differ.
+    assert ids == [reviewed_clause_id('C007119')]  # Baseline and October physical indexes differ.
     selected = frame.filter(pl.col('clause_id').is_in(ids)).row(0, named=True)
     assert content_hash(selected['in_force_text']) == '481b9b26'
     assert selected['paragraph_index'] > frame.filter(pl.col('clause_key') == '4.2.49.A#c2df3999')['paragraph_index'][0]
@@ -178,7 +180,7 @@ def test_dates_block_all_documentary_comparisons(family, kind):
     if kind == 'missing_service':
         day = None
     elif kind == 'future_source':
-        day += timedelta(days=2)
+        day = date(2026, 10, 6)  # First unsupported day after the October 5 review.
     elif kind == 'before_source':
         day = date(2025, 5, 5) if family == 'sma' else DAY - timedelta(days=1)
     updates = {'applies_on': DAY-timedelta(days=1)} if kind == 'scope_mismatch' else (

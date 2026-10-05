@@ -19,8 +19,6 @@ Covers the three pieces of the dental data fix:
 
 from __future__ import annotations
 
-import re
-
 import pytest
 
 pytestmark = pytest.mark.unit
@@ -182,7 +180,6 @@ def test_dental_fallback_reads_xls_when_parquet_missing(monkeypatch) -> None:
     """
     import pathlib
 
-    from src.bilun.domain import loaders as loaders_mod
     from src.bilun.domain.loaders import gazette as gazette_mod
 
     # Reset the module-level caches so the fallback re-reads.
@@ -217,3 +214,57 @@ def test_dental_fallback_reads_xls_when_parquet_missing(monkeypatch) -> None:
     monkeypatch.setattr(
         gazette_mod, "EK2C_DENTAL_CURATED_HISTORY_PATH", EK2C_DENTAL_CURATED_HISTORY_PATH
     )
+
+
+@pytest.mark.parametrize("missing_path", [False, True])
+def test_dental_fallback_without_raw_workbook_is_empty(monkeypatch, tmp_path, missing_path):
+    from src.bilun.domain.loaders import gazette
+
+    monkeypatch.setattr(gazette, "EK2C_DENTAL_CURATED_HISTORY_PATH", tmp_path / "missing.parquet")
+    monkeypatch.setattr(gazette, "_EK2C_DENTAL_XLS_FALLBACK",
+                        tmp_path / "missing.xls" if missing_path else None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_by_asof_cache", {})
+    monkeypatch.setattr(gazette.pd, "read_excel",
+                        lambda *args, **kwargs: pytest.fail("No raw workbook must not be read"))
+    assert gazette._load_curated_ek2c_dental_by_asof("2026-07-01") == {}
+
+
+def test_dental_curated_snapshot_precedes_missing_raw_fallback(monkeypatch, tmp_path):
+    import pandas as pd
+
+    from src.bilun.domain.loaders import gazette
+
+    path = tmp_path / "dental.parquet"
+    pd.DataFrame([{"code": "402010", "name": "fixture dental entry", "puan": 10.0,
+                   "price_try": 5.93, "effective_date": "2026-01-01"}]).to_parquet(path)
+    monkeypatch.setattr(gazette, "EK2C_DENTAL_CURATED_HISTORY_PATH", path)
+    monkeypatch.setattr(gazette, "_EK2C_DENTAL_XLS_FALLBACK", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_by_asof_cache", {})
+    assert gazette._load_curated_ek2c_dental_by_asof("2026-07-01")["402010"]["price_try"] == 5.93
+
+
+def test_dental_raw_fallback_still_parses_available_workbook(monkeypatch, tmp_path):
+    import pandas as pd
+
+    from src.bilun.domain.loaders import gazette
+
+    path = tmp_path / "dental.xls"
+    path.touch()
+    raw = pd.DataFrame([["İŞLEM KODU", "İŞLEM ADI", "NOT", "İŞLEM PUANI"],
+                        ["402010", "fixture dental entry", "", 10.0]])
+
+    def read_excel(source, *, engine):
+        assert source == path and engine == "xlrd"
+        return raw
+
+    monkeypatch.setattr(gazette, "EK2C_DENTAL_CURATED_HISTORY_PATH", tmp_path / "missing.parquet")
+    monkeypatch.setattr(gazette, "_EK2C_DENTAL_XLS_FALLBACK", path)
+    monkeypatch.setattr(gazette, "_ek2c_dental_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_by_asof_cache", {})
+    monkeypatch.setattr(gazette.pd, "read_excel", read_excel)
+    result = gazette._load_curated_ek2c_dental_by_asof("2026-07-01")
+    assert set(result) == {"402010"}
+    assert result["402010"]["puan"] == 10.0
+    assert result["402010"]["price_try"] == 5.93
