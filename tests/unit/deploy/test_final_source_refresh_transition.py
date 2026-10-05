@@ -60,11 +60,40 @@ OWNED_TABLES = (
     "cohort_compliance_index",
 )
 CONTRACT = "bilun-source-refresh-499-3d29-v1"
+PUBLIC_SCOPE = "/user.slice/user-0.slice/session-900.scope"
+PUBLIC_REGULAR_FILES = (
+    "/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg", "/etc/nsswitch.conf",
+    "/etc/passwd", "/etc/ssl/openssl.cnf",
+)
+PUBLIC_KERNEL_PATHS = {
+    "transparent_hugepage_enabled": "/sys/kernel/mm/transparent_hugepage/enabled",
+    "user_slice_cpu_max": "/sys/fs/cgroup/user.slice/cpu.max",
+    "root_user_slice_cpu_max": "/sys/fs/cgroup/user.slice/user-0.slice/cpu.max",
+    "own_session_cpu_max": "/sys/fs/cgroup" + PUBLIC_SCOPE + "/cpu.max",
+    "own_session_memory_max": "/sys/fs/cgroup" + PUBLIC_SCOPE + "/memory.max",
+}
 
 
 def _digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
         separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+
+
+def _public_descriptor(path, *, kernel=False, number=1, body=b"public bytes"):
+    value = {"path": path, "file_type": "kernel_resource" if kernel else "regular_file",
+        "uid": 0, "gid": 0, "mode": 0o644, "size_bytes": 0 if kernel else len(body),
+        "device": 1, "inode": number, "nlink": 1, "mtime_ns": 100, "ctime_ns": 100,
+        "sha256": hashlib.sha256(body).hexdigest()}
+    if kernel:
+        value["read_byte_count"] = len(body)
+    return value
+
+
+def _public_runtime_resources():
+    return {"membership": {"descriptor": _public_descriptor("/proc/800/cgroup", kernel=True,
+        body=("0::" + PUBLIC_SCOPE + "\n").encode()), "scope": PUBLIC_SCOPE},
+        "kernel_files": {label: _public_descriptor(path, kernel=True, number=index + 2,
+            body=b"max 100000\n") for index, (label, path) in enumerate(PUBLIC_KERNEL_PATHS.items())}}
 
 
 def _request(sha="a" * 40):
@@ -138,26 +167,49 @@ def final_wrapper(source_projection_wrapper_case, monkeypatch):
     case["trace_transform"] = None
     case["runtime_snapshots"] = []
     case["runtime_snapshot_mutation"] = None
-    os_bindings = {literal: {"path": literal, "file_type": "regular_file", "uid": 0, "gid": 0,
-        "mode": 0o644, "size_bytes": 12, "device": 1, "inode": index + 1, "nlink": 1,
-        "mtime_ns": 100, "ctime_ns": 100, "sha256": _digest({"public_os_file": literal})}
-        for index, literal in enumerate(("/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg"))}
+    case["os_bindings"] = {literal: _public_descriptor(literal, number=index + 1)
+                           for index, literal in enumerate(PUBLIC_REGULAR_FILES)}
+    case["resource_bindings"] = _public_runtime_resources()
+    case["resource_snapshots"] = []
+    case["resource_snapshot_mutation"] = None
+    case["complete_trace_transform"] = None
 
     def snapshot():
         # A metadata seam for these VPS-only paths; descriptor behavior has
         # separate public-file tests below. This is not a VPS observation.
-        value = copy.deepcopy(os_bindings)
+        value = copy.deepcopy(case["os_bindings"])
         if case["runtime_snapshots"] and case["runtime_snapshot_mutation"] is not None:
             field, replacement = case["runtime_snapshot_mutation"]
             value["/etc/locale.alias"][field] = replacement
         case["runtime_snapshots"].append(value)
         return value
 
+    def resources(expected_membership=None):
+        value = copy.deepcopy(case["resource_bindings"])
+        if case["resource_snapshots"] and case["resource_snapshot_mutation"] is not None:
+            target, field, replacement = case["resource_snapshot_mutation"]
+            descriptor = value["membership"]["descriptor"] if target == "membership" else value["kernel_files"][target]
+            descriptor[field] = replacement
+        case["resource_snapshots"].append((copy.deepcopy(expected_membership), copy.deepcopy(value)))
+        return value
+
     def run(command, **kwargs):
         result = child_spy(command, **kwargs)
-        if command[0] == "strace" and case["trace_transform"] is not None:
+        if command[0] == "strace":
             trace = Path(command[command.index("-o") + 1])
-            trace.write_text(case["trace_transform"](trace.read_text()), encoding="utf-8")
+            value = trace.read_text()
+            if case["trace_transform"] is not None:
+                value = case["trace_transform"](value)
+            lines = value.splitlines()
+            # Public process IDs, not observations of the coordinator or VPS.
+            # The child double emits a complete parent/clone/exit lifecycle.
+            complete = ["700 clone(child_stack=NULL, flags=CLONE_VM) = 701",
+                *["700 " + line for line in lines[:-1]], "701 +++ exited with 0 +++",
+                "700 " + lines[-1]]
+            value = "\n".join(complete) + "\n"
+            if case["complete_trace_transform"] is not None:
+                value = case["complete_trace_transform"](value)
+            trace.write_text(value, encoding="utf-8")
         return result
 
     def validate(trace, **kwargs):
@@ -167,6 +219,8 @@ def final_wrapper(source_projection_wrapper_case, monkeypatch):
     monkeypatch.setattr(final, "validate_runtime_read_trace", validate)
     monkeypatch.setattr(final.subprocess, "run", run)
     monkeypatch.setattr(final, "_snapshot_runtime_files", snapshot)
+    monkeypatch.setattr(final, "_snapshot_runtime_resources", resources)
+    monkeypatch.setattr(final.os, "getpid", lambda: 800)
 
     def invoke():
         return final._replay_projection(case["checkout"], case["claims"], case["clean"],
@@ -234,10 +288,10 @@ def test_final_trace_rejects_unknown_os_directory_key_and_wal_reads(final_wrappe
 
 @pytest.mark.parametrize("path", [
     "/etc/ld.so.cache", "/dev/null", "/usr/lib/public.so.1", "/lib/public.so.1",
-    "/usr/share/locale/en/LC_MESSAGES/public.mo", "/proc/123/status", "/proc/123/stat", "/proc/123/statm",
-    "/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg",
+    "/usr/share/locale/en/LC_MESSAGES/public.mo", "/proc/700/status", "/proc/700/stat", "/proc/700/statm",
+    "/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg", "/etc/nsswitch.conf", "/etc/passwd", "/etc/ssl/openssl.cnf",
 ])
-def test_final_wrapper_preserves_reviewed_startup_os_reads_with_exact_two_file_binding(final_wrapper, path):
+def test_final_wrapper_preserves_reviewed_startup_os_reads_with_exact_closed_bindings(final_wrapper, path):
     case = final_wrapper
     case["trace_transform"] = lambda text: text.replace("+++ exited with 0 +++",
         f'openat(AT_FDCWD, "public", O_RDONLY) = 50<{path}>\n+++ exited with 0 +++')
@@ -283,20 +337,59 @@ def public_os_file(tmp_path, monkeypatch):
     path.chmod(0o644)
     monkeypatch.setattr(final, "RUNTIME_FILE_PATHS", (str(path),))
     original_lstat, original_fstat = final.os.lstat, final.os.fstat
-    case = {"path": path, "uid": 0, "fstat_mutation": None, "fstats": 0}
+    original_open, original_read = final.os.open, final.os.read
+    case = {"path": path, "uid": 0, "fstat_mutation": None, "fstats": 0,
+            "stat_size": None, "open_calls": [], "read_calls": [], "descriptors": set(),
+            "swap_after_open": False, "swap_after_read": False}
+
+    def observed_metadata(observed):
+        overrides = {"st_uid": case["uid"]}
+        if case["stat_size"] is not None:
+            overrides["st_size"] = case["stat_size"]
+        return overrides
+
+    def replace_path():
+        replacement = path.with_suffix(".replacement")
+        replacement.write_bytes(b"public replacement bytes\n")
+        replacement.chmod(0o644)
+        replacement.replace(path)
+
     def lstat(value, *args, **kwargs):
         observed = original_lstat(value, *args, **kwargs)
-        return _StatView(observed, st_uid=case["uid"]) if str(value) == str(path) else observed
+        return _StatView(observed, **observed_metadata(observed)) if str(value) == str(path) else observed
     def fstat(fd):
         observed = original_fstat(fd)
+        if fd not in case["descriptors"]:
+            return observed
         case["fstats"] += 1
-        overrides = {"st_uid": case["uid"]}
+        overrides = observed_metadata(observed)
         if case["fstat_mutation"] is not None:
             key, value = case["fstat_mutation"]
             overrides[key] = value
         return _StatView(observed, **overrides)
+
+    def open_file(literal, flags, *args, **kwargs):
+        descriptor = original_open(literal, flags, *args, **kwargs)
+        if str(literal) == str(path):
+            case["open_calls"].append((str(literal), flags))
+            case["descriptors"].add(descriptor)
+            if case["swap_after_open"]:
+                replace_path()
+        return descriptor
+
+    def read_file(fd, count):
+        value = original_read(fd, count)
+        if fd in case["descriptors"]:
+            case["read_calls"].append(count)
+            if value and case["swap_after_read"]:
+                case["swap_after_read"] = False
+                replace_path()
+        return value
+
     monkeypatch.setattr(final.os, "lstat", lstat)
     monkeypatch.setattr(final.os, "fstat", fstat)
+    monkeypatch.setattr(final.os, "open", open_file)
+    monkeypatch.setattr(final.os, "read", read_file)
     return case
 
 
@@ -307,6 +400,7 @@ def test_runtime_descriptor_snapshot_hashes_real_public_bytes_with_metadata_seam
     assert value["size_bytes"] == len(b"public immutable runtime fixture\n")
     assert value["uid"] == 0 and value["mode"] == 0o644
     assert case["fstats"] == 2
+    assert case["open_calls"] == [(str(case["path"]), final.os.O_RDONLY | final.os.O_NOFOLLOW | final.os.O_CLOEXEC)]
 
 
 @pytest.mark.parametrize("mutation", ["foreign_literal", "wrong_uid", "group_write", "world_write", "symlink", "directory", "fd_size", "fd_inode"])
@@ -332,6 +426,58 @@ def test_runtime_descriptor_snapshot_rejects_unbound_owner_type_mode_or_descript
         case["fstat_mutation"] = key, getattr(path.stat(), key) + 1
     with pytest.raises(ValueError):
         final._snapshot_runtime_file(literal)
+
+
+@pytest.mark.parametrize("kernel", [False, True])
+@pytest.mark.parametrize("when", ["swap_after_open", "swap_after_read"])
+def test_runtime_real_public_path_replacement_cannot_hide_behind_old_descriptor(public_os_file, kernel, when):
+    case = public_os_file
+    case[when] = True
+    if kernel:
+        case["stat_size"] = 0
+    with pytest.raises(ValueError):
+        (final._read_kernel_resource if kernel else final._snapshot_runtime_file)(str(case["path"]))
+
+
+@pytest.mark.parametrize("count", [1, 65536, 65537])
+def test_kernel_pseudo_resource_bounds_actual_read_bytes_independently_of_stat_size(public_os_file, count):
+    case = public_os_file
+    body = b"x" * count
+    case["path"].write_bytes(body)
+    case["stat_size"] = 0
+    if count > 65536:
+        with pytest.raises(ValueError):
+            final._read_kernel_resource(str(case["path"]))
+    else:
+        descriptor, read_body = final._read_kernel_resource(str(case["path"]))
+        assert read_body == body
+        assert descriptor["size_bytes"] == 0
+        assert descriptor["read_byte_count"] == count
+        assert descriptor["sha256"] == hashlib.sha256(body).hexdigest()
+        assert descriptor["file_type"] == "kernel_resource"
+    assert case["open_calls"] == [(str(case["path"]), final.os.O_RDONLY | final.os.O_NOFOLLOW | final.os.O_CLOEXEC)]
+    assert all(0 < request <= 65536 for request in case["read_calls"])
+
+
+@pytest.mark.parametrize("mutation", ["wrong_uid", "group_write", "symlink", "fd_inode", "fd_size", "missing"])
+def test_kernel_pseudo_resource_rejects_owner_mode_type_descriptor_and_io_failure(public_os_file, mutation):
+    case = public_os_file
+    path = case["path"]
+    case["stat_size"] = 0
+    if mutation == "wrong_uid":
+        case["uid"] = 1
+    elif mutation == "group_write":
+        path.chmod(0o664)
+    elif mutation == "symlink":
+        target = path.with_suffix(".target")
+        path.rename(target)
+        path.symlink_to(target)
+    elif mutation == "missing":
+        path.unlink()
+    else:
+        case["fstat_mutation"] = ("st_ino", path.stat().st_ino + 1) if mutation == "fd_inode" else ("st_size", 1)
+    with pytest.raises(ValueError):
+        final._read_kernel_resource(str(path))
 
 
 @pytest.mark.parametrize("boundary", ["claims", "clean", "checkout", "foreign_source", "unlisted"])
@@ -370,6 +516,256 @@ def test_final_wrapper_rejects_bad_runtime_or_child_contract(final_wrapper, inva
         case["output"]["future_permission"] = True
     with pytest.raises(ValueError):
         case["invoke"]()
+
+
+@pytest.mark.parametrize("leaf", ["status", "stat", "statm", "maps", "cgroup"])
+@pytest.mark.parametrize("pid", [700, 701, 999])
+def test_runtime_proc_read_requires_completed_authentic_trace_process_owner(final_wrapper, leaf, pid):
+    case = final_wrapper
+    case["trace_transform"] = lambda text: text.replace("+++ exited with 0 +++",
+        f'openat(AT_FDCWD, "public", O_RDONLY) = 60</proc/{pid}/{leaf}>\n+++ exited with 0 +++')
+    if pid == 999:
+        with pytest.raises(ValueError):
+            case["invoke"]()
+    else:
+        assert case["invoke"]() == case["expected"]
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing_child_exit", "missing_parent_exit", "failed_child", "killed_child", "detached",
+    "unprefixed_proc_owner", "unmatched_unfinished", "unmatched_resumed", "strace_error",
+])
+def test_runtime_proc_permissions_require_complete_successful_trace(final_wrapper, mutation):
+    case = final_wrapper
+    def change(text):
+        if mutation == "missing_child_exit":
+            return text.replace("701 +++ exited with 0 +++\n", "")
+        if mutation == "missing_parent_exit":
+            return text.replace("700 +++ exited with 0 +++\n", "")
+        if mutation == "failed_child":
+            return text.replace("701 +++ exited with 0 +++", "701 +++ exited with 1 +++")
+        if mutation == "killed_child":
+            return text.replace("701 +++ exited with 0 +++", "701 +++ killed by SIGKILL +++")
+        if mutation == "detached":
+            return text.replace("700 +++ exited with 0 +++", "700 detached\n700 +++ exited with 0 +++")
+        if mutation == "unprefixed_proc_owner":
+            without_ids = "\n".join(line[4:] for line in text.splitlines() if "clone(" not in line
+                                    and not line.startswith("701 ")) + "\n"
+            return without_ids.replace("+++ exited with 0 +++",
+                'openat(AT_FDCWD, "public", O_RDONLY) = 60</proc/700/maps>\n+++ exited with 0 +++')
+        if mutation == "unmatched_unfinished":
+            extra = '700 openat(AT_FDCWD, "public", O_RDONLY <unfinished ...>'
+        elif mutation == "unmatched_resumed":
+            extra = '700 <... openat resumed>) = 60</proc/700/maps>'
+        else:
+            extra = "strace: public fixture incomplete"
+        return text.replace("700 +++ exited with 0 +++", extra + "\n700 +++ exited with 0 +++")
+    case["complete_trace_transform"] = change
+    with pytest.raises(ValueError):
+        case["invoke"]()
+
+
+def test_runtime_complete_trace_rejoins_interleaved_proc_open_and_keeps_pid_owner(final_wrapper):
+    case = final_wrapper
+    case["complete_trace_transform"] = lambda text: text.replace("701 +++ exited with 0 +++",
+        '700 openat(AT_FDCWD, "public", O_RDONLY <unfinished ...>\n'
+        '701 openat(AT_FDCWD, "public", O_RDONLY) = 61</proc/701/status>\n'
+        '700 <... openat resumed>) = 60</proc/700/maps>\n701 +++ exited with 0 +++')
+    assert case["invoke"]() == case["expected"]
+
+
+@pytest.mark.parametrize("path", [
+    *PUBLIC_KERNEL_PATHS.values(),
+])
+def test_runtime_exact_fixed_and_own_session_kernel_resource_reads_are_bound(final_wrapper, path):
+    case = final_wrapper
+    case["trace_transform"] = lambda text: text.replace("+++ exited with 0 +++",
+        f'openat(AT_FDCWD, "public", O_RDONLY) = 60<{path}>\n+++ exited with 0 +++')
+    assert case["invoke"]() == case["expected"]
+    assert len(case["resource_snapshots"]) >= 4
+
+
+@pytest.mark.parametrize("path,flag", [
+    ("/proc/700/environ", "O_RDONLY"), ("/proc/700/cmdline", "O_RDONLY"),
+    ("/proc/700/mem", "O_RDONLY"), ("/proc/700/fd/3", "O_RDONLY"),
+    ("/proc/self/cgroup", "O_RDONLY"), ("/proc/thread-self/maps", "O_RDONLY"),
+    ("/proc/700/mountinfo", "O_RDONLY"), ("/proc/700/status", "O_RDONLY|O_DIRECTORY"),
+    ("/sys/fs/cgroup/user.slice/user-0.slice/session-901.scope/cpu.max", "O_RDONLY"),
+    ("/sys/fs/cgroup" + PUBLIC_SCOPE + "/memory.current", "O_RDONLY"),
+    ("/sys/fs/cgroup" + PUBLIC_SCOPE + "/cpu.weight", "O_RDONLY"),
+    ("/sys/fs/cgroup" + PUBLIC_SCOPE + "/../session-900.scope/cpu.max", "O_RDONLY"),
+    ("/sys/fs/cgroup/user.slice", "O_RDONLY|O_DIRECTORY"),
+    ("/sys/kernel/mm/transparent_hugepage/defrag", "O_RDONLY"),
+    ("/etc/ssl/private/public.key.backup", "O_RDONLY"),
+    ("/sys/fs/cgroup" + PUBLIC_SCOPE + "/memory.max", "O_RDWR"),
+])
+def test_runtime_closed_proc_kernel_and_secret_policy_precedes_dependency_allowance(final_wrapper, path, flag):
+    case = final_wrapper
+    # The native source/resources are never read: only a public trace contains
+    # these paths. An explicit broad dependency cannot override proc/kernel rules.
+    if path.startswith("/proc/"):
+        case["dependencies"] = (*case["dependencies"], Path("/proc"))
+    elif path.startswith("/sys/"):
+        case["dependencies"] = (*case["dependencies"], Path("/sys"))
+    case["trace_transform"] = lambda text: text.replace("+++ exited with 0 +++",
+        f'openat(AT_FDCWD, "public", {flag}) = 60<{path}>\n+++ exited with 0 +++')
+    with pytest.raises(ValueError):
+        case["invoke"]()
+
+
+@pytest.mark.parametrize("mutation", [
+    "none", "extra", "missing", "member_none", "scope_none", "foreign_member_pid", "scope_foreign",
+    "kernel_missing", "kernel_extra", "foreign_kernel_path", "descriptor_extra", "uid_bool",
+    "size_float", "read_count_bool", "read_count_float", "read_count_oversize", "sha_upper", "sha_null",
+])
+def test_runtime_resource_binding_has_closed_typed_schema_before_any_recheck_open(monkeypatch, mutation):
+    expected = _public_runtime_resources()
+    monkeypatch.setattr(final.os, "getpid", lambda: 800)
+    descriptor = expected["kernel_files"]["own_session_cpu_max"]
+    if mutation == "none":
+        expected = None
+    elif mutation == "extra":
+        expected["process_ids"] = ["999"]
+    elif mutation == "missing":
+        expected.pop("membership")
+    elif mutation == "member_none":
+        expected["membership"] = None
+    elif mutation == "scope_none":
+        expected["membership"]["scope"] = None
+    elif mutation == "foreign_member_pid":
+        expected["membership"]["descriptor"]["path"] = "/proc/801/cgroup"
+    elif mutation == "scope_foreign":
+        expected["membership"]["scope"] = "/user.slice/user-1000.slice/session-900.scope"
+    elif mutation == "kernel_missing":
+        expected["kernel_files"].pop("own_session_memory_max")
+    elif mutation == "kernel_extra":
+        expected["kernel_files"]["memory_current"] = copy.deepcopy(descriptor)
+    elif mutation == "foreign_kernel_path":
+        descriptor["path"] = "/sys/fs/cgroup/user.slice/user-0.slice/session-901.scope/cpu.max"
+    elif mutation == "descriptor_extra":
+        descriptor["future_permission"] = True
+    else:
+        field, value = {
+            "uid_bool": ("uid", False), "size_float": ("size_bytes", 0.0),
+            "read_count_bool": ("read_byte_count", True), "read_count_float": ("read_byte_count", 11.0),
+            "read_count_oversize": ("read_byte_count", 65537), "sha_upper": ("sha256", "A" * 64),
+            "sha_null": ("sha256", None),
+        }[mutation]
+        descriptor[field] = value
+    monkeypatch.setattr(final, "_snapshot_runtime_resources", lambda *_: pytest.fail("Invalid binding reached runtime reads"))
+    with pytest.raises(ValueError):
+        final._check_runtime_resources_stability(expected)
+
+
+@pytest.mark.parametrize("mutation", ["missing_file", "extra_file", "path_key", "uid_bool", "size_float", "descriptor_extra"])
+def test_runtime_regular_bindings_reject_missing_forged_or_untyped_record_before_fd(final_wrapper, monkeypatch, mutation):
+    case = final_wrapper
+    bindings = copy.deepcopy(case["os_bindings"])
+    row = bindings["/etc/passwd"]
+    if mutation == "missing_file":
+        bindings.pop("/etc/passwd")
+    elif mutation == "extra_file":
+        bindings["/etc/group"] = copy.deepcopy(row)
+    elif mutation == "path_key":
+        row["path"] = "/etc/group"
+    elif mutation == "uid_bool":
+        row["uid"] = False
+    elif mutation == "size_float":
+        row["size_bytes"] = 12.0
+    else:
+        row["future_permission"] = True
+    monkeypatch.setattr(final, "_snapshot_runtime_files", lambda: pytest.fail("Invalid regular binding reached FD reads"))
+    with pytest.raises(ValueError):
+        final._validate_pure_read_trace(Path("/unread-public-trace"), roster=case["roster"],
+            dependency_roots=case["dependencies"], runtime_os_bindings=bindings,
+            runtime_resource_bindings=case["resource_bindings"])
+
+
+@pytest.mark.parametrize("target,field,value", [
+    ("membership", "sha256", "f" * 64), ("membership", "inode", 999),
+    ("user_slice_cpu_max", "sha256", "f" * 64), ("own_session_memory_max", "read_byte_count", 12),
+    ("own_session_cpu_max", "uid", 1), ("own_session_memory_max", "mode", 0o666),
+])
+def test_runtime_member_and_kernel_binding_rechecks_reject_changed_metadata(final_wrapper, target, field, value):
+    case = final_wrapper
+    case["resource_snapshot_mutation"] = target, field, value
+    with pytest.raises(ValueError):
+        case["invoke"]()
+
+
+@pytest.mark.parametrize("newline", ["", "\n"])
+def test_runtime_own_cgroup_membership_is_numeric_and_exact_ascii_one_line(monkeypatch, newline):
+    monkeypatch.setattr(final.os, "getpid", lambda: 800)
+    body = ("0::" + PUBLIC_SCOPE + newline).encode()
+    descriptor = _public_descriptor("/proc/800/cgroup", kernel=True, body=body)
+    reads = []
+    def read(literal):
+        reads.append(literal)
+        return descriptor, body
+    monkeypatch.setattr(final, "_read_kernel_resource", read)
+    assert final._load_own_cgroup_membership() == {"descriptor": descriptor, "scope": PUBLIC_SCOPE}
+    assert reads == ["/proc/800/cgroup"]
+
+
+@pytest.mark.parametrize("body", [
+    b"", b"\n", b"0::/user.slice/user-0.slice/session-900.scope\n\n",
+    b"0::/user.slice/user-0.slice/session-900.scope\n0::/another.scope\n",
+    b"2:cpu:/user.slice/user-0.slice/session-900.scope\n",
+    b"0::/user.slice/user-1000.slice/session-900.scope\n",
+    b"0::/user.slice/user-0.slice/session-other.scope\n",
+    b"0::/user.slice/user-0.slice/session-900.scope/../session-901.scope\n",
+    b" 0::/user.slice/user-0.slice/session-900.scope\n",
+    b"0::/user.slice/user-0.slice/session-900.scope \n",
+    b"0::/user.slice/user-0.slice/session-900.scope\r\n",
+    b"0::/user.slice/user-0.slice/session-\xff.scope\n",
+])
+def test_runtime_membership_rejects_malformed_multiple_foreign_or_nonascii_lines(monkeypatch, body):
+    monkeypatch.setattr(final.os, "getpid", lambda: 800)
+    monkeypatch.setattr(final, "_read_kernel_resource", lambda literal: (
+        _public_descriptor(literal, kernel=True, body=body), body))
+    with pytest.raises(ValueError):
+        final._load_own_cgroup_membership()
+
+
+@pytest.mark.parametrize("pid", [None, True, 0, -1, 800.0, "800"])
+def test_runtime_membership_rejects_non_numeric_coordinator_before_read(monkeypatch, pid):
+    monkeypatch.setattr(final.os, "getpid", lambda: pid)
+    monkeypatch.setattr(final, "_read_kernel_resource", lambda *_: pytest.fail("Bad coordinator reached proc read"))
+    with pytest.raises(ValueError):
+        final._load_own_cgroup_membership()
+
+
+def test_runtime_changed_membership_is_checked_before_any_kernel_resource_open(monkeypatch):
+    current = _public_runtime_resources()["membership"]
+    old = copy.deepcopy(current)
+    old["scope"] = "/user.slice/user-0.slice/session-901.scope"
+    monkeypatch.setattr(final, "_load_own_cgroup_membership", lambda: copy.deepcopy(current))
+    monkeypatch.setattr(final, "_snapshot_kernel_resource", lambda *_: pytest.fail("Changed scope reached kernel open"))
+    with pytest.raises(ValueError):
+        final._snapshot_runtime_resources(old)
+
+
+@pytest.mark.parametrize("mutation", ["foreign_literal", "foreign_label", "missing", "extra", "wrong_fixed", "wrong_session", "traversal"])
+def test_runtime_kernel_resource_catalog_cannot_be_supplied_or_widened_by_caller(monkeypatch, mutation):
+    paths = copy.deepcopy(PUBLIC_KERNEL_PATHS)
+    literal, label = paths["own_session_cpu_max"], "own_session_cpu_max"
+    if mutation == "foreign_literal":
+        literal = "/sys/fs/cgroup/user.slice/user-0.slice/session-901.scope/cpu.max"
+    elif mutation == "foreign_label":
+        label = "memory_current"
+    elif mutation == "missing":
+        paths.pop("own_session_memory_max")
+    elif mutation == "extra":
+        paths["memory_current"] = literal
+    elif mutation == "wrong_fixed":
+        paths["user_slice_cpu_max"] = "/sys/fs/cgroup/cpu.max"
+    elif mutation == "wrong_session":
+        paths["own_session_memory_max"] = "/sys/fs/cgroup/user.slice/user-0.slice/session-901.scope/memory.max"
+    else:
+        literal = "/sys/fs/cgroup" + PUBLIC_SCOPE + "/../session-900.scope/cpu.max"
+    monkeypatch.setattr(final, "_read_kernel_resource", lambda *_: pytest.fail("Forged catalog reached FD read"))
+    with pytest.raises(ValueError):
+        final._snapshot_kernel_resource(literal, label, paths)
 
 
 @pytest.fixture

@@ -88,7 +88,13 @@ _FOLLOWUP_INPUTS = {"drug_name", "drug_claim_date", "verified_source_for_service
 _PROOF_BINDINGS: dict[object, str] = {}
 # Exact loader/device reads only. Other necessary runtime files must be
 # explicitly supplied as dependencies; unknown OS paths remain blockers.
-RUNTIME_FILE_PATHS = ("/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg")
+RUNTIME_FILE_PATHS = ("/etc/locale.alias", "/opt/Bilun/.venv/pyvenv.cfg",
+                      "/etc/nsswitch.conf", "/etc/passwd", "/etc/ssl/openssl.cnf")
+FIXED_KERNEL_PATHS = {'transparent_hugepage_enabled': '/sys/kernel/mm/transparent_hugepage/enabled', 'user_slice_cpu_max': '/sys/fs/cgroup/user.slice/cpu.max', 'root_user_slice_cpu_max': '/sys/fs/cgroup/user.slice/user-0.slice/cpu.max'}
+SESSION_KERNEL_LEAVES = {'own_session_cpu_max': 'cpu.max', 'own_session_memory_max': 'memory.max'}
+KERNEL_RESOURCE_LABELS = frozenset(FIXED_KERNEL_PATHS) | frozenset(SESSION_KERNEL_LEAVES)
+MAX_KERNEL_RESOURCE_BYTES = 65536
+MEMBERSHIP_PATTERN = '0::(/user\\.slice/user-0\\.slice/session-[0-9]+\\.scope)'
 _OS_RUNTIME_ROOTS = (Path("/usr/lib"), Path("/lib"), Path("/usr/share/locale"))
 _OS_RUNTIME_FILES = frozenset(path.resolve(strict=False) for path in {
     Path("/etc/ld.so.cache"), Path("/etc/localtime"), Path("/usr/share/zoneinfo/UTC"), Path("/dev/null"),
@@ -426,6 +432,7 @@ def _replay_projection(checkout: Path, claims_dir: Path, clean_dir: Path, mode: 
     runtime_files = tuple(path for path in dependency_roots if path.is_file())
     bindings = _runtime_file_bindings(runtime_files)
     os_bindings = _snapshot_runtime_files()
+    resource_bindings = _snapshot_runtime_resources()
     with tempfile.TemporaryDirectory(prefix="bilun-final-source-") as directory:
         trace = Path(directory) / "replay.trace"
         command = ["strace", "-f", "-yy", "-s", "4096", "-e",
@@ -445,14 +452,16 @@ def _replay_projection(checkout: Path, claims_dir: Path, clean_dir: Path, mode: 
         }:
             raise ValueError("Final replay has an unknown ownership contract")
         _same(os_bindings, _snapshot_runtime_files(), "post-worker fixed runtime OS files")
+        _check_runtime_resources_stability(resource_bindings)
         _validate_pure_read_trace(trace, roster=roster, dependency_roots=dependency_roots,
-                                  runtime_os_bindings=os_bindings)
+                                  runtime_os_bindings=os_bindings, runtime_resource_bindings=resource_bindings)
         parsed = validate_runtime_read_trace(trace, roster=roster,
                     candidate_db=Path(directory) / "unused.duckdb", dependency_roots=dependency_roots)
         if parsed.get("trace_parse_ok") is not True:
             raise ValueError("Final replay read closure is unverified")
         _same(bindings, _runtime_file_bindings(runtime_files), "before/after explicit runtime file bindings")
         _same(os_bindings, _snapshot_runtime_files(), "final fixed runtime OS files")
+        _check_runtime_resources_stability(resource_bindings)
         return value
 
 
@@ -462,25 +471,125 @@ def _runtime_file_bindings(paths: tuple[Path, ...]) -> list:
             for path in paths]
 
 
+def _runtime_require(condition: bool, reason: str) -> None:
+    if not condition:
+        raise ValueError(reason)
+
+
+def _validate_runtime_descriptor(value: dict, *, kernel: bool = False) -> None:
+    fields = {"path", "file_type", "uid", "gid", "mode", "size_bytes", "device", "inode",
+              "nlink", "mtime_ns", "ctime_ns", "sha256"}
+    if kernel:
+        fields.add("read_byte_count")
+    _runtime_require(type(value) is dict and set(value) == fields, "Runtime descriptor schema is unreviewed")
+    _runtime_require(all(type(value[key]) is int for key in fields - {"path", "file_type", "sha256"}),
+                     "Runtime descriptor numeric types are unreviewed")
+    _runtime_require(type(value["path"]) is str and Path(value["path"]).is_absolute()
+                     and type(value["file_type"]) is str
+                     and value["file_type"] == ("kernel_resource" if kernel else "regular_file")
+                     and value["uid"] == 0 and 0 <= value["mode"] <= 0o7777 and not value["mode"] & 0o022
+                     and value["size_bytes"] >= 0 and value["nlink"] > 0
+                     and type(value["sha256"]) is str and re.fullmatch(r"[0-9a-f]{64}", value["sha256"]) is not None,
+                     "Runtime descriptor identity/hash is unreviewed")
+    if kernel:
+        _runtime_require(0 <= value["read_byte_count"] <= MAX_KERNEL_RESOURCE_BYTES,
+                         "Runtime kernel resource size is unreviewed")
+    else:
+        _runtime_require(value["path"] in RUNTIME_FILE_PATHS, "Runtime descriptor path is outside the five reviewed files")
+
+
+def _runtime_file_metadata(value):
+    result = {'file_type': 'regular_file', 'uid': value.st_uid, 'gid': value.st_gid,
+              'mode': stat.S_IMODE(value.st_mode), 'size_bytes': value.st_size,
+              'device': value.st_dev, 'inode': value.st_ino, 'nlink': value.st_nlink,
+              'mtime_ns': value.st_mtime_ns, 'ctime_ns': value.st_ctime_ns}
+    _runtime_require(all(type(number) is int for key, number in result.items() if key != 'file_type'),
+                     "Runtime stat numeric types are unreviewed")
+    return result
+
+def _read_kernel_resource(literal):
+    """Private bounded FD read for only the closed callers below; no body export."""
+
+    def check(condition, category):
+        _runtime_require(condition, category)
+    path = Path(literal)
+    try:
+        initial_stat = os.lstat(literal)
+        check(stat.S_ISREG(initial_stat.st_mode) and (not stat.S_ISLNK(initial_stat.st_mode)) and (not path.is_symlink()) and (path.resolve(strict=True) == path) and (initial_stat.st_uid == 0) and (initial_stat.st_mode & 18 == 0), 'runtime_kernel_identity_rejected')
+        initial = _runtime_file_metadata(initial_stat)
+        descriptor = os.open(literal, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        try:
+            opened_stat = os.fstat(descriptor)
+            check(stat.S_ISREG(opened_stat.st_mode) and _runtime_file_metadata(opened_stat) == initial, 'runtime_kernel_identity_rejected')
+            chunks, byte_count = ([], 0)
+            while True:
+                block = os.read(descriptor, min(65536, MAX_KERNEL_RESOURCE_BYTES + 1 - byte_count))
+                if not block:
+                    break
+                byte_count += len(block)
+                check(byte_count <= MAX_KERNEL_RESOURCE_BYTES, 'runtime_kernel_read_rejected')
+                chunks.append(block)
+            check(_runtime_file_metadata(os.fstat(descriptor)) == initial, 'runtime_kernel_unstable')
+        finally:
+            os.close(descriptor)
+        final_stat = os.lstat(literal)
+        check(stat.S_ISREG(final_stat.st_mode) and (not stat.S_ISLNK(final_stat.st_mode)) and (not path.is_symlink()) and (path.resolve(strict=True) == path) and (_runtime_file_metadata(final_stat) == initial), 'runtime_kernel_unstable')
+        body = b''.join(chunks)
+        value = {'path': literal, 'file_type': 'kernel_resource', **{key: value for key, value in initial.items() if key != 'file_type'}, 'read_byte_count': byte_count, 'sha256': hashlib.sha256(body).hexdigest()}
+        _validate_runtime_descriptor(value, kernel=True)
+        return value, body
+    except OSError:
+        raise ValueError('Closed runtime kernel resource read rejected') from None
+
+def _load_own_cgroup_membership():
+    pid = os.getpid()
+    _runtime_require(type(pid) is int and pid > 0, 'runtime_cgroup_membership_rejected')
+    descriptor, body = _read_kernel_resource('/proc/' + str(pid) + '/cgroup')
+    try:
+        text = body.decode('ascii', errors='strict')
+    except UnicodeError:
+        raise ValueError('Runtime own cgroup membership encoding is unreviewed') from None
+    match = re.fullmatch(MEMBERSHIP_PATTERN + '\\n?', text)
+    _runtime_require(match is not None, 'runtime_cgroup_membership_rejected')
+    return {'descriptor': descriptor, 'scope': match.group(1)}
+
+def _kernel_resource_paths(scope):
+    if not isinstance(scope, str) or not re.fullmatch('/user\\.slice/user-0\\.slice/session-[0-9]+\\.scope', scope):
+        raise ValueError('fixed runtime contract rejected')
+    return {**FIXED_KERNEL_PATHS, **{label: '/sys/fs/cgroup' + scope + '/' + leaf for label, leaf in SESSION_KERNEL_LEAVES.items()}}
+
+def _snapshot_kernel_resource(literal, resource_label, resource_paths):
+    scope_path = resource_paths.get('own_session_cpu_max') if isinstance(resource_paths, dict) else None
+    scope_match = re.fullmatch('/sys/fs/cgroup(/user\\.slice/user-0\\.slice/session-[0-9]+\\.scope)/cpu\\.max', scope_path or '')
+    _runtime_require(isinstance(resource_paths, dict) and set(resource_paths) == KERNEL_RESOURCE_LABELS and (scope_match is not None) and (resource_paths == _kernel_resource_paths(scope_match.group(1))) and (resource_label in resource_paths) and (literal == resource_paths[resource_label]), 'runtime_kernel_binding_rejected')
+    descriptor, body = _read_kernel_resource(literal)
+    del body
+    return descriptor
+
+def _snapshot_runtime_resources(expected_membership=None):
+    membership = _load_own_cgroup_membership()
+    if expected_membership is not None:
+        _runtime_require(type(expected_membership) is dict and set(expected_membership) == {'descriptor', 'scope'}, 'runtime_kernel_binding_rejected')
+        _validate_runtime_descriptor(expected_membership['descriptor'], kernel=True)
+        _runtime_require(membership == expected_membership, 'runtime_kernel_unstable')
+    paths = _kernel_resource_paths(membership['scope'])
+    return {'membership': membership, 'kernel_files': {label: _snapshot_kernel_resource(literal, label, paths) for label, literal in paths.items()}}
+
+
 def _snapshot_runtime_file(literal: str) -> dict:
-    def metadata(value):
-        return {"file_type": "regular_file", "uid": value.st_uid, "gid": value.st_gid,
-                "mode": stat.S_IMODE(value.st_mode), "size_bytes": value.st_size,
-                "device": value.st_dev, "inode": value.st_ino, "nlink": value.st_nlink,
-                "mtime_ns": value.st_mtime_ns, "ctime_ns": value.st_ctime_ns}
 
     if literal not in RUNTIME_FILE_PATHS:
-        raise ValueError("Runtime OS file is outside the two reviewed literals")
+        raise ValueError("Runtime OS file is outside the five reviewed literals")
     path = Path(literal)
     initial_stat = os.lstat(literal)
     if (not stat.S_ISREG(initial_stat.st_mode) or path.is_symlink() or path.resolve(strict=True) != path
             or initial_stat.st_uid != 0 or initial_stat.st_mode & 0o022):
         raise ValueError("Runtime OS file has an unreviewed type/owner/mode")
-    initial = metadata(initial_stat)
+    initial = _runtime_file_metadata(initial_stat)
     descriptor = os.open(literal, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
     try:
         opened_stat = os.fstat(descriptor)
-        if not stat.S_ISREG(opened_stat.st_mode) or metadata(opened_stat) != initial:
+        if not stat.S_ISREG(opened_stat.st_mode) or _runtime_file_metadata(opened_stat) != initial:
             raise ValueError("Runtime OS file changed before its readonly descriptor")
         digest, size = hashlib.sha256(), 0
         while block := os.read(descriptor, 65536):
@@ -488,46 +597,113 @@ def _snapshot_runtime_file(literal: str) -> dict:
             if size > initial["size_bytes"]:
                 raise ValueError("Runtime OS file changed while hashing")
             digest.update(block)
-        if metadata(os.fstat(descriptor)) != initial or size != initial["size_bytes"]:
+        if _runtime_file_metadata(os.fstat(descriptor)) != initial or size != initial["size_bytes"]:
             raise ValueError("Runtime OS file descriptor changed while hashing")
     finally:
         os.close(descriptor)
-    if path.is_symlink() or path.resolve(strict=True) != path or metadata(os.lstat(literal)) != initial:
+    if path.is_symlink() or path.resolve(strict=True) != path or _runtime_file_metadata(os.lstat(literal)) != initial:
         raise ValueError("Runtime OS path changed after hashing")
-    return {"path": literal, **initial, "sha256": digest.hexdigest()}
+    value = {"path": literal, **initial, "sha256": digest.hexdigest()}
+    _validate_runtime_descriptor(value)
+    return value
 
 
 def _snapshot_runtime_files() -> dict:
     return {literal: _snapshot_runtime_file(literal) for literal in RUNTIME_FILE_PATHS}
 
 
+def _validate_runtime_resources(expected: dict) -> None:
+    _runtime_require(type(expected) is dict and set(expected) == {"membership", "kernel_files"},
+                     "Runtime kernel binding schema is unreviewed")
+    member, kernels = expected["membership"], expected["kernel_files"]
+    _runtime_require(type(member) is dict and set(member) == {"descriptor", "scope"}
+                     and type(member["scope"]) is str
+                     and re.fullmatch(r"/user\.slice/user-0\.slice/session-[0-9]+\.scope", member["scope"]) is not None
+                     and type(kernels) is dict and set(kernels) == KERNEL_RESOURCE_LABELS,
+                     "Runtime own membership or kernel catalog is unreviewed")
+    _validate_runtime_descriptor(member["descriptor"], kernel=True)
+    _runtime_require(member["descriptor"]["path"] == "/proc/" + str(os.getpid()) + "/cgroup",
+                     "Runtime membership is not the coordinator's numeric own proc record")
+    paths = _kernel_resource_paths(member["scope"])
+    for label, descriptor in kernels.items():
+        _validate_runtime_descriptor(descriptor, kernel=True)
+        _runtime_require(descriptor["path"] == paths[label], "Runtime kernel resource is outside the exact catalog")
+
+
+def _check_runtime_resources_stability(expected: dict) -> dict:
+    _validate_runtime_resources(expected)
+    current = _snapshot_runtime_resources(expected["membership"])
+    _same(expected, current, "own membership and exact kernel resources before/after")
+    return current
+
+
 def _validate_pure_read_trace(trace: Path, *, roster: dict, dependency_roots: tuple[Path, ...],
-                             runtime_os_bindings: dict | None = None) -> None:
+                              runtime_os_bindings: dict | None = None,
+                              runtime_resource_bindings: dict | None = None) -> None:
+    if type(runtime_os_bindings) is not dict or set(runtime_os_bindings) != set(RUNTIME_FILE_PATHS):
+        raise ValueError("Fixed runtime OS read lacks its complete readonly binding")
+    for literal, descriptor in runtime_os_bindings.items():
+        _validate_runtime_descriptor(descriptor)
+        _runtime_require(descriptor["path"] == literal, "Runtime OS descriptor has a mismatched catalog key")
+    _same(runtime_os_bindings, _snapshot_runtime_files(), "trace exact fixed runtime OS files")
+    _check_runtime_resources_stability(runtime_resource_bindings)
+    kernel_paths = set(_kernel_resource_paths(runtime_resource_bindings["membership"]["scope"]).values())
     sources = {Path(row["path"]).resolve(strict=True) for row in roster["sources"]}
     checkout = Path(roster["checkout"]).resolve(strict=True)
     dependencies = tuple(path.resolve(strict=True) for path in dependency_roots)
+    process_ids, exited_ids, proc_read_ids = set(), set(), set()
+    opens, final = 0, ""
     for line in trace_parser._completed_trace_lines(trace):
-        if not trace_parser._OPEN.match(line) or " = -1 " in line:
+        final = line
+        if line.startswith("strace:") or "+++ killed by " in line or "detached" in line:
+            raise ValueError("Final source read trace has an incomplete process")
+        pid = trace_parser._PID.match(line)
+        if pid:
+            process_ids.add(pid.group(1) or pid.group(2))
+        exit_match = trace_parser._EXIT.match(line)
+        if exit_match:
+            if exit_match.group(1) != "0":
+                raise ValueError("Final source read trace has a failed process")
+            if pid:
+                exited_ids.add(pid.group(1) or pid.group(2))
+        fork = trace_parser._FORK.match(line)
+        if fork and int(fork.group(1)) > 0:
+            process_ids.add(fork.group(1))
+        if not trace_parser._OPEN.match(line):
+            continue
+        opens += 1
+        if " = -1 " in line:
             continue
         match = trace_parser._OPEN_RESULT.search(line)
         if match is None:
             raise ValueError("Final successful open lacks a decoded absolute path")
         observed = trace_parser._decoded_trace_path(match.group(2))
-        if not observed.is_absolute():
+        if not observed.is_absolute() or ".." in observed.parts:
             raise ValueError("Final read path is not absolute")
         path = observed.resolve(strict=False)
         if any(flag in line for flag in ("O_WRONLY", "O_RDWR", "O_CREAT", "O_TRUNC", "O_APPEND")):
             raise ValueError("Pure final replay attempted a successful file write")
         for candidate in (observed, path):
-            if (any(part == ".env" or part.startswith(".env.") for part in candidate.parts)
-                    or any(part in {".ssh", ".aws", ".gnupg"} for part in candidate.parts)
-                    or candidate.name in {"credentials", "credential", "id_rsa", "id_ed25519"}
-                    or re.search(r"\.(?:duckdb|db|sqlite3?|wal|key|pem|p12|pfx)(?:[.-](?:wal|shm))?$", candidate.name.lower())):
+            parts = tuple(part.lower() for part in candidate.parts)
+            if (any(part == ".env" or part.startswith(".env.") for part in parts)
+                    or any(part in {".ssh", ".aws", ".gnupg", "credentials", "credential", "id_rsa", "id_ed25519"} for part in parts)
+                    or re.search(r"\.(?:duckdb|db|sqlite3?|wal|key|pem|p12|pfx)(?:[.-](?:wal|shm))?$", candidate.name.lower())
+                    or re.search(r"\.(?:key|pem|p12|pfx)(?:\..*)?$", candidate.name.lower())):
                 raise ValueError("Pure final replay accessed a cache/environment/credential oracle")
+        numeric_proc = re.fullmatch(r"/proc/([0-9]+)/(status|stat|statm|maps|cgroup)", str(path))
+        if path.is_relative_to(Path("/proc")) and path not in _OS_RUNTIME_FILES:
+            if numeric_proc is None or "O_DIRECTORY" in line:
+                raise ValueError("Final source replay opened unreviewed proc metadata")
+            proc_read_ids.add(numeric_proc.group(1))
+            continue
+        if (path.is_relative_to(Path("/sys/fs/cgroup"))
+                or path.is_relative_to(Path("/sys/kernel/mm/transparent_hugepage"))):
+            if str(path) not in kernel_paths or "O_DIRECTORY" in line:
+                raise ValueError("Final source replay opened an unbound kernel resource")
+            continue
         if path in {Path(literal) for literal in RUNTIME_FILE_PATHS}:
-            if not isinstance(runtime_os_bindings, dict) or set(runtime_os_bindings) != set(RUNTIME_FILE_PATHS):
+            if "O_DIRECTORY" in line:
                 raise ValueError("Fixed runtime OS read lacks its complete readonly binding")
-            _same(runtime_os_bindings, _snapshot_runtime_files(), "trace exact fixed runtime OS files")
             continue
         if any(path == root or root.is_dir() and path.is_relative_to(root) for root in dependencies):
             continue
@@ -536,11 +712,13 @@ def _validate_pure_read_trace(trace: Path, *, roster: dict, dependency_roots: tu
                     or any(path == root or path.is_relative_to(root) for root in _OS_RUNTIME_ROOTS)):
                 raise ValueError("Pure final replay opened an unrostered directory")
             continue
-        proc_status = bool(re.fullmatch(r"/proc/[0-9]+/(?:status|stat|statm)", str(path)))
         os_library = path.suffix not in trace_parser._RUNTIME_EXTENSIONS and any(
             path == root or path.is_relative_to(root) for root in _OS_RUNTIME_ROOTS)
-        if path not in sources and path not in _OS_RUNTIME_FILES and not proc_status and not os_library:
+        if path not in sources and path not in _OS_RUNTIME_FILES and not os_library:
             raise ValueError("Pure final replay read outside its explicit source/runtime closure")
+    if (not opens or not trace_parser._EXIT.match(final) or not final.endswith("+++ exited with 0 +++")
+            or process_ids != exited_ids or not proc_read_ids <= process_ids):
+        raise ValueError("Final source proc ownership requires a complete successful authentic trace")
 
 
 def _check_source_witnesses(projection: dict, *, candidate: bool) -> dict[tuple, dict]:
@@ -875,6 +1053,7 @@ def verify_transition(*, request: Mapping, baseline_roster: Path, candidate_rost
     rosters = {"baseline": old_roster, "candidate": new_roster}
     replay_bindings = {side: _replay_checkout_binding(roster) for side, roster in rosters.items()}
     runtime_os_bindings = _snapshot_runtime_files()
+    runtime_resource_bindings = _snapshot_runtime_resources()
     projections = {}
     for side, roster, data in (("baseline", old_roster, old_data), ("candidate", new_roster, new_data)):
         claims = Path(next(row["path"] for label, row in data.items() if label.startswith("claim:"))).parent
@@ -898,6 +1077,7 @@ def verify_transition(*, request: Mapping, baseline_roster: Path, candidate_rost
     for side, roster in rosters.items():
         _same(_replay_checkout_binding(roster), replay_bindings[side], "final replay source bytes")
     _same(runtime_os_bindings, _snapshot_runtime_files(), "whole-replay fixed runtime OS files")
+    _check_runtime_resources_stability(runtime_resource_bindings)
     if (_roster(baseline_roster, BASELINE_CODE_SHA)[0] != old_roster
             or _roster(candidate_roster, expected_candidate_sha)[0] != new_roster):
         raise ValueError("Source refresh inputs changed before proof issuance")
