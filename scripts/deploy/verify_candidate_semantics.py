@@ -274,7 +274,7 @@ def _current_content_parity(
                 if _digest(_without_data_source(value)) != _digest(expected_cohort):
                     raise ValueError(f"Current {side} cohort compliance disagrees with patient rows")
             if clinical_transition is not None:
-                from scripts.deploy.verify_source_refresh_transition import normalize_transition_content
+                from scripts.deploy.verify_final_source_refresh_transition import normalize_transition_content
                 value = normalize_transition_content(
                     table, value, side=side, proof=clinical_transition,
                     patient_reports=(_payload_rows(con, "patient_billing_report_rows", build_id)
@@ -800,7 +800,7 @@ def verify_candidate_semantic_checkpoint(
         raise ValueError("Same-input proof needs the candidate source roster")
     if baseline_build_config_environment is not None and baseline_roster is None:
         raise ValueError("Baseline configuration proof needs a baseline source roster")
-    from scripts.deploy.verify_source_refresh_transition import (
+    from scripts.deploy.verify_final_source_refresh_transition import (
         validate_transition_request, verify_transition,
     )
     transition_request = validate_transition_request(clinical_transition)

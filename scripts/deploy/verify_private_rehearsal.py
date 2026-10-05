@@ -52,7 +52,7 @@ def verify_private_rehearsal(
     if clinical_transition is None and "clinical_transition_report_sha256" in rehearsal:
         raise ValueError("Private rehearsal has an unrequested clinical transition")
     if clinical_transition is not None:
-        from scripts.deploy.verify_source_refresh_transition import validate_transition_report_contract
+        from scripts.deploy.verify_final_source_refresh_transition import validate_transition_report_contract
         if schema != "wavea-same-port-rehearsal-v2":
             raise ValueError("Clinical transition requires the complete same-port rehearsal")
         transition, transition_sha = _load_private_json(

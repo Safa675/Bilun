@@ -318,7 +318,7 @@ def issue_wavea_activation(
     )
     verify_release_sidecar(sidecar_path, expected)
     code_sha = candidate["code_sha"]
-    from scripts.deploy.verify_source_refresh_transition import validate_transition_request
+    from scripts.deploy.verify_final_source_refresh_transition import validate_transition_request
     request = validate_transition_request(clinical_transition)
     if request is not None and any(request[key] != code_sha
                                    for key in ("expected_candidate_sha", "expected_verifier_sha")):

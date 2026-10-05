@@ -500,7 +500,7 @@ def compare_reports(
     if clinical_transition is not None:
         if contract != FULL_EVIDENCE_SCHEMA_VERSION:
             raise ValueError("Clinical transition requires complete current HTTP/cache ownership")
-        from scripts.deploy.verify_source_refresh_transition import normalize_transition_http_reports
+        from scripts.deploy.verify_final_source_refresh_transition import normalize_transition_http_reports
         view = "draft" if old_capability == "draft" else "legacy"
         old_comparable = normalize_transition_http_reports(old_comparable, side="baseline", proof=clinical_transition,
             transport=old_transport, baseline_transport=old_transport, view=view)
@@ -743,7 +743,7 @@ def main(argv: list[str] | None = None) -> None:
     transition_report_sha = None
     if args.clinical_transition is not None:
         from scripts.deploy.release_sidecar import _load_private_json
-        from scripts.deploy.verify_source_refresh_transition import (
+        from scripts.deploy.verify_final_source_refresh_transition import (
             validate_transition_request, verify_transition,
         )
         request, _ = _load_private_json(args.clinical_transition, root=args.clinical_transition.parent)
