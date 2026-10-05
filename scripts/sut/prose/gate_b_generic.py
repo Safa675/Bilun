@@ -707,10 +707,28 @@ def build_manifest(
     frame_ids = {
         str(x) for x in gate_b_frame["clause_id"].to_list() if x is not None and str(x).strip()
     }
+    compositor_clause_traces: dict[str, list[str]] | None = None
     # §4.2.14.C / parquet_in_force_only: encode list must stay within the in-force
     # universe. Other sections keep out-of-frame cites (legacy export filters).
     if section.parquet_in_force_only:
         encoded_ids = {cid for cid in encoded_ids if cid in frame_ids}
+    if section.extra_manifest == "copay_compositor":
+        compositor_clause_traces, compositor_encoded_ids = (
+            _resolve_copay_compositor_clause_traces(resolve_frame)
+        )
+        trace_ids = {
+            cid
+            for ids in compositor_clause_traces.values()
+            for cid in ids
+        }
+        if missing_trace_ids := trace_ids - frame_ids:
+            raise ValueError(
+                "copay compositor source clauses are outside the manifest frame: "
+                + ", ".join(sorted(missing_trace_ids))
+            )
+        # Only the two full-scope runtime paths supplement rule-backed encoding.
+        # Trace-only partial paths stay in their honest pending/deferred buckets.
+        encoded_ids.update(compositor_encoded_ids)
     deferral = load_deferral_table(resolve_frame)
     rules_by_clause: dict[str, list[str]] = {}
     from scripts.sut.prose.clause_identity import (
@@ -858,28 +876,112 @@ def build_manifest(
                 ).height
 
     if section.extra_manifest:
-        extras = _extra_manifest_fields(section, rules, encoded_ids)
-        if section.extra_manifest == "copay_compositor":
-            for ids in (extras.get("compositor_clause_traces") or {}).values():
-                encoded_ids.update(str(cid) for cid in ids)
-            manifest["encoded_clause_ids"] = sorted(encoded_ids)
-            manifest["encoded_clause_count"] = len(encoded_ids)
-            # Recompute ek4d overlap against the unioned encoded set.
-            compositor = extras.get("compositor_clause_traces") or {}
-            extras["ek4d_overlap_clause_ids"] = sorted(
-                cid
-                for cid in encoded_ids
-                if cid in compositor.get("copay_exemption_ek4d", [])
-            )
+        extras = _extra_manifest_fields(
+            section,
+            rules,
+            encoded_ids,
+            compositor_clause_traces=compositor_clause_traces,
+        )
         manifest.update(extras)
 
+    if section.extra_manifest == "copay_compositor":
+        # A compositor trace is evidence of a runtime path, not proof that every
+        # part of its source clause is encoded. Keep the Gate B rule resolution
+        # authoritative and report a complete trace only when IDs and statuses
+        # form the same exact partition of the exported clause frame.
+        trace_statuses = {
+            str(trace["clause_id"]): str(trace["manifest_status"])
+            for trace in traces
+        }
+        trace_buckets = {
+            "tier_a_pending": "tier_a_pending_clause_ids",
+            "tier_b_pending": "tier_b_pending_clause_ids",
+            "tier_c_deferred": "tier_c_deferred_clause_ids",
+            "emr_blocked": "emr_blocked_clause_ids",
+            "non_actionable": "non_actionable_clause_ids",
+        }
+        buckets_match = all(
+            {
+                cid for cid, status in trace_statuses.items() if status == status_name
+            }
+            == set(manifest[field])
+            for status_name, field in trace_buckets.items()
+        )
+        trace_ids = set(trace_statuses)
+        manifest["clause_trace_complete"] = bool(
+            manifest["clause_trace_complete"]
+            and len(trace_statuses) == len(traces)
+            and trace_ids == frame_ids
+            and set(encoded_ids).intersection(frame_ids)
+            == {cid for cid, status in trace_statuses.items() if status == "encoded"}
+            and buckets_match
+        )
+
     return manifest
+
+
+def _resolve_copay_compositor_clause_traces(
+    clauses: pl.DataFrame,
+) -> tuple[dict[str, list[str]], set[str]]:
+    """Resolve runtime trace/encoding identities, failing closed on source drift."""
+    from scripts.sut.prose.copay_compositor_traces import (
+        COMPOSITOR_CLAUSE_TRACE_KEYS,
+        COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS,
+    )
+
+    required_columns = {"clause_id", "clause_key", "is_in_force"}
+    missing_columns = required_columns - set(clauses.columns)
+    if missing_columns:
+        raise ValueError(
+            "copay compositor source frame lacks required columns: "
+            + ", ".join(sorted(missing_columns))
+        )
+
+    expected_keys = {
+        key for keys in COMPOSITOR_CLAUSE_TRACE_KEYS.values() for key in keys
+    }
+    if not COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS <= expected_keys:
+        raise ValueError("fully encoded compositor identities must also be runtime traces")
+    rows_by_key: dict[str, list[dict[str, Any]]] = {}
+    for row in (
+        clauses.filter(pl.col("clause_key").is_in(sorted(expected_keys)))
+        .select("clause_id", "clause_key", "is_in_force")
+        .iter_rows(named=True)
+    ):
+        rows_by_key.setdefault(str(row["clause_key"]), []).append(row)
+
+    problems: list[str] = []
+    for key in sorted(expected_keys):
+        matches = rows_by_key.get(key) or []
+        if len(matches) != 1:
+            problems.append(f"{key}: expected one source row, found {len(matches)}")
+        elif matches[0]["is_in_force"] is not True:
+            problems.append(f"{key}: source row is not in force")
+    if problems:
+        raise ValueError(
+            "copay compositor clause identities did not resolve uniquely/in force: "
+            + "; ".join(problems)
+        )
+
+    id_by_key = {
+        key: str(rows_by_key[key][0]["clause_id"]) for key in expected_keys
+    }
+    traces = {
+        category: sorted(id_by_key[key] for key in keys)
+        for category, keys in COMPOSITOR_CLAUSE_TRACE_KEYS.items()
+    }
+    encoded_ids = {
+        id_by_key[key] for key in COMPOSITOR_FULLY_ENCODED_SOURCE_KEYS
+    }
+    return traces, encoded_ids
 
 
 def _extra_manifest_fields(
     section: GateBSection,
     rules: list[dict[str, Any]],
     encoded_ids: set[str],
+    *,
+    compositor_clause_traces: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
     """Track F: non-drug manifest extras that used to live in bespoke writers."""
     if section.extra_manifest == "payment_cross_refs":
@@ -933,9 +1035,9 @@ def _extra_manifest_fields(
             "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
         }
     if section.extra_manifest == "copay_compositor":
-        from scripts.sut.prose.copay_compositor_traces import COMPOSITOR_CLAUSE_TRACES
-
-        compositor = COMPOSITOR_CLAUSE_TRACES
+        if compositor_clause_traces is None:
+            raise ValueError("copay compositor traces were not resolved from source identities")
+        compositor = compositor_clause_traces
         ek4d = sorted(
             cid
             for cid in encoded_ids
