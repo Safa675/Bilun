@@ -1,24 +1,3 @@
-## Task: MDS epoetin alfa/beta gated clinical draft
-
-### Goal
-Deliver an isolated, source-proven MDS candidate evidence/evaluator and reviewable API/UI helpers as a draft PR, with exact-head independent review and hosted full CI; keep clinical admission and interpretation release disabled.
-
-### Subtasks
-- [x] Verify Safa675/Bilun main 3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e, isolate codex/mds-epoetin-clinical-draft, read AGENTS/lessons/roles and preserve original dirty files.
-- [x] Independently verify pinned October DOCX operative strike-aware MDS/general ESA source, alpha/beta bindings and date limits.
-- [x] Notify exact path ownership plan before writing code; shared clinical files remain unassigned and unwritten.
-- [x] Add strict isolated mds_evidence and source-bound candidate/runtime gated evaluator with unique tests (290 passed).
-- [x] Add isolated API request/helper (63 passed) and frontend evidence/helper/review component (118 focused passed; TypeScript clean); document inactive integration when shared ownership is unavailable.
-- [ ] Run focused regression and source proof, no laptop full suite; review exact commit independently.
-- [ ] Check existing CI before push, publish narrow draft PR, attach it and verify hosted full CI for exact final head.
-- [ ] Record final findings, pending source/date/interpretation admission and parent integration handoff.
-
-### Out of Scope
-VPS, deployment scripts/targets, main writes/merge, dependency/global configuration changes, new clinical admission or interpretation activation, historical-gap filling, generic ESA drug aliases, clinical_eligibility_complete=true, clinical/payment clearance, unrelated adult GH work or repeated laptop full suite.
-
-### Specification and plan review
-User delegation explicitly approves this narrow MDS draft in parallel with adult GH/deploymentfix. Source and path investigation are assigned independently. New files: src/bilun/domain/claims/mds_evidence.py; src/bilun/domain/prose_rules/_drug_indication/clinical_mds.py; src/bilun/api/mds_clinical_draft.py; frontend/src/lib/api/mdsClinicalDraft.ts; frontend/src/components/tabs/sut/sections/MdsClinicalDraft.tsx; tests/unit/domain/claims/test_mds_evidence_transport.py; tests/unit/domain/prose_rules/test_mds_clinical_draft.py; tests/unit/api/test_mds_clinical_draft_api.py; frontend/src/components/tabs/sut/sections/mdsClinicalDraft.test.tsx; data/gazette/clinical_sources/mds_candidate_2026_10.json; plans/clinical/mds-epoetin-clinical-draft.md. Common models/adapter/parsing/clinical.py/frontend form/evidence/messages are not assigned and must remain unchanged. Parent message tool returned an app error; commentary records this concrete plan. Requirements explicitly permit gated draft when evidence/admission is absent. Existing mesothelioma candidate/release-gate pattern is the bounded design. All invalid/missing units/date/phase facts stay unknown; CKD and darbepoetin retain existing runtime behavior. Candidate checks are incomplete even when all pass.
-
 ## Task: 5 Ekim kaynak yenilemesi ve doğrulanmış paket entegrasyonu
 
 ### Goal

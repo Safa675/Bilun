@@ -2026,6 +2026,7 @@
     "src/bilun/domain/prose_rules/_drug_indication/clinical_enteral.py": "9a691e0b93757f59e386b6be1f440776d336df6d22f4bfde4b7a4d918c6edc9e",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_followup.py": "d626c60150841912edd21b032f19c93b3cd18ff849ce8b9430e2b068729b672a",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_indications.py": "187d6208825a8fc3feee1a0630c9d11a048cf227ba7ec0f5f191b27f7f38d1de",
+    "src/bilun/domain/prose_rules/_drug_indication/clinical_mds.py": "3975249a6810f1e03a1318f30f15f0dc76c195105d401d0bf58840f7f62d4b98",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_mesothelioma_documents.py": "e1f45e83f96cd5fceba618f101103a11b6e0402133496af8d2bcd52a150d24ad",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_ravulizumab.py": "d6302744033813abd86f90dbdbdbaaef6eb15831f0a8905b7efabd5afe65ef50",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_renal.py": "4ecae36f47ba6ef8b53a105d77c2a0d710a82d25d568680d6fcd091af9ed2e36",

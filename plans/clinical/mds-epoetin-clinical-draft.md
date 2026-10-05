@@ -17,9 +17,11 @@
 | Backend | `src/bilun/domain/claims/mds_evidence.py`, `src/bilun/domain/prose_rules/_drug_indication/clinical_mds.py`, `tests/unit/domain/claims/test_mds_evidence_transport.py`, `tests/unit/domain/prose_rules/test_mds_clinical_draft.py` |
 | API scout | `src/bilun/api/mds_clinical_draft.py`, `tests/unit/api/test_mds_clinical_draft_api.py` |
 | Frontend | `frontend/src/lib/api/mdsClinicalDraft.ts`, `frontend/src/components/tabs/sut/sections/MdsClinicalDraft.tsx`, `frontend/src/components/tabs/sut/sections/mdsClinicalDraft.test.tsx` |
-| Coordinator | `tasks/todo.md`, commit/PR/CI koordinasyonu ve ayrıca atanmış ortak dosyalar |
+| Coordinator | Bu plan, commit/PR/CI koordinasyonu ve açıkça atanmış `data/gazette/sut_coverage_evidence.json` dependency hash kapanışı |
 
 `claims/models.py`, adapter/parsing/shared models/validation, `clinical.py`, mevcut frontend clinical fields/evidence/SUT messages, mevcut kaynak repairs/catalog ve coverage dosyaları ortak kapsamdır. Bu dört owner bu dosyalara yazmaz. Erişkin GH ile ortak entegrasyon, açık dosya sahipliği ve ayrı inceleme gerektirir.
+
+PR #159 CI sonrası parent, koordinatörü kanonik coverage JSON için tek yazar olarak atadı. Dar düzeltme yalnız `clinical_mds.py` dependency hash satırını ekler; semantic counts, dört coverage parquet, kaynak admission ve runtime dispatch değişmez. Parent talebiyle `tasks/todo.md` PR farkından çıkarılır; görev planı bu deliverable'da kalır. Deployment Git-pack hatası önce salt okunur fixture/taban karşılaştırmasıyla incelenir; production deployment kodu kapsam dışıdır.
 
 ## Subtasks
 
@@ -30,8 +32,11 @@
 - [x] Dar tipli evidence ve aday evaluatorü benzersiz backend dosyalarında tamamla.
 - [x] Standalone API payload helperları ve bağlantısız frontend formunu tamamla.
 - [x] Başlangıç/devam/durdurma sınırları, substance ayrımı, eksik/geçersiz evidence ve MDS/CKD ayrımını yeni focused testlerle doğrula.
-- [ ] Son exact HEAD üzerinde bağımsız kaynak/klinik yorum ve kod incelemesi yap.
-- [ ] Dar Draft PR oluştur; hosted full CI sonucunu exact PR HEAD ile kaydet.
+- [x] İlk exact HEAD üzerinde bağımsız kaynak/klinik yorum ve kod incelemesi yap (`eb519dba`, P1/P2 bulgu yok).
+- [x] Dar Draft PR #159 oluştur.
+- [x] Coverage dependency hash kapanışını currentness regresyonuyla doğrula (**1 PASS**); semantic JSON değerleri ve beş corpus/coverage parquet SHA'sı değişmedi.
+- [ ] Fixture Git-pack CI hatasının taban/HEAD karşılaştırmasını tamamla; deployment dosyalarına yazmadan yeni hosted koşuda doğrula.
+- [ ] Yeni son exact HEAD'i bağımsız incelet; hosted full CI sonucunu PR üzerinde kaydet.
 
 ## Source proof
 
