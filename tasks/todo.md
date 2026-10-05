@@ -1,3 +1,31 @@
+## Task: 5 Ekim kaynak yenilemesi ve doğrulanmış paket entegrasyonu
+
+### Goal
+Main499dff4 tabanında PR154(150 dahil), PR153(152 dahil) ve PR151'i tek kez birleştir; pozitif resmî kanıtla desteklenen 5 Ekim penceresi ve kanonik ortak veri kapanışıyla bağımsız incelenmiş draft PR ve exact-head full CI teslim et.
+
+### Subtasks
+- [x] Güncel main/5PRhead/exactCI ve repoAGENTS/lessons doğrula; özgün dirtyfiles koru.
+- [x] Ayrı integration-2026-10-05 ve source-renewal-2026-10-05 çalışma ağaçlarını kur.
+- [x] Semantic child planını review et; PR153→PR152 exactdiff yalnız contextmemoization üç dosyadır; prioroutcome/evidence kodu aynı, ikinci taşıma yok.
+- [ ] Git merge sırasıyla PR154 → PR153 → PR151; ortak evidence çakışmasını geçici kapalı tut, final hash elle seçme.
+- [ ] Kaynak writer canlı RG5Ekim günlük/mükerrer ve SGKduyuru/primarydocument kanıtını gözlem saatiyle ayrı source worktree'de inceleyip yalnız desteklenen [5Ekim,5Ekim] continuity eklesin; 6Ekim review_required kalsın.
+- [ ] Yeni kaynak dosyaları ve sourcewriter sahipliğindeki dokuz dar date fixture/test/docs değişimini selected-path listesiyle integration tree'ye taşı; eski receipt/history kimlikleri değişmesin.
+- [ ] Compiler/manifests → normalized coverage/registry → consumer report actualpins/catalog → final evidenceJSON sırasını mevcut üreticilerle kapat; manifest/coverage feedback varsa envanter eşitliğini kanıtla.
+- [ ] Consumer/source/date API ve transport testleri, compiler --check/parity/Ruff, rawcorpus/vector/policy/pending/neutral invariants doğrula.
+- [ ] Ayrı incelemeci final tree/pins/source gözlemlerini ve negatifleri inceleyip gerçek komut/sayı kaydını versin.
+- [ ] CI beforepush kontrolünden sonra onaylı draft integration PR yayımla; exact final head hosted fullCI sonucunu gerçek loglarla doğrula.
+- [ ] Main'e merge yapmadan verifiedtree/head/CI ve tekrar etmeyen merge planını koordinatöre teslim et.
+
+### Out of Scope
+Üretim/VPS/deploy/mainmerge, mesothelioma runtimegate açılması veya yeni klinik kriter/admission, clinical_eligibility_complete=true, tarihî boşluk/hukukaltı doldurmak, kanıtsız tarih/hash uzatmak, genel mimari, historicalold→3e deploymentverifier/servingpermission genişletmek, tüm ingest/annex yenilemesi veya özgün dirtyfiles/stash temizliği.
+
+### Specification and plan review
+Kullanıcı 2026-10-05 06:01UTC'de kaynak yenileme, sıralı paket entegrasyonu, ortak veri regeneration ve birleşik CI için 'do it' dedi. Aynı adımlar için yeniden onay gerekmez. Python3.13 mevcut Bilun .venv; Git approved remote; main499 exactAPI identical ve tümPRheadCIgreen. .agents/skills seçili ortamda mevcut değil; repoAGENTS ve ilgili role/lessons okundu. Başarı: 12 bounded family yalnız kanıtlı5Ekim source review, 6Ekim unsupported/falsecomplete; legal/gaps, exact3 organneutral ve55pending korunur; PR151 CLOSED; historicalreceiptc4→40b2 ve immutable releaseverifier korunur; current maps/produceroutputs/querysource eşitliği; bağımsızreview ve exactheadfullCIgreen. Sharedcatalog/report/coverage aşamalarında tek namedwriter; Git/publish root only. Runtime yeni semantik gerekiyorsa açık risk bildir, unaffected work devam.
+
+### File ownership
+Root: Git integration, tasks/todo, delivery-status ve yayın. Kaynak writer ayrısourceworktree: yeni5Ekimreview/captures/receipt, clinical_versions yalnızappendwindow/review, .gitattributes/docs ve source_authority/source_authority_transport/followup_request_integration/mecasermin_request_integration/mecasermin_known_as_of/enteral_ravulizumab_clinical/report_documentation_completion/renal_runtime_observations/sma_antifungal_documentary_facts dar tarih testleri. Semantic child: yalnız gerektiğinde explicitlyassigned conflict/runtime paths; şu an read-only. Closure child: final tekowner olarak compiler/rulemanifest/4coverageparquet+JSON/commonconsumerreport/catalogreportpin aşamaları root GO ile; kaynağın Oct5catalog transportu bitmeden sharedwrite yok. Bağımsızreview ayrıchild, implementationowner olamaz.
+
+
 ## Task: Implement public billing and protected developer access
 
 ### Goal
