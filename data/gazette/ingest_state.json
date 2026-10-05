@@ -1,8 +1,8 @@
 {
-  "last_ingested_folder": "2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT",
-  "last_ingested_date": "2026-08-29",
-  "last_ingested_at": "2026-09-06T09:53:50.108714+00:00",
+  "last_ingested_folder": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT",
+  "last_ingested_date": "2026-10-02",
+  "last_ingested_at": "2026-10-05T12:57:32.682932+00:00",
   "manifest_row_count": 326,
-  "manifest_sha256": "ac172631298f4be4",
+  "manifest_sha256": "2aa947807d48034a",
   "pipeline_version": 2
 }
