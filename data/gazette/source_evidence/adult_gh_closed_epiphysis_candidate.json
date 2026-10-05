@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "contract_kind": "source_pinned_candidate_only",
+  "family_id": "adult_gh_closed_epiphysis",
+  "verified_main_sha": "3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e",
+  "verification_status": "ai_generated_pending_review",
+  "source_only": true,
+  "source_date_admission": false,
+  "independent_clinical_interpretation_released": false,
+  "clinical_eligibility_complete": false,
+  "runtime_branch_eligibility_implemented": false,
+  "source_context": {
+    "path": "data/gazette/source_evidence/adult_gh_closed_epiphysis_context.json",
+    "sha256": "990915b34ed0c9d6b5afee1cb1b9fb12d626c8a2b7e7caea759d50fabe50eba7",
+    "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+    "verified_current_heading_from": "2024-05-17",
+    "heading_date_is_not_first_enactment_or_admission": true,
+    "existing_context_bytes_preserved": true
+  },
+  "source_verification": {
+    "method": "Read-only SHA256 and direct word/document.xml body paragraph/run comparison against the existing context pins; corpus canonical keys and is_in_force checked separately.",
+    "verified_context_paragraph_count_total": 20,
+    "text_sha256_active_text_and_struck_runs_exact": true,
+    "two_source_active_contexts_equal": true,
+    "former_adult_heading_fully_struck": true,
+    "current_active_heading": "4.2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri;",
+    "sources": [
+      {
+        "file_name": "sut-aug29.docx",
+        "docx_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821",
+        "verified_context_paragraph_count": 10
+      },
+      {
+        "file_name": "2026-10-02-SGK-consolidated.docx",
+        "docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+        "verified_context_paragraph_count": 10
+      }
+    ],
+    "no_history_windows_introduced": true
+  },
+  "source_refs": [
+    "4.2.6.A-2.(2)#5589013c",
+    "4.2.6.A-2.a#80b6dded",
+    "4.2.6.A-2.b#9b0bad75",
+    "4.2.6.A-2.(3)#3c094940",
+    "4.2.6.A-2.(4)#e9d92dba"
+  ],
+  "operative_paragraphs": [
+    {
+      "source_ref": "4.2.6.A-2.(2)#5589013c",
+      "active_text": "(2) Epifiz hatları kapalı olan hastalarda:",
+      "text_sha256": "5589013cf2695f8bafa21f7570ec2535352624b0488b4afbfbcd10a3889e7e1b",
+      "source_paragraph_indices_zero_based": {
+        "sut-aug29.docx": 4265,
+        "2026-10-02-SGK-consolidated.docx": 4273
+      }
+    },
+    {
+      "source_ref": "4.2.6.A-2.a#80b6dded",
+      "active_text": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+      "text_sha256": "80b6dded934f6919ed8b77598dc26b367515f16620be8db808d322141445fe6f",
+      "source_paragraph_indices_zero_based": {
+        "sut-aug29.docx": 4266,
+        "2026-10-02-SGK-consolidated.docx": 4274
+      }
+    },
+    {
+      "source_ref": "4.2.6.A-2.b#9b0bad75",
+      "active_text": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+      "text_sha256": "9b0bad7597bdb8f0a7aeaf559ce72afaff7f2694b90ea0078c851daef9e27acd",
+      "source_paragraph_indices_zero_based": {
+        "sut-aug29.docx": 4267,
+        "2026-10-02-SGK-consolidated.docx": 4275
+      }
+    },
+    {
+      "source_ref": "4.2.6.A-2.(3)#3c094940",
+      "active_text": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+      "text_sha256": "3c09494073472c853e98614056687835dedbd249fafee44afdc9a73821a1580e",
+      "source_paragraph_indices_zero_based": {
+        "sut-aug29.docx": 4268,
+        "2026-10-02-SGK-consolidated.docx": 4276
+      }
+    },
+    {
+      "source_ref": "4.2.6.A-2.(4)#e9d92dba",
+      "active_text": "(4) İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3mcg/L’den küçük olduğunun raporda belirtilmesi gereklidir.",
+      "text_sha256": "e9d92dbac88d938159baea3ffd701f349bdbc8ecaebbc7bd647bf9fa0c97677c",
+      "source_paragraph_indices_zero_based": {
+        "sut-aug29.docx": 4269,
+        "2026-10-02-SGK-consolidated.docx": 4277
+      }
+    }
+  ],
+  "scope_contract": {
+    "drug_scope": "somatropin only, using the repository's existing verified somatropin identity/matching",
+    "required_explicit_outer_context": {
+      "gh_patient_group": "adult",
+      "epiphyses_closed": true,
+      "gh_treatment_phase": "initiation"
+    },
+    "infer_epiphyseal_closure_from_age": false,
+    "excluded_scope": [
+      "somatrogon",
+      "unidentified generic growth-hormone aliases",
+      "unrelated drugs",
+      "pediatric eligibility",
+      "adult open-epiphysis pediatric cross-reference",
+      "continuation eligibility",
+      "complete reimbursement eligibility"
+    ],
+    "paragraph_2_introduction_is_a_scope_condition_not_standalone_eligibility": true,
+    "board_report_only_route_is_not_full_adult_eligibility": true
+  },
+  "candidate_schema_contract": {
+    "schema_role": "Narrow isolated typed input contract; this evidence file does not register a shared model, source-admission family, rule or live API route.",
+    "documentary_dates": {
+      "drug_claim_date": "Actual service date from the existing claim; never replace with today.",
+      "applies_on": "Explicit evidence applicability date.",
+      "assessment_date": "Explicit clinical assessment date.",
+      "no_stimulation_test_recency_cutoff_introduced": true
+    },
+    "diagnosis_pathway": {
+      "allowed_values": [
+        "childhood_onset_retest",
+        "adult_hypothalamic_pituitary"
+      ],
+      "source_refs": [
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75"
+      ],
+      "must_be_explicit": true,
+      "derive_from_icd_age_or_prescriber": false
+    },
+    "exact_boolean_fields": {
+      "childhood_gh_deficiency_diagnosed": "Childhood GH deficiency diagnosis documented; required for childhood_onset_retest.",
+      "childhood_gh_treatment_received": "Prior childhood GH treatment documented; required for childhood_onset_retest.",
+      "gh_stopped_due_to_epiphyseal_closure": "Prior treatment stopped because of epiphyseal closure; required for childhood_onset_retest.",
+      "adult_hypothalamic_pituitary_gh_deficiency_suspected": "Clinical suspicion of adult GH deficiency attributable to hypothalamohypophyseal disease; required for adult_hypothalamic_pituitary.",
+      "additional_anterior_pituitary_deficiency_confirmed": "Documented clinical confirmation of at least one additional anterior pituitary hormone deficiency, explicitly excluding prolactin and growth hormone.",
+      "itt_contraindicated": "Explicit documented contraindication fact; no new contraindication list or inference."
+    },
+    "additional_anterior_pituitary_deficiency_exception": {
+      "source_ref": "4.2.6.A-2.(3)#3c094940",
+      "prolactin_and_growth_hormone_excluded": true,
+      "generic_pituitary_deficiency_alias_is_insufficient": true,
+      "changes_test_count_only": true,
+      "removes_diagnosis_pathway_prerequisites": false
+    },
+    "stimulation_test_record_fields": {
+      "test_id": "Explicit documentary identity; distinct records must have unique IDs.",
+      "performed_on": "Explicit date of the performed test; invalid or future/conflicting documentary dates require unknown/review.",
+      "kind": "Explicit itt or other; no inference from drug or diagnosis.",
+      "inadequate_response_documented": "Explicit documented clinical interpretation of inadequate GH response; no numerical interpretation for other test kinds.",
+      "peak_gh_mcg_l": "Finite nonnegative numerical peak GH in the named unit; boolean or numeric-string coercion is invalid. The <3 criterion applies only when kind is itt.",
+      "peak_gh_documented_in_report": "Explicit report documentation of the ITT peak result; ordinary report presence does not establish this fact.",
+      "retest_after_epiphyseal_closure_stop": "Explicit post-stop retest fact for the childhood pathway; age/date alone must not establish it."
+    },
+    "test_count_contract": {
+      "ordinary_required_count": 2,
+      "required_count_with_confirmed_additional_anterior_pituitary_deficiency": 1,
+      "source_specifies_different_test_types": false,
+      "source_specifies_maximum_test_count": false,
+      "duplicate_invalid_or_conflicting_records_must_not_be_discarded_to_select_a_pass": true,
+      "excess_or_conflicting_test_selection_requires_independent_clinical_interpretation": true,
+      "excess_count_alone_is_not_a_clinical_denial": true
+    },
+    "itt_contract": {
+      "source_ref": "4.2.6.A-2.(4)#e9d92dba",
+      "comparison": "peak_gh_mcg_l < 3",
+      "three_exactly_satisfies_comparison": false,
+      "peak_result_documented_in_report_required": true,
+      "threshold_applies_to_other_test_kinds": false,
+      "itt_preference_source_refs": [
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75",
+        "4.2.6.A-2.(3)#3c094940"
+      ],
+      "preference_without_contraindication_is_an_unreleased_interpretation": true,
+      "non_itt_test_with_no_or_unknown_contraindication_requires_review_not_automatic_denial": true
+    },
+    "input_validity_contract": {
+      "booleans": "Exact booleans only; missing or invalid values remain unknown.",
+      "dates": "Explicit valid dates; inconsistent documentary chronology remains unknown/review.",
+      "malformed_test_collections": "Unknown as a whole; no dropping or truncating malformed records to produce a pass.",
+      "missing_or_invalid_facts": "unknown/review",
+      "candidate_criterion_status_does_not_establish_payment": true
+    }
+  },
+  "unresolved_interpretations": [
+    {
+      "issue": "itt_preferred_wording",
+      "source_refs": [
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75",
+        "4.2.6.A-2.(3)#3c094940"
+      ],
+      "detail": "The text says ITT should be preferred if not contraindicated; it does not establish an automatic no-pay decision whenever a non-ITT test is supplied."
+    },
+    {
+      "issue": "other_test_inadequacy",
+      "source_refs": [
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75",
+        "4.2.6.A-2.(3)#3c094940"
+      ],
+      "detail": "Other test response adequacy needs documented clinical interpretation. This package introduces no other-test numerical cutoff, protocol or contraindication list."
+    },
+    {
+      "issue": "more_than_required_or_conflicting_tests",
+      "source_refs": [
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75",
+        "4.2.6.A-2.(3)#3c094940"
+      ],
+      "detail": "The source establishes required counts but no maximum or test-subset selection method. Additional, contradictory or invalid records must not be silently ignored."
+    },
+    {
+      "issue": "source_date_admission",
+      "source_refs": [
+        "4.2.6.A-2.(2)#5589013c",
+        "4.2.6.A-2.a#80b6dded",
+        "4.2.6.A-2.b#9b0bad75",
+        "4.2.6.A-2.(3)#3c094940",
+        "4.2.6.A-2.(4)#e9d92dba"
+      ],
+      "detail": "The existing 12-family renewal excludes this new adult GH diagnosis/stimulation family; the 2024 heading annotation and two matching observations do not establish missing historical intervals."
+    }
+  ],
+  "runtime_release_contract": {
+    "source_date_admission_required": true,
+    "independent_clinical_interpretation_required": true,
+    "both_requirements_completed": false,
+    "runtime_result_until_both_requirements_complete": "gated draft / unknown / review",
+    "new_payment_clear_allowed": false,
+    "full_reimbursement_eligibility_claim_allowed": false,
+    "clinical_eligibility_complete": false
+  },
+  "integration_ownership": {
+    "isolated_preparation_paths": [
+      "src/bilun/domain/claims/adult_gh.py",
+      "src/bilun/domain/prose_rules/_drug_indication/clinical_adult_gh.py",
+      "src/bilun/api/adult_gh_clinical_draft.py",
+      "frontend/src/lib/api/adultGhEvidence.ts",
+      "frontend/src/components/tabs/sut/sections/AdultGhClinicalDraft.tsx"
+    ],
+    "api_ui_contract_preparation_scope_defined": true,
+    "isolated_api_ui_files_prepared": true,
+    "isolated_api_ui_functional_verification_claimed_by_this_source_review": false,
+    "common_api_ui_registration": "awaiting parent/MDS ownership coordination",
+    "shared_adapter_parsing_models_validation_and_clinical_files": "No write authorization granted to this source-evidence owner.",
+    "active_runtime_integration_claimed": false,
+    "deployment_files_changed_by_this_owner": false
+  },
+  "review_report": "reports/sut-expansion/adult-gh-closed-epiphysis-draft-review.md"
+}

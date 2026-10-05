@@ -1,3 +1,28 @@
+## Task: Erişkin somatropin — kapalı epifiz tanı/stimülasyon draft
+
+### Goal
+Main `3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e` tabanında §4.2.6.A-2(2)-(4) için açık belgelenmiş erişkin GH faktlarını taşıyan, eksikleri unknown/review bırakan, admission ve bağımsız klinik yorum tamamlanana kadar runtime kapalı olan dar draft PR üret.
+
+### Subtasks
+- [x] Repo kimliğini/main SHA'yı yeniden doğrula, kirli checkout'u koru ve yalıtılmış repo/worktree kur.
+- [x] Repo AGENTS, ilgili reimbursement/data/fullstack görev kuralları ve lessons oku.
+- [x] Exact kaynak bağlamını bağımsız incelemeciye ver; dosya planını ortak yazım öncesi bildir.
+- [x] Raw DOCX/aktif paragraf/hash, iki tanı yolu, test sayısı istisnası ve ITT/report sınırlarını bağımsız incelemeyle doğrula; 20/20 pinned paragraf exact, yeni admission yok.
+- [x] İzole typed adult GH evidence parser ve üç değerli candidate/runtime gate modüllerini yaz; parser198PASS, evaluator127PASS, Ruff clean.
+- [x] Ortak sahiplik beklerken izole API request/response helper, frontend evidence/payload ve review component/testlerini hazırla; API67PASS, UI51PASS/tsc clean, aktif routing olmadığını belgeyle açıkla.
+- [x] MDS ile ortak dosya sahipliği çözülmedi: common paths untouched; somut blokaj, aday kontratı ve izolasyon planı parent'a commentary/dosya ile bildirildi, ortak kayıt sonraki sahiplik kararını bekler.
+- [x] Source/boundary/negative/differential odaklı testleri çalıştır; toplam399 Python/51 frontendPASS, yerelde full suite yok.
+- [ ] Final exact HEAD için bağımsız inceleme yaptır, CI beforepush oku, dar draft PR aç ve hosted full CI doğrula.
+
+### Out of Scope
+Pediatric/open-epiphysis kuralları, yaşla epifiz kapanması varsayımı, somatrogon/generic GH alias, other-test sayısal eşik türetme, genel framework/refactor, admission/history interval icadı, klinik yorum release, yeni ödeme clear veya `clinical_eligibility_complete=true`, deployment #158 dosyaları, main merge, VPS/deploy mutasyonu.
+
+### Specification and plan review
+Kullanıcı erişkin GH tanı/stimülasyon dar paketini ve paralel MDS/deployment çalışmasını onayladı. Python3.13 dataclass/parser ve mevcut Reader/Predicate/result/source authority pattern'i kullanılacak. Eksik/invalid/date-conflict facts unknown/review kalır. §(3) yalnız test sayısı istisnasıdır; tanı yolu koşullarını kaldırmaz. ITT <3 yalnız ITT; test raporu facts explicit. Başarı: somut draft, exact pinned source evidence, typed boundary ve negatif/differential testler, bağımsız exact-head review, hosted full CI. Plan scope ve kullanıcı talimatına göre root tarafından doğrulandı. Ortak dosya yazımı parent koordinasyonu sağlanmadan yok; app parent mesajı hata verdi, exact path planı `../adult-gh-coordination.md` ve commentary ile bildirildi, async sahiplik sorusu açık. Geçici izole API/UI hazırlığı yeni `src/bilun/api/adult_gh_clinical_draft.py`, `frontend/src/lib/api/adultGhEvidence.ts`, `frontend/src/components/tabs/sut/sections/AdultGhClinicalDraft.tsx` ve yeni testlerde yapılacak; app/router/forms içine kayıt ortak yazım gate'ine bağlı.
+
+### Review
+Başlangıç main doğrulandı; bağımsız kaynak incelemesi 2 raw DOCX/20 pinned paragraf exact olduğunu gösterdi. Mevcut context SHA256 `990915b34ed0c9d6b5afee1cb1b9fb12d626c8a2b7e7caea759d50fabe50eba7` byte-exact korundu. Typed parser198PASS/Ruff; API67PASS/Ruff; evaluator127PASS/Ruff; UI51PASS/tsc; existing adult-route7PASS (2 existing RefResolver warnings). Unknown ek hipofiz eksikliği+yalnız1 destekleyici test sınırı bağımsız ön incelemeyle düzeltildi ve API JSON/mapping regression ile doğrulandı. Full suite yalnız hosted CI'da çalışacak. Ortak entegrasyon talebi app tool hatası nedeniyle ulaştırılamadı; async sahiplik sorusu açık, ortak dosyalarda yazım yok. Source-date admission ve independent clinical-interpretation release bu paket için yok. Code/head frozen olduktan sonra exact-head review ve PR/CI teslim durumu `../adult-gh-delivery.md` dosyasında kaydedilecek; incelenen head yalnız gerekli bug fix ile değişecek.
+
 ## Task: 5 Ekim kaynak yenilemesi ve doğrulanmış paket entegrasyonu
 
 ### Goal
