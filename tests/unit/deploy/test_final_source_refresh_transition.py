@@ -865,6 +865,189 @@ def test_final_history_rejects_unknown_product_ancestry_or_intermediate_edit(pub
         final._verify_candidate_history(checkout, candidate)
 
 
+def _public_blob(body):
+    return ("100644", "blob", hashlib.sha1(f"blob {len(body)}\0".encode() + body).hexdigest())
+
+
+@pytest.fixture
+def normal_squash(public_history, monkeypatch):
+    case = public_history
+    checkout = case["checkout"]
+    prior = {path: (checkout / path).read_bytes() for path in case["frozen_paths"]}
+    # Public literals are independently authored, not copied from the producer.
+    consumers = [
+        "scripts/deploy/verify_candidate_semantics.py",
+        "scripts/deploy/prepare_single_vps_release.py",
+        "scripts/deploy/issue_wavea_activation.py",
+        "scripts/deploy/rehearse_wavea_same_port.py",
+        "scripts/deploy/verify_private_rehearsal.py",
+        "tests/unit/deploy/test_final_source_refresh_transition.py",
+    ]
+    tooling = {path: ("PUBLIC_TOOL = " + repr(path) + "\n").encode() for path in consumers}
+    slot = b"0" * 64
+    normalized = b'_REVIEWED_SQUASH_SELF_SHA256 = "' + slot + b'"\nPUBLIC = True\n'
+    digest = hashlib.sha256(normalized).hexdigest()
+    source = normalized.replace(slot, digest.encode(), 1)
+    _git(checkout, "checkout", "-q", "-b", "public-squash", case["anchor"])
+    for path, body in {**prior, **tooling, "scripts/deploy/verify_final_source_refresh_transition.py": source}.items():
+        target = checkout / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+    candidate = _commit(checkout, "public reviewed normal squash")
+    monkeypatch.setattr(final, "_FROZEN_PRIOR_TOOLING", {path: _public_blob(body) for path, body in prior.items()})
+    monkeypatch.setattr(final, "_REVIEWED_SQUASH_TOOLING", {path: _public_blob(body) for path, body in tooling.items()})
+    monkeypatch.setattr(final, "_REVIEWED_SQUASH_SELF_SHA256", digest)
+    return {**case, "candidate": candidate, "source": source, "digest": digest,
+            "tooling": tooling, "prior": prior}
+
+
+def _amend_public_squash(case):
+    _git(case["checkout"], "add", ".")
+    _git(case["checkout"], "commit", "--amend", "-q", "--no-edit")
+    return _git(case["checkout"], "rev-parse", "HEAD")
+
+
+def test_normal_squash_admits_only_reviewed_anchor_and_exact_tooling(normal_squash):
+    case = normal_squash
+    result = final._verify_candidate_history(case["checkout"], case["candidate"])
+    assert result == {
+        "product_anchor_sha": case["anchor"], "product_anchor_tree": final.PRODUCT_ANCHOR_TREE,
+        "integration_seed_sha": None, "integration_seed_tree": None,
+        "candidate_sha": case["candidate"], "descendant_commits": [case["candidate"]],
+        "authorized_changed_paths": sorted([*case["tooling"], "scripts/deploy/verify_final_source_refresh_transition.py"]),
+        "product_closure_sha256": hashlib.sha256(final._product_closure(case["checkout"], case["anchor"])).hexdigest(),
+    }
+
+
+def test_normal_squash_fresh_clone_does_not_need_discarded_seed(normal_squash, tmp_path):
+    case = normal_squash
+    fresh = tmp_path / "fresh-main"
+    _git(tmp_path, "clone", "--no-local", "--single-branch", "--branch", "public-squash", str(case["checkout"]), str(fresh))
+    with pytest.raises(ValueError):
+        final._git(fresh, "cat-file", "-e", case["seed"])
+    result = final._verify_candidate_history(fresh, case["candidate"])
+    assert result["integration_seed_sha"] is None
+    assert result["descendant_commits"] == [case["candidate"]]
+
+
+@pytest.mark.parametrize("path", [
+    "scripts/deploy/verify_candidate_semantics.py", "scripts/deploy/prepare_single_vps_release.py",
+    "scripts/deploy/issue_wavea_activation.py", "scripts/deploy/rehearse_wavea_same_port.py",
+    "scripts/deploy/verify_private_rehearsal.py", "tests/unit/deploy/test_final_source_refresh_transition.py",
+    "scripts/deploy/verify_source_refresh_transition.py", "tests/unit/deploy/test_source_refresh_transition.py",
+])
+@pytest.mark.parametrize("mutation", ["body", "mode", "type"])
+def test_normal_squash_rejects_every_changed_reviewed_tool_entry(normal_squash, path, mutation):
+    target = normal_squash["checkout"] / path
+    if mutation == "body":
+        target.write_text("UNREVIEWED = True\n")
+    elif mutation == "mode":
+        target.chmod(0o755)
+    else:
+        target.unlink()
+        target.symlink_to("/public-unreviewed-target")
+    candidate = _amend_public_squash(normal_squash)
+    with pytest.raises(ValueError):
+        final._verify_candidate_history(normal_squash["checkout"], candidate)
+
+
+@pytest.mark.parametrize("mutation", [
+    "wrong_head", "wrong_anchor", "future_commit", "mutate_revert", "two_parents",
+    "product_body", "product_mode", "product_type", "extra_product", "extra_tooling",
+    "self_body", "self_mode", "self_type",
+])
+def test_normal_squash_rejects_unknown_identity_history_or_closure(normal_squash, mutation):
+    case = normal_squash
+    checkout, candidate = case["checkout"], case["candidate"]
+    if mutation == "wrong_head":
+        candidate = "f" * 40
+    elif mutation == "wrong_anchor":
+        candidate = _git(checkout, "commit-tree", candidate + "^{tree}", "-p", case["anchor"] + "^", "-m", "wrong anchor parent")
+        _git(checkout, "checkout", "-q", "--detach", candidate)
+    elif mutation == "future_commit":
+        case["new_tool"].write_bytes(case["source"] + b"# future\n")
+        candidate = _commit(checkout, "unreviewed future descendant")
+    elif mutation == "mutate_revert":
+        body = case["product"].read_bytes()
+        case["product"].write_text('{"version": 99}')
+        _commit(checkout, "unreviewed product intermediate")
+        case["product"].write_bytes(body)
+        candidate = _commit(checkout, "revert does not restore reviewed parent")
+    elif mutation == "two_parents":
+        _git(checkout, "checkout", "-q", "-b", "unreviewed-side", case["anchor"])
+        (checkout / "data/side.json").write_text("{}")
+        side = _commit(checkout, "unreviewed side")
+        _git(checkout, "checkout", "-q", "public-squash")
+        _git(checkout, "merge", "--no-ff", "-m", "ordinary two parent merge", side)
+        candidate = _git(checkout, "rev-parse", "HEAD")
+    else:
+        target = case["product"] if mutation.startswith("product_") else case["new_tool"]
+        if mutation.endswith("body"):
+            target.write_bytes(target.read_bytes() + b"# changed\n")
+        elif mutation.endswith("mode"):
+            target.chmod(0o755)
+        elif mutation.endswith("type"):
+            target.unlink()
+            target.symlink_to("/public-unreviewed-target")
+        else:
+            extra = checkout / ("data/extra.json" if mutation == "extra_product" else "scripts/deploy/extra.py")
+            extra.write_text("{}")
+        candidate = _amend_public_squash(case)
+    with pytest.raises(ValueError):
+        final._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("mutation", ["missing", "multiple", "malformed", "mismatch", "other_bytes", "resealed"])
+def test_normal_squash_self_pin_rejects_unknown_slot_or_other_source_bytes(normal_squash, mutation):
+    case = normal_squash
+    source, digest = case["source"], case["digest"].encode()
+    if mutation == "missing":
+        source = source.replace(b"_REVIEWED_SQUASH_SELF_SHA256", b"OTHER_DIGEST")
+    elif mutation == "multiple":
+        source += source.splitlines(keepends=True)[0]
+    elif mutation == "malformed":
+        source = source.replace(digest, b"x" * 64)
+    elif mutation == "mismatch":
+        source = source.replace(digest, b"f" * 64)
+    else:
+        source += b"# unreviewed bytes\n"
+        if mutation == "resealed":
+            new_digest = hashlib.sha256(source.replace(digest, b"0" * 64)).hexdigest().encode()
+            source = source.replace(digest, new_digest)
+    with pytest.raises(ValueError):
+        final._verify_squash_self_source(source)
+
+
+@pytest.mark.parametrize("mutation", [None, "wrong_sha", "disk_bytes", "missing_final"])
+def test_normal_squash_keeps_actual_executing_verifier_binding(normal_squash, monkeypatch, mutation):
+    case = normal_squash
+    checkout = case["checkout"]
+    historical_path = checkout / "scripts/deploy/verify_clinical_semantic_transition.py"
+    historical_path.write_text("PUBLIC_HISTORICAL = True\n")
+    candidate = _commit(checkout, "public fixture for executing-byte binding only")
+    monkeypatch.setattr(final.historical, "__file__", str(historical_path))
+    if mutation == "wrong_sha":
+        candidate = case["candidate"]
+    elif mutation == "disk_bytes":
+        case["new_tool"].write_text("UNREVIEWED = True\n")
+    elif mutation == "missing_final":
+        case["new_tool"].unlink()
+    if mutation is None:
+        binding = final._guard_code_binding(checkout, candidate)
+        assert binding["verifier_sha"] == candidate
+        assert "scripts/deploy/verify_final_source_refresh_transition.py" in binding["files"]
+    else:
+        with pytest.raises(ValueError):
+            final._guard_code_binding(checkout, candidate)
+
+
+def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
+    checkout = Path(final.__file__).resolve().parents[2]
+    for path, expected in {**final._FROZEN_PRIOR_TOOLING, **final._REVIEWED_SQUASH_TOOLING}.items():
+        assert _public_blob((checkout / path).read_bytes()) == expected
+    final._verify_squash_self_source(Path(final.__file__).read_bytes())
+
+
 def _copay():
     frames = {}
     for name, keys in (
@@ -1252,6 +1435,46 @@ def test_final_proof_is_detached_and_immutable():
     assert len(proof.projections["candidate"]["tables"]) == 19
     with pytest.raises(FrozenInstanceError):
         proof._report_json = "{}"
+
+
+@pytest.mark.parametrize("mutation", [
+    None, "mixed_seed_sha", "mixed_seed_tree", "false_seed_sha", "false_seed_tree",
+    "descendant_chain", "empty_descendants", "wrong_candidate", "extra_history_key", "prior_tooling_permission",
+])
+def test_normal_squash_report_has_only_closed_product_anchor_history(mutation):
+    old, new = _public_final_pair()
+    report = _final_report({"baseline": old, "candidate": new})
+    history = report["history"]
+    history.update(integration_seed_sha=None, integration_seed_tree=None,
+                   descendant_commits=[report["candidate_code_sha"]])
+    if mutation == "mixed_seed_sha":
+        history["integration_seed_sha"] = final.INTEGRATION_SEED_SHA
+    elif mutation == "mixed_seed_tree":
+        history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
+    elif mutation == "false_seed_sha":
+        history["integration_seed_sha"] = False
+    elif mutation == "false_seed_tree":
+        history["integration_seed_tree"] = False
+    elif mutation == "descendant_chain":
+        history["descendant_commits"].insert(0, "b" * 40)
+    elif mutation == "empty_descendants":
+        history["descendant_commits"] = []
+    elif mutation == "wrong_candidate":
+        history["candidate_sha"] = "b" * 40
+    elif mutation == "extra_history_key":
+        history["squash_permission"] = True
+    elif mutation == "prior_tooling_permission":
+        history["authorized_changed_paths"] = ["scripts/deploy/verify_source_refresh_transition.py"]
+    report["transition_sha256"] = _digest({key: value for key, value in report.items()
+                                          if key not in {"status", "transition_sha256"}})
+    if mutation is None:
+        final.validate_transition_report_contract(report)
+        assert set(history) == {"product_anchor_sha", "product_anchor_tree", "candidate_sha",
+                               "descendant_commits", "authorized_changed_paths", "integration_seed_sha",
+                               "integration_seed_tree", "product_closure_sha256"}
+    else:
+        with pytest.raises(ValueError):
+            final.validate_transition_report_contract(report)
 
 
 @pytest.mark.parametrize("table", TABLES)

@@ -50,6 +50,26 @@ _SEED_TOOLING_EXCLUSIONS = AUTHORIZED_TOOLING_PATHS | {
     "scripts/deploy/verify_source_refresh_transition.py",
     "tests/unit/deploy/test_source_refresh_transition.py",
 }
+# A normal squash discards the feature seed. Pin its complete reviewed tooling
+# without requiring that unreachable object in a fresh main checkout.
+_FROZEN_PRIOR_TOOLING = {
+    "scripts/deploy/verify_source_refresh_transition.py": ("100644", "blob", "c34d829c36fd38c4ea1ccf4ceb8b63687ac3bbcf"),
+    "tests/unit/deploy/test_source_refresh_transition.py": ("100644", "blob", "3e543f7c6b00f1f91800a5efb53b3f84a4615467"),
+}
+_REVIEWED_SQUASH_TOOLING = {
+    "scripts/deploy/verify_candidate_semantics.py": ("100644", "blob", "7658fc006cf0e5d768275770e08d9f592f2a51d7"),
+    "scripts/deploy/prepare_single_vps_release.py": ("100644", "blob", "90c22af28b7ac63dc540dc2dc72e798764a44f37"),
+    "scripts/deploy/issue_wavea_activation.py": ("100644", "blob", "1cc55863aecbbf0f165a05c8dc7ba4dcd4d72b76"),
+    "scripts/deploy/rehearse_wavea_same_port.py": ("100644", "blob", "24166ec87faa0637af934cec9eff380c0b039484"),
+    "scripts/deploy/verify_private_rehearsal.py": ("100644", "blob", "945ed8ca72a1eab7dc1bf832570843b1156aa95b"),
+    "tests/unit/deploy/test_final_source_refresh_transition.py": ("100644", "blob", "b3e5ee0a4493ff43d56f9deb4b03c96eb002d29a"),
+}
+_SQUASH_VERIFIER_PATH = "scripts/deploy/verify_final_source_refresh_transition.py"
+# Only this one literal slot is replaced with zeros when computing the digest.
+# All other source bytes, including the tooling pins, are covered. The external
+# reviewed SHA still binds the actual executing verifier; this is no bootstrap.
+_REVIEWED_SQUASH_SELF_SHA256 = "356e45bf897bdab14d6c20c2ea6243d67ac37788856bdcc12d2977ca765ae83a"
+_SQUASH_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SQUASH_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
     "patient_detail_cache", "patient_outcome_base", "cohort_optimization_summary",
@@ -127,21 +147,71 @@ def _product_closure(checkout: Path, sha: str) -> bytes:
                        if row and os.fsdecode(row.split(b"\t", 1)[1]) not in _SEED_TOOLING_EXCLUSIONS)
 
 
+def _tooling_tree_entry(checkout: Path, sha: str, path: str) -> tuple[str, str, str]:
+    rows = [row for row in _git(checkout, "ls-tree", "-z", sha, "--", path).split(b"\0") if row]
+    if len(rows) != 1 or rows[0].split(b"\t", 1)[-1] != os.fsencode(path):
+        raise ValueError("Squash tooling entry is absent or ambiguous")
+    fields = rows[0].split(b"\t", 1)[0].decode().split()
+    if len(fields) != 3:
+        raise ValueError("Squash tooling entry is malformed")
+    return tuple(fields)
+
+
+def _verify_squash_self_source(source: bytes) -> None:
+    slots = list(_SQUASH_SELF_SLOT.finditer(source))
+    if (len(slots) != 1 or not isinstance(_REVIEWED_SQUASH_SELF_SHA256, str)
+            or not _SHA256.fullmatch(_REVIEWED_SQUASH_SELF_SHA256)
+            or slots[0].group(1).decode() != _REVIEWED_SQUASH_SELF_SHA256):
+        raise ValueError("Squash verifier self digest has an unknown literal slot")
+    start, end = slots[0].span(1)
+    normalized = source[:start] + b"0" * 64 + source[end:]
+    if hashlib.sha256(normalized).hexdigest() != _REVIEWED_SQUASH_SELF_SHA256:
+        raise ValueError("Squash verifier differs from reviewed source bytes")
+
+
+def _verify_normal_squash_history(checkout: Path, sha: str, product: bytes) -> dict:
+    if _product_closure(checkout, sha) != product:
+        raise ValueError("Normal squash changes pinned product bytes")
+    for path, entry in {**_FROZEN_PRIOR_TOOLING, **_REVIEWED_SQUASH_TOOLING}.items():
+        _same(_tooling_tree_entry(checkout, sha, path), entry, "reviewed squash tooling mode/type/blob")
+    mode, kind, _ = _tooling_tree_entry(checkout, sha, _SQUASH_VERIFIER_PATH)
+    if (mode, kind) != ("100644", "blob"):
+        raise ValueError("Squash verifier has an unreviewed mode/type")
+    _verify_squash_self_source(_git(checkout, "show", f"{sha}:{_SQUASH_VERIFIER_PATH}"))
+    changed = {os.fsdecode(row) for row in _git(checkout, "diff-tree", "--no-commit-id",
+               "--name-only", "-r", "-z", PRODUCT_ANCHOR_SHA, sha).split(b"\0") if row}
+    if not changed or not changed <= _SEED_TOOLING_EXCLUSIONS:
+        raise ValueError("Normal squash changes unreviewed tooling paths")
+    # The two immutable prior files are pinned above, not new mutation rights.
+    authorized = changed & AUTHORIZED_TOOLING_PATHS
+    if not authorized:
+        raise ValueError("Normal squash has no reviewed tooling transition")
+    return {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
+            "integration_seed_sha": None, "integration_seed_tree": None,
+            "candidate_sha": sha, "descendant_commits": [sha],
+            "authorized_changed_paths": sorted(authorized),
+            "product_closure_sha256": hashlib.sha256(product).hexdigest()}
+
+
 def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> dict:
     if (not isinstance(expected_candidate_sha, str) or not _SHA.fullmatch(expected_candidate_sha)
             or _git(checkout, "rev-parse", "HEAD").decode().strip() != expected_candidate_sha):
         raise ValueError("Final profile checkout differs from reviewed candidate")
     for sha, tree in ((BASELINE_CODE_SHA, BASELINE_TREE),
-                      (INTEGRATION_SEED_SHA, INTEGRATION_SEED_TREE),
                       *((sha, tree) for sha, tree, _ in PRODUCT_HISTORY)):
         if _git(checkout, "rev-parse", f"{sha}^{{tree}}").decode().strip() != tree:
             raise ValueError("Final profile pinned product/seed tree differs")
     for sha, _, parent in PRODUCT_HISTORY:
         if _git(checkout, "show", "-s", "--format=%P", sha).decode().split() != [parent]:
             raise ValueError("Final product has unknown ancestry")
+    product = _product_closure(checkout, PRODUCT_ANCHOR_SHA)
+    parents = _git(checkout, "show", "-s", "--format=%P", expected_candidate_sha).decode().split()
+    if parents == [PRODUCT_ANCHOR_SHA]:
+        return _verify_normal_squash_history(checkout, expected_candidate_sha, product)
+    if _git(checkout, "rev-parse", f"{INTEGRATION_SEED_SHA}^{{tree}}").decode().strip() != INTEGRATION_SEED_TREE:
+        raise ValueError("Final profile pinned product/seed tree differs")
     if tuple(_git(checkout, "show", "-s", "--format=%P", INTEGRATION_SEED_SHA).decode().split()) != SEED_PARENTS:
         raise ValueError("Final integration seed has unknown parents")
-    product = _product_closure(checkout, PRODUCT_ANCHOR_SHA)
     if _product_closure(checkout, INTEGRATION_SEED_SHA) != product:
         raise ValueError("Final integration seed changes product bytes")
     for path in _SEED_TOOLING_EXCLUSIONS - AUTHORIZED_TOOLING_PATHS:
@@ -1135,12 +1205,13 @@ def validate_transition_report_contract(report: Mapping) -> None:
             or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
             or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
             or history.get("candidate_sha") != candidate
-            or history.get("integration_seed_sha") != INTEGRATION_SEED_SHA
-            or history.get("integration_seed_tree") != INTEGRATION_SEED_TREE
+            or (history.get("integration_seed_sha"), history.get("integration_seed_tree"))
+               not in ((INTEGRATION_SEED_SHA, INTEGRATION_SEED_TREE), (None, None))
             or not isinstance(history.get("product_closure_sha256"), str)
             or not _SHA256.fullmatch(history["product_closure_sha256"])
             or not isinstance(history.get("descendant_commits"), list) or not history["descendant_commits"]
             or history["descendant_commits"][-1] != candidate
+            or (history["integration_seed_sha"] is None and history["descendant_commits"] != [candidate])
             or any(not isinstance(sha, str) or not _SHA.fullmatch(sha) for sha in history["descendant_commits"])
             or len(set(history["descendant_commits"])) != len(history["descendant_commits"])
             or not isinstance(history.get("authorized_changed_paths"), list)
