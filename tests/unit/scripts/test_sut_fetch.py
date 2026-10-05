@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import signal
 import stat
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -331,19 +333,127 @@ def test_failed_missing_file_installation_rolls_back(tmp_path: Path) -> None:
     original = _snapshot(target)
     from scripts.sut import sut_fetch
 
-    copyfileobj = sut_fetch.shutil.copyfileobj
+    link = sut_fetch.os.link
 
-    def fail_install(source, output, *args):
-        if output.name == str(target / XLSX_MEMBER):
-            output.write(b"partial")
+    def fail_install(source, destination, **kwargs):
+        if destination == target / PACKAGE_INVENTORY_FILENAME:
             raise OSError("installation interrupted")
-        return copyfileobj(source, output, *args)
+        return link(source, destination, **kwargs)
 
-    with patch("scripts.sut.sut_fetch.shutil.copyfileobj", fail_install):
+    with patch("scripts.sut.sut_fetch.os.link", fail_install):
         with pytest.raises(OSError, match="installation interrupted"):
             _fetch(tmp_path, _zip_bytes(SOURCE_FILES))
     assert _snapshot(target) == original
     assert not (target / "2026.10.02-SUT/EK-4 LİSTELERİ").exists()
+
+
+@pytest.mark.parametrize("concurrent_content", [SOURCE_FILES[XLSX_MEMBER], b"concurrent divergence"])
+def test_concurrently_published_member_is_validated_without_overwrite(
+    tmp_path: Path, concurrent_content: bytes,
+) -> None:
+    target = _target(tmp_path)
+    docx = target / DOCX_MEMBER
+    docx.parent.mkdir(parents=True)
+    docx.write_bytes(SOURCE_FILES[DOCX_MEMBER])
+    original_docx = (docx.read_bytes(), docx.stat().st_mtime_ns)
+    from scripts.sut import sut_fetch
+
+    link = sut_fetch.os.link
+
+    def publish_concurrently(source, destination, **kwargs):
+        if destination == target / XLSX_MEMBER:
+            destination.write_bytes(concurrent_content)
+        return link(source, destination, **kwargs)
+
+    with patch("scripts.sut.sut_fetch.os.link", publish_concurrently):
+        if concurrent_content == SOURCE_FILES[XLSX_MEMBER]:
+            _fetch(tmp_path, _zip_bytes(SOURCE_FILES))
+            assert (target / PACKAGE_INVENTORY_FILENAME).is_file()
+        else:
+            with pytest.raises(ValueError, match="changed during hydration"):
+                _fetch(tmp_path, _zip_bytes(SOURCE_FILES))
+            assert not (target / PACKAGE_INVENTORY_FILENAME).exists()
+    assert (target / XLSX_MEMBER).read_bytes() == concurrent_content
+    assert (docx.read_bytes(), docx.stat().st_mtime_ns) == original_docx
+
+
+@pytest.mark.parametrize("phase", ["before_link", "after_link"])
+@pytest.mark.parametrize("termination", ["os_exit", "sigkill"])
+def test_process_death_during_publication_allows_next_rerun(
+    tmp_path: Path, phase: str, termination: str,
+) -> None:
+    """A real abrupt process exit cannot leave a corrupt permanent ZIP member."""
+    target = _target(tmp_path)
+    docx = target / DOCX_MEMBER
+    docx.parent.mkdir(parents=True)
+    docx.write_bytes(SOURCE_FILES[DOCX_MEMBER])
+    original_docx = (docx.read_bytes(), docx.stat().st_mtime_ns)
+    data = _zip_bytes(SOURCE_FILES)
+    archive = tmp_path / "official.zip"
+    archive.write_bytes(data)
+    child = r'''
+import os
+import signal
+import sys
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+from scripts.sut import sut_fetch
+
+archive, raw_root, permanent_member, phase, termination, zip_url = sys.argv[1:]
+permanent_member = Path(permanent_member)
+link = os.link
+copyfileobj = sut_fetch.shutil.copyfileobj
+
+def terminate():
+    if termination == "os_exit":
+        os._exit(73)
+    os.kill(os.getpid(), signal.SIGKILL)
+
+def interrupt_link(source, destination, **kwargs):
+    if destination == permanent_member and phase == "before_link":
+        terminate()
+    link(source, destination, **kwargs)
+    if destination == permanent_member:
+        terminate()
+
+def interrupt_unsafe_copy(source, output, *args):
+    # Retain the original failure trigger: a future direct-to-final copy must
+    # fail this regression even if it bypasses the atomic publication boundary.
+    if getattr(output, "name", None) == str(permanent_member):
+        output.write(b"partial permanent member")
+        output.flush()
+        terminate()
+    return copyfileobj(source, output, *args)
+
+raw = Path(archive).open("rb")
+response = SimpleNamespace(
+    status_code=200, headers={}, raw=raw,
+    raise_for_status=lambda: None, close=raw.close,
+)
+with (
+    patch.object(sut_fetch.requests, "get", return_value=response),
+    patch.object(sut_fetch.os, "link", interrupt_link),
+    patch.object(sut_fetch.shutil, "copyfileobj", interrupt_unsafe_copy),
+):
+    sut_fetch.download_and_extract(zip_url, "2026-10-02", Path(raw_root))
+'''
+    result = subprocess.run(
+        [sys.executable, "-c", child, str(archive), str(target.parent), str(target / XLSX_MEMBER),
+         phase, termination, ZIP_URL],
+        cwd=Path(__file__).resolve().parents[3], capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == (73 if termination == "os_exit" else -signal.SIGKILL), result.stderr
+    assert (docx.read_bytes(), docx.stat().st_mtime_ns) == original_docx
+    if phase == "before_link":
+        assert not (target / XLSX_MEMBER).exists()
+    else:
+        assert (target / XLSX_MEMBER).read_bytes() == SOURCE_FILES[XLSX_MEMBER]
+    assert not (target / PACKAGE_INVENTORY_FILENAME).exists()
+    assert _fetch(tmp_path, data) == target
+    assert (target / XLSX_MEMBER).read_bytes() == SOURCE_FILES[XLSX_MEMBER]
+    assert (docx.read_bytes(), docx.stat().st_mtime_ns) == original_docx
+    assert (target / PACKAGE_INVENTORY_FILENAME).is_file()
 
 
 def test_main_exports_exact_completed_input_and_inventory(tmp_path: Path, monkeypatch) -> None:

@@ -10,6 +10,7 @@ Verified 2026-07-12: HTTP 200, 30MB, application/x-zip-compressed.
 """
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -121,40 +122,50 @@ def _validate_existing(target_dir: Path, files: dict[str, dict], receipt: bytes)
 
 
 def _hydrate_existing(staged: Path, target: Path, files: dict[str, dict]) -> None:
-    """Install missing files only; roll back any interrupted installation."""
+    """Atomically publish complete missing files; roll back ordinary failures."""
     created_files: list[Path] = []
     created_dirs: list[Path] = []
     try:
         # Write the receipt last: its presence must never certify a partial copy.
         for name in [*files, PACKAGE_INVENTORY_FILENAME]:
             destination = target / name
-            if destination.exists():
-                if destination.is_symlink() or not destination.is_file():
-                    raise ValueError(f"Existing destination is not a regular file: {name!r}")
-                if name == PACKAGE_INVENTORY_FILENAME:
-                    if destination.read_bytes() != (staged / name).read_bytes():
-                        raise ValueError("Existing SUT package inventory changed during hydration")
-                elif _sha256(destination) != files[name]["sha256"]:
-                    raise ValueError(f"Existing source file changed during hydration: {name!r}")
-                continue
-            missing_dirs: list[Path] = []
-            parent = destination.parent
-            while parent != target and not parent.exists():
-                missing_dirs.append(parent)
-                parent = parent.parent
-            for directory in reversed(missing_dirs):
-                directory.mkdir()
-                created_dirs.append(directory)
-            # Exclusive creation also prevents overwriting a concurrently added file.
-            with destination.open("xb") as output:
-                created_files.append(destination)
-                with (staged / name).open("rb") as source:
-                    shutil.copyfileobj(source, output)
+            if not destination.exists() and not destination.is_symlink():
+                missing_dirs: list[Path] = []
+                parent = destination.parent
+                while parent != target and not parent.exists():
+                    missing_dirs.append(parent)
+                    parent = parent.parent
+                for directory in reversed(missing_dirs):
+                    directory.mkdir()
+                    created_dirs.append(directory)
+                # Both paths share the raw-data filesystem. A hard link exposes
+                # only the already complete staged inode, never overwrites an
+                # existing name, and remains complete even after SIGKILL.
+                try:
+                    os.link(staged / name, destination, follow_symlinks=False)
+                except FileExistsError:
+                    # A concurrently published member must still match exactly.
+                    pass
+                else:
+                    created_files.append(destination)
+                    continue
+            if destination.is_symlink() or not destination.is_file():
+                raise ValueError(f"Existing destination is not a regular file: {name!r}")
+            if name == PACKAGE_INVENTORY_FILENAME:
+                if destination.read_bytes() != (staged / name).read_bytes():
+                    raise ValueError("Existing SUT package inventory changed during hydration")
+            elif _sha256(destination) != files[name]["sha256"]:
+                raise ValueError(f"Existing source file changed during hydration: {name!r}")
     except Exception:
         for path in reversed(created_files):
             path.unlink(missing_ok=True)
         for path in reversed(created_dirs):
-            path.rmdir()
+            try:
+                path.rmdir()
+            except OSError as error:
+                # Concurrent files belong to their publisher; preserve them.
+                if error.errno not in (errno.ENOTEMPTY, errno.EEXIST, errno.ENOENT):
+                    raise
         raise
 
 
