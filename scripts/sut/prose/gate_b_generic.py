@@ -726,8 +726,9 @@ def build_manifest(
                 "copay compositor source clauses are outside the manifest frame: "
                 + ", ".join(sorted(missing_trace_ids))
             )
-        # Only the two full-scope runtime paths supplement rule-backed encoding.
-        # Trace-only partial paths stay in their honest pending/deferred buckets.
+        # Only explicitly allowlisted compositor identities supplement
+        # rule-backed encoding; the current copay map keeps all traced clauses
+        # in their authored pending/deferred buckets.
         encoded_ids.update(compositor_encoded_ids)
     deferral = load_deferral_table(resolve_frame)
     rules_by_clause: dict[str, list[str]] = {}
