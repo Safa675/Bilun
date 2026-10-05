@@ -7,6 +7,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
 pytestmark = pytest.mark.unit
 
@@ -17,7 +18,7 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4224_mani
 
 _SECTION = "4224"
 
-_PILOT_SOURCES = frozenset({
+_PILOT_SOURCES = reviewed_clause_ids(
     "C006212",
     "C006213",
     "C006230",
@@ -27,7 +28,7 @@ _PILOT_SOURCES = frozenset({
     "C006268",
     "C006272",
     "C006280",
-})
+)
 
 
 def test_gate_b_exports_4224_candidates() -> None:

@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.2.(1a).outpatient_daily_allowance_window
   sut_section: 2.6.2
   gate_b_sources:
-  - C001609
+  - C001617
   condition:
     definition_scope: Ayakta tedavide müracaat ile tedavi bitişi arası, istirahat dışı günler için gündelik
     applies_to: Ayakta tedavi
@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.2.(1b).inpatient_daily_allowance_travel_days_only
   sut_section: 2.6.2
   gate_b_sources:
-  - C001610
+  - C001618
   condition:
     definition_scope: Yatarak tedavide hasta ve refakatçiye yalnızca gidiş/dönüş için gündelik
     applies_to: Yatarak tedavi
@@ -24,7 +24,7 @@ rules:
 - rule_id: 2.6.2.(1c).no_bed_waiting_daily_cap_5
   sut_section: 2.6.2
   gate_b_sources:
-  - C001611
+  - C001619
   condition:
     definition_scope: Yatak yokluğu nedeniyle yatırılmadan geçen günler için 5 günü geçmemek üzere gündelik
     applies_to: Müracaat sonrası yatak bulunamaması

@@ -640,7 +640,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C008171"
+        "C008196"
       ]
     },
     {

@@ -14,9 +14,11 @@ rules:
       nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - 2.4.2.A.(1)
+  - 2.4.2.A.(1)#7548a2e7
 - rule_id: 2.4.2.A.(4).domestic_organ_transfer_per_2_6
   sut_section: 2.4.2.A
+  source_review_required: true
+  verification_status: ai_generated_pending_review
   condition:
     organ_found_in_country: true
     service_category: patient_transfer_for_transplant
@@ -26,10 +28,12 @@ rules:
       bulunduğu yere getirilmesine ilişkin gidiş-dönüş nakliye/transfer masrafları SUT’un 2.6 maddesi doğrultusunda Kurumca
       karşılanır
     billing_method: fee_for_service
-  gate_b_sources:
-  - 2.4.2.A.(4)
+  gate_b_sources: []
+  source_scope_note: Historical documentary source 2.4.2.A.(4)#dd4afd03; no executable current source. Existing rule retained for neutral source review only.
 - rule_id: 2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c
   sut_section: 2.4.2.A
+  source_review_required: true
+  verification_status: ai_generated_pending_review
   condition:
     procedure_code_any:
     - P911146
@@ -40,8 +44,8 @@ rules:
       sunucuya EK-2/C “P911146 Kadavra donör temini” bedeli karşılanır; bedele kadavra organ alım işlemleri dahildir
     billing_method: fee_for_service
     annex_basis: EK-2/C
-  gate_b_sources:
-  - 2.4.2.A.(5)
+  gate_b_sources: []
+  source_scope_note: Historical documentary source 2.4.2.A.(5)#5733887d; no executable current source. Existing rule retained for neutral source review only.
 - rule_id: 2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay
   sut_section: 2.4.2.A
   condition:
@@ -54,10 +58,11 @@ rules:
       uygulanacak aferez işlemi ve tıbbi malzeme bedelleri ayrıca faturalandırılamaz
     severity: error
   gate_b_sources:
-  - 2.4.2.A.(6)
+  - 2.4.2.A.(6)#b195f0a7
 - rule_id: 2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay
   sut_section: 2.4.2.A
   verification_status: ai_generated_pending_review
+  source_review_required: true
   condition:
     patient_in_general_scope_not_in_5510_excluded_groups: false
     is_organ_or_tissue_donor: true
@@ -67,5 +72,5 @@ rules:
     message_tr: Kurumca saglik yardimlari karsilanmayan alici durumundaki kisilerin organ/doku vericisi olmasi halinde bu
       islemlere ait bedeller karsilanmaz
     severity: error
-  gate_b_sources:
-  - 2.4.2.A.(2)
+  gate_b_sources: []
+  source_scope_note: Historical documentary source 2.4.2.A.(2)#943077b8; no executable current source. Existing rule retained for neutral source review only.

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -86,7 +88,7 @@ def test_a6_manifest_encoded_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest.get("section_id") == "4.2.6"
-    assert {"C003995", "C003996", "C004020"} <= encoded
+    assert {reviewed_clause_id("C003995"), reviewed_clause_id("C003996"), reviewed_clause_id("C004020")} <= encoded
     assert manifest["encoded_clause_count"] == len(encoded)
     assert manifest.get("tier_b_pending_count") == 0
 

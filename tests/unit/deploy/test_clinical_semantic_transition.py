@@ -893,8 +893,52 @@ def test_public_source_rule_intent_is_quarantine_with_unchanged_review_window(pu
         assert not {"darbepoetin", "aranesp"} & set(new["rules"][key]["drug_names"])
 
 
-def test_expected_fingerprints_are_reproducible_from_public_source_without_a_cache():
-    assert _json_sha256(prose.drug_indication_coverage_scope()) == transition.PRODUCT_COVERAGE_SHA256
+@pytest.fixture
+def historical_public_coverage_snapshots():
+    """Frozen public generator outputs; shallow CI validates golden metadata.
+
+    Their provenance records the separately executed immutable source generators.
+    Loading these fixtures is not a historical generator or private cache replay.
+    """
+    directory = Path(__file__).parent / "fixtures" / "clinical_semantic_transition_public_coverage"
+    provenance = json.loads((directory / "provenance.json").read_text(encoding="utf-8"))
+    assert provenance["schema_version"] == 1
+    expected = [
+        (transition.BASELINE_CODE_SHA, transition.BASELINE_TREE,
+         transition.BASELINE_COVERAGE_SHA256, "c556eaf34839751970ae4c2e4375981eeb7ef023727fea4e784ab580a0e7ccb9"),
+        (transition.PRODUCT_ANCHOR_SHA, transition.PRODUCT_ANCHOR_TREE,
+         transition.PRODUCT_COVERAGE_SHA256, "fa4e9ce84282b5aada323d32cc1ec73f5afb98106f1663dd97ba8ad2c14c2ee1"),
+    ]
+    scopes = []
+    assert len(provenance["snapshots"]) == len(expected)
+    for snapshot, (revision, tree, scope_sha, inputs_sha) in zip(provenance["snapshots"], expected):
+        assert snapshot["source_revision"] == revision
+        assert snapshot["source_tree"] == tree
+        assert snapshot["input_entry_count"] == len(snapshot["inputs"])
+        assert _json_sha256(snapshot["inputs"]) == snapshot["input_manifest_sha256"] == inputs_sha
+        raw = (directory / snapshot["snapshot_file"]).read_bytes()
+        assert len(raw) == snapshot["snapshot_size_bytes"]
+        scope = json.loads(raw)
+        assert _json_sha256(scope) == snapshot["canonical_scope_sha256"] == scope_sha
+        scopes.append(scope)
+    return scopes
+
+
+def test_historical_public_coverage_golden_snapshots_keep_exact_transition(historical_public_coverage_snapshots):
+    old, product = historical_public_coverage_snapshots
+    transition._check_coverage_pair(old, product)
+
+
+def test_historical_transition_rejects_current_corpus_coverage(historical_public_coverage_snapshots):
+    old, _ = historical_public_coverage_snapshots
+    current = prose.drug_indication_coverage_scope()
+    assert _json_sha256(current) != transition.PRODUCT_COVERAGE_SHA256
+    for before in (old, current):
+        with pytest.raises(ValueError, match="coverage metadata differs from the pinned source generators"):
+            transition._check_coverage_pair(before, current)
+
+
+def test_expected_route_fingerprints_are_reproducible_from_current_public_source_without_a_cache():
     rules = {rule["rule_id"]: rule for rule in prose.list_drug_indication_rules()}
     for key, expected in transition.SOURCE_ROUTE_SHA256.items():
         routes, truncated = _route_evidence([rules[key]])

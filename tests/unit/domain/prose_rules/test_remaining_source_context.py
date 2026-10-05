@@ -1,5 +1,7 @@
 """Context repair cannot turn report metadata into clinical/payment clearance."""
 
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_id
+
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -109,7 +111,7 @@ def test_all_seven_context_records_resolve_unique_original_items_without_encodin
     assert len(data["entries"]) == 7
     for row in data["entries"]:
         refs = row["source_context_refs"]
-        assert resolve_gate_b_ref_to_clause_ids(refs[0], frame) == [row["baseline_inventory_id"]]
+        assert resolve_gate_b_ref_to_clause_ids(refs[0], frame) == [reviewed_clause_id(row["baseline_inventory_id"])]
         as_rule = {"rule_id": row["baseline_inventory_id"], "source_context_refs": refs}
         assert_gate_b_sources_resolvable([as_rule], frame)
         assert encoded_clause_ids_from_rules([as_rule], frame) == set()

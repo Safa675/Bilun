@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.66.gyn.gonadotropin_fsh_lh_corifollitropin_dosecap_combo_nopay
   sut_section: 4.2.66
   gate_b_sources:
-  - C007243
+  - C007268
   drug_names:
   - kombine fsh-lh preparatları
   - koryogonadotropin alfa

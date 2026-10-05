@@ -25,6 +25,7 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.treatment_pricing import (
     _build_treatment_pricing_context,
     _condition_matches,
+    _source_review_required,
     _suffix_len,
     _violation_from_rule,
     load_treatment_pricing_rules,
@@ -282,6 +283,16 @@ def evaluate_treatment_pricing(
         flat = _build_treatment_pricing_context(claim_ctx)
         for rule in rules:
             rule_id = rule["rule_id"]
+            if _source_review_required(rule):
+                evaluations.append(RuleEvaluation(
+                    patient_id=patient_id, claim_id=claim_id, rule_id=rule_id,
+                    evaluation_status="unavailable", required_inputs=[], missing_inputs=[],
+                    reason="source_review_required",
+                ))
+                legacy_rows.append(LegacyTreatmentPricingRow(
+                    patient_id, claim_id, rule_id, _FAMILY, _violation_from_rule(rule, _FAMILY),
+                ))
+                continue
             condition = rule["condition"]
             raw_matched, status, missing, reason = _observe_condition(condition, flat)
             gate = _metadata_gate(condition, claim_ctx, flat)

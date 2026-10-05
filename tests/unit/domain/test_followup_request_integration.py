@@ -15,7 +15,8 @@ from src.bilun.domain.prose_rules._drug_indication.clinical_followup import eval
     ('dupilumab', 'atopic_dermatitis', True, False, 99, None, '2026-10-02', 'not_evaluated', 'drug_claim_date'),
     ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-03', '2026-10-02', 'not_evaluated', 'followup_evidence.applies_on'),
     ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-03', '2026-10-03', 'criterion_clear', None),
-    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-04', '2026-10-04', 'not_evaluated', 'verified_source_for_service_date'),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-04', '2026-10-04', 'criterion_clear', None),
+    ('dupilumab', 'atopic_dermatitis', True, False, 99, '2026-10-05', '2026-10-05', 'not_evaluated', 'verified_source_for_service_date'),
     ('nintedanib', 'progressive_fibrosing_ild', False, True, 100, '2026-10-02', '2026-10-02', 'criterion_clear', None),
     ('nintedanib', 'progressive_fibrosing_ild', False, True, 99, '2026-10-02', '2026-10-02', 'restriction_not_met', None),
     ('nintedanib', 'systemic_sclerosis_ild', False, False, 50, '2026-10-02', '2026-10-02', 'unknown', 'followup_evidence.fvc_assessment_outside_exacerbation'),
@@ -52,11 +53,11 @@ def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, ind
         if status == 'not_evaluated':
             assert outcome['checks'] == []
             assert outcome['missing_inputs'] == [reason]
-        if day == '2026-10-03':
+        if day in ('2026-10-03', '2026-10-04'):
             assert outcome['source_authority']['status'] == 'admitted'
             if evidence_day == day:
                 assert len(outcome['checks']) == 3
-        elif day == '2026-10-04':
+        elif day == '2026-10-05':
             assert outcome['source_authority']['status'] == 'review_required'
     app = FastAPI()
     app.include_router(router, prefix='/api')
@@ -72,7 +73,7 @@ def test_followup_http_preserves_domains_dates_false_and_partial_scope(name, ind
     if status == 'not_evaluated':
         assert observation['checks'] == []
         assert observation['missing_inputs'] == [reason]
-    elif day == '2026-10-03':
+    elif day in ('2026-10-03', '2026-10-04'):
         assert len(observation['checks']) == 3
     assert row['disposition'] == 'review_only' and public['is_valid'] is None
     if reason:

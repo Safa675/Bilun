@@ -6,9 +6,12 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import polars as pl
+from polars.testing import assert_frame_equal
 import pytest
 
 from scripts.sut.prose.classify import classify_clause_row
+from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
 from scripts.sut.prose.coverage import build_sut_coverage
 from scripts.sut.prose.rule_registry import RULE_BY_ID
 
@@ -324,6 +327,14 @@ class TestFullCoverageBuild:
 
     def test_majority_classified(self, coverage: pd.DataFrame) -> None:
         assert coverage["is_classified"].mean() > 0.7
+
+    def test_source_fields_match_idempotent_authored_normalization(self, coverage: pd.DataFrame) -> None:
+        raw = pl.read_parquet(_CLAUSES_PATH)
+        normalized = apply_clause_type_overrides(raw)
+        assert_frame_equal(apply_clause_type_overrides(normalized), normalized)
+        expected = normalized.filter(pl.col("is_in_force"))
+        actual = pl.from_pandas(coverage).select(raw.columns)
+        assert_frame_equal(actual, expected, check_dtypes=False)
 
     def test_implemented_rules_present(self, coverage: pd.DataFrame) -> None:
         assert (coverage["coverage_status"] == "implemented").any()

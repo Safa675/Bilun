@@ -7,131 +7,131 @@
   "section_clause_total": 284,
   "encoded_clause_count": 125,
   "encoded_clause_ids": [
-    "C003613",
-    "C003615",
-    "C003637",
-    "C003641",
-    "C003643",
-    "C003652",
-    "C003653",
-    "C003654",
-    "C003655",
+    "C003621",
+    "C003623",
+    "C003645",
+    "C003649",
+    "C003651",
     "C003660",
-    "C003667",
-    "C003671",
-    "C003672",
-    "C003673",
-    "C003674",
+    "C003661",
+    "C003662",
+    "C003663",
+    "C003668",
     "C003675",
-    "C003677",
     "C003679",
     "C003680",
     "C003681",
-    "C003684",
+    "C003682",
+    "C003683",
     "C003685",
-    "C003686",
-    "C003695",
-    "C003696",
-    "C003697",
-    "C003698",
-    "C003699",
-    "C003700",
-    "C003701",
-    "C003702",
+    "C003687",
+    "C003688",
+    "C003689",
+    "C003692",
+    "C003693",
+    "C003694",
+    "C003703",
+    "C003704",
+    "C003705",
+    "C003706",
     "C003707",
     "C003708",
     "C003709",
-    "C003714",
+    "C003710",
     "C003715",
     "C003716",
     "C003717",
-    "C003719",
-    "C003721",
     "C003722",
+    "C003723",
     "C003724",
-    "C003728",
+    "C003725",
+    "C003727",
     "C003729",
-    "C003731",
-    "C003734",
-    "C003735",
+    "C003730",
+    "C003732",
     "C003736",
-    "C003738",
+    "C003737",
     "C003739",
+    "C003742",
     "C003743",
     "C003744",
-    "C003745",
     "C003746",
     "C003747",
-    "C003749",
+    "C003751",
     "C003752",
     "C003753",
-    "C003759",
+    "C003754",
+    "C003755",
+    "C003757",
     "C003760",
-    "C003765",
-    "C003766",
+    "C003761",
+    "C003767",
     "C003768",
     "C003773",
+    "C003774",
     "C003776",
-    "C003792",
-    "C003793",
-    "C003795",
-    "C003797",
-    "C003799",
+    "C003781",
+    "C003784",
     "C003800",
     "C003801",
     "C003803",
-    "C003804",
+    "C003805",
     "C003807",
+    "C003808",
     "C003809",
+    "C003811",
     "C003812",
+    "C003815",
+    "C003817",
     "C003820",
-    "C003823",
-    "C003824",
-    "C003826",
-    "C003827",
     "C003828",
-    "C003829",
     "C003831",
     "C003832",
+    "C003834",
     "C003835",
-    "C003838",
-    "C003845",
-    "C003860",
-    "C003861",
-    "C003862",
-    "C003865",
-    "C003866",
-    "C003867",
+    "C003836",
+    "C003837",
+    "C003839",
+    "C003840",
+    "C003843",
+    "C003846",
+    "C003853",
     "C003868",
-    "C003872",
+    "C003869",
+    "C003870",
     "C003873",
     "C003874",
+    "C003875",
+    "C003876",
+    "C003880",
     "C003881",
-    "C003886",
-    "C003893",
+    "C003882",
+    "C003889",
     "C003894",
-    "C003898",
+    "C003901",
     "C003902",
-    "C003904",
     "C003906",
-    "C003908",
     "C003910",
     "C003912",
-    "C003915",
+    "C003914",
     "C003916",
-    "C003917",
-    "C003921",
+    "C003918",
+    "C003920",
     "C003923",
-    "C003926",
-    "C003928",
-    "C003932",
+    "C003924",
+    "C003925",
+    "C003929",
+    "C003931",
     "C003934",
-    "C003937",
-    "C003939",
+    "C003936",
+    "C003940",
     "C003942",
-    "C003943",
-    "C003948",
-    "C003950"
+    "C003945",
+    "C003947",
+    "C003950",
+    "C003951",
+    "C003956",
+    "C003958"
   ],
   "encoded_clause_coordinates": [
     "4.2.1.A.(1)",
@@ -212,165 +212,165 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
-    "C003608",
-    "C003609",
-    "C003611",
-    "C003612",
-    "C003614",
     "C003616",
     "C003617",
-    "C003618",
-    "C003621",
-    "C003623",
+    "C003619",
+    "C003620",
+    "C003622",
+    "C003624",
     "C003625",
-    "C003627",
-    "C003628",
+    "C003626",
     "C003629",
-    "C003630",
-    "C003632",
+    "C003631",
     "C003633",
-    "C003634",
     "C003635",
     "C003636",
+    "C003637",
     "C003638",
+    "C003640",
+    "C003641",
     "C003642",
+    "C003643",
     "C003644",
-    "C003651",
-    "C003656",
+    "C003646",
+    "C003650",
+    "C003652",
     "C003659",
-    "C003661",
     "C003664",
-    "C003665",
-    "C003668",
+    "C003667",
+    "C003669",
+    "C003672",
+    "C003673",
     "C003676",
-    "C003678",
-    "C003682",
-    "C003683",
-    "C003687",
-    "C003688",
-    "C003694",
-    "C003703",
-    "C003704",
-    "C003705",
-    "C003710",
+    "C003684",
+    "C003686",
+    "C003690",
+    "C003691",
+    "C003695",
+    "C003696",
+    "C003702",
     "C003711",
     "C003712",
+    "C003713",
     "C003718",
+    "C003719",
     "C003720",
-    "C003723",
-    "C003725",
     "C003726",
-    "C003727",
-    "C003730",
-    "C003732",
+    "C003728",
+    "C003731",
     "C003733",
-    "C003737",
+    "C003734",
+    "C003735",
+    "C003738",
     "C003740",
     "C003741",
-    "C003742",
+    "C003745",
     "C003748",
+    "C003749",
     "C003750",
-    "C003751",
-    "C003754",
-    "C003755",
     "C003756",
-    "C003757",
     "C003758",
-    "C003761",
+    "C003759",
     "C003762",
     "C003763",
     "C003764",
-    "C003767",
+    "C003765",
+    "C003766",
     "C003769",
     "C003770",
+    "C003771",
     "C003772",
-    "C003774",
     "C003775",
     "C003777",
-    "C003791",
-    "C003794",
-    "C003796",
-    "C003798",
+    "C003778",
+    "C003780",
+    "C003782",
+    "C003783",
+    "C003785",
+    "C003799",
     "C003802",
-    "C003805",
+    "C003804",
     "C003806",
-    "C003808",
     "C003810",
-    "C003811",
     "C003813",
     "C003814",
-    "C003815",
     "C003816",
-    "C003817",
     "C003818",
+    "C003819",
     "C003821",
     "C003822",
+    "C003823",
+    "C003824",
     "C003825",
+    "C003826",
+    "C003829",
     "C003830",
     "C003833",
-    "C003834",
-    "C003836",
-    "C003837",
-    "C003839",
-    "C003840",
+    "C003838",
     "C003841",
     "C003842",
-    "C003843",
     "C003844",
-    "C003846",
+    "C003845",
+    "C003847",
     "C003848",
-    "C003858",
-    "C003859",
-    "C003863",
-    "C003869",
-    "C003870",
+    "C003849",
+    "C003850",
+    "C003851",
+    "C003852",
+    "C003854",
+    "C003856",
+    "C003866",
+    "C003867",
     "C003871",
-    "C003875",
-    "C003876",
     "C003877",
     "C003878",
     "C003879",
-    "C003880",
-    "C003882",
     "C003883",
     "C003884",
+    "C003885",
+    "C003886",
     "C003887",
+    "C003888",
+    "C003890",
     "C003891",
     "C003892",
     "C003895",
-    "C003896",
-    "C003897",
     "C003899",
     "C003900",
-    "C003901",
     "C003903",
+    "C003904",
     "C003905",
     "C003907",
+    "C003908",
     "C003909",
     "C003911",
     "C003913",
-    "C003914",
-    "C003918",
+    "C003915",
+    "C003917",
     "C003919",
-    "C003920",
+    "C003921",
     "C003922",
-    "C003924",
-    "C003925",
+    "C003926",
     "C003927",
-    "C003929",
+    "C003928",
     "C003930",
-    "C003931",
+    "C003932",
     "C003933",
     "C003935",
-    "C003936",
+    "C003937",
     "C003938",
-    "C003940",
+    "C003939",
     "C003941",
+    "C003943",
     "C003944",
-    "C003945",
     "C003946",
-    "C003947",
-    "C003949"
+    "C003948",
+    "C003949",
+    "C003952",
+    "C003953",
+    "C003954",
+    "C003955",
+    "C003957"
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -381,7 +381,7 @@
   "non_actionable_count": 0,
   "clause_traces": [
     {
-      "clause_id": "C003608",
+      "clause_id": "C003616",
       "section_id": "4.2.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -389,10 +389,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003609",
+      "clause_id": "C003617",
       "section_id": "4.2.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -400,10 +400,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003611",
+      "clause_id": "C003619",
       "section_id": "4.2.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -414,7 +414,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003612",
+      "clause_id": "C003620",
       "section_id": "4.2.1.A",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -422,10 +422,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003613",
+      "clause_id": "C003621",
       "section_id": "4.2.1.A",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -435,7 +435,7 @@
       ]
     },
     {
-      "clause_id": "C003614",
+      "clause_id": "C003622",
       "section_id": "4.2.1.B",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -443,10 +443,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003615",
+      "clause_id": "C003623",
       "section_id": "4.2.1.B",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -456,7 +456,7 @@
       ]
     },
     {
-      "clause_id": "C003616",
+      "clause_id": "C003624",
       "section_id": "4.2.1.B",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -464,10 +464,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003617",
+      "clause_id": "C003625",
       "section_id": "4.2.1.B",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -475,10 +475,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003618",
+      "clause_id": "C003626",
       "section_id": "4.2.1.B",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -489,7 +489,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003621",
+      "clause_id": "C003629",
       "section_id": "4.2.1.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -497,80 +497,14 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003623",
+      "clause_id": "C003631",
       "section_id": "4.2.1.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG-02/11/2024- 32710/3 md. Yürürlük: 09/11/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003625",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Değişik: RG-12/12/2024-32750/6 md. Yürürlük: 20/12/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003627",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-Biyolojik ajanlar (Anti-TNF ilaçlar",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003628",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/3 md. Yürürlük: 09/11/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003629",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003630",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Ara vermeden",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003632",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -581,14 +515,80 @@
       "section_id": "4.2.1.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG-12/12/2024-32750/6 md. Yürürlük: 20/12/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003635",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-Biyolojik ajanlar (Anti-TNF ilaçlar",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003636",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/3 md. Yürürlük: 09/11/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003637",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003638",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Ara vermeden",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003640",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003641",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG-25/11/2025-33088/2-a md. Yürürlük: 03/12/2025)",
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003634",
+      "clause_id": "C003642",
       "section_id": "4.2.1.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -599,7 +599,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003635",
+      "clause_id": "C003643",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -607,10 +607,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003636",
+      "clause_id": "C003644",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -621,7 +621,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003637",
+      "clause_id": "C003645",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -631,7 +631,7 @@
       ]
     },
     {
-      "clause_id": "C003638",
+      "clause_id": "C003646",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -642,7 +642,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003641",
+      "clause_id": "C003649",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -654,7 +654,7 @@
       ]
     },
     {
-      "clause_id": "C003642",
+      "clause_id": "C003650",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -662,10 +662,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003643",
+      "clause_id": "C003651",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -675,7 +675,7 @@
       ]
     },
     {
-      "clause_id": "C003644",
+      "clause_id": "C003652",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -683,10 +683,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003651",
+      "clause_id": "C003659",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -697,7 +697,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003652",
+      "clause_id": "C003660",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -709,7 +709,7 @@
       ]
     },
     {
-      "clause_id": "C003653",
+      "clause_id": "C003661",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -729,7 +729,7 @@
       ]
     },
     {
-      "clause_id": "C003654",
+      "clause_id": "C003662",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -739,7 +739,7 @@
       ]
     },
     {
-      "clause_id": "C003655",
+      "clause_id": "C003663",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -749,7 +749,7 @@
       ]
     },
     {
-      "clause_id": "C003656",
+      "clause_id": "C003664",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -757,10 +757,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003659",
+      "clause_id": "C003667",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "tier_c_deferred",
@@ -771,7 +771,7 @@
       "defer_reason": "Deferred — infliximab/sertolizumab/golimumab continuation criteria; awaiting the defining board-report rule before encoding (4201 manifest keeps this Tier A candidate pending)."
     },
     {
-      "clause_id": "C003660",
+      "clause_id": "C003668",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -781,7 +781,7 @@
       ]
     },
     {
-      "clause_id": "C003661",
+      "clause_id": "C003669",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -789,10 +789,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003664",
+      "clause_id": "C003672",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "tier_c_deferred",
@@ -803,7 +803,7 @@
       "defer_reason": "Deferred — infliximab/sertolizumab/golimumab continuation criteria; awaiting the defining board-report rule before encoding (4201 manifest keeps this Tier A candidate pending)."
     },
     {
-      "clause_id": "C003665",
+      "clause_id": "C003673",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -811,10 +811,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003667",
+      "clause_id": "C003675",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -824,7 +824,7 @@
       ]
     },
     {
-      "clause_id": "C003668",
+      "clause_id": "C003676",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -832,10 +832,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003671",
+      "clause_id": "C003679",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -847,7 +847,7 @@
       ]
     },
     {
-      "clause_id": "C003672",
+      "clause_id": "C003680",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -857,7 +857,7 @@
       ]
     },
     {
-      "clause_id": "C003673",
+      "clause_id": "C003681",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -867,7 +867,7 @@
       ]
     },
     {
-      "clause_id": "C003674",
+      "clause_id": "C003682",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -877,7 +877,7 @@
       ]
     },
     {
-      "clause_id": "C003675",
+      "clause_id": "C003683",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -887,7 +887,7 @@
       ]
     },
     {
-      "clause_id": "C003676",
+      "clause_id": "C003684",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -895,10 +895,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003677",
+      "clause_id": "C003685",
       "section_id": "4.2.1.C-1",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -908,7 +908,7 @@
       ]
     },
     {
-      "clause_id": "C003678",
+      "clause_id": "C003686",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -919,7 +919,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003679",
+      "clause_id": "C003687",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -930,7 +930,7 @@
       ]
     },
     {
-      "clause_id": "C003680",
+      "clause_id": "C003688",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -941,7 +941,7 @@
       ]
     },
     {
-      "clause_id": "C003681",
+      "clause_id": "C003689",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -951,7 +951,7 @@
       ]
     },
     {
-      "clause_id": "C003682",
+      "clause_id": "C003690",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -959,10 +959,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003683",
+      "clause_id": "C003691",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -973,7 +973,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003684",
+      "clause_id": "C003692",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -983,7 +983,7 @@
       ]
     },
     {
-      "clause_id": "C003685",
+      "clause_id": "C003693",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -993,7 +993,7 @@
       ]
     },
     {
-      "clause_id": "C003686",
+      "clause_id": "C003694",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1004,7 +1004,7 @@
       ]
     },
     {
-      "clause_id": "C003687",
+      "clause_id": "C003695",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1012,10 +1012,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003688",
+      "clause_id": "C003696",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1026,7 +1026,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003694",
+      "clause_id": "C003702",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1037,7 +1037,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003695",
+      "clause_id": "C003703",
       "section_id": "4.2.1.C-2",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1048,7 +1048,7 @@
       ]
     },
     {
-      "clause_id": "C003696",
+      "clause_id": "C003704",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1058,7 +1058,7 @@
       ]
     },
     {
-      "clause_id": "C003697",
+      "clause_id": "C003705",
       "section_id": "4.2.1.C-2",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1069,7 +1069,7 @@
       ]
     },
     {
-      "clause_id": "C003698",
+      "clause_id": "C003706",
       "section_id": "4.2.1.C-2",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -1080,7 +1080,7 @@
       ]
     },
     {
-      "clause_id": "C003699",
+      "clause_id": "C003707",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1090,7 +1090,7 @@
       ]
     },
     {
-      "clause_id": "C003700",
+      "clause_id": "C003708",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1100,7 +1100,7 @@
       ]
     },
     {
-      "clause_id": "C003701",
+      "clause_id": "C003709",
       "section_id": "4.2.1.C-2",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1110,7 +1110,7 @@
       ]
     },
     {
-      "clause_id": "C003702",
+      "clause_id": "C003710",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1120,7 +1120,7 @@
       ]
     },
     {
-      "clause_id": "C003703",
+      "clause_id": "C003711",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1131,7 +1131,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003704",
+      "clause_id": "C003712",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1142,7 +1142,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003705",
+      "clause_id": "C003713",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1153,7 +1153,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003707",
+      "clause_id": "C003715",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1163,7 +1163,7 @@
       ]
     },
     {
-      "clause_id": "C003708",
+      "clause_id": "C003716",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1173,7 +1173,7 @@
       ]
     },
     {
-      "clause_id": "C003709",
+      "clause_id": "C003717",
       "section_id": "4.2.1.C-2",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1183,7 +1183,7 @@
       ]
     },
     {
-      "clause_id": "C003710",
+      "clause_id": "C003718",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1191,10 +1191,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003711",
+      "clause_id": "C003719",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1205,7 +1205,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003712",
+      "clause_id": "C003720",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1213,10 +1213,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003714",
+      "clause_id": "C003722",
       "section_id": "4.2.1.C-3",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1227,7 +1227,7 @@
       ]
     },
     {
-      "clause_id": "C003715",
+      "clause_id": "C003723",
       "section_id": "4.2.1.C-3",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -1237,7 +1237,7 @@
       ]
     },
     {
-      "clause_id": "C003716",
+      "clause_id": "C003724",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1247,7 +1247,7 @@
       ]
     },
     {
-      "clause_id": "C003717",
+      "clause_id": "C003725",
       "section_id": "4.2.1.C-3",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1257,7 +1257,7 @@
       ]
     },
     {
-      "clause_id": "C003718",
+      "clause_id": "C003726",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1268,7 +1268,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C003719",
+      "clause_id": "C003727",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1278,7 +1278,7 @@
       ]
     },
     {
-      "clause_id": "C003720",
+      "clause_id": "C003728",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1289,7 +1289,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003721",
+      "clause_id": "C003729",
       "section_id": "4.2.1.C-3",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1299,7 +1299,7 @@
       ]
     },
     {
-      "clause_id": "C003722",
+      "clause_id": "C003730",
       "section_id": "4.2.1.C-3",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1309,7 +1309,7 @@
       ]
     },
     {
-      "clause_id": "C003723",
+      "clause_id": "C003731",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1320,7 +1320,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003724",
+      "clause_id": "C003732",
       "section_id": "4.2.1.C-3",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1331,7 +1331,7 @@
       ]
     },
     {
-      "clause_id": "C003725",
+      "clause_id": "C003733",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1339,10 +1339,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003726",
+      "clause_id": "C003734",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1350,10 +1350,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003727",
+      "clause_id": "C003735",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1364,7 +1364,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003728",
+      "clause_id": "C003736",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1374,7 +1374,7 @@
       ]
     },
     {
-      "clause_id": "C003729",
+      "clause_id": "C003737",
       "section_id": "4.2.1.C-4",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1384,7 +1384,7 @@
       ]
     },
     {
-      "clause_id": "C003730",
+      "clause_id": "C003738",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1395,7 +1395,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003731",
+      "clause_id": "C003739",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1405,7 +1405,7 @@
       ]
     },
     {
-      "clause_id": "C003732",
+      "clause_id": "C003740",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1416,7 +1416,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003733",
+      "clause_id": "C003741",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1424,10 +1424,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003734",
+      "clause_id": "C003742",
       "section_id": "4.2.1.C-4",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1437,7 +1437,7 @@
       ]
     },
     {
-      "clause_id": "C003735",
+      "clause_id": "C003743",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1447,7 +1447,7 @@
       ]
     },
     {
-      "clause_id": "C003736",
+      "clause_id": "C003744",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1457,7 +1457,7 @@
       ]
     },
     {
-      "clause_id": "C003737",
+      "clause_id": "C003745",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1465,10 +1465,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003738",
+      "clause_id": "C003746",
       "section_id": "4.2.1.C-4",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1478,7 +1478,7 @@
       ]
     },
     {
-      "clause_id": "C003739",
+      "clause_id": "C003747",
       "section_id": "4.2.1.C-4",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1488,7 +1488,7 @@
       ]
     },
     {
-      "clause_id": "C003740",
+      "clause_id": "C003748",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1496,10 +1496,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003741",
+      "clause_id": "C003749",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1510,7 +1510,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003742",
+      "clause_id": "C003750",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1518,10 +1518,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003743",
+      "clause_id": "C003751",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1531,7 +1531,7 @@
       ]
     },
     {
-      "clause_id": "C003744",
+      "clause_id": "C003752",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1541,7 +1541,7 @@
       ]
     },
     {
-      "clause_id": "C003745",
+      "clause_id": "C003753",
       "section_id": "4.2.1.C-5",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -1551,7 +1551,7 @@
       ]
     },
     {
-      "clause_id": "C003746",
+      "clause_id": "C003754",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1561,7 +1561,7 @@
       ]
     },
     {
-      "clause_id": "C003747",
+      "clause_id": "C003755",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1571,7 +1571,7 @@
       ]
     },
     {
-      "clause_id": "C003748",
+      "clause_id": "C003756",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1582,7 +1582,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C003749",
+      "clause_id": "C003757",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1592,7 +1592,7 @@
       ]
     },
     {
-      "clause_id": "C003750",
+      "clause_id": "C003758",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1600,10 +1600,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003751",
+      "clause_id": "C003759",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1614,7 +1614,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003752",
+      "clause_id": "C003760",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1624,7 +1624,7 @@
       ]
     },
     {
-      "clause_id": "C003753",
+      "clause_id": "C003761",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1635,98 +1635,11 @@
       ]
     },
     {
-      "clause_id": "C003754",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG- 18/06/2016- 29746/ 10-e md. Yürürlük: 25/06/2016)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003755",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Sistemik juvenil idiyopatik artriti (SJİA) bulunan 2 yaş ve üzeri çocuklarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003756",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Sistemik bulguların ön planda olduğu tip",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003757",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003758",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003759",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
-        "4.2.1.tocilizumab_sjia_anakinra_response"
-      ]
-    },
-    {
-      "clause_id": "C003760",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
-      ]
-    },
-    {
-      "clause_id": "C003761",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Batch encode when EMR/report fields support this pathway."
-    },
-    {
       "clause_id": "C003762",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Artrit bulgularının ön planda olduğu tip",
+      "heuristic_inn": "(Ek: RG- 18/06/2016- 29746/ 10-e md. Yürürlük: 25/06/2016)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -1737,14 +1650,25 @@
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
+      "heuristic_inn": "Sistemik juvenil idiyopatik artriti (SJİA) bulunan 2 yaş ve üzeri çocuklarda",
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003764",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sistemik bulguların ön planda olduğu tip",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003765",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1755,7 +1679,18 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003765",
+      "clause_id": "C003766",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003767",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1766,7 +1701,7 @@
       ]
     },
     {
-      "clause_id": "C003766",
+      "clause_id": "C003768",
       "section_id": "4.2.1.C-5",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -1776,7 +1711,29 @@
       ]
     },
     {
-      "clause_id": "C003767",
+      "clause_id": "C003769",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003770",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Artrit bulgularının ön planda olduğu tip",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003771",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1787,7 +1744,50 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003768",
+      "clause_id": "C003772",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003773",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
+        "4.2.1.tocilizumab_sjia_anakinra_response"
+      ]
+    },
+    {
+      "clause_id": "C003774",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
+      ]
+    },
+    {
+      "clause_id": "C003775",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003776",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -1797,7 +1797,7 @@
       ]
     },
     {
-      "clause_id": "C003769",
+      "clause_id": "C003777",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1805,10 +1805,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003770",
+      "clause_id": "C003778",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1816,10 +1816,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003772",
+      "clause_id": "C003780",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1830,7 +1830,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003773",
+      "clause_id": "C003781",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1841,7 +1841,7 @@
       ]
     },
     {
-      "clause_id": "C003774",
+      "clause_id": "C003782",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1853,7 +1853,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003775",
+      "clause_id": "C003783",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1864,7 +1864,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003776",
+      "clause_id": "C003784",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1874,7 +1874,7 @@
       ]
     },
     {
-      "clause_id": "C003777",
+      "clause_id": "C003785",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1882,10 +1882,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003791",
+      "clause_id": "C003799",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -1896,7 +1896,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C003792",
+      "clause_id": "C003800",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1908,7 +1908,7 @@
       ]
     },
     {
-      "clause_id": "C003793",
+      "clause_id": "C003801",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -1918,98 +1918,11 @@
       ]
     },
     {
-      "clause_id": "C003794",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tofacitinib ve upadasitinibin psöriatik artritli erişkin hastalarda kullanımı",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003795",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.jak_psa_second_line_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003796",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003797",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.rheum_6mo_report_coverage_c6"
-      ]
-    },
-    {
-      "clause_id": "C003798",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003799",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Aksiyel tutulumlu ankilozan spondilitli hastalarda",
-      "linked_rule_ids": [
-        "4.2.1.jak_efficacy_continuation_romato_immuno",
-        "4.2.1.tofacitinib_axial_as_board",
-        "4.2.1.tofacitinib_axial_as_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003800",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
-      "linked_rule_ids": [
-        "4.2.1.jak_efficacy_continuation_romato_immuno",
-        "4.2.1.tofacitinib_axial_as_board",
-        "4.2.1.tofacitinib_peripheral_as_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003801",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6"
-      ]
-    },
-    {
       "clause_id": "C003802",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
+      "heuristic_inn": "Tofacitinib ve upadasitinibin psöriatik artritli erişkin hastalarda kullanımı",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2022,36 +1935,36 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
-        "4.2.1.upadacitinib_anti_tnf_second_line"
+        "4.2.1.jak_psa_second_line_initiation"
       ]
     },
     {
       "clause_id": "C003804",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6_b"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003805",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG- 09/05/2024- 32541/3-c md. Yürürlük: 17/05/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_6mo_report_coverage_c6"
+      ]
     },
     {
       "clause_id": "C003806",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Upadasitinibin crohn hastalığında kullanımı",
+      "heuristic_inn": "",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2062,30 +1975,33 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
-      "heuristic_inn": "Orta ilâ şiddetli aktif crohn hastalığında",
+      "heuristic_inn": "Aksiyel tutulumlu ankilozan spondilitli hastalarda",
       "linked_rule_ids": [
-        "4.2.1.upadacitinib_crohn_anti_tnf"
+        "4.2.1.jak_efficacy_continuation_romato_immuno",
+        "4.2.1.tofacitinib_axial_as_board",
+        "4.2.1.tofacitinib_axial_as_initiation"
       ]
     },
     {
       "clause_id": "C003808",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Upadasitinibin ülseratif kolit hastalığında kullanımı",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
+      "linked_rule_ids": [
+        "4.2.1.jak_efficacy_continuation_romato_immuno",
+        "4.2.1.tofacitinib_axial_as_board",
+        "4.2.1.tofacitinib_peripheral_as_initiation"
+      ]
     },
     {
       "clause_id": "C003809",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
+      "encode_tier": "C",
       "manifest_status": "encoded",
-      "heuristic_inn": "Ülseratif kolit hastalığında",
+      "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.1.upadacitinib_uc_anti_tnf"
+        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6"
       ]
     },
     {
@@ -2093,7 +2009,7 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Upadasitinib (Değişik:RG-25/03/2025-32852/2-e md.Yürürlük:04/04/2025)",
+      "heuristic_inn": "",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2102,13 +2018,12 @@
     {
       "clause_id": "C003811",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_anti_tnf_second_line"
+      ]
     },
     {
       "clause_id": "C003812",
@@ -2117,7 +2032,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.1.C.12_week_response_criteria_continue_c6"
+        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6_b"
       ]
     },
     {
@@ -2125,7 +2040,7 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "EASI skorunda en az %50 azalma",
+      "heuristic_inn": "(Ek: RG- 09/05/2024- 32541/3-c md. Yürürlük: 17/05/2024)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2136,7 +2051,7 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Dermatoloji Yaşam Kalite İndeksinde en az 4 puanlık azalma",
+      "heuristic_inn": "Upadasitinibin crohn hastalığında kullanımı",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2145,56 +2060,64 @@
     {
       "clause_id": "C003815",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Pruritus NRS skorunda en az 3 puanlık düşüş.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Orta ilâ şiddetli aktif crohn hastalığında",
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_crohn_anti_tnf"
+      ]
     },
     {
       "clause_id": "C003816",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
+      "heuristic_inn": "Upadasitinibin ülseratif kolit hastalığında kullanımı",
       "defer_themes": [
-        "response_assessment"
+        "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003817",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ülseratif kolit hastalığında",
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_uc_anti_tnf"
+      ]
     },
     {
       "clause_id": "C003818",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Değişik:RG-25/03/2025-32852/2-e md. Yürürlük:04/04/2025)",
+      "heuristic_inn": "Upadasitinib (Değişik:RG-25/03/2025-32852/2-e md.Yürürlük:04/04/2025)",
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003819",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003820",
       "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
+      "encode_tier": "C",
       "manifest_status": "encoded",
-      "heuristic_inn": "Üçüncü basamak resmi sağlık hizmeti sunucularında",
+      "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.1.baricitinib_ad_specialist_board",
-        "4.2.1.upadacitinib_ad_dermatology_board"
+        "4.2.1.C.12_week_response_criteria_continue_c6"
       ]
     },
     {
@@ -2202,7 +2125,7 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/6-b md. Yürürlük: 09/11/2024)",
+      "heuristic_inn": "EASI skorunda en az %50 azalma",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2213,7 +2136,7 @@
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tofacitinibin ülseratif kolit hastalığında kullanımı",
+      "heuristic_inn": "Dermatoloji Yaşam Kalite İndeksinde en az 4 puanlık azalma",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2223,6 +2146,83 @@
       "clause_id": "C003823",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Pruritus NRS skorunda en az 3 puanlık düşüş.",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003824",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003825",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003826",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik:RG-25/03/2025-32852/2-e md. Yürürlük:04/04/2025)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003828",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Üçüncü basamak resmi sağlık hizmeti sunucularında",
+      "linked_rule_ids": [
+        "4.2.1.baricitinib_ad_specialist_board",
+        "4.2.1.upadacitinib_ad_dermatology_board"
+      ]
+    },
+    {
+      "clause_id": "C003829",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/6-b md. Yürürlük: 09/11/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003830",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tofacitinibin ülseratif kolit hastalığında kullanımı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003831",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
@@ -2230,7 +2230,7 @@
       ]
     },
     {
-      "clause_id": "C003824",
+      "clause_id": "C003832",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2240,7 +2240,7 @@
       ]
     },
     {
-      "clause_id": "C003825",
+      "clause_id": "C003833",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2251,7 +2251,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003826",
+      "clause_id": "C003834",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2261,7 +2261,7 @@
       ]
     },
     {
-      "clause_id": "C003827",
+      "clause_id": "C003835",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2271,7 +2271,7 @@
       ]
     },
     {
-      "clause_id": "C003828",
+      "clause_id": "C003836",
       "section_id": "4.2.1.C-6",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -2281,7 +2281,7 @@
       ]
     },
     {
-      "clause_id": "C003829",
+      "clause_id": "C003837",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2291,7 +2291,7 @@
       ]
     },
     {
-      "clause_id": "C003830",
+      "clause_id": "C003838",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2299,10 +2299,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003831",
+      "clause_id": "C003839",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2312,7 +2312,7 @@
       ]
     },
     {
-      "clause_id": "C003832",
+      "clause_id": "C003840",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2322,18 +2322,19 @@
       ]
     },
     {
-      "clause_id": "C003833",
+      "clause_id": "C003841",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
       "defer_themes": [
-        "clinical_pathway"
+        "response_assessment",
+        "moh_patient_approval"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003834",
+      "clause_id": "C003842",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2344,7 +2345,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003835",
+      "clause_id": "C003843",
       "section_id": "4.2.1.C-6",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2354,7 +2355,7 @@
       ]
     },
     {
-      "clause_id": "C003836",
+      "clause_id": "C003844",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2362,10 +2363,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003837",
+      "clause_id": "C003845",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2373,10 +2374,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
-      "clause_id": "C003838",
+      "clause_id": "C003846",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2387,7 +2388,7 @@
       ]
     },
     {
-      "clause_id": "C003839",
+      "clause_id": "C003847",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2398,7 +2399,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003840",
+      "clause_id": "C003848",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2409,7 +2410,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003841",
+      "clause_id": "C003849",
       "section_id": "4.2.1.C-7",
       "encode_tier": "B",
       "manifest_status": "tier_c_deferred",
@@ -2420,7 +2421,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003842",
+      "clause_id": "C003850",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2431,7 +2432,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003843",
+      "clause_id": "C003851",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2442,7 +2443,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003844",
+      "clause_id": "C003852",
       "section_id": "4.2.1.C-7",
       "encode_tier": "B",
       "manifest_status": "tier_c_deferred",
@@ -2453,7 +2454,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003845",
+      "clause_id": "C003853",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2463,7 +2464,7 @@
       ]
     },
     {
-      "clause_id": "C003846",
+      "clause_id": "C003854",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2471,10 +2472,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003848",
+      "clause_id": "C003856",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2482,10 +2483,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003858",
+      "clause_id": "C003866",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2496,7 +2497,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003859",
+      "clause_id": "C003867",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2507,7 +2508,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003860",
+      "clause_id": "C003868",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2518,7 +2519,7 @@
       ]
     },
     {
-      "clause_id": "C003861",
+      "clause_id": "C003869",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2528,7 +2529,7 @@
       ]
     },
     {
-      "clause_id": "C003862",
+      "clause_id": "C003870",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2538,7 +2539,7 @@
       ]
     },
     {
-      "clause_id": "C003863",
+      "clause_id": "C003871",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2546,10 +2547,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003865",
+      "clause_id": "C003873",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2559,7 +2560,7 @@
       ]
     },
     {
-      "clause_id": "C003866",
+      "clause_id": "C003874",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2570,7 +2571,7 @@
       ]
     },
     {
-      "clause_id": "C003867",
+      "clause_id": "C003875",
       "section_id": "4.2.1.C-7",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2581,7 +2582,7 @@
       ]
     },
     {
-      "clause_id": "C003868",
+      "clause_id": "C003876",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2591,96 +2592,11 @@
       ]
     },
     {
-      "clause_id": "C003869",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/7 md. Yürürlük: 09/11/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
-    },
-    {
-      "clause_id": "C003870",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003871",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "mutation_panel"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003872",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.anakinra_kanakinumab_sequencing"
-      ]
-    },
-    {
-      "clause_id": "C003873",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
-      ]
-    },
-    {
-      "clause_id": "C003874",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.moh_offlabel_approval_coverage_c7"
-      ]
-    },
-    {
-      "clause_id": "C003875",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Ek: RG-12/12/2024-32750/7-c md. Yürürlük: 20/12/2024)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003876",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Kriyopirin ilişkili periyodik sendromlar (CAPS) hastalığında",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C003877",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Kanakinumab 7",
+      "heuristic_inn": "(Ek: RG-02/11/2024- 32710/7 md. Yürürlük: 09/11/2024)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2691,7 +2607,7 @@
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Anakinra erişkinler",
+      "heuristic_inn": "",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2704,21 +2620,19 @@
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
       "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
+        "mutation_panel"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003880",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.C.anakinra_kanakinumab_sequencing"
+      ]
     },
     {
       "clause_id": "C003881",
@@ -2734,19 +2648,18 @@
       "clause_id": "C003882",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Erişkin Başlangıçlı Still Hastalığında (AOSD) anakinra kullanım ilkeleri",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.1.C.moh_offlabel_approval_coverage_c7"
+      ]
     },
     {
       "clause_id": "C003883",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Erişkin başlangıçlı Still Hastalığı (AOSD) tedavisinde orta ve yüksek şiddette",
+      "heuristic_inn": "(Ek: RG-12/12/2024-32750/7-c md. Yürürlük: 20/12/2024)",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2757,7 +2670,18 @@
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Sistemik özellikleri olmayan (artiküler fenotip) AOSD’de",
+      "heuristic_inn": "Kriyopirin ilişkili periyodik sendromlar (CAPS) hastalığında",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003885",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Kanakinumab 7",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2767,6 +2691,40 @@
       "clause_id": "C003886",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Anakinra erişkinler",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003887",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003888",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003889",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
@@ -2774,7 +2732,50 @@
       ]
     },
     {
-      "clause_id": "C003887",
+      "clause_id": "C003890",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Erişkin Başlangıçlı Still Hastalığında (AOSD) anakinra kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003891",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Erişkin başlangıçlı Still Hastalığı (AOSD) tedavisinde orta ve yüksek şiddette",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003892",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sistemik özellikleri olmayan (artiküler fenotip) AOSD’de",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003894",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C003895",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2785,7 +2786,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003891",
+      "clause_id": "C003899",
       "section_id": "4.2.1.C-8",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2796,7 +2797,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003892",
+      "clause_id": "C003900",
       "section_id": "4.2.1.C-8",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2807,7 +2808,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003893",
+      "clause_id": "C003901",
       "section_id": "4.2.1.C-8",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2817,7 +2818,7 @@
       ]
     },
     {
-      "clause_id": "C003894",
+      "clause_id": "C003902",
       "section_id": "4.2.1.C-8",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -2827,7 +2828,7 @@
       ]
     },
     {
-      "clause_id": "C003895",
+      "clause_id": "C003903",
       "section_id": "4.2.1.C-8",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2835,10 +2836,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003896",
+      "clause_id": "C003904",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2846,10 +2847,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003897",
+      "clause_id": "C003905",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2860,7 +2861,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003898",
+      "clause_id": "C003906",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -2870,7 +2871,7 @@
       ]
     },
     {
-      "clause_id": "C003899",
+      "clause_id": "C003907",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2881,7 +2882,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003900",
+      "clause_id": "C003908",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2892,7 +2893,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003901",
+      "clause_id": "C003909",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -2903,97 +2904,13 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003902",
+      "clause_id": "C003910",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
         "4.2.1.C.start_therapy_finding_coverage_c9"
-      ]
-    },
-    {
-      "clause_id": "C003903",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003904",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9"
-      ]
-    },
-    {
-      "clause_id": "C003905",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003906",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003907",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003908",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9"
-      ]
-    },
-    {
-      "clause_id": "C003909",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003910",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_psa_second_line"
       ]
     },
     {
@@ -3014,7 +2931,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.1.C.rheum_pmr_6mo_coverage_c9"
+        "4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9"
       ]
     },
     {
@@ -3022,14 +2939,98 @@
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003914",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003915",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003916",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9"
+      ]
+    },
+    {
+      "clause_id": "C003917",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003918",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_psa_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003919",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003920",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_pmr_6mo_coverage_c9"
+      ]
+    },
+    {
+      "clause_id": "C003921",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG-25/11/2025-33088/2-ç md. Yürürlük: 03/12/2025)",
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003914",
+      "clause_id": "C003922",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3040,7 +3041,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003915",
+      "clause_id": "C003923",
       "section_id": "4.2.1.C-9",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3050,7 +3051,7 @@
       ]
     },
     {
-      "clause_id": "C003916",
+      "clause_id": "C003924",
       "section_id": "4.2.1.C-9",
       "encode_tier": "B",
       "manifest_status": "encoded",
@@ -3060,7 +3061,7 @@
       ]
     },
     {
-      "clause_id": "C003917",
+      "clause_id": "C003925",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -3070,7 +3071,7 @@
       ]
     },
     {
-      "clause_id": "C003918",
+      "clause_id": "C003926",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3078,10 +3079,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003919",
+      "clause_id": "C003927",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3089,10 +3090,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003920",
+      "clause_id": "C003928",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3103,7 +3104,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003921",
+      "clause_id": "C003929",
       "section_id": "4.2.1.C-10",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3113,7 +3114,7 @@
       ]
     },
     {
-      "clause_id": "C003922",
+      "clause_id": "C003930",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3124,7 +3125,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003923",
+      "clause_id": "C003931",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -3134,7 +3135,7 @@
       ]
     },
     {
-      "clause_id": "C003924",
+      "clause_id": "C003932",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3142,10 +3143,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003925",
+      "clause_id": "C003933",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3156,7 +3157,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003926",
+      "clause_id": "C003934",
       "section_id": "4.2.1.C-10",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3166,7 +3167,7 @@
       ]
     },
     {
-      "clause_id": "C003927",
+      "clause_id": "C003935",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3177,7 +3178,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003928",
+      "clause_id": "C003936",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -3187,7 +3188,7 @@
       ]
     },
     {
-      "clause_id": "C003929",
+      "clause_id": "C003937",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3195,10 +3196,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003930",
+      "clause_id": "C003938",
       "section_id": "4.2.1.C-11",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3206,10 +3207,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003931",
+      "clause_id": "C003939",
       "section_id": "4.2.1.C-11",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3220,7 +3221,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003932",
+      "clause_id": "C003940",
       "section_id": "4.2.1.C-11",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3230,7 +3231,7 @@
       ]
     },
     {
-      "clause_id": "C003933",
+      "clause_id": "C003941",
       "section_id": "4.2.1.C-11",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3241,7 +3242,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003934",
+      "clause_id": "C003942",
       "section_id": "4.2.1.C-11",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -3251,7 +3252,7 @@
       ]
     },
     {
-      "clause_id": "C003935",
+      "clause_id": "C003943",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3259,10 +3260,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003936",
+      "clause_id": "C003944",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3273,7 +3274,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003937",
+      "clause_id": "C003945",
       "section_id": "4.2.1.C-12",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3283,7 +3284,7 @@
       ]
     },
     {
-      "clause_id": "C003938",
+      "clause_id": "C003946",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3294,7 +3295,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003939",
+      "clause_id": "C003947",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "encoded",
@@ -3304,7 +3305,7 @@
       ]
     },
     {
-      "clause_id": "C003940",
+      "clause_id": "C003948",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3315,7 +3316,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003941",
+      "clause_id": "C003949",
       "section_id": "4.2.1.C-13",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3323,10 +3324,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003942",
+      "clause_id": "C003950",
       "section_id": "4.2.1.C-13",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3336,7 +3337,7 @@
       ]
     },
     {
-      "clause_id": "C003943",
+      "clause_id": "C003951",
       "section_id": "4.2.1.C-13",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3346,7 +3347,7 @@
       ]
     },
     {
-      "clause_id": "C003944",
+      "clause_id": "C003952",
       "section_id": "4.2.1.C-13",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3357,7 +3358,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003945",
+      "clause_id": "C003953",
       "section_id": "4.2.1.C-13",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3365,10 +3366,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003946",
+      "clause_id": "C003954",
       "section_id": "4.2.1.C-14",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3376,10 +3377,10 @@
       "defer_themes": [
         "clinical_pathway"
       ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003947",
+      "clause_id": "C003955",
       "section_id": "4.2.1.C-14",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3390,7 +3391,7 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003948",
+      "clause_id": "C003956",
       "section_id": "4.2.1.C-14",
       "encode_tier": "A",
       "manifest_status": "encoded",
@@ -3400,7 +3401,7 @@
       ]
     },
     {
-      "clause_id": "C003949",
+      "clause_id": "C003957",
       "section_id": "4.2.1.C-14",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
@@ -3411,7 +3412,7 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003950",
+      "clause_id": "C003958",
       "section_id": "4.2.1.C-14",
       "encode_tier": "C",
       "manifest_status": "encoded",

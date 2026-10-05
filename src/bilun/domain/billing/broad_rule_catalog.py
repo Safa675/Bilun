@@ -124,9 +124,12 @@ def load_broad_rule_catalog(
             if not isinstance(condition, dict):
                 raise ValueError(f"Invalid condition for {rule_id}")
             locators = rule.get("gate_b_sources")
+            from scripts.sut.prose.clause_identity import validate_review_only_source
+
+            review_only = validate_review_only_source(rule, rule_set_id=family)
             if (
                 not isinstance(locators, list)
-                or not locators
+                or (not locators and not review_only)
                 or any(not isinstance(ref, str) or not ref.strip() for ref in locators)
             ):
                 raise ValueError(f"Missing source locator for {rule_id}")

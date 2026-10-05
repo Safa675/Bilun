@@ -337,8 +337,14 @@ def test_all_496_policies_have_exact_authored_identity_and_explicit_gates():
             row.authored_verification_status == "ai_generated_pending_review"
             for row in matrix.values()
         )
-        == 31
+        == 33
     )
+    for rule_id in (
+        "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+        "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+        "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+    ):
+        assert matrix[rule_id].authored_verification_status == "ai_generated_pending_review"
     with pytest.raises(TypeError):
         matrix[PRECIOUS] = matrix[PRECIOUS]
 

@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-04 — Corpus compatibility includes every positional consumer
+
+**Pattern:** Bounded clinical bindings and focused tests stayed valid after a corpus replacement, but old coverage, manifest traces and retrieval artifacts still joined positional C* IDs to different clause bodies. Updating a renal test literal alone would conceal the wider dependency break.
+
+**Rule:** Before publishing a corpus replacement, inventory all ID-based derived artifacts and consumers. Compare canonical keys and full body hashes against the actual new corpus, regenerate manifests before coverage, refresh the final source evidence closure, and verify retrieval artifacts. Require negative stale-artifact/consumer checks; do not call a provisional table or a bounded-family test result complete corpus compatibility.
+
 Format per entry:
 - Date
 - Mistake pattern (not just the incident)
@@ -753,3 +759,9 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 **Pattern:** A read-only DuckDB connection can read committed rows from an uncheckpointed `.wal` while the hash of the main `.duckdb` file stays unchanged. An independent review reproduced this against the receipt's baseline comparison.
 
 **Rule:** Reject any WAL sidecar, including a broken symlink, before and after hashing every cache used for release attestation. Keep crash-WAL regression coverage on both the serving-to-baseline bridge and the same-input semantic checkpoint.
+
+## 2026-10-04 — Source review windows also change test boundaries and coverage hash closure
+
+**Pattern:** Adding the bounded October 4 source-review window moved the SMA/antifungal `future_source` fixture (`October 2 + 2 days`) into an admitted day. The coverage inventory stayed identical, but its dependency hash map still omitted the new captures/receipt and pinned the old catalog/resolver hashes. The focused source package missed these three full-CI failures.
+
+**Rule:** After a source-review window changes, verify future-source fixtures against the first unsupported day (October 5 for this review), preserving `not_evaluated` and zero predicate attempts. Regenerate the evidence with existing helpers against the actual persisted corpus/coverage frame and `coverage_dependency_hashes` over the final source-file closure; never copy hashes from differently serialized temporary parquets. Before publishing, include documentary boundary tests, committed coverage currentness, `compile_rules.py --check`, and manifest parity in the source gates. Prove the original corpus and four coverage parquet bytes remain unchanged when only source evidence is refreshed.

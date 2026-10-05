@@ -24,6 +24,12 @@ _EXPECTED_FAMILY_COUNTS = {
     "treatment_pricing_2_4": (202, 129, 73, 0),
 }
 
+_DOCUMENTARY_REVIEW_RULES = {
+    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+    "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+    "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+}
+
 
 def test_catalog_accounts_for_every_active_authored_id_without_promoting_it() -> None:
     rows = load_broad_rule_catalog()
@@ -67,7 +73,14 @@ def test_catalog_preserves_raw_action_condition_and_provenance() -> None:
             assert row.source_corpus == authored["rule_set_id"]
             assert row.source_file == f"data/gazette/prose_rules/{source_file.name}"
             assert row.source_locators == tuple(rule["gate_b_sources"])
-            assert row.source_locators
+            if row.rule_id in _DOCUMENTARY_REVIEW_RULES:
+                assert family == "treatment_pricing_2_4"
+                assert row.source_locators == ()
+                assert rule["source_review_required"] is True
+                assert rule["verification_status"] == "ai_generated_pending_review"
+                assert "Historical documentary source" in rule["source_scope_note"]
+            else:
+                assert row.source_locators
             assert row.fatura_inceleme_ref == rule.get("fatura_inceleme_ref")
             assert row.condition == rule["condition"]
             assert row.action == rule["action"]

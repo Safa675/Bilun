@@ -119,6 +119,7 @@
     "C000675",
     "C000678",
     "C000685",
+    "C000690",
     "C000694",
     "C000699",
     "C000700",
@@ -136,14 +137,13 @@
     "C000602",
     "C000604",
     "C000680",
-    "C000686",
-    "C000690"
+    "C000686"
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 31,
+  "tier_c_deferred_count": 32,
   "emr_blocked_count": 0,
-  "non_actionable_count": 10,
+  "non_actionable_count": 9,
   "clause_traces": [
     {
       "clause_id": "C000530",
@@ -888,9 +888,12 @@
       "clause_id": "C000690",
       "section_id": "2.2.2.B-1",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C000694",

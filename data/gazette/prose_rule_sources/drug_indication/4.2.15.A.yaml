@@ -141,7 +141,7 @@ rules:
   message_tr: Klopidogrel rapor yenileme — ilk iki rapor dönemi (toplam 24 ay) sonrası aile hekimliği uzmanı en fazla 12 aylık
     rapor düzenleyebilir (§4.2.15.A).
   gate_b_sources:
-  - C005866
+  - C005891
   report_required: true
   report_specialties:
   - aile hekimliği

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.12.B-2.immunglob.ivig_board_report_1mo_dose
   sut_section: 4.2.12.B-2
   gate_b_sources:
-  - C004551
+  - C004559
   drug_names:
   - subkutan immünglobulin
   - subkutan immunglobulin

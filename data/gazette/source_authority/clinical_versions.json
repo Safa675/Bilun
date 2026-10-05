@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "deployed_source_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+  "deployed_source_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
   "verification_status": "ai_generated_pending_review",
   "scope": "named_clinical_report_checks_only",
   "legacy_unchanged_modes": [
@@ -35,6 +35,55 @@
         "path": "data/gazette/source_authority/review_receipt_2026_10_03.json",
         "sha256": "0d773cc4348fbdf802e5e2aebe67737f5342f36f14302f669e323d83e1c68ccc"
       }
+    },
+    {
+      "review_id": "sgk-rg-clinical-2026-10-04T182213Z",
+      "checked_at": "2026-10-04T18:22:13Z",
+      "checked_through": "2026-10-04",
+      "scope": "named_clinical_report_checks_only",
+      "positive_currentness_evidence": true,
+      "evidence": [
+        {
+          "path": "data/gazette/source_authority/official_review_2026_10_04.json",
+          "sha256": "e2ebd8b3ad34bbd4f197b965485b1b6528214f80bfb2414093176d40c207d4da"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261004-text.txt",
+          "sha256": "cfabc290a83696d3013eec90ab2c05581454e650a82b0852a40a71ab9e03f1b9"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-20261004-daily-contents-observer-text.txt",
+          "sha256": "394a335fe25aaeddc5347b3e5b706ecea8c504189feabfb887607e8e62fa954b"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-homepage-20261004-observer-text.txt",
+          "sha256": "58509899d25641a5bddec314873d941018c9b65f4285bfa65fc8bcd402762a90"
+        },
+        {
+          "path": "data/gazette/source_authority/sgk-20261002-amendment-observed-20261004-text.txt",
+          "sha256": "d8a512e78e2a737af831175a9f5a8cac81ffd8669a5396806d4adb6203a9d152"
+        },
+        {
+          "path": "data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261004-text.txt",
+          "sha256": "3bdbccf5d3660c0d368589673336b65430eede38685ad9e8df8e18b82c13a181"
+        },
+        {
+          "path": "data/gazette/source_authority/sgk-gss-listing-20261004-observer-text.txt",
+          "sha256": "1775465ae0252fa6d8b753841d099b7d550c4ab0d9766e9f02fa59945431d72d"
+        },
+        {
+          "path": "data/gazette/source_authority/corpus_migration_pr128.json",
+          "sha256": "3c7f781b8e223adc6073e69b1dff4af7b5b0e7cb106814a1ca016dde8b3c5bde"
+        },
+        {
+          "path": "data/gazette/source_authority/corpus_consumer_review_pr128.json",
+          "sha256": "b273b9b6a972d5e963a55bda0e5731b35c1b06d7ff6bcf491c63d414e19820c8"
+        }
+      ],
+      "receipt": {
+        "path": "data/gazette/source_authority/review_receipt_2026_10_04.json",
+        "sha256": "6b62391a5839472bc6bde330dc93fb2ce26482c9be43e8ff0b08f3675e172b19"
+      }
     }
   ],
   "versions": [
@@ -62,6 +111,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -89,6 +144,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -117,6 +178,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -145,6 +212,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -172,6 +245,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -199,6 +278,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -227,6 +312,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -254,6 +345,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -281,6 +378,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -309,6 +412,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -337,6 +446,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     },
@@ -376,6 +491,12 @@
           "through": "2026-10-03",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
         }
       ]
     }

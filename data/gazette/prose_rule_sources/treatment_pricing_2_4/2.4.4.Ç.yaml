@@ -39,7 +39,7 @@ rules:
     enforcement: coverage
     message_tr: uygun endikasyon nedeniyle uygulanması halinde bedelleri Kurumca karşılanır
   gate_b_sources:
-  - C000941
+  - C000949
 - rule_id: 2.4.4.C-c.(3).photopheresis_6mo_report_max26_cycles
   sut_section: 2.4.4.Ç
   condition:

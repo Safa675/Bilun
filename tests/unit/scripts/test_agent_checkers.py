@@ -85,6 +85,30 @@ def test_parquet_freshness_flags_known_stale_package(tmp_path) -> None:
 # --------------------------------------------------------------------------- #
 # Data — pipeline_smoke
 # --------------------------------------------------------------------------- #
+def test_pipeline_smoke_uses_one_selected_source_package(monkeypatch, tmp_path) -> None:
+    from scripts.agent import pipeline_smoke
+
+    raw = tmp_path / "raw data"
+    complete = raw / "2026.07.01-reviewed-fixture" / "nested-package"
+    partial = raw / "2026.10.02-docx-only-fixture"
+    complete.mkdir(parents=True)
+    partial.mkdir()
+    selected = complete / "selected.docx"
+    selected.touch()
+    (complete / "EK-2Ç fixture.xls").touch()
+    (partial / "newer.docx").touch()
+    monkeypatch.setattr(pipeline_smoke, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(pipeline_smoke, "DEFAULT_DOCX_CANDIDATES", [selected])
+
+    docx = pipeline_smoke.find_docx()
+    stages = dict(pipeline_smoke.build_stages(tmp_path / "output", docx, 3))
+    conversion = stages["1_convert_xlsx_to_parquet"]
+    assert conversion[conversion.index("--input-dir") + 1] == str(complete)
+    extraction = stages["3_extract_sut_prose"]
+    assert extraction[extraction.index("--docx") + 1] == str(selected)
+    assert str(partial) not in conversion
+
+
 def test_pipeline_smoke_runs_clean_with_small_limit(tmp_path) -> None:
     """The smoke runner with --limit 3 against the real consolidated SUT must pass all
     5 stages (convert→curate→extract→coverage→validate) and clean its temp dir.
@@ -100,6 +124,35 @@ def test_pipeline_smoke_runs_clean_with_small_limit(tmp_path) -> None:
     assert r.stdout.count("✓") >= 5, f"fewer than 5 passing stages:\n{r.stdout[-800:]}"
     # temp dir cleaned on success
     assert "cleaned temp dir" in r.stdout, "temp dir not cleaned on success"
+
+
+def test_pipeline_smoke_without_produced_annexes_fails_before_prose(monkeypatch, tmp_path, capsys):
+    import subprocess
+    import sys
+
+    from scripts.agent import pipeline_smoke
+
+    selected = tmp_path / "source" / "selected.docx"
+    selected.parent.mkdir()
+    selected.touch()
+    monkeypatch.setattr(pipeline_smoke, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(pipeline_smoke, "TEMP_BASE", tmp_path / "smoke")
+    monkeypatch.setattr(pipeline_smoke, "find_docx", lambda: selected)
+    monkeypatch.setattr(sys, "argv", ["pipeline_smoke", "--limit", "3"])
+    called = []
+
+    def run(cmd, **kwargs):
+        called.append(cmd)
+        conversion = "scripts.sut.convert_xlsx_to_parquet" in cmd
+        return subprocess.CompletedProcess(cmd, 0 if conversion else 2,
+                                           "No annexes produced" if conversion else "No matching annexes", "")
+
+    monkeypatch.setattr(pipeline_smoke.subprocess, "run", run)
+    assert pipeline_smoke.main() == 1
+    assert len(called) == 2
+    assert not any("scripts.sut.extract_sut_prose" in cmd for cmd in called)
+    output = capsys.readouterr().out
+    assert "FAIL" in output and "cleaned temp dir" not in output
 
 
 # --------------------------------------------------------------------------- #

@@ -30,7 +30,7 @@ rules:
   sut_section: 3.3.3.C
   deontic: MUST_BILL
   gate_b_sources:
-  - C002961
+  - C002969
   condition:
     material_name_any:
     - kontakt lens

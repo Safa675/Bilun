@@ -8,6 +8,7 @@ from typing import Any
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
 pytestmark = pytest.mark.unit
 
@@ -18,19 +19,19 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4206_mani
 
 _SECTION = "4206"
 
-_ALL_TIER_A_ENCODED = frozenset({
+_ALL_TIER_A_ENCODED = reviewed_clause_ids(
     "C003995", "C004020", "C004036", "C004052",
     "C004057", "C004070", "C004084", "C004087", "C004093",
-})
+)
 # Exact current-source stop clauses are now executable despite having no drug
 # keyword of their own; the two list introductions are source links, not extra predicates.
-_ALL_STOP_SOURCE_IDS = frozenset({
+_ALL_STOP_SOURCE_IDS = reviewed_clause_ids(
     "C004037", "C004038", "C004039", "C004040", "C004058",
     "C004059", "C004060", "C004061", "C004062", "C004069", "C004073", "C004074", "C004082", "C004083",
     "C004090", "C004096", "C004097", "C004098", "C004099", "C004100",
-})
-_ALL_INITIATION_SOURCE_IDS = frozenset({"C004021", "C004022", "C004023", "C004024", "C004025", "C004026", "C004027", "C004028", "C004029", "C004032"})
-_ALL_ENCODED = _ALL_TIER_A_ENCODED | _ALL_STOP_SOURCE_IDS | _ALL_INITIATION_SOURCE_IDS | {"C004067", "C004078", "C004079", "C004080", "C004081"}
+)
+_ALL_INITIATION_SOURCE_IDS = reviewed_clause_ids("C004021", "C004022", "C004023", "C004024", "C004025", "C004026", "C004027", "C004028", "C004029", "C004032")
+_ALL_ENCODED = _ALL_TIER_A_ENCODED | _ALL_STOP_SOURCE_IDS | _ALL_INITIATION_SOURCE_IDS | reviewed_clause_ids("C004067", "C004078", "C004079", "C004080", "C004081")
 
 
 def _all_4206_batch_rules() -> list[dict[str, Any]]:
@@ -80,7 +81,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
-    assert {"C004068", "C004071", "C004072"} <= set(manifest["tier_c_deferred_clause_ids"])
+    assert reviewed_clause_ids("C004068", "C004071", "C004072") <= set(manifest["tier_c_deferred_clause_ids"])
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)

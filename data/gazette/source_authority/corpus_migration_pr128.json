@@ -1,0 +1,2632 @@
+{
+  "schema_version": 1,
+  "status": "verified",
+  "scope": "mechanical_clinical_corpus_compatibility",
+  "baseline": {
+    "commit": "c4f736be362a026eb4c9ae6013cd1f76d28c5e8c",
+    "corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+    "corpus_rows": 8388,
+    "catalog_sha256": "50bf856e8a80c5c59a5daba464848317346cdf50ed2af9fe4174190f9e8a5c0f",
+    "assets": {
+      "data/gazette/source_authority/clinical_antifungal_bindings.json": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e",
+      "data/gazette/source_authority/clinical_enteral_bindings.json": "84ac91bab846af948eb8f3cc77d81eb908b6245657a94af6b5d19acc3896bb90",
+      "data/gazette/source_authority/clinical_followup_bindings.json": "446a38c9996db56ae5bbd8d6228de54ae74f718487ab4b2b7b98607ffec7719c",
+      "data/gazette/source_authority/clinical_indications_bindings.json": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245",
+      "data/gazette/source_authority/clinical_ravulizumab_bindings.json": "c0895bc523c50dc37e388460c03d0ec1f0ada0618046d843ecbf8a0e74d53536",
+      "data/gazette/source_authority/clinical_renal_bindings.json": "c1ee1b74e2c2000b1311ab2590fbd704e35284d27b9cd49209734dcefa4c7555",
+      "data/gazette/source_authority/clinical_sma_bindings.json": "0229c60c49851d6ddef49d18d5d0e8c4c335e19814574f7dcdbf87003c3b3037",
+      "data/gazette/source_authority/clinical_versions.json": "50bf856e8a80c5c59a5daba464848317346cdf50ed2af9fe4174190f9e8a5c0f",
+      "data/gazette/source_authority/clinical_versions.schema.json": "2e41ae89dfa4b94b731fec8d56abe1ad59f29e31706756be72bebeb54a1f7acb",
+      "data/gazette/source_authority/mecasermin_bindings.json": "b666d72a2fbbd5115e5cf75fca79e4e5b21d10d4c3e9e7a07691d6b60d8175b5",
+      "data/gazette/source_authority/official_review_2026_10_03.json": "f2ed092afebf80c1be1e8661dd626917c0e97e10ba882ebb7b5ccc822b03c4e2",
+      "data/gazette/source_authority/official_review_2026_10_04.json": "e2ebd8b3ad34bbd4f197b965485b1b6528214f80bfb2414093176d40c207d4da",
+      "data/gazette/source_authority/review_receipt_2026_10_03.json": "0d773cc4348fbdf802e5e2aebe67737f5342f36f14302f669e323d83e1c68ccc",
+      "data/gazette/source_authority/review_receipt_2026_10_04.json": "6b62391a5839472bc6bde330dc93fb2ce26482c9be43e8ff0b08f3675e172b19",
+      "data/gazette/source_authority/rg-20261003-3-regulation-observed-20261004-text.txt": "cfabc290a83696d3013eec90ab2c05581454e650a82b0852a40a71ab9e03f1b9",
+      "data/gazette/source_authority/rg-20261003-3-regulation-observer-text.txt": "14dd3b0eb6cbbb6e8e3624f67a1e5d3370362481e363ec728c9caa68b8ccaa34",
+      "data/gazette/source_authority/rg-20261003-daily-contents-observer-text.txt": "541ab604cbdb777b8fcaef0ca753afe2fb4d7c766fa698f23180d3a036f65a10",
+      "data/gazette/source_authority/rg-20261004-daily-contents-observer-text.txt": "394a335fe25aaeddc5347b3e5b706ecea8c504189feabfb887607e8e62fa954b",
+      "data/gazette/source_authority/rg-homepage-20261004-observer-text.txt": "58509899d25641a5bddec314873d941018c9b65f4285bfa65fc8bcd402762a90",
+      "data/gazette/source_authority/rg-homepage-current-issue-supplement-observer-excerpt.txt": "5c9a458ea25eea930954e125e5f3ea20caca0da9ee2e08c8e7dcd5665742bbe2",
+      "data/gazette/source_authority/sgk-20261002-amendment-observed-20261004-text.txt": "d8a512e78e2a737af831175a9f5a8cac81ffd8669a5396806d4adb6203a9d152",
+      "data/gazette/source_authority/sgk-20261002-effective-boundary-observed-20261004-text.txt": "3bdbccf5d3660c0d368589673336b65430eede38685ad9e8df8e18b82c13a181",
+      "data/gazette/source_authority/sgk-gss-listing-20261004-observer-text.txt": "1775465ae0252fa6d8b753841d099b7d550c4ab0d9766e9f02fa59945431d72d",
+      "data/gazette/source_evidence/mecasermin_known_as_of_continuation.json": "71d43430b4976e0658d6d81c60e1c52618356600f16cb40622d6baa15ab1947f",
+      "data/gazette/sut_clauses.parquet": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac"
+    },
+    "source_documents": [
+      {
+        "path": "raw data/2026.08.29-De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT/2026.08.29-De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT/29.08.2026 - De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT.docx",
+        "sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821"
+      }
+    ]
+  },
+  "candidate": {
+    "commit": "49af201926e42142c3d83986e50b7887491772c9",
+    "corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+    "corpus_rows": 8413,
+    "source_documents": [
+      {
+        "path": "raw data/2026.10.02-De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT/2026.10.02-De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT/02.10.2026 - De\u011fi\u015fiklik Tebli\u011fi \u0130\u015flenmi\u015f G\u00fcncel 2013 SUT.docx",
+        "sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+      }
+    ]
+  },
+  "family_count": 12,
+  "binding_file_count": 8,
+  "binding_count": 72,
+  "family_binding_membership_count": 110,
+  "family_contracts": [
+    {
+      "family_id": "sma",
+      "version_id": "sma.clinical.2026-10-02",
+      "version_contract_sha256": "1981762edef8856482ba440c4ef3902d359a0605173c9615669a24b7434b0800",
+      "legal_effective_from": "2025-05-06",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2025-05-06",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "antifungal_micafungin",
+      "version_id": "antifungal_micafungin.clinical.2026-10-02",
+      "version_contract_sha256": "f422a2bd9d1641eb83373a693edec19079b04cca9d474c947f900800a4c0fd12",
+      "legal_effective_from": "2018-04-01",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2018-04-01",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "antifungal_other",
+      "version_id": "antifungal_other.clinical.2026-10-02",
+      "version_contract_sha256": "b1246cfbbd4b9398e1305ef93211ad707645f0c9c6fc53587fff68a93bd1225f",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "renal",
+      "version_id": "renal.clinical.2026-10-02",
+      "version_contract_sha256": "4d6b3303234fc362b0848a1f291fe26c50d034c24a0b174144cfb614acba32d9",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "enteral",
+      "version_id": "enteral.clinical.2026-10-02",
+      "version_contract_sha256": "eebbed91ef2f70ca2101272e064068ef08d2ff5e013adf8f0a15df35e95d7884",
+      "legal_effective_from": "2026-09-05",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-09-05",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "ravulizumab",
+      "version_id": "ravulizumab.clinical.2026-10-02",
+      "version_contract_sha256": "7bd2dde32aa82cd86d6e849b6b2673e24f144c3087359b88479ef75c1adaf3a2",
+      "legal_effective_from": "2026-07-07",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-07-07",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "followup",
+      "version_id": "followup.clinical.2026-10-02",
+      "version_contract_sha256": "4c05baeedbf9bb49423a97e5fec30897ced821f4a36f2e605e455a6a3839fc3c",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_sc_ig",
+      "version_id": "indication_sc_ig.clinical.2026-10-02",
+      "version_contract_sha256": "a1aad6841b0b8f5d63fe6d42107550c5e04676ec695db6871de9e361f8af519a",
+      "legal_effective_from": "2024-11-09",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2024-11-09",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_hbv",
+      "version_id": "indication_hbv.clinical.2026-10-02",
+      "version_contract_sha256": "c99ceca0a561e7d17be9472ec939e8206f5898f5d11ec8e2ca6f208ad6128a41",
+      "legal_effective_from": "2024-11-09",
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2024-11-09",
+          "through": "2026-10-02",
+          "basis": "established_history"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_hcv",
+      "version_id": "indication_hcv.clinical.2026-10-02",
+      "version_contract_sha256": "8506507a7b8d6babf6b5420c26078abb18c0cda21f7b5c259b9ada270bd38d7f",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "indication_bone",
+      "version_id": "indication_bone.clinical.2026-10-02",
+      "version_contract_sha256": "8d3924ee4e095c4937c26539c0f7bba625f4b7b5993b7b6ac53994b48c589835",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    },
+    {
+      "family_id": "mecasermin",
+      "version_id": "mecasermin.clinical.2026-10-02",
+      "version_contract_sha256": "1e7235cb6f345e971e324801b3b9edb5f1a3d0d181cbefa085810bec0bbec5c7",
+      "legal_effective_from": null,
+      "known_successor_from": null,
+      "windows": [
+        {
+          "start": "2026-08-29",
+          "through": "2026-08-29",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "e6697a42cb24e20335c0a59ef9f9b7554d95a2db9a0280a90617564df9538821"
+        },
+        {
+          "start": "2026-10-02",
+          "through": "2026-10-02",
+          "basis": "observed_snapshot",
+          "observed_source_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573"
+        },
+        {
+          "start": "2026-10-03",
+          "through": "2026-10-03",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-03T070400Z"
+        },
+        {
+          "start": "2026-10-04",
+          "through": "2026-10-04",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-04T182213Z"
+        }
+      ]
+    }
+  ],
+  "binding_groups": [
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_antifungal_bindings.json",
+      "evidence_sha256": "905d3f81e82e3ef26021491f93c35c8d0934381a00fce24d64293ae58fdab51e",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "antifungal_micafungin",
+        "antifungal_other"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.23.(1)#7976531d",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(1)#7976531d",
+            "clause_coordinate": "4.2.23.(1)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "7976531d3bf59da1275075b64716fc2083bfbce08c92ddc59e93353a29c0621e"
+          },
+          "old_position": {
+            "clause_id": "C006202",
+            "paragraph_index": 6493
+          },
+          "new_position": {
+            "clause_id": "C006227",
+            "paragraph_index": 6518
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(1)#9dd6786c",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(1)#9dd6786c",
+            "clause_coordinate": "4.2.23.(1)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "9dd6786c049442c2bdd6baf2f298fb4804aa77e790cf704c27b4a2402366e320"
+          },
+          "old_position": {
+            "clause_id": "C006185",
+            "paragraph_index": 6476
+          },
+          "new_position": {
+            "clause_id": "C006210",
+            "paragraph_index": 6501
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(1)#ed3dd5ea",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(1)#ed3dd5ea",
+            "clause_coordinate": "4.2.23.(1)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "ed3dd5eabff35024f5dafad41bf36367e0c56e71427c485ef39840af57200af2"
+          },
+          "old_position": {
+            "clause_id": "C006188",
+            "paragraph_index": 6479
+          },
+          "new_position": {
+            "clause_id": "C006213",
+            "paragraph_index": 6504
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(2)#4b9ca2bb",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(2)#4b9ca2bb",
+            "clause_coordinate": "4.2.23.(2)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "4b9ca2bb3d18b22843b39d40fefaad1adcb865ff90500aae932259de8968d977"
+          },
+          "old_position": {
+            "clause_id": "C006189",
+            "paragraph_index": 6480
+          },
+          "new_position": {
+            "clause_id": "C006214",
+            "paragraph_index": 6505
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(2)#9e75077a",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(2)#9e75077a",
+            "clause_coordinate": "4.2.23.(2)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "9e75077a3a7dde3af2b59cec1f3901ae9398efbeb5b2eb9bd60e551e53add781"
+          },
+          "old_position": {
+            "clause_id": "C006203",
+            "paragraph_index": 6494
+          },
+          "new_position": {
+            "clause_id": "C006228",
+            "paragraph_index": 6519
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(2)#fe3010eb",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(2)#fe3010eb",
+            "clause_coordinate": "4.2.23.(2)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "fe3010ebd4dc9a6598c6e9c4108a1ba7e8b369a9bc25c0174f5a949d252697fd"
+          },
+          "old_position": {
+            "clause_id": "C006186",
+            "paragraph_index": 6477
+          },
+          "new_position": {
+            "clause_id": "C006211",
+            "paragraph_index": 6502
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(3)#84014798",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(3)#84014798",
+            "clause_coordinate": "4.2.23.(3)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "840147986968e5728767e33ecf2c7e5306748ddfc3f273e9560c6dca83f63a03"
+          },
+          "old_position": {
+            "clause_id": "C006190",
+            "paragraph_index": 6481
+          },
+          "new_position": {
+            "clause_id": "C006215",
+            "paragraph_index": 6506
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(3)#cf0aee43",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(3)#cf0aee43",
+            "clause_coordinate": "4.2.23.(3)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "cf0aee431d5fc2d3513d4268fde929fbd413d13d748c0b69fa70d38d2c0729e5"
+          },
+          "old_position": {
+            "clause_id": "C006204",
+            "paragraph_index": 6495
+          },
+          "new_position": {
+            "clause_id": "C006229",
+            "paragraph_index": 6520
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(4)#06a1b9aa",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(4)#06a1b9aa",
+            "clause_coordinate": "4.2.23.(4)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "06a1b9aa4d1ae98225cb58d40d0e0d2c3b4854cef73e508bdbddbb26dee2f2d7"
+          },
+          "old_position": {
+            "clause_id": "C006191",
+            "paragraph_index": 6482
+          },
+          "new_position": {
+            "clause_id": "C006216",
+            "paragraph_index": 6507
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(5)#1234522e",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(5)#1234522e",
+            "clause_coordinate": "4.2.23.(5)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "1234522ed81b00533f7ec4f91ef7ff17ca4b0c62ea677d49c6ab0012235dc12a"
+          },
+          "old_position": {
+            "clause_id": "C006193",
+            "paragraph_index": 6484
+          },
+          "new_position": {
+            "clause_id": "C006218",
+            "paragraph_index": 6509
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.(5)#2fe8e460",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.(5)#2fe8e460",
+            "clause_coordinate": "4.2.23.(5)",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "2fe8e4607560b908b5c3c3394be06df847ded0378fccb2a495a77eb3f42e6685"
+          },
+          "old_position": {
+            "clause_id": "C006192",
+            "paragraph_index": 6483
+          },
+          "new_position": {
+            "clause_id": "C006217",
+            "paragraph_index": 6508
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.a#70ca881f",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.a#70ca881f",
+            "clause_coordinate": "4.2.23.a",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "70ca881fd52f8dc688367d47ef1d5f90f848a433542735aa258ba8d795e37064"
+          },
+          "old_position": {
+            "clause_id": "C006184",
+            "paragraph_index": 6475
+          },
+          "new_position": {
+            "clause_id": "C006209",
+            "paragraph_index": 6500
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.a#77f6ee8f",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.a#77f6ee8f",
+            "clause_coordinate": "4.2.23.a",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "77f6ee8fa7c3f211f298de77af57d69e129fd01fd9d2106307459989ebf50acf"
+          },
+          "old_position": {
+            "clause_id": "C006180",
+            "paragraph_index": 6471
+          },
+          "new_position": {
+            "clause_id": "C006205",
+            "paragraph_index": 6496
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.23.b#1b49d136",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.23.b#1b49d136",
+            "clause_coordinate": "4.2.23.b",
+            "section_id": "4.2.23",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.23",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "1b49d136e6c13135475421aee3da4a5a10343098e4dc4479c8cae1ac94962f3c"
+          },
+          "old_position": {
+            "clause_id": "C006181",
+            "paragraph_index": 6472
+          },
+          "new_position": {
+            "clause_id": "C006206",
+            "paragraph_index": 6497
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_enteral_bindings.json",
+      "evidence_sha256": "84ac91bab846af948eb8f3cc77d81eb908b6245657a94af6b5d19acc3896bb90",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "enteral"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.8.A.b#5c30b19e",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.8.A.b#5c30b19e",
+            "clause_coordinate": "4.2.8.A.b",
+            "section_id": "4.2.8.A",
+            "parent_section_id": "4.2.8",
+            "section_path": "4.2/4.2.8/4.2.8.A",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "5c30b19edf3931d435801bf91c1dcc3f50baa0477ef28f8b3460da76eb43720a"
+          },
+          "old_position": {
+            "clause_id": "C004151",
+            "paragraph_index": 4441
+          },
+          "new_position": {
+            "clause_id": "C004159",
+            "paragraph_index": 4449
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "prose:4.2.8.A#99f29955",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.8.A#99f29955",
+            "clause_coordinate": "4.2.8.A",
+            "section_id": "4.2.8.A",
+            "parent_section_id": "4.2.8",
+            "section_path": "4.2/4.2.8/4.2.8.A",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "99f29955d538c88f1670d7e2ab89fdf92ba6d7fb1b43e21773dfb2b56db96fc7"
+          },
+          "old_position": {
+            "clause_id": "C004150",
+            "paragraph_index": 4440
+          },
+          "new_position": {
+            "clause_id": "C004158",
+            "paragraph_index": 4448
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_followup_bindings.json",
+      "evidence_sha256": "446a38c9996db56ae5bbd8d6228de54ae74f718487ab4b2b7b98607ffec7719c",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "followup"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.46.B.(3)#cac79ad7",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.B.(3)#cac79ad7",
+            "clause_coordinate": "4.2.46.B.(3)",
+            "section_id": "4.2.46.B",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "cac79ad794e119975385688e96a3ba595c8f451d01992fe85fec577717733387"
+          },
+          "old_position": {
+            "clause_id": "C006953",
+            "paragraph_index": 7246
+          },
+          "new_position": {
+            "clause_id": "C006978",
+            "paragraph_index": 7271
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.46.B.a#89e9c50d",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.B.a#89e9c50d",
+            "clause_coordinate": "4.2.46.B.a",
+            "section_id": "4.2.46.B",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "89e9c50d7367d60f7020e8cb75a7a0ba7e0f1d0111775ff1376f8cbe37a583e3"
+          },
+          "old_position": {
+            "clause_id": "C006954",
+            "paragraph_index": 7247
+          },
+          "new_position": {
+            "clause_id": "C006979",
+            "paragraph_index": 7272
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.46.B.b#aa27b4a1",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.B.b#aa27b4a1",
+            "clause_coordinate": "4.2.46.B.b",
+            "section_id": "4.2.46.B",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "aa27b4a1fc20fbcb270cc1a9b58b20286147fd8043924afef3ca0199722c0b21"
+          },
+          "old_position": {
+            "clause_id": "C006955",
+            "paragraph_index": 7248
+          },
+          "new_position": {
+            "clause_id": "C006980",
+            "paragraph_index": 7273
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.46.C.(3)#cac79ad7",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.C.(3)#cac79ad7",
+            "clause_coordinate": "4.2.46.C.(3)",
+            "section_id": "4.2.46.C",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.C",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "cac79ad794e119975385688e96a3ba595c8f451d01992fe85fec577717733387"
+          },
+          "old_position": {
+            "clause_id": "C006959",
+            "paragraph_index": 7252
+          },
+          "new_position": {
+            "clause_id": "C006984",
+            "paragraph_index": 7277
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.46.C.a#89e9c50d",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.C.a#89e9c50d",
+            "clause_coordinate": "4.2.46.C.a",
+            "section_id": "4.2.46.C",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.C",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "89e9c50d7367d60f7020e8cb75a7a0ba7e0f1d0111775ff1376f8cbe37a583e3"
+          },
+          "old_position": {
+            "clause_id": "C006960",
+            "paragraph_index": 7253
+          },
+          "new_position": {
+            "clause_id": "C006985",
+            "paragraph_index": 7278
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.46.C.b#aa27b4a1",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.46.C.b#aa27b4a1",
+            "clause_coordinate": "4.2.46.C.b",
+            "section_id": "4.2.46.C",
+            "parent_section_id": "4.2.46",
+            "section_path": "4.2/4.2.46/4.2.46.C",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "aa27b4a1fc20fbcb270cc1a9b58b20286147fd8043924afef3ca0199722c0b21"
+          },
+          "old_position": {
+            "clause_id": "C006961",
+            "paragraph_index": 7254
+          },
+          "new_position": {
+            "clause_id": "C006986",
+            "paragraph_index": 7279
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.57.(1)#d711a1b9",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.57.(1)#d711a1b9",
+            "clause_coordinate": "4.2.57.(1)",
+            "section_id": "4.2.57",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.57",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "d711a1b9f5bb7404e546c6bdc23c7c76c60b8081eca21d84c42bebe960d3aab0"
+          },
+          "old_position": {
+            "clause_id": "C007188",
+            "paragraph_index": 7481
+          },
+          "new_position": {
+            "clause_id": "C007213",
+            "paragraph_index": 7506
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.57.(2)#62f546f9",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.57.(2)#62f546f9",
+            "clause_coordinate": "4.2.57.(2)",
+            "section_id": "4.2.57",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.57",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "62f546f97d8286ba5627a20bd6fe158e075416d59a221c93cbe8c079c8d3a705"
+          },
+          "old_position": {
+            "clause_id": "C007189",
+            "paragraph_index": 7482
+          },
+          "new_position": {
+            "clause_id": "C007214",
+            "paragraph_index": 7507
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.57.(2)#af1ccf61",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.57.(2)#af1ccf61",
+            "clause_coordinate": "4.2.57.(2)",
+            "section_id": "4.2.57",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.57",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "af1ccf61e6218ea70d9d7e86457d011a264186d39ba49e44da6b42389e390030"
+          },
+          "old_position": {
+            "clause_id": "C007187",
+            "paragraph_index": 7480
+          },
+          "new_position": {
+            "clause_id": "C007212",
+            "paragraph_index": 7505
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.57.(3)#6147427c",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.57.(3)#6147427c",
+            "clause_coordinate": "4.2.57.(3)",
+            "section_id": "4.2.57",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.57",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "6147427cbf9dce99bc006729d0f8f2d19e3024b37e508815f60f5eedad98ddfe"
+          },
+          "old_position": {
+            "clause_id": "C007190",
+            "paragraph_index": 7483
+          },
+          "new_position": {
+            "clause_id": "C007215",
+            "paragraph_index": 7508
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_indications_bindings.json",
+      "evidence_sha256": "5654c8412acd7c55940f99511bc335813d24a36d326563ff813936b4f1bb5245",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "indication_sc_ig",
+        "indication_hbv",
+        "indication_hcv",
+        "indication_bone"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.12.B-2#954d11cb",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.12.B-2#954d11cb",
+            "clause_coordinate": "4.2.12.B-2",
+            "section_id": "4.2.12.B-2",
+            "parent_section_id": "4.2.12",
+            "section_path": "4.2/4.2.12/4.2.12.B-2",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "954d11cbb75168a59b08f70f6119d4cdf391f0c716c0f7b0aa6d5293e81a799b"
+          },
+          "old_position": {
+            "clause_id": "C004551",
+            "paragraph_index": 4841
+          },
+          "new_position": {
+            "clause_id": "C004559",
+            "paragraph_index": 4849
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.12.B-2.b#34366508",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.12.B-2.b#34366508",
+            "clause_coordinate": "4.2.12.B-2.b",
+            "section_id": "4.2.12.B-2",
+            "parent_section_id": "4.2.12",
+            "section_path": "4.2/4.2.12/4.2.12.B-2",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "34366508739885529e462e8fb5e7d97d266ddb4f28a8c5d6d7f7c41656468954"
+          },
+          "old_position": {
+            "clause_id": "C004549",
+            "paragraph_index": 4839
+          },
+          "new_position": {
+            "clause_id": "C004557",
+            "paragraph_index": 4847
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.13.1#2076b8bd",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.13.1#2076b8bd",
+            "clause_coordinate": "4.2.13.1",
+            "section_id": "4.2.13.1",
+            "parent_section_id": "4.2.13",
+            "section_path": "4.2/4.2.13/4.2.13.1",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "2076b8bdc73256c37d4efc59b89d05c13371b31a1601793a3c163c4bfd79023b"
+          },
+          "old_position": {
+            "clause_id": "C004595",
+            "paragraph_index": 4885
+          },
+          "new_position": {
+            "clause_id": "C004603",
+            "paragraph_index": 4893
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.13.1#50f88a7d",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.13.1#50f88a7d",
+            "clause_coordinate": "4.2.13.1",
+            "section_id": "4.2.13.1",
+            "parent_section_id": "4.2.13",
+            "section_path": "4.2/4.2.13/4.2.13.1",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "50f88a7dd34eb08debc9533f342de1d4e3cfbf7b12094ff23413977fdf4d8fc2"
+          },
+          "old_position": {
+            "clause_id": "C004596",
+            "paragraph_index": 4886
+          },
+          "new_position": {
+            "clause_id": "C004604",
+            "paragraph_index": 4894
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.13.1.a#3a85da7e",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.13.1.a#3a85da7e",
+            "clause_coordinate": "4.2.13.1.a",
+            "section_id": "4.2.13.1",
+            "parent_section_id": "4.2.13",
+            "section_path": "4.2/4.2.13/4.2.13.1",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "3a85da7ec5fb13eb82a6012f32a06122e3de0fbe6788ccf0132b2b4628f3169a"
+          },
+          "old_position": {
+            "clause_id": "C004594",
+            "paragraph_index": 4884
+          },
+          "new_position": {
+            "clause_id": "C004602",
+            "paragraph_index": 4892
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.13.3.2.B.(1)#d4fbff46",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.13.3.2.B.(1)#d4fbff46",
+            "clause_coordinate": "4.2.13.3.2.B.(1)",
+            "section_id": "4.2.13.3.2.B",
+            "parent_section_id": "4.2.13.3.2",
+            "section_path": "4.2/4.2.13/4.2.13.3/4.2.13.3.2/4.2.13.3.2.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "d4fbff461860d7186af1e55a6fb9771b05f553418b52e6ea0776806fe9d71bd3"
+          },
+          "old_position": {
+            "clause_id": "C004964",
+            "paragraph_index": 5254
+          },
+          "new_position": {
+            "clause_id": "C004972",
+            "paragraph_index": 5262
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.17.A.(2)#ec5a2641",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.17.A.(2)#ec5a2641",
+            "clause_coordinate": "4.2.17.A.(2)",
+            "section_id": "4.2.17.A",
+            "parent_section_id": "4.2.17",
+            "section_path": "4.2/4.2.17/4.2.17.A",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "ec5a264158c1a5046eabc6b4f48660a4a21bad2f00aec23455e4a76583ef0a58"
+          },
+          "old_position": {
+            "clause_id": "C006124",
+            "paragraph_index": 6415
+          },
+          "new_position": {
+            "clause_id": "C006149",
+            "paragraph_index": 6440
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.17.A.b#21d7b36c",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.17.A.b#21d7b36c",
+            "clause_coordinate": "4.2.17.A.b",
+            "section_id": "4.2.17.A",
+            "parent_section_id": "4.2.17",
+            "section_path": "4.2/4.2.17/4.2.17.A",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "21d7b36c6fc14a6925600c0b1888cd03d5b607e1a4b687470ec419d866e6d8f9"
+          },
+          "old_position": {
+            "clause_id": "C006126",
+            "paragraph_index": 6417
+          },
+          "new_position": {
+            "clause_id": "C006151",
+            "paragraph_index": 6442
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_ravulizumab_bindings.json",
+      "evidence_sha256": "c0895bc523c50dc37e388460c03d0ec1f0ada0618046d843ecbf8a0e74d53536",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "ravulizumab"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.14.C#024594a5",
+          "context_anchor": true,
+          "verified_contract": {
+            "clause_key": "4.2.14.C#024594a5",
+            "clause_coordinate": "4.2.14.C",
+            "section_id": "4.2.14.C",
+            "parent_section_id": "4.2.14",
+            "section_path": "4.2/4.2.14/4.2.14.C",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7"
+          },
+          "old_position": {
+            "clause_id": "C005817",
+            "paragraph_index": 6108
+          },
+          "new_position": {
+            "clause_id": "C005835",
+            "paragraph_index": 6126
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.14.C#c36e5ca4",
+          "context_anchor": true,
+          "verified_contract": {
+            "clause_key": "4.2.14.C#c36e5ca4",
+            "clause_coordinate": "4.2.14.C",
+            "section_id": "4.2.14.C",
+            "parent_section_id": "4.2.14",
+            "section_path": "4.2/4.2.14/4.2.14.C",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834"
+          },
+          "old_position": {
+            "clause_id": "C005797",
+            "paragraph_index": 6088
+          },
+          "new_position": {
+            "clause_id": "C005815",
+            "paragraph_index": 6106
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.14.C.(2)#d0db489d@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.14.C.(2)#d0db489d",
+            "clause_coordinate": "4.2.14.C.(2)",
+            "section_id": "4.2.14.C",
+            "parent_section_id": "4.2.14",
+            "section_path": "4.2/4.2.14/4.2.14.C",
+            "section_title": null,
+            "clause_type": "numbered_item",
+            "is_in_force": true,
+            "normalized_text_sha256": "d0db489d801929ce899e89bb8a64964e6d59ff8b65ddb6d0372edeb999ac5ea0"
+          },
+          "old_position": {
+            "clause_id": "C005809",
+            "paragraph_index": 6100
+          },
+          "new_position": {
+            "clause_id": "C005827",
+            "paragraph_index": 6118
+          },
+          "context": {
+            "kind": "@between:",
+            "anchors": [
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#c36e5ca4",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834"
+                },
+                "old_position": {
+                  "clause_id": "C005797",
+                  "paragraph_index": 6088
+                },
+                "new_position": {
+                  "clause_id": "C005815",
+                  "paragraph_index": 6106
+                }
+              },
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#024594a5",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7"
+                },
+                "old_position": {
+                  "clause_id": "C005817",
+                  "paragraph_index": 6108
+                },
+                "new_position": {
+                  "clause_id": "C005835",
+                  "paragraph_index": 6126
+                }
+              }
+            ]
+          }
+        },
+        {
+          "source_ref": "4.2.14.C.a#43c9dfb5@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.14.C.a#43c9dfb5",
+            "clause_coordinate": "4.2.14.C.a",
+            "section_id": "4.2.14.C",
+            "parent_section_id": "4.2.14",
+            "section_path": "4.2/4.2.14/4.2.14.C",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "43c9dfb51d2896b9ecade5775f5a09105dda3bc4ee46e633aab9b08af6b3d82b"
+          },
+          "old_position": {
+            "clause_id": "C005810",
+            "paragraph_index": 6101
+          },
+          "new_position": {
+            "clause_id": "C005828",
+            "paragraph_index": 6119
+          },
+          "context": {
+            "kind": "@between:",
+            "anchors": [
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#c36e5ca4",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834"
+                },
+                "old_position": {
+                  "clause_id": "C005797",
+                  "paragraph_index": 6088
+                },
+                "new_position": {
+                  "clause_id": "C005815",
+                  "paragraph_index": 6106
+                }
+              },
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#024594a5",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7"
+                },
+                "old_position": {
+                  "clause_id": "C005817",
+                  "paragraph_index": 6108
+                },
+                "new_position": {
+                  "clause_id": "C005835",
+                  "paragraph_index": 6126
+                }
+              }
+            ]
+          }
+        },
+        {
+          "source_ref": "4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.14.C.b#769b2a20",
+            "clause_coordinate": "4.2.14.C.b",
+            "section_id": "4.2.14.C",
+            "parent_section_id": "4.2.14",
+            "section_path": "4.2/4.2.14/4.2.14.C",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "769b2a2056f20507ab2044120848675aaad28546d73dfc5cef99e46c258fdc9b"
+          },
+          "old_position": {
+            "clause_id": "C005814",
+            "paragraph_index": 6105
+          },
+          "new_position": {
+            "clause_id": "C005832",
+            "paragraph_index": 6123
+          },
+          "context": {
+            "kind": "@between:",
+            "anchors": [
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#c36e5ca4",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "c36e5ca4feb81a6639d3e5c61d4782fccddedb4b4e79f312b1a7b276a9bae834"
+                },
+                "old_position": {
+                  "clause_id": "C005797",
+                  "paragraph_index": 6088
+                },
+                "new_position": {
+                  "clause_id": "C005815",
+                  "paragraph_index": 6106
+                }
+              },
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.14.C#024594a5",
+                  "clause_coordinate": "4.2.14.C",
+                  "section_id": "4.2.14.C",
+                  "parent_section_id": "4.2.14",
+                  "section_path": "4.2/4.2.14/4.2.14.C",
+                  "section_title": null,
+                  "clause_type": "prose",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "024594a54a9e319e66ab23ec63af5efdc476a1d5a8afd0feca898558d5a898f7"
+                },
+                "old_position": {
+                  "clause_id": "C005817",
+                  "paragraph_index": 6108
+                },
+                "new_position": {
+                  "clause_id": "C005835",
+                  "paragraph_index": 6126
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_renal_bindings.json",
+      "evidence_sha256": "c1ee1b74e2c2000b1311ab2590fbd704e35284d27b9cd49209734dcefa4c7555",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "renal"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.9.B.(1)#00052268",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.(1)#00052268",
+            "clause_coordinate": "4.2.9.B.(1)",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "000522682b84a52b4f318c45527659877206125ef7109a528ca670328604e98d"
+          },
+          "old_position": {
+            "clause_id": "C004195",
+            "paragraph_index": 4485
+          },
+          "new_position": {
+            "clause_id": "C004203",
+            "paragraph_index": 4493
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.(2)#8c267281",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.(2)#8c267281",
+            "clause_coordinate": "4.2.9.B.(2)",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "8c2672811f5e234398e3dfdfc2aa461c7822491e4c331d32206b57cf3ce5a5e5"
+          },
+          "old_position": {
+            "clause_id": "C004201",
+            "paragraph_index": 4491
+          },
+          "new_position": {
+            "clause_id": "C004209",
+            "paragraph_index": 4499
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.(3)#cbdee244",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.(3)#cbdee244",
+            "clause_coordinate": "4.2.9.B.(3)",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "cbdee2448d6654d8899f6b23ea5ed3a55d28ee02295a30dcda810fb8c3144f1f"
+          },
+          "old_position": {
+            "clause_id": "C004202",
+            "paragraph_index": 4492
+          },
+          "new_position": {
+            "clause_id": "C004210",
+            "paragraph_index": 4500
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.(4)#e346bde0",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.(4)#e346bde0",
+            "clause_coordinate": "4.2.9.B.(4)",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "e346bde02b897996736581b3873638209138b93c35d70699ca4ac73f74926705"
+          },
+          "old_position": {
+            "clause_id": "C004203",
+            "paragraph_index": 4493
+          },
+          "new_position": {
+            "clause_id": "C004211",
+            "paragraph_index": 4501
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.a#2cbf02e7",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.a#2cbf02e7",
+            "clause_coordinate": "4.2.9.B.a",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "2cbf02e70984fd72662e2e4a6e47f59556607912941dc922e2cdaf4e5893e772"
+          },
+          "old_position": {
+            "clause_id": "C004196",
+            "paragraph_index": 4486
+          },
+          "new_position": {
+            "clause_id": "C004204",
+            "paragraph_index": 4494
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.b#1438d4b8",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.b#1438d4b8",
+            "clause_coordinate": "4.2.9.B.b",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "1438d4b8288570fb6e2ce8af173200d19ba0719dfab7d7a361543e9aed6f3630"
+          },
+          "old_position": {
+            "clause_id": "C004197",
+            "paragraph_index": 4487
+          },
+          "new_position": {
+            "clause_id": "C004205",
+            "paragraph_index": 4495
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.c#44af65a8",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.c#44af65a8",
+            "clause_coordinate": "4.2.9.B.c",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "44af65a85d4a1758aadc894393be93751a45b58cbbca5818c3a06388da9f7b61"
+          },
+          "old_position": {
+            "clause_id": "C004198",
+            "paragraph_index": 4488
+          },
+          "new_position": {
+            "clause_id": "C004206",
+            "paragraph_index": 4496
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.B.\u00e7#4843bec7",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.B.\u00e7#4843bec7",
+            "clause_coordinate": "4.2.9.B.\u00e7",
+            "section_id": "4.2.9.B",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "4843bec7b27b2b4f1fcd284e9799d95121eb331d029495ca6104ee919239083d"
+          },
+          "old_position": {
+            "clause_id": "C004199",
+            "paragraph_index": 4489
+          },
+          "new_position": {
+            "clause_id": "C004207",
+            "paragraph_index": 4497
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.(1)#4dc7d730",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.(1)#4dc7d730",
+            "clause_coordinate": "4.2.9.D.(1)",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "4dc7d7300b48a3701521fb95605c4a5119c27233e670cb543536dedf311ad908"
+          },
+          "old_position": {
+            "clause_id": "C004235",
+            "paragraph_index": 4525
+          },
+          "new_position": {
+            "clause_id": "C004243",
+            "paragraph_index": 4533
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.a#7aa28a33",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.a#7aa28a33",
+            "clause_coordinate": "4.2.9.D.a",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "7aa28a3392d304a5ac5a67b5acec23cc776c5940115986b305e5468b7a17c4b6"
+          },
+          "old_position": {
+            "clause_id": "C004240",
+            "paragraph_index": 4530
+          },
+          "new_position": {
+            "clause_id": "C004248",
+            "paragraph_index": 4538
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.a#f13a1cdd",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.a#f13a1cdd",
+            "clause_coordinate": "4.2.9.D.a",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "f13a1cdd7efde962afce67a464530948748916971dbf2e38d0d8075e386588d6"
+          },
+          "old_position": {
+            "clause_id": "C004236",
+            "paragraph_index": 4526
+          },
+          "new_position": {
+            "clause_id": "C004244",
+            "paragraph_index": 4534
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.b#914a33c4",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.b#914a33c4",
+            "clause_coordinate": "4.2.9.D.b",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "914a33c4082748b7913672e66c180abd7c54415bd57ec4c7f3cfd825753dcc3a"
+          },
+          "old_position": {
+            "clause_id": "C004237",
+            "paragraph_index": 4527
+          },
+          "new_position": {
+            "clause_id": "C004245",
+            "paragraph_index": 4535
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.b#a3749cdc",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.b#a3749cdc",
+            "clause_coordinate": "4.2.9.D.b",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "a3749cdcd11c629bc0eeba4466a6cedc107d7abc325c280ca11e57e4eb8eaec2"
+          },
+          "old_position": {
+            "clause_id": "C004241",
+            "paragraph_index": 4531
+          },
+          "new_position": {
+            "clause_id": "C004249",
+            "paragraph_index": 4539
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.D.c#6a824531",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.D.c#6a824531",
+            "clause_coordinate": "4.2.9.D.c",
+            "section_id": "4.2.9.D",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.D",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "6a8245312ce87cfc23af570cf20cc19564ae53c31c83dc506e74453f632ad7ff"
+          },
+          "old_position": {
+            "clause_id": "C004243",
+            "paragraph_index": 4533
+          },
+          "new_position": {
+            "clause_id": "C004251",
+            "paragraph_index": 4541
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.(1)#d5f6d259",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.(1)#d5f6d259",
+            "clause_coordinate": "4.2.9.\u00c7.(1)",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "d5f6d2592e5a1bd1a47e9f24a7ed15367e1cb8cd8f4fab226d16e86110e371d9"
+          },
+          "old_position": {
+            "clause_id": "C004224",
+            "paragraph_index": 4514
+          },
+          "new_position": {
+            "clause_id": "C004232",
+            "paragraph_index": 4522
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.(2)#ab7653a8",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.(2)#ab7653a8",
+            "clause_coordinate": "4.2.9.\u00c7.(2)",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "ab7653a8e89afe53dbdec68eacd7b35f1f4515c5f7826ac78e38acba6d17fb67"
+          },
+          "old_position": {
+            "clause_id": "C004225",
+            "paragraph_index": 4515
+          },
+          "new_position": {
+            "clause_id": "C004233",
+            "paragraph_index": 4523
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.(3)#0a00af38",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.(3)#0a00af38",
+            "clause_coordinate": "4.2.9.\u00c7.(3)",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "0a00af38020b3b0e72a467e81c6a54328f060874dc56f9f86e28718f85f8309d"
+          },
+          "old_position": {
+            "clause_id": "C004226",
+            "paragraph_index": 4516
+          },
+          "new_position": {
+            "clause_id": "C004234",
+            "paragraph_index": 4524
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.(5)#deb19c81",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.(5)#deb19c81",
+            "clause_coordinate": "4.2.9.\u00c7.(5)",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "deb19c81e3b614b089a81d05d52c587b2b16136b7aff6a53cc0bd70920a90c15"
+          },
+          "old_position": {
+            "clause_id": "C004228",
+            "paragraph_index": 4518
+          },
+          "new_position": {
+            "clause_id": "C004236",
+            "paragraph_index": 4526
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.a#afe54fee",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.a#afe54fee",
+            "clause_coordinate": "4.2.9.\u00c7.a",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "afe54fee5cd46cceda394c232d3dd9765b3756bd1fd76b277c5e92dbaab7e162"
+          },
+          "old_position": {
+            "clause_id": "C004229",
+            "paragraph_index": 4519
+          },
+          "new_position": {
+            "clause_id": "C004237",
+            "paragraph_index": 4527
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.9.\u00c7.b#568549ff",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.9.\u00c7.b#568549ff",
+            "clause_coordinate": "4.2.9.\u00c7.b",
+            "section_id": "4.2.9.\u00c7",
+            "parent_section_id": "4.2.9",
+            "section_path": "4.2/4.2.9/4.2.9.\u00c7",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "568549ff4a07a211f746e11a4fc3a7474fa7e1c1b9f1f5175d8f3af56cf2ed67"
+          },
+          "old_position": {
+            "clause_id": "C004230",
+            "paragraph_index": 4520
+          },
+          "new_position": {
+            "clause_id": "C004238",
+            "paragraph_index": 4528
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/clinical_sma_bindings.json",
+      "evidence_sha256": "0229c60c49851d6ddef49d18d5d0e8c4c335e19814574f7dcdbf87003c3b3037",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "sma"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.49.(2)#d31c4d8c",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.(2)#d31c4d8c",
+            "clause_coordinate": "4.2.49.(2)",
+            "section_id": "4.2.49",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.49",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "d31c4d8ca6e842dae9dc3af4942aa61d83b596c5afc4b2c78cada15ad63ea2e5"
+          },
+          "old_position": {
+            "clause_id": "C007102",
+            "paragraph_index": 7395
+          },
+          "new_position": {
+            "clause_id": "C007127",
+            "paragraph_index": 7420
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.(3)#88014037",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.(3)#88014037",
+            "clause_coordinate": "4.2.49.(3)",
+            "section_id": "4.2.49",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.49",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "88014037bbe0356088a8c2f5e5b9042ea8d6624cad5f40cde00769b616a6a254"
+          },
+          "old_position": {
+            "clause_id": "C007103",
+            "paragraph_index": 7396
+          },
+          "new_position": {
+            "clause_id": "C007128",
+            "paragraph_index": 7421
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.(4)#d9c6cd1d",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.(4)#d9c6cd1d",
+            "clause_coordinate": "4.2.49.(4)",
+            "section_id": "4.2.49",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.49",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "d9c6cd1d1e40633042e02e56fa097476524bec6e597f545a646a1f316c37e21f"
+          },
+          "old_position": {
+            "clause_id": "C007104",
+            "paragraph_index": 7397
+          },
+          "new_position": {
+            "clause_id": "C007129",
+            "paragraph_index": 7422
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.(5)#597ea9c2",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.(5)#597ea9c2",
+            "clause_coordinate": "4.2.49.(5)",
+            "section_id": "4.2.49",
+            "parent_section_id": "4.2",
+            "section_path": "4.2/4.2.49",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "597ea9c2e250c19acafd8b12fb692f29c465b5ee480d91c683e296ae7603ef48"
+          },
+          "old_position": {
+            "clause_id": "C007105",
+            "paragraph_index": 7398
+          },
+          "new_position": {
+            "clause_id": "C007130",
+            "paragraph_index": 7423
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.A#c2df3999",
+          "context_anchor": true,
+          "verified_contract": {
+            "clause_key": "4.2.49.A#c2df3999",
+            "clause_coordinate": "4.2.49.A",
+            "section_id": "4.2.49.A",
+            "parent_section_id": "4.2.49",
+            "section_path": "4.2/4.2.49/4.2.49.A",
+            "section_title": ".2- Risdiplam kullan\u0131m ilkeleri",
+            "clause_type": "section_heading",
+            "is_in_force": true,
+            "normalized_text_sha256": "c2df3999ccf22b0b4cac9b62fbdc757ec8e788f23002f1f1783871351f226e40"
+          },
+          "old_position": {
+            "clause_id": "C007115",
+            "paragraph_index": 7408
+          },
+          "new_position": {
+            "clause_id": "C007140",
+            "paragraph_index": 7433
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.A.(2)#481b9b26@within:4.2.49.A#c2df3999",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.A.(2)#481b9b26",
+            "clause_coordinate": "4.2.49.A.(2)",
+            "section_id": "4.2.49.A",
+            "parent_section_id": "4.2.49",
+            "section_path": "4.2/4.2.49/4.2.49.A",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "481b9b26a8c5384023b87e73ee7f47e13daa8b61662be75d9a01addccdce2f36"
+          },
+          "old_position": {
+            "clause_id": "C007119",
+            "paragraph_index": 7412
+          },
+          "new_position": {
+            "clause_id": "C007144",
+            "paragraph_index": 7437
+          },
+          "context": {
+            "kind": "@within:",
+            "anchors": [
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.49.A#c2df3999",
+                  "clause_coordinate": "4.2.49.A",
+                  "section_id": "4.2.49.A",
+                  "parent_section_id": "4.2.49",
+                  "section_path": "4.2/4.2.49/4.2.49.A",
+                  "section_title": ".2- Risdiplam kullan\u0131m ilkeleri",
+                  "clause_type": "section_heading",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "c2df3999ccf22b0b4cac9b62fbdc757ec8e788f23002f1f1783871351f226e40"
+                },
+                "old_position": {
+                  "clause_id": "C007115",
+                  "paragraph_index": 7408
+                },
+                "new_position": {
+                  "clause_id": "C007140",
+                  "paragraph_index": 7433
+                }
+              }
+            ],
+            "next_heading": {
+              "verified_contract": {
+                "clause_key": "4.2.49.B#09758ffa",
+                "clause_coordinate": "4.2.49.B",
+                "section_id": "4.2.49.B",
+                "parent_section_id": "4.2.49",
+                "section_path": "4.2/4.2.49/4.2.49.B",
+                "section_title": "Spinal Musk\u00fcler Atrofi Tip-2 (SMA Tip-2) ve Spinal Musk\u00fcler Atrofi Tip-3 (SMA Tip-3) hastal\u0131\u011f\u0131nda",
+                "clause_type": "section_heading",
+                "is_in_force": true,
+                "normalized_text_sha256": "09758ffa825a1ee07b1f564e1243a19e53ede95793b01b265ddf868537104d8d"
+              },
+              "old_position": {
+                "clause_id": "C007120",
+                "paragraph_index": 7413
+              },
+              "new_position": {
+                "clause_id": "C007145",
+                "paragraph_index": 7438
+              }
+            }
+          }
+        },
+        {
+          "source_ref": "4.2.49.B#1a8f10e4",
+          "context_anchor": true,
+          "verified_contract": {
+            "clause_key": "4.2.49.B#1a8f10e4",
+            "clause_coordinate": "4.2.49.B",
+            "section_id": "4.2.49.B",
+            "parent_section_id": "4.2.49",
+            "section_path": "4.2/4.2.49/4.2.49.B",
+            "section_title": ".1- Nusinersen kullan\u0131m ilkeleri",
+            "clause_type": "section_heading",
+            "is_in_force": true,
+            "normalized_text_sha256": "1a8f10e4e917c47025004c74285a8018b89ddb661afb5ac614b1188913bd2eae"
+          },
+          "old_position": {
+            "clause_id": "C007121",
+            "paragraph_index": 7414
+          },
+          "new_position": {
+            "clause_id": "C007146",
+            "paragraph_index": 7439
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.49.B.e#927a1a83@within:4.2.49.B#1a8f10e4",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.49.B.e#927a1a83",
+            "clause_coordinate": "4.2.49.B.e",
+            "section_id": "4.2.49.B",
+            "parent_section_id": "4.2.49",
+            "section_path": "4.2/4.2.49/4.2.49.B",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "927a1a83384649d30e362e4812587feeb039c750e24170d4f7afc882a0525f28"
+          },
+          "old_position": {
+            "clause_id": "C007128",
+            "paragraph_index": 7421
+          },
+          "new_position": {
+            "clause_id": "C007153",
+            "paragraph_index": 7446
+          },
+          "context": {
+            "kind": "@within:",
+            "anchors": [
+              {
+                "verified_contract": {
+                  "clause_key": "4.2.49.B#1a8f10e4",
+                  "clause_coordinate": "4.2.49.B",
+                  "section_id": "4.2.49.B",
+                  "parent_section_id": "4.2.49",
+                  "section_path": "4.2/4.2.49/4.2.49.B",
+                  "section_title": ".1- Nusinersen kullan\u0131m ilkeleri",
+                  "clause_type": "section_heading",
+                  "is_in_force": true,
+                  "normalized_text_sha256": "1a8f10e4e917c47025004c74285a8018b89ddb661afb5ac614b1188913bd2eae"
+                },
+                "old_position": {
+                  "clause_id": "C007121",
+                  "paragraph_index": 7414
+                },
+                "new_position": {
+                  "clause_id": "C007146",
+                  "paragraph_index": 7439
+                }
+              }
+            ],
+            "next_heading": {
+              "verified_contract": {
+                "clause_key": "4.2.49.B#58c3e3be",
+                "clause_coordinate": "4.2.49.B",
+                "section_id": "4.2.49.B",
+                "parent_section_id": "4.2.49",
+                "section_path": "4.2/4.2.49/4.2.49.B",
+                "section_title": ".2- Risdiplam kullan\u0131m ilkeleri",
+                "clause_type": "section_heading",
+                "is_in_force": true,
+                "normalized_text_sha256": "58c3e3bef896bca56a1f7b287676b7eff488470b9310d0ecda332f9c3f3f0551"
+              },
+              "old_position": {
+                "clause_id": "C007131",
+                "paragraph_index": 7424
+              },
+              "new_position": {
+                "clause_id": "C007156",
+                "paragraph_index": 7449
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "evidence_path": "data/gazette/source_authority/mecasermin_bindings.json",
+      "evidence_sha256": "b666d72a2fbbd5115e5cf75fca79e4e5b21d10d4c3e9e7a07691d6b60d8175b5",
+      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "family_ids": [
+        "mecasermin"
+      ],
+      "bindings": [
+        {
+          "source_ref": "4.2.6.B-1.(2)#df3e5cd0",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.6.B-1.(2)#df3e5cd0",
+            "clause_coordinate": "4.2.6.B-1.(2)",
+            "section_id": "4.2.6.B-1",
+            "parent_section_id": "4.2.6",
+            "section_path": "4.2/4.2.6/4.2.6.B-1",
+            "section_title": null,
+            "clause_type": "fikra",
+            "is_in_force": true,
+            "normalized_text_sha256": "df3e5cd0be1ac74c2340ff2021640e5dc88bbfa4ce6c3cf96a447dffcaaf943d"
+          },
+          "old_position": {
+            "clause_id": "C004090",
+            "paragraph_index": 4380
+          },
+          "new_position": {
+            "clause_id": "C004098",
+            "paragraph_index": 4388
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.6.B-3#11e1f077",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.6.B-3#11e1f077",
+            "clause_coordinate": "4.2.6.B-3",
+            "section_id": "4.2.6.B-3",
+            "parent_section_id": "4.2.6",
+            "section_path": "4.2/4.2.6/4.2.6.B-3",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "11e1f07761bd53af78aa49e614126cc264cbd00be62e77c48009ca49c5946a1b"
+          },
+          "old_position": {
+            "clause_id": "C004098",
+            "paragraph_index": 4388
+          },
+          "new_position": {
+            "clause_id": "C004106",
+            "paragraph_index": 4396
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.6.B-3#dde3c8f6",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.6.B-3#dde3c8f6",
+            "clause_coordinate": "4.2.6.B-3",
+            "section_id": "4.2.6.B-3",
+            "parent_section_id": "4.2.6",
+            "section_path": "4.2/4.2.6/4.2.6.B-3",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "dde3c8f61ad7719b2363fd762bc01efbf8afaa7524c7e5d1f44b2b18f2b17f0c"
+          },
+          "old_position": {
+            "clause_id": "C004097",
+            "paragraph_index": 4387
+          },
+          "new_position": {
+            "clause_id": "C004105",
+            "paragraph_index": 4395
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.6.B-3#de2f2b31",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.6.B-3#de2f2b31",
+            "clause_coordinate": "4.2.6.B-3",
+            "section_id": "4.2.6.B-3",
+            "parent_section_id": "4.2.6",
+            "section_path": "4.2/4.2.6/4.2.6.B-3",
+            "section_title": null,
+            "clause_type": "prose",
+            "is_in_force": true,
+            "normalized_text_sha256": "de2f2b31454b8e6081711bdaa207331f199e69eaf9a0fa089cd4c00ef54949c1"
+          },
+          "old_position": {
+            "clause_id": "C004099",
+            "paragraph_index": 4389
+          },
+          "new_position": {
+            "clause_id": "C004107",
+            "paragraph_index": 4397
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        },
+        {
+          "source_ref": "4.2.6.B-3.\u00e7#269f3195",
+          "context_anchor": false,
+          "verified_contract": {
+            "clause_key": "4.2.6.B-3.\u00e7#269f3195",
+            "clause_coordinate": "4.2.6.B-3.\u00e7",
+            "section_id": "4.2.6.B-3",
+            "parent_section_id": "4.2.6",
+            "section_path": "4.2/4.2.6/4.2.6.B-3",
+            "section_title": null,
+            "clause_type": "bent",
+            "is_in_force": true,
+            "normalized_text_sha256": "269f3195c84fd172c96451133fc34c5899b956c2646901cb75a00e1f4b069dff"
+          },
+          "old_position": {
+            "clause_id": "C004100",
+            "paragraph_index": 4390
+          },
+          "new_position": {
+            "clause_id": "C004108",
+            "paragraph_index": 4398
+          },
+          "context": {
+            "kind": "exact_clause",
+            "anchors": []
+          }
+        }
+      ]
+    }
+  ],
+  "currentness_extended": false,
+  "clinical_eligibility_complete": false
+}

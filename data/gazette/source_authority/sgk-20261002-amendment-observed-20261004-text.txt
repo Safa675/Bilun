@@ -1,0 +1,101 @@
+Source URL: https://www.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a
+Observed at UTC: 2026-10-04T18:09:34.837168Z
+Capture type: derived complete all w:p text, including table paragraphs, from official DOCX bytes; zero-based indices
+
+0: 02 Ekim CUMA                                                    Resmî Gazete                                                        Sayı : 33388
+1:                                                 TEBLİĞ
+2: 
+3: Sosyal Güvenlik Kurumu Başkanlığından:
+4: 
+5: SOSYAL GÜVENLİK KURUMU SAĞLIK UYGULAMA TEBLİĞİNDE
+6: DEĞİŞİKLİK YAPILMASINA DAİR TEBLİĞ
+7: 
+8: MADDE 1- 24/3/2013 tarihli ve 28597 sayılı Resmî Gazete’de yayımlanan Sosyal Güvenlik Kurumu Sağlık Uygulama Tebliğinin 2.4.2.A numaralı maddesi aşağıdaki şekilde değiştirilmiştir.
+9:       “2.4.2.A - Organ ve doku nakli                
+10: (1) Kurum sağlık yardımlarından yararlandırılan kişilere organ veya doku nakline gerek görülmesi halinde, 2238 sayılı Organ ve Doku Alınması, Saklanması, Aşılanması ve Nakli Hakkında Kanun hükümleri dikkate alınmak şartıyla, organ veya doku nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır. 
+11: (2) Organ nakli tedavileri, bünyesinde “organ nakli merkezi” bulunan sağlık hizmeti sunucularında gerçekleştirilecektir.
+12: (3) Yurt içinde organın bulunması halinde hastanın organın bulunduğu yere veya organın organ nakli yapılacak merkezin bulunduğu yere getirilmesine ilişkin gidiş-dönüş için nakliye/transfer masrafları SUT’un 2.6 maddesi doğrultusunda Kurumca karşılanır. 
+13:                 (4) Ulusal Organ ve Doku Nakli Koordinasyon Merkezince bildirilen her bir kadavra donör için donörü temin eden sağlık hizmeti sunucusuna SUT eki EK-2/C listesinde “P911146” işlem kodu ile yer alan “Kadavra donör temini” bedeli karşılanır. Söz konusu bedele kadavra organ alım işlemleri dâhildir.
+14: (5) Ölüm Bildirim Sistemindeki (ÖBS) Beyin Ölümü Modülüne ve Ulusal Organ ve Doku Nakli Koordinasyon Merkezine bildirimi yapılan ancak kadavra donör temini işlemi yapılamayan/tamamlanamayan hastaların, organ koruma protokolü uygulanan 48 saatlik (iki gün) süreci, hastanın takip edildiği mevcut yoğun bakım basamağı üzerinden Kuruma faturalandırılır.
+15:                (6) Herhangi bir diyaliz yöntemiyle tedavisinin mümkün olmadığı (damar yolu girişi olmayan, periton diyalizi uygulanamayan vb.) Kurumla sözleşmeli üçüncü basamak sağlık hizmeti sunucuları sağlık kurulu raporu ile belgelenen hastalar hariç olmak üzere, ABO kan grubu uyumsuz böbrek nakline ilişkin giderler Kurumca karşılanmaz. ABO uyumsuz böbrek nakli yapılacak hastalara uygulanacak aferez işlemi ve bu işlemde kullanılacak tıbbi malzeme bedelleri ayrıca faturalandırılamaz.”
+16: MADDE 2- Aynı Tebliğin 4.2.14.C numaralı maddesinin üçüncü fıkrasında aşağıdaki düzenlemeler yapılmıştır.
+17:                 a) (ff) bendi aşağıdaki şekilde değiştirilmiştir.
+18: “ff) Trastuzumab emtansin;  
+19: a)HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan, neoadjuvan olarak yeterli süre (en az 4 kür) taksan ve anti-HER2 tedavi almış ve cerrahi sonrasında patolojik incelemede memede 1 cm’in üzerinde invaziv rezidü hastalık veya lenf düğümünde invaziv rezidü hastalık mevcut olan erken evre meme kanseri hastalarının adjuvan tedavisinde tek ajan olarak en fazla 14 kür kullanılır.
+20: b)Metastatik meme kanserinde daha önce trastuzumab ve bir basamak taksan tedavisi almış ve hastalığı sonrasında progresyon göstermiş, HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan metastatik meme kanseri hastalarında kurtarma tedavisinde tek ajan olarak progresyona kadar kullanılır. Progresyon sonrası tek ajan veya kombinasyon tedavisinin bir parçası olarak kullanılamaz.
+21: c)Tıbbi onkoloji uzman hekiminin yer aldığı ve bu hususların belirtildiği sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır.”
+22: b) (gg) bendi aşağıdaki şekilde değiştirilmiştir.
+23: “gg) Pertuzumab, trastuzumab ve pertuzumab kombinasyonu;
+24: a)Pertuzumab, trastuzumab ve kemoterapi ile kombine olarak HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan lokal ilerlemiş, enflamatuvar ya da lokal ileri evre meme kanseri (T3-4 ve/veya Nod pozitif) olan neoadjuvan erken evre meme kanseri hastalarının tedavisinde en fazla 4 kür kullanılır.
+25: b)Daha önce metastatik hastalığı için sistemik kemoterapi veya trastuzumab tedavisi almamış, ECOG performans skoru 0-1 olan, HER-2/neu testi immünohistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan metastatik meme kanserinde ilk seri tedavide pertuzumab, trastuzumab ve dosetaksel kemoterapisi kombine olarak progresyona kadar kullanılabilir. Pertuzumab veya kombinasyon tedavisi alırken progresyon gösteren hastalarda bir daha pertuzumab tedavisine monoterapi veya kombinasyon tedavisinin bir parçası olarak devam edilemez. Adjuvan veya neoadjuvan trastuzumab kullanmış hastalarda trastuzumab tedavisinin tamamlanmasından sonraki ilk 12 ay içinde veya tedavi sırasında gelişen hastalık nüksü veya progresyonunda pertuzumab kullanılamaz. Adjuvan veya neoadjuvan trastuzumab tedavisinin tamamlanmasından sonraki 12 aydan sonra gelişen hastalık nüksü veya progresyonunda pertuzumab, trastuzumab ve dosetaksel kemoterapisi kombine olarak progresyona kadar kullanılabilir. Dosetaksel toksisitesi nedeniyle dosetaksel kemoterapisinin kesilmesi durumunda trastuzumab ve pertuzumab kombinasyonu ile tedaviye devam edilebilir.
+26: c)Tıbbi onkoloji uzman hekiminin yer aldığı ve bu hususların belirtildiği sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır.”
+27: c) Aynı fıkraya aşağıdaki bent eklenmiştir.
+28:                “aaaa) Satralizumab yalnızca; yüksek hastalık aktivitesi gösteren, relapslarla seyreden vücut ağırlığı 40 kg veya üzerinde olan 12 yaşından itibaren adolesan ve yetişkin hastaların Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB) tedavisinde; 
+29: a) Aşağıda yer alan kriterleri birlikte sağlayan hastalarda tedaviye monoterapi olarak veya immünosupresif tedavi ile kombine olarak başlanılması ve üçüncü basamak sağlık hizmeti sunucularında üç nöroloji uzman hekiminin yer aldığı ve aşağıdaki durumların belirtildiği en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır. 
+30: 1- Aquaporin 4 (AQP4) antikoru pozitif,
+31: 2- Expanded Disability Status Scale (EDSS) 6,5 ve altında olan,
+32: 3- En az iki ya da daha fazla immünosupresan tedaviyi (azatiyoprin, mikofenolat mofetil, siklofosfamid veya rituksimab etkin maddeli ilaçlar) monoterapi olarak uygun dozda ve sürede kullanmasına rağmen tedavi altında iken en az 1 atak geçiren.
+33: b) NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda; EDSS 8 ve üzerinde ise tedavi sonlandırılır. EDSS her sağlık kurulu raporunda belirtilmelidir.”
+34: MADDE 3- Aynı Tebliğ eki “Hizmet Başı İşlem Puan Listesi (EK-2/B)” nde aşağıdaki düzenlemeler yapılmıştır.
+35: a) Listede yer alan “608310” SUT kodlu işlem satırı aşağıdaki şekilde değiştirilmiştir.   
+36: “
+37: 608310
+38: Bronkoskopi, tanısal (fleksible/rijit), bronşial lavaj ile birlikte veya değil
+39: Genel anestezi ile yapıldığında anestezi ücreti ayrıca faturalandırılır. Göğüs hastalıkları, göğüs cerrahisi, çocuk cerrahisi, çocuk göğüs hastalıkları uzman hekimi tarafından; ayrıca yoğun bakım ünitelerinde yoğun bakım uzman hekimi tarafından da yapılması halinde faturalandırılır.
+40: 1.073,67
+41:                                                                                                                                                                                                                  ”
+42: b) Listeye “609540” SUT kodlu işlem satırından sonra gelmek üzere aşağıdaki satır eklenmiştir. 
+43: “
+44: 609541
+45: Özofagus atrezi primer onarımı (torakoskopik)
+46: 604070, 604071, 608880 ile birlikte faturalandırılmaz.
+47: 25.278,02
+48:                                                                                                                                                                                                  ”
+49: MADDE 4- Aynı Tebliğ eki “Tanıya Dayalı İşlem Puan Listesi (EK-2/C)” nde aşağıdaki düzenlemeler yapılmıştır.
+50: a) Listede yer alan “P608310” SUT kodlu işlem satırı aşağıdaki şekilde değiştirilmiştir.  
+51: “
+52: P608310
+53: Bronkoskopi, tanısal (fleksible/rijit), bronşial lavaj ile birlikte veya değil
+54: Göğüs hastalıkları, göğüs cerrahisi, çocuk cerrahisi, çocuk göğüs hastalıkları uzman hekimi tarafından; ayrıca yoğun bakım ünitelerinde yoğun bakım uzman hekimi tarafından da yapılması halinde faturalandırılır.
+55: D
+56: 
+57: 5.456,70
+58:                           ”
+59: b) Listede yer alan “Kemik İliği Nakilleri” başlıklı satır aşağıdaki şekilde değiştirilmiştir.   
+60: “
+61: 
+62: 
+63: 
+64: 
+65: 
+66: 
+67: 
+68: Kemik İliği Nakilleri
+69: Kemik iliği bankalarından temin edilen kemik iliği/ kordon kanı bedelleri hariç olmak üzere kemik iliği paket fiyatlarına aynı sağlık hizmeti sunucusunda paket süresi içinde donöre yapılanlar da dahil olmak üzere her türlü tetkik, tahlil, işlem, kan ve kan bileşenleri, tıbbi malzeme, kan ürünleri dahil ilaçlar (Kemik iliği nakli ve komplikasyon tedavilerine ilişkin olmayan nakil öncesinde mevcut olan kronik hastalıklara ilişkin ayakta tedavilerde reçete edilen ilaçlar ve şahsi tedavi için yurtdışından getirtilen ilaçlar hariç) ve komplikasyon tedavisine ilişkin ücretler dahildir.  Paket fiyat, allojenik nakil öncesi 15 günü ve nakil sonrası 90 günü, diğer nakillerde nakil öncesi 15 günü ve nakil sonrası 60 günü kapsar.
+70: 
+71: 
+72: 
+73:                              ”
+74: c) Listeye “P609540” SUT kodlu işlem satırından sonra gelmek üzere aşağıdaki satır eklenmiştir. 
+75: “
+76: P609541
+77: Özofagus atrezi primer onarımı (torakoskopik)
+78: P604070, P604071 ile birlikte faturalandırılmaz.
+79: A3
+80: 
+81: 215.007,17
+82:                             ”                                                                                                                                                    
+83:   MADDE 5- Aynı Tebliğ eki “Hematoloji-Onkoloji Branşına Ait Tıbbi Malzemeler Listesi (EK-3/O)” nde yer alan “HO1000” SUT kodlu tıbbi malzeme satırının “Açıklama” bölümüne aşağıdaki madde eklenmiştir.
+84:                 “(3) SUT’un 2.4.4.Ç maddesine bakınız.”
+85: MADDE 6- Aynı Tebliğ eki “Bedeli Ödenecek İlaçlar Listesi (EK-4/A)” Ek’teki şekilde değiştirilmiştir.
+86: MADDE 7- Aynı Tebliğ eki “Sadece Yatarak Tedavilerde Kullanımı Halinde Bedelleri Ödenecek İlaçlar Listesi (EK-4/G)” ne aşağıdaki madde eklenmiştir.
+87: “92. Satralizumab”
+88:                 MADDE 8- Bu Tebliğin;
+89: 1 inci maddesi yayımı tarihinden 30 gün sonra,
+90:                 b)  2 nci ve 3 üncü maddeleri, 4 üncü maddesinin (a) ve (c) bentleri ile 7 nci maddesi yayımı tarihinden 5 iş günü sonra
+91: c)  4 üncü maddesinin (b) bendi 5/9/2026 tarihinden geçerli olmak üzere yayımı tarihinde,
+92: ç)  5 inci maddesi yayımı tarihinden 5 gün sonra,
+93: d) 6 ncı maddesindeki ekli listede; listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunan ilaçlar belirtilen tarihlerde, listeye giriş tarihi, aktiflenme tarihi veya pasiflenme tarihi bulunmayan ilaçlar yayımları tarihlerinde, listeye giriş tarihinde (*) işareti bulunan ilaçlar ile ilaç adında (**) işareti bulunan ilaçlar yayımı tarihinden 5 iş günü sonra ve ilaç adında (***) işareti bulunan ilaçlar yayımı tarihinde,
+94:                 e)  Diğer hükümleri yayımı tarihinde,
+95:                 yürürlüğe girer.
+96: MADDE 9- Bu Tebliğ hükümlerini Sosyal Güvenlik Kurumu Başkanı yürütür.

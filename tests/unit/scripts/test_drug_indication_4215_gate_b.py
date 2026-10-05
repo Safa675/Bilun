@@ -7,6 +7,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from tests.unit._helpers.reviewed_clause_ids import reviewed_clause_ids
 
 from tests.unit._helpers.brittle_guards import soft_floor
 
@@ -19,7 +20,7 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4215_mani
 
 _SECTION = "4215"
 
-_PILOT_SOURCES = frozenset({
+_PILOT_SOURCES = reviewed_clause_ids(
     "C005864",
     "C005865",
     "C005866",
@@ -29,7 +30,7 @@ _PILOT_SOURCES = frozenset({
     "C005873",
     "C005923",
     "C005958",
-})
+)
 
 
 def test_gate_b_exports_4215_candidates() -> None:

@@ -319,6 +319,10 @@ def _validate_compile_invariants(
         if not rule_id:
             raise ValueError(f"{prefix}: missing rule_id")
 
+        from scripts.sut.prose.clause_identity import validate_review_only_source
+
+        review_only = validate_review_only_source(rule, rule_set_id=rule_set_id)
+
         if ("source_clinical_scope_incomplete" in rule
                 and type(rule["source_clinical_scope_incomplete"]) is not bool):
             raise ValueError(f"{prefix} ({rule_id}): source_clinical_scope_incomplete must be boolean")
@@ -349,7 +353,7 @@ def _validate_compile_invariants(
                 raise ValueError(f"{prefix} ({rule_id}): invalid source-review date interval") from exc
 
         sources = rule.get("gate_b_sources")
-        if require_gate_b_sources and not sources:
+        if (require_gate_b_sources or rule_set_id == "treatment_pricing_2_4") and not sources and not review_only:
             raise ValueError(f"{prefix} ({rule_id}): gate_b_sources is required and must be non-empty")
         if sources is not None and not isinstance(sources, list):
             raise ValueError(f"{prefix} ({rule_id}): gate_b_sources must be a list")
