@@ -40,6 +40,9 @@ class AdultGhEvidence:
     # An explicit clinical record of >=1 additional anterior pituitary hormone
     # deficiency, excluding prolactin and GH; never derived from ICDs or aliases.
     additional_anterior_pituitary_deficiency_confirmed: bool | None = None
+    # Explicit documentation that the submitted records include two actual,
+    # distinct stimulation procedures; IDs, methods and dates cannot assert it.
+    two_distinct_stimulation_procedures_documented: bool | None = None
     itt_contraindicated: bool | None = None
     stimulation_tests: tuple[AdultGhStimulationTest, ...] | None = None
 
@@ -130,6 +133,9 @@ def parse_adult_gh_evidence(value: Any) -> AdultGhEvidence | None:
         ),
         additional_anterior_pituitary_deficiency_confirmed=_exact_bool(
             value.get("additional_anterior_pituitary_deficiency_confirmed")
+        ),
+        two_distinct_stimulation_procedures_documented=_exact_bool(
+            value.get("two_distinct_stimulation_procedures_documented")
         ),
         itt_contraindicated=_exact_bool(value.get("itt_contraindicated")),
         stimulation_tests=_stimulation_tests(value.get("stimulation_tests")),

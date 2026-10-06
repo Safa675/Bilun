@@ -126,6 +126,43 @@ it("submits same-report true, false and unknown without deriving the relationshi
   expect(renderer.root.findByProps({ "aria-label": label }).props.value).toBe("true");
 });
 
+it("submits the documented procedure-pair observation without deriving it from test IDs, methods, dates or exception facts", async () => {
+  const label = "At least two distinct stimulation test procedures documented in the clinical record";
+  expect(renderer.root.findByProps({ "aria-label": label }).props.value).toBe("");
+  await act(async () => { button("Add test").props.onClick(); });
+  await act(async () => { button("Add test").props.onClick(); });
+  await change("Test record ID 1", "T1");
+  await change("Test record ID 2", "T2");
+  await change("Test type 1", "itt");
+  await change("Test type 2", "other");
+  await change("Test date 1", "2026-10-04");
+  await change("Test date 2", "2026-10-05");
+  await change("Inadequate response documented 1", "true");
+  await change("Inadequate response documented 2", "true");
+  await change("At least one additional anterior pituitary hormone deficiency confirmed (excluding prolactin and GH)", "true");
+  await submit();
+  expect(request().materials[0].adult_gh_evidence).toMatchObject({
+    two_distinct_stimulation_procedures_documented: null, additional_anterior_pituitary_deficiency_confirmed: true,
+    stimulation_tests: [{ test_id: "T1", kind: "itt", performed_on: "2026-10-04" },
+      { test_id: "T2", kind: "other", performed_on: "2026-10-05" }],
+  });
+
+  for (const [edit, expected] of [["true", true], ["false", false], ["invalid", null], ["", null]] as const) {
+    await change(label, edit);
+    expect(snapshot()).not.toContain("CURRENT_RESULT");
+    await submit();
+    expect(request().materials[0].adult_gh_evidence?.two_distinct_stimulation_procedures_documented).toBe(expected);
+    expect(request().materials[0].adult_gh_evidence?.additional_anterior_pituitary_deficiency_confirmed).toBe(true);
+  }
+
+  await change(label, "false");
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  await submit();
+  expect(request().materials[0]).not.toHaveProperty("adult_gh_evidence");
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
+  expect(renderer.root.findByProps({ "aria-label": label }).props.value).toBe("false");
+});
+
 it("cancels, submits again and discards late responses and errors from obsolete requests", async () => {
   const first = deferred<SutValidationResult>(), second = deferred<SutValidationResult>();
   vi.mocked(postJSON).mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
@@ -158,11 +195,13 @@ it("aborts an in-flight combined request on unmount", async () => {
 
 it("normalizes invalid nested facts and excludes all draft fields when drug context is disabled", () => {
   const material = { name: "drug", unit_price: 0, quantity: 1,
-    adult_gh_evidence: { itt_contraindicated: "false", stimulation_tests: [{ peak_gh_mcg_l: true, private_note: "PRIVATE" }] },
+    adult_gh_evidence: { itt_contraindicated: "false", two_distinct_stimulation_procedures_documented: "true",
+      stimulation_tests: [{ peak_gh_mcg_l: true, private_note: "PRIVATE" }] },
     mds_evidence: { hb_value: "10", specialist_report_present: 1,
       prescription_based_on_same_hematology_report: "true", private_note: "PRIVATE" } };
   const enabled = drugMaterialPayload(material as never, true);
-  expect(enabled.adult_gh_evidence).toMatchObject({ itt_contraindicated: null, stimulation_tests: [{ peak_gh_mcg_l: null }] });
+  expect(enabled.adult_gh_evidence).toMatchObject({ itt_contraindicated: null,
+    two_distinct_stimulation_procedures_documented: null, stimulation_tests: [{ peak_gh_mcg_l: null }] });
   expect(enabled.mds_evidence).toMatchObject({ hb_value: null, specialist_report_present: null,
     prescription_based_on_same_hematology_report: null });
   expect(JSON.stringify(enabled)).not.toContain("PRIVATE");
@@ -186,6 +225,9 @@ describe("bounded bilingual clinical review", () => {
       .toContain(messages.claimValidator.clinical.adultGh.fields.peak_gh_mcg_l);
     expect(clinicalMissingInputLabel("adult_gh_evidence.stimulation_tests.count", t))
       .toContain(messages.claimValidator.clinical.adultGh.fields.stimulation_tests_count);
+    expect(clinicalMissingInputLabel("adult_gh_evidence.two_distinct_stimulation_procedures_documented", t))
+      .toContain(locale === "tr" ? "En az iki ayrı gerçek uyarı testi işlemi klinik kayıtta belgelenmiş"
+        : "At least two distinct stimulation test procedures documented in the clinical record");
     expect(clinicalMissingInputLabel("mds_evidence.hb_value", t)).toContain(messages.claimValidator.clinical.mds.fields.hb_value);
     expect(clinicalMissingInputLabel("mds_evidence.prescription_based_on_same_hematology_report", t))
       .toContain(locale === "tr" ? "Reçete aynı hematoloji raporuna dayanıyor" : "Prescription based on the same hematology report");

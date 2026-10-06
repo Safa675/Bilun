@@ -21,6 +21,8 @@ export interface SutAdultGhEvidence {
   /** At least one additional anterior pituitary hormone deficiency, excluding prolactin and GH. */
   additional_anterior_pituitary_deficiency_confirmed?: boolean | null;
   itt_contraindicated?: boolean | null;
+  /** Independent documentary fact; test IDs, methods and dates never establish it. */
+  two_distinct_stimulation_procedures_documented?: boolean | null;
   stimulation_tests?: SutAdultGhStimulationTest[] | null;
 }
 
@@ -99,6 +101,7 @@ export function adultGhEvidencePayload(value: unknown): SutAdultGhEvidence | nul
     additional_anterior_pituitary_deficiency_confirmed:
       exactBoolean(facts.additional_anterior_pituitary_deficiency_confirmed),
     itt_contraindicated: exactBoolean(facts.itt_contraindicated),
+    two_distinct_stimulation_procedures_documented: exactBoolean(facts.two_distinct_stimulation_procedures_documented),
     stimulation_tests: Array.isArray(tests) && tests.length <= 20 ? Array.from(tests, stimulationTest) : null,
   };
 }

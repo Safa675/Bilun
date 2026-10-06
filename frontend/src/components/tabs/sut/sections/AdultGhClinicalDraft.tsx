@@ -9,14 +9,15 @@ const copy = {
     title: "Erişkin somatropin — tanı ve uyarı testi taslağı",
     warning: "Kaynak/tarih kabulü ve bağımsız klinik yorum bekleyen taslak; ödeme uygunluğu kesinleşmez",
     scope: "Yalnız epifizleri kapalı erişkin somatropin kapsamı. Hasta grubu, epifiz kapanması ve tedavi aşaması ayrı kayıtlardır; yaş bunları belirlemez.",
+    diagnosticScope: "Yalnız §4.2.6.A-2(2)–(4) tanı ve uyarı testi önkoşulları. Rapor/reçete koşulları ayrı değerlendirilir; bu taslak bunları doğrulamaz.",
     unknown: "Bilinmiyor", yes: "Evet", no: "Hayır", disabled: "Değerlendirme kapalı",
     tests: "Belgelenmiş büyüme hormonu uyarı testleri", add: "Test ekle", remove: "Testi kaldır",
     otherHint: "Diğer testlerde yetersiz yanıt için belgelenmiş klinik yorum gerekir; ITT sayısal eşiği diğer testlere uygulanmaz.",
     limit: "En fazla 20 test kaydı girilebilir.",
     invalidTests: "Test listesi okunamadı. Yeni test eklemek mevcut listeyi değiştirir; kaynak kaydı gözden geçirin.",
-    runtime: "Kapalı değerlendirme sonucu", candidate: "Taslak önkoşul incelemesi", missing: "Eksik kayıtlar",
+    runtime: "Kapalı değerlendirme sonucu", candidate: "Tanı/uyarı testi alt kümesi incelemesi", missing: "Eksik kayıtlar",
     pending: "Bekleyen incelemeler", emptyResult: "Sonuç bulunmuyor",
-    statuses: { not_evaluated: "Değerlendirilmedi", unknown: "Bilinmiyor", criterion_clear: "Taslak önkoşullar karşılandı", restriction_not_met: "Taslak önkoşullar karşılanmadı" },
+    statuses: { not_evaluated: "Değerlendirilmedi", unknown: "Bilinmiyor", criterion_clear: "Tanı/uyarı testi alt kümesindeki önkoşullar karşılandı", restriction_not_met: "Tanı/uyarı testi alt kümesindeki önkoşullar karşılanmadı" },
     requirements: {
       adult_gh_source_date_admission: "Kaynak ve tarih kabulü",
       adult_gh_independent_clinical_interpretation: "Bağımsız klinik yorum",
@@ -37,6 +38,7 @@ const copy = {
       adult_hypothalamic_pituitary_gh_deficiency_suspected: "Erişkinde hipotalamohipofizer hastalığa bağlı GH eksikliği düşünüldü",
       additional_anterior_pituitary_deficiency_confirmed: "En az bir ek ön hipofiz hormonu eksikliği doğrulandı (prolaktin ve GH hariç)",
       itt_contraindicated: "ITT kontrendikasyonu var",
+      two_distinct_stimulation_procedures_documented: "En az iki ayrı gerçek uyarı testi işlemi klinik kayıtta belgelenmiş",
       test_id: "Test kaydı kimliği", performed_on: "Test tarihi", kind: "Test türü",
       inadequate_response_documented: "Yetersiz yanıt belgelenmiş",
       peak_gh_mcg_l: "ITT pik GH değeri (mcg/L; yalnız ITT)",
@@ -49,14 +51,15 @@ const copy = {
     title: "Adult somatropin — diagnosis and stimulation test draft",
     warning: "Draft awaiting source/date admission and independent clinical interpretation; payment eligibility is not established",
     scope: "Closed-epiphysis adult somatropin only. Patient group, epiphyseal closure and treatment phase are separate records; age does not establish them.",
+    diagnosticScope: "Only diagnosis and stimulation prerequisites in §4.2.6.A-2(2)–(4). Report and prescription requirements are assessed separately; this draft does not verify them.",
     unknown: "Unknown", yes: "Yes", no: "No", disabled: "Evaluation disabled",
     tests: "Documented growth hormone stimulation tests", add: "Add test", remove: "Remove test",
     otherHint: "Other tests require a documented clinical interpretation of inadequate response; the ITT numeric threshold does not apply to other tests.",
     limit: "A maximum of 20 test records can be entered.",
     invalidTests: "The test list could not be read. Adding a new test replaces the existing list; review the source record.",
-    runtime: "Disabled evaluation result", candidate: "Draft prerequisite review", missing: "Missing records",
+    runtime: "Disabled evaluation result", candidate: "Diagnosis/stimulation subset review", missing: "Missing records",
     pending: "Pending reviews", emptyResult: "No result available",
-    statuses: { not_evaluated: "Not evaluated", unknown: "Unknown", criterion_clear: "Draft prerequisites met", restriction_not_met: "Draft prerequisites not met" },
+    statuses: { not_evaluated: "Not evaluated", unknown: "Unknown", criterion_clear: "Diagnosis/stimulation subset prerequisites met", restriction_not_met: "Diagnosis/stimulation subset prerequisites not met" },
     requirements: {
       adult_gh_source_date_admission: "Source and date admission",
       adult_gh_independent_clinical_interpretation: "Independent clinical interpretation",
@@ -77,6 +80,7 @@ const copy = {
       adult_hypothalamic_pituitary_gh_deficiency_suspected: "Adult GH deficiency due to hypothalamic-pituitary disease suspected",
       additional_anterior_pituitary_deficiency_confirmed: "At least one additional anterior pituitary hormone deficiency confirmed (excluding prolactin and GH)",
       itt_contraindicated: "ITT contraindicated",
+      two_distinct_stimulation_procedures_documented: "At least two distinct stimulation test procedures documented in the clinical record",
       test_id: "Test record ID", performed_on: "Test date", kind: "Test type",
       inadequate_response_documented: "Inadequate response documented",
       peak_gh_mcg_l: "ITT peak GH (mcg/L; ITT only)",
@@ -89,7 +93,8 @@ const copy = {
 
 const booleanFields = ["childhood_gh_deficiency_diagnosed", "childhood_gh_treatment_received",
   "gh_stopped_due_to_epiphyseal_closure", "adult_hypothalamic_pituitary_gh_deficiency_suspected",
-  "additional_anterior_pituitary_deficiency_confirmed", "itt_contraindicated"] as const;
+  "additional_anterior_pituitary_deficiency_confirmed", "itt_contraindicated",
+  "two_distinct_stimulation_procedures_documented"] as const;
 const testBooleanFields = ["inadequate_response_documented", "peak_gh_documented_in_report",
   "retest_after_epiphyseal_closure_stop"] as const;
 
@@ -129,6 +134,7 @@ export function AdultGhClinicalDraft({ value, onChange, locale = "tr", result, e
     <h3 className="text-sm font-medium">{t.title}</h3>
     <p role="status" className="text-xs text-[var(--text-muted)]">{t.warning}</p>
     <p className="text-xs text-[var(--text-muted)]">{t.scope}</p>
+    <p className="text-xs text-[var(--text-muted)]">{t.diagnosticScope}</p>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {(["applies_on", "assessment_date"] as const).map(field => <label key={field} className="text-xs">
         <span className="block mb-1">{t.fields[field]}</span>

@@ -12,7 +12,7 @@ from typing import Any
 from ..claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
 from ..claims.clinical_evidence import clinical_date
 from ..claims.growth_hormone import validated_growth_hormone_value
-from ._drug_indication.clinical_common import Predicate, Reader, all_of, result
+from ._drug_indication.clinical_common import Predicate, Reader, all_of, any_of, result
 from ._drug_indication.matching import _drug_name_matches
 from ._drug_indication.source_authority import resolve_source_authority
 
@@ -111,12 +111,20 @@ def _test_records_missing(reader: Reader, service: date) -> list[str]:
 
 
 def _test_count(reader: Reader, count: int) -> Predicate:
-    if count >= 2:
-        predicate = Predicate(True)
-    elif count == 0:
+    if count == 0:
         predicate = Predicate(False)
-    else:
+    elif count == 1 or reader.get("additional_anterior_pituitary_deficiency_confirmed") is True:
+        # The documented one-test exception does not require a pair of tests.
         predicate = reader.bool("additional_anterior_pituitary_deficiency_confirmed")
+    elif reader.get("two_distinct_stimulation_procedures_documented") is True:
+        predicate = reader.bool("two_distinct_stimulation_procedures_documented")
+    else:
+        # Multiple record IDs alone do not prove two actual procedures. An
+        # unresolved exception can still supply the alternative one-test path.
+        predicate = any_of(
+            reader.bool("two_distinct_stimulation_procedures_documented"),
+            reader.bool("additional_anterior_pituitary_deficiency_confirmed"),
+        )
     return _check(reader, _PREFIX + ".stimulation_tests.count", predicate)
 
 

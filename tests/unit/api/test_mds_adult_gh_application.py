@@ -199,18 +199,22 @@ def test_candidate_missing_paths_survive_public_projection_only_with_known_bound
             outcome['missing_inputs'] += ['adult_gh_evidence.stimulation_tests[19].test_id',
                 'adult_gh_evidence.stimulation_tests[20].test_id', 'adult_gh_evidence.stimulation_tests[01].kind',
                 'adult_gh_evidence.stimulation_tests[0].private_note', 'adult_gh_evidence.PRIVATE_INTERNAL',
-                'mds_evidence.hb_value', 'mds_evidence.private_note']
+                'mds_evidence.hb_value', 'mds_evidence.private_note',
+                'adult_gh_evidence.two_distinct_stimulation_procedures_documented.PRIVATE']
         return outcome
     monkeypatch.setattr('src.bilun.domain.prose_rules._drug_indication.clinical.evaluate_adult_gh_closed_epiphysis', review)
     raw = payload(gh.KIND)
+    raw['materials'][0]['adult_gh_evidence'].pop('two_distinct_stimulation_procedures_documented', None)
     raw['materials'][0]['adult_gh_evidence']['stimulation_tests'][1]['inadequate_response_documented'] = None
     row = rows(post(client, raw))[0]
     assert 'adult_gh_evidence.stimulation_tests[1].inadequate_response_documented' in row['missing_inputs']
+    assert 'adult_gh_evidence.two_distinct_stimulation_procedures_documented' in row['missing_inputs']
     assert 'adult_gh_evidence.stimulation_tests[19].test_id' in row['missing_inputs']
     assert 'mds_evidence.hb_value' in row['missing_inputs']
     assert all(value not in row['missing_inputs'] for value in (
         'adult_gh_evidence.stimulation_tests[20].test_id', 'adult_gh_evidence.stimulation_tests[01].kind',
-        'adult_gh_evidence.stimulation_tests[0].private_note', 'adult_gh_evidence.PRIVATE_INTERNAL', 'mds_evidence.private_note'))
+        'adult_gh_evidence.stimulation_tests[0].private_note', 'adult_gh_evidence.PRIVATE_INTERNAL', 'mds_evidence.private_note',
+        'adult_gh_evidence.two_distinct_stimulation_procedures_documented.PRIVATE'))
     assert row['selected_rule_id'] == RULES[gh.KIND] and row['clinical_eligibility_complete'] is False
 
 
@@ -256,7 +260,7 @@ def test_actual_native_typescript_payload_helper_roundtrips_both_new_evidence_gr
         pytest.skip('Native TypeScript stripping is unavailable')
     raw = payload(family)
     key = 'adult_gh_evidence' if family == gh.KIND else 'mds_evidence'
-    raw['materials'][0][key]['itt_contraindicated' if family == gh.KIND else 'prescription_based_on_same_hematology_report'] = False
+    raw['materials'][0][key]['two_distinct_stimulation_procedures_documented' if family == gh.KIND else 'prescription_based_on_same_hematology_report'] = False
     root = Path(__file__).resolve().parents[3]
     helper = (root / 'frontend/src/components/tabs/sut/sections/drugInputs.ts').as_uri()
     script = f'''import {{drugMaterialPayload}} from {json.dumps(helper)};
@@ -270,26 +274,29 @@ console.log(JSON.stringify([drugMaterialPayload(material, true), drugMaterialPay
     assert key in enabled and key not in disabled
     raw['materials'] = [enabled]
     typed = getattr(ClaimValidationRequest.model_validate(raw).materials[0], key)
-    assert getattr(typed, 'itt_contraindicated' if family == gh.KIND else 'prescription_based_on_same_hematology_report') is False
+    assert getattr(typed, 'two_distinct_stimulation_procedures_documented' if family == gh.KIND else 'prescription_based_on_same_hematology_report') is False
     assert restriction(rows(post(client, raw))[0], family)['criterion_status'] == 'not_evaluated'
 
 
 @pytest.mark.parametrize('observed,expected', [(True, True), (False, False), (None, None), ('false', None), (1, None)])
-def test_same_report_relationship_roundtrips_real_transport_without_releasing_runtime(client, observed, expected):  # noqa: F811
-    key = 'prescription_based_on_same_hematology_report'
-    raw = payload(mds.KIND)
-    raw['materials'][0]['mds_evidence'][key] = observed
+@pytest.mark.parametrize('family,group,key', [
+    (mds.KIND, 'mds_evidence', 'prescription_based_on_same_hematology_report'),
+    (gh.KIND, 'adult_gh_evidence', 'two_distinct_stimulation_procedures_documented'),
+])
+def test_new_documentary_facts_roundtrip_real_transport_without_releasing_runtime(client, family, group, key, observed, expected):  # noqa: F811
+    raw = payload(family)
+    raw['materials'][0][group][key] = observed
     request = ClaimValidationRequest.model_validate(raw)
-    typed = request.materials[0].mds_evidence
+    typed = getattr(request.materials[0], group)
     assert getattr(typed, key) is expected
     dumped = request.model_dump(mode='json')
-    assert build_context_from_material_dict(dumped).drug_lines[0].mds_evidence == typed
-    row = asdict(replace(_drug_line(drug_name='epoetin alfa', report_present=True), drug_claim_date=DAY))
-    row['mds_evidence'] = json.dumps(raw['materials'][0]['mds_evidence'])
+    assert getattr(build_context_from_material_dict(dumped).drug_lines[0], group) == typed
+    row = asdict(replace(_drug_line(drug_name=raw['materials'][0]['name'], report_present=True), drug_claim_date=DAY))
+    row[group] = json.dumps(raw['materials'][0][group])
     errors = []
-    assert parse_drug_line(row, errors).mds_evidence == typed and errors == []
+    assert getattr(parse_drug_line(row, errors), group) == typed and errors == []
     data = post(client, raw)
-    item = restriction(rows(data)[0], mds.KIND)
+    item = restriction(rows(data)[0], family)
     assert item['criterion_status'] == 'not_evaluated' and item['checks'] == []
     assert item['clinical_eligibility_complete'] is False and data['is_valid'] is None
 

@@ -46,6 +46,7 @@ def facts(**changes):
         "childhood_gh_treatment_received": True,
         "gh_stopped_due_to_epiphyseal_closure": True,
         "additional_anterior_pituitary_deficiency_confirmed": False,
+        "two_distinct_stimulation_procedures_documented": True,
         "itt_contraindicated": False,
         "stimulation_tests": (stimulation(), stimulation("T2", kind="other")),
         **changes,
@@ -151,6 +152,7 @@ def test_two_diagnosis_paths_clear_only_complete_necessary_candidate_checks(path
 def test_explicit_distinct_test_count_and_documented_pituitary_exception(count, extra, status):
     tests = tuple(stimulation(f"T{index}") for index in range(count))
     outcome = candidate(facts(stimulation_tests=tests,
+                              two_distinct_stimulation_procedures_documented=True if count >= 2 else None,
                               additional_anterior_pituitary_deficiency_confirmed=extra))
     assert outcome["criterion_status"] == status
     if count == 1 and extra is None:
@@ -306,6 +308,8 @@ def test_test_date_must_not_follow_assessment_even_before_service():
 def test_source_does_not_invent_recency_or_require_distinct_test_kinds_or_dates():
     tests = (stimulation(performed_on=date(1990, 1, 1)),
              stimulation("T2", performed_on=date(1990, 1, 1)))
+    # The positive fixture documents actual distinct procedures even though
+    # their methods/dates match; those attributes never establish the fact.
     assert candidate(facts(stimulation_tests=tests))["criterion_status"] == "criterion_clear"
 
 

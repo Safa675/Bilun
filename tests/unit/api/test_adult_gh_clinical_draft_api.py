@@ -43,6 +43,7 @@ def payload() -> dict:
             "assessment_date": "2026-10-04",
             "diagnosis_pathway": "adult_hypothalamic_pituitary",
             "adult_hypothalamic_pituitary_gh_deficiency_suspected": True,
+            "two_distinct_stimulation_procedures_documented": True,
             "stimulation_tests": [
                 {
                     "test_id": "ITT-1",
@@ -107,6 +108,27 @@ def test_candidate_clear_cannot_open_runtime_or_complete_payment_eligibility():
         "verified_source_for_service_date", "adult_gh_clinical_interpretation_release",
     } <= set(response["runtime_result"]["missing_inputs"])
     assert response["runtime_result"]["clinical_eligibility_complete"] is False
+
+
+@pytest.mark.parametrize("raw,expected_fact,status", [
+    (True, True, "criterion_clear"),
+    (False, False, "restriction_not_met"),
+    (None, None, "unknown"),
+    ("true", None, "unknown"),
+    (1, None, "unknown"),
+])
+def test_actual_helper_revalidates_the_distinct_procedure_fact_without_releasing_runtime(raw, expected_fact, status):
+    submitted = payload()
+    submitted["adult_gh_evidence"]["two_distinct_stimulation_procedures_documented"] = raw
+    submitted["adult_gh_evidence"]["additional_anterior_pituitary_deficiency_confirmed"] = False
+    request = AdultGhClinicalDraftRequest.model_validate(submitted)
+    assert request.adult_gh_evidence.two_distinct_stimulation_procedures_documented is expected_fact
+    response = review_adult_gh_clinical_draft(request)
+    assert response.candidate_result["criterion_status"] == status
+    assert response.runtime_result["criterion_status"] == "not_evaluated"
+    assert response.runtime_result["checks"] == []
+    assert response.runtime_enabled is False
+    assert response.clinical_eligibility_complete is False
 
 
 @pytest.mark.parametrize("service", [

@@ -43,6 +43,7 @@ def _evidence(**facts):
         "childhood_gh_treatment_received": True,
         "gh_stopped_due_to_epiphyseal_closure": True,
         "additional_anterior_pituitary_deficiency_confirmed": False,
+        "two_distinct_stimulation_procedures_documented": True,
         "itt_contraindicated": False,
         "stimulation_tests": (_test("DOCUMENTED-ITT"), _test("DOCUMENTED-OTHER", kind="other")),
         **facts,
@@ -104,6 +105,7 @@ def test_one_test_exception_changes_count_but_never_repairs_childhood_documentat
     ordinary = _evidence(
         diagnosis_pathway="childhood_onset_retest",
         stimulation_tests=(_test("POST-CLOSURE-RETEST"),),
+        two_distinct_stimulation_procedures_documented=None,
         **{field: fact},
     )
     before = _candidate(ordinary)
@@ -176,6 +178,84 @@ def test_same_numeric_peak_needs_other_test_interpretation_but_uses_cutoff_only_
     assert _status(classified_itt, "stimulation_tests[1].peak_gh_mcg_l") == (
         "pass" if peak < 3 else "fail"
     )
+
+
+PAIR = "two_distinct_stimulation_procedures_documented"
+EXCEPTION = "additional_anterior_pituitary_deficiency_confirmed"
+
+
+@pytest.mark.parametrize("pair,exception,expected,missing", [
+    (True, True, "criterion_clear", ()),
+    (True, False, "criterion_clear", ()),
+    (True, None, "criterion_clear", ()),
+    (False, True, "criterion_clear", ()),
+    (False, False, "restriction_not_met", ()),
+    (False, None, "unknown", (EXCEPTION,)),
+    (None, True, "criterion_clear", ()),
+    (None, False, "unknown", (PAIR,)),
+    (None, None, "unknown", (PAIR, EXCEPTION)),
+])
+def test_two_record_count_requires_documented_procedures_or_the_one_test_exception(pair, exception, expected, missing):
+    outcome = _candidate(_evidence(**{PAIR: pair, EXCEPTION: exception}))
+    assert outcome["criterion_status"] == expected
+    assert outcome["missing_inputs"] == sorted(PREFIX + field for field in missing)
+    assert _status(outcome, "stimulation_tests.count") == (
+        "unknown" if missing else "pass" if expected == "criterion_clear" else "fail"
+    )
+    checked = {check["field"] for check in outcome["checks"]}
+    if exception is True:
+        assert PREFIX + PAIR not in checked
+    elif pair is True:
+        assert PREFIX + EXCEPTION not in checked
+    else:
+        assert _status(outcome, PAIR) == ("unknown" if pair is None else "fail")
+        assert _status(outcome, EXCEPTION) == ("unknown" if exception is None else "fail")
+
+
+@pytest.mark.parametrize("pair", [True, False, None])
+def test_documented_single_test_exception_does_not_require_the_two_procedure_fact(pair):
+    outcome = _candidate(_evidence(
+        stimulation_tests=(_test("SINGLE-ITT"),), **{PAIR: pair, EXCEPTION: True},
+    ))
+    assert outcome["criterion_status"] == "criterion_clear"
+    assert outcome["missing_inputs"] == []
+    assert _status(outcome, "stimulation_tests.count") == "pass"
+    assert not any(check["field"] == PREFIX + PAIR for check in outcome["checks"])
+
+
+@pytest.mark.parametrize("count", [0, 1])
+def test_two_procedure_flag_cannot_supply_an_absent_submitted_test(count):
+    outcome = _candidate(_evidence(
+        stimulation_tests=tuple(_test(f"RECORDED-{index}") for index in range(count)),
+        **{PAIR: True, EXCEPTION: False},
+    ))
+    assert outcome["criterion_status"] == "restriction_not_met"
+    assert _status(outcome, "stimulation_tests.count") == "fail"
+    assert outcome["missing_inputs"] == []
+
+
+def test_ids_different_methods_dates_and_generic_report_cannot_document_actual_distinct_procedures():
+    evidence = _evidence(stimulation_tests=(
+        _test("UNIQUE-ITT-ID"),
+        _test("UNIQUE-OTHER-ID", kind="other", performed_on=date(2026, 10, 3)),
+    ), **{PAIR: None, EXCEPTION: False})
+    present = _candidate(evidence, report_present=True)
+    assert present == _candidate(evidence, report_present=False)
+    assert present["criterion_status"] == "unknown"
+    assert present["missing_inputs"] == [PREFIX + PAIR]
+    assert _status(present, PAIR) == "unknown"
+
+
+def test_extra_compatible_complete_tests_do_not_block_a_documented_two_procedure_path():
+    # Same methods and dates do not establish or negate the clinician's explicit
+    # documentation of distinct procedures; the source imposes no such limits.
+    evidence = _evidence(stimulation_tests=tuple(_test(f"ACTUAL-{index}") for index in range(3)),
+                         **{PAIR: True, EXCEPTION: None})
+    outcome = _candidate(evidence)
+    assert outcome["criterion_status"] == "criterion_clear"
+    assert outcome["missing_inputs"] == []
+    assert _status(outcome, "stimulation_tests.count") == "pass"
+    assert all(check["status"] == "pass" for check in outcome["checks"])
 
 
 def test_mocked_source_admission_cannot_evaluate_a_candidate_while_real_clinical_gate_is_closed(monkeypatch):

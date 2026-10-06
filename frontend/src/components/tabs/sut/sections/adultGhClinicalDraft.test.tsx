@@ -13,7 +13,8 @@ const emptyTest = {
 };
 const booleanFields = ["childhood_gh_deficiency_diagnosed", "childhood_gh_treatment_received",
   "gh_stopped_due_to_epiphyseal_closure", "adult_hypothalamic_pituitary_gh_deficiency_suspected",
-  "additional_anterior_pituitary_deficiency_confirmed", "itt_contraindicated"] as const;
+  "additional_anterior_pituitary_deficiency_confirmed", "itt_contraindicated",
+  "two_distinct_stimulation_procedures_documented"] as const;
 
 describe("adult GH draft payload", () => {
   it("keeps every absent fact unknown and excludes inferred context", () => {
@@ -22,7 +23,8 @@ describe("adult GH draft payload", () => {
     expect(facts).toEqual({ applies_on: null, assessment_date: null, diagnosis_pathway: null,
       childhood_gh_deficiency_diagnosed: null, childhood_gh_treatment_received: null,
       gh_stopped_due_to_epiphyseal_closure: null, adult_hypothalamic_pituitary_gh_deficiency_suspected: null,
-      additional_anterior_pituitary_deficiency_confirmed: null, itt_contraindicated: null, stimulation_tests: null });
+      additional_anterior_pituitary_deficiency_confirmed: null, itt_contraindicated: null,
+      two_distinct_stimulation_procedures_documented: null, stimulation_tests: null });
   });
 
   it.each([null, undefined, "true", [], 1])("does not invent evidence from malformed root %s", value => {
@@ -35,6 +37,26 @@ describe("adult GH draft payload", () => {
     for (const value of ["true", "false", 0, 1, null, undefined]) {
       expect(adultGhEvidencePayload({ [field]: value })?.[field]).toBeNull();
     }
+  });
+
+  it.each([
+    ["itt", "2026-10-04"], ["other", "2026-10-05"],
+  ])("does not infer two actual procedures from unique IDs with method %s and date %s", (kind, performed_on) => {
+    const facts = adultGhEvidencePayload({ stimulation_tests: [
+      { test_id: "T1", kind: "itt", performed_on: "2026-10-04", inadequate_response_documented: true },
+      { test_id: "T2", kind, performed_on, inadequate_response_documented: true },
+    ] });
+    expect(facts?.stimulation_tests).toHaveLength(2);
+    expect(facts?.two_distinct_stimulation_procedures_documented).toBeNull();
+  });
+
+  it("does not infer a pair from the one-test exception or overwrite an explicit pair observation", () => {
+    const evidence = { additional_anterior_pituitary_deficiency_confirmed: true,
+      stimulation_tests: [{ test_id: "T1", inadequate_response_documented: true }] };
+    expect(adultGhEvidencePayload(evidence)?.two_distinct_stimulation_procedures_documented).toBeNull();
+    expect(adultGhEvidencePayload({ ...evidence, two_distinct_stimulation_procedures_documented: false }))
+      .toMatchObject({ additional_anterior_pituitary_deficiency_confirmed: true,
+        two_distinct_stimulation_procedures_documented: false });
   });
 
   it.each([
@@ -136,6 +158,11 @@ describe("isolated adult GH draft editor", () => {
     expect(html).toContain(locale === "tr" ? "prolaktin ve GH hariç" : "excluding prolactin and GH");
     expect(html).toContain(locale === "tr" ? "ITT sayısal eşiği diğer testlere uygulanmaz" : "the ITT numeric threshold does not apply to other tests");
     expect(html).toContain(locale === "tr" ? "yaş bunları belirlemez" : "age does not establish them");
+    expect(html).toContain("§4.2.6.A-2(2)–(4)");
+    expect(html).toContain(locale === "tr" ? "Rapor/reçete koşulları ayrı değerlendirilir; bu taslak bunları doğrulamaz"
+      : "Report and prescription requirements are assessed separately; this draft does not verify them");
+    expect(html).toContain(locale === "tr" ? "En az iki ayrı gerçek uyarı testi işlemi klinik kayıtta belgelenmiş"
+      : "At least two distinct stimulation test procedures documented in the clinical record");
     expect(html).not.toContain("type=\"submit\"");
     expect(html).toContain("disabled=\"\"");
   });
@@ -144,7 +171,7 @@ describe("isolated adult GH draft editor", () => {
     await act(async () => { renderer = create(<AdultGhClinicalDraft onChange={() => {}} />); });
     expect(renderer!.root.findByType("h3").children.join("")).toContain("Erişkin somatropin");
     const selects = renderer!.root.findAllByType("select");
-    expect(selects).toHaveLength(7);
+    expect(selects).toHaveLength(8);
     for (const select of selects) expect(select.props.value).toBe("");
     for (const input of renderer!.root.findAllByType("input")) expect(input.props.value).toBe("");
   });
@@ -163,6 +190,22 @@ describe("isolated adult GH draft editor", () => {
     expect(current.diagnosis_pathway).toBeNull();
     await change("Application date", "2026-02-29");
     expect(current.applies_on).toBeNull();
+  });
+
+  it("keeps the documented procedure pair independent from test rows and the one-test exception", async () => {
+    await mount({ stimulation_tests: [{ test_id: "T1" }, { test_id: "T2" }] });
+    const label = "At least two distinct stimulation test procedures documented in the clinical record";
+    expect(renderer!.root.findByProps({ "aria-label": label }).props.value).toBe("");
+    await change("At least one additional anterior pituitary hormone deficiency confirmed (excluding prolactin and GH)", "true");
+    expect(current.two_distinct_stimulation_procedures_documented).toBeNull();
+    await change(label, "true");
+    expect(current.two_distinct_stimulation_procedures_documented).toBe(true);
+    await change(label, "false");
+    expect(current.two_distinct_stimulation_procedures_documented).toBe(false);
+    await change(label, "");
+    expect(current.two_distinct_stimulation_procedures_documented).toBeNull();
+    expect(current.additional_anterior_pituitary_deficiency_confirmed).toBe(true);
+    expect(current.stimulation_tests?.map(test => test.test_id)).toEqual(["T1", "T2"]);
   });
 
   it("retains incomplete nested test rows through edits and only removes explicitly selected rows", async () => {
@@ -207,18 +250,21 @@ describe("isolated adult GH draft editor", () => {
     expect(renderer!.root.findAllByType("button").find(node => node.children.includes("Add test"))?.props.disabled).toBe(false);
   });
 
-  it("keeps runtime disabled and payment uncertain even when a supplied candidate has clear prerequisites", () => {
-    const html = renderToStaticMarkup(<AdultGhClinicalDraft locale="en" onChange={() => {}} result={{
+  it.each(["tr", "en"] as const)("limits a clear candidate to diagnostic prerequisites and keeps runtime disabled in %s", locale => {
+    const html = renderToStaticMarkup(<AdultGhClinicalDraft locale={locale} onChange={() => {}} result={{
       runtime_enabled: false, clinical_eligibility_complete: false,
       runtime_result: { criterion_status: "not_evaluated", missing_inputs: ["adult_gh_source_date_admission"], clinical_eligibility_complete: false },
       candidate_result: { criterion_status: "criterion_clear", missing_inputs: [], clinical_eligibility_complete: false },
       pending_requirements: ["adult_gh_independent_clinical_interpretation"],
     }} />);
-    expect(html).toContain("Draft prerequisites met");
-    expect(html).toContain("Not evaluated");
-    expect(html).toContain("Source and date admission");
-    expect(html).toContain("Independent clinical interpretation");
-    expect(html).toContain("payment eligibility is not established");
+    expect(html).toContain(locale === "tr" ? "Tanı/uyarı testi alt kümesindeki önkoşullar karşılandı" : "Diagnosis/stimulation subset prerequisites met");
+    expect(html).toContain("§4.2.6.A-2(2)–(4)");
+    expect(html).toContain(locale === "tr" ? "Rapor/reçete koşulları ayrı değerlendirilir; bu taslak bunları doğrulamaz"
+      : "Report and prescription requirements are assessed separately; this draft does not verify them");
+    expect(html).toContain(locale === "tr" ? "Değerlendirilmedi" : "Not evaluated");
+    expect(html).toContain(locale === "tr" ? "Kaynak ve tarih kabulü" : "Source and date admission");
+    expect(html).toContain(locale === "tr" ? "Bağımsız klinik yorum" : "Independent clinical interpretation");
+    expect(html).toContain(locale === "tr" ? "ödeme uygunluğu kesinleşmez" : "payment eligibility is not established");
     expect(html).toContain("disabled=\"\"");
   });
 
@@ -227,7 +273,8 @@ describe("isolated adult GH draft editor", () => {
       "adult_gh_evidence.stimulation_tests[0].test_id", "adult_gh_evidence.stimulation_tests[1].test_id",
       "adult_gh_evidence.stimulation_tests", "adult_gh_evidence.stimulation_tests.distinct_test_records",
       "adult_gh_evidence.stimulation_tests.count", "adult_gh_evidence.stimulation_tests.test_set_interpretation",
-      "adult_gh_evidence.itt_contraindication_context_reconciliation", "unknown_review_requirement",
+      "adult_gh_evidence.itt_contraindication_context_reconciliation",
+      "adult_gh_evidence.two_distinct_stimulation_procedures_documented", "unknown_review_requirement",
     ];
     const html = renderToStaticMarkup(<AdultGhClinicalDraft locale={locale} onChange={() => {}} result={{
       runtime_enabled: false, clinical_eligibility_complete: false,
@@ -239,11 +286,13 @@ describe("isolated adult GH draft editor", () => {
       "Ayrı test kayıtlarının doğrulanması", "Gerekli uyarı testi sayısı", "Uyarı testlerinin birlikte klinik yorumu",
       "ITT kontrendikasyon kaydının testlerle uyumu", "Uygulama tarihi için doğrulanmış kaynak",
       "Erişkin GH klinik yorumunun onayı",
+      "En az iki ayrı gerçek uyarı testi işlemi klinik kayıtta belgelenmiş",
     ] : [
       "Test 1 — Test record ID", "Test 2 — Test record ID", "Documented stimulation test list",
       "Confirmation of distinct test records", "Required stimulation test count",
       "Clinical interpretation of the complete stimulation test set", "Reconciliation of ITT contraindication records with tests",
       "Verified source for the application date", "Adult GH clinical interpretation approval",
+      "At least two distinct stimulation test procedures documented in the clinical record",
     ];
     for (const label of labels) expect(html).toContain(`<li>${label}</li>`);
     for (const key of missing_inputs.slice(0, -1)) expect(html).not.toContain(key);

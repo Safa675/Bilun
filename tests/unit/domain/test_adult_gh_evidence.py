@@ -19,6 +19,7 @@ BOOLEAN_FIELDS = (
     "gh_stopped_due_to_epiphyseal_closure",
     "adult_hypothalamic_pituitary_gh_deficiency_suspected",
     "additional_anterior_pituitary_deficiency_confirmed",
+    "two_distinct_stimulation_procedures_documented",
     "itt_contraindicated",
 )
 TEST_BOOLEAN_FIELDS = (
@@ -76,6 +77,7 @@ def transport(payload, kind):
 def test_complete_evidence_has_transport_parity(kind):
     payload = evidence_record(
         applies_on=date(2026, 10, 5), assessment_date=date(2026, 10, 4),
+        two_distinct_stimulation_procedures_documented=True,
         stimulation_tests=[_test_record(
             test_id="  SYNTHETIC-ITT-1  ", performed_on=date(2026, 10, 3),
         ), _test_record(test_id="SYNTHETIC-OTHER-2", kind="other", peak_gh_mcg_l=9)],
@@ -89,6 +91,7 @@ def test_complete_evidence_has_transport_parity(kind):
         gh_stopped_due_to_epiphyseal_closure=True,
         adult_hypothalamic_pituitary_gh_deficiency_suspected=False,
         additional_anterior_pituitary_deficiency_confirmed=False,
+        two_distinct_stimulation_procedures_documented=True,
         itt_contraindicated=False,
         stimulation_tests=(AdultGhStimulationTest(
             test_id="SYNTHETIC-ITT-1", performed_on=date(2026, 10, 3), kind="itt",
