@@ -1,4 +1,4 @@
-"""Material KDV pricing (§3.1.1(12))."""
+"""Material KDV pricing (§3.1.1(10))."""
 
 from __future__ import annotations
 

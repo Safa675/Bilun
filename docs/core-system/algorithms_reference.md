@@ -72,8 +72,8 @@ SUT §3.1–3.2 contains hundreds of material payment and non-separate-billing c
 
 **Implemented today (23 rules):**
 - Keyword rules: §3.1.3(7)–(9), §3.1.2(c)/(ç)/(d), barcode mismatch, lost/stolen MIAT, non-reimbursed procedure materials, device consumable, branch-unlisted, etc.
-- Claim-field rules: missing code, `not_in_ek3c` / `not_in_ek3`, procedure pairing, TİTUBB/ÜTS incomplete, procurement screen, foreign facility, facility restriction, diagnosis-bundled MEDULA, **`3.1.1.(15).separate_billing_not_authorized`** (C001635), etc.
-- **KDV pricing (tail):** `src/bilun/domain/pricing/material_kdv.py` — C001630, C002692; `kdv_price_reviews` on `precheck_materials_from_claims()`.
+- Claim-field rules: missing code, `not_in_ek3c` / `not_in_ek3`, procedure pairing, TİTUBB/ÜTS incomplete, procurement screen, foreign facility, facility restriction, diagnosis-bundled MEDULA, **`3.1.1.(15).separate_billing_not_authorized`** (§3.1.1(13), C002751), etc.
+- **KDV pricing (tail):** `src/bilun/domain/pricing/material_kdv.py` — §3.1.1(10), C002748; `kdv_price_reviews` on `precheck_materials_from_claims()`.
 - **EK-3 allow-list (tail):** `ek3_separate_billing_allowed_codes()` in `catalog_lookup.py` — C001823 catalog scan.
 - Synthetic demo ingest: prose flag columns on `material_claim_lines.parquet` (2026-06-03).
 - `validate_claim()` third pass; `precheck_materials_from_claims()` → `prose_bundling_violations` (separate from EK-3B-1 `is_bundled`).

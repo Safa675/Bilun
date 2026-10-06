@@ -1,4 +1,4 @@
-"""EK-3 list-price KDV (§3.1.1(10)/(12) — C001630, C002692)."""
+"""EK-3 list-price KDV (§3.1.1(10) — C002748)."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def should_apply_kdv_to_material(
     kdv_exempt: bool = False,
     kanun_3065_17_exempt: bool = False,
 ) -> bool:
-    """Return False when SUT/KDVK exemptions apply (§3.1.1(12))."""
+    """Return False when SUT/KDVK exemptions apply (§3.1.1(10))."""
     if foreign_facility:
         return False
     if kdv_exempt or kanun_3065_17_exempt:

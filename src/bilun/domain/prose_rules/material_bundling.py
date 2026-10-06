@@ -279,7 +279,7 @@ def _condition_matches(
     )
     for flag in claim_flags:
         if condition.get(flag):
-            # Inpatient-scoped rules (e.g. §3.1.1(7) "yatarak malzeme") cannot
+            # Inpatient-scoped rules (e.g. §3.1.1(6) "yatarak malzeme") cannot
             # apply to an outpatient claim — the violation text asserts a setting
             # that doesn't exist. Suppress rather than emit a false positive.
             if flag in _INPATIENT_SCOPED_FLAGS and care_setting != "inpatient":

@@ -91,7 +91,7 @@ const sections = {
       partialEngineRulesOnDisk: "Diskteki JSON kuralları",
       partialEngineManifestTraced: "Bildirimle izlenen hüküm ID",
       partialEngineTierCDeferred: "C kademesi ertelenmiş (bildirim)",
-      partialEngineKdvClauses: "KDV fiyat maddeleri (§3.1.1(12))",
+      partialEngineKdvClauses: "KDV fiyat maddeleri (§3.1.1(10))",
       partialEngineSubsections: "§4.2 alt bölüm kodlama %",
     },
     tabs: {

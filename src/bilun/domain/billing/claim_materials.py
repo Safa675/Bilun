@@ -101,7 +101,7 @@ def _append_kdv_price_reviews(
     result: MaterialPreCheck,
     ctx: PatientClaimContext,
 ) -> None:
-    """Flag billed amounts above EK-3 ex-VAT list price + applicable KDV (§3.1.1(12))."""
+    """Flag billed amounts above EK-3 ex-VAT list price + applicable KDV (§3.1.1(10))."""
     for line in ctx.material_lines:
         code = line.material_code.strip()
         if not code:
@@ -133,7 +133,7 @@ def _append_kdv_price_reviews(
                 "note": (
                     "Billed amount exceeds EK-3 list price"
                     + (" + KDV" if apply_kdv else " (KDV exempt path)")
-                    + " (§3.1.1(12))."
+                    + " (§3.1.1(10))."
                 ),
             }
         )
@@ -281,7 +281,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
     result.required_inputs_missing = []
     result.rule_source = (
         "EK-3C-1 tıbbi uygunluk (§3.1.2), EK-3C-2 MIAT intervals, EK-3B-1 bundling (54-row list), "
-        "§3.1.1(12) KDV on EK-3 list prices, partial §3.1 prose (keywords + EK-3/C membership + pairing), "
+        "§3.1.1(10) KDV on EK-3 list prices, partial §3.1 prose (keywords + EK-3/C membership + pairing), "
         "partial §3.3 specialty annex prose (L4.4)"
     )
     return result

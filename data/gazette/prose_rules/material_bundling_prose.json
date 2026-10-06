@@ -181,7 +181,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(17))."
+        "message_tr": "Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(15))."
       }
     },
     {
@@ -351,7 +351,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "3.1.1.(5)"
+        "3.1.1.(4)"
       ],
       "condition": {
         "procurement_record_incomplete": true
@@ -359,7 +359,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(5))."
+        "message_tr": "İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(4))."
       }
     },
     {
@@ -367,7 +367,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "3.1.1.(11)"
+        "3.1.1.(9)"
       ],
       "condition": {
         "procedure_not_reimbursed": true
@@ -375,7 +375,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(11)/(12))."
+        "message_tr": "Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(9))."
       }
     },
     {
@@ -391,7 +391,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "warning",
-        "message_tr": "Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12)/(14))."
+        "message_tr": "Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12))."
       }
     },
     {
@@ -407,7 +407,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16)/(18))."
+        "message_tr": "Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16))."
       }
     },
     {
@@ -471,7 +471,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14)/(16))."
+        "message_tr": "SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14))."
       }
     },
     {
@@ -636,7 +636,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "error",
-        "message_tr": "Yatarak tedavi sırasında EK-3/C malzemesi dışarıdan reçete yolu uygunsuz — sözleşmeli merkez/kurallara uygun temin gerekir (§3.1.1(8)/(19))."
+        "message_tr": "Yatarak tedavi sırasında EK-3/C malzemesi dışarıdan reçete yolu uygunsuz — sözleşmeli merkez/kurallara uygun temin gerekir (§3.1.2(19))."
       }
     },
     {
@@ -668,7 +668,7 @@
       "action": {
         "material_outcome": "review_required",
         "severity": "warning",
-        "message_tr": "EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11)/(13))."
+        "message_tr": "EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11))."
       }
     },
     {
@@ -796,7 +796,7 @@
       "action": {
         "material_outcome": "no_pay",
         "severity": "warning",
-        "message_tr": "Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(7))."
+        "message_tr": "Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(6))."
       }
     },
     {
@@ -1040,7 +1040,7 @@
       "action": {
         "material_outcome": "review_required",
         "severity": "warning",
-        "message_tr": "TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3)/(4); EK-3/A <100 TL yatarak istisnası hariç)."
+        "message_tr": "TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3); EK-3/A <100 TL yatarak istisnası hariç)."
       }
     },
     {

@@ -398,7 +398,7 @@ const billing = {
     "miatPeriod": "MIAT period",
     "ceilingEyebrow": "EK-3 specialty price benchmark (P90)",
     "partialBenchmarkNotice": "Partial mode: P90 benchmarks by EK-3 annex only. EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines.",
-    "kdvPriceReviews": "KDV list-price ceiling (§3.1.1(12))",
+    "kdvPriceReviews": "KDV list-price ceiling (§3.1.1(10))",
     "billedAmount": "Billed",
     "gazetteCeiling": "EK-3 ceiling",
     "kdvApplied": "KDV applied"

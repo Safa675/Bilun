@@ -69,6 +69,32 @@ def test_procedure_pairing_when_ek3c_code_unlinked() -> None:
     _assert_cites_in_force_3_1_1_13(hits[0])
 
 
+def test_procedure_not_reimbursed_link_cites_in_force_3_1_1_9() -> None:
+    # In-force §3.1.1(9) (C002747) is the clause that withholds payment for
+    # materials of procedures whose price the Kurum does not cover. In-force
+    # §3.1.1(11) is the quality-document clause and (12) the foreign-facility
+    # overhead clause; the rule id keeps its historical (11) label.
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "Islem malzemesi",
+                "code": "PR1",
+                "unit_price": 60.0,
+                "procedure_not_reimbursed": True,
+            }
+        ]
+    )
+    assert len(hits) == 1
+    hit = hits[0]
+    assert hit["rule_id"] == "3.1.1.(11).procedure_not_reimbursed_link"
+    assert hit["material_outcome"] == "no_pay"
+    assert "(§3.1.1(9))" in hit["message"]
+    assert "§3.1.1(11)" not in hit["message"]
+    assert "(12)" not in hit["message"]
+    assert hit["clause_ref"]["clause_coordinate"] == "3.1.1.(9)"
+    assert hit["clause_ref"]["clause_key"].startswith("3.1.1.(9)#")
+
+
 def test_procedure_pairing_ok_via_line_id() -> None:
     known = next(iter(ek3c_material_code_set()))
     hits = check_material_bundling_prose(
@@ -320,6 +346,12 @@ def test_barcode_sut_mismatch_flag() -> None:
         ],
     )
     assert hits[0]["rule_id"] == "3.1.1.(17).barcode_sut_mismatch"
+    # rule_id keeps its legacy (17) label for stability; in force the
+    # barcode-SUT mismatch text is §3.1.1(15) (C002753).
+    assert "(§3.1.1(15))" in hits[0]["message"]
+    assert "§3.1.1(17)" not in hits[0]["message"]
+    assert hits[0]["clause_ref"]["clause_coordinate"] == "3.1.1.(15)"
+    assert hits[0]["clause_ref"]["clause_key"].startswith("3.1.1.(15)#")
 
 
 def test_medula_undefined_not_titubb_rule_when_only_date_flag() -> None:
@@ -581,9 +613,10 @@ def test_titubb_uts_barcode_documentation_missing() -> None:
 
 
 # ── Inpatient-scope care-setting gate (false-positive guard) ─────────────────
-# The §3.1.1(7) "Karşılanmayan yatarak malzeme" rule asserts an inpatient
-# context. It must NOT fire on an outpatient (poliklinik) claim — that is a
-# false compliance violation an auditor can falsify on the spot.
+# The §3.1.1(6) "Karşılanmayan yatarak malzeme" rule (rule id keeps its
+# historical (7) label) asserts an inpatient context. It must NOT fire on an
+# outpatient (poliklinik) claim — that is a false compliance violation an
+# auditor can falsify on the spot.
 
 def test_inpatient_rule_suppressed_on_outpatient_care_setting() -> None:
     """Inpatient-scoped flag must not fire when care_setting is outpatient."""
@@ -621,6 +654,30 @@ def test_inpatient_rule_fires_on_inpatient_care_setting() -> None:
         h for h in hits if h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
     ]
     assert len(inpatient_hits) == 1, "inpatient rule must fire on a yatarak claim"
+
+
+def test_patient_charge_rule_message_cites_in_force_3_1_1_6() -> None:
+    # In-force §3.1.1(6) (C002744) is the paragraph where the patient buys a
+    # non-reimbursed inpatient material and the invoice is paid to the patient and
+    # offset; in-force (7) is the EK-3/B clause. The rule id and its gate_b_sources
+    # keep the historical (7) label until the owner decides on the L1.4 manifest
+    # side effect of re-anchoring (see _EXTRA_MESSAGE_CITES in the golden test).
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "Renal replasman seti",
+                "code": "NF1017",
+                "unit_price": 5000.0,
+                "non_reimbursed_inpatient_patient_charge": True,
+            }
+        ],
+        care_setting="inpatient",
+    )
+    (hit,) = [
+        h for h in hits if h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
+    ]
+    assert "(§3.1.1(6))" in hit["message"]
+    assert "§3.1.1(7)" not in hit["message"]
 
 
 def test_inpatient_rule_uses_per_material_care_setting() -> None:

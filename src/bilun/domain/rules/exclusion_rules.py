@@ -1,7 +1,7 @@
 """
 exclusion_rules.py — Detect non-reimbursable materials per EK-3B-2.
 
-SUT §3.1.1(7)/(9) — EK-3/B list materials are not reimbursed (13 curated rows).
+SUT §3.1.1(7) — EK-3/B list materials are not reimbursed (13 curated rows).
 """
 
 from __future__ import annotations

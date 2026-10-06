@@ -64,7 +64,7 @@ These paths are **committed** and verified by `compile_rules.py --check`:
 | Artifact | Location | Produced by |
 |----------|----------|-------------|
 | Runtime rule sets | `data/gazette/prose_rules/*.json` | YAML `fresh` targets |
-| Golden fixtures | `data/gazette/prose_rules/golden/*.json` | same compile pass |
+| Golden fixtures | `data/gazette/prose_rules/golden/*.json` | Hand-kept behavioural samples. `material_bundling_gate_b.json` is not written by the compile pass (the `material_bundling_prose` target has no `golden_path`). Its `clause_id`s are provenance labels that must follow `gate_b_sources`, guarded by `test_golden_clause_ids_follow_rule_gate_b_sources` |
 | Gate B manifests | `data/gazette/prose_manifests/*.json` | Gate B / manifest stages |
 | Prose corpus CSVs | `data/gazette/prose_corpus/*.csv` | Gate B stages |
 
