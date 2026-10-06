@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from importlib.util import module_from_spec, spec_from_file_location
 from dataclasses import replace
 from functools import wraps
+from types import SimpleNamespace
 
 from tests.unit.deploy.probe_auth_fixtures import write_old_auth
 
@@ -24,6 +25,193 @@ from scripts.deploy import prepare_single_vps_release as module
 
 TARGET = "a" * 40
 OLD = "b" * 40
+
+
+def old_python_context(tmp_path: Path, *, environment_sha256="e" * 64,
+                       name="old-python", terminal: Path | None = None):
+    """Real launcher links and venv bytes; the process is never executed."""
+    context = tmp_path / name
+    (context / "bin").mkdir(parents=True)
+    packages = context / "lib/python3.13/site-packages"
+    packages.mkdir(parents=True)
+    (packages / "old_dependency.py").write_text("CONTEXT = " + repr(name) + "\n")
+    (context / "pyvenv.cfg").write_text("home = /fixture/base-python\ninclude-system-site-packages = false\n")
+    if terminal is None:
+        terminal = tmp_path / "python3.13"
+        terminal.write_bytes(b"independently observed terminal executable fixture\n")
+        terminal.chmod(0o755)
+    intermediate = context / "bin/python3"
+    intermediate.symlink_to(terminal)
+    launcher = context / "bin/python"
+    launcher.symlink_to("python3")
+    dependencies = (context, intermediate, terminal)
+    pins = module._pin_inputs(set(dependencies), set(), dependency_roots=dependencies,
+                              allow_dependency_file_links=True)
+    service = SimpleNamespace(
+        process_argv=(str(launcher), "-m", "uvicorn", "src.bilun.api:app",
+                      "--host", "127.0.0.1", "--port", "8001"),
+        process_executable=terminal, environment_sha256=environment_sha256,
+    )
+    identity = module._capture_old_backend_python_identity(
+        service, dependency_roots=dependencies, dependency_pins=pins,
+        allow_dependency_file_links=True,
+    )
+    return SimpleNamespace(context=context, terminal=terminal, launcher=launcher,
+                           intermediate=intermediate, dependencies=dependencies,
+                           pins=pins, service=service, identity=identity,
+                           packages=packages)
+
+
+def old_python_record(root: Path, old, *, runtime_sha256="a" * 64) -> tuple[Path, str]:
+    """Bind the identity to independently recorded process/environment digests."""
+    path = root / "live-after-snapshot.json"
+    save(path, {
+        "backend_runtime_sha256": runtime_sha256,
+        "backend": {
+            "process_executable": str(old.service.process_executable),
+            "process_argv_sha256": hashlib.sha256(
+                b"\0".join(argument.encode() for argument in old.service.process_argv)
+            ).hexdigest(),
+            "effective_environment_sha256": old.service.environment_sha256,
+            "old_backend_python_identity": old.identity,
+        },
+    })
+    return path, hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_old_python_record(tmp_path, old, path, digest):
+    snapshot = tmp_path / "old-snapshot"
+    snapshot.mkdir(exist_ok=True)
+    return module._load_old_backend_python_identity(
+        path, digest, old_snapshot=snapshot, old_runtime_sha256="a" * 64,
+        old_environment_sha256=old.service.environment_sha256,
+        dependency_roots=old.dependencies,
+    )
+
+
+def test_old_python_identity_preserves_launcher_context_and_terminal(tmp_path):
+    old = old_python_context(tmp_path)
+    launcher, terminal = module._verify_old_backend_python_identity(old.identity)
+    assert launcher == old.launcher and terminal == old.terminal
+    assert launcher != terminal and launcher.resolve(strict=True) == terminal
+    assert old.identity["context_root"] == str(old.context)
+    record, digest = old_python_record(tmp_path, old)
+    assert load_old_python_record(tmp_path, old, record, digest) == old.identity
+
+
+def test_old_python_identity_accepts_a_separately_pinned_shared_candidate_terminal(tmp_path):
+    old = old_python_context(tmp_path)
+    pins = module._pin_inputs(set(old.dependencies), {old.terminal},
+                              dependency_roots=old.dependencies,
+                              allow_dependency_file_links=True)
+    assert pins[str(old.terminal)]["executable_target"] == str(old.terminal)
+    old.identity = module._capture_old_backend_python_identity(
+        old.service, dependency_roots=old.dependencies, dependency_pins=pins,
+        allow_dependency_file_links=True,
+    )
+    assert module._verify_old_backend_python_identity(old.identity) == (old.launcher, old.terminal)
+    record, digest = old_python_record(tmp_path, old)
+    assert load_old_python_record(tmp_path, old, record, digest) == old.identity
+
+
+@pytest.mark.parametrize("missing", ["context", "intermediate", "terminal"])
+def test_old_python_capture_requires_explicit_context_and_link_terminal_roles(tmp_path, missing):
+    old = old_python_context(tmp_path)
+    omitted = {"context": old.context, "intermediate": old.intermediate,
+               "terminal": old.terminal}[missing]
+    dependencies = tuple(path for path in old.dependencies if path != omitted)
+    with pytest.raises(ValueError):
+        module._capture_old_backend_python_identity(
+            old.service, dependency_roots=dependencies,
+            dependency_pins={str(path): old.pins[str(path)] for path in dependencies},
+            allow_dependency_file_links=True,
+        )
+
+
+@pytest.mark.parametrize("changed", ["pyvenv_cfg", "site_packages", "link", "terminal"])
+def test_old_python_frozen_identity_rejects_real_dependency_mutation(tmp_path, changed):
+    old = old_python_context(tmp_path)
+    if changed == "pyvenv_cfg":
+        (old.context / "pyvenv.cfg").write_text("home = /different/base-python\n")
+    elif changed == "site_packages":
+        (old.packages / "old_dependency.py").write_text("CONTEXT = 'changed'\n")
+    elif changed == "terminal":
+        old.terminal.write_bytes(b"changed terminal executable\n")
+    else:
+        old.launcher.unlink()
+        old.launcher.symlink_to(old.terminal)
+    with pytest.raises(ValueError):
+        module._verify_old_backend_python_identity(old.identity)
+
+
+@pytest.mark.parametrize("replacement", ["candidate", "same_terminal_other_venv"])
+def test_old_python_record_rejects_resealed_interpreter_substitution(tmp_path, replacement):
+    old = old_python_context(tmp_path)
+    other = old_python_context(tmp_path, name=replacement, terminal=old.terminal)
+    assert other.launcher.resolve(strict=True) == old.launcher.resolve(strict=True)
+    assert hashlib.sha256(other.terminal.read_bytes()).digest() == hashlib.sha256(old.terminal.read_bytes()).digest()
+    assert (other.packages / "old_dependency.py").read_bytes() != (old.packages / "old_dependency.py").read_bytes()
+    record, _ = old_python_record(tmp_path, old)
+    value = json.loads(record.read_bytes())
+    value["backend"]["old_backend_python_identity"] = other.identity
+    save(record, value)
+    # Rehashing a private file cannot grant authority over the original argv.
+    with pytest.raises(ValueError):
+        load_old_python_record(tmp_path, old, record, hashlib.sha256(record.read_bytes()).hexdigest())
+
+
+def test_old_python_frozen_record_rejects_same_terminal_context_swap_with_both_roots_declared(tmp_path):
+    old = old_python_context(tmp_path)
+    other = old_python_context(tmp_path, name="candidate-python", terminal=old.terminal)
+    old.dependencies = tuple(dict.fromkeys((*old.dependencies, *other.dependencies)))
+    old.pins = module._pin_inputs(set(old.dependencies), set(), dependency_roots=old.dependencies,
+                                 allow_dependency_file_links=True)
+    old.identity = module._capture_old_backend_python_identity(
+        old.service, dependency_roots=old.dependencies, dependency_pins=old.pins,
+        allow_dependency_file_links=True,
+    )
+    record, producer_digest = old_python_record(tmp_path, old)
+    assert load_old_python_record(tmp_path, old, record, producer_digest) == old.identity
+    changed = json.loads(record.read_bytes())
+    identity = changed["backend"]["old_backend_python_identity"]
+    identity["launcher_path"] = str(other.launcher)
+    identity["context_root"] = str(other.context)
+    # Both contexts and their common executable were authorized dependencies;
+    # they are still distinct from the particular launcher observed at capture.
+    assert identity["dependency_roots"] == old.identity["dependency_roots"]
+    assert identity["dependency_pins"] == old.identity["dependency_pins"]
+    assert identity["process_argv_sha256"] == old.identity["process_argv_sha256"]
+    assert identity["effective_environment_sha256"] == old.identity["effective_environment_sha256"]
+    save(record, changed)
+    with pytest.raises(ValueError, match="frozen observation"):
+        load_old_python_record(tmp_path, old, record, producer_digest)
+
+
+@pytest.mark.parametrize("fault", ["file_digest", "omitted_identity", "omitted_key", "extra_key",
+                                   "argv_digest", "environment_digest", "runtime_digest"])
+def test_old_python_record_rejects_tamper_or_missing_original_binding(tmp_path, fault):
+    old = old_python_context(tmp_path)
+    record, digest = old_python_record(tmp_path, old)
+    value = json.loads(record.read_bytes())
+    if fault == "file_digest":
+        record.write_bytes(record.read_bytes() + b"\n")
+    else:
+        if fault == "omitted_identity":
+            del value["backend"]["old_backend_python_identity"]
+        elif fault == "omitted_key":
+            del value["backend"]["old_backend_python_identity"]["launcher_path"]
+        elif fault == "extra_key":
+            value["backend"]["old_backend_python_identity"]["fallback_python"] = str(old.terminal)
+        elif fault == "argv_digest":
+            value["backend"]["process_argv_sha256"] = "0" * 64
+        elif fault == "environment_digest":
+            value["backend"]["effective_environment_sha256"] = "0" * 64
+        else:
+            value["backend_runtime_sha256"] = "0" * 64
+        save(record, value)
+        digest = hashlib.sha256(record.read_bytes()).hexdigest()
+    with pytest.raises(ValueError):
+        load_old_python_record(tmp_path, old, record, digest)
 
 
 def save(path: Path, value) -> None:
@@ -576,17 +764,31 @@ def _early_private_capture(tmp_path, monkeypatch):
     services, environments = {}, {}
     for role, pid in (("backend", 101), ("frontend", 202)):
         raw = f"AUTH_SECRET=authored-{role}-only\0BILUN_CACHE_DB_PATH={host.live}\0".encode()
-        argv = (str(Path(sys.executable).resolve()), str(tmp_path / role / "source"))
+        environment_sha = hashlib.sha256(b"\0".join(sorted(raw[:-1].split(b"\0")))).hexdigest()
+        executable = Path(sys.executable).resolve()
+        if role == "backend":
+            old = old_python_context(tmp_path, environment_sha256=environment_sha)
+            executable = old.terminal
+            argv = old.service.process_argv
+            spec["dependency_roots"] = old.dependencies
+            spec["_old_backend_python_authority"] = {
+                "dependency_roots": old.dependencies, "dependency_pins": old.pins,
+                "allow_dependency_file_links": True,
+            }
+        else:
+            argv = (str(executable), str(tmp_path / role / "source"))
         _process(proc, pid, tmp_path / role, b"\0".join(arg.encode() for arg in argv) + b"\0", raw)
+        (proc / str(pid) / "exe").unlink()
+        (proc / str(pid) / "exe").symlink_to(executable)
         (proc / str(pid) / "status").write_text("Uid:\t0\t0\t0\t0\n")
         service = ServiceObservation(
             unit=f"bilun-{role}.service", active_state="active", main_pid=pid, listener_pid=pid,
             declared_working_directory=tmp_path / role, process_working_directory=tmp_path / role,
-            process_executable=Path(sys.executable).resolve(), process_argv=argv,
+            process_executable=executable, process_argv=argv,
             unit_sha256=hashlib.sha256((tmp_path / f"{role}.service").read_bytes()).hexdigest(),
             unit_fragment=str(tmp_path / f"{role}.service"), unit_files=(tmp_path / f"{role}.service",),
             environment_files=(tmp_path / f"{role}.env",), selected_environment={"BILUN_STARTUP_POLICY": "load-only"},
-            environment_sha256=hashlib.sha256(b"\0".join(sorted(raw[:-1].split(b"\0")))).hexdigest(),
+            environment_sha256=environment_sha,
             process_started_at_utc=datetime.now(UTC),
         )
         services[role] = service
@@ -607,7 +809,13 @@ def _early_private_capture(tmp_path, monkeypatch):
                        process_executable=(current / "exe").resolve(strict=True))
 
     monkeypatch.setattr(fresh, "observe_service", observe)
-    monkeypatch.setattr(fresh, "_observe_live", lambda _spec: host.observe())
+    def private_observe(_spec):
+        result = host.observe()
+        result["backend"]["old_backend_python_identity"] = old.identity
+        return result
+
+    monkeypatch.setattr(fresh, "_observe_live", private_observe)
+    save(bundle / "live-before.json", private_observe(spec))
     gate = paired.SingleVpsDriver._service_access_gate
 
     def access_run(*args):
@@ -650,7 +858,7 @@ def _early_private_capture(tmp_path, monkeypatch):
 
 def test_early_capture_seals_private_inventory_before_proc_disappears(tmp_path, monkeypatch):
     fresh, spec, host, proc, services, environments = _early_private_capture(tmp_path, monkeypatch)
-    before = json.loads(json.dumps(host.expected))
+    before = fresh._observe_live(spec)
     captured = fresh._snapshot_old(spec, before)
     assert captured == before and not any(proc.iterdir())
     assert not any(host.running.values()) and host.barrier()
@@ -658,6 +866,7 @@ def test_early_capture_seals_private_inventory_before_proc_disappears(tmp_path, 
     assert "start_backend" not in host.calls and "start_frontend" not in host.calls
     journal = json.loads(host.journal.read_text())
     assert journal["state"] == "held" and journal["snapshot_complete"] is True
+    assert "old_backend_python_identity" not in journal["expected_pair"]["backend"]
     assert (host.lock.parent / "paired-release-owner.json").is_file()
     for role in ("backend", "frontend"):
         private = spec["bundle_root"] / "old-snapshot"
@@ -677,7 +886,7 @@ def test_early_capture_rejects_private_process_or_configuration_drift_before_sto
     else:
         (tmp_path / "backend.service").write_bytes(b"changed authored unit")
     with pytest.raises(ValueError, match="environment moved|service moved"):
-        fresh._snapshot_old(spec, host.expected)
+        fresh._snapshot_old(spec, fresh._observe_live(spec))
     assert host.calls == [] and all(host.running.values())
     assert not host.journal.exists() and not (spec["bundle_root"] / "old-snapshot/backend").exists()
 
@@ -685,7 +894,7 @@ def test_early_capture_rejects_private_process_or_configuration_drift_before_sto
 @pytest.mark.parametrize("changed", ["environment", "argv", "executable", "runtime"])
 def test_held_preparation_rejects_frozen_private_inventory_tampering(tmp_path, monkeypatch, changed):
     fresh, spec, host, _, _, _ = _early_private_capture(tmp_path, monkeypatch)
-    fresh._snapshot_old(spec, host.expected)
+    fresh._snapshot_old(spec, fresh._observe_live(spec))
     private = spec["bundle_root"] / "old-snapshot"
     if changed == "environment":
         (private / "frontend-effective-env.nul").write_bytes(b"AUTH_SECRET=changed-authored-capture\0")
@@ -710,7 +919,7 @@ def test_held_preparation_rejects_operator_configuration_drift_without_writes(tm
     from scripts.deploy import snapshot_maintenance as maintenance
 
     fresh, spec, host, proc, _, _ = _early_private_capture(tmp_path, monkeypatch)
-    fresh._snapshot_old(spec, host.expected)
+    fresh._snapshot_old(spec, fresh._observe_live(spec))
     owner = host.lock.parent / "paired-release-owner.json"
     journal_before, owner_before = host.journal.read_bytes(), owner.read_bytes()
     target = {"unit": tmp_path / "frontend.service", "environment": tmp_path / "frontend.env",
@@ -733,19 +942,21 @@ def _early_pipeline(machine, tmp_path, monkeypatch):
     old_pair = tmp_path / "controlled-old-pair"
     old_pair.mkdir(mode=0o700)
     fresh, capture_spec, host, _, _, _ = _early_private_capture(old_pair, monkeypatch)
+    (capture_spec["bundle_root"] / "live-before.json").unlink()
     capture_spec["bundle_root"].rmdir()
     root = Path(spec["bundle_root"])
     host.journal, host.output = root / "snapshot-maintenance/transaction.json", root / "old-snapshot/cache.duckdb"
     spec.update({key: str(value) for key, value in capture_spec.items() if key in module._PATHS})
     spec.update(bundle_root=str(root), snapshot_mode="early-owned-maintenance", old_build_id="old-build",
-                serving_code_sha=OLD)
+                serving_code_sha=OLD, schema_version=module.DEPENDENCY_CHAIN_SCHEMA,
+                dependency_roots=[str(path) for path in capture_spec["dependency_roots"]])
     save(manifest, spec)
     run = maintenance._run
     monkeypatch.setattr(maintenance, "_run", lambda *args: OLD if args[0] == "git" else run(*args))
 
     def observe(_spec):
         events.append("observe")
-        return host.observe()
+        return fresh._observe_live(_spec)
 
     def capture(parsed, before):
         events.append("snapshot")
@@ -897,6 +1108,10 @@ def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkey
     _, raw, _, _ = machine
     spec = {key: Path(value) if key in module._PATHS else value for key, value in raw.items()}
     spec["bundle_root"].mkdir(mode=0o700)
+    old = old_python_context(spec["bundle_root"].parent, environment_sha256="b" * 64)
+    record, record_sha = old_python_record(spec["bundle_root"], old, runtime_sha256="a" * 64)
+    spec["dependency_roots"] = old.dependencies
+    spec["_old_backend_python_identity_record_sha256"] = record_sha
     calls = []
     monkeypatch.setattr(module, "_run", lambda argv, **kwargs: calls.append((argv, kwargs)))
     # Call the real function, independently of the orchestration fixture's I/O double.
@@ -913,6 +1128,9 @@ def test_rehearsal_uses_private_namespace_and_same_port_producer(machine, monkey
     assert argv[argv.index("--old-backend-runtime-sha256") + 1] == "a" * 64
     assert argv[argv.index("--old-environment-sha256") + 1] == "b" * 64
     assert argv[argv.index("--candidate-environment-sha256") + 1] == "c" * 64
+    assert argv[argv.index("--old-backend-python-identity-record") + 1] == str(record)
+    assert argv[argv.index("--old-backend-python-identity-record-sha256") + 1] == record_sha
+    assert argv[argv.index("--backend-python") + 1] == str(spec["backend_python"])
     assert "--clinical-transition" not in argv
     assert [argv[index + 1] for index, value in enumerate(argv) if value == "--dependency-root"] == [
         str(path) for path in spec["dependency_roots"]

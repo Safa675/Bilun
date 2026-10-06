@@ -11,6 +11,7 @@ import argparse
 import ast
 import hashlib
 import importlib
+import inspect
 import json
 import os
 import re
@@ -31,6 +32,9 @@ import duckdb
 
 from scripts.deploy.candidate_environment import _environment as environment, candidate_environments
 from scripts.deploy.capture_release_preflight import _runtime_digest
+from scripts.deploy.prepare_single_vps_release import (
+    _load_old_backend_python_identity, _verify_old_backend_python_identity,
+)
 from scripts.deploy.probe_auth import old_probe_context
 from scripts.deploy.http_release_probes import _fetch, _strict_json
 from scripts.deploy.health_request import open_probe
@@ -661,12 +665,14 @@ def main(argv: list[str] | None = None) -> None:
         "work-dir", "old-snapshot", "old-replay", "candidate-backend-environment",
         "candidate-frontend-environment", "candidate-checkout", "candidate-db",
         "candidate-roster", "baseline-roster", "frontend-runtime", "backend-python",
+        "old-backend-python-identity-record",
     ):
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--node", type=Path, default=Path("/usr/bin/node"))
     parser.add_argument("--code-sha", required=True)
     parser.add_argument("--old-backend-runtime-sha256", required=True)
     parser.add_argument("--old-environment-sha256", required=True)
+    parser.add_argument("--old-backend-python-identity-record-sha256", required=True)
     parser.add_argument("--candidate-environment-sha256", required=True)
     parser.add_argument("--patient-id", required=True)
     parser.add_argument("--baseline-build-config-environment", type=Path)
@@ -686,13 +692,26 @@ def main(argv: list[str] | None = None) -> None:
     producer_sha = _stable_file_hash(Path(__file__))
     if _stable_file_hash(args.candidate_checkout / "scripts/deploy/rehearse_wavea_same_port.py") != producer_sha:
         raise ValueError("Same-port rehearsal producer differs from candidate source")
+    old_python = _load_old_backend_python_identity(
+        args.old_backend_python_identity_record, args.old_backend_python_identity_record_sha256,
+        old_snapshot=args.old_snapshot, old_runtime_sha256=args.old_backend_runtime_sha256,
+        old_environment_sha256=args.old_environment_sha256,
+        dependency_roots=tuple(args.dependency_root))
+    # The shared verifier is imported from the executing source; its capture pin
+    # and exact candidate bytes must both agree with the preparation producer.
+    helper_path = Path(inspect.getfile(_verify_old_backend_python_identity))
+    if (_stable_file_hash(helper_path) != old_python["helper_source_sha256"]
+            or _stable_file_hash(args.candidate_checkout / "scripts/deploy/prepare_single_vps_release.py")
+            != old_python["helper_source_sha256"]):
+        raise ValueError("Old backend Python helper differs from preparation or candidate source")
+    old_launcher, old_executable = _verify_old_backend_python_identity(old_python)
     replay, frontend = args.old_replay, args.frontend_runtime
     _distinct_roots(args.old_snapshot, replay)
     _distinct_roots(replay, args.candidate_checkout)
     _distinct_roots(replay, frontend)
     for runtime in (replay / "backend", replay / "frontend"):
         _independent_runtime_links(
-            runtime, allowed_external_file=(replay / "backend/.venv/bin/python").resolve()
+            runtime, allowed_external_file=old_executable
             if runtime.name == "backend" else None,
         )
     old_probe_context(args.old_snapshot / "backend",
@@ -808,10 +827,12 @@ def main(argv: list[str] | None = None) -> None:
     frontend_argv = [str(args.node), str(frontend / "server.js")]
 
     def old_start(label: str) -> None:
+        if _verify_old_backend_python_identity(old_python) != (old_launcher, old_executable):
+            raise ValueError("Old backend Python identity changed before replay launch")
         _HEALTH_TOKEN.set(old_backend.get("BILUN_HEALTH_PROBE_TOKEN", ""))
         _assert_ports_free()
         children.append(start(
-            [str(replay / "backend/.venv/bin/python"), "-m", "uvicorn", "src.bilun.api:app",
+            [str(old_launcher), "-m", "uvicorn", "src.bilun.api:app",
              "--host", "127.0.0.1", "--port", "8001"],
             replay / "backend", old_backend, label + "-backend", args.work_dir,
         ))

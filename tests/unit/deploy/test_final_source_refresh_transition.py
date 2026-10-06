@@ -7,10 +7,12 @@ The wrapper tests replace only the strace child; Git and read-trace gates run.
 
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import json
 import sys
+import zlib
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 
@@ -1041,11 +1043,155 @@ def test_normal_squash_keeps_actual_executing_verifier_binding(normal_squash, mo
             final._guard_code_binding(checkout, candidate)
 
 
+_HISTORICAL_MAIN00128_TOOLING = {
+    "scripts/deploy/prepare_single_vps_release.py": (
+        "90c22af28b7ac63dc540dc2dc72e798764a44f37",
+        "01eedc41193be4306e1682d584be75ed672aad701bae43b8ef44c490b4db38a1",
+        60596,
+    ),
+    "scripts/deploy/rehearse_wavea_same_port.py": (
+        "24166ec87faa0637af934cec9eff380c0b039484",
+        "f4880f79646e99d16374a724aec09a529225f9927577f333686fc05329ee2b8d",
+        54396,
+    ),
+    "tests/unit/deploy/test_final_source_refresh_transition.py": (
+        "b3e5ee0a4493ff43d56f9deb4b03c96eb002d29a",
+        "d34914cda1a7284ef42e7e95fd721c5e9034408f94acac9643822c92cdcd4291",
+        101077,
+    ),
+}
+
+
+def _historical_main00128_tooling_bytes(path):
+    """Read three immutable historical sources; never grant a later head admission."""
+    def unique_fields(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("Historical tooling fixture repeats a field")
+            result[key] = value
+        return result
+
+    fixture = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_fields)
+    if (not isinstance(fixture, dict)
+            or set(fixture) != {"schema_version", "purpose", "source_commit", "source_tree",
+                                "encoding", "sources"}
+            or type(fixture["schema_version"]) is not int or fixture["schema_version"] != 1
+            or fixture["source_commit"] != "00128c6001c7921621b44537fcecefc22236b1f3"
+            or fixture["source_tree"] != "ba09db1023be8ae17b5605145caefec771a7fbe5"
+            or fixture["encoding"] != "zlib-base64"
+            or fixture["purpose"] != "Historical reviewed tooling source bytes only; this fixture "
+                                    "grants no deployment admission to a later head."
+            or not isinstance(fixture["sources"], dict)
+            or set(fixture["sources"]) != set(_HISTORICAL_MAIN00128_TOOLING)):
+        raise ValueError("Historical tooling fixture has unknown provenance or roles")
+    decoded = {}
+    for source_path, (blob_sha1, sha256, size) in _HISTORICAL_MAIN00128_TOOLING.items():
+        row = fixture["sources"][source_path]
+        if (not isinstance(row, dict)
+                or set(row) != {"mode", "type", "blob_sha1", "sha256", "size_bytes",
+                                "zlib_base64_chunks"}
+                or row["mode"] != "100644" or row["type"] != "blob"
+                or row["blob_sha1"] != blob_sha1 or row["sha256"] != sha256
+                or type(row["size_bytes"]) is not int or row["size_bytes"] != size):
+            raise ValueError("Historical tooling fixture changes pinned source metadata")
+        chunks = row["zlib_base64_chunks"]
+        if (not isinstance(chunks, list) or not 1 <= len(chunks) <= 2048
+                or any(not isinstance(chunk, str) or not 1 <= len(chunk) <= 76 for chunk in chunks)
+                or any(len(chunk) != 76 for chunk in chunks[:-1])):
+            raise ValueError("Historical tooling fixture encoding is malformed")
+        try:
+            compressed = base64.b64decode("".join(chunks), validate=True)
+            decoder = zlib.decompressobj()
+            body = decoder.decompress(compressed, size + 1)
+        except (ValueError, zlib.error) as error:
+            raise ValueError("Historical tooling fixture encoding is malformed") from error
+        if (len(body) != size or not decoder.eof or decoder.unconsumed_tail or decoder.unused_data
+                or hashlib.sha256(body).hexdigest() != sha256
+                or _public_blob(body) != ("100644", "blob", blob_sha1)):
+            raise ValueError("Historical tooling fixture source bytes differ from reviewed pins")
+        decoded[source_path] = body
+    return decoded
+
+
 def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
+    """Keep main00128 pins historical while checking every unchanged current source."""
     checkout = Path(final.__file__).resolve().parents[2]
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    historical = _historical_main00128_tooling_bytes(fixture_path)
     for path, expected in {**final._FROZEN_PRIOR_TOOLING, **final._REVIEWED_SQUASH_TOOLING}.items():
-        assert _public_blob((checkout / path).read_bytes()) == expected
+        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        assert _public_blob(body) == expected
     final._verify_squash_self_source(Path(final.__file__).read_bytes())
+
+
+@pytest.mark.parametrize("mutation", [
+    "body", "rehashed_body", "mode", "type", "missing_role", "extra_role",
+    "forged_commit", "forged_tree", "extra_field", "extra_source_field", "schema_bool",
+    "encoding", "size_bool", "sha256", "blob_sha1", "truncated_stream", "trailing_stream",
+    "nonstring_chunk", "invalid_base64", "oversized_chunk", "missing_chunks",
+])
+def test_historical_main00128_tooling_fixture_rejects_tampering(tmp_path, mutation):
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    source_path = "scripts/deploy/prepare_single_vps_release.py"
+    row = fixture["sources"][source_path]
+    chunks = row["zlib_base64_chunks"]
+    if mutation in {"body", "rehashed_body", "truncated_stream", "trailing_stream"}:
+        compressed = base64.b64decode("".join(chunks), validate=True)
+        if mutation in {"body", "rehashed_body"}:
+            body = zlib.decompress(compressed)
+            body = bytes([body[0] ^ 1]) + body[1:]
+            compressed = zlib.compress(body)
+            if mutation == "rehashed_body":
+                row.update(sha256=hashlib.sha256(body).hexdigest(), blob_sha1=_public_blob(body)[2])
+        elif mutation == "truncated_stream":
+            compressed = compressed[:-1]
+        else:
+            compressed += b"unreviewed trailing bytes"
+        encoded = base64.b64encode(compressed).decode("ascii")
+        row["zlib_base64_chunks"] = [encoded[index:index + 76] for index in range(0, len(encoded), 76)]
+    elif mutation in {"mode", "type", "sha256", "blob_sha1", "size_bool"}:
+        key = "size_bytes" if mutation == "size_bool" else mutation
+        row[key] = {"mode": "100755", "type": "tree", "sha256": "f" * 64,
+                    "blob_sha1": "f" * 40, "size_bool": True}[mutation]
+    elif mutation == "missing_role":
+        del fixture["sources"][source_path]
+    elif mutation == "extra_role":
+        fixture["sources"]["scripts/deploy/unreviewed.py"] = copy.deepcopy(row)
+    elif mutation in {"forged_commit", "forged_tree"}:
+        fixture["source_commit" if mutation == "forged_commit" else "source_tree"] = "f" * 40
+    elif mutation == "extra_field":
+        fixture["admit_later_heads"] = True
+    elif mutation == "extra_source_field":
+        row["allow_changed_source"] = True
+    elif mutation == "schema_bool":
+        fixture["schema_version"] = True
+    elif mutation == "encoding":
+        fixture["encoding"] = "raw-base64"
+    elif mutation == "nonstring_chunk":
+        chunks[0] = None
+    elif mutation == "invalid_base64":
+        chunks[0] = "!" + chunks[0][1:]
+    elif mutation == "oversized_chunk":
+        chunks[0] += "A"
+    else:
+        row["zlib_base64_chunks"] = []
+    mutated = tmp_path / "historical-tooling.json"
+    mutated.write_text(json.dumps(fixture), encoding="utf-8")
+    with pytest.raises(ValueError):
+        _historical_main00128_tooling_bytes(mutated)
+
+
+def test_historical_main00128_tooling_fixture_rejects_duplicate_fields(tmp_path):
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    raw = fixture_path.read_text(encoding="utf-8")
+    assert raw.count('"schema_version": 1') == 1
+    mutated = tmp_path / "historical-tooling.json"
+    mutated.write_text(raw.replace('"schema_version": 1', '"schema_version": 0, "schema_version": 1'),
+                       encoding="utf-8")
+    with pytest.raises(ValueError, match="repeats a field"):
+        _historical_main00128_tooling_bytes(mutated)
 
 
 def _copay():

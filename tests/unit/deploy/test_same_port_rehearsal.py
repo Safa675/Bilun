@@ -27,6 +27,7 @@ from scripts.deploy.observe_candidate_tuple import _canonical_digest
 from scripts.deploy.verify_private_rehearsal import verify_private_rehearsal
 from tests.unit.deploy.test_candidate_environment import candidate_auth, write_env
 from tests.unit.deploy.probe_auth_fixtures import source_context, source_verifier
+from tests.unit.deploy.test_prepare_single_vps_release import old_python_context, old_python_record
 
 
 def private_json(path: Path, value: dict) -> str:
@@ -332,7 +333,9 @@ def test_public_guard_rejects_stale_independent_identity_and_unknown_resolver(kn
 def test_same_port_rejects_stale_captured_environment_before_start(tmp_path, monkeypatch, flag):
     arguments, _, events, _ = fixture_rehearsal(tmp_path, monkeypatch)
     arguments[arguments.index(flag) + 1] = "0" * 64
-    with pytest.raises(ValueError, match="environment differs"):
+    message = ("identity differs from its frozen observation" if flag == "--old-environment-sha256"
+               else "environment differs")
+    with pytest.raises(ValueError, match=message):
         rehearsal.main(arguments)
     assert events == []
 
@@ -535,16 +538,17 @@ def test_candidate_access_checks_both_same_ports_using_candidate_session(monkeyp
 
 def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=None):
     work, snapshot, replay, checkout, front = [tmp_path / name for name in (
-        "work", "snapshot", "replay", "checkout", "frontend",
+        "work", "old-snapshot", "replay", "checkout", "frontend",
     )]
     work.mkdir(mode=0o700)
     snapshot.mkdir()
-    (replay / "backend/.venv/bin").mkdir(parents=True)
-    (replay / "backend/.venv/bin/python").write_text("fixture executable")
+    (replay / "backend").mkdir(parents=True)
     old_context = source_context(replay / "backend")
     shutil.copytree(replay / "backend", snapshot / "backend")
     (checkout / "scripts/deploy").mkdir(parents=True)
     (checkout / "scripts/deploy/rehearse_wavea_same_port.py").write_bytes(Path(rehearsal.__file__).read_bytes())
+    from scripts.deploy import prepare_single_vps_release as preparation
+    (checkout / "scripts/deploy/prepare_single_vps_release.py").write_bytes(Path(preparation.__file__).read_bytes())
     frontend(replay / "frontend")
     frontend(front)
     (replay / "cache.duckdb").write_bytes(b"old-cache-fixture")
@@ -557,6 +561,9 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
            "BILUN_HEALTH_PROBE_TOKEN": "o" * 32}
     old.pop("BILUN_SESSION_TOKEN_PURPOSE")
     write_env(snapshot / "backend-effective-env.nul", old)
+    old_python = old_python_context(tmp_path, environment_sha256=rehearsal.env_digest(old))
+    old_record, old_record_sha = old_python_record(tmp_path, old_python,
+                                                  runtime_sha256=old_context.runtime_sha256)
     write_env(snapshot / "frontend-effective-env.nul", {"NODE_ENV": "production"})
     new = {**candidate_auth(), "BILUN_HEALTH_PROBE_TOKEN": "n" * 32}
     backend_env = write_env(tmp_path / "candidate-backend.nul", new)
@@ -578,7 +585,10 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
             for side in ("baseline", "candidate")
         },
     })
-    monkeypatch.setattr(rehearsal.os, "readlink", lambda path: "private" if "self" in path else "host")
+    real_readlink = os.readlink
+    monkeypatch.setattr(rehearsal.os, "readlink", lambda path: (
+        "private" if "self" in str(path) else "host"
+    ) if str(path).startswith("/proc/") else real_readlink(path))
     monkeypatch.setattr(rehearsal.subprocess, "run", lambda *_a, **_k: SimpleNamespace(stdout=""))
     monkeypatch.setattr(rehearsal, "ready", lambda *_: None)
     monkeypatch.setattr(rehearsal, "_runtime_digest", lambda root, **_k:
@@ -614,6 +624,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
         if name.endswith("backend"):
             assert all(process.stopped for process in processes)
             assert argv[-1] == "8001"
+            assert argv[0] == (sys.executable if pair == "candidate" else str(old_python.launcher))
+            assert cwd == (checkout if pair == "candidate" else replay / "backend")
         assert values.get("PORT", "3000") == "3000"
         assert rehearsal._HEALTH_TOKEN.get() == ("n" * 32 if pair == "candidate" else "o" * 32)
         state["pair"] = pair
@@ -659,6 +671,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
     monkeypatch.setattr(rehearsal, "observe_candidate_tuple", observe)
     args = ["--work-dir", str(work), "--old-snapshot", str(snapshot), "--old-replay", str(replay),
             "--old-backend-runtime-sha256", old_context.runtime_sha256,
+            "--old-backend-python-identity-record", str(old_record),
+            "--old-backend-python-identity-record-sha256", old_record_sha,
             "--old-environment-sha256", rehearsal.env_digest(old),
             "--candidate-environment-sha256", rehearsal.env_digest(new),
             "--candidate-backend-environment", str(backend_env), "--candidate-frontend-environment", str(frontend_env),
@@ -666,6 +680,8 @@ def fixture_rehearsal(tmp_path, monkeypatch, *, old_capability="draft", failure=
             "--baseline-roster", str(baseline_roster),
             "--frontend-runtime", str(front), "--code-sha", "a" * 40, "--backend-python", sys.executable,
             "--node", sys.executable, "--patient-id", "P1"]
+    for dependency in old_python.dependencies:
+        args.extend(("--dependency-root", str(dependency)))
     return args, work, events, processes
 
 
@@ -685,6 +701,81 @@ def test_sequential_same_port_old_capture_candidate_and_recovery(tmp_path, monke
     assert report["legacy_api_patients_checked"] == report["legacy_api_bills_checked"] == 1
     assert report["old_route_sha256"] == report["candidate_route_sha256"]
     assert len(json.loads((work / "old-api-capture.json").read_text())) == 2
+    assert not (tmp_path / "replay/backend/.venv").exists()
+
+
+@pytest.mark.parametrize("fault", ["candidate_identity", "environment_digest", "omitted_identity",
+                                   "omitted_argument", "changed_context", "undeclared_link"])
+def test_same_port_rejects_unproven_old_python_before_any_start(tmp_path, monkeypatch, fault):
+    args, work, events, processes = fixture_rehearsal(tmp_path, monkeypatch)
+    record = Path(args[args.index("--old-backend-python-identity-record") + 1])
+    if fault == "omitted_argument":
+        index = args.index("--old-backend-python-identity-record")
+        del args[index:index + 2]
+        error = SystemExit
+    elif fault == "changed_context":
+        (tmp_path / "old-python/pyvenv.cfg").write_text("home = /changed/python\n")
+        error = ValueError
+    elif fault == "undeclared_link":
+        index = next(index for index, value in enumerate(args)
+                     if value == "--dependency-root" and args[index + 1].endswith("/bin/python3"))
+        del args[index:index + 2]
+        error = ValueError
+    else:
+        value = json.loads(record.read_bytes())
+        if fault == "omitted_identity":
+            del value["backend"]["old_backend_python_identity"]
+        elif fault == "environment_digest":
+            value["backend"]["effective_environment_sha256"] = "0" * 64
+        else:
+            original = value["backend"]["old_backend_python_identity"]
+            other = old_python_context(tmp_path, name="candidate-python",
+                                       terminal=Path(original["executable_target"]),
+                                       environment_sha256=original["effective_environment_sha256"])
+            value["backend"]["old_backend_python_identity"] = other.identity
+        digest = private_json(record, value)
+        args[args.index("--old-backend-python-identity-record-sha256") + 1] = digest
+        error = ValueError
+    with pytest.raises(error):
+        rehearsal.main(args)
+    assert events == [] and processes == []
+    assert not (work / "real-candidate-namespace-rehearsal.json").exists()
+
+
+def test_same_port_revalidates_old_context_before_recovered_start(tmp_path, monkeypatch):
+    args, work, events, processes = fixture_rehearsal(tmp_path, monkeypatch)
+    start = rehearsal.start
+
+    def mutate_after_candidate(argv, cwd, values, name, directory):
+        process = start(argv, cwd, values, name, directory)
+        if name == "candidate-frontend":
+            (tmp_path / "old-python/lib/python3.13/site-packages/old_dependency.py").write_text(
+                "CONTEXT = 'mutated while candidate rehearsed'\n"
+            )
+        return process
+
+    monkeypatch.setattr(rehearsal, "start", mutate_after_candidate)
+    with pytest.raises(ValueError):
+        rehearsal.main(args)
+    assert "start:old-backend" in events and "start:candidate-backend" in events
+    assert "start:recovered-old-backend" not in events
+    assert all(process.stopped for process in processes)
+    assert not (work / "real-candidate-namespace-rehearsal.json").exists()
+
+
+@pytest.mark.parametrize("alias", ["symlink", "hardlink"])
+def test_verified_external_old_python_keeps_independent_runtime_alias_gate(tmp_path, monkeypatch, alias):
+    args, _, events, processes = fixture_rehearsal(tmp_path, monkeypatch)
+    external = tmp_path / "external-source.py"
+    external.write_text("mutable source outside replay\n")
+    path = tmp_path / "replay/backend/aliased-source.py"
+    if alias == "symlink":
+        path.symlink_to(external)
+    else:
+        os.link(external, path)
+    with pytest.raises(ValueError, match="external source|hardlinked"):
+        rehearsal.main(args)
+    assert events == [] and processes == []
 
 
 def test_recovered_old_session_is_reminted_with_same_verified_context(tmp_path, monkeypatch):
