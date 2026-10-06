@@ -256,7 +256,7 @@ def test_actual_native_typescript_payload_helper_roundtrips_both_new_evidence_gr
         pytest.skip('Native TypeScript stripping is unavailable')
     raw = payload(family)
     key = 'adult_gh_evidence' if family == gh.KIND else 'mds_evidence'
-    raw['materials'][0][key]['itt_contraindicated' if family == gh.KIND else 'specialist_report_present'] = False
+    raw['materials'][0][key]['itt_contraindicated' if family == gh.KIND else 'prescription_based_on_same_hematology_report'] = False
     root = Path(__file__).resolve().parents[3]
     helper = (root / 'frontend/src/components/tabs/sut/sections/drugInputs.ts').as_uri()
     script = f'''import {{drugMaterialPayload}} from {json.dumps(helper)};
@@ -270,5 +270,59 @@ console.log(JSON.stringify([drugMaterialPayload(material, true), drugMaterialPay
     assert key in enabled and key not in disabled
     raw['materials'] = [enabled]
     typed = getattr(ClaimValidationRequest.model_validate(raw).materials[0], key)
-    assert getattr(typed, 'itt_contraindicated' if family == gh.KIND else 'specialist_report_present') is False
+    assert getattr(typed, 'itt_contraindicated' if family == gh.KIND else 'prescription_based_on_same_hematology_report') is False
     assert restriction(rows(post(client, raw))[0], family)['criterion_status'] == 'not_evaluated'
+
+
+@pytest.mark.parametrize('observed,expected', [(True, True), (False, False), (None, None), ('false', None), (1, None)])
+def test_same_report_relationship_roundtrips_real_transport_without_releasing_runtime(client, observed, expected):  # noqa: F811
+    key = 'prescription_based_on_same_hematology_report'
+    raw = payload(mds.KIND)
+    raw['materials'][0]['mds_evidence'][key] = observed
+    request = ClaimValidationRequest.model_validate(raw)
+    typed = request.materials[0].mds_evidence
+    assert getattr(typed, key) is expected
+    dumped = request.model_dump(mode='json')
+    assert build_context_from_material_dict(dumped).drug_lines[0].mds_evidence == typed
+    row = asdict(replace(_drug_line(drug_name='epoetin alfa', report_present=True), drug_claim_date=DAY))
+    row['mds_evidence'] = json.dumps(raw['materials'][0]['mds_evidence'])
+    errors = []
+    assert parse_drug_line(row, errors).mds_evidence == typed and errors == []
+    data = post(client, raw)
+    item = restriction(rows(data)[0], mds.KIND)
+    assert item['criterion_status'] == 'not_evaluated' and item['checks'] == []
+    assert item['clinical_eligibility_complete'] is False and data['is_valid'] is None
+
+
+def test_generic_report_and_prescriber_never_supply_missing_same_report_relationship(client):  # noqa: F811
+    key = 'prescription_based_on_same_hematology_report'
+    raw = payload(mds.KIND, report=True)
+    raw['materials'][0]['mds_evidence'].pop(key, None)
+    typed = ClaimValidationRequest.model_validate(raw).materials[0].mds_evidence
+    assert typed.specialist_report_present is True and typed.prescribed_by_specialist is True
+    assert getattr(typed, key) is None
+    outcome = mds.evaluate_mds_clinical_candidate(build_context_from_material_dict(raw).drug_lines[0], RULES[mds.KIND])
+    assert outcome['criterion_status'] == 'unknown'
+    assert outcome['missing_inputs'] == ['mds_evidence.' + key]
+    assert restriction(rows(post(client, raw))[0], mds.KIND)['checks'] == []
+
+
+def test_new_actual_relationship_field_survives_bounded_public_projection(client, monkeypatch):  # noqa: F811
+    """Inspect the existing projection with local candidate output; release stays false."""
+    assert mds._MDS_CLINICAL_INTERPRETATION_RELEASED is False
+    key = 'mds_evidence.prescription_based_on_same_hematology_report'
+
+    def inspect(line, selected, *, codes=None):
+        outcome = mds.evaluate_mds_clinical_candidate(line, selected, codes=codes)
+        if outcome is not None:
+            outcome['missing_inputs'] += [key + '.PRIVATE', 'mds_evidence.private_report_id']
+        return outcome
+
+    monkeypatch.setattr('src.bilun.domain.prose_rules._drug_indication.clinical.evaluate_mds_clinical_draft', inspect)
+    raw = payload(mds.KIND)
+    raw['materials'][0]['mds_evidence'].pop('prescription_based_on_same_hematology_report', None)
+    data = post(client, raw)
+    row = rows(data)[0]
+    assert key in row['missing_inputs']
+    assert key + '.PRIVATE' not in row['missing_inputs'] and 'mds_evidence.private_report_id' not in row['missing_inputs']
+    assert row['clinical_eligibility_complete'] is False and data['is_valid'] is None

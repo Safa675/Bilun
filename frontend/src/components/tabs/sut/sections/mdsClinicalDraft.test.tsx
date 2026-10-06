@@ -10,6 +10,23 @@ import {
 import { MdsClinicalDraft } from "./MdsClinicalDraft";
 
 describe("MDS draft fact transport", () => {
+  it.each([true, false, null])("preserves the explicit same-report relationship %s", value => {
+    expect(mdsEvidencePayload({ prescription_based_on_same_hematology_report: value })
+      ?.prescription_based_on_same_hematology_report).toBe(value);
+  });
+
+  it.each([undefined, "true", "false", "", 1, 0, [], {}])("keeps invalid same-report relationship %s unknown", value => {
+    expect(mdsEvidencePayload({ prescription_based_on_same_hematology_report: value })
+      ?.prescription_based_on_same_hematology_report).toBeNull();
+  });
+
+  it("does not derive the same-report relationship from separate report or prescriber facts", () => {
+    expect(mdsEvidencePayload({ board_report_present: true, specialist_report_present: true,
+      report_author_specialty: "hematology", report_date: "2026-10-05", prescribed_by_specialist: true,
+      prescribed_by_specialty: "hematology", usage_dose_documented_in_report: true,
+      usage_duration_documented_in_report: true })?.prescription_based_on_same_hematology_report).toBeNull();
+  });
+
   it.each(["", " ", "-1", "NaN", "Infinity", "1e2", "0x10", "1,5", "500 mu/ml"])("keeps invalid numeric form input %s unknown", value => {
     expect(optionalMdsNumber(value)).toBeNull();
   });
@@ -78,6 +95,13 @@ const allMetReview: MdsClinicalDraftResponse = {
 };
 
 describe("standalone MDS gated review", () => {
+  it.each(["en", "tr"] as const)("labels the same-report relationship and leaves it unknown in %s", locale => {
+    const html = renderToStaticMarkupWithLocale(<MdsClinicalDraft onChange={() => {}} />, locale);
+    const label = locale === "tr" ? "Reçete aynı hematoloji raporuna dayanıyor" : "Prescription based on the same hematology report";
+    expect(html).toContain(`aria-label="${label}"`);
+    expect(html).toMatch(new RegExp(`aria-label="${label}"[^>]*><option value="" selected="">${locale === "tr" ? "Bilinmiyor" : "Unknown"}</option>`));
+  });
+
   it.each(["en", "tr"] as const)("keeps all gates and incomplete eligibility visible in %s even with passed candidate checks", locale => {
     const html = renderToStaticMarkupWithLocale(<MdsClinicalDraft onChange={() => {}} review={allMetReview} />, locale);
     expect(html).toContain(locale === "tr" ? "MDS — taslak inceleme" : "MDS — draft review");
@@ -149,6 +173,21 @@ describe("controlled MDS inputs", () => {
     await change("Hematologist specialist report present", "unknown");
     await change("Weekly dose value", "");
     expect(latest).toMatchObject({ specialist_report_present: null, weekly_dose_value: null });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps same-report edits independent and allows true, false and clearing to unknown", async () => {
+    const label = "Prescription based on the same hematology report";
+    await change("Hematologist specialist report present", "true");
+    await change("Prescribed by a specialist", "true");
+    expect(latest.prescription_based_on_same_hematology_report).toBeNull();
+    await change(label, "true");
+    expect(latest.prescription_based_on_same_hematology_report).toBe(true);
+    await change(label, "false");
+    expect(latest.prescription_based_on_same_hematology_report).toBe(false);
+    await change(label, "");
+    expect(latest).toMatchObject({ prescription_based_on_same_hematology_report: null,
+      specialist_report_present: true, prescribed_by_specialist: true });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

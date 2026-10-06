@@ -99,6 +99,7 @@ def test_pinned_docx_independent_strike_aware_source_proof_and_exact_corpus_bind
     assert mds["paragraph_index"] == 4489 and mds["xml_para_id"] == "3108F0FD"
     assert mds["source_ref"] == "4.2.9.A-2#17efb08b"
     assert "Eritropoietin alfa-beta için maksimum doz haftada 900 IU/kg" in mds["operative_text"]
+    assert "hematoloji uzman hekimi tarafından düzenlenen uzman hekim raporuna dayanılarak" in mds["operative_text"]
     assert "darbepoetin için maksimum doz haftada 150 µg" in mds["struck_fragments"][0]
     assert mds["struck_fragments"][1] == "ve darbepoetin"
     assert proof["clinical_eligibility_complete"] is False

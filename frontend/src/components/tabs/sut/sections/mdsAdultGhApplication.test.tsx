@@ -94,6 +94,38 @@ it("submits both controlled editors through the actual v2 API client with separa
   expect(renderer.root.findByProps({ "aria-label": "MDS: Hematologist specialist report present" }).props.value).toBe("false");
 });
 
+it("submits same-report true, false and unknown without deriving the relationship from separate report flags", async () => {
+  const label = "MDS: Prescription based on the same hematology report";
+  expect(renderer.root.findByProps({ "aria-label": label }).props.value).toBe("");
+  const genericReport = renderer.root.findAllByType("label").find(node =>
+    node.children.join("") === en.claimValidator.drugContext.boardReport)!.parent!.findByType("select");
+  await act(async () => { genericReport.props.onChange({ target: { value: "yes" } }); });
+  await change("MDS: Hematologist specialist report present", "true");
+  await change("MDS: Report author specialty", "hematology");
+  await change("MDS: Prescribed by a specialist", "true");
+  await change("MDS: Prescribing specialist specialty", "hematology");
+  await submit();
+  expect(request().drug_context?.board_report_present).toBe(true);
+  expect(request().materials[0].mds_evidence).toMatchObject({ specialist_report_present: true,
+    prescribed_by_specialist: true, prescription_based_on_same_hematology_report: null });
+
+  for (const [edit, expected] of [["true", true], ["false", false], ["", null]] as const) {
+    await change(label, edit);
+    expect(snapshot()).not.toContain("CURRENT_RESULT");
+    await submit();
+    expect(request().materials[0].mds_evidence?.prescription_based_on_same_hematology_report).toBe(expected);
+  }
+
+  await change(label, "true");
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": true }).props.onClick(); });
+  await submit();
+  expect(request()).not.toHaveProperty("drug_context");
+  expect(request().materials[0]).not.toHaveProperty("mds_evidence");
+  expect(request().materials[0]).not.toHaveProperty("adult_gh_evidence");
+  await act(async () => { renderer.root.findByProps({ "aria-expanded": false }).props.onClick(); });
+  expect(renderer.root.findByProps({ "aria-label": label }).props.value).toBe("true");
+});
+
 it("cancels, submits again and discards late responses and errors from obsolete requests", async () => {
   const first = deferred<SutValidationResult>(), second = deferred<SutValidationResult>();
   vi.mocked(postJSON).mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
@@ -127,10 +159,12 @@ it("aborts an in-flight combined request on unmount", async () => {
 it("normalizes invalid nested facts and excludes all draft fields when drug context is disabled", () => {
   const material = { name: "drug", unit_price: 0, quantity: 1,
     adult_gh_evidence: { itt_contraindicated: "false", stimulation_tests: [{ peak_gh_mcg_l: true, private_note: "PRIVATE" }] },
-    mds_evidence: { hb_value: "10", specialist_report_present: 1, private_note: "PRIVATE" } };
+    mds_evidence: { hb_value: "10", specialist_report_present: 1,
+      prescription_based_on_same_hematology_report: "true", private_note: "PRIVATE" } };
   const enabled = drugMaterialPayload(material as never, true);
   expect(enabled.adult_gh_evidence).toMatchObject({ itt_contraindicated: null, stimulation_tests: [{ peak_gh_mcg_l: null }] });
-  expect(enabled.mds_evidence).toMatchObject({ hb_value: null, specialist_report_present: null });
+  expect(enabled.mds_evidence).toMatchObject({ hb_value: null, specialist_report_present: null,
+    prescription_based_on_same_hematology_report: null });
   expect(JSON.stringify(enabled)).not.toContain("PRIVATE");
   expect(drugMaterialPayload(material as never, false)).toEqual({ name: "drug", unit_price: 0, quantity: 1 });
 });
@@ -153,6 +187,8 @@ describe("bounded bilingual clinical review", () => {
     expect(clinicalMissingInputLabel("adult_gh_evidence.stimulation_tests.count", t))
       .toContain(messages.claimValidator.clinical.adultGh.fields.stimulation_tests_count);
     expect(clinicalMissingInputLabel("mds_evidence.hb_value", t)).toContain(messages.claimValidator.clinical.mds.fields.hb_value);
+    expect(clinicalMissingInputLabel("mds_evidence.prescription_based_on_same_hematology_report", t))
+      .toContain(locale === "tr" ? "Reçete aynı hematoloji raporuna dayanıyor" : "Prescription based on the same hematology report");
     expect(clinicalMissingInputLabel("adult_gh_evidence.stimulation_tests[20].private_note", t)).not.toContain("private_note");
   });
 });

@@ -294,6 +294,7 @@ const sections = {
           "report_date": "Rapor tarihi",
           "prescribed_by_specialist": "Uzman tarafından reçete edildi",
           "prescribed_by_specialty": "Reçete yazan uzmanlık",
+          "prescription_based_on_same_hematology_report": "Reçete aynı hematoloji raporuna dayanıyor",
           "usage_dose_documented_in_report": "Doz raporda belgeli",
           "usage_duration_documented_in_report": "Süre raporda belgeli",
           "lab_results_dates_documented_in_prescription_or_report": "Laboratuvar sonuçları ve tarihleri reçete veya raporda",

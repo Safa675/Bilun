@@ -22,6 +22,7 @@ def facts(**changes):
         "weekly_dose_value": 900, "weekly_dose_unit": "IU/kg/week",
         "specialist_report_present": True, "report_author_specialty": "hematology", "report_date": DAY,
         "prescribed_by_specialist": True, "prescribed_by_specialty": "internal_medicine",
+        "prescription_based_on_same_hematology_report": True,
         "usage_dose_documented_in_report": True, "usage_duration_documented_in_report": True,
         "lab_results_dates_documented_in_prescription_or_report": True,
         "hemogram_date": DAY, "hemogram_result_documented_in_prescription": True,

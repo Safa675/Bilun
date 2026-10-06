@@ -45,6 +45,7 @@ def request(**changes):
             "report_date": DAY.isoformat(),
             "prescribed_by_specialist": True,
             "prescribed_by_specialty": "hematology",
+            "prescription_based_on_same_hematology_report": True,
             "usage_dose_documented_in_report": True,
             "usage_duration_documented_in_report": True,
             "lab_results_dates_documented_in_prescription_or_report": True,
@@ -97,6 +98,41 @@ def test_local_candidate_helper_remains_draft_even_when_necessary_checks_clear()
     assert response.restriction.checks
     assert all(check.status == "pass" for check in response.restriction.checks)
     assert api.evaluate_mds_draft_request(request()).restriction.criterion_status == "not_evaluated"
+
+
+@pytest.mark.parametrize("transport", ["mapping", "typed", "json"])
+@pytest.mark.parametrize("relation,status,parsed", [
+    (True, "criterion_clear", True), (False, "restriction_not_met", False),
+    (None, "unknown", None), (1, "unknown", None), ("true", "unknown", None),
+])
+def test_same_report_relationship_survives_existing_api_transport_without_inference(transport, relation, status, parsed):
+    field = "prescription_based_on_same_hematology_report"
+    raw = request()
+    raw["mds_evidence"][field] = relation
+    typed = api.MdsClinicalDraftRequest.model_validate(raw)
+    assert getattr(typed.mds_evidence, field) is parsed
+    value = raw if transport == "mapping" else (
+        typed if transport == "typed" else api.MdsClinicalDraftRequest.model_validate_json(json.dumps(raw))
+    )
+    response = api.inspect_mds_candidate_request(value)
+    assert_draft(response, "local_candidate")
+    restriction = response.restriction
+    assert restriction.criterion_status == status
+    assert restriction.missing_inputs == (["mds_evidence." + field] if parsed is None else [])
+    assert any(check.field == "mds_evidence." + field for check in restriction.checks)
+    runtime = api.evaluate_mds_draft_request(value)
+    assert_draft(runtime, "gated_runtime")
+    assert runtime.restriction.criterion_status == "not_evaluated"
+    assert runtime.restriction.checks == []
+
+
+def test_existing_api_does_not_infer_relationship_from_complete_report_and_prescriber_facts():
+    raw = request()
+    raw["mds_evidence"].pop("prescription_based_on_same_hematology_report")
+    response = api.inspect_mds_candidate_request(raw)
+    assert_draft(response, "local_candidate")
+    assert response.restriction.criterion_status == "unknown"
+    assert response.restriction.missing_inputs == ["mds_evidence.prescription_based_on_same_hematology_report"]
 
 
 @pytest.mark.parametrize("key", [

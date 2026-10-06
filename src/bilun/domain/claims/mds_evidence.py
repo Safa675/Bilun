@@ -42,6 +42,9 @@ class MdsEvidence:
     # Explicit specialist status and specialty of the actual prescriber.
     prescribed_by_specialist: bool | None = None
     prescribed_by_specialty: str | None = None
+    # Explicit link to the same hematology report; never inferred from presence,
+    # author/prescriber specialties or matching document dates.
+    prescription_based_on_same_hematology_report: bool | None = None
     usage_dose_documented_in_report: bool | None = None
     usage_duration_documented_in_report: bool | None = None
     lab_results_dates_documented_in_prescription_or_report: bool | None = None

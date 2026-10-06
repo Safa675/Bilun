@@ -294,6 +294,7 @@ const sections = {
           "report_date": "Report date",
           "prescribed_by_specialist": "Prescribed by a specialist",
           "prescribed_by_specialty": "Prescribing specialist specialty",
+          "prescription_based_on_same_hematology_report": "Prescription based on the same hematology report",
           "usage_dose_documented_in_report": "Dose documented in report",
           "usage_duration_documented_in_report": "Duration documented in report",
           "hemogram_date": "Hemogram date",

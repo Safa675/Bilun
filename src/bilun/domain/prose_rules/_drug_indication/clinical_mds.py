@@ -139,6 +139,7 @@ def _candidate(reader: Reader, substance: str, selected_rule_id: str, service: d
     checks.extend([
         reader.bool("prescribed_by_specialist"),
         reader.one_of("prescribed_by_specialty", ("hematology", "internal_medicine")),
+        reader.bool("prescription_based_on_same_hematology_report"),
         reader.bool("lab_results_dates_documented_in_prescription_or_report"),
         *_dated_document(reader, "hemogram_date", service,
                          "hemogram_result_documented_in_prescription", "hemogram_date_documented_in_prescription"),

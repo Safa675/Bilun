@@ -23,6 +23,7 @@ export interface MdsEvidence {
   report_date?: string | null;
   prescribed_by_specialist?: boolean | null;
   prescribed_by_specialty?: "hematology" | "internal_medicine" | "other" | null;
+  prescription_based_on_same_hematology_report?: boolean | null;
   usage_dose_documented_in_report?: boolean | null;
   usage_duration_documented_in_report?: boolean | null;
   lab_results_dates_documented_in_prescription_or_report?: boolean | null;
@@ -78,6 +79,7 @@ const booleanFields = [
   "specialist_report_present", "usage_dose_documented_in_report", "usage_duration_documented_in_report",
   "hemogram_result_documented_in_prescription", "hemogram_date_documented_in_prescription", "prescribed_by_specialist",
   "lab_results_dates_documented_in_prescription_or_report",
+  "prescription_based_on_same_hematology_report",
 ] as const;
 const choices = {
   indication: ["mds_anemia", "ckd_anemia", "other"],
