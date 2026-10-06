@@ -70,6 +70,36 @@ _SQUASH_VERIFIER_PATH = "scripts/deploy/verify_final_source_refresh_transition.p
 # reviewed SHA still binds the actual executing verifier; this is no bootstrap.
 _REVIEWED_SQUASH_SELF_SHA256 = "356e45bf897bdab14d6c20c2ea6243d67ac37788856bdcc12d2977ca765ae83a"
 _SQUASH_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SQUASH_SELF_SHA256 = "([0-9a-f]{64})"$')
+# This separate profile admits only the reviewed old replay tooling as a normal
+# squash on the immutable main00128 base. Historical profile permissions and
+# pins above remain unchanged; none of these paths is added to their closure.
+OLD_REPLAY_PROFILE = "bilun-old-replay-tooling-main00128-v1"
+OLD_REPLAY_BASE_SHA = "00128c6001c7921621b44537fcecefc22236b1f3"
+OLD_REPLAY_BASE_TREE = "ba09db1023be8ae17b5605145caefec771a7fbe5"
+OLD_REPLAY_TOOLING_PATHS = frozenset({
+    "scripts/deploy/prepare_single_vps_release.py",
+    "scripts/deploy/rehearse_wavea_same_port.py",
+    "scripts/deploy/verify_final_source_refresh_transition.py",
+    "tests/unit/deploy/fixtures/final_source_refresh_main00128_tooling.json",
+    "tests/unit/deploy/test_final_source_refresh_transition.py",
+    "tests/unit/deploy/test_prepare_single_vps_release.py",
+    "tests/unit/deploy/test_same_port_rehearsal.py",
+    "tests/unit/deploy/test_source_refresh_transition.py",
+})
+_REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256 = "5236c656fe4d1989e8ec3a4e584c763928b00cb9f8a52053bac23f59b99ff9a3"
+_REVIEWED_OLD_REPLAY_TOOLING = {
+    "scripts/deploy/prepare_single_vps_release.py": ("100644", "blob", "2ae414652fcf2a6d53f63cb9e28abc93302e7626"),
+    "scripts/deploy/rehearse_wavea_same_port.py": ("100644", "blob", "315aee150f3eb0aeeb696357451e85351a29f79e"),
+    "tests/unit/deploy/fixtures/final_source_refresh_main00128_tooling.json": ("100644", "blob", "d02ae18d31626dd94da5cdd0b15546692fca2e61"),
+    "tests/unit/deploy/test_final_source_refresh_transition.py": ("100644", "blob", "b10d84acde9b1845c808d027cf0f02a4a0d19bba"),
+    "tests/unit/deploy/test_prepare_single_vps_release.py": ("100644", "blob", "8d5cb7933fcd83d4efe76b9cb071774c5430f78c"),
+    "tests/unit/deploy/test_same_port_rehearsal.py": ("100644", "blob", "a9a09bf79dc32b5eb675ef866015d465c3096d69"),
+    "tests/unit/deploy/test_source_refresh_transition.py": ("100644", "blob", "ef08ca63d638544dcd338b2bece2e57193ad61d8"),
+}
+# Only this new literal is normalized; the historical self slot is still bound.
+# The actual executing bytes also remain bound to the external reviewed SHA.
+_REVIEWED_OLD_REPLAY_SELF_SHA256 = "464444b9622b784dc9b10e6655dbaa97b886e5ff73317039c7ea0f96f7eafbf7"
+_OLD_REPLAY_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_OLD_REPLAY_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
     "patient_detail_cache", "patient_outcome_base", "cohort_optimization_summary",
@@ -169,6 +199,66 @@ def _verify_squash_self_source(source: bytes) -> None:
         raise ValueError("Squash verifier differs from reviewed source bytes")
 
 
+def _old_replay_product_closure(checkout: Path, sha: str) -> bytes:
+    return b"\0".join(row for row in _git(checkout, "ls-tree", "-r", "-z", sha).split(b"\0")
+                       if row and os.fsdecode(row.split(b"\t", 1)[1]) not in OLD_REPLAY_TOOLING_PATHS)
+
+
+def _verify_old_replay_self_source(source: bytes) -> None:
+    slots = list(_OLD_REPLAY_SELF_SLOT.finditer(source))
+    if (len(slots) != 1 or not isinstance(_REVIEWED_OLD_REPLAY_SELF_SHA256, str)
+            or not _SHA256.fullmatch(_REVIEWED_OLD_REPLAY_SELF_SHA256)
+            or slots[0].group(1).decode() != _REVIEWED_OLD_REPLAY_SELF_SHA256):
+        raise ValueError("Old replay verifier self digest has an unknown literal slot")
+    start, end = slots[0].span(1)
+    normalized = source[:start] + b"0" * 64 + source[end:]
+    if hashlib.sha256(normalized).hexdigest() != _REVIEWED_OLD_REPLAY_SELF_SHA256:
+        raise ValueError("Old replay verifier differs from reviewed source bytes")
+
+
+def _old_replay_tooling_digest() -> str:
+    return _digest({"profile": OLD_REPLAY_PROFILE, "base_sha": OLD_REPLAY_BASE_SHA,
+        "base_tree": OLD_REPLAY_BASE_TREE,
+        "product_closure_sha256": _REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256,
+        "files": _REVIEWED_OLD_REPLAY_TOOLING,
+        "verifier": {"path": _SQUASH_VERIFIER_PATH, "mode": "100644", "type": "blob",
+                     "normalized_sha256": _REVIEWED_OLD_REPLAY_SELF_SHA256}})
+
+
+def _verify_old_replay_squash_history(checkout: Path, sha: str) -> dict:
+    if (_git(checkout, "show", "-s", "--format=%P", sha).decode().split() != [OLD_REPLAY_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{OLD_REPLAY_BASE_SHA}^{{tree}}").decode().strip()
+               != OLD_REPLAY_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", OLD_REPLAY_BASE_SHA).decode().split()
+               != [PRODUCT_ANCHOR_SHA]):
+        raise ValueError("Old replay squash requires the immutable main00128 parent")
+    product = _old_replay_product_closure(checkout, OLD_REPLAY_BASE_SHA)
+    if (hashlib.sha256(product).hexdigest() != _REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256
+            or _old_replay_product_closure(checkout, sha) != product):
+        raise ValueError("Old replay squash changes pinned whole-tree bytes")
+    if set(_REVIEWED_OLD_REPLAY_TOOLING) != OLD_REPLAY_TOOLING_PATHS - {_SQUASH_VERIFIER_PATH}:
+        raise ValueError("Old replay squash has an unknown reviewed tooling roster")
+    for path, entry in _REVIEWED_OLD_REPLAY_TOOLING.items():
+        _same(_tooling_tree_entry(checkout, sha, path), entry,
+              "old replay tooling mode/type/blob")
+    mode, kind, _ = _tooling_tree_entry(checkout, sha, _SQUASH_VERIFIER_PATH)
+    if (mode, kind) != ("100644", "blob"):
+        raise ValueError("Old replay verifier has an unreviewed mode/type")
+    _verify_old_replay_self_source(_git(checkout, "show", f"{sha}:{_SQUASH_VERIFIER_PATH}"))
+    changed = {os.fsdecode(row) for row in _git(checkout, "diff-tree", "--no-commit-id",
+               "--name-only", "-r", "-z", OLD_REPLAY_BASE_SHA, sha).split(b"\0") if row}
+    if changed != OLD_REPLAY_TOOLING_PATHS:
+        raise ValueError("Old replay squash differs from the exact reviewed path transition")
+    return {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
+            "integration_seed_sha": None, "integration_seed_tree": None,
+            "candidate_sha": sha, "descendant_commits": [sha],
+            "authorized_changed_paths": sorted(changed),
+            "product_closure_sha256": _REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256,
+            "tooling_profile": OLD_REPLAY_PROFILE, "tooling_base_sha": OLD_REPLAY_BASE_SHA,
+            "tooling_base_tree": OLD_REPLAY_BASE_TREE,
+            "reviewed_tooling_sha256": _old_replay_tooling_digest()}
+
+
 def _verify_normal_squash_history(checkout: Path, sha: str, product: bytes) -> dict:
     if _product_closure(checkout, sha) != product:
         raise ValueError("Normal squash changes pinned product bytes")
@@ -208,6 +298,8 @@ def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> di
     parents = _git(checkout, "show", "-s", "--format=%P", expected_candidate_sha).decode().split()
     if parents == [PRODUCT_ANCHOR_SHA]:
         return _verify_normal_squash_history(checkout, expected_candidate_sha, product)
+    if parents == [OLD_REPLAY_BASE_SHA]:
+        return _verify_old_replay_squash_history(checkout, expected_candidate_sha)
     if _git(checkout, "rev-parse", f"{INTEGRATION_SEED_SHA}^{{tree}}").decode().strip() != INTEGRATION_SEED_TREE:
         raise ValueError("Final profile pinned product/seed tree differs")
     if tuple(_git(checkout, "show", "-s", "--format=%P", INTEGRATION_SEED_SHA).decode().split()) != SEED_PARENTS:
@@ -1178,6 +1270,49 @@ def verify_transition(*, request: Mapping, baseline_roster: Path, candidate_rost
     return _issue_proof(report, expected_tables)
 
 
+def _validate_transition_history(history: Any, candidate: str) -> None:
+    fields = {"product_anchor_sha", "product_anchor_tree", "candidate_sha",
+              "descendant_commits", "authorized_changed_paths", "integration_seed_sha",
+              "integration_seed_tree", "product_closure_sha256"}
+    if isinstance(history, dict) and "tooling_profile" in history:
+        if (set(history) != fields | {"tooling_profile", "tooling_base_sha", "tooling_base_tree",
+                                     "reviewed_tooling_sha256"}
+                or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
+                or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
+                or history.get("candidate_sha") != candidate
+                or history.get("integration_seed_sha") is not None
+                or history.get("integration_seed_tree") is not None
+                or history.get("descendant_commits") != [candidate]
+                or history.get("authorized_changed_paths") != sorted(OLD_REPLAY_TOOLING_PATHS)
+                or history.get("product_closure_sha256") != _REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256
+                or history.get("tooling_profile") != OLD_REPLAY_PROFILE
+                or history.get("tooling_base_sha") != OLD_REPLAY_BASE_SHA
+                or history.get("tooling_base_tree") != OLD_REPLAY_BASE_TREE
+                or history.get("reviewed_tooling_sha256") != _old_replay_tooling_digest()):
+            raise ValueError("Source refresh report source/replay/tooling binding differs")
+        return
+    # The historical eight-field predicate and its finite permissions are frozen.
+    if (not isinstance(history, dict) or set(history) != fields
+            or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
+            or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
+            or history.get("candidate_sha") != candidate
+            or (history.get("integration_seed_sha"), history.get("integration_seed_tree"))
+               not in ((INTEGRATION_SEED_SHA, INTEGRATION_SEED_TREE), (None, None))
+            or not isinstance(history.get("product_closure_sha256"), str)
+            or not _SHA256.fullmatch(history["product_closure_sha256"])
+            or not isinstance(history.get("descendant_commits"), list) or not history["descendant_commits"]
+            or history["descendant_commits"][-1] != candidate
+            or (history["integration_seed_sha"] is None and history["descendant_commits"] != [candidate])
+            or any(not isinstance(sha, str) or not _SHA.fullmatch(sha) for sha in history["descendant_commits"])
+            or len(set(history["descendant_commits"])) != len(history["descendant_commits"])
+            or not isinstance(history.get("authorized_changed_paths"), list)
+            or not history["authorized_changed_paths"]
+            or any(not isinstance(path, str) for path in history["authorized_changed_paths"])
+            or history["authorized_changed_paths"] != sorted(set(history["authorized_changed_paths"]))
+            or not set(history["authorized_changed_paths"]) <= AUTHORIZED_TOOLING_PATHS):
+        raise ValueError("Source refresh report source/replay/tooling binding differs")
+
+
 def validate_transition_report_contract(report: Mapping) -> None:
     if not isinstance(report, Mapping):
         raise ValueError("Transition report is malformed")
@@ -1198,27 +1333,8 @@ def validate_transition_report_contract(report: Mapping) -> None:
     candidate = report["candidate_code_sha"]
     history, binding, source, inputs, checkouts = (report[key] for key in
         ("history", "verifier", "source_intent", "same_input", "replay_checkouts"))
+    _validate_transition_history(history, candidate)
     if (not all(isinstance(value, dict) for value in (history, binding, source, inputs, checkouts))
-            or set(history) != {"product_anchor_sha", "product_anchor_tree", "candidate_sha",
-                                "descendant_commits", "authorized_changed_paths", "integration_seed_sha",
-                                "integration_seed_tree", "product_closure_sha256"}
-            or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
-            or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
-            or history.get("candidate_sha") != candidate
-            or (history.get("integration_seed_sha"), history.get("integration_seed_tree"))
-               not in ((INTEGRATION_SEED_SHA, INTEGRATION_SEED_TREE), (None, None))
-            or not isinstance(history.get("product_closure_sha256"), str)
-            or not _SHA256.fullmatch(history["product_closure_sha256"])
-            or not isinstance(history.get("descendant_commits"), list) or not history["descendant_commits"]
-            or history["descendant_commits"][-1] != candidate
-            or (history["integration_seed_sha"] is None and history["descendant_commits"] != [candidate])
-            or any(not isinstance(sha, str) or not _SHA.fullmatch(sha) for sha in history["descendant_commits"])
-            or len(set(history["descendant_commits"])) != len(history["descendant_commits"])
-            or not isinstance(history.get("authorized_changed_paths"), list)
-            or not history["authorized_changed_paths"]
-            or any(not isinstance(path, str) for path in history["authorized_changed_paths"])
-            or history["authorized_changed_paths"] != sorted(set(history["authorized_changed_paths"]))
-            or not set(history["authorized_changed_paths"]) <= AUTHORIZED_TOOLING_PATHS
             or binding.get("verifier_sha") != candidate
             or not isinstance(binding.get("files"), dict)
             or "scripts/deploy/verify_final_source_refresh_transition.py" not in binding["files"]

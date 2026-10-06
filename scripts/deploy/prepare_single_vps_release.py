@@ -21,6 +21,7 @@ import subprocess
 import sys
 from dataclasses import asdict
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import duckdb
@@ -59,6 +60,15 @@ DEPENDENCY_FILE_SCHEMA = "bilun-single-vps-preparation-v2"
 DEPENDENCY_CHAIN_SCHEMA = "bilun-single-vps-preparation-v3"
 _MAX_DEPENDENCY_LINKS = 8
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
+_SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+_OLD_PYTHON_FIELD = "old_backend_python_identity"
+_OLD_PYTHON_SCHEMA = "bilun-old-backend-python-identity-v1"
+_OLD_PYTHON_FIELDS = frozenset({
+    "schema_version", "launcher_path", "executable_target", "process_argv_sha256",
+    "effective_environment_sha256", "launcher_kind", "context_root",
+    "dependency_roots", "dependency_pins", "allow_dependency_file_links",
+    "helper_source_sha256",
+})
 _PATHS = frozenset({
     "repository", "bundle_root", "baseline_checkout", "baseline_claims_dir",
     "baseline_clean_dir", "live_backend_runtime", "live_frontend_runtime",
@@ -325,6 +335,104 @@ def _pin_inputs(paths: set[Path], executables: set[Path], *,
     return result
 
 
+def _verify_old_backend_python_identity(identity: dict[str, Any]) -> tuple[Path, Path]:
+    """Check the original launcher and its frozen, explicitly declared context."""
+    if (not isinstance(identity, dict) or set(identity) != _OLD_PYTHON_FIELDS
+            or identity["schema_version"] != _OLD_PYTHON_SCHEMA
+            or not isinstance(identity["launcher_kind"], str)
+            or identity["launcher_kind"] not in {"venv_python", "system_python"}
+            or type(identity["allow_dependency_file_links"]) is not bool
+            or any(not isinstance(identity[key], str) or not _SHA256.fullmatch(identity[key])
+                   for key in ("process_argv_sha256", "effective_environment_sha256", "helper_source_sha256"))
+            or identity["helper_source_sha256"] != _stable_file_hash(Path(__file__))):
+        raise ValueError("Old backend Python identity is malformed or its helper differs")
+    raw_roots = identity["dependency_roots"]
+    pins = identity["dependency_pins"]
+    chained = identity["allow_dependency_file_links"]
+    if (not isinstance(raw_roots, list) or not raw_roots or len(raw_roots) > 64
+            or any(not isinstance(path, str) for path in raw_roots)
+            or len(set(raw_roots)) != len(raw_roots)
+            or not isinstance(pins, dict) or set(pins) != set(raw_roots)):
+        raise ValueError("Old backend Python lacks frozen declared dependency pins")
+    roots = tuple(_canonical_path(path, executable=chained) for path in raw_roots)
+    executables = {path for path in roots if isinstance(pins[str(path)], dict)
+                   and "executable_target" in pins[str(path)]}
+    launcher = _canonical_path(identity["launcher_path"], executable=True)
+    target = _canonical_path(identity["executable_target"])
+    context = _canonical_path(identity["context_root"])
+    if (launcher.parent.name != "bin"
+            or re.fullmatch(r"python(?:\d+(?:\.\d+)?)?", launcher.name) is None
+            or context != launcher.parent.parent or context not in roots
+            or not context.is_dir() or target not in roots or not target.is_file()
+            or not os.access(target, os.X_OK)):
+        raise ValueError("Old backend Python launcher or context is not explicitly pinned")
+    # The whole declared context covers pyvenv.cfg, site-packages and absence of
+    # optional configuration. A shared terminal executable alone cannot do so.
+    configuration = context / "pyvenv.cfg"
+    kind = "venv_python" if os.path.lexists(configuration) else "system_python"
+    if (identity["launcher_kind"] != kind
+            or (kind == "venv_python" and (configuration.is_symlink() or not configuration.is_file()))
+            or _pin_inputs(set(roots), executables, dependency_roots=roots,
+                           allow_dependency_file_links=chained) != pins
+            or launcher.resolve(strict=True) != target):
+        raise ValueError("Old backend Python launcher, context or dependency pins changed")
+    return launcher, target
+
+
+def _capture_old_backend_python_identity(service: Any, *, dependency_roots: tuple[Path, ...],
+                                         dependency_pins: dict[str, Any],
+                                         allow_dependency_file_links: bool) -> dict[str, Any]:
+    """Keep only argv[0] privately, before the service's public projection."""
+    if not service.process_argv or not isinstance(service.process_argv[0], str):
+        raise ValueError("Observed old backend lacks its original Python launcher")
+    launcher = _canonical_path(service.process_argv[0], executable=True)
+    context = launcher.parent.parent
+    identity = {
+        "schema_version": _OLD_PYTHON_SCHEMA, "launcher_path": str(launcher),
+        "executable_target": str(service.process_executable),
+        "process_argv_sha256": hashlib.sha256(
+            b"\0".join(argument.encode("utf-8") for argument in service.process_argv)).hexdigest(),
+        "effective_environment_sha256": service.environment_sha256,
+        "launcher_kind": "venv_python" if os.path.lexists(context / "pyvenv.cfg") else "system_python",
+        "context_root": str(context), "dependency_roots": [str(path) for path in dependency_roots],
+        "dependency_pins": json.loads(json.dumps(dependency_pins, allow_nan=False)),
+        "allow_dependency_file_links": allow_dependency_file_links,
+        "helper_source_sha256": _stable_file_hash(Path(__file__)),
+    }
+    _verify_old_backend_python_identity(identity)
+    return identity
+
+
+def _load_old_backend_python_identity(record_path: Path, record_sha256: str, *, old_snapshot: Path,
+                                      old_runtime_sha256: str, old_environment_sha256: str,
+                                      dependency_roots: tuple[Path, ...]) -> dict[str, Any]:
+    """Read the fixed private observation with the producer's frozen digest."""
+    root = _canonical_path(str(old_snapshot.parent))
+    if (old_snapshot != root / "old-snapshot" or record_path != root / "live-after-snapshot.json"
+            or not isinstance(record_sha256, str) or not _SHA256.fullmatch(record_sha256)):
+        raise ValueError("Old backend Python identity record is not the fixed private snapshot")
+    record, digest = _load_private_json(record_path, root=root)
+    backend = record.get("backend")
+    identity = backend.get(_OLD_PYTHON_FIELD) if isinstance(backend, dict) else None
+    if (digest != record_sha256 or not isinstance(identity, dict)
+            or record.get("backend_runtime_sha256") != old_runtime_sha256
+            or backend.get("effective_environment_sha256") != old_environment_sha256
+            or identity.get("effective_environment_sha256") != old_environment_sha256
+            or identity.get("process_argv_sha256") != backend.get("process_argv_sha256")
+            or identity.get("executable_target") != backend.get("process_executable")
+            or identity.get("dependency_roots") != [str(path) for path in dependency_roots]):
+        raise ValueError("Old backend Python identity differs from its frozen observation")
+    _verify_old_backend_python_identity(identity)
+    return identity
+
+
+def _without_old_python_identity(pair: dict[str, Any]) -> dict[str, Any]:
+    """Keep the additional private launcher out of maintenance journal schemas."""
+    result = json.loads(json.dumps(pair, allow_nan=False))
+    result["backend"].pop(_OLD_PYTHON_FIELD, None)
+    return result
+
+
 def _external_identities(paths: tuple[Path, ...]) -> dict[str, Any]:
     """Mutable ledgers may change contents while serving; pin ownership and location.
 
@@ -437,6 +545,8 @@ def _observe_live(spec: dict[str, Any]) -> dict[str, Any]:
         service = observe_service(f"bilun-{role}.service", port)
         if service.process_working_directory != spec[f"live_{role}_runtime"]:
             raise ValueError("Observed serving runtime differs from explicit machine inventory")
+        old_python = (_capture_old_backend_python_identity(
+            service, **spec["_old_backend_python_authority"]) if role == "backend" else None)
         public = _public_service(service)
         raw_environment = Path(f"/proc/{service.listener_pid}/environ").read_bytes()
         public["stable_environment_sha256"] = stable_environment_sha256(raw_environment)
@@ -447,6 +557,9 @@ def _observe_live(spec: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("Serving environment changed during observation")
         if role == "backend":
             backend_environment = values
+            if old_python["effective_environment_sha256"] != full_environment_sha:
+                raise ValueError("Old backend Python environment changed during capture")
+            public[_OLD_PYTHON_FIELD] = old_python
         public["persistent_state_settings"] = {
             "BILUN_PUBLIC_CHAT_BUDGET_DB": values.get("BILUN_PUBLIC_CHAT_BUDGET_DB", ""),
         }
@@ -567,7 +680,7 @@ def _snapshot_old(spec: dict[str, Any], before: dict[str, Any]) -> dict[str, Any
                 raise ValueError("Serving configuration moved during snapshot")
         if early:
             captured["cache_sha256"] = _candidate_db_hash(spec["live_cache_path"])
-        return captured
+        return _without_old_python_identity(captured) if early else captured
 
     if early:
         # The original PIDs disappear after stop; freeze their private identity first.
@@ -578,16 +691,19 @@ def _snapshot_old(spec: dict[str, Any], before: dict[str, Any]) -> dict[str, Any
         from scripts.deploy.snapshot_maintenance import snapshot_with_maintenance
         journal.parent.mkdir(mode=0o700)
         options = {"hold_barrier": True, "stopped_runtime_capture": capture} if early else {}
+        old_python = before["backend"][_OLD_PYTHON_FIELD]
         before = snapshot_with_maintenance(
             journal_path=journal, machine_lock=spec["lock_path"],
             live_cache=spec["live_cache_path"], output_cache=snapshot / "cache.duckdb",
             build_id=spec["old_build_id"], copy_cache=_copy_cache_consistently,
-            expected_pair=before, observe_pair=lambda: _observe_live(spec),
+            expected_pair=_without_old_python_identity(before),
+            observe_pair=lambda: _without_old_python_identity(_observe_live(spec)),
             recovery_spec={key: spec[key] for key in (
                 "live_backend_runtime", "live_frontend_runtime", "live_cache_path",
                 "frontend_current", "caddy_config", "serving_code_sha", "old_build_id",
             )}, **options,
         )
+        before["backend"][_OLD_PYTHON_FIELD] = old_python
     else:
         _copy_cache_consistently(spec["live_cache_path"], snapshot / "cache.duckdb", spec["old_build_id"])
     if not early:
@@ -627,7 +743,20 @@ def _observe_preparation(spec: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("Frozen old runtime snapshot changed")
     if _candidate_db_hash(snapshot / "cache.duckdb") != expected["cache_sha256"]:
         raise ValueError("Frozen old cache snapshot changed")
-    return expected
+    private_before, _ = _load_private_json(spec["bundle_root"] / "live-before.json", root=spec["bundle_root"])
+    identity = private_before.get("backend", {}).get(_OLD_PYTHON_FIELD)
+    _verify_old_backend_python_identity(identity)
+    service, _ = _load_private_json(snapshot / "backend-service.json", root=snapshot)
+    captured = _capture_old_backend_python_identity(
+        SimpleNamespace(process_argv=tuple(service["process_argv"]),
+                        process_executable=Path(service["process_executable"]),
+                        environment_sha256=service["environment_sha256"]),
+        **spec["_old_backend_python_authority"])
+    if captured != identity:
+        raise ValueError("Frozen old backend Python identity changed")
+    result = json.loads(json.dumps(expected, allow_nan=False))
+    result["backend"][_OLD_PYTHON_FIELD] = identity
+    return result
 
 
 def _check_held_preparation(spec: dict[str, Any], before: dict[str, Any]) -> None:
@@ -722,12 +851,20 @@ def _rehearse(spec: dict[str, Any], checkout: Path, frontend: Path,
     root = spec["bundle_root"]
     work = root / "rehearsal"
     work.mkdir(mode=0o700)
+    identity_record = root / "live-after-snapshot.json"
+    identity_record_sha256 = spec["_old_backend_python_identity_record_sha256"]
+    _load_old_backend_python_identity(
+        identity_record, identity_record_sha256, old_snapshot=root / "old-snapshot",
+        old_runtime_sha256=old_backend_runtime_sha256, old_environment_sha256=old_environment_sha256,
+        dependency_roots=spec["dependency_roots"])
     argv = ["unshare", "--net", "--", str(spec["backend_python"]), "-m",
             "scripts.deploy.rehearse_wavea_same_port"]
     fields = {
         "work-dir": work, "old-snapshot": root / "old-snapshot",
         "old-backend-runtime-sha256": old_backend_runtime_sha256,
         "old-environment-sha256": old_environment_sha256,
+        "old-backend-python-identity-record": identity_record,
+        "old-backend-python-identity-record-sha256": identity_record_sha256,
         "candidate-environment-sha256": candidate_environment_sha256,
         "old-replay": root / "old-replay", "candidate-checkout": checkout,
         "candidate-db": root / "candidate.duckdb", "candidate-roster": root / "source-roster.json",
@@ -865,6 +1002,11 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
     pin_options = {"dependency_roots": dependencies,
                    "allow_dependency_file_links": spec["schema_version"] == DEPENDENCY_CHAIN_SCHEMA}
     pinned = _pin_inputs(pins, executables, **pin_options)
+    spec = {**spec, "_old_backend_python_authority": {
+        "dependency_roots": dependencies,
+        "dependency_pins": {str(path): pinned[str(path)] for path in dependencies},
+        "allow_dependency_file_links": pin_options["allow_dependency_file_links"],
+    }}
     external = _external_identities(spec["external_state_paths"])
     before = _observe_live(spec)
     _verify_known_external_state(spec, before, candidate_backend)
@@ -885,6 +1027,7 @@ def _prepare_release_bundle(manifest_path: Path, spec: dict[str, Any]) -> dict[s
         _save(root / "preparation-pins.json", pin_contract)
         before = _snapshot_old(spec, before)
         _save(root / "live-after-snapshot.json", before)
+        spec["_old_backend_python_identity_record_sha256"] = _stable_file_hash(root / "live-after-snapshot.json")
         baseline = _baseline_roster(spec)
         _check_held_preparation(spec, before)
         _save(root / "baseline-roster.json", baseline)

@@ -7,10 +7,12 @@ The wrapper tests replace only the strace child; Git and read-trace gates run.
 
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import json
 import sys
+import zlib
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 
@@ -1041,11 +1043,475 @@ def test_normal_squash_keeps_actual_executing_verifier_binding(normal_squash, mo
             final._guard_code_binding(checkout, candidate)
 
 
+_PUBLIC_OLD_REPLAY_PATHS = (
+    "scripts/deploy/prepare_single_vps_release.py",
+    "scripts/deploy/rehearse_wavea_same_port.py",
+    "scripts/deploy/verify_final_source_refresh_transition.py",
+    "tests/unit/deploy/fixtures/final_source_refresh_main00128_tooling.json",
+    "tests/unit/deploy/test_final_source_refresh_transition.py",
+    "tests/unit/deploy/test_prepare_single_vps_release.py",
+    "tests/unit/deploy/test_same_port_rehearsal.py",
+    "tests/unit/deploy/test_source_refresh_transition.py",
+)
+
+
+def _public_old_replay_closure(checkout, sha):
+    records = _git(checkout, "ls-tree", "-r", "-z", sha).encode().split(b"\0")
+    return b"\0".join(record for record in records if record
+        and record.split(b"\t", 1)[1].decode() not in _PUBLIC_OLD_REPLAY_PATHS)
+
+
+@pytest.fixture
+def old_replay_squash(normal_squash, monkeypatch):
+    """Authored tooling, a reviewed main parent, and an unreachable PR history."""
+    case = normal_squash
+    checkout, base = case["checkout"], case["candidate"]
+    base_tree = _git(checkout, "rev-parse", base + "^{tree}")
+    closure = _public_old_replay_closure(checkout, base)
+    tooling = {path: ("PUBLIC_REPLAY_TOOL = " + repr(path) + "\n").encode()
+               for path in _PUBLIC_OLD_REPLAY_PATHS
+               if path != "scripts/deploy/verify_final_source_refresh_transition.py"}
+    slot = b"0" * 64
+    normalized = b'_REVIEWED_OLD_REPLAY_SELF_SHA256 = "' + slot + b'"\nPUBLIC_REPLAY = True\n'
+    digest = hashlib.sha256(normalized).hexdigest()
+    source = normalized.replace(slot, digest.encode(), 1)
+    sources = {**tooling, "scripts/deploy/verify_final_source_refresh_transition.py": source}
+    _git(checkout, "checkout", "-q", "-b", "public-replay-feature", base)
+    (checkout / "scripts/deploy/prepare_single_vps_release.py").write_bytes(tooling[
+        "scripts/deploy/prepare_single_vps_release.py"])
+    _commit(checkout, "public feature intermediate")
+    for path, body in sources.items():
+        target = checkout / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+    feature = _commit(checkout, "public reviewed feature tree")
+    _git(checkout, "checkout", "-q", "-b", "public-replay-squash", base)
+    for path, body in sources.items():
+        target = checkout / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+    candidate = _commit(checkout, "public normal squash with independent commit identity")
+    pins = {path: _public_blob(body) for path, body in tooling.items()}
+    for name, value in {
+        "OLD_REPLAY_BASE_SHA": base, "OLD_REPLAY_BASE_TREE": base_tree,
+        "_REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256": hashlib.sha256(closure).hexdigest(),
+        "_REVIEWED_OLD_REPLAY_TOOLING": pins, "_REVIEWED_OLD_REPLAY_SELF_SHA256": digest,
+    }.items():
+        monkeypatch.setattr(final, name, value)
+    return {**case, "base": base, "base_tree": base_tree, "candidate": candidate,
+            "feature": feature, "tooling": tooling, "pins": pins, "source": source,
+            "digest": digest, "product_closure": closure}
+
+
+def _public_old_replay_tooling_digest(case):
+    return _digest({"profile": "bilun-old-replay-tooling-main00128-v1",
+        "base_sha": case["base"], "base_tree": case["base_tree"],
+        "product_closure_sha256": hashlib.sha256(case["product_closure"]).hexdigest(),
+        "files": case["pins"],
+        "verifier": {"path": "scripts/deploy/verify_final_source_refresh_transition.py",
+                     "mode": "100644", "type": "blob", "normalized_sha256": case["digest"]}})
+
+
+def test_old_replay_normal_squash_binds_the_whole_tree_and_exact_eight_paths(old_replay_squash):
+    case = old_replay_squash
+    assert final.OLD_REPLAY_TOOLING_PATHS == frozenset(_PUBLIC_OLD_REPLAY_PATHS)
+    assert _git(case["checkout"], "rev-parse", case["candidate"] + "^{tree}") == _git(
+        case["checkout"], "rev-parse", case["feature"] + "^{tree}")
+    assert case["candidate"] != case["feature"]
+    result = final._verify_candidate_history(case["checkout"], case["candidate"])
+    assert result == {
+        "product_anchor_sha": case["anchor"], "product_anchor_tree": final.PRODUCT_ANCHOR_TREE,
+        "integration_seed_sha": None, "integration_seed_tree": None,
+        "candidate_sha": case["candidate"], "descendant_commits": [case["candidate"]],
+        "authorized_changed_paths": list(_PUBLIC_OLD_REPLAY_PATHS),
+        "product_closure_sha256": hashlib.sha256(case["product_closure"]).hexdigest(),
+        "tooling_profile": "bilun-old-replay-tooling-main00128-v1",
+        "tooling_base_sha": case["base"], "tooling_base_tree": case["base_tree"],
+        "reviewed_tooling_sha256": _public_old_replay_tooling_digest(case),
+    }
+
+
+def test_old_replay_normal_squash_accepts_unknown_commit_identity_for_the_same_tree(old_replay_squash):
+    case = old_replay_squash
+    first = final._verify_candidate_history(case["checkout"], case["candidate"])
+    replacement = _git(case["checkout"], "commit-tree", case["candidate"] + "^{tree}",
+                       "-p", case["base"], "-m", "different public squash metadata")
+    assert replacement not in {case["candidate"], case["feature"]}
+    _git(case["checkout"], "checkout", "-q", "--detach", replacement)
+    second = final._verify_candidate_history(case["checkout"], replacement)
+    assert second == {**first, "candidate_sha": replacement, "descendant_commits": [replacement]}
+
+
+def test_old_replay_profile_preserves_the_reviewed_main_parent_and_historical_permissions(old_replay_squash):
+    case = old_replay_squash
+    _git(case["checkout"], "checkout", "-q", "--detach", case["base"])
+    result = final._verify_candidate_history(case["checkout"], case["base"])
+    assert "tooling_profile" not in result
+    assert result["integration_seed_sha"] is None
+    assert result["authorized_changed_paths"] == sorted([
+        "scripts/deploy/verify_candidate_semantics.py", "scripts/deploy/prepare_single_vps_release.py",
+        "scripts/deploy/issue_wavea_activation.py", "scripts/deploy/rehearse_wavea_same_port.py",
+        "scripts/deploy/verify_private_rehearsal.py", "tests/unit/deploy/test_final_source_refresh_transition.py",
+        "scripts/deploy/verify_final_source_refresh_transition.py",
+    ])
+    for path in (
+        "tests/unit/deploy/test_prepare_single_vps_release.py",
+        "tests/unit/deploy/test_same_port_rehearsal.py",
+        "tests/unit/deploy/fixtures/final_source_refresh_main00128_tooling.json",
+    ):
+        assert path not in final.AUTHORIZED_TOOLING_PATHS
+        assert path not in final._SEED_TOOLING_EXCLUSIONS
+
+
+def test_old_replay_normal_squash_fresh_clone_needs_no_seed_or_feature_head(old_replay_squash, tmp_path):
+    case = old_replay_squash
+    fresh = tmp_path / "fresh-replay-main"
+    _git(tmp_path, "clone", "--no-local", "--single-branch", "--branch", "public-replay-squash",
+         str(case["checkout"]), str(fresh))
+    for discarded in (case["seed"], case["feature"]):
+        with pytest.raises(ValueError):
+            final._git(fresh, "cat-file", "-e", discarded)
+    result = final._verify_candidate_history(fresh, case["candidate"])
+    assert result["tooling_base_sha"] == case["base"]
+    assert result["integration_seed_sha"] is None
+    assert result["descendant_commits"] == [case["candidate"]]
+
+
+@pytest.mark.parametrize("path", _PUBLIC_OLD_REPLAY_PATHS)
+@pytest.mark.parametrize("mutation", ["body", "mode", "type", "missing"])
+def test_old_replay_normal_squash_rejects_every_changed_reviewed_entry(old_replay_squash, path, mutation):
+    case = old_replay_squash
+    target = case["checkout"] / path
+    if mutation == "body":
+        target.write_bytes(target.read_bytes() + b"# changed public bytes\n")
+    elif mutation == "mode":
+        target.chmod(0o755)
+    else:
+        target.unlink()
+        if mutation == "type":
+            target.symlink_to("/public-unreviewed-target")
+    candidate = _amend_public_squash(case)
+    with pytest.raises(ValueError):
+        final._verify_candidate_history(case["checkout"], candidate)
+
+
+@pytest.mark.parametrize("path", [
+    "data/public_product.json", "scripts/deploy/verify_source_refresh_transition.py",
+    "scripts/deploy/verify_candidate_semantics.py", "scripts/deploy/issue_wavea_activation.py",
+    "scripts/deploy/verify_private_rehearsal.py",
+])
+@pytest.mark.parametrize("mutation", ["body", "mode", "type", "missing"])
+def test_old_replay_normal_squash_preserves_every_other_tree_entry(old_replay_squash, path, mutation):
+    case = old_replay_squash
+    target = case["checkout"] / path
+    if mutation == "body":
+        target.write_bytes(target.read_bytes() + b"# changed public product\n")
+    elif mutation == "mode":
+        target.chmod(0o755)
+    else:
+        target.unlink()
+        if mutation == "type":
+            target.symlink_to("/public-unreviewed-target")
+    candidate = _amend_public_squash(case)
+    with pytest.raises(ValueError, match="whole-tree"):
+        final._verify_candidate_history(case["checkout"], candidate)
+
+
+@pytest.mark.parametrize("path", [
+    "data/unreviewed.json", "scripts/deploy/extra.py", "scripts/deploy/rehearse_wavea_same_port_extra.py",
+    "tests/unit/deploy/test_extra.py", "tests/unit/deploy/fixtures/extra.json",
+])
+def test_old_replay_normal_squash_rejects_extra_or_similarly_named_paths(old_replay_squash, path):
+    case = old_replay_squash
+    target = case["checkout"] / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("PUBLIC_UNREVIEWED = True\n")
+    candidate = _amend_public_squash(case)
+    with pytest.raises(ValueError, match="whole-tree"):
+        final._verify_candidate_history(case["checkout"], candidate)
+
+
+@pytest.mark.parametrize("mutation", [
+    "wrong_head", "wrong_base_sha", "wrong_base_tree", "wrong_parent", "two_parents",
+    "future_commit", "product_then_revert", "feature_history", "wrong_closure_pin",
+    "missing_tooling_pin", "extra_tooling_pin", "unchanged_tooling_path",
+])
+def test_old_replay_normal_squash_rejects_other_identity_history_or_roster(old_replay_squash, monkeypatch, mutation):
+    case = old_replay_squash
+    checkout, candidate = case["checkout"], case["candidate"]
+    if mutation == "wrong_head":
+        candidate = "f" * 40
+    elif mutation in {"wrong_base_sha", "wrong_base_tree", "wrong_closure_pin"}:
+        name = {"wrong_base_sha": "OLD_REPLAY_BASE_SHA", "wrong_base_tree": "OLD_REPLAY_BASE_TREE",
+                "wrong_closure_pin": "_REVIEWED_OLD_REPLAY_PRODUCT_CLOSURE_SHA256"}[mutation]
+        monkeypatch.setattr(final, name, "f" * (64 if mutation == "wrong_closure_pin" else 40))
+    elif mutation in {"wrong_parent", "two_parents"}:
+        parents = [case["anchor"]] if mutation == "wrong_parent" else [case["base"], case["seed"]]
+        arguments = ["commit-tree", candidate + "^{tree}"]
+        for parent in parents:
+            arguments += ["-p", parent]
+        candidate = _git(checkout, *arguments, "-m", "unreviewed squash ancestry")
+        _git(checkout, "checkout", "-q", "--detach", candidate)
+    elif mutation == "future_commit":
+        case["new_tool"].write_bytes(case["source"] + b"# future\n")
+        candidate = _commit(checkout, "unreviewed replay descendant")
+    elif mutation == "product_then_revert":
+        body = case["product"].read_bytes()
+        case["product"].write_text('{"version": 99}')
+        _commit(checkout, "public unreviewed product intermediate")
+        case["product"].write_bytes(body)
+        candidate = _commit(checkout, "product revert does not restore the exact parent")
+    elif mutation == "feature_history":
+        candidate = case["feature"]
+        _git(checkout, "checkout", "-q", "--detach", candidate)
+    elif mutation in {"missing_tooling_pin", "extra_tooling_pin"}:
+        pins = dict(case["pins"])
+        if mutation == "missing_tooling_pin":
+            pins.pop("scripts/deploy/prepare_single_vps_release.py")
+        else:
+            pins["scripts/deploy/extra.py"] = _public_blob(b"PUBLIC = True\n")
+        monkeypatch.setattr(final, "_REVIEWED_OLD_REPLAY_TOOLING", pins)
+    else:
+        path = "tests/unit/deploy/test_source_refresh_transition.py"
+        body = final._git(checkout, "show", case["base"] + ":" + path)
+        (checkout / path).write_bytes(body)
+        pins = {**case["pins"], path: _public_blob(body)}
+        monkeypatch.setattr(final, "_REVIEWED_OLD_REPLAY_TOOLING", pins)
+        candidate = _amend_public_squash(case)
+    with pytest.raises(ValueError):
+        final._verify_candidate_history(checkout, candidate)
+
+
+@pytest.mark.parametrize("mutation", ["missing", "multiple", "malformed", "mismatch", "other_bytes", "resealed"])
+def test_old_replay_self_pin_rejects_changed_slot_or_resealed_candidate(old_replay_squash, mutation):
+    case = old_replay_squash
+    source, digest = case["source"], case["digest"].encode()
+    if mutation == "missing":
+        source = source.replace(b"_REVIEWED_OLD_REPLAY_SELF_SHA256", b"OTHER_DIGEST")
+    elif mutation == "multiple":
+        source += source.splitlines(keepends=True)[0]
+    elif mutation == "malformed":
+        source = source.replace(digest, b"x" * 64)
+    elif mutation == "mismatch":
+        source = source.replace(digest, b"f" * 64)
+    else:
+        source += b"# changed public verifier policy\n"
+        if mutation == "resealed":
+            replacement = hashlib.sha256(source.replace(digest, b"0" * 64)).hexdigest().encode()
+            source = source.replace(digest, replacement)
+    case["new_tool"].write_bytes(source)
+    candidate = _amend_public_squash(case)
+    assert final._REVIEWED_OLD_REPLAY_SELF_SHA256 == case["digest"]
+    with pytest.raises(ValueError):
+        final._verify_candidate_history(case["checkout"], candidate)
+
+
+@pytest.mark.parametrize("mutation", [None, "wrong_sha", "disk_bytes", "missing_final"])
+def test_old_replay_profile_keeps_actual_executing_verifier_binding(old_replay_squash, monkeypatch, mutation):
+    case = old_replay_squash
+    checkout = case["checkout"]
+    path = checkout / "scripts/deploy/verify_clinical_semantic_transition.py"
+    path.write_text("PUBLIC_HISTORICAL = True\n")
+    candidate = _commit(checkout, "public executing closure fixture only")
+    monkeypatch.setattr(final.historical, "__file__", str(path))
+    if mutation == "wrong_sha":
+        candidate = case["candidate"]
+    elif mutation == "disk_bytes":
+        case["new_tool"].write_text("PUBLIC_UNREVIEWED = True\n")
+    elif mutation == "missing_final":
+        case["new_tool"].unlink()
+    if mutation is None:
+        binding = final._guard_code_binding(checkout, candidate)
+        assert binding["verifier_sha"] == candidate
+        assert binding["files"]["scripts/deploy/verify_final_source_refresh_transition.py"] == hashlib.sha256(
+            case["source"]).hexdigest()
+    else:
+        with pytest.raises(ValueError):
+            final._guard_code_binding(checkout, candidate)
+
+
+_HISTORICAL_MAIN00128_TOOLING = {
+    "scripts/deploy/verify_final_source_refresh_transition.py": (
+        "b6af23d0203acede37132e89ebdf29b6b768d5bd",
+        "ece116123fc9ba24893231957c9e2c6e19b37bfa59bcc8140b7fbe1f7fb1361a",
+        91418,
+    ),
+    "scripts/deploy/prepare_single_vps_release.py": (
+        "90c22af28b7ac63dc540dc2dc72e798764a44f37",
+        "01eedc41193be4306e1682d584be75ed672aad701bae43b8ef44c490b4db38a1",
+        60596,
+    ),
+    "scripts/deploy/rehearse_wavea_same_port.py": (
+        "24166ec87faa0637af934cec9eff380c0b039484",
+        "f4880f79646e99d16374a724aec09a529225f9927577f333686fc05329ee2b8d",
+        54396,
+    ),
+    "tests/unit/deploy/test_final_source_refresh_transition.py": (
+        "b3e5ee0a4493ff43d56f9deb4b03c96eb002d29a",
+        "d34914cda1a7284ef42e7e95fd721c5e9034408f94acac9643822c92cdcd4291",
+        101077,
+    ),
+    "tests/unit/deploy/test_source_refresh_transition.py": (
+        "3e543f7c6b00f1f91800a5efb53b3f84a4615467",
+        "f9aaf6c111470758d5abe59a6ce100c9c99f57a06c9a937c97ab3f0c16e7fca3",
+        83093,
+    ),
+}
+
+
+def _historical_main00128_tooling_bytes(path):
+    """Read five immutable historical sources; never grant a later head admission."""
+    def unique_fields(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("Historical tooling fixture repeats a field")
+            result[key] = value
+        return result
+
+    fixture = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_fields)
+    if (not isinstance(fixture, dict)
+            or set(fixture) != {"schema_version", "purpose", "source_commit", "source_tree",
+                                "encoding", "sources"}
+            or type(fixture["schema_version"]) is not int or fixture["schema_version"] != 1
+            or fixture["source_commit"] != "00128c6001c7921621b44537fcecefc22236b1f3"
+            or fixture["source_tree"] != "ba09db1023be8ae17b5605145caefec771a7fbe5"
+            or fixture["encoding"] != "zlib-base64"
+            or fixture["purpose"] != "Historical reviewed tooling source bytes only; this fixture "
+                                    "grants no deployment admission to a later head."
+            or not isinstance(fixture["sources"], dict)
+            or set(fixture["sources"]) != set(_HISTORICAL_MAIN00128_TOOLING)):
+        raise ValueError("Historical tooling fixture has unknown provenance or roles")
+    decoded = {}
+    for source_path, (blob_sha1, sha256, size) in _HISTORICAL_MAIN00128_TOOLING.items():
+        row = fixture["sources"][source_path]
+        if (not isinstance(row, dict)
+                or set(row) != {"mode", "type", "blob_sha1", "sha256", "size_bytes",
+                                "zlib_base64_chunks"}
+                or row["mode"] != "100644" or row["type"] != "blob"
+                or row["blob_sha1"] != blob_sha1 or row["sha256"] != sha256
+                or type(row["size_bytes"]) is not int or row["size_bytes"] != size):
+            raise ValueError("Historical tooling fixture changes pinned source metadata")
+        chunks = row["zlib_base64_chunks"]
+        if (not isinstance(chunks, list) or not 1 <= len(chunks) <= 2048
+                or any(not isinstance(chunk, str) or not 1 <= len(chunk) <= 76 for chunk in chunks)
+                or any(len(chunk) != 76 for chunk in chunks[:-1])):
+            raise ValueError("Historical tooling fixture encoding is malformed")
+        try:
+            compressed = base64.b64decode("".join(chunks), validate=True)
+            decoder = zlib.decompressobj()
+            body = decoder.decompress(compressed, size + 1)
+        except (ValueError, zlib.error) as error:
+            raise ValueError("Historical tooling fixture encoding is malformed") from error
+        if (len(body) != size or not decoder.eof or decoder.unconsumed_tail or decoder.unused_data
+                or hashlib.sha256(body).hexdigest() != sha256
+                or _public_blob(body) != ("100644", "blob", blob_sha1)):
+            raise ValueError("Historical tooling fixture source bytes differ from reviewed pins")
+        decoded[source_path] = body
+    return decoded
+
+
 def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
+    """Keep main00128 pins historical while checking every unchanged current source."""
     checkout = Path(final.__file__).resolve().parents[2]
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    historical = _historical_main00128_tooling_bytes(fixture_path)
     for path, expected in {**final._FROZEN_PRIOR_TOOLING, **final._REVIEWED_SQUASH_TOOLING}.items():
-        assert _public_blob((checkout / path).read_bytes()) == expected
-    final._verify_squash_self_source(Path(final.__file__).read_bytes())
+        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        assert _public_blob(body) == expected
+    final._verify_squash_self_source(historical["scripts/deploy/verify_final_source_refresh_transition.py"])
+
+
+def test_old_replay_published_pins_match_every_current_tooling_body_and_new_self_source():
+    checkout = Path(final.__file__).resolve().parents[2]
+    assert final.OLD_REPLAY_BASE_SHA == "00128c6001c7921621b44537fcecefc22236b1f3"
+    assert final.OLD_REPLAY_BASE_TREE == "ba09db1023be8ae17b5605145caefec771a7fbe5"
+    assert final.OLD_REPLAY_TOOLING_PATHS == frozenset(_PUBLIC_OLD_REPLAY_PATHS)
+    assert set(final._REVIEWED_OLD_REPLAY_TOOLING) == set(_PUBLIC_OLD_REPLAY_PATHS) - {
+        "scripts/deploy/verify_final_source_refresh_transition.py"}
+    for path, entry in final._REVIEWED_OLD_REPLAY_TOOLING.items():
+        assert _public_blob((checkout / path).read_bytes()) == entry
+    final._verify_old_replay_self_source(Path(final.__file__).read_bytes())
+
+
+@pytest.mark.parametrize("source_path,mutation", [
+    ("scripts/deploy/prepare_single_vps_release.py", mutation) for mutation in (
+        "body", "rehashed_body", "mode", "type", "missing_role", "extra_role",
+        "forged_commit", "forged_tree", "extra_field", "extra_source_field", "schema_bool",
+        "encoding", "size_bool", "sha256", "blob_sha1", "truncated_stream", "trailing_stream",
+        "nonstring_chunk", "invalid_base64", "oversized_chunk", "missing_chunks",
+    )
+] + [
+    ("tests/unit/deploy/test_source_refresh_transition.py", mutation) for mutation in (
+        "body", "rehashed_body", "mode", "type", "missing_role", "sha256", "blob_sha1",
+        "extra_source_field",
+    )
+] + [
+    ("scripts/deploy/verify_final_source_refresh_transition.py", mutation) for mutation in (
+        "body", "rehashed_body", "mode", "type", "missing_role", "sha256", "blob_sha1",
+        "extra_source_field", "truncated_stream", "trailing_stream",
+    )
+])
+def test_historical_main00128_tooling_fixture_rejects_tampering(tmp_path, source_path, mutation):
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    row = fixture["sources"][source_path]
+    chunks = row["zlib_base64_chunks"]
+    if mutation in {"body", "rehashed_body", "truncated_stream", "trailing_stream"}:
+        compressed = base64.b64decode("".join(chunks), validate=True)
+        if mutation in {"body", "rehashed_body"}:
+            body = zlib.decompress(compressed)
+            body = bytes([body[0] ^ 1]) + body[1:]
+            compressed = zlib.compress(body)
+            if mutation == "rehashed_body":
+                row.update(sha256=hashlib.sha256(body).hexdigest(), blob_sha1=_public_blob(body)[2])
+        elif mutation == "truncated_stream":
+            compressed = compressed[:-1]
+        else:
+            compressed += b"unreviewed trailing bytes"
+        encoded = base64.b64encode(compressed).decode("ascii")
+        row["zlib_base64_chunks"] = [encoded[index:index + 76] for index in range(0, len(encoded), 76)]
+    elif mutation in {"mode", "type", "sha256", "blob_sha1", "size_bool"}:
+        key = "size_bytes" if mutation == "size_bool" else mutation
+        row[key] = {"mode": "100755", "type": "tree", "sha256": "f" * 64,
+                    "blob_sha1": "f" * 40, "size_bool": True}[mutation]
+    elif mutation == "missing_role":
+        del fixture["sources"][source_path]
+    elif mutation == "extra_role":
+        fixture["sources"]["scripts/deploy/unreviewed.py"] = copy.deepcopy(row)
+    elif mutation in {"forged_commit", "forged_tree"}:
+        fixture["source_commit" if mutation == "forged_commit" else "source_tree"] = "f" * 40
+    elif mutation == "extra_field":
+        fixture["admit_later_heads"] = True
+    elif mutation == "extra_source_field":
+        row["allow_changed_source"] = True
+    elif mutation == "schema_bool":
+        fixture["schema_version"] = True
+    elif mutation == "encoding":
+        fixture["encoding"] = "raw-base64"
+    elif mutation == "nonstring_chunk":
+        chunks[0] = None
+    elif mutation == "invalid_base64":
+        chunks[0] = "!" + chunks[0][1:]
+    elif mutation == "oversized_chunk":
+        chunks[0] += "A"
+    else:
+        row["zlib_base64_chunks"] = []
+    mutated = tmp_path / "historical-tooling.json"
+    mutated.write_text(json.dumps(fixture), encoding="utf-8")
+    with pytest.raises(ValueError):
+        _historical_main00128_tooling_bytes(mutated)
+
+
+def test_historical_main00128_tooling_fixture_rejects_duplicate_fields(tmp_path):
+    fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
+    raw = fixture_path.read_text(encoding="utf-8")
+    assert raw.count('"schema_version": 1') == 1
+    mutated = tmp_path / "historical-tooling.json"
+    mutated.write_text(raw.replace('"schema_version": 1', '"schema_version": 0, "schema_version": 1'),
+                       encoding="utf-8")
+    with pytest.raises(ValueError, match="repeats a field"):
+        _historical_main00128_tooling_bytes(mutated)
 
 
 def _copay():
@@ -1406,6 +1872,126 @@ def _final_report(projections, candidate="a" * 40):
     report["transition_sha256"] = _digest({key: value for key, value in report.items()
                                           if key not in {"status", "transition_sha256"}})
     return report
+
+
+def _old_replay_public_report():
+    """Public cache projections retain their existing source and money contracts."""
+    old, new = _public_final_pair()
+    report = _final_report({"baseline": old, "candidate": new})
+    checkout = Path(final.__file__).resolve().parents[2]
+    pins = {path: _public_blob((checkout / path).read_bytes()) for path in _PUBLIC_OLD_REPLAY_PATHS
+            if path != "scripts/deploy/verify_final_source_refresh_transition.py"}
+    manifest = {"profile": "bilun-old-replay-tooling-main00128-v1",
+        "base_sha": "00128c6001c7921621b44537fcecefc22236b1f3",
+        "base_tree": "ba09db1023be8ae17b5605145caefec771a7fbe5",
+        "product_closure_sha256": "5236c656fe4d1989e8ec3a4e584c763928b00cb9f8a52053bac23f59b99ff9a3",
+        "files": pins,
+        "verifier": {"path": "scripts/deploy/verify_final_source_refresh_transition.py",
+                     "mode": "100644", "type": "blob",
+                     "normalized_sha256": final._REVIEWED_OLD_REPLAY_SELF_SHA256}}
+    report["history"].update(
+        integration_seed_sha=None, integration_seed_tree=None,
+        descendant_commits=[report["candidate_code_sha"]],
+        authorized_changed_paths=list(_PUBLIC_OLD_REPLAY_PATHS),
+        product_closure_sha256=manifest["product_closure_sha256"],
+        tooling_profile=manifest["profile"], tooling_base_sha=manifest["base_sha"],
+        tooling_base_tree=manifest["base_tree"], reviewed_tooling_sha256=_digest(manifest))
+    report["transition_sha256"] = _digest({key: value for key, value in report.items()
+        if key not in {"status", "transition_sha256"}})
+    return report
+
+
+def test_old_replay_report_has_only_the_closed_twelve_field_tooling_addendum():
+    report = _old_replay_public_report()
+    final.validate_transition_report_contract(report)
+    assert set(report["history"]) == {
+        "product_anchor_sha", "product_anchor_tree", "candidate_sha", "descendant_commits",
+        "authorized_changed_paths", "integration_seed_sha", "integration_seed_tree",
+        "product_closure_sha256", "tooling_profile", "tooling_base_sha", "tooling_base_tree",
+        "reviewed_tooling_sha256",
+    }
+    assert report["source_intent"]["followup"]["clinical_eligibility_complete"] is False
+    assert report["source_intent"]["copay"]["payment_permission_added"] is False
+    assert report["source_projected_table_count"] == 19
+    assert report["strict_table_count"] == 13
+
+
+@pytest.mark.parametrize("mutation", [
+    "wrong_profile", "profile_bool", "missing_profile", "wrong_base", "base_bool",
+    "wrong_base_tree", "base_tree_none", "wrong_anchor", "wrong_anchor_tree", "wrong_closure",
+    "closure_bool", "wrong_tooling_digest", "tooling_digest_none", "missing_addendum_field",
+    "old_seed", "mixed_seed", "false_seed", "extra_descendant", "empty_descendants",
+    "wrong_candidate", "candidate_bool", "missing_path", "extra_path", "duplicate_path",
+    "unsorted_paths", "roster_tuple", "candidate_tree", "extra_field", "wrong_verifier",
+    "wrong_replay_candidate",
+])
+def test_old_replay_report_rejects_resealed_history_or_execution_authority(mutation):
+    report = _old_replay_public_report()
+    history = report["history"]
+    if mutation in {"wrong_profile", "profile_bool"}:
+        history["tooling_profile"] = "future-profile" if mutation == "wrong_profile" else True
+    elif mutation == "missing_profile":
+        history.pop("tooling_profile")
+    elif mutation in {"wrong_base", "base_bool", "wrong_base_tree", "base_tree_none"}:
+        key = "tooling_base_tree" if "tree" in mutation else "tooling_base_sha"
+        history[key] = True if mutation == "base_bool" else None if mutation == "base_tree_none" else "f" * 40
+    elif mutation in {"wrong_anchor", "wrong_anchor_tree"}:
+        history["product_anchor_tree" if mutation.endswith("tree") else "product_anchor_sha"] = "f" * 40
+    elif mutation in {"wrong_closure", "closure_bool", "wrong_tooling_digest", "tooling_digest_none"}:
+        key = "product_closure_sha256" if mutation.startswith("wrong_closure") or mutation == "closure_bool" else "reviewed_tooling_sha256"
+        history[key] = True if mutation == "closure_bool" else None if mutation == "tooling_digest_none" else "f" * 64
+    elif mutation == "missing_addendum_field":
+        history.pop("tooling_base_tree")
+    elif mutation in {"old_seed", "mixed_seed", "false_seed"}:
+        history["integration_seed_sha"] = False if mutation == "false_seed" else final.INTEGRATION_SEED_SHA
+        if mutation == "old_seed":
+            history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
+    elif mutation in {"extra_descendant", "empty_descendants"}:
+        history["descendant_commits"] = [] if mutation == "empty_descendants" else ["b" * 40, report["candidate_code_sha"]]
+    elif mutation in {"wrong_candidate", "candidate_bool"}:
+        history["candidate_sha"] = False if mutation == "candidate_bool" else "b" * 40
+    elif mutation in {"missing_path", "extra_path", "duplicate_path", "unsorted_paths", "roster_tuple"}:
+        paths = history["authorized_changed_paths"]
+        if mutation == "missing_path":
+            paths.pop()
+        elif mutation == "extra_path":
+            paths.append("scripts/deploy/extra.py")
+            paths.sort()
+        elif mutation == "duplicate_path":
+            paths.append(paths[-1])
+        elif mutation == "unsorted_paths":
+            paths.reverse()
+        else:
+            history["authorized_changed_paths"] = tuple(paths)
+    elif mutation in {"candidate_tree", "extra_field"}:
+        history["candidate_tree" if mutation == "candidate_tree" else "future_permission"] = "f" * 40
+    elif mutation == "wrong_verifier":
+        report["verifier"]["verifier_sha"] = "b" * 40
+    else:
+        report["replay_checkouts"]["candidate"]["code_sha"] = "b" * 40
+    report["transition_sha256"] = _digest({key: value for key, value in report.items()
+        if key not in {"status", "transition_sha256"}})
+    with pytest.raises(ValueError):
+        final.validate_transition_report_contract(report)
+
+
+@pytest.mark.parametrize("mutation", ["new_paths_only", "partial_addendum", "old_seed_new_profile"])
+def test_historical_reports_cannot_inherit_new_tooling_permissions_by_resealing(mutation):
+    old, new = _public_final_pair()
+    report = _final_report({"baseline": old, "candidate": new})
+    if mutation == "new_paths_only":
+        report["history"]["authorized_changed_paths"] = list(_PUBLIC_OLD_REPLAY_PATHS)
+    elif mutation == "partial_addendum":
+        report["history"]["tooling_profile"] = "bilun-old-replay-tooling-main00128-v1"
+    else:
+        fresh = _old_replay_public_report()
+        report["history"] = fresh["history"]
+        report["history"]["integration_seed_sha"] = final.INTEGRATION_SEED_SHA
+        report["history"]["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
+    report["transition_sha256"] = _digest({key: value for key, value in report.items()
+        if key not in {"status", "transition_sha256"}})
+    with pytest.raises(ValueError):
+        final.validate_transition_report_contract(report)
 
 
 def _public_proof():
