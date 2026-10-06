@@ -150,7 +150,7 @@ def _procedure_pairing_satisfied(
     procedure_codes_on_claim: frozenset[str],
     billed_procedure_line_ids: frozenset[str],
 ) -> bool:
-    """§3.1.1(11)-style: listed material needs a linked or matching procedure on the claim."""
+    """§3.1.1(13)-style: listed material needs a linked or matching procedure on the claim."""
     if not is_material_in_ek3c_catalog(material_code):
         return True
 

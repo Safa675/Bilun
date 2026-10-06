@@ -37,12 +37,23 @@ def test_not_in_ek3c_when_code_unknown() -> None:
     assert hits[0]["rule_id"] == "3.1.2.(2).not_in_ek3c"
 
 
+def _assert_cites_in_force_3_1_1_13(hit: dict) -> None:
+    # In-force §3.1.1(11) is the quality-document clause; the material/procedure
+    # billing text it once held now lives only in superseded copies. The in-force
+    # anchor is §3.1.1(13) (EK-3 codes billed in addition to procedure codes).
+    assert "(§3.1.1(13))" in hit["message"]
+    assert "§3.1.1(11)" not in hit["message"]
+    assert hit["clause_ref"]["clause_coordinate"] == "3.1.1.(13)"
+    assert hit["clause_ref"]["clause_key"].startswith("3.1.1.(13)#")
+
+
 def test_missing_material_code() -> None:
     hits = check_material_bundling_prose(
         [{"name": "Kodsuz malzeme", "unit_price": 10.0}]
     )
     assert len(hits) == 1
     assert hits[0]["rule_id"] == "3.1.1.(11).missing_material_code"
+    _assert_cites_in_force_3_1_1_13(hits[0])
 
 
 def test_procedure_pairing_when_ek3c_code_unlinked() -> None:
@@ -55,6 +66,7 @@ def test_procedure_pairing_when_ek3c_code_unlinked() -> None:
     )
     assert len(hits) == 1
     assert hits[0]["rule_id"] == "3.1.1.(11).procedure_pairing"
+    _assert_cites_in_force_3_1_1_13(hits[0])
 
 
 def test_procedure_pairing_ok_via_line_id() -> None:

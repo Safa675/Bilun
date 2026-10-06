@@ -190,6 +190,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tıbbi malzeme alan tanımları (SUT kodları)",
       "linked_rule_ids": [
+        "3.1.1.(11).missing_material_code",
+        "3.1.1.(11).procedure_pairing",
         "3.1.1.(15).separate_billing_not_authorized"
       ]
     },

@@ -1890,7 +1890,7 @@
   "executable_predicate_scope": "diagnosis_applicability_only_lower_bound",
   "file_sha256": {
     "data/gazette/clause_type_overrides.yaml": "2880da37d29c740c3b084b16a6377e55006c54b6ea549c95ef37c7505db044bd",
-    "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json": "6b7d0ce1ca1152e6daa933838a2ccb15f6a2bdd7c0495e8852ae163f7dcdfb05",
+    "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json": "3d2ee9e954f21393d3ad6c566a54f1b95c6ea13791b01f2917e4ffb157665a5a",
     "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json": "3916d3c87406112800b9f2e7480b6f17c29847d66a6ef305ecf12463f776e25d",
     "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json": "057879535aca23fc680b002ee9a2e616f8c75c11a9ec5b4ea97943fb36846469",
     "data/gazette/prose_manifests/L2.2_procedure_pairing_encoded_manifest.json": "024ed7f515d3c2cf3fb5b785a926a44af0d405d39a4be9e711fd73e3712a8419",
@@ -1950,7 +1950,7 @@
     "data/gazette/prose_rules/fatura_inceleme_prose.schema.json": "85e6a37695c579b8b1df48effc29e1c04e413add2a8c96f40238b83bb97ba5bc",
     "data/gazette/prose_rules/gap_closing_misc.json": "2c5e6f187bd56bc24d891d2f6dcd427efc8fc77d10f9d78eb9848bb52ed7ec73",
     "data/gazette/prose_rules/gap_closing_treatment_2.json": "3f4ccd544be398da538f979bd2ef7e4ff9c1e824e243771f4a52e77c53042080",
-    "data/gazette/prose_rules/material_bundling_prose.json": "ffa7c0570846317eb58f4695d189b73827794c8bbe6e0a1b873320a2383861b9",
+    "data/gazette/prose_rules/material_bundling_prose.json": "602bbc1ecf1f2efa660310140acadcd16fbaa210243b382e84fffd06026873a6",
     "data/gazette/prose_rules/material_bundling_prose.schema.json": "30ddd881f65ebf9485b11fe18f23366ed7ade5d0cfd67ddb26a307a1bbe64145",
     "data/gazette/prose_rules/material_pairing_uplift.json": "928bdfc3b47bd98a9d6c322bf2b454dfcb517597b4a7611ae60e855a8283d2aa",
     "data/gazette/prose_rules/payment_method_2_2.json": "8102cb83b7171cd710425b6b69a442536630f2460ae565c2481932c41e6c299f",

@@ -4,23 +4,27 @@ rules:
 - rule_id: 3.1.1.(11).missing_material_code
   sut_section: 3.1.1
   deontic: MUST_HAVE_CODE
+  gate_b_sources:
+  - 3.1.1.(13)
   condition:
     requires_material_code: true
     material_code_missing: true
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(11)).
+    message_tr: Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(13)).
 - rule_id: 3.1.1.(11).procedure_pairing
   sut_section: 3.1.1
   deontic: MUST_PAIR_PROCEDURE
+  gate_b_sources:
+  - 3.1.1.(13)
   condition:
     material_in_ek3c: true
     procedure_pairing_required: true
   action:
     material_outcome: no_pay
     severity: warning
-    message_tr: EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(11)).
+    message_tr: EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(13)).
 - rule_id: 3.1.1.(2).titubb_uts_incomplete
   sut_section: 3.1.1
   deontic: NO_PAY
