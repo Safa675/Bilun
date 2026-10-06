@@ -6,11 +6,17 @@
  * One command writes, from a local production build and the SYNTHETIC cohort:
  *   screens/   viewport + full-page PNGs per route, locale and size
  *   numbers/   every money amount / count / percent per rendered state (JSON,
- *              deterministic: no timestamps, no commit, no ports)
- *   text/      the normalised visible text behind each numbers file (for diffs)
- *   metrics/   layout measurements (page height, first table row, money wraps)
- *   run-meta.json  commit, versions, failures (NOT deterministic, never compared)
- * and `--compare A B` proves that no number changed between two runs.
+ *              deterministic: no timestamps, no commit, no ports), the honesty
+ *              wording, the lone "-" placeholders and the amounts that sit under a label
+ *   text/      the normalised text behind each numbers file, for diffs:
+ *              <state>.txt = everything on the expanded page, <state>.visible.txt =
+ *              what the default view really shows (layout-hidden text left out)
+ *   metrics/   layout measurements (page height, first table row, money wraps,
+ *              money overlaps and clipping, chat input height)
+ *   run-meta.json  commit, tool file hashes, versions, failures (NOT deterministic, never compared)
+ * and `--compare A B` checks that no number was added, lost, repeated as a zero
+ * amount, detached from its label or stripped of its "not exact" wording between
+ * two runs (what it can and cannot prove: header of lib/numbers-parity.mjs).
  *
  * LOCAL RUN (verified 2026-10-07; ports 18001/13000 are this lane's ports):
  *   # once per checkout; Node 22 is closer to CI (Node 20) than the laptop's v26
@@ -36,6 +42,22 @@
  *   # capture (system Chrome via Playwright channel "chrome"; no browser download)
  *   node scripts/capture-screens.mjs --out <dir>          # <dir> must be new (or pass --overwrite)
  *   node scripts/capture-screens.mjs --compare <baselineDir> <candidateDir>
+ *   node scripts/capture-screens.mjs --self-test           # no servers: checks the visibility probes in Chrome
+ *
+ * Routes: the 8 plan routes, plus (unless --no-extras) the split pane, the ?section=&finding=
+ * deep link and every other Compliance and Reference Tools sub-view (lib/capture-routes.mjs).
+ * A capture needs about 15 minutes; --routes <ids> --locales en --sizes 1440x900 is the quick check.
+ * Re-recording a baseline: pass --overwrite. The old output is only replaced when the whole
+ * new run succeeded (it is written next to it as <out>.incomplete first).
+ *
+ * KNOWN LIMITS (measured, not fixed here because they live in the app)
+ *  - At 390 px the app sizes the chat textarea once, at mount, with a transient width, so
+ *    identical runs differ by up to about 60 px in scrollHeight, firstTableRowTop and
+ *    firstMoney.top of the patient pages (metrics.chatInputHeight records the cause). At 1440
+ *    and 1280 they are identical. deepLink.top is the page's own scroll offset and is not stable.
+ *  - The collapsed chat bar planned for Phase 1 should remove that jitter (not verified yet).
+ *  - moneyWrapCount cannot fire in Turkish (no space inside "₺66.524,22"); moneyOverlapCount
+ *    and moneyClippedCount measure collisions and cut-off amounts in both locales.
  *
  * Stop both servers by listening PID when done: ss -ltnp "sport = :13000" (lsof is unreliable here).
  * Identity: default "public" (anonymous, public billing). "--identity dev" mints a
@@ -48,7 +70,11 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { compareRuns, normaliseLines, SCHEMA, tokenise } from "./lib/numbers-parity.mjs";
+import { fileURLToPath } from "node:url";
+import { subtabRoutes } from "./lib/capture-routes.mjs";
+import { compareRuns, describeItem, normaliseLines, SCHEMA, tokenise, verdict } from "./lib/numbers-parity.mjs";
+import { installPageProbes } from "./lib/page-probes.mjs";
+import { registerSecret, safeMessage } from "./lib/safe-message.mjs";
 
 // ---------------------------------------------------------------- constants
 
@@ -74,6 +100,7 @@ const HELP = [
   "  --out <dir>  --locales en,tr  --sizes 1440x900,1280x800,390x844  --routes <ids>  --mode all|screens|numbers",
   "  --identity public|dev [--env-file <file>]  --base-url <url>  --retries 2  --probe name=css  --no-extras  --overwrite",
   "  --compare <baselineDir> <candidateDir> [--allow <file>] [--strict-multiplicity] [--json <file>]",
+  "  --self-test   (checks the visibility probes against a built-in page; needs Chrome, no servers)",
 ].join("\n");
 
 function usage(message) {
@@ -88,7 +115,7 @@ const VALUE_OPTIONS = new Set([
 ]);
 
 function parseArgs(argv) {
-  const flags = new Set(["no-full-page", "reduced-motion", "no-extras", "strict-multiplicity", "overwrite", "help"]);
+  const flags = new Set(["no-full-page", "reduced-motion", "no-extras", "strict-multiplicity", "overwrite", "self-test", "help"]);
   const opts = { probe: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -122,6 +149,7 @@ function parseArgs(argv) {
     overwrite: Boolean(opts.overwrite),
     probes: opts.probe.map((p) => ({ name: p.split("=")[0], css: p.slice(p.indexOf("=") + 1) })),
     help: Boolean(opts.help),
+    selfTest: Boolean(opts["self-test"]),
     compare: opts.compare ?? null,
     strictMultiplicity: Boolean(opts["strict-multiplicity"]),
     allowFile: opts.allow ?? null,
@@ -151,7 +179,10 @@ function mintSessionToken(envFile) {
   if (!secret || !user) throw usage("--env-file must define BILUN_SESSION_SECRET and BILUN_AUTH_USERNAME");
   const payload = Buffer.from(`${purpose}:${user}.${Math.floor(Date.now() / 1000) + 8 * 3600}`, "utf8");
   const signature = crypto.createHmac("sha256", secret).update(payload).digest();
-  return `${payload.toString("base64url")}.${signature.toString("base64url")}`;
+  const token = `${payload.toString("base64url")}.${signature.toString("base64url")}`;
+  registerSecret(token);
+  registerSecret(secret);
+  return token;
 }
 
 // ---------------------------------------------------------------- browser helpers
@@ -170,6 +201,7 @@ async function newContext(browser, cfg, { locale, size, split, token }) {
   const cookies = [{ name: "bilun:locale", value: locale, url: cfg.baseUrl }];
   if (token) cookies.push({ name: "bilun:session", value: token, url: cfg.baseUrl });
   await context.addCookies(cookies);
+  await context.addInitScript(installPageProbes);
   await context.route("**/api/chat", (route) => route.fulfill(CHAT_STUB));
   if (split) {
     // Pane B is store-only (lib/workspaceTabs.ts WORKSPACE_STORAGE_KEY), so seed the session.
@@ -295,33 +327,70 @@ async function expandAll(page) {
   }
 }
 
+/** Everything innerText gives: the expanded page, including text CSS merely collapsed. */
 const readScopes = (page) =>
   page.evaluate((selector) => [...document.querySelectorAll(selector)].map((s) => s.innerText).join("\n"), SCOPE_SELECTOR);
+
+/** What the default view really shows: innerText minus anything the layout hides (lib/page-probes.mjs). */
+const readVisible = (page) => page.evaluate((selector) => window.__bilunCapture.visibleText(selector), SCOPE_SELECTOR);
 
 /** Layout metrics of the default view (taken before anything is expanded). */
 function measure(page, probes) {
   return page.evaluate(
     ({ selector, probes: probeList }) => {
-      const scope = document.querySelector(selector);
+      const scopes = [...document.querySelectorAll(selector)];
       const scrollY = window.scrollY;
       const round = (n) => Math.round(n);
+      const isHidden = window.__bilunCapture.hiddenCheck();
       const en = /-?\d[\d,]*(?:\.\d+)? TRY/g;
       const tr = /₺-?\d[\d.]*(?:,\d+)?/g;
+      const trPostfix = /(?<![\w.,])-?\d+(?:\.\d+)? ?₺/g; // backend prose: "9000.00 ₺"
+      // 1. every rendered text node of the scopes (layout-hidden ones left out) with its line boxes,
+      //    cut to what the clipping ancestors (overflow hidden / ellipsis / scroll boxes) really show
+      const clipBox = new Map();
+      const clippingBox = (el) => {
+        if (!clipBox.has(el)) {
+          const cs = getComputedStyle(el);
+          clipBox.set(el, cs.overflowX !== "visible" || cs.overflowY !== "visible" ? el.getBoundingClientRect() : null);
+        }
+        return clipBox.get(el);
+      };
+      const shown = (rect, from) => {
+        let box = { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+        for (let el = from; el && el !== document.body; el = el.parentElement) {
+          const c = clippingBox(el);
+          if (!c) continue;
+          box = { left: Math.max(box.left, c.left), right: Math.min(box.right, c.right), top: Math.max(box.top, c.top), bottom: Math.min(box.bottom, c.bottom) };
+          if (box.right <= box.left || box.bottom <= box.top) return null;
+        }
+        return { ...box, width: box.right - box.left, height: box.bottom - box.top };
+      };
+      const texts = [];
+      for (const scope of scopes) {
+        const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.nodeValue.trim() || !node.parentElement || isHidden(node.parentElement)) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+          if (rects.length) texts.push({ node, rects, shown: rects.map((r) => shown(r, node.parentElement)).filter(Boolean) });
+        }
+      }
+      // 2. money amounts
       const wraps = [];
+      const money = [];
       let first = null;
-      let moneyCount = 0;
-      const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
-      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-        const text = node.nodeValue.replace(/\s/g, " ");
-        for (const re of [en, tr]) {
+      for (const entry of texts) {
+        const text = entry.node.nodeValue.replace(/\s/g, " ");
+        for (const re of [en, tr, trPostfix]) {
           re.lastIndex = 0;
           for (let m = re.exec(text); m; m = re.exec(text)) {
             const range = document.createRange();
-            range.setStart(node, m.index);
-            range.setEnd(node, m.index + m[0].length);
+            range.setStart(entry.node, m.index);
+            range.setEnd(entry.node, m.index + m[0].length);
             const rects = [...range.getClientRects()].filter((r) => r.width > 0);
             if (!rects.length) continue;
-            moneyCount += 1;
+            money.push({ text: m[0], node: entry.node, rects, shown: rects.map((r) => shown(r, entry.node.parentElement)).filter(Boolean) });
             const lines = new Set(rects.map((r) => round(r.top))).size;
             const top = round(Math.min(...rects.map((r) => r.top)) + scrollY);
             const bottom = round(Math.max(...rects.map((r) => r.bottom)) + scrollY);
@@ -330,7 +399,33 @@ function measure(page, probes) {
           }
         }
       }
-      const row = scope.querySelector("tbody tr");
+      // 3. collisions: an amount printed over other text (or another amount), and an amount cut off by a clipping ancestor
+      // Two text boxes collide when they share the same line band (at least half of the smaller box's
+      // height, so a label right above a value does not count) and cross horizontally by at least
+      // 10% of the narrower box (and more than 2 px).
+      const collide = (a, b) => {
+        const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        return ox > 2 && oy >= 0.5 * Math.min(a.height, b.height) && ox >= 0.1 * Math.min(a.width, b.width);
+      };
+      const overlaps = [];
+      const clipped = [];
+      for (const m of money) {
+        const hit = texts.find(
+          (other) => other.node !== m.node && other.shown.some((o) => m.shown.some((r) => collide(r, o))),
+        );
+        if (hit) overlaps.push({ text: m.text, top: round(Math.min(...m.rects.map((r) => r.top)) + scrollY), with: hit.node.nodeValue.trim().slice(0, 60) });
+        const left = Math.min(...m.rects.map((r) => r.left));
+        const right = Math.max(...m.rects.map((r) => r.right));
+        let cut = right > document.documentElement.clientWidth + 1 || left < -1 ? "page" : null;
+        for (let el = m.node.parentElement; el && el !== document.body && !cut; el = el.parentElement) {
+          const box = clippingBox(el);
+          if (box && (right > box.right + 1 || left < box.left - 1)) cut = `${el.tagName.toLowerCase()}${el.className && typeof el.className === "string" ? `.${el.className.split(" ")[0]}` : ""}`;
+        }
+        if (cut) clipped.push({ text: m.text, top: round(Math.min(...m.rects.map((r) => r.top)) + scrollY), by: cut });
+      }
+      // 4. named probes and page numbers
+      const row = scopes[0]?.querySelector("tbody tr");
       const boxes = {};
       for (const { name, css } of probeList) {
         const el = document.querySelector(css);
@@ -341,15 +436,21 @@ function measure(page, probes) {
         const r = el.getBoundingClientRect();
         boxes[name] = { top: round(r.top + scrollY), bottom: round(r.bottom + scrollY), left: round(r.left), width: round(r.width) };
       }
+      const chat = scopes[0]?.querySelector("textarea");
       const de = document.documentElement;
       return {
         scrollHeight: de.scrollHeight,
         horizontalScroll: de.scrollWidth > de.clientWidth,
         firstTableRowTop: row ? round(row.getBoundingClientRect().top + scrollY) : null,
         firstMoney: first,
-        moneyCount,
+        moneyCount: money.length,
         moneyWrapCount: wraps.length,
         moneyWraps: wraps,
+        moneyOverlapCount: overlaps.length,
+        moneyOverlaps: overlaps.slice(0, 10),
+        moneyClippedCount: clipped.length,
+        moneyClipped: clipped.slice(0, 10),
+        chatInputHeight: chat ? round(chat.getBoundingClientRect().height) : null,
         probes: boxes,
       };
     },
@@ -404,8 +505,8 @@ function buildRoutes(cfg, facts) {
     routes.push({ id: `patient-${patient.slice(-4)}`, kind: "patient", url: `/patient/${patient}`, patient });
   }
   if (cfg.extras) {
-    // Beyond the eight plan routes: split pane (every patient-page change is tested in both) and the
-    // ?section=&finding= deep link that Phase 2 must keep working.
+    // Beyond the eight plan routes: split pane (every patient-page change is tested in both), the
+    // ?section=&finding= deep link that Phase 2 must keep working, and the sub-views below.
     routes.push({
       id: "patient-0003+0017-split",
       kind: "split",
@@ -420,6 +521,8 @@ function buildRoutes(cfg, facts) {
         findingId: facts.findingId,
       });
     }
+    // The other Compliance and Reference Tools sub-views: Phases 3 and 4 rewrite their tables and tiles.
+    routes.push(...subtabRoutes());
   }
   if (!cfg.routes) return routes;
   const unknown = cfg.routes.filter((id) => !routes.some((r) => r.id === id));
@@ -456,11 +559,10 @@ async function captureRoute(browser, cfg, route, locale, size, primary, facts, t
   const context = await newContext(browser, cfg, { locale, size, split: route.split, token });
   const page = await context.newPage();
   const watch = watchPage(page);
-  const result = { states: [], metrics: null, screens: {} };
+  const result = { states: [], metrics: null, screens: {}, layoutHiddenElements: 0 };
   try {
     for (const spec of planStates(route, facts, primary)) {
       await openState(page, watch, cfg, route, spec);
-      const visibleText = await readScopes(page);
       if (spec.state === "default") {
         // Measure first: screenshots can move the scroll position (deep link).
         result.metrics = await measure(page, cfg.probes);
@@ -478,12 +580,16 @@ async function captureRoute(browser, cfg, route, locale, size, primary, facts, t
           if (cfg.fullPage) result.screens.full = await page.screenshot({ animations: "disabled", caret: "hide", fullPage: true });
         }
       }
+      // After measure() and the screenshots: reading the visible text briefly hides collapsed boxes
+      // (lib/page-probes.mjs), which a component with a ResizeObserver could react to.
+      const visible = await readVisible(page);
+      result.layoutHiddenElements += visible.hiddenElements;
       await expandAll(page);
       await settle(page, watch, { scopes: route.kind === "split" ? 2 : 1 });
       const expandedText = await readScopes(page);
       result.states.push({
         state: spec.state,
-        visibleLines: normaliseLines(visibleText),
+        visibleLines: normaliseLines(visible.text),
         expandedLines: normaliseLines(expandedText),
       });
     }
@@ -516,26 +622,44 @@ function writeResult(cfg, route, locale, size, result) {
         visible: tokenise(s.visibleLines),
         expanded: tokenise(s.expandedLines),
       };
-      writeFile(path.join(cfg.out, "numbers", `${base}.json`), `${JSON.stringify(doc, null, 2)}\n`);
-      writeFile(path.join(cfg.out, "text", `${base}.txt`), `${s.expandedLines.join("\n")}\n`);
+      writeFile(path.join(cfg.writeDir, "numbers", `${base}.json`), `${JSON.stringify(doc, null, 2)}\n`);
+      writeFile(path.join(cfg.writeDir, "text", `${base}.txt`), `${s.expandedLines.join("\n")}\n`);
+      writeFile(path.join(cfg.writeDir, "text", `${base}.visible.txt`), `${s.visibleLines.join("\n")}\n`);
     }
   }
-  if (result.screens.viewport) writeFile(path.join(cfg.out, "screens", locale, tag, `${route.id}.png`), result.screens.viewport);
-  if (result.screens.full) writeFile(path.join(cfg.out, "screens", locale, tag, `${route.id}.full.png`), result.screens.full);
+  if (result.screens.viewport) writeFile(path.join(cfg.writeDir, "screens", locale, tag, `${route.id}.png`), result.screens.viewport);
+  if (result.screens.full) writeFile(path.join(cfg.writeDir, "screens", locale, tag, `${route.id}.full.png`), result.screens.full);
   if (result.metrics) {
-    writeFile(path.join(cfg.out, "metrics", locale, tag, `${route.id}.json`), `${JSON.stringify(result.metrics, null, 2)}\n`);
+    writeFile(path.join(cfg.writeDir, "metrics", locale, tag, `${route.id}.json`), `${JSON.stringify(result.metrics, null, 2)}\n`);
   }
 }
 
 const GENERATED = ["numbers", "text", "metrics", "screens", "run-meta.json"];
 
-/** A capture must never mix with files of an earlier run: stale numbers would pass a compare as if they were new. */
+/**
+ * A capture must never mix with files of an earlier run (stale numbers would pass a compare as
+ * if they were new), and a failed run must never destroy a recorded baseline. So: a fresh --out
+ * is written in place; with --overwrite over an existing capture the new run is staged in
+ * <out>.incomplete and replaces the old output only when the whole run succeeded.
+ */
 function prepareOutDir(cfg) {
   const existing = GENERATED.filter((name) => fs.existsSync(path.join(cfg.out, name)));
   if (existing.length && !cfg.overwrite) {
     throw usage(`${cfg.out} already holds capture output (${existing.join(", ")}). Use a new --out, or pass --overwrite to replace it.`);
   }
-  for (const name of existing) fs.rmSync(path.join(cfg.out, name), { recursive: true, force: true });
+  cfg.staged = existing.length > 0;
+  cfg.writeDir = cfg.staged ? `${cfg.out}.incomplete` : cfg.out;
+  if (cfg.staged) fs.rmSync(cfg.writeDir, { recursive: true, force: true });
+}
+
+/** Replace the old output by the staged one (all generated names go, so nothing of the old run survives). */
+function publishStaged(cfg) {
+  for (const name of GENERATED) fs.rmSync(path.join(cfg.out, name), { recursive: true, force: true });
+  for (const name of GENERATED) {
+    const from = path.join(cfg.writeDir, name);
+    if (fs.existsSync(from)) fs.renameSync(from, path.join(cfg.out, name));
+  }
+  fs.rmSync(cfg.writeDir, { recursive: true, force: true });
 }
 
 function gitMeta() {
@@ -565,25 +689,95 @@ function walkJson(dir) {
   return found;
 }
 
+const REPORT_LIMIT = 60;
+
 function runCompare(cfg) {
   const [a, b] = cfg.compare.map((d) => path.resolve(d));
   const baseline = walkJson(path.join(a, "numbers"));
   if (!Object.keys(baseline).length) throw usage(`No numbers files under ${a}/numbers`);
   const allow = cfg.allowFile ? JSON.parse(fs.readFileSync(cfg.allowFile, "utf8")) : {};
   const report = compareRuns(baseline, walkJson(path.join(b, "numbers")), { strictMultiplicity: cfg.strictMultiplicity, allow });
-  const line = (item) => `  ${item.key}  ${item.problem}  ${item.kind ?? ""} ${item.value ?? ""}`.trimEnd();
   console.log(`states compared: ${Object.keys(baseline).length}`);
   console.log(`failures: ${report.failures.length}, warnings: ${report.warnings.length}, unused allow entries: ${report.unusedAllow.length}`);
-  for (const item of report.failures.slice(0, 60)) console.log(line(item));
-  if (report.failures.length > 60) console.log(`  ... ${report.failures.length - 60} more`);
-  for (const item of report.warnings.slice(0, 15)) console.log(`  (warning) ${line(item).trim()}`);
+  for (const item of report.failures.slice(0, REPORT_LIMIT)) console.log(`  ${describeItem(item)}`);
+  if (report.failures.length > REPORT_LIMIT) console.log(`  ... ${report.failures.length - REPORT_LIMIT} more (use --json for all)`);
+  for (const item of report.warnings.slice(0, REPORT_LIMIT)) console.log(`  (warning) ${describeItem(item)}`);
+  if (report.warnings.length > REPORT_LIMIT) console.log(`  (warning) ... ${report.warnings.length - REPORT_LIMIT} more (use --json for all)`);
   for (const item of report.unusedAllow) console.log(`  (unused allow, remove it) ${item.list} ${item.key} ${item.kind} ${item.value}${item.reason ? ` - ${item.reason}` : ""}`);
   if (cfg.jsonReport) writeFile(path.resolve(cfg.jsonReport), `${JSON.stringify(report, null, 2)}\n`);
-  console.log(report.ok ? "PARITY OK: no number changed" : "PARITY FAILED");
-  return report.ok ? 0 : 1;
+  if (report.failures.some((f) => f.problem === "schema_differs")) {
+    console.log(`The two captures were recorded with different tool versions (schema ${SCHEMA} is current). Re-record the baseline with this tool: --out <baselineDir> --overwrite.`);
+    return 2;
+  }
+  const result = verdict(report);
+  console.log(result.line);
+  return result.exitCode;
+}
+
+// ---------------------------------------------------------------- self-test
+
+const SELF_TEST_VISIBLE = ["VIS_PLAIN", "VIS_ZERO_WRAPPER", "VIS_CONTENTS", "VIS_INLINE", "VIS_OPEN_DETAILS"];
+// innerText still returns these (CSS collapsed them) - the probes must not.
+const SELF_TEST_COLLAPSED = ["HID_HEIGHT0", "HID_MAXHEIGHT0", "HID_GRID0FR", "HID_OPACITY0", "HID_SRONLY", "HID_OFFSCREEN"];
+// innerText already leaves these out.
+const SELF_TEST_EXCLUDED = ["HID_DISPLAYNONE", "HID_ATTRIBUTE", "HID_VISIBILITY", "HID_CLOSED_DETAILS"];
+const SELF_TEST_HTML = `<!doctype html><html><body><main id="main-content">
+  <div>VIS_PLAIN</div>
+  <div style="height:0"><span>VIS_ZERO_WRAPPER</span></div>
+  <div style="display:contents"><span>VIS_CONTENTS</span></div>
+  <p>before <span>VIS_INLINE</span> after</p>
+  <details open><summary>s</summary>VIS_OPEN_DETAILS</details>
+  <div data-case="height0" style="height:0;overflow:hidden">HID_HEIGHT0</div>
+  <div style="max-height:0;overflow:hidden">HID_MAXHEIGHT0</div>
+  <div style="display:grid;grid-template-rows:0fr"><div style="overflow:hidden;min-height:0">HID_GRID0FR</div></div>
+  <div style="opacity:0">HID_OPACITY0</div>
+  <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap">HID_SRONLY</span>
+  <div style="position:absolute;left:-9999px">HID_OFFSCREEN</div>
+  <div style="display:none">HID_DISPLAYNONE</div>
+  <div hidden>HID_ATTRIBUTE</div>
+  <div style="visibility:hidden">HID_VISIBILITY</div>
+  <details><summary>s</summary>HID_CLOSED_DETAILS</details>
+</main></body></html>`;
+
+/** Checks the visibility probes against a built-in page in the real browser. Needs Chrome only. */
+async function selfTest(cfg) {
+  const browser = await chromium.launch({
+    headless: true,
+    ...(cfg.chromePath ? { executablePath: cfg.chromePath } : { channel: cfg.channel }),
+  });
+  const problems = [];
+  try {
+    const context = await browser.newContext({ viewport: { width: 800, height: 600 } });
+    await context.addInitScript(installPageProbes);
+    const page = await context.newPage();
+    await page.setContent(SELF_TEST_HTML);
+    const before = await readScopes(page);
+    const visible = await readVisible(page);
+    const after = await readScopes(page);
+    const restored = await page.evaluate(() => {
+      const el = document.querySelector('[data-case="height0"]');
+      return { display: el.style.getPropertyValue("display"), height: el.style.height, overflow: el.style.overflow };
+    });
+    for (const word of SELF_TEST_VISIBLE) if (!visible.text.includes(word)) problems.push(`${word} is visible but the probe dropped it`);
+    for (const word of [...SELF_TEST_COLLAPSED, ...SELF_TEST_EXCLUDED]) if (visible.text.includes(word)) problems.push(`${word} is hidden but the probe kept it`);
+    for (const word of SELF_TEST_COLLAPSED) if (!before.includes(word)) problems.push(`premise changed: innerText no longer includes ${word}, so the probe is not needed for it`);
+    if (after !== before) problems.push("the page was not restored after the probe");
+    if (restored.display !== "" || restored.height !== "0px" || restored.overflow !== "hidden") problems.push(`inline style was not restored (${JSON.stringify(restored)})`);
+    if (visible.hiddenElements < SELF_TEST_COLLAPSED.length) problems.push(`only ${visible.hiddenElements} elements were reported hidden`);
+  } finally {
+    await browser.close();
+  }
+  console.log(problems.length ? `self-test FAILED:\n  ${problems.join("\n  ")}` : "self-test OK: layout-collapsed text is left out of the default view and the page is restored");
+  return problems.length ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- main
+
+const toolHashes = () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const files = ["capture-screens.mjs", "lib/numbers-parity.mjs", "lib/page-probes.mjs", "lib/capture-routes.mjs", "lib/safe-message.mjs"];
+  return Object.fromEntries(files.map((f) => [f, crypto.createHash("sha256").update(fs.readFileSync(path.join(here, f))).digest("hex")]));
+};
 
 async function main() {
   const cfg = parseArgs(process.argv.slice(2));
@@ -592,6 +786,7 @@ async function main() {
     return 0;
   }
   if (cfg.compare) return runCompare(cfg);
+  if (cfg.selfTest) return selfTest(cfg);
   if (!["public", "dev"].includes(cfg.identity)) throw usage("--identity must be public or dev");
   if (cfg.identity === "dev" && !cfg.envFile) throw usage("--identity dev needs --env-file");
   const token = cfg.identity === "dev" ? mintSessionToken(cfg.envFile) : null;
@@ -602,8 +797,9 @@ async function main() {
     headless: true,
     ...(cfg.chromePath ? { executablePath: cfg.chromePath } : { channel: cfg.channel }),
   });
-  const meta = { schema: SCHEMA, startedAt, git: gitMeta(), node: process.version, chrome: browser.version(), identity: cfg.identity, baseUrl: cfg.baseUrl, config: { mode: cfg.mode, locales: cfg.locales, sizes: cfg.sizes.map((s) => s.join("x")), routes: cfg.routes, extras: cfg.extras, dpr: cfg.dpr, reducedMotion: cfg.reducedMotion }, failedRoutes: [], warnings: [], written: 0 };
+  const meta = { schema: SCHEMA, startedAt, git: gitMeta(), tool: toolHashes(), node: process.version, chrome: browser.version(), identity: cfg.identity, baseUrl: cfg.baseUrl, config: { mode: cfg.mode, locales: cfg.locales, sizes: cfg.sizes.map((s) => s.join("x")), routes: cfg.routes, extras: cfg.extras, dpr: cfg.dpr, reducedMotion: cfg.reducedMotion }, failedRoutes: [], warnings: [], layoutNotes: [], layoutHiddenElements: 0, written: 0 };
   let exitCode = 0;
+  let complete = false;
   try {
     const facts = await preflight(browser, cfg, token);
     const routes = buildRoutes(cfg, facts);
@@ -620,12 +816,17 @@ async function main() {
               if (result.failures.length) throw new Error(`API failures: ${[...new Set(result.failures)].join("; ")}`);
               writeResult(cfg, route, locale, size, result);
               meta.written += result.states.length;
+              meta.layoutHiddenElements += result.layoutHiddenElements;
               meta.warnings.push(...result.warnings.map((w) => `${label}: ${w}`));
+              const m = result.metrics;
+              const note = m && (m.moneyOverlapCount || m.moneyClippedCount) ? `${m.moneyOverlapCount} money overlap(s), ${m.moneyClippedCount} clipped` : "";
+              if (note) meta.layoutNotes.push(`${label}: ${note}`);
               done = true;
-              console.log(`ok   ${label} (${result.states.length} state${result.states.length === 1 ? "" : "s"})`);
+              console.log(`ok   ${label} (${result.states.length} state${result.states.length === 1 ? "" : "s"})${note ? `  [layout: ${note}]` : ""}`);
             } catch (error) {
-              console.log(`fail ${label} attempt ${attempt + 1}: ${error.message}`);
-              if (attempt === cfg.retries) meta.failedRoutes.push({ route: label, reason: error.message });
+              const reason = safeMessage(error);
+              console.log(`fail ${label} attempt ${attempt + 1}: ${reason}`);
+              if (attempt === cfg.retries) meta.failedRoutes.push({ route: label, reason });
               else await sleep(2000);
             }
           }
@@ -633,23 +834,27 @@ async function main() {
       }
     }
     if (meta.failedRoutes.length) exitCode = 1;
+    complete = exitCode === 0;
   } catch (error) {
-    meta.error = error.message;
+    meta.error = safeMessage(error);
     throw error;
   } finally {
     await browser.close();
     meta.finishedAt = new Date().toISOString();
     meta.durationSeconds = Math.round((Date.now() - Date.parse(startedAt)) / 1000);
-    writeFile(path.join(cfg.out, "run-meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
+    writeFile(path.join(cfg.writeDir, "run-meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
+    if (cfg.staged && complete) publishStaged(cfg);
+    else if (cfg.staged) console.error(`The previous capture in ${cfg.out} is untouched; the incomplete new run is in ${cfg.writeDir}.`);
   }
   console.log(exitCode === 0 ? `done: ${meta.written} states in ${meta.durationSeconds} s -> ${cfg.out}` : `FAILED routes: ${meta.failedRoutes.length} (see run-meta.json)`);
+  if (meta.layoutNotes.length) console.log(`layout notes: ${meta.layoutNotes.length} route(s) have overlapping or cut-off amounts (see run-meta.json layoutNotes and the metrics files)`);
   return exitCode;
 }
 
 main().then(
   (code) => process.exit(code),
   (error) => {
-    console.error(error.message);
+    console.error(safeMessage(error));
     process.exit(error.exitCode ?? 1);
   },
 );
