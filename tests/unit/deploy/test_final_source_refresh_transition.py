@@ -1059,11 +1059,16 @@ _HISTORICAL_MAIN00128_TOOLING = {
         "d34914cda1a7284ef42e7e95fd721c5e9034408f94acac9643822c92cdcd4291",
         101077,
     ),
+    "tests/unit/deploy/test_source_refresh_transition.py": (
+        "3e543f7c6b00f1f91800a5efb53b3f84a4615467",
+        "f9aaf6c111470758d5abe59a6ce100c9c99f57a06c9a937c97ab3f0c16e7fca3",
+        83093,
+    ),
 }
 
 
 def _historical_main00128_tooling_bytes(path):
-    """Read three immutable historical sources; never grant a later head admission."""
+    """Read four immutable historical sources; never grant a later head admission."""
     def unique_fields(pairs):
         result = {}
         for key, value in pairs:
@@ -1125,16 +1130,22 @@ def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
     final._verify_squash_self_source(Path(final.__file__).read_bytes())
 
 
-@pytest.mark.parametrize("mutation", [
-    "body", "rehashed_body", "mode", "type", "missing_role", "extra_role",
-    "forged_commit", "forged_tree", "extra_field", "extra_source_field", "schema_bool",
-    "encoding", "size_bool", "sha256", "blob_sha1", "truncated_stream", "trailing_stream",
-    "nonstring_chunk", "invalid_base64", "oversized_chunk", "missing_chunks",
+@pytest.mark.parametrize("source_path,mutation", [
+    ("scripts/deploy/prepare_single_vps_release.py", mutation) for mutation in (
+        "body", "rehashed_body", "mode", "type", "missing_role", "extra_role",
+        "forged_commit", "forged_tree", "extra_field", "extra_source_field", "schema_bool",
+        "encoding", "size_bool", "sha256", "blob_sha1", "truncated_stream", "trailing_stream",
+        "nonstring_chunk", "invalid_base64", "oversized_chunk", "missing_chunks",
+    )
+] + [
+    ("tests/unit/deploy/test_source_refresh_transition.py", mutation) for mutation in (
+        "body", "rehashed_body", "mode", "type", "missing_role", "sha256", "blob_sha1",
+        "extra_source_field",
+    )
 ])
-def test_historical_main00128_tooling_fixture_rejects_tampering(tmp_path, mutation):
+def test_historical_main00128_tooling_fixture_rejects_tampering(tmp_path, source_path, mutation):
     fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
-    source_path = "scripts/deploy/prepare_single_vps_release.py"
     row = fixture["sources"][source_path]
     chunks = row["zlib_base64_chunks"]
     if mutation in {"body", "rehashed_body", "truncated_stream", "trailing_stream"}:

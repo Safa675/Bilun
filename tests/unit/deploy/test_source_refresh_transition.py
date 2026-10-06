@@ -27,6 +27,7 @@ from scripts.deploy import verify_source_refresh_transition as transition
 from src.bilun.domain.billing.rule_findings import build_evaluation_id
 from tests.unit.deploy.test_generate_candidate_source_roster import _candidate, _roster
 from tests.unit.deploy.test_prepare_single_vps_release import machine as machine
+from tests.unit.deploy.test_prepare_single_vps_release import old_python_context, old_python_record
 from tests.unit.deploy.test_same_port_rehearsal import private_json
 from tests.unit.deploy.test_same_port_rehearsal import fabricated_transport, fixture_rehearsal, sealed_rehearsal
 from tests.unit.deploy.test_issue_wavea_activation import _issuer_transition_fixture
@@ -1331,21 +1332,61 @@ def test_prepare_carries_the_same_new_opt_in_to_semantic_rehearsal_and_issuer(ma
     assert Path(spec["live_cache_path"]).read_bytes() == original
 
 
-def test_prepare_writes_exact_new_request_for_namespace_without_running_a_child(machine, monkeypatch):
+@pytest.fixture
+def namespace_preparation_identity(machine):
     manifest, spec, _, _ = machine
+    old = old_python_context(Path(spec["bundle_root"]).parent, environment_sha256="b" * 64)
     spec["clinical_transition"] = _request(spec["target_sha"])
+    spec["schema_version"] = preparation.DEPENDENCY_CHAIN_SCHEMA
+    spec["dependency_roots"] = [str(path) for path in old.dependencies]
     private_json(manifest, spec)
     loaded = preparation.load_preparation_manifest(manifest)
     loaded["bundle_root"].mkdir(mode=0o700)
+    record, digest = old_python_record(loaded["bundle_root"], old, runtime_sha256="a" * 64)
+    loaded["_old_backend_python_identity_record_sha256"] = digest
+    return loaded, record, digest
+
+
+def test_prepare_writes_exact_new_request_for_namespace_without_running_a_child(
+    namespace_preparation_identity, monkeypatch,
+):
+    loaded, record, digest = namespace_preparation_identity
     commands = []
     monkeypatch.setattr(preparation, "_run", lambda argv, **kwargs: commands.append((argv, kwargs)))
     _REAL_PREPARE_REHEARSE(loaded, loaded["live_backend_runtime"], loaded["live_frontend_runtime"],
                            "a" * 64, "b" * 64, "c" * 64)
     assert len(commands) == 1
     argv, _ = commands[0]
+    assert argv[:3] == ["unshare", "--net", "--"]
+    assert argv[argv.index("--old-backend-python-identity-record") + 1] == str(record)
+    assert argv[argv.index("--old-backend-python-identity-record-sha256") + 1] == digest
+    assert argv[argv.index("--backend-python") + 1] == str(loaded["backend_python"])
+    assert [argv[index + 1] for index, value in enumerate(argv) if value == "--dependency-root"] == [
+        str(path) for path in loaded["dependency_roots"]
+    ]
     path = Path(argv[argv.index("--clinical-transition") + 1])
-    assert json.loads(path.read_text()) == spec["clinical_transition"]
+    assert json.loads(path.read_text()) == loaded["clinical_transition"]
     assert path.stat().st_mode & 0o777 == 0o600
+
+
+@pytest.mark.parametrize("fault", ["absent", "tampered"])
+def test_namespace_request_rejects_unverified_old_identity_before_running_a_child(
+    namespace_preparation_identity, monkeypatch, fault,
+):
+    loaded, record, _ = namespace_preparation_identity
+    if fault == "absent":
+        record.unlink()
+        message = "private independent file"
+    else:
+        record.write_bytes(record.read_bytes() + b"\n")
+        message = "identity differs from its frozen observation"
+    commands = []
+    monkeypatch.setattr(preparation, "_run", lambda argv, **kwargs: commands.append((argv, kwargs)))
+    with pytest.raises(ValueError, match=message):
+        _REAL_PREPARE_REHEARSE(loaded, loaded["live_backend_runtime"], loaded["live_frontend_runtime"],
+                               "a" * 64, "b" * 64, "c" * 64)
+    assert commands == []
+    assert not (loaded["bundle_root"] / "clinical-transition-request.json").exists()
 
 
 def test_semantic_checkpoint_dispatches_the_new_typed_proof_and_keeps_release_unready(tmp_path, monkeypatch):
