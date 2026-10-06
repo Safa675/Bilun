@@ -100,6 +100,31 @@ _REVIEWED_OLD_REPLAY_TOOLING = {
 # The actual executing bytes also remain bound to the external reviewed SHA.
 _REVIEWED_OLD_REPLAY_SELF_SHA256 = "464444b9622b784dc9b10e6655dbaa97b886e5ff73317039c7ea0f96f7eafbf7"
 _OLD_REPLAY_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_OLD_REPLAY_SELF_SHA256 = "([0-9a-f]{64})"$')
+# This distinct profile binds the raw bill transport repair to one finite
+# reviewed tree on mainf28. It grants no mutation rights to earlier profiles.
+RAW_REPORT_PROFILE = "bilun-raw-report-transport-mainf28-v1"
+RAW_REPORT_BASE_SHA = "f28af00ffe6237fe4b6c01d98d15360caa4c6008"
+RAW_REPORT_BASE_TREE = "d76b6656730f74a58554558f7a8012fafd8190ff"
+RAW_REPORT_TOOLING_PATHS = frozenset({
+    "scripts/deploy/rehearse_wavea_same_port.py",
+    "scripts/deploy/verify_final_source_refresh_transition.py",
+    "tests/unit/deploy/fixtures/final_source_refresh_mainf28_tooling.json",
+    "tests/unit/deploy/test_final_source_refresh_transition.py",
+    "tests/unit/deploy/test_raw_report_transport.py",
+    "tests/unit/deploy/test_raw_report_transport_source_profile.py",
+})
+# The complete reviewed files bind these finite literals. No path outside the
+# exact roster has mutation permission; an unmatched closure fails closed.
+_REVIEWED_RAW_REPORT_PRODUCT_CLOSURE_SHA256 = "088a40df99762419c7446276d6132e51c3244c950c2db23964104c47720b4590"
+_REVIEWED_RAW_REPORT_TOOLING = {
+    'scripts/deploy/rehearse_wavea_same_port.py': ('100644', 'blob', '4987802783fc700760190d44baabd2b186d20295'),
+    'tests/unit/deploy/fixtures/final_source_refresh_mainf28_tooling.json': ('100644', 'blob', 'e9b338a2b29dbf819791dc60791d45e994189109'),
+    'tests/unit/deploy/test_final_source_refresh_transition.py': ('100644', 'blob', 'be0fdc19af342759c0d4750ede33ac06572a7b44'),
+    'tests/unit/deploy/test_raw_report_transport.py': ('100644', 'blob', '1896a56454ed844929f6afc6368378cba2e6c8c5'),
+    'tests/unit/deploy/test_raw_report_transport_source_profile.py': ('100644', 'blob', '3ae5060e9bd2f23ec9f3bdc5f342d0fe2b39a579'),
+}
+_REVIEWED_RAW_REPORT_SELF_SHA256 = "49a0e4143dd982732a726cbdd7c921a9babd235bab9e3a0146f049fff7882561"
+_RAW_REPORT_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_RAW_REPORT_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
     "patient_detail_cache", "patient_outcome_base", "cohort_optimization_summary",
@@ -259,6 +284,70 @@ def _verify_old_replay_squash_history(checkout: Path, sha: str) -> dict:
             "reviewed_tooling_sha256": _old_replay_tooling_digest()}
 
 
+def _raw_report_product_closure(checkout: Path, sha: str) -> bytes:
+    return b"\0".join(row for row in _git(checkout, "ls-tree", "-r", "-z", sha).split(b"\0")
+                       if row and os.fsdecode(row.split(b"\t", 1)[1]) not in RAW_REPORT_TOOLING_PATHS)
+
+
+def _verify_raw_report_self_source(source: bytes) -> None:
+    slots = list(_RAW_REPORT_SELF_SLOT.finditer(source))
+    if (len(slots) != 1 or not isinstance(_REVIEWED_RAW_REPORT_SELF_SHA256, str)
+            or not _SHA256.fullmatch(_REVIEWED_RAW_REPORT_SELF_SHA256)
+            or slots[0].group(1).decode() != _REVIEWED_RAW_REPORT_SELF_SHA256):
+        raise ValueError("Raw report verifier self digest has an unknown literal slot")
+    start, end = slots[0].span(1)
+    normalized = source[:start] + b"0" * 64 + source[end:]
+    if hashlib.sha256(normalized).hexdigest() != _REVIEWED_RAW_REPORT_SELF_SHA256:
+        raise ValueError("Raw report verifier differs from reviewed source bytes")
+
+
+def _raw_report_tooling_digest() -> str:
+    return _digest({"profile": RAW_REPORT_PROFILE, "base_sha": RAW_REPORT_BASE_SHA,
+        "base_tree": RAW_REPORT_BASE_TREE,
+        "product_closure_sha256": _REVIEWED_RAW_REPORT_PRODUCT_CLOSURE_SHA256,
+        "files": _REVIEWED_RAW_REPORT_TOOLING,
+        "verifier": {"path": _SQUASH_VERIFIER_PATH, "mode": "100644", "type": "blob",
+                     "normalized_sha256": _REVIEWED_RAW_REPORT_SELF_SHA256}})
+
+
+def _verify_raw_report_squash_history(checkout: Path, sha: str) -> dict:
+    if (_git(checkout, "show", "-s", "--format=%P", sha).decode().split() != [RAW_REPORT_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{RAW_REPORT_BASE_SHA}^{{tree}}").decode().strip()
+               != RAW_REPORT_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", RAW_REPORT_BASE_SHA).decode().split()
+               != [OLD_REPLAY_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{OLD_REPLAY_BASE_SHA}^{{tree}}").decode().strip()
+               != OLD_REPLAY_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", OLD_REPLAY_BASE_SHA).decode().split()
+               != [PRODUCT_ANCHOR_SHA]):
+        raise ValueError("Raw report squash requires the immutable mainf28 parent")
+    product = _raw_report_product_closure(checkout, RAW_REPORT_BASE_SHA)
+    if (hashlib.sha256(product).hexdigest() != _REVIEWED_RAW_REPORT_PRODUCT_CLOSURE_SHA256
+            or _raw_report_product_closure(checkout, sha) != product):
+        raise ValueError("Raw report squash changes pinned whole-tree bytes")
+    if set(_REVIEWED_RAW_REPORT_TOOLING) != RAW_REPORT_TOOLING_PATHS - {_SQUASH_VERIFIER_PATH}:
+        raise ValueError("Raw report squash has an unknown reviewed tooling roster")
+    for path, entry in _REVIEWED_RAW_REPORT_TOOLING.items():
+        _same(_tooling_tree_entry(checkout, sha, path), entry,
+              "raw report tooling mode/type/blob")
+    mode, kind, _ = _tooling_tree_entry(checkout, sha, _SQUASH_VERIFIER_PATH)
+    if (mode, kind) != ("100644", "blob"):
+        raise ValueError("Raw report verifier has an unreviewed mode/type")
+    _verify_raw_report_self_source(_git(checkout, "show", f"{sha}:{_SQUASH_VERIFIER_PATH}"))
+    changed = {os.fsdecode(row) for row in _git(checkout, "diff-tree", "--no-commit-id",
+               "--name-only", "-r", "-z", RAW_REPORT_BASE_SHA, sha).split(b"\0") if row}
+    if changed != RAW_REPORT_TOOLING_PATHS:
+        raise ValueError("Raw report squash differs from the exact reviewed path transition")
+    return {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
+            "integration_seed_sha": None, "integration_seed_tree": None,
+            "candidate_sha": sha, "descendant_commits": [sha],
+            "authorized_changed_paths": sorted(changed),
+            "product_closure_sha256": _REVIEWED_RAW_REPORT_PRODUCT_CLOSURE_SHA256,
+            "tooling_profile": RAW_REPORT_PROFILE, "tooling_base_sha": RAW_REPORT_BASE_SHA,
+            "tooling_base_tree": RAW_REPORT_BASE_TREE,
+            "reviewed_tooling_sha256": _raw_report_tooling_digest()}
+
+
 def _verify_normal_squash_history(checkout: Path, sha: str, product: bytes) -> dict:
     if _product_closure(checkout, sha) != product:
         raise ValueError("Normal squash changes pinned product bytes")
@@ -300,6 +389,8 @@ def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> di
         return _verify_normal_squash_history(checkout, expected_candidate_sha, product)
     if parents == [OLD_REPLAY_BASE_SHA]:
         return _verify_old_replay_squash_history(checkout, expected_candidate_sha)
+    if parents == [RAW_REPORT_BASE_SHA]:
+        return _verify_raw_report_squash_history(checkout, expected_candidate_sha)
     if _git(checkout, "rev-parse", f"{INTEGRATION_SEED_SHA}^{{tree}}").decode().strip() != INTEGRATION_SEED_TREE:
         raise ValueError("Final profile pinned product/seed tree differs")
     if tuple(_git(checkout, "show", "-s", "--format=%P", INTEGRATION_SEED_SHA).decode().split()) != SEED_PARENTS:
@@ -1274,6 +1365,22 @@ def _validate_transition_history(history: Any, candidate: str) -> None:
     fields = {"product_anchor_sha", "product_anchor_tree", "candidate_sha",
               "descendant_commits", "authorized_changed_paths", "integration_seed_sha",
               "integration_seed_tree", "product_closure_sha256"}
+    if isinstance(history, dict) and history.get("tooling_profile") == RAW_REPORT_PROFILE:
+        if (set(history) != fields | {"tooling_profile", "tooling_base_sha", "tooling_base_tree",
+                                     "reviewed_tooling_sha256"}
+                or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
+                or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
+                or history.get("candidate_sha") != candidate
+                or history.get("integration_seed_sha") is not None
+                or history.get("integration_seed_tree") is not None
+                or history.get("descendant_commits") != [candidate]
+                or history.get("authorized_changed_paths") != sorted(RAW_REPORT_TOOLING_PATHS)
+                or history.get("product_closure_sha256") != _REVIEWED_RAW_REPORT_PRODUCT_CLOSURE_SHA256
+                or history.get("tooling_base_sha") != RAW_REPORT_BASE_SHA
+                or history.get("tooling_base_tree") != RAW_REPORT_BASE_TREE
+                or history.get("reviewed_tooling_sha256") != _raw_report_tooling_digest()):
+            raise ValueError("Source refresh report source/replay/tooling binding differs")
+        return
     if isinstance(history, dict) and "tooling_profile" in history:
         if (set(history) != fields | {"tooling_profile", "tooling_base_sha", "tooling_base_tree",
                                      "reviewed_tooling_sha256"}

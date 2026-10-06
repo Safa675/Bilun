@@ -184,8 +184,9 @@ class PinnedReportTransport:
 
 
 _PROJECTION_WORKER = r'''
-import ast, contextlib, dataclasses, importlib, io, json, os, sys, types
+import ast, contextlib, dataclasses, importlib, io, json, os, re, sys, types
 from pathlib import Path
+from urllib.parse import quote, unquote
 sys.dont_write_bytecode = True
 root = Path.cwd().resolve()
 dependencies = tuple(Path(value).resolve() for value in json.loads(sys.argv[1]))
@@ -216,6 +217,9 @@ def audit(event, args):
         raise ValueError('Report projection read outside explicit dependency closure')
 sys.addaudithook(audit)
 payload = json.load(sys.stdin)
+contract = payload['contract']
+if contract not in {'original-five', 'wavea-evidence-v2'}:
+    raise ValueError('Report projection has an unknown cache contract')
 sys.path.insert(0, str(root))
 sys.path.extend(str(path) for path in dependencies if path.is_dir())
 # Avoid API app construction, route registration and state/log/.env imports.
@@ -234,6 +238,45 @@ with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.St
                 and node.name == '_serialize_billing_report']
     if len(selected) != 1:
         raise ValueError('Pinned serializer function is absent or repeated')
+    identities = {}
+    if contract == 'wavea-evidence-v2':
+        # Extract the source API's cache-hit identity assignments, separately
+        # from its serializer. Route fields belong to the DTO, never raw rows.
+        routes = [node for node in tree.body if isinstance(node, ast.FunctionDef)
+                  and node.name == 'get_bill_billing_report']
+        expected = ast.parse('payload = _serialize_billing_report(report)\n'
+            'payload["patient_id"] = patient_id\n'
+            'payload["claim_id"] = claim_id\n'
+            'payload["scope"] = "bill"').body
+        blocks = [node.body for route in routes for node in ast.walk(route)
+                  if isinstance(node, ast.If)
+                  and [ast.dump(row) for row in node.body[:4]] == [ast.dump(row) for row in expected]]
+        if len(routes) != 1 or len(blocks) != 1:
+            raise ValueError('Pinned bill identity projection is absent or repeated')
+        identity = ast.parse('def _project_bill_identity(payload, patient_id, claim_id):\n'
+                             '    return payload').body[0]
+        identity.body[:0] = blocks[0][1:4]
+        selected.append(identity)
+        for path, report in payload['reports'].items():
+            matched = re.fullmatch(r'/api/billing-report/([^/]+)(?:/bills/([^/]+))?', path)
+            if matched is None:
+                raise ValueError('Report projection has an unknown ownership path')
+            patient, claim = (unquote(value, errors='strict') if value is not None else None
+                              for value in matched.groups())
+            canonical = '/api/billing-report/' + quote(patient, safe='')
+            if claim is not None:
+                canonical += '/bills/' + quote(claim, safe='')
+            if not patient or claim == '' or path != canonical:
+                raise ValueError('Report projection ownership path is not canonical')
+            if report.get('patient_id') != patient:
+                raise ValueError('Report projection patient ownership differs from raw cache')
+            if claim is not None and (
+                '/api/billing-report/' + quote(patient, safe='') not in payload['reports']
+                or ('claim_id' in report and report['claim_id'] != claim)
+                or ('scope' in report and report['scope'] != 'bill')
+            ):
+                raise ValueError('Report projection bill ownership differs from raw cache')
+            identities[path] = (patient, claim)
     module = ast.Module(body=[ast.ImportFrom(module='__future__',
         names=[ast.alias(name='annotations')], level=0), *selected], type_ignores=[])
     ast.fix_missing_locations(module)
@@ -246,6 +289,8 @@ with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.St
     from src.bilun.domain.billing.wavea_evidence import original_five_report_payload
     for path, report in payload['reports'].items():
         serialized = namespace['_serialize_billing_report'](report)
+        if contract == 'wavea-evidence-v2' and identities[path][1] is not None:
+            serialized = namespace['_project_bill_identity'](serialized, *identities[path])
         serialized = attach_bilun_data_source_metadata(serialized, payload['provenance'])
         complete[path] = BillingReportResponse.model_validate(serialized).model_dump(mode='json')
         gated = original_five_report_payload(serialized)
@@ -290,7 +335,8 @@ def project_report_transport(raw_reports: dict[str, dict], provenance: dict, *, 
             f"pycache_prefix={directory}/bytecode", "-c", _PROJECTION_WORKER,
             json.dumps([str(path) for path in dependency_roots]), json.dumps(source_files)],
             cwd=repository, env=worker_env,
-            input=json.dumps({"reports": raw_reports, "provenance": provenance}, ensure_ascii=False, allow_nan=False).encode(),
+            input=json.dumps({"reports": raw_reports, "provenance": provenance, "contract": contract},
+                             ensure_ascii=False, allow_nan=False).encode(),
             capture_output=True, check=False, timeout=120)
     if _source_binding(repository, expected_code_sha, expected_runtime_sha256) != source:
         raise ValueError("Report projection source changed during isolated serialization")
@@ -402,8 +448,6 @@ def _cache_reports(path: Path, *, candidate_only: bool = False,
         patient, separator, claim = key.partition("::")
         if not separator or not claim or patient not in patients:
             raise ValueError("Rehearsal bill ownership is malformed")
-        if contract == FULL_EVIDENCE_SCHEMA_VERSION:
-            report = {**report, "patient_id": patient, "claim_id": claim, "scope": "bill"}
         reports[f"/api/billing-report/{quote(patient, safe='')}/bills/{quote(claim, safe='')}"] = report
     if repository is not None:
         transport = project_report_transport(reports, provenance, repository=repository,

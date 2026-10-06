@@ -1423,15 +1423,20 @@ def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
 
 
 def test_old_replay_published_pins_match_every_current_tooling_body_and_new_self_source():
+    from tests.unit.deploy.test_raw_report_transport_source_profile import _historical_mainf28_tooling_bytes
+
     checkout = Path(final.__file__).resolve().parents[2]
+    historical = _historical_mainf28_tooling_bytes(
+        Path(__file__).parent / "fixtures/final_source_refresh_mainf28_tooling.json")
     assert final.OLD_REPLAY_BASE_SHA == "00128c6001c7921621b44537fcecefc22236b1f3"
     assert final.OLD_REPLAY_BASE_TREE == "ba09db1023be8ae17b5605145caefec771a7fbe5"
     assert final.OLD_REPLAY_TOOLING_PATHS == frozenset(_PUBLIC_OLD_REPLAY_PATHS)
     assert set(final._REVIEWED_OLD_REPLAY_TOOLING) == set(_PUBLIC_OLD_REPLAY_PATHS) - {
         "scripts/deploy/verify_final_source_refresh_transition.py"}
     for path, entry in final._REVIEWED_OLD_REPLAY_TOOLING.items():
-        assert _public_blob((checkout / path).read_bytes()) == entry
-    final._verify_old_replay_self_source(Path(final.__file__).read_bytes())
+        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        assert _public_blob(body) == entry
+    final._verify_old_replay_self_source(historical["scripts/deploy/verify_final_source_refresh_transition.py"])
 
 
 @pytest.mark.parametrize("source_path,mutation", [
@@ -1876,10 +1881,15 @@ def _final_report(projections, candidate="a" * 40):
 
 def _old_replay_public_report():
     """Public cache projections retain their existing source and money contracts."""
+    from tests.unit.deploy.test_raw_report_transport_source_profile import _historical_mainf28_tooling_bytes
+
     old, new = _public_final_pair()
     report = _final_report({"baseline": old, "candidate": new})
     checkout = Path(final.__file__).resolve().parents[2]
-    pins = {path: _public_blob((checkout / path).read_bytes()) for path in _PUBLIC_OLD_REPLAY_PATHS
+    historical = _historical_mainf28_tooling_bytes(
+        Path(__file__).parent / "fixtures/final_source_refresh_mainf28_tooling.json")
+    pins = {path: _public_blob(historical[path] if path in historical else (checkout / path).read_bytes())
+            for path in _PUBLIC_OLD_REPLAY_PATHS
             if path != "scripts/deploy/verify_final_source_refresh_transition.py"}
     manifest = {"profile": "bilun-old-replay-tooling-main00128-v1",
         "base_sha": "00128c6001c7921621b44537fcecefc22236b1f3",
