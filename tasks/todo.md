@@ -1593,3 +1593,30 @@ Consumer report SHA256 b273b9b6a972d5e963a55bda0e5731b35c1b06d7ff6bcf491c63d414e
 Root compiler --check134byte-identical, drugparity23/23zeroissues, globalRuffsrc/scripts ve gitdiff--check gerçekten exit0. Tek son bağımsız pytest174passed/2mevcutwarnings/30.11s, exit0: CI484 original41failurenode (kanıtlı yeniden adlandırmalar dahil), helper/dental/pipeline negatives, historicalgolden/currentrejection, kaynak/coverageclosure ve11retrieval testi. JUnit sayımıyla ayrışan dört index initialization testi bu174 sayısında yoktur; yalnız bu eksik dört test ayrıca gerçekten4passed/0.20s ile tamamlandı. Son retrieval kapsamı11+4 ayrı koşudur. Independentfinalreadonly467/60/134/150hashpin,58-parentdeepcatalogcomparison,36family/date ve12family/27assetsourceclosure assertions exit0. Full hosted CI yenihead için henüz çalışmadı; bu174 sonuç CI484 history41fail/8239pass veya fullsuite sonucu ile toplanmaz. Merge/deploy/VPS yapılmadı.
 
 CI repair bağımsız final code/data review: P1/P2 bulgu yok; post-test pin/dış hash/diff kontrolleri geçti. Tam actual komutlar ve sonuçlar task-2/independent-ci484-final-commands.json, review makbuzu task-2/independent-ci484-review-result.json içinde. Hosted yenihead fullCI sonucu bu incelemeye dahil değildir.
+
+## Task: App UI overhaul, phase 0: screenshot baseline and numbers-parity capture (2026-10-07)
+
+### Goal
+One command produces the screenshot set, the numbers-parity JSON and the layout metrics for the plan routes from a local production build on the synthetic cohort, and a second command proves that two runs show the same numbers; the shipped UI does not change.
+
+### Subtasks
+- [x] Add `frontend/scripts/lib/numbers-parity.mjs`: pure functions that normalise rendered text and tokenise money (EN and TR forms, one canonical key), counts, percents and honesty markers, and that compare two runs; add `numbers-parity.test.mjs` (vitest picks it up) with EN/TR money, date masking, compare and exception cases.
+- [x] Add `frontend/scripts/capture-screens.mjs`: CLI, identity (public by default, dev optional), chat stub, per-state settle, expand-all, extraction, screenshots, metrics, run-meta, fail-loud rules, `--compare`.
+- [x] Put the verified local run commands (backend cache, backend with `--timeout-keep-alive 65`, build, start, capture) in the script header and run them from a clean shell.
+- [x] Run the full capture twice on one build: `numbers/` and `text/` are byte-identical (`diff -r`), `metrics/` is identical at 1440 and 1280 except the deep-link scroll offset (390 px patient-page heights may differ by up to about 60 px, measured 19 to 59 px on 6 of 60 files); EN and TR canonical money maps are equal for every state.
+- [x] Negative checks: backend stopped or injected 5xx gives a non-zero exit and no partial baseline; `--compare` fails on a changed amount and passes on an identical run.
+- [x] Record the baseline set from a build whose `frontend/src` equals `approved/main` (`git diff approved/main --stat -- frontend/src` is empty) into `lanes/ui/baseline`.
+- [x] `npx tsc --noEmit`, `npx vitest run`, `npm run build` stay green; `git diff approved/main --name-only` lists only the two scripts, the test and `tasks/todo.md`.
+
+### Out of Scope
+Any change under `frontend/src`, any backend, rule, amount, exactness or API change, the deploy lane, phases 1 to 8 of the plan, fixing the pre-existing 404 of `/api/frontend-config`, committing screenshots or recordings.
+
+### Review (2026-10-07)
+- Changed paths: `frontend/scripts/capture-screens.mjs`, `frontend/scripts/lib/numbers-parity.mjs`, `frontend/scripts/lib/numbers-parity.test.mjs`, this file. Nothing under `frontend/src`, no `package.json` or lockfile, no backend, no `.gitignore`.
+- Gates (Node 22.16.0; CI uses Node 20, GitHub CI is the final arbiter): `npx tsc --noEmit` exit 0; `npx vitest run` 85 files / 614 tests passed (84 / 596 before plus the new 18); `npm run build` exit 0.
+- Local run: backend :18001 (public billing mode, `--timeout-keep-alive 65`), `next start` :13000, capture with system Chrome 154. Full matrix: 86 numbers files, 86 text, 60 metrics, 120 PNG, `failedRoutes: []`, `warnings: []`, 325 to 338 s.
+- Determinism: two full runs, `diff -r numbers` and `diff -r text` empty (86 + 86 files); `metrics/` identical except `deepLink.top` and 6 patient pages at 390x844 (height and first-money top differ by 19 to 59 px, the chat textarea autosize race); 95 of 120 PNGs byte-identical, so PNGs are evidence only. EN and TR money maps equal in 43 of 43 states.
+- Fail loud (all run): injected 500 on one billing report gives exit 1 and no numbers file for that route; backend stopped gives exit 1 with only `run-meta.json`; backend without public billing gives exit 2; a proxy reporting `is_synthetic: false` gives exit 2. `--compare`: identical run passes; a changed amount, a hidden partial marker, a missing state and a changed identity fail; a multiplicity-only change warns and fails with `--strict-multiplicity`; the allow list suppresses exactly its entries and prints unused ones.
+- Additions to the scout's code: unknown options, bad values and unknown route ids exit 2 instead of being ignored; `--out` must not already hold capture output (`--overwrite` replaces it) so a run never mixes with stale files; the deep-link route needs a finding on patient 0029 or `--no-extras`; unused allow entries are printed by `--compare`. The header no longer points at a plan file that is not in the repo.
+- Baseline: `lanes/ui/baseline` (outside the repo, not committed), captured with `frontend/src` equal to `approved/main` (`c44aa78c`); `run-meta.json` records `dirty: true` because the two scripts and this file were not committed yet.
+- Not run: Node 20 and Node 26, the standalone deploy runtime, a real LLM key (the chat is stubbed), `npm run lint`, backend pytest (forbidden in this lane), the developer identity (`--identity dev`, only run by the scout).
