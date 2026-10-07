@@ -89,6 +89,13 @@ python scripts/sut/build_clause_embeddings.py --provider local
 
 Run order: `extract_sut_prose.py` → `build_clause_embeddings.py`. If the sidecar is absent, the tool degrades gracefully (returns no clauses).
 
+## Development
+
+Run `./scripts/ci_local.sh` on this laptop to check the same backend and frontend gates as CI.
+It uses the project Python environment and installed Ruff, and installs frontend dependencies with `npm ci`.
+Backend tests run with automatic parallel workers and report the 20 slowest test phases.
+Pytest temporary data lives under `~/.cache` and is deleted immediately after the test run, including on failure.
+
 ## Testing
 
 ```bash
