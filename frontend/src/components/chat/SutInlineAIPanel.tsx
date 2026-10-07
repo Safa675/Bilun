@@ -389,6 +389,11 @@ export default function SutInlineAIPanel({
     const opened = autoBriefEnabled && !wasAutoBriefEnabledRef.current;
     wasAutoBriefEnabledRef.current = autoBriefEnabled;
     if (!opened) return;
+    // Opening replaces the pending context brief, even if this attempt fails fast.
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
     const timer = setTimeout(() => fireAutoAnalysisRef.current(), 0);
     return () => clearTimeout(timer);
   }, [autoBriefEnabled]);

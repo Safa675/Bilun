@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import ReportProblemModal from "@/components/feedback/ReportProblemModal";
@@ -15,7 +17,7 @@ import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import BillPicker from "@/components/patient/BillPicker";
 import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
-import { Eyebrow, Surface } from "@/components/primitives";
+import { Button, Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import {
   getBillBillingReport,
@@ -26,7 +28,7 @@ import {
   getPatientOptimization,
   getSutPatientOutcome,
 } from "@/lib/api/sut";
-import { buildSutPatientHref } from "@/lib/constants";
+import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
 import { isChatDockedRight } from "@/lib/chatDockPreference";
 import {
   parsePatientWorkspaceQuery,
@@ -499,6 +501,14 @@ export function SutPatientPageContent({
   // Split view: the right column is off and pane B renders no chat panel; collapsing and opening stay available.
   const splitActive = useWorkspacePaneBTabId() !== null;
   const ShellTag = (embedded ? "div" : "main") as "div" | "main";
+  const backToPatientsLink = (
+    <Button asChild variant="secondary">
+      <Link href={buildSutHomeHref("patients")}>
+        <ArrowLeft className="h-4 w-4" />
+        {t("patient.workspace.backToPatients")}
+      </Link>
+    </Button>
+  );
 
   return (
     <>
@@ -519,13 +529,14 @@ export function SutPatientPageContent({
             )}
 
             {loading ? (
-              <SutPatientAnalyticsSkeleton patientId={patientId} />
+              <SutPatientAnalyticsSkeleton patientId={patientId} navigation={backToPatientsLink} />
             ) : allFailed ? (
               <Surface variant="base" padding="lg">
                 <Eyebrow tone="primary" as="h1" className="text-base normal-case tracking-normal">
                   {t("patient.page.billingUnavailable")}
                 </Eyebrow>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{pageError}</p>
+                <div className="mt-5">{backToPatientsLink}</div>
               </Surface>
             ) : (
               <>

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sendSutChatMessage, type SendSutChatMessageOptions } from "@/lib/api/sutChat";
 import type { ChatMessage } from "@/lib/domains/common";
 import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInterfaces";
+import { NavigationProvider, useAiDockPosition } from "@/stores/navigationContext";
 import SutInlineAIPanel from "./SutInlineAIPanel";
 
 const settings = vi.hoisted(() => ({ locale: "en", translate: (key: string) => key }));
@@ -211,6 +212,27 @@ describe("mounted chat generation lifecycle", () => {
 describe("collapsed dock (the page default)", () => {
   const unbriefed = (): SutInlineChatState => ({ messages: [], autoText: "", autoFiredKey: "", briefedContextKeys: [] });
   const opened = () => act(async () => { vi.advanceTimersByTime(10); });
+
+  it.each(["center", "right"])("sends one brief when the saved %s dock opens and fetch fails immediately", async savedDock => {
+    vi.stubGlobal("window", {
+      localStorage: { getItem: (key: string) => key === "bilun:chat-dock" ? savedDock : null },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response("Unavailable", { status: 503 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = await vi.importActual<typeof import("@/lib/api/sutChat")>("@/lib/api/sutChat");
+    vi.mocked(sendSutChatMessage).mockImplementation(api.sendSutChatMessage);
+    function SavedDockPanel() {
+      return <SutInlineAIPanel activeTab="Patients" dock={useAiDockPosition()} />;
+    }
+    await act(async () => {
+      renderers.push(create(<NavigationProvider><SavedDockPanel /></NavigationProvider>));
+    });
+    await opened();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).intent).toBe("auto_brief");
+    await act(async () => { vi.advanceTimersByTime(1000); });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 
   it("starts no auto-brief while collapsed, then exactly one when the panel opens", async () => {
     const panel = await mount(unbriefed(), "patient:A", "collapsed");

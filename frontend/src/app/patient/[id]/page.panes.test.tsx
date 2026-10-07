@@ -13,12 +13,14 @@ import type { SutChatDockPosition } from "@/stores/storeInterfaces";
 
 const navigation = vi.hoisted(() => ({ query: "claim=A-1&section=lab&finding=primary", replace: vi.fn(), push: vi.fn() }));
 const dockState = vi.hoisted(() => ({ value: "center" as SutChatDockPosition }));
-const translate = (key: string) => key;
+const translate = (key: string) => key === "patient.workspace.backToPatients" ? "Back to patients" : key;
 vi.mock("next/navigation", () => ({
   useRouter: () => navigation,
   useSearchParams: () => new URLSearchParams(navigation.query), useParams: () => ({ id: "A" }),
 }));
-vi.mock("next/link", () => ({ default: () => null }));
+vi.mock("next/link", () => ({
+  default: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a>,
+}));
 vi.mock("@/lib/i18n/useTranslations", () => ({ useT: () => translate }));
 vi.mock("@/lib/recents", () => ({ recordRecent: vi.fn() }));
 vi.mock("@/components/chat/SutInlineAIPanel", () => ({ default: () => null }));
@@ -72,6 +74,24 @@ beforeEach(() => {
 afterEach(async () => {
   for (const renderer of renderers.splice(0)) await act(async () => { renderer.unmount(); });
   vi.useRealTimers(); vi.unstubAllGlobals();
+});
+it("keeps a Back to patients link inside the loading skeleton", async () => {
+  let renderer: ReactTestRenderer;
+  await act(async () => { renderer = create(<SutPatientPageContent patientId="A" />); });
+  renderers.push(renderer!);
+  const link = renderer!.root.findByType("main").findByType("a");
+  expect(link.props.href).toBe("/?tab=patients");
+  expect(link.children).toContain("Back to patients");
+});
+it("keeps a Back to patients link inside the unavailable billing report card", async () => {
+  vi.mocked(api.getSutPatientOutcome).mockRejectedValueOnce(new Error("Patient not found"));
+  vi.mocked(api.getPatientOptimization).mockRejectedValueOnce(new Error("Patient not found"));
+  vi.mocked(api.getPatientBillingReport).mockRejectedValueOnce(new Error("Patient not found"));
+  const view = await mount("SENTETIK-HASTA-9999", false);
+  expect(view.renderer.root.findByType("h1").children).toContain("patient.page.billingUnavailable");
+  const link = view.renderer.root.findByType("main").findByType("a");
+  expect(link.props.href).toBe("/?tab=patients");
+  expect(link.children).toContain("Back to patients");
 });
 it("keeps B's bill selection local while A's URL and real split workspace remain intact", async () => {
   const store = createWorkspaceStore({
