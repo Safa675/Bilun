@@ -236,7 +236,7 @@ function AlertQueryBar({
             <form className="flex flex-wrap items-center gap-2 lg:justify-end" onSubmit={handlePageJumpSubmit}>
               <label
                 htmlFor={`${category}-page-jump`}
-                className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]"
+                className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]"
               >
                 {t("optimizer.pagination.jumpToPage")}
               </label>
@@ -280,8 +280,8 @@ function AlertQueryBar({
 function AlertBadge({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-      style={{ background: `${color}15`, color }}
+      className="inline-block rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider"
+      style={{ background: `color-mix(in srgb, ${color} 8%, transparent)`, color }}
     >
       {label}
     </span>
@@ -291,7 +291,7 @@ function AlertBadge({ label, color }: { label: string; color: string }) {
 function ActionBadge({ action }: { action: string | null }) {
   const label = getSutRecommendedActionLabel(action);
   if (!action) {
-    return <span className="text-xs" style={{ color: "#A1A1AA" }}>{label}</span>;
+    return <span className="text-xs" style={{ color: "var(--text-disabled)" }}>{label}</span>;
   }
   return (
     <span className="text-xs font-medium" style={{ color: theme.accent }}>
@@ -565,7 +565,7 @@ function CopayExemptionAlerts({
                 <td className="text-center">
                   {p.copay_exemption.exempt
                     ? <AlertBadge label={getSutAlertBadgeLabel("exempt")} color={theme.accent} />
-                    : <AlertBadge label={getSutAlertBadgeLabel("notExempt")} color="#A1A1AA" />
+                    : <AlertBadge label={getSutAlertBadgeLabel("notExempt")} color="var(--text-disabled)" />
                   }
                 </td>
                 <td>
@@ -640,19 +640,19 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
               ? fmtNum(summary.n_patients_with_surcharge_unavailable ?? summary.n_total_patients)
               : fmtNum(summary.n_total_patients - (summary.n_patients_with_surcharge_flags ?? 0))
           }
-          valueColor="#B45309"
+          valueColor="var(--warning)"
           sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.noSurchargeFlags")}
         />
         <DashboardStat
           label={t("optimizer.kpis.patientsFlagged")}
           value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.n_patients_with_surcharge_flags ?? 0)}
-          valueColor="#B45309"
+          valueColor="var(--warning)"
           sub={isUnavailable ? t("optimizer.kpis.noExactSurchargeFindings") : t("optimizer.kpis.exactClaimLineFindings")}
         />
         <DashboardStat
           label={t("optimizer.kpis.totalFlags")}
           value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.total_surcharge_flags ?? 0)}
-          valueColor="#B91C1C"
+          valueColor="var(--danger)"
           sub={isUnavailable ? t("optimizer.kpis.countsResumeAfterInputs") : t("optimizer.kpis.exactProcedureFlags")}
         />
       </div>
@@ -701,7 +701,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
                   {!isExactOutput(patient.surcharge_exposure)
                     ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
                     : (patient.surcharge_exposure.n_applicable ?? 0) > 0
-                    ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="var(--warning)" />
                     : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
                   }
                 </td>
@@ -750,10 +750,10 @@ function MethodologyBadge({
 }) {
   const t = useT();
   const badgeLabel = label ?? t("optimizer.methodology.gazetteData");
-  const color = warn ? "#F59E0B" : theme.accent;
-  const colorLight = warn ? "rgba(245, 158, 11, 0.15)" : theme.accentAlpha(0.06);
-  const borderColor = warn ? "rgba(245, 158, 11, 0.3)" : theme.accentAlpha(0.2);
-  const separatorColor = warn ? "rgba(245, 158, 11, 0.4)" : theme.accentAlpha(0.35);
+  const color = warn ? "var(--warning)" : theme.accent;
+  const colorLight = `color-mix(in srgb, ${color} ${warn ? 15 : 6}%, transparent)`;
+  const borderColor = `color-mix(in srgb, ${color} ${warn ? 30 : 20}%, transparent)`;
+  const separatorColor = `color-mix(in srgb, ${color} ${warn ? 40 : 35}%, transparent)`;
   return (
     <div
       className="rounded-lg px-3 py-2 text-xs leading-relaxed"
@@ -1123,7 +1123,7 @@ function RevenueRecoveryDashboard({
   const priorityData = Object.entries(hasRecoveryBreakdown ? (displayData.priority_distribution || {}) : {})
     .map(([key, value]) => ({ key: key.toLowerCase(), name: fmtPriorityLabel(key), value }));
 
-  const priorityColors: Record<string, string> = { high: "#B91C1C", medium: "#B45309", low: theme.accent };
+  const priorityColors: Record<string, string> = { high: "var(--danger)", medium: "var(--warning)", low: theme.accent };
 
   return (
     <div className="space-y-5">
@@ -1268,7 +1268,7 @@ function RevenueRecoveryDashboard({
       />
 
       {/* Methodology Badge */}
-      <div className="text-xs text-center py-2" style={{ color: "#A1A1AA" }}>
+      <div className="text-xs text-center py-2" style={{ color: "var(--text-disabled)" }}>
         {recoveryExact
           ? t("optimizer.methodology.revenueFooterExact")
           : recoveryPartial
@@ -1315,7 +1315,7 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
       )}
 
       {!isUnavailable && (drg.n_patients_with_risk ?? 0) > 0 && (drg.total_potential_savings ?? 0) === 0 && (
-        <p className="text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "rgba(180, 83, 9, 0.08)", color: "#92400E" }}>
+        <p className="text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "color-mix(in srgb, var(--warning) 8%, transparent)", color: "var(--warning)" }}>
           {t("optimizer.methodology.drgAuditFlagsOnly")}
         </p>
       )}
@@ -1329,13 +1329,13 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
         <DashboardStat
           label={t("optimizer.kpis.patientsWithRisk")}
           value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drg.n_patients_with_risk)}
-          valueColor="#B91C1C"
+          valueColor="var(--danger)"
           sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.exactUnbundlingFindings")}
         />
         <DashboardStat
           label={t("optimizer.kpis.potentialSavings")}
           value={isUnavailable ? unavailableLabel : fmtTRY2OrUnavailable(drg.total_potential_savings)}
-          valueColor="#B45309"
+          valueColor="var(--warning)"
           sub={isUnavailable ? t("optimizer.kpis.amountsResumeAfterInputs") : t("optimizer.kpis.fromExactClaimLineAnalysis")}
         />
         <DashboardStat

@@ -71,7 +71,7 @@ export function BillingStrategySection({ strategyData, collapsed = false }: { st
           <tbody>
             {heuristicRows.map((item, index) => (
               <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
-                <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
+                <td className="font-semibold text-[var(--text-primary)]">{item.chapter ?? "—"}</td>
                 <td>
                   <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                 </td>
@@ -118,23 +118,23 @@ export function BillingStrategySection({ strategyData, collapsed = false }: { st
                       {t(strategyRowStatusMessageKey(status))}
                     </Chip>
                   </td>
-                  <td className="font-semibold text-slate-950">
+                  <td className="font-semibold text-[var(--text-primary)]">
                     {isViolation ? (item.claim_id ?? "—") : strategyPrimaryLabel(item)}
                   </td>
                   <td>
                     {isViolation ? (
                       <>
-                        <div className="font-semibold text-slate-950">
+                        <div className="font-semibold text-[var(--text-primary)]">
                           {item.procedure_name ?? item.procedure_code ?? "—"}
                         </div>
                         {item.procedure_code && item.procedure_name && (
-                          <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                          <div className="mt-1 font-mono text-xs" style={{ color: "var(--text-muted)" }}>
                             {item.procedure_code}
                           </div>
                         )}
                       </>
                     ) : (
-                      <Chip variant={chipVariantFromColor(strategyModeLabel(item) === "package" ? ACCENT : "#2563EB")}>
+                      <Chip variant={chipVariantFromColor(strategyModeLabel(item) === "package" ? ACCENT : "var(--info)")}>
                         {fmtLabel(strategyModeLabel(item))}
                       </Chip>
                     )}
@@ -164,7 +164,7 @@ export function BillingStrategySection({ strategyData, collapsed = false }: { st
                   </td>
                   <td
                     className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]"
-                    style={!isViolation && savings.muted ? { color: "#71717A" } : undefined}
+                    style={!isViolation && savings.muted ? { color: "var(--text-muted)" } : undefined}
                   >
                     {isViolation
                       ? "—"
@@ -199,7 +199,7 @@ export function BillingStrategySection({ strategyData, collapsed = false }: { st
             <tbody>
               {heuristicRows.map((item, index) => (
                 <tr key={`heuristic-${strategyPrimaryLabel(item)}-${index}`}>
-                  <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
+                  <td className="font-semibold text-[var(--text-primary)]">{item.chapter ?? "—"}</td>
                   <td>
                     <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                   </td>

@@ -50,7 +50,7 @@ export default function UnifiedComplianceFindingsTable({
   const t = useT();
 
   return (
-    <DataTable minWidth={960} className="text-[0.82rem]">
+    <DataTable minWidth={960} className="text-sm">
       <thead>
         <tr>
           <th>{t("billing.views.compliance.colStatus")}</th>

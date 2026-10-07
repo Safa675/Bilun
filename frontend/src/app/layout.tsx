@@ -26,7 +26,7 @@ import "./styles/sut-how-modal.css";
 
 const fontDisplay = Fraunces({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-display",
+  variable: "--font-fraunces",
   weight: ["400", "500", "700"],
   style: ["normal", "italic"],
   display: "swap",
@@ -34,7 +34,7 @@ const fontDisplay = Fraunces({
 
 const fontSans = Inter({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+  variable: "--font-inter",
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });

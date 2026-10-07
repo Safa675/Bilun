@@ -70,7 +70,7 @@ function SutClauseDrawerBody({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-24"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--text-primary)_40%,transparent)] p-4 pt-24"
       role="dialog"
       aria-modal="true"
       aria-label={t("billing.clauseDrawer.ariaLabel")}
@@ -82,7 +82,7 @@ function SutClauseDrawerBody({
       >
         <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               {t("billing.clauseDrawer.kicker")}
             </p>
             <h2 className="truncate font-mono text-sm font-semibold text-[var(--text-primary)]">

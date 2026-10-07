@@ -220,13 +220,13 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
             <img
               src="/brand/nameless.png"
               alt=""
-              width={20}
-              height={24}
-              className="block h-6 w-auto"
+              width={27}
+              height={32}
+              className="block h-8 w-auto"
               aria-hidden="true"
             />
           ) : (
-            <BilunWordmark size={20} />
+            <BilunWordmark size={40} />
           )}
         </Link>
 
@@ -279,7 +279,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
               scroll={false}
               title={subtitle}
               className={cn(
-                "group relative flex items-center gap-3 rounded-[var(--r-md)] px-2.5 py-2 text-[13px] font-medium transition-colors",
+                "group relative flex items-center gap-3 rounded-[var(--r-md)] px-2.5 py-2 text-sm font-medium transition-colors",
                 collapsed && "justify-center px-0",
                 isActive
                   ? "bg-[var(--gold-subtle)] text-[var(--text-primary)]"
@@ -314,7 +314,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
           type="button"
           onClick={() => setShowReportProblem(true)}
           className={cn(
-            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium",
+            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-xs font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
             "transition-colors",
             collapsed && "justify-center px-0",
@@ -330,7 +330,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
           type="button"
           onClick={handleOpenHowItWorks}
           className={cn(
-            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium",
+            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-xs font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
             "transition-colors",
             collapsed && "justify-center px-0",
@@ -347,7 +347,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
           onClick={handleLogout}
           disabled={loggingOut}
           className={cn(
-            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium",
+            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-xs font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
             "transition-colors",
             collapsed && "justify-center px-0",

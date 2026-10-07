@@ -56,7 +56,7 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <Eyebrow>{t("patient.workspace.copayEyebrow")}</Eyebrow>
-          <p className="mt-2 font-[var(--font-display)] text-lg font-medium tracking-tight text-[var(--text-primary)]">
+          <p className="mt-2 font-display text-lg font-medium tracking-normal text-[var(--text-primary)]">
             {copay.exempt ? t("patient.workspace.copayEligible") : t("patient.workspace.copayNoMatch")}
           </p>
           <p className="mt-2 text-sm leading-snug text-[var(--text-secondary)]">
@@ -116,7 +116,7 @@ export function PatientOptimizationSnapshot({
           className="mt-0.5 h-5 w-5 shrink-0 text-[var(--gold)]"
         />
         <div>
-          <h2 className="font-[var(--font-display)] text-lg font-medium tracking-tight text-[var(--text-primary)]">
+          <h2 className="font-display text-lg font-medium tracking-normal text-[var(--text-primary)]">
             {t("patient.workspace.optimizationTitle")}
           </h2>
           <p className="mt-1 text-sm leading-snug text-[var(--text-secondary)]">
@@ -223,9 +223,9 @@ export default function SutPatientWorkspace({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <Eyebrow>{t("patient.workspace.eyebrow")}</Eyebrow>
-            <h1 className="mt-1 font-[var(--font-display)] text-2xl font-medium leading-tight tracking-tight text-[var(--text-primary)] sm:text-3xl">
+            <h1 className="mt-1 font-display text-2xl font-medium leading-tight tracking-normal text-[var(--text-primary)] sm:text-3xl">
               {t("patient.workspace.billingTitle")}{" "}
-              <em className="not-italic font-[var(--font-display)] italic text-[var(--gold)]">
+              <em className="not-italic font-display italic text-[var(--gold)]">
                 {t("patient.workspace.billingEmphasis")}
               </em>
             </h1>

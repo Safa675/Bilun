@@ -49,7 +49,7 @@ export function OptionalOverrideSection({
     >
       <p
         className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2"
-        style={{ background: "rgba(37, 99, 235, 0.08)", color: "#1D4ED8" }}
+        style={{ background: "color-mix(in srgb, var(--info) 8%, transparent)", color: "var(--info)" }}
       >
         {t("billing.strategy.overrideScopeNotice")}
       </p>
@@ -82,7 +82,7 @@ export function OptionalOverrideSection({
         <tbody>
           {rows.map((item, index) => (
             <tr key={`${item.claim_id}-${index}`}>
-              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td className="font-semibold text-[var(--text-primary)]">{item.claim_id ?? "—"}</td>
               <td>
                 <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>
                   {fmtLabel(strategyModeLabel(item))}

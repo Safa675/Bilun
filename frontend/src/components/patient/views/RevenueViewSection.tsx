@@ -19,7 +19,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { recoverableUplift, viewActions } from "@/lib/workspaceViews";
 import { PatientWaveAEvidenceSection } from "@/components/patient/WaveAEvidenceSection";
 
-const UPLIFT_COLOR = "#2F6E4E";
+const UPLIFT_COLOR = "var(--success)";
 
 /**
  * View 2 — Gelir Optimizasyonu & Hak Kazanım (Revenue Recovery).
