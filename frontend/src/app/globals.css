@@ -363,3 +363,98 @@ textarea:focus-visible {
   min-height: 0;
   padding: 1.25rem;
 }
+
+/* Phone navigation and labelled rows do not change desktop dock preferences. */
+[data-workspace-split] [data-patient-findings] [role="tablist"] {
+  flex-wrap: wrap;
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  [data-workspace-split] [data-patient-workspace] .grid.sm\:grid-cols-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding-left: 0;
+    overflow-x: visible;
+  }
+
+  [data-sut-sidebar]:not([data-mobile-open="true"]) {
+    display: none;
+  }
+
+  [data-workspace-tabstrip] {
+    top: 3rem;
+  }
+
+  .sut-app-main,
+  [data-workspace-split] .sut-app-main {
+    padding: 0.75rem 0.75rem 1.5rem;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] {
+    display: block;
+    min-width: 0 !important;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] tbody {
+    display: block;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] tbody tr {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] tbody td {
+    display: grid;
+    grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    border-bottom: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] td[data-label]::before {
+    content: attr(data-label);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] td > * {
+    min-width: 0;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] td > .items-end {
+    align-items: flex-start;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] td[data-stack-wide],
+  .bilun-data-table[data-mobile-stacked="true"] td[colspan] {
+    display: block;
+  }
+
+  .bilun-data-table[data-mobile-stacked="true"] td[data-stack-wide]::before {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+}
