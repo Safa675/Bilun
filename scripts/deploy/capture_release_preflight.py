@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -352,6 +353,60 @@ def _snapshot_build_id(cache_path: Path) -> str:
         return str(row[0])
 
 
+_SHARED_INTERPRETER_FIELDS = frozenset({
+    "identity_sha256", "launcher_path", "process_argv_sha256", "executable_target",
+    "effective_environment_sha256", "runtime_sha256", "dependency_roots",
+})
+_SHA256_TEXT = re.compile(r"[0-9a-f]{64}\Z")
+
+
+def _paths_overlap(left: Path, right: Path) -> bool:
+    return left == right or left.is_relative_to(right) or right.is_relative_to(left)
+
+
+def bind_shared_interpreter(
+    evidence: Mapping[str, Any], *, process_launcher: str, process_argv_sha256: str,
+    process_executable: Path, effective_environment_sha256: str, runtime_sha256: str,
+    runtime_roots: Sequence[Path],
+) -> dict[str, Any]:
+    """Bind verified shared-interpreter evidence to the exact old process and runtime.
+
+    A runtime copied from a release worktree carries no .venv: the serving old
+    backend is started through an external, separately pinned launcher. The
+    caller proves that launcher closure; this function only accepts the proof
+    for the observed process launcher (argv[0]), argv, terminal executable,
+    environment and runtime. Binding argv[0] itself, not only the argv digest, keeps
+    a record that was re-sealed onto another declared interpreter context from
+    describing a process that is not running from it. The declared closure must
+    also lie outside every runtime copy: inside one it would be covered by the
+    runtime digest and is the legacy in-tree layout, not a shared interpreter.
+    """
+    roots = evidence.get("dependency_roots") if isinstance(evidence, Mapping) else None
+    if (not isinstance(evidence, Mapping) or set(evidence) != _SHARED_INTERPRETER_FIELDS
+            or not isinstance(roots, list) or not roots
+            or any(not isinstance(item, str) or not os.path.isabs(item) for item in roots)
+            or not runtime_roots
+            or any(not isinstance(evidence[key], str) for key in _SHARED_INTERPRETER_FIELDS
+                   if key != "dependency_roots")
+            or any(_SHA256_TEXT.match(evidence[key]) is None for key in _SHARED_INTERPRETER_FIELDS
+                   if key.endswith("_sha256"))):
+        raise ValueError("backend interpreter identity proof is malformed")
+    if (evidence["launcher_path"] != process_launcher
+            or evidence["process_argv_sha256"] != process_argv_sha256
+            or evidence["executable_target"] != str(process_executable)
+            or evidence["effective_environment_sha256"] != effective_environment_sha256
+            or evidence["runtime_sha256"] != runtime_sha256):
+        raise ValueError("backend interpreter identity differs from the serving old backend")
+    context = Path(evidence["launcher_path"]).parent.parent
+    if any(_paths_overlap(Path(declared), Path(runtime))
+           for declared in (str(context), *roots) for runtime in runtime_roots):
+        raise ValueError("backend interpreter context overlaps a runtime copy")
+    # Like _public_service, never project the raw launcher path; its digest is in argv.
+    return {"kind": "shared_interpreter",
+            **{key: evidence[key] for key in sorted(evidence)
+               if key not in {"launcher_path", "dependency_roots"}}}
+
+
 def assess_release_preflight(
     frontend: ServiceObservation,
     backend: ServiceObservation,
@@ -365,8 +420,15 @@ def assess_release_preflight(
     backend_probe: Path | None = None,
     config_snapshot_dir: Path | None = None,
     caddy_config: Path = Path("/etc/caddy/Caddyfile"),
+    prove_shared_interpreter: Callable[[ServiceObservation, str], Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Return a truthful observed-state manifest even when rollback is blocked."""
+    """Return a truthful observed-state manifest even when rollback is blocked.
+
+    A backend snapshot without its own .venv stays blocked unless the caller
+    supplies ``prove_shared_interpreter``; it is called with the serving backend
+    and the verified snapshot runtime digest, and must verify the external
+    interpreter closure the serving process was started from.
+    """
     blockers: list[str] = []
     frontend_cwd = frontend.process_working_directory.resolve(strict=True)
     backend_cwd = backend.process_working_directory.resolve(strict=True)
@@ -498,17 +560,35 @@ def assess_release_preflight(
         try:
             if backend_snapshot.resolve(strict=True) == backend_cwd:
                 raise ValueError("backend snapshot aliases mutable serving directory")
-            if not (backend_snapshot / ".venv" / "bin" / "python").exists():
+            local_python = (backend_snapshot / ".venv" / "bin" / "python").exists()
+            if not local_python and (
+                prove_shared_interpreter is None
+                or os.path.lexists(backend_snapshot / ".venv")
+                or os.path.lexists(backend_cwd / ".venv")
+            ):
                 raise ValueError("backend snapshot lacks runnable Python environment")
             live_digest = _runtime_digest(backend_cwd, backend=True)
             snapshot_digest = _runtime_digest(backend_snapshot, backend=True)
             if live_digest != snapshot_digest:
                 raise ValueError("backend snapshot differs from serving runtime")
+            interpreter = None if local_python else bind_shared_interpreter(
+                prove_shared_interpreter(backend, snapshot_digest),
+                process_launcher=backend.process_argv[0] if backend.process_argv else "",
+                process_argv_sha256=hashlib.sha256(
+                    b"\0".join(argument.encode("utf-8") for argument in backend.process_argv)
+                ).hexdigest(),
+                process_executable=backend.process_executable,
+                effective_environment_sha256=backend.environment_sha256,
+                runtime_sha256=snapshot_digest,
+                runtime_roots=(backend_cwd, backend_snapshot.resolve(strict=True)),
+            )
             artifacts["backend"] = {
                 "path": str(backend_snapshot),
                 "observed_checkout_head": checkout_head,
                 "runtime_sha256": snapshot_digest,
             }
+            if interpreter is not None:
+                artifacts["backend"]["interpreter"] = interpreter
         except (OSError, ValueError) as exc:
             blockers.append(f"backend_rollback_artifact_unverified: {exc}")
 

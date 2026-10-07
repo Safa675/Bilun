@@ -29,6 +29,7 @@ from scripts.deploy.release_sidecar import (
 from scripts.deploy.capture_release_preflight import (
     _live_health,
     assess_release_preflight,
+    bind_shared_interpreter,
     observe_service,
 )
 from scripts.deploy.verify_candidate_cache import (
@@ -87,11 +88,50 @@ def _existing_private_key(path: Path) -> bytes:
     return key
 
 
+def _old_shared_interpreter_evidence(
+    *, old_snapshot: Path, dependency_roots: tuple[Path, ...],
+    runtime_sha256: str, environment_sha256: str,
+) -> dict[str, Any]:
+    """Verify the frozen external Python closure of a venv-less old runtime.
+
+    Releases made by this tool run from a git worktree through a shared launcher,
+    so the copied old runtime has no .venv. Rollback restarts that same launcher;
+    the PR 165 identity is its full pinned closure. Reuse its verifier unchanged
+    and require the pins the paired activation gate re-verifies to cover it.
+    """
+    # Lazy: prepare_single_vps_release imports this module at import time.
+    from scripts.deploy.prepare_single_vps_release import _load_old_backend_python_identity
+
+    bundle = old_snapshot.parent
+    record = bundle / "live-after-snapshot.json"
+    identity = _load_old_backend_python_identity(
+        record, _stable_file_hash(record), old_snapshot=old_snapshot,
+        old_runtime_sha256=runtime_sha256, old_environment_sha256=environment_sha256,
+        dependency_roots=tuple(dependency_roots),
+    )
+    pins, _ = _load_private_json(bundle / "preparation-pins.json", root=bundle)
+    immutable = pins.get("immutable_inputs")
+    if (not isinstance(immutable, dict) or pins.get("dependency_roots") != identity["dependency_roots"]
+            or any(immutable.get(root) != identity["dependency_pins"][root]
+                   for root in identity["dependency_roots"])):
+        raise ValueError("Old backend Python closure is not covered by the hash-bound preparation pins")
+    return {
+        "identity_sha256": hashlib.sha256(json.dumps(
+            identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "launcher_path": identity["launcher_path"],
+        "process_argv_sha256": identity["process_argv_sha256"],
+        "executable_target": identity["executable_target"],
+        "effective_environment_sha256": identity["effective_environment_sha256"],
+        "runtime_sha256": runtime_sha256,
+        "dependency_roots": list(identity["dependency_roots"]),
+    }
+
+
 def _held_old_preflight(
     *, journal_path: Path, journal_identity_sha256: str, old_snapshot: Path,
     frontend_current: Path, caddy_config: Path, serving_old_build_id: str,
     serving_code_sha: str, old_backend_environment_path: Path | None,
-    rehearsal_path: Path,
+    rehearsal_path: Path, dependency_roots: tuple[Path, ...],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Bind copied rollback artifacts to the exact owned, stopped old pair."""
     from scripts.deploy.snapshot_maintenance import SnapshotMaintenanceError, assert_held_snapshot
@@ -135,7 +175,10 @@ def _held_old_preflight(
         if (runtime.resolve() == Path(spec[f"live_{role}_runtime"]).resolve()
                 or _runtime_digest(runtime, backend=role == "backend") != expected[f"{role}_runtime_sha256"]):
             raise ValueError("Held old runtime copy differs from sealed snapshot")
-        if role == "backend" and not (runtime / ".venv/bin/python").exists():
+        local_python = role == "backend" and (runtime / ".venv/bin/python").exists()
+        if role == "backend" and not local_python and any(
+                os.path.lexists(root / ".venv")
+                for root in (runtime, Path(spec["live_backend_runtime"]))):
             raise ValueError("Held old backend copy lacks its runnable Python environment")
         if role == "frontend" and not (
             (runtime / "server.js").is_file()
@@ -162,6 +205,18 @@ def _held_old_preflight(
                     "unit_files", "selected_environment", "process_started_at_utc",
                 ))):
             raise ValueError("Held old full environment, service or argv copy differs")
+        interpreter = None
+        if role == "backend" and not local_python:
+            runtime_sha256 = expected["backend_runtime_sha256"]
+            interpreter = bind_shared_interpreter(
+                _old_shared_interpreter_evidence(
+                    old_snapshot=old_snapshot, dependency_roots=dependency_roots,
+                    runtime_sha256=runtime_sha256, environment_sha256=environment_sha),
+                process_launcher=service["process_argv"][0] if service["process_argv"] else "",
+                process_argv_sha256=argv_sha, process_executable=Path(service["process_executable"]),
+                effective_environment_sha256=environment_sha, runtime_sha256=runtime_sha256,
+                runtime_roots=(runtime.resolve(strict=True), Path(spec["live_backend_runtime"]).resolve()),
+            )
         if role == "backend":
             cache = Path(environment.get("BILUN_CACHE_DB_PATH") or
                          Path(spec["live_backend_runtime"]) / ".cache/bilun.duckdb")
@@ -176,6 +231,8 @@ def _held_old_preflight(
         if not identity["unit_files"]:
             raise ValueError("Held old effective unit inventory is empty")
         artifacts[role] = {"path": str(runtime), "runtime_sha256": expected[f"{role}_runtime_sha256"]}
+        if interpreter is not None:
+            artifacts[role]["interpreter"] = interpreter
         probe_identity = {"runtime_sha256": expected[f"{role}_runtime_sha256"],
                           "effective_environment_sha256": environment_sha}
         checks = {"health", "representative_api"} if role == "backend" else {"login_assets"}
@@ -297,6 +354,7 @@ def issue_wavea_activation(
             serving_old_build_id=serving_old_build_id,
             serving_code_sha=baseline_code_sha if serving_code_sha is None else serving_code_sha,
             old_backend_environment_path=old_backend_environment_path, rehearsal_path=rehearsal_path,
+            dependency_roots=dependency_roots,
         )
         held_preflight, held_health = _held_old_preflight(**held_arguments)
     if (
@@ -446,6 +504,9 @@ def issue_wavea_activation(
             backend_probe=rehearsal_path.parent / "old-backend-probe.json",
             config_snapshot_dir=old_snapshot / "config",
             caddy_config=caddy_config,
+            prove_shared_interpreter=lambda backend, runtime_sha256: _old_shared_interpreter_evidence(
+                old_snapshot=old_snapshot, dependency_roots=dependency_roots,
+                runtime_sha256=runtime_sha256, environment_sha256=backend.environment_sha256),
         )
     rollback = old_preflight.get("rollback", {})
     artifacts = rollback.get("artifacts", {})
@@ -538,7 +599,7 @@ def issue_wavea_activation(
         if not use_existing_key:
             key_path.unlink(missing_ok=True)
         raise
-    return {
+    issued = {
         "status": "private_activation_receipt_issued",
         "public_activation_ready": False,
         "code_sha": code_sha,
@@ -548,6 +609,9 @@ def issue_wavea_activation(
         "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
         "candidate_tuple_sha256": rehearsal["candidate_tuple_sha256"],
     }
+    if "interpreter" in artifacts["backend"]:
+        issued["old_backend_interpreter"] = artifacts["backend"]["interpreter"]
+    return issued
 
 
 _MANIFEST_PATHS = frozenset({
