@@ -42,6 +42,7 @@ from tests.unit.deploy.test_verify_candidate_semantics import (
     _current_fixture,
     _mutate_payload,
 )
+from tests.unit.deploy.integration_historical_sources import load_historical_sources
 
 
 def _git(checkout: Path, *arguments: str) -> str:
@@ -1197,43 +1198,19 @@ def test_owned_projection_cannot_hide_additional_fields_or_report_rows(mutation)
 def transport_sources(tmp_path_factory):
     """Run actual public serializers/models in independent source-only Git trees.
 
-    CI has a shallow checkout. Reconstruct the old schema's exact Git blob
-    from the unchanged current file and the five reviewed schema additions;
-    this fixture is a transport regression, not a complete production replay.
+    CI has a shallow checkout. Use exact independently archived old/new source
+    bodies; current model changes cannot redefine historical transport. This
+    fixture is a transport regression, not a complete production replay.
     """
     repository = Path(__file__).resolve().parents[3]
-    schema = (repository / "src/bilun/api/schemas.py").read_text()
-    old_schema = schema.replace(
-        "from src.bilun.domain.sut.runtime_coverage_schema import RuntimeCoverageResponse as DrugRuntimeCoverageResponse\n"
-        "from src.bilun.domain.sut.source_authority_schema import ClinicalSourceAuthorityEvidence\n\n", "",
-    )
-    start = old_schema.index("class DrugTemporalCheckResponse(BaseModel):")
-    end = old_schema.index("class DrugIndicationFindingResponse(BaseModel):")
-    old_schema = old_schema[:start] + old_schema[end:]
-    for addition in (
-        "    source_authority: ClinicalSourceAuthorityEvidence | None = None\n",
-        "    runtime_coverage: DrugRuntimeCoverageResponse | None = None\n",
-        "    temporal_evidence: DrugTemporalEvidenceResponse | None = None\n",
-        "    clinical_restrictions: list[DrugClinicalRestrictionResponse] = Field(default_factory=list)\n"
-        "    clinical_eligibility_complete: bool | None = None\n\n",
-    ):
-        assert old_schema.count(addition) == 2
-        old_schema = old_schema.replace(addition, "")
-    raw = old_schema.encode()
+    archived = load_historical_sources()
+    old_schema = archived["clinical_baseline"]["src/bilun/api/schemas.py"]
+    raw = old_schema
     assert hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest() == "c7d2e3d5bb738c83de23f83f7541d0acc20014f7"
-    serializer = (repository / "src/bilun/api/routes/billing.py").read_bytes()
+    serializer = archived["clinical_baseline"]["src/bilun/api/routes/billing.py"]
     assert hashlib.sha1(b"blob " + str(len(serializer)).encode() + b"\0" + serializer).hexdigest() == "6cd6f86c92f1deb533692090def668fb00e2bb1d"
     normalizer_path = "src/bilun/domain/billing/drug_indication_findings.py"
-    old_normalizer = (repository / normalizer_path).read_text().replace(
-        "    # Cached measurement metadata uses the same bounded contract as live rows.\n"
-        "    # Missing old-cache metadata stays absent; it cannot become measured zero.\n"
-        '    for kind in ("findings", "evaluations", "violations"):\n'
-        "        if isinstance(payload.get(kind), list):\n"
-        "            payload[kind] = [\n"
-        "                _normalize_cached_evidence(row)\n"
-        "                for row in payload[kind]\n"
-        "            ]\n", "",
-    )
+    old_normalizer = archived["clinical_baseline"][normalizer_path].decode()
     old_node = next(node for node in ast.parse(old_normalizer).body
                     if isinstance(node, ast.FunctionDef) and node.name == "normalize_drug_indication_payload")
     assert hashlib.sha256(ast.get_source_segment(old_normalizer, old_node).encode()).hexdigest() == "1b0f6cf4c0e56683882e459c90bf07f51f58cdc3dba1e3240edddb15ae580203"
@@ -1243,9 +1220,9 @@ def transport_sources(tmp_path_factory):
         shutil.copytree(repository / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         shutil.copytree(repository / "scripts/sut", root / "scripts/sut", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         shutil.copyfile(repository / "scripts/__init__.py", root / "scripts/__init__.py")
-        if side == "baseline":
-            (root / "src/bilun/api/schemas.py").write_text(old_schema)
-            (root / normalizer_path).write_text(old_normalizer)
+        group = archived["clinical_" + side]
+        for path, body in group.items():
+            (root / path).write_bytes(body)
         _git(root, "init", "-q")
         _git(root, "config", "user.name", "Bilun Transport Test")
         _git(root, "config", "user.email", "transport@example.invalid")

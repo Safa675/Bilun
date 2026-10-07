@@ -574,15 +574,17 @@ def test_earlier_profile_reports_stay_valid_beside_the_new_profile():
 
 
 def test_shared_interpreter_published_pins_match_current_reviewed_bytes():
-    checkout = Path(final.__file__).resolve().parents[2]
+    from tests.unit.deploy.integration_historical_sources import load_historical_sources
+
+    reviewed = load_historical_sources()["shared_interpreter"]
     assert final.SHARED_INTERPRETER_PROFILE == _PROFILE
     assert final.SHARED_INTERPRETER_BASE_SHA == _BASE_SHA
     assert final.SHARED_INTERPRETER_BASE_TREE == _BASE_TREE
     assert final.SHARED_INTERPRETER_TOOLING_PATHS == frozenset(_PUBLIC_SHARED_PATHS)
     assert set(final._REVIEWED_SHARED_INTERPRETER_TOOLING) == set(_PUBLIC_SHARED_PATHS) - {_VERIFIER_PATH}
     for path, expected in final._REVIEWED_SHARED_INTERPRETER_TOOLING.items():
-        assert _public_blob((checkout / path).read_bytes()) == expected
-    final._verify_shared_interpreter_self_source(Path(final.__file__).read_bytes())
+        assert _public_blob(reviewed[path]) == expected
+    final._verify_shared_interpreter_self_source(reviewed[_VERIFIER_PATH])
 
 
 @pytest.mark.parametrize("historical_digest", [
