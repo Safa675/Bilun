@@ -9,8 +9,10 @@ import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
 import { createWorkspaceStore } from "@/stores/workspaceStore";
 import * as api from "@/lib/api/sut";
+import type { SutChatDockPosition } from "@/stores/storeInterfaces";
 
 const navigation = vi.hoisted(() => ({ query: "claim=A-1&section=lab&finding=primary", replace: vi.fn(), push: vi.fn() }));
+const dockState = vi.hoisted(() => ({ value: "center" as SutChatDockPosition }));
 const translate = (key: string) => key;
 vi.mock("next/navigation", () => ({
   useRouter: () => navigation,
@@ -29,7 +31,7 @@ vi.mock("@/components/patient/SutBillingReportSections", () => ({ BillingSummary
 vi.mock("@/components/patient/views/PatientWorkspaceViews", () => ({ default: () => null }));
 vi.mock("@/components/patient/OriginalBillView", () => ({ default: () => null }));
 vi.mock("@/stores/index", () => ({
-  useAiDockPosition: () => "center", useSetAiDockPosition: () => vi.fn(),
+  useAiDockPosition: () => dockState.value, useSetAiDockPosition: () => vi.fn(),
   useSetShowHowItWorks: () => vi.fn(), useSetShowReportProblem: () => vi.fn(), useSetSutChatSession: () => vi.fn(),
   useShowHowItWorks: () => false, useShowReportProblem: () => false,
   useSutChatSession: () => ({ messages: [], autoText: "" }), useWorkspacePaneBTabId: () => "patient:B",
@@ -65,6 +67,7 @@ beforeEach(() => {
   vi.stubGlobal("window", { setTimeout, clearTimeout });
   vi.stubGlobal("requestAnimationFrame", () => 1); vi.stubGlobal("cancelAnimationFrame", vi.fn());
   navigation.query = "claim=A-1&section=lab&finding=primary";
+  dockState.value = "center";
 });
 afterEach(async () => {
   for (const renderer of renderers.splice(0)) await act(async () => { renderer.unmount(); });
@@ -137,4 +140,19 @@ it("has no standalone patient search card, and the chat keeps collapse and open 
   expect(typeof chat.props.onDockChange).toBe("function");
   const pane = await mount("B", true);
   expect(pane.renderer.root.findAllByType(SutInlineAIPanel)).toHaveLength(0);
+});
+// The page frame follows the chat dock: only the right dock (a fixed column) and the embedded split pane use the full
+// width; the collapsed bar (the default) and the centre card keep the centred max-w-7xl frame.
+it.each([
+  ["collapsed", false, "mx-auto max-w-7xl space-y-6"],
+  ["center", false, "mx-auto max-w-7xl space-y-6"],
+  ["right", false, "w-full space-y-6"],
+  ["collapsed", true, "w-full space-y-6"],
+  ["right", true, "w-full space-y-6"],
+] as const)("frames the page for the %s chat dock (embedded %s) as '%s'", async (dock, embedded, expectedClass) => {
+  dockState.value = dock;
+  const view = await mount("A", embedded);
+  const frames = view.renderer.root.findAll(node => node.type === "section" && String(node.props.className).includes("space-y-6"));
+  expect(frames).toHaveLength(1);
+  expect(frames[0].props.className).toBe(expectedClass);
 });

@@ -559,6 +559,8 @@ export default function SutInlineAIPanel({
     );
   }
 
+  // The header row below wraps (flex-wrap): in the 380px right dock the four controls beside a long subtitle
+  // ("Patient: <id>") do not fit one row, and the controls then take their own row instead of running past the viewport edge.
   const displayedMessages = visibleChatMessages(messages);
 
   return (
@@ -571,8 +573,8 @@ export default function SutInlineAIPanel({
           : "fixed top-0 right-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
       )}
     >
-      <div className="mb-2 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 items-start gap-3">
           <Sparkles className="mt-[0.15rem] h-4 w-4 shrink-0 text-[var(--gold)]" />
           <div>
             <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
@@ -598,7 +600,7 @@ export default function SutInlineAIPanel({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1">
           <Button
             variant="icon"
             onClick={() => {

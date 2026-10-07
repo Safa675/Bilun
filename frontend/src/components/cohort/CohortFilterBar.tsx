@@ -39,9 +39,10 @@ export default function CohortFilterBar({
     [patients],
   );
 
-  const selectedPatientInList = sortedPatients.some(
+  const selectedPatient = sortedPatients.find(
     (patient) => patient.patient_id === filter.q,
   );
+  const selectedPatientInList = selectedPatient !== undefined;
 
   useEffect(() => {
     setDoctorDraft(filter.doctor);
@@ -52,6 +53,12 @@ export default function CohortFilterBar({
     setFilter(parseAgeRangeInput(ageDraft));
   }
 
+  // The closed select must show a chosen patient whole. Measured in Chrome (pixel compare): the widest Turkish
+  // label of the synthetic cohort ("SENTETIK-HASTA-0032 · 44 yaş · K", 239 px of text) is cut below about 288 px
+  // with pr-3 and below about 310 px with the default pr-8, because the native arrow reserves room of its own.
+  // 310 px with pr-3 leaves about 22 px to spare. The sex, age and doctor widths are trimmed so the whole row,
+  // with the clear button and the chip, still fits one line at 1280 px. Below 640 px the select takes the whole row:
+  // a fixed 310 px made the page scroll sideways at 390 px (measured by the phase-1 capture, 20 states).
   return (
     <Toolbar
       role="group"
@@ -76,7 +83,7 @@ export default function CohortFilterBar({
         </>
       }
     >
-      <label className="flex w-[250px] shrink-0 flex-col gap-1">
+      <label className="flex w-full shrink-0 flex-col gap-1 sm:w-[310px]">
         <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.patientLabel")}
         </span>
@@ -84,7 +91,8 @@ export default function CohortFilterBar({
           value={filter.q && (selectedPatientInList || filter.q) ? filter.q : ""}
           onChange={(event) => setFilter({ q: event.target.value })}
           disabled={sortedPatients.length === 0}
-          className={cn(selectClass)}
+          title={selectedPatient ? formatPatientFilterLabel(selectedPatient) : filter.q || undefined}
+          className={cn(selectClass, "pr-3")}
         >
           <option value="">
             {sortedPatients.length === 0
@@ -102,7 +110,7 @@ export default function CohortFilterBar({
         </select>
       </label>
 
-      <label className="flex w-[148px] shrink-0 flex-col gap-1">
+      <label className="flex w-[116px] shrink-0 flex-col gap-1">
         <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.sexLabel")}
         </span>
@@ -111,7 +119,7 @@ export default function CohortFilterBar({
           onChange={(event) =>
             setFilter({ sex: event.target.value as "" | "E" | "K" })
           }
-          className={cn(selectClass)}
+          className={cn(selectClass, "min-w-0")}
         >
           <option value="">{t("cohort.filterBar.sexAll")}</option>
           <option value="E">{t("cohort.filterBar.sexE")}</option>
@@ -119,7 +127,7 @@ export default function CohortFilterBar({
         </select>
       </label>
 
-      <label className="flex w-[132px] shrink-0 flex-col gap-1">
+      <label className="flex w-[112px] shrink-0 flex-col gap-1">
         <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.ageLabel")}
         </span>
@@ -137,7 +145,7 @@ export default function CohortFilterBar({
         />
       </label>
 
-      <label className="flex w-[140px] shrink-0 flex-col gap-1">
+      <label className="flex w-[120px] shrink-0 flex-col gap-1">
         <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.doctorCodeLabel")}
         </span>

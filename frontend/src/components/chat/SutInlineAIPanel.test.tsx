@@ -157,6 +157,24 @@ describe("SutInlineAIPanel", () => {
       expect(split).not.toContain("Dock right");
     });
 
+    it("lets the right-dock header wrap, so four controls beside a patient subtitle never run past the viewport edge", () => {
+      const html = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel
+          activeTab="SUT Patient Workspace"
+          patientId="SENTETIK-HASTA-0003"
+          dock="right"
+          onDockChange={noop}
+        />,
+      );
+      expect(html).toContain("Patient: SENTETIK-HASTA-0003");
+      // measured in Chrome: the 380px column is 9px too narrow for one row; the controls then take their own row
+      expect(html).toMatch(/<div class="mb-2 flex flex-wrap items-start justify-between [^"]*">/);
+      expect(html).toContain('<div class="ml-auto flex items-center gap-1">');
+      for (const label of ["Regenerate analysis", "Collapse chat", "Center (inline)", "Dock right"]) {
+        expect(html).toContain(`aria-label="${label}"`);
+      }
+    });
+
     it("renders no dock buttons when nobody can change the dock (the open panel keeps its old markup)", () => {
       const html = renderToStaticMarkupWithLocale(<SutInlineAIPanel activeTab="SUT Workspace" dock="center" />);
       expect(html).not.toContain("Collapse chat");
