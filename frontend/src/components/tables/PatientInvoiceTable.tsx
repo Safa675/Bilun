@@ -309,7 +309,7 @@ export default function PatientInvoiceTable({
     : t("home.patientTable.patientCountPlural", { count: rows.length });
 
   return (
-    <Surface variant="base" padding="lg" className="space-y-4">
+    <Surface variant="base" padding="md" className="space-y-4">
       <div className="flex items-center justify-between">
         <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
         <span className="text-xs text-[var(--text-muted)]">

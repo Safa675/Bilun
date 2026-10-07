@@ -1,4 +1,5 @@
 import { SUT_INLINE_CHAT_PANEL_WIDTH } from "@/components/chat/SutInlineAIPanel";
+import { isChatDockedRight } from "@/lib/chatDockPreference";
 import type { SutChatDockPosition } from "@/stores/storeInterfaces";
 
 /** Breathing room between docked chat panel edge and page content. */
@@ -14,12 +15,9 @@ export function getChatDockInsets(
   dock: SutChatDockPosition,
   eligible: boolean,
 ): { left: string; right: string } {
-  if (!eligible || dock === "center") {
+  if (!eligible || !isChatDockedRight(dock)) {
     return { left: "0px", right: "0px" };
   }
 
-  return {
-    left: "0px",
-    right: dock === "right" ? `${CHAT_DOCK_INSET_PX}px` : "0px",
-  };
+  return { left: "0px", right: `${CHAT_DOCK_INSET_PX}px` };
 }

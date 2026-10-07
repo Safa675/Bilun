@@ -8,7 +8,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { workspaceTabHref } from "@/lib/workspaceTabs";
 import {
   useAiDockPosition,
-  useSetAiDockPosition,
+  useNavigationStoreApi,
   useWorkspacePaneB,
   useWorkspaceStoreApi,
 } from "@/stores/index";
@@ -26,16 +26,17 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
   const paneB = useWorkspacePaneB();
   const store = useWorkspaceStoreApi();
   const chatDock = useAiDockPosition();
-  const setChatDock = useSetAiDockPosition();
+  const navigationStore = useNavigationStoreApi();
   // The split state hydrates from sessionStorage, which the server cannot
   // see; gate it behind a mounted flag so hydration matches the SSR tree.
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const effectivePaneB = mounted ? paneB : null;
 
   // Right-docked chat is disabled while split is active (v1 scope).
+  // setState, not the action: a layout rule must not overwrite the dock the user saved.
   useEffect(() => {
-    if (paneB && chatDock === "right") setChatDock("center");
-  }, [paneB, chatDock, setChatDock]);
+    if (paneB && chatDock === "right") navigationStore.setState({ aiDockPosition: "center" });
+  }, [paneB, chatDock, navigationStore]);
 
   if (!effectivePaneB) {
     return <>{children}</>;

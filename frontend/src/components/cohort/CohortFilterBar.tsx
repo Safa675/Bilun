@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Filter } from "lucide-react";
-import { Chip, Eyebrow, Surface, Button, inputClass, selectClass } from "@/components/primitives";
+import { Button, Chip, Toolbar, inputClass, selectClass } from "@/components/primitives";
 import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { fmtNum } from "@/components/tabs/sut/shared";
 import {
@@ -54,117 +53,107 @@ export default function CohortFilterBar({
   }
 
   return (
-    <Surface variant="base" padding="md" className={cn("space-y-3", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Eyebrow tone="muted" className="inline-flex items-center gap-1.5">
-            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
-            {t("cohort.filterBar.eyebrow")}
-          </Eyebrow>
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            {t("cohort.filterBar.description")}
-          </p>
-        </div>
-        {matchedCount !== null && totalCount !== null && (
-          <Chip variant={isActive ? "gold" : "neutral"}>
-            {t("cohort.filterBar.matchedCount", {
-              matched: fmtNum(matchedCount),
-              total: fmtNum(totalCount),
-            })}
-          </Chip>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex min-w-[220px] flex-1 flex-col gap-1">
-          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {t("cohort.filterBar.patientLabel")}
-          </span>
-          <select
-            value={filter.q && (selectedPatientInList || filter.q) ? filter.q : ""}
-            onChange={(event) => setFilter({ q: event.target.value })}
-            disabled={sortedPatients.length === 0}
-            className={cn(selectClass)}
-          >
-            <option value="">
-              {sortedPatients.length === 0
-                ? t("cohort.filterBar.loadingPatients")
-                : t("cohort.filterBar.allPatients")}
+    <Toolbar
+      role="group"
+      aria-label={t("cohort.filterBar.eyebrow")}
+      className={cn("py-2", className)}
+      trailing={
+        <>
+          {isActive && (
+            <Button variant="secondary" size="compact" onClick={clearFilter}>
+              {t("cohort.filterBar.clearFilters")}
+            </Button>
+          )}
+          {/* totalCount 0 is "not loaded yet" or "the list failed", never a real cohort size: no "0 of 0 patients" */}
+          {matchedCount !== null && totalCount !== null && totalCount > 0 && (
+            <Chip variant={isActive ? "gold" : "neutral"}>
+              {t("cohort.filterBar.matchedCount", {
+                matched: fmtNum(matchedCount),
+                total: fmtNum(totalCount),
+              })}
+            </Chip>
+          )}
+        </>
+      }
+    >
+      <label className="flex w-[250px] shrink-0 flex-col gap-1">
+        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("cohort.filterBar.patientLabel")}
+        </span>
+        <select
+          value={filter.q && (selectedPatientInList || filter.q) ? filter.q : ""}
+          onChange={(event) => setFilter({ q: event.target.value })}
+          disabled={sortedPatients.length === 0}
+          className={cn(selectClass)}
+        >
+          <option value="">
+            {sortedPatients.length === 0
+              ? t("cohort.filterBar.loadingPatients")
+              : t("cohort.filterBar.allPatients")}
+          </option>
+          {filter.q && !selectedPatientInList && (
+            <option value={filter.q}>{filter.q}</option>
+          )}
+          {sortedPatients.map((patient) => (
+            <option key={patient.patient_id} value={patient.patient_id}>
+              {formatPatientFilterLabel(patient)}
             </option>
-            {filter.q && !selectedPatientInList && (
-              <option value={filter.q}>{filter.q}</option>
-            )}
-            {sortedPatients.map((patient) => (
-              <option key={patient.patient_id} value={patient.patient_id}>
-                {formatPatientFilterLabel(patient)}
-              </option>
-            ))}
-          </select>
-        </label>
+          ))}
+        </select>
+      </label>
 
-        <label className="flex w-[148px] shrink-0 flex-col gap-1">
-          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {t("cohort.filterBar.sexLabel")}
-          </span>
-          <select
-            value={filter.sex}
-            onChange={(event) =>
-              setFilter({ sex: event.target.value as "" | "E" | "K" })
-            }
-            className={cn(selectClass)}
-          >
-            <option value="">{t("cohort.filterBar.sexAll")}</option>
-            <option value="E">{t("cohort.filterBar.sexE")}</option>
-            <option value="K">{t("cohort.filterBar.sexK")}</option>
-          </select>
-        </label>
+      <label className="flex w-[148px] shrink-0 flex-col gap-1">
+        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("cohort.filterBar.sexLabel")}
+        </span>
+        <select
+          value={filter.sex}
+          onChange={(event) =>
+            setFilter({ sex: event.target.value as "" | "E" | "K" })
+          }
+          className={cn(selectClass)}
+        >
+          <option value="">{t("cohort.filterBar.sexAll")}</option>
+          <option value="E">{t("cohort.filterBar.sexE")}</option>
+          <option value="K">{t("cohort.filterBar.sexK")}</option>
+        </select>
+      </label>
 
-        <label className="flex w-[132px] shrink-0 flex-col gap-1">
-          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {t("cohort.filterBar.ageLabel")}
-          </span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={ageDraft}
-            onChange={(event) => setAgeDraft(event.target.value)}
-            onBlur={commitAgeRange}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") commitAgeRange();
-            }}
-            placeholder={t("cohort.filterBar.agePlaceholder")}
-            className={cn(inputClass, "tabular-nums")}
-          />
-        </label>
+      <label className="flex w-[132px] shrink-0 flex-col gap-1">
+        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("cohort.filterBar.ageLabel")}
+        </span>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={ageDraft}
+          onChange={(event) => setAgeDraft(event.target.value)}
+          onBlur={commitAgeRange}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") commitAgeRange();
+          }}
+          placeholder={t("cohort.filterBar.agePlaceholder")}
+          className={cn(inputClass, "tabular-nums")}
+        />
+      </label>
 
-        <label className="flex min-w-[140px] flex-1 flex-col gap-1">
-          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {t("cohort.filterBar.doctorCodeLabel")}
-          </span>
-          <input
-            type="search"
-            value={doctorDraft}
-            onChange={(event) => setDoctorDraft(event.target.value)}
-            onBlur={() => setFilter({ doctor: doctorDraft.trim() })}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") setFilter({ doctor: doctorDraft.trim() });
-            }}
-            placeholder={t("cohort.filterBar.doctorPlaceholder")}
-            className={inputClass}
-          />
-        </label>
+      <label className="flex w-[140px] shrink-0 flex-col gap-1">
+        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("cohort.filterBar.doctorCodeLabel")}
+        </span>
+        <input
+          type="search"
+          value={doctorDraft}
+          onChange={(event) => setDoctorDraft(event.target.value)}
+          onBlur={() => setFilter({ doctor: doctorDraft.trim() })}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") setFilter({ doctor: doctorDraft.trim() });
+          }}
+          placeholder={t("cohort.filterBar.doctorPlaceholder")}
+          className={inputClass}
+        />
+      </label>
 
-        {isActive && (
-          <Button
-            variant="secondary"
-            size="compact"
-            onClick={clearFilter}
-            className="mb-0.5"
-          >
-            {t("cohort.filterBar.clearFilters")}
-          </Button>
-        )}
-      </div>
-    </Surface>
+    </Toolbar>
   );
 }

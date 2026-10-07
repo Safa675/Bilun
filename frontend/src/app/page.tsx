@@ -12,6 +12,7 @@ import {
   parseSutHomeTab,
   SUT_HOME_TABS,
 } from "@/lib/constants";
+import { isChatDockedRight } from "@/lib/chatDockPreference";
 import { buildHomePageContext } from "@/lib/sutChatPageContext";
 import { sutWorkspaceChatSessionKey } from "@/lib/sutChatSession";
 import {
@@ -72,9 +73,8 @@ function SutHomeContent() {
   const setShowReportProblem = useSetShowReportProblem();
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
-  // Split view disables chat docking (v1 scope).
+  // Split view turns the right column off; collapsing and opening the chat stay available.
   const splitActive = useWorkspacePaneBTabId() !== null;
-  const dockChange = splitActive ? undefined : setChatDock;
   const showAdmin = useShowAdmin();
   const setShowAdmin = useSetShowAdmin();
   const healthStatus = useHealthStatus();
@@ -108,7 +108,7 @@ function SutHomeContent() {
   );
   const shouldRenderChat = isWorkspaceMode;
   const chatPageContext = useMemo(() => buildHomePageContext(activeTab), [activeTab]);
-  const isDocked = shouldRenderChat && chatDock !== "center";
+  const isDocked = shouldRenderChat && isChatDockedRight(chatDock);
   const sectionClass = isDocked
     ? "w-full space-y-6"
     : "mx-auto max-w-7xl space-y-6";
@@ -132,7 +132,8 @@ function SutHomeContent() {
                   activeTab={activeTabLabel}
                   pageContext={chatPageContext}
                   dock={chatDock}
-                  onDockChange={dockChange}
+                  onDockChange={setChatDock}
+                  allowRightDock={!splitActive}
                   chatState={chatState}
                   onChatStateChange={handleChatStateChange}
                 />

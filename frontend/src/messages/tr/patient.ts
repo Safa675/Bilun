@@ -1,12 +1,5 @@
 const patient = {
   "page": {
-    "breadcrumbAria": "SUT hasta gezinme",
-    "workspace": "SUT çalışma alanı",
-    "patient": "{patientId}",
-    "patientUnknown": "Hasta bilinmiyor",
-    "searchEyebrow": "Hasta arama",
-    "searchPlaceholder": "Farklı bir hasta çalışma alanına geç…",
-    "searchDescription": "Hasta seçimi, ana sayfada satır içi yükleme yerine ayrılmış SUT çalışma alanına yönlendirir.",
     "billingUnavailable": "Fatura raporu kullanılamıyor",
     "footerNormative": "Resmi SUT tebliğ kural referanslarına (EK-1A, EK-2B, EK-2C, EK-4A) dayalı normatif analiz",
     "errors": {

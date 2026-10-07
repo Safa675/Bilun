@@ -27,7 +27,7 @@ export default function SUTCompliance() {
   const cohort = useCohortPatientIds(patientMeta);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <CohortFilterBar
         matchedCount={cohort.count}
         totalCount={patientMeta.length}

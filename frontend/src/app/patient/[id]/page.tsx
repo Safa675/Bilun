@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
@@ -18,7 +17,6 @@ import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
 import { Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
-import PatientSearch from "@/components/ui/PatientSearch";
 import {
   getBillBillingReport,
   getBillOptimization,
@@ -27,9 +25,9 @@ import {
   getPatientClaims,
   getPatientOptimization,
   getSutPatientOutcome,
-  searchSutPatients,
 } from "@/lib/api/sut";
-import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
+import { buildSutPatientHref } from "@/lib/constants";
+import { isChatDockedRight } from "@/lib/chatDockPreference";
 import {
   parsePatientWorkspaceQuery,
   resolvePatientScrollTarget,
@@ -467,10 +465,6 @@ export function SutPatientPageContent({
     [embedded, patientId, router, selectedClaimId],
   );
 
-  const handlePatientSelect = useCallback((selectedPatientId: string) => {
-    router.push(buildSutPatientHref(selectedPatientId));
-  }, [router]);
-
   const hasAnyData = Boolean(outcome) || Boolean(optimization) || Boolean(billingReport);
   const hasAnyError = Boolean(outcomeError) || Boolean(optimizationError) || Boolean(billingError);
   const allFailed = hasAnyError && !hasAnyData;
@@ -499,57 +493,17 @@ export function SutPatientPageContent({
     [patientId, outcome, activeOptimization, activeBillingReport, selectedClaimId],
   );
   const shouldRenderChat = !loading && !allFailed;
-  const isDocked = shouldRenderChat && chatDock !== "center";
+  const isDocked = shouldRenderChat && isChatDockedRight(chatDock);
   const sectionClass =
     isDocked || embedded ? "w-full space-y-6" : "mx-auto max-w-7xl space-y-6";
-  // Split view: dock controls are disabled and pane B renders no chat panel.
+  // Split view: the right column is off and pane B renders no chat panel; collapsing and opening stay available.
   const splitActive = useWorkspacePaneBTabId() !== null;
-  const dockChange = splitActive ? undefined : setChatDock;
   const ShellTag = (embedded ? "div" : "main") as "div" | "main";
 
   return (
     <>
       <ShellTag id={embedded ? undefined : "main-content"} className="sut-app-main">
         <section className={sectionClass}>
-            {!embedded && (
-            <Surface variant="base" padding="lg">
-              <nav
-                aria-label={t("patient.page.breadcrumbAria")}
-                className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
-              >
-                <Link
-                  href={buildSutHomeHref("patients")}
-                  className="text-[var(--text-secondary)] transition-colors hover:text-[var(--gold-hover)]"
-                >
-                  {t("patient.page.workspace")}
-                </Link>
-                <span aria-hidden="true" className="text-[var(--border-strong)]">
-                  /
-                </span>
-                <span className="text-[var(--text-primary)]">
-                  {patientId
-                    ? t("patient.page.patient", { patientId })
-                    : t("patient.page.patientUnknown")}
-                </span>
-              </nav>
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
-                <div>
-                  <Eyebrow className="mb-2">{t("patient.page.searchEyebrow")}</Eyebrow>
-                  <PatientSearch
-                    id="sut-patient-workspace-search"
-                    selectedPatientId={patientId || null}
-                    onSelect={handlePatientSelect}
-                    placeholder={t("patient.page.searchPlaceholder")}
-                    searchFn={searchSutPatients}
-                  />
-                </div>
-                <p className="text-sm leading-snug text-[var(--text-secondary)]">
-                  {t("patient.page.searchDescription")}
-                </p>
-              </div>
-            </Surface>
-            )}
-
             {!embedded && shouldRenderChat && (
               <SutInlineAIPanel
                 key={chatSessionKey}
@@ -557,7 +511,8 @@ export function SutPatientPageContent({
                 activeTab="SUT Patient Workspace"
                 pageContext={chatPageContext}
                 dock={chatDock}
-                onDockChange={dockChange}
+                onDockChange={setChatDock}
+                allowRightDock={!splitActive}
                 chatState={chatState}
                 onChatStateChange={handleChatStateChange}
               />

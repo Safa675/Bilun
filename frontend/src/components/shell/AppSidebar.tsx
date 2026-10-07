@@ -24,7 +24,6 @@ import {
 } from "@/lib/constants";
 import { useT } from "@/lib/i18n/useTranslations";
 import {
-  useAiDockPosition,
   useNavigationStoreApi,
   useSetShowHowItWorks,
   useSetShowReportProblem,
@@ -33,6 +32,7 @@ import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
 import { useSessionIdentity, useUserRole } from "@/components/shell/RoleProvider";
 import { endSession } from "@/lib/api/auth";
 import { announceSessionChange, clearProtectedBrowserState } from "@/lib/authBrowser";
+import { readChatDock } from "@/lib/chatDockPreference";
 import {
   readSidebarCollapsed,
   sidebarWidthPx,
@@ -70,7 +70,6 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const collapsed = narrowScreen ? !mobileExpanded : desktopCollapsed;
   const hideShell = pathname === "/login";
-  const chatDock = useAiDockPosition();
   const navigationStore = useNavigationStoreApi();
 
   useEffect(() => {
@@ -86,7 +85,8 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   // Mount-only read; synchronously initialize sidebar state and width before paint.
   useLayoutEffect(() => {
     const initiallyNarrow = window.matchMedia("(max-width: 640px)").matches;
-    const initialDesktopCollapsed = readSidebarCollapsed() || chatDock === "right";
+    // The saved dock is read directly: the provider applies it to the store in a later layout effect.
+    const initialDesktopCollapsed = readSidebarCollapsed() || readChatDock() === "right";
     setNarrowScreen(initiallyNarrow);
     setDesktopCollapsed(initialDesktopCollapsed);
     if (!hideShell) {

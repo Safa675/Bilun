@@ -25,8 +25,8 @@ export interface WorkspaceView {
 }
 
 export const WORKSPACE_STORAGE_KEY = "bilun:workspace-tabs";
-/** Preferred tab width (`max-w-52` / 13rem). Tabs do not grow past this. */
-export const WORKSPACE_TAB_MAX_PX = 208;
+/** Preferred tab width (17.5rem: fits the longest "Parent · Subtab" label in EN and TR). Tabs do not grow past this. */
+export const WORKSPACE_TAB_MAX_PX = 280;
 /** Floor width (`min-w-[4.5rem]`). Further tabs scroll instead of shrinking. */
 export const WORKSPACE_TAB_MIN_PX = 72;
 

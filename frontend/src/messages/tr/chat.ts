@@ -10,6 +10,12 @@ const chat = {
     centerInline: "Ortala (satır içi)",
     dockRight: "Sağa sabitle",
     sendMessage: "Mesaj gönder",
+    collapse: "Sohbeti küçült",
+    expand: "Sohbeti aç",
+  },
+  collapsed: {
+    prompt: "Bilun'a sorun…",
+    working: "Bilun çalışıyor…",
   },
   emptyState: "Bilun her görünümü özetler ve tüm konuşmayı burada tutar.",
   devModeBadge: "Geliştirici",

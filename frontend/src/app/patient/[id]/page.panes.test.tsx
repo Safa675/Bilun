@@ -2,6 +2,8 @@ import { act } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { SutPatientPageContent } from "./page";
+import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
+import PatientSearch from "@/components/ui/PatientSearch";
 import BillPicker from "@/components/patient/BillPicker";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
@@ -124,4 +126,15 @@ it("preserves primary selection URLs, reload and Back/Forward query changes", as
   navigation.query = ""; await primary.update();
   expect(primary.picker().props.selectedClaimId).toBeNull();
   await primary.select(null); expect(navigation.replace).toHaveBeenLastCalledWith("/patient/A", { scroll: false });
+});
+it("has no standalone patient search card, and the chat keeps collapse and open while a split view is active", async () => {
+  const primary = await mount("A", false);
+  expect(primary.renderer.root.findAllByType(PatientSearch)).toHaveLength(0);
+  expect(primary.renderer.root.findAllByProps({ id: "sut-patient-workspace-search" })).toHaveLength(0);
+  const chat = primary.renderer.root.findByType(SutInlineAIPanel);
+  // the mocked store reports a split view (pane B open) and the "center" dock
+  expect(chat.props).toMatchObject({ dock: "center", allowRightDock: false });
+  expect(typeof chat.props.onDockChange).toBe("function");
+  const pane = await mount("B", true);
+  expect(pane.renderer.root.findAllByType(SutInlineAIPanel)).toHaveLength(0);
 });
