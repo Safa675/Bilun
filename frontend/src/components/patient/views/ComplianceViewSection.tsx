@@ -78,7 +78,7 @@ export default function ComplianceViewSection({
   // counted action has one; otherwise a dash (none) or a labelled partial sum.
   const billed = complianceBilledAtRiskSummary(billingReport);
   const billedComplete = billed.known === billed.count;
-  const billedNone = billed.known === 0 && billed.count > 0;
+  const billedNone = billed.known === 0;
   const auditExposure = billingReport.audit_exposure_try ?? null;
   const effectivePatientId = patientId || billingReport.patient_id;
   const coverage = buildComplianceCoverage(billingReport, t);

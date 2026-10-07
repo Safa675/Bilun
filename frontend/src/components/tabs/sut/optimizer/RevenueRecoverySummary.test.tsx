@@ -51,6 +51,15 @@ describe("RevenueRecoverySummary honesty", () => {
     expect(html).not.toContain("0 TRY");
   });
 
+  it("preserves an unknown filtered headline while retaining explicit zero category evidence", () => {
+    const data = { ...summary, grand_total_recoverable: null };
+    const html = renderToStaticMarkupWithLocale(<RevenueRecoverySummary data={data} />);
+    const headline = html.slice(0, html.indexOf("data-recovery-category"));
+    expect(headline).toContain("Unavailable");
+    expect(headline).not.toContain("0 TRY");
+    expect(recoveryCategories(data).noFindings.map((row) => row.key)).toEqual(["optional_override", "blood_uplift"]);
+  });
+
   it.each(["en", "tr"] as const)("renders the category and uncertainty labels in %s", (locale) => {
     const html = renderToStaticMarkupWithLocale(<RevenueRecoverySummary data={{ ...summary, exactness_status: "partial_exact" }} />, locale);
     expect(html).toContain(locale === "en" ? "Partial exact" : "Kısmi kesin");

@@ -31,11 +31,15 @@ export type RecoveryCategory = {
   patients: number | null;
 };
 
+type RecoverySummaryDisplay = Omit<CohortRecoverySummary, "grand_total_recoverable"> & {
+  grand_total_recoverable: number | null;
+};
+
 function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-export function recoveryCategories(data: CohortRecoverySummary): {
+export function recoveryCategories(data: RecoverySummaryDisplay): {
   rows: RecoveryCategory[];
   noFindings: RecoveryCategory[];
 } {
@@ -64,7 +68,7 @@ export function recoveryCategories(data: CohortRecoverySummary): {
   };
 }
 
-export default function RevenueRecoverySummary({ data }: { data: CohortRecoverySummary }) {
+export default function RevenueRecoverySummary({ data }: { data: RecoverySummaryDisplay }) {
   const t = useT();
   const exact = isExactOutput(data);
   const partial = data.exactness_status === "partial_exact";

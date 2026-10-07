@@ -1125,6 +1125,11 @@ function RevenueRecoveryDashboard({
 
   const priorityColors: Record<string, string> = { high: "#B91C1C", medium: "#B45309", low: theme.accent };
 
+  return (
+    <div className="space-y-5">
+      {recoveryPartial ? (
+        <MethodologyBadge
+          warn
           label={t("optimizer.methodology.partialExact")}
           text={getUnavailableMessage(displayData, t("optimizer.methodology.revenuePartialExact"))}
         />
