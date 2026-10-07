@@ -13,7 +13,7 @@ import {
 } from "@/components/patient/SutBillingReportSections";
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
-import { complianceBilledAtRisk } from "@/lib/workspaceViews";
+import { complianceBilledAtRiskSummary } from "@/lib/workspaceViews";
 import {
   buildUnifiedComplianceFindings,
   type UnifiedComplianceFindingRow,
@@ -69,7 +69,11 @@ export default function ComplianceViewSection({
 }) {
   const t = useT();
   const rows = unifiedRows ?? buildUnifiedComplianceFindings(billingReport, t);
-  const billedAtRisk = complianceBilledAtRisk(billingReport);
+  // A missing billed amount is unknown, never zero: show the sum only when every
+  // counted action has one; otherwise a dash (none) or a labelled partial sum.
+  const billed = complianceBilledAtRiskSummary(billingReport);
+  const billedComplete = billed.known === billed.count;
+  const billedNone = billed.known === 0 && billed.count > 0;
   const auditExposure = billingReport.audit_exposure_try ?? 0;
   const effectivePatientId = patientId || billingReport.patient_id;
   const coverage = buildComplianceCoverage(billingReport, t);
@@ -92,7 +96,19 @@ export default function ComplianceViewSection({
         />
         <KpiCard
           label={t("billing.views.compliance.kpiBilledAtRisk")}
-          value={fmtTRY2(billedAtRisk)}
+          value={billedNone ? "—" : fmtTRY2(billed.total)}
+          sub={
+            billedComplete
+              ? undefined
+              : billedNone
+                ? t("billing.views.compliance.kpiBilledAtRiskNone", {
+                    count: billed.count,
+                  })
+                : t("billing.views.compliance.kpiBilledAtRiskPartial", {
+                    known: billed.known,
+                    count: billed.count,
+                  })
+          }
         />
       </div>
 

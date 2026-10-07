@@ -591,6 +591,8 @@ const billing = {
       "kpiRisk": "Toplam denetim riski",
       "kpiFindings": "Riskli bulgu",
       "kpiBilledAtRisk": "Riskli faturalanan tutar",
+      "kpiBilledAtRiskNone": "{count} bulgunun hiçbirinde faturalanan tutar yok",
+      "kpiBilledAtRiskPartial": "Kısmi toplam: {count} bulgudan yalnızca {known} tanesinde faturalanan tutar var",
       "statusConfirmedViolation": "Kesin ihlal",
       "statusReviewRisk": "Risk — inceleme gerekli",
       "tableTitle": "Uyumluluk bulguları",

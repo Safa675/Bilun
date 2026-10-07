@@ -177,4 +177,88 @@ describe("ComplianceViewSection", () => {
     // Single anchor: no duplicate claim-compliance ids.
     expect(html.match(/id="claim-compliance"/g)?.length).toBe(1);
   });
+
+  describe("billed amount at risk KPI with missing billed amounts", () => {
+    const reportWith = (actions: Array<Record<string, unknown>>): BillingActionReport =>
+      ({
+        ...baseReport,
+        action_count: actions.length,
+        audit_exposure_try: 0,
+        recommended_actions: actions.map((action, index) => ({
+          action_id: `act-${index}`,
+          surface: "materials",
+          kind: "material_pre_auth",
+          finding_type: "compliance",
+          ...action,
+        })),
+      }) as unknown as BillingActionReport;
+
+    // Text of the "Billed amount at risk" KPI block only (label + value + hint).
+    function billedKpiText(report: BillingActionReport, locale: "en" | "tr" = "en"): string {
+      const html = renderToStaticMarkupWithLocale(
+        <WorkspaceProvider>
+          <ComplianceViewSection billingReport={report} />
+        </WorkspaceProvider>,
+        locale,
+      );
+      const label = locale === "en" ? "Billed amount at risk" : "Riskli faturalanan tutar";
+      const block = new RegExp(`${label}</p>(.*?)</div>`).exec(html);
+      expect(block).not.toBeNull();
+      return (block as RegExpExecArray)[1].replace(/<[^>]+>/g, "|");
+    }
+
+    it("shows the exact sum and no hint when every amount is present", () => {
+      const text = billedKpiText(
+        reportWith([{ billed_try: 192.32 }, { billed_try: 192.32 }]),
+      );
+      expect(text).toBe("|384.64 TRY|");
+    });
+
+    it("shows a labelled partial sum, not a bare total, when some amounts are missing", () => {
+      const text = billedKpiText(
+        reportWith([
+          { billed_try: 10000 },
+          { billed_try: 15000 },
+          ...Array.from({ length: 5 }, () => ({ billed_try: null })),
+        ]),
+      );
+      expect(text).toContain("25,000.00 TRY");
+      expect(text).toContain("Partial total: only 2 of 7 findings have a billed amount");
+    });
+
+    it("shows a dash and no 0.00 when no counted finding has a billed amount", () => {
+      const text = billedKpiText(
+        reportWith(Array.from({ length: 5 }, () => ({ billed_try: null }))),
+      );
+      expect(text).toContain("|—|");
+      expect(text).not.toContain("0.00");
+      expect(text).toContain("None of the 5 findings has a billed amount");
+    });
+
+    it("keeps excluding drug_indication findings without marking the sum partial", () => {
+      const text = billedKpiText(
+        reportWith([
+          { billed_try: 100 },
+          { surface: "drug_indication", kind: "drug_indication", billed_try: null },
+        ]),
+      );
+      expect(text).toBe("|100.00 TRY|");
+    });
+
+    it("localizes the partial and unavailable states in Turkish", () => {
+      const partial = billedKpiText(
+        reportWith([{ billed_try: 100 }, { billed_try: null }]),
+        "tr",
+      );
+      expect(partial).toContain("Kısmi toplam: 2 bulgudan yalnızca 1 tanesinde faturalanan tutar var");
+
+      const none = billedKpiText(
+        reportWith([{ billed_try: null }, { billed_try: null }]),
+        "tr",
+      );
+      expect(none).toContain("|—|");
+      expect(none).not.toContain("0,00");
+      expect(none).toContain("2 bulgunun hiçbirinde faturalanan tutar yok");
+    });
+  });
 });

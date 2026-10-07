@@ -86,13 +86,44 @@ export function scopedClaimComplianceFindings(
   );
 }
 
-/** Sum of billed amounts at risk across compliance-classified actions. */
-export function complianceBilledAtRisk(report: BillingActionReport): number {
-  return viewActions(report, "compliance").reduce(
-    (sum, action) =>
-      sum + (action.surface === "drug_indication" ? 0 : action.billed_try ?? 0),
-    0,
-  );
+/**
+ * Billed amount at risk across compliance-classified actions, with coverage.
+ *
+ * `count` is the number of counted at-risk actions and `known` how many of
+ * them carry a billed amount. `total` sums only those `known` amounts, so it is
+ * a partial figure whenever `known < count`; a missing (null) billed amount is
+ * never treated as zero. Actions with `surface === "drug_indication"` are
+ * deliberately left out of the total and of both counts.
+ */
+export interface BilledAtRiskSummary {
+  total: number;
+  known: number;
+  count: number;
+}
+
+export function complianceBilledAtRiskSummary(
+  report: BillingActionReport,
+): BilledAtRiskSummary {
+  let total = 0;
+  let known = 0;
+  let count = 0;
+  for (const action of viewActions(report, "compliance")) {
+    if (action.surface === "drug_indication") continue;
+    count += 1;
+    if (action.billed_try == null) continue;
+    total += action.billed_try;
+    known += 1;
+  }
+  return { total, known, count };
+}
+
+/**
+ * Sum of billed amounts at risk across compliance-classified actions, or null
+ * when any counted action lacks a billed amount (never a bare partial sum).
+ */
+export function complianceBilledAtRisk(report: BillingActionReport): number | null {
+  const { total, known, count } = complianceBilledAtRiskSummary(report);
+  return known === count ? total : null;
 }
 
 /** SGK uplift shown on the revenue view (total fallback for partial reports). */

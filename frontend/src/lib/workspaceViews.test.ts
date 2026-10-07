@@ -4,6 +4,7 @@ import {
   claimComplianceFindingIdentity,
   isClaimComplianceFindingSelected,
   complianceBilledAtRisk,
+  complianceBilledAtRiskSummary,
   recoverableUplift,
   scopedClaimComplianceFindings,
   viewActions,
@@ -86,6 +87,93 @@ describe("workspaceViews", () => {
 
   it("sums billed-at-risk amounts for the compliance view", () => {
     expect(complianceBilledAtRisk(report)).toBe(100);
+    expect(complianceBilledAtRiskSummary(report)).toEqual({ total: 100, known: 1, count: 1 });
+  });
+
+  describe("billed-at-risk with missing billed amounts", () => {
+    const withActions = (
+      actions: Array<Record<string, unknown>>,
+    ): BillingActionReport =>
+      ({
+        patient_id: "P-NULLS",
+        recommended_actions: actions.map((action, index) => ({
+          action_id: `n${index}`,
+          surface: "materials",
+          kind: "material_pre_auth",
+          finding_type: "compliance",
+          ...action,
+        })),
+      }) as unknown as BillingActionReport;
+
+    it("is a complete exact sum when every counted action has a billed amount", () => {
+      const complete = withActions([{ billed_try: 192.32 }, { billed_try: 192.32 }]);
+      expect(complianceBilledAtRiskSummary(complete)).toEqual({
+        total: 384.64,
+        known: 2,
+        count: 2,
+      });
+      expect(complianceBilledAtRisk(complete)).toBe(384.64);
+    });
+
+    it("keeps an explicit zero billed amount as a known amount", () => {
+      const zero = withActions([{ billed_try: 0 }, { billed_try: 25 }]);
+      expect(complianceBilledAtRiskSummary(zero)).toEqual({ total: 25, known: 2, count: 2 });
+      expect(complianceBilledAtRisk(zero)).toBe(25);
+    });
+
+    it("reports a partial sum, never a bare total, when one amount is missing", () => {
+      const partial = withActions([{ billed_try: 100 }, { billed_try: null }]);
+      expect(complianceBilledAtRiskSummary(partial)).toEqual({ total: 100, known: 1, count: 2 });
+      expect(complianceBilledAtRisk(partial)).toBeNull();
+    });
+
+    it("treats an absent billed_try the same as null", () => {
+      const absent = withActions([{ billed_try: 100 }, {}]);
+      expect(complianceBilledAtRiskSummary(absent)).toEqual({ total: 100, known: 1, count: 2 });
+      expect(complianceBilledAtRisk(absent)).toBeNull();
+    });
+
+    it("has no known amount when every counted action is missing one", () => {
+      const none = withActions([
+        { billed_try: null },
+        { billed_try: null },
+        { billed_try: null },
+      ]);
+      expect(complianceBilledAtRiskSummary(none)).toEqual({ total: 0, known: 0, count: 3 });
+      expect(complianceBilledAtRisk(none)).toBeNull();
+    });
+
+    it("keeps excluding drug_indication actions from the total and from the coverage counts", () => {
+      const drugOnlyMissing = withActions([
+        { billed_try: 100 },
+        { surface: "drug_indication", kind: "drug_indication", billed_try: null },
+      ]);
+      expect(complianceBilledAtRiskSummary(drugOnlyMissing)).toEqual({
+        total: 100,
+        known: 1,
+        count: 1,
+      });
+      expect(complianceBilledAtRisk(drugOnlyMissing)).toBe(100);
+
+      const drugWithAmount = withActions([
+        { billed_try: 100 },
+        { surface: "drug_indication", kind: "drug_indication", billed_try: 40 },
+      ]);
+      expect(complianceBilledAtRiskSummary(drugWithAmount)).toEqual({
+        total: 100,
+        known: 1,
+        count: 1,
+      });
+    });
+
+    it("ignores non-compliance actions that lack a billed amount", () => {
+      const mixed = withActions([
+        { billed_try: 100 },
+        { finding_type: "opportunity", surface: "yatak_puani", kind: "yatak_puani_standard_bed" },
+      ]);
+      expect(complianceBilledAtRiskSummary(mixed)).toEqual({ total: 100, known: 1, count: 1 });
+      expect(complianceBilledAtRisk(mixed)).toBe(100);
+    });
   });
 
   it("keeps generic claim-compliance findings scoped and keyed by canonical identity", () => {

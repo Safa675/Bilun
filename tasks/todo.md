@@ -1,3 +1,19 @@
+## Task: Never show a zero or partial sum for missing billed amounts at risk
+
+### Goal
+The compliance view's "Billed amount at risk" stat shows an exact sum only when every counted at-risk action has a billed amount; otherwise a dash or a labelled partial sum with "x of y findings".
+
+### Subtasks
+- [x] Reproduction reported by independent review (not re-run against the live API here): SENTETIK-HASTA-0003 (5 nulls shown as 0.00 TRY) and 0029 (25,000.00 TRY = 2 of 7 findings) on the synthetic cohort; 0017 (2 x 192.32) is complete and unchanged.
+- [x] Add `complianceBilledAtRiskSummary` ({total, known, count}) in `frontend/src/lib/workspaceViews.ts`; `complianceBilledAtRisk` returns null instead of a partial sum; keep the `drug_indication` exclusion.
+- [x] Render dash / partial hint in `ComplianceViewSection.tsx` with en and tr messages.
+- [x] Tests: one null, all nulls, no nulls, drug_indication exclusion, en and tr rendering.
+- [x] `npx tsc --noEmit`, full `npx vitest run`, `npm run build`.
+- [ ] Draft PR against main; do not merge before the pending production deploy is activated.
+
+### Out of Scope
+Backend, rules, exactness semantics, API shape, and other aggregations (uplift/savings fallbacks) that are not this billed-at-risk total.
+
 ## Task: 5 Ekim kaynak yenilemesi ve doğrulanmış paket entegrasyonu
 
 ### Goal

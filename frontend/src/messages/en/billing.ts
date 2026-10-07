@@ -591,6 +591,8 @@ const billing = {
       "kpiRisk": "Total audit exposure",
       "kpiFindings": "At-risk findings",
       "kpiBilledAtRisk": "Billed amount at risk",
+      "kpiBilledAtRiskNone": "None of the {count} findings has a billed amount",
+      "kpiBilledAtRiskPartial": "Partial total: only {known} of {count} findings have a billed amount",
       "statusConfirmedViolation": "Confirmed violation",
       "statusReviewRisk": "Risk — review required",
       "tableTitle": "Compliance findings",
