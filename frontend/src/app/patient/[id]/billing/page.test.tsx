@@ -22,7 +22,8 @@ vi.mock("@/lib/sutLabels", () => ({
   },
 }));
 
-vi.mock("@/lib/sutExactness", () => ({
+vi.mock("@/lib/sutExactness", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/sutExactness")>(),
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
   hasRecoverableBillingTotals: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
@@ -104,7 +105,7 @@ describe("BillingSummary", () => {
   it("shows exact billing state without inline provenance banner", () => {
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={baseReport} />);
 
-    expect(html).toContain("SGK uplift (Kurum ödemesi)");
+    expect(html).toContain("SGK payment uplift");
     expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Billing totals remain unavailable");
     expect(html).not.toContain("Actual reimbursement recovery");
@@ -138,7 +139,7 @@ describe("BillingSummary", () => {
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={exactReport} />);
 
     expect(html).toContain(fmtTRY2Fixture(exactReport.total_recoverable_try!));
-    expect(html).toContain("SGK uplift (Kurum ödemesi)");
+    expect(html).toContain("SGK payment uplift");
     // Gold discipline (Phase 6): BillingSummary no longer applies italic-gold to
     // the rule-calculated opportunity — the single italic-gold money KPI on the
     // patient page lives on PatientFinancialSummary (total recoverable).

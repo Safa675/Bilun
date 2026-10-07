@@ -55,7 +55,8 @@ vi.mock("@/lib/theme", () => ({
   },
 }));
 
-vi.mock("@/lib/sutExactness", () => ({
+vi.mock("@/lib/sutExactness", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/sutExactness")>(),
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
   getUnavailableMessage: (

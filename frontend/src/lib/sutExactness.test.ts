@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { formatRequiredInputs, getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "./sutExactness";
+import { formatRequiredInputs, getExactnessDescription, getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "./sutExactness";
 
 describe("sutExactness helpers", () => {
+  it("explains exact, partial, not applicable and unavailable without changing status", () => {
+    const t = (key: string) => key;
+    expect(getExactnessDescription({ exactness_status: "exact" }, t)).toBe("billing.glossary.exact");
+    expect(getExactnessDescription({ pricing_status: "partial_exact" }, t)).toBe("billing.glossary.partial");
+    expect(getExactnessDescription({ exactness_status: "not_applicable" }, t)).toBe("billing.glossary.notApplicable");
+    expect(getExactnessDescription({ exactness_status: "unknown_date" }, t)).toBe("billing.glossary.unavailable");
+    expect(getExactnessDescription(undefined, t)).toBe("billing.glossary.unavailable");
+  });
   it("requires explicit exactness metadata before treating a block as exact", () => {
     expect(isExactOutput({})).toBe(false);
     expect(isExactOutput(undefined)).toBe(false);

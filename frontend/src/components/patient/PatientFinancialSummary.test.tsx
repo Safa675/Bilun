@@ -12,7 +12,8 @@ vi.mock("@/lib/theme", () => ({
   theme: { accent: "#059669" },
 }));
 
-vi.mock("@/lib/sutExactness", () => ({
+vi.mock("@/lib/sutExactness", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/sutExactness")>(),
   isExactOutput: (block: { exactness_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact",
   hasRecoverableBillingTotals: (block: { exactness_status?: string | null } | null | undefined) =>

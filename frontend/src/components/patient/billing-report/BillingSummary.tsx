@@ -2,7 +2,7 @@
 
 import type { BillingActionReport } from "@/lib/domains/sut";
 import { useT } from "@/lib/i18n/useTranslations";
-import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
+import { getExactnessDescription, hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import { copayExemptionGapTotal, copayShowsIlaveColumn } from "@/lib/billingReportFields";
 import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow, Stat, Surface } from "@/components/primitives";
 import { fmtNum, fmtPriorityLabel, fmtTRY2 } from "@/components/tabs/sut/shared";
@@ -77,7 +77,7 @@ export function BillingSummary({
             {isBillScope ? t("billing.summary.billDescription") : t("billing.summary.description")}
           </p>
         </div>
-        <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
+        <Chip variant={chipVariantFromColor(priorityColor)} title={getExactnessDescription(billingReport, t)}>{statusLabel}</Chip>
       </div>
 
       <div

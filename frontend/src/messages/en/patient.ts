@@ -13,7 +13,7 @@ const patient = {
     "eyebrow": "Financial profile",
     "title": "All bills at a glance",
     "titleBill": "Bill {claimId}",
-    "description": "Patient-level totals across every claim: what was billed, what SUT expects to pay, and how much BILUN can still recover.",
+    "description": "Billed, expected payable and recoverable amounts across all bills. Missing amounts remain unavailable.",
     "descriptionBill": "Totals and recoverable amounts for the selected bill only — sections below use the same scope.",
     "totalBilled": "Total billed",
     "expectedPayable": "Expected payable",
@@ -23,7 +23,7 @@ const patient = {
   },
   "billingGroups": {
     "overview": "Financial overview",
-    "overviewDescription": "Summary KPIs and recommended actions for the active scope."
+    "overviewDescription": "Amounts and recommended actions for the selected bills."
   },
   "billPicker": {
     "label": "Bills",
@@ -68,7 +68,7 @@ const patient = {
     "eyebrow": "SUT patient workspace",
     "billingTitle": "Billing",
     "billingEmphasis": "Report",
-    "description": "A dedicated patient-level exact-only workspace that composes surviving SUT outcome and optimization data before handing off to the deeper billing review.",
+    "description": "Review this patient's bills, SUT findings and recoverable amounts.",
     "backToPatients": "Back to patients",
     "diagnoses": "Diagnoses",
     "icdChapters": "ICD chapters",
@@ -79,7 +79,7 @@ const patient = {
     "clinicalSnapshotEyebrow": "Clinical & rule snapshot",
     "clinicalSnapshotDescription": "Diagnosis-driven SUT rule findings for this patient. Select a bill below for claim-scoped optimization.",
     "optimizationTitle": "Optimization snapshot",
-    "optimizationDescription": "Patient-level SUT rule findings stay exactness-aware: unavailable inputs stay unavailable.",
+    "optimizationDescription": "Checks with missing information remain unavailable.",
     "copayEyebrow": "Copay exemption",
     "copayEligible": "Eligible",
     "copayNoMatch": "No exemption ground matched",
@@ -124,10 +124,10 @@ const patient = {
       "message": "Patient-level SUT analytics are not currently loaded for patient {patientId}."
     },
     "outcomeSummary": {
-      "eyebrow": "Exact-only patient outcome",
-      "title": "Claim-line totals stay explicit",
-      "paragraph1": "Estimate-backed SUT cost ranges and gap projections were removed.",
-      "paragraph2": "This patient view keeps exact claim-line totals from the analytics cache; missing pricing metadata stays unavailable instead of being treated as exact."
+      "eyebrow": "Patient billing summary",
+      "title": "Amounts from billed items",
+      "paragraph1": "Only calculated billed-item amounts are shown; no estimated amounts are added.",
+      "paragraph2": "Amounts with missing pricing information remain unavailable."
     },
     "claimSummary": {
       "title": "Exact Claim-Line Summary",

@@ -9,7 +9,7 @@ import type {
 import { fmtNum, fmtTRY2, fmtPriorityLabel } from "@/components/tabs/sut/shared";
 import { chipVariantFromColor } from "@/components/patient/SutBillingReportSections";
 import { Chip, Surface } from "@/components/primitives";
-import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
+import { getExactnessDescription, hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import { useT } from "@/lib/i18n/useTranslations";
 
 const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
@@ -86,6 +86,7 @@ export function PatientFinancialSummary({
     },
     {
       label: t("patient.financialSummary.totalRecoverable"),
+      explanation: t("billing.glossary.claimBacked"),
       value: reportHasTotals && recoverable != null ? fmtTRY2(recoverable) : t("common.unavailable"),
       gold: reportHasTotals && (recoverable ?? 0) > 0,
     },
@@ -112,7 +113,7 @@ export function PatientFinancialSummary({
             : t("patient.financialSummary.title")}
         </h2>
         {billingReport && !isExactOutput(billingReport) && (
-          <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
+          <Chip variant={chipVariantFromColor(priorityColor)} title={getExactnessDescription(billingReport, t)}>{statusLabel}</Chip>
         )}
       </div>
       <p className="sr-only">
@@ -121,10 +122,10 @@ export function PatientFinancialSummary({
           : t("patient.financialSummary.description")}
       </p>
       <dl className="grid grid-cols-1 gap-x-4 gap-y-3 @min-[360px]:grid-cols-2 @min-[800px]:grid-cols-[1.1fr_1.1fr_1.4fr_0.45fr_0.65fr]">
-        {values.map(({ label, value, gold }) => (
+        {values.map(({ label, value, gold, explanation }) => (
           <div key={label} className="min-w-0 space-y-2">
-            <dt className="min-h-8 text-xs leading-4 text-[var(--text-muted)]">{label}</dt>
-            <dd className={`whitespace-nowrap tabular-nums text-xs leading-6 tracking-tight @min-[180px]:text-lg @min-[800px]:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
+            <dt title={explanation} className="min-h-8 text-xs leading-4 text-[var(--text-muted)]">{label}</dt>
+            <dd title={value === t("common.unavailable") ? t("billing.glossary.unavailable") : undefined} className={`whitespace-nowrap tabular-nums text-xs leading-6 tracking-tight @min-[180px]:text-lg @min-[800px]:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
               {value}
             </dd>
           </div>

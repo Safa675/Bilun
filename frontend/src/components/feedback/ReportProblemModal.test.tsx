@@ -1,6 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import ReportProblemModal from "./ReportProblemModal";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+
+const feedbackState = vi.hoisted(() => ({ localOnly: false }));
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  return {
+    ...actual,
+    useState: ((initial: unknown) => actual.useState(
+      initial === "idle" && feedbackState.localOnly ? "local_only" : initial,
+    )) as typeof actual.useState,
+  };
+});
+afterEach(() => { feedbackState.localOnly = false; });
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/?tab=reference-tools",
@@ -14,6 +26,18 @@ vi.mock("@/components/shell/RoleProvider", () => ({
 }));
 
 describe("ReportProblemModal", () => {
+  it.each(["en", "tr"] as const)("honestly localizes undelivered email and the fallback in %s", (locale) => {
+    feedbackState.localOnly = true;
+    const html = renderToStaticMarkupWithLocale(
+      <ReportProblemModal open={true} onClose={() => undefined} />, locale,
+    );
+    expect(html).not.toContain("RESEND_API_KEY");
+    expect(html).not.toContain("Konsola Kaydedildi");
+    expect(html).toContain(locale === "en" ? "Email not sent" : "E-posta gönderilmedi");
+    const mailto = decodeURIComponent(html.match(/href="(mailto:[^"]+)"/)?.[1] ?? "");
+    expect(mailto).toContain(locale === "en" ? "[Bilun Feedback]" : "[Bilun Geri Bildirim]");
+    expect(mailto).toContain(locale === "en" ? "Message:" : "Mesaj:");
+  });
   it("renders nothing when closed", () => {
     const html = renderToStaticMarkupWithLocale(
       <ReportProblemModal open={false} onClose={() => undefined} />,

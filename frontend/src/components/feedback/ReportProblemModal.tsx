@@ -64,9 +64,15 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
 
   if (!open) return null;
 
-  const mailtoSubject = encodeURIComponent(`[Bilun Geri Bildirim] ${category.toUpperCase()} - ${name || "Kullanıcı"}`);
+  const mailtoSubject = encodeURIComponent(t("shell.feedback.mailtoSubject", {
+    category: t(`shell.feedback.categories.${category}`),
+    name: name || t("shell.feedback.anonymousUser"),
+  }));
   const mailtoBody = encodeURIComponent(
-    `Gönderen: ${name}\nE-posta: ${email}\nKategori: ${category}\nKonum: ${activeTab} (${currentUrl})\nRol: ${userRole}\n\nMesaj:\n${message}`,
+    t("shell.feedback.mailtoBody", {
+      name, email, category: t(`shell.feedback.categories.${category}`),
+      tab: activeTab, url: currentUrl, role: userRole, message,
+    }),
   );
   const clientMailtoHref = `mailto:safaoksuz@bilun.tech?subject=${mailtoSubject}&body=${mailtoBody}`;
   const effectiveMailtoHref = serverMailtoHref || clientMailtoHref;
@@ -194,13 +200,13 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
                 <Info className="h-6 w-6" aria-hidden="true" />
               </div>
               <h3 className="text-base font-semibold text-[var(--text-primary)]">
-                Bildiriminiz Konsola Kaydedildi
+                {t("shell.feedback.localOnlyTitle")}
               </h3>
               <p className="mt-2 max-w-md text-xs text-[var(--text-secondary)] leading-relaxed">
-                Yerel geliştirme ortamında <code className="rounded bg-[var(--surface-tint)] px-1 py-0.5 font-mono text-[11px] text-[var(--gold)]">RESEND_API_KEY</code> tanımlı olmadığı için mesajınız doğrudan yerel sunucu loglarına yazıldı.
+                {t("shell.feedback.localOnlyDescription")}
               </p>
               <p className="mt-1 max-w-md text-xs text-[var(--text-muted)]">
-                Doğrudan <strong>safaoksuz@bilun.tech</strong> adresine gerçek bir e-posta iletmek için aşağıdaki butona tıklayabilirsiniz:
+                {t("shell.feedback.localOnlyFallback")}
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <a
@@ -208,7 +214,7 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
                   className="inline-flex items-center gap-1.5 rounded-[var(--r-md)] bg-[var(--gold)] px-4 py-2 text-xs font-medium text-black hover:bg-[var(--gold-hover)] transition-all"
                 >
                   <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>E-posta Programında Aç (Gönder)</span>
+                  <span>{t("shell.feedback.directEmailButton")}</span>
                   <ExternalLink className="h-3 w-3 opacity-70" aria-hidden="true" />
                 </a>
                 <button

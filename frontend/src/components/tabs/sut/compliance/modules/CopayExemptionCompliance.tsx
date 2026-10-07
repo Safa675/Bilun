@@ -10,6 +10,7 @@ import type { PatientAlertsResponse, PatientAlertsStatus } from "@/lib/domains/s
 import { fmtNum } from "../../shared";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { cn } from "@/lib/cn";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export interface CopayExemptionComplianceProps {
   cohortPatientIds: Set<string>;
@@ -23,6 +24,7 @@ export function CopayExemptionCompliance({
   cohortPatientIds,
   cohortFilterActive,
 }: CopayExemptionComplianceProps) {
+  const t = useT();
   const [data, setData] = useState<PatientAlertsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<PatientAlertsStatus>("all");
@@ -64,9 +66,9 @@ export function CopayExemptionCompliance({
     <div className="space-y-5">
       <Surface variant="base" padding="md">
         <Stat
-          label="Muafiyet uygunluğu"
+          label={t("optimizer.modules.exemptionEligibility")}
           value={fmtNum(exemptCount)}
-          hint={`Toplam ${fmtNum(totalCount)} hastadan`}
+          hint={t("optimizer.modules.totalPatientsHint", { count: fmtNum(totalCount) })}
         />
       </Surface>
 
@@ -78,7 +80,7 @@ export function CopayExemptionCompliance({
           onClick={() => setStatus("all")}
           className={cn("gap-1.5", status === "all" && buttonActiveClass)}
         >
-          Tümü ({fmtNum(totalCount)})
+          {t("optimizer.filters.status.all")} ({fmtNum(totalCount)})
         </Button>
         <Button
           type="button"
@@ -87,7 +89,7 @@ export function CopayExemptionCompliance({
           onClick={() => setStatus("exempt")}
           className={cn("gap-1.5", status === "exempt" && buttonActiveClass)}
         >
-          Muaf olanlar ({fmtNum(exemptCount)})
+          {t("optimizer.filters.status.exempt")} ({fmtNum(exemptCount)})
         </Button>
         <Button
           type="button"
@@ -96,7 +98,7 @@ export function CopayExemptionCompliance({
           onClick={() => setStatus("not_exempt")}
           className={cn("gap-1.5", status === "not_exempt" && buttonActiveClass)}
         >
-          Muaf olmayanlar ({fmtNum(totalCount - exemptCount)})
+          {t("optimizer.filters.status.not_exempt")} ({fmtNum(totalCount - exemptCount)})
         </Button>
       </div>
 
@@ -106,19 +108,22 @@ export function CopayExemptionCompliance({
         <DataTable minWidth={900}>
           <thead>
             <tr>
-              <th>Hasta ID</th>
-              <th>Tanı sayısı & ICD bölümleri</th>
-              <th>Muafiyet durumu</th>
-              <th>Eşleşen tanılar (EK-1A / acil)</th>
-              <th>Önerilen aksiyon</th>
-              <th className="text-right">İncele</th>
+              <th>{t("optimizer.tables.patientId")}</th>
+              <th>{t("optimizer.modules.diagnosisChapters")}</th>
+              <th>{t("optimizer.modules.exemptionStatus")}</th>
+              <th>
+                {t("optimizer.modules.matchedDiagnoses")}
+                <span className="block text-[var(--text-muted)]">{t("optimizer.modules.sourceTextTr")}</span>
+              </th>
+              <th>{t("optimizer.tables.recommendedAction")}</th>
+              <th className="text-right">{t("optimizer.complianceIndex.inspect")}</th>
             </tr>
           </thead>
           <tbody>
             {filteredPatients.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
-                  Seçili filtre için hasta kaydı bulunamadı.
+                  {t("optimizer.emptyStates.noPatientsMatchFilter")}
                 </td>
               </tr>
             ) : (
@@ -133,18 +138,18 @@ export function CopayExemptionCompliance({
                       </PatientTabLink>
                     </td>
                     <td className="text-[var(--text-secondary)]">
-                      {p.n_diagnoses} tanı · {p.icd10_chapters?.join(", ") || "—"}
+                      {t("optimizer.modules.diagnosisCount", { count: p.n_diagnoses })} · {p.icd10_chapters?.join(", ") || "—"}
                     </td>
                     <td>
                       {isExempt ? (
-                        <Chip variant="success">Muaf (EK-1A)</Chip>
+                        <Chip variant="success">{t("optimizer.modules.exemptEk1a")}</Chip>
                       ) : (
-                        <Chip variant="neutral">Standart katılım</Chip>
+                        <Chip variant="neutral">{t("optimizer.modules.standardCopay")}</Chip>
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
                       {qualifyingDx.length > 0 ? (
-                        <span className="font-medium text-[var(--text-primary)]">
+                        <span lang="tr" className="font-medium text-[var(--text-primary)]">
                           {qualifyingDx.map((q) => `${q.icd10} (${q.disease})`).join(", ")}
                         </span>
                       ) : (
@@ -153,8 +158,8 @@ export function CopayExemptionCompliance({
                     </td>
                     <td className="text-[var(--text-secondary)]">
                       {isExempt
-                        ? "Fatura öncesi muafiyet bayrağı uygulayın"
-                        : "Standart katılım payı tahsilatı"}
+                        ? t("optimizer.modules.applyExemption")
+                        : t("optimizer.modules.collectStandardCopay")}
                     </td>
                     <td className="text-right">
                       <PatientTabLink
@@ -162,7 +167,7 @@ export function CopayExemptionCompliance({
                         href={buildSutBillingHref(p.patient_id)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                       >
-                        Faturaya git <ArrowRight className="h-3 w-3" />
+                        {t("optimizer.complianceIndex.openBill")} <ArrowRight className="h-3 w-3" />
                       </PatientTabLink>
                     </td>
                   </tr>
