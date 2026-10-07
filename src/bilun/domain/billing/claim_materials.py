@@ -21,6 +21,10 @@ from .types import EXACTNESS_STATUS_EXACT, MaterialPreCheck
 _PREAUTH_NOTE = (
     "EK-3C-1 — tıbbi uygunluk (medical appropriateness) required before SGK submission (§3.1.2)"
 )
+_PREAUTH_FLAG_NOTE = (
+    "Pre-authorization review requested by the material-line input flag; "
+    "EK-3C-1 catalog membership not verified"
+)
 
 _BUNDLED_EK3B1_NOTE = (
     "Bundled material billed separately — review package inclusion (EK-3B-1)"
@@ -180,7 +184,8 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
         if latest_line_by_code.get(code_key) is not line:
             continue
         code = line.material_code.strip()
-        if code in preauth_codes or line.requires_pre_auth:
+        in_preauth_catalog = code in preauth_codes
+        if in_preauth_catalog or line.requires_pre_auth:
             catalog = preauth_codes.get(code, {})
             result.pre_auth_required.append(
                 _enrich_material_precheck_row(
@@ -189,7 +194,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                         "sut_code": code,
                         "material_name": line.material_name or catalog.get("material_name", ""),
                         "price_try": float(line.billed_amount_try),
-                        "note": _PREAUTH_NOTE,
+                        "note": _PREAUTH_NOTE if in_preauth_catalog else _PREAUTH_FLAG_NOTE,
                     },
                     list_key="pre_auth_required",
                     claim_id=line.claim_id,

@@ -154,6 +154,99 @@ def test_domain_serializer_keeps_uncomputed_and_zero_money(amount):
     assert response["lab"]["normative_cost_try"] is None
 
 
+def _medula_entries(scope: str, nonempty: bool) -> list[dict]:
+    if not nonempty:
+        return []
+    entries = [{
+        "patient_id": "PAT-1", "claim_id": "F-PAT-1-001",
+        "rejection_event_id": "REJ-1102", "sonuc_kodu": "1102",
+        "playbook_id": "1102_uncontracted_facility", "rebill_permitted": False,
+    }]
+    if scope == "patient":
+        entries.append({
+            "patient_id": "PAT-1", "claim_id": "F-PAT-1-002",
+            "rejection_event_id": "REJ-1688", "sonuc_kodu": "1688",
+            "playbook_id": "1688_molecular_microbiology", "rebill_permitted": True,
+        })
+    return entries
+
+
+@pytest.mark.parametrize("scope", ["patient", "bill"])
+@pytest.mark.parametrize("nonempty", [False, True])
+@pytest.mark.parametrize("representation", ["live", "cached", "cached_stale_counts"])
+def test_medula_counts_survive_live_and_cache_serialization(scope, nonempty, representation):
+    from copy import deepcopy
+
+    from src.bilun.api.routes.billing import _serialize_billing_report
+    from src.bilun.api.schemas import BillingReportResponse
+    from src.bilun.cache.build_streaming import json_ready
+    from src.bilun.domain.billing.types import BillingActionReport, MedulaRejectionPlaybook
+
+    entries = _medula_entries(scope, nonempty)
+    report = BillingActionReport(
+        patient_id="PAT-1", medula_rejection_playbook=MedulaRejectionPlaybook(entries=entries),
+        medula_playbook_entry_count=len(entries),
+    )
+    source = report if representation == "live" else json_ready(report)
+    if representation == "cached_stale_counts":
+        source["medula_rejection_playbook"].update(entry_count=0, rebill_permitted_count=99)
+        source["medula_playbook_entry_count"] = 99
+    before = deepcopy(source)
+    payload = _serialize_billing_report(source)
+    response = BillingReportResponse.model_validate(payload).model_dump(mode="json")
+    for output in (payload, response):
+        block = output["medula_rejection_playbook"]
+        assert block["entries"] == entries
+        assert block["entry_count"] == len(entries)
+        assert block["rebill_permitted_count"] == sum(row["rebill_permitted"] for row in entries)
+        assert output["medula_playbook_entry_count"] == len(entries)
+        if nonempty:
+            assert block["entries"][0]["sonuc_kodu"] == "1102"
+            assert block["entries"][0]["rebill_permitted"] is False
+    assert source == before
+
+
+@pytest.mark.parametrize("scope", ["patient", "bill"])
+@pytest.mark.parametrize("nonempty", [False, True])
+def test_medula_counts_on_actual_patient_and_bill_cache_endpoints(bill_report_cache, scope, nonempty):
+    from src.bilun.api.routes.billing import get_bill_billing_report, get_patient_billing_report
+    from src.bilun.api.schemas import BillingReportResponse
+    from src.bilun.cache.build_streaming import json_ready
+    from src.bilun.db import connect, write_json_payload_rows
+    from src.bilun.domain.billing.types import BillingActionReport, MedulaRejectionPlaybook
+
+    entries = _medula_entries(scope, nonempty)
+    cached = json_ready(BillingActionReport(
+        patient_id="PAT-1", medula_rejection_playbook=MedulaRejectionPlaybook(entries=entries),
+        medula_playbook_entry_count=len(entries),
+    ))
+    assert "entry_count" not in cached["medula_rejection_playbook"]
+    table = "patient_billing_report_rows" if scope == "patient" else "patient_bill_billing_report_rows"
+    key = "PAT-1" if scope == "patient" else "PAT-1::F-PAT-1-001"
+    con = connect(bill_report_cache["db_path"])
+    try:
+        write_json_payload_rows(con, table, bill_report_cache["build_id"], {key: cached})
+    finally:
+        con.close()
+    result = (get_patient_billing_report("PAT-1") if scope == "patient"
+              else get_bill_billing_report("PAT-1", "F-PAT-1-001"))
+    response = BillingReportResponse.model_validate(result).model_dump(mode="json")
+    block = response["medula_rejection_playbook"]
+    assert block["entries"] == entries
+    assert block["entry_count"] == len(entries)
+    assert block["rebill_permitted_count"] == sum(row["rebill_permitted"] for row in entries)
+    assert response["medula_playbook_entry_count"] == len(entries)
+    assert response["patient_id"] == "PAT-1"
+    if scope == "bill":
+        assert response["claim_id"] == "F-PAT-1-001" and response["scope"] == "bill"
+        assert all(row["claim_id"] == "F-PAT-1-001" for row in entries)
+    if nonempty:
+        assert block["entries"][0]["rejection_event_id"] == "REJ-1102"
+        assert block["entries"][0]["rebill_permitted"] is False
+    # No signed Wave A capability is fabricated to exercise these legacy blocks.
+    assert response["claim_reviews"]["available"] is False
+
+
 def test_bill_billing_report_distinct_per_bill(bill_report_cache):
     import src.bilun.api.routes.billing as billing_mod
 
