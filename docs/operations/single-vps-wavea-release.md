@@ -63,10 +63,14 @@ around a blocked or interrupted transaction.
   declared `dependency_roots` closure re-pins from disk, every pin and the root
   list equal `preparation-pins.json`, the closure lies outside both runtime
   copies, and the recorded launcher, argv, terminal executable, environment and
-  runtime digest equal the serving old process. Anything less keeps the
-  `backend snapshot lacks runnable Python environment` blocker. Rollback of the
-  paired release restarts the original services, so the shared interpreter must
-  stay unchanged. The old two-port route chain still needs a `.venv` in the old
+  runtime digest equal the serving old process. Anything less keeps rollback
+  blocked as `backend_rollback_artifact_unverified: <reason>`. The reason is
+  `backend snapshot lacks runnable Python environment` when there is no proof
+  or a `.venv` entry that is not the retained runnable one, and the reason of
+  the failed check when a proof fails. Owned maintenance raises its own
+  reason instead of reporting a blocker. Rollback of the paired release
+  restarts the original services, so the shared interpreter must stay
+  unchanged. The old two-port route chain still needs a `.venv` in the old
   backend copy and is not supported for the second form: `observe_old_pair` and
   `prepare_wavea_route_manifest` refuse it before any maintenance, and
   `rehearse_wavea_pair` starts its replay from `backend/.venv`. Both old and

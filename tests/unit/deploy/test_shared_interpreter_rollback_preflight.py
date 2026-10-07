@@ -690,6 +690,32 @@ def test_issuer_in_owned_maintenance_mode_hands_the_declared_roots_to_the_held_g
     assert not arguments["receipt_path"].exists()
 
 
+def test_issuer_in_owned_maintenance_mode_refuses_when_the_second_evaluation_differs(
+        tmp_path, monkeypatch):
+    """The held proof runs twice around the slow gates; evidence that moved in between is refused.
+
+    The second evaluation here is individually valid but names another closure identity,
+    the case a re-sealed record and pins would produce while the site sits behind the barrier.
+    """
+    state = _held_state(tmp_path, monkeypatch)
+    arguments = _held_issuer_arguments(tmp_path, monkeypatch, state)
+    evaluate, calls = issuer._held_old_preflight, []
+
+    def drifting(**kwargs):
+        result, health = evaluate(**kwargs)
+        calls.append(kwargs)
+        if len(calls) == 2:
+            result["rollback"]["artifacts"]["backend"]["interpreter"]["identity_sha256"] = "0" * 64
+        return result, health
+
+    monkeypatch.setattr(issuer, "_held_old_preflight", drifting)
+    with pytest.raises(
+            ValueError, match="Held old rollback evidence changed before receipt issuance"):
+        issuer.issue_wavea_activation(**arguments)
+    assert len(calls) == 2
+    assert not arguments["receipt_path"].exists() and not arguments["key_path"].exists()
+
+
 def test_issuer_in_online_mode_never_adds_the_identity_for_the_legacy_layout(tmp_path, monkeypatch):
     state = _bundle(tmp_path, monkeypatch, local_venv=True)
     arguments = _issuer_arguments(tmp_path, monkeypatch, state)
@@ -723,6 +749,23 @@ def test_a_local_environment_directory_in_either_copy_blocks_the_shared_proof(tm
     (root / ".venv").mkdir()
     report = _assess(state, prove_shared_interpreter=_prover(state))
     assert report["rollback"]["blockers"] == [BLOCKER]
+
+
+@pytest.mark.parametrize("layout", ["shared", "legacy"])
+def test_a_live_runtime_that_drifted_from_its_snapshot_blocks(tmp_path, monkeypatch, layout):
+    """Rollback restarts the live runtime, so the rehearsed copy must still equal it.
+
+    The record, the probe and the snapshot agree with each other here; only the live
+    runtime moved, so only the live-versus-snapshot digest can notice.
+    """
+    state = _bundle(tmp_path, monkeypatch, local_venv=layout == "legacy")
+    (state["backend"].process_working_directory / "src" / "app.py").write_text("app = 'drifted'\n")
+    options = {"prove_shared_interpreter": _prover(state)} if layout == "shared" else {}
+    report = _assess(state, **options)
+    assert report["rollback"]["ready"] is False
+    assert report["rollback"]["blockers"] == [
+        "backend_rollback_artifact_unverified: backend snapshot differs from serving runtime"]
+    assert "backend" not in report["rollback"]["artifacts"]
 
 
 def test_paired_release_old_artifact_gate_needs_no_snapshot_environment(tmp_path, monkeypatch):

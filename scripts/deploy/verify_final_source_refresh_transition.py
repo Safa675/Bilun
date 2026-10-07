@@ -145,16 +145,16 @@ SHARED_INTERPRETER_TOOLING_PATHS = frozenset({
 # exact roster has mutation permission; an unmatched closure fails closed.
 _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256 = "1b1b4b227795690d0d3e02dc0dbafdf6b9c47117cd35798dedfe729af6ea7c41"
 _REVIEWED_SHARED_INTERPRETER_TOOLING = {
-    'docs/operations/single-vps-wavea-release.md': ('100644', 'blob', '6605914af252c0fd3cc482571c7b0b8d0acff4ce'),
+    'docs/operations/single-vps-wavea-release.md': ('100644', 'blob', '1b9f1021899936cef6b613348494bb4b5f0a2c8e'),
     'scripts/deploy/capture_release_preflight.py': ('100644', 'blob', 'db250469b7df4a44f14bd95d47ef568c2c8355a9'),
     'scripts/deploy/issue_wavea_activation.py': ('100644', 'blob', '3e17298a3652abca60e170597e04c7d72e5aea04'),
     'tests/unit/deploy/fixtures/final_source_refresh_mainc44_tooling.json': ('100644', 'blob', '12bba3259806cca50053686056f5998e4ade5478'),
     'tests/unit/deploy/test_final_source_refresh_transition.py': ('100644', 'blob', '13e926bf2c79553a29bc03950748177c2b8e23ee'),
     'tests/unit/deploy/test_raw_report_transport_source_profile.py': ('100644', 'blob', '511b7b6125cdf833f9a9910f73cb110ed1ad0ffa'),
-    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', '6aca7ed27c222aa1c261cd9bb5167c859c0a370c'),
+    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', 'fe93b78acb2c628c21e343f11b8df12d9f44505d'),
     'tests/unit/deploy/test_shared_interpreter_source_profile.py': ('100644', 'blob', '2810a6cf916a74a019806f9e9dad39f10a2b0a0f'),
 }
-_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "e852e869d1eb580720e55b58996481e77770f2e96069df7040254ebd1ef0dc3d"
+_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "b187b5b38bc08fab623633ad87e34989199c3f5ccc711e6f5c785c84bb799f3f"
 _SHARED_INTERPRETER_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
