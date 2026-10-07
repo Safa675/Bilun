@@ -43,7 +43,7 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
   const t = useT();
   const topMatch = copay.qualifying_diagnoses[0];
   const categories = getExemptionCategories(copay);
-  const basisSummary = formatExemptionBasisSummary(categories);
+  const basisSummary = formatExemptionBasisSummary(categories, t);
   const ek1aOnly =
     copay.exempt && categories.length > 0 && categories.every((c) => c === "ek1a_chronic");
   const codeWord =

@@ -1,10 +1,10 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { describe, expect, it } from "vitest";
 import { ExemptionBasisChips } from "./ExemptionBasisChips";
 
 describe("ExemptionBasisChips", () => {
   it("renders category chips for exempt patients", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <ExemptionBasisChips
         copay={{
           exempt: true,
@@ -15,6 +15,7 @@ describe("ExemptionBasisChips", () => {
         }}
       />,
     );
-    expect(html).toContain("Acil");
+    expect(html).toContain("Emergency");
+    expect(html).not.toContain("Acil");
   });
 });

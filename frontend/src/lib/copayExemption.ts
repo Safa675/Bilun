@@ -3,21 +3,22 @@ import type {
   ExemptionSource,
   PatientAlertCopay,
 } from "@/lib/domains/sut";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { translate } from "@/lib/i18n/translate";
 
-export const EXEMPTION_CATEGORY_LABELS: Record<string, string> = {
-  ek1a_chronic: "EK-1A",
-  acil_servis: "Acil",
-  koruyucu_saglik: "Koruyucu",
-  yesil_kart: "Yeşil kart",
-  sehit_gazi: "Şehit / gazi",
-  vatani_hizmet: "Vatani hizmet",
-  kanun_2022_65: "65+ (2022)",
-  is_kazasi_meslek: "İş kazası",
-};
+type Translate = (key: string) => string;
 
-export function formatExemptionCategory(category: string): string {
+function activeTranslate(key: string): string {
+  return translate(getModuleLocale() === "tr" ? trMessages : enMessages, key);
+}
+
+export function formatExemptionCategory(category: string, t: Translate = activeTranslate): string {
   const key = category.trim().toLowerCase();
-  return EXEMPTION_CATEGORY_LABELS[key] ?? category.replaceAll("_", " ");
+  const messageKey = `optimizer.exemptionCategories.${key}`;
+  const label = t(messageKey);
+  return label !== messageKey ? label : category.replaceAll("_", " ");
 }
 
 export function getExemptionCategories(
@@ -42,11 +43,11 @@ export function hasEk1aExemption(categories: string[]): boolean {
   return categories.includes("ek1a_chronic");
 }
 
-export function formatExemptionBasisSummary(categories: string[]): string {
+export function formatExemptionBasisSummary(categories: string[], t: Translate = activeTranslate): string {
   if (categories.length === 0) {
     return "";
   }
-  return categories.map(formatExemptionCategory).join(" · ");
+  return categories.map((category) => formatExemptionCategory(category, t)).join(" · ");
 }
 
 export type { ExemptionSource };

@@ -2,6 +2,13 @@ const billing = {
   "common": {
     "regulatorySource": "Kaynak (EK)",
   },
+  "glossary": {
+    "claimBacked": "Tahmini değil, kayıtlı fatura kalemlerine dayalı tutar. Ödeme onayı anlamına gelmez.",
+    "exact": "Bu kontrolün gerekli kayıtlı bilgileriyle hesaplandı. Ödeme onayı anlamına gelmez.",
+    "partial": "Bazı kontroller hesaplandı; diğerleri bilgi bekliyor. Toplam tamamen kesin değil.",
+    "unavailable": "Gerekli bilgi eksik veya bu kontrol hesaplanamıyor. Sıfır tutar ya da başarılı kontrol anlamına gelmez.",
+    "notApplicable": "Bu kayıt için kontrol hesabı mevcut değil. Başarılı kontrol anlamına gelmez.",
+  },
   "summary": {
     "title": "Hasta fatura raporu",
     "billTitle": "Seçili fatura raporu",
@@ -653,7 +660,7 @@ const billing = {
   },
   "clauseDrawer": {
     "title": "SUT fıkra metni",
-    "kicker": "Mevzuat",
+    "kicker": "Mevzuat · özgün Türkçe metin",
     "ariaLabel": "SUT fıkra metni çekmecesi"
   }
 } as const;

@@ -2,6 +2,13 @@ const billing = {
   "common": {
     "regulatorySource": "Source (EK)",
   },
+  "glossary": {
+    "claimBacked": "Based on recorded billed items, not an estimated amount. This is not a payment approval.",
+    "exact": "Calculated from the required recorded inputs for this check. This is not a payment approval.",
+    "partial": "Some checks have calculated results; others still need information. The total is not fully exact.",
+    "unavailable": "Required information is missing or this check cannot be calculated. This does not mean a zero amount or a passed check.",
+    "notApplicable": "No calculation is available for this check in the current record. This is not a passed check.",
+  },
   "summary": {
     "title": "Patient billing report",
     "billTitle": "Bill billing report",
@@ -11,11 +18,11 @@ const billing = {
     "scopeBill": "Optimization below is scoped to bill {claimId} ({date}).",
     "scopedLoading": "Loading bill-scoped optimization…",
     "partialExact": "Partial exact",
-    "ruleCalculatedOpportunity": "SGK uplift (Kurum ödemesi)",
+    "ruleCalculatedOpportunity": "SGK payment uplift",
     "complianceAdjustment": "Compliance adjustment",
     "exemptionGapCorrective": "Exemption gap (corrective)",
-    "ilaveUcretInfo": "Ilave ücret (informational)",
-    "dualTotalsFootnote": "SGK uplift is legitimate Kurum ödemesi increase (session fractions, billing strategy). Compliance adjustment covers over-billing corrections such as lab bundling. Exemption gap is waivable katılım payı only — not ilave ücret.",
+    "ilaveUcretInfo": "Surcharge (informational)",
+    "dualTotalsFootnote": "SGK uplift shows calculated institution-payment increases. Compliance adjustment covers over-billing corrections. The exemption gap concerns waivable copay, not surcharge.",
     "auditExposure": "Audit exposure (over-billing risk)",
     "captureGap": "Capture gap (EMR and clinical lab vs claim)",
     "packageAdequacyReview": "Package adequacy review (coding)",
@@ -653,7 +660,7 @@ const billing = {
   },
   "clauseDrawer": {
     "title": "SUT clause text",
-    "kicker": "Legislation",
+    "kicker": "Legislation · original Turkish text",
     "ariaLabel": "SUT clause text drawer"
   }
 } as const;

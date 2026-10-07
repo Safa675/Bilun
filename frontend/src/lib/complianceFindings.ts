@@ -93,7 +93,7 @@ function findingSourceText(t: TranslateFn): string {
   const optimizerKey = "optimizer.tabs.claim_compliance";
   const optTranslated = t(optimizerKey);
   if (optTranslated !== optimizerKey) return optTranslated;
-  return "Fatura uyumluluğu";
+  return t("optimizer.complianceIndex.claimComplianceSource");
 }
 
 function findingSutLabel(finding: ClaimComplianceFinding): string | null {

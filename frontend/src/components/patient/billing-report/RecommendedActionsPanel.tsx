@@ -1,7 +1,7 @@
 "use client";
 
 import type { BillingActionReport } from "@/lib/domains/sut";
-import type { ExactnessLike } from "@/lib/sutExactness";
+import { getExactnessDescription, type ExactnessLike } from "@/lib/sutExactness";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translateStructuredApiMessage } from "@/lib/apiMessages";
 import { formatSutSectionLabel } from "@/lib/billingReportFields";
@@ -86,7 +86,7 @@ export function RecommendedActionsPanel({
                   </button>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-secondary)]">
                     <span>{recommendedActionSurfaceLabel(t, action.surface)}</span>
-                    <Chip variant={exactness === "exact" ? "success" : "warning"}>
+                    <Chip variant={exactness === "exact" ? "success" : "warning"} title={getExactnessDescription(source, t)}>
                       {exactness ? t(`billing.recommendedActions.exactness.${exactness}`) : t("common.unavailable")}
                     </Chip>
                   </div>

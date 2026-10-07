@@ -345,7 +345,7 @@ describe("SutBillingReportSections honest gaps", () => {
       />,
     );
 
-    expect(html).toContain("Ilave ücret (informational)");
+    expect(html).toContain("Surcharge (informational)");
     expect(html).toContain(fmtTRY2Fixture(15.00));
     expect(html).toContain("exemption does not waive ilave");
   });

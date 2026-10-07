@@ -13,7 +13,8 @@ vi.mock("@/lib/theme", () => ({
   },
 }));
 
-vi.mock("@/lib/sutExactness", () => ({
+vi.mock("@/lib/sutExactness", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/sutExactness")>(),
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
   getUnavailableMessage: (
@@ -130,7 +131,7 @@ describe("PatientSUTContent", () => {
       />,
     );
 
-    expect(html).toContain("Estimate-backed SUT cost ranges and gap projections were removed.");
+    expect(html).toContain("Only calculated billed-item amounts are shown; no estimated amounts are added.");
     expect(html).toContain("Exact Claim-Line Summary");
     expect(html).not.toContain("DRG Episode Cost Modeling");
     expect(html).not.toContain("Estimated SUT Cost");

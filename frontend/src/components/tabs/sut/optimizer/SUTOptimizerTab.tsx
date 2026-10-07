@@ -497,7 +497,7 @@ function CopayExemptionAlerts({
           <div className="flex flex-wrap gap-2">
             {cohortCopay.exemption_by_category_bills.map((row) => (
               <Chip key={row.category} variant="outline" className="text-xs">
-                {formatExemptionCategory(row.category)} ({fmtNum(row.count)})
+                {formatExemptionCategory(row.category, t)} ({fmtNum(row.count)})
               </Chip>
             ))}
           </div>
@@ -515,7 +515,7 @@ function CopayExemptionAlerts({
           <div className="flex flex-wrap gap-2">
             {cohortCopay.exemption_by_category.map((row) => (
               <Chip key={row.category} variant="outline" className="text-xs">
-                {formatExemptionCategory(row.category)} ({fmtNum(row.count)})
+                {formatExemptionCategory(row.category, t)} ({fmtNum(row.count)})
               </Chip>
             ))}
           </div>

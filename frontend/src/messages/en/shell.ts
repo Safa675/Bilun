@@ -59,6 +59,12 @@ const shell = {
     errorTitle: "Submission Failed",
     errorFallback: "Automatic email delivery failed. You can email us directly:",
     directEmailButton: "Open Email Client",
+    localOnlyTitle: "Email not sent",
+    localOnlyDescription: "Your message was saved locally but was not delivered by email.",
+    localOnlyFallback: "Use your email app to send it directly to safaoksuz@bilun.tech.",
+    mailtoSubject: "[Bilun Feedback] {category} - {name}",
+    mailtoBody: "From: {name}\nEmail: {email}\nCategory: {category}\nPage: {tab} ({url})\nRole: {role}\n\nMessage:\n{message}",
+    anonymousUser: "User",
     close: "Close",
   },
 } as const;

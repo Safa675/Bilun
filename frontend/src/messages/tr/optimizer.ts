@@ -3,7 +3,7 @@ const optimizer = {
     complianceDescription:
       "Kohort uyumluluk uyarıları: katılım payı muafiyetleri, ilave ücret, EK-2C-1 oranları, malzeme, endikasyon, lab ve ödeme yöntemi.",
     revenueDescription:
-      "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
+      "Geri kazanılabilir tutarları ve eksik fatura bilgisi bekleyen kontrolleri inceleyin.",
     exemptions: "Katılım Payı Muafiyetleri",
     surcharge: "İlave Ücret & Tavan Sınırı",
     copay_rates: "Katılım oranı",
@@ -41,6 +41,42 @@ const optimizer = {
     surcharge: "İlave Ücret & Tavan Sınırı",
     copay_rates: "Katılım oranı",
   },
+  modules: {
+    exemptionEligibility: "Muafiyet uygunluğu",
+    totalPatientsHint: "Toplam {count} hastadan",
+    flaggedPatientsHint: "İşaretli hasta (toplam {count})",
+    diagnosisCount: "{count} tanı",
+    procedureCount: "{count} işlem",
+    diagnosisChapters: "Tanılar ve ICD bölümleri",
+    exemptionStatus: "Muafiyet durumu",
+    matchedDiagnoses: "Eşleşen tanılar (EK-1A / acil)",
+    sourceTextTr: "Kaynak metin (Türkçe)",
+    exemptEk1a: "Muaf (EK-1A)",
+    standardCopay: "Standart katılım payı",
+    applyExemption: "Fatura öncesi muafiyet bayrağını uygulayın",
+    collectStandardCopay: "Standart katılım payı tahsilatı",
+    surchargeRisk: "İlave ücret riski",
+    exposureRate: "İlave ücret maruziyet oranı",
+    applicableProcedures: "Uygulanabilir işlemler",
+    topRules: "En çok eşleşen kurallar",
+    complianceStatus: "Uyumluluk durumu",
+    noRuleViolations: "Kural ihlali yok",
+    compliant: "Uyumlu",
+    copayRate: "EK-2C-1 katılım payı oranı",
+    meanRate: "Ortalama oran",
+    topProcedures: "En çok eşleşen işlemler",
+    rateDifference: "Oran sapması",
+  },
+  exemptionCategories: {
+    ek1a_chronic: "EK-1A",
+    acil_servis: "Acil",
+    koruyucu_saglik: "Koruyucu sağlık",
+    yesil_kart: "Yeşil kart",
+    sehit_gazi: "Şehit / gazi",
+    vatani_hizmet: "Vatani hizmet",
+    kanun_2022_65: "65+ (2022 sayılı kanun)",
+    is_kazasi_meslek: "İş kazası / meslek hastalığı",
+  },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",
     loadAlertsUnexpected:
@@ -48,12 +84,12 @@ const optimizer = {
     loadAlertsBackend: "Hasta uyarıları yüklenirken arka uç hata döndürdü.",
     alertsTemporarilyUnavailable: "SUT uyarıları geçici olarak kullanılamıyor.",
     networkHint:
-      "API sunucusuna ulaşılamadı. `python -m uvicorn src.api:app` ile başlatıp tekrar deneyin.",
+      "Hizmete ulaşılamadı. Kısa süre sonra tekrar deneyin.",
     alertLoadFailed: "Uyarı yüklemesi başarısız",
     loadRevenueRecovery: "Gelir geri kazanımı yüklenemedi",
     revenueRecoveryUnavailable: "Gelir geri kazanımı kullanılamıyor",
     revenueRecoveryApiHint:
-      "Fatura raporları tam işlem hattı gerektirir. API'yi `python -m uvicorn src.api:app` ile başlatın.",
+      "Fatura raporları geçici olarak kullanılamıyor. Kısa süre sonra tekrar deneyin.",
   },
   emptyStates: {
     noPatientsMatchFilter: "Bu filtreyle eşleşen hasta yok.",
@@ -80,17 +116,17 @@ const optimizer = {
     activeFilters: "Aktif filtreler",
     partialExact: "Kısmi Kesin",
     cohortFilterAlertsHint:
-      "Uyarı tabloları aktif filtreleri yansıtır. Özet performans göstergesi kartları filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
+      "Tablolar seçili filtreleri kullanır; özet kartları tüm hastaları gösterir.",
     cohortFilterRevenueHint:
-      "Geri kazanılabilir toplam ve hasta sayısı aktif filtreleri yansıtır. Kategori tasarruf grafikleri filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
+      "Toplam ve hasta sayısı seçili filtreleri kullanır; kategori grafikleri tüm hastaları gösterir.",
     copayComposableWithProfiles:
-      "Birleştirilebilir katılım payı muafiyeti: EK-1A ({ek1aCount} kronik aralık) artı talep profilleri mevcutsa ziyaret türü ve hasta statüsü kuralları. EK-2C-1 katılım payı oranı listesi (§2.2) ayrı değerlendirilir.",
+      "{ek1aCount} EK-1A tanı aralığını ve mevcut ziyaret/statü bilgilerini kontrol eder. EK-2C-1 oranları ayrı değerlendirilir.",
     copayEk1aOnly:
-      "Hasta ICD-10 tanılarını tebliğ eki EK-1A'daki {ek1aCount} kronik hastalık muafiyet aralığıyla çapraz referanslar. Statü ve ziyaret türü muafiyet alanları için çözümleme önbelleğini yeniden oluşturun.",
+      "Tanıları {ek1aCount} EK-1A muafiyet aralığıyla karşılaştırır. Ziyaret ve statü bilgileri yüklü değil.",
     billLevelOverlapNote:
       "Tek bir fatura birden fazla muafiyet gerekçesini karşılayabilir; bu nedenle kategori toplamları muaf fatura sayısından fazla olabilir. Kronik hastalık muafiyeti hasta özelliği olduğundan, etkilenen hastanın her faturasına uygulanır.",
     surchargeExact:
-      "Aktif SUT çalışma zamanı girdilerinden kesin tarihli işlem talep satırları ve açık fark ücreti kural bayrakları kullanılır.",
+      "Tarihli fatura işlemleri ve ilgili SUT ilave ücret kurallarıyla kontrol edilir.",
     revenuePartialExact:
       "Gelir geri kazanımında kesin kategori düzeyinde bulgular var; ancak bazı fatura bölümleri hâlâ kesin girdi gerektirdiği için toplam tutarlar karışık.",
     revenueUnavailable:
@@ -98,7 +134,7 @@ const optimizer = {
     revenueFooterExact:
       "Resmi SUT tebliğ kural referanslarına (EK-1A, EK-2B, EK-2C, EK-4A) dayalı normatif analiz",
     revenueFooterPartial:
-      "Kısmi-kesin geri kazanım incelemesi: eksik fatura bölümleri açık gerekli-girdi boşlukları olarak kalırken kesin kategori düzeyinde tasarruflar gösterilir.",
+      "Hesaplanan kategori tutarları gösterilir; bilgisi eksik bölümler tamamlanmış sayılmaz.",
     revenueFooterMixed:
       "Karışık kesinlik algılandı: her fatura bölümü kesin olana kadar geri kazanım inceleme toplamları kullanılamaz.",
     drgAuditFlagsOnly:
@@ -170,7 +206,7 @@ const optimizer = {
     billedAtRisk: "Risk altındaki tutar",
     medulaRejections: "MEDULA redleri",
     medulaHint: "Red kuyruğu",
-    indexUnavailable: "Uyumluluk indeksi bu cache'de yok. Analitik cache'i yeniden oluşturun.",
+    indexUnavailable: "Bu faturaların uyum sonuçları yüklü değil.",
     noFindings: "Bu filtre için uyumluluk bulgusu yok.",
     patientId: "Hasta ID",
     claim: "Fatura",
@@ -180,6 +216,7 @@ const optimizer = {
     sutSection: "SUT",
     inspect: "İncele",
     openBill: "Faturaya git",
+    claimComplianceSource: "Fatura uyumluluğu",
   },
   recoveryList: {
     category: "Kategori",

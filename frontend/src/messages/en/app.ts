@@ -11,7 +11,7 @@ const app = {
     "closeAria": "Close how it works modal",
     "kicker": "Bilun",
     "title": "How the SUT workspace works",
-    "intro": "The split SUT app focuses on billing rule analytics, exactness-aware optimization, and patient financial review without reaching back into mixed legacy IHP surfaces.",
+    "intro": "Bilun checks bills against SUT rules and shows findings, recoverable amounts and missing information.",
     "phaseNavAria": "SUT methodology phases",
     "phaseBadge": "Phase {number}",
     "powersLabel": "Powers",
@@ -29,35 +29,35 @@ const app = {
       },
       "02": {
         "title": "Patient SUT rule assembly",
-        "description": "The patient workspace composes SUT outcome and optimization data to show cost, rule-calculation status, and exactness-aware patient findings.",
-        "detail1": "Outcome data provides cost, DRG summary, and claim-line rule context.",
-        "detail2": "Optimization data provides copay exemption and exactness-aware rule findings.",
-        "detail3": "Home patient search now routes into the dedicated patient workspace.",
-        "feedsInto": "Patient workspace and billing handoff"
+        "description": "The patient report brings billed amounts, SUT findings and missing information together.",
+        "detail1": "Billed items provide the amounts and procedure details.",
+        "detail2": "SUT checks show exemptions and findings with their calculation status.",
+        "detail3": "Each patient opens in a separate report.",
+        "feedsInto": "Patient report and bill review"
       },
       "03": {
         "title": "Exactness-first optimization",
         "description": "Unavailable optimization surfaces stay unavailable until the exact billed inputs exist, rather than being shown as low risk or zero impact.",
         "detail1": "Copay exemptions stay actionable when exact.",
         "detail2": "Surcharge, EK-2C-1 copay rate, and DRG-unbundling findings respect missing exact inputs.",
-        "detail3": "The patient workspace and optimizer share the same exactness semantics.",
+        "detail3": "Missing amounts stay unavailable in both patient and summary views.",
         "feedsInto": "Optimizer alerts and revenue recovery review"
       },
       "04": {
-        "title": "Dedicated billing handoff",
-        "description": "Patient-level financial review stays split across a high-level patient workspace and the deeper billing route, instead of pushing everything into home.",
-        "detail1": "The new `/patient/[id]` page becomes the main patient shell.",
-        "detail2": "Detailed section-by-section billing remains on `/patient/[id]/billing`.",
-        "detail3": "The handoff keeps ownership and routing clear inside the split app.",
-        "feedsInto": "Patient route and dedicated billing route"
+        "title": "Bill review",
+        "description": "The patient report shows the summary and the details for each selected bill.",
+        "detail1": "The summary shows billed, expected payable and recoverable amounts.",
+        "detail2": "Bill details show the itemized procedures, materials and drugs.",
+        "detail3": "Each view identifies whether it covers one bill or all bills.",
+        "feedsInto": "Patient summary and bill details"
       },
       "05": {
-        "title": "Product-owned SUT assistant",
-        "description": "The restored chatbot is wired to SUT-only context so it can explain exposure, optimization, and patient SUT rule state without depending on IHP cache readiness.",
-        "detail1": "Frontend chat requests use `/api/chat`.",
-        "detail2": "Context assembly stays inside SUT exposure, optimization, and patient routes.",
-        "detail3": "Unavailable exactness states are explained, not converted into fake numerics.",
-        "feedsInto": "SUT-owned assistant context"
+        "title": "SUT assistant",
+        "description": "The assistant explains the available patient findings and SUT references.",
+        "detail1": "Answers use the current patient and billing context.",
+        "detail2": "Findings stay linked to their available SUT sources.",
+        "detail3": "Missing information is explained, not replaced with a zero amount.",
+        "feedsInto": "SUT finding explanations"
       }
     }
   }

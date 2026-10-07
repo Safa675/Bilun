@@ -1,14 +1,27 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setModuleLocale } from "@/lib/i18n/localeModule";
 import {
   formatExemptionCategory,
+  formatExemptionBasisSummary,
   getExemptionCategories,
   hasEk1aExemption,
 } from "./copayExemption";
 
 describe("copayExemption helpers", () => {
+  afterEach(() => setModuleLocale("en"));
   it("formats known exemption categories", () => {
+    setModuleLocale("en");
     expect(formatExemptionCategory("ek1a_chronic")).toBe("EK-1A");
+    expect(formatExemptionCategory("yesil_kart")).toBe("Green card");
+    setModuleLocale("tr");
     expect(formatExemptionCategory("yesil_kart")).toBe("Yeşil kart");
+  });
+
+  it("localizes categories without changing their source identities", () => {
+    setModuleLocale("en");
+    expect(formatExemptionBasisSummary(["acil_servis", "is_kazasi_meslek"])).toBe("Emergency · Work injury / occupational disease");
+    expect(formatExemptionCategory("future_source_category")).toBe("future source category");
+    expect(formatExemptionCategory("acil_servis", () => "Localized emergency")).toBe("Localized emergency");
   });
 
   it("reads categories from exemption_sources", () => {
