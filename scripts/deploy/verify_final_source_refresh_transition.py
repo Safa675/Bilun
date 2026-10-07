@@ -125,6 +125,37 @@ _REVIEWED_RAW_REPORT_TOOLING = {
 }
 _REVIEWED_RAW_REPORT_SELF_SHA256 = "49a0e4143dd982732a726cbdd7c921a9babd235bab9e3a0146f049fff7882561"
 _RAW_REPORT_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_RAW_REPORT_SELF_SHA256 = "([0-9a-f]{64})"$')
+# This distinct profile binds the shared-interpreter rollback preflight to one
+# finite reviewed tree on mainc44. It grants no mutation rights to earlier profiles.
+SHARED_INTERPRETER_PROFILE = "bilun-shared-interpreter-rollback-mainc44-v1"
+SHARED_INTERPRETER_BASE_SHA = "c44aa78c6e0f530ab3d585c32d3daacdc80b3876"
+SHARED_INTERPRETER_BASE_TREE = "80c7ab861aa252b01e863c5fd0465c7c8cc09136"
+SHARED_INTERPRETER_TOOLING_PATHS = frozenset({
+    "docs/operations/single-vps-wavea-release.md",
+    "scripts/deploy/capture_release_preflight.py",
+    "scripts/deploy/issue_wavea_activation.py",
+    "scripts/deploy/verify_final_source_refresh_transition.py",
+    "tests/unit/deploy/fixtures/final_source_refresh_mainc44_tooling.json",
+    "tests/unit/deploy/test_final_source_refresh_transition.py",
+    "tests/unit/deploy/test_raw_report_transport_source_profile.py",
+    "tests/unit/deploy/test_shared_interpreter_rollback_preflight.py",
+    "tests/unit/deploy/test_shared_interpreter_source_profile.py",
+})
+# The complete reviewed files bind these finite literals. No path outside the
+# exact roster has mutation permission; an unmatched closure fails closed.
+_REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256 = "1b1b4b227795690d0d3e02dc0dbafdf6b9c47117cd35798dedfe729af6ea7c41"
+_REVIEWED_SHARED_INTERPRETER_TOOLING = {
+    'docs/operations/single-vps-wavea-release.md': ('100644', 'blob', '6605914af252c0fd3cc482571c7b0b8d0acff4ce'),
+    'scripts/deploy/capture_release_preflight.py': ('100644', 'blob', 'db250469b7df4a44f14bd95d47ef568c2c8355a9'),
+    'scripts/deploy/issue_wavea_activation.py': ('100644', 'blob', '3e17298a3652abca60e170597e04c7d72e5aea04'),
+    'tests/unit/deploy/fixtures/final_source_refresh_mainc44_tooling.json': ('100644', 'blob', '12bba3259806cca50053686056f5998e4ade5478'),
+    'tests/unit/deploy/test_final_source_refresh_transition.py': ('100644', 'blob', '13e926bf2c79553a29bc03950748177c2b8e23ee'),
+    'tests/unit/deploy/test_raw_report_transport_source_profile.py': ('100644', 'blob', '511b7b6125cdf833f9a9910f73cb110ed1ad0ffa'),
+    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', '6aca7ed27c222aa1c261cd9bb5167c859c0a370c'),
+    'tests/unit/deploy/test_shared_interpreter_source_profile.py': ('100644', 'blob', '2810a6cf916a74a019806f9e9dad39f10a2b0a0f'),
+}
+_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "e852e869d1eb580720e55b58996481e77770f2e96069df7040254ebd1ef0dc3d"
+_SHARED_INTERPRETER_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
     "patient_detail_cache", "patient_outcome_base", "cohort_optimization_summary",
@@ -348,6 +379,74 @@ def _verify_raw_report_squash_history(checkout: Path, sha: str) -> dict:
             "reviewed_tooling_sha256": _raw_report_tooling_digest()}
 
 
+def _shared_interpreter_product_closure(checkout: Path, sha: str) -> bytes:
+    return b"\0".join(row for row in _git(checkout, "ls-tree", "-r", "-z", sha).split(b"\0")
+                       if row and os.fsdecode(row.split(b"\t", 1)[1]) not in SHARED_INTERPRETER_TOOLING_PATHS)
+
+
+def _verify_shared_interpreter_self_source(source: bytes) -> None:
+    slots = list(_SHARED_INTERPRETER_SELF_SLOT.finditer(source))
+    if (len(slots) != 1 or not isinstance(_REVIEWED_SHARED_INTERPRETER_SELF_SHA256, str)
+            or not _SHA256.fullmatch(_REVIEWED_SHARED_INTERPRETER_SELF_SHA256)
+            or slots[0].group(1).decode() != _REVIEWED_SHARED_INTERPRETER_SELF_SHA256):
+        raise ValueError("Shared interpreter verifier self digest has an unknown literal slot")
+    start, end = slots[0].span(1)
+    normalized = source[:start] + b"0" * 64 + source[end:]
+    if hashlib.sha256(normalized).hexdigest() != _REVIEWED_SHARED_INTERPRETER_SELF_SHA256:
+        raise ValueError("Shared interpreter verifier differs from reviewed source bytes")
+
+
+def _shared_interpreter_tooling_digest() -> str:
+    return _digest({"profile": SHARED_INTERPRETER_PROFILE, "base_sha": SHARED_INTERPRETER_BASE_SHA,
+        "base_tree": SHARED_INTERPRETER_BASE_TREE,
+        "product_closure_sha256": _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256,
+        "files": _REVIEWED_SHARED_INTERPRETER_TOOLING,
+        "verifier": {"path": _SQUASH_VERIFIER_PATH, "mode": "100644", "type": "blob",
+                     "normalized_sha256": _REVIEWED_SHARED_INTERPRETER_SELF_SHA256}})
+
+
+def _verify_shared_interpreter_squash_history(checkout: Path, sha: str) -> dict:
+    if (_git(checkout, "show", "-s", "--format=%P", sha).decode().split() != [SHARED_INTERPRETER_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{SHARED_INTERPRETER_BASE_SHA}^{{tree}}").decode().strip()
+               != SHARED_INTERPRETER_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", SHARED_INTERPRETER_BASE_SHA).decode().split()
+               != [RAW_REPORT_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{RAW_REPORT_BASE_SHA}^{{tree}}").decode().strip()
+               != RAW_REPORT_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", RAW_REPORT_BASE_SHA).decode().split()
+               != [OLD_REPLAY_BASE_SHA]
+            or _git(checkout, "rev-parse", f"{OLD_REPLAY_BASE_SHA}^{{tree}}").decode().strip()
+               != OLD_REPLAY_BASE_TREE
+            or _git(checkout, "show", "-s", "--format=%P", OLD_REPLAY_BASE_SHA).decode().split()
+               != [PRODUCT_ANCHOR_SHA]):
+        raise ValueError("Shared interpreter squash requires the immutable mainc44 parent")
+    product = _shared_interpreter_product_closure(checkout, SHARED_INTERPRETER_BASE_SHA)
+    if (hashlib.sha256(product).hexdigest() != _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256
+            or _shared_interpreter_product_closure(checkout, sha) != product):
+        raise ValueError("Shared interpreter squash changes pinned whole-tree bytes")
+    if set(_REVIEWED_SHARED_INTERPRETER_TOOLING) != SHARED_INTERPRETER_TOOLING_PATHS - {_SQUASH_VERIFIER_PATH}:
+        raise ValueError("Shared interpreter squash has an unknown reviewed tooling roster")
+    for path, entry in _REVIEWED_SHARED_INTERPRETER_TOOLING.items():
+        _same(_tooling_tree_entry(checkout, sha, path), entry,
+              "shared interpreter tooling mode/type/blob")
+    mode, kind, _ = _tooling_tree_entry(checkout, sha, _SQUASH_VERIFIER_PATH)
+    if (mode, kind) != ("100644", "blob"):
+        raise ValueError("Shared interpreter verifier has an unreviewed mode/type")
+    _verify_shared_interpreter_self_source(_git(checkout, "show", f"{sha}:{_SQUASH_VERIFIER_PATH}"))
+    changed = {os.fsdecode(row) for row in _git(checkout, "diff-tree", "--no-commit-id",
+               "--name-only", "-r", "-z", SHARED_INTERPRETER_BASE_SHA, sha).split(b"\0") if row}
+    if changed != SHARED_INTERPRETER_TOOLING_PATHS:
+        raise ValueError("Shared interpreter squash differs from the exact reviewed path transition")
+    return {"product_anchor_sha": PRODUCT_ANCHOR_SHA, "product_anchor_tree": PRODUCT_ANCHOR_TREE,
+            "integration_seed_sha": None, "integration_seed_tree": None,
+            "candidate_sha": sha, "descendant_commits": [sha],
+            "authorized_changed_paths": sorted(changed),
+            "product_closure_sha256": _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256,
+            "tooling_profile": SHARED_INTERPRETER_PROFILE, "tooling_base_sha": SHARED_INTERPRETER_BASE_SHA,
+            "tooling_base_tree": SHARED_INTERPRETER_BASE_TREE,
+            "reviewed_tooling_sha256": _shared_interpreter_tooling_digest()}
+
+
 def _verify_normal_squash_history(checkout: Path, sha: str, product: bytes) -> dict:
     if _product_closure(checkout, sha) != product:
         raise ValueError("Normal squash changes pinned product bytes")
@@ -391,6 +490,8 @@ def _verify_candidate_history(checkout: Path, expected_candidate_sha: str) -> di
         return _verify_old_replay_squash_history(checkout, expected_candidate_sha)
     if parents == [RAW_REPORT_BASE_SHA]:
         return _verify_raw_report_squash_history(checkout, expected_candidate_sha)
+    if parents == [SHARED_INTERPRETER_BASE_SHA]:
+        return _verify_shared_interpreter_squash_history(checkout, expected_candidate_sha)
     if _git(checkout, "rev-parse", f"{INTEGRATION_SEED_SHA}^{{tree}}").decode().strip() != INTEGRATION_SEED_TREE:
         raise ValueError("Final profile pinned product/seed tree differs")
     if tuple(_git(checkout, "show", "-s", "--format=%P", INTEGRATION_SEED_SHA).decode().split()) != SEED_PARENTS:
@@ -1365,6 +1466,22 @@ def _validate_transition_history(history: Any, candidate: str) -> None:
     fields = {"product_anchor_sha", "product_anchor_tree", "candidate_sha",
               "descendant_commits", "authorized_changed_paths", "integration_seed_sha",
               "integration_seed_tree", "product_closure_sha256"}
+    if isinstance(history, dict) and history.get("tooling_profile") == SHARED_INTERPRETER_PROFILE:
+        if (set(history) != fields | {"tooling_profile", "tooling_base_sha", "tooling_base_tree",
+                                     "reviewed_tooling_sha256"}
+                or history.get("product_anchor_sha") != PRODUCT_ANCHOR_SHA
+                or history.get("product_anchor_tree") != PRODUCT_ANCHOR_TREE
+                or history.get("candidate_sha") != candidate
+                or history.get("integration_seed_sha") is not None
+                or history.get("integration_seed_tree") is not None
+                or history.get("descendant_commits") != [candidate]
+                or history.get("authorized_changed_paths") != sorted(SHARED_INTERPRETER_TOOLING_PATHS)
+                or history.get("product_closure_sha256") != _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256
+                or history.get("tooling_base_sha") != SHARED_INTERPRETER_BASE_SHA
+                or history.get("tooling_base_tree") != SHARED_INTERPRETER_BASE_TREE
+                or history.get("reviewed_tooling_sha256") != _shared_interpreter_tooling_digest()):
+            raise ValueError("Source refresh report source/replay/tooling binding differs")
+        return
     if isinstance(history, dict) and history.get("tooling_profile") == RAW_REPORT_PROFILE:
         if (set(history) != fields | {"tooling_profile", "tooling_base_sha", "tooling_base_tree",
                                      "reviewed_tooling_sha256"}

@@ -1413,11 +1413,16 @@ def _historical_main00128_tooling_bytes(path):
 
 def test_normal_squash_published_literals_match_reviewed_local_file_bytes():
     """Keep main00128 pins historical while checking every unchanged current source."""
+    from tests.unit.deploy.test_shared_interpreter_source_profile import _historical_mainc44_tooling_bytes
+
     checkout = Path(final.__file__).resolve().parents[2]
     fixture_path = Path(__file__).parent / "fixtures/final_source_refresh_main00128_tooling.json"
     historical = _historical_main00128_tooling_bytes(fixture_path)
+    mainc44 = _historical_mainc44_tooling_bytes(
+        Path(__file__).parent / "fixtures/final_source_refresh_mainc44_tooling.json")
     for path, expected in {**final._FROZEN_PRIOR_TOOLING, **final._REVIEWED_SQUASH_TOOLING}.items():
-        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        body = (historical[path] if path in historical else mainc44[path] if path in mainc44
+                else (checkout / path).read_bytes())
         assert _public_blob(body) == expected
     final._verify_squash_self_source(historical["scripts/deploy/verify_final_source_refresh_transition.py"])
 

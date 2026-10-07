@@ -385,21 +385,29 @@ def test_raw_report_contract_rejects_resealed_authority(mutation):
 
 
 def test_raw_report_published_pins_match_current_reviewed_bytes():
+    from tests.unit.deploy.test_shared_interpreter_source_profile import _historical_mainc44_tooling_bytes
+
     checkout = Path(final.__file__).resolve().parents[2]
+    historical = _historical_mainc44_tooling_bytes(
+        Path(__file__).parent / "fixtures/final_source_refresh_mainc44_tooling.json")
     assert final.RAW_REPORT_BASE_SHA == "f28af00ffe6237fe4b6c01d98d15360caa4c6008"
     assert final.RAW_REPORT_BASE_TREE == "d76b6656730f74a58554558f7a8012fafd8190ff"
     assert final.RAW_REPORT_TOOLING_PATHS == frozenset(_PUBLIC_RAW_PATHS)
     assert set(final._REVIEWED_RAW_REPORT_TOOLING) == set(_PUBLIC_RAW_PATHS) - {_VERIFIER_PATH}
     for path, expected in final._REVIEWED_RAW_REPORT_TOOLING.items():
-        assert _public_blob((checkout / path).read_bytes()) == expected
-    final._verify_raw_report_self_source(Path(final.__file__).read_bytes())
+        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        assert _public_blob(body) == expected
+    final._verify_raw_report_self_source(historical[_VERIFIER_PATH])
 
 
 @pytest.mark.parametrize("historical_digest", [
     final._REVIEWED_SQUASH_SELF_SHA256, final._REVIEWED_OLD_REPLAY_SELF_SHA256,
 ])
 def test_raw_report_self_pin_keeps_both_historical_literal_slots_bound(historical_digest):
-    source = Path(final.__file__).read_bytes()
+    from tests.unit.deploy.test_shared_interpreter_source_profile import _historical_mainc44_tooling_bytes
+
+    source = _historical_mainc44_tooling_bytes(
+        Path(__file__).parent / "fixtures/final_source_refresh_mainc44_tooling.json")[_VERIFIER_PATH]
     assert historical_digest.encode() in source
     with pytest.raises(ValueError):
         final._verify_raw_report_self_source(source.replace(historical_digest.encode(), b"f" * 64, 1))
