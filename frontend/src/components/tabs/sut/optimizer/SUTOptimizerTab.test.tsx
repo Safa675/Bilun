@@ -84,7 +84,6 @@ vi.mock("@/components/tabs/sut/shared", () => ({
   fmtTRY: (value: number) => `${value} TRY`,
   fmtTRYOrUnavailable: (value: number | null | undefined) => value == null ? "Unavailable" : `${value} TRY`,
   fmtTRY2OrUnavailable: (value: number | null | undefined) => value == null ? "Unavailable" : `${value.toFixed(2)} TRY`,
-  KpiCard: ({ label, value }: { label: string; value: string; sub?: string }) => <div>{label}:{value}</div>,
 }));
 
 vi.mock("@/lib/constants", () => ({
@@ -150,8 +149,9 @@ describe("Revenue recovery optimization panels", () => {
 
     expect(html).toContain("Aggregated per-patient DRG unbundling findings from exact claim lines.");
     expect(html).not.toContain("Unavailable:DRG unbundling risk is unavailable");
-    expect(html).toContain("Patients With Risk:19");
-    expect(html).toContain(`Claim-backed savings:${fmtTRYFixture(totalPotentialSavings)}`);
+    const text = html.replace(/<[^>]*>/g, "");
+    expect(text).toContain("Patients With Risk19");
+    expect(text).toContain(`Claim-backed savings${fmtTRYFixture(totalPotentialSavings)}`);
   });
 
   it("shows unavailable banner for missing DRG inputs", () => {
@@ -172,7 +172,7 @@ describe("Revenue recovery optimization panels", () => {
 
     expect(html).toContain("Missing itemized billed procedure lines.");
     expect(html).toContain("Unavailable");
-    expect(html).toContain("Patients With Risk:Unavailable");
+    expect(html.replace(/<[^>]*>/g, "")).toContain("Patients With RiskUnavailable");
   });
 
 });

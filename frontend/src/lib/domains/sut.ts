@@ -1205,6 +1205,16 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   n_optional_override_patients?: number;
   n_drg_uplift_patients?: number;
   n_blood_uplift_patients?: number;
+  total_yatak_puani?: number;
+  n_yatak_puani_patients?: number;
+  total_icu_puani?: number;
+  n_icu_puani_patients?: number;
+  total_yenidogan_yatak?: number;
+  n_yenidogan_yatak_patients?: number;
+  total_refakatci?: number;
+  n_refakatci_patients?: number;
+  total_anestezi_puani?: number;
+  n_anestezi_puani_patients?: number;
   total_material_uplift?: number;
   n_material_uplift_patients?: number;
   total_procedure_addon_uplift?: number;
