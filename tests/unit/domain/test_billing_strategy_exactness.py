@@ -24,7 +24,7 @@ def test_billing_strategy_with_chapters_only_stays_unavailable() -> None:
 
     assert report.billing_strategy.recommendations == []
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
-    assert report.total_recoverable_try == 0.0
+    assert report.total_recoverable_try is None
 
 
 def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
@@ -58,7 +58,7 @@ def test_billing_report_without_claim_context_excludes_heuristic_totals() -> Non
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.exactness_status == "missing_exact_inputs"
     assert "itemized_billed_procedure_lines" in report.required_inputs_missing
-    assert report.sgk_uplift_try == 0.0
-    assert report.total_recoverable_try == 0.0
-    assert report.compliance_adjustment_try == 0.0
+    assert report.sgk_uplift_try is None
+    assert report.total_recoverable_try is None
+    assert report.compliance_adjustment_try is None
     assert report.action_count == 0
