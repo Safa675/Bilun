@@ -4,7 +4,8 @@
  * app UI overhaul (Phase 0 of the overhaul plan: baseline and guardrails, no UI change).
  *
  * One command writes, from a local production build and the SYNTHETIC cohort:
- *   screens/   viewport + full-page PNGs per route, locale and size
+ *   screens/   viewport + full-page PNGs per route, locale and size (plus one viewport PNG
+ *              per Source-drawer state)
  *   numbers/   every money amount / count / percent per rendered state (JSON,
  *              deterministic: no timestamps, no commit, no ports), the honesty
  *              wording, the lone "-" placeholders and the amounts that sit under a label
@@ -46,6 +47,17 @@
  *
  * Routes: the 8 plan routes, plus (unless --no-extras) the split pane, the ?section=&finding=
  * deep link and every other Compliance and Reference Tools sub-view (lib/capture-routes.mjs).
+ * States (extended ones only at the first --sizes entry, 1440x900 by default):
+ *   default                          every route
+ *   page-2 .. page-N                 Patients tab: every page of the table (?p=N); the route fails when the
+ *                                    pages do not show every patient of the cohort
+ *   view-revenue, view-audit,
+ *   claim-<id>                       patient pages
+ *   source-drawer                    patient pages: the page-level Source (SUT clause) drawer, opened with the first
+ *                                    "Inspect clause" button (looked for in the default, revenue, audit view)
+ *   source-drawer-copay              patient pages: the second drawer instance of the copay section, opened with
+ *                                    the first [data-clause-link] button; a patient without such a button has no such
+ *                                    state (run-meta.json skippedStates)
  * A capture needs about 15 minutes; --routes <ids> --locales en --sizes 1440x900 is the quick check.
  * Re-recording a baseline: pass --overwrite. The old output is only replaced when the whole
  * new run succeeded (it is written next to it as <out>.incomplete first).
@@ -56,6 +68,17 @@
  *    firstMoney.top of the patient pages (metrics.chatInputHeight records the cause). At 1440
  *    and 1280 they are identical. deepLink.top is the page's own scroll offset and is not stable.
  *  - The collapsed chat bar planned for Phase 1 should remove that jitter (not verified yet).
+ *  - Wave A evidence (human review, advisories) is NOT rendered: the backend serves it only with a signed release
+ *    receipt, which a local synthetic run cannot have ("wavea_capability_unavailable", recorded in run-meta.json
+ *    limits.waveAEvidence and printed at the end of a run). Every patient page shows one "unavailable" line where
+ *    the real page has several screens of cards, so page heights here are SHORTER than the real pages and the
+ *    Phase 2 collapse of those blocks cannot be measured or checked with this baseline. Test it with component
+ *    fixtures, or on an environment that serves Wave A. Nothing here fakes that data.
+ *  - Paged tables: Patients is walked (all pages). Not walked, so only their first page is in the baseline:
+ *    Reference Tools Drugs (270 pages of reference data) and Compliance Materials (rows 1-100 of 163). They are
+ *    listed in run-meta.json limits.unwalkedPagers and metrics/*.json pagers.
+ *  - The Source drawer is captured for the first clause button of each kind on the three patient pages, in the
+ *    single pane. Other clauses, the split pane and the drawer's loading and error states are not captured.
  *  - moneyWrapCount cannot fire in Turkish (no space inside "₺66.524,22"); moneyOverlapCount
  *    and moneyClippedCount measure collisions and cut-off amounts in both locales.
  *
@@ -71,14 +94,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { subtabRoutes } from "./lib/capture-routes.mjs";
+import { CLAUSE_VIEWS, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes } from "./lib/capture-routes.mjs";
 import { compareRuns, describeItem, normaliseLines, SCHEMA, tokenise, verdict } from "./lib/numbers-parity.mjs";
 import { installPageProbes } from "./lib/page-probes.mjs";
+import { runProbeSelfTest } from "./lib/probe-selftest.mjs";
 import { registerSecret, safeMessage } from "./lib/safe-message.mjs";
 
 // ---------------------------------------------------------------- constants
 
-const SCOPE_SELECTOR = '#main-content, [data-workspace-pane="b"]';
+// The page, the second pane of the split view and an open modal (the Source drawer renders outside
+// #main-content). A match inside another match is counted once (window.__bilunCapture.scopesOf).
+const SCOPE_SELECTOR = '#main-content, [data-workspace-pane="b"], [role="dialog"][aria-modal="true"]';
 const PRIMARY_PATIENTS = ["SENTETIK-HASTA-0003", "SENTETIK-HASTA-0017", "SENTETIK-HASTA-0029"];
 const HOME_ROUTES = ["patients", "compliance", "revenue", "operations", "reference-tools"];
 const TIMEZONE = "Europe/Istanbul";
@@ -273,7 +299,7 @@ async function settle(page, watch, { scopes = 1, timeoutMs = 90_000 } = {}) {
   while (Date.now() - start < timeoutMs) {
     if (watch.failures.length) throw new Error(`API failures: ${[...new Set(watch.failures)].join("; ")}`);
     const snap = await page.evaluate((selector) => {
-      const nodes = [...document.querySelectorAll(selector)];
+      const nodes = window.__bilunCapture.scopesOf(selector);
       return {
         count: nodes.length,
         pending: nodes.reduce((n, s) => n + s.querySelectorAll('.skeleton, [aria-busy="true"]').length, 0),
@@ -305,7 +331,7 @@ async function expandAll(page) {
   for (let round = 0; round < 4; round += 1) {
     const changed = await page.evaluate((selector) => {
       let n = 0;
-      for (const scope of document.querySelectorAll(selector)) {
+      for (const scope of window.__bilunCapture.scopesOf(selector)) {
         for (const d of scope.querySelectorAll("details:not([open])")) {
           d.open = true;
           n += 1;
@@ -329,7 +355,7 @@ async function expandAll(page) {
 
 /** Everything innerText gives: the expanded page, including text CSS merely collapsed. */
 const readScopes = (page) =>
-  page.evaluate((selector) => [...document.querySelectorAll(selector)].map((s) => s.innerText).join("\n"), SCOPE_SELECTOR);
+  page.evaluate((selector) => window.__bilunCapture.scopesOf(selector).map((s) => s.innerText).join("\n"), SCOPE_SELECTOR);
 
 /** What the default view really shows: innerText minus anything the layout hides (lib/page-probes.mjs). */
 const readVisible = (page) => page.evaluate((selector) => window.__bilunCapture.visibleText(selector), SCOPE_SELECTOR);
@@ -338,7 +364,7 @@ const readVisible = (page) => page.evaluate((selector) => window.__bilunCapture.
 function measure(page, probes) {
   return page.evaluate(
     ({ selector, probes: probeList }) => {
-      const scopes = [...document.querySelectorAll(selector)];
+      const scopes = window.__bilunCapture.scopesOf(selector);
       const scrollY = window.scrollY;
       const round = (n) => Math.round(n);
       const isHidden = window.__bilunCapture.hiddenCheck();
@@ -493,14 +519,24 @@ async function preflight(browser, cfg, token) {
     if (cfg.extras && !findings.length) {
       throw usage("SENTETIK-HASTA-0029 has no claim-compliance finding, so the deep-link route cannot be captured. Use --no-extras to skip it on purpose.");
     }
-    return { cohortSize: ids.length, claims, findingId: findings[0] ?? null };
+    // Wave A evidence (human review, advisories) is served only with a signed release receipt, which a local
+    // synthetic run cannot have. Record what the backend says so the limit is data, not memory.
+    let waveA = { available: null, reason: "probe failed" };
+    try {
+      const wave = await fetchJson(context, cfg, `/api/wavea-evidence/${PRIMARY_PATIENTS[0]}?kind=reviews&offset=0&limit=1`);
+      waveA = { available: wave.available === true, reason: wave.unavailable_reason ?? null };
+    } catch (error) {
+      waveA.reason = safeMessage(error);
+    }
+    return { cohortSize: ids.length, claims, findingId: findings[0] ?? null, waveA };
   } finally {
     await context.close();
   }
 }
 
 function buildRoutes(cfg, facts) {
-  const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}` }));
+  // The Patients table shows 10 of 50 patients per page and keeps its page in ?p=: the tool walks every page.
+  const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}`, ...(id === "patients" ? { pageWalk: true } : {}) }));
   for (const patient of PRIMARY_PATIENTS) {
     routes.push({ id: `patient-${patient.slice(-4)}`, kind: "patient", url: `/patient/${patient}`, patient });
   }
@@ -540,29 +576,83 @@ function planStates(route, facts, primary) {
     for (const claimId of facts.claims[route.patient] ?? []) {
       states.push({ state: `claim-${claimId}`, url: `${route.url}?claim=${encodeURIComponent(claimId)}` });
     }
+    // The Source (SUT clause) drawer: the page-level drawer ("Inspect clause") and the second drawer instance of the
+    // copay section. First button of each kind; a patient without such a button has no such state (run-meta lists it).
+    states.push({ state: "source-drawer", url: route.url, clause: "inspect", screenshot: true });
+    states.push({ state: "source-drawer-copay", url: route.url, clause: "copay", screenshot: true });
   }
   return states;
 }
 
-async function openState(page, watch, cfg, route, spec) {
+/** Click the tab of a patient view (Radix gives each trigger the id "<base>-trigger-<value>", components/primitives/Tabs.tsx). */
+async function switchView(page, watch, scopes, view) {
+  await page.locator(`#main-content [role="tab"][id$="-trigger-${view}"]`).first().click();
+  await settle(page, watch, { scopes });
+}
+
+/**
+ * Opens the first clause button of one kind. Looks in the default view, then the revenue view, then the audit
+ * view (a later phase may move the button). Returns false when no view has such a button.
+ */
+async function openClause(page, watch, locale, kind, scopes) {
+  const selector =
+    kind === "inspect"
+      ? `#main-content button[aria-label^="${INSPECT_CLAUSE_LABEL[locale]}"]`
+      : "#main-content [data-clause-link]";
+  for (const view of CLAUSE_VIEWS) {
+    if (view !== "default") await switchView(page, watch, scopes, view);
+    const button = page.locator(selector).first();
+    if (await button.count()) {
+      await button.click();
+      await page.locator('[role="dialog"][aria-modal="true"]').first().waitFor({ state: "visible", timeout: 15_000 });
+      await settle(page, watch, { scopes });
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Returns false when the state cannot exist on this page (no clause button). */
+async function openState(page, watch, cfg, route, spec, locale) {
   await page.goto(`${cfg.baseUrl}${spec.url}`, { waitUntil: "domcontentloaded", timeout: 90_000 });
   const scopes = route.kind === "split" ? 2 : 1;
   await settle(page, watch, { scopes });
-  if (spec.view) {
-    // Radix gives each trigger the id "<base>-trigger-<value>" (components/primitives/Tabs.tsx).
-    await page.locator(`#main-content [role="tab"][id$="-trigger-${spec.view}"]`).first().click();
-    await settle(page, watch, { scopes });
-  }
+  if (spec.view) await switchView(page, watch, scopes, spec.view);
+  if (spec.clause) return openClause(page, watch, locale, spec.clause, scopes);
+  return true;
 }
+
+/** The patient ids in the first column of the table(s) on the page (locale independent). */
+const readPatientRows = (page) =>
+  page.evaluate(
+    (selector) =>
+      window.__bilunCapture
+        .scopesOf(selector)
+        .flatMap((scope) => [...scope.querySelectorAll("tbody tr")].map((tr) => tr.querySelector("td, th")?.innerText.trim() ?? ""))
+        .filter((text) => /^SENTETIK-HASTA-\d{4}$/.test(text)),
+    SCOPE_SELECTOR,
+  );
 
 async function captureRoute(browser, cfg, route, locale, size, primary, facts, token) {
   const context = await newContext(browser, cfg, { locale, size, split: route.split, token });
   const page = await context.newPage();
   const watch = watchPage(page);
-  const result = { states: [], metrics: null, screens: {}, layoutHiddenElements: 0 };
+  const scopes = route.kind === "split" ? 2 : 1;
+  const result = { states: [], skipped: [], metrics: null, screens: {}, layoutHiddenElements: 0 };
+  const patientRows = new Set();
   try {
-    for (const spec of planStates(route, facts, primary)) {
-      await openState(page, watch, cfg, route, spec);
+    const queue = planStates(route, facts, primary);
+    for (let index = 0; index < queue.length; index += 1) {
+      const spec = queue[index];
+      if (!(await openState(page, watch, cfg, route, spec, locale))) {
+        result.skipped.push({ state: spec.state, reason: "no clause button of this kind on the patient page" });
+        continue;
+      }
+      if (spec.page) {
+        // A page that did not open (the app clamps ?p= to the last page) would be recorded twice under a wrong name.
+        const shown = detectPagers(await readScopes(page)).find((pager) => pager.kind === "page");
+        if (shown?.current !== spec.page) throw new Error(`state ${spec.state}: the pager shows page ${shown?.current ?? "none"}`);
+      }
       if (spec.state === "default") {
         // Measure first: screenshots can move the scroll position (deep link).
         result.metrics = await measure(page, cfg.probes);
@@ -579,19 +669,37 @@ async function captureRoute(browser, cfg, route, locale, size, primary, facts, t
           result.screens.viewport = await page.screenshot({ animations: "disabled", caret: "hide" });
           if (cfg.fullPage) result.screens.full = await page.screenshot({ animations: "disabled", caret: "hide", fullPage: true });
         }
+      } else if (spec.screenshot && cfg.mode !== "numbers") {
+        result.screens[spec.state] = await page.screenshot({ animations: "disabled", caret: "hide" });
       }
       // After measure() and the screenshots: reading the visible text briefly hides collapsed boxes
       // (lib/page-probes.mjs), which a component with a ResizeObserver could react to.
       const visible = await readVisible(page);
       result.layoutHiddenElements += visible.hiddenElements;
       await expandAll(page);
-      await settle(page, watch, { scopes: route.kind === "split" ? 2 : 1 });
+      await settle(page, watch, { scopes });
       const expandedText = await readScopes(page);
       result.states.push({
         state: spec.state,
         visibleLines: normaliseLines(visible.text),
         expandedLines: normaliseLines(expandedText),
       });
+      if (route.pageWalk) for (const id of await readPatientRows(page)) patientRows.add(id);
+      if (spec.state === "default") {
+        // Every pager on the page goes into the metrics, walked or not (run-meta lists the ones nobody walked).
+        result.metrics.pagers = detectPagers(expandedText);
+        const pager = result.metrics.pagers.find((candidate) => candidate.kind === "page");
+        if (route.pageWalk && primary) {
+          if (!pager) throw new Error("the Patients tab shows no pager, so its pages cannot be walked");
+          for (let number = 2; number <= pager.total; number += 1) queue.push({ state: `page-${number}`, url: pageUrl(route.url, number), page: number });
+          result.metrics.pagesWalked = pager.total;
+        }
+      }
+    }
+    if (route.pageWalk && primary) {
+      // The walk is only worth something if it reached every patient of the cohort.
+      if (patientRows.size !== facts.cohortSize) throw new Error(`the page walk saw ${patientRows.size} of ${facts.cohortSize} patients`);
+      result.metrics.patientRowsSeen = patientRows.size;
     }
   } finally {
     await context.close();
@@ -627,8 +735,10 @@ function writeResult(cfg, route, locale, size, result) {
       writeFile(path.join(cfg.writeDir, "text", `${base}.visible.txt`), `${s.visibleLines.join("\n")}\n`);
     }
   }
-  if (result.screens.viewport) writeFile(path.join(cfg.writeDir, "screens", locale, tag, `${route.id}.png`), result.screens.viewport);
-  if (result.screens.full) writeFile(path.join(cfg.writeDir, "screens", locale, tag, `${route.id}.full.png`), result.screens.full);
+  for (const [name, png] of Object.entries(result.screens)) {
+    const file = name === "viewport" ? `${route.id}.png` : name === "full" ? `${route.id}.full.png` : `${route.id}.${name}.png`;
+    writeFile(path.join(cfg.writeDir, "screens", locale, tag, file), png);
+  }
   if (result.metrics) {
     writeFile(path.join(cfg.writeDir, "metrics", locale, tag, `${route.id}.json`), `${JSON.stringify(result.metrics, null, 2)}\n`);
   }
@@ -716,66 +826,19 @@ function runCompare(cfg) {
 
 // ---------------------------------------------------------------- self-test
 
-const SELF_TEST_VISIBLE = ["VIS_PLAIN", "VIS_ZERO_WRAPPER", "VIS_CONTENTS", "VIS_INLINE", "VIS_OPEN_DETAILS"];
-// innerText still returns these (CSS collapsed them) - the probes must not.
-const SELF_TEST_COLLAPSED = ["HID_HEIGHT0", "HID_MAXHEIGHT0", "HID_GRID0FR", "HID_OPACITY0", "HID_SRONLY", "HID_OFFSCREEN"];
-// innerText already leaves these out.
-const SELF_TEST_EXCLUDED = ["HID_DISPLAYNONE", "HID_ATTRIBUTE", "HID_VISIBILITY", "HID_CLOSED_DETAILS"];
-const SELF_TEST_HTML = `<!doctype html><html><body><main id="main-content">
-  <div>VIS_PLAIN</div>
-  <div style="height:0"><span>VIS_ZERO_WRAPPER</span></div>
-  <div style="display:contents"><span>VIS_CONTENTS</span></div>
-  <p>before <span>VIS_INLINE</span> after</p>
-  <details open><summary>s</summary>VIS_OPEN_DETAILS</details>
-  <div data-case="height0" style="height:0;overflow:hidden">HID_HEIGHT0</div>
-  <div style="max-height:0;overflow:hidden">HID_MAXHEIGHT0</div>
-  <div style="display:grid;grid-template-rows:0fr"><div style="overflow:hidden;min-height:0">HID_GRID0FR</div></div>
-  <div style="opacity:0">HID_OPACITY0</div>
-  <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap">HID_SRONLY</span>
-  <div style="position:absolute;left:-9999px">HID_OFFSCREEN</div>
-  <div style="display:none">HID_DISPLAYNONE</div>
-  <div hidden>HID_ATTRIBUTE</div>
-  <div style="visibility:hidden">HID_VISIBILITY</div>
-  <details><summary>s</summary>HID_CLOSED_DETAILS</details>
-</main></body></html>`;
-
-/** Checks the visibility probes against a built-in page in the real browser. Needs Chrome only. */
+/** Checks the visibility probes against a built-in page in the real browser (lib/probe-selftest.mjs). Needs Chrome only. */
 async function selfTest(cfg) {
-  const browser = await chromium.launch({
-    headless: true,
-    ...(cfg.chromePath ? { executablePath: cfg.chromePath } : { channel: cfg.channel }),
-  });
-  const problems = [];
-  try {
-    const context = await browser.newContext({ viewport: { width: 800, height: 600 } });
-    await context.addInitScript(installPageProbes);
-    const page = await context.newPage();
-    await page.setContent(SELF_TEST_HTML);
-    const before = await readScopes(page);
-    const visible = await readVisible(page);
-    const after = await readScopes(page);
-    const restored = await page.evaluate(() => {
-      const el = document.querySelector('[data-case="height0"]');
-      return { display: el.style.getPropertyValue("display"), height: el.style.height, overflow: el.style.overflow };
-    });
-    for (const word of SELF_TEST_VISIBLE) if (!visible.text.includes(word)) problems.push(`${word} is visible but the probe dropped it`);
-    for (const word of [...SELF_TEST_COLLAPSED, ...SELF_TEST_EXCLUDED]) if (visible.text.includes(word)) problems.push(`${word} is hidden but the probe kept it`);
-    for (const word of SELF_TEST_COLLAPSED) if (!before.includes(word)) problems.push(`premise changed: innerText no longer includes ${word}, so the probe is not needed for it`);
-    if (after !== before) problems.push("the page was not restored after the probe");
-    if (restored.display !== "" || restored.height !== "0px" || restored.overflow !== "hidden") problems.push(`inline style was not restored (${JSON.stringify(restored)})`);
-    if (visible.hiddenElements < SELF_TEST_COLLAPSED.length) problems.push(`only ${visible.hiddenElements} elements were reported hidden`);
-  } finally {
-    await browser.close();
-  }
-  console.log(problems.length ? `self-test FAILED:\n  ${problems.join("\n  ")}` : "self-test OK: layout-collapsed text is left out of the default view and the page is restored");
-  return problems.length ? 1 : 0;
+  const { problems, premises } = await runProbeSelfTest(cfg.chromePath ? { executablePath: cfg.chromePath } : { channel: cfg.channel });
+  const all = [...problems, ...premises.map((note) => `premise changed: ${note}`)];
+  console.log(all.length ? `self-test FAILED:\n  ${all.join("\n  ")}` : "self-test OK: layout-collapsed text (also with padding, border, scale or clip-path) is left out of the default view and the page is restored");
+  return all.length ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- main
 
 const toolHashes = () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const files = ["capture-screens.mjs", "lib/numbers-parity.mjs", "lib/page-probes.mjs", "lib/capture-routes.mjs", "lib/safe-message.mjs"];
+  const files = ["capture-screens.mjs", "lib/numbers-parity.mjs", "lib/page-probes.mjs", "lib/probe-selftest.mjs", "lib/capture-routes.mjs", "lib/safe-message.mjs"];
   return Object.fromEntries(files.map((f) => [f, crypto.createHash("sha256").update(fs.readFileSync(path.join(here, f))).digest("hex")]));
 };
 
@@ -797,11 +860,12 @@ async function main() {
     headless: true,
     ...(cfg.chromePath ? { executablePath: cfg.chromePath } : { channel: cfg.channel }),
   });
-  const meta = { schema: SCHEMA, startedAt, git: gitMeta(), tool: toolHashes(), node: process.version, chrome: browser.version(), identity: cfg.identity, baseUrl: cfg.baseUrl, config: { mode: cfg.mode, locales: cfg.locales, sizes: cfg.sizes.map((s) => s.join("x")), routes: cfg.routes, extras: cfg.extras, dpr: cfg.dpr, reducedMotion: cfg.reducedMotion }, failedRoutes: [], warnings: [], layoutNotes: [], layoutHiddenElements: 0, written: 0 };
+  const meta = { schema: SCHEMA, startedAt, git: gitMeta(), tool: toolHashes(), node: process.version, chrome: browser.version(), identity: cfg.identity, baseUrl: cfg.baseUrl, config: { mode: cfg.mode, locales: cfg.locales, sizes: cfg.sizes.map((s) => s.join("x")), routes: cfg.routes, extras: cfg.extras, dpr: cfg.dpr, reducedMotion: cfg.reducedMotion }, failedRoutes: [], warnings: [], layoutNotes: [], skippedStates: [], pagedTables: {}, limits: {}, layoutHiddenElements: 0, written: 0 };
   let exitCode = 0;
   let complete = false;
+  let facts = null;
   try {
-    const facts = await preflight(browser, cfg, token);
+    facts = await preflight(browser, cfg, token);
     const routes = buildRoutes(cfg, facts);
     if (!routes.length) throw usage("No routes selected.");
     meta.cohortSize = facts.cohortSize;
@@ -817,6 +881,11 @@ async function main() {
               writeResult(cfg, route, locale, size, result);
               meta.written += result.states.length;
               meta.layoutHiddenElements += result.layoutHiddenElements;
+              for (const item of result.skipped) {
+                meta.skippedStates.push({ route: label, ...item });
+                console.log(`skip ${label} ${item.state}: ${item.reason}`);
+              }
+              if (result.metrics?.pagers?.length) meta.pagedTables[route.id] = { pagers: result.metrics.pagers, walked: Boolean(route.pageWalk) };
               meta.warnings.push(...result.warnings.map((w) => `${label}: ${w}`));
               const m = result.metrics;
               const note = m && (m.moneyOverlapCount || m.moneyClippedCount) ? `${m.moneyOverlapCount} money overlap(s), ${m.moneyClippedCount} clipped` : "";
@@ -835,6 +904,9 @@ async function main() {
     }
     if (meta.failedRoutes.length) exitCode = 1;
     complete = exitCode === 0;
+    // What this baseline cannot show (run-meta.json limits; the header lists them too).
+    meta.limits.waveAEvidence = facts.waveA;
+    meta.limits.unwalkedPagers = Object.fromEntries(Object.entries(meta.pagedTables).filter(([, table]) => !table.walked));
   } catch (error) {
     meta.error = safeMessage(error);
     throw error;
@@ -847,6 +919,15 @@ async function main() {
     else if (cfg.staged) console.error(`The previous capture in ${cfg.out} is untouched; the incomplete new run is in ${cfg.writeDir}.`);
   }
   console.log(exitCode === 0 ? `done: ${meta.written} states in ${meta.durationSeconds} s -> ${cfg.out}` : `FAILED routes: ${meta.failedRoutes.length} (see run-meta.json)`);
+  const unwalked = Object.entries(meta.limits.unwalkedPagers ?? {});
+  if (unwalked.length) {
+    const describe = (pager) => (pager.kind === "page" ? `page 1 of ${pager.total}` : `rows ${pager.from}-${pager.to} of ${pager.total}`);
+    console.log(`paged tables NOT walked (only their first page is recorded): ${unwalked.map(([id, table]) => `${id} (${table.pagers.map(describe).join(", ")})`).join("; ")}`);
+  }
+  if (meta.limits.waveAEvidence && meta.limits.waveAEvidence.available !== true) {
+    console.log(`Wave A evidence is NOT rendered by this backend (${meta.limits.waveAEvidence.reason}): human-review and advisory blocks, and the page heights with them, are missing from this capture.`);
+  }
+  if (meta.skippedStates.length) console.log(`states skipped (no such button on the page): ${meta.skippedStates.length} (see run-meta.json skippedStates)`);
   if (meta.layoutNotes.length) console.log(`layout notes: ${meta.layoutNotes.length} route(s) have overlapping or cut-off amounts (see run-meta.json layoutNotes and the metrics files)`);
   return exitCode;
 }

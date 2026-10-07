@@ -1,8 +1,12 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   compareRuns,
   compareSnapshots,
   describeItem,
+  foldLabel,
   foldText,
   hiddenAmounts,
   hiddenMarkers,
@@ -167,6 +171,75 @@ describe("honesty markers: vocabulary and Turkish case folding", () => {
   });
 });
 
+describe("honesty markers: the uncertainty wording the UI really shows (strings read from messages/)", () => {
+  const messagesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../src/messages");
+  /** Every string value of `key` in messages/<locale>/<file>.ts (one entry per occurrence). */
+  function messageValues(locale, file, key) {
+    const source = fs.readFileSync(path.join(messagesDir, locale, `${file}.ts`), "utf8");
+    const re = new RegExp(`(?:"${key}"|\\b${key})\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`, "g");
+    return [...source.matchAll(re)].map((m) => m[1].replace(/\\"/g, '"'));
+  }
+  const markersOf = (text) => Object.keys(tokenise([text]).markers);
+
+  // [file, key, marker kinds each locale's text must carry]
+  const expectations = [
+    ["billing", "riskNotice", ["unverified"]], // Reimbursement condition could not be verified - MEDULA rejection risk
+    ["billing", "corpusNoncoverage", ["cannotCompute"]], // The encoded rule corpus cannot evaluate this drug
+    ["billing", "corpusNoncoverageDetail", ["manualReview", "notInferred"]], // manual SUT review is required and no financial value is inferred
+    ["billing", "indication_mismatch", ["mismatch"]], // No diagnosis-drug match found
+    ["billing", "missing_board_report", ["unverified"]],
+    ["billing", "inpatient_supply_required", ["unverified"]],
+    ["billing", "needs_dose_verification", ["unverified"]],
+    ["billing", "report_duration_mismatch", ["mismatch"]],
+    ["billing", "ambiguous_route", ["mismatch"]],
+    ["billing", "sourceLocator", ["unverified"]],
+    ["billing", "sourceUnverified", ["unverified"]],
+    ["billing", "procedure_line_charge_not_cent_exact", ["notExact"]],
+    ["optimizer", "incompleteFindings", ["unverified"]], // compliance cannot be confirmed
+    ["optimizer", "partialResults", ["incompleteList"]], // More findings are available
+  ];
+
+  for (const locale of ["en", "tr"]) {
+    for (const [file, key, kinds] of expectations) {
+      it(`${locale} ${file}.${key} is counted as ${kinds.join(" + ")}`, () => {
+        const values = messageValues(locale, file, key);
+        expect(values.length, `${key} not found in messages/${locale}/${file}.ts`).toBeGreaterThan(0);
+        for (const value of values) for (const kind of kinds) expect(markersOf(value), value).toContain(kind);
+      });
+    }
+    it(`${locale} price lines that are estimates are counted as estimated`, () => {
+      const estimates = [...messageValues(locale, "billing", "scopeFootnote")].filter((text) => (locale === "en" ? /estimated/i : /tahmin/i).test(text));
+      expect(estimates.length).toBeGreaterThanOrEqual(2); // procedure add-ons and missing materials
+      for (const text of estimates) expect(markersOf(text), text).toContain("estimated");
+    });
+  }
+
+  it("also reads the uppercase and dotless-i renderings of the new Turkish wording", () => {
+    expect(markersOf("GERİ ÖDEME KOŞULU DOĞRULANAMADI — MEDULA REDDİ RİSKİ")).toContain("unverified");
+    expect(markersOf("KODLANMIŞ KURAL DERLEMİ BU İLACI DEĞERLENDİREMİYOR")).toContain("cannotCompute");
+    expect(markersOf("TAHMİNİ KURUM ÖDEMESİ ARTIŞI")).toContain("estimated");
+    expect(markersOf("TANI–İLAÇ EŞLEŞMESİ BULUNAMADI")).toContain("mismatch");
+  });
+
+  it("does not count ordinary labels and amounts", () => {
+    expect(markersOf("Total billed")).toEqual([]);
+    expect(markersOf("Doküman")).toEqual([]);
+    expect(markersOf("Patient ID Age Sex Recoverable Priority Actions Top action")).toEqual([]);
+  });
+
+  it("fails a collapse that hides an uncertainty line the old vocabulary could not see (the review's repro)", () => {
+    const line = "Reimbursement condition could not be verified — MEDULA rejection risk";
+    const page = ["Drug indication", line, "The encoded rule corpus cannot evaluate this drug", "A14551"];
+    const key = "en/1440x900/patient-0029/default";
+    const state = (visible) => ({ schema: SCHEMA, identity: "public", expanded: tokenise(page), visible: tokenise(visible) });
+    const report = compareRuns({ [key]: state(page) }, { [key]: state(page.filter((l) => l !== line)) });
+    expect(report.ok).toBe(false);
+    expect(report.failures.map((f) => [f.problem, f.value])).toEqual([["marker_hidden_in_default_view", "unverified"]]);
+    const evaluate = compareRuns({ [key]: state(page) }, { [key]: state(page.filter((l) => !/cannot evaluate/.test(l))) });
+    expect(evaluate.failures.map((f) => [f.problem, f.value])).toEqual([["marker_hidden_in_default_view", "cannotCompute"]]);
+  });
+});
+
 describe("placeholders and labelled amounts", () => {
   it("counts lone dash lines only, not dashes inside prose", () => {
     expect(tokenise(["Billed (at risk)", "—", "Risk — review required", "–"]).placeholders).toEqual({ dash: 2 });
@@ -215,11 +288,12 @@ describe("a missing amount must not turn into a zero amount", () => {
     const nonZero = { [key]: state(["TOTAL", "5.00 TRY", "OTHER", "5.00 TRY"]) };
     const merged = { [key]: state(["TOTAL", "5.00 TRY"]) };
     expect(compareRuns(nonZero, merged).ok).toBe(true);
-    expect(compareRuns(nonZero, merged).warnings.map((w) => w.problem)).toEqual(["multiplicity_changed"]);
+    expect(compareRuns(nonZero, merged).warnings.map((w) => w.problem)).toEqual(["multiplicity_changed", "label_not_in_candidate"]);
     const fewerZeros = lines.filter((_, i) => i !== 5 && i !== 4);
     const report = compareRuns(baseline, { [key]: state(fewerZeros) });
     expect(report.failures).toEqual([]);
-    expect(report.warnings.map((w) => w.problem)).toEqual(["multiplicity_changed"]);
+    // "Other 0.00 TRY" was removed together with its label: the amount count drops and the label is reported as gone
+    expect(report.warnings.map((w) => w.problem)).toEqual(["multiplicity_changed", "label_not_in_candidate"]);
   });
 
   it("lets a reasoned allow entry waive each failure once, and reports unused ones", () => {
@@ -249,11 +323,52 @@ describe("amounts must stay under their label", () => {
     expect(report.failures.map((f) => f.problem)).toEqual(["label_amount_changed", "label_amount_changed"]);
   });
 
-  it("accepts a moved block, a repeated block and a renamed label", () => {
+  it("accepts a moved block and a block repeated under the same label", () => {
     const moved = ["BILLS", "5", "EXPECTED PAYABLE", "35,739.89 TRY", "TOTAL RECOVERABLE (CLAIM-BACKED)", "29,039.29 TRY"];
-    expect(compareRuns({ [key]: state(base) }, { [key]: state(moved) }).ok).toBe(true);
-    const renamed = ["Recoverable (claim-backed)", "29,039.29 TRY", "EXPECTED PAYABLE", "35,739.89 TRY", "BILLS", "5"];
-    expect(compareRuns({ [key]: state(base) }, { [key]: state(renamed) }).ok).toBe(true);
+    const movedReport = compareRuns({ [key]: state(base) }, { [key]: state(moved) });
+    expect(movedReport.ok).toBe(true);
+    expect(movedReport.warnings).toEqual([]);
+    const repeated = [...base, "EXPECTED PAYABLE", "35,739.89 TRY"];
+    expect(compareRuns({ [key]: state(base) }, { [key]: state(repeated) }).failures).toEqual([]);
+  });
+
+  it("still fails a swap when the labels were only re-cased (Phase 5 turns forced uppercase off)", () => {
+    const recased = ["Total recoverable (claim-backed)", "35,739.89 TRY", "Expected payable", "29,039.29 TRY", "Bills", "5"];
+    const report = compareRuns({ [key]: state(base) }, { [key]: state(recased) });
+    expect(report.ok).toBe(false);
+    expect(report.failures.map((f) => [f.problem, f.value])).toEqual([
+      ["label_amount_changed", "expected payable"],
+      ["label_amount_changed", "total recoverable (claim-backed)"],
+    ]);
+    // Turkish dotted and dotless i: CSS uppercases "kurtarılabilir" to "KURTARILABİLİR" and "fiyat" to "FİYAT"
+    const tr = (l) => ({ schema: SCHEMA, identity: "public", expanded: tokenise(l), visible: tokenise(l) });
+    const upper = ["TOPLAM KURTARILABİLİR", "₺29.039,29", "FİYAT FARKI", "₺35.739,89"];
+    const lower = ["Toplam kurtarılabilir", "₺35.739,89", "Fiyat farkı", "₺29.039,29"];
+    expect(compareRuns({ [key]: tr(upper) }, { [key]: tr(lower) }).failures.map((f) => f.problem)).toEqual(["label_amount_changed", "label_amount_changed"]);
+    expect(compareRuns({ [key]: tr(upper) }, { [key]: tr(["Toplam kurtarılabilir", "₺29.039,29", "Fiyat farkı", "₺35.739,89"]) }).ok).toBe(true);
+    expect(foldLabel("TOPLAM  KURTARILABİLİR ")).toBe("toplam kurtarilabilir");
+  });
+
+  it("warns for a renamed label instead of skipping it silently, and the verdict says so", () => {
+    const renamed = ["Recoverable (claim-backed)", "35,739.89 TRY", "EXPECTED PAYABLE", "29,039.29 TRY", "BILLS", "5"];
+    const report = compareRuns({ [key]: state(base) }, { [key]: state(renamed) });
+    // the swap is hidden behind the rename, so the tool cannot fail it: it must at least say that one label was not checked
+    expect(report.failures.map((f) => f.problem)).toEqual(["label_amount_changed"]);
+    expect(report.warnings.map((w) => [w.problem, w.value, w.before])).toEqual([["label_not_in_candidate", "total recoverable (claim-backed)", ["29039.29"]]]);
+    const onlyRename = ["Recoverable (claim-backed)", "29,039.29 TRY", "EXPECTED PAYABLE", "35,739.89 TRY", "BILLS", "5"];
+    const renameReport = compareRuns({ [key]: state(base) }, { [key]: state(onlyRename) });
+    expect(renameReport.ok).toBe(true);
+    expect(renameReport.warnings.map((w) => w.problem)).toEqual(["label_not_in_candidate"]);
+    expect(verdict(renameReport).line).toMatch(/^PARITY OK WITH 1 WARNING:.*not proof that no number changed/);
+    expect(describeItem(renameReport.warnings[0])).toBe("en/1440x900/patient-0003/default  label_not_in_candidate  labelled total recoverable (claim-backed) ([29039.29] -> -)");
+  });
+
+  it("matches an allow entry written with the label as displayed", () => {
+    const swapped = ["Total recoverable (claim-backed)", "35,739.89 TRY", "Expected payable", "29,039.29 TRY", "Bills", "5"];
+    const allow = { added: ["TOTAL RECOVERABLE (CLAIM-BACKED)", "EXPECTED PAYABLE"].map((value) => ({ key, kind: "labelled", value, reason: "tiles reordered by design" })) };
+    const report = compareRuns({ [key]: state(base) }, { [key]: state(swapped) }, { allow });
+    expect(report.ok).toBe(true);
+    expect(report.unusedAllow).toEqual([]);
   });
 
   it("can be waived per label with a reason", () => {

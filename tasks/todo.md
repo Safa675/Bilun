@@ -1663,3 +1663,22 @@ Results:
 - Reviewer scenarios through the real CLI (`--compare`) on the new baseline: null money to 0.00 exit 1; swapped amounts exit 1; one of two Partial exact lines or two of three unavailable lines collapsed exit 1; Not evaluated lines removed exit 1; TR uppercase partial line removed exit 1; unchanged control exit 0; headline amounts leaving the default view exit 0 with "WITH 19 WARNINGS"; a merged duplicate exit 0 with "WITH 1 WARNING".
 - The run-meta.json of the baseline records the sha256 of the five tool files; `git.dirty` is true because the commit came after the recording, the hashes match the committed files. One trailing blank line of `numbers-parity.mjs` was removed after the recording (whitespace only, diff checked); its hash in run-meta.json was updated and the old value is kept in `toolHashNote`.
 - Not run: Node 20 and Node 26, GitHub CI, `npm run lint` on all of `src`, backend pytest (forbidden in this lane), `--identity dev` against a real backend, a real LLM key (chat stubbed). Servers on 18001 and 13000 were stopped by PID; scratch captures under `~/.cache/ui-capture-tmp` and `.next` were removed.
+
+## Task: App UI overhaul, phase 0 fixer round 2: close the guard's remaining blind spots (2026-10-07)
+
+### Goal
+The seven blocking findings of the second phase-0 review are each either fixed in the capture tool (with a failing case first) or answered with a measured reason, so that the baseline covers all 50 patients, the Source drawer and the wording a collapse would hide, and a collapsed box can no longer pass as visible.
+
+### Subtasks
+- [x] Verify each finding against the code and the recorded baseline before touching anything (baseline text, the live app on 18001/13000, Chrome 154).
+- [ ] Page walk: add `page-2` to `page-N` states for the Patients tab (`?p=N`, primary size, both locales), fail the route when the pages do not show every cohort patient, record the pager of every captured route in the metrics, list paged tables that are not walked (Reference Tools Drugs, Compliance Materials) in run-meta.
+- [ ] Source drawer: add `source-drawer` (page-level drawer opened by "Inspect clause") and `source-drawer-copay` (the second drawer instance) per primary patient where the button exists; include the modal dialog in the scope (nested scopes counted once); add a viewport PNG per drawer state.
+- [ ] Marker vocabulary: add the families that today's uncertainty lines need (could not be verified, cannot evaluate, estimated, manual review, no value inferred, no match, not exact, more findings available) in EN and TR, tested against the real strings of `messages/en` and `messages/tr`; bump the schema to 3 so an old baseline is refused.
+- [ ] Labels: compare label keys case- and dotted-i-folded, and warn (with a count) for every baseline label that holds amounts and has no counterpart in the candidate, so a renamed label is never skipped silently.
+- [ ] Probes: decide hidden for a clipping box from its content box (padding and border do not keep a collapsed box visible), also for a transform that scales a box to nothing and for a clip-path inset that clips everything; add the padded cases to the self-test first (they fail today).
+- [ ] CI: move the self-test cases into `lib/probe-selftest.mjs` and run them from vitest when Chrome is installed (skipped with a visible reason otherwise), so `npx vitest run` guards the probe.
+- [ ] Wave A: record in run-meta whether the backend serves Wave A evidence (it does not in a local synthetic run; the receipt cannot be issued here), print it at the end of a capture and write the limit into the header; no data is faked.
+- [ ] Re-run tsc, vitest, build; re-record `lanes/ui/baseline` with the schema-3 tool (the schema-2 baseline is kept), prove determinism with a second run, replay the reviewers' scenarios through the real CLI.
+
+### Out of Scope
+Anything under `frontend/src`; backend, rules, amounts, exactness, API shapes; faking or stubbing Wave A evidence or a signed activation receipt; walking all 270 pages of Reference Tools Drugs; the split-pane drawer state; opening every clause button (one per kind and patient); fixing app behaviour the tool only measures; the other lanes; committing screenshots or baselines.

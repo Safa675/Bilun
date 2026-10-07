@@ -7,15 +7,22 @@
 //     the same value (multiplicity differences are warnings, see below);
 //   - zero amounts did not become more numerous and lone "-" placeholders did
 //     not disappear, so a missing amount cannot silently turn into "0.00 TRY";
-//   - a standalone amount still sits under the same label (a swap of two
-//     amounts between two labels fails); amounts inside table rows or prose
-//     are not tied to a label;
+//   - a standalone amount still sits under the same label, compared without
+//     case (a swap of two amounts between two labels fails, also when the labels
+//     were re-cased); amounts inside table rows or prose are not tied to a label,
+//     and a label that is RENAMED is only a warning ("label_not_in_candidate"):
+//     its amounts are then not checked against a label, so a person must look;
 //   - honesty wording (partial, unavailable, not evaluated, missing inputs,
-//     amount unverified, cannot compute) did not lose a line in the default view.
+//     amount unverified, cannot compute, unverified, estimated, manual review,
+//     no value inferred, mismatch, not exact, more findings available) did not
+//     lose a line in the default view. The vocabulary is a list of words taken
+//     from messages/en and messages/tr (numbers-parity.test.mjs reads the real
+//     strings), not a judgement of meaning: a line worded differently is not
+//     protected until its words are added here.
 // It does NOT judge layout, wording quality or amounts that were never
 // captured (states not in the baseline). Screenshots stay the evidence for those.
 
-export const SCHEMA = "bilun-numbers-parity/2";
+export const SCHEMA = "bilun-numbers-parity/3";
 
 // EN: "29,039.29 TRY" (fmtTRY/fmtTRY2 in lib/i18n/formatters.ts) and backend
 // prose such as "9000.00 TRY". The sign is "-" or the real minus sign.
@@ -49,16 +56,35 @@ export function foldText(text) {
   return String(text).normalize("NFC").replace(/[İı]/g, "i").toLowerCase();
 }
 
+/** Key of a label for matching: folded case, one space. "TOTAL BILLED" and "Total billed" are the same label. */
+export function foldLabel(text) {
+  return foldText(text).replace(/\s+/g, " ").trim();
+}
+
 // Honesty markers: wording that says "not exact / not available / not computed".
 // It must stay visible when a section is collapsed. Informational vocabulary,
 // per locale (EN and TR), taken from messages/en and messages/tr.
 const MARKER_PATTERNS = {
   partial: /\bpartial\b|\bkismi\b/,
   unavailable: /\bunavailable\b|\bkullanilam/,
-  cannotCompute: /cannot (?:be )?comput|\bhesaplanam/,
+  cannotCompute: /cannot (?:be )?(?:comput|evaluat)|\bhesaplanam|değerlendirem/,
   notEvaluated: /not evaluated|değerlendirilmedi|değerlendirilemedi/,
   missingInputs: /missing (?:exact )?inputs?|eksik (?:kesin )?girdi|required inputs? missing/,
   amountUnverified: /amount unverified|tutar doğrulanmadi/,
+  // "could not be verified", "verification is required", "No verified source" and their Turkish twins
+  unverified:
+    /could not be verified|(?<!amount )\bunverified\b|\bnot verified\b|no verified source|cannot be (?:confirmed|verified)|verification (?:is )?required|requires (?:review|verification)|doğrulanama|(?<!tutar )doğrulanmad|doğrulanmamiş|doğrulanmal|doğrulamasi gerekli|doğrulanmiş kaynak yok|incelenmeli/,
+  // a figure that is an estimate, not a computed amount ("is estimated from the EK-3 list price ceiling")
+  estimated: /\bestimat(?:e|es|ed|ion)\b|tahmin/,
+  // the engine hands the decision to a person ("manual SUT review is required")
+  manualReview: /\bmanual(?:ly)?\b|\bmanuel/,
+  // "no financial value is inferred": the line says why no amount is shown
+  notInferred: /\binferred\b|çikarilmad/,
+  // a condition check that did not match or could not pick a route
+  mismatch: /no diagnosis[–-]drug match|does not match|eşleşmesi bulunamad|uyuşmuyor|\bambiguous\b|belirsiz/,
+  notExact: /\bnot exact|exact to the cent|kesin değil/,
+  // the list on screen is a page of a longer list
+  incompleteList: /more findings are available|daha fazla bulgu var/,
 };
 // Lines of the (stubbed) chat panel are not part of the billing UI.
 const MARKER_IGNORE = /temporarily unavailable|unable to reach the llm/;
@@ -163,6 +189,17 @@ export function tokenise(lines) {
 
 const VALUE_KINDS = ["money", "counts", "percents"];
 
+/** { label -> { amount -> n } } with labels folded; labels that differ only in case or spacing are merged. */
+function foldLabels(labelled) {
+  const folded = {};
+  for (const [label, values] of Object.entries(labelled ?? {})) {
+    const key = foldLabel(label);
+    folded[key] ??= {};
+    for (const [amount, n] of Object.entries(values)) folded[key][amount] = (folded[key][amount] ?? 0) + n;
+  }
+  return folded;
+}
+
 const isZeroAmount = (value) => Number(value) === 0;
 const zeroTotal = (snapshot) =>
   Object.entries(snapshot?.money ?? {}).reduce((sum, [value, n]) => (isZeroAmount(value) ? sum + n : sum), 0);
@@ -174,15 +211,18 @@ const zeroTotal = (snapshot) =>
  *   zeroAmount    more zero amounts than before (a missing amount turned into
  *                 "0.00 TRY", or a zero amount was repeated)      -> failure
  *   placeholder   fewer lone "-" placeholder lines than before    -> failure
- *   labelChanged  a label that exists in both runs now sits above
- *                 other amounts (values swapped or re-attached)   -> failure
+ *   labelChanged  a label (compared without case) that exists in both runs
+ *                 now sits above other amounts (swapped, re-attached) -> failure
+ *   labelUnmatched  a baseline label that holds amounts has no label of the
+ *                 same text in the candidate (renamed or gone): its amounts
+ *                 are not checked against a label                  -> warning
  *   multiplicity  same value, different number of occurrences     -> warning
  *                 (a restructured page may repeat or merge a figure)
  *                 or a failure with { strictMultiplicity: true }
  *   markersReduced  honesty wording lost lines on the page        -> warning
  */
 export function compareSnapshots(before, after, { strictMultiplicity = false } = {}) {
-  const diff = { missing: [], added: [], multiplicity: [], zeroAmount: [], placeholder: [], labelChanged: [], markersReduced: [] };
+  const diff = { missing: [], added: [], multiplicity: [], zeroAmount: [], placeholder: [], labelChanged: [], labelUnmatched: [], markersReduced: [] };
   let zeroRiseOnExistingValue = false;
   for (const kind of VALUE_KINDS) {
     const a = before?.[kind] ?? {};
@@ -207,10 +247,13 @@ export function compareSnapshots(before, after, { strictMultiplicity = false } =
     const now = placeholdersAfter[value] ?? 0;
     if (now < placeholdersBefore[value]) diff.placeholder.push({ kind: "placeholders", value, before: placeholdersBefore[value], after: now });
   }
-  const labelsBefore = before?.labelled ?? {};
-  const labelsAfter = after?.labelled ?? {};
+  const labelsBefore = foldLabels(before?.labelled);
+  const labelsAfter = foldLabels(after?.labelled);
   for (const label of Object.keys(labelsBefore)) {
-    if (!(label in labelsAfter)) continue;
+    if (!(label in labelsAfter)) {
+      diff.labelUnmatched.push({ kind: "labelled", value: label, before: Object.keys(labelsBefore[label]).sort() });
+      continue;
+    }
     const was = Object.keys(labelsBefore[label]).sort();
     const now = Object.keys(labelsAfter[label]).sort();
     if (was.join("|") !== now.join("|")) diff.labelChanged.push({ kind: "labelled", value: label, before: was, after: now });
@@ -266,7 +309,7 @@ export function hiddenAmounts(baselineVisible, candidateVisible) {
  * reasoned exceptions (new UI copy such as "Top 3 actions"). An entry waives the
  * failure with the same key, kind and value; `kind` is money / counts /
  * percents for values, "zeroAmounts" (value "total"), "placeholders" (value
- * "dash"), "labelled" (value: the label) or "markers" (value: the marker kind,
+ * "dash"), "labelled" (value: the label, any case) or "markers" (value: the marker kind,
  * for a reduction in the default view). Unused entries are reported so stale
  * exceptions do not accumulate.
  */
@@ -275,7 +318,8 @@ export function compareRuns(baseline, candidate, { strictMultiplicity = false, a
   const warnings = [];
   const allowed = { added: [...(allow.added ?? [])], removed: [...(allow.removed ?? [])] };
   const take = (list, key, item) => {
-    const index = list.findIndex((entry) => entry.key === key && entry.kind === item.kind && entry.value === item.value);
+    const sameValue = (entry) => (item.kind === "labelled" ? foldLabel(entry.value) === item.value : entry.value === item.value);
+    const index = list.findIndex((entry) => entry.key === key && entry.kind === item.kind && sameValue(entry));
     if (index < 0) return false;
     list.splice(index, 1);
     return true;
@@ -304,6 +348,7 @@ export function compareRuns(baseline, candidate, { strictMultiplicity = false, a
     for (const item of diff.multiplicity) {
       (strictMultiplicity ? failures : warnings).push({ key, problem: "multiplicity_changed", ...item });
     }
+    for (const item of diff.labelUnmatched) warnings.push({ key, problem: "label_not_in_candidate", ...item });
     for (const item of diff.markersReduced) warnings.push({ key, problem: "marker_lines_removed_from_page", ...item });
     for (const item of reducedMarkers(before.visible, after.visible)) {
       const entry = { kind: "markers", value: item.kind, before: item.before, after: item.after };
