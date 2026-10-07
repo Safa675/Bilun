@@ -104,7 +104,7 @@ export function PatientFinancialSummary({
   ];
 
   return (
-    <Surface variant="base" padding="md" className="space-y-3" data-patient-summary>
+    <Surface variant="base" padding="md" className="@container space-y-3" data-patient-summary>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-[var(--text-primary)]">
           {isBillScoped
@@ -120,11 +120,11 @@ export function PatientFinancialSummary({
           ? t("patient.financialSummary.descriptionBill")
           : t("patient.financialSummary.description")}
       </p>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-[1.1fr_1.1fr_1.4fr_0.45fr_0.65fr]">
+      <dl className="grid grid-cols-1 gap-x-4 gap-y-3 @min-[360px]:grid-cols-2 @min-[800px]:grid-cols-[1.1fr_1.1fr_1.4fr_0.45fr_0.65fr]">
         {values.map(({ label, value, gold }) => (
           <div key={label} className="min-w-0 space-y-2">
             <dt className="min-h-8 text-xs leading-4 text-[var(--text-muted)]">{label}</dt>
-            <dd className={`whitespace-nowrap tabular-nums text-lg leading-6 tracking-tight md:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
+            <dd className={`whitespace-nowrap tabular-nums text-xs leading-6 tracking-tight @min-[180px]:text-lg @min-[800px]:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
               {value}
             </dd>
           </div>

@@ -62,7 +62,7 @@ export function RecommendedActionsPanel({
       yatak_puani: (billingReport as BillingActionReport & { yatak_puani?: ExactnessLike }).yatak_puani,
     };
     return (
-      <Surface variant="base" padding="md" className="space-y-3" data-next-actions>
+      <Surface variant="base" padding="md" className="@container space-y-3" data-next-actions>
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">
             {t("billing.recommendedActions.nextActions")}
@@ -79,9 +79,9 @@ export function RecommendedActionsPanel({
             const clauseKey = action.clause_ref?.clause_key ?? "";
             const cite = action.clause_ref?.clause_coordinate || action.sut_section_id || "";
             return (
-              <li key={action.action_id} data-action-id={action.action_id} className={cn("flex items-center gap-3 py-2 first:pt-0 last:pb-0", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
-                <div className="min-w-0 flex-1">
-                  <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left text-sm font-medium leading-snug text-[var(--text-primary)] hover:text-[var(--gold-hover)]">
+              <li key={action.action_id} data-action-id={action.action_id} className={cn("grid grid-cols-1 items-center gap-3 py-2 first:pt-0 last:pb-0 @min-[300px]:grid-cols-[minmax(0,1fr)_auto] @min-[560px]:grid-cols-[minmax(0,1fr)_auto_auto]", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
+                <div className="min-w-0 @min-[300px]:col-span-2 @min-[560px]:col-span-1">
+                  <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left text-sm font-medium leading-snug [overflow-wrap:anywhere] text-[var(--text-primary)] hover:text-[var(--gold-hover)]">
                     {recommendedActionTitle(t, action)}
                   </button>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-secondary)]">
@@ -91,13 +91,13 @@ export function RecommendedActionsPanel({
                     </Chip>
                   </div>
                 </div>
-                <div className="shrink-0 text-right">
+                <div className="min-w-0 text-left @min-[560px]:text-right">
                   <span className="whitespace-nowrap tabular-nums text-sm font-semibold text-[var(--text-primary)]">
                     {amount?.value != null ? fmtTRY2(amount.value) : amount?.label ?? "—"}
                   </span>
                   {amount?.value != null && <span className="block text-xs text-[var(--text-secondary)]">{amount.label}</span>}
                 </div>
-                <Button variant="secondary" size="compact" disabled={!clauseKey || !onOpenClause} aria-label={clauseKey && onOpenClause ? t("billing.recommendedActions.inspectClause", { coordinate: cite }) : t("billing.recommendedActions.sourceUnavailable")} onClick={() => clauseKey && onOpenClause?.(clauseKey)} className="shrink-0 whitespace-nowrap">
+                <Button variant="secondary" size="compact" disabled={!clauseKey || !onOpenClause} aria-label={clauseKey && onOpenClause ? t("billing.recommendedActions.inspectClause", { coordinate: cite }) : t("billing.recommendedActions.sourceUnavailable")} onClick={() => clauseKey && onOpenClause?.(clauseKey)} className="justify-self-start whitespace-nowrap @min-[300px]:justify-self-end">
                   {cite ? `${t("billing.recommendedActions.section")} ${formatSutSectionLabel(cite)}` : t("billing.recommendedActions.sourceUnavailable")}
                 </Button>
               </li>
