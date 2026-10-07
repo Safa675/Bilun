@@ -79,8 +79,7 @@ def _ensure_required_inputs_for_status(
 ) -> None:
     if status in _STATUSES_REQUIRING_INPUTS and not required_inputs_missing:
         raise ValueError(
-            f"required_inputs_missing must be non-empty when {status_field} "
-            f"is {status!r}"
+            f"required_inputs_missing must be non-empty when {status_field} is {status!r}"
         )
 
 
@@ -228,9 +227,9 @@ class BillingExactnessResponse(BaseModel):
 
 
 class LabOptimizationResponse(BillingExactnessResponse):
-    normative_cost_try: float = 0.0
-    hemogram_bundling_savings: float = 0.0
-    session_fraction_savings: float = 0.0
+    normative_cost_try: float | None = None
+    hemogram_bundling_savings: float | None = None
+    session_fraction_savings: float | None = None
     flagged_tests: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -244,73 +243,73 @@ class CopayOptimizationResponse(BillingExactnessResponse):
     copay_primary_outcome: str = "none"
     savings_beneficiary: str = "patient_and_sgk"
     gap_kind: str = "exemption_correction"
-    visit_copay_savings_try: float = 0.0
-    rx_copay_savings_try: float = 0.0
-    total_copay_savings_try: float = 0.0
-    patient_copay_waived_total_try: float = 0.0
-    patient_copay_try: float = 0.0
-    ilave_ucret_total_try: float = 0.0
+    visit_copay_savings_try: float | None = None
+    rx_copay_savings_try: float | None = None
+    total_copay_savings_try: float | None = None
+    patient_copay_waived_total_try: float | None = None
+    patient_copay_try: float | None = None
+    ilave_ucret_total_try: float | None = None
     line_decomposition_status: str = "missing_inputs"
     rate_corrections: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class BillingStrategyResponse(BillingExactnessResponse):
     recommendations: list[dict[str, Any]] = Field(default_factory=list)
-    uplift_savings_try: float = 0.0
-    optional_override_uplift_try: float = 0.0
+    uplift_savings_try: float | None = None
+    optional_override_uplift_try: float | None = None
 
 
 class SessionPricingUpliftResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
-    review_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
+    review_uplift_try: float | None = None
     review_opportunity_count: int = 0
 
 
 class DrgUpliftRecommendationResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
 
 
 class BloodComponentUpliftResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
 
 
 class MaterialUpliftResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
 
 
 class ProcedureAddonUpliftResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
 
 
 class CareSettingReviewResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
-    review_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
+    review_uplift_try: float | None = None
     review_opportunity_count: int = 0
 
 
 class ProcedureCaptureGapResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_gap_try: float = 0.0
-    confirmed_gap_try: float = 0.0
+    total_gap_try: float | None = None
+    confirmed_gap_try: float | None = None
 
 
 class DrgPackageAdequacyReviewResponse(BillingExactnessResponse):
     opportunities: list[dict[str, Any]] = Field(default_factory=list)
-    total_uplift_try: float = 0.0
-    confirmed_uplift_try: float = 0.0
-    review_uplift_try: float = 0.0
+    total_uplift_try: float | None = None
+    confirmed_uplift_try: float | None = None
+    review_uplift_try: float | None = None
     review_opportunity_count: int = 0
 
 
@@ -574,15 +573,15 @@ class BillingReportResponse(BaseModel):
         default_factory=DrugIndicationReviewResponse
     )
     medula_rejection_ingest_available: bool = False
-    sgk_uplift_try: float = 0.0
-    compliance_adjustment_try: float = 0.0
-    audit_exposure_try: float = 0.0
-    capture_gap_try: float = 0.0
-    package_adequacy_review_try: float = 0.0
+    sgk_uplift_try: float | None = None
+    compliance_adjustment_try: float | None = None
+    audit_exposure_try: float | None = None
+    capture_gap_try: float | None = None
+    package_adequacy_review_try: float | None = None
     medula_playbook_entry_count: int = 0
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0
-    total_recoverable_try: float = 0.0
+    total_recoverable_try: float | None = None
     recommended_actions: list[dict[str, Any]] = Field(default_factory=list)
     action_count: int = 0
     priority: str = "low"

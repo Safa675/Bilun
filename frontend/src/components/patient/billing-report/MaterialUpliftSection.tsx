@@ -25,13 +25,13 @@ export function MaterialUpliftSection({
     return null;
   }
 
-  const confirmedUplift = materialData.confirmed_uplift_try ?? 0;
+  const confirmedUplift = materialData.confirmed_uplift_try ?? null;
 
   return (
     <BillingSectionShell
       id="billing-material-uplift"
       title={t("billing.materialUplift.title")}
-      total={fmtTRY2(confirmedUplift)}
+      total={confirmedUplift == null ? "—" : fmtTRY2(confirmedUplift)}
     >
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.materialUplift.scopeFootnote")}

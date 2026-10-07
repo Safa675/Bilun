@@ -26,14 +26,14 @@ export function CareSettingReviewSection({
     return null;
   }
 
-  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
+  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? null;
 
   return (
     <BillingSectionShell id="billing-care-setting-review" title={t("billing.careSettingReview.title")}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.careSettingReview.scopeFootnote")}
       </p>
-      {reviewUplift > 0 && (
+      {reviewUplift != null && reviewUplift > 0 && (
         <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.careSettingReview.reviewTotal")}: {fmtTRY2(reviewUplift)}
         </p>

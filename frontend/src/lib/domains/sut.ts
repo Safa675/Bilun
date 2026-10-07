@@ -572,9 +572,9 @@ export interface ComplianceIndexResponse extends SUTDataSourceCarrier {
 }
 
 export interface LabOptimization extends ExactnessState {
-  normative_cost_try: number;
-  hemogram_bundling_savings: number;
-  session_fraction_savings?: number;
+  normative_cost_try: number | null;
+  hemogram_bundling_savings: number | null;
+  session_fraction_savings?: number | null;
   flagged_tests: Array<{
     test_name: string;
     sut_code: string;
@@ -618,16 +618,16 @@ export interface CopayOptimization extends ExactnessState {
   /** Exemption gap benefits patient katılım waiver and SGK payable correction. */
   savings_beneficiary?: "patient_and_sgk";
   gap_kind?: "exemption_correction";
-  visit_copay_savings_try: number;
-  rx_copay_savings_try: number;
+  visit_copay_savings_try: number | null;
+  rx_copay_savings_try: number | null;
   /** Legacy: procedure/visit copay waived only (excludes Rx). */
-  total_copay_savings_try: number;
+  total_copay_savings_try: number | null;
   /** Visit + Rx patient copay that exemption may waive. */
-  patient_copay_waived_total_try?: number;
+  patient_copay_waived_total_try?: number | null;
   /** Total katılım payı on claim lines (before waiver). */
-  patient_copay_try?: number;
+  patient_copay_try?: number | null;
   /** Total ilave ücret (§1.9) — informational, never waived. */
-  ilave_ucret_total_try?: number;
+  ilave_ucret_total_try?: number | null;
   line_decomposition_status?: "exact" | "copay_only" | "missing_inputs";
   rx_copay_savings_by_ground?: Record<string, number>;
   rate_corrections: Array<{
@@ -659,7 +659,7 @@ export interface CopayOptimization extends ExactnessState {
 }
 
 export interface BillingStrategyRecommendation extends ExactnessState {
-  optional_override_uplift_try?: number;
+  optional_override_uplift_try?: number | null;
   recommendations: Array<{
     chapter?: string;
     chapter_description?: string;
@@ -783,8 +783,8 @@ export interface ProcedureCaptureGap extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_gap_try?: number;
-  confirmed_gap_try?: number;
+  total_gap_try?: number | null;
+  confirmed_gap_try?: number | null;
 }
 
 export interface ProcedureAddonUplift extends ExactnessState {
@@ -807,8 +807,8 @@ export interface ProcedureAddonUplift extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
 }
 
 export interface MaterialUplift extends ExactnessState {
@@ -833,8 +833,8 @@ export interface MaterialUplift extends ExactnessState {
     message_code?: string;
     message_params?: Record<string, unknown>;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
 }
 
 export interface BloodComponentUplift extends ExactnessState {
@@ -853,8 +853,8 @@ export interface BloodComponentUplift extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
 }
 
 export interface DrgUpliftRecommendation extends ExactnessState {
@@ -872,8 +872,8 @@ export interface DrgUpliftRecommendation extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
 }
 
 export interface MedulaRejectionPlaybook extends ExactnessState {
@@ -1042,9 +1042,9 @@ export interface DrgPackageAdequacyReview extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
-  review_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
+  review_uplift_try?: number | null;
   review_opportunity_count?: number;
 }
 
@@ -1070,9 +1070,9 @@ export interface CareSettingReview extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
-  review_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
+  review_uplift_try?: number | null;
   review_opportunity_count?: number;
 }
 
@@ -1093,9 +1093,9 @@ export interface SessionPricingUplift extends ExactnessState {
     sut_section_id?: string;
     detail?: string;
   }>;
-  total_uplift_try?: number;
-  confirmed_uplift_try?: number;
-  review_uplift_try?: number;
+  total_uplift_try?: number | null;
+  confirmed_uplift_try?: number | null;
+  review_uplift_try?: number | null;
   review_opportunity_count?: number;
 }
 
@@ -1161,15 +1161,15 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   financial_findings?: import("./waveaEvidence").WaveAEvidenceBlock;
   wavea_coverage?: import("./waveaEvidence").WaveACoverage | null;
   materials: MaterialPreCheck;
-  sgk_uplift_try?: number;
-  compliance_adjustment_try?: number;
-  audit_exposure_try?: number;
-  capture_gap_try?: number;
-  package_adequacy_review_try?: number;
+  sgk_uplift_try?: number | null;
+  compliance_adjustment_try?: number | null;
+  audit_exposure_try?: number | null;
+  capture_gap_try?: number | null;
+  package_adequacy_review_try?: number | null;
   medula_playbook_entry_count?: number;
   claim_submission_checklist_count?: number;
   drug_indication_violation_count?: number;
-  total_recoverable_try: number;
+  total_recoverable_try: number | null;
   recommended_actions?: RecommendedActionItem[];
   action_count: number;
   priority: "high" | "medium" | "low";
@@ -1183,11 +1183,11 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
 
 export interface PatientRecoverySummaryRow {
   patient_id: string;
-  total_recoverable_try: number;
-  sgk_uplift_try?: number;
-  compliance_adjustment_try?: number;
-  exemption_gap_try?: number;
-  total_opportunity_try?: number;
+  total_recoverable_try: number | null;
+  sgk_uplift_try?: number | null;
+  compliance_adjustment_try?: number | null;
+  exemption_gap_try?: number | null;
+  total_opportunity_try?: number | null;
   priority: string;
   action_count: number;
   top_action_type: string;

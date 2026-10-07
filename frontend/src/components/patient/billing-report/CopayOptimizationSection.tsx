@@ -41,7 +41,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     hasEk1aVisitSavings,
     usesClaimTableHeader,
   } = model;
-  const savingsColor = exemptionGapTotal > 0 ? ACCENT : "#71717A";
+  const savingsColor = exemptionGapTotal != null && exemptionGapTotal > 0 ? ACCENT : "#71717A";
 
   const waiverGroundLabel = (ground: string | null) => {
     if (!ground) {
@@ -63,7 +63,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     <BillingSectionShell
       id="billing-copay"
       title={t("billing.copay.title")}
-      total={copayExact ? fmtTRY2(exemptionGapTotal) : undefined}
+      total={copayExact ? exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal) : undefined}
     >
       <div className="space-y-4">
         {!copayExact && (
@@ -110,13 +110,13 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         {copayExact && (
           <>
             <div className={`grid gap-3 ${showIlaveColumn ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-              <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
-              <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
-              <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.visitSavings")} value={copayData.visit_copay_savings_try == null ? "—" : fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.rxSavings")} value={copayData.rx_copay_savings_try == null ? "—" : fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.totalSavings")} value={exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
               {showIlaveColumn && (
                 <KpiCard
                   label={t("billing.copay.ilaveUcretTotal")}
-                  value={fmtTRY2(ilaveTotal)}
+                  value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
                   valueColor="#71717A"
                 />
               )}

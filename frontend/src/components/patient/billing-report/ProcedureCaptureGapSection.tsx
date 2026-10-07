@@ -36,10 +36,10 @@ export function ProcedureCaptureGapSection({
     return null;
   }
 
-  const gapTotal = captureData.confirmed_gap_try ?? captureData.total_gap_try ?? 0;
+  const gapTotal = captureData.confirmed_gap_try ?? captureData.total_gap_try ?? null;
 
   return (
-    <BillingSectionShell id="billing-procedure-capture-gap" title={t("billing.procedureCaptureGap.title")} total={fmtTRY2(gapTotal)}>
+    <BillingSectionShell id="billing-procedure-capture-gap" title={t("billing.procedureCaptureGap.title")} total={gapTotal == null ? "—" : fmtTRY2(gapTotal)}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.procedureCaptureGap.scopeFootnote")}
       </p>

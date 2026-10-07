@@ -54,7 +54,7 @@ export default function RevenueViewSection({
       <div className="grid gap-6 sm:grid-cols-2">
         <KpiCard
           label={t("billing.views.revenue.kpiRecoverable")}
-          value={fmtTRY2(recoverable)}
+          value={recoverable == null ? "—" : fmtTRY2(recoverable)}
           valueColor={UPLIFT_COLOR}
         />
         <KpiCard

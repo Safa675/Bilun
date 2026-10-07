@@ -42,7 +42,7 @@ export function SessionUpliftSection({
   const reportedConfirmed = sessionData.confirmed_uplift_try;
   const confirmedUplift = reportedConfirmed ?? rowSum.total;
   const totalCoverage = reportedConfirmed != null ? "complete" : amountCoverage(rowSum);
-  const reviewUplift = sessionData.review_uplift_try ?? 0;
+  const reviewUplift = sessionData.review_uplift_try ?? null;
 
   return (
     <BillingSectionShell
@@ -63,7 +63,7 @@ export function SessionUpliftSection({
               })}
         </p>
       )}
-      {reviewUplift > 0 && (
+      {reviewUplift != null && reviewUplift > 0 && (
         <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.sessionUplift.reviewTotal")}: {fmtTRY2(reviewUplift)}
         </p>

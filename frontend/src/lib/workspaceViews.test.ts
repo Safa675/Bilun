@@ -237,6 +237,16 @@ describe("workspaceViews", () => {
         total_recoverable_try: 0,
       } as unknown as BillingActionReport),
     ).toBe(0);
+    expect(recoverableUplift({
+      ...report,
+      sgk_uplift_try: null,
+      total_recoverable_try: null,
+    } as BillingActionReport)).toBeNull();
+    expect(recoverableUplift({
+      ...report,
+      sgk_uplift_try: 0,
+      total_recoverable_try: 100,
+    } as BillingActionReport)).toBe(0);
   });
 });
 

@@ -163,8 +163,6 @@ export function amountCoverage(sum: Pick<KnownAmountsSum, "known" | "count">): A
 }
 
 /** SGK uplift shown on the revenue view (total fallback for partial reports). */
-export function recoverableUplift(report: BillingActionReport): number {
-  // BillingReportResponse defaults both amounts to 0.0 and total_recoverable_try is a
-  // required number, so the final `?? 0` cannot stand in for a missing amount.
-  return report.sgk_uplift_try ?? report.total_recoverable_try ?? 0;
+export function recoverableUplift(report: BillingActionReport): number | null {
+  return report.sgk_uplift_try ?? report.total_recoverable_try ?? null;
 }

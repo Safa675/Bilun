@@ -12,6 +12,7 @@ import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import { useConfig } from "@/lib/configContext";
 import { theme } from "@/lib/theme";
 import { ApiRequestError } from "@/lib/apiClient";
+import { amountCoverage, sumKnownAmounts } from "@/lib/workspaceViews";
 import {
   getPatientAlerts,
   getRevenueRecovery,
@@ -1066,13 +1067,8 @@ function RevenueRecoveryDashboard({
     (patient) => !cohortFilterActive || cohortPatientIds.has(patient.patient_id),
   );
 
-  // total_recoverable_try is a required number on every patient summary row (the
-  // backend always emits it, domains/sut.ts PatientRecoverySummaryRow), and the sort
-  // below relies on it, so this `?? 0` never stands in for a missing amount.
-  const filteredGrandTotal = summarySource.reduce(
-    (sum, patient) => sum + (patient.total_recoverable_try ?? 0),
-    0,
-  );
+  const filteredSum = sumKnownAmounts(summarySource.map((patient) => patient.total_recoverable_try));
+  const filteredGrandTotal = amountCoverage(filteredSum) === "complete" ? filteredSum.total : null;
 
   const displayData = cohortFilterActive
     ? {
@@ -1080,7 +1076,11 @@ function RevenueRecoveryDashboard({
         n_patients: summarySource.length,
         grand_total_recoverable: filteredGrandTotal,
         top_patients: [...summarySource]
-          .sort((a, b) => b.total_recoverable_try - a.total_recoverable_try)
+          .sort((a, b) => {
+            if (a.total_recoverable_try == null) return b.total_recoverable_try == null ? 0 : 1;
+            if (b.total_recoverable_try == null) return -1;
+            return b.total_recoverable_try - a.total_recoverable_try;
+          })
           .slice(0, 10),
       }
     : data;
@@ -1126,7 +1126,9 @@ function RevenueRecoveryDashboard({
         {[
           {
             label: recoveryPartial ? t("optimizer.kpis.partialRuleCalculatedTotal") : t("optimizer.kpis.ruleCalculatedTotal"),
-            value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.grand_total_recoverable : null),
+            value: cohortFilterActive && filteredGrandTotal == null
+              ? "—"
+              : fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.grand_total_recoverable : null),
             accent: true,
           },
           { label: t("optimizer.kpis.labSavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_lab_savings : null) },
@@ -1291,7 +1293,14 @@ function RevenueRecoveryDashboard({
                     </PatientTabLink>
                   </td>
                   <td className="num-col font-semibold text-[var(--text-primary)]">
-                    {fmtTRY(p.total_opportunity_try ?? p.total_recoverable_try)}
+                    {(() => {
+                      const total = p.total_opportunity_try ?? (
+                        p.total_recoverable_try != null && p.exemption_gap_try != null
+                          ? p.total_recoverable_try + p.exemption_gap_try
+                          : null
+                      );
+                      return total == null ? "—" : fmtTRY(total);
+                    })()}
                   </td>
                   <td>
                     <AlertBadge

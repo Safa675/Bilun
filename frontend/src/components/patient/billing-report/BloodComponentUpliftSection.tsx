@@ -25,13 +25,13 @@ export function BloodComponentUpliftSection({
     return null;
   }
 
-  const confirmedUplift = bloodData.confirmed_uplift_try ?? 0;
+  const confirmedUplift = bloodData.confirmed_uplift_try ?? null;
 
   return (
     <BillingSectionShell
       id="billing-blood-uplift"
       title={t("billing.bloodUplift.title")}
-      total={fmtTRY2(confirmedUplift)}
+      total={confirmedUplift == null ? "—" : fmtTRY2(confirmedUplift)}
     >
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.bloodUplift.scopeFootnote")}

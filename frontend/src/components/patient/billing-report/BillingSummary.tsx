@@ -25,23 +25,23 @@ export function BillingSummary({
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const copayExact = isExactOutput(billingReport.copay);
   const exemptionGapTotal = copayExemptionGapTotal(billingReport.copay);
-  const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal > 0;
+  const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal != null && exemptionGapTotal > 0;
   const showIlaveInfo = copayExact && copayShowsIlaveColumn(billingReport.copay);
-  const ilaveTotal = billingReport.copay.ilave_ucret_total_try ?? 0;
+  const ilaveTotal = billingReport.copay.ilave_ucret_total_try ?? null;
   const copayOnlyDecomposition =
     billingReport.copay.line_decomposition_status === "copay_only";
   const sgkUplift =
-    billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? 0;
-  const complianceAdjustment = billingReport.compliance_adjustment_try ?? 0;
-  const auditExposure = billingReport.audit_exposure_try ?? 0;
-  const captureGap = billingReport.capture_gap_try ?? 0;
-  const packageAdequacyReview = billingReport.package_adequacy_review_try ?? 0;
+    billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? null;
+  const complianceAdjustment = billingReport.compliance_adjustment_try;
+  const auditExposure = billingReport.audit_exposure_try;
+  const captureGap = billingReport.capture_gap_try;
+  const packageAdequacyReview = billingReport.package_adequacy_review_try;
   const medulaPlaybookCount = billingReport.medula_playbook_entry_count ?? 0;
   const drugIndicationCount = billingReport.drug_indication_violation_count ?? 0;
-  const showCompliance = reportHasTotals && complianceAdjustment > 0;
-  const showAuditExposure = reportHasTotals && auditExposure > 0;
-  const showCaptureGap = reportHasTotals && captureGap > 0;
-  const showPackageAdequacy = reportHasTotals && packageAdequacyReview > 0;
+  const showCompliance = reportHasTotals && complianceAdjustment != null && complianceAdjustment > 0;
+  const showAuditExposure = reportHasTotals && auditExposure != null && auditExposure > 0;
+  const showCaptureGap = reportHasTotals && captureGap != null && captureGap > 0;
+  const showPackageAdequacy = reportHasTotals && packageAdequacyReview != null && packageAdequacyReview > 0;
   const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
   const showDrugIndication = drugIndicationCount > 0;
   const extraSummaryStats = [
@@ -84,7 +84,7 @@ export function BillingSummary({
       >
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
-          value={reportHasTotals ? fmtTRY2(sgkUplift) : t("common.unavailable")}
+          value={reportHasTotals ? sgkUplift == null ? "—" : fmtTRY2(sgkUplift) : t("common.unavailable")}
         />
         {showCompliance && (
           <Stat
@@ -128,14 +128,14 @@ export function BillingSummary({
             showExemptionGap
               ? fmtTRY2(exemptionGapTotal)
               : copayExact
-                ? fmtTRY2(0)
+                ? exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal)
                 : t("common.unavailable")
           }
         />
         {showIlaveInfo && (
           <Stat
             label={t("billing.summary.ilaveUcretInfo")}
-            value={fmtTRY2(ilaveTotal)}
+            value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
           />
         )}
         <Stat

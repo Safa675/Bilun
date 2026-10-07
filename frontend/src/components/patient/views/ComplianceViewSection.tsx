@@ -74,7 +74,7 @@ export default function ComplianceViewSection({
   const billed = complianceBilledAtRiskSummary(billingReport);
   const billedComplete = billed.known === billed.count;
   const billedNone = billed.known === 0 && billed.count > 0;
-  const auditExposure = billingReport.audit_exposure_try ?? 0;
+  const auditExposure = billingReport.audit_exposure_try ?? null;
   const effectivePatientId = patientId || billingReport.patient_id;
   const coverage = buildComplianceCoverage(billingReport, t);
 
@@ -87,7 +87,7 @@ export default function ComplianceViewSection({
       <div className="grid gap-6 sm:grid-cols-3">
         <KpiCard
           label={t("billing.views.compliance.kpiRisk")}
-          value={fmtTRY2(auditExposure)}
+          value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
           valueColor={RISK_COLOR}
         />
         <KpiCard

@@ -1,4 +1,5 @@
 import { matchingBillReport } from "./scopedPatientReport";
+import { copayExemptionGapTotal } from "./billingReportFields";
 import type {
   BillingActionReport,
   PatientOptimization,
@@ -13,16 +14,16 @@ export interface VisibleBillingSnapshot {
   scope: "patient" | "bill";
   patient_id: string;
   claim_id?: string;
-  sgk_uplift_try?: number;
-  compliance_adjustment_try?: number;
-  audit_exposure_try?: number;
-  capture_gap_try?: number;
-  exemption_gap_try?: number;
-  ilave_ucret_total_try?: number;
+  sgk_uplift_try?: number | null;
+  compliance_adjustment_try?: number | null;
+  audit_exposure_try?: number | null;
+  capture_gap_try?: number | null;
+  exemption_gap_try?: number | null;
+  ilave_ucret_total_try?: number | null;
   line_decomposition_status?: BillingActionReport["copay"]["line_decomposition_status"];
-  package_adequacy_review_try?: number;
+  package_adequacy_review_try?: number | null;
   medula_playbook_entry_count?: number;
-  total_recoverable_try: number;
+  total_recoverable_try: number | null;
   priority: BillingActionReport["priority"];
   exactness_status?: BillingActionReport["exactness_status"];
 }
@@ -32,14 +33,9 @@ export function buildVisibleBillingSnapshot(
 ): VisibleBillingSnapshot {
   const isBillScope = report.scope === "bill" && Boolean(report.claim_id);
   const copayExact = report.copay?.exactness_status === "exact";
-  // CopayOptimization defaults all three amounts to 0.0 and types visit/rx as required
-  // numbers, so these `?? 0` cannot stand in for a missing amount (an unknown gap
-  // is simply not sent: showExemptionGap also requires copayExact and a positive sum).
-  const exemptionGapTotal =
-    report.copay?.patient_copay_waived_total_try ??
-    (report.copay?.visit_copay_savings_try ?? 0) + (report.copay?.rx_copay_savings_try ?? 0);
+  const exemptionGapTotal = report.copay ? copayExemptionGapTotal(report.copay) : null;
   const showExemptionGap =
-    copayExact && report.copay?.is_exempt && exemptionGapTotal > 0;
+    copayExact && report.copay?.is_exempt && exemptionGapTotal != null && exemptionGapTotal > 0;
   const showIlaveInfo = copayExact && (report.copay?.ilave_ucret_total_try ?? 0) > 0 &&
     report.copay?.line_decomposition_status === "exact";
 
