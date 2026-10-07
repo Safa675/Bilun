@@ -6,6 +6,7 @@ normalizer run unchanged. Only public proof identities use fixture Git objects.
 
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import json
@@ -173,6 +174,10 @@ def test_real_cache_http_chain_supports_complete_old_pair(raw_transport_case):
         assert package.raw_reports[PATIENT_PATH] == case["pair"][side]["tables"][REPORT_TABLES[0]]["P1"]
         assert "lab" not in package.raw_reports[PATIENT_PATH]
         assert "lab" in package.complete_reports[PATIENT_PATH]
+        for reports in (package.raw_reports, package.complete_reports, package.draft_reports):
+            assert reports[PATIENT_PATH]["patient_id"] == "P1"
+            assert "claim_id" not in reports[PATIENT_PATH]
+            assert "scope" not in reports[PATIENT_PATH]
 
 
 def test_original_five_cache_and_source_worker_keep_existing_bill_shape(raw_transport_case):
@@ -356,6 +361,26 @@ def test_source_worker_rejects_pinned_but_changed_bill_route_assignments(raw_tra
     code_sha = fixture_git_commit(case["repository"])
     # The changed public source really matches its Git identity. Failure must be
     # the unsupported route projection, rather than an invented source SHA.
+    rehearsal._source_binding(case["repository"], code_sha)
+    raw = {
+        PATIENT_PATH: copy.deepcopy(case["pair"]["candidate"]["tables"][REPORT_TABLES[0]]["P1"]),
+        BILL_PATH: copy.deepcopy(case["pair"]["candidate"]["tables"][REPORT_TABLES[1]]["P1::C1"]),
+    }
+    with pytest.raises(ValueError, match="Pinned isolated report serialization failed"):
+        _project(case, raw, code_sha=code_sha)
+
+
+def test_source_worker_rejects_pinned_but_repeated_bill_route_identity(raw_transport_case):
+    case = raw_transport_case
+    route = case["repository"] / "src/bilun/api/routes/billing.py"
+    tree = ast.parse(route.read_text())
+    bill_route = next(node for node in tree.body
+                      if isinstance(node, ast.FunctionDef) and node.name == "get_bill_billing_report")
+    cache_hit = next(node for node in ast.walk(bill_route)
+                     if isinstance(node, ast.If) and ast.unparse(node.test) == "report is not None")
+    bill_route.body.append(copy.deepcopy(cache_hit))
+    route.write_text(ast.unparse(tree) + "\n")
+    code_sha = fixture_git_commit(case["repository"])
     rehearsal._source_binding(case["repository"], code_sha)
     raw = {
         PATIENT_PATH: copy.deepcopy(case["pair"]["candidate"]["tables"][REPORT_TABLES[0]]["P1"]),
