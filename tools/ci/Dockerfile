@@ -23,7 +23,9 @@ ENV PATH="/opt/hostedtoolcache/Python/3.13.15/x64/bin:/opt/node/bin:${PATH}" \
     LD_LIBRARY_PATH=/opt/hostedtoolcache/Python/3.13.15/x64/lib \
     HOME=/workspace/home
 COPY requirements-ci.lock /opt/requirements-ci.lock
-RUN python -m pip download --require-hashes -r /opt/requirements-ci.lock -d /opt/wheels && \
+RUN ln -sfn python3.13 /opt/hostedtoolcache/Python/3.13.15/x64/bin/python && \
+    ln -sfn python3.13 /opt/hostedtoolcache/Python/3.13.15/x64/bin/python3 && \
+    python -m pip download --require-hashes -r /opt/requirements-ci.lock -d /opt/wheels && \
     useradd --uid 1001 --create-home --shell /bin/bash ci && \
     mkdir -p /workspace /runner && chown ci:ci /workspace /runner
 COPY tools/ci/runner-entrypoint.sh /opt/runner-entrypoint.sh
