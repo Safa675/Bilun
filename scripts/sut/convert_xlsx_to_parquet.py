@@ -23,15 +23,20 @@ import hashlib
 import json
 import os
 import re
+import sys
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
-from scripts.sut._common import find_latest_consolidated_sut_dir
+import polars as pl
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from scripts.sut._common import find_latest_consolidated_sut_dir
+
 DEFAULT_INPUT_DIR = None
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "gazette"
 RAW_DATA_ROOT = PROJECT_ROOT / "raw data"
@@ -92,6 +97,10 @@ def parse_args() -> argparse.Namespace:
         "--overwrite-manifest",
         action="store_true",
         help="Overwrite existing version_manifest.parquet",
+    )
+    parser.add_argument(
+        "--defer-state", action="store_true",
+        help="Leave ingest_state.json untouched for the post-pipeline completion gate",
     )
     return parser.parse_args()
 
@@ -236,6 +245,59 @@ def output_path_for_sheet(
     )
 
 
+def stored_path(path: Path) -> str:
+    """Use repository-relative provenance, retaining external source identities."""
+    resolved = path.resolve()
+    return str(resolved.relative_to(PROJECT_ROOT)) if resolved.is_relative_to(PROJECT_ROOT) else str(resolved)
+
+
+def source_identity(value: str) -> str:
+    """Normalize old runner checkout prefixes, preserving the complete raw-data path."""
+    path = Path(value)
+    if "raw data" in path.parts:
+        return str(Path(*path.parts[path.parts.index("raw data"):]))
+    return str(path)
+
+
+def frames_equal(left: pd.DataFrame, right: pd.DataFrame, *, raw: bool = False) -> bool:
+    """Compare decoded schema, ordered values and provenance, never parquet encoding."""
+    frames = []
+    for frame in (left, right):
+        frame = frame.copy()
+        if raw:
+            frame = frame.drop(columns=["__ingested_at"], errors="ignore")
+            if "__source_file" in frame:
+                frame["__source_file"] = frame["__source_file"].map(source_identity)
+        frames.append(pl.from_pandas(frame))
+    return frames[0].schema == frames[1].schema and frames[0].equals(frames[1])
+
+
+def write_parquet_if_changed(frame: pd.DataFrame, path: Path, *, raw: bool = False) -> bool:
+    if path.exists() and frames_equal(pd.read_parquet(path), frame, raw=raw):
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".parquet.tmp")
+    frame.to_parquet(tmp, index=False)
+    os.replace(tmp, path)
+    return True
+
+
+def refresh_manifest_state(output_dir: Path, manifest: pd.DataFrame) -> None:
+    """Reconcile durable manifest metadata; conversion alone never completes a package."""
+    state_path = output_dir / "ingest_state.json"
+    state = json.loads(state_path.read_text()) if state_path.exists() else {"pipeline_version": 2}
+    updated = dict(state, manifest_row_count=len(manifest), manifest_sha256=hashlib.sha256(
+        (output_dir / "version_manifest.parquet").read_bytes()).hexdigest()[:16])
+    if updated == state:
+        return
+    tmp = state_path.with_suffix(".json.tmp")
+    with tmp.open("w") as stream:
+        json.dump(updated, stream, indent=2, ensure_ascii=False)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(tmp, state_path)
+
+
 def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult]:
     annex_code = parse_annex_code(xlsx_path)
     annex_family = parse_annex_family(annex_code)
@@ -257,7 +319,7 @@ def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult
                 annex_code=annex_code,
                 annex_family=annex_family,
                 effective_date=effective_date,
-                source_file=str(xlsx_path),
+                source_file=stored_path(xlsx_path),
                 sheet_name=sheet_name,
                 is_mulga=mulga,
             )
@@ -270,14 +332,11 @@ def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult
                 source_file=xlsx_path,
                 sheet_name=sheet_name,
             )
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            parquet_df.to_parquet(out_path, index=False)
+            write_parquet_if_changed(parquet_df, out_path, raw=True)
 
             results.append(
                 SheetResult(
-                    source_file=str(
-                        xlsx_path.resolve().relative_to(PROJECT_ROOT)
-                    ),
+                    source_file=stored_path(xlsx_path),
                     annex_code=annex_code,
                     annex_family=annex_family,
                     sheet_name=sheet_name,
@@ -285,9 +344,7 @@ def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult
                     is_mulga=mulga,
                     row_count=len(parquet_df),
                     column_count=len(parquet_df.columns),
-                    parquet_path=str(
-                        out_path.resolve().relative_to(PROJECT_ROOT)
-                    ),
+                    parquet_path=stored_path(out_path),
                 )
             )
     finally:
@@ -311,7 +368,7 @@ def build_manifest(results: list[SheetResult]) -> pd.DataFrame:
         }
         for r in results
     ]
-    manifest = pd.DataFrame(rows)
+    manifest = pd.DataFrame(rows, columns=list(SheetResult.__dataclass_fields__))
     if not manifest.empty:
         manifest = manifest.sort_values(
             [
@@ -326,14 +383,15 @@ def build_manifest(results: list[SheetResult]) -> pd.DataFrame:
     return manifest
 
 
-def main() -> None:
+def main() -> int:
     args = parse_args()
-    default_input = find_latest_consolidated_sut_dir(RAW_DATA_ROOT)
-    input_dir = Path(args.input_dir) if args.input_dir else default_input
+    input_dir = Path(args.input_dir) if args.input_dir else find_latest_consolidated_sut_dir(RAW_DATA_ROOT)
     output_dir = Path(args.output_dir)
 
     if input_dir is None or not input_dir.exists():
         raise FileNotFoundError(f"Input directory does not exist: {input_dir}")
+    if args.limit is not None and args.limit < 0:
+        raise ValueError("--limit cannot be negative")
 
     # Include both .xlsx and .xls files
     xlsx_files = sorted(
@@ -343,6 +401,9 @@ def main() -> None:
         xlsx_files = [p for p in xlsx_files if not is_mulga_path(p)]
     if args.limit is not None:
         xlsx_files = xlsx_files[: args.limit]
+    if not xlsx_files:
+        print("No eligible workbooks; manifest and ingest state remain unchanged.")
+        return 1
 
     print("=" * 72)
     print("SUT XLSX -> Parquet Converter")
@@ -358,6 +419,8 @@ def main() -> None:
         print(f"[{idx}/{len(xlsx_files)}] {file_path.name}")
         try:
             sheet_results = convert_one_workbook(file_path, output_dir)
+            if not sheet_results:
+                raise ValueError("Workbook has no non-empty sheets")
             all_results.extend(sheet_results)
             print(f"  -> {len(sheet_results)} sheet(s) written")
         except Exception as exc:
@@ -366,56 +429,24 @@ def main() -> None:
 
     manifest = build_manifest(all_results)
     manifest_path = output_dir / "version_manifest.parquet"
+    if failed:
+        for src, error in failed:
+            print(f"Conversion failed: {src}: {error}")
+        return 1
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if manifest_path.exists() and not args.overwrite_manifest:
         existing = pd.read_parquet(manifest_path)
         merged = pd.concat([existing, manifest], ignore_index=True)
+        order = merged["parquet_path"].drop_duplicates().tolist()
         merged = merged.drop_duplicates(subset=["parquet_path"], keep="last")
-        # Write to a temp file then atomically rename, so a crash or
-        # concurrent run can't leave a half-written manifest at the final path.
-        tmp_path = manifest_path.with_suffix(".parquet.tmp")
-        merged.to_parquet(tmp_path, index=False)
-        os.replace(tmp_path, manifest_path)
-        manifest_rows = len(merged)
+        manifest = merged.set_index("parquet_path").loc[order].reset_index()[existing.columns]
+    write_parquet_if_changed(manifest, manifest_path)
+    manifest_rows = len(manifest)
+    if not args.defer_state:
+        refresh_manifest_state(output_dir, manifest)
     else:
-        tmp_path = manifest_path.with_suffix(".parquet.tmp")
-        manifest.to_parquet(tmp_path, index=False)
-        os.replace(tmp_path, manifest_path)
-        manifest_rows = len(manifest)
-
-    # ── Atomic ingest-state write ────────────────────────────────────
-    # Only update ingest_state.json after the full manifest is durably
-    # committed. Uses the same temp-then-rename pattern as the manifest.
-    # On a mid-run crash, state still points at the OLD version → the
-    # next run retries cleanly.
-    try:
-        manifest_bytes = manifest_path.read_bytes()
-        manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()[:16]
-        latest_sut_dir = find_latest_consolidated_sut_dir(RAW_DATA_ROOT)
-        latest_folder = latest_sut_dir.name if latest_sut_dir else ""
-        latest_date = (
-            latest_folder.split("-")[0].replace(".", "-")
-            if latest_folder
-            else ""
-        )
-        state = {
-            "last_ingested_folder": latest_folder,
-            "last_ingested_date": latest_date,
-            "last_ingested_at": dt.datetime.now(dt.UTC).isoformat(),
-            "manifest_row_count": manifest_rows,
-            "manifest_sha256": manifest_sha,
-            "pipeline_version": 2,
-        }
-        state_path = output_dir / "ingest_state.json"
-        with open(state_path.with_suffix(".json.tmp"), "w") as sf:
-            json.dump(state, sf, indent=2, ensure_ascii=False)
-            sf.flush()
-            os.fsync(sf.fileno())
-        os.replace(state_path.with_suffix(".json.tmp"), state_path)
-        print(f"Ingest state written: {state_path}")
-    except Exception as exc:
-        print(f"WARNING: Failed to write ingest_state.json: {exc}")
+        print("Ingest state deferred to the post-pipeline completion gate.")
 
     print("\n" + "=" * 72)
     print("CONVERSION COMPLETE")
@@ -429,7 +460,8 @@ def main() -> None:
             print(f"  - {src}: {err}")
     else:
         print("Failures: 0")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

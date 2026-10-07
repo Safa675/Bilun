@@ -9,6 +9,7 @@ NEW / REMOVED.
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 import polars as pl
@@ -308,3 +309,200 @@ def test_main_preserves_actual_totals_with_duplicate_stable_rows(tmp_path, monke
     }
     assert len(payload["rows"]) == 3
     assert {row["status"] for row in payload["rows"]} == {"AMENDED"}
+
+
+def _run_report(tmp_path, monkeypatch, old, new, *, date_tag="2026-10-02", legacy_proof=None):
+    old_path, new_path = tmp_path / "old.parquet", tmp_path / "new.parquet"
+    old.write_parquet(old_path)
+    new.write_parquet(new_path)
+    output_dir = tmp_path / "output"
+    argv = [
+        "sut_clause_diff", str(old_path), str(new_path),
+        "--new-date", date_tag, "--output-dir", str(output_dir),
+    ]
+    if legacy_proof is not None:
+        argv.extend(["--legacy-input-fingerprints", str(legacy_proof)])
+    monkeypatch.setattr("sys.argv", argv)
+    return sut_clause_diff.main()
+
+
+def _report_pair(tmp_path):
+    output = tmp_path / "output"
+    return output / "2026-10-02_clause_diff.json", output / "2026-10-02_clause_diff.md"
+
+
+def test_new_report_records_semantic_input_fingerprints(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    assert _run_report(tmp_path, monkeypatch, _amended_corpus("old", 13), _amended_corpus("new", 29)) == 0
+    json_path, md_path = _report_pair(tmp_path)
+    payload = json.loads(json_path.read_text())
+    assert payload["summary"]["amended"] == 42
+    assert len(payload["rows"]) == 42
+    assert md_path.is_file()
+    hashes = payload["input_fingerprints"]
+    assert hashes["algorithm"] == "sha256-clause-diff-inputs-v1"
+    assert len(hashes["old"]) == len(hashes["new"]) == 64
+    assert hashes["old"] != hashes["new"]
+
+
+def test_same_comparison_rerun_preserves_report_bytes(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    original = [p.read_bytes() for p in pair]
+    # The comparison identity must survive harmless serialization/row order changes.
+    assert _run_report(tmp_path, monkeypatch, old.reverse(), new.reverse()) == 0
+    assert [p.read_bytes() for p in pair] == original
+
+
+def test_self_comparison_preserves_original_history_and_summary(tmp_path, monkeypatch):
+    gh_output = tmp_path / "github-output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(gh_output))
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    original = [p.read_bytes() for p in pair]
+    gh_output.write_text("")
+    assert _run_report(tmp_path, monkeypatch, new, new) == 0
+    assert [p.read_bytes() for p in pair] == original
+    assert "42 amended corpus rows" in gh_output.read_text()
+    assert "0 amended corpus rows" not in gh_output.read_text()
+
+
+def test_different_transition_cannot_overwrite_report(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    original = [p.read_bytes() for p in pair]
+    with pytest.raises(ValueError, match="Refusing to overwrite historical clause report"):
+        _run_report(tmp_path, monkeypatch, old, _amended_corpus("different", 29))
+    assert [p.read_bytes() for p in pair] == original
+
+
+def test_unrelated_self_comparison_cannot_reuse_report(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    _run_report(tmp_path, monkeypatch, _amended_corpus("old", 13), _amended_corpus("new", 29))
+    unrelated = _amended_corpus("different", 29)
+    with pytest.raises(ValueError, match="source transition differs"):
+        _run_report(tmp_path, monkeypatch, unrelated, unrelated)
+
+
+@pytest.mark.parametrize("missing_suffix", [".json", ".md"])
+def test_missing_report_pair_fails_without_repairing_history(tmp_path, monkeypatch, missing_suffix):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    missing = next(p for p in pair if p.suffix == missing_suffix)
+    surviving = next(p for p in pair if p.suffix != missing_suffix)
+    original = surviving.read_bytes()
+    missing.unlink()
+    with pytest.raises(ValueError, match="Incomplete clause report pair"):
+        _run_report(tmp_path, monkeypatch, old, new)
+    assert not missing.exists()
+    assert surviving.read_bytes() == original
+
+
+def _remove_input_fingerprints(json_path, *, with_proof=False):
+    payload = json.loads(json_path.read_text())
+    fingerprints = payload.pop("input_fingerprints")
+    json_path.write_text(json.dumps(payload))
+    if with_proof:
+        proof_path = json_path.with_name("legacy-input-fingerprints.json")
+        proof_path.write_text(json.dumps({
+            "report_sha256": hashlib.sha256(json_path.read_bytes()).hexdigest(),
+            "input_fingerprints": fingerprints,
+        }))
+        return proof_path
+
+
+def test_legacy_self_comparison_preserves_42_row_history(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    new = _amended_corpus("new", 29).with_columns(pl.lit("2026-10-02").alias("source_effective_date"))
+    _run_report(tmp_path, monkeypatch, _amended_corpus("old", 13), new)
+    pair = _report_pair(tmp_path)
+    proof = _remove_input_fingerprints(pair[0], with_proof=True)
+    original = [p.read_bytes() for p in pair]
+    capsys.readouterr()
+    assert _run_report(tmp_path, monkeypatch, new, new, legacy_proof=proof) == 0
+    assert [p.read_bytes() for p in pair] == original
+    output = capsys.readouterr().out
+    assert "using verified input fingerprints" in output
+    assert "42 amended corpus rows" in output
+
+
+def test_legacy_self_comparison_requires_prior_input_proof(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    new = _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, _amended_corpus("old", 13), new)
+    pair = _report_pair(tmp_path)
+    _remove_input_fingerprints(pair[0])
+    original = [p.read_bytes() for p in pair]
+    with pytest.raises(ValueError, match="cannot be verified"):
+        _run_report(tmp_path, monkeypatch, new, new)
+    assert [p.read_bytes() for p in pair] == original
+
+
+def test_legacy_self_comparison_rejects_changed_recorded_new_rows(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    new = _amended_corpus("new", 29).with_columns(pl.lit("2026-10-02").alias("source_effective_date"))
+    _run_report(tmp_path, monkeypatch, _amended_corpus("old", 13), new)
+    pair = _report_pair(tmp_path)
+    proof = _remove_input_fingerprints(pair[0], with_proof=True)
+    original = [p.read_bytes() for p in pair]
+    changed = new.with_columns(pl.lit("unrelated text").alias("in_force_text"))
+    with pytest.raises(ValueError, match="cannot be verified"):
+        _run_report(tmp_path, monkeypatch, changed, changed, legacy_proof=proof)
+    assert [p.read_bytes() for p in pair] == original
+
+
+def test_legacy_same_transition_rerun_is_byte_preserving(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    proof = _remove_input_fingerprints(pair[0], with_proof=True)
+    original = [p.read_bytes() for p in pair]
+    assert _run_report(tmp_path, monkeypatch, old.reverse(), new.reverse(), legacy_proof=proof) == 0
+    assert [p.read_bytes() for p in pair] == original
+
+
+@pytest.mark.parametrize("change", ["stable_body", "duplicate_multiplicity"])
+def test_legacy_proof_rejects_changed_stable_rows_with_same_total(tmp_path, monkeypatch, change):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    stable = _amended_corpus("stable", 2)
+    old = pl.concat([stable, _amended_corpus("old", 13)])
+    new = pl.concat([stable, _amended_corpus("new", 29)])
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    proof = _remove_input_fingerprints(pair[0], with_proof=True)
+    original = [p.read_bytes() for p in pair]
+    if change == "stable_body":
+        changed = new.with_columns(
+            pl.when(pl.col("clause_id") == "stable-0")
+            .then(pl.lit("changed stable body"))
+            .otherwise(pl.col("in_force_text")).alias("in_force_text")
+        )
+    else:
+        changed = pl.concat([stable.head(1), stable.head(1), _amended_corpus("new", 29)])
+    assert changed.height == new.height
+    with pytest.raises(ValueError, match="cannot be verified"):
+        _run_report(tmp_path, monkeypatch, changed, changed, legacy_proof=proof)
+    assert [p.read_bytes() for p in pair] == original
+
+
+def test_legacy_proof_is_bound_to_existing_report_bytes(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    old, new = _amended_corpus("old", 13), _amended_corpus("new", 29)
+    _run_report(tmp_path, monkeypatch, old, new)
+    pair = _report_pair(tmp_path)
+    proof = _remove_input_fingerprints(pair[0], with_proof=True)
+    payload = json.loads(pair[0].read_text())
+    payload["generated_at"] = "different historical record"
+    pair[0].write_text(json.dumps(payload))
+    original = [p.read_bytes() for p in pair]
+    with pytest.raises(ValueError, match="proof does not match"):
+        _run_report(tmp_path, monkeypatch, new, new, legacy_proof=proof)
+    assert [p.read_bytes() for p in pair] == original

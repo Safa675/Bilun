@@ -10,11 +10,13 @@ Provides:
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 
 def _data_cols(df: pd.DataFrame) -> list[str]:
@@ -24,7 +26,7 @@ def _data_cols(df: pd.DataFrame) -> list[str]:
 
 def _safe_str(val: Any) -> str:
     """Convert value to stripped string, treating None/NaN as ''."""
-    if val is None or (isinstance(val, float) and pd.isna(val)):
+    if val is None or val is pd.NA or val is pd.NaT or (isinstance(val, float) and pd.isna(val)):
         return ""
     return str(val).strip()
 
@@ -62,9 +64,30 @@ def _is_mulga_parquet(fp: Path) -> bool:
     return "MULGA" in folded
 
 
-def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
+def _source_package_is_future(fp: Path, as_of: dt.date) -> bool:
+    """Check the dated source package even for an undated annex filename."""
+    if "__source_file" not in pq.read_schema(fp).names:
+        return False
+    sources = pd.read_parquet(fp, columns=["__source_file"])["__source_file"]
+    for source in sources.dropna().unique():
+        for part in Path(str(source)).parts:
+            if not part.endswith(_CONSOLIDATED_SUT_DIR_SUFFIX):
+                continue
+            match = _DATE_PREFIX_RE.match(part)
+            if match is not None:
+                package_date = dt.date(*(int(value) for value in match.groups()))
+                if package_date > as_of:
+                    return True
+    return False
+
+
+def _find_raw_parquet(
+    parquet_root: Path, annex_code: str, *, as_of: dt.date | None = None
+) -> Path | None:
     """Walk annex=<CODE>/ dir tree and return the latest .parquet file found.
 
+    Files after ``as_of`` (UTC today by default), including undated files
+    from a future consolidated source package, are not active candidates.
     Files are sorted by effective_date (YYYY-MM-DD prefix). MÜLGA
     (repealed) candidates are excluded up front: for EK-4/4A/4B/4C the
     current source converts to ``effective_date=unknown`` (no date in the
@@ -84,6 +107,7 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
     annex_dir = parquet_root / "raw" / f"annex={annex_code}"
     if not annex_dir.exists():
         return None
+    cutoff = as_of if as_of is not None else dt.datetime.now(dt.UTC).date()
 
     def _date_sort_key(fp: Path) -> str:
         # Extract effective_date from path components: .../effective_date=YYYY-MM-DD/...
@@ -92,7 +116,13 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
                 return part.removeprefix("effective_date=")
         return ""
 
-    all_parquets = list(annex_dir.rglob("*.parquet"))
+    all_parquets = []
+    for fp in sorted(annex_dir.rglob("*.parquet")):
+        effective_date = _date_sort_key(fp)
+        if effective_date and dt.date.fromisoformat(effective_date) > cutoff:
+            continue
+        if not _source_package_is_future(fp, cutoff):
+            all_parquets.append(fp)
     # Prefer current (non-MÜLGA) partitions; fall back to MÜLGA only when
     # an annex has nothing else, preserving resolvability.
     pool = [fp for fp in all_parquets if not _is_mulga_parquet(fp)] or all_parquets
@@ -106,9 +136,11 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
     return unknown[-1] if unknown else None
 
 
-def _read_raw(parquet_root: Path, annex_code: str) -> pd.DataFrame | None:
+def _read_raw(
+    parquet_root: Path, annex_code: str, *, as_of: dt.date | None = None
+) -> pd.DataFrame | None:
     """Read raw parquet for an annex, returning None if not found."""
-    fp = _find_raw_parquet(parquet_root, annex_code)
+    fp = _find_raw_parquet(parquet_root, annex_code, as_of=as_of)
     if fp is None:
         return None
     return pd.read_parquet(fp)

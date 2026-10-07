@@ -1593,3 +1593,25 @@ Consumer report SHA256 b273b9b6a972d5e963a55bda0e5731b35c1b06d7ff6bcf491c63d414e
 Root compiler --check134byte-identical, drugparity23/23zeroissues, globalRuffsrc/scripts ve gitdiff--check gerçekten exit0. Tek son bağımsız pytest174passed/2mevcutwarnings/30.11s, exit0: CI484 original41failurenode (kanıtlı yeniden adlandırmalar dahil), helper/dental/pipeline negatives, historicalgolden/currentrejection, kaynak/coverageclosure ve11retrieval testi. JUnit sayımıyla ayrışan dört index initialization testi bu174 sayısında yoktur; yalnız bu eksik dört test ayrıca gerçekten4passed/0.20s ile tamamlandı. Son retrieval kapsamı11+4 ayrı koşudur. Independentfinalreadonly467/60/134/150hashpin,58-parentdeepcatalogcomparison,36family/date ve12family/27assetsourceclosure assertions exit0. Full hosted CI yenihead için henüz çalışmadı; bu174 sonuç CI484 history41fail/8239pass veya fullsuite sonucu ile toplanmaz. Merge/deploy/VPS yapılmadı.
 
 CI repair bağımsız final code/data review: P1/P2 bulgu yok; post-test pin/dış hash/diff kontrolleri geçti. Tam actual komutlar ve sonuçlar task-2/independent-ci484-final-commands.json, review makbuzu task-2/independent-ci484-review-result.json içinde. Hosted yenihead fullCI sonucu bu incelemeye dahil değildir.
+
+## Task: Exact-source EK-4A and idempotent SUT ingestion
+
+### Goal
+Publish a small verified draft PR repairing the producer and metadata while preserving clause history and admitting only exact-source EK-4A data.
+
+### Subtasks
+- [x] Verify current remote main and closed PR128 in a clean isolated worktree.
+- [x] Prove stale-state/self-comparison root cause and write exact path plan in plans/update/2026-10-05-ek4a-ingest-idempotence.md.
+- [x] Complete official-source decoded schema/key/history/name/discount/date comparison; record final exact source and partition before writing.
+- [x] Preserve historical dated clause reports with positive, negative and idempotent rerun tests.
+- [x] Repair exact-input completion and future-date handling without claiming full ingestion of partial source capture.
+- [x] Admit exact current/MÜLGA EK-4A source/raw and honest partial manifest/state; preserve runtime curated bytes per approved deferral.
+- [x] Run focused regression and canonical artifact checks.
+- [ ] Open new draft PR, finish independent exact-head review and hosted full CI.
+
+### Out of Scope
+Main writes, merge, force push, deploy/VPS, secrets/auth setup, sourceauthority/clinical catalog/coverage edits, new payment or clinical interpretation, and duplicate local full-suite runs.
+
+### Review
+
+Final combined focused gate after the independent fetch finding: 250 passed in 22.15s. Global Ruff, compiler --check (134 byte-identical artifacts), drug manifest parity (23/23, zero issues) and git diff --check passed. Current main remains 3d29a1fe. Source/raw/manifest/state rerun preserves all six admitted file bytes; runtime EK-4A 8078, corpus 8413 and historical clause reports remain byte-identical to base. Official future markers prevent pre-October-10 curation; current catalog promotion and full 318-workbook October reconciliation are explicitly deferred. Draft PR162 is open. Independent review reproduced the exact source/raw and historical report proof; its fetch process-death P2 is fixed by atomic publication, with four abrupt-exit and two concurrent-publication regressions. Revised exact-head review and hosted full CI remain pending; no laptop full-suite repeat.

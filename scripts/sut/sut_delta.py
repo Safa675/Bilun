@@ -23,6 +23,8 @@ Two delta strategies:
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import os
 import sys
@@ -136,7 +138,6 @@ def compute_snapshot_delta(annex: str, filename: str, old_date: str, new_date: s
     # Cast all columns to string for stable hashing
     str_cols = [pl.col(c).cast(pl.Utf8) for c in df.columns]
     df_str = df.select(str_cols)
-    import hashlib
     content_hash = hashlib.md5(df_str.write_csv().encode()).hexdigest()[:12]
 
     return {
@@ -220,12 +221,60 @@ def format_summary(deltas: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def main() -> int:
-    if len(sys.argv) < 3:
-        print("Usage: sut_delta.py <OLD_DATE> <NEW_DATE>", file=sys.stderr)
-        return 1
+def _catalog_fingerprints() -> dict:
+    """Typed current catalog inputs; legacy CSV hashes cannot prove their dtypes."""
+    hashes = {}
+    for path in sorted(CURATED_DIR.glob("*.parquet")):
+        if path.name in _SKIP_PARQUETS:
+            continue
+        frame = pl.read_parquet(path)
+        columns = sorted(frame.columns)
+        # JSON alone maps NaN/infinities to null; retain their distinct spellings.
+        serialized = frame.select(columns).with_columns(
+            pl.col(c).cast(pl.String) for c in columns if frame.schema[c].is_float()
+        )
+        content = json.dumps({
+            "schema": [(c, str(frame.schema[c])) for c in columns],
+            "rows": serialized.sort(columns).write_json(),
+        }, ensure_ascii=False, separators=(",", ":"))
+        hashes[path.name] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    return {"algorithm": "sha256-typed-catalog-inputs-v1", "catalogs": hashes}
 
-    old_date, new_date = sys.argv[1], sys.argv[2]
+
+def _reuse_existing_delta(output: Path, payload: dict, legacy_proof: Path | None) -> dict | None:
+    if not output.exists():
+        return None
+    existing = json.loads(output.read_text(encoding="utf-8"))
+    if not isinstance(existing, dict) or not isinstance(existing.get("catalogs"), list):
+        raise ValueError(f"Invalid existing delta report: {output}")
+    stored = existing.get("input_fingerprints")
+    legacy = stored is None
+    if legacy and legacy_proof is not None:
+        proof = json.loads(legacy_proof.read_text(encoding="utf-8"))
+        if (
+            not isinstance(proof, dict)
+            or proof.get("report_sha256") != hashlib.sha256(output.read_bytes()).hexdigest()
+        ):
+            raise ValueError(f"Legacy input proof does not match the delta report: {legacy_proof}")
+        stored = proof.get("input_fingerprints")
+    same_dates = all(existing.get(k) == payload[k] for k in ("old_date", "new_date"))
+    if same_dates and stored == payload["input_fingerprints"]:
+        if legacy:
+            print("Preserving legacy delta history using verified typed input fingerprints.")
+        return existing
+    raise ValueError(
+        f"Refusing to overwrite historical delta report for {payload['new_date']}: "
+        "the source transition differs or cannot be verified."
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Compare SUT catalogs without replacing dated history.")
+    parser.add_argument("old_date")
+    parser.add_argument("new_date")
+    parser.add_argument("--legacy-input-fingerprints", type=Path, default=None)
+    args = parser.parse_args()
+    old_date, new_date = args.old_date, args.new_date
 
     deltas = compute_all_deltas(old_date, new_date)
 
@@ -233,14 +282,20 @@ def main() -> int:
         "old_date": old_date,
         "new_date": new_date,
         "generated_at": date.today().isoformat(),
+        "input_fingerprints": _catalog_fingerprints(),
         "catalogs": deltas,
     }
 
     DELTA_DIR.mkdir(parents=True, exist_ok=True)
     output = DELTA_DIR / f"{new_date}_delta.json"
-    output.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False, default=str)
-    )
+    existing = _reuse_existing_delta(output, summary, args.legacy_input_fingerprints)
+    if existing is None:
+        output.write_text(
+            json.dumps(summary, indent=2, ensure_ascii=False, default=str)
+        )
+    else:
+        deltas = existing["catalogs"]
+        print(f"Preserved existing delta report for {new_date}.")
 
     body = format_summary(deltas)
     print(body)

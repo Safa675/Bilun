@@ -38,6 +38,7 @@ Outputs:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -75,6 +76,7 @@ def _load_corpus(parquet_path: Path) -> pl.DataFrame:
         raise FileNotFoundError(f"clause corpus parquet missing: {parquet_path}")
     frame = pl.read_parquet(parquet_path)
     cols = [c for c in _DIFF_COLS if c in frame.columns]
+    cols += [c for c in ("source_docx", "source_effective_date") if c in frame.columns]
     out = frame.select(cols)
     # Ensure the identity columns exist (older corpora predate Track E).
     if "content_hash" not in out.columns or "clause_key" not in out.columns:
@@ -277,6 +279,79 @@ def format_summary(summary: dict[str, int]) -> str:
     )
 
 
+def _corpus_fingerprint(frame: pl.DataFrame) -> str:
+    """Hash the seven diff fields and available provenance, not the full corpus.
+
+    Include schema and duplicate rows; parquet encoding and row order are ignored.
+    """
+    columns = sorted(frame.columns)
+    ordered = frame.select(columns)
+    serialized = ordered.with_columns(
+        pl.col(c).cast(pl.String) for c in columns if ordered.schema[c].is_float()
+    )
+    content = json.dumps(
+        {
+            "schema": [(c, str(ordered.schema[c])) for c in columns],
+            "rows": serialized.sort(columns).write_json(),
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def _reuse_existing_report(
+    json_path: Path, md_path: Path, payload: dict, legacy_proof: Path | None,
+) -> dict | None:
+    """Never replace a dated report with a different transition."""
+    if not json_path.exists() and not md_path.exists():
+        return None
+    if not json_path.is_file() or not md_path.is_file():
+        raise ValueError(f"Incomplete clause report pair: {json_path} and {md_path}")
+    existing = json.loads(json_path.read_text(encoding="utf-8"))
+    if (
+        not isinstance(existing, dict)
+        or existing.get("new_date") != payload["new_date"]
+        or not isinstance(existing.get("summary"), dict)
+        or not isinstance(existing.get("rows"), list)
+    ):
+        raise ValueError(f"Invalid existing clause report: {json_path}")
+    fingerprints = payload["input_fingerprints"]
+    stored = existing.get("input_fingerprints")
+    legacy = stored is None
+    if legacy and legacy_proof is not None:
+        proof = json.loads(legacy_proof.read_text(encoding="utf-8"))
+        if (
+            not isinstance(proof, dict)
+            or proof.get("report_sha256") != hashlib.sha256(json_path.read_bytes()).hexdigest()
+        ):
+            raise ValueError(f"Legacy input proof does not match the clause report: {legacy_proof}")
+        stored = proof.get("input_fingerprints")
+        if (
+            not isinstance(stored, dict)
+            or stored.get("algorithm") != fingerprints["algorithm"]
+            or not all(
+                isinstance(stored.get(k), str) and len(stored[k]) == 64
+                and set(stored[k]) <= set("0123456789abcdef")
+                for k in ("old", "new")
+            )
+        ):
+            raise ValueError(f"Invalid legacy input fingerprints: {legacy_proof}")
+    self_comparison = fingerprints["old"] == fingerprints["new"]
+    if stored == fingerprints or (
+        isinstance(stored, dict) and self_comparison
+        and stored.get("algorithm") == fingerprints["algorithm"]
+        and stored.get("new") == fingerprints["new"]
+    ):
+        if legacy:
+            print("Preserving legacy clause history using verified input fingerprints.")
+        return existing
+    raise ValueError(
+        f"Refusing to overwrite historical clause report for {payload['new_date']}: "
+        "the source transition differs or cannot be verified."
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Diff two SUT clause corpora by Track E clause_key."
@@ -294,6 +369,12 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DELTA_DIR,
         help=f"Output directory (default: {DELTA_DIR})",
+    )
+    parser.add_argument(
+        "--legacy-input-fingerprints",
+        type=Path,
+        default=None,
+        help="Previously verified input fingerprints bound to a legacy report SHA256",
     )
     return parser
 
@@ -324,16 +405,26 @@ def main() -> int:
         "new_corpus": str(args.new_parquet),
         "new_date": date_tag,
         "generated_at": date.today().isoformat(),
+        "input_fingerprints": {
+            "algorithm": "sha256-clause-diff-inputs-v1",
+            "old": _corpus_fingerprint(old),
+            "new": _corpus_fingerprint(new),
+        },
         "summary": summary,
         "rows": actionable.to_dicts(),
     }
-    json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
-    md_path.write_text(
-        render_markdown(
-            diff, summary, old_name=args.old_parquet.name, new_name=args.new_parquet.name
-        ),
-        encoding="utf-8",
-    )
+    existing = _reuse_existing_report(json_path, md_path, payload, args.legacy_input_fingerprints)
+    if existing is None:
+        json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+        md_path.write_text(
+            render_markdown(
+                diff, summary, old_name=args.old_parquet.name, new_name=args.new_parquet.name
+            ),
+            encoding="utf-8",
+        )
+    else:
+        summary = existing["summary"]
+        print(f"Preserved existing clause report for {date_tag}.")
 
     body = format_summary(summary)
     print(body)

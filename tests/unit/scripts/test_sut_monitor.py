@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
-import os
-from pathlib import Path
+import datetime as dt
 
 import pytest
 
@@ -85,3 +83,18 @@ def test_check_for_new_empty_tebliğs() -> None:
     """Empty tebliğ list always returns None."""
     state = {"last_ingested_date": "2000-01-01"}
     assert check_for_new(state, []) is None
+
+
+def test_future_publication_is_skipped_for_newest_available() -> None:
+    state = {"last_ingested_date": "2026-06-01"}
+    tebliğs = find_sut_tebliğs(MOCK_DUYURU_HTML)
+    new = check_for_new(state, tebliğs, as_of=dt.date(2026, 6, 29))
+    assert new is not None and new["date"] == "2026-06-29"
+    assert check_for_new(state, tebliğs, as_of=dt.date(2026, 5, 1)) is None
+
+
+def test_partial_component_receipt_does_not_suppress_complete_package_retry() -> None:
+    state = {"last_ingested_date": "2026-05-23", "pending_full_package_date": "2026-07-01",
+        "component_receipts": {"prose": {"source_snapshot_date": "2026-07-01"}}}
+    new = check_for_new(state, find_sut_tebliğs(MOCK_DUYURU_HTML), as_of=dt.date(2026, 7, 1))
+    assert new is not None and new["date"] == "2026-07-01"

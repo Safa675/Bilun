@@ -10,6 +10,7 @@ Outputs via GITHUB_OUTPUT (in CI) or stderr (local).
 from __future__ import annotations
 
 import json
+import datetime as dt
 import os
 import re
 import sys
@@ -63,11 +64,12 @@ def find_sut_tebliğs(html: str) -> list[dict]:
     return sorted(unique, key=lambda t: t["date"], reverse=True)
 
 
-def check_for_new(state: dict, tebliğs: list[dict]) -> dict | None:
-    """Return the newest tebliğ newer than last_ingested_date, or None."""
+def check_for_new(state: dict, tebliğs: list[dict], *, as_of: dt.date | None = None) -> dict | None:
+    """Select a published amendment; future listings never activate ingestion early."""
     last_date = state.get("last_ingested_date", "2000-01-01")
+    today = (as_of or dt.datetime.now(dt.UTC).date()).isoformat()
     for t in tebliğs:
-        if t["date"] > last_date:
+        if last_date < t["date"] <= today:
             return t
     return None
 
