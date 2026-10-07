@@ -53,9 +53,25 @@ around a blocked or interrupted transaction.
   systemd drop-in parent directories must already exist; preparation does not
   provision them
 - The old standalone frontend is already compiled to proxy to port 8001. Its
-  runnable backend has the retained `.venv/bin/python` expected by the recovery
-  launcher. Both old and candidate Python/Node runtimes must remain available
-  and accessible to the existing service identity
+  backend is accepted in exactly one of two forms. Either it has the retained
+  `.venv/bin/python` expected by the recovery launcher (unchanged behavior), or
+  it has no `.venv` entry of any kind, not even an empty directory, in the live
+  runtime or its snapshot and runs from a shared interpreter such as a venv
+  outside the checkout (every runtime this tool builds from a git worktree has
+  this layout). The second form is ready only if the issuer proves the captured
+  identity: the private `live-after-snapshot.json` record loads, the whole
+  declared `dependency_roots` closure re-pins from disk, every pin and the root
+  list equal `preparation-pins.json`, the closure lies outside both runtime
+  copies, and the recorded launcher, argv, terminal executable, environment and
+  runtime digest equal the serving old process. Anything less keeps the
+  `backend snapshot lacks runnable Python environment` blocker. Rollback of the
+  paired release restarts the original services, so the shared interpreter must
+  stay unchanged. The old two-port route chain still needs a `.venv` in the old
+  backend copy and is not supported for the second form: `observe_old_pair` and
+  `prepare_wavea_route_manifest` refuse it before any maintenance, and
+  `rehearse_wavea_pair` starts its replay from `backend/.venv`. Both old and
+  candidate Python/Node runtimes must remain available and accessible to the
+  existing service identity
 - The signing key already exists as an independent private file containing at
   least 32 bytes. Existing candidate authentication comes from separate private,
   NUL-delimited environment files. The backend must contain the existing
@@ -260,6 +276,15 @@ PYTHONDONTWRITEBYTECODE=1 /absolute/existing/python -m scripts.deploy.paired_rel
    existing key. Emit `candidate-launch.json`, the dependency/ownership pin
    contract and `paired-manifest.json`. The paired driver then prepares its
    separate durable activation journal
+7. For an old backend without its own `.venv`, `prepared.json` carries
+   `receipt.old_backend_interpreter.identity_sha256`. Before any maintenance or
+   activation, compare it with the digest reviewed in the stage plan for the
+   reviewed `dependency_roots` list. A different value means stop and re-review;
+   never edit the expected value to make it match. The verifier accepts
+   whatever closure was declared, so the reviewed root list and this comparison
+   are the controls for a complete closure. Changing the shared interpreter
+   between preparation and activation invalidates the bundle. Only the legacy
+   `.venv` form omits this key
 
 Canonical evidence lives under the bundle: `baseline-roster.json`,
 `source-roster.json`, `traced-build.json`, `structural.json`, `semantic.json`,
