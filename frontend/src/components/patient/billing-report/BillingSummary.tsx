@@ -47,15 +47,6 @@ export function BillingSummary({
   const showPackageAdequacy = reportHasTotals && packageAdequacyReview != null && packageAdequacyReview > 0;
   const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
   const showDrugIndication = drugIndicationCount > 0;
-  const extraSummaryStats = [
-    showCompliance,
-    showAuditExposure,
-    showCaptureGap,
-    showPackageAdequacy,
-    showMedulaPlaybook,
-    showDrugIndication,
-    showIlaveInfo,
-  ].filter(Boolean).length;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
     ? fmtPriorityLabel(billingReport.priority)
@@ -64,7 +55,12 @@ export function BillingSummary({
       : t("common.unavailable");
 
   return (
-    <Surface variant="base" padding="lg" className="space-y-5 [&_.tabular-nums]:whitespace-nowrap">
+    <Surface
+      variant="base"
+      padding="lg"
+      className="@container space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
+      data-billing-summary
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <Eyebrow>
@@ -81,9 +77,7 @@ export function BillingSummary({
       </div>
 
       <div
-        className={`grid gap-6 md:grid-cols-2 ${
-          extraSummaryStats >= 2 ? "xl:grid-cols-6" : extraSummaryStats >= 1 ? "xl:grid-cols-5" : "xl:grid-cols-4"
-        }`}
+        className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-6 [&>div]:min-w-0 [&>div>p]:break-words"
       >
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
