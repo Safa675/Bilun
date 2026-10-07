@@ -80,7 +80,7 @@ export function OpportunityCell({
     <div className="flex flex-col items-end gap-0.5">
       <span>{fmtTRY2(row.total_opportunity_try)}</span>
       {note ? (
-        <span className="text-[0.65rem] font-normal text-[var(--text-muted)]">{note}</span>
+        <span className="text-xs font-normal text-[var(--text-muted)]">{note}</span>
       ) : null}
     </div>
   );
@@ -156,7 +156,7 @@ function SortHeader({
       <span className="inline-flex items-center gap-1">
         {label}
         {active && (
-          <span className="text-[0.7rem] text-[var(--gold)]">
+          <span className="text-xs text-[var(--gold)]">
             {direction === "desc" ? "▼" : "▲"}
           </span>
         )}
@@ -359,7 +359,7 @@ export default function PatientInvoiceTable({
         </span>
       </div>
 
-      <DataTable minWidth={720} className="text-[0.82rem]">
+      <DataTable minWidth={720} className="text-sm">
         <thead>
           <tr>
             <SortHeader
@@ -456,19 +456,19 @@ export default function PatientInvoiceTable({
               <td>
                 {row.priority ? (
                   <span
-                    className="inline-flex rounded-full px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide"
+                    className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
                     style={{
                       background:
                         row.priority === "high"
-                          ? "rgba(185,28,28,0.1)"
+                          ? "color-mix(in srgb, var(--danger) 10%, transparent)"
                           : row.priority === "medium"
-                            ? "rgba(217,119,6,0.1)"
-                            : "rgba(5,150,105,0.1)",
+                            ? "color-mix(in srgb, var(--warning) 10%, transparent)"
+                            : "color-mix(in srgb, var(--success) 10%, transparent)",
                       color:
                         row.priority === "high"
-                          ? "#B91C1C"
+                          ? "var(--danger)"
                           : row.priority === "medium"
-                            ? "#D97706"
+                            ? "var(--warning)"
                             : "var(--success)",
                     }}
                   >

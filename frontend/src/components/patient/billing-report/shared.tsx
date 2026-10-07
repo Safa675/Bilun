@@ -22,6 +22,11 @@ export const WRAPPED_HEADER_STYLE = {
  * collapse to `success`. Informational blue maps to `outline`.
  */
 export function chipVariantFromColor(color: string) {
+  if (color === "var(--danger)") return "danger" as const;
+  if (color === "var(--warning)") return "warning" as const;
+  if (color === "var(--success)" || color === "var(--gold)") return "success" as const;
+  if (color === "var(--info)") return "outline" as const;
+  // Untouched report sections still pass legacy colors during the scoped transition.
   if (color === "#B91C1C") return "danger" as const;
   if (color === "#B45309" || color === "#D97706") return "warning" as const;
   if (color === "#2F6E4E" || color === ACCENT) return "success" as const;
@@ -104,7 +109,7 @@ export function TableWrap({
   children: ReactNode;
 }) {
   return (
-    <DataTable minWidth={minWidth} className="text-[0.82rem]">
+    <DataTable minWidth={minWidth} className="text-sm">
       {children}
     </DataTable>
   );

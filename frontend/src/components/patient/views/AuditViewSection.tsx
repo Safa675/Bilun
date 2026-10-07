@@ -13,8 +13,8 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { viewActions } from "@/lib/workspaceViews";
 import { Eyebrow, Surface } from "@/components/primitives";
 
-const ERROR_COLOR = "#B91C1C";
-const READY_COLOR = "#2F6E4E";
+const ERROR_COLOR = "var(--danger)";
+const READY_COLOR = "var(--success)";
 
 const STORAGE_KEY_PREFIX = "bilun:checklist:ready:";
 

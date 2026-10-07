@@ -33,12 +33,12 @@ export default function Stat({
 }: StatProps) {
   const valueClass =
     display === "gold"
-      ? "font-[var(--font-display)] italic text-[var(--gold)] text-3xl leading-none tracking-tight"
-      : "font-sans text-[var(--text-primary)] text-2xl leading-none font-semibold tracking-tight";
+      ? "font-display italic text-[var(--gold)] text-3xl leading-none"
+      : "font-sans text-[var(--text-primary)] text-2xl leading-none font-semibold";
 
   return (
     <div className={cn("flex flex-col gap-2", className)} {...rest}>
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+      <p className="text-xs font-semibold text-[var(--text-muted)]">
         {label}
       </p>
       <div className="flex items-baseline gap-2">

@@ -45,7 +45,7 @@ const CHAT_INPUT_MIN_HEIGHT_PX = 36;
 const CHAT_INPUT_MAX_HEIGHT_PX = 144;
 
 const CHAT_INPUT_CLASS =
-  "flex-1 resize-none overflow-y-auto rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-[13px] leading-[1.5] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-[border-color] duration-150 focus:border-[var(--gold)] focus:outline-none focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--gold)_15%,transparent)]";
+  "flex-1 resize-none overflow-y-auto rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-sm leading-[1.5] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-[border-color] duration-150 focus:border-[var(--gold)] focus:outline-none focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--gold)_15%,transparent)]";
 
 const CHAT_CURSOR_CLASS =
   "inline-block h-3.5 w-1.5 ml-0.5 align-text-bottom bg-[var(--gold)] [animation:sutChatCursorBlink_1s_step-end_infinite]";
@@ -555,7 +555,7 @@ export default function SutInlineAIPanel({
           type="button"
           disabled={!onDockChange}
           onClick={() => changeDock("center")}
-          className="min-w-0 flex-1 truncate rounded-[var(--r-sm)] py-1 text-left text-[13px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] disabled:cursor-default"
+          className="min-w-0 flex-1 truncate rounded-[var(--r-sm)] py-1 text-left text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] disabled:cursor-default"
         >
           {working ? t("chat.collapsed.working") : t("chat.collapsed.prompt")}
         </button>
@@ -582,15 +582,15 @@ export default function SutInlineAIPanel({
         <div className="flex min-w-0 items-start gap-3">
           <Sparkles className="mt-[0.15rem] h-4 w-4 shrink-0 text-[var(--gold)]" />
           <div>
-            <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
+            <div className="text-base font-bold leading-[1.35] text-[var(--text-primary)]">
               {t("chat.title")}
               {userRole === "dev" && (
-                <span className="ml-2 align-middle text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--gold)]">
+                <span className="ml-2 align-middle text-xs font-semibold uppercase tracking-wide text-[var(--gold)]">
                   {t("chat.devModeBadge")}
                 </span>
               )}
             </div>
-            <p className="mt-[0.2rem] flex items-center gap-1.5 text-[0.78rem] leading-[1.4] text-[var(--text-muted)]">
+            <p className="mt-[0.2rem] flex items-center gap-1.5 text-xs leading-[1.4] text-[var(--text-muted)]">
               {patientId ? (
                 <>
                   <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-success)]" aria-hidden="true" />
@@ -623,7 +623,7 @@ export default function SutInlineAIPanel({
         </div>
       </div>
 
-      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-[13px] leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-52" : "max-h-none")}>
+      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-sm leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-52" : "max-h-none")}>
         {displayedMessages.length === 0 && !isAutoLoading && !autoError && (
           <EmptyState
             icon={<Sparkles className="h-5 w-5" />}
@@ -642,12 +642,12 @@ export default function SutInlineAIPanel({
               key={`${message.role}-${message.content.slice(0, 64)}-${index}`}
               className="mb-3"
             >
-              <div className="mb-1 text-[0.72rem] font-semibold text-[var(--text-muted)]">
+              <div className="mb-1 text-xs font-semibold text-[var(--text-muted)]">
                 {message.role === "user" ? t("chat.roles.you") : t("chat.roles.bilun")}
               </div>
               <div
                 className={cn(
-                  "whitespace-pre-wrap text-[13px] leading-[1.7]",
+                  "whitespace-pre-wrap text-sm leading-[1.7]",
                   message.role === "user"
                     ? "italic text-[var(--text-secondary)]"
                     : "text-[var(--text-primary)]",
@@ -662,7 +662,7 @@ export default function SutInlineAIPanel({
         {isAutoLoading && (
           <>
             {autoReasoningText && (
-              <details className="mb-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
+              <details className="mb-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-xs leading-[1.6]">
                 <summary className="cursor-pointer text-[var(--text-muted)] select-none">
                   {t("chat.loading.thinking")}{" "}
                   <span className="inline-block h-3 w-3 ml-1 align-text-bottom bg-[var(--text-muted)]/30 [animation:sutChatCursorBlink_1s_step-end_infinite]" />
@@ -672,7 +672,7 @@ export default function SutInlineAIPanel({
                 </div>
               </details>
             )}
-            <div className="mb-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
+            <div className="mb-2 whitespace-pre-wrap text-sm leading-[1.7] text-[var(--text-primary)]">
               {!autoText && !autoReasoningText && (
                 <span className="italic text-[var(--text-muted)]">{t("chat.loading.analyzing")}</span>
               )}
@@ -706,7 +706,7 @@ export default function SutInlineAIPanel({
       </div>
 
       {!patientId && !isAutoLoading && displayedMessages.length > 0 && (
-        <div className="mt-2.5 rounded-[var(--r-md)] border border-[var(--gold-subtle)] bg-[var(--gold-subtle)]/20 px-3 py-2 text-[12px] leading-[1.5] text-[var(--text-muted)]">
+        <div className="mt-2.5 rounded-[var(--r-md)] border border-[var(--gold-subtle)] bg-[var(--gold-subtle)]/20 px-3 py-2 text-xs leading-[1.5] text-[var(--text-muted)]">
           <span className="font-medium text-[var(--gold)]">{t("chat.tip.label")}</span>{" "}
           {t("chat.tip.selectPatient")}
         </div>
@@ -715,7 +715,7 @@ export default function SutInlineAIPanel({
       {isResponding && (
         <>
           {followUpReasoningText && (
-            <details className="mt-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
+            <details className="mt-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-xs leading-[1.6]">
               <summary className="cursor-pointer text-[var(--text-muted)] select-none">
                 {t("chat.loading.thinking")}
                 {!followUpText && (
@@ -728,7 +728,7 @@ export default function SutInlineAIPanel({
             </details>
           )}
           {followUpText && (
-            <div className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
+            <div className="mt-2 whitespace-pre-wrap text-sm leading-[1.7] text-[var(--text-primary)]">
               {followUpText}
               <span className={CHAT_CURSOR_CLASS} />
             </div>
@@ -737,13 +737,13 @@ export default function SutInlineAIPanel({
       )}
 
       {followUpError && (
-        <div className="mt-2 text-[13px] text-[var(--danger)]">
+        <div className="mt-2 text-sm text-[var(--danger)]">
           {followUpError}
         </div>
       )}
 
       {pendingQuestion && !isResponding && !isAutoLoading && (
-        <div role="status" className="mt-2 text-[13px] text-[var(--text-muted)]">
+        <div role="status" className="mt-2 text-sm text-[var(--text-muted)]">
           {t("chat.errors.interruptedFollowUp")}
           <Button variant="ghost" size="compact" onClick={() => handleSend(pendingQuestion)}
             aria-label={t("chat.actions.retryQuestion")}>

@@ -23,7 +23,7 @@ import { buildComplianceCoverage } from "@/lib/complianceCoverage";
 import UnifiedComplianceFindingsTable from "@/components/patient/UnifiedComplianceFindingsTable";
 import { PatientWaveAEvidenceSection, WaveACoverageSummary } from "@/components/patient/WaveAEvidenceSection";
 
-const RISK_COLOR = "#B91C1C";
+const RISK_COLOR = "var(--danger)";
 
 function ruleLabel(t: ReturnType<typeof useT>, ruleId: string | null | undefined): string {
   if (!ruleId) return "—";
