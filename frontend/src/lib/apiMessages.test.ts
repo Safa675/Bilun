@@ -74,6 +74,34 @@ describe("apiMessages", () => {
     );
   });
 
+  it.each([
+    [
+      "en",
+      "Pre-authorization review requested by the material-line input flag; EK-3C-1 catalog membership not verified",
+    ],
+    [
+      "tr",
+      "Malzeme satırında girilen işaret nedeniyle ön onay incelemesi istendi; EK-3C-1 listesinde bulunduğu doğrulanmadı.",
+    ],
+  ] as const)("localizes only the known material input-flag note in %s", (locale, expected) => {
+    setModuleLocale(locale);
+    const note =
+      "Pre-authorization review requested by the material-line input flag; EK-3C-1 catalog membership not verified";
+    const row = Object.freeze({ detail: note });
+
+    expect(translateApiText(note)).toBe(expected);
+    expect(translateStructuredApiMessage(locale === "tr" ? trT : enT, row)).toBe(expected);
+    expect(row.detail).toBe(note);
+    expect(translateApiText(`${note}; additional source text`)).toBe(
+      `${note}; additional source text`,
+    );
+    const sourceText = "EK-3C-1 özgün kaynak metni";
+    expect(translateApiText(sourceText)).toBe(sourceText);
+    expect(translateApiText(enMessages.api.billingProse.preauthNote)).toBe(
+      (locale === "tr" ? trMessages : enMessages).api.billingProse.preauthNote,
+    );
+  });
+
   it("translates billing prose and LLM errors in Turkish", () => {
     setModuleLocale("tr");
     expect(

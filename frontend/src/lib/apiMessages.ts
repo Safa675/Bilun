@@ -359,6 +359,9 @@ function tryTranslateBillingProsePart(trimmed: string): string | null {
     return t("api.billingProse.preauthNote");
   }
 
+  if (trimmed === enMessages.api.billingProse.preauthFlagNote) {
+    return t("api.billingProse.preauthFlagNote");
+  }
   if (trimmed === enMessages.api.billingProse.bundledEk3b1) {
     return t("api.billingProse.bundledEk3b1");
   }
