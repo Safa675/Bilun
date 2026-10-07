@@ -176,7 +176,9 @@ def _held_old_preflight(
                 or _runtime_digest(runtime, backend=role == "backend") != expected[f"{role}_runtime_sha256"]):
             raise ValueError("Held old runtime copy differs from sealed snapshot")
         local_python = role == "backend" and (runtime / ".venv/bin/python").exists()
-        if role == "backend" and not local_python and os.path.lexists(runtime / ".venv"):
+        if role == "backend" and not local_python and any(
+                os.path.lexists(root / ".venv")
+                for root in (runtime, Path(spec["live_backend_runtime"]))):
             raise ValueError("Held old backend copy lacks its runnable Python environment")
         if role == "frontend" and not (
             (runtime / "server.js").is_file()

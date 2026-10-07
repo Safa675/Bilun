@@ -147,14 +147,14 @@ _REVIEWED_SHARED_INTERPRETER_PRODUCT_CLOSURE_SHA256 = "1b1b4b227795690d0d3e02dc0
 _REVIEWED_SHARED_INTERPRETER_TOOLING = {
     'docs/operations/single-vps-wavea-release.md': ('100644', 'blob', '1b9f1021899936cef6b613348494bb4b5f0a2c8e'),
     'scripts/deploy/capture_release_preflight.py': ('100644', 'blob', 'db250469b7df4a44f14bd95d47ef568c2c8355a9'),
-    'scripts/deploy/issue_wavea_activation.py': ('100644', 'blob', '3e17298a3652abca60e170597e04c7d72e5aea04'),
+    'scripts/deploy/issue_wavea_activation.py': ('100644', 'blob', '8212e476b2a4c7c0092fa711b510a13ef2947552'),
     'tests/unit/deploy/fixtures/final_source_refresh_mainc44_tooling.json': ('100644', 'blob', '12bba3259806cca50053686056f5998e4ade5478'),
     'tests/unit/deploy/test_final_source_refresh_transition.py': ('100644', 'blob', '13e926bf2c79553a29bc03950748177c2b8e23ee'),
     'tests/unit/deploy/test_raw_report_transport_source_profile.py': ('100644', 'blob', '511b7b6125cdf833f9a9910f73cb110ed1ad0ffa'),
-    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', 'fe93b78acb2c628c21e343f11b8df12d9f44505d'),
+    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', 'a7c5f44fb38d4736b3414f7fb92b543118070539'),
     'tests/unit/deploy/test_shared_interpreter_source_profile.py': ('100644', 'blob', '2810a6cf916a74a019806f9e9dad39f10a2b0a0f'),
 }
-_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "b187b5b38bc08fab623633ad87e34989199c3f5ccc711e6f5c785c84bb799f3f"
+_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "0a2b0a49f1f904318cbb6862c7b4cccf25f23e8a1624e75e1db2cce452192c58"
 _SHARED_INTERPRETER_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({

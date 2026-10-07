@@ -420,6 +420,7 @@ def test_held_old_preflight_binds_the_shared_interpreter_of_a_venvless_copy(tmp_
     ("record_missing", "Expected independent regular file"),
     ("closure", "launcher, context or dependency pins changed"),
     ("partial_venv", "lacks its runnable Python environment"),
+    ("live_partial_venv", "lacks its runnable Python environment"),
     ("argv", "service or argv copy differs"),
     ("pins_root_missing", "differs from its frozen observation|not covered by the hash-bound"),
 ])
@@ -434,6 +435,9 @@ def test_held_old_preflight_fails_closed_without_an_exact_interpreter_proof(
         state["old"].terminal.write_bytes(b"changed terminal executable\n")
     elif fault == "partial_venv":
         (snapshot / "backend/.venv").mkdir()
+    elif fault == "live_partial_venv":
+        # An empty directory is invisible to the runtime digests, so only an explicit check sees it.
+        (state["backend"].process_working_directory / ".venv").mkdir()
     elif fault == "argv":
         service = json.loads((snapshot / "backend-service.json").read_text())
         service["process_argv"][0] = str(state["old"].terminal)
@@ -471,6 +475,57 @@ def test_held_old_preflight_record_resealed_onto_another_declared_context(tmp_pa
     value["backend"]["old_backend_python_identity"].update(
         launcher_path=str(other.launcher), context_root=str(other.context))
     save(record, value)
+    with pytest.raises(ValueError, match="differs from the serving old backend"):
+        issuer._held_old_preflight(**arguments)
+
+
+@pytest.mark.parametrize("other", ["argv", "terminal"])
+def test_held_old_preflight_record_resealed_onto_another_process_is_refused(tmp_path, monkeypatch, other):
+    """A self-consistent record and pins must still describe the SEALED old process.
+
+    The launcher path (argv[0]) stays the sealed one and the re-captured closure verifies
+    from disk, so the PR 165 loader and the pins accept it. Only the sealed argv digest and
+    the sealed terminal executable tell this process from the one that was serving.
+    """
+    from types import SimpleNamespace
+
+    state = _held_state(tmp_path, monkeypatch)
+    old = state["old"]
+    arguments = _held_fixture(tmp_path, monkeypatch, state, {})
+    sealed_argv_sha256 = old.identity["process_argv_sha256"]
+    sealed_terminal = str(old.terminal)
+    assert issuer._held_old_preflight(**arguments)[0]["rollback"]["blockers"] == []
+    argv, terminal = old.service.process_argv, old.terminal
+    if other == "argv":
+        argv = (*argv[:-1], "8099")
+    else:
+        terminal = tmp_path / "other-python3.13"
+        terminal.write_bytes(b"another terminal executable fixture\n")
+        terminal.chmod(0o755)
+        old.intermediate.unlink()
+        old.intermediate.symlink_to(terminal)
+    old.service = SimpleNamespace(process_argv=argv, process_executable=terminal,
+                                  environment_sha256=old.service.environment_sha256)
+    old.dependencies = (old.context, old.intermediate, terminal)
+    old.pins = prepare._pin_inputs(set(old.dependencies), set(), dependency_roots=old.dependencies,
+                                   allow_dependency_file_links=True)
+    old.identity = prepare._capture_old_backend_python_identity(
+        old.service, dependency_roots=old.dependencies, dependency_pins=old.pins,
+        allow_dependency_file_links=True)
+    runtime_sha256 = preflight._runtime_digest(state["backend"].process_working_directory, backend=True)
+    old_python_record(state["bundle"], old, runtime_sha256=runtime_sha256)
+    save(state["bundle"] / "preparation-pins.json", {
+        "schema_version": "bilun-preparation-pins-v3", "immutable_inputs": old.pins,
+        "dependency_roots": [str(path) for path in old.dependencies], "external_state": {},
+    })
+    arguments["dependency_roots"] = old.dependencies
+    # Control: the re-sealed proof is valid on its own and really names the other process.
+    proof = issuer._old_shared_interpreter_evidence(
+        old_snapshot=arguments["old_snapshot"], dependency_roots=old.dependencies,
+        runtime_sha256=runtime_sha256, environment_sha256=old.service.environment_sha256)
+    assert proof["launcher_path"] == str(old.launcher)
+    assert (proof["process_argv_sha256"] != sealed_argv_sha256) == (other == "argv")
+    assert (proof["executable_target"] != sealed_terminal) == (other == "terminal")
     with pytest.raises(ValueError, match="differs from the serving old backend"):
         issuer._held_old_preflight(**arguments)
 
