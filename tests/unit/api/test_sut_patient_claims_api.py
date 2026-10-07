@@ -112,6 +112,23 @@ def test_list_patient_claims(api_client):
     assert "data_source" in data
 
 
+@pytest.mark.parametrize(
+    "rollup,expected",
+    [
+        (None, None),
+        ({}, None),
+        ({"total_recoverable_try": None}, None),
+        ({"total_recoverable_try": 0.0}, 0.0),
+        ({"total_recoverable_try": 12.5}, 12.5),
+    ],
+)
+def test_claim_summary_keeps_missing_rollup_amount_distinct_from_zero(rollup, expected):
+    from src.bilun.api.routes.patients import _serialize_claim_summary
+
+    header = _fake_dataset().claims_by_patient["PAT-TEST-01"][0]
+    assert _serialize_claim_summary(header, rollup=rollup)["recoverable_try"] == expected
+
+
 def test_list_patient_claims_not_found(api_client):
     with patch(
         "src.bilun.api.routes.patients._load_claim_dataset",
@@ -263,4 +280,3 @@ def test_list_patient_claims_includes_bill_rollups(api_client, monkeypatch, tmp_
         except Exception:
             pass
     runtime.cache_con = None
-

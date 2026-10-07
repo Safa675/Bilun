@@ -24,14 +24,14 @@ export function DrgPackageAdequacyReviewSection({
     return null;
   }
 
-  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
+  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? null;
 
   return (
     <BillingSectionShell id="billing-drg-package-adequacy" title={t("billing.packageAdequacyReview.title")}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.packageAdequacyReview.scopeFootnote")}
       </p>
-      {reviewUplift > 0 && (
+      {reviewUplift != null && reviewUplift > 0 && (
         <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.careSettingReview.reviewTotal")}: {fmtTRY2(reviewUplift)}
         </p>

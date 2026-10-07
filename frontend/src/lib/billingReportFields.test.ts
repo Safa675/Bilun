@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   copayClaimScopedAnnexLabels,
   copayCorrectedPayableTry,
+  copayExemptionGapTotal,
   copayCorrectionProcedureLabel,
   formatSutSectionLabel,
   isClaimLevelStrategyRow,
@@ -17,6 +18,15 @@ import {
 import type { CopayOptimization } from "./domains/sut";
 
 describe("billingReportFields honest gaps", () => {
+  it("requires both fallback copay amounts and preserves a reported zero", () => {
+    const copay = {
+      visit_copay_savings_try: 20,
+      rx_copay_savings_try: null,
+    } as CopayOptimization;
+    expect(copayExemptionGapTotal(copay)).toBeNull();
+    expect(copayExemptionGapTotal({ ...copay, rx_copay_savings_try: 0 })).toBe(20);
+    expect(copayExemptionGapTotal({ ...copay, patient_copay_waived_total_try: 0 })).toBe(0);
+  });
   it("treats detail-only copay rows as insight-only", () => {
     const correction = {
       detail: "EK-1A exemption may apply for Diabetes (E10-E14).",

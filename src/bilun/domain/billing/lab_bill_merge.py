@@ -38,9 +38,10 @@ def compute_lab_and_capture_gap_from_claims(
             continue
 
         lab_result = _optimize_lab_billing_from_claims(bill_context)
-        merged_lab.normative_cost_try = round(
-            merged_lab.normative_cost_try + lab_result.normative_cost_try, 2
-        )
+        if lab_result.normative_cost_try is not None:
+            merged_lab.normative_cost_try = round(
+                (merged_lab.normative_cost_try or 0.0) + lab_result.normative_cost_try, 2
+            )
         merged_lab.session_fraction_savings = round(
             merged_lab.session_fraction_savings + lab_result.session_fraction_savings, 2
         )

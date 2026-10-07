@@ -137,12 +137,12 @@ describe("BillingSummary", () => {
     };
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={exactReport} />);
 
-    expect(html).toContain(fmtTRY2Fixture(exactReport.total_recoverable_try));
+    expect(html).toContain(fmtTRY2Fixture(exactReport.total_recoverable_try!));
     expect(html).toContain("SGK uplift (Kurum ödemesi)");
     // Gold discipline (Phase 6): BillingSummary no longer applies italic-gold to
     // the rule-calculated opportunity — the single italic-gold money KPI on the
     // patient page lives on PatientFinancialSummary (total recoverable).
-    expect(html).not.toMatch(new RegExp(`italic[^>]*var\\(--gold\\)[\\s\\S]*?${fmtTRY2Fixture(exactReport.total_recoverable_try).replace(".", "\\.")}`));
+    expect(html).not.toMatch(new RegExp(`italic[^>]*var\\(--gold\\)[\\s\\S]*?${fmtTRY2Fixture(exactReport.total_recoverable_try!).replace(".", "\\.")}`));
     // legacy chrome must be absent
     expect(html).not.toContain("frost-panel");
     expect(html).not.toContain("sut-premium-panel");
@@ -161,7 +161,7 @@ describe("BillingSummary", () => {
     };
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={partialReport} />);
 
-    expect(html).toContain(fmtTRY2Fixture(partialReport.total_recoverable_try));
+    expect(html).toContain(fmtTRY2Fixture(partialReport.total_recoverable_try!));
     expect(html).toContain("Partial exact");
     expect(html).not.toContain("Rule-calculated opportunity:Unavailable");
   });

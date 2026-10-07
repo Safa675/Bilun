@@ -175,11 +175,14 @@ export function resolveCopayIlaveStatus(
   };
 }
 
-export function copayExemptionGapTotal(copay: CopayOptimization): number {
-  return (
-    copay.patient_copay_waived_total_try ??
-    copay.visit_copay_savings_try + copay.rx_copay_savings_try
-  );
+export function copayExemptionGapTotal(copay: CopayOptimization): number | null {
+  if (copay.patient_copay_waived_total_try != null) {
+    return copay.patient_copay_waived_total_try;
+  }
+  if (copay.visit_copay_savings_try == null || copay.rx_copay_savings_try == null) {
+    return null;
+  }
+  return copay.visit_copay_savings_try + copay.rx_copay_savings_try;
 }
 
 export function copayShowsIlaveColumn(copay: CopayOptimization): boolean {
@@ -429,4 +432,3 @@ export function mergeClaimStrategyTableRows(
 ): BillingStrategyRow[] {
   return [...complianceViolations, ...claimLevelRows];
 }
-

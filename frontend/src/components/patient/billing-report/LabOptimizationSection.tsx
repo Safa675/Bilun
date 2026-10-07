@@ -21,11 +21,12 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
     return null;
   }
 
-  const combinedSavings =
-    labData.hemogram_bundling_savings + (labData.session_fraction_savings ?? 0);
+  const combinedSavings = labData.hemogram_bundling_savings == null || labData.session_fraction_savings == null
+    ? null
+    : labData.hemogram_bundling_savings + labData.session_fraction_savings;
 
   return (
-    <BillingSectionShell id="billing-lab" title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
+    <BillingSectionShell id="billing-lab" title={t("billing.lab.title")} total={combinedSavings == null ? "—" : fmtTRY2(combinedSavings)}>
       <TableWrap minWidth={820}>
         <thead>
           <tr>

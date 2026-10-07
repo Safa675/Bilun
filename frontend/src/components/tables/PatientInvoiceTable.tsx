@@ -23,26 +23,67 @@ interface PatientRow {
   total_recoverable_try: number | null;
   exemption_gap_try: number | null;
   total_opportunity_try: number | null;
+  opportunity_missing: OpportunityMissing | null;
   priority: string | null;
   action_count: number | null;
   top_action_type: string | null;
 }
 
-function resolveOpportunityTry(
+/** Which component of the opportunity total is missing from a summary row. */
+type OpportunityMissing = "gap" | "recoverable";
+
+/**
+ * Opportunity total for one summary row: the reported `total_opportunity_try`,
+ * else recoverable + exemption gap. When only one of the two is present the
+ * figure is partial and `missing` names the absent component; the absent
+ * component is unknown, never silently zero.
+ */
+export function resolveOpportunityTry(
   summary: {
-    total_recoverable_try?: number;
-    exemption_gap_try?: number;
-    total_opportunity_try?: number;
+    total_recoverable_try?: number | null;
+    exemption_gap_try?: number | null;
+    total_opportunity_try?: number | null;
   } | undefined,
-): number | null {
-  if (!summary) return null;
+): { amount: number | null; missing: OpportunityMissing | null } {
+  if (!summary) return { amount: null, missing: null };
   if (summary.total_opportunity_try != null) {
-    return summary.total_opportunity_try;
+    return { amount: summary.total_opportunity_try, missing: null };
   }
-  if (summary.total_recoverable_try == null && summary.exemption_gap_try == null) {
-    return null;
-  }
-  return (summary.total_recoverable_try ?? 0) + (summary.exemption_gap_try ?? 0);
+  const recoverable = summary.total_recoverable_try;
+  const gap = summary.exemption_gap_try;
+  if (recoverable == null && gap == null) return { amount: null, missing: null };
+  if (recoverable == null) return { amount: gap ?? null, missing: "recoverable" };
+  if (gap == null) return { amount: recoverable, missing: "gap" };
+  return { amount: recoverable + gap, missing: null };
+}
+
+/** "Recoverable" cell: amount, plus a note for a gap-only or partial figure. */
+export function OpportunityCell({
+  row,
+}: {
+  row: Pick<
+    PatientRow,
+    "total_opportunity_try" | "opportunity_missing" | "total_recoverable_try" | "exemption_gap_try"
+  >;
+}) {
+  const t = useT();
+  if (row.total_opportunity_try === null) return <>—</>;
+  const note =
+    row.opportunity_missing === "gap"
+      ? t("home.patientTable.partialNoGap")
+      : row.opportunity_missing === "recoverable"
+        ? t("home.patientTable.partialNoRecoverable")
+        : (row.exemption_gap_try ?? 0) > 0 && row.total_recoverable_try === 0
+          ? t("home.patientTable.exemptionGapOnly")
+          : null;
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <span>{fmtTRY2(row.total_opportunity_try)}</span>
+      {note ? (
+        <span className="text-[0.65rem] font-normal text-[var(--text-muted)]">{note}</span>
+      ) : null}
+    </div>
+  );
 }
 
 const PAGE_SIZE = 10;
@@ -226,7 +267,8 @@ export default function PatientInvoiceTable({
             sex: meta?.sex ?? null,
             total_recoverable_try: hospital,
             exemption_gap_try: gap,
-            total_opportunity_try: opportunity,
+            total_opportunity_try: opportunity.amount,
+            opportunity_missing: opportunity.missing,
             priority: summary?.priority ?? null,
             action_count: summary?.action_count ?? null,
             top_action_type: summary?.top_action_type ?? null,
@@ -409,18 +451,7 @@ export default function PatientInvoiceTable({
               <td>{row.age ?? "—"}</td>
               <td className="capitalize">{row.sex ?? "—"}</td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {row.total_opportunity_try !== null ? (
-                  <div className="flex flex-col items-end gap-0.5">
-                    <span>{fmtTRY2(row.total_opportunity_try)}</span>
-                    {(row.exemption_gap_try ?? 0) > 0 && (row.total_recoverable_try ?? 0) === 0 ? (
-                      <span className="text-[0.65rem] font-normal text-[var(--text-muted)]">
-                        {t("home.patientTable.exemptionGapOnly")}
-                      </span>
-                    ) : null}
-                  </div>
-                ) : (
-                  "—"
-                )}
+                <OpportunityCell row={row} />
               </td>
               <td>
                 {row.priority ? (

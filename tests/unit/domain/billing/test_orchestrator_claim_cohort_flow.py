@@ -77,6 +77,6 @@ def test_compute_all_billing_reports_without_dataset_marks_missing_inputs() -> N
 
     report = reports["P1"]
     assert report.exactness_status == "missing_exact_inputs"
-    assert report.total_recoverable_try == 0.0
+    assert report.total_recoverable_try is None
     assert report.copay.exactness_status == "missing_exact_inputs"
     assert summary.exactness_status == "missing_exact_inputs"

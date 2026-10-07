@@ -59,7 +59,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          215
+          214
         ],
         "analyzer_runtime_id": "analyze_claim:check_bundling_violations_for_context",
         "analyzer_source_lines": [
@@ -85,7 +85,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          215
+          214
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_bundling_for_context",
         "analyzer_source_lines": [
@@ -193,7 +193,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          215
+          214
         ],
         "analyzer_runtime_id": "analyze_claim:check_specialty_materials_for_context",
         "analyzer_source_lines": [
@@ -420,7 +420,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          215
+          214
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_preauth_for_context",
         "analyzer_source_lines": [
@@ -446,7 +446,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
         "adapter_source_lines": [
-          215
+          214
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_miat_for_context",
         "analyzer_source_lines": [
@@ -472,7 +472,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_drg_package_adequacy_from_claims",
         "adapter_source_lines": [
-          191
+          190
         ],
         "analyzer_runtime_id": "analyze_claim:check_drg_package_adequacy_for_context",
         "analyzer_source_lines": [
@@ -499,7 +499,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_material_uplift_from_claims",
         "adapter_source_lines": [
-          187
+          186
         ],
         "analyzer_runtime_id": "analyze_claim:check_material_pairing_for_context",
         "analyzer_source_lines": [
@@ -536,7 +536,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:recommend_procedure_addon_uplift_from_claims",
         "adapter_source_lines": [
-          195
+          194
         ],
         "analyzer_runtime_id": "analyze_claim:check_procedure_pairing_for_context",
         "analyzer_source_lines": [
@@ -569,7 +569,7 @@
       {
         "adapter_runtime_id": "compute_patient_billing_report:validate_drug_indication_from_claims",
         "adapter_source_lines": [
-          208
+          207
         ],
         "analyzer_runtime_id": "analyze_claim:evaluate_drug_indication_findings",
         "analyzer_source_lines": [
@@ -5583,7 +5583,7 @@
       "runtime_id": "compute_patient_billing_report:collect_billing_actions",
       "runtime_status": "gated",
       "source_lines": [
-        218
+        217
       ],
       "visibility_status": "not_applicable"
     },
@@ -5643,7 +5643,7 @@
       "runtime_id": "compute_patient_billing_report:compute_lab_and_capture_gap_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        143
+        142
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -5682,7 +5682,7 @@
       "runtime_id": "compute_patient_billing_report:dedupe_addon_against_capture",
       "runtime_status": "gated",
       "source_lines": [
-        194
+        193
       ],
       "visibility_status": "not_applicable"
     },
@@ -6710,7 +6710,7 @@
       "runtime_id": "compute_patient_billing_report:evaluate_drug_indication_findings",
       "runtime_status": "gated",
       "source_lines": [
-        138
+        137
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -6796,8 +6796,8 @@
       "runtime_id": "compute_patient_billing_report:finalize_report_exactness",
       "runtime_status": "gated",
       "source_lines": [
-        133,
-        220
+        132,
+        219
       ],
       "visibility_status": "not_applicable"
     },
@@ -6817,7 +6817,7 @@
         "src/bilun/domain/billing/report_totals.py"
       ],
       "finding_type": "aggregate",
-      "gating_condition": "always OR claim_context is None AND SUT_REQUIRE_CLAIM_LINES",
+      "gating_condition": "always",
       "hidden_reason": "Aggregate finalizer; it does not originate row-level findings.",
       "included_in_totals": true,
       "inventory_level": "runtime_detector",
@@ -6837,10 +6837,9 @@
       "report_field": "report totals",
       "required_inputs": [],
       "runtime_id": "compute_patient_billing_report:finalize_report_totals",
-      "runtime_status": "gated",
+      "runtime_status": "executed",
       "source_lines": [
-        132,
-        217
+        216
       ],
       "visibility_status": "aggregate_only"
     },
@@ -6978,7 +6977,7 @@
       "runtime_id": "compute_patient_billing_report:optimize_copay_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        155
+        154
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -7325,7 +7324,7 @@
       "runtime_id": "compute_patient_billing_report:precheck_materials_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        215
+        214
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -8072,7 +8071,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_anestezi_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        186
+        185
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8135,7 +8134,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_billing_strategy_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        158
+        157
       ],
       "visibility_status": "patient_and_cohort_visible"
     },
@@ -8185,7 +8184,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_blood_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        171
+        170
       ],
       "visibility_status": "patient_visible"
     },
@@ -8235,7 +8234,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_care_setting_review_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        188
+        187
       ],
       "visibility_status": "patient_visible"
     },
@@ -8350,7 +8349,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_claim_submission_checklist_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        205
+        204
       ],
       "visibility_status": "patient_visible"
     },
@@ -8407,7 +8406,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_drg_package_adequacy_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        191
+        190
       ],
       "visibility_status": "patient_visible"
     },
@@ -8457,7 +8456,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_drg_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        166
+        165
       ],
       "visibility_status": "patient_visible"
     },
@@ -8500,7 +8499,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_icu_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        173
+        172
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8572,7 +8571,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_material_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        187
+        186
       ],
       "visibility_status": "patient_visible"
     },
@@ -8621,7 +8620,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_medula_rejection_playbook_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        203
+        202
       ],
       "visibility_status": "patient_visible"
     },
@@ -8683,7 +8682,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_procedure_addon_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        195
+        194
       ],
       "visibility_status": "patient_visible"
     },
@@ -8726,7 +8725,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_refakatci_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        185
+        184
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8782,7 +8781,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_session_uplift_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        165
+        164
       ],
       "visibility_status": "patient_visible"
     },
@@ -8830,7 +8829,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_yatak_puani_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        172
+        171
       ],
       "visibility_status": "patient_visible"
     },
@@ -8873,7 +8872,7 @@
       "runtime_id": "compute_patient_billing_report:recommend_yenidogan_yatak_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        184
+        183
       ],
       "visibility_status": "aggregate_only"
     },
@@ -8918,7 +8917,7 @@
       "runtime_id": "compute_patient_billing_report:reconcile_yatak_icu_overlap",
       "runtime_status": "gated",
       "source_lines": [
-        181
+        180
       ],
       "visibility_status": "not_applicable"
     },
@@ -9981,7 +9980,7 @@
       "runtime_id": "compute_patient_billing_report:validate_drug_indication_from_claims",
       "runtime_status": "gated",
       "source_lines": [
-        208
+        207
       ],
       "visibility_status": "patient_and_cohort_visible"
     },

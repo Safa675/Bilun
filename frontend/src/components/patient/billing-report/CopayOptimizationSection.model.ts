@@ -13,9 +13,9 @@ import { isExactOutput } from "@/lib/sutExactness";
 type CopaySectionModel = { kind: "unavailable" } | {
   kind: "content";
   copayExact: boolean;
-  exemptionGapTotal: number;
+  exemptionGapTotal: number | null;
   showIlaveColumn: boolean;
-  ilaveTotal: number;
+  ilaveTotal: number | null;
   copayOnlyDecomposition: boolean;
   insightOnlyRows: CopayRateCorrectionRow[];
   claimRows: CopayRateCorrectionRow[];
@@ -54,7 +54,7 @@ export function buildCopaySectionModel(
     copayExact,
     exemptionGapTotal: copayExemptionGapTotal(copayData),
     showIlaveColumn: copayShowsIlaveColumn(copayData),
-    ilaveTotal: copayData.ilave_ucret_total_try ?? 0,
+    ilaveTotal: copayData.ilave_ucret_total_try ?? null,
     copayOnlyDecomposition: copayData.line_decomposition_status === "copay_only",
     insightOnlyRows,
     claimRows,

@@ -71,4 +71,4 @@ def test_billing_strategy_without_claim_context_stays_unavailable() -> None:
 
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.billing_strategy.recommendations == []
-    assert report.total_recoverable_try == 0.0
+    assert report.total_recoverable_try is None

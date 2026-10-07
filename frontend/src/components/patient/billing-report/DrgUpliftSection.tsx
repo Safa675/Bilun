@@ -30,10 +30,10 @@ export function DrgUpliftSection({
     return null;
   }
 
-  const confirmedUplift = drgData.confirmed_uplift_try ?? 0;
+  const confirmedUplift = drgData.confirmed_uplift_try ?? null;
 
   return (
-    <BillingSectionShell id="billing-drg-uplift" title={t("billing.drgUplift.title")} total={fmtTRY2(confirmedUplift)}>
+    <BillingSectionShell id="billing-drg-uplift" title={t("billing.drgUplift.title")} total={confirmedUplift == null ? "—" : fmtTRY2(confirmedUplift)}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.drgUplift.scopeFootnote")}
       </p>

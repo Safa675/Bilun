@@ -24,8 +24,8 @@ def _copay_waived_total_try(report: BillingActionReport) -> float:
         getattr(report.copay, "patient_copay_waived_total_try", 0.0) or 0.0
     )
     if waived_total <= 0:
-        waived_total = (
-            report.copay.total_copay_savings_try + report.copay.rx_copay_savings_try
+        waived_total = (report.copay.total_copay_savings_try or 0.0) + (
+            report.copay.rx_copay_savings_try or 0.0
         )
     return waived_total
 
@@ -37,7 +37,7 @@ def _rollup_lab_and_compliance(
     if block_exactness_status(report.lab) != EXACTNESS_STATUS_EXACT:
         return
     summary.total_lab_savings += report.lab.total_savings
-    summary.total_compliance_adjustment += report.compliance_adjustment_try
+    summary.total_compliance_adjustment += report.compliance_adjustment_try or 0.0
 
 
 def _rollup_billing_strategy(
@@ -81,6 +81,8 @@ def _rollup_registry_block(
         return
 
     current = getattr(summary, spec.cohort_total_field)
+    if value is None:
+        return
     setattr(summary, spec.cohort_total_field, current + value)
 
     if spec.cohort_patient_counter_field and float(value) > 0:
@@ -119,7 +121,7 @@ def _finalize_summary_rounding(
     summary.total_strategy_uplift = round(summary.total_strategy_uplift, 2)
     summary.total_compliance_adjustment = round(summary.total_compliance_adjustment, 2)
     summary.total_sgk_uplift = round(
-        sum(r.sgk_uplift_try for r in reports.values()),
+        sum(r.sgk_uplift_try for r in reports.values() if r.sgk_uplift_try is not None),
         2,
     )
     summary.total_audit_exposure = round(summary.total_audit_exposure, 2)
@@ -183,17 +185,22 @@ def build_cohort_recovery_summary(
         for spec in registry_specs:
             _rollup_registry_block(summary, report, spec)
         _rollup_copay(summary, report)
-        summary.total_audit_exposure += report.audit_exposure_try
+        summary.total_audit_exposure += report.audit_exposure_try or 0.0
         _rollup_material_flags(summary, report)
         priority_dist[report.priority] = priority_dist.get(report.priority, 0) + 1
 
     _finalize_summary_rounding(summary, reports)
     summary.priority_distribution = priority_dist
 
-    sorted_reports = sorted(reports.values(), key=total_opportunity_try, reverse=True)
-    summary.patient_summaries = [
-        patient_recovery_summary_entry(r) for r in sorted_reports
-    ]
+    sorted_reports = sorted(
+        reports.values(),
+        key=lambda report: (
+            (amount := total_opportunity_try(report)) is not None,
+            amount if amount is not None else 0.0,
+        ),
+        reverse=True,
+    )
+    summary.patient_summaries = [patient_recovery_summary_entry(r) for r in sorted_reports]
     summary.top_patients = summary.patient_summaries[:10]
     summary.savings_by_category = _savings_by_category(summary)
     finalize_summary_exactness(summary, reports)

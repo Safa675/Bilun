@@ -7,6 +7,8 @@ const home = {
     "patientCount": "{count} hasta",
     "patientCountPlural": "{count} hasta",
     "exemptionGapOnly": "muafiyet farkı",
+    "partialNoGap": "Kısmi: muafiyet farkı hesaplanmadı",
+    "partialNoRecoverable": "Kısmi: kurtarılabilir tutar hesaplanmadı",
     "sortBy": "{label} sütununa göre sırala",
     "headers": {
       "patientId": "Hasta ID",

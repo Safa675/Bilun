@@ -81,7 +81,7 @@ describe("PatientFinancialSummary", () => {
     expect(html).toContain("All bills at a glance");
     expect(html).toContain(fmtTRY2Fixture(claimTotals.total_billed_try));
     expect(html).toContain(fmtTRY2Fixture(claimTotals.total_expected_payable_try));
-    expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try));
+    expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try!));
     expect(html).toContain("3");
     expect(html).toContain("high");
   });

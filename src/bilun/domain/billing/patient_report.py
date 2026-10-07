@@ -129,7 +129,6 @@ def compute_patient_billing_report(
     if claim_context is None:
         if SUT_REQUIRE_CLAIM_LINES:
             set_missing_inputs_report(report)
-            finalize_report_totals(report, claim_context=None)
             finalize_report_exactness(report)
             return report
 

@@ -1,3 +1,35 @@
+## Task: Stop counting missing amounts as zero in uplift, savings and recoverable totals
+
+### Goal
+Each `?? 0` flagged in the zero-for-null sweep is classified with evidence; the ones where a missing amount is shown as a bare number now show a dash or a labelled partial figure (stacked on the billed-at-risk fix).
+
+### Subtasks
+- [x] Verify the six flagged places against the API types (`frontend/src/lib/domains/sut.ts`), the backend response models (`src/bilun/api/schemas.py`) and the callers.
+- [x] Fix (a): `SessionUpliftSection` fallback sum and `PatientInvoiceTable` opportunity fallback (dash / partial note, en and tr messages); shared `sumKnownAmounts` / `amountCoverage` next to `complianceBilledAtRiskSummary`.
+- [x] Leave (b) unchanged with a one-line reason comment: `OptionalOverrideSection`, `SUTOptimizerTab` grand total, `recoverableUplift`, `sutChatPageContext` copay savings.
+- [x] Tests: all present, one null, all null, en and tr (`SessionUpliftSection.test.tsx`, `PatientInvoiceTable.test.tsx`, `workspaceViews.test.ts`).
+- [x] `npx tsc --noEmit`, full `npx vitest run`, eslint on changed files, `npm run build`.
+- [ ] Draft PR against main, stacked on the billed-at-risk PR; do not merge before the pending production deploy is activated.
+
+### Out of Scope
+Backend, rules, exactness semantics, API shape. Backend defaults of 0.0 in the response models are noted in the PR, not changed.
+
+## Task: Never show a zero or partial sum for missing billed amounts at risk
+
+### Goal
+The compliance view's "Billed amount at risk" stat shows an exact sum only when every counted at-risk action has a billed amount; otherwise a dash or a labelled partial sum with "x of y findings".
+
+### Subtasks
+- [x] Reproduction reported by independent review (not re-run against the live API here): SENTETIK-HASTA-0003 (5 nulls shown as 0.00 TRY) and 0029 (25,000.00 TRY = 2 of 7 findings) on the synthetic cohort; 0017 (2 x 192.32) is complete and unchanged.
+- [x] Add `complianceBilledAtRiskSummary` ({total, known, count}) in `frontend/src/lib/workspaceViews.ts`; `complianceBilledAtRisk` returns null instead of a partial sum; keep the `drug_indication` exclusion.
+- [x] Render dash / partial hint in `ComplianceViewSection.tsx` with en and tr messages.
+- [x] Tests: one null, all nulls, no nulls, drug_indication exclusion, en and tr rendering.
+- [x] `npx tsc --noEmit`, full `npx vitest run`, `npm run build`.
+- [ ] Draft PR against main; do not merge before the pending production deploy is activated.
+
+### Out of Scope
+Backend, rules, exactness semantics, API shape, and other aggregations (uplift/savings fallbacks) that are not this billed-at-risk total.
+
 ## Task: 5 Ekim kaynak yenilemesi ve doğrulanmış paket entegrasyonu
 
 ### Goal
