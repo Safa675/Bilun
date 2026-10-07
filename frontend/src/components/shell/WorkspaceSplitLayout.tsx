@@ -54,10 +54,10 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
   };
 
   return (
-    <div className="flex items-start" data-workspace-split>
+    <div className="flex flex-col items-stretch min-[641px]:flex-row min-[641px]:items-start" data-workspace-split>
       <div className="min-w-0 flex-1">{children}</div>
       <div
-        className="min-w-0 flex-1 border-l border-[var(--border-subtle)]"
+        className="min-w-0 flex-1 border-t border-[var(--border-subtle)] min-[641px]:border-l min-[641px]:border-t-0"
         data-workspace-pane="b"
       >
         <div className="sticky top-10 z-20 flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-1.5">

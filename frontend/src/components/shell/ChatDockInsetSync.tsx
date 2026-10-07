@@ -4,6 +4,7 @@ import { useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import { getChatDockInsets, isChatDockEligiblePath } from "@/lib/chatDockLayout";
 import { useAiDockPosition } from "@/stores/index";
+import { useSmallScreen } from "@/lib/useSmallScreen";
 
 /**
  * Keeps `--chat-dock-inset-left/right` in sync so main content shifts away
@@ -13,7 +14,8 @@ export default function ChatDockInsetSync() {
   const pathname = usePathname();
   const chatDock = useAiDockPosition();
   const eligible = isChatDockEligiblePath(pathname);
-  const { left, right } = getChatDockInsets(chatDock, eligible);
+  const phone = useSmallScreen();
+  const { left, right } = getChatDockInsets(chatDock, eligible && !phone);
 
   useLayoutEffect(() => {
     const root = document.documentElement;

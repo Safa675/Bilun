@@ -8,6 +8,7 @@ import AppSidebar from "./AppSidebar";
 const saved = vi.hoisted(() => ({ dock: null as string | null, sidebar: null as string | null }));
 const widthWrites: string[] = [];
 const renderers: ReactTestRenderer[] = [];
+let phone = false;
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
@@ -34,20 +35,21 @@ async function mount() {
   await act(async () => { renderer = create(<AppSidebar />); });
   renderers.push(renderer!);
   const aside = renderer!.root.findByType("aside");
-  return { aside, width: aside.props.style.width, collapsed: aside.props["data-collapsed"] };
+  return { renderer: renderer!, aside, width: aside.props.style.width, collapsed: aside.props["data-collapsed"] };
 }
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   saved.dock = null;
   saved.sidebar = null;
+  phone = false;
   widthWrites.length = 0;
   vi.stubGlobal("window", {
     localStorage: {
       getItem: (key: string) => (key === "bilun:chat-dock" ? saved.dock : key === "bilun:sidebar-collapsed" ? saved.sidebar : null),
       setItem: vi.fn(),
     },
-    matchMedia: () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
+    matchMedia: () => ({ matches: phone, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
     setInterval: () => 1,
     clearInterval: () => undefined,
   });
@@ -68,6 +70,25 @@ afterEach(async () => {
 });
 
 describe("AppSidebar first width", () => {
+  it("opens phone navigation without reserving a rail or changing the saved desktop choice", async () => {
+    phone = true;
+    saved.dock = "right";
+    saved.sidebar = "1";
+    const { renderer, aside } = await mount();
+    expect(aside.props.hidden).toBe(true);
+    expect(widthWrites.every(width => width === "0px")).toBe(true);
+    const trigger = renderer.root.findAllByType("button").find(button => button.props["aria-controls"] === "phone-navigation")!;
+    await act(async () => trigger.props.onClick());
+    expect(aside.props.hidden).toBe(false);
+    expect(aside.props["aria-modal"]).toBe(true);
+    expect(aside.props["data-mobile-open"]).toBe("true");
+    const backdrop = renderer.root.findByProps({ "data-phone-sidebar-backdrop": true });
+    await act(async () => backdrop.props.onClick());
+    expect(aside.props.hidden).toBe(true);
+    expect(window.localStorage.setItem).toHaveBeenCalledWith("bilun:sidebar-collapsed", "1");
+    expect(window.localStorage.setItem).not.toHaveBeenCalledWith("bilun:sidebar-collapsed", "0");
+  });
+
   it("renders the existing full-resolution wordmark at a readable size", async () => {
     const { aside } = await mount();
     const logo = aside.findByType("img");

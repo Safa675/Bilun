@@ -50,7 +50,7 @@ export default function UnifiedComplianceFindingsTable({
   const t = useT();
 
   return (
-    <DataTable minWidth={960} className="text-sm">
+    <DataTable minWidth={960} mobileStacked className="text-sm">
       <thead>
         <tr>
           <th>{t("billing.views.compliance.colStatus")}</th>
@@ -146,7 +146,7 @@ export default function UnifiedComplianceFindingsTable({
                 }}
               >
                 {/* 1. Durum */}
-                <td>
+                <td data-label={t("billing.views.compliance.colStatus")}>
                   <Chip
                     variant={
                       row.status === "confirmed_violation" ? "danger" : "warning"
@@ -159,7 +159,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 2. Kaynak */}
-                <td>
+                <td data-label={t("billing.views.compliance.colSource")}>
                   <div className="flex flex-wrap items-center gap-1.5">
                     {row.sourceLabels.map((label) => (
                       <Chip key={label} variant="neutral">
@@ -170,7 +170,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 3. Bulgu / yapılması gereken */}
-                <td>
+                <td data-label={t("billing.views.compliance.colFinding")} data-stack-wide>
                   <div className="font-medium text-[var(--text-primary)]">
                     {row.title}
                   </div>
@@ -182,17 +182,17 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 4. Fatura */}
-                <td className="font-mono text-xs text-[var(--text-secondary)]">
+                <td data-label={t("billing.views.compliance.colClaim")} className="font-mono text-xs text-[var(--text-secondary)]">
                   {row.claimId || "—"}
                 </td>
 
                 {/* 5. Kod */}
-                <td className="font-mono text-xs text-[var(--text-primary)]">
+                <td data-label={t("billing.views.compliance.colCode")} className="font-mono text-xs text-[var(--text-primary)]">
                   {row.code || "—"}
                 </td>
 
                 {/* 6. SUT */}
-                <td className="text-sm text-[var(--text-secondary)]">
+                <td data-label={t("billing.views.compliance.colSut")} className="text-sm text-[var(--text-secondary)]">
                   {row.sutLabel || clauseKey ? (
                     onOpenClause && clauseKey ? (
                       <button
@@ -217,7 +217,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 7. Risk tutarı */}
-                <td className="num-col text-right tabular-nums text-sm text-[var(--text-primary)]">
+                <td data-label={t("billing.views.compliance.colAmount")} className="num-col text-right tabular-nums text-sm text-[var(--text-primary)]">
                   {row.amountValue != null ? (
                     <span className="whitespace-nowrap">
                       {fmtTRY2(row.amountValue)}
@@ -235,7 +235,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 8. İncele */}
-                <td className="text-right">
+                <td data-label={t("billing.views.compliance.colInspect")} className="text-right">
                   {row.canonicalFindingId ? (
                     <PatientTabLink
                       patientId={patientId}
