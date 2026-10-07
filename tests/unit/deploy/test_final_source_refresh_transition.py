@@ -1935,7 +1935,7 @@ def test_old_replay_report_has_only_the_closed_twelve_field_tooling_addendum():
     "wrong_profile", "profile_bool", "missing_profile", "wrong_base", "base_bool",
     "wrong_base_tree", "base_tree_none", "wrong_anchor", "wrong_anchor_tree", "wrong_closure",
     "closure_bool", "wrong_tooling_digest", "tooling_digest_none", "missing_addendum_field",
-    "old_seed", "mixed_seed", "false_seed", "extra_descendant", "empty_descendants",
+    "old_seed", "mixed_seed", "false_seed", "seed_tree_only", "extra_descendant", "empty_descendants",
     "wrong_candidate", "candidate_bool", "missing_path", "extra_path", "duplicate_path",
     "unsorted_paths", "roster_tuple", "candidate_tree", "extra_field", "wrong_verifier",
     "wrong_replay_candidate",
@@ -1961,6 +1961,8 @@ def test_old_replay_report_rejects_resealed_history_or_execution_authority(mutat
         history["integration_seed_sha"] = False if mutation == "false_seed" else final.INTEGRATION_SEED_SHA
         if mutation == "old_seed":
             history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
+    elif mutation == "seed_tree_only":
+        history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
     elif mutation in {"extra_descendant", "empty_descendants"}:
         history["descendant_commits"] = [] if mutation == "empty_descendants" else ["b" * 40, report["candidate_code_sha"]]
     elif mutation in {"wrong_candidate", "candidate_bool"}:

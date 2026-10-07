@@ -342,7 +342,7 @@ def test_raw_report_has_only_existing_closed_twelve_field_addendum():
 
 @pytest.mark.parametrize("mutation", [
     "profile", "base", "base_tree", "product_anchor", "product_tree", "closure", "tooling_digest",
-    "candidate", "extra_descendant", "old_seed", "false_seed", "missing_path", "extra_path",
+    "candidate", "extra_descendant", "old_seed", "false_seed", "seed_tree_only", "missing_path", "extra_path",
     "duplicate_path", "unsorted_paths", "missing_key", "extra_key", "wrong_verifier", "wrong_replay",
 ])
 def test_raw_report_contract_rejects_resealed_authority(mutation):
@@ -359,6 +359,8 @@ def test_raw_report_contract_rejects_resealed_authority(mutation):
         history["descendant_commits"].append("f" * 40)
     elif mutation in {"old_seed", "false_seed"}:
         history["integration_seed_sha"] = False if mutation == "false_seed" else final.INTEGRATION_SEED_SHA
+    elif mutation == "seed_tree_only":
+        history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
     elif mutation in {"missing_path", "extra_path", "duplicate_path", "unsorted_paths"}:
         paths = history["authorized_changed_paths"]
         if mutation == "missing_path":
