@@ -32,6 +32,9 @@ export function buildVisibleBillingSnapshot(
 ): VisibleBillingSnapshot {
   const isBillScope = report.scope === "bill" && Boolean(report.claim_id);
   const copayExact = report.copay?.exactness_status === "exact";
+  // CopayOptimization defaults all three amounts to 0.0 and types visit/rx as required
+  // numbers, so these `?? 0` cannot stand in for a missing amount (an unknown gap
+  // is simply not sent: showExemptionGap also requires copayExact and a positive sum).
   const exemptionGapTotal =
     report.copay?.patient_copay_waived_total_try ??
     (report.copay?.visit_copay_savings_try ?? 0) + (report.copay?.rx_copay_savings_try ?? 0);

@@ -5,7 +5,9 @@ import {
   isClaimComplianceFindingSelected,
   complianceBilledAtRisk,
   complianceBilledAtRiskSummary,
+  amountCoverage,
   recoverableUplift,
+  sumKnownAmounts,
   scopedClaimComplianceFindings,
   viewActions,
   viewForSection,
@@ -235,5 +237,35 @@ describe("workspaceViews", () => {
         total_recoverable_try: 0,
       } as unknown as BillingActionReport),
     ).toBe(0);
+  });
+});
+
+describe("sumKnownAmounts / amountCoverage", () => {
+  it("sums every amount when none is missing", () => {
+    const sum = sumKnownAmounts([100, 50.5, 0]);
+    expect(sum).toEqual({ total: 150.5, known: 3, count: 3 });
+    expect(amountCoverage(sum)).toBe("complete");
+  });
+
+  it("sums only the known amounts and reports a partial coverage when one is missing", () => {
+    const sum = sumKnownAmounts([100, null, undefined, 25]);
+    expect(sum).toEqual({ total: 125, known: 2, count: 4 });
+    expect(amountCoverage(sum)).toBe("partial");
+  });
+
+  it("reports none, not a zero total, when every amount is missing", () => {
+    const sum = sumKnownAmounts([null, undefined]);
+    expect(sum).toEqual({ total: 0, known: 0, count: 2 });
+    expect(amountCoverage(sum)).toBe("none");
+  });
+
+  it("treats an empty list as complete (nothing to sum)", () => {
+    const sum = sumKnownAmounts([]);
+    expect(sum).toEqual({ total: 0, known: 0, count: 0 });
+    expect(amountCoverage(sum)).toBe("complete");
+  });
+
+  it("keeps a real zero amount known", () => {
+    expect(amountCoverage(sumKnownAmounts([0, 0]))).toBe("complete");
   });
 });

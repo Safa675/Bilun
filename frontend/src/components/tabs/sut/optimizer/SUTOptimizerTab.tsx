@@ -1066,6 +1066,9 @@ function RevenueRecoveryDashboard({
     (patient) => !cohortFilterActive || cohortPatientIds.has(patient.patient_id),
   );
 
+  // total_recoverable_try is a required number on every patient summary row (the
+  // backend always emits it, domains/sut.ts PatientRecoverySummaryRow), and the sort
+  // below relies on it, so this `?? 0` never stands in for a missing amount.
   const filteredGrandTotal = summarySource.reduce(
     (sum, patient) => sum + (patient.total_recoverable_try ?? 0),
     0,

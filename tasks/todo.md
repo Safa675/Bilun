@@ -1,3 +1,19 @@
+## Task: Stop counting missing amounts as zero in uplift, savings and recoverable totals
+
+### Goal
+Each `?? 0` flagged in the zero-for-null sweep is classified with evidence; the ones where a missing amount is shown as a bare number now show a dash or a labelled partial figure (stacked on the billed-at-risk fix).
+
+### Subtasks
+- [x] Verify the six flagged places against the API types (`frontend/src/lib/domains/sut.ts`), the backend response models (`src/bilun/api/schemas.py`) and the callers.
+- [x] Fix (a): `SessionUpliftSection` fallback sum and `PatientInvoiceTable` opportunity fallback (dash / partial note, en and tr messages); shared `sumKnownAmounts` / `amountCoverage` next to `complianceBilledAtRiskSummary`.
+- [x] Leave (b) unchanged with a one-line reason comment: `OptionalOverrideSection`, `SUTOptimizerTab` grand total, `recoverableUplift`, `sutChatPageContext` copay savings.
+- [x] Tests: all present, one null, all null, en and tr (`SessionUpliftSection.test.tsx`, `PatientInvoiceTable.test.tsx`, `workspaceViews.test.ts`).
+- [x] `npx tsc --noEmit`, full `npx vitest run`, eslint on changed files, `npm run build`.
+- [ ] Draft PR against main, stacked on the billed-at-risk PR; do not merge before the pending production deploy is activated.
+
+### Out of Scope
+Backend, rules, exactness semantics, API shape. Backend defaults of 0.0 in the response models are noted in the PR, not changed.
+
 ## Task: Never show a zero or partial sum for missing billed amounts at risk
 
 ### Goal

@@ -30,6 +30,8 @@ export function OptionalOverrideSection({
     return null;
   }
 
+  // Every row passed the `savings_try > 0` filter above (the backend's
+  // optional_override_opportunities predicate), so no summed row lacks an amount.
   const totalUplift =
     strategyData.optional_override_uplift_try ??
     rows.reduce((sum, row) => sum + (row.savings_try ?? 0), 0);

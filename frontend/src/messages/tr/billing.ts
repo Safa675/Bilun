@@ -339,6 +339,8 @@ const billing = {
     "scopeFootnote": "Fatura tutarları ve SUT puan oranlarından kural hesaplı (aynı hizmet tarihi). Klinik seans/kesi sınırları doğrulanmamıştır — grafik incelemesi satırları SGK artışı başlığına dahil edilmez.",
     "reviewBadge": "Grafik incelemesi",
     "reviewTotal": "Grafik incelemesi bekleyen",
+    "totalNone": "Bu toplamdaki {count} satırın hiçbirinde artış tutarı yok",
+    "totalPartial": "Kısmi toplam: bu toplamdaki {count} satırdan yalnızca {known} tanesinde artış tutarı var",
     "unavailable": "Seans fiyatlandırma artışı için aynı seanstaki kesin işlem satırları gerekir.",
     "claim": "Talep",
     "procedure": "İşlem",

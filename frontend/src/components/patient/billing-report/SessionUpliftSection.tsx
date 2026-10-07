@@ -7,6 +7,7 @@ import { isExactOutput } from "@/lib/sutExactness";
 import { formatSutSectionLabel } from "@/lib/billingReportFields";
 import { Chip, ExactnessBlock as ExactnessNotice } from "@/components/primitives";
 import { fmtTRY2, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
+import { amountCoverage, sumKnownAmounts } from "@/lib/workspaceViews";
 import { WRAPPED_HEADER_STYLE, BillingRegulatorySourceCell, BillingSectionShell, TableWrap } from "./shared";
 
 export function SessionUpliftSection({
@@ -30,22 +31,38 @@ export function SessionUpliftSection({
     return null;
   }
 
-  const confirmedUplift =
-    sessionData.confirmed_uplift_try ??
+  // The reported confirmed total is used as-is. Only when it is absent do we sum
+  // the rows, and a row without an uplift amount is unknown (its cell shows
+  // "unavailable"), never zero: show a dash or a labelled partial total.
+  const rowSum = sumKnownAmounts(
     opportunities
       .filter((row) => row.included_in_sgk_total !== false)
-      .reduce((sum, row) => sum + (row.recoverable_uplift_try ?? 0), 0);
+      .map((row) => row.recoverable_uplift_try),
+  );
+  const reportedConfirmed = sessionData.confirmed_uplift_try;
+  const confirmedUplift = reportedConfirmed ?? rowSum.total;
+  const totalCoverage = reportedConfirmed != null ? "complete" : amountCoverage(rowSum);
   const reviewUplift = sessionData.review_uplift_try ?? 0;
 
   return (
     <BillingSectionShell
       id="billing-session-uplift"
       title={t("billing.sessionUplift.title")}
-      total={fmtTRY2(confirmedUplift)}
+      total={totalCoverage === "none" ? "—" : fmtTRY2(confirmedUplift)}
     >
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.sessionUplift.scopeFootnote")}
       </p>
+      {totalCoverage !== "complete" && (
+        <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {totalCoverage === "none"
+            ? t("billing.sessionUplift.totalNone", { count: rowSum.count })
+            : t("billing.sessionUplift.totalPartial", {
+                known: rowSum.known,
+                count: rowSum.count,
+              })}
+        </p>
+      )}
       {reviewUplift > 0 && (
         <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.sessionUplift.reviewTotal")}: {fmtTRY2(reviewUplift)}

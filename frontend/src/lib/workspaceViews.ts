@@ -126,7 +126,45 @@ export function complianceBilledAtRisk(report: BillingActionReport): number | nu
   return known === count ? total : null;
 }
 
+/**
+ * Sum of amounts that may be missing, with coverage (same shape as
+ * `BilledAtRiskSummary`). `count` is every amount offered, `known` how many are
+ * present, and `total` adds only the present ones, so it is a partial figure
+ * whenever `known < count`. A missing (null/undefined) amount is never zero.
+ */
+export interface KnownAmountsSum {
+  total: number;
+  known: number;
+  count: number;
+}
+
+export function sumKnownAmounts(
+  amounts: ReadonlyArray<number | null | undefined>,
+): KnownAmountsSum {
+  let total = 0;
+  let known = 0;
+  for (const amount of amounts) {
+    if (amount == null) continue;
+    total += amount;
+    known += 1;
+  }
+  return { total, known, count: amounts.length };
+}
+
+/**
+ * How much of a sum is known: "complete" (every amount present, or nothing to
+ * sum), "none" (amounts exist but none is known: show a dash) or "partial".
+ */
+export type AmountCoverage = "complete" | "partial" | "none";
+
+export function amountCoverage(sum: Pick<KnownAmountsSum, "known" | "count">): AmountCoverage {
+  if (sum.known === sum.count) return "complete";
+  return sum.known === 0 ? "none" : "partial";
+}
+
 /** SGK uplift shown on the revenue view (total fallback for partial reports). */
 export function recoverableUplift(report: BillingActionReport): number {
+  // BillingReportResponse defaults both amounts to 0.0 and total_recoverable_try is a
+  // required number, so the final `?? 0` cannot stand in for a missing amount.
   return report.sgk_uplift_try ?? report.total_recoverable_try ?? 0;
 }
