@@ -18,6 +18,9 @@ from scripts.deploy import verify_final_source_refresh_transition as historical
 from scripts.deploy import verify_integration_byte_profile as profile
 from scripts.deploy.rehearse_wavea_same_port import project_report_transport
 from tests.unit.deploy.integration_historical_sources import load_historical_sources
+from tests.unit.deploy.test_same_port_rehearsal import (
+    isolated_projection_source as isolated_projection_source,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 ARCHIVE = Path(__file__).parent / "fixtures/integration_historical_sources.json"
@@ -319,7 +322,10 @@ def test_historical_archive_does_not_trust_rehashed_or_forged_metadata(tmp_path,
 
 
 @pytest.mark.parametrize("kind", ["missing", "null", "zero"])
-def test_current_transport_computes_unknown_and_real_zero_from_actual_source(kind):
+def test_current_transport_computes_unknown_and_real_zero_from_actual_source(
+    kind, isolated_projection_source
+):
+    repository, code_sha = isolated_projection_source
     report = {"patient_id": "P1"}
     if kind != "missing":
         amount = None if kind == "null" else 0.0
@@ -341,8 +347,8 @@ def test_current_transport_computes_unknown_and_real_zero_from_actual_source(kin
             "claim_source": "claims",
             "clinical_source": "clean",
         },
-        repository=ROOT,
-        expected_code_sha=_git(ROOT, "rev-parse", "HEAD"),
+        repository=repository,
+        expected_code_sha=code_sha,
         python_executable=Path(sys.executable),
         dependency_roots=(Path(sys.base_prefix), Path(sysconfig.get_path("purelib"))),
         cache_sha256="a" * 64,

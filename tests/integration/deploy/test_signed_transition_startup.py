@@ -475,6 +475,9 @@ def _populate_combined_cache(path, *, checkout, code_sha, environment, drug):
                     payload["recommended_actions"] = [*payload["recommended_actions"],
                                                         *copy.deepcopy(drug["recommended_actions"])]
                     payload["sgk_uplift_try"] = 0.0
+                    # An authored known lab total is valid in both frozen DTOs;
+                    # current no-claim computation otherwise leaves it unknown.
+                    payload["lab"]["normative_cost_try"] = 7.5
                     if table == "patient_billing_report_rows":
                         patient = payload
                 con.execute(f'UPDATE "{table}" SET payload_json=? WHERE build_id=? AND payload_json=?',
@@ -786,6 +789,9 @@ def _assert_combined_negative_matrix(bundle):
     common = ("unknown_top", "unknown_finding", "money_bool", "money_integer", "money_null")
     checked = 0
     for side in ("baseline", "candidate"):
+        for report in bundle.packages[side].raw_reports.values():
+            assert type(report["lab"]["normative_cost_try"]) is float
+            assert report["lab"]["normative_cost_try"] == 7.5
         mutations = (*common, "old_default") if side == "baseline" else (*common, "missing_authority", "missing_restrictions")
         for path in sorted(expected_paths):
             for mutation in mutations:
