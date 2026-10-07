@@ -3,8 +3,7 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import PatientTabLink from "@/components/shell/PatientTabLink";
 import { useT } from "@/lib/i18n/useTranslations";
-import { fmtDateTime } from "@/lib/i18n/formatters";
-import { translateApiText } from "@/lib/apiMessages";
+import { fmtDate } from "@/lib/i18n/formatters";
 import { getMedulaRejectionQueue } from "@/lib/api/sut";
 import { buildSutPatientHref } from "@/lib/constants";
 import type {
@@ -143,18 +142,23 @@ export default function MedulaRejectionQueueTab() {
   const codeOptions = data?.facets?.sonuc_kodu ?? [];
   const stageOptions = data?.facets?.medula_stage ?? [];
   const stats = data?.stats;
+  const readableLabel = (kind: "stages" | "playbooks", value: string) => {
+    const key = `operations.queue.${kind}.${value}`;
+    const label = t(key);
+    return label === key ? value : label;
+  };
 
   return (
     <div className="space-y-5">
       {data?.ingest_available && stats && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Surface variant="base" padding="md">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Surface variant="inset" padding="sm" className="border-b border-[var(--border-subtle)] lg:border-b-0">
             <Stat label={t("operations.queue.kpis.total")} value={fmtNum(stats.n_events ?? 0)} />
           </Surface>
-          <Surface variant="base" padding="md">
+          <Surface variant="inset" padding="sm" className="border-b border-[var(--border-subtle)] lg:border-b-0">
             <Stat label={t("operations.queue.kpis.matched")} value={fmtNum(stats.n_matched ?? 0)} />
           </Surface>
-          <Surface variant="base" padding="md">
+          <Surface variant="inset" padding="sm">
             <Stat
               label={t("operations.queue.kpis.rebillable")}
               value={fmtNum(stats.n_rebill_permitted ?? 0)}
@@ -194,7 +198,7 @@ export default function MedulaRejectionQueueTab() {
               <option value="">{t("operations.queue.filters.all")}</option>
               {stageOptions.map((stage) => (
                 <option key={stage} value={stage}>
-                  {translateApiText(stage)}
+                  {readableLabel("stages", stage)}
                 </option>
               ))}
             </select>
@@ -292,7 +296,7 @@ export default function MedulaRejectionQueueTab() {
                         setExpandedId(expanded ? null : row.rejection_event_id)
                       }
                     >
-                      <td>
+                      <td className="whitespace-nowrap">
                         <PatientTabLink
                           patientId={row.patient_id}
                           href={buildSutPatientHref(row.patient_id)}
@@ -302,23 +306,23 @@ export default function MedulaRejectionQueueTab() {
                           {row.patient_id}
                         </PatientTabLink>
                       </td>
-                      <td>
+                      <td className="whitespace-nowrap">
                         <PatientTabLink
                           patientId={row.patient_id}
                           href={buildSutPatientHref(row.patient_id, {
                             claimId: row.claim_id,
                             section: "medula-playbook",
                           })}
-                          className={cn("font-mono text-xs", PATIENT_LINK_CLASS)}
+                          className={cn("font-mono text-xs whitespace-nowrap", PATIENT_LINK_CLASS)}
                           onClick={(event) => event.stopPropagation()}
                         >
                           {row.claim_id}
                         </PatientTabLink>
                       </td>
-                      <td>{row.rejection_timestamp ? fmtDateTime(row.rejection_timestamp) : "—"}</td>
-                      <td>{row.medula_stage ? translateApiText(row.medula_stage) : "—"}</td>
+                      <td className="whitespace-nowrap">{row.rejection_timestamp ? fmtDate(row.rejection_timestamp) : "—"}</td>
+                      <td>{row.medula_stage ? readableLabel("stages", row.medula_stage) : "—"}</td>
                       <td className="font-mono text-xs">{row.sonuc_kodu}</td>
-                      <td>{row.hata_mesaji ? translateApiText(row.hata_mesaji) : "—"}</td>
+                      <td lang="tr">{row.hata_mesaji || "—"}</td>
                       <td>
                         <RelatedLineCell
                           lineType={row.related_line_type}
@@ -329,7 +333,7 @@ export default function MedulaRejectionQueueTab() {
                       </td>
                       <td>
                         {row.playbook_matched
-                          ? row.playbook_key ?? "—"
+                          ? (row.playbook_key ? readableLabel("playbooks", row.playbook_key) : "—")
                           : t("operations.queue.values.noTemplate")}
                       </td>
                       <td>

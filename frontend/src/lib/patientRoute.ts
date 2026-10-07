@@ -54,8 +54,10 @@ export function resolvePatientScrollTarget(
     const exact = findFindingRowElement(root, findingId);
     if (exact) return exact;
   }
-  if (sectionId && typeof root.getElementById === "function") {
-    const section = root.getElementById(sectionId);
+  if (sectionId) {
+    const section = typeof root.getElementById === "function"
+      ? root.getElementById(sectionId)
+      : Array.from(root.querySelectorAll("[id]")).find((element) => element.id === sectionId);
     if (section) return section;
   }
   return null;

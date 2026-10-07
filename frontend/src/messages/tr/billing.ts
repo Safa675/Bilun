@@ -28,6 +28,16 @@ const billing = {
     "totalsUnavailableNotice": "Her fatura bölümü kesin olana kadar fatura toplamları kullanılamaz."
   },
   "recommendedActions": {
+    "nextActions": "Sonraki işlemler",
+    "showAll": "Tümünü göster ({count})",
+    "sourceUnavailable": "SUT kullanılamıyor",
+    "exactness": {
+      "exact": "Kesin",
+      "partial_exact": "Kısmi kesin",
+      "missing_exact_inputs": "Kesin girdiler eksik",
+      "unknown_date": "Tarih bilinmiyor",
+      "not_applicable": "Uygulanamaz"
+    },
     "listTitle": "Önerilen işlemler — kalem kalem",
     "surface": "Yüzey",
     "claim": "Talep",
@@ -83,7 +93,7 @@ const billing = {
     "amountSgkUplift": "SGK artışı",
     "amountCompliance": "Uyumluluk tasarrufu",
     "amountAuditRisk": "Denetim riski",
-    "amountExemptionReview": "Muafiyet doğrulama (₺0 fark)",
+    "amountExemptionReview": "Muafiyeti doğrula",
     "amountComplianceOnly": "Uyumluluk düzeltmesi gerekli"
   },
   "lab": {
@@ -382,6 +392,9 @@ const billing = {
     "catalogAsOf": "EK-2B/EK-2C katalog üyeliği {date} tarihi itibarıyla (hizmet tarihi)."
   },
   "materials": {
+    "partialCoverage": "Kısmi kapsam",
+    "coverageUnavailable": "Kapsam kullanılamıyor",
+    "coverageNotEvaluated": "Kapsam değerlendirilmedi",
     "title": "Malzeme ön kontrolü",
     "unavailable": "Bu bölüm tam kesin olana kadar malzeme tavan tahminleri kullanılamaz.",
     "preAuth": "Ön onay gerekli",
@@ -424,6 +437,13 @@ const billing = {
     "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
   },
   "wavea": {
+    "sutClause": "SUT {coordinate}",
+    "countUnavailable": "Sayı mevcut değil",
+    "notEvaluated": "Değerlendirilmedi",
+    "statusUnavailable": "Mevcut değil",
+    "statusPartial": "Kısmi",
+    "evaluationCount": "{count} değerlendirme",
+    "missingDataCount": "{count} değerlendirilmedi",
     "reviewTitle": "İnsan incelemesi gerekli",
     "reviewHeading": "İnsan incelemesi gerekli",
     "reviewNotice": "Bu kayıtlar henüz ihlal veya finansal kazanç olarak sayılmadı. Fatura ve kaynak koşullarını doğrulayın.",

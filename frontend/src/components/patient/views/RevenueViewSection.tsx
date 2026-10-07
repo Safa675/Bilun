@@ -1,6 +1,7 @@
 "use client";
 
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+import type { ReactNode } from "react";
 import {
   BloodComponentUpliftSection,
   CareSettingReviewSection,
@@ -33,6 +34,7 @@ export default function RevenueViewSection({
   onOpenClause,
   selectedFindingId,
   selectedClaimId,
+  detailsPrelude,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
@@ -40,6 +42,7 @@ export default function RevenueViewSection({
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
+  detailsPrelude?: ReactNode;
 }) {
   const t = useT();
   const viewActionsList = viewActions(billingReport, "revenue");
@@ -75,6 +78,8 @@ export default function RevenueViewSection({
         />
       )}
 
+      {detailsPrelude}
+
       <PatientWaveAEvidenceSection
         patientId={billingReport.patient_id}
         kind="financial_rows"
@@ -84,7 +89,7 @@ export default function RevenueViewSection({
         selectedClaimId={selectedClaimId}
       />
 
-      <CopayOptimizationSection copayData={billingReport.copay} />
+      <CopayOptimizationSection copayData={billingReport.copay} onOpenClause={onOpenClause} />
       {billingReport.session_uplift && (
         <SessionUpliftSection sessionData={billingReport.session_uplift} />
       )}

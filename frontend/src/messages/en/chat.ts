@@ -10,6 +10,12 @@ const chat = {
     centerInline: "Center (inline)",
     dockRight: "Dock right",
     sendMessage: "Send message",
+    collapse: "Collapse chat",
+    expand: "Open chat",
+  },
+  collapsed: {
+    prompt: "Ask Bilun…",
+    working: "Bilun is working…",
   },
   emptyState: "Bilun will brief each view and keep the full thread here.",
   devModeBadge: "Dev copilot",

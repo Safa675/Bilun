@@ -10,6 +10,17 @@ import { getExemptionCategories } from "@/lib/copayExemption";
 import { fmtNum, fmtRiskLabel, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
 import { BillingSectionShell } from "./shared";
 
+function MoneyHint({ labelKey, amount }: { labelKey: string; amount: number | null | undefined }) {
+  const t = useT();
+  const marker = "__bilun_money__";
+  const [before, after] = t(labelKey, { amount: marker }).split(marker);
+  return (
+    <p className="text-xs text-[var(--text-secondary)]">
+      {before}<span className="whitespace-nowrap tabular-nums">{fmtTRY2OrUnavailable(amount)}</span>{after}
+    </p>
+  );
+}
+
 export function SutOptimizationSection({ optimization }: { optimization: PatientOptimization }) {
   const t = useT();
   const surchargeExact = isExactOutput(optimization.surcharge_exposure);
@@ -103,17 +114,9 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
             </Chip>
             {drgExact ? (
               <>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {t("billing.sutOptimization.recoverableSavings", {
-                    amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings),
-                  })}
-                </p>
+                <MoneyHint labelKey="billing.sutOptimization.recoverableSavings" amount={optimization.drg_unbundling.total_potential_savings} />
                 {(optimization.drg_unbundling.total_sourced_savings ?? 0) > 0 && (
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {t("billing.sutOptimization.drgSourcedSavings", {
-                      amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_sourced_savings),
-                    })}
-                  </p>
+                  <MoneyHint labelKey="billing.sutOptimization.drgSourcedSavings" amount={optimization.drg_unbundling.total_sourced_savings} />
                 )}
               </>
             ) : (

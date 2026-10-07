@@ -5,6 +5,8 @@ import {
   AlertCircle,
   Minimize2,
   PanelRight,
+  PanelTopClose,
+  PanelTopOpen,
   RotateCcw,
   Send,
   Sparkles,
@@ -31,6 +33,8 @@ interface SutInlineAIPanelProps {
   autoPrompt?: string;
   dock?: SutChatDockPosition;
   onDockChange?: (dock: SutChatDockPosition) => void;
+  /** False while a split view is open: the right column is off there, collapse and open still work. */
+  allowRightDock?: boolean;
   chatState?: SutInlineChatState;
   onChatStateChange?: (state: SutInlineChatState) => void;
 }
@@ -86,6 +90,7 @@ export default function SutInlineAIPanel({
   autoPrompt,
   dock = "center",
   onDockChange,
+  allowRightDock = true,
   chatState: externalState,
   onChatStateChange,
 }: SutInlineAIPanelProps) {
@@ -114,6 +119,12 @@ export default function SutInlineAIPanel({
   const fireAutoAnalysisRef = useRef<(options?: { force?: boolean }) => void>(() => undefined);
   const prevLocaleRef = useRef(locale);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Collapsed mode never starts a brief; opening the panel does (effects below).
+  const autoBriefEnabled = dock !== "collapsed";
+  const autoBriefEnabledRef = useRef(autoBriefEnabled);
+  const wasAutoBriefEnabledRef = useRef(autoBriefEnabled);
+  const focusToggleRef = useRef(false);
 
   const syncInputHeight = useCallback(() => {
     const el = inputRef.current;
@@ -143,6 +154,10 @@ export default function SutInlineAIPanel({
   useEffect(() => {
     pageContextRef.current = pageContext;
   }, [pageContext]);
+
+  useEffect(() => {
+    autoBriefEnabledRef.current = autoBriefEnabled;
+  }, [autoBriefEnabled]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -344,7 +359,7 @@ export default function SutInlineAIPanel({
       setFollowUpText("");
       setFollowUpReasoningText("");
       setFollowUpError(null);
-      fireAutoAnalysisRef.current({ force: true });
+      if (autoBriefEnabledRef.current) fireAutoAnalysisRef.current({ force: true });
     }
   }, [locale, persistChatState]);
 
@@ -354,7 +369,7 @@ export default function SutInlineAIPanel({
     }
 
     debounceRef.current = setTimeout(() => {
-      fireAutoAnalysisRef.current();
+      if (autoBriefEnabledRef.current) fireAutoAnalysisRef.current();
     }, 400);
 
     return () => {
@@ -367,6 +382,33 @@ export default function SutInlineAIPanel({
       followUpAbortRef.current = null;
     };
   }, [patientId, activeTab]);
+
+  // Opening the panel starts the brief that collapsed mode skipped. A context that already has its brief
+  // is not repeated (fireAutoAnalysis checks briefedContextKeys). Collapsing aborts nothing.
+  useEffect(() => {
+    const opened = autoBriefEnabled && !wasAutoBriefEnabledRef.current;
+    wasAutoBriefEnabledRef.current = autoBriefEnabled;
+    if (!opened) return;
+    // Opening replaces the pending context brief, even if this attempt fails fast.
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    const timer = setTimeout(() => fireAutoAnalysisRef.current(), 0);
+    return () => clearTimeout(timer);
+  }, [autoBriefEnabled]);
+
+  // After a user toggle the clicked button is replaced by its twin: keep keyboard focus inside the panel.
+  useEffect(() => {
+    if (!focusToggleRef.current) return;
+    focusToggleRef.current = false;
+    rootRef.current?.querySelector<HTMLElement>("[data-chat-dock-toggle]")?.focus();
+  }, [dock]);
+
+  const changeDock = useCallback((next: SutChatDockPosition) => {
+    if ((next === "collapsed") !== (dock === "collapsed")) focusToggleRef.current = true;
+    onDockChange?.(next);
+  }, [dock, onDockChange]);
 
   const handleSend = useCallback((retryQuestion?: string) => {
     const question = (retryQuestion ?? input).trim();
@@ -461,10 +503,74 @@ export default function SutInlineAIPanel({
     }
   };
 
+  const collapsed = dock === "collapsed";
+  const dockButtonClass =
+    "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]";
+  const dockControls = onDockChange ? (
+    <div className="flex items-center gap-1">
+      <Button
+        variant="icon"
+        data-chat-dock-toggle
+        onClick={() => changeDock(collapsed ? "center" : "collapsed")}
+        aria-label={collapsed ? t("chat.actions.expand") : t("chat.actions.collapse")}
+        title={collapsed ? t("chat.actions.expand") : t("chat.actions.collapse")}
+        className={dockButtonClass}
+      >
+        {collapsed ? <PanelTopOpen className="h-3.5 w-3.5" /> : <PanelTopClose className="h-3.5 w-3.5" />}
+      </Button>
+      {!collapsed && (
+        <Button
+          variant="icon"
+          onClick={() => changeDock("center")}
+          aria-label={t("chat.actions.centerInline")}
+          title={t("chat.actions.centerInline")}
+          className={cn(dockButtonClass, dock === "center" && buttonActiveClass)}
+        >
+          <Minimize2 className="h-3.5 w-3.5" />
+        </Button>
+      )}
+      {allowRightDock && (
+        <Button
+          variant="icon"
+          onClick={() => changeDock("right")}
+          aria-label={t("chat.actions.dockRight")}
+          title={t("chat.actions.dockRight")}
+          className={cn(dockButtonClass, dock === "right" && buttonActiveClass)}
+        >
+          <PanelRight className="h-3.5 w-3.5" />
+        </Button>
+      )}
+    </div>
+  ) : null;
+
+  if (collapsed) {
+    const working = isAutoLoading || isResponding;
+    return (
+      <div
+        ref={rootRef}
+        className="mb-3 flex items-center gap-2 rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-base)] py-1 pl-3 pr-2 text-[var(--text-primary)] shadow-[var(--shadow-1)]"
+      >
+        <Sparkles className="h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+        <button
+          type="button"
+          disabled={!onDockChange}
+          onClick={() => changeDock("center")}
+          className="min-w-0 flex-1 truncate rounded-[var(--r-sm)] py-1 text-left text-[13px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] disabled:cursor-default"
+        >
+          {working ? t("chat.collapsed.working") : t("chat.collapsed.prompt")}
+        </button>
+        {dockControls}
+      </div>
+    );
+  }
+
+  // The header row below wraps (flex-wrap): in the 380px right dock the four controls beside a long subtitle
+  // ("Patient: <id>") do not fit one row, and the controls then take their own row instead of running past the viewport edge.
   const displayedMessages = visibleChatMessages(messages);
 
   return (
     <div
+      ref={rootRef}
       className={cn(
         "border border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-4 text-[var(--text-primary)] shadow-[var(--shadow-1)]",
         dock === "center"
@@ -472,8 +578,8 @@ export default function SutInlineAIPanel({
           : "fixed top-0 right-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
       )}
     >
-      <div className="mb-2 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 items-start gap-3">
           <Sparkles className="mt-[0.15rem] h-4 w-4 shrink-0 text-[var(--gold)]" />
           <div>
             <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
@@ -499,7 +605,7 @@ export default function SutInlineAIPanel({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1">
           <Button
             variant="icon"
             onClick={() => {
@@ -513,34 +619,7 @@ export default function SutInlineAIPanel({
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </Button>
-          {onDockChange && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="icon"
-                onClick={() => onDockChange("center")}
-                aria-label={t("chat.actions.centerInline")}
-                title={t("chat.actions.centerInline")}
-                className={cn(
-                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
-                  dock === "center" && buttonActiveClass,
-                )}
-              >
-                <Minimize2 className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="icon"
-                onClick={() => onDockChange("right")}
-                aria-label={t("chat.actions.dockRight")}
-                title={t("chat.actions.dockRight")}
-                className={cn(
-                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
-                  dock === "right" && buttonActiveClass,
-                )}
-              >
-                <PanelRight className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          )}
+          {dockControls}
         </div>
       </div>
 

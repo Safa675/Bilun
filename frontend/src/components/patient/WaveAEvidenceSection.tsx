@@ -12,6 +12,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { findFindingRowElement } from "@/lib/patientRoute";
 import { groupWaveAReviewRows } from "@/lib/groupWaveAReviewRows";
 import { getWaveAEvidencePresentation } from "@/lib/waveaEvidencePresentation";
+import { formatSutSectionLabel } from "@/lib/billingReportFields";
 
 export type WaveAEvidenceKind = "reviews" | "advisories" | "financial_rows";
 
@@ -83,10 +84,12 @@ export function matchesPatientEvidenceScope(page: WaveAEvidencePage, selectedCla
     : page.scope === "patient" && page.claim_id === null;
 }
 
-export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | null }) {
+export function WaveACoverageSummary({ coverage, selectedSection }: {
+  coverage?: WaveACoverage | null;
+  selectedSection?: string | null;
+}) {
   const t = useT();
-  if (!coverage) return null;
-  const groups = Object.entries(coverage.by_group ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  const groups = Object.entries(coverage?.by_group ?? {}).sort(([a], [b]) => a.localeCompare(b));
   const totals = groups.reduce(
     (sum, [, counts]) => ({
       evaluated: sum.evaluated + counts.evaluated,
@@ -96,25 +99,30 @@ export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | 
     { evaluated: 0, missing_inputs: 0, unavailable: 0 },
   );
   return (
-    <section className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3 text-sm">
-      <h3 className="font-semibold text-[var(--text-primary)]">{t("billing.wavea.coverageTitle")}</h3>
-      <p className="mt-1 text-[var(--text-secondary)]">
-        {t(!coverage.available || totals.missing_inputs > 0 || totals.unavailable > 0
-          ? "billing.wavea.coverageCompact"
-          : "billing.wavea.coverageComplete")}
-      </p>
-      {!coverage.available && (
-        <p className="mt-1 text-[var(--text-muted)]">{t("billing.wavea.coveragePartial")}</p>
-      )}
-      <details className="mt-2">
-        <summary className="cursor-pointer font-medium">{t("billing.wavea.coverageDetails")}</summary>
-        <div className="mt-2 space-y-2 text-[var(--text-secondary)]">
-          <p className="tabular-nums">{t("billing.wavea.coverageSummary", {
+    <details id="wavea-coverage" open={selectedSection === "wavea-coverage" || undefined} className="scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3 text-sm">
+      <summary className="cursor-pointer font-semibold text-[var(--text-primary)]">
+        {t("billing.wavea.coverageTitle")} · {coverage
+          ? t("billing.wavea.evaluationCount", { count: coverage.evaluation_count })
+          : t("billing.wavea.countUnavailable")}
+        <span className="mt-1 block text-xs font-normal tabular-nums text-[var(--text-secondary)]">
+          {coverage ? t("billing.wavea.coverageSummary", {
             groups: groups.length,
             evaluated: totals.evaluated,
             missing: totals.missing_inputs,
             unavailable: totals.unavailable,
-          })}</p>
+          }) : t("billing.wavea.unavailable")}
+        </span>
+        {coverage && (!coverage.available || totals.missing_inputs > 0 || totals.unavailable > 0) && (
+          <span className="mt-1 block text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.coverageCompact")}</span>
+        )}
+        {coverage && !coverage.available && (
+          <span className="mt-1 block text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.coveragePartial")}</span>
+        )}
+      </summary>
+      {coverage && <>
+        <h4 className="mt-2 font-medium">{t("billing.wavea.coverageDetails")}</h4>
+        <div className="mt-2 space-y-2 text-[var(--text-secondary)]">
+          {coverage.available && totals.missing_inputs === 0 && totals.unavailable === 0 && <p>{t("billing.wavea.coverageComplete")}</p>}
           <p className="text-xs">{t("billing.wavea.coverageExplainer")}</p>
         </div>
         {groups.length > 0 && (
@@ -133,8 +141,8 @@ export function WaveACoverageSummary({ coverage }: { coverage?: WaveACoverage | 
             ))}
           </ul>
         )}
-      </details>
-    </section>
+      </>}
+    </details>
   );
 }
 
@@ -176,7 +184,7 @@ function WaveATechnicalDetails({
         <p>{row.rule_id}{row.reason ? ` · ${row.reason}` : ""}</p>
         <p>{row.line_kind}{row.line_id ? `:${row.line_id}` : ""}</p>
         {source && onOpenClause ? (
-          <button type="button" className="underline" onClick={() => onOpenClause(source)}>{source}</button>
+          <button type="button" className="rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono whitespace-nowrap hover:bg-[var(--surface-tint)]" onClick={() => onOpenClause(source)}>{t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(source.split("#")[0]) })}</button>
         ) : source ? <p>{source}</p> : null}
         {references.length > 0 && <p>{references.join(" · ")}</p>}
       </div>
@@ -384,8 +392,8 @@ export function WaveAEvidenceRowsTable({
               </td>
               <td className="text-xs">
                 {source && onOpenClause ? (
-                  <button type="button" className="underline" onClick={() => onOpenClause(source)}>
-                    {source}
+                  <button type="button" className="rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono whitespace-nowrap hover:bg-[var(--surface-tint)]" onClick={() => onOpenClause(source)}>
+                    {t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(source.split("#")[0]) })}
                   </button>
                 ) : source ? (
                   <span className="font-mono">{source}</span>
@@ -395,8 +403,8 @@ export function WaveAEvidenceRowsTable({
                       <span key={`${reference}:${index}`}>
                         {index > 0 ? " · " : null}
                         {onOpenClause && reference.includes("#") ? (
-                          <button type="button" className="underline" onClick={() => onOpenClause(reference)}>
-                            {reference}
+                          <button type="button" className="rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono whitespace-nowrap hover:bg-[var(--surface-tint)]" onClick={() => onOpenClause(reference)}>
+                            {t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(reference.split("#")[0]) })}
                           </button>
                         ) : reference}
                       </span>
@@ -408,7 +416,7 @@ export function WaveAEvidenceRowsTable({
                 </div>
               </td>
               {financial && (
-                <td className="text-right tabular-nums">
+                <td className="text-right tabular-nums whitespace-nowrap">
                   {row.amount_status !== "confirmed" ||
                   typeof row.confirmed_amount_try !== "number" ||
                   !Number.isFinite(row.confirmed_amount_try)
@@ -454,6 +462,7 @@ export function PatientWaveAEvidenceSection({
   onOpenClause,
   selectedFindingId,
   selectedClaimId,
+  selectedSection,
 }: {
   patientId: string;
   kind: WaveAEvidenceKind;
@@ -461,8 +470,10 @@ export function PatientWaveAEvidenceSection({
   onOpenClause?: (clauseKey: string) => void;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
+  selectedSection?: string | null;
 }) {
   const t = useT();
+  const sectionRef = useRef<HTMLElement>(null);
   const [rows, setRows] = useState(block?.rows ?? []);
   const [unavailable, setUnavailable] = useState(!validPatientBlock(block, patientId, kind));
   const [loading, setLoading] = useState(false);
@@ -523,7 +534,13 @@ export function PatientWaveAEvidenceSection({
   useEffect(() => {
     if (!selectedFindingId || typeof document === "undefined") return;
     if (!rows.some((row) => row.evidence_id === selectedFindingId) && selectedRow?.evidence_id !== selectedFindingId) return;
-    findFindingRowElement(document, selectedFindingId)?.scrollIntoView({
+    const target = sectionRef.current && findFindingRowElement(sectionRef.current, selectedFindingId);
+    let parent = target?.parentElement;
+    while (parent && parent !== sectionRef.current) {
+      if (parent instanceof HTMLDetailsElement) parent.open = true;
+      parent = parent.parentElement;
+    }
+    target?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
@@ -586,52 +603,56 @@ export function PatientWaveAEvidenceSection({
     }
   };
 
-  return (
-    <section id={sectionId(kind)} className="space-y-2 scroll-mt-24">
-      {(kind !== "advisories" || unavailable) && (
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-          {t(kind === "reviews" ? "billing.wavea.reviewHeading" : titleKey(kind))}
-        </h3>
-      )}
-      {kind === "reviews" && !unavailable && (
-        <>
-          <p className="text-sm text-[var(--text-secondary)]">{t("billing.wavea.reviewCount", { count: total })}</p>
-          <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.reviewNotice")}</p>
-        </>
-      )}
+  const body = <>
       {unavailable ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.unavailable")}</p>
       ) : kind === "advisories" ? (
-        <details open={selectedInSection || undefined}>
-          <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
-            {t(titleKey(kind))} · {t("billing.wavea.advisoryCount", { count: total })}
-          </summary>
-          <div className="mt-2 space-y-2">
+          <div className="space-y-2">
             <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.advisoryNotice")}</p>
             {displayRows.length === 0 ? (
               <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noRows")}</p>
             ) : (
               <PatientWaveAAdvisoryList rows={displayRows} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
             )}
-            {canLoadMore && (
-              <button type="button" disabled={loading} onClick={loadMore} className="text-sm font-medium underline disabled:opacity-50">
-                {loading ? t("billing.wavea.loading") : t("billing.wavea.loadMore", { shown: rows.length, total })}
-              </button>
-            )}
           </div>
-        </details>
       ) : displayRows.length === 0 ? (
         <p className="text-sm text-[var(--text-muted)]">{t("billing.wavea.noRows")}</p>
       ) : kind === "reviews" ? (
-        <PatientWaveAReviewList rows={displayRows} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
+        <>
+          <p className="text-xs text-[var(--text-muted)]">{t("billing.wavea.reviewNotice")}</p>
+          <PatientWaveAReviewList rows={displayRows} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} />
+        </>
       ) : (
         <WaveAEvidenceRowsTable rows={displayRows} kind={kind} onOpenClause={onOpenClause} selectedFindingId={selectedFindingId} selectedClaimId={selectedClaimId} patientId={patientId} />
       )}
       {error && <p role="alert" className="text-sm text-[var(--danger)]">{t("billing.wavea.loadFailed")}</p>}
-      {canLoadMore && kind !== "advisories" && (
+      {canLoadMore && (
         <button type="button" disabled={loading} onClick={loadMore} className="text-sm font-medium underline disabled:opacity-50">
           {loading ? t("billing.wavea.loading") : t("billing.wavea.loadMore", { shown: rows.length, total })}
         </button>
+      )}
+    </>;
+
+  return (
+    <section ref={sectionRef} id={sectionId(kind)} className="space-y-2 scroll-mt-24">
+      {kind === "financial_rows" ? <>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t(titleKey(kind))}</h3>
+        {body}
+      </> : (
+        <details open={selectedInSection || selectedSection === sectionId(kind) || undefined} className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
+          <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
+            {t(kind === "reviews" ? "billing.wavea.reviewHeading" : titleKey(kind))} · {unavailable
+              ? t("billing.wavea.countUnavailable")
+              : t(kind === "reviews" ? "billing.wavea.reviewCount" : "billing.wavea.advisoryCount", { count: total })}
+            {unavailable ? <span className="mt-1 block text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.unavailable")}</span>
+              : <>
+                {displayRows.some((row) => ["not_evaluated", "missing_inputs"].includes(row.evaluation_status)) && <span className="ml-2 text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.notEvaluated")}</span>}
+                {displayRows.some((row) => row.evaluation_status === "unavailable") && <span className="ml-2 text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.statusUnavailable")}</span>}
+                {displayRows.some((row) => ["partial", "partial_exact"].includes(row.evaluation_status)) && <span className="ml-2 text-xs font-normal text-[var(--text-muted)]">{t("billing.wavea.statusPartial")}</span>}
+              </>}
+          </summary>
+          <div className="mt-3 space-y-2">{body}</div>
+        </details>
       )}
     </section>
   );

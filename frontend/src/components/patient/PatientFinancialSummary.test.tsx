@@ -58,6 +58,14 @@ const baseBillingReport: BillingActionReport = {
 };
 
 describe("PatientFinancialSummary", () => {
+  it("keeps missing selected-bill amounts unavailable", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <PatientFinancialSummary outcome={null} billingReport={baseBillingReport} selectedClaimId="B-1" />,
+    );
+    expect(html.match(/Unavailable/g)).toHaveLength(2);
+    expect(html).not.toContain(">0.00 TRY<");
+    expect(html).toContain("whitespace-nowrap tabular-nums");
+  });
   it("renders all-bills totals and recoverable priority", () => {
     const claimTotals = {
       exactness_status: "exact" as const,

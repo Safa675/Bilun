@@ -126,10 +126,10 @@ function SectionSubtotal({
   return (
     <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-1 border-t border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-sm">
       <span className="font-medium text-[var(--text-secondary)]">{label}</span>
-      <span className="tabular-nums text-[var(--text-primary)]">
+      <span className="whitespace-nowrap tabular-nums text-[var(--text-primary)]">
         {fmtTRY2(billed)}
       </span>
-      <span className="tabular-nums text-[var(--text-primary)]">
+      <span className="whitespace-nowrap tabular-nums text-[var(--text-primary)]">
         {fmtTRY2(payable)}
       </span>
     </div>
@@ -177,8 +177,8 @@ function InvoiceLineTable({
               <DataTableCell className="font-mono text-xs">{line.code}</DataTableCell>
               <DataTableCell>{line.name}</DataTableCell>
               <DataTableCell numeric>{fmtNum(line.quantity)}</DataTableCell>
-              <DataTableCell numeric>{fmtTRY2(line.billedAmountTry)}</DataTableCell>
-              <DataTableCell numeric>{fmtTRY2(line.expectedPayableTry)}</DataTableCell>
+              <DataTableCell numeric className="whitespace-nowrap">{fmtTRY2(line.billedAmountTry)}</DataTableCell>
+              <DataTableCell numeric className="whitespace-nowrap">{fmtTRY2(line.expectedPayableTry)}</DataTableCell>
             </DataTableRow>
           );
         })}
@@ -344,26 +344,26 @@ export default function OriginalBillView({ claim, highlightCodes }: OriginalBill
           <div>
             <p className="text-xs text-[var(--text-muted)]">{t("patient.originalBill.linesSubtotal")}</p>
             <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
-              {fmtTRY2(linesBilledTotal)} → {fmtTRY2(linesPayableTotal)}
+              <span className="whitespace-nowrap tabular-nums">{fmtTRY2(linesBilledTotal)}</span> → <span className="whitespace-nowrap tabular-nums">{fmtTRY2(linesPayableTotal)}</span>
             </p>
           </div>
           <div>
             <p className="text-xs text-[var(--text-muted)]">{t("patient.claimDetail.totalBilled")}</p>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
+            <p className="mt-1 whitespace-nowrap tabular-nums text-sm font-semibold text-[var(--text-primary)]">
               {fmtTRY2(claim.expected_total_billed_try)}
             </p>
           </div>
           <div>
             <p className="text-xs text-[var(--text-muted)]">{t("patient.claimDetail.totalPayable")}</p>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
+            <p className="mt-1 whitespace-nowrap tabular-nums text-sm font-semibold text-[var(--text-primary)]">
               {fmtTRY2(claim.expected_total_payable_try)}
             </p>
           </div>
           <div>
             <p className="text-xs text-[var(--text-muted)]">{t("patient.originalBill.variance")}</p>
             <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
-              {fmtTRY2(Math.max(0, claim.expected_total_billed_try - linesBilledTotal))} /{" "}
-              {fmtTRY2(Math.max(0, claim.expected_total_payable_try - linesPayableTotal))}
+              <span className="whitespace-nowrap tabular-nums">{fmtTRY2(Math.max(0, claim.expected_total_billed_try - linesBilledTotal))}</span> /{" "}
+              <span className="whitespace-nowrap tabular-nums">{fmtTRY2(Math.max(0, claim.expected_total_payable_try - linesPayableTotal))}</span>
             </p>
           </div>
         </div>

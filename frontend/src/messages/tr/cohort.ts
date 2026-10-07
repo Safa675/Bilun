@@ -1,7 +1,6 @@
 const cohort = {
   "filterBar": {
     "eyebrow": "Filtreleme",
-    "description": "Filtreler Hastalar, Uyumluluk ve Gelir sekmelerinde geçerlidir.",
     "matchedCount": "{total} hastadan {matched}",
     "patientLabel": "Hasta",
     "loadingPatients": "Hastalar yükleniyor…",

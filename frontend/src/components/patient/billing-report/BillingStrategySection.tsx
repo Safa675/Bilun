@@ -9,13 +9,13 @@ import { fmtLabel, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
 import { buildBillingStrategySectionModel } from "./BillingStrategySection.model";
 import { ACCENT, WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableWrap } from "./shared";
 
-export function BillingStrategySection({ strategyData }: { strategyData: BillingActionReport["billing_strategy"] }) {
+export function BillingStrategySection({ strategyData, collapsed = false }: { strategyData: BillingActionReport["billing_strategy"]; collapsed?: boolean }) {
   const t = useT();
   const model = buildBillingStrategySectionModel(strategyData);
 
   if (model.kind === "unavailable") {
     return (
-      <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
+      <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")} collapsed={collapsed} count={strategyData.recommendations.length} exactness={strategyData}>
         <ExactnessNotice block={strategyData} fallback={t("billing.strategy.unavailable")} />
       </BillingSectionShell>
     );
@@ -49,7 +49,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   };
 
   return (
-    <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
+    <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")} collapsed={collapsed} count={usesClaimTable ? mergedClaimRows.length : heuristicRows.length} exactness={strategyData}>
       {!strategyExact && (
         <ExactnessNotice block={strategyData} fallback={t("billing.strategy.unavailable")} className="mb-4" />
       )}

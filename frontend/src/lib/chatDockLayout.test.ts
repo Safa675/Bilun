@@ -12,7 +12,8 @@ describe("chatDockLayout", () => {
     expect(isChatDockEligiblePath("/design-system")).toBe(false);
   });
 
-  it("returns zero insets for center dock or ineligible routes", () => {
+  it("returns zero insets for collapsed or center dock or ineligible routes", () => {
+    expect(getChatDockInsets("collapsed", true)).toEqual({ left: "0px", right: "0px" });
     expect(getChatDockInsets("center", true)).toEqual({ left: "0px", right: "0px" });
     expect(getChatDockInsets("right", false)).toEqual({ left: "0px", right: "0px" });
   });

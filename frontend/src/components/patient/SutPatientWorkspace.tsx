@@ -202,7 +202,6 @@ export function PatientOptimizationSnapshot({
 export default function SutPatientWorkspace({
   patientId,
   outcome,
-  optimization,
   billingReport,
   selectedClaimId = null,
   claimCount,
@@ -217,27 +216,21 @@ export default function SutPatientWorkspace({
   selectedClaimSummary?: PatientClaimSummary | null;
 }) {
   const t = useT();
-  const primaryFocusLabel = optimization?.copay_exemptions.exempt
-    ? t("patient.workspace.focusCopay")
-    : t("patient.workspace.focusExactness");
-  const primaryFocusColor = optimization?.copay_exemptions.exempt
-    ? theme.accent
-    : undefined;
 
   return (
-    <div className="space-y-6">
-      <Surface variant="base" padding="lg">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <div className="space-y-4">
+      <Surface variant="base" padding="md">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <Eyebrow>{t("patient.workspace.eyebrow")}</Eyebrow>
-            <h1 className="mt-2 font-[var(--font-display)] text-3xl font-medium leading-tight tracking-tight text-[var(--text-primary)] sm:text-4xl">
+            <h1 className="mt-1 font-[var(--font-display)] text-2xl font-medium leading-tight tracking-tight text-[var(--text-primary)] sm:text-3xl">
               {t("patient.workspace.billingTitle")}{" "}
               <em className="not-italic font-[var(--font-display)] italic text-[var(--gold)]">
                 {t("patient.workspace.billingEmphasis")}
               </em>
             </h1>
-            <p className="mt-2 font-mono text-base text-[var(--text-secondary)]">{patientId}</p>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
+            <p className="mt-1 font-mono text-xs text-[var(--text-secondary)]">{patientId}</p>
+            <p className="sr-only">
               {t("patient.workspace.description")}
             </p>
           </div>
@@ -260,40 +253,63 @@ export default function SutPatientWorkspace({
         claimCount={claimCount}
         selectedClaimSummary={selectedClaimSummary}
       />
-
-      {optimization && (
-        <Surface variant="soft" padding="lg" className="space-y-6">
-          <div>
-            <Eyebrow>{t("patient.workspace.clinicalSnapshotEyebrow")}</Eyebrow>
-            <p className="mt-1 text-sm leading-snug text-[var(--text-secondary)]">
-              {t("patient.workspace.clinicalSnapshotDescription")}
-            </p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            <Stat
-              label={t("patient.workspace.diagnoses")}
-              value={fmtNum(optimization.n_diagnoses)}
-            />
-            <Stat
-              label={t("patient.workspace.icdChapters")}
-              value={
-                optimization.icd10_chapters.length > 0
-                  ? optimization.icd10_chapters.join(", ")
-                  : t("patient.workspace.icdNone")
-              }
-            />
-            <Stat
-              label={t("patient.workspace.primaryFocus")}
-              value={
-                <span style={primaryFocusColor ? { color: primaryFocusColor } : undefined}>
-                  {primaryFocusLabel}
-                </span>
-              }
-            />
-          </div>
-          <PatientOptimizationSnapshot optimization={optimization} />
-        </Surface>
-      )}
     </div>
+  );
+}
+
+export function PatientClinicalSnapshot({ optimization }: { optimization: PatientOptimization }) {
+  const t = useT();
+  const statuses = [...new Set([
+    optimization.surcharge_exposure.exactness_status,
+    optimization.copay_rate_exposure.exactness_status,
+    optimization.drg_unbundling?.exactness_status,
+  ].map((status) => status ? t(`billing.recommendedActions.exactness.${status}`) : t("common.unavailable")))];
+  const primaryFocusLabel = optimization.copay_exemptions.exempt
+    ? t("patient.workspace.focusCopay")
+    : t("patient.workspace.focusExactness");
+  const primaryFocusColor = optimization.copay_exemptions.exempt
+    ? theme.accent
+    : undefined;
+
+  return (
+    <details className="rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
+      <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
+        {t("patient.workspace.clinicalSnapshotEyebrow")} · {t("patient.workspace.diagnoses")}: <span className="tabular-nums">{fmtNum(optimization.n_diagnoses)}</span>
+        <span className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">{statuses.join(" · ")}</span>
+      </summary>
+      <div className="mt-3">
+  <Surface variant="soft" padding="lg" className="space-y-6">
+    <div>
+      <Eyebrow>{t("patient.workspace.clinicalSnapshotEyebrow")}</Eyebrow>
+      <p className="mt-1 text-sm leading-snug text-[var(--text-secondary)]">
+        {t("patient.workspace.clinicalSnapshotDescription")}
+      </p>
+    </div>
+    <div className="grid gap-6 sm:grid-cols-3">
+      <Stat
+        label={t("patient.workspace.diagnoses")}
+        value={fmtNum(optimization.n_diagnoses)}
+      />
+      <Stat
+        label={t("patient.workspace.icdChapters")}
+        value={
+          optimization.icd10_chapters.length > 0
+            ? optimization.icd10_chapters.join(", ")
+            : t("patient.workspace.icdNone")
+        }
+      />
+      <Stat
+        label={t("patient.workspace.primaryFocus")}
+        value={
+          <span style={primaryFocusColor ? { color: primaryFocusColor } : undefined}>
+            {primaryFocusLabel}
+          </span>
+        }
+      />
+    </div>
+    <PatientOptimizationSnapshot optimization={optimization} />
+  </Surface>
+      </div>
+    </details>
   );
 }

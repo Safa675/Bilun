@@ -67,6 +67,55 @@ function render(block: WaveAEvidenceBlock) {
 }
 
 describe("Wave A patient evidence", () => {
+  it("keeps review counts and unavailable/not-evaluated markers visible while collapsed", () => {
+    const reviews = [
+      { ...reviewRow("C-1", "1"), evaluation_status: "missing_inputs" },
+      { ...reviewRow("C-2", "2"), evaluation_status: "unavailable" },
+    ];
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection patientId="P-1" kind="reviews" block={{ available: true, unavailable_reason: null, total_rows: 2, rows: reviews, has_more: false }} />
+      </WorkspaceProvider>,
+      "en",
+    );
+    const summary = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(summary).toContain("2 review records in total");
+    expect(summary).toContain("Not evaluated");
+    expect(summary).toContain("Unavailable");
+    expect(html).not.toMatch(/<details[^>]* open=/);
+  });
+
+  it("opens a review section for an anchor-only deep link", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection patientId="P-1" kind="reviews" selectedSection="wavea-reviews" block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [reviewRow("C-1", "1")], has_more: false }} />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html).toMatch(/<details open=""/);
+  });
+
+  it("keeps the information count and partial marker in its collapsed header", () => {
+    const advisory = {
+      ...advisoryBase,
+      evidence_id: "wavea_advisory:claim_evaluation:source-1",
+      advisory_kind: "information" as const,
+      money_semantics: "unpriced_advisory",
+      evaluation_status: "partial",
+      financial_kind: undefined,
+      confirmed_amount_try: undefined,
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <PatientWaveAEvidenceSection patientId="P-1" kind="advisories" block={{ available: true, unavailable_reason: null, total_rows: 1, rows: [advisory], has_more: false }} />
+      </WorkspaceProvider>,
+      "en",
+    );
+    const summary = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(summary).toContain("1 information or conditional permission records");
+    expect(summary).toContain("Partial");
+    expect(html).not.toMatch(/<details[^>]* open=/);
+  });
   it("groups loaded review evidence by topic and keeps each exact claim link and identity", () => {
     const reviews = [reviewRow("C-1", "1"), reviewRow("C-2", "2"), reviewRow("C-3", "3")];
     const html = renderToStaticMarkupWithLocale(
@@ -337,6 +386,10 @@ describe("Wave A patient evidence", () => {
     expect(html).toContain("Information and conditional permissions");
     expect(html).toContain("Wave A evidence is unavailable");
     expect(html).not.toContain("No observations in this category");
+    const summary = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(summary).toContain("Count unavailable");
+    expect(summary).toContain("Wave A evidence is unavailable");
+    expect(summary).not.toContain("0 information");
   });
 
   it("shows an absent source once in the shared cohort table", () => {
@@ -394,5 +447,10 @@ describe("Wave A patient evidence", () => {
     expect(html).toContain("2 rule groups · 1 evaluated · 1 missing inputs · 1 unavailable");
     expect(html).toContain("Some claim inputs or evaluation results are unavailable");
     expect(html).toContain("Coverage and missing data");
+    const summary = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(summary).toContain("3 evaluations");
+    expect(summary).toContain("1 missing inputs · 1 unavailable");
+    expect(summary).toContain("Evaluation is partial");
+    expect(html).not.toMatch(/<details[^>]* open=/);
   });
 });

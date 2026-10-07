@@ -113,7 +113,7 @@ export default function BillPicker({
                   {fmtDate(claim.claim_start_date)}
                 </span>
               </div>
-              <span className="block text-xs text-[var(--text-muted)]">
+              <span className="block whitespace-nowrap tabular-nums text-xs text-[var(--text-muted)]">
                 {claim.claim_id} · {t("patient.billPicker.billMeta", {
                   claimType: claim.claim_type,
                   amount: fmtTRY2(claim.expected_total_billed_try),
@@ -121,7 +121,7 @@ export default function BillPicker({
               </span>
               {hasRecoverable && (
                 <span
-                  className={`mt-1.5 inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${priorityChipClass(
+                  className={`mt-1.5 inline-block whitespace-nowrap tabular-nums rounded-full border px-2 py-0.5 text-xs font-medium ${priorityChipClass(
                     claim.priority,
                   )}`}
                 >

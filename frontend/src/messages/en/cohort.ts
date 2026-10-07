@@ -1,7 +1,6 @@
 const cohort = {
   "filterBar": {
     "eyebrow": "Filtering",
-    "description": "Filters carry across Patients, Compliance, and Revenue.",
     "matchedCount": "{matched} of {total} patients",
     "patientLabel": "Patient",
     "loadingPatients": "Loading patients…",

@@ -98,8 +98,9 @@ describe("ComplianceViewSection", () => {
 
     expect(html).toContain("Yapısal kontroller: 25 değerlendirme · 0 bulgu");
     expect(html).toContain("Yalnızca yapısal kontrollerin özeti; değerlendirme uygunluk kararı değildir.");
-    // No details disclosure when all are evaluated
-    expect(html).not.toContain("<details");
+    // Secondary coverage starts collapsed even when all checks were evaluated.
+    expect(html).toContain('<details id="claim-coverage"');
+    expect(html).not.toContain('<details id="claim-coverage" open=');
   });
 
   it("displays missing inputs and unavailable counts in coverage summary and provides disclosure", () => {
@@ -139,6 +140,34 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain("1 değerlendirilemedi");
     expect(html).toContain("<details");
     expect(html).toContain("diagnosis_code");
+    const header = html.match(/<details id="claim-coverage"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(header).toContain("2 değerlendirilmedi");
+    expect(header).toContain("1 eksik girdi");
+    expect(header).toContain("1 değerlendirilemedi");
+  });
+
+  it("keeps missing amounts unavailable rather than synthesizing zero in the KPI row", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={{ ...baseReport, audit_exposure_try: undefined, recommended_actions: [] }} />
+      </WorkspaceProvider>,
+      "en",
+    );
+    const beforeTable = html.slice(0, html.indexOf('id="claim-compliance"'));
+    expect(beforeTable).not.toContain("0.00 TRY");
+    expect(beforeTable.match(/>—</g)).toHaveLength(2);
+  });
+
+  it("puts bill and patient details after findings and before collapsed secondary sections", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={baseReport} detailsPrelude={<div>ORIGINAL BILL AND DETAILS</div>} selectedSection="claim-coverage" />
+      </WorkspaceProvider>,
+      "en",
+    );
+    expect(html.indexOf("ORIGINAL BILL AND DETAILS")).toBeGreaterThan(html.indexOf("</table>"));
+    expect(html.indexOf("ORIGINAL BILL AND DETAILS")).toBeLessThan(html.indexOf('id="claim-coverage"'));
+    expect(html).toContain('<details id="claim-coverage" open=""');
   });
 
   it("preserves detail section anchors in correct order", () => {

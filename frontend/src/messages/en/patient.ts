@@ -1,12 +1,5 @@
 const patient = {
   "page": {
-    "breadcrumbAria": "SUT patient breadcrumb",
-    "workspace": "SUT workspace",
-    "patient": "{patientId}",
-    "patientUnknown": "Patient unknown",
-    "searchEyebrow": "Patient search",
-    "searchPlaceholder": "Jump to a different patient workspace...",
-    "searchDescription": "Patient selection routes into the dedicated SUT workspace instead of loading inline on home.",
     "billingUnavailable": "Billing Report unavailable",
     "footerNormative": "Normative analysis based on official SUT gazette rule references (EK-1A, EK-2B, EK-2C, EK-4A)",
     "errors": {

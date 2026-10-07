@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useMemo, type ReactNode } from "react";
 import { useStore } from "zustand";
 import type { StoreApi } from "zustand";
 import type { NavigationStore } from "./storeInterfaces";
+import { readChatDock } from "@/lib/chatDockPreference";
 import { createNavigationStore } from "./navigationStore";
 
 interface NavigationContextValue {
@@ -15,6 +16,13 @@ const NavigationContext = createContext<NavigationContextValue | null>(null);
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const store = useMemo(() => createNavigationStore(), []);
   const value = useMemo(() => ({ store }), [store]);
+
+  // The server and the first client render use the default dock, so hydration matches the server HTML;
+  // the saved choice is applied before the first paint after hydration. setState, not the action: no write.
+  useLayoutEffect(() => {
+    const saved = readChatDock();
+    if (saved !== store.getState().aiDockPosition) store.setState({ aiDockPosition: saved });
+  }, [store]);
 
   return (
     <NavigationContext.Provider value={value}>
