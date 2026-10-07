@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSmallScreen } from "@/lib/useSmallScreen";
+import { usePhoneOverlayFocus } from "@/lib/usePhoneOverlayFocus";
 import {
   AlertCircle,
   Minimize2,
@@ -120,8 +123,12 @@ export default function SutInlineAIPanel({
   const prevLocaleRef = useRef(locale);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const phone = useSmallScreen();
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const phoneTriggerRef = useRef<"prompt" | "toggle">("prompt");
+  usePhoneOverlayFocus(phone && phoneOpen, rootRef, () => setPhoneOpen(false), () => rootRef.current?.querySelector<HTMLElement>(phoneTriggerRef.current === "toggle" ? "[data-chat-dock-toggle]" : "[data-chat-mobile-open]") ?? null);
   // Collapsed mode never starts a brief; opening the panel does (effects below).
-  const autoBriefEnabled = dock !== "collapsed";
+  const autoBriefEnabled = phone ? phoneOpen : dock !== "collapsed";
   const autoBriefEnabledRef = useRef(autoBriefEnabled);
   const wasAutoBriefEnabledRef = useRef(autoBriefEnabled);
   const focusToggleRef = useRef(false);
@@ -503,10 +510,14 @@ export default function SutInlineAIPanel({
     }
   };
 
-  const collapsed = dock === "collapsed";
+  const collapsed = phone ? !phoneOpen : dock === "collapsed";
   const dockButtonClass =
     "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]";
-  const dockControls = onDockChange ? (
+  const dockControls = phone ? (
+    <Button variant="icon" data-chat-mobile-open={collapsed ? "true" : undefined} data-chat-dock-toggle onClick={() => { phoneTriggerRef.current = "toggle"; setPhoneOpen(value => !value); }} aria-label={collapsed ? t("chat.actions.expand") : t("chat.actions.collapse")} title={collapsed ? t("chat.actions.expand") : t("chat.actions.collapse")} className={dockButtonClass}>
+      {collapsed ? <PanelTopOpen className="h-3.5 w-3.5" /> : <PanelTopClose className="h-3.5 w-3.5" />}
+    </Button>
+  ) : onDockChange ? (
     <div className="flex items-center gap-1">
       <Button
         variant="icon"
@@ -553,8 +564,12 @@ export default function SutInlineAIPanel({
         <Sparkles className="h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
         <button
           type="button"
-          disabled={!onDockChange}
-          onClick={() => changeDock("center")}
+          disabled={!phone && !onDockChange}
+          data-chat-mobile-open={phone ? "true" : undefined}
+          onClick={() => {
+            if (phone) { phoneTriggerRef.current = "prompt"; setPhoneOpen(true); }
+            else changeDock("center");
+          }}
           className="min-w-0 flex-1 truncate rounded-[var(--r-sm)] py-1 text-left text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] disabled:cursor-default"
         >
           {working ? t("chat.collapsed.working") : t("chat.collapsed.prompt")}
@@ -568,12 +583,17 @@ export default function SutInlineAIPanel({
   // ("Patient: <id>") do not fit one row, and the controls then take their own row instead of running past the viewport edge.
   const displayedMessages = visibleChatMessages(messages);
 
-  return (
+  const panel = (
     <div
       ref={rootRef}
+      role={phone ? "dialog" : undefined}
+      aria-modal={phone ? true : undefined}
+      aria-label={phone ? t("chat.title") : undefined}
+      tabIndex={phone ? -1 : undefined}
+      data-phone-chat={phone ? "true" : undefined}
       className={cn(
         "border border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-4 text-[var(--text-primary)] shadow-[var(--shadow-1)]",
-        dock === "center"
+        phone ? "fixed inset-x-0 bottom-0 z-[80] flex h-[min(80dvh,42rem)] min-h-0 flex-col rounded-t-[var(--r-lg)] pb-[max(1rem,env(safe-area-inset-bottom))]" : dock === "center"
           ? "my-4 max-h-80 w-full overflow-y-auto rounded-[var(--r-lg)]"
           : "fixed top-0 right-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
       )}
@@ -623,7 +643,7 @@ export default function SutInlineAIPanel({
         </div>
       </div>
 
-      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-sm leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-52" : "max-h-none")}>
+      <div data-chat-transcript className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-sm leading-[1.65] text-[var(--text-primary)]", phone ? "min-h-0 flex-1 overscroll-contain" : dock === "center" ? "max-h-52" : "max-h-none")}>
         {displayedMessages.length === 0 && !isAutoLoading && !autoError && (
           <EmptyState
             icon={<Sparkles className="h-5 w-5" />}
@@ -777,4 +797,8 @@ export default function SutInlineAIPanel({
       </div>
     </div>
   );
+  return phone ? createPortal(<>
+    <button type="button" tabIndex={-1} aria-label={t("chat.actions.collapse")} onClick={() => setPhoneOpen(false)} className="fixed inset-0 z-[70] bg-black/40" data-phone-chat-backdrop />
+    {panel}
+  </>, document.body) : panel;
 }

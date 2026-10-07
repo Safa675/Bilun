@@ -22,6 +22,8 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   minWidth?: number;
   /** Optional classes applied to the inner `<table>` element. */
   tableClassName?: string;
+  /** Labelled, complete rows instead of a horizontally scrolling table on phones. */
+  mobileStacked?: boolean;
   children?: ReactNode;
 }
 
@@ -29,6 +31,7 @@ export function DataTable({
   minWidth = 720,
   className,
   tableClassName,
+  mobileStacked = false,
   children,
   ...rest
 }: DataTableProps) {
@@ -41,6 +44,7 @@ export function DataTable({
       {...rest}
     >
       <table
+        data-mobile-stacked={mobileStacked ? "true" : undefined}
         className={cn("bilun-data-table w-full border-collapse text-sm", tableClassName)}
         style={{ minWidth }}
       >

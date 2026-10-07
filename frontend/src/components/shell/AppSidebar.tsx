@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -9,6 +9,7 @@ import {
   MessageSquareWarning,
   PanelLeft,
   PanelLeftClose,
+  X,
 } from "lucide-react";
 import BilunWordmark from "@/components/brand/BilunWordmark";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
@@ -39,6 +40,7 @@ import {
   writeSidebarCollapsed,
 } from "@/lib/shellSidebar";
 import { MAIN_SECTION_ICONS, tabMessageKey } from "@/lib/workspaceSubtabs";
+import { usePhoneOverlayFocus } from "@/lib/usePhoneOverlayFocus";
 
 interface AppSidebarProps {
   /** Optional override; defaults to wiring the global `showHowItWorks` store. */
@@ -67,17 +69,23 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [narrowScreen, setNarrowScreen] = useState(false);
-  const [mobileExpanded, setMobileExpanded] = useState(false);
-  const collapsed = narrowScreen ? !mobileExpanded : desktopCollapsed;
+  const navigationKey = `${pathname}?${searchParams.toString()}`;
+  const [mobileNavigation, setMobileNavigation] = useState<string | null>(null);
+  const mobileExpanded = mobileNavigation === navigationKey;
+  const collapsed = narrowScreen ? false : desktopCollapsed;
   const hideShell = pathname === "/login";
   const navigationStore = useNavigationStoreApi();
+  const sidebarRef = useRef<HTMLElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const skipInitialPreferenceWrite = useRef(true);
+  usePhoneOverlayFocus(narrowScreen && mobileExpanded, sidebarRef, () => setMobileNavigation(null), () => mobileTriggerRef.current);
 
   useEffect(() => {
     if (hideShell) return;
     return navigationStore.subscribe((state, prevState) => {
       if (state.aiDockPosition === "right" && prevState.aiDockPosition !== "right") {
         setDesktopCollapsed(true);
-        setMobileExpanded(false);
+        setMobileNavigation(null);
       }
     });
   }, [hideShell, navigationStore]);
@@ -92,7 +100,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     if (!hideShell) {
       document.documentElement.style.setProperty(
         "--shell-sidebar-width",
-        `${sidebarWidthPx(initiallyNarrow || initialDesktopCollapsed)}px`,
+        initiallyNarrow ? "0px" : `${sidebarWidthPx(initialDesktopCollapsed)}px`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only read
@@ -102,7 +110,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     const narrowScreen = window.matchMedia("(max-width: 640px)");
     const updateNarrowScreen = (event: MediaQueryListEvent) => {
       setNarrowScreen(event.matches);
-      if (event.matches) setMobileExpanded(false);
+      if (event.matches) setMobileNavigation(null);
     };
     narrowScreen.addEventListener("change", updateNarrowScreen);
     return () => narrowScreen.removeEventListener("change", updateNarrowScreen);
@@ -114,12 +122,17 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
       root.style.setProperty("--shell-sidebar-width", "0px");
       return;
     }
-    const width = `${sidebarWidthPx(collapsed)}px`;
+    const phone = narrowScreen || window.matchMedia("(max-width: 640px)").matches;
+    const width = phone ? "0px" : `${sidebarWidthPx(collapsed)}px`;
     root.style.setProperty("--shell-sidebar-width", width);
-  }, [collapsed, hideShell]);
+  }, [collapsed, hideShell, narrowScreen]);
 
   useEffect(() => {
     if (hideShell) return;
+    if (skipInitialPreferenceWrite.current) {
+      skipInitialPreferenceWrite.current = false;
+      return;
+    }
     writeSidebarCollapsed(desktopCollapsed);
   }, [desktopCollapsed, hideShell]);
 
@@ -186,18 +199,33 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     }
   }
 
-  const CollapseIcon = collapsed ? PanelLeft : PanelLeftClose;
+  const CollapseIcon = narrowScreen ? X : collapsed ? PanelLeft : PanelLeftClose;
 
   return (
+    <>
+      {narrowScreen && <header className="sut-phone-navigation sticky top-0 z-40 flex h-12 items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-3" data-phone-navigation>
+        <button ref={mobileTriggerRef} type="button" onClick={() => setMobileNavigation(navigationKey)} aria-label={t("shell.appSidebar.expand")} title={t("shell.appSidebar.expand")} aria-expanded={mobileExpanded} aria-controls="phone-navigation" className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-md)] text-[var(--text-primary)]">
+          <PanelLeft className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <BilunWordmark size={28} />
+      </header>}
+      {narrowScreen && mobileExpanded && <button type="button" tabIndex={-1} aria-label={t("shell.appSidebar.collapse")} onClick={() => setMobileNavigation(null)} className="fixed inset-0 z-[70] bg-black/40" data-phone-sidebar-backdrop />}
     <aside
+      ref={sidebarRef}
+      id={narrowScreen ? "phone-navigation" : undefined}
+      hidden={narrowScreen && !mobileExpanded}
+      role={narrowScreen ? "dialog" : undefined}
+      aria-modal={narrowScreen && mobileExpanded ? true : undefined}
+      tabIndex={narrowScreen ? -1 : undefined}
       className={cn(
-        "sut-app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col",
+        "sut-app-sidebar fixed inset-y-0 left-0 flex flex-col",
         "border-r border-[var(--border-subtle)] bg-[var(--surface-base)]",
-        "transition-[width] duration-200 ease-out",
+        narrowScreen ? "z-[80]" : "z-40",
         className,
       )}
-      style={{ width: sidebarWidthPx(collapsed) }}
+      style={{ width: narrowScreen ? "min(20rem, calc(100vw - 3rem))" : sidebarWidthPx(collapsed) }}
       data-sut-sidebar
+      data-mobile-open={narrowScreen && mobileExpanded ? "true" : undefined}
       data-collapsed={collapsed ? "true" : "false"}
       aria-label={t("shell.appSidebar.ariaNavigation")}
     >
@@ -233,7 +261,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
         <button
           type="button"
           onClick={() => narrowScreen
-            ? setMobileExpanded((value) => !value)
+            ? setMobileNavigation(mobileExpanded ? null : navigationKey)
             : setDesktopCollapsed((value) => !value)}
           className={cn(
             "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--r-md)]",
@@ -276,6 +304,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
             <Link
               key={tab.id}
               href={buildSutHomeHref(tab.id, searchParams)}
+              onClick={() => setMobileNavigation(null)}
               scroll={false}
               title={subtitle}
               className={cn(
@@ -312,7 +341,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
 
         <button
           type="button"
-          onClick={() => setShowReportProblem(true)}
+          onClick={() => { setMobileNavigation(null); setShowReportProblem(true); }}
           className={cn(
             "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-xs font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
@@ -328,7 +357,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
 
         <button
           type="button"
-          onClick={handleOpenHowItWorks}
+          onClick={() => { setMobileNavigation(null); handleOpenHowItWorks(); }}
           className={cn(
             "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-xs font-medium",
             "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
@@ -361,5 +390,6 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
         {logoutError && <p role="alert" className="px-2 text-xs text-[var(--danger)]">{t("auth.logout.error")}</p>}
       </div>
     </aside>
+    </>
   );
 }

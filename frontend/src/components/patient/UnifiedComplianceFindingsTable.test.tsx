@@ -111,6 +111,13 @@ describe("UnifiedComplianceFindingsTable", () => {
 
     const html = renderTable({ rows, patientId: "P-1" });
 
+    expect(html).toContain('data-mobile-stacked="true"');
+    expect((html.match(/data-label=/g) ?? []).length).toBe(8);
+    expect(html).toContain('data-label="Fatura"');
+    expect(html).toContain('data-label="Risk tutarı"');
+    expect(html).toContain("C-100");
+    expect(html).toContain("₺350,00");
+
     // 8 columns in Turkish
     expect(html).toContain("Durum");
     expect(html).toContain("Kaynak");
