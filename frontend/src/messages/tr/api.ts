@@ -137,6 +137,8 @@ const api = {
       "Katalog MIAT süresi: {period} — aralığı hasta öyküsüyle doğrulayın",
     preauthNote:
       "EK-3C-1 — SGK gönderiminden önce tıbbi uygunluk gerekli (§3.1.2)",
+    preauthFlagNote:
+      "Malzeme satırında girilen işaret nedeniyle ön onay incelemesi istendi; EK-3C-1 listesinde bulunduğu doğrulanmadı.",
     bundledEk3b1:
       "Pakete dahil malzeme ayrı faturalandırılmış — paket kapsamını gözden geçirin (EK-3B-1)",
     bundledPackageFlag:
