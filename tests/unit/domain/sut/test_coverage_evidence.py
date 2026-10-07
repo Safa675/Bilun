@@ -156,7 +156,10 @@ def test_dependency_hashes_pin_rules_manifests_temporal_and_canonical_source(tmp
                  "data/gazette/temporal/amendment.json", "data/gazette/sut_clauses.parquet",
                  "data/gazette/source_authority/clinical_versions.json",
                  "data/gazette/source_authority/official-observation.txt",
-                 "data/gazette/deferral_table.yaml", "alternate.parquet"):
+                 "data/gazette/deferral_table.yaml", "alternate.parquet",
+                 "src/bilun/domain/prose_rules/adult_gh_draft.py",
+                 "src/bilun/domain/claims/adult_gh.py", "src/bilun/domain/claims/mds_evidence.py",
+                 "src/bilun/domain/prose_rules/_drug_indication/clinical_mds.py"):
         path = first / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(name.encode())
@@ -170,6 +173,12 @@ def test_dependency_hashes_pin_rules_manifests_temporal_and_canonical_source(tmp
     changed = coverage_dependency_hashes(first, first / "alternate.parquet")
     assert changed[path.relative_to(first).as_posix()] != baseline[path.relative_to(first).as_posix()]
     assert changed["input_clauses"] == baseline["input_clauses"]
+    for name in ("src/bilun/domain/prose_rules/adult_gh_draft.py",
+                 "src/bilun/domain/claims/adult_gh.py", "src/bilun/domain/claims/mds_evidence.py",
+                 "src/bilun/domain/prose_rules/_drug_indication/clinical_mds.py"):
+        dependency = first / name
+        dependency.write_text("changed gated clinical dependency")
+        assert coverage_dependency_hashes(first, first / "alternate.parquet")[name] != baseline[name]
     authority = first / "data/gazette/source_authority/clinical_versions.json"
     authority.write_text("new reviewed source window")
     assert coverage_dependency_hashes(first, first / "alternate.parquet")[

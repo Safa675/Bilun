@@ -55,6 +55,19 @@ export function ClaimValidatorSection() {
   const [drugServiceDate, setDrugServiceDate] = useState("");
   const [drugReportDuration, setDrugReportDuration] = useState<number | null>(null);
 
+  const cancelValidation = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setLoading(false);
+    setResult(null);
+    setError(null);
+  }, []);
+
+  useEffect(() => {
+    cancelValidation();
+  }, [materials, claimId, procedureCode, drugContextEnabled, drugIcd10, drugPrescriber,
+    drugReportPresent, drugReportDuration, drugServiceDate, cancelValidation]);
+
   useEffect(() => {
     if (!shouldShowProcedureLookup) {
       procAbortRef.current?.abort();
@@ -146,10 +159,11 @@ export function ClaimValidatorSection() {
         claim.drug_context = ctx;
       }
       const res = await validateSutClaim(claim, { signal: controller.signal });
-      if (!controller.signal.aborted) {
+      if (!controller.signal.aborted && abortRef.current === controller) {
         setResult(res);
       }
     } catch (err) {
+      if (controller.signal.aborted || abortRef.current !== controller) return;
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : t("sections.claimValidator.errors.validationFailed"));
     } finally {
@@ -312,6 +326,9 @@ export function ClaimValidatorSection() {
           <Button variant="primary" onClick={handleValidate} disabled={loading}>
             {loading ? t("sections.claimValidator.validating") : t("sections.claimValidator.validateClaim")}
           </Button>
+          {loading && <Button variant="secondary" onClick={cancelValidation}>
+            {t("sections.claimValidator.cancelValidation")}
+          </Button>}
         </div>
       </Surface>
 

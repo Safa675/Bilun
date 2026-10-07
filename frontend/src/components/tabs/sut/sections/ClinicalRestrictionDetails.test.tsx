@@ -158,3 +158,41 @@ it("keeps legacy source absence absent instead of inventing currentness", () => 
   expect(html).not.toContain("Source observed on");
   expect(html).not.toContain("Source admission checked through");
 });
+
+it.each(["en", "tr"] as const)("keeps a clear GH diagnosis subset separate from unverified document requirements in %s", locale => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "adult_gh_closed_epiphysis",
+    criterion_status: "criterion_clear", checks_truncated: false,
+    checks: [{ field: "adult_gh_evidence.two_distinct_stimulation_procedures_documented", status: "pass" }],
+    missing_inputs: [], source_refs: ["4.2.6.A-2.(3)#3c094940"] };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />, locale);
+  const expected = locale === "en" ? ["Diagnosis/stimulation subset prerequisites met",
+    "Report and prescription requirements are not assessed here", "not verified by this result",
+    "adult endocrinology or internal medicine", "one calendar year", "three calendar months",
+    "distinct stimulation test procedures documented"] : ["Tanı/uyarı testi alt kümesindeki önkoşullar karşılandı",
+    "Rapor ve reçete koşulları burada değerlendirilmez", "bu sonuçta doğrulanmadı",
+    "endokrinoloji veya iç hastalıkları", "bir takvim yılı", "üç takvim aylık",
+    "iki ayrı gerçek uyarı testi işlemi klinik kayıtta belgelenmiş"];
+  for (const text of expected) expect(html).toContain(text);
+  for (const ref of ["§4.2.6.A-2(2)–(4)", "§4.2.6.A-2(5)", "§4.2.6.A(1)", "§4.2.6.A(2)", "§4.1.3(2)", "§1.10"])
+    expect(html).toContain(ref);
+  for (const absent of ["365", "90 days", "PRIVATE_CLINICAL_SENTINEL", "987654321", "sections.claimValidator.", "<input", "<select"])
+    expect(html).not.toContain(absent);
+});
+
+it("shows the GH document checklist while its runtime checks remain unevaluated", () => {
+  const data: SutClinicalRestriction = { ...restriction, constraint_set: "adult_gh_closed_epiphysis",
+    criterion_status: "not_evaluated", checks: [], missing_inputs: [], source_refs: [], checks_truncated: false };
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[data]} />);
+  expect(html).toContain("Not evaluated");
+  expect(html).toContain("Separate report and prescription review — not verified by this result");
+  expect(html).not.toContain("Diagnosis/stimulation subset prerequisites met");
+});
+
+it("does not add the GH document checklist to another clinical family", () => {
+  const html = renderToStaticMarkupWithLocale(<ClinicalRestrictionDetails restrictions={[
+    { ...restriction, constraint_set: "mds_epoetin", criterion_status: "criterion_clear" },
+  ]} />);
+  expect(html).toContain("This limited check passed");
+  expect(html).not.toContain("Diagnosis/stimulation subset prerequisites met");
+  expect(html).not.toContain("Separate report and prescription review");
+});

@@ -3,7 +3,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { clinicalMissingInputLabel } from "./clinicalFields";
 
 const knownSets = new Set(["other_indication_source_constraints", "followup_source_constraints", "sma_safety_2025", "antifungal_source_constraints", "renal_source_constraints",
-  "enteral_pediatric_reports_2026", "ravulizumab_nmosd_continuation_2026", "source_context_clinical_review", "pleural_mesothelioma_documents"]);
+  "enteral_pediatric_reports_2026", "ravulizumab_nmosd_continuation_2026", "source_context_clinical_review", "pleural_mesothelioma_documents", "mds_epoetin", "adult_gh_closed_epiphysis"]);
 
 function SourceAuthorityDetails({ authority }: { authority: SutClinicalSourceAuthority }) {
   const t = useT();
@@ -48,9 +48,21 @@ export function ClinicalRestrictionDetails({ restrictions, selectedRuleId, sourc
       {restrictions.map((restriction, index) => <div key={`${restriction.constraint_set}:${index}`}>
         <p className="font-medium">{knownSets.has(restriction.constraint_set)
           ? t(`${prefix}.sets.${restriction.constraint_set}`) : restriction.constraint_set.replaceAll("_", " ")}
-          {": "}{t(`${prefix}.statuses.${restriction.criterion_status}`)}</p>
+          {": "}{t(`${prefix}.${restriction.constraint_set === "adult_gh_closed_epiphysis"
+            && restriction.criterion_status === "criterion_clear" ? "adultGhDiagnosticClear"
+            : `statuses.${restriction.criterion_status}`}`)}</p>
         {restriction.constraint_set === "pleural_mesothelioma_documents" &&
           <p className="mt-1 text-[var(--text-muted)]">{t(`${prefix}.mesotheliomaDraft`)}</p>}
+        {["mds_epoetin", "adult_gh_closed_epiphysis"].includes(restriction.constraint_set) &&
+          <p className="mt-1 text-[var(--text-muted)]">{t(`${prefix}.gatedClinicalDraft`)}</p>}
+        {restriction.constraint_set === "adult_gh_closed_epiphysis" && <div className="mt-1 text-[var(--text-muted)]">
+          <p>{t(`${prefix}.adultGhDiagnosticScope`)}</p>
+          <p className="mt-1">{t(`${prefix}.adultGhDocuments.title`)}</p>
+          <ul className="list-disc pl-4">
+            {(["board", "scheme", "report", "prescription", "formalities"] as const).map(item =>
+              <li key={item}>{t(`${prefix}.adultGhDocuments.${item}`)}</li>)}
+          </ul>
+        </div>}
         {restriction.source_authority && <SourceAuthorityDetails authority={restriction.source_authority} />}
         {restriction.missing_inputs.length > 0 && <p className="mt-1 text-[var(--text-muted)]">
           {t("sections.claimValidator.drugContext.missingInputs")}: {restriction.missing_inputs.map(fieldLabel).join(", ")}

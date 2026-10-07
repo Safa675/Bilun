@@ -26,6 +26,8 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.2.
 
 from __future__ import annotations
 
+from src.bilun.domain.claims.adult_gh import parse_adult_gh_evidence
+from src.bilun.domain.claims.mds_evidence import parse_mds_evidence
 from src.bilun.domain.claims.growth_hormone import parse_growth_hormone_inputs
 
 from src.bilun.domain.claims.clinical_evidence import (
@@ -255,6 +257,8 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     indication_evidence=parse_clinical_evidence(mat.get("indication_evidence"), IndicationEvidence),
                     enteral_evidence=parse_clinical_evidence(mat.get("enteral_evidence"), EnteralEvidence),
                     ravulizumab_evidence=parse_clinical_evidence(mat.get("ravulizumab_evidence"), RavulizumabEvidence),
+                    adult_gh_evidence=parse_adult_gh_evidence(mat.get("adult_gh_evidence")),
+                    mds_evidence=parse_mds_evidence(mat.get("mds_evidence")),
                     mesothelioma_evidence=parse_mesothelioma_evidence(mat.get("mesothelioma_evidence")),
                 )
             )
