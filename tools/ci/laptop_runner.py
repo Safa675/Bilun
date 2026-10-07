@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
+import signal
 import subprocess
 import tempfile
 import uuid
@@ -25,7 +27,9 @@ def github(arguments, payload=None):
                             input=json.dumps(payload) if payload is not None else None,
                             text=True, capture_output=True, check=False)
     if result.returncode:
-        raise RuntimeError("GitHub runner API request failed (response withheld)")
+        status = re.search(r"HTTP (\d{3})", result.stderr)
+        code = status.group(1) if status else "unavailable"
+        raise RuntimeError(f"GitHub runner API failed: HTTP {code} (response withheld)")
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
@@ -93,6 +97,9 @@ def main():
     parser.add_argument("--build", action="store_true")
     parser.add_argument("--jobs", type=int, default=1)
     args = parser.parse_args()
+    def stop(signum, _frame):
+        raise SystemExit(128 + signum)
+    signal.signal(signal.SIGTERM, stop)
     if args.jobs < 0:
         parser.error("--jobs must be non-negative")
     repo = github([f"repos/{REPOSITORY}"])
