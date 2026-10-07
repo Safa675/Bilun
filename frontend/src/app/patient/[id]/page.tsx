@@ -65,6 +65,7 @@ import {
   useWorkspacePaneBTabId,
 } from "@/stores/index";
 import { useT } from "@/lib/i18n/useTranslations";
+import { motionScrollBehavior, runBillCrossfade } from "@/lib/motion";
 
 export function SutPatientPageContent({
   patientId,
@@ -424,7 +425,7 @@ export function SutPatientPageContent({
       for (let ancestor = target; ancestor && root.contains(ancestor); ancestor = ancestor.parentElement) {
         if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
       }
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      target?.scrollIntoView({ behavior: motionScrollBehavior(), block: "start" });
     });
     return () => cancelAnimationFrame(frame);
   }, [findingQuery, sectionQuery, activeBillingReport]);
@@ -438,18 +439,21 @@ export function SutPatientPageContent({
 
   const handleSelectClaim = useCallback(
     (claimId: string | null) => {
-      setSelectedClaimId(claimId);
-      setSelectedActionId(null);
-      if (embedded) return;
-      router.replace(
-        buildSutPatientHref(patientId, {
-          claimId: claimId ?? undefined,
-          section: sectionQuery ?? undefined,
-        }),
-        { scroll: false },
-      );
+      const update = () => {
+        setSelectedClaimId(claimId);
+        setSelectedActionId(null);
+        if (embedded) return;
+        router.replace(
+          buildSutPatientHref(patientId, {
+            claimId: claimId ?? undefined,
+            section: sectionQuery ?? undefined,
+          }),
+          { scroll: false },
+        );
+      };
+      runBillCrossfade(workspaceRef.current, update, claimId !== selectedClaimId);
     },
-    [embedded, patientId, router, sectionQuery, setSelectedClaimId],
+    [embedded, patientId, router, sectionQuery, selectedClaimId, setSelectedClaimId],
   );
 
   const handleOpenClause = useCallback((nextClauseKey: string) => {
@@ -470,7 +474,7 @@ export function SutPatientPageContent({
       for (let ancestor = target; ancestor && workspaceRef.current?.contains(ancestor); ancestor = ancestor.parentElement) {
         if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
       }
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      target?.scrollIntoView({ behavior: motionScrollBehavior(), block: "start" });
       if (sectionId && embedded) {
         setEmbeddedActionSection({ patientId, query: embeddedQuery, section: sectionId });
       }
@@ -565,7 +569,7 @@ export function SutPatientPageContent({
   return (
     <>
       <ShellTag id={embedded ? undefined : "main-content"} className="sut-app-main">
-        <section ref={workspaceRef} className={sectionClass} data-patient-workspace>
+        <section ref={workspaceRef} className={sectionClass} data-patient-workspace data-patient-id={patientId}>
             {!embedded && shouldRenderChat && (
               <SutInlineAIPanel
                 key={chatSessionKey}
@@ -615,7 +619,8 @@ export function SutPatientPageContent({
                     selectedActionId={selectedActionId}
                     onSelectAction={handleSelectAction}
                     onOpenClause={handleOpenClause}
-                    onShowAll={() => workspaceRef.current?.querySelector("[data-patient-findings]")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    activeClauseKey={clauseKey}
+                    onShowAll={() => workspaceRef.current?.querySelector("[data-patient-findings]")?.scrollIntoView({ behavior: motionScrollBehavior(), block: "start" })}
                   />
                 )}
                 {(scopedBillingError || scopedOptimizationError) && (
@@ -635,7 +640,7 @@ export function SutPatientPageContent({
                 {!claimsLoading && activeBillingReport && (
                   <div
                     className={cn(
-                      "space-y-4 transition-opacity duration-150",
+                      "space-y-4",
                       scopedLoading && "pointer-events-none opacity-55",
                     )}
                   >
@@ -661,6 +666,7 @@ export function SutPatientPageContent({
                       selectedActionId={selectedActionId}
                       onSelectAction={handleSelectAction}
                       onOpenClause={handleOpenClause}
+                      activeClauseKey={clauseKey}
                       sectionQuery={sectionQuery}
                       selectedFindingId={findingQuery}
                       selectedClaimId={selectedClaimId}

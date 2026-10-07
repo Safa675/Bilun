@@ -52,6 +52,24 @@ function renderTable(
 }
 
 describe("UnifiedComplianceFindingsTable", () => {
+  it("associates only the open source key without changing finding selection", () => {
+    const rows: UnifiedComplianceFindingRow[] = [{
+      rowId: "source-row", canonicalFindingId: null,
+      sourceKind: "recommended_action", sourceLabels: ["Source"],
+      status: "review_risk", title: "Source finding", detail: null,
+      claimId: "C-100", code: "P-500", sutLabel: "2.2.1",
+      amountValue: null, amountLabel: null, action: mockAction, finding: null,
+    }];
+    const active = renderTable({ rows, patientId: "P-1", activeClauseKey: "clause-2-2-1" });
+    expect(active).toContain('data-clause-key="clause-2-2-1"');
+    expect(active).toContain('data-source-active="true"');
+    expect(active).not.toContain('data-selected="true"');
+    expect(renderTable({ rows, patientId: "P-1", activeClauseKey: "other" }))
+      .not.toContain('data-source-active="true"');
+    expect(renderTable({ rows, patientId: "P-1", activeClauseKey: null }))
+      .not.toContain('data-source-active="true"');
+  });
+
   it("renders the eight approved columns and does NOT render Patient ID / Hasta ID", () => {
     const rows: UnifiedComplianceFindingRow[] = [
       {

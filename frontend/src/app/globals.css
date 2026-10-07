@@ -110,7 +110,6 @@ body {
 body {
   overflow-x: hidden;
   padding-left: var(--shell-sidebar-width, 0px);
-  transition: padding-left 0.2s ease;
 }
 
 /* Login has no app shell — keep full-bleed before AppSidebar can zero the inset. */
@@ -283,24 +282,65 @@ textarea:focus-visible {
   }
 }
 
-/* ── Staggered reveal (subtle list/card enter animation) ───────────────── */
-
-@keyframes staggerRevealFade {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 .stagger-reveal {
-  opacity: 0;
-  animation: staggerRevealFade 0.4s ease-out forwards;
-  animation-delay: var(--stagger-delay, 0ms);
+  opacity: 1;
 }
+
+/* These transitions are tied to an explicit Source, section or bill action. */
+@keyframes sutSourceSlide {
+  from { transform: translateX(24px); }
+  to { transform: translateX(0); }
+}
+
+.sut-source-slide {
+  animation: sutSourceSlide 180ms var(--ease);
+}
+
+[data-next-actions] li[data-clause-key] {
+  transition: background-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.bilun-data-table tbody tr[data-source-active="true"],
+[data-next-actions] li[data-source-active="true"] {
+  background: var(--gold-subtle);
+  box-shadow: inset 3px 0 var(--gold);
+}
+
+@supports (interpolate-size: allow-keywords) {
+  [data-patient-workspace] details::details-content {
+    display: flow-root;
+    interpolate-size: allow-keywords;
+    height: 0;
+    overflow: clip;
+    transition: height 180ms var(--ease), content-visibility 180ms var(--ease) allow-discrete;
+  }
+
+  [data-patient-workspace] details[open]::details-content {
+    height: auto;
+  }
+}
+
+@keyframes sutBillOut {
+  to { opacity: 0; }
+}
+
+@keyframes sutBillIn {
+  from { opacity: 0; }
+}
+
+::view-transition-group(*) { animation: none; }
+::view-transition-old(*) { animation: sutBillOut 180ms var(--ease) both; }
+::view-transition-new(*) { animation: sutBillIn 180ms var(--ease) both; }
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .stagger-reveal {
-    opacity: 1;
-    animation: none;
-    transform: none;
+  *, *::before, *::after,
+  [data-patient-workspace] details::details-content,
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -316,11 +356,6 @@ textarea:focus-visible {
   padding: 1rem calc(1.5rem + var(--chat-dock-inset-right, 0px)) 2rem
     calc(1.5rem + var(--chat-dock-inset-left, 0px));
   background: var(--surface-base);
-  transition: padding 0.25s ease;
-}
-
-.sut-app-sidebar {
-  transition: width 0.2s ease;
 }
 
 /* Split view: tighten pane padding so two panes read side by side. */
