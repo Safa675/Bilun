@@ -28,9 +28,9 @@ vi.mock("@/components/modals/SutHowItWorksModal", () => ({ default: () => null }
 vi.mock("@/components/feedback/ReportProblemModal", () => ({ default: () => null }));
 vi.mock("@/components/ui/PatientSearch", () => ({ default: () => null }));
 vi.mock("@/components/sut/SutClauseDrawer", () => ({ SutClauseDrawer: () => null }));
-vi.mock("@/components/patient/SutPatientWorkspace", () => ({ default: () => null }));
+vi.mock("@/components/patient/SutPatientWorkspace", () => ({ default: () => null, PatientClinicalSnapshot: () => null }));
 vi.mock("@/components/patient/SutBillingReportSections", () => ({ BillingSummary: () => null, SutOptimizationSection: () => null }));
-vi.mock("@/components/patient/views/PatientWorkspaceViews", () => ({ default: () => null }));
+vi.mock("@/components/patient/views/PatientWorkspaceViews", () => ({ default: ({ billContent, detailsContent }: { billContent: React.ReactNode; detailsContent: React.ReactNode }) => <>{billContent}{detailsContent}</> }));
 vi.mock("@/components/patient/OriginalBillView", () => ({ default: () => null }));
 vi.mock("@/stores/index", () => ({
   useAiDockPosition: () => dockState.value, useSetAiDockPosition: () => vi.fn(),
@@ -49,9 +49,9 @@ vi.mock("@/lib/api/sut", () => ({
   searchSutPatients: vi.fn(),
 }));
 const renderers: ReactTestRenderer[] = [];
-async function mount(patientId: string, embedded: boolean) {
+async function mount(patientId: string, embedded: boolean, embeddedQuery?: string, createNodeMock?: (element: React.ReactElement) => unknown) {
   let renderer: ReactTestRenderer;
-  await act(async () => { renderer = create(<SutPatientPageContent patientId={patientId} embedded={embedded} />); });
+  await act(async () => { renderer = create(<SutPatientPageContent patientId={patientId} embedded={embedded} embeddedQuery={embeddedQuery} />, { createNodeMock: createNodeMock ?? (() => null) }); });
   renderers.push(renderer!);
   await act(async () => { vi.advanceTimersByTime(0); });
   const picker = () => renderer!.root.findByType(BillPicker);
@@ -59,7 +59,7 @@ async function mount(patientId: string, embedded: boolean) {
     renderer: renderer!, picker,
     select: (id: string | null) => act(async () => { picker().props.onSelectClaim(id); }),
     update: async (id = patientId) => {
-      await act(async () => { renderer!.update(<SutPatientPageContent patientId={id} embedded={embedded} />); });
+      await act(async () => { renderer!.update(<SutPatientPageContent patientId={id} embedded={embedded} embeddedQuery={embeddedQuery} />); });
       await act(async () => { vi.advanceTimersByTime(0); });
     },
   };
@@ -82,6 +82,32 @@ it("keeps a Back to patients link inside the loading skeleton", async () => {
   const link = renderer!.root.findByType("main").findByType("a");
   expect(link.props.href).toBe("/?tab=patients");
   expect(link.children).toContain("Back to patients");
+});
+it("restores the embedded pane's own saved bill, section and finding query", async () => {
+  const pane = await mount("B", true, "claim=B-2&section=claim-reviews&finding=B-review");
+  expect(pane.picker().props.selectedClaimId).toBe("B-2");
+  expect(pane.renderer.root.findByType(PatientWorkspaceViews).props).toMatchObject({
+    sectionQuery: "claim-reviews", selectedFindingId: "B-review",
+  });
+  expect(api.getBillBillingReport).toHaveBeenCalledWith("B", "B-2", expect.anything());
+  expect(navigation.replace).not.toHaveBeenCalled();
+});
+it.each([false, true])("opens an optional-method detail target itself and its parent in embedded=%s", async (embedded) => {
+  const outer = { tagName: "DETAILS", open: false, parentElement: null };
+  const target = { id: "billing-optional-override", tagName: "DETAILS", open: false, parentElement: outer, scrollIntoView: vi.fn() };
+  const root = {
+    querySelectorAll: (selector: string) => selector === "[id]" ? [target] : [],
+    contains: (element: unknown) => element === target || element === outer,
+  };
+  const frames: Array<FrameRequestCallback> = [];
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { frames.push(callback); return frames.length; });
+  navigation.query = "section=billing-optional-override";
+  const pane = await mount("A", embedded, embedded ? navigation.query : undefined, () => root);
+  await act(async () => { for (const frame of frames.splice(0)) frame(0); });
+  expect(target.open).toBe(true);
+  expect(outer.open).toBe(true);
+  expect(target.scrollIntoView).toHaveBeenCalled();
+  expect(pane.renderer.root.findByType(PatientWorkspaceViews).props.sectionQuery).toBe("billing-optional-override");
 });
 it("keeps a Back to patients link inside the unavailable billing report card", async () => {
   vi.mocked(api.getSutPatientOutcome).mockRejectedValueOnce(new Error("Patient not found"));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ClipboardCheck, ShieldAlert, TrendingUp } from "lucide-react";
 import Tabs from "@/components/primitives/Tabs";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -44,6 +44,8 @@ export default function PatientWorkspaceViews({
   sectionQuery,
   selectedFindingId,
   selectedClaimId,
+  billContent,
+  detailsContent,
 }: {
   billingReport: BillingActionReport;
   patientId: string;
@@ -53,9 +55,13 @@ export default function PatientWorkspaceViews({
   sectionQuery?: string | null;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
+  billContent?: ReactNode;
+  detailsContent?: ReactNode;
 }) {
   const t = useT();
-  const [activeView, setActiveView] = useState<WorkspaceViewId>("compliance");
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [activeView, setActiveView] = useState<WorkspaceViewId>(() => viewForSection(sectionQuery) ?? "compliance");
+  const detailsPrelude = <>{billContent}{detailsContent}</>;
 
   const unifiedComplianceRows = buildUnifiedComplianceFindings(billingReport, t);
   const complianceCount = unifiedComplianceRows.length;
@@ -75,12 +81,19 @@ export default function PatientWorkspaceViews({
       return;
     }
     if (handledSectionRef.current === sectionQuery) return;
-    const target = viewForSection(sectionQuery);
+    const target = viewForSection(sectionQuery) ?? (["claim-coverage", "wavea-coverage"].includes(sectionQuery) ? "compliance" : null);
     if (!target) return;
     handledSectionRef.current = sectionQuery;
     setActiveView((current) => (current === target ? current : target));
     requestAnimationFrame(() => {
-      document.getElementById(sectionQuery)?.scrollIntoView({
+      const targetElement = Array.from(rootRef.current?.querySelectorAll<HTMLElement>("[id]") ?? [])
+        .find((element) => element.id === sectionQuery);
+      let ancestor: HTMLElement | null = targetElement ?? null;
+      while (ancestor && ancestor !== rootRef.current) {
+        if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+        ancestor = ancestor.parentElement;
+      }
+      targetElement?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -89,9 +102,11 @@ export default function PatientWorkspaceViews({
 
   return (
     <Tabs.Root
+      ref={rootRef}
+      data-patient-findings
       value={activeView}
       onValueChange={(value) => setActiveView(value as WorkspaceViewId)}
-      className="space-y-5"
+      className="space-y-5 scroll-mt-24"
     >
       <Tabs.List aria-label={t("billing.views.tabListAria")}>
         <Tabs.Trigger
@@ -124,6 +139,8 @@ export default function PatientWorkspaceViews({
           onOpenClause={onOpenClause}
           selectedFindingId={selectedFindingId}
           selectedClaimId={selectedClaimId}
+          selectedSection={sectionQuery}
+          detailsPrelude={detailsPrelude}
         />
       </Tabs.Content>
 
@@ -135,6 +152,7 @@ export default function PatientWorkspaceViews({
           onOpenClause={onOpenClause}
           selectedFindingId={selectedFindingId}
           selectedClaimId={selectedClaimId}
+          detailsPrelude={detailsPrelude}
         />
       </Tabs.Content>
 
@@ -145,6 +163,7 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          detailsPrelude={detailsPrelude}
         />
       </Tabs.Content>
     </Tabs.Root>

@@ -97,7 +97,8 @@ describe("billing presentation compatibility at the public sections", () => {
     expect(html).toContain("STRUCTURED_MARKER");
     expect(html).not.toContain("LEGACY_MARKER");
     expect(html).not.toContain("EVALUATION_MARKER");
-    expect(html.match(/<header[^>]*>([\s\S]*?)<\/header>/)?.[1]).toMatch(/>0<\/span>/);
+    const header = html.match(/<details id="drug-indication"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(header?.split("<")[0]).toMatch(/ · 0$/);
   });
 
   it("prefers the legacy disclosure over evaluations when findings are empty", () => {

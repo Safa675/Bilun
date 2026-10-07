@@ -8,7 +8,7 @@ import type {
 } from "@/lib/domains/sut";
 import { fmtNum, fmtTRY2, fmtPriorityLabel } from "@/components/tabs/sut/shared";
 import { chipVariantFromColor } from "@/components/patient/SutBillingReportSections";
-import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
+import { Chip, Surface } from "@/components/primitives";
 import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -69,87 +69,67 @@ export function PatientFinancialSummary({
     return null;
   }
 
+  const values = [
+    {
+      label: t("patient.financialSummary.totalBilled"),
+      value: isBillScoped
+        ? billBilled != null ? fmtTRY2(billBilled) : t("common.unavailable")
+        : claimTotalsExact && claimTotals?.total_billed_try != null
+          ? fmtTRY2(claimTotals.total_billed_try) : t("common.unavailable"),
+    },
+    {
+      label: t("patient.financialSummary.expectedPayable"),
+      value: isBillScoped
+        ? billPayable != null ? fmtTRY2(billPayable) : t("common.unavailable")
+        : claimTotalsExact && claimTotals?.total_expected_payable_try != null
+          ? fmtTRY2(claimTotals.total_expected_payable_try) : t("common.unavailable"),
+    },
+    {
+      label: t("patient.financialSummary.totalRecoverable"),
+      value: reportHasTotals && recoverable != null ? fmtTRY2(recoverable) : t("common.unavailable"),
+      gold: reportHasTotals && (recoverable ?? 0) > 0,
+    },
+    {
+      label: t("patient.financialSummary.billCount"),
+      value: isBillScoped ? fmtNum(1) : bills != null ? fmtNum(bills) : t("common.unavailable"),
+    },
+    {
+      label: t("patient.financialSummary.overallPriority"),
+      value: priority ? (
+        <span style={{ color: priorityColor } as CSSProperties} className="font-medium">
+          {fmtPriorityLabel(priority)}
+        </span>
+      ) : t("common.unavailable"),
+    },
+  ];
+
   return (
-    <Surface variant="base" padding="lg" className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <Eyebrow>{t("patient.financialSummary.eyebrow")}</Eyebrow>
-          <h2 className="mt-1 font-[var(--font-display)] text-xl font-medium tracking-tight text-[var(--text-primary)]">
-            {isBillScoped
-              ? t("patient.financialSummary.titleBill", { claimId: selectedClaimId ?? "" })
-              : t("patient.financialSummary.title")}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            {isBillScoped
-              ? t("patient.financialSummary.descriptionBill")
-              : t("patient.financialSummary.description")}
-          </p>
-        </div>
-        {billingReport && (
+    <Surface variant="base" padding="md" className="space-y-3" data-patient-summary>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+          {isBillScoped
+            ? t("patient.financialSummary.titleBill", { claimId: selectedClaimId ?? "" })
+            : t("patient.financialSummary.title")}
+        </h2>
+        {billingReport && !isExactOutput(billingReport) && (
           <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
         )}
       </div>
-
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
-        <Stat
-          label={t("patient.financialSummary.totalBilled")}
-          value={
-            isBillScoped
-              ? billBilled != null
-                ? fmtTRY2(billBilled)
-                : t("common.unavailable")
-              : claimTotalsExact && claimTotals?.total_billed_try != null
-                ? fmtTRY2(claimTotals.total_billed_try)
-                : t("common.unavailable")
-          }
-        />
-        <Stat
-          label={t("patient.financialSummary.expectedPayable")}
-          value={
-            isBillScoped
-              ? billPayable != null
-                ? fmtTRY2(billPayable)
-                : t("common.unavailable")
-              : claimTotalsExact && claimTotals?.total_expected_payable_try != null
-                ? fmtTRY2(claimTotals.total_expected_payable_try)
-                : t("common.unavailable")
-          }
-        />
-        <Stat
-          label={t("patient.financialSummary.totalRecoverable")}
-          value={
-            reportHasTotals && recoverable != null
-              ? fmtTRY2(recoverable)
-              : t("common.unavailable")
-          }
-          display={reportHasTotals && (recoverable ?? 0) > 0 ? "gold" : "default"}
-        />
-        <Stat
-          label={t("patient.financialSummary.billCount")}
-          value={
-            isBillScoped
-              ? fmtNum(1)
-              : bills != null
-                ? fmtNum(bills)
-                : t("common.unavailable")
-          }
-        />
-        <Stat
-          label={t("patient.financialSummary.overallPriority")}
-          value={
-            priority ? (
-              <span
-                style={{ color: priorityColor } as CSSProperties}
-                className="font-medium"
-              >
-                {fmtPriorityLabel(priority)}
-              </span>
-            ) : (
-              t("common.unavailable")
-            )
-          }
-        />
-      </div>
+      <p className="sr-only">
+        {isBillScoped
+          ? t("patient.financialSummary.descriptionBill")
+          : t("patient.financialSummary.description")}
+      </p>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-[1.1fr_1.1fr_1.4fr_0.45fr_0.65fr]">
+        {values.map(({ label, value, gold }) => (
+          <div key={label} className="min-w-0 space-y-2">
+            <dt className="min-h-8 text-xs leading-4 text-[var(--text-muted)]">{label}</dt>
+            <dd className={`whitespace-nowrap tabular-nums text-lg leading-6 tracking-tight md:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </Surface>
   );
 }

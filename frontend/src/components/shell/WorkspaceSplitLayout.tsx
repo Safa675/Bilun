@@ -85,7 +85,7 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
             </button>
           </div>
         </div>
-        <SutPatientPageContent patientId={effectivePaneB.refId} embedded />
+        <SutPatientPageContent patientId={effectivePaneB.refId} embedded embeddedQuery={effectivePaneB.query} />
       </div>
     </div>
   );

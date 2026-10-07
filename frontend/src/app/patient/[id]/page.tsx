@@ -7,7 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import ReportProblemModal from "@/components/feedback/ReportProblemModal";
-import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
+import SutPatientWorkspace, { PatientClinicalSnapshot } from "@/components/patient/SutPatientWorkspace";
+import { RecommendedActionsPanel } from "@/components/patient/billing-report/RecommendedActionsPanel";
 import {
   BillingSummary,
   SutOptimizationSection,
@@ -68,9 +69,11 @@ import { useT } from "@/lib/i18n/useTranslations";
 export function SutPatientPageContent({
   patientId,
   embedded = false,
+  embeddedQuery,
 }: {
   patientId: string;
   embedded?: boolean;
+  embeddedQuery?: string;
 }) {
   const t = useT();
   // Keep the latest `t` in a ref so fetch callbacks read a fresh translator
@@ -80,11 +83,15 @@ export function SutPatientPageContent({
   tRef.current = t;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const routeQuery = parsePatientWorkspaceQuery(searchParams);
-  // The document URL belongs to the primary pane, never to an embedded patient.
-  const claimQuery = embedded ? null : routeQuery.claimId;
-  const sectionQuery = embedded ? null : routeQuery.section;
-  const findingQuery = embedded ? null : routeQuery.findingId;
+  const routeQuery = parsePatientWorkspaceQuery(embedded ? new URLSearchParams(embeddedQuery) : searchParams);
+  const workspaceRef = useRef<HTMLElement | null>(null);
+  const [embeddedActionSection, setEmbeddedActionSection] = useState<{ patientId: string; query?: string; section: string } | null>(null);
+  // Each pane owns its saved query; embedded action selection stays local.
+  const claimQuery = routeQuery.claimId;
+  const sectionQuery = embedded && embeddedActionSection?.patientId === patientId && embeddedActionSection.query === embeddedQuery
+    ? embeddedActionSection.section
+    : routeQuery.section;
+  const findingQuery = routeQuery.findingId;
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
@@ -411,7 +418,12 @@ export function SutPatientPageContent({
     // Exact finding rows win over section anchors; schedule after the
     // workspace view switch so the target row is mounted before scrolling.
     const frame = requestAnimationFrame(() => {
-      const target = resolvePatientScrollTarget(document, findingQuery, sectionQuery);
+      const root = workspaceRef.current;
+      if (!root) return;
+      const target = resolvePatientScrollTarget(root, findingQuery, sectionQuery);
+      for (let ancestor = target; ancestor && root.contains(ancestor); ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+      }
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return () => cancelAnimationFrame(frame);
@@ -454,6 +466,14 @@ export function SutPatientPageContent({
     (action: RecommendedActionItem) => {
       setSelectedActionId(action.action_id);
       const sectionId = recommendedActionSectionId(action.surface);
+      const target = workspaceRef.current && resolvePatientScrollTarget(workspaceRef.current, action.finding_id, sectionId);
+      for (let ancestor = target; ancestor && workspaceRef.current?.contains(ancestor); ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+      }
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (sectionId && embedded) {
+        setEmbeddedActionSection({ patientId, query: embeddedQuery, section: sectionId });
+      }
       if (sectionId && !embedded) {
         router.replace(
           buildSutPatientHref(patientId, {
@@ -464,7 +484,7 @@ export function SutPatientPageContent({
         );
       }
     },
-    [embedded, patientId, router, selectedClaimId],
+    [embedded, embeddedQuery, patientId, router, selectedClaimId],
   );
 
   const hasAnyData = Boolean(outcome) || Boolean(optimization) || Boolean(billingReport);
@@ -510,10 +530,42 @@ export function SutPatientPageContent({
     </Button>
   );
 
+  const billContent = (
+    <>
+      {(claims.length > 0 || claimsLoading || claimsError) && (
+        <Surface variant="base" padding="md">
+          {claimsError ? (
+            <p className="text-sm text-[var(--text-secondary)]">{claimsError}</p>
+          ) : (
+            <BillPicker
+              claims={claims}
+              selectedClaimId={selectedClaimId}
+              onSelectClaim={handleSelectClaim}
+              disabled={claimsLoading}
+            />
+          )}
+        </Surface>
+      )}
+      {claimDetailLoading && (
+        <Surface variant="soft" padding="md">
+          <p className="text-sm text-[var(--text-secondary)]">{t("patient.claimDetail.loading")}</p>
+        </Surface>
+      )}
+      {claimDetailError && (
+        <Surface variant="soft" padding="md">
+          <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
+        </Surface>
+      )}
+      {claimDetail && selectedClaimId && (
+        <OriginalBillView claim={claimDetail} highlightCodes={highlightCodes} />
+      )}
+    </>
+  );
+
   return (
     <>
       <ShellTag id={embedded ? undefined : "main-content"} className="sut-app-main">
-        <section className={sectionClass}>
+        <section ref={workspaceRef} className={sectionClass} data-patient-workspace>
             {!embedded && shouldRenderChat && (
               <SutInlineAIPanel
                 key={chatSessionKey}
@@ -556,34 +608,15 @@ export function SutPatientPageContent({
                   claimCount={claims.length > 0 ? claims.length : undefined}
                   selectedClaimSummary={selectedClaimSummary}
                 />
-                {(claims.length > 0 || claimsLoading || claimsError) && (
-                  <Surface variant="base" padding="md">
-                    {claimsError ? (
-                      <p className="text-sm text-[var(--text-secondary)]">{claimsError}</p>
-                    ) : (
-                      <BillPicker
-                        claims={claims}
-                        selectedClaimId={selectedClaimId}
-                        onSelectClaim={handleSelectClaim}
-                        disabled={claimsLoading}
-                      />
-                    )}
-                  </Surface>
-                )}
-                {claimDetailLoading && (
-                  <Surface variant="soft" padding="md">
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      {t("patient.claimDetail.loading")}
-                    </p>
-                  </Surface>
-                )}
-                {claimDetailError && (
-                  <Surface variant="soft" padding="md">
-                    <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
-                  </Surface>
-                )}
-                {claimDetail && selectedClaimId && (
-                  <OriginalBillView claim={claimDetail} highlightCodes={highlightCodes} />
+                {activeBillingReport && (
+                  <RecommendedActionsPanel
+                    billingReport={activeBillingReport}
+                    compact
+                    selectedActionId={selectedActionId}
+                    onSelectAction={handleSelectAction}
+                    onOpenClause={handleOpenClause}
+                    onShowAll={() => workspaceRef.current?.querySelector("[data-patient-findings]")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  />
                 )}
                 {(scopedBillingError || scopedOptimizationError) && (
                   <Surface variant="soft" padding="md" className="space-y-1 text-sm text-[var(--text-secondary)]">
@@ -598,6 +631,7 @@ export function SutPatientPageContent({
                     </p>
                   </Surface>
                 )}
+                {(!activeBillingReport || claimsLoading) && billContent}
                 {!claimsLoading && activeBillingReport && (
                   <div
                     className={cn(
@@ -621,13 +655,6 @@ export function SutPatientPageContent({
                       ) : null}
                     </Surface>
 
-                    <BillingReportGroup
-                      title={t("patient.billingGroups.overview")}
-                      description={t("patient.billingGroups.overviewDescription")}
-                    >
-                      <BillingSummary billingReport={activeBillingReport} />
-                    </BillingReportGroup>
-
                     <PatientWorkspaceViews
                       billingReport={activeBillingReport}
                       patientId={patientId}
@@ -637,12 +664,23 @@ export function SutPatientPageContent({
                       sectionQuery={sectionQuery}
                       selectedFindingId={findingQuery}
                       selectedClaimId={selectedClaimId}
+                      billContent={billContent}
+                      detailsContent={
+                        <>
+                          <BillingReportGroup
+                            title={t("patient.billingGroups.overview")}
+                            description={t("patient.billingGroups.overviewDescription")}
+                          >
+                            <BillingSummary billingReport={activeBillingReport} omitPriority />
+                          </BillingReportGroup>
+                          {optimization && <PatientClinicalSnapshot optimization={optimization} />}
+                          {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
+                          <p className="py-2 text-center text-xs text-[var(--text-muted)]">
+                            {t("patient.page.footerNormative")}
+                          </p>
+                        </>
+                      }
                     />
-
-                    {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
-                    <p className="py-2 text-center text-xs text-[var(--text-muted)]">
-                      {t("patient.page.footerNormative")}
-                    </p>
                   </div>
                 )}
               </>

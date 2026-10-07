@@ -89,12 +89,18 @@ export default function UnifiedComplianceFindingsTable({
             );
             const isSelected = isActionSelected || isFindingSelected;
 
-            const handleRowClick = () => {
+            const handleRowClick = (root?: HTMLElement) => {
               if (row.action && onSelectAction) {
                 onSelectAction(row.action);
                 const sectionId = recommendedActionSectionId(row.action.surface);
                 if (sectionId && typeof document !== "undefined") {
-                  document.getElementById(sectionId)?.scrollIntoView({
+                  const scope = root?.closest("[data-patient-findings]") ?? document;
+                  const target = Array.from(scope.querySelectorAll<HTMLElement>("[id]"))
+                    .find((element) => element.id === sectionId);
+                  for (let ancestor = target; ancestor; ancestor = ancestor.parentElement ?? undefined) {
+                    if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+                  }
+                  target?.scrollIntoView({
                     behavior: "smooth",
                     block: "start",
                   });
@@ -102,7 +108,14 @@ export default function UnifiedComplianceFindingsTable({
               }
             };
 
-            const clauseKey = row.action?.clause_ref?.clause_key ?? "";
+            const canonicalSource = row.finding?.regulatory_source;
+            const canonicalClauseKey = canonicalSource && typeof canonicalSource === "object"
+              ? (canonicalSource as Record<string, unknown>).clause_key
+              : null;
+            const clauseKey = row.action?.clause_ref?.clause_key ||
+              (typeof canonicalClauseKey === "string" ? canonicalClauseKey.trim() : "");
+            const clauseCoordinate = row.action?.clause_ref?.clause_coordinate ||
+              (clauseKey.includes("#") ? clauseKey.split("#")[0] : row.sutLabel);
             // Canonical Inspect always targets the claim-compliance section;
             // action row selection keeps its own source-section scroll behavior.
             const inspectSection = row.canonicalFindingId
@@ -125,11 +138,11 @@ export default function UnifiedComplianceFindingsTable({
                   row.action && "cursor-pointer",
                   isSelected && "bg-[var(--gold-subtle)]",
                 )}
-                onClick={handleRowClick}
+                onClick={(event) => handleRowClick(event.currentTarget)}
                 onKeyDown={(e) => {
                   if (!shouldActivateRowOnKeyDown(e)) return;
                   e.preventDefault();
-                  handleRowClick();
+                  handleRowClick(e.currentTarget);
                 }}
               >
                 {/* 1. Durum */}
@@ -180,23 +193,23 @@ export default function UnifiedComplianceFindingsTable({
 
                 {/* 6. SUT */}
                 <td className="text-sm text-[var(--text-secondary)]">
-                  {row.sutLabel ? (
+                  {row.sutLabel || clauseKey ? (
                     onOpenClause && clauseKey ? (
                       <button
                         type="button"
                         aria-label={t("billing.recommendedActions.inspectClause", {
-                          coordinate: row.sutLabel,
+                          coordinate: row.sutLabel ?? clauseCoordinate,
                         })}
-                        className="underline decoration-dotted underline-offset-2 transition-colors hover:text-[var(--gold-hover)]"
+                        className="whitespace-nowrap rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono text-xs transition-colors hover:bg-[var(--surface-tint)]"
                         onClick={(event) => {
                           event.stopPropagation();
                           onOpenClause(clauseKey);
                         }}
                       >
-                        {formatSutSectionLabel(row.sutLabel)}
+                        {t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(clauseCoordinate ?? undefined) })}
                       </button>
                     ) : (
-                      formatSutSectionLabel(row.sutLabel)
+                      formatSutSectionLabel(row.sutLabel ?? undefined)
                     )
                   ) : (
                     "—"
@@ -206,7 +219,7 @@ export default function UnifiedComplianceFindingsTable({
                 {/* 7. Risk tutarı */}
                 <td className="num-col text-right tabular-nums text-sm text-[var(--text-primary)]">
                   {row.amountValue != null ? (
-                    <span>
+                    <span className="whitespace-nowrap">
                       {fmtTRY2(row.amountValue)}
                       {row.amountLabel ? (
                         <span className="block text-xs text-[var(--text-secondary)]">

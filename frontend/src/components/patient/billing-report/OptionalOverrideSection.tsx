@@ -11,8 +11,10 @@ import { WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableW
 
 export function OptionalOverrideSection({
   strategyData,
+  collapsed = false,
 }: {
   strategyData: BillingActionReport["billing_strategy"];
+  collapsed?: boolean;
 }) {
   const t = useT();
   const strategyExact = isExactOutput(strategyData);
@@ -36,8 +38,12 @@ export function OptionalOverrideSection({
 
   return (
     <BillingSectionShell
+      id="billing-optional-override"
       title={t("billing.optionalOverride.title")}
       total={fmtTRY2(totalUplift)}
+      collapsed={collapsed}
+      count={rows.length}
+      exactness={strategyData}
     >
       <p
         className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2"

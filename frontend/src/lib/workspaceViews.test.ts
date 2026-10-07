@@ -61,6 +61,7 @@ const report = {
 describe("workspaceViews", () => {
   it("maps billing section anchors to their owning view", () => {
     expect(viewForSection("billing-lab")).toBe("compliance");
+    expect(viewForSection("billing-optional-override")).toBe("compliance");
     expect(viewForSection("materials-pre-check")).toBe("compliance");
     expect(viewForSection("drug-indication")).toBe("compliance");
     expect(viewForSection("wavea-reviews")).toBe("compliance");

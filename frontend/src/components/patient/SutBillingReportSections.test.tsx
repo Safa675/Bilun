@@ -4,6 +4,7 @@ import { fmtTRY2Fixture } from "@/test/fmtMoney";
 import type { BillingActionReport, DrugIndicationFinding } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
+  BillingSectionShell,
   BillingSummary,
   CopayOptimizationSection,
   DrgUpliftSection,
@@ -40,6 +41,36 @@ vi.mock("@/components/tabs/sut/shared", () => ({
 }));
 
 describe("SutBillingReportSections honest gaps", () => {
+
+  it("separates a collapsed row count from a known zero monetary total in visible text", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingSectionShell title="SUT review" collapsed count={1} total="0.00 TRY" exactness={{ exactness_status: "exact" }}>
+        <p>Details</p>
+      </BillingSectionShell>,
+    );
+    const summaryText = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1].replace(/<[^>]+>/g, "");
+    expect(summaryText).toContain("SUT review · 1 0.00 TRY");
+    expect(summaryText).not.toContain("10.00 TRY");
+  });
+
+  it.each(["en", "tr"] as const)("keeps implemented but partial material prose coverage visible in the collapsed %s header", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <MaterialsPreCheckSection collapsed materialsData={{
+        exactness_status: "exact",
+        pre_auth_required: [], miat_restricted: [], gazette_ceiling_by_specialty: {},
+        prose_bundling_violations: [{ material_code: "MAL-A", material_name: "Material A", risk_amount: 100 }],
+        coverage_scope: {
+          prose_engine_status: "implemented", prose_coverage_tier: "partial", prose_rules_implemented: 1,
+          prose_section_prefixes: ["3.1"], implemented_annexes: ["EK-3B-1", "EK-3B-2"],
+          ek3b1_row_count: 10, ek3b2_row_count: 20,
+        },
+      }} />,
+      locale,
+    );
+    const summary = html.match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(summary).toContain(locale === "en" ? "Exact" : "Kesin");
+    expect(summary).toContain(locale === "en" ? "Partial coverage" : "Kısmi kapsam");
+  });
 
   it("shows copay exemption insight when section is not exact", () => {
     const html = renderToStaticMarkupWithLocale(
@@ -200,6 +231,7 @@ describe("SutBillingReportSections honest gaps", () => {
   it("renders backend ilave reasons with clause drawer links when resolvable", () => {
     const html = renderToStaticMarkupWithLocale(
       <CopayOptimizationSection
+        onOpenClause={() => {}}
         copayData={{
           exactness_status: "exact",
           is_exempt: true,
@@ -721,6 +753,11 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("Gözlenen tanıların yalnızca sınırlı bir önizlemesi gösteriliyor.");
     expect(html).toContain("Gösterilen yol kodları/aralıkları sınırlı bir önizlemedir");
     expect(html).toContain("Çok sayıda aday yol bulundu; teknik liste sınırlandı.");
+    expect(html).not.toContain('<details id="drug-indication" open=');
+    const header = html.match(/<details id="drug-indication"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(header).toContain("· 1");
+    expect(header).toContain("ORENCIA 250 MG");
+    expect(header).toContain("Geri ödeme koşulu doğrulanamadı — MEDULA reddi riski");
   });
 
   it("renders missing diagnosis as unevaluable rather than a confirmed mismatch", () => {
@@ -769,6 +806,8 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("Tanı kodu yok");
     expect(html).toContain("Tanı kayıtlarını tamamlayıp yeniden kontrol edin.");
     expect(html).not.toContain("Tanı–ilaç eşleşmesi bulunamadı");
+    const header = html.match(/<details id="drug-indication"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    expect(header).toContain("Eksik girdi — manuel doğrulama");
   });
 
   it("selects exactly the requested canonical finding across drug lines", () => {
@@ -812,9 +851,23 @@ describe("DrugIndicationReviewSection", () => {
     );
 
     expect(html.match(/data-selected="true"/g)).toHaveLength(1);
+    expect(html).toContain('<details id="drug-indication" open=""');
     expect(html).toContain(
       'data-finding-id="drug_indication:P-DEEP:C-DEEP:D2:indication_mismatch"',
     );
+  });
+
+  it("opens drug detail from its section anchor without a selected finding", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection selectedSection="drug-indication" reviewData={{
+        exactness_status: "exact",
+        violations: [{ claim_id: "C-1", drug_name: "Drug", violation_kind: "missing_board_report" }],
+        violation_count: 1,
+        error_count: 0,
+      }} />,
+      "en",
+    );
+    expect(html).toContain('<details id="drug-indication" open=""');
   });
 
   it("renders structured corpus noncoverage without calling it legacy", () => {
@@ -987,6 +1040,57 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
       },
     ],
   } as unknown as BillingActionReport;
+
+  it("shows the three highest existing amounts with their source exactness", () => {
+    const report = {
+      ...panelReport,
+      materials: { exactness_status: "partial_exact" },
+      yatak_puani: { exactness_status: "exact" },
+      recommended_actions: [
+        ...panelReport.recommended_actions!,
+        { action_id: "a4", surface: "lab", kind: "hemogram_unbundling", compliance_savings_try: 25 },
+      ],
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+    );
+    expect(html).toContain("Next actions");
+    expect(html).toContain("Show all (4)");
+    expect(html).toContain("Partial exact");
+    expect(html).toContain(">Exact<");
+    expect(html.indexOf('data-action-id="a1"')).toBeLessThan(html.indexOf('data-action-id="a2"'));
+    expect(html.indexOf('data-action-id="a2"')).toBeLessThan(html.indexOf('data-action-id="a4"'));
+    expect(html).not.toContain('data-action-id="a3"');
+    expect(html).toContain("SUT §3.1.2");
+    expect(html.match(/aria-label="Inspect clause:/g)).toHaveLength(1);
+  });
+
+  it.each([
+    ["en", "Verify exemption", "Partial exact", "Inspect clause: 1.8.5.(7)"],
+    ["tr", "Muafiyeti doğrula", "Kısmi kesin", "Fıkrayı incele: 1.8.5.(7)"],
+  ] as const)("keeps a null copay review amount unpriced in the compact %s panel", (locale, label, exactness, clauseLabel) => {
+    const report = {
+      ...panelReport,
+      copay: { exactness_status: "partial_exact" },
+      recommended_actions: [{
+        action_id: "unpriced-copay",
+        surface: "copay",
+        kind: "exemption_review",
+        billed_try: null,
+        sgk_uplift_try: null,
+        clause_ref: { clause_key: "1.8.5.(7)#real-source", clause_coordinate: "1.8.5.(7)" },
+      }],
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    expect(html).toContain(label);
+    expect(html).not.toMatch(/₺\s*0\b|0(?:[.,]00)?\s*TRY\b/);
+    expect(html).toContain(exactness);
+    expect(html).toContain(`aria-label="${clauseLabel}"`);
+    expect(html).toContain("SUT §1.8.5.(7)");
+  });
 
   it("renders all rows without a finding filter", () => {
     const html = renderToStaticMarkupWithLocale(

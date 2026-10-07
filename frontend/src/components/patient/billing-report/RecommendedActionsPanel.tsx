@@ -1,12 +1,13 @@
 "use client";
 
 import type { BillingActionReport } from "@/lib/domains/sut";
+import type { ExactnessLike } from "@/lib/sutExactness";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translateStructuredApiMessage } from "@/lib/apiMessages";
 import { formatSutSectionLabel } from "@/lib/billingReportFields";
 import { findingTypeChipVariant, findingTypeLabelKey, getFindingType, getRecommendedActions, recommendedActionSectionId, recommendedActionAmountParts, recommendedActionSurfaceLabel, recommendedActionTitle, type FindingType, type RecommendedActionItem } from "@/lib/recommendedActions";
 import { cn } from "@/lib/cn";
-import { Chip, Eyebrow } from "@/components/primitives";
+import { Button, Chip, Eyebrow, Surface } from "@/components/primitives";
 import { fmtTRY2 } from "@/components/tabs/sut/shared";
 import { WRAPPED_HEADER_STYLE, TableWrap } from "./shared";
 
@@ -16,6 +17,8 @@ export function RecommendedActionsPanel({
   onSelectAction,
   findingFilter,
   onOpenClause,
+  compact = false,
+  onShowAll,
 }: {
   billingReport: BillingActionReport;
   selectedActionId?: string | null;
@@ -24,6 +27,9 @@ export function RecommendedActionsPanel({
   findingFilter?: FindingType;
   /** When provided, rows with a canonical clause cite render an inspect button. */
   onOpenClause?: (clauseKey: string) => void;
+  /** Page overview: the existing amount ordering, limited to three actions. */
+  compact?: boolean;
+  onShowAll?: () => void;
 }) {
   const t = useT();
   const allActions = getRecommendedActions(billingReport);
@@ -33,6 +39,73 @@ export function RecommendedActionsPanel({
 
   if (actions.length === 0) {
     return null;
+  }
+
+  if (compact) {
+    const sourceBlocks: Record<string, ExactnessLike | null | undefined> = {
+      lab: billingReport.lab,
+      copay: billingReport.copay,
+      materials: billingReport.materials,
+      billing_strategy: billingReport.billing_strategy,
+      payment_methods: billingReport.billing_strategy,
+      claim_checklist: billingReport.claim_submission_checklist,
+      medula_playbook: billingReport.medula_rejection_playbook,
+      drug_indication: billingReport.drug_indication,
+      session_uplift: billingReport.session_uplift,
+      blood_uplift: billingReport.blood_uplift,
+      material_uplift: billingReport.material_uplift,
+      procedure_addon_uplift: billingReport.procedure_addon_uplift,
+      procedure_capture_gap: billingReport.procedure_capture_gap,
+      drg_package_adequacy: billingReport.drg_package_adequacy,
+      drg_uplift: billingReport.drg_uplift,
+      care_setting_review: billingReport.care_setting_review,
+      yatak_puani: (billingReport as BillingActionReport & { yatak_puani?: ExactnessLike }).yatak_puani,
+    };
+    return (
+      <Surface variant="base" padding="md" className="space-y-3" data-next-actions>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+            {t("billing.recommendedActions.nextActions")}
+          </h2>
+          <button type="button" onClick={onShowAll} className="text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]">
+            {t("billing.recommendedActions.showAll", { count: actions.length })}
+          </button>
+        </div>
+        <ol className="divide-y divide-[var(--border-subtle)]">
+          {actions.slice(0, 3).map((action) => {
+            const amount = recommendedActionAmountParts(t, action);
+            const source = sourceBlocks[action.surface];
+            const exactness = source?.exactness_status ?? source?.pricing_status;
+            const clauseKey = action.clause_ref?.clause_key ?? "";
+            const cite = action.clause_ref?.clause_coordinate || action.sut_section_id || "";
+            return (
+              <li key={action.action_id} data-action-id={action.action_id} className={cn("flex items-center gap-3 py-2 first:pt-0 last:pb-0", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
+                <div className="min-w-0 flex-1">
+                  <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left text-sm font-medium leading-snug text-[var(--text-primary)] hover:text-[var(--gold-hover)]">
+                    {recommendedActionTitle(t, action)}
+                  </button>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                    <span>{recommendedActionSurfaceLabel(t, action.surface)}</span>
+                    <Chip variant={exactness === "exact" ? "success" : "warning"}>
+                      {exactness ? t(`billing.recommendedActions.exactness.${exactness}`) : t("common.unavailable")}
+                    </Chip>
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="whitespace-nowrap tabular-nums text-sm font-semibold text-[var(--text-primary)]">
+                    {amount?.value != null ? fmtTRY2(amount.value) : amount?.label ?? "—"}
+                  </span>
+                  {amount?.value != null && <span className="block text-xs text-[var(--text-secondary)]">{amount.label}</span>}
+                </div>
+                <Button variant="secondary" size="compact" disabled={!clauseKey || !onOpenClause} aria-label={clauseKey && onOpenClause ? t("billing.recommendedActions.inspectClause", { coordinate: cite }) : t("billing.recommendedActions.sourceUnavailable")} onClick={() => clauseKey && onOpenClause?.(clauseKey)} className="shrink-0 whitespace-nowrap">
+                  {cite ? `${t("billing.recommendedActions.section")} ${formatSutSectionLabel(cite)}` : t("billing.recommendedActions.sourceUnavailable")}
+                </Button>
+              </li>
+            );
+          })}
+        </ol>
+      </Surface>
+    );
   }
 
   return (
@@ -64,10 +137,15 @@ export function RecommendedActionsPanel({
             const cite = clauseRef?.clause_coordinate || action.sut_section_id || "";
             // Selection drives invoice-line highlighting (independent of scroll),
             // so every row is clickable; scroll is a bonus when an anchor exists.
-            const handleSelect = () => {
+            const handleSelect = (row: HTMLElement) => {
               onSelectAction?.(action);
               if (sectionId) {
-                document.getElementById(sectionId)?.scrollIntoView({
+                const root = row.closest("[data-patient-workspace]") ?? document;
+                const target = Array.from(root.querySelectorAll("[id]")).find((element) => element.id === sectionId);
+                for (let ancestor = target?.parentElement; ancestor; ancestor = ancestor.parentElement) {
+                  if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+                }
+                target?.scrollIntoView({
                   behavior: "smooth",
                   block: "start",
                 });
@@ -80,12 +158,12 @@ export function RecommendedActionsPanel({
                   "cursor-pointer",
                   isActive && "bg-[var(--gold-subtle)]",
                 )}
-                onClick={handleSelect}
+                onClick={(event) => handleSelect(event.currentTarget)}
                 onKeyDown={
                   (event) => {
-                    if (event.key === "Enter" || event.key === " ") {
+                    if ((event.key === "Enter" || event.key === " ") && event.target === event.currentTarget) {
                       event.preventDefault();
-                      handleSelect();
+                      handleSelect(event.currentTarget);
                     }
                   }
                 }
@@ -117,13 +195,13 @@ export function RecommendedActionsPanel({
                         aria-label={t("billing.recommendedActions.inspectClause", {
                           coordinate: cite,
                         })}
-                        className="underline decoration-dotted underline-offset-2 transition-colors hover:text-[var(--gold-hover)]"
+                        className="inline-flex whitespace-nowrap rounded-[var(--r-sm)] border border-[var(--border-default)] bg-[var(--surface-base)] px-2 py-1 font-semibold transition-colors hover:text-[var(--gold-hover)]"
                         onClick={(event) => {
                           event.stopPropagation();
                           onOpenClause(clauseKey);
                         }}
                       >
-                        {formatSutSectionLabel(cite)}
+                        {t("billing.recommendedActions.section")} {formatSutSectionLabel(cite)}
                       </button>
                     ) : (
                       formatSutSectionLabel(cite)
@@ -132,7 +210,7 @@ export function RecommendedActionsPanel({
                     "—"
                   )}
                 </td>
-                <td className="num-col tabular-nums text-right text-sm text-[var(--text-primary)]">
+                <td className="num-col whitespace-nowrap tabular-nums text-right text-sm text-[var(--text-primary)]">
                   {amount ? (
                     <span>
                       {amount.value != null ? fmtTRY2(amount.value) : amount.label}

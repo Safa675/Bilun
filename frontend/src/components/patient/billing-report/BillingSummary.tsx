@@ -16,8 +16,11 @@ const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
 
 export function BillingSummary({
   billingReport,
+  omitPriority = false,
 }: {
   billingReport: BillingActionReport;
+  /** The page summary already displays this same report's priority. */
+  omitPriority?: boolean;
 }) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
@@ -61,7 +64,7 @@ export function BillingSummary({
       : t("common.unavailable");
 
   return (
-    <Surface variant="base" padding="lg" className="space-y-5">
+    <Surface variant="base" padding="lg" className="space-y-5 [&_.tabular-nums]:whitespace-nowrap">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <Eyebrow>
@@ -142,14 +145,14 @@ export function BillingSummary({
           label={t("billing.summary.recommendedActions")}
           value={reportHasTotals ? fmtNum(billingReport.action_count) : t("billing.summary.reviewSections")}
         />
-        <Stat
+        {!omitPriority && <Stat
           label={t("billing.summary.priorityTier")}
           value={
             <span style={{ color: priorityColor }}>
               {reportHasTotals ? fmtPriorityLabel(billingReport.priority) : t("common.unavailable")}
             </span>
           }
-        />
+        />}
       </div>
       {showExemptionGap && reportHasTotals && (
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">

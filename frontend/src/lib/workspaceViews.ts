@@ -26,6 +26,7 @@ export const WORKSPACE_VIEW_FINDING: Record<WorkspaceViewId, FindingType> = {
 export const SECTION_VIEW_MAP: Record<string, WorkspaceViewId> = {
   "billing-lab": "compliance",
   "billing-strategy": "compliance",
+  "billing-optional-override": "compliance",
   "materials-pre-check": "compliance",
   "drug-indication": "compliance",
   "claim-compliance": "compliance",

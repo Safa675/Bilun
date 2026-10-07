@@ -4,6 +4,7 @@ import type {
   BillingActionReport,
   RecommendedActionItem,
 } from "@/lib/domains/sut";
+import type { ReactNode } from "react";
 import {
   BillingStrategySection,
   DrugIndicationReviewSection,
@@ -13,7 +14,7 @@ import {
 } from "@/components/patient/SutBillingReportSections";
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
-import { complianceBilledAtRisk } from "@/lib/workspaceViews";
+import { complianceBilledAtRisk, viewActions } from "@/lib/workspaceViews";
 import {
   buildUnifiedComplianceFindings,
   type UnifiedComplianceFindingRow,
@@ -57,6 +58,8 @@ export default function ComplianceViewSection({
   onOpenClause,
   selectedFindingId,
   selectedClaimId,
+  selectedSection,
+  detailsPrelude,
 }: {
   billingReport: BillingActionReport;
   patientId?: string;
@@ -66,11 +69,16 @@ export default function ComplianceViewSection({
   onOpenClause?: (sectionId: string) => void;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
+  selectedSection?: string | null;
+  detailsPrelude?: ReactNode;
 }) {
   const t = useT();
   const rows = unifiedRows ?? buildUnifiedComplianceFindings(billingReport, t);
   const billedAtRisk = complianceBilledAtRisk(billingReport);
-  const auditExposure = billingReport.audit_exposure_try ?? 0;
+  const auditExposure = billingReport.audit_exposure_try;
+  const hasBilledAtRisk = viewActions(billingReport, "compliance").some(
+    (action) => action.surface !== "drug_indication" && action.billed_try != null,
+  );
   const effectivePatientId = patientId || billingReport.patient_id;
   const coverage = buildComplianceCoverage(billingReport, t);
 
@@ -83,7 +91,7 @@ export default function ComplianceViewSection({
       <div className="grid gap-6 sm:grid-cols-3">
         <KpiCard
           label={t("billing.views.compliance.kpiRisk")}
-          value={fmtTRY2(auditExposure)}
+          value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
           valueColor={RISK_COLOR}
         />
         <KpiCard
@@ -92,7 +100,7 @@ export default function ComplianceViewSection({
         />
         <KpiCard
           label={t("billing.views.compliance.kpiBilledAtRisk")}
-          value={fmtTRY2(billedAtRisk)}
+          value={hasBilledAtRisk ? fmtTRY2(billedAtRisk) : "—"}
         />
       </div>
 
@@ -105,18 +113,26 @@ export default function ComplianceViewSection({
           onOpenClause={onOpenClause}
           selectedFindingId={selectedFindingId}
         />
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-          {t("optimizer.tabs.claim_compliance")}
-        </h3>
+      </section>
+
+      {detailsPrelude}
+
+      <details id="claim-coverage" open={selectedSection === "claim-coverage" || undefined} className="scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
+          {t("billing.wavea.coverageDetails")} · {coverage
+            ? t("billing.wavea.missingDataCount", { count: coverage.nonEvaluatedTotal })
+            : t("billing.wavea.countUnavailable")}
+          <span className="mt-1 block text-xs font-normal tabular-nums text-[var(--text-secondary)]">
+            {coverage ? coverage.summaryText : t("optimizer.claimCompliance.unavailable")}
+          </span>
+        </summary>
         {!coverage ? (
           <p className="text-sm text-[var(--text-muted)]">
             {t("optimizer.claimCompliance.unavailable")}
           </p>
         ) : (
           <div className="space-y-2 text-xs text-[var(--text-secondary)]">
-            <p className="tabular-nums">
-              {coverage.summaryText}
-              {" · "}
+            <p className="mt-2">
               <span className="text-[var(--text-muted)]">
                 {t("billing.views.compliance.coverageNotice")}
               </span>
@@ -153,7 +169,7 @@ export default function ComplianceViewSection({
             )}
           </div>
         )}
-      </section>
+      </details>
 
       <PatientWaveAEvidenceSection
         patientId={effectivePatientId}
@@ -162,6 +178,7 @@ export default function ComplianceViewSection({
         onOpenClause={onOpenClause}
         selectedFindingId={selectedFindingId}
         selectedClaimId={selectedClaimId}
+        selectedSection={selectedSection}
       />
 
       <PatientWaveAEvidenceSection
@@ -171,18 +188,20 @@ export default function ComplianceViewSection({
         onOpenClause={onOpenClause}
         selectedFindingId={selectedFindingId}
         selectedClaimId={selectedClaimId}
+        selectedSection={selectedSection}
       />
 
-      <WaveACoverageSummary coverage={billingReport.wavea_coverage} />
+      <WaveACoverageSummary coverage={billingReport.wavea_coverage} selectedSection={selectedSection} />
 
       <LabOptimizationSection labData={billingReport.lab} />
-      <BillingStrategySection strategyData={billingReport.billing_strategy} />
-      <OptionalOverrideSection strategyData={billingReport.billing_strategy} />
-      <MaterialsPreCheckSection materialsData={billingReport.materials} />
+      <BillingStrategySection strategyData={billingReport.billing_strategy} collapsed />
+      <OptionalOverrideSection strategyData={billingReport.billing_strategy} collapsed />
+      <MaterialsPreCheckSection materialsData={billingReport.materials} collapsed />
       {billingReport.drug_indication && (
         <DrugIndicationReviewSection
           reviewData={billingReport.drug_indication}
           selectedFindingId={selectedFindingId}
+          selectedSection={selectedSection}
         />
       )}
     </div>
