@@ -125,6 +125,35 @@
         "path": "data/gazette/source_authority/review_receipt_2026_10_05.json",
         "sha256": "b93c8c0caee05e5dee622346576bdc4e5f34d114033ba40884a260354ee4029f"
       }
+    },
+    {
+      "review_id": "sgk-rg-clinical-2026-10-08T225149Z",
+      "checked_at": "2026-10-07T22:51:49.829Z",
+      "checked_through": "2026-10-08",
+      "scope": "named_clinical_report_checks_only",
+      "positive_currentness_evidence": true,
+      "evidence": [
+        {
+          "path": "data/gazette/source_authority/official_review_2026_10_08.json",
+          "sha256": "766220dcdc461cd2f12af77dc5bc879c9f0fcb5c4dd1c1108aa4702f708ce8b7"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+          "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+        },
+        {
+          "path": "data/gazette/source_authority/rg-supplement-archive-observed-20261008-records.txt",
+          "sha256": "fa8a90a49c566881382d5aecc3b037d67662a8f796a4d06ed26e0e616284e581"
+        },
+        {
+          "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+          "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+        }
+      ],
+      "receipt": {
+        "path": "data/gazette/source_authority/review_receipt_2026_10_08.json",
+        "sha256": "beb0de8700da08aa4b04114189e06855d75bfe2ce443c9c95a99be1895bb2c4d"
+      }
     }
   ],
   "versions": [
@@ -164,6 +193,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -203,6 +238,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -243,6 +284,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -283,6 +330,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -322,6 +375,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -361,6 +420,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -401,6 +466,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -440,6 +511,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -479,6 +556,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -519,6 +602,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -559,6 +648,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     },
@@ -610,6 +705,12 @@
           "through": "2026-10-05",
           "basis": "reviewed_continuity",
           "review_id": "sgk-rg-clinical-2026-10-05T061959Z"
+        },
+        {
+          "start": "2026-10-08",
+          "through": "2026-10-08",
+          "basis": "reviewed_continuity",
+          "review_id": "sgk-rg-clinical-2026-10-08T225149Z"
         }
       ]
     }

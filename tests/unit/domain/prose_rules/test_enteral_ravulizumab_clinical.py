@@ -74,7 +74,8 @@ def test_exempt_and_adult_paths_are_not_forced_through_malnutrition_rule():
 @pytest.mark.parametrize('day,status', [('2026-09-04', 'not_evaluated'), ('2026-09-05', 'criterion_clear'),
                                        ('2026-09-06', 'criterion_clear'), ('2026-10-03', 'criterion_clear'),
                                        ('2026-10-04', 'criterion_clear'), ('2026-10-05', 'criterion_clear'),
-                                       ('2026-10-06', 'not_evaluated')])
+                                       ('2026-10-06', 'not_evaluated'), ('2026-10-08', 'criterion_clear'),
+                                       ('2026-10-09', 'not_evaluated')])
 def test_enteral_provision_date_not_publication_date(day, status):
     service = date.fromisoformat(day)
     line = replace(enteral(applies_on=service, assessment_date=service), drug_claim_date=service)
@@ -112,7 +113,8 @@ def test_edss_must_be_on_each_report_even_before_six_months(documented, status):
 @pytest.mark.parametrize('day,status', [('2026-07-06','not_evaluated'), ('2026-07-07','criterion_clear'),
                                        ('2026-07-08','criterion_clear'), ('2026-10-03','criterion_clear'),
                                        ('2026-10-04','criterion_clear'), ('2026-10-05','criterion_clear'),
-                                       ('2026-10-06','not_evaluated')])
+                                       ('2026-10-06','not_evaluated'), ('2026-10-08','criterion_clear'),
+                                       ('2026-10-09','not_evaluated')])
 def test_ravulizumab_source_date(day, status):
     service=date.fromisoformat(day)
     line=replace(ravu(applies_on=service,assessment_date=service),drug_claim_date=service)

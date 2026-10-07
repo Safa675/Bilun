@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "review_id": "sgk-rg-clinical-2026-10-08T225149Z",
+  "checked_at": "2026-10-07T22:51:49.829Z",
+  "checked_through": "2026-10-08",
+  "scope": "named_clinical_report_checks_only",
+  "named_families": [
+    "sma",
+    "antifungal_micafungin",
+    "antifungal_other",
+    "renal",
+    "enteral",
+    "ravulizumab",
+    "followup",
+    "indication_sc_ig",
+    "indication_hbv",
+    "indication_hcv",
+    "indication_bone",
+    "mecasermin"
+  ],
+  "no_affecting_clinical_amendment_found": true,
+  "excluded_dependencies": [
+    "pricing",
+    "reference/equivalent groups",
+    "market-share mechanisms",
+    "EK-4/A listing and product availability",
+    "general prescription and report dependencies beyond the pinned named checks",
+    "full reimbursement eligibility",
+    "later publications after observation",
+    "SGK 2026/39 EK-4/A entry, exit, activation, deactivation and band changes effective 2026-10-09",
+    "October 6 and October 7 service dates: observations made on October 8 do not create retrospective receipts"
+  ],
+  "observations": [
+    {
+      "kind": "gazette_supplement_index",
+      "source_url": "https://www.resmigazete.gov.tr/",
+      "observed_at": "2026-10-07T22:36:08.986613+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+        "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+      }
+    },
+    {
+      "kind": "gazette_daily_contents",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261006.htm",
+      "observed_at": "2026-10-07T22:36:09.333045+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+        "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+      }
+    },
+    {
+      "kind": "gazette_daily_contents",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261007.htm",
+      "observed_at": "2026-10-07T22:36:09.676981+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+        "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+      }
+    },
+    {
+      "kind": "gazette_daily_contents",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261008.htm",
+      "observed_at": "2026-10-07T22:36:09.998784+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+        "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.resmigazete.gov.tr/eskiler/2026/10/20261003-3.htm",
+      "observed_at": "2026-10-07T22:36:10.389570+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-public-observed-20261008-records.txt",
+        "sha256": "c2d3a1ce108cb5a4bc156da8b91b13eab870664307568461310d3184fe5e6448"
+      }
+    },
+    {
+      "kind": "gazette_supplement_index",
+      "source_url": "https://www.resmigazete.gov.tr/Home/Filter",
+      "observed_at": "2026-10-07T22:47:37.099317+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/rg-supplement-archive-observed-20261008-records.txt",
+        "sha256": "fa8a90a49c566881382d5aecc3b037d67662a8f796a4d06ed26e0e616284e581"
+      }
+    },
+    {
+      "kind": "sgk_sut_listing",
+      "source_url": "https://www.sgk.gov.tr/birimler/duyurular/GENEL-SAGLIK-SIGORTASI-GENEL-MUDURLUGU-2026-01-28-02-00-42",
+      "observed_at": "2026-10-07T22:40:07.817956+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06",
+      "observed_at": "2026-10-07T22:40:08.099066+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/duyuru/detay/02102026-Tarihli-ve-33388-Sayili-Resm-Gazetede-Yayimlanan-Sosyal-Guvenlik-Kurumu-Saglik-Uygulama-Tebliginde-Degisiklik-Yapilmasina-Dair-Teblig-2026-10-02-02-48-55",
+      "observed_at": "2026-10-07T22:40:08.391182+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202639-2026-10-07-04-54-48",
+      "observed_at": "2026-10-07T22:40:09.028411+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=006c75f8-7b03-4780-b946-a15c7831bea8.docx&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at": "2026-10-07T22:40:09.797435+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+      "observed_at": "2026-10-07T22:40:44.148859+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=4a709a6b-cbcc-46a1-8e51-e4dcc171a4a3.pdf&d=1d589522-67ad-42e3-a750-df777dd4b5a2",
+      "observed_at": "2026-10-07T22:40:45.362966+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    },
+    {
+      "kind": "relevant_amendments",
+      "source_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=ad41335b-d963-424a-a82c-af138c44cf9d.xlsx&d=1d589522-67ad-42e3-a750-df777dd4b5a2",
+      "observed_at": "2026-10-07T22:40:45.844632+00:00",
+      "capture": {
+        "path": "data/gazette/source_authority/sgk-public-observed-20261008-records.txt",
+        "sha256": "1315d539cdfca42e1410f67244546fd7c0e4d51191e1820a1bed8f08314ed2b2"
+      }
+    }
+  ]
+}

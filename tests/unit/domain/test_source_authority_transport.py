@@ -201,7 +201,8 @@ def test_actual_http_v2_serialization_preserves_authority_and_review_scope(monke
 @pytest.mark.parametrize('service_date,expected_status', [
     ('2026-10-02', 'admitted'), ('2026-10-03', 'admitted'),
     ('2026-10-04', 'admitted'), ('2026-10-05', 'admitted'),
-    ('2026-10-06', 'review_required'), (None, 'review_required'),
+    ('2026-10-06', 'review_required'), ('2026-10-08', 'admitted'),
+    ('2026-10-09', 'review_required'), (None, 'review_required'),
 ])
 def test_real_mecasermin_leaf_to_http_preserves_top_level_authority(service_date, expected_status):
     app = FastAPI()

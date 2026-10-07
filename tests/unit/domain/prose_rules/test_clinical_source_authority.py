@@ -119,7 +119,8 @@ def test_changed_review_bytes_are_rejected_with_existing_hash(tmp_path, monkeypa
 @pytest.mark.parametrize('family', FAMILIES)
 @pytest.mark.parametrize('day,admitted', [('2026-10-02', True), ('2026-10-03', True),
                                         ('2026-10-04', True), ('2026-10-05', True),
-                                        ('2026-10-06', False), ('2030-01-01', False)])
+                                        ('2026-10-06', False), ('2026-10-07', False),
+                                        ('2026-10-08', True), ('2026-10-09', False), ('2030-01-01', False)])
 def test_all_capped_families_have_explicit_current_bounds(family, day, admitted):
     result = authority.resolve_source_authority(family, day)
     assert (result.status == 'admitted') is admitted
@@ -129,7 +130,7 @@ def test_all_capped_families_have_explicit_current_bounds(family, day, admitted)
     expected_review = next((review['checked_at'] for review in reviews if review['checked_through'] == day),
                            max(reviews, key=lambda review: review['checked_through'])['checked_at'])
     assert result.official_review_checked_at == expected_review
-    if day in ('2026-10-03', '2026-10-04', '2026-10-05'):
+    if day in ('2026-10-03', '2026-10-04', '2026-10-05', '2026-10-08'):
         assert result.admission_basis == 'reviewed_continuity'
         assert result.source_observed_on == '2026-10-02'
         assert result.admitted_from == result.admitted_through == day
@@ -155,6 +156,7 @@ def test_unknown_history_stays_unknown(family):
     assert authority.resolve_source_authority(family, '2026-10-03').legal_effective_from is None
     assert authority.resolve_source_authority(family, '2026-10-04').legal_effective_from is None
     assert authority.resolve_source_authority(family, '2026-10-05').legal_effective_from is None
+    assert authority.resolve_source_authority(family, '2026-10-08').legal_effective_from is None
 
 
 def test_mecasermin_points_are_not_interpolated():
@@ -305,7 +307,7 @@ def test_later_positive_review_can_extend_without_evaluator_or_legal_date_edit(m
     assert result.status=='admitted' and result.legal_effective_from is None
 
 
-@pytest.mark.parametrize('day', ['2026-10-03', '2026-10-04', '2026-10-05'])
+@pytest.mark.parametrize('day', ['2026-10-03', '2026-10-04', '2026-10-05', '2026-10-08'])
 def test_public_evidence_rejects_inconsistent_or_invalid_dates(day):
     raw=authority.resolve_source_authority('renal',day).model_dump()
     service = date.fromisoformat(day)
