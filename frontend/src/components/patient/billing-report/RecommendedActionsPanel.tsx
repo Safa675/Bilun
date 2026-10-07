@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { Button, Chip, Eyebrow, Surface } from "@/components/primitives";
 import { fmtTRY2 } from "@/components/tabs/sut/shared";
 import { WRAPPED_HEADER_STYLE, TableWrap } from "./shared";
+import { motionScrollBehavior } from "@/lib/motion";
 
 export function RecommendedActionsPanel({
   billingReport,
@@ -17,6 +18,7 @@ export function RecommendedActionsPanel({
   onSelectAction,
   findingFilter,
   onOpenClause,
+  activeClauseKey,
   compact = false,
   onShowAll,
 }: {
@@ -27,6 +29,7 @@ export function RecommendedActionsPanel({
   findingFilter?: FindingType;
   /** When provided, rows with a canonical clause cite render an inspect button. */
   onOpenClause?: (clauseKey: string) => void;
+  activeClauseKey?: string | null;
   /** Page overview: the existing amount ordering, limited to three actions. */
   compact?: boolean;
   onShowAll?: () => void;
@@ -79,7 +82,7 @@ export function RecommendedActionsPanel({
             const clauseKey = action.clause_ref?.clause_key ?? "";
             const cite = action.clause_ref?.clause_coordinate || action.sut_section_id || "";
             return (
-              <li key={action.action_id} data-action-id={action.action_id} className={cn("grid grid-cols-1 items-center gap-3 py-2 first:pt-0 last:pb-0 @min-[300px]:grid-cols-[minmax(0,1fr)_auto] @min-[420px]:grid-cols-[minmax(0,1fr)_auto_auto]", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
+              <li key={action.action_id} data-action-id={action.action_id} data-clause-key={clauseKey || undefined} data-source-active={clauseKey && clauseKey === activeClauseKey ? "true" : undefined} className={cn("grid grid-cols-1 items-center gap-3 py-2 first:pt-0 last:pb-0 @min-[300px]:grid-cols-[minmax(0,1fr)_auto] @min-[420px]:grid-cols-[minmax(0,1fr)_auto_auto]", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
                 <div className="min-w-0 @min-[300px]:col-span-2 @min-[420px]:col-span-1">
                   <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left text-sm font-medium leading-snug [overflow-wrap:anywhere] text-[var(--text-primary)] hover:text-[var(--gold-hover)]">
                     {recommendedActionTitle(t, action)}
@@ -146,7 +149,7 @@ export function RecommendedActionsPanel({
                   if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
                 }
                 target?.scrollIntoView({
-                  behavior: "smooth",
+                  behavior: motionScrollBehavior(),
                   block: "start",
                 });
               }
@@ -154,6 +157,8 @@ export function RecommendedActionsPanel({
             return (
               <tr
                 key={action.action_id}
+                data-clause-key={clauseKey || undefined}
+                data-source-active={clauseKey && clauseKey === activeClauseKey ? "true" : undefined}
                 className={cn(
                   "cursor-pointer",
                   isActive && "bg-[var(--gold-subtle)]",

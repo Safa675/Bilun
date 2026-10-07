@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Columns2, MessageSquareWarning, Search, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
+import { motionScrollBehavior } from "@/lib/motion";
 import {
   WORKSPACE_TAB_MAX_PX,
   WORKSPACE_TAB_MIN_PX,
@@ -120,7 +121,7 @@ export default function WorkspaceTabStrip() {
   const scrollByPage = (direction: -1 | 1) => {
     const el = trackRef.current;
     if (!el) return;
-    el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.6, 120), behavior: "smooth" });
+    el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.6, 120), behavior: motionScrollBehavior() });
   };
 
   return (

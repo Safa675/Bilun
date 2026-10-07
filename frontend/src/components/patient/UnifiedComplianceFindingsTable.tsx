@@ -13,6 +13,7 @@ import {
 } from "@/lib/recommendedActions";
 import type { UnifiedComplianceFindingRow } from "@/lib/complianceFindings";
 import { cn } from "@/lib/cn";
+import { motionScrollBehavior } from "@/lib/motion";
 
 export interface UnifiedComplianceFindingsTableProps {
   rows: UnifiedComplianceFindingRow[];
@@ -21,6 +22,7 @@ export interface UnifiedComplianceFindingsTableProps {
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (clauseKey: string) => void;
   selectedFindingId?: string | null;
+  activeClauseKey?: string | null;
 }
 
 /**
@@ -46,6 +48,7 @@ export default function UnifiedComplianceFindingsTable({
   onSelectAction,
   onOpenClause,
   selectedFindingId,
+  activeClauseKey,
 }: UnifiedComplianceFindingsTableProps) {
   const t = useT();
 
@@ -101,7 +104,7 @@ export default function UnifiedComplianceFindingsTable({
                     if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
                   }
                   target?.scrollIntoView({
-                    behavior: "smooth",
+                    behavior: motionScrollBehavior(),
                     block: "start",
                   });
                 }
@@ -133,6 +136,8 @@ export default function UnifiedComplianceFindingsTable({
                 key={row.rowId}
                 data-finding-id={row.canonicalFindingId ?? undefined}
                 data-selected={isSelected ? "true" : undefined}
+                data-clause-key={clauseKey || undefined}
+                data-source-active={clauseKey && clauseKey === activeClauseKey ? "true" : undefined}
                 tabIndex={row.action ? 0 : undefined}
                 className={cn(
                   row.action && "cursor-pointer",

@@ -13,6 +13,7 @@ import { findFindingRowElement } from "@/lib/patientRoute";
 import { groupWaveAReviewRows } from "@/lib/groupWaveAReviewRows";
 import { getWaveAEvidencePresentation } from "@/lib/waveaEvidencePresentation";
 import { formatSutSectionLabel } from "@/lib/billingReportFields";
+import { motionScrollBehavior } from "@/lib/motion";
 
 export type WaveAEvidenceKind = "reviews" | "advisories" | "financial_rows";
 
@@ -541,7 +542,7 @@ export function PatientWaveAEvidenceSection({
       parent = parent.parentElement;
     }
     target?.scrollIntoView({
-      behavior: "smooth",
+      behavior: motionScrollBehavior(),
       block: "start",
     });
   }, [rows, selectedRow, selectedFindingId]);

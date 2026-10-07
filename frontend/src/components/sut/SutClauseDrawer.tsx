@@ -72,12 +72,13 @@ function SutClauseDrawerBody({
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--text-primary)_40%,transparent)] p-4 pt-24"
       role="dialog"
+      data-clause-key={clauseKey}
       aria-modal="true"
       aria-label={t("billing.clauseDrawer.ariaLabel")}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl rounded-[var(--r-lg)] border border-[var(--border-subtle)] bg-[var(--surface-base)] shadow-[var(--shadow-2)]"
+        className="sut-source-slide w-full max-w-xl rounded-[var(--r-lg)] border border-[var(--gold)] bg-[var(--surface-base)] shadow-[var(--shadow-2)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">

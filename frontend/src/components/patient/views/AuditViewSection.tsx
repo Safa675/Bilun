@@ -76,6 +76,7 @@ export default function AuditViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  activeClauseKey,
   detailsPrelude,
 }: {
   billingReport: BillingActionReport;
@@ -83,6 +84,7 @@ export default function AuditViewSection({
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  activeClauseKey?: string | null;
   detailsPrelude?: ReactNode;
 }) {
   const t = useT();
@@ -167,6 +169,7 @@ export default function AuditViewSection({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
         />
       )}
 
