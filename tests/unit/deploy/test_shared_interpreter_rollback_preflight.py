@@ -850,3 +850,67 @@ def test_paired_release_old_artifact_gate_needs_no_snapshot_environment(tmp_path
     state["old"].terminal.write_bytes(b"changed terminal executable\n")
     with pytest.raises(ValueError, match="Protected old runtime or executable changed"):
         SingleVpsDriver._verify_old_artifacts(driver)
+
+
+# --- the runtime digest is the issuer's own measurement, never the record's claim -------------
+
+_LOADER_REFUSAL = "Old backend Python identity differs from its frozen observation"
+
+
+def _record_another_runtime(state):
+    """Re-write only the runtime digest the identity record claims; every other binding still holds."""
+    record = state["bundle"] / "live-after-snapshot.json"
+    value = json.loads(record.read_text())
+    assert value["backend_runtime_sha256"] == preflight._runtime_digest(
+        state["backend"].process_working_directory, backend=True)
+    value["backend_runtime_sha256"] = "0" * 64
+    save(record, value)
+
+
+def test_a_record_of_another_runtime_cannot_be_proven_for_the_serving_old_backend(tmp_path, monkeypatch):
+    """The PR 165 loader must compare the record with the runtime the issuer measured.
+
+    The proof echoes the runtime digest it is given, so bind_shared_interpreter can never
+    notice a stale or foreign record: if the issuer handed the loader the record's own
+    digest, argv[0], argv, terminal, environment and closure would still match and the
+    record of another runtime would be accepted for this one.
+    """
+    state = _bundle(tmp_path, monkeypatch)
+    assert _assess(state, prove_shared_interpreter=_prover(state))["rollback"]["ready"] is True
+    _record_another_runtime(state)
+    report = _assess(state, prove_shared_interpreter=_prover(state))
+    assert report["rollback"]["ready"] is False and "backend" not in report["rollback"]["artifacts"]
+    assert report["rollback"]["blockers"] == [f"backend_rollback_artifact_unverified: {_LOADER_REFUSAL}"]
+
+
+def test_held_old_preflight_refuses_a_record_of_another_runtime(tmp_path, monkeypatch):
+    state = _held_state(tmp_path, monkeypatch)
+    arguments = _held_fixture(tmp_path, monkeypatch, state, {})
+    assert issuer._held_old_preflight(**arguments)[0]["rollback"]["blockers"] == []
+    _record_another_runtime(state)
+    with pytest.raises(ValueError, match=_LOADER_REFUSAL):
+        issuer._held_old_preflight(**arguments)
+
+
+@pytest.mark.parametrize("field", ["runtime_sha256", "effective_environment_sha256"])
+def test_the_preflight_refuses_a_proof_that_names_another_runtime_or_environment(
+        tmp_path, monkeypatch, field):
+    """The binding must not rely on the issuer's own echo: a proof naming another value is refused.
+
+    The real evidence function echoes the runtime digest it was asked about and the loader
+    forces its environment digest to match, so only a proof corrupted after the loader can
+    differ. Everything else in it is real: record, closure, pins and bindings.
+    """
+    state = _bundle(tmp_path, monkeypatch)
+    real = _prover(state)
+    assert _assess(state, prove_shared_interpreter=real)["rollback"]["ready"] is True
+
+    def names_another(backend, runtime_sha256):
+        evidence = real(backend, runtime_sha256)
+        assert evidence[field] != "9" * 64
+        return {**evidence, field: "9" * 64}
+
+    report = _assess(state, prove_shared_interpreter=names_another)
+    assert report["rollback"]["ready"] is False and "backend" not in report["rollback"]["artifacts"]
+    assert report["rollback"]["blockers"] == [
+        "backend_rollback_artifact_unverified: backend interpreter identity differs from the serving old backend"]

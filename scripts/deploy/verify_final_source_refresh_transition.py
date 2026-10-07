@@ -151,10 +151,10 @@ _REVIEWED_SHARED_INTERPRETER_TOOLING = {
     'tests/unit/deploy/fixtures/final_source_refresh_mainc44_tooling.json': ('100644', 'blob', '12bba3259806cca50053686056f5998e4ade5478'),
     'tests/unit/deploy/test_final_source_refresh_transition.py': ('100644', 'blob', '13e926bf2c79553a29bc03950748177c2b8e23ee'),
     'tests/unit/deploy/test_raw_report_transport_source_profile.py': ('100644', 'blob', '511b7b6125cdf833f9a9910f73cb110ed1ad0ffa'),
-    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', 'a7c5f44fb38d4736b3414f7fb92b543118070539'),
+    'tests/unit/deploy/test_shared_interpreter_rollback_preflight.py': ('100644', 'blob', 'b488e3f142046655f0d88e4abdb7af7e3df95389'),
     'tests/unit/deploy/test_shared_interpreter_source_profile.py': ('100644', 'blob', '2810a6cf916a74a019806f9e9dad39f10a2b0a0f'),
 }
-_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "0a2b0a49f1f904318cbb6862c7b4cccf25f23e8a1624e75e1db2cce452192c58"
+_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "cbdc42447ca4dee3ca2a2375900efc24a71ca741ee709f78255971ed8a4f216c"
 _SHARED_INTERPRETER_SELF_SLOT = re.compile(rb'(?m)^_REVIEWED_SHARED_INTERPRETER_SELF_SHA256 = "([0-9a-f]{64})"$')
 _OWNED_TABLES = frozenset({*previous._TABLES, "cohort_compliance_index"})
 _STRICT_TABLES = frozenset({
