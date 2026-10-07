@@ -56,7 +56,7 @@ def serve_one(image, index):
         data = github(["-X", "POST", f"repos/{REPOSITORY}/actions/runners/generate-jitconfig",
                        "--input", "-"], {
             "name": identity, "runner_group_id": 1,
-            "labels": ["self-hosted", "Linux", "X64", LABEL], "work_folder": "_work",
+            "labels": ["self-hosted", "Linux", "X64", LABEL], "work_folder": "/workspace",
         })
         runner_id = data["runner"]["id"]
         configuration = data.pop("encoded_jit_config")

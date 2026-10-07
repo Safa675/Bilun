@@ -28,6 +28,12 @@ RUN ln -sfn python3.13 /opt/hostedtoolcache/Python/3.13.15/x64/bin/python && \
     python -m pip download --require-hashes -r /opt/requirements-ci.lock -d /opt/wheels && \
     useradd --uid 1001 --create-home --shell /bin/bash ci && \
     mkdir -p /workspace /runner && chown ci:ci /workspace /runner
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
+    rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_155.0.8059.39-1_amd64.deb -o /tmp/chrome.deb && \
+    echo 'c58aa0f2cd66179c9f050e062c882d27aa9b9f8c2b7c73fee3498560b5ed0b38  /tmp/chrome.deb' | sha256sum -c - && \
+    apt-get update && apt-get install -y --no-install-recommends /tmp/chrome.deb && \
+    rm /tmp/chrome.deb && rm -rf /var/lib/apt/lists/*
 COPY tools/ci/runner-entrypoint.sh /opt/runner-entrypoint.sh
 RUN mkdir -p /workspace/home/.cache && chown -R ci:ci /workspace
 USER 1001:1001
