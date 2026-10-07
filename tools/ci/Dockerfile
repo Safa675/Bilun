@@ -29,6 +29,7 @@ RUN ln -sfn python3.13 /opt/hostedtoolcache/Python/3.13.15/x64/bin/python && \
     useradd --uid 1001 --create-home --shell /bin/bash ci && \
     mkdir -p /workspace /runner && chown ci:ci /workspace /runner
 COPY tools/ci/runner-entrypoint.sh /opt/runner-entrypoint.sh
+RUN mkdir -p /workspace/home/.cache && chown -R ci:ci /workspace
 USER 1001:1001
 WORKDIR /runner
 ENTRYPOINT ["bash", "/opt/runner-entrypoint.sh"]
