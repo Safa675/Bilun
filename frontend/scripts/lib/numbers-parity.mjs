@@ -10,8 +10,9 @@
 //   - a standalone amount still sits under the same label, compared without
 //     case (a swap of two amounts between two labels fails, also when the labels
 //     were re-cased); amounts inside table rows or prose are not tied to a label,
-//     and a label that is RENAMED is only a warning ("label_not_in_candidate"):
-//     its amounts are then not checked against a label, so a person must look;
+//     and a label that is RENAMED is only a warning ("label_not_in_candidate"; a
+//     failure with strictLabels unless an allow entry names it): its amounts are
+//     then not checked against a label, so a person must look;
 //   - honesty wording (partial, unavailable, not evaluated, missing inputs,
 //     amount unverified, cannot compute, unverified, estimated, manual review,
 //     no value inferred, mismatch, not exact, more findings available) did not
@@ -313,7 +314,7 @@ export function hiddenAmounts(baselineVisible, candidateVisible) {
  * for a reduction in the default view). Unused entries are reported so stale
  * exceptions do not accumulate.
  */
-export function compareRuns(baseline, candidate, { strictMultiplicity = false, allow = {} } = {}) {
+export function compareRuns(baseline, candidate, { strictMultiplicity = false, strictLabels = false, allow = {} } = {}) {
   const failures = [];
   const warnings = [];
   const allowed = { added: [...(allow.added ?? [])], removed: [...(allow.removed ?? [])] };
@@ -348,7 +349,12 @@ export function compareRuns(baseline, candidate, { strictMultiplicity = false, a
     for (const item of diff.multiplicity) {
       (strictMultiplicity ? failures : warnings).push({ key, problem: "multiplicity_changed", ...item });
     }
-    for (const item of diff.labelUnmatched) warnings.push({ key, problem: "label_not_in_candidate", ...item });
+    for (const item of diff.labelUnmatched) {
+      // A renamed label hides a swap behind the rename, so only a person can judge it: a warning by default,
+      // a failure with strictLabels unless an allow entry (kind "labelled", value: the label) names it.
+      if (!strictLabels) warnings.push({ key, problem: "label_not_in_candidate", ...item });
+      else if (!takeEither(key, item)) failures.push({ key, problem: "label_not_in_candidate", ...item });
+    }
     for (const item of diff.markersReduced) warnings.push({ key, problem: "marker_lines_removed_from_page", ...item });
     for (const item of reducedMarkers(before.visible, after.visible)) {
       const entry = { kind: "markers", value: item.kind, before: item.before, after: item.after };

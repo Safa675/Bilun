@@ -363,6 +363,19 @@ describe("amounts must stay under their label", () => {
     expect(describeItem(renameReport.warnings[0])).toBe("en/1440x900/patient-0003/default  label_not_in_candidate  labelled total recoverable (claim-backed) ([29039.29] -> -)");
   });
 
+  it("fails a renamed label with strictLabels unless an allow entry names it", () => {
+    const onlyRename = ["Recoverable (claim-backed)", "29,039.29 TRY", "EXPECTED PAYABLE", "35,739.89 TRY", "BILLS", "5"];
+    const strict = compareRuns({ [key]: state(base) }, { [key]: state(onlyRename) }, { strictLabels: true });
+    expect(strict.ok).toBe(false);
+    expect(strict.failures.map((f) => [f.problem, f.value])).toEqual([["label_not_in_candidate", "total recoverable (claim-backed)"]]);
+    expect(strict.warnings).toEqual([]);
+    const allow = { added: [{ key, kind: "labelled", value: "TOTAL RECOVERABLE (CLAIM-BACKED)", reason: "renamed to Recoverable (claim-backed), amount checked by hand" }] };
+    const waived = compareRuns({ [key]: state(base) }, { [key]: state(onlyRename) }, { strictLabels: true, allow });
+    expect(waived.ok).toBe(true);
+    expect(waived.unusedAllow).toEqual([]);
+    expect(verdict(waived).line).toBe("PARITY OK: no number changed");
+  });
+
   it("matches an allow entry written with the label as displayed", () => {
     const swapped = ["Total recoverable (claim-backed)", "35,739.89 TRY", "Expected payable", "29,039.29 TRY", "Bills", "5"];
     const allow = { added: ["TOTAL RECOVERABLE (CLAIM-BACKED)", "EXPECTED PAYABLE"].map((value) => ({ key, kind: "labelled", value, reason: "tiles reordered by design" })) };

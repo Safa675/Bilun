@@ -43,6 +43,8 @@
  *   # capture (system Chrome via Playwright channel "chrome"; no browser download)
  *   node scripts/capture-screens.mjs --out <dir>          # <dir> must be new (or pass --overwrite)
  *   node scripts/capture-screens.mjs --compare <baselineDir> <candidateDir>
+ *       # --strict-multiplicity: a repeated or merged figure fails; --strict-labels: a renamed label fails unless an
+ *       # --allow entry (kind "labelled") names it. Use both for a phase that must not move or rename content.
  *   node scripts/capture-screens.mjs --self-test           # no servers: checks the visibility probes in Chrome
  *
  * Routes: the 8 plan routes, plus (unless --no-extras) the split pane, the ?section=&finding=
@@ -125,7 +127,7 @@ const HELP = [
   "Usage: node scripts/capture-screens.mjs [options]   (run commands: see the header of this file)",
   "  --out <dir>  --locales en,tr  --sizes 1440x900,1280x800,390x844  --routes <ids>  --mode all|screens|numbers",
   "  --identity public|dev [--env-file <file>]  --base-url <url>  --retries 2  --probe name=css  --no-extras  --overwrite",
-  "  --compare <baselineDir> <candidateDir> [--allow <file>] [--strict-multiplicity] [--json <file>]",
+  "  --compare <baselineDir> <candidateDir> [--allow <file>] [--strict-multiplicity] [--strict-labels] [--json <file>]",
   "  --self-test   (checks the visibility probes against a built-in page; needs Chrome, no servers)",
 ].join("\n");
 
@@ -141,7 +143,7 @@ const VALUE_OPTIONS = new Set([
 ]);
 
 function parseArgs(argv) {
-  const flags = new Set(["no-full-page", "reduced-motion", "no-extras", "strict-multiplicity", "overwrite", "self-test", "help"]);
+  const flags = new Set(["no-full-page", "reduced-motion", "no-extras", "strict-multiplicity", "strict-labels", "overwrite", "self-test", "help"]);
   const opts = { probe: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -178,6 +180,7 @@ function parseArgs(argv) {
     selfTest: Boolean(opts["self-test"]),
     compare: opts.compare ?? null,
     strictMultiplicity: Boolean(opts["strict-multiplicity"]),
+    strictLabels: Boolean(opts["strict-labels"]),
     allowFile: opts.allow ?? null,
     jsonReport: opts.json ?? null,
   };
@@ -806,7 +809,7 @@ function runCompare(cfg) {
   const baseline = walkJson(path.join(a, "numbers"));
   if (!Object.keys(baseline).length) throw usage(`No numbers files under ${a}/numbers`);
   const allow = cfg.allowFile ? JSON.parse(fs.readFileSync(cfg.allowFile, "utf8")) : {};
-  const report = compareRuns(baseline, walkJson(path.join(b, "numbers")), { strictMultiplicity: cfg.strictMultiplicity, allow });
+  const report = compareRuns(baseline, walkJson(path.join(b, "numbers")), { strictMultiplicity: cfg.strictMultiplicity, strictLabels: cfg.strictLabels, allow });
   console.log(`states compared: ${Object.keys(baseline).length}`);
   console.log(`failures: ${report.failures.length}, warnings: ${report.warnings.length}, unused allow entries: ${report.unusedAllow.length}`);
   for (const item of report.failures.slice(0, REPORT_LIMIT)) console.log(`  ${describeItem(item)}`);
