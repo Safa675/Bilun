@@ -58,6 +58,33 @@ function headerTotal(html: string): string {
 }
 
 describe("uncomputed backend money displays", () => {
+  it.each(["en", "tr"] as const)("keeps populated summary values in container-aware tracks (%s)", (locale) => {
+    const populated = {
+      ...report(29039.29),
+      audit_exposure_try: 53437.9,
+      package_adequacy_review_try: 1,
+      action_count: 26,
+      copay: {
+        ...report(14508.48).copay,
+        ilave_ucret_total_try: 9354.77,
+        line_decomposition_status: "exact" as const,
+      },
+    };
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={populated} omitPriority />, locale);
+    expect(html).toContain("data-billing-summary");
+    expect(html).toContain("grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))]");
+    expect(html).not.toMatch(/(?:md|xl):grid-cols-/);
+    expect(html).toContain("@min-[220px]");
+    expect(html).toContain("max-sm:p-3");
+    expect(html).toContain("@min-[180px]");
+    for (const value of locale === "tr"
+      ? ["₺29.039,29", "₺53.437,90", "₺1,00", "₺14.508,48", "₺9.354,77"]
+      : ["29,039.29 TRY", "53,437.90 TRY", "1.00 TRY", "14,508.48 TRY", "9,354.77 TRY"]) {
+      expect(html).toContain(value);
+    }
+    expect(html).toContain(">26<");
+  });
+
   it.each(["en", "tr"] as const)("keeps missing and zero separate in summary and copay (%s)", (locale) => {
     const zeroLabel = locale === "tr" ? "₺0,00" : "0.00 TRY";
     const missingSummary = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report(null)} />, locale);
