@@ -1,0 +1,114 @@
+# PR 168 follow-up proposals
+
+Date: 2026-10-07. Review base: `0aea7390a5d0995cd420e5e79f23050994fc3796` (PR 168, including PR 167).
+
+This is a proposal, not an implementation or approval to change payment decisions. Only local regulatory text, authored rules, manifests, compiler code, and tests were inspected. The four recommended choices are: retire the unsupported custom-device component rule; change both procurement findings to scoped entry-duty reviews; move inpatient patient-charge provenance to paragraph (6), with correct traces and exception handling; replace the generic facility-contract bundle with separately scoped reviews.
+
+## Evidence boundary
+
+The corpus is `data/gazette/sut_clauses.parquet`, SHA-256 `40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec`. Relevant rows declare `source_effective_date=2026-10-02`. A clause key below identifies the coordinate and the corpus's normalized content hash. Empty hash `e3b0c442` denotes an empty extracted in-force body, not a hash of the historical wording. Historical `text_tr` can contain repealed words that are absent from `in_force_text`.
+
+**Regulatory conclusions** below describe this supplied corpus. They do not certify that no later law or external annex exists. **Engineering recommendations** describe proposed product behavior. No current-law web check, external annex authority search, patient data, or billing data was used. Where this corpus does not establish authority, payment eligibility remains pending.
+
+## 1. Custom-device component registration
+
+**Evidence.** `material_bundling/3.1.1.yaml:205` in `data/gazette/prose_rule_sources/` defines `3.1.1.(3).ismarlama_device_component_titubb_incomplete` as `NO_PAY`, `no_pay`, error, citing `3.1.1.(3)`. Historical corpus row `C001676` carries the component-by-component registration wording and the repeal marker `RG-18/01/2016-29597/5`, effective `01/02/2016`; it has `is_in_force=false` and an empty in-force body. Today's paragraph (3), `C002741`, key `3.1.1.(3)#87acff59`, concerns barcode retention and production on request, including the EK-3/A under-100-TL inpatient exception. It does not establish that component rule. The current L1.4 manifest links this rule to that barcode clause (`data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json:103`).
+
+**Regulatory conclusion.** The supplied text establishes repeal of the cited component premise. Current general registration paragraph (2), `C002740`, key `3.1.1.(2)#975f52d2`, has its own scope and exceptions; it does not justify copying the repealed component-versus-final-product distinction. The in-force custom-device passages at `3.1.2.(4)#e97f09c3`, `3.1.2.a#47f9747d`, and `3.1.2.b#af1d1ae1` address licensed supply centers and documents, not that distinction. A replacement component-specific authority has not been established.
+
+**Recommendation.** Retire this rule from the active material ruleset. Preserve the historical rationale in documentation, and require a separately verified authority before adding a new component rule. General registration checks continue to require their own paragraph-(2) facts and exceptions.
+
+**Alternatives.** A neutral source-review item could record the unresolved question without claiming illegality or denial. Re-authoring against a current annex is possible only after its exact text, effective dates, scope, and exceptions are established. Keeping the existing denial or substituting (2)/(3) while retaining the component premise is unsupported by the inspected text.
+
+**Exact proposed behavior change.** The custom component flag alone stops emitting this finding and its whole-material `no_pay` outcome. It does not make the material payable or exempt it from independently applicable registration rules. The barcode-retention rule remains linked to `C002741`; removing this rule therefore need not remove that clause from encoded coverage.
+
+**Focused acceptance test.** Adapt the synthetic case at `tests/unit/domain/prose_rules/test_material_bundling.py:581`: component flag true with general registration complete emits neither the retired finding nor general-registration denial; an independently applicable general-registration failure still emits paragraph-(2) finding. Verify the retired rule ID is absent from active JSON and manifest traces. Update/remove its golden case if present; do not preserve a false source link to maintain counts.
+
+## 2. Procurement entry duty versus payment denial
+
+**Evidence.** The two affected rules are `3.1.1.(5).procurement_screen_incomplete` (`material_bundling/3.1.1.yaml:69`) and `3.1.1.(4).ihale_dts_mandatory_fields_incomplete` (`:136`), both in `data/gazette/prose_rule_sources/`. Both cite paragraph (4), return `no_pay`/error, and say the material price is not reimbursed. In-force `C002742`, key `3.1.1.(4)#e0c962fb`, requires contracted official providers subject to Law 4734 to enter procurement information completely and regularly. It lists IKN except for direct procurement, TİTUBB/ÜTS number, VAT-exclusive purchase price, quantity, date, hospital code, supplier, and other requested information. It contains no payment-denial sentence. Historical `C001678` includes the denial-until-completion sentence after `Mülga:RG-08/06/2017-30090/5`, effective `08/06/2017`; the historical row is not in force.
+
+**Regulatory conclusion.** The entry duty is supported; automatic denial for incomplete entry is not established by paragraph (4). Its provider and procurement-path restrictions are part of the duty. A separate currently applicable SGK sanction or contract clause could alter the conclusion but has not been supplied.
+
+**Recommendation.** Keep both identifiers for compatibility, change both to `deontic: MANDATORY`, `material_outcome: review_required`, and warning severity. Describe the missing entry duty and cite `3.1.1.(4)#e0c962fb`. Require confirmed contracted official-provider/Law-4734 scope; unknown scope is an applicability review, not a regulatory violation.
+
+**Alternatives.** Merge the two flags into one entry-duty finding with field-level detail after tracing their consumers. Retire both pending better facts. Retaining `no_pay` requires a distinct in-force denial authority and its temporal/applicability predicates; neither the repealed sentence nor a generic noncompliant-invoicing clause establishes that application automatically.
+
+**Exact proposed behavior change.** For an applicable provider, either flag produces an entry-completion review instead of an asserted SGK denial. A private provider or an official provider outside the clause scope does not receive this violation. Missing IKN alone is not a violation on direct procurement. A separately proved denial rule can still run on its own facts. Do not count these reviews as definitively denied receivables merely because `_violation_from_rule` currently sets `risk_amount=unit_price` (`src/bilun/domain/prose_rules/material_bundling.py:319`).
+
+**Focused acceptance test.** Extend the existing flag-isolation cases at `tests/unit/domain/prose_rules/test_material_bundling.py:181`, `:459`, and `:488` with provider scope. For each flag alone on a contracted official/Law-4734 provider, assert warning, `review_required`, paragraph-(4) reference, and no denial wording; private/out-of-scope cases emit no violation; direct procurement without IKN passes that field check. Synthetic demo assertions at `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py:500` must continue checking the revised category honestly.
+
+**Related dependency, still pending.** `3.2.1.(2).procurement_price_refs_insufficient` (`data/gazette/prose_rule_sources/material_bundling/3.2.1.yaml:4`) independently asserts a three-hospital-price-reference denial while citing `3.2.1.A.(1)#becf9133`. That in-force clause describes reimbursement prices and contract ceilings, not three references. Establish the exact current authority before retaining that denial; do not silently treat this as one of the two paragraph-(4) rules.
+
+## 3. Inpatient patient-charge source: (6), not EK-3/B (7)
+
+**Evidence.** `data/gazette/prose_rule_sources/material_bundling/3.1.1.yaml:181` has a message citing (6), a source citing (7), and `NO_PAY`/`no_pay`/warning. `C002744`, key `3.1.1.(6)#1d815b1e`, says the patient is paid and the facility receivable offset when a non-reimbursed inpatient material is bought by the patient, with an exception when the patient was informed in writing that SGK does not pay for it. `C002745`, key `3.1.1.(7)#ba82ac19`, is the EK-3/B exclusion clause; it cannot serve as provenance for patient payment/offset. The current trace points to `C002745` (`L1.4_material_bundling_encoded_manifest.json:135`).
+
+**Regulatory conclusion.** Paragraph (6) is the supplied authority for this scenario. Written notification changes the patient-payment outcome. The current single boolean flag does not prove provider contract, patient purchase, written notification, payment, or deduction facts; paragraph (6) alone does not make every flagged material wholly nonpayable.
+
+**Recommendation.** Keep the historical rule ID, re-anchor its source to `3.1.1.(6)#1d815b1e`, and present it as a patient-payment/offset review (`REGULATORY_ACTION`, `review_required`, warning) until those facts are available. Encode the paragraph's actual branches if the product later gets those inputs. Admit this exact in-force key into the L1.4 export using the existing bounded `force_include_ids` mechanism, so the finding retains honest structured provenance. This admission is an engineering correction to the signal filter, not new legal authority.
+
+**Compiler dependency.** The section requires a deontic/keyword signal (`scripts/sut/prose/gate_b_sections.py:627`; filter at `gate_b_generic.py:473`). Paragraph (6) has no extracted deontic signal and is absent from its frame. `build_manifest` intersects encoded IDs with that frame and creates traces only for frame rows (`gate_b_generic.py:706`, `:772`). A read-only in-memory build on this branch reproduced the re-anchor-only result: encoded 33 to 32; deferred 4 to 5; `C002745` becomes deferred; no trace remains for the patient-charge rule. Runtime provenance depends on those traces (`src/bilun/domain/prose_rules/clause_linking.py:165`; attachment at `material_bundling.py:349`). Do not retain (7) simply to avoid this count change. EK-3/B coverage must be represented by its own actual rule, not this patient-charge rule.
+
+**Alternatives.** Re-anchor immediately and accept a temporarily absent structured reference, explicitly exposing that limitation. Retire the ambiguous flag until the factual branches can be evaluated. Expanding all material clauses through the generic filter is a wider change; bounded inclusion is the narrower proposal.
+
+**Exact proposed behavior change.** Inpatient reviews cite (6) in message, manifest, and API `clause_ref`; they no longer claim EK-3/B provenance or total material denial. Outpatient suppression remains. A proved written-notification case does not assert patient repayment/offset; absent notification information stays unresolved, rather than becoming a denial.
+
+**Focused acceptance test.** Extend `tests/unit/domain/prose_rules/test_material_bundling.py:621` and `:659` and the golden source guard at `test_material_bundling_golden.py:88`. An inpatient case has (6) in message and structured reference, `source_type=sut_clause`, and `review_required`; an outpatient case has no hit; written-notification and unknown-notification cases preserve the clause's branch/uncertainty. Regeneration must include the exact (6) trace and remove this rule ID from the (7) trace. Remove the deliberate message/source exception at `test_material_bundling_golden.py:55`. Do not freeze overall counts that later change with other proposals.
+
+## 4. Facility-contract scope bundle
+
+**Evidence.** `data/gazette/prose_rule_sources/material_bundling/3.1.1.yaml:192` defines one generic `facility_contract_material_supply_scope` flag, `review_required`/info, and three sources: (6), `3.2.1.A.(3)`, and `3.1.2.b#3d3a16d5`. Their supplied meanings differ:
+
+- `3.1.1.(6)#1d815b1e`: non-reimbursed inpatient material bought by the patient and patient-payment/offset exceptions.
+- `3.2.1.A.(3)#103712be` (`C002881`): SGK may contract with medical-material sales centers for selected providers, with discounts and an SGK-cost ceiling. Parent heading `3.2.1.A#b5dec9c0` explicitly limits the section to official providers subject to Law 4734.
+- `3.1.2.b#3d3a16d5` (`C002771`): an ostomy material list item. Parent `3.1.2.(5)#ab19386c` starts the medical-appropriateness/report-followed continuous-use list. The item alone contains no general contractual supply obligation.
+
+The input model exposes only a generic boolean (`src/bilun/domain/claims/models.py:211`), which is copied into evaluation (`src/bilun/domain/prose_rules/material_bundling.py:488`). The existing generic message does not select any of these legal branches.
+
+**Regulatory conclusion.** None of those three bodies is a universal facility-contract supply rule. Replacing (6) with (5), `3.1.1.(5)#e444c5ac`, would select a different, supported inpatient facility-supply duty; it would be a scope change, not a citation repair. Dropping ostomy is also a scope change. The supplied item does not establish a general ostomy contract rule, so that particular inference remains pending.
+
+**Recommendation.** Retire the generic active bundle and route independently substantiated cases to scoped reviews: patient purchase to decision 3; general contracted inpatient facility supply to the existing paragraph-(5) path; selected public-provider sales-center contracting/pricing to a narrowly scoped paragraph-A-(3) review. Ostomy applicability remains a separate pending review tied to the complete parent/list continuation and relevant contract, before an executable supply obligation is added. Reuse existing rules where their facts match; do not emit duplicates solely to preserve the old rule ID.
+
+**Alternatives.** Preserve the bundle temporarily as an explicit scope-unknown review with no assertion that all three authorities apply. Split it into three new rules after supplying branch inputs. Retaining the generic source list or swapping its first source without defining the branch hides the scope decision.
+
+**Exact proposed behavior change.** The generic flag alone stops producing a supposedly sourced universal supply finding. Contracted inpatient-supply facts select (5); patient-purchase facts select (6); selected official-provider sales-center facts select A-(3). Private providers do not inherit the A-section pricing scope. Ostomy membership alone never proves a contract breach or denial. New branch reviews remain non-denial findings.
+
+**Focused acceptance test.** Add a synthetic branch matrix: the generic flag alone produces no regulatory violation; private outpatient ostomy membership produces no public-contract finding; contracted inpatient supply breach links (5); patient purchase links (6); confirmed selected Law-4734 sales-center context links A-(3). Every emitted review has a trace for its actual source, and no duplicate finding from the retired bundle. Test parent/list applicability before enabling an ostomy branch.
+
+## Positional manifest-set audit
+
+All values below were joined to this exact corpus without writing it. Locations are in `scripts/sut/prose/manifest_clause_ids.py`. The sets are emitted as extra manifest metadata, not independently verified legal decisions. The audit establishes today's target bodies; it does not reconstruct an unprovided historical authoring intention.
+
+- `:17` `EK3C_LIST_PRICE_CEILING_CLAUSE_IDS`: `C002841` now resolves to `3.1.3.ö#145275f9`, an EK-3/P nephrology list item, not an EK-3/C price ceiling.
+- `:23` `EK3_SCOPE_ONLY_CLAUSE_IDS`: `C002716` is out-of-force `3.3.36.D.(1)#e3b0c442`; `C002753` is active barcode/noncompliant-invoicing denial `3.1.1.(15)#be881847`, not merely scope metadata.
+- `:30` `SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS`: `C002698` is out-of-force `3.3.36.C.ç#e3b0c442`. The current general ceiling is `3.1.1.(8)#0a25f560` (`C002746`); verify whether that is the historical intended scope before substituting it.
+- `:36` `MALZEME_SCOPE_ONLY_CLAUSE_IDS`: `C002691` is out-of-force `3.3.36.B.b#e3b0c442`; replacement scope is pending.
+- `:42` `R5_AMENDMENT_HEADER_CLAUSE_IDS`: `C002739`, `C002746`, `C002771` now target the active material definition `(1)#2daedca1`, general ceiling `(8)#0a25f560`, and ostomy `b#3d3a16d5`; none is an amendment header.
+- `:50` `R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS`: `C002830`, `C002834`, `C002837` are branch list items `3.1.3.g#79a6cd01`, `3.1.3.i#ad622c31`, `3.1.3.l#2fb53c5a`, not corpus heading rows.
+- `:58` `KDV_PRICING_CLAUSE_IDS`: `C002700` is out-of-force `3.3.36.C.e#e3b0c442`; the VAT clause is `3.1.1.(10)#5e3f8bf7` (`C002748`). The L1.4 manifest currently lists the latter as deferred (`:79`) while the extra VAT bucket names the former. Rebinding the bucket cannot honestly declare the entire clause implemented, including tax exemptions or a correct product-specific tax rate.
+- `:64` `WOUND_331_PILOT_CLAUSE_IDS`: `C002864` is `3.1.4.f#7eec5ba1`, a pacemaker-electrode list item, not wound care.
+- `:70` `SPECIALTY_334_BATCH_CLAUSE_IDS`: `C002942/944/945/947/970/972/974/975/978` resolve to `3.3.3`, `(2)`, `A`, `A.(2)`, `C.(2)`, `C.(4)`, `C.(6)`, `Ç`, `Ç.(3)` respectively: optical clauses/headings, not section 3.3.4. `C002961` is out-of-force `3.3.3.B.(3)#e3b0c442`.
+- `:87` `SPECIALTY_336_BATCH_CLAUSE_IDS`: `C003005` is `3.3.4.A.(12)#ac42b895`; `C003038` is `3.3.4.Ç.ğ#de5f7f03`, both orthopedic criteria, not 3.3.6.
+- `:94` `GLUCOSE_METER_BATCH_CLAUSE_IDS`: `C002883` is private-provider material pricing `3.2.1.B.(1)#a9ceeebb`, not a glucose-meter clause.
+- `:100` `SPECIALTY_337_BATCH_CLAUSE_IDS`: `C003080/081` are respiratory-device criteria `3.3.6.A-1.(6)#0cd6e5cc` and `(7)#9fd297e3`, not section 3.3.7.
+- `:107` `OTHER_3_3_TAIL_CLAUSE_IDS`: `C003154/167` are headings `3.3.9#042e395b` and `3.3.10#c5d8838c`. Their intended historical role must be recovered before treating them as encoded clinical criteria.
+- `:114` `SPECIALTY_R5_HEADER_CLAUSE_IDS`: `C002865`, `C002866`, `C003132` are list items `3.1.4.g#8d6c3c80`, `3.1.4.ğ#fc374294`, and `3.3.8.a#31302515`, not heading rows.
+- `:122` `VISION_OPTIK_BATCH_CLAUSE_IDS`: `C002896`, `C002898`, `C002901`, `C002915` target wound-care `3.3.1.(2)/b/b/(10)`; `C003297`, `C003310`, `C003354`, `C003392`, `C003402` target `3.3.26.(1)`, `3.3.27`, `3.3.32.a`, `3.3.33.B.b`, `3.3.33.B.(9)`. `C002925`, `C002926`, `C003371` are out-of-force `3.3.2`, `3.3.2.c`, `3.3.33.B.(5)` with empty-body hashes. These are not a reliable optical batch.
+- `:15` `GATE_B_STILL_DEFERRED_CLAUSE_IDS` and `:85` `SPECIALTY_338_BATCH_CLAUSE_IDS` are empty; emptiness itself does not prove drift. The two header-sidecar files named at `:12` and `:13` are absent, and their loaders return empty sets (`:140`, `:148`); distinguish missing historical inventory from a verified zero.
+
+**Engineering proposal.** Replace positional authoring constants with reviewed coordinate/content keys resolved against the exact corpus; derive batch inventories from actual rule sources where they represent implemented rules. For historical/header buckets, recover the intended bodies from the authoring snapshot and compare complete normalized bodies and parent scope; leave unresolved mappings pending. Do not add a fixed C-ID offset. Current body mismatches above are sufficient to reject blindly reusing these constants.
+
+**Dependencies.** Material extras are copied by `scripts/sut/prose/gate_b_generic.py:1007`; specialty extras by `scripts/sut/compile_rules.py:982`. The VAT UI/API count simply takes the length of the extra bucket (`src/bilun/domain/materials/coverage_scope.py:58`), so a displayed count of one is not source validation. The adjacent literal `separate_billing_allowlist_clause_ids=[C001831]` at `gate_b_generic.py:1024` is also stale: current `C001831` is out-of-force `3.1.3.i#e3b0c442`; include it in the follow-up inventory. Reconcile generated JSON/manifests first, then coverage and its dependency evidence, using existing producers. Catalog/retrieval/provenance consumers must see the same identities. A focused future acceptance check should reject empty/out-of-force/wrong-body references and preserve resolution under row reordering, rather than testing only bucket counts.
+
+## Additional VAT denial wording
+
+`data/gazette/prose_rule_sources/gap_closing_misc/3.1.1.yaml:14` defines `3.1.1.(10).ek3_prices_kdv_excluded`: EK-3 membership plus `kdv_included_in_price=true` yields `billable=false`/error and says VAT cannot be added to the invoice (`:21`). The supplied VAT clause `3.1.1.(10)#5e3f8bf7` explicitly says it is added except for its stated exclusions. A specialty rule describes that positive wording but still applies a whole-material `no_pay` to a generic exception-misapplied flag (`data/gazette/prose_rule_sources/specialty_materials/3.1.1.yaml:37`). The pricing helper implements VAT addition/exemption and uses a default rate (`src/bilun/domain/pricing/material_kdv.py:5`); paragraph (10) supplies no numerical rate.
+
+**Proposal.** Remove the blanket VAT-added denial premise and express the actual ex-VAT base plus applicable VAT/exemption adjustment. Treat uncertain exemption/rate facts as a pricing review; do not deny the entire underlying material solely for VAT treatment. Verify the helper's rate against applicable authority separately before claiming legal correctness. A future focused synthetic test must accept an otherwise valid non-exempt VAT addition, suppress the VAT addition on a confirmed clause exception, and leave unknown rate/exemption facts unresolved. Update the gap-closing and specialty messages/outcomes together with the VAT bucket correction so they cannot contradict one another.
+
+## Implementation boundary and validation
+
+The proposed follow-ups require a separate implementation task and review of their final behavioral scope. Rule removal/splitting must reconcile YAML, compiled rules, golden cases, manifest traces, relevant synthetic pins, API/UI categories, and generated coverage evidence. Verify the finite source closure for the resulting tree; this document does not approve clinical activation, release admission, deployment, merges, or pushes.
+
+For this proposal-only change, verification is limited to source/reference inspection, the read-only compiler probe reported above, and the document diff. No test suite, reviewer, compiler writer, or generated-artifact rebuild was run. All authority outside the supplied local corpus, including a replacement component rule, a procurement sanction, an ostomy contract duty, and product-specific VAT rates, remains pending.
