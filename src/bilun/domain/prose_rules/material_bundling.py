@@ -150,7 +150,7 @@ def _procedure_pairing_satisfied(
     procedure_codes_on_claim: frozenset[str],
     billed_procedure_line_ids: frozenset[str],
 ) -> bool:
-    """§3.1.1(11)-style: listed material needs a linked or matching procedure on the claim."""
+    """§3.1.1(13)-style: listed material needs a linked or matching procedure on the claim."""
     if not is_material_in_ek3c_catalog(material_code):
         return True
 
@@ -279,7 +279,7 @@ def _condition_matches(
     )
     for flag in claim_flags:
         if condition.get(flag):
-            # Inpatient-scoped rules (e.g. §3.1.1(7) "yatarak malzeme") cannot
+            # Inpatient-scoped rules (e.g. §3.1.1(6) "yatarak malzeme") cannot
             # apply to an outpatient claim — the violation text asserts a setting
             # that doesn't exist. Suppress rather than emit a false positive.
             if flag in _INPATIENT_SCOPED_FLAGS and care_setting != "inpatient":

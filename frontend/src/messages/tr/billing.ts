@@ -398,7 +398,7 @@ const billing = {
     "miatPeriod": "MIAT süresi",
     "ceilingEyebrow": "EK-3 uzmanlık fiyat kıyası (P90)",
     "partialBenchmarkNotice": "Kısmi mod: yalnızca EK-3 ekine göre P90 kıyasları. EK-3C-1 ön onay ve EK-3C-2 MIAT için faturalı malzeme satırları gerekir.",
-    "kdvPriceReviews": "KDV liste fiyat tavanı (§3.1.1(12))",
+    "kdvPriceReviews": "KDV liste fiyat tavanı (§3.1.1(10))",
     "billedAmount": "Faturalanan",
     "gazetteCeiling": "EK-3 tavan",
     "kdvApplied": "KDV uygulandı"

@@ -522,7 +522,7 @@ describe("SutBillingReportSections honest gaps", () => {
               billed_try: 999999,
               gazette_ceiling_try: 1200,
               kdv_applied: true,
-              note: "Billed amount exceeds EK-3 list price + KDV (§3.1.1(12)).",
+              note: "Billed amount exceeds EK-3 list price + KDV (§3.1.1(10)).",
             },
           ],
           gazette_ceiling_by_specialty: {},

@@ -4,23 +4,27 @@ rules:
 - rule_id: 3.1.1.(11).missing_material_code
   sut_section: 3.1.1
   deontic: MUST_HAVE_CODE
+  gate_b_sources:
+  - 3.1.1.(13)
   condition:
     requires_material_code: true
     material_code_missing: true
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(11)).
+    message_tr: Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(13)).
 - rule_id: 3.1.1.(11).procedure_pairing
   sut_section: 3.1.1
   deontic: MUST_PAIR_PROCEDURE
+  gate_b_sources:
+  - 3.1.1.(13)
   condition:
     material_in_ek3c: true
     procedure_pairing_required: true
   action:
     material_outcome: no_pay
     severity: warning
-    message_tr: EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(11)).
+    message_tr: EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(13)).
 - rule_id: 3.1.1.(2).titubb_uts_incomplete
   sut_section: 3.1.1
   deontic: NO_PAY
@@ -47,7 +51,7 @@ rules:
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(17)).
+    message_tr: Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(15)).
 - rule_id: 3.1.1.(9).non_reimbursed_procedure_material
   sut_section: 3.1.1
   deontic: NO_PAY
@@ -66,24 +70,24 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - 3.1.1.(5)
+  - 3.1.1.(4)
   condition:
     procurement_record_incomplete: true
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(5)).
+    message_tr: İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(4)).
 - rule_id: 3.1.1.(11).procedure_not_reimbursed_link
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - 3.1.1.(11)
+  - 3.1.1.(9)
   condition:
     procedure_not_reimbursed: true
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(11)/(12)).
+    message_tr: Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(9)).
 - rule_id: 3.1.1.(14).foreign_facility_overhead
   sut_section: 3.1.1
   deontic: NO_PAY
@@ -94,7 +98,7 @@ rules:
   action:
     material_outcome: no_pay
     severity: warning
-    message_tr: Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12)/(14)).
+    message_tr: Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12)).
 - rule_id: 3.1.1.(18).facility_procedure_restriction
   sut_section: 3.1.1
   deontic: NO_PAY
@@ -105,7 +109,7 @@ rules:
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16)/(18)).
+    message_tr: Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16)).
 - rule_id: 3.1.1.(15).separate_billing_not_authorized
   sut_section: 3.1.1
   deontic: MUST_NOT_BILL
@@ -128,7 +132,7 @@ rules:
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14)/(16)).
+    message_tr: SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14)).
 - rule_id: 3.1.1.(4).ihale_dts_mandatory_fields_incomplete
   sut_section: 3.1.1
   deontic: MANDATORY
@@ -151,7 +155,7 @@ rules:
     material_outcome: no_pay
     severity: error
     message_tr: Yatarak tedavi sırasında EK-3/C malzemesi dışarıdan reçete yolu uygunsuz — sözleşmeli merkez/kurallara uygun
-      temin gerekir (§3.1.1(8)/(19)).
+      temin gerekir (§3.1.2(19)).
 - rule_id: 3.1.1.(13).ek3_quality_documentation_incomplete
   sut_section: 3.1.1
   deontic: REGULATORY_ACTION
@@ -162,7 +166,7 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11)/(13)).
+    message_tr: EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11)).
 - rule_id: 3.1.1.(6).inpatient_facility_supply_violation
   sut_section: 3.1.1
   deontic: MANDATORY
@@ -184,7 +188,7 @@ rules:
   action:
     material_outcome: no_pay
     severity: warning
-    message_tr: Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(7)).
+    message_tr: Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(6)).
 - rule_id: 3.1.1.facility_contract_material_supply_scope
   sut_section: 3.1.1
   deontic: REGULATORY_ACTION
@@ -220,5 +224,5 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3)/(4); EK-3/A <100 TL yatarak
+    message_tr: TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3); EK-3/A <100 TL yatarak
       istisnası hariç).

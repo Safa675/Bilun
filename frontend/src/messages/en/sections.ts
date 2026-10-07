@@ -91,7 +91,7 @@ const sections = {
       partialEngineRulesOnDisk: "JSON rules on disk",
       partialEngineManifestTraced: "Manifest traced clause IDs",
       partialEngineTierCDeferred: "Tier C deferred (manifest)",
-      partialEngineKdvClauses: "KDV pricing clauses (§3.1.1(12))",
+      partialEngineKdvClauses: "KDV pricing clauses (§3.1.1(10))",
       partialEngineSubsections: "§4.2 subsection encoded %",
     },
     tabs: {

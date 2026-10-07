@@ -118,7 +118,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "3.1.1.(4).ihale_dts_mandatory_fields_incomplete"
+        "3.1.1.(4).ihale_dts_mandatory_fields_incomplete",
+        "3.1.1.(5).procurement_screen_incomplete"
       ]
     },
     {
@@ -128,7 +129,6 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "3.1.1.(5).procurement_screen_incomplete",
         "3.1.1.(6).inpatient_facility_supply_violation"
       ]
     },
@@ -159,6 +159,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "3.1.1.(11).procedure_not_reimbursed_link",
         "3.1.1.(9).non_reimbursed_procedure_material"
       ]
     },
@@ -190,6 +191,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tıbbi malzeme alan tanımları (SUT kodları)",
       "linked_rule_ids": [
+        "3.1.1.(11).missing_material_code",
+        "3.1.1.(11).procedure_pairing",
         "3.1.1.(15).separate_billing_not_authorized"
       ]
     },
