@@ -822,6 +822,199 @@ def _clause_witnesses(value: Any, identities: Any, policy: dict) -> dict:
     return value
 
 
+def _build_owner_routes(raw: bytes) -> dict[str, str]:
+    tree = _tree(raw)
+    normalizer = _node(tree, ast.FunctionDef, "_normalize_wavea_bill_detail")
+    writer = _node(tree, ast.FunctionDef, "_write_wavea_bill_details")
+    run = _node(tree, ast.FunctionDef, "run_build")
+
+    def statement(scope, body, source):
+        expected = _tree(source.encode()).body[0]
+        matches = [node for node in ast.walk(scope) if _ast(node) == _ast(expected)]
+        _require(len(matches) == 1 and matches[0] in body, "build_owner_statement")
+        return matches[0]
+
+    def assignment(scope, body, source):
+        expected = _tree(source.encode()).body[0]
+        target = expected.targets[0]
+        matches = []
+        for node in ast.walk(scope):
+            targets = (
+                node.targets
+                if isinstance(node, ast.Assign)
+                else ([node.target] if isinstance(node, (ast.AnnAssign, ast.AugAssign)) else [])
+            )
+            if any(_ast(item) == _ast(target) for item in targets):
+                matches.append(node)
+        _require(
+            len(matches) == 1 and matches[0] in body and _ast(matches[0]) == _ast(expected),
+            "build_owner_assignment",
+        )
+        return matches[0]
+
+    def calls(scope, name):
+        return [
+            node
+            for node in ast.walk(scope)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == name
+        ]
+
+    def owner_writer(scope, name, owner, source):
+        expected = _tree(source.encode()).body[0].value
+        matches = [
+            node
+            for node in calls(scope, name)
+            if len(node.args) == 4
+            and any(
+                isinstance(item, ast.Name) and item.id == owner for item in ast.walk(node.args[3])
+            )
+        ]
+        _require(len(matches) == 1 and _ast(matches[0]) == _ast(expected), "build_owner_writer")
+        return matches[0].args[1].value
+
+    for function, arguments in (
+        (normalizer, ["bill_key", "report", "build_id"]),
+        (writer, ["con", "raw_bill_reports", "build_id", "data_source"]),
+        (run, ["args"]),
+    ):
+        _require(
+            not function.args.posonlyargs
+            and not function.args.vararg
+            and not function.args.kwarg
+            and [arg.arg for arg in function.args.args] == arguments,
+            "build_owner_signature",
+        )
+    initial = assignment(normalizer, normalizer.body, "normalized = json_ready(detail)")
+    owned = assignment(normalizer, normalizer.body, "normalized['build_id'] = build_id")
+    returned = statement(normalizer, normalizer.body, "return normalized")
+    _require(
+        sum(isinstance(node, ast.Return) for node in ast.walk(normalizer)) == 1
+        and normalizer.body.index(initial)
+        < normalizer.body.index(owned)
+        < normalizer.body.index(returned),
+        "build_owner_normalizer_order",
+    )
+    bill_loop = statement(
+        writer,
+        writer.body,
+        """for bill_key, report in raw_bill_reports.items():
+    detail = _normalize_wavea_bill_detail(bill_key, report, build_id)
+    rows.append((bill_key, dump_json_compact(attach_bilun_data_source_metadata(detail, data_source))))
+    if len(rows) == batch_size:
+        written += write_json_payload_rows_serialized(con, 'wavea_bill_evidence_detail', build_id, rows, append=written > 0)
+        rows = []
+""",
+    )
+    bill_tail = statement(
+        writer,
+        writer.body,
+        """if rows or not written:
+    written += write_json_payload_rows_serialized(con, 'wavea_bill_evidence_detail', build_id, rows, append=written > 0)
+""",
+    )
+    _require(
+        writer.body.index(bill_loop) < writer.body.index(bill_tail)
+        and len(calls(writer, "_normalize_wavea_bill_detail")) == 1
+        and len(calls(writer, "write_json_payload_rows_serialized")) == 2,
+        "build_owner_bill_route",
+    )
+    tries = [node for node in run.body if isinstance(node, ast.Try)]
+    _require(len(tries) == 1, "build_owner_run_scope")
+    body = tries[0].body
+    patient_loop = statement(
+        run,
+        body,
+        """for detail in wavea_details.values():
+    detail['build_id'] = build.build_id
+""",
+    )
+    assignment(run, patient_loop.body, "detail['build_id'] = build.build_id")
+    patient_source = """write_json_payload_rows(con, 'wavea_evidence_detail', build.build_id,
+    {patient_id: attach_bilun_data_source_metadata(detail, sut_data_source_metadata)
+     for patient_id, detail in wavea_details.items()})"""
+    patient_call = statement(run, body, patient_source)
+    patient_table = owner_writer(run, "write_json_payload_rows", "wavea_details", patient_source)
+    bill_call = statement(
+        run,
+        body,
+        "wavea_bill_count = _write_wavea_bill_details(con, raw_bill_reports, build.build_id, sut_data_source_metadata)",
+    )
+    _require(len(calls(run, "_write_wavea_bill_details")) == 1, "build_owner_bill_caller")
+    generator = assignment(
+        run, body, "wavea_index = build_full_wavea_evidence_index(wavea_details)"
+    )
+    index_owner = assignment(run, body, "wavea_index['build_id'] = build.build_id")
+    index_source = """upsert_single_json_table(con, 'wavea_evidence_index', build.build_id,
+    attach_bilun_data_source_metadata(wavea_index, sut_data_source_metadata))"""
+    index_call = statement(run, body, index_source)
+    index_table = owner_writer(run, "upsert_single_json_table", "wavea_index", index_source)
+    _require(
+        len(calls(run, "build_full_wavea_evidence_index")) == 1
+        and body.index(patient_loop) < body.index(patient_call)
+        and [body.index(node) for node in (bill_call, generator, index_owner, index_call)]
+        == list(range(body.index(patient_call) + 1, body.index(patient_call) + 5)),
+        "build_owner_run_order",
+    )
+    bill_table = calls(writer, "write_json_payload_rows_serialized")[0].args[1].value
+    return {patient_table: "map", bill_table: "map", index_table: "singleton"}
+
+
+def _own_build_context(value: Any, tables: dict[str, dict], identities: dict) -> tuple[dict, dict]:
+    _require(type(value) is dict and set(value) == {"baseline", "candidate"}, "build_context_sides")
+    pins, builders = {}, []
+    for side in ("baseline", "candidate"):
+        row = value[side]
+        _require(
+            type(row) is dict
+            and set(row)
+            == {
+                "source_identity",
+                "build_id",
+                "cache_sha256",
+                "raw_projection_sha256",
+                "builder_source",
+            },
+            "build_context_fields",
+        )
+        _require(
+            type(row["source_identity"]) is str and row["source_identity"] == identities[side],
+            "build_context_source_identity",
+        )
+        _require(type(row["build_id"]) is str and bool(row["build_id"]), "build_context_id")
+        for pin_field in ("cache_sha256", "raw_projection_sha256"):
+            _require(
+                type(row[pin_field]) is str and bool(_SHA256.fullmatch(row[pin_field])),
+                "build_context_digest",
+            )
+        _require(row["raw_projection_sha256"] == _digest(tables[side]), "build_context_projection")
+        witness = row["builder_source"]
+        _require(
+            type(witness) is dict
+            and set(witness) == {"path", "bytes", "sha256"}
+            and type(witness["path"]) is str
+            and witness["path"] == "src/bilun/cache/builder.py",
+            "build_context_builder_shape",
+        )
+        raw, sha = witness["bytes"], witness["sha256"]
+        _require(
+            type(raw) is bytes
+            and len(raw) <= 2_000_000
+            and type(sha) is str
+            and bool(_SHA256.fullmatch(sha))
+            and hashlib.sha256(raw).hexdigest() == sha,
+            "build_context_builder_digest",
+        )
+        builders.append(raw)
+        # Cache hashes are bound declarations; this pure module does not attest them.
+        pins[side] = {field: row[field] for field in row if field != "builder_source"}
+        pins[side]["builder_source"] = {"path": witness["path"], "sha256": sha}
+    _require(builders[0] == builders[1], "build_context_builder_changed")
+    routes = _build_owner_routes(builders[0])
+    return pins, routes
+
+
 @_payload_free
 def measure_delta(
     baseline: dict,
@@ -830,6 +1023,7 @@ def measure_delta(
     *,
     clause_references: dict,
     clause_source_identities: dict,
+    own_build_context: dict | None = None,
 ) -> DeltaMeasurement:
     """Reject unknown deltas; a complete measurement still grants no authority."""
     _require(type(policy) is DeltaPolicy, "policy_type")
@@ -847,6 +1041,15 @@ def measure_delta(
     )
     differences = []
     actions = {}
+    build_pins, build_routes = (
+        ({}, {})
+        if own_build_context is None
+        else _own_build_context(
+            own_build_context,
+            {"baseline": baseline, "candidate": candidate},
+            data["source_identities"],
+        )
+    )
 
     def add(table, row, path, left, right, kind):
         differences.append(
@@ -1151,18 +1354,62 @@ def measure_delta(
                     )
                     actions[identity] = [left, right]
     for table in sorted(TABLES - _REPORT_TABLES):
-        if table == "cohort_compliance_index":
+        if table in build_routes:
+            old, new = baseline[table], candidate[table]
+            _require(type(old) is dict and type(new) is dict, "build_owner_shape")
+            if build_routes[table] == "map":
+                _require(
+                    set(old) == set(new) and all(type(key) is str and bool(key) for key in old),
+                    "build_owner_inventory",
+                )
+                pairs = [(key, old[key], new[key]) for key in sorted(old)]
+            else:
+                pairs = [("index", old, new)]
+            for key, left, right in pairs:
+                _require(
+                    type(left) is dict
+                    and type(right) is dict
+                    and set(left) == set(right)
+                    and "build_id" in left,
+                    "build_owner_fields",
+                )
+                for field in sorted(left):
+                    if field == "build_id":
+                        _require(
+                            left[field] == build_pins["baseline"]["build_id"]
+                            and right[field] == build_pins["candidate"]["build_id"],
+                            "build_owner_identity",
+                        )
+                        if not _same(left[field], right[field]):
+                            add(
+                                table,
+                                key,
+                                (field,),
+                                left[field],
+                                right[field],
+                                "own_build_bookkeeping",
+                            )
+                    else:
+                        _require(_same(left[field], right[field]), "build_owner_sibling_changed")
+        elif table == "cohort_compliance_index":
             visit(table, "cohort", (), baseline[table], candidate[table])
         else:
             _require(_same(baseline[table], candidate[table]), "protected_table_changed")
     counts = {}
     for difference in differences:
         counts[difference._kind] = counts.get(difference._kind, 0) + 1
+    witness = [
+        [item._table, item._row, list(item._path), item._before, item._after, item._kind]
+        for item in differences
+    ]
     witness_digest = _digest(
-        [
-            [item._table, item._row, list(item._path), item._before, item._after, item._kind]
-            for item in differences
-        ]
+        witness
+        if own_build_context is None
+        else {
+            "differences": witness,
+            "own_build_context": build_pins,
+            "build_owner_routes": build_routes,
+        }
     )
     return DeltaMeasurement(
         tuple(sorted(counts.items())), policy.sha256, witness_digest, tuple(differences)

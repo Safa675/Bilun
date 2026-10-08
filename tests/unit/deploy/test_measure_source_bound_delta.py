@@ -28,6 +28,43 @@ OLD_SOURCE = "KDV \u00a73.1.1(12)"
 NEW_SOURCE = "KDV \u00a73.1.1(10)"
 OLD_KDV = "Billed amount exceeds EK-3 list price + KDV (\u00a73.1.1(12))."
 NEW_KDV = "Billed amount exceeds EK-3 list price + KDV (\u00a73.1.1(10))."
+BUILD_PATH = "src/bilun/cache/builder.py"
+OWN_TABLES = ("wavea_evidence_detail", "wavea_bill_evidence_detail", "wavea_evidence_index")
+OLD_BUILD = "private-old-synthetic-build"
+NEW_BUILD = "private-new-synthetic-build"
+BUILDER = b"""def _normalize_wavea_bill_detail(bill_key, report, build_id):
+    normalized = json_ready(detail)
+    normalized['build_id'] = build_id
+    return normalized
+
+def _write_wavea_bill_details(con, raw_bill_reports, build_id, data_source, *, batch_size=4):
+    rows = []
+    written = 0
+    for bill_key, report in raw_bill_reports.items():
+        detail = _normalize_wavea_bill_detail(bill_key, report, build_id)
+        rows.append((bill_key, dump_json_compact(attach_bilun_data_source_metadata(detail, data_source))))
+        if len(rows) == batch_size:
+            written += write_json_payload_rows_serialized(con, 'wavea_bill_evidence_detail', build_id, rows, append=written > 0)
+            rows = []
+    if rows or not written:
+        written += write_json_payload_rows_serialized(con, 'wavea_bill_evidence_detail', build_id, rows, append=written > 0)
+    return written
+
+def run_build(args):
+    try:
+        for detail in wavea_details.values():
+            detail['build_id'] = build.build_id
+        write_json_payload_rows(con, 'wavea_evidence_detail', build.build_id,
+            {patient_id: attach_bilun_data_source_metadata(detail, sut_data_source_metadata)
+             for patient_id, detail in wavea_details.items()})
+        wavea_bill_count = _write_wavea_bill_details(con, raw_bill_reports, build.build_id, sut_data_source_metadata)
+        wavea_index = build_full_wavea_evidence_index(wavea_details)
+        wavea_index['build_id'] = build.build_id
+        upsert_single_json_table(con, 'wavea_evidence_index', build.build_id,
+            attach_bilun_data_source_metadata(wavea_index, sut_data_source_metadata))
+    finally:
+        con.close()
+"""
 
 
 def _json(value):
@@ -77,7 +114,8 @@ def _source_files(*, candidate):
             + "    required_inputs_missing: list = []\n"
             + "    computed_total_try: float = 0.0\n"
         ).encode(),
-        BILLING + "claim_lab.py": b"def _optimize_lab_billing_from_claims(claims):\n    return LabOptimization()\n",
+        BILLING
+        + "claim_lab.py": b"def _optimize_lab_billing_from_claims(claims):\n    return LabOptimization()\n",
         BILLING + "lab_bill_merge.py": (
             "def merge(merged_lab, lab_result):\n"
             + (
@@ -100,7 +138,8 @@ def _source_files(*, candidate):
             b"    kinds = ('material_pre_auth', 'material_prose_bundling')\n"
             b"    return action(kind=kinds[1], detail=_material_row_detail(row))\n"
         ),
-        BILLING + "cohort_compliance.py": b"def _row_from_action(action):\n    return {'detail': action.get('detail')}\n",
+        BILLING
+        + "cohort_compliance.py": b"def _row_from_action(action):\n    return {'detail': action.get('detail')}\n",
         "src/bilun/domain/prose_rules/clause_linking.py": b"def clause_ref_for_rule_id(rule_id):\n    return None\n",
         "src/bilun/domain/sut/rules_catalog.py": b"def get_clause(key):\n    return None\n",
         "src/bilun/domain/sut/clause_reference.py": b"SOURCE_SUT_CLAUSE = 'sut_clause'\n",
@@ -1263,3 +1302,328 @@ def test_unchanged_historical_links_cannot_hide_other_source_changes(mutation):
         new[RULES] = _json(document)
     with pytest.raises(delta.MeasurementRejected):
         delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+def _build_tables():
+    left = _tables()
+    row = {
+        "patient_id": PATIENT,
+        "build_id": OLD_BUILD,
+        "known_zero_try": 0.0,
+        "known_nonzero_try": 12.5,
+        "count": 2,
+        "status": "not_evaluated",
+        "timestamp": "synthetic-stable-timestamp",
+        "data_source": {"claim_source": "synthetic-stable-input"},
+        "nested": {"build_id": "private-stable-nested-build"},
+    }
+    left[OWN_TABLES[0]] = {PATIENT: copy.deepcopy(row)}
+    left[OWN_TABLES[1]] = {BILL_KEY: copy.deepcopy(row)}
+    left[OWN_TABLES[2]] = copy.deepcopy(row)
+    right = copy.deepcopy(left)
+    for table in OWN_TABLES:
+        _build_owner(right, table)["build_id"] = NEW_BUILD
+    return left, right
+
+
+def _build_owner(tables, table):
+    key = PATIENT if table == OWN_TABLES[0] else BILL_KEY
+    return tables[table] if table == OWN_TABLES[2] else tables[table][key]
+
+
+def _build_context(left, right, sources):
+    return {
+        side: {
+            "source_identity": sources[index].identity,
+            "build_id": OLD_BUILD if index == 0 else NEW_BUILD,
+            "cache_sha256": ("c" if index == 0 else "d") * 64,
+            "raw_projection_sha256": delta._digest(tables),
+            "builder_source": {
+                "path": BUILD_PATH,
+                "bytes": BUILDER,
+                "sha256": hashlib.sha256(BUILDER).hexdigest(),
+            },
+        }
+        for index, (side, tables) in enumerate((("baseline", left), ("candidate", right)))
+    }
+
+
+def test_three_source_owned_build_deltas_are_private_and_non_authorizing(policy, sources, capsys):
+    left, right = _build_tables()
+    context = _build_context(left, right, sources)
+    snapshot = copy.deepcopy((left, right, context))
+    result = _measure(left, right, policy, sources, own_build_context=context)
+    summary = result.safe_summary()
+    assert summary["change_counts"] == {"own_build_bookkeeping": 3}
+    assert summary["changed_cell_count"] == 3
+    assert {(item._table, item._path) for item in result._differences} == {
+        (table, ("build_id",)) for table in OWN_TABLES
+    }
+    assert {item._row for item in result._differences} == {PATIENT, BILL_KEY, "index"}
+    assert all(
+        item._before == json.dumps(OLD_BUILD) and item._after == json.dumps(NEW_BUILD)
+        for item in result._differences
+    )
+    for key in (
+        "deployment_admitted",
+        "semantic_release_admitted",
+        "external_witness_generation_attested",
+        "own_source_cache_equivalence_attested",
+    ):
+        assert summary[key] is False
+    for forbidden in (PATIENT, CLAIM, OLD_BUILD, NEW_BUILD, "synthetic-stable-input", "12.5"):
+        assert forbidden not in repr(result) + json.dumps(summary)
+    assert (left, right, context) == snapshot
+    assert capsys.readouterr() == ("", "")
+
+
+def test_old_context_free_contract_and_digest_are_unchanged(policy, sources):
+    left = _tables()
+    implicit = _measure(left, copy.deepcopy(left), policy, sources).safe_summary()
+    explicit = _measure(
+        left, copy.deepcopy(left), policy, sources, own_build_context=None
+    ).safe_summary()
+    assert implicit == explicit
+    assert implicit["delta_sha256"] == delta._digest([])
+    left, right = _build_tables()
+    _reject(left, right, policy, sources)
+
+
+def test_unchanged_correct_owners_are_validated_and_context_pins_bind_digest(policy, sources):
+    left, right = _build_tables()
+    for table in OWN_TABLES:
+        _build_owner(right, table)["build_id"] = OLD_BUILD
+    context = _build_context(left, right, sources)
+    context["candidate"]["build_id"] = OLD_BUILD
+    before = _measure(left, right, policy, sources, own_build_context=context).safe_summary()
+    assert before["change_counts"] == {}
+    # A valid-format cache hash remains a declaration, not independently attested.
+    context["candidate"]["cache_sha256"] = "e" * 64
+    after = _measure(left, right, policy, sources, own_build_context=context).safe_summary()
+    assert before["delta_sha256"] != after["delta_sha256"]
+    assert after["own_source_cache_equivalence_attested"] is False
+    builder = context["baseline"]["builder_source"]["bytes"] + b"\n# same source-owned routes\n"
+    for side in context.values():
+        side["builder_source"].update(bytes=builder, sha256=hashlib.sha256(builder).hexdigest())
+    rebound = _measure(left, right, policy, sources, own_build_context=context).safe_summary()
+    assert rebound["delta_sha256"] != after["delta_sha256"]
+
+
+@pytest.mark.parametrize("table", OWN_TABLES)
+@pytest.mark.parametrize("unchanged", [False, True])
+def test_wrong_direct_build_owner_is_never_skipped(policy, sources, table, unchanged):
+    left, right = _build_tables()
+    _build_owner(left, table)["build_id"] = "private-foreign-owner"
+    if unchanged:
+        _build_owner(right, table)["build_id"] = "private-foreign-owner"
+    _reject(left, right, policy, sources, own_build_context=_build_context(left, right, sources))
+
+
+@pytest.mark.parametrize("table", OWN_TABLES)
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("known_zero_try", None),
+        ("known_nonzero_try", 13.5),
+        ("count", 3),
+        ("status", "evaluated"),
+        ("timestamp", "changed-timestamp"),
+        ("data_source", {"claim_source": "changed-input"}),
+        ("nested", {"build_id": NEW_BUILD}),
+    ],
+)
+def test_build_context_does_not_permit_sibling_or_nested_drift(
+    policy, sources, table, field, value
+):
+    left, right = _build_tables()
+    _build_owner(right, table)[field] = value
+    _reject(left, right, policy, sources, own_build_context=_build_context(left, right, sources))
+
+
+@pytest.mark.parametrize("table", OWN_TABLES)
+@pytest.mark.parametrize(
+    "mutation", ["missing_owner", "extra_field", "missing_field", "wrong_row_type"]
+)
+def test_build_owner_field_sets_and_shapes_remain_exact(policy, sources, table, mutation):
+    left, right = _build_tables()
+    if mutation == "missing_owner":
+        del _build_owner(left, table)["build_id"]
+        del _build_owner(right, table)["build_id"]
+    elif mutation == "extra_field":
+        _build_owner(right, table)["extra"] = True
+    elif mutation == "missing_field":
+        del _build_owner(right, table)["count"]
+    elif table == OWN_TABLES[2]:
+        right[table] = []
+    else:
+        right[table][PATIENT if table == OWN_TABLES[0] else BILL_KEY] = []
+    _reject(left, right, policy, sources, own_build_context=_build_context(left, right, sources))
+
+
+@pytest.mark.parametrize("table", OWN_TABLES[:2])
+@pytest.mark.parametrize("mutation", ["missing", "extra", "empty_key", "wrong_map_type"])
+def test_build_owner_map_inventory_is_exact(policy, sources, table, mutation):
+    left, right = _build_tables()
+    key = PATIENT if table == OWN_TABLES[0] else BILL_KEY
+    if mutation == "missing":
+        del right[table][key]
+    elif mutation == "extra":
+        right[table]["private-extra-row"] = copy.deepcopy(right[table][key])
+    elif mutation == "empty_key":
+        for side in (left, right):
+            side[table][""] = side[table].pop(key)
+    else:
+        right[table] = []
+    _reject(left, right, policy, sources, own_build_context=_build_context(left, right, sources))
+
+
+@pytest.mark.parametrize("table", sorted(delta.TABLES - set(OWN_TABLES)))
+def test_build_context_does_not_allow_other_table_bookkeeping(policy, sources, table):
+    left, right = _build_tables()
+    if table in (REPORT, BILL_REPORT):
+        row = PATIENT if table == REPORT else BILL_KEY
+        right[table][row]["build_id"] = NEW_BUILD
+    else:
+        right[table]["build_id"] = NEW_BUILD
+    _reject(left, right, policy, sources, own_build_context=_build_context(left, right, sources))
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "side_missing",
+        "side_extra",
+        "side_type",
+        "field_missing",
+        "field_extra",
+        "context_type",
+        "source_identity",
+        "source_type",
+        "build_empty",
+        "build_type",
+        "cache_digest",
+        "cache_type",
+        "projection_digest",
+        "projection_type",
+        "builder_missing",
+        "builder_extra",
+        "builder_type",
+        "builder_path",
+        "builder_bytes",
+        "builder_digest",
+        "builder_hash_mismatch",
+        "builder_changed",
+    ],
+)
+def test_build_context_exact_schema_and_pins(policy, sources, mutation):
+    left, right = _build_tables()
+    context = _build_context(left, right, sources)
+    row = context["candidate"]
+    witness = row["builder_source"]
+    if mutation == "side_missing":
+        del context["baseline"]
+    elif mutation == "side_extra":
+        context["extra"] = copy.deepcopy(row)
+    elif mutation == "side_type":
+        context["candidate"] = []
+    elif mutation == "context_type":
+        context = []
+    elif mutation == "field_missing":
+        del row["cache_sha256"]
+    elif mutation == "field_extra":
+        row["attested"] = True
+    elif mutation == "source_identity":
+        row["source_identity"] = sources[0].identity
+    elif mutation == "source_type":
+        row["source_identity"] = None
+    elif mutation == "build_empty":
+        row["build_id"] = ""
+    elif mutation == "build_type":
+        row["build_id"] = 1
+    elif mutation == "cache_digest":
+        row["cache_sha256"] = "not-a-digest"
+    elif mutation == "cache_type":
+        row["cache_sha256"] = None
+    elif mutation == "projection_digest":
+        row["raw_projection_sha256"] = "f" * 64
+    elif mutation == "projection_type":
+        row["raw_projection_sha256"] = False
+    elif mutation == "builder_missing":
+        del witness["bytes"]
+    elif mutation == "builder_extra":
+        witness["attested"] = True
+    elif mutation == "builder_type":
+        row["builder_source"] = []
+    elif mutation == "builder_path":
+        witness["path"] = "src/bilun/cache/other.py"
+    elif mutation == "builder_bytes":
+        witness["bytes"] = BUILDER.decode()
+    elif mutation == "builder_digest":
+        witness["sha256"] = "invalid"
+    elif mutation == "builder_hash_mismatch":
+        witness["sha256"] = "f" * 64
+    elif mutation == "builder_changed":
+        raw = BUILDER + b"\n# changed candidate source\n"
+        witness.update(bytes=raw, sha256=hashlib.sha256(raw).hexdigest())
+    _reject(left, right, policy, sources, own_build_context=context)
+
+
+@pytest.mark.parametrize(
+    "before,after",
+    [
+        (b"normalized['build_id'] = build_id", b"normalized['build_id'] = other_id"),
+        (
+            b"normalized['build_id'] = build_id",
+            b"normalized['build_id'] = build_id\n    normalized['build_id'] = build_id",
+        ),
+        (b"normalized = json_ready(detail)", b"normalized = json_ready(other_detail)"),
+        (b"return normalized", b"return detail"),
+        (
+            b"_normalize_wavea_bill_detail(bill_key, report, build_id)",
+            b"_normalize_wavea_bill_detail(bill_key, report, other_id)",
+        ),
+        (b"'wavea_bill_evidence_detail', build_id, rows", b"'other_table', build_id, rows"),
+        (
+            b"'wavea_bill_evidence_detail', build_id, rows",
+            b"'wavea_bill_evidence_detail', other_id, rows",
+        ),
+        (
+            b"dump_json_compact(attach_bilun_data_source_metadata(detail, data_source))",
+            b"dump_json_compact(other_detail)",
+        ),
+        (b"for detail in wavea_details.values():", b"for detail in other_details.values():"),
+        (b"detail['build_id'] = build.build_id", b"detail['build_id'] = other_id"),
+        (b"'wavea_evidence_detail', build.build_id", b"'other_table', build.build_id"),
+        (b"'wavea_evidence_detail', build.build_id", b"'wavea_evidence_detail', other_id"),
+        (
+            b"for patient_id, detail in wavea_details.items()",
+            b"for patient_id, detail in other_details.items()",
+        ),
+        (
+            b"con, raw_bill_reports, build.build_id, sut_data_source_metadata",
+            b"con, raw_bill_reports, other_id, sut_data_source_metadata",
+        ),
+        (
+            b"wavea_index = build_full_wavea_evidence_index(wavea_details)",
+            b"wavea_index = build_full_wavea_evidence_index(other_details)",
+        ),
+        (b"wavea_index['build_id'] = build.build_id", b"wavea_index['build_id'] = other_id"),
+        (b"'wavea_evidence_index', build.build_id", b"'other_table', build.build_id"),
+        (
+            b"attach_bilun_data_source_metadata(wavea_index, sut_data_source_metadata)",
+            b"attach_bilun_data_source_metadata(other_index, sut_data_source_metadata)",
+        ),
+        (b"def run_build(args):", b"def run_build(other_args):"),
+        (b"def run_build(args):", b"def run_build(args):\n    pass\ndef run_build(args):"),
+    ],
+)
+def test_each_builder_owner_assignment_and_writer_route_is_source_bound(
+    policy, sources, before, after
+):
+    left, right = _build_tables()
+    context = _build_context(left, right, sources)
+    raw = BUILDER.replace(before, after, 1)
+    assert raw != BUILDER
+    for row in context.values():
+        row["builder_source"].update(bytes=raw, sha256=hashlib.sha256(raw).hexdigest())
+    _reject(left, right, policy, sources, own_build_context=context)
