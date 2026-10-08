@@ -18,6 +18,7 @@ from functools import wraps
 from typing import Any
 
 _BILLING = "src/bilun/domain/billing/"
+_MATERIAL_PROSE_SOURCE = "src/bilun/domain/prose_rules/material_bundling.py"
 _RULES = "data/gazette/prose_rules/material_bundling_prose.json"
 _MANIFEST = "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json"
 SOURCE_PATHS = frozenset(
@@ -1224,6 +1225,180 @@ def _raw_bill_identity(key: str, report: dict, evidence: dict) -> None:
     )
 
 
+def _material_prose_source_proof(old: dict, new: dict, producers: tuple[bytes, bytes]) -> str:
+    # Complete scoped AST pins from Git5c/01f; imported helper internals and
+    # external source generation are not attested by this declaration proof.
+    functions = {
+        "_violation_from_rule": "241d8aa408b4b2165c9ff84b060e6cad188b8e9339b282f691910fd8c44fa897",
+        "check_material_bundling_prose": "c0c62aeb7423236ecf521cfbda03e2fd17675776fe10c44bd8083851aad9a60d",
+        "check_material_bundling_for_context": "2882884db95a1664997447168f17dfa8fffebe92008f23e1f0af8e2c4503abcc",
+    }
+    trees = [_tree(raw) for raw in producers]
+    for tree in trees:
+        for name, expected in functions.items():
+            function = _node(tree, ast.FunctionDef, name)
+            _require(
+                sum(
+                    isinstance(node, ast.FunctionDef) and node.name == name
+                    for node in ast.walk(tree)
+                )
+                == 1
+                and hashlib.sha256(_ast(function).encode()).hexdigest() == expected,
+                "material_prose_producer_ast",
+            )
+    converted = copy.deepcopy(trees[0])
+    pairing = [
+        _node(tree, ast.FunctionDef, "_procedure_pairing_satisfied")
+        for tree in (converted, trees[1])
+    ]
+    docs = [ast.get_docstring(function, clean=False) for function in pairing]
+    known = [
+        "\u00a73.1.1(11)-style: listed material needs a linked or matching procedure on the claim.",
+        "\u00a73.1.1(13)-style: listed material needs a linked or matching procedure on the claim.",
+    ]
+    if docs[0] != docs[1]:
+        _require(docs == known, "material_prose_pairing_doc")
+        pairing[0].body[0] = copy.deepcopy(pairing[1].body[0])
+    else:
+        _require(docs[0] in known, "material_prose_pairing_doc")
+    _require(_ast(converted) == _ast(trees[1]), "material_prose_executable_changed")
+
+    def owned(scope, source):
+        expected = ast.parse(source).body[0]
+        matches = [
+            node
+            for node in ast.walk(scope)
+            if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+            and any(
+                _ast(target) == _ast(expected.targets[0])
+                for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+            )
+        ]
+        _require(
+            len(matches) == 1 and matches[0] in scope.body and _ast(matches[0]) == _ast(expected),
+            "material_prose_bound_route",
+        )
+        return matches[0]
+
+    for files in (old, new):
+        claim = _tree(files[_BILLING + "claim_materials.py"])
+        enrich = _node(claim, ast.FunctionDef, "_enrich_material_precheck_row")
+        _require(
+            sum(
+                isinstance(node, ast.FunctionDef) and node.name == enrich.name
+                for node in ast.walk(claim)
+            )
+            == 1
+            and hashlib.sha256(_ast(enrich).encode()).hexdigest()
+            == "f22edf32b8d1a4808e8674fe209d77005a2da32fc86379222cdd40720a9ab3c7",
+            "material_prose_enrichment_ast",
+        )
+        precheck = _node(claim, ast.FunctionDef, "precheck_materials_from_claims")
+        initial = owned(precheck, "result = MaterialPreCheck()")
+        projected = owned(
+            precheck,
+            """result.prose_bundling_violations = [
+    _enrich_material_precheck_row(ctx, row, list_key="prose_bundling_violations")
+    for row in check_material_bundling_for_context(ctx)
+]""",
+        )
+        _require(
+            not precheck.args.posonlyargs
+            and [arg.arg for arg in precheck.args.args] == ["ctx"]
+            and precheck.body.index(initial) < precheck.body.index(projected)
+            and _ast(precheck.body[-1]) == _ast(ast.parse("return result").body[0])
+            and sum(
+                isinstance(node, ast.Attribute)
+                and node.attr == "prose_bundling_violations"
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "result"
+                for node in ast.walk(precheck)
+            )
+            == 1
+            and sum(
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "check_material_bundling_for_context"
+                for node in ast.walk(precheck)
+            )
+            == 1,
+            "material_prose_precheck_owner",
+        )
+        report = _node(
+            _tree(files[_BILLING + "patient_report.py"]),
+            ast.FunctionDef,
+            "compute_patient_billing_report",
+        )
+        owned(report, "report.materials = precheck_materials_from_claims(claim_context)")
+        _require(
+            sum(
+                isinstance(node, ast.Attribute)
+                and node.attr == "materials"
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "report"
+                for node in ast.walk(report)
+            )
+            == 1
+            and sum(
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "precheck_materials_from_claims"
+                for node in ast.walk(report)
+            )
+            == 1,
+            "material_prose_report_owner",
+        )
+    return _digest(
+        {
+            "producer_ast_sha256": functions,
+            "producer_sha256": [hashlib.sha256(raw).hexdigest() for raw in producers],
+            "bound_source_sha256": [
+                {
+                    path: hashlib.sha256(files[path]).hexdigest()
+                    for path in (_BILLING + "claim_materials.py", _BILLING + "patient_report.py")
+                }
+                for files in (old, new)
+            ],
+        }
+    )
+
+
+def _material_prose_context(value: Any, policy: DeltaPolicy, identities: dict) -> tuple[dict, str]:
+    _require(
+        type(value) is dict and set(value) == {"baseline", "candidate"},
+        "material_prose_context_sides",
+    )
+    pins, producers = {}, []
+    for side in ("baseline", "candidate"):
+        row = value[side]
+        _require(
+            type(row) is dict and set(row) == {"source_identity", "path", "bytes", "sha256"},
+            "material_prose_context_fields",
+        )
+        _require(
+            type(row["source_identity"]) is str
+            and row["source_identity"] == identities[side]
+            and type(row["path"]) is str
+            and row["path"] == _MATERIAL_PROSE_SOURCE,
+            "material_prose_context_identity",
+        )
+        raw, sha = row["bytes"], row["sha256"]
+        _require(
+            type(raw) is bytes
+            and len(raw) <= 2_000_000
+            and type(sha) is str
+            and bool(_SHA256.fullmatch(sha))
+            and hashlib.sha256(raw).hexdigest() == sha,
+            "material_prose_context_digest",
+        )
+        producers.append(raw)
+        pins[side] = {name: row[name] for name in ("source_identity", "path", "sha256")}
+    proof = _material_prose_source_proof(
+        _sources(policy._baseline), _sources(policy._candidate), tuple(producers)
+    )
+    return pins, proof
+
+
 @_payload_free
 def measure_delta(
     baseline: dict,
@@ -1234,6 +1409,7 @@ def measure_delta(
     clause_source_identities: dict,
     own_build_context: dict | None = None,
     raw_bill_cache_identity: bool = False,
+    material_prose_context: dict | None = None,
 ) -> DeltaMeasurement:
     """Reject unknown deltas; a complete measurement still grants no authority."""
     _require(type(policy) is DeltaPolicy, "policy_type")
@@ -1273,6 +1449,11 @@ def measure_delta(
         if raw_bill_cache_identity
         else None
     )
+    material_pins, material_proof = (
+        (None, None)
+        if material_prose_context is None
+        else _material_prose_context(material_prose_context, policy, data["source_identities"])
+    )
 
     def add(table, row, path, left, right, kind):
         differences.append(
@@ -1286,7 +1467,7 @@ def measure_delta(
             )
         )
 
-    def raw_rule(left, right, removed):
+    def raw_rule(left, right, removed, *, observed_prose=False):
         rule = left.get("rule_id")
         _require(
             type(rule) is str and rule == right.get("rule_id") and rule in data["rules"],
@@ -1309,10 +1490,13 @@ def measure_delta(
                     _same(value["gate_b_sources"], expected["gate_sources"][index]),
                     "material_gate_owner",
                 )
-            _require(
-                ("gate_b_sources" in value) is expected["gate_present"][index],
-                "material_gate_presence",
-            )
+            if observed_prose:
+                _require("gate_b_sources" not in value, "material_prose_projected_gate")
+            else:
+                _require(
+                    ("gate_b_sources" in value) is expected["gate_present"][index],
+                    "material_gate_presence",
+                )
         if rule in data["clause_rules"]:
             for side, value in (("baseline", left), ("candidate", right)):
                 ref = refs[side][rule]
@@ -1329,9 +1513,9 @@ def measure_delta(
                 )
         return rule, expected
 
-    def material_row(table, row, path, left, right):
+    def material_row(table, row, path, left, right, *, observed_prose=False):
         removable = {"message", "message_tr", "note", "gate_b_sources", "clause_ref", "source_type"}
-        rule, expected = raw_rule(left, right, removable)
+        rule, expected = raw_rule(left, right, removable, observed_prose=observed_prose)
         _require(set(left) - removable == set(right) - removable, "material_row_inventory")
         for key in left.keys() | right.keys():
             a, b = left.get(key, _MISSING), right.get(key, _MISSING)
@@ -1400,6 +1584,21 @@ def measure_delta(
             _require(action.get("detail") == text, "action_detail_source")
 
     def visit(table, row, path, left, right, report_old=None, report_new=None):
+        observed_prose = (
+            material_pins is not None
+            and table in _REPORT_TABLES
+            and len(path) == 3
+            and path[:2] == ("materials", "prose_bundling_violations")
+            and type(path[2]) is int
+        )
+        if observed_prose:
+            _require(
+                type(left) is dict
+                and type(right) is dict
+                and "gate_b_sources" not in left
+                and "gate_b_sources" not in right,
+                "material_prose_projected_gate",
+            )
         if _same(left, right):
             return
         _require(type(left) is type(right), "changed_value_type")
@@ -1431,7 +1630,7 @@ def measure_delta(
                 and path[:2] == ("materials", "prose_bundling_violations")
                 and type(path[2]) is int
             ):
-                material_row(table, row, path, left, right)
+                material_row(table, row, path, left, right, observed_prose=observed_prose)
                 return
             if (
                 table in _REPORT_TABLES
@@ -1563,6 +1762,19 @@ def measure_delta(
                     )
             else:
                 _require(key == a["patient_id"], "patient_row_identity")
+            if material_pins is not None:
+                # Check this exact owner before equality can skip unchanged ancestors.
+                for report in (a, b):
+                    materials = report.get("materials")
+                    if type(materials) is dict and "prose_bundling_violations" in materials:
+                        rows = materials["prose_bundling_violations"]
+                        _require(type(rows) is list, "material_prose_projected_rows")
+                        _require(
+                            all(
+                                type(item) is dict and "gate_b_sources" not in item for item in rows
+                            ),
+                            "material_prose_projected_gate",
+                        )
             visit(table, key, (), a, b, a, b)
             if table == "patient_billing_report_rows":
                 old_actions, new_actions = (
@@ -1642,6 +1854,13 @@ def measure_delta(
         witness_payload["raw_bill_cache_identity"] = {
             "enabled": True,
             "source_proof_sha256": raw_identity_proof,
+        }
+    if material_prose_context is not None:
+        if own_build_context is None:
+            witness_payload = {"differences": witness_payload}
+        witness_payload["material_prose_context"] = {
+            "sources": material_pins,
+            "projection_proof_sha256": material_proof,
         }
     witness_digest = _digest(witness_payload)
     return DeltaMeasurement(

@@ -2116,3 +2116,722 @@ def test_raw_builder_duplicate_write_and_bypass_order_are_rejected(raw_policy, r
             raw_sources,
             own_build_context=_raw_context(left, right, raw_sources, builder),
         )
+
+
+MATERIAL_PATH = "src/bilun/domain/prose_rules/material_bundling.py"
+PAIRING_OLD = (
+    "\u00a73.1.1(11)-style: listed material needs a linked or matching procedure on the claim."
+)
+PAIRING_NEW = (
+    "\u00a73.1.1(13)-style: listed material needs a linked or matching procedure on the claim."
+)
+# Parse-only full production function fixtures, never executed as domain code.
+MATERIAL_FUNCTIONS = (
+    "def _violation_from_rule(\n"
+    "    rule: dict[str, Any],\n"
+    "    *,\n"
+    "    name: str,\n"
+    "    code: str,\n"
+    "    unit_price: float,\n"
+    "    ruleset: dict[str, Any],\n"
+    ") -> dict[str, Any]:\n"
+    '    action = rule.get("action") or {}\n'
+    '    display_name = name or resolve_material_name_by_code(code) or code or "\u2014"\n'
+    "    finding: dict[str, Any] = {\n"
+    '        "rule": "material_bundling_prose",\n'
+    '        "severity": action.get("severity", "warning"),\n'
+    '        "material_name": display_name,\n'
+    '        "material_code": code,\n'
+    '        "message": action.get("message_tr", rule.get("rule_id", "")),\n'
+    '        "savings_try": 0.0,\n'
+    '        "risk_amount": unit_price,\n'
+    '        "sut_section": rule.get("sut_section", "3.1"),\n'
+    '        "rule_id": rule.get("rule_id", ""),\n'
+    '        "material_outcome": action.get("material_outcome", "no_pay"),\n'
+    '        "details": {\n'
+    '            "deontic": rule.get("deontic"),\n'
+    '            "prose_rule_set": ruleset.get("rule_set_id"),\n'
+    "        },\n"
+    "    }\n"
+    "    # Phase 2 canonical clause linking: attach the structured SUT clause\n"
+    "    # reference when this rule_id resolves via the prose-manifest\n"
+    "    # clause_traces join. Additive only \u2014 message and amounts unchanged;\n"
+    "    # unresolvable rule ids keep the finding as-is (no invented cite).\n"
+    '    clause_ref = clause_ref_for_rule_id(str(rule.get("rule_id", "")))\n'
+    "    if clause_ref is not None:\n"
+    '        finding["clause_ref"] = clause_ref\n'
+    '        finding["source_type"] = clause_ref["source_type"]\n'
+    "    return finding\n"
+    "\n"
+    "def check_material_bundling_prose(\n"
+    "    materials: list[dict[str, Any]],\n"
+    "    *,\n"
+    '    procedure_code: str = "",\n'
+    "    procedure_codes_on_claim: frozenset[str] | set[str] | None = None,\n"
+    "    billed_procedure_line_ids: frozenset[str] | set[str] | None = None,\n"
+    '    care_setting: str = "inpatient",\n'
+    ") -> list[dict[str, Any]]:\n"
+    '    """Evaluate partial \u00a73.1 prose rules on material dict lines (validator or claims)."""\n'
+    "    ruleset = load_material_bundling_rules()\n"
+    "    rules = sorted(\n"
+    '        ruleset.get("rules", []),\n'
+    "        key=_rule_evaluation_priority,\n"
+    "    )\n"
+    "    claim_codes = frozenset(procedure_codes_on_claim or ())\n"
+    "    billed_ids = frozenset(billed_procedure_line_ids or ())\n"
+    "    violations: list[dict[str, Any]] = []\n"
+    "    seen: set[tuple[str, str]] = set()\n"
+    "\n"
+    "    for mat in materials:\n"
+    "        name, code, unit_price = _material_fields(mat)\n"
+    "        if unit_price <= 0 and not code and not name:\n"
+    "            continue\n"
+    "\n"
+    '        proc_line_id = str(mat.get("procedure_line_id") or "").strip()\n'
+    "        # Per-material care setting when available (mixed-claim patients),\n"
+    "        # else the caller's global default.\n"
+    '        mat_care = str(mat.get("care_setting") or care_setting)\n'
+    "\n"
+    "        for rule in rules:\n"
+    '            condition = rule.get("condition") or {}\n'
+    "            if not _condition_matches(\n"
+    "                condition,\n"
+    "                mat=mat,\n"
+    "                name=name,\n"
+    "                code=code,\n"
+    "                unit_price=unit_price,\n"
+    "                procedure_code=procedure_code,\n"
+    "                procedure_line_id=proc_line_id,\n"
+    "                procedure_codes_on_claim=claim_codes,\n"
+    "                billed_procedure_line_ids=billed_ids,\n"
+    "                care_setting=mat_care,\n"
+    "            ):\n"
+    "                continue\n"
+    "\n"
+    '            key = (code or name, str(rule.get("rule_id", "")))\n'
+    "            if key in seen:\n"
+    "                break\n"
+    "            seen.add(key)\n"
+    "            violations.append(\n"
+    "                _violation_from_rule(\n"
+    "                    rule, name=name, code=code, unit_price=unit_price, ruleset=ruleset\n"
+    "                )\n"
+    "            )\n"
+    "            break\n"
+    "\n"
+    "    return violations\n"
+    "\n"
+    "def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:\n"
+    '    """Run prose material rules on a PatientClaimContext."""\n'
+    "    from .claim_utils import infer_care_setting\n"
+    "\n"
+    "    # Map each claim_id \u2192 care setting. A patient with mixed claims (e.g. one\n"
+    "    # poliklinik + one yatis) has materials on different claim types; the care\n"
+    "    # setting must come from the material's OWN claim, not ctx.claims[0].\n"
+    "    claim_care = {\n"
+    "        str(c.claim_id): infer_care_setting(c) for c in ctx.claims\n"
+    "    }\n"
+    "    procedure_codes = frozenset(\n"
+    "        normalize_procedure_code(line.procedure_code)\n"
+    "        for line in ctx.procedure_lines\n"
+    "        if normalize_procedure_code(line.procedure_code)\n"
+    "    )\n"
+    "    billed_procedure_ids = frozenset(\n"
+    "        line.procedure_line_id\n"
+    "        for line in ctx.procedure_lines\n"
+    "        if float(line.billed_amount_try) > 0\n"
+    "    )\n"
+    "    materials = []\n"
+    "    for line in ctx.material_lines:\n"
+    "        row: dict[str, Any] = {\n"
+    '            "name": line.material_name,\n'
+    '            "code": line.material_code,\n'
+    '            "unit_price": float(line.billed_amount_try),\n'
+    '            "procedure_line_id": line.procedure_line_id,\n'
+    '            "care_setting": claim_care.get(\n'
+    '                getattr(line, "claim_id", ""), "inpatient"\n'
+    "            ),\n"
+    "        }\n"
+    "        for flag in (\n"
+    '            "titubb_registered",\n'
+    '            "uts_registered",\n'
+    '            "procurement_record_incomplete",\n'
+    '            "procedure_not_reimbursed",\n'
+    '            "foreign_facility",\n'
+    '            "facility_procedure_restriction_violation",\n'
+    '            "diagnosis_bundled_no_separate_bill",\n'
+    '            "procurement_price_refs_insufficient",\n'
+    '            "medula_code_undefined_on_date",\n'
+    '            "barcode_sut_mismatch",\n'
+    '            "diagnosis_bundled_material_scope",\n'
+    '            "cross_branch_material_unauthorized",\n'
+    '            "ortez_protez_contract_billing_invalid",\n'
+    '            "maintenance_cost_exceeds_sut_cap",\n'
+    '            "protez_repair_documentation_incomplete",\n'
+    '            "warranty_maintenance_procedure_incomplete",\n'
+    '            "ortez_protez_maintenance_unverified",\n'
+    '            "ihale_dts_mandatory_fields_incomplete",\n'
+    '            "supplier_contract_pricing_path",\n'
+    '            "ek3c_inpatient_external_supply_invalid",\n'
+    '            "ek3c_list_price_missing",\n'
+    '            "ek3_quality_documentation_incomplete",\n'
+    '            "ek3c_miat_early_renewal_unauthorized",\n'
+    '            "ek3c_custom_order_billing_invalid",\n'
+    '            "ek3c_medical_appropriateness_incomplete",\n'
+    '            "ek3c_custom_garment_contract_invalid",\n'
+    '            "ek3c_force_majeure_renewal_claim",\n'
+    '            "ek3c_outpatient_material_scope",\n'
+    '            "inpatient_material_facility_supply_violation",\n'
+    '            "non_reimbursed_inpatient_patient_charge",\n'
+    '            "lab_material_separate_billing",\n'
+    '            "shared_consumable_wrong_branch_billing",\n'
+    '            "material_prescription_quantity_exceeded",\n'
+    '            "material_report_prescription_invalid",\n'
+    '            "material_invoice_documentation_incomplete",\n'
+    '            "diagnosis_package_material_unbundled",\n'
+    '            "emergency_uncontracted_facility_material",\n'
+    '            "unlisted_material_surcharge_billing",\n'
+    '            "wheelchair_dual_prescription_invalid",\n'
+    '            "outpatient_contract_center_supply_required",\n'
+    '            "child_growth_miat_renewal_claim",\n'
+    '            "facility_contract_material_supply_scope",\n'
+    '            "ismarlama_device_component_titubb_incomplete",\n'
+    '            "titubb_uts_barcode_documentation_missing",\n'
+    '            "ek3c_list_field_definition_scope",\n'
+    '            "ismarlama_licensed_center_supply_required",\n'
+    '            "ek3c_optional_appropriateness_consumable",\n'
+    '            "disabled_veteran_ortez_protez_billing_review",\n'
+    '            "terror_victim_ortez_protez_documentation_incomplete",\n'
+    '            "material_prescription_correction_invalid",\n'
+    '            "device_return_application_deadline_missed",\n'
+    '            "material_effective_date_transition_scope",\n'
+    '            "is_bundled",\n'
+    "        ):\n"
+    "            if hasattr(line, flag):\n"
+    "                row[flag] = getattr(line, flag)\n"
+    "        materials.append(row)\n"
+    '    primary_procedure = ""\n'
+    "    if ctx.procedure_lines:\n"
+    '        primary_procedure = str(ctx.procedure_lines[0].procedure_code or "")\n'
+    "    # Global care setting as a fallback for materials without an explicit\n"
+    "    # care_setting (materials above already carry per-claim care setting).\n"
+    '    fallback_care = "inpatient"\n'
+    "    if ctx.claims:\n"
+    "        fallback_care = infer_care_setting(ctx.claims[0])\n"
+    "    return check_material_bundling_prose(\n"
+    "        materials,\n"
+    "        procedure_code=primary_procedure,\n"
+    "        procedure_codes_on_claim=procedure_codes,\n"
+    "        billed_procedure_line_ids=billed_procedure_ids,\n"
+    "        care_setting=fallback_care,\n"
+    "    )\n"
+    ""
+).encode()
+MATERIAL_ENRICHMENT = (
+    b"def _enrich_material_precheck_row(\n"
+    b"    ctx: PatientClaimContext,\n"
+    b"    row: dict[str, object],\n"
+    b"    *,\n"
+    b"    list_key: str,\n"
+    b"    claim_id: str | None = None,\n"
+    b") -> dict[str, object]:\n"
+    b'    """Attach claim scope, SUT section, and optional package code for action rows."""\n'
+    b"    enriched = dict(row)\n"
+    b'    resolved_claim_id = str(claim_id or enriched.get("claim_id") or "").strip() or None\n'
+    b"    if resolved_claim_id is None and len(ctx.claims) == 1:\n"
+    b"        resolved_claim_id = ctx.claims[0].claim_id\n"
+    b"    if resolved_claim_id:\n"
+    b'        enriched["claim_id"] = resolved_claim_id\n'
+    b"\n"
+    b"    fallback_section = _MATERIAL_LIST_SUT_SECTION[list_key]\n"
+    b'    enriched["sut_section_id"] = _normalize_sut_section_id(\n'
+    b'        enriched.get("sut_section_id") or enriched.get("sut_section"),\n'
+    b"        fallback=fallback_section,\n"
+    b"    )\n"
+    b"\n"
+    b"    package_code = _package_code_for_claim(ctx, resolved_claim_id)\n"
+    b"    if package_code:\n"
+    b'        enriched["procedure_code"] = package_code\n'
+    b"\n"
+    b'    code = str(enriched.get("sut_code") or enriched.get("material_code") or "").strip()\n'
+    b'    if code and "sut_code" not in enriched:\n'
+    b'        enriched["sut_code"] = code\n'
+    b"\n"
+    b'    if enriched.get("price_try") is None and enriched.get("risk_amount") is not None:\n'
+    b'        enriched["price_try"] = float(enriched["risk_amount"])\n'
+    b"\n"
+    b'    if not enriched.get("note"):\n'
+    b'        note = enriched.get("message") or enriched.get("detail") or enriched.get("rule_id")\n'
+    b"        if note:\n"
+    b'            enriched["note"] = str(note)\n'
+    b"\n"
+    b"    return enriched\n"
+    b""
+)
+MATERIAL_PRODUCER_OLD = (
+    "def _procedure_pairing_satisfied():\n"
+    + "    "
+    + repr(PAIRING_OLD)
+    + "\n"
+    + "    return True\n\n"
+).encode() + MATERIAL_FUNCTIONS
+MATERIAL_PRODUCER_NEW = MATERIAL_PRODUCER_OLD.replace(PAIRING_OLD.encode(), PAIRING_NEW.encode())
+
+
+def _material_files():
+    files = _missing_context_sources()
+    for side in files:
+        side[BILLING + "types.py"] += (
+            b'\n@dataclass\nclass BillingActionReport:\n    patient_id: str = ""\n'
+        )
+        side[BILLING + "claim_materials.py"] = (
+            side[BILLING + "claim_materials.py"]
+            .replace(
+                b"def precheck_materials_from_claims(code, preauth_codes, result, line):\n",
+                b"def precheck_materials_from_claims(ctx):\n    result = MaterialPreCheck()\n",
+            )
+            .replace(
+                b"    return result\n",
+                b"    result.prose_bundling_violations = [\n"
+                b'        _enrich_material_precheck_row(ctx, row, list_key="prose_bundling_violations")\n'
+                b"        for row in check_material_bundling_for_context(ctx)\n"
+                b"    ]\n    return result\n",
+            )
+            + MATERIAL_ENRICHMENT
+        )
+        side[BILLING + "patient_report.py"] = side[BILLING + "patient_report.py"].replace(
+            b"\n    return report\n",
+            b"\n    report.materials = precheck_materials_from_claims(claim_context)\n"
+            b"    return report\n",
+        )
+    return files
+
+
+@pytest.fixture
+def material_sources():
+    old, new = _material_files()
+    return _bundle(old, candidate=False), _bundle(new, candidate=True)
+
+
+@pytest.fixture
+def material_policy(material_sources):
+    return delta.derive_policy(*material_sources)
+
+
+def _material_context(sources, producers=(MATERIAL_PRODUCER_OLD, MATERIAL_PRODUCER_NEW)):
+    return {
+        side: {
+            "source_identity": source.identity,
+            "path": MATERIAL_PATH,
+            "bytes": raw,
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+        for side, source, raw in zip(("baseline", "candidate"), sources, producers, strict=True)
+    }
+
+
+def _material_tables(*, raw=False, changed=True):
+    left, right = _raw_bill_tables() if raw else (_tables(), _tables())
+    for tables, candidate in ((left, False), (right, changed)):
+        for table, key in ((REPORT, PATIENT), (BILL_REPORT, BILL_KEY)):
+            tables[table][key]["materials"]["prose_bundling_violations"] = [
+                {
+                    "rule": "material_bundling_prose",
+                    "rule_id": RULE,
+                    "severity": "warning",
+                    "material_name": "Synthetic material",
+                    "material_code": "SYNTHETIC-CODE",
+                    "message": NEW_MESSAGE if candidate else OLD_MESSAGE,
+                    "savings_try": 0.0,
+                    "risk_amount": 12.5,
+                    "sut_section": "3.1",
+                    "material_outcome": "no_pay",
+                    "details": {"deontic": "synthetic", "prose_rule_set": "synthetic-rules"},
+                    "clause_ref": _ref(candidate=candidate),
+                    "source_type": "sut_clause",
+                    "claim_id": CLAIM,
+                    "sut_section_id": "3.1",
+                    "sut_code": "SYNTHETIC-CODE",
+                    "price_try": 12.5,
+                    "note": NEW_MESSAGE if candidate else OLD_MESSAGE,
+                }
+            ]
+            tables[table][key]["recommended_actions"][0]["detail"] = (
+                NEW_MESSAGE if candidate else OLD_MESSAGE
+            )
+        tables[COHORT]["rows"][0]["detail"] = NEW_MESSAGE if candidate else OLD_MESSAGE
+    return left, right
+
+
+def _material_measure(left, right, policy, sources, *, raw=False, **overrides):
+    options = {"material_prose_context": _material_context(sources)}
+    if raw:
+        options.update(
+            own_build_context=_raw_context(left, right, sources), raw_bill_cache_identity=True
+        )
+    options.update(overrides)
+    return _measure(left, right, policy, sources, **options)
+
+
+def _material_reject(left, right, policy, sources, **overrides):
+    with pytest.raises(delta.MeasurementRejected):
+        _material_measure(left, right, policy, sources, **overrides)
+
+
+@pytest.mark.parametrize("raw", [False, True])
+def test_bound_observed_prose_is_private_strict_and_non_authorizing(
+    material_policy, material_sources, raw, capsys
+):
+    left, right = _material_tables(raw=raw)
+    context = _material_context(material_sources)
+    snapshot = copy.deepcopy((left, right, context))
+    result = _material_measure(
+        left, right, material_policy, material_sources, raw=raw, material_prose_context=context
+    )
+    summary = result.safe_summary()
+    counts = {
+        "material_rule_message_citation": 4,
+        "material_manifest_clause_reference": 2,
+        "material_action_detail_source_pair": 3,
+    }
+    if raw:
+        counts["own_build_bookkeeping"] = 3
+    assert summary["change_counts"] == counts
+    assert summary["changed_cell_count"] == sum(counts.values())
+    assert set(summary) == {
+        "status",
+        "changed_cell_count",
+        "change_counts",
+        "source_policy_sha256",
+        "delta_sha256",
+        "deployment_admitted",
+        "semantic_release_admitted",
+        "external_witness_generation_attested",
+        "own_source_cache_equivalence_attested",
+    }
+    assert all(
+        summary[name] is False for name in summary if name.endswith(("admitted", "attested"))
+    )
+    assert len(delta.SOURCE_PATHS) == 12
+    assert (left, right, context) == snapshot
+    assert capsys.readouterr() == ("", "")
+    producers = (
+        MATERIAL_PRODUCER_OLD + b"# Same executable AST.\n",
+        MATERIAL_PRODUCER_NEW + b"# Same executable AST.\n",
+    )
+    other = _material_measure(
+        left,
+        right,
+        material_policy,
+        material_sources,
+        raw=raw,
+        material_prose_context=_material_context(material_sources, producers),
+    ).safe_summary()
+    assert other["change_counts"] == counts
+    assert other["delta_sha256"] != summary["delta_sha256"]
+    for side in context:
+        assert context[side]["sha256"] not in repr(summary)
+        assert context[side]["source_identity"] not in repr(summary)
+
+
+@pytest.mark.parametrize("mode", ["legacy", "own_build", "raw"])
+def test_material_none_preserves_every_previous_digest_and_public_contract(
+    policy, sources, raw_policy, raw_sources, mode
+):
+    if mode == "raw":
+        left, right = _raw_bill_tables()
+        policy, sources = raw_policy, raw_sources
+        options = {
+            "own_build_context": _raw_context(left, right, sources),
+            "raw_bill_cache_identity": True,
+        }
+    elif mode == "own_build":
+        left, right = _build_tables()
+        options = {"own_build_context": _build_context(left, right, sources)}
+    else:
+        left, right = _tables(), _tables()
+        options = {}
+    old = _measure(left, right, policy, sources, **options).safe_summary()
+    explicit = _measure(
+        left, right, policy, sources, material_prose_context=None, **options
+    ).safe_summary()
+    assert explicit == old
+
+
+def test_absent_observed_gate_requires_explicit_material_context(material_policy, material_sources):
+    left, right = _material_tables()
+    with pytest.raises(delta.MeasurementRejected, match="material_gate_presence"):
+        _measure(left, right, material_policy, material_sources)
+
+
+@pytest.mark.parametrize("value", [None, [], ["3.1.1.(12)"]])
+@pytest.mark.parametrize("changed", [False, True])
+@pytest.mark.parametrize("side", ["baseline", "candidate", "both"])
+@pytest.mark.parametrize("table,key", [(REPORT, PATIENT), (BILL_REPORT, BILL_KEY)])
+def test_observed_gate_injection_is_rejected_even_under_equal_ancestors(
+    material_policy, material_sources, value, changed, side, table, key
+):
+    left, right = _material_tables(changed=changed)
+    for tables, label in ((left, "baseline"), (right, "candidate")):
+        if side in (label, "both"):
+            tables[table][key]["materials"]["prose_bundling_violations"][0]["gate_b_sources"] = (
+                value
+            )
+    _material_reject(left, right, material_policy, material_sources)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        False,
+        [],
+        {},
+        {"baseline": {}},
+        {"candidate": {}},
+        {"baseline": {}, "candidate": {}, "extra": {}},
+    ],
+)
+def test_material_context_outer_schema_is_exact(material_policy, material_sources, value):
+    left, right = _material_tables()
+    _material_reject(left, right, material_policy, material_sources, material_prose_context=value)
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing",
+        "extra",
+        "identity",
+        "identity_type",
+        "path",
+        "path_type",
+        "bytes_type",
+        "bytes_large",
+        "digest",
+        "digest_type",
+        "digest_changed",
+    ],
+)
+def test_material_context_both_side_pins_are_exact(
+    material_policy, material_sources, side, mutation
+):
+    left, right = _material_tables()
+    context = _material_context(material_sources)
+    row = context[side]
+    if mutation == "missing":
+        del row["sha256"]
+    elif mutation == "extra":
+        row["extra"] = True
+    elif mutation == "identity":
+        row["source_identity"] = "c" * 40
+    elif mutation == "identity_type":
+        row["source_identity"] = 1
+    elif mutation == "path":
+        row["path"] = BUILD_PATH
+    elif mutation == "path_type":
+        row["path"] = None
+    elif mutation == "bytes_type":
+        row["bytes"] = row["bytes"].decode()
+    elif mutation == "bytes_large":
+        row["bytes"] = b" " * 2_000_001
+        row["sha256"] = hashlib.sha256(row["bytes"]).hexdigest()
+    elif mutation == "digest":
+        row["sha256"] = "bad"
+    elif mutation == "digest_type":
+        row["sha256"] = b"f" * 64
+    else:
+        row["sha256"] = "f" * 64
+    _material_reject(left, right, material_policy, material_sources, material_prose_context=context)
+
+
+@pytest.mark.parametrize("side", [0, 1])
+@pytest.mark.parametrize(
+    "before,after",
+    [
+        (b'"savings_try": 0.0', b'"savings_try": 1.0'),
+        (b'"material_code": code,', b'"material_code": code, "gate_b_sources": [],'),
+        (b"if clause_ref is not None:", b"if clause_ref is None:"),
+        (
+            b'finding["source_type"] = clause_ref["source_type"]',
+            b'finding["source_type"] = "unknown"',
+        ),
+        (
+            b"_violation_from_rule(\n                    rule,",
+            b"_violation_from_rule(\n                    other_rule,",
+        ),
+        (b"return check_material_bundling_prose(", b"return unknown_evaluator("),
+        (
+            b"def _violation_from_rule(",
+            b"def _violation_from_rule():\n    pass\ndef _violation_from_rule(",
+        ),
+        (
+            b"def check_material_bundling_prose(",
+            b"def check_material_bundling_prose():\n    pass\ndef check_material_bundling_prose(",
+        ),
+        (
+            b"def check_material_bundling_for_context(",
+            b"def check_material_bundling_for_context():\n    pass\ndef check_material_bundling_for_context(",
+        ),
+    ],
+)
+def test_material_full_producer_caller_and_wrapper_asts_are_bound(
+    material_policy, material_sources, side, before, after
+):
+    left, right = _material_tables()
+    producers = [MATERIAL_PRODUCER_OLD, MATERIAL_PRODUCER_NEW]
+    changed = producers[side].replace(before, after, 1)
+    assert changed != producers[side]
+    producers[side] = changed
+    _material_reject(
+        left,
+        right,
+        material_policy,
+        material_sources,
+        material_prose_context=_material_context(material_sources, tuple(producers)),
+    )
+
+
+@pytest.mark.parametrize("mutation", ["unknown_doc", "other_runtime", "other_doc"])
+def test_only_exact_pairing_first_docstring_change_is_allowed(material_sources, mutation):
+    files = [dict(source._files) for source in material_sources]
+    producers = [MATERIAL_PRODUCER_OLD, MATERIAL_PRODUCER_NEW]
+    if mutation == "unknown_doc":
+        producers[1] = producers[1].replace(PAIRING_NEW.encode(), b"unapproved doc")
+    elif mutation == "other_runtime":
+        producers[1] = producers[1].replace(b"    return True\n", b"    return False\n", 1)
+    else:
+        producers[0] += b'\ndef other_helper():\n    """Old doc."""\n    return 1\n'
+        producers[1] += b'\ndef other_helper():\n    """New doc."""\n    return 1\n'
+    with pytest.raises(delta.MeasurementRejected):
+        delta._material_prose_source_proof(*files, tuple(producers))
+
+
+@pytest.mark.parametrize("side", [0, 1])
+@pytest.mark.parametrize(
+    "path,before,after",
+    [
+        (
+            "claim_materials.py",
+            b"enriched = dict(row)",
+            b'enriched = {**row, "gate_b_sources": []}',
+        ),
+        ("claim_materials.py", b'if not enriched.get("note"):', b'if enriched.get("note"):'),
+        (
+            "claim_materials.py",
+            b"def _enrich_material_precheck_row(",
+            b"def _enrich_material_precheck_row():\n    pass\ndef _enrich_material_precheck_row(",
+        ),
+        (
+            "claim_materials.py",
+            b"result = MaterialPreCheck()",
+            b"other_result = MaterialPreCheck()",
+        ),
+        (
+            "claim_materials.py",
+            b'_enrich_material_precheck_row(ctx, row, list_key="prose_bundling_violations")',
+            b'_enrich_material_precheck_row(other_ctx, row, list_key="prose_bundling_violations")',
+        ),
+        (
+            "claim_materials.py",
+            b"for row in check_material_bundling_for_context(ctx)",
+            b"for row in check_material_bundling_for_context(other_ctx)",
+        ),
+        (
+            "claim_materials.py",
+            b"    return result\n",
+            b"    result.prose_bundling_violations.append(injected)\n    return result\n",
+        ),
+        (
+            "patient_report.py",
+            b"report.materials = precheck_materials_from_claims(claim_context)",
+            b"report.materials = precheck_materials_from_claims(other_ctx)",
+        ),
+        (
+            "patient_report.py",
+            b"report.materials = precheck_materials_from_claims(claim_context)",
+            b"report.materials = precheck_materials_from_claims(claim_context)\n    report.materials = injected",
+        ),
+    ],
+)
+def test_material_enrichment_and_report_owner_routes_are_bound(
+    material_sources, side, path, before, after
+):
+    files = [dict(source._files) for source in material_sources]
+    path = BILLING + path
+    changed = files[side][path].replace(before, after, 1)
+    assert changed != files[side][path]
+    files[side][path] = changed
+    with pytest.raises(delta.MeasurementRejected):
+        delta._material_prose_source_proof(*files, (MATERIAL_PRODUCER_OLD, MATERIAL_PRODUCER_NEW))
+
+
+@pytest.mark.parametrize("table,key", [(REPORT, PATIENT), (BILL_REPORT, BILL_KEY)])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "money",
+        "count",
+        "type",
+        "order",
+        "identity",
+        "clause",
+        "source",
+        "sibling",
+        "message",
+        "rule",
+    ],
+)
+def test_observed_prose_keeps_all_other_data_gates_strict(
+    material_policy, material_sources, table, key, mutation
+):
+    left, right = _material_tables()
+    for tables in (left, right):
+        tables[table][key]["ordered_sibling"] = ["first", "second"]
+    report = right[table][key]
+    row = report["materials"]["prose_bundling_violations"][0]
+    if mutation == "money":
+        row["risk_amount"] = 13.5
+    elif mutation == "count":
+        report["materials"]["prose_bundling_violations"].append(copy.deepcopy(row))
+    elif mutation == "type":
+        row["savings_try"] = 0
+    elif mutation == "order":
+        report["ordered_sibling"].reverse()
+    elif mutation == "identity":
+        row["claim_id"] = "foreign-claim"
+    elif mutation == "clause":
+        row["clause_ref"]["clause_key"] = "unknown"
+    elif mutation == "source":
+        row["source_type"] = "unknown"
+    elif mutation == "sibling":
+        row["details"]["extra"] = True
+    elif mutation == "message":
+        row["message"] = "unknown"
+    else:
+        row["rule_id"] = OTHER_RULE
+    _material_reject(left, right, material_policy, material_sources)
+
+
+@pytest.mark.parametrize("scope", ["category", "nested", "action", "cohort"])
+def test_observed_prose_does_not_project_any_other_category_or_object(
+    material_policy, material_sources, scope
+):
+    left, right = _material_tables()
+    row = copy.deepcopy(left[REPORT][PATIENT]["materials"]["prose_bundling_violations"][0])
+    row["gate_b_sources"] = ["3.1.1.(12)"]
+    changed = copy.deepcopy(row)
+    del changed["gate_b_sources"]
+    if scope == "category":
+        left[REPORT][PATIENT]["materials"]["other_material_category"] = [row]
+        right[REPORT][PATIENT]["materials"]["other_material_category"] = [changed]
+    elif scope == "nested":
+        left[REPORT][PATIENT]["materials"]["prose_bundling_violations"][0]["nested"] = row
+        right[REPORT][PATIENT]["materials"]["prose_bundling_violations"][0]["nested"] = changed
+    elif scope == "action":
+        left[REPORT][PATIENT]["recommended_actions"][0]["nested"] = row
+        right[REPORT][PATIENT]["recommended_actions"][0]["nested"] = changed
+    else:
+        left[COHORT]["rows"][0]["nested"] = row
+        right[COHORT]["rows"][0]["nested"] = changed
+    _material_reject(left, right, material_policy, material_sources)
