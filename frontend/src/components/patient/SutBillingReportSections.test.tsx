@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRY2Fixture } from "@/test/fmtMoney";
-import type { BillingActionReport, DrugIndicationFinding } from "@/lib/domains/sut";
+import type { BillingActionReport, DrugIndicationFinding, PatientOptimization } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   BillingSectionShell,
@@ -13,6 +13,7 @@ import {
   DrugIndicationReviewSection,
   OptionalOverrideSection,
   RecommendedActionsPanel,
+  SutOptimizationSection,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -1041,7 +1042,7 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
     ],
   } as unknown as BillingActionReport;
 
-  it("shows the three highest existing amounts with their source exactness", () => {
+  it.each(["en", "tr"] as const)("shows the three highest existing amounts with their source exactness in the compact %s container", (locale) => {
     const report = {
       ...panelReport,
       materials: { exactness_status: "partial_exact" },
@@ -1053,16 +1054,48 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
     } as unknown as BillingActionReport;
     const html = renderToStaticMarkupWithLocale(
       <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
     );
-    expect(html).toContain("Next actions");
-    expect(html).toContain("Show all (4)");
-    expect(html).toContain("Partial exact");
-    expect(html).toContain(">Exact<");
+    expect(html).toContain(locale === "en" ? "Next actions" : "Sonraki işlemler");
+    expect(html).toContain(locale === "en" ? "Show all (4)" : "Tümünü göster (4)");
+    expect(html).toContain(locale === "en" ? "Partial exact" : "Kısmi kesin");
+    expect(html).toContain(locale === "en" ? ">Exact<" : ">Kesin<");
     expect(html.indexOf('data-action-id="a1"')).toBeLessThan(html.indexOf('data-action-id="a2"'));
     expect(html.indexOf('data-action-id="a2"')).toBeLessThan(html.indexOf('data-action-id="a4"'));
     expect(html).not.toContain('data-action-id="a3"');
     expect(html).toContain("SUT §3.1.2");
-    expect(html.match(/aria-label="Inspect clause:/g)).toHaveLength(1);
+    expect(html.match(locale === "en" ? /aria-label="Inspect clause:/g : /aria-label="Fıkrayı incele:/g)).toHaveLength(1);
+    expect(html).toContain("100.00 TRY");
+    expect(html).toContain("50.00 TRY");
+    expect(html).toContain("25.00 TRY");
+    expect(html).toContain("@min-[420px]:grid-cols-[minmax(0,1fr)_auto_auto]");
+    expect(html).toContain("@min-[420px]:col-span-1");
+    expect(html).toContain("@min-[420px]:text-right");
+    expect(html).toContain("@min-[300px]:col-span-2");
+    expect(html).not.toContain("@min-[560px]");
+  });
+
+  it.each(["en", "tr"] as const)("preserves a missing exactness and disabled Source for a null compact %s action", (locale) => {
+    const report = {
+      ...panelReport,
+      recommended_actions: [{
+        action_id: "unpriced-material",
+        surface: "materials",
+        kind: "material_pre_auth",
+        billed_try: null,
+        material_name: "UNPRICED-MATERIAL",
+      }],
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    expect(html).toContain('data-action-id="unpriced-material"');
+    expect(html).toContain(locale === "en" ? "Pre-authorization required" : "Ön onay gerekli");
+    expect(html).toContain(locale === "en" ? "Unavailable" : "Kullanılamıyor");
+    expect(html).toContain("disabled=\"\"");
+    expect(html).not.toMatch(/aria-label="(?:Inspect clause|Fıkrayı incele):/);
+    expect(html).not.toMatch(/0(?:[.,]00)?\s*TRY\b/);
   });
 
   it.each([
@@ -1133,5 +1166,44 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
 
     expect(html).not.toContain('<button');
     expect(html).toContain("§3.1.2");
+  });
+});
+
+describe("SutOptimizationSection container layout", () => {
+  it.each(["en", "tr"] as const)("keeps the open %s cards and their separate uncertainty inside component-width columns", (locale) => {
+    const optimization: PatientOptimization = {
+      patient_id: "P-CONTAINER",
+      n_diagnoses: 0,
+      diagnoses: [],
+      icd10_chapters: [],
+      copay_exemptions: { exempt: false, n_qualifying: 0, qualifying_diagnoses: [] },
+      surcharge_exposure: {
+        exactness_status: "exact", n_applicable_procedures: 2,
+        n_total_ek2g: 3, exposure_rate: 2 / 3, applicable_rules: [],
+      },
+      copay_rate_exposure: {
+        exactness_status: "partial_exact", unavailable_reason: "RATE-INPUT-MISSING",
+        n_applicable_procedures: null, n_total_ek2c1: null,
+        procedures_with_rates: [], mean_rate: null, rate_distribution: {},
+      },
+      drg_unbundling: {
+        exactness_status: "exact", has_unbundling_risk: true,
+        n_chapters_analyzed: 1, chapter_analysis: [], total_potential_savings: null,
+      },
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <SutOptimizationSection optimization={optimization} />,
+      locale,
+    );
+    expect(html).toContain('<div class="@container"><div class="grid grid-cols-1 gap-3 @min-[480px]:grid-cols-2 @min-[960px]:grid-cols-4">');
+    expect(html).not.toContain("md:grid-cols");
+    expect(html).not.toContain("xl:grid-cols");
+    expect(html).not.toContain("<details");
+    expect(html).toContain("RATE-INPUT-MISSING");
+    expect(html).toContain('role="status">RATE-INPUT-MISSING');
+    expect(html).toContain(locale === "en" ? "2 flags" : "2 bayrak");
+    expect(html).toContain("Unavailable");
+    expect(html).not.toContain("0.00 TRY");
+    expect(html).toContain("whitespace-nowrap tabular-nums");
   });
 });
