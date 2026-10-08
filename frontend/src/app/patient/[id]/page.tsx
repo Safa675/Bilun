@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import ReportProblemModal from "@/components/feedback/ReportProblemModal";
-import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
+import SutPatientWorkspace, { PatientClinicalSnapshot } from "@/components/patient/SutPatientWorkspace";
+import { RecommendedActionsPanel } from "@/components/patient/billing-report/RecommendedActionsPanel";
 import {
   BillingSummary,
   SutOptimizationSection,
@@ -16,9 +18,8 @@ import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import BillPicker from "@/components/patient/BillPicker";
 import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
-import { Eyebrow, Surface } from "@/components/primitives";
+import { Button, Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
-import PatientSearch from "@/components/ui/PatientSearch";
 import {
   getBillBillingReport,
   getBillOptimization,
@@ -27,9 +28,9 @@ import {
   getPatientClaims,
   getPatientOptimization,
   getSutPatientOutcome,
-  searchSutPatients,
 } from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
+import { isChatDockedRight } from "@/lib/chatDockPreference";
 import {
   parsePatientWorkspaceQuery,
   resolvePatientScrollTarget,
@@ -68,9 +69,11 @@ import { useT } from "@/lib/i18n/useTranslations";
 export function SutPatientPageContent({
   patientId,
   embedded = false,
+  embeddedQuery,
 }: {
   patientId: string;
   embedded?: boolean;
+  embeddedQuery?: string;
 }) {
   const t = useT();
   // Keep the latest `t` in a ref so fetch callbacks read a fresh translator
@@ -80,11 +83,15 @@ export function SutPatientPageContent({
   tRef.current = t;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const routeQuery = parsePatientWorkspaceQuery(searchParams);
-  // The document URL belongs to the primary pane, never to an embedded patient.
-  const claimQuery = embedded ? null : routeQuery.claimId;
-  const sectionQuery = embedded ? null : routeQuery.section;
-  const findingQuery = embedded ? null : routeQuery.findingId;
+  const routeQuery = parsePatientWorkspaceQuery(embedded ? new URLSearchParams(embeddedQuery) : searchParams);
+  const workspaceRef = useRef<HTMLElement | null>(null);
+  const [embeddedActionSection, setEmbeddedActionSection] = useState<{ patientId: string; query?: string; section: string } | null>(null);
+  // Each pane owns its saved query; embedded action selection stays local.
+  const claimQuery = routeQuery.claimId;
+  const sectionQuery = embedded && embeddedActionSection?.patientId === patientId && embeddedActionSection.query === embeddedQuery
+    ? embeddedActionSection.section
+    : routeQuery.section;
+  const findingQuery = routeQuery.findingId;
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
@@ -411,7 +418,12 @@ export function SutPatientPageContent({
     // Exact finding rows win over section anchors; schedule after the
     // workspace view switch so the target row is mounted before scrolling.
     const frame = requestAnimationFrame(() => {
-      const target = resolvePatientScrollTarget(document, findingQuery, sectionQuery);
+      const root = workspaceRef.current;
+      if (!root) return;
+      const target = resolvePatientScrollTarget(root, findingQuery, sectionQuery);
+      for (let ancestor = target; ancestor && root.contains(ancestor); ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+      }
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return () => cancelAnimationFrame(frame);
@@ -454,6 +466,14 @@ export function SutPatientPageContent({
     (action: RecommendedActionItem) => {
       setSelectedActionId(action.action_id);
       const sectionId = recommendedActionSectionId(action.surface);
+      const target = workspaceRef.current && resolvePatientScrollTarget(workspaceRef.current, action.finding_id, sectionId);
+      for (let ancestor = target; ancestor && workspaceRef.current?.contains(ancestor); ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
+      }
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (sectionId && embedded) {
+        setEmbeddedActionSection({ patientId, query: embeddedQuery, section: sectionId });
+      }
       if (sectionId && !embedded) {
         router.replace(
           buildSutPatientHref(patientId, {
@@ -464,12 +484,8 @@ export function SutPatientPageContent({
         );
       }
     },
-    [embedded, patientId, router, selectedClaimId],
+    [embedded, embeddedQuery, patientId, router, selectedClaimId],
   );
-
-  const handlePatientSelect = useCallback((selectedPatientId: string) => {
-    router.push(buildSutPatientHref(selectedPatientId));
-  }, [router]);
 
   const hasAnyData = Boolean(outcome) || Boolean(optimization) || Boolean(billingReport);
   const hasAnyError = Boolean(outcomeError) || Boolean(optimizationError) || Boolean(billingError);
@@ -499,57 +515,57 @@ export function SutPatientPageContent({
     [patientId, outcome, activeOptimization, activeBillingReport, selectedClaimId],
   );
   const shouldRenderChat = !loading && !allFailed;
-  const isDocked = shouldRenderChat && chatDock !== "center";
+  const isDocked = shouldRenderChat && isChatDockedRight(chatDock);
   const sectionClass =
     isDocked || embedded ? "w-full space-y-6" : "mx-auto max-w-7xl space-y-6";
-  // Split view: dock controls are disabled and pane B renders no chat panel.
+  // Split view: the right column is off and pane B renders no chat panel; collapsing and opening stay available.
   const splitActive = useWorkspacePaneBTabId() !== null;
-  const dockChange = splitActive ? undefined : setChatDock;
   const ShellTag = (embedded ? "div" : "main") as "div" | "main";
+  const backToPatientsLink = (
+    <Button asChild variant="secondary">
+      <Link href={buildSutHomeHref("patients")}>
+        <ArrowLeft className="h-4 w-4" />
+        {t("patient.workspace.backToPatients")}
+      </Link>
+    </Button>
+  );
+
+  const billContent = (
+    <>
+      {(claims.length > 0 || claimsLoading || claimsError) && (
+        <Surface variant="base" padding="md">
+          {claimsError ? (
+            <p className="text-sm text-[var(--text-secondary)]">{claimsError}</p>
+          ) : (
+            <BillPicker
+              claims={claims}
+              selectedClaimId={selectedClaimId}
+              onSelectClaim={handleSelectClaim}
+              disabled={claimsLoading}
+            />
+          )}
+        </Surface>
+      )}
+      {claimDetailLoading && (
+        <Surface variant="soft" padding="md">
+          <p className="text-sm text-[var(--text-secondary)]">{t("patient.claimDetail.loading")}</p>
+        </Surface>
+      )}
+      {claimDetailError && (
+        <Surface variant="soft" padding="md">
+          <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
+        </Surface>
+      )}
+      {claimDetail && selectedClaimId && (
+        <OriginalBillView claim={claimDetail} highlightCodes={highlightCodes} />
+      )}
+    </>
+  );
 
   return (
     <>
       <ShellTag id={embedded ? undefined : "main-content"} className="sut-app-main">
-        <section className={sectionClass}>
-            {!embedded && (
-            <Surface variant="base" padding="lg">
-              <nav
-                aria-label={t("patient.page.breadcrumbAria")}
-                className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
-              >
-                <Link
-                  href={buildSutHomeHref("patients")}
-                  className="text-[var(--text-secondary)] transition-colors hover:text-[var(--gold-hover)]"
-                >
-                  {t("patient.page.workspace")}
-                </Link>
-                <span aria-hidden="true" className="text-[var(--border-strong)]">
-                  /
-                </span>
-                <span className="text-[var(--text-primary)]">
-                  {patientId
-                    ? t("patient.page.patient", { patientId })
-                    : t("patient.page.patientUnknown")}
-                </span>
-              </nav>
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
-                <div>
-                  <Eyebrow className="mb-2">{t("patient.page.searchEyebrow")}</Eyebrow>
-                  <PatientSearch
-                    id="sut-patient-workspace-search"
-                    selectedPatientId={patientId || null}
-                    onSelect={handlePatientSelect}
-                    placeholder={t("patient.page.searchPlaceholder")}
-                    searchFn={searchSutPatients}
-                  />
-                </div>
-                <p className="text-sm leading-snug text-[var(--text-secondary)]">
-                  {t("patient.page.searchDescription")}
-                </p>
-              </div>
-            </Surface>
-            )}
-
+        <section ref={workspaceRef} className={sectionClass} data-patient-workspace>
             {!embedded && shouldRenderChat && (
               <SutInlineAIPanel
                 key={chatSessionKey}
@@ -557,20 +573,22 @@ export function SutPatientPageContent({
                 activeTab="SUT Patient Workspace"
                 pageContext={chatPageContext}
                 dock={chatDock}
-                onDockChange={dockChange}
+                onDockChange={setChatDock}
+                allowRightDock={!splitActive}
                 chatState={chatState}
                 onChatStateChange={handleChatStateChange}
               />
             )}
 
             {loading ? (
-              <SutPatientAnalyticsSkeleton patientId={patientId} />
+              <SutPatientAnalyticsSkeleton patientId={patientId} navigation={backToPatientsLink} />
             ) : allFailed ? (
               <Surface variant="base" padding="lg">
                 <Eyebrow tone="primary" as="h1" className="text-base normal-case tracking-normal">
                   {t("patient.page.billingUnavailable")}
                 </Eyebrow>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{pageError}</p>
+                <div className="mt-5">{backToPatientsLink}</div>
               </Surface>
             ) : (
               <>
@@ -590,34 +608,15 @@ export function SutPatientPageContent({
                   claimCount={claims.length > 0 ? claims.length : undefined}
                   selectedClaimSummary={selectedClaimSummary}
                 />
-                {(claims.length > 0 || claimsLoading || claimsError) && (
-                  <Surface variant="base" padding="md">
-                    {claimsError ? (
-                      <p className="text-sm text-[var(--text-secondary)]">{claimsError}</p>
-                    ) : (
-                      <BillPicker
-                        claims={claims}
-                        selectedClaimId={selectedClaimId}
-                        onSelectClaim={handleSelectClaim}
-                        disabled={claimsLoading}
-                      />
-                    )}
-                  </Surface>
-                )}
-                {claimDetailLoading && (
-                  <Surface variant="soft" padding="md">
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      {t("patient.claimDetail.loading")}
-                    </p>
-                  </Surface>
-                )}
-                {claimDetailError && (
-                  <Surface variant="soft" padding="md">
-                    <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
-                  </Surface>
-                )}
-                {claimDetail && selectedClaimId && (
-                  <OriginalBillView claim={claimDetail} highlightCodes={highlightCodes} />
+                {activeBillingReport && (
+                  <RecommendedActionsPanel
+                    billingReport={activeBillingReport}
+                    compact
+                    selectedActionId={selectedActionId}
+                    onSelectAction={handleSelectAction}
+                    onOpenClause={handleOpenClause}
+                    onShowAll={() => workspaceRef.current?.querySelector("[data-patient-findings]")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  />
                 )}
                 {(scopedBillingError || scopedOptimizationError) && (
                   <Surface variant="soft" padding="md" className="space-y-1 text-sm text-[var(--text-secondary)]">
@@ -632,6 +631,7 @@ export function SutPatientPageContent({
                     </p>
                   </Surface>
                 )}
+                {(!activeBillingReport || claimsLoading) && billContent}
                 {!claimsLoading && activeBillingReport && (
                   <div
                     className={cn(
@@ -655,13 +655,6 @@ export function SutPatientPageContent({
                       ) : null}
                     </Surface>
 
-                    <BillingReportGroup
-                      title={t("patient.billingGroups.overview")}
-                      description={t("patient.billingGroups.overviewDescription")}
-                    >
-                      <BillingSummary billingReport={activeBillingReport} />
-                    </BillingReportGroup>
-
                     <PatientWorkspaceViews
                       billingReport={activeBillingReport}
                       patientId={patientId}
@@ -671,12 +664,23 @@ export function SutPatientPageContent({
                       sectionQuery={sectionQuery}
                       selectedFindingId={findingQuery}
                       selectedClaimId={selectedClaimId}
+                      billContent={billContent}
+                      detailsContent={
+                        <>
+                          <BillingReportGroup
+                            title={t("patient.billingGroups.overview")}
+                            description={t("patient.billingGroups.overviewDescription")}
+                          >
+                            <BillingSummary billingReport={activeBillingReport} omitPriority />
+                          </BillingReportGroup>
+                          {optimization && <PatientClinicalSnapshot optimization={optimization} />}
+                          {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
+                          <p className="py-2 text-center text-xs text-[var(--text-muted)]">
+                            {t("patient.page.footerNormative")}
+                          </p>
+                        </>
+                      }
                     />
-
-                    {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
-                    <p className="py-2 text-center text-xs text-[var(--text-muted)]">
-                      {t("patient.page.footerNormative")}
-                    </p>
                   </div>
                 )}
               </>

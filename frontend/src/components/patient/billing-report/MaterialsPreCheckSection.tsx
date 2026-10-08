@@ -18,7 +18,7 @@ import {
   MaterialCeilingBenchmarks,
 } from "./MaterialsPreCheckTables";
 
-export function MaterialsPreCheckSection({ materialsData }: { materialsData: BillingActionReport["materials"] }) {
+export function MaterialsPreCheckSection({ materialsData, collapsed = false }: { materialsData: BillingActionReport["materials"]; collapsed?: boolean }) {
   const t = useT();
   const ceilingEntries = Object.entries(materialsData.gazette_ceiling_by_specialty);
   const materialsExact = isExactOutput(materialsData);
@@ -42,7 +42,22 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   }
 
   return (
-    <BillingSectionShell id="materials-pre-check" title={t("billing.materials.title")}>
+    <BillingSectionShell
+      id="materials-pre-check"
+      title={t("billing.materials.title")}
+      collapsed={collapsed}
+      count={materialsData.pre_auth_required.length + materialsData.miat_restricted.length + intervalViolations.length + bundledLines.length + proseViolations.length + specialtyProseViolations.length + kdvPriceReviews.length}
+      exactness={materialsData}
+      status={materialsData.coverage_scope?.prose_coverage_tier === "partial" || materialsData.specialty_coverage_scope?.prose_coverage_tier === "partial"
+        ? t("billing.materials.partialCoverage")
+        : !materialsData.coverage_scope
+        ? t("billing.materials.coverageUnavailable")
+        : materialsData.coverage_scope.prose_engine_status === "implemented"
+          ? undefined
+          : materialsData.coverage_scope.prose_engine_status === "out_of_scope"
+            ? t("billing.materials.coverageNotEvaluated")
+            : t("billing.materials.partialCoverage")}
+    >
       <div className="space-y-4">
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.materials.advisoryFootnote")}

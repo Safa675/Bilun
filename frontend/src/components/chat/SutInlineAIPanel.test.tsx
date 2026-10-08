@@ -109,4 +109,76 @@ describe("SutInlineAIPanel", () => {
     expect(html).toContain("Send message");
     expect(html).toContain("Ask Bilun");
   });
+
+  describe("collapsed dock", () => {
+    const noop = () => undefined;
+
+    it("renders a one-line bar: no thread, no input, no fixed column", () => {
+      const html = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel activeTab="SUT Workspace" dock="collapsed" onDockChange={noop} />,
+      );
+      expect(html).toContain("Ask Bilun…");
+      expect(html).toContain('aria-label="Open chat"');
+      expect(html).toContain('aria-label="Dock right"');
+      expect(html).not.toContain("Bilun Analysis");
+      expect(html).not.toContain("<textarea");
+      expect(html).not.toContain("Send message");
+      expect(html).not.toContain("fixed");
+    });
+
+    it("renders the bar in Turkish", () => {
+      const html = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel activeTab="SUT Workspace" dock="collapsed" onDockChange={noop} />,
+        "tr",
+      );
+      expect(html).toContain("sorun…");
+      expect(html).toContain('aria-label="Sohbeti aç"');
+    });
+
+    it("keeps open available in a split view and switches the right column off", () => {
+      const html = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel activeTab="SUT Workspace" dock="collapsed" onDockChange={noop} allowRightDock={false} />,
+      );
+      expect(html).toContain('aria-label="Open chat"');
+      expect(html).not.toContain("Dock right");
+    });
+
+    it("offers collapse, center and right in the open panel, and only collapse and center in a split view", () => {
+      const open = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel activeTab="SUT Workspace" dock="center" onDockChange={noop} />,
+      );
+      expect(open).toContain('aria-label="Collapse chat"');
+      expect(open).toContain('aria-label="Center (inline)"');
+      expect(open).toContain('aria-label="Dock right"');
+      const split = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel activeTab="SUT Workspace" dock="center" onDockChange={noop} allowRightDock={false} />,
+      );
+      expect(split).toContain('aria-label="Collapse chat"');
+      expect(split).not.toContain("Dock right");
+    });
+
+    it("lets the right-dock header wrap, so four controls beside a patient subtitle never run past the viewport edge", () => {
+      const html = renderToStaticMarkupWithLocale(
+        <SutInlineAIPanel
+          activeTab="SUT Patient Workspace"
+          patientId="SENTETIK-HASTA-0003"
+          dock="right"
+          onDockChange={noop}
+        />,
+      );
+      expect(html).toContain("Patient: SENTETIK-HASTA-0003");
+      // measured in Chrome: the 380px column is 9px too narrow for one row; the controls then take their own row
+      expect(html).toMatch(/<div class="mb-2 flex flex-wrap items-start justify-between [^"]*">/);
+      expect(html).toContain('<div class="ml-auto flex items-center gap-1">');
+      for (const label of ["Regenerate analysis", "Collapse chat", "Center (inline)", "Dock right"]) {
+        expect(html).toContain(`aria-label="${label}"`);
+      }
+    });
+
+    it("renders no dock buttons when nobody can change the dock (the open panel keeps its old markup)", () => {
+      const html = renderToStaticMarkupWithLocale(<SutInlineAIPanel activeTab="SUT Workspace" dock="center" />);
+      expect(html).not.toContain("Collapse chat");
+      expect(html).not.toContain("Dock right");
+    });
+  });
 });

@@ -55,12 +55,18 @@ def _seed_bill_report_cache(db_path: Path) -> str:
                     "priority": "low",
                     "exactness_status": "exact",
                 },
+                "PAT-1::F-PAT-1-003": {
+                    "patient_id": "PAT-1",
+                    "action_count": 0,
+                    "priority": "low",
+                    "exactness_status": "missing_exact_inputs",
+                },
             },
         )
         complete_build(
             con,
             build_id,
-            row_counts={"patient_bill_billing_report_rows": 2},
+            row_counts={"patient_bill_billing_report_rows": 3},
             checksums={},
         )
         set_active_build(con, build_id, scope=BILUN_BUILD_SCOPE)
@@ -109,6 +115,43 @@ def test_bill_billing_report_returns_scoped_payload(bill_report_cache):
     assert result["scope"] == "bill"
     assert result["total_recoverable_try"] == 1750.0
     assert result["priority"] == "high"
+
+
+def test_bill_cache_response_preserves_missing_versus_computed_zero(bill_report_cache):
+    from src.bilun.api.routes.billing import get_bill_billing_report
+    from src.bilun.api.schemas import BillingReportResponse
+
+    missing = BillingReportResponse.model_validate(
+        get_bill_billing_report("PAT-1", "F-PAT-1-003")
+    ).model_dump(mode="json")
+    zero = BillingReportResponse.model_validate(
+        get_bill_billing_report("PAT-1", "F-PAT-1-002")
+    ).model_dump(mode="json")
+    assert missing["total_recoverable_try"] is None
+    assert missing["sgk_uplift_try"] is None
+    assert missing["copay"]["patient_copay_waived_total_try"] is None
+    assert zero["total_recoverable_try"] == 0.0
+
+
+@pytest.mark.parametrize("amount", [None, 0.0, 12.5])
+def test_domain_serializer_keeps_uncomputed_and_zero_money(amount):
+    from src.bilun.api.routes.billing import _serialize_billing_report
+    from src.bilun.api.schemas import BillingReportResponse
+    from src.bilun.domain.billing.types import BillingActionReport, CopayOptimization
+
+    report = BillingActionReport(
+        patient_id="SYNTHETIC-SERIALIZER",
+        total_recoverable_try=amount,
+        sgk_uplift_try=amount,
+        copay=CopayOptimization(patient_copay_waived_total_try=amount),
+    )
+    payload = _serialize_billing_report(report)
+    response = BillingReportResponse.model_validate(payload).model_dump(mode="json")
+    assert payload["total_recoverable_try"] == amount
+    assert response["total_recoverable_try"] == amount
+    assert response["sgk_uplift_try"] == amount
+    assert response["copay"]["patient_copay_waived_total_try"] == amount
+    assert response["lab"]["normative_cost_try"] is None
 
 
 def test_bill_billing_report_distinct_per_bill(bill_report_cache):

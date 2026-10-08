@@ -9,6 +9,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.bilun.domain.claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
+from src.bilun.domain.claims.mds_evidence import MdsEvidence, parse_mds_evidence
+
 from src.bilun.domain.claims.clinical_evidence import (
     AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence, parse_clinical_evidence,
 )
@@ -140,6 +143,19 @@ class MaterialItem(BaseModel):
     enteral_evidence: EnteralEvidence | None = None
     ravulizumab_evidence: RavulizumabEvidence | None = None
     mesothelioma_evidence: MesotheliomaEvidence | None = None
+
+    adult_gh_evidence: AdultGhEvidence | None = None
+    mds_evidence: MdsEvidence | None = None
+
+    @field_validator('adult_gh_evidence', mode='before')
+    @classmethod
+    def parse_adult_gh_evidence(cls, value):
+        return parse_adult_gh_evidence(value)
+
+    @field_validator('mds_evidence', mode='before')
+    @classmethod
+    def parse_mds_evidence(cls, value):
+        return parse_mds_evidence(value)
 
     @field_validator('mesothelioma_evidence', mode='before')
     @classmethod

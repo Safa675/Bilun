@@ -306,26 +306,26 @@ export function SUTComplianceDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Surface variant="base" padding="md">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+        <Surface variant="inset" padding="sm" className="border-b border-[var(--border-subtle)] lg:border-b-0 [&_span]:whitespace-nowrap">
           <Stat
             label={t("optimizer.complianceIndex.findings")}
             value={headerFindings == null ? dash : fmtNum(headerFindings)}
           />
         </Surface>
-        <Surface variant="base" padding="md">
+        <Surface variant="inset" padding="sm" className="border-b border-[var(--border-subtle)] lg:border-b-0 [&_span]:whitespace-nowrap">
           <Stat
             label={t("optimizer.complianceIndex.patientsWithFindings")}
             value={headerPatients == null ? dash : fmtNum(headerPatients)}
           />
         </Surface>
-        <Surface variant="base" padding="md">
+        <Surface variant="inset" padding="sm" className="border-b border-[var(--border-subtle)] lg:border-b-0 [&_span]:whitespace-nowrap">
           <Stat
             label={t("optimizer.complianceIndex.billedAtRisk")}
             value={headerBilled == null ? dash : fmtTRY2(headerBilled)}
           />
         </Surface>
-        <Surface variant="base" padding="md">
+        <Surface variant="inset" padding="sm" className="[&_span]:whitespace-nowrap">
           <Link href={buildSutHomeHref("operations", searchParams)} className="block">
             <Stat
               label={t("optimizer.complianceIndex.medulaRejections")}

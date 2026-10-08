@@ -58,6 +58,14 @@ const baseBillingReport: BillingActionReport = {
 };
 
 describe("PatientFinancialSummary", () => {
+  it("keeps missing selected-bill amounts unavailable", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <PatientFinancialSummary outcome={null} billingReport={baseBillingReport} selectedClaimId="B-1" />,
+    );
+    expect(html.match(/Unavailable/g)).toHaveLength(2);
+    expect(html).not.toContain(">0.00 TRY<");
+    expect(html).toContain("whitespace-nowrap tabular-nums");
+  });
   it("renders all-bills totals and recoverable priority", () => {
     const claimTotals = {
       exactness_status: "exact" as const,
@@ -81,7 +89,7 @@ describe("PatientFinancialSummary", () => {
     expect(html).toContain("All bills at a glance");
     expect(html).toContain(fmtTRY2Fixture(claimTotals.total_billed_try));
     expect(html).toContain(fmtTRY2Fixture(claimTotals.total_expected_payable_try));
-    expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try));
+    expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try!));
     expect(html).toContain("3");
     expect(html).toContain("high");
   });

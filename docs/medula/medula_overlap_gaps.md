@@ -128,7 +128,7 @@ Full boundary doc: [`docs/medula/material_bundling_medula_boundary.md`](../../do
 | No procedure in takip → no material | `procedure_pairing_required` (EK-3/C) | **PARTIAL_OVERLAP** (intent) |
 | UBB/ÜTS / barcode DTO | `titubb_uts_incomplete`, barcode keyword | **PARTIAL_OVERLAP** |
 | *(not in manual)* | EK-3B-1, EK-3B-2, §3.1 prose (**23 rules**) | **ADDITIVE** |
-| EK-3 list price + KDV (§3.1.1(10)/(12)) | `material_kdv.py` → `kdv_price_reviews` (C001630, C002692) | **ADDITIVE** (pre-submission ceiling analytics) |
+| EK-3 list price + KDV (§3.1.1(10)) | `material_kdv.py` → `kdv_price_reviews` (C002748) | **ADDITIVE** (pre-submission ceiling analytics) |
 | EK-3 explicit separate-billing allow list | `ek3_separate_billing_allowed_codes()` (C001823) | **ADDITIVE** |
 
 **L1.4:** `material_bundling_prose` is **implemented** with `prose_coverage_tier: partial`. **0** Gate B deferred clauses (tail closed 2026-06-02). Coverage matrix: 733 §3.1-classified clauses → registry `implemented` (legal corpus tail still open). Do **not** count prose violations or KDV review deltas as MEDULA-guaranteed savings.

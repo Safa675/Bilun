@@ -99,7 +99,7 @@ class TestResolveSectionClauseRef:
 class TestClauseRefForRuleId:
     def test_resolves_material_bundling_rule_from_l1_4_manifest(self) -> None:
         # L1.4_material_bundling_encoded_manifest.json clause_traces:
-        # C002728 → linked_rule_ids ["3.1.1.(2).titubb_uts_incomplete"].
+        # C002740 → linked_rule_ids ["3.1.1.(2).titubb_uts_incomplete"].
         ref = clause_ref_for_rule_id("3.1.1.(2).titubb_uts_incomplete")
         assert ref is not None
         assert ref["source_type"] == "sut_clause"
@@ -114,8 +114,8 @@ class TestClauseRefForRuleId:
         assert ref["clause_key"].startswith("3.1.2.(2)#")
 
     def test_resolves_rule_linked_to_multiple_clauses_first_wins(self) -> None:
-        # "3.1.2.report_prescription_invalid" is linked from C002778,
-        # C002802, C002803, C002805 — deterministic first-wins resolution.
+        # "3.1.2.report_prescription_invalid" is linked from C002790,
+        # C002814, C002815, C002817 — deterministic first-wins resolution.
         ref = clause_ref_for_rule_id("3.1.2.report_prescription_invalid")
         assert ref is not None
         assert ref["clause_key"]
@@ -130,7 +130,7 @@ class TestClauseRefForRuleId:
     def test_internal_clause_id_never_leaks_into_output(self) -> None:
         ref = clause_ref_for_rule_id("3.1.1.(2).titubb_uts_incomplete")
         assert ref is not None
-        assert "C002728" not in str(ref)
+        assert "C002740" not in str(ref)
         assert set(ref) == {
             "clause_key",
             "clause_coordinate",

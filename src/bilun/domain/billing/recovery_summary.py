@@ -9,20 +9,32 @@ from .types import EXACTNESS_STATUS_EXACT, BillingActionReport
 from .report_exactness import block_exactness_status
 
 
-def exemption_gap_try(report: BillingActionReport) -> float:
+def _amount(value: Any) -> float | None:
+    return float(value) if value is not None else None
+
+
+def _complete_sum(*amounts: float | None) -> float | None:
+    if any(amount is None for amount in amounts):
+        return None
+    return round(sum(amount for amount in amounts if amount is not None), 2)
+
+
+def exemption_gap_try(report: BillingActionReport) -> float | None:
     """Patient katılım payı exemption gap when copay block is exact."""
     copay = report.copay
-    if block_exactness_status(copay) != EXACTNESS_STATUS_EXACT or not copay.is_exempt:
+    if block_exactness_status(copay) != EXACTNESS_STATUS_EXACT:
+        return None
+    if not copay.is_exempt:
         return 0.0
-    waived = float(getattr(copay, "patient_copay_waived_total_try", 0.0) or 0.0)
-    if waived <= 0:
-        waived = copay.total_copay_savings_try + copay.rx_copay_savings_try
-    return round(waived, 2)
+    waived = copay.patient_copay_waived_total_try
+    if waived is not None:
+        return round(waived, 2)
+    return _complete_sum(copay.total_copay_savings_try, copay.rx_copay_savings_try)
 
 
-def total_opportunity_try(report: BillingActionReport) -> float:
+def total_opportunity_try(report: BillingActionReport) -> float | None:
     """Hospital SGK recoverable plus exemption gap (cohort ranking / directory display)."""
-    return round(report.total_recoverable_try + exemption_gap_try(report), 2)
+    return _complete_sum(report.total_recoverable_try, exemption_gap_try(report))
 
 
 def _top_action_type_from_savings(savings: dict[str, float]) -> str:
@@ -33,6 +45,7 @@ def _top_action_type_from_savings(savings: dict[str, float]) -> str:
 
 def _get_top_action_type(report: BillingActionReport) -> str:
     """Determine the primary action type for a patient report."""
+    waived = getattr(report.copay, "patient_copay_waived_total_try", None)
     return _top_action_type_from_savings(
         {
             "session_uplift": report.session_uplift.total_uplift_try,
@@ -42,17 +55,18 @@ def _get_top_action_type(report: BillingActionReport) -> str:
             "material_uplift": report.material_uplift.confirmed_uplift_try,
             "procedure_addon_uplift": report.procedure_addon_uplift.confirmed_uplift_try,
             "strategy": report.billing_strategy.uplift_savings_try,
-            "capture_gap": report.capture_gap_try,
-            "package_adequacy_review": report.package_adequacy_review_try,
+            "capture_gap": report.capture_gap_try or 0.0,
+            "package_adequacy_review": report.package_adequacy_review_try or 0.0,
             "medula_playbook": float(report.medula_playbook_entry_count),
-            "lab": report.compliance_adjustment_try,
-            "copay": float(
-                getattr(report.copay, "patient_copay_waived_total_try", 0.0)
-                or (
-                    report.copay.total_copay_savings_try
-                    + report.copay.rx_copay_savings_try
+            "lab": report.compliance_adjustment_try or 0.0,
+            "copay": (
+                waived
+                if waived is not None
+                else _complete_sum(
+                    report.copay.total_copay_savings_try,
+                    report.copay.rx_copay_savings_try,
                 )
-            ),
+            ) or 0.0,
         }
     )
 
@@ -73,23 +87,24 @@ def patient_recovery_summary_entry(report: BillingActionReport) -> dict[str, Any
     }
 
 
-def _exemption_gap_from_copay_payload(copay: dict[str, Any] | None) -> float:
+def _exemption_gap_from_copay_payload(copay: dict[str, Any] | None) -> float | None:
     if not copay or str(copay.get("exactness_status") or "") != EXACTNESS_STATUS_EXACT:
-        return 0.0
+        return None
     if not copay.get("is_exempt"):
         return 0.0
-    waived = float(copay.get("patient_copay_waived_total_try") or 0)
-    if waived <= 0:
-        waived = float(copay.get("total_copay_savings_try") or 0) + float(
-            copay.get("rx_copay_savings_try") or 0
-        )
-    return round(waived, 2)
+    waived = _amount(copay.get("patient_copay_waived_total_try"))
+    if waived is not None:
+        return round(waived, 2)
+    return _complete_sum(
+        _amount(copay.get("total_copay_savings_try")),
+        _amount(copay.get("rx_copay_savings_try")),
+    )
 
 
 def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, Any]:
     """Build a recovery summary dict from cached billing report JSON."""
     copay_payload = report.get("copay") or {}
-    hospital = float(report.get("total_recoverable_try") or 0)
+    hospital = _amount(report.get("total_recoverable_try"))
     gap = _exemption_gap_from_copay_payload(copay_payload)
     # Mirror the 13 keys in _get_top_action_type so cached-payload and live-object
     # paths produce identical top_action_type (audit finding #12).
@@ -117,15 +132,17 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
         "package_adequacy_review": float(report.get("package_adequacy_review_try") or 0),
         "medula_playbook": float(report.get("medula_playbook_entry_count") or 0),
         "lab": float(report.get("compliance_adjustment_try") or 0),
-        "copay": gap,
+        "copay": gap or 0.0,
     }
     return {
         "patient_id": str(report.get("patient_id") or ""),
         "total_recoverable_try": hospital,
-        "sgk_uplift_try": float(report.get("sgk_uplift_try") or hospital),
-        "compliance_adjustment_try": float(report.get("compliance_adjustment_try") or 0),
+        "sgk_uplift_try": (
+            _amount(report["sgk_uplift_try"]) if "sgk_uplift_try" in report else hospital
+        ),
+        "compliance_adjustment_try": _amount(report.get("compliance_adjustment_try")),
         "exemption_gap_try": gap,
-        "total_opportunity_try": round(hospital + gap, 2),
+        "total_opportunity_try": _complete_sum(hospital, gap),
         "priority": str(report.get("priority") or "low"),
         "action_count": int(report.get("action_count") or 0),
         "top_action_type": _top_action_type_from_savings(savings),

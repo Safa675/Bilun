@@ -28,6 +28,16 @@ const billing = {
     "totalsUnavailableNotice": "Her fatura bölümü kesin olana kadar fatura toplamları kullanılamaz."
   },
   "recommendedActions": {
+    "nextActions": "Sonraki işlemler",
+    "showAll": "Tümünü göster ({count})",
+    "sourceUnavailable": "SUT kullanılamıyor",
+    "exactness": {
+      "exact": "Kesin",
+      "partial_exact": "Kısmi kesin",
+      "missing_exact_inputs": "Kesin girdiler eksik",
+      "unknown_date": "Tarih bilinmiyor",
+      "not_applicable": "Uygulanamaz"
+    },
     "listTitle": "Önerilen işlemler — kalem kalem",
     "surface": "Yüzey",
     "claim": "Talep",
@@ -83,7 +93,7 @@ const billing = {
     "amountSgkUplift": "SGK artışı",
     "amountCompliance": "Uyumluluk tasarrufu",
     "amountAuditRisk": "Denetim riski",
-    "amountExemptionReview": "Muafiyet doğrulama (₺0 fark)",
+    "amountExemptionReview": "Muafiyeti doğrula",
     "amountComplianceOnly": "Uyumluluk düzeltmesi gerekli"
   },
   "lab": {
@@ -339,6 +349,8 @@ const billing = {
     "scopeFootnote": "Fatura tutarları ve SUT puan oranlarından kural hesaplı (aynı hizmet tarihi). Klinik seans/kesi sınırları doğrulanmamıştır — grafik incelemesi satırları SGK artışı başlığına dahil edilmez.",
     "reviewBadge": "Grafik incelemesi",
     "reviewTotal": "Grafik incelemesi bekleyen",
+    "totalNone": "Bu toplamdaki {count} satırın hiçbirinde artış tutarı yok",
+    "totalPartial": "Kısmi toplam: bu toplamdaki {count} satırdan yalnızca {known} tanesinde artış tutarı var",
     "unavailable": "Seans fiyatlandırma artışı için aynı seanstaki kesin işlem satırları gerekir.",
     "claim": "Talep",
     "procedure": "İşlem",
@@ -380,6 +392,9 @@ const billing = {
     "catalogAsOf": "EK-2B/EK-2C katalog üyeliği {date} tarihi itibarıyla (hizmet tarihi)."
   },
   "materials": {
+    "partialCoverage": "Kısmi kapsam",
+    "coverageUnavailable": "Kapsam kullanılamıyor",
+    "coverageNotEvaluated": "Kapsam değerlendirilmedi",
     "title": "Malzeme ön kontrolü",
     "unavailable": "Bu bölüm tam kesin olana kadar malzeme tavan tahminleri kullanılamaz.",
     "preAuth": "Ön onay gerekli",
@@ -398,7 +413,7 @@ const billing = {
     "miatPeriod": "MIAT süresi",
     "ceilingEyebrow": "EK-3 uzmanlık fiyat kıyası (P90)",
     "partialBenchmarkNotice": "Kısmi mod: yalnızca EK-3 ekine göre P90 kıyasları. EK-3C-1 ön onay ve EK-3C-2 MIAT için faturalı malzeme satırları gerekir.",
-    "kdvPriceReviews": "KDV liste fiyat tavanı (§3.1.1(12))",
+    "kdvPriceReviews": "KDV liste fiyat tavanı (§3.1.1(10))",
     "billedAmount": "Faturalanan",
     "gazetteCeiling": "EK-3 tavan",
     "kdvApplied": "KDV uygulandı"
@@ -422,6 +437,13 @@ const billing = {
     "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
   },
   "wavea": {
+    "sutClause": "SUT {coordinate}",
+    "countUnavailable": "Sayı mevcut değil",
+    "notEvaluated": "Değerlendirilmedi",
+    "statusUnavailable": "Mevcut değil",
+    "statusPartial": "Kısmi",
+    "evaluationCount": "{count} değerlendirme",
+    "missingDataCount": "{count} değerlendirilmedi",
     "reviewTitle": "İnsan incelemesi gerekli",
     "reviewHeading": "İnsan incelemesi gerekli",
     "reviewNotice": "Bu kayıtlar henüz ihlal veya finansal kazanç olarak sayılmadı. Fatura ve kaynak koşullarını doğrulayın.",
@@ -591,6 +613,8 @@ const billing = {
       "kpiRisk": "Toplam denetim riski",
       "kpiFindings": "Riskli bulgu",
       "kpiBilledAtRisk": "Riskli faturalanan tutar",
+      "kpiBilledAtRiskNone": "{count} bulgunun hiçbirinde faturalanan tutar yok",
+      "kpiBilledAtRiskPartial": "Kısmi toplam: {count} bulgudan yalnızca {known} tanesinde faturalanan tutar var",
       "statusConfirmedViolation": "Kesin ihlal",
       "statusReviewRisk": "Risk — inceleme gerekli",
       "tableTitle": "Uyumluluk bulguları",

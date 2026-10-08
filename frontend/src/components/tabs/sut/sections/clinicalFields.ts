@@ -175,7 +175,23 @@ export const renalFields = [
 ] satisfies Array<ClinicalField & { name: keyof SutRenalEvidence }>;
 
 export function clinicalMissingInputLabel(field: string, t: (key: string) => string): string | null {
-  const [root, detail] = field.split(".");
+  const root = field.split(".")[0];
+  const detail = field.slice(root.length + 1);
+  const family = root === "adult_gh_evidence" ? "adultGh" : root === "mds_evidence" ? "mds" : null;
+  if (family) {
+    const prefix = `sections.claimValidator.clinical.${family}`;
+    const group = t(`sections.claimValidator.clinical.groups.${family}`);
+    if (field === root) return group;
+    const indexed = /^stimulation_tests\[(0|[1-9]|1[0-9])\]\.([a-z_]+)$/.exec(detail);
+    const key = indexed ? indexed[2] : detail.replaceAll(".", "_");
+    const path = `${prefix}.fields.${key}`;
+    const translated = t(path);
+    const label = translated === path ? t(`${prefix}.review`) : translated;
+    return `${group}: ${indexed ? `${t(`${prefix}.test`)} ${Number(indexed[1]) + 1}: ` : ""}${label}`;
+  }
+  if (["adult_gh_clinical_interpretation_release", "mds_clinical_interpretation_release"].includes(field)) {
+    return t("sections.claimValidator.clinical.output.clinicalRelease");
+  }
   const groups: Record<string, string> = {
     followup_evidence: "followup", indication_evidence: "indication", sma_evidence: "sma", antifungal_evidence: "antifungal", renal_evidence: "renal",
     enteral_evidence: "enteral", ravulizumab_evidence: "ravulizumab",

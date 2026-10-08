@@ -25,13 +25,13 @@ export function ProcedureAddonUpliftSection({
     return null;
   }
 
-  const confirmedUplift = addonData.confirmed_uplift_try ?? 0;
+  const confirmedUplift = addonData.confirmed_uplift_try ?? null;
 
   return (
     <BillingSectionShell
       id="billing-procedure-addon-uplift"
       title={t("billing.procedureAddonUplift.title")}
-      total={fmtTRY2(confirmedUplift)}
+      total={confirmedUplift == null ? "—" : fmtTRY2(confirmedUplift)}
     >
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.procedureAddonUplift.scopeFootnote")}

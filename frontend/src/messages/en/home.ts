@@ -7,6 +7,8 @@ const home = {
     "patientCount": "{count} patient",
     "patientCountPlural": "{count} patients",
     "exemptionGapOnly": "exemption gap",
+    "partialNoGap": "Partial: exemption gap not computed",
+    "partialNoRecoverable": "Partial: recoverable amount not computed",
     "sortBy": "Sort by {label}",
     "headers": {
       "patientId": "Patient ID",

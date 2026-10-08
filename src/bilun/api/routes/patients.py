@@ -70,7 +70,8 @@ def _serialize_claim_summary(
         "scenario_tag": header.scenario_tag,
     }
     if rollup is not None:
-        summary["recoverable_try"] = float(rollup.get("total_recoverable_try", 0.0))
+        amount = rollup.get("total_recoverable_try")
+        summary["recoverable_try"] = float(amount) if amount is not None else None
         summary["priority"] = rollup.get("priority", "low")
     else:
         summary["recoverable_try"] = None

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createNavigationStore } from "./navigationStore";
 
@@ -10,7 +10,7 @@ describe("createNavigationStore", () => {
       showHowItWorks: false,
       showAdmin: false,
       showReportProblem: false,
-      aiDockPosition: "center",
+      aiDockPosition: "collapsed",
     });
   });
 
@@ -27,6 +27,28 @@ describe("createNavigationStore", () => {
       showAdmin: true,
       showReportProblem: true,
       aiDockPosition: "right",
+    });
+  });
+
+  describe("dock persistence", () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("remembers a dock the user chose, but not a change forced by the layout", () => {
+      const writes: Array<[string, string]> = [];
+      vi.stubGlobal("window", {
+        localStorage: { getItem: () => null, setItem: (key: string, value: string) => writes.push([key, value]) },
+      });
+      const store = createNavigationStore();
+
+      store.getState().setAiDockPosition("right");
+      store.setState({ aiDockPosition: "center" }); // split view turns the right column off
+      store.getState().setAiDockPosition("collapsed");
+
+      expect(writes).toEqual([
+        ["bilun:chat-dock", "right"],
+        ["bilun:chat-dock", "collapsed"],
+      ]);
+      expect(store.getState().aiDockPosition).toBe("collapsed");
     });
   });
 });

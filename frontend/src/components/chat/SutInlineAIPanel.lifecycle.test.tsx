@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sendSutChatMessage, type SendSutChatMessageOptions } from "@/lib/api/sutChat";
 import type { ChatMessage } from "@/lib/domains/common";
 import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInterfaces";
+import { NavigationProvider, useAiDockPosition } from "@/stores/navigationContext";
 import SutInlineAIPanel from "./SutInlineAIPanel";
 
 const settings = vi.hoisted(() => ({ locale: "en", translate: (key: string) => key }));
@@ -28,12 +29,12 @@ const initialState = (): SutInlineChatState => ({
   autoText: "", autoFiredKey: "cohort::Patients::en", briefedContextKeys: ["cohort::Patients::en"],
 });
 
-async function mount(initial = initialState(), sessionKey = "patient:A") {
+async function mount(initial = initialState(), sessionKey = "patient:A", initialDock: SutChatDockPosition = "center") {
   let state = initial;
   let renderer: ReactTestRenderer;
   function Harness() {
     const [chatState, setChatState] = useState(initial);
-    const [dock, setDock] = useState<SutChatDockPosition>("center");
+    const [dock, setDock] = useState<SutChatDockPosition>(initialDock);
     const publish = useCallback((next: SutInlineChatState) => {
       state = next;
       setChatState(next);
@@ -67,6 +68,8 @@ async function finish(index: number, text: string) {
 const SEND = "chat.actions.sendMessage";
 const REGENERATE = "chat.actions.regenerateAnalysis";
 const RETRY = "chat.actions.retryQuestion";
+const EXPAND = "chat.actions.expand";
+const COLLAPSE = "chat.actions.collapse";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -203,5 +206,85 @@ describe("mounted chat generation lifecycle", () => {
     await finish(1, "New answer");
     expect(panel.state().pendingQuestion).toBeNull();
     expect(panel.state().messages.at(-1)?.content).toBe("New answer");
+  });
+});
+
+describe("collapsed dock (the page default)", () => {
+  const unbriefed = (): SutInlineChatState => ({ messages: [], autoText: "", autoFiredKey: "", briefedContextKeys: [] });
+  const opened = () => act(async () => { vi.advanceTimersByTime(10); });
+
+  it.each(["center", "right"])("sends one brief when the saved %s dock opens and fetch fails immediately", async savedDock => {
+    vi.stubGlobal("window", {
+      localStorage: { getItem: (key: string) => key === "bilun:chat-dock" ? savedDock : null },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response("Unavailable", { status: 503 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = await vi.importActual<typeof import("@/lib/api/sutChat")>("@/lib/api/sutChat");
+    vi.mocked(sendSutChatMessage).mockImplementation(api.sendSutChatMessage);
+    function SavedDockPanel() {
+      return <SutInlineAIPanel activeTab="Patients" dock={useAiDockPosition()} />;
+    }
+    await act(async () => {
+      renderers.push(create(<NavigationProvider><SavedDockPanel /></NavigationProvider>));
+    });
+    await opened();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).intent).toBe("auto_brief");
+    await act(async () => { vi.advanceTimersByTime(1000); });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts no auto-brief while collapsed, then exactly one when the panel opens", async () => {
+    const panel = await mount(unbriefed(), "patient:A", "collapsed");
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(calls).toHaveLength(0);
+    expect(panel.renderer.root.findAllByType("textarea")).toHaveLength(0);
+    await panel.click(EXPAND);
+    await opened();
+    expect(calls).toHaveLength(1);
+    expect(calls[0].options.intent).toBe("auto_brief");
+    await finish(0, "Briefing after opening");
+    expect(panel.state().messages.map((m) => m.content)).toEqual(["Briefing after opening"]);
+    // collapse and open again: this context already has its brief, nothing new starts
+    await panel.click(COLLAPSE);
+    await panel.click(EXPAND);
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("opens straight into the right column and briefs once", async () => {
+    const panel = await mount(unbriefed(), "patient:A", "collapsed");
+    await panel.click("chat.actions.dockRight");
+    await opened();
+    expect(calls).toHaveLength(1);
+    await finish(0, "Briefing in the right column");
+    expect(panel.state().messages).toHaveLength(1);
+  });
+
+  it("does not abort a streaming answer when the panel is collapsed, and finishes it", async () => {
+    const panel = await mount();
+    await panel.type("Question");
+    await panel.click(SEND);
+    await panel.click(COLLAPSE);
+    expect(calls[0].options.signal?.aborted).toBe(false);
+    await panel.click(EXPAND);
+    expect(calls[0].options.signal?.aborted).toBe(false);
+    await finish(0, "Answer that streamed while collapsed");
+    expect(panel.state().messages.at(-1)?.content).toBe("Answer that streamed while collapsed");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("a language change while collapsed clears the thread, starts nothing, and opening briefs once in the new language", async () => {
+    const panel = await mount(initialState(), "patient:A", "collapsed");
+    settings.locale = "tr";
+    await panel.refresh();
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(calls).toHaveLength(0);
+    expect(panel.state().messages).toEqual([]);
+    await panel.click(EXPAND);
+    await opened();
+    expect(calls).toHaveLength(1);
+    await finish(0, "Yeni dilde özet");
+    expect(panel.state().messages.map((m) => m.content)).toEqual(["Yeni dilde özet"]);
   });
 });

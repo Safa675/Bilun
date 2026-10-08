@@ -342,7 +342,7 @@ def test_raw_report_has_only_existing_closed_twelve_field_addendum():
 
 @pytest.mark.parametrize("mutation", [
     "profile", "base", "base_tree", "product_anchor", "product_tree", "closure", "tooling_digest",
-    "candidate", "extra_descendant", "old_seed", "false_seed", "missing_path", "extra_path",
+    "candidate", "extra_descendant", "old_seed", "false_seed", "seed_tree_only", "missing_path", "extra_path",
     "duplicate_path", "unsorted_paths", "missing_key", "extra_key", "wrong_verifier", "wrong_replay",
 ])
 def test_raw_report_contract_rejects_resealed_authority(mutation):
@@ -359,6 +359,8 @@ def test_raw_report_contract_rejects_resealed_authority(mutation):
         history["descendant_commits"].append("f" * 40)
     elif mutation in {"old_seed", "false_seed"}:
         history["integration_seed_sha"] = False if mutation == "false_seed" else final.INTEGRATION_SEED_SHA
+    elif mutation == "seed_tree_only":
+        history["integration_seed_tree"] = final.INTEGRATION_SEED_TREE
     elif mutation in {"missing_path", "extra_path", "duplicate_path", "unsorted_paths"}:
         paths = history["authorized_changed_paths"]
         if mutation == "missing_path":
@@ -386,16 +388,17 @@ def test_raw_report_contract_rejects_resealed_authority(mutation):
 
 def test_raw_report_published_pins_match_current_reviewed_bytes():
     from tests.unit.deploy.test_shared_interpreter_source_profile import _historical_mainc44_tooling_bytes
+    from tests.unit.deploy.integration_historical_sources import load_historical_sources
 
-    checkout = Path(final.__file__).resolve().parents[2]
     historical = _historical_mainc44_tooling_bytes(
         Path(__file__).parent / "fixtures/final_source_refresh_mainc44_tooling.json")
+    reviewed = load_historical_sources()["shared_interpreter"]
     assert final.RAW_REPORT_BASE_SHA == "f28af00ffe6237fe4b6c01d98d15360caa4c6008"
     assert final.RAW_REPORT_BASE_TREE == "d76b6656730f74a58554558f7a8012fafd8190ff"
     assert final.RAW_REPORT_TOOLING_PATHS == frozenset(_PUBLIC_RAW_PATHS)
     assert set(final._REVIEWED_RAW_REPORT_TOOLING) == set(_PUBLIC_RAW_PATHS) - {_VERIFIER_PATH}
     for path, expected in final._REVIEWED_RAW_REPORT_TOOLING.items():
-        body = historical[path] if path in historical else (checkout / path).read_bytes()
+        body = historical[path] if path in historical else reviewed[path]
         assert _public_blob(body) == expected
     final._verify_raw_report_self_source(historical[_VERIFIER_PATH])
 

@@ -28,6 +28,16 @@ const billing = {
     "totalsUnavailableNotice": "Billing totals remain unavailable until every billing section is exact."
   },
   "recommendedActions": {
+    "nextActions": "Next actions",
+    "showAll": "Show all ({count})",
+    "sourceUnavailable": "SUT unavailable",
+    "exactness": {
+      "exact": "Exact",
+      "partial_exact": "Partial exact",
+      "missing_exact_inputs": "Missing exact inputs",
+      "unknown_date": "Unknown date",
+      "not_applicable": "Not applicable"
+    },
     "listTitle": "Recommended actions — itemized",
     "surface": "Surface",
     "claim": "Claim",
@@ -83,7 +93,7 @@ const billing = {
     "amountSgkUplift": "SGK uplift",
     "amountCompliance": "Compliance savings",
     "amountAuditRisk": "Audit risk",
-    "amountExemptionReview": "Verify exemption (₺0 gap)",
+    "amountExemptionReview": "Verify exemption",
     "amountComplianceOnly": "Compliance fix required"
   },
   "lab": {
@@ -339,6 +349,8 @@ const billing = {
     "scopeFootnote": "Rule-calculated from billed amounts and SUT point factors on the same service date. Clinical session and incision boundaries are not verified — rows marked chart review are excluded from the SGK uplift headline.",
     "reviewBadge": "Chart review",
     "reviewTotal": "Pending chart review",
+    "totalNone": "None of the {count} rows in this total has an uplift amount",
+    "totalPartial": "Partial total: only {known} of {count} rows in this total have an uplift amount",
     "unavailable": "Session pricing uplift requires exact billed procedure lines in the same session.",
     "claim": "Claim",
     "procedure": "Procedure",
@@ -380,6 +392,9 @@ const billing = {
     "catalogAsOf": "EK-2B/EK-2C catalog membership as of {date} (service date)."
   },
   "materials": {
+    "partialCoverage": "Partial coverage",
+    "coverageUnavailable": "Coverage unavailable",
+    "coverageNotEvaluated": "Coverage not evaluated",
     "title": "Materials pre-check",
     "unavailable": "Material ceiling estimates remain unavailable until this section is fully exact.",
     "preAuth": "Pre-authorization required",
@@ -398,7 +413,7 @@ const billing = {
     "miatPeriod": "MIAT period",
     "ceilingEyebrow": "EK-3 specialty price benchmark (P90)",
     "partialBenchmarkNotice": "Partial mode: P90 benchmarks by EK-3 annex only. EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines.",
-    "kdvPriceReviews": "KDV list-price ceiling (§3.1.1(12))",
+    "kdvPriceReviews": "KDV list-price ceiling (§3.1.1(10))",
     "billedAmount": "Billed",
     "gazetteCeiling": "EK-3 ceiling",
     "kdvApplied": "KDV applied"
@@ -422,6 +437,13 @@ const billing = {
     "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"
   },
   "wavea": {
+    "sutClause": "SUT {coordinate}",
+    "countUnavailable": "Count unavailable",
+    "notEvaluated": "Not evaluated",
+    "statusUnavailable": "Unavailable",
+    "statusPartial": "Partial",
+    "evaluationCount": "{count} evaluations",
+    "missingDataCount": "{count} not evaluated",
     "reviewTitle": "Human review required",
     "reviewHeading": "Human review required",
     "reviewNotice": "These records are not yet counted as violations or financial gains. Verify the claim and source conditions.",
@@ -591,6 +613,8 @@ const billing = {
       "kpiRisk": "Total audit exposure",
       "kpiFindings": "At-risk findings",
       "kpiBilledAtRisk": "Billed amount at risk",
+      "kpiBilledAtRiskNone": "None of the {count} findings has a billed amount",
+      "kpiBilledAtRiskPartial": "Partial total: only {known} of {count} findings have a billed amount",
       "statusConfirmedViolation": "Confirmed violation",
       "statusReviewRisk": "Risk — review required",
       "tableTitle": "Compliance findings",

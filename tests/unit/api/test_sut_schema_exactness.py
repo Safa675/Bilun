@@ -9,6 +9,7 @@ from src.bilun.api.schemas import (
     BilunPatientOutcomeResponse,
     BillingReportResponse,
 )
+from src.bilun.api import schemas
 
 pytestmark = pytest.mark.unit
 
@@ -64,6 +65,65 @@ def test_billing_report_schema_missing_exactness_defaults_to_unavailable() -> No
     assert parsed.required_inputs_missing == ["exactness_status"]
     assert parsed.billing_strategy.exactness_status == "missing_exact_inputs"
     assert parsed.billing_strategy.required_inputs_missing == ["exactness_status"]
+
+
+@pytest.mark.parametrize(
+    "model,fields",
+    [
+        (
+            schemas.LabOptimizationResponse,
+            ("normative_cost_try", "hemogram_bundling_savings", "session_fraction_savings"),
+        ),
+        (
+            schemas.CopayOptimizationResponse,
+            (
+                "visit_copay_savings_try",
+                "rx_copay_savings_try",
+                "total_copay_savings_try",
+                "patient_copay_waived_total_try",
+                "patient_copay_try",
+                "ilave_ucret_total_try",
+            ),
+        ),
+        (schemas.BillingStrategyResponse, ("uplift_savings_try", "optional_override_uplift_try")),
+        (
+            schemas.SessionPricingUpliftResponse,
+            ("total_uplift_try", "confirmed_uplift_try", "review_uplift_try"),
+        ),
+        (schemas.DrgUpliftRecommendationResponse, ("total_uplift_try", "confirmed_uplift_try")),
+        (schemas.BloodComponentUpliftResponse, ("total_uplift_try", "confirmed_uplift_try")),
+        (schemas.MaterialUpliftResponse, ("total_uplift_try", "confirmed_uplift_try")),
+        (schemas.ProcedureAddonUpliftResponse, ("total_uplift_try", "confirmed_uplift_try")),
+        (
+            schemas.CareSettingReviewResponse,
+            ("total_uplift_try", "confirmed_uplift_try", "review_uplift_try"),
+        ),
+        (schemas.ProcedureCaptureGapResponse, ("total_gap_try", "confirmed_gap_try")),
+        (
+            schemas.DrgPackageAdequacyReviewResponse,
+            ("total_uplift_try", "confirmed_uplift_try", "review_uplift_try"),
+        ),
+        (
+            schemas.BillingReportResponse,
+            (
+                "sgk_uplift_try",
+                "compliance_adjustment_try",
+                "audit_exposure_try",
+                "capture_gap_try",
+                "package_adequacy_review_try",
+                "total_recoverable_try",
+            ),
+        ),
+    ],
+)
+def test_uncomputed_money_defaults_are_null_and_explicit_zero_survives(model, fields) -> None:
+    missing = model.model_validate({}).model_dump(mode="json")
+    zero = model.model_validate({field: 0.0 for field in fields}).model_dump(mode="json")
+    explicit_null = model.model_validate({field: None for field in fields}).model_dump(mode="json")
+    for field in fields:
+        assert missing[field] is None
+        assert explicit_null[field] is None
+        assert zero[field] == 0.0
 
 
 def test_billing_report_schema_preserves_explicit_exact_status() -> None:

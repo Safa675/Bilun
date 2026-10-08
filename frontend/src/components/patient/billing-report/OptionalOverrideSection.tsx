@@ -11,8 +11,10 @@ import { WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableW
 
 export function OptionalOverrideSection({
   strategyData,
+  collapsed = false,
 }: {
   strategyData: BillingActionReport["billing_strategy"];
+  collapsed?: boolean;
 }) {
   const t = useT();
   const strategyExact = isExactOutput(strategyData);
@@ -30,14 +32,20 @@ export function OptionalOverrideSection({
     return null;
   }
 
+  // Every row passed the `savings_try > 0` filter above (the backend's
+  // optional_override_opportunities predicate), so no summed row lacks an amount.
   const totalUplift =
     strategyData.optional_override_uplift_try ??
     rows.reduce((sum, row) => sum + (row.savings_try ?? 0), 0);
 
   return (
     <BillingSectionShell
+      id="billing-optional-override"
       title={t("billing.optionalOverride.title")}
       total={fmtTRY2(totalUplift)}
+      collapsed={collapsed}
+      count={rows.length}
+      exactness={strategyData}
     >
       <p
         className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2"

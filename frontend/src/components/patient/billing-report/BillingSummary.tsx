@@ -16,8 +16,11 @@ const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
 
 export function BillingSummary({
   billingReport,
+  omitPriority = false,
 }: {
   billingReport: BillingActionReport;
+  /** The page summary already displays this same report's priority. */
+  omitPriority?: boolean;
 }) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
@@ -25,34 +28,25 @@ export function BillingSummary({
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const copayExact = isExactOutput(billingReport.copay);
   const exemptionGapTotal = copayExemptionGapTotal(billingReport.copay);
-  const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal > 0;
+  const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal != null && exemptionGapTotal > 0;
   const showIlaveInfo = copayExact && copayShowsIlaveColumn(billingReport.copay);
-  const ilaveTotal = billingReport.copay.ilave_ucret_total_try ?? 0;
+  const ilaveTotal = billingReport.copay.ilave_ucret_total_try ?? null;
   const copayOnlyDecomposition =
     billingReport.copay.line_decomposition_status === "copay_only";
   const sgkUplift =
-    billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? 0;
-  const complianceAdjustment = billingReport.compliance_adjustment_try ?? 0;
-  const auditExposure = billingReport.audit_exposure_try ?? 0;
-  const captureGap = billingReport.capture_gap_try ?? 0;
-  const packageAdequacyReview = billingReport.package_adequacy_review_try ?? 0;
+    billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? null;
+  const complianceAdjustment = billingReport.compliance_adjustment_try;
+  const auditExposure = billingReport.audit_exposure_try;
+  const captureGap = billingReport.capture_gap_try;
+  const packageAdequacyReview = billingReport.package_adequacy_review_try;
   const medulaPlaybookCount = billingReport.medula_playbook_entry_count ?? 0;
   const drugIndicationCount = billingReport.drug_indication_violation_count ?? 0;
-  const showCompliance = reportHasTotals && complianceAdjustment > 0;
-  const showAuditExposure = reportHasTotals && auditExposure > 0;
-  const showCaptureGap = reportHasTotals && captureGap > 0;
-  const showPackageAdequacy = reportHasTotals && packageAdequacyReview > 0;
+  const showCompliance = reportHasTotals && complianceAdjustment != null && complianceAdjustment > 0;
+  const showAuditExposure = reportHasTotals && auditExposure != null && auditExposure > 0;
+  const showCaptureGap = reportHasTotals && captureGap != null && captureGap > 0;
+  const showPackageAdequacy = reportHasTotals && packageAdequacyReview != null && packageAdequacyReview > 0;
   const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
   const showDrugIndication = drugIndicationCount > 0;
-  const extraSummaryStats = [
-    showCompliance,
-    showAuditExposure,
-    showCaptureGap,
-    showPackageAdequacy,
-    showMedulaPlaybook,
-    showDrugIndication,
-    showIlaveInfo,
-  ].filter(Boolean).length;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
     ? fmtPriorityLabel(billingReport.priority)
@@ -61,7 +55,12 @@ export function BillingSummary({
       : t("common.unavailable");
 
   return (
-    <Surface variant="base" padding="lg" className="space-y-5">
+    <Surface
+      variant="base"
+      padding="lg"
+      className="@container space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
+      data-billing-summary
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <Eyebrow>
@@ -78,13 +77,11 @@ export function BillingSummary({
       </div>
 
       <div
-        className={`grid gap-6 md:grid-cols-2 ${
-          extraSummaryStats >= 2 ? "xl:grid-cols-6" : extraSummaryStats >= 1 ? "xl:grid-cols-5" : "xl:grid-cols-4"
-        }`}
+        className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-6 [&>div]:min-w-0 [&>div>p]:break-words"
       >
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
-          value={reportHasTotals ? fmtTRY2(sgkUplift) : t("common.unavailable")}
+          value={reportHasTotals ? sgkUplift == null ? "—" : fmtTRY2(sgkUplift) : t("common.unavailable")}
         />
         {showCompliance && (
           <Stat
@@ -128,28 +125,28 @@ export function BillingSummary({
             showExemptionGap
               ? fmtTRY2(exemptionGapTotal)
               : copayExact
-                ? fmtTRY2(0)
+                ? exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal)
                 : t("common.unavailable")
           }
         />
         {showIlaveInfo && (
           <Stat
             label={t("billing.summary.ilaveUcretInfo")}
-            value={fmtTRY2(ilaveTotal)}
+            value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
           />
         )}
         <Stat
           label={t("billing.summary.recommendedActions")}
           value={reportHasTotals ? fmtNum(billingReport.action_count) : t("billing.summary.reviewSections")}
         />
-        <Stat
+        {!omitPriority && <Stat
           label={t("billing.summary.priorityTier")}
           value={
             <span style={{ color: priorityColor }}>
               {reportHasTotals ? fmtPriorityLabel(billingReport.priority) : t("common.unavailable")}
             </span>
           }
-        />
+        />}
       </div>
       {showExemptionGap && reportHasTotals && (
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">

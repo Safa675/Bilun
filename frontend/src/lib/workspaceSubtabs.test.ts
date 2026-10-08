@@ -2,9 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   resolveTabInfo,
   BILLING_SUB_ICONS,
+  BILLING_SUB_IDS,
   COMPLIANCE_SUB_ICONS,
+  COMPLIANCE_SUB_IDS,
   RULE_DATABASE_SUB_ICONS,
+  RULE_DATABASE_SUB_IDS,
 } from "./workspaceSubtabs";
+import { translate } from "@/lib/i18n/translate";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
 import { workspaceTabId, type WorkspaceTab } from "./workspaceTabs";
 
 function makeTab(
@@ -73,7 +79,7 @@ describe("resolveTabInfo", () => {
     it("defaults to validator (Talep Doğrulayıcı) when no subtab is in query", () => {
       const tab = makeTab("section", "reference-tools");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Talep Doğrulayıcı");
+      expect(info.label).toBe("Referans Araçları · Talep Doğrulayıcı");
       expect(info.fullTitle).toBe("Referans Araçları · Talep Doğrulayıcı");
       expect(info.Icon).toBe(BILLING_SUB_ICONS.validator);
       expect(info.subtab).toBe("validator");
@@ -82,7 +88,7 @@ describe("resolveTabInfo", () => {
     it("resolves specialty (Branşa Göre) when toolSub=specialty", () => {
       const tab = makeTab("section", "reference-tools", "tab=reference-tools&toolSub=specialty");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Branşa Göre");
+      expect(info.label).toBe("Referans Araçları · Branşa Göre");
       expect(info.fullTitle).toBe("Referans Araçları · Branşa Göre");
       expect(info.Icon).toBe(BILLING_SUB_ICONS.specialty);
       expect(info.subtab).toBe("specialty");
@@ -91,7 +97,7 @@ describe("resolveTabInfo", () => {
     it("resolves search (Malzeme Arama) when toolSub=search", () => {
       const tab = makeTab("section", "reference-tools", "tab=reference-tools&toolSub=search");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Malzeme Arama");
+      expect(info.label).toBe("Referans Araçları · Malzeme Arama");
       expect(info.Icon).toBe(BILLING_SUB_ICONS.search);
       expect(info.subtab).toBe("search");
     });
@@ -99,14 +105,14 @@ describe("resolveTabInfo", () => {
     it("resolves drugs (İlaç Kataloğu) when toolSub=drugs", () => {
       const tab = makeTab("section", "reference-tools", "tab=reference-tools&toolSub=drugs");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("İlaç Kataloğu");
+      expect(info.label).toBe("Referans Araçları · İlaç Kataloğu");
       expect(info.Icon).toBe(BILLING_SUB_ICONS.drugs);
     });
 
     it("resolves lab_prices (Laboratuvar Fiyatları) when toolSub=lab_prices", () => {
       const tab = makeTab("section", "reference-tools", "tab=reference-tools&toolSub=lab_prices");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Laboratuvar Fiyatları");
+      expect(info.label).toBe("Referans Araçları · Laboratuvar Fiyatları");
       expect(info.Icon).toBe(BILLING_SUB_ICONS.lab_prices);
     });
   });
@@ -115,7 +121,7 @@ describe("resolveTabInfo", () => {
     it("defaults to exemptions (Katılım Payı Muafiyetleri)", () => {
       const tab = makeTab("section", "compliance");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Katılım Payı Muafiyetleri");
+      expect(info.label).toBe("Uyumluluk · Katılım Payı Muafiyetleri");
       expect(info.fullTitle).toBe("Uyumluluk · Katılım Payı Muafiyetleri");
       expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.exemptions);
       expect(info.subtab).toBe("exemptions");
@@ -124,7 +130,7 @@ describe("resolveTabInfo", () => {
     it("resolves surcharge (İlave Ücret & Tavan Sınırı) when compTab=surcharge", () => {
       const tab = makeTab("section", "compliance", "tab=compliance&compTab=surcharge");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("İlave Ücret & Tavan Sınırı");
+      expect(info.label).toBe("Uyumluluk · İlave Ücret & Tavan Sınırı");
       expect(info.fullTitle).toBe("Uyumluluk · İlave Ücret & Tavan Sınırı");
       expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.surcharge);
       expect(info.subtab).toBe("surcharge");
@@ -133,7 +139,7 @@ describe("resolveTabInfo", () => {
     it("resolves materials when compTab=materials", () => {
       const tab = makeTab("section", "compliance", "tab=compliance&compTab=materials");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Tıbbi malzeme");
+      expect(info.label).toBe("Uyumluluk · Tıbbi malzeme");
       expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.materials);
       expect(info.subtab).toBe("materials");
     });
@@ -141,7 +147,7 @@ describe("resolveTabInfo", () => {
     it("falls back to exemptions when compTab is an unknown value", () => {
       const tab = makeTab("section", "compliance", "tab=compliance&compTab=surgical_sessions");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Katılım Payı Muafiyetleri");
+      expect(info.label).toBe("Uyumluluk · Katılım Payı Muafiyetleri");
       expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.exemptions);
       expect(info.subtab).toBe("exemptions");
     });
@@ -151,7 +157,7 @@ describe("resolveTabInfo", () => {
     it("defaults to coverage (Kapsam)", () => {
       const tab = makeTab("section", "rule-database");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Kapsam");
+      expect(info.label).toBe("Kural Veritabanı · Kapsam");
       expect(info.fullTitle).toBe("Kural Veritabanı · Kapsam");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.coverage);
       expect(info.subtab).toBe("coverage");
@@ -160,7 +166,7 @@ describe("resolveTabInfo", () => {
     it("resolves rules (Kurallar) when rdTab=rules", () => {
       const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=rules");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Kurallar");
+      expect(info.label).toBe("Kural Veritabanı · Kurallar");
       expect(info.fullTitle).toBe("Kural Veritabanı · Kurallar");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.rules);
       expect(info.subtab).toBe("rules");
@@ -169,7 +175,7 @@ describe("resolveTabInfo", () => {
     it("resolves clauses (Hükümler) when rdTab=clauses", () => {
       const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=clauses");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Hükümler");
+      expect(info.label).toBe("Kural Veritabanı · Hükümler");
       expect(info.fullTitle).toBe("Kural Veritabanı · Hükümler");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.clauses);
       expect(info.subtab).toBe("clauses");
@@ -178,21 +184,21 @@ describe("resolveTabInfo", () => {
     it("resolves sections (Bölümler) when rdTab=sections", () => {
       const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=sections");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Bölümler");
+      expect(info.label).toBe("Kural Veritabanı · Bölümler");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.sections);
     });
 
     it("resolves prose (Düz metin motorları) when rdTab=prose", () => {
       const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=prose");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Düz metin motorları");
+      expect(info.label).toBe("Kural Veritabanı · Düz metin motorları");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.prose);
     });
 
     it("resolves deferrals (Ertelenenler) when rdTab=deferrals", () => {
       const tab = makeTab("section", "rule-database", "tab=rule-database&rdTab=deferrals");
       const info = resolveTabInfo(tab, mockT);
-      expect(info.label).toBe("Ertelenenler");
+      expect(info.label).toBe("Kural Veritabanı · Ertelenenler");
       expect(info.Icon).toBe(RULE_DATABASE_SUB_ICONS.deferrals);
     });
   });
@@ -213,5 +219,42 @@ describe("resolveTabInfo", () => {
       expect(info.fullTitle).toBe("Gelir Dashboard");
       expect(info.subtab).toBeNull();
     });
+  });
+});
+
+describe("tab label is \"Parent · Subtab\" with the real messages", () => {
+  const sections = [
+    { id: "reference-tools", param: "toolSub", subs: BILLING_SUB_IDS },
+    { id: "compliance", param: "compTab", subs: COMPLIANCE_SUB_IDS },
+    { id: "rule-database", param: "rdTab", subs: RULE_DATABASE_SUB_IDS },
+  ] as const;
+
+  it.each([
+    ["en", enMessages],
+    ["tr", trMessages],
+  ] as const)("labels every sub-view in %s and leaks no raw message key", (_locale, messages) => {
+    const t = (key: string) => translate(messages, key);
+    let checked = 0;
+    for (const section of sections) {
+      for (const sub of section.subs) {
+        const info = resolveTabInfo(makeTab("section", section.id, `tab=${section.id}&${section.param}=${sub}`), t);
+        expect(info.subtab).toBe(sub);
+        expect(info.label).toBe(info.fullTitle);
+        expect(info.label).toContain(" · ");
+        // translate() returns the key itself when a message is missing
+        expect(info.label).not.toMatch(/\b(?:constants|sections|optimizer)\.[a-z]/);
+        checked += 1;
+      }
+    }
+    expect(checked).toBe(22);
+  });
+
+  it("keeps the parent name alone for tabs without a sub-view", () => {
+    const t = (key: string) => translate(enMessages, key);
+    for (const refId of ["patients", "revenue", "operations"]) {
+      const info = resolveTabInfo(makeTab("section", refId), t);
+      expect(info.label).toBe(info.fullTitle);
+      expect(info.label).not.toContain(" · ");
+    }
   });
 });

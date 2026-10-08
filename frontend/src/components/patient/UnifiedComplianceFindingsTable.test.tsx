@@ -439,6 +439,7 @@ describe("UnifiedComplianceFindingsTable", () => {
     expect(htmlWithClause).toContain("<button");
     expect(htmlWithClause).toContain('aria-label="Fıkrayı incele: 2.2.1"');
     expect(htmlWithClause).toContain("§2.2.1");
+    expect(htmlWithClause).toContain("SUT §2.2.1");
 
     const htmlWithoutClause = renderTable({
       rows: rowsWithClause,
@@ -447,6 +448,31 @@ describe("UnifiedComplianceFindingsTable", () => {
 
     expect(htmlWithoutClause).not.toContain("<button");
     expect(htmlWithoutClause).toContain("§2.2.1");
+  });
+
+  it("opens a canonical finding clause through the shared callback without a recommended action", () => {
+    const html = renderTable({
+      patientId: "P-1",
+      onOpenClause: vi.fn(),
+      rows: [{
+        rowId: "canonical-clause",
+        canonicalFindingId: "canonical-find-1",
+        sourceKind: "claim_compliance",
+        sourceLabels: ["Claim compliance"],
+        status: "confirmed_violation",
+        title: "Canonical finding",
+        detail: null,
+        claimId: "C-100",
+        code: "P-500",
+        sutLabel: "2.2.1",
+        amountValue: null,
+        amountLabel: null,
+        action: null,
+        finding: { ...mockFinding, regulatory_source: { clause_key: "2.2.1#abc123" } },
+      }],
+    }, "en");
+    expect(html).toContain('aria-label="Inspect clause: 2.2.1"');
+    expect(html).toContain("SUT §2.2.1");
   });
 
   it("renders a single empty state and no second table when rows array is empty", () => {

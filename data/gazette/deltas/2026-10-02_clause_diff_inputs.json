@@ -1,0 +1,16 @@
+{
+  "report_sha256": "faa8909f9ff3fb5dd297ef82fe89b0a5e8c4e249fe0fa8cfba312d2b5f63d6e9",
+  "input_fingerprints": {
+    "algorithm": "sha256-clause-diff-inputs-v1",
+    "old": "463c5acb9d2e8373cec508a9534173075ca56c44772075a69ef2c5bc2350f1e2",
+    "new": "e75c97a3b0721c8c1ce39982d3d64ccd31d5cea6f749dad51104c60a0c17fc58"
+  },
+  "verification": {
+    "old_commit": "c4f736be362a026eb4c9ae6013cd1f76d28c5e8c",
+    "old_corpus_sha256": "9639c4578223ff46a40499270af5043d229ab2a1a1c3783114b43b64787384ac",
+    "new_commit": "3d29a1fefa2b89f9a8d38e2dccab6fe2285c861e",
+    "new_corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
+    "summary_exactly_reproduced": true,
+    "all_actionable_rows_exactly_reproduced": true
+  }
+}

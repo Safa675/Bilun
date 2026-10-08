@@ -1,8 +1,8 @@
 {
-  "description": "Gate B golden fixtures — expected rule_id per synthetic material line",
+  "description": "Gate B golden fixtures — expected rule_id per synthetic material line. clause_id is provenance only: an in-force clause that the rule's gate_b_sources resolves to (guarded by test_golden_clause_ids_follow_rule_gate_b_sources).",
   "cases": [
     {
-      "clause_id": "C001626",
+      "clause_id": "C002740",
       "material": {
         "name": "Protez",
         "code": "100000",
@@ -13,7 +13,7 @@
       "expected_rule_id": "3.1.1.(2).titubb_uts_incomplete"
     },
     {
-      "clause_id": "C001645",
+      "clause_id": "C002763",
       "material": {
         "name": "Barkod-SUT kodu eşleşme hatalı cihaz",
         "code": "LOST1",
@@ -22,7 +22,7 @@
       "expected_rule_id": "3.1.2.(2).not_in_ek3c"
     },
     {
-      "clause_id": "C002699",
+      "clause_id": "C002747",
       "material": {
         "name": "Karşılanmayan işlem malzemesi seti",
         "code": "LOST2",
@@ -31,7 +31,7 @@
       "expected_rule_id": "3.1.1.(9).non_reimbursed_procedure_material"
     },
     {
-      "clause_id": "C001842",
+      "clause_id": "C002763",
       "material": {
         "name": "Liste dışı",
         "code": "NOT-IN-ANY-EK3-99999",
@@ -40,7 +40,7 @@
       "expected_rule_id": "3.1.2.(2).not_in_ek3c"
     },
     {
-      "clause_id": "C001672",
+      "clause_id": "C002776",
       "material": {
         "name": "Malzeme kaybolması sonrası talep",
         "code": "LOST3",
@@ -49,7 +49,7 @@
       "expected_rule_id": "3.1.2.(7).lost_stolen_miat"
     },
     {
-      "clause_id": "C002732",
+      "clause_id": "C002780",
       "material": {
         "name": "Kullanım kurallarına uyulmaması onarım",
         "code": "LOST4",
@@ -58,7 +58,7 @@
       "expected_rule_id": "3.1.2.c.onarim_not_covered"
     },
     {
-      "clause_id": "C002750",
+      "clause_id": "C002798",
       "material": {
         "name": "Garanti süresi içindeki yenilenme",
         "code": "LOST5",
@@ -67,7 +67,7 @@
       "expected_rule_id": "3.1.2.ç.garanti_renewal_denied"
     },
     {
-      "clause_id": "C002751",
+      "clause_id": "C002799",
       "material": {
         "name": "Aynı işlevi gören birden fazla ürün",
         "code": "LOST6",
@@ -76,7 +76,7 @@
       "expected_rule_id": "3.1.2.d.duplicate_function_garanty"
     },
     {
-      "clause_id": "C002757",
+      "clause_id": "C002805",
       "material": {
         "name": "Karşılanmayan tıbbi cihaz sarf",
         "code": "LOST7",
@@ -85,7 +85,7 @@
       "expected_rule_id": "3.1.2.(17).device_consumable_excluded"
     },
     {
-      "clause_id": "C001770",
+      "clause_id": "C002845",
       "material": {
         "name": "Branş listesinde yok malzeme",
         "code": "LOST8",
@@ -94,7 +94,7 @@
       "expected_rule_id": "3.1.3.(2).branch_unlisted_material"
     },
     {
-      "clause_id": "C001805",
+      "clause_id": "C002854",
       "material": {
         "name": "Tanı paketi malzemesi",
         "code": "DX1",
@@ -104,7 +104,7 @@
       "expected_rule_id": "3.1.3.(11).diagnosis_bundled_medula"
     },
     {
-      "clause_id": "C001630",
+      "clause_id": "C002742",
       "material": {
         "name": "Sözleşmeli kurum malzemesi",
         "code": "P1",
@@ -114,7 +114,7 @@
       "expected_rule_id": "3.1.1.(5).procurement_screen_incomplete"
     },
     {
-      "clause_id": "C001637",
+      "clause_id": "C002747",
       "material": {
         "name": "İşlem malzemesi",
         "code": "PR1",
@@ -124,7 +124,7 @@
       "expected_rule_id": "3.1.1.(11).procedure_not_reimbursed_link"
     },
     {
-      "clause_id": "C001641",
+      "clause_id": "C002750",
       "material": {
         "name": "Yurt dışı malzeme",
         "code": "AB1",
@@ -134,7 +134,7 @@
       "expected_rule_id": "3.1.1.(14).foreign_facility_overhead"
     },
     {
-      "clause_id": "C001647",
+      "clause_id": "C002754",
       "material": {
         "name": "Kısıtlı sunucu malzemesi",
         "code": "FC1",
@@ -144,7 +144,7 @@
       "expected_rule_id": "3.1.1.(18).facility_procedure_restriction"
     },
     {
-      "clause_id": "C002749",
+      "clause_id": "C002797",
       "material": {
         "name": "Bakım ve onarım masrafları garanti süresi içinde",
         "code": "W1",
@@ -153,7 +153,7 @@
       "expected_rule_id": "3.1.2.c.warranty_maintenance"
     },
     {
-      "clause_id": "C002714",
+      "clause_id": "C002762",
       "material": {
         "name": "EK-3/C liste alan tanımı",
         "code": "EK3C1",
@@ -163,7 +163,7 @@
       "expected_rule_id": "3.1.2.(1).ek3c_list_field_definitions"
     },
     {
-      "clause_id": "C002718",
+      "clause_id": "C002766",
       "material": {
         "name": "Ismarlama protez",
         "code": "IP1",
@@ -173,7 +173,7 @@
       "expected_rule_id": "3.1.2.(4)a.ismarlama_licensed_center_supply"
     },
     {
-      "clause_id": "C002722",
+      "clause_id": "C002770",
       "material": {
         "name": "Hasta alt bezi",
         "code": "D1",
@@ -183,7 +183,7 @@
       "expected_rule_id": "3.1.2.(5).ek3c_optional_appropriateness_consumables"
     },
     {
-      "clause_id": "C002744",
+      "clause_id": "C002792",
       "material": {
         "name": "Vazife malulü ortez",
         "code": "OP1",
@@ -193,7 +193,7 @@
       "expected_rule_id": "3.1.2.(14).disabled_veteran_ortez_protez_billing"
     },
     {
-      "clause_id": "C002755",
+      "clause_id": "C002803",
       "material": {
         "name": "Olay mağduru protez",
         "code": "TV1",
@@ -203,7 +203,7 @@
       "expected_rule_id": "3.1.2.(15).terror_victim_ortez_protez_documentation"
     },
     {
-      "clause_id": "C002758",
+      "clause_id": "C002806",
       "material": {
         "name": "Reçete düzeltmesi gerekli malzeme",
         "code": "RX1",
@@ -213,7 +213,7 @@
       "expected_rule_id": "3.1.2.(18).prescription_correction_authority"
     },
     {
-      "clause_id": "C002764",
+      "clause_id": "C002812",
       "material": {
         "name": "İade kapsamı cihaz",
         "code": "RET1",
@@ -223,7 +223,7 @@
       "expected_rule_id": "3.1.2.1.(3).device_return_deadline_missed"
     },
     {
-      "clause_id": "C008317",
+      "clause_id": "C008410",
       "material": {
         "name": "Geçiş dönemi malzeme fiyatı",
         "code": "TR1",

@@ -7,7 +7,9 @@ from .types import BillingActionReport
 
 def assign_priority_by_percentile(reports: list[BillingActionReport]) -> None:
     """Tier reports high/medium/low by sgk_uplift percentile (in place)."""
-    recoverables = sorted(r.sgk_uplift_try for r in reports if r.sgk_uplift_try > 0)
+    recoverables = sorted(
+        r.sgk_uplift_try for r in reports if r.sgk_uplift_try is not None and r.sgk_uplift_try > 0
+    )
     if not recoverables:
         return
     n = len(recoverables)
@@ -15,6 +17,9 @@ def assign_priority_by_percentile(reports: list[BillingActionReport]) -> None:
     p50 = recoverables[min(n - 1, int(n * 0.50))]
     for report in reports:
         opportunity = report.sgk_uplift_try
+        if opportunity is None:
+            report.priority = "low"
+            continue
         if opportunity >= p75:
             report.priority = "high"
         elif opportunity >= p50:

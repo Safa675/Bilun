@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
 import {
   ClaimSubmissionChecklistSection,
@@ -75,12 +76,14 @@ export default function AuditViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  detailsPrelude,
 }: {
   billingReport: BillingActionReport;
   patientId: string;
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  detailsPrelude?: ReactNode;
 }) {
   const t = useT();
   const { readyIds, toggleReady } = useChecklistReady(patientId);
@@ -166,6 +169,8 @@ export default function AuditViewSection({
           onOpenClause={onOpenClause}
         />
       )}
+
+      {detailsPrelude}
 
       {billingReport.claim_submission_checklist && (
         <ClaimSubmissionChecklistSection

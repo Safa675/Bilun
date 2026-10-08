@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -73,12 +74,19 @@ export function SutAnalyticsShellSkeleton() {
   );
 }
 
-export function SutPatientAnalyticsSkeleton({ patientId }: { patientId?: string | null }) {
+export function SutPatientAnalyticsSkeleton({
+  patientId,
+  navigation,
+}: {
+  patientId?: string | null;
+  navigation?: ReactNode;
+}) {
   const t = useT();
   return (
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
         <SkeletonBars count={2} widths={["22%", "48%"]} />
+        {navigation && <div className="mt-5">{navigation}</div>}
       </Surface>
       <Surface variant="base" padding="lg">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">

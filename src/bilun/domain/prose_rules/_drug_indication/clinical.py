@@ -9,6 +9,8 @@ from .clinical_renal import evaluate_renal
 from .clinical_followup import evaluate_followup
 from .clinical_indications import evaluate_indications
 from .clinical_mesothelioma_documents import evaluate_mesothelioma_documents
+from .clinical_mds import evaluate_mds_clinical_draft
+from ..adult_gh_draft import evaluate_adult_gh_closed_epiphysis
 from .matching import _drug_name_matches
 
 
@@ -58,6 +60,14 @@ def evaluate_clinical_restrictions(line: Any, rules: list[dict[str, Any]], codes
     item = evaluate_mesothelioma_documents(line, selected_rule_id, codes=codes)
     if item is not None:
         evaluations.append(item)
+    # Only runtime exports enter the application. Their source/interpretation
+    # gates stay closed; local candidate inspection is never an API mode.
+    item = evaluate_mds_clinical_draft(line, selected_rule_id, codes=codes)
+    if item is not None:
+        evaluations.append(item)
+    item = evaluate_adult_gh_closed_epiphysis(line, selected_rule_id)
+    if item is not None:
+        evaluations.append(item)
     return evaluations
 
 
@@ -101,6 +111,15 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
         and any(x['constraint_set'] == 'enteral_pediatric_reports_2026' for x in outcomes)
     )
     dates_supported = all(x['criterion_status'] != 'not_evaluated' for x in outcomes)
+    # Adding either new closed draft must not erase an independently observed
+    # error on the selected legacy route. Other families retain date precedence.
+    new_draft_only_date_gap = (
+        any(x['constraint_set'] in {'mds_epoetin', 'adult_gh_closed_epiphysis'}
+            and x['criterion_status'] == 'not_evaluated' for x in outcomes)
+        and all(x['criterion_status'] != 'not_evaluated'
+                or x['constraint_set'] in {'mds_epoetin', 'adult_gh_closed_epiphysis'}
+                for x in outcomes)
+    )
     if existing and existing.get('violation_kind') == 'ambiguous_route' and failed is None:
         # Necessary checks do not choose among unresolved indication routes.
         # Keep their original identity and explanation alongside the observations.
@@ -116,7 +135,7 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
         violation = dict(existing)
         violation['severity'] = 'review'
         violation['message_tr'] = 'Kodlanmış tanı yolları eşleşmedi; kaynakta tanımlı diğer klinik koşullar ayrıca doğrulanmalıdır.'
-    elif existing and existing.get('severity') == 'error' and failed is None and not unverified_enteral_supplement and dates_supported:
+    elif existing and existing.get('severity') == 'error' and failed is None and not unverified_enteral_supplement and (dates_supported or new_draft_only_date_gap):
         violation = dict(existing)
     else:
         source = failed or outcomes[0]
@@ -143,6 +162,10 @@ def apply_clinical_restrictions(base: dict[str, Any], line: Any,
     for key in ('applicability_status', 'observed_icd10_codes', 'matched_icd10_codes',
                 'unmatched_icd10_codes', 'eligible_icd10_codes_or_ranges', 'eligible_route_rule_ids'):
         violation[key] = base.get(key)
+    if any(item['constraint_set'] in {'mds_epoetin', 'adult_gh_closed_epiphysis'} for item in outcomes):
+        # A review family is not the selected SUT route. Preserve the actual
+        # corpus-selected identity through repeated API projections.
+        violation['selected_rule_id'] = base.get('selected_rule_id')
     merged['selected_rule_id'] = violation.get('selected_rule_id')
     merged['violation'] = violation
     merged['evaluation_status'] = violation['evaluation_status']

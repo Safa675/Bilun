@@ -1,3 +1,6 @@
+import { AdultGhClinicalDraft } from "./AdultGhClinicalDraft";
+import { MdsClinicalDraft } from "./MdsClinicalDraft";
+import { useLocale } from "@/lib/i18n";
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -52,7 +55,19 @@ export function ClinicalMaterialInputs({ material, onChange }: {
   material: SutMaterialItem;
   onChange: (patch: Partial<SutMaterialItem>) => void;
 }) {
+  const locale = useLocale();
+  const t = useT();
   return <div className="space-y-2">
+    <details className="rounded-md border border-[var(--border-subtle)] p-3">
+      <summary className="cursor-pointer text-xs font-medium">{t("sections.claimValidator.clinical.groups.adultGh")}</summary>
+      <AdultGhClinicalDraft value={material.adult_gh_evidence} locale={locale} embedded
+        onChange={value => onChange({ adult_gh_evidence: value })} />
+    </details>
+    <details className="rounded-md border border-[var(--border-subtle)] p-3">
+      <summary className="cursor-pointer text-xs font-medium">{t("sections.claimValidator.clinical.groups.mds")}</summary>
+      <MdsClinicalDraft value={material.mds_evidence} embedded
+        onChange={value => onChange({ mds_evidence: value })} />
+    </details>
     <ClinicalGroup group="growthHormone" fields={growthHormoneFields} value={material}
       onChange={onChange} />
     <ClinicalGroup group="praderWilli" fields={praderWilliFields} value={material}

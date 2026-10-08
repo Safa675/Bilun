@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -8,15 +7,16 @@ import { translateStructuredApiMessage } from "@/lib/apiMessages";
 import { copayCorrectionBilledTry, copayCorrectionGroundKey, copayCorrectionPayableTry, copayCorrectionProcedureLabel, copayCorrectionSavingsTry, copayCorrectedPayableTry, resolveCopayIlaveStatus, formatSutSectionLabel, usesClaimCopayCorrectionShape } from "@/lib/billingReportFields";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
-import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import { Chip, ExactnessBlock as ExactnessNotice } from "@/components/primitives";
 import { fmtTRY2, fmtTRY2OrUnavailable, KpiCard } from "@/components/tabs/sut/shared";
 import { buildCopaySectionModel } from "./CopayOptimizationSection.model";
 import { ACCENT, WRAPPED_HEADER_STYLE, chipVariantFromColor, BillingSectionShell, TableWrap } from "./shared";
 
-export function CopayOptimizationSection({ copayData }: { copayData: BillingActionReport["copay"] }) {
+export function CopayOptimizationSection({ copayData, onOpenClause }: {
+  copayData: BillingActionReport["copay"];
+  onOpenClause?: (clauseKey: string) => void;
+}) {
   const t = useT();
-  const [clauseDrawerKey, setClauseDrawerKey] = useState<string | null>(null);
   const model = buildCopaySectionModel(copayData);
 
   if (model.kind === "unavailable") {
@@ -41,7 +41,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     hasEk1aVisitSavings,
     usesClaimTableHeader,
   } = model;
-  const savingsColor = exemptionGapTotal > 0 ? ACCENT : "#71717A";
+  const savingsColor = exemptionGapTotal != null && exemptionGapTotal > 0 ? ACCENT : "#71717A";
 
   const waiverGroundLabel = (ground: string | null) => {
     if (!ground) {
@@ -63,7 +63,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     <BillingSectionShell
       id="billing-copay"
       title={t("billing.copay.title")}
-      total={copayExact ? fmtTRY2(exemptionGapTotal) : undefined}
+      total={copayExact ? exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal) : undefined}
     >
       <div className="space-y-4">
         {!copayExact && (
@@ -110,13 +110,13 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         {copayExact && (
           <>
             <div className={`grid gap-3 ${showIlaveColumn ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-              <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
-              <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
-              <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.visitSavings")} value={copayData.visit_copay_savings_try == null ? "—" : fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.rxSavings")} value={copayData.rx_copay_savings_try == null ? "—" : fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.totalSavings")} value={exemptionGapTotal == null ? "—" : fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
               {showIlaveColumn && (
                 <KpiCard
                   label={t("billing.copay.ilaveUcretTotal")}
-                  value={fmtTRY2(ilaveTotal)}
+                  value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
                   valueColor="#71717A"
                 />
               )}
@@ -203,40 +203,43 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                       {(() => {
                         const label = waiverGroundLabel(copayCorrectionGroundKey(correction));
                         const groundClauseKey = (correction.clause_ref?.clause_key ?? "").trim();
-                        if (!groundClauseKey) {
+                        if (!groundClauseKey || !onOpenClause) {
                           return label;
                         }
                         const coordinate = (correction.clause_ref?.clause_coordinate ?? "").trim();
                         return (
-                          <button
-                            type="button"
-                            data-clause-link={groundClauseKey}
-                            onClick={() => setClauseDrawerKey(groundClauseKey)}
-                            title={coordinate ? formatSutSectionLabel(coordinate) : undefined}
-                            className="cursor-pointer underline decoration-dotted decoration-[var(--border-strong)] hover:text-[var(--text-primary)]"
-                          >
+                          <span className="inline-flex flex-wrap items-center gap-2">
                             {label}
-                          </button>
+                            <button
+                              type="button"
+                              data-clause-link={groundClauseKey}
+                              onClick={() => onOpenClause(groundClauseKey)}
+                              title={coordinate ? formatSutSectionLabel(coordinate) : undefined}
+                              className="rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono text-xs whitespace-nowrap hover:bg-[var(--surface-tint)]"
+                            >
+                              {t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(coordinate || groundClauseKey.split("#")[0]) })}
+                            </button>
+                          </span>
                         );
                       })()}
                     </td>
                   ) : null}
                   {usesClaimCopayCorrectionShape(correction) ? (
                     <>
-                      <td className="num-col tabular-nums text-right">
+                      <td className="num-col tabular-nums text-right whitespace-nowrap">
                         {fmtTRY2OrUnavailable(copayCorrectionBilledTry(correction))}
                       </td>
-                      <td className="num-col tabular-nums text-right">
+                      <td className="num-col tabular-nums text-right whitespace-nowrap">
                         {fmtTRY2OrUnavailable(copayCorrectionPayableTry(correction))}
                       </td>
-                      <td className="num-col tabular-nums text-right font-semibold text-[var(--gold)]">
+                      <td className="num-col tabular-nums text-right whitespace-nowrap font-semibold text-[var(--gold)]">
                         {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
                       </td>
-                      <td className="num-col tabular-nums text-right font-semibold text-[var(--success)]" title={t("billing.copay.correctedPayableTooltip")}>
+                      <td className="num-col tabular-nums text-right whitespace-nowrap font-semibold text-[var(--success)]" title={t("billing.copay.correctedPayableTooltip")}>
                         {fmtTRY2OrUnavailable(copayCorrectedPayableTry(correction))}
                       </td>
                       {showIlaveColumn ? (
-                        <td className="num-col tabular-nums text-right text-xs text-[var(--text-secondary)]">
+                        <td className="num-col tabular-nums text-right whitespace-nowrap text-xs text-[var(--text-secondary)]">
                           {(() => {
                             const status = resolveCopayIlaveStatus(correction);
                             if (status.kind === "numeric" && status.amount != null) {
@@ -246,17 +249,20 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                             const tooltip = status.tooltipKey
                               ? t(status.tooltipKey, status.labelParams)
                               : undefined;
-                            if (status.clauseKey) {
+                            if (status.clauseKey && onOpenClause) {
                               return (
-                                <button
-                                  type="button"
-                                  data-clause-link={status.clauseKey}
-                                  onClick={() => setClauseDrawerKey(status.clauseKey)}
-                                  title={tooltip}
-                                  className="cursor-pointer underline decoration-dotted decoration-[var(--border-strong)] hover:text-[var(--text-primary)]"
-                                >
+                                <span className="inline-flex flex-wrap items-center justify-end gap-2">
                                   {label}
-                                </button>
+                                  <button
+                                    type="button"
+                                    data-clause-link={status.clauseKey}
+                                    onClick={() => onOpenClause(status.clauseKey)}
+                                    title={tooltip}
+                                    className="rounded-[var(--r-sm)] border border-[var(--border-strong)] px-2 py-1 font-mono text-xs whitespace-nowrap hover:bg-[var(--surface-tint)]"
+                                  >
+                                    {t("billing.wavea.sutClause", { coordinate: formatSutSectionLabel(status.clauseCoordinate || status.clauseKey.split("#")[0]) })}
+                                  </button>
+                                </span>
                               );
                             }
                             return (
@@ -273,10 +279,10 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                     </>
                   ) : (
                     <>
-                      <td className="num-col tabular-nums text-right">
+                      <td className="num-col tabular-nums text-right whitespace-nowrap">
                         {fmtTRY2OrUnavailable(copayCorrectionBilledTry(correction))}
                       </td>
-                      <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                      <td className="num-col tabular-nums text-right whitespace-nowrap font-semibold text-[var(--text-primary)]">
                         {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
                       </td>
                     </>
@@ -288,7 +294,6 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
           </>
         )}
       </div>
-      <SutClauseDrawer clauseKey={clauseDrawerKey} onClose={() => setClauseDrawerKey(null)} />
     </BillingSectionShell>
   );
 }

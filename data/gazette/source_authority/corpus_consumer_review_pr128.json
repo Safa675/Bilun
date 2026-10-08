@@ -24709,11 +24709,11 @@
   "generated_artifact_hashes": {
     "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json": {
       "exists": true,
-      "sha256": "6b7d0ce1ca1152e6daa933838a2ccb15f6a2bdd7c0495e8852ae163f7dcdfb05"
+      "sha256": "0fd1f54a85b0a8144cc174b17c323495a6bea0f78d1d00b15c4d2ab8f7176f1e"
     },
     "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json": {
       "exists": true,
-      "sha256": "ecb32c1882e81a1654f6d05ec236beebf4aaafd95c328aa920575387c8b121a8"
+      "sha256": "3916d3c87406112800b9f2e7480b6f17c29847d66a6ef305ecf12463f776e25d"
     },
     "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json": {
       "exists": true,
@@ -25181,7 +25181,7 @@
     },
     "data/gazette/prose_rules/golden/material_bundling_gate_b.json": {
       "exists": true,
-      "sha256": "fa44ebb9e4b33d5dbd73579f2a355b9f562af20873aa2f86c93ce3fef075e1a6"
+      "sha256": "51a69ecb76afad9e2de9ad6089495254ffc61b769eaadcd629b17dde3f617345"
     },
     "data/gazette/prose_rules/golden/material_prose_sprint2.json": {
       "exists": true,
@@ -25197,7 +25197,7 @@
     },
     "data/gazette/prose_rules/material_bundling_prose.json": {
       "exists": true,
-      "sha256": "ffa7c0570846317eb58f4695d189b73827794c8bbe6e0a1b873320a2383861b9"
+      "sha256": "5440bf26354e7c6dd64313191d2567e52ca54912b7763a24100b25e722b55bcb"
     },
     "data/gazette/prose_rules/material_bundling_prose.schema.json": {
       "exists": true,
@@ -25551,7 +25551,7 @@
     "data/gazette/prose_rule_sources/gap_closing_treatment_2/2.6.6.yaml": "6e6ff6a30689f3e35522a1d3079236a9e26a3d796d38fe807da4dfda68334c24",
     "data/gazette/prose_rule_sources/gap_closing_treatment_2/2.6.8.yaml": "52b432e95d062bdb1dac4df8ef4669d1fe1773c0769621ae1aa04bac3ba13efc",
     "data/gazette/prose_rule_sources/gap_closing_treatment_2/2.6.9.yaml": "b264f4458282efc7d9121a281bf18066a2e93958202771fb9a707a67d59d9b1c",
-    "data/gazette/prose_rule_sources/material_bundling/3.1.1.yaml": "6c7207ae9b701ded12fb90d38cd189a2219aa38284553687006cc4afb02281b4",
+    "data/gazette/prose_rule_sources/material_bundling/3.1.1.yaml": "fe1105de09b86d1035e555f9d085d3da09fedf5b75aaec8b4307fbc14910f154",
     "data/gazette/prose_rule_sources/material_bundling/3.1.2.1.yaml": "8f277b0185fb1400a213aa53d75d508e77b993c9ff73b59467787eccde2772aa",
     "data/gazette/prose_rule_sources/material_bundling/3.1.2.yaml": "88fcfce0a5683cab886b8b2fe033794593a1d81fd4e294cde7bda323f1dbdc52",
     "data/gazette/prose_rule_sources/material_bundling/3.1.3.yaml": "3c7690c3e3a870c064b482bd374778781c69a18dc6e03e7dc443955800f8d6f0",
@@ -25697,16 +25697,16 @@
     "data/gazette/source_authority/sgk-gss-listing-20261005-observer-text.txt": "4d5181469665524c7aab63bed800c7cdb74b7d7f5131553bc9bfef829169bbf1",
     "data/gazette/temporal/drug_amendments_2026_10.json": "c75e3fef61a1dc24f3a58b20a073526f21ea04f543417272aa276daa3d5c6d2e",
     "docs/gazette/clinical-source-authority.md": "ca791dadb35e0bc6c55de13f158a982e8d65ee4ca6ea80504e411ea14e029015",
-    "frontend/src/components/tabs/sut/sections/ClinicalMaterialInputs.tsx": "5c05ea29f059132d8ba730dd019da9bfd580f92e500104a0d2fbd5fa9e7a1724",
-    "frontend/src/components/tabs/sut/sections/ClinicalRestrictionDetails.tsx": "a8c1ec6c35e66eff55c13055dcb424e1a133311fba715e7af6a9f5f509d2ac40",
-    "frontend/src/components/tabs/sut/sections/clinicalFields.ts": "184a396714467d529ec433774fbc615a6f5a4394f54e8e6ca1122d48d9468831",
-    "frontend/src/components/tabs/sut/sections/drugInputs.ts": "a95d748901c8d2435c11d9e2c77339486b50913ce4c92121dc8ed37e3a3b658e",
-    "frontend/src/lib/api/clinicalEvidence.ts": "33d835c1123db22795918a890b94ac5365152e405160beed4e4effcf6875e3ab",
-    "frontend/src/lib/api/sut.ts": "8c2e3a579b480e1d4823fdda51d159c0ad9f217802eaf6159a3a3a5ad499401d",
-    "frontend/src/messages/en/sections.ts": "ac41abbe74b80271f6ced3d56f624d54da8c7bc98095f90c915e864509a7a9d0",
-    "frontend/src/messages/tr/sections.ts": "af39f9fe237843da356dbe04029f8eabbb90413718f4f4f04521a44c632ea429",
+    "frontend/src/components/tabs/sut/sections/ClinicalMaterialInputs.tsx": "a227716d14b209c18aaf76935881918ced2e6be6b8d2a15c15c8b07857c25dea",
+    "frontend/src/components/tabs/sut/sections/ClinicalRestrictionDetails.tsx": "03eb2b352d1824e7bd846cd431935d1c728f58cc29b594fd9073e05407c3d81f",
+    "frontend/src/components/tabs/sut/sections/clinicalFields.ts": "860dfb4d4c533cc75f940e1f80298fc9b26f9bfcff2999d87d701f380071fee6",
+    "frontend/src/components/tabs/sut/sections/drugInputs.ts": "5c1a90f242f188cb2ad9b61b6447db62a8bdae02308d6cfdeaf0f8daeabaad08",
+    "frontend/src/lib/api/clinicalEvidence.ts": "0d0c61e2b56750165040ae332cf6794e757406f0375c2c917504280c869bb3ed",
+    "frontend/src/lib/api/sut.ts": "e18efdab9c49acee7da33c4362593466ba797ff09a6dbe679c147ef6855a6a78",
+    "frontend/src/messages/en/sections.ts": "d181c60b92040b07d7228ee0a10f008930d4443f3633ec52f7fb73043a8f1f8d",
+    "frontend/src/messages/tr/sections.ts": "52a8ba3204b993bbd3b005c82bf2f96c38e60c19d81e9b1e7460032989ea9bc6",
     "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-audit.md": "7626a93a1c63d71307b1323987e427703e29098af499b693153c7c78eea36543",
-    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json": "48f88bc47892ea6816524c060ea62a08fbab1ef1e326f8ace6eb6337a144a7ae",
+    "reports/rule-engine-surfacing/2026-09-18-rule-surfacing-matrix.json": "3f66a97066d786d0f81cd95eed4fe9af655fa48c11e62489521b41911f00da7d",
     "reports/sut-expansion/2026-10-04-mesothelioma-documentary-draft.md": "a8364f592b27201488fda9e277a6151785689abc2e28fc9ec3aede7ffe14d1b6",
     "scripts/agent/pipeline_smoke.py": "35b6ede6cc293b1c4488dc0849f41d0603dc1933a3b4013947d1d04e46f1ba3b",
     "scripts/sut/close_algorithmic_gaps.py": "1e793c18288f0482e5f187dda821f344db5c019b5d5faab69cba63a2b18475d1",
@@ -25715,26 +25715,26 @@
     "scripts/sut/prose/clause_identity.py": "020f6c1918977496031c2c7b5f4bc169e8d794c3c175a2bccf2ec6b23bb14b6a",
     "scripts/sut/prose/clause_type_overrides.py": "c67aec2a7879737ae63ee275dae5e229b8527aa1aaec14817f16c05a0c0edd94",
     "scripts/sut/prose/coverage.py": "604f940954a9014d3adf0ddf1911d40f63009749a2276fc6444a8870dac3cb11",
-    "scripts/sut/prose/gate_b_generic.py": "f2490255a476955153f146c1ff8e3050dd7b82edd38217ae8f944e91b4a7e865",
+    "scripts/sut/prose/gate_b_generic.py": "e452b57c39c329cc5ee35d662c0a2e95a358ad52a189b927e7cdfae0b4e80789",
     "scripts/sut/prose/gate_b_sections.py": "d77b1ce7201b7f37ece26abf72b76e67b18b5bb4016391afc89a9a1ebd7a8ae8",
     "scripts/sut/prose/manifest_clause_ids.py": "5c503116021cb008ee38f1f0ac85c05f981034764e2923b389d63048e5fe9c79",
     "scripts/sut/rule_sources.py": "93c2e0dea44b7754604bc685d79bbef093277c1555767d16c0c373f6749189c8",
     "src/bilun/domain/billing/broad_rule_catalog.py": "715f788231f0118f46e737c99492e0ef0369600ff00532431391c894d3240532",
     "src/bilun/domain/billing/broad_rule_classification.py": "1ff3fb8ac38a6ff2dd53f8110bd41477d574bd80e72f741e100bc2a70b471828",
     "src/bilun/domain/billing/treatment_pricing_evaluations.py": "291f462c49e00e281c3ee2d77831d1a6bfe9b90c7e816ace2987d17ee6a02ea2",
-    "src/bilun/domain/claim_validation_v2.py": "e0f1f2f5edb4ef41d4789c39c4db1a812259aae93a0822e1aec6d9a0aa25cae5",
-    "src/bilun/domain/claims/adapter.py": "cfa9b41b69dbec26ab3feb9747b25f96cb96000deeaad519b7262ec4f2554ef9",
+    "src/bilun/domain/claim_validation_v2.py": "e760dad1ca2be6e3c67e3976b5fbf1658f3179b379326cf9360ef82ede87cf14",
+    "src/bilun/domain/claims/adapter.py": "efd73c0e2019791d136b83ac257dd22d0eab8ca807125870f9a5a722c071b659",
     "src/bilun/domain/claims/mesothelioma_evidence.py": "885e63fd4ace81109937db1e4bc5bc394faa10f9c22307b53552e8cc53308413",
-    "src/bilun/domain/claims/models.py": "459fa5d7a0a93c15c9bd7026f5de3a70b63f58f73d1f0de6fa92fdc713c0668c",
-    "src/bilun/domain/claims/parsing/row_parsers.py": "c906fa353c704f7e32c5968ed81b83e53f7d801aa75c68492a5e11426c211bf6",
+    "src/bilun/domain/claims/models.py": "1ba64a2ef1872637d7c544dc98344f7abc62f38b69444bb54ffd11aeb022bdf8",
+    "src/bilun/domain/claims/parsing/row_parsers.py": "75c377547d41b3aa60388d24716a56a17d1bf5030b441529b5fe38a3ec43f565",
     "src/bilun/domain/loaders/gazette.py": "725191e186823713221e7f19cc3128535f1769ae331b29532ce4c8f2ec933c94",
-    "src/bilun/domain/prose_rules/_drug_indication/clinical.py": "6ea2e228c18f5cff795da9e8d35709fa6c1c51fc295ad31e41530d25bb450c19",
+    "src/bilun/domain/prose_rules/_drug_indication/clinical.py": "523b5d3d63189c26ef8f8a8a2c7f7e76e09397769f27c4f036f887cd45a6ee05",
     "src/bilun/domain/prose_rules/_drug_indication/clinical_mesothelioma_documents.py": "e1f45e83f96cd5fceba618f101103a11b6e0402133496af8d2bcd52a150d24ad",
     "src/bilun/domain/prose_rules/_drug_indication/constraints.py": "e4eb0f2671bfea798e0ea0dbf6c173bf8b8d8688bd410a2a0deaeb3df7e50cd4",
     "src/bilun/domain/prose_rules/_drug_indication/temporal.py": "632b3b93088771d2b176ffaf5a695713562837da3bf3280bb39473f21c566afe",
     "src/bilun/domain/prose_rules/gap_closing.py": "5bd330d4f762c814645869c251af9e131d66bd99bdb50ca648d9fb582e87361d",
     "src/bilun/domain/prose_rules/treatment_pricing.py": "b626a58f7419e12ea6a7d3636fbf8891622d742d36aa84aace42e78bc589f63c",
-    "src/bilun/shared/models.py": "b3c80ed84b71a676c3dc2106a1da1edd7403ce4e0712aafd2fd8f40e64ea5251",
+    "src/bilun/shared/models.py": "e30fef9c07c05a2b28b1811acce5d3240c84b67d0e73fee46813232eebd2e634",
     "tests/unit/_helpers/reviewed_clause_identities_pr128.json": "156a42cf34f1e592887bac38d5406d9a46a372049a309033814dc6c0b25ea79b",
     "tests/unit/_helpers/reviewed_clause_ids.py": "f7a814e6692c0268547fa8bc1556cea8ddbeb812560182fc24b44b0d53bb8e29",
     "tests/unit/_helpers/test_reviewed_clause_ids.py": "08082d8d52db245a600f7283fe0394b1e596f7e2bd31daba2ce76f8988bb8f46",
@@ -25951,7 +25951,7 @@
     "tests/unit/domain/prose_rules/test_clinical_remaining_indications.py": "b9d940c538b925c8af167ce53bf877f42e3a722b40b403875380ac70e1c21228",
     "tests/unit/domain/prose_rules/test_clinical_source_authority.py": "0358e169125e5e5fd6089b3dcdbb3f0a52578086288b47e1fd91cea44f3b3a5f",
     "tests/unit/domain/prose_rules/test_drug_indication_4201_w4_tier_b.py": "0fd8ca3c1efc266895f5ba3fea8937d5ed2a9900ed7ef8a06c695268d3f311d3",
-    "tests/unit/domain/prose_rules/test_drug_indication_4206.py": "8d7b72ed8ee08d7456f125e25190ae08cf8c1677cafc2b0087b76ca7dec53f88",
+    "tests/unit/domain/prose_rules/test_drug_indication_4206.py": "6ed35519b54069412d66c512ef5ea57b14ea89f1508a5a0f58aa184266087956",
     "tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py": "2a5fa071e9c06181d633c12db8bc2846acddce6dc69e30182f49087f499e081a",
     "tests/unit/domain/prose_rules/test_drug_indication_4213_tier_b.py": "b387d46b5a36b952324dc7a5d627f97c8e34c9abd5e0240301596e0ad6dfca67",
     "tests/unit/domain/prose_rules/test_drug_indication_4218_4236.py": "86e4d03181413b3bcc051752e03db94522bea9b9106c91da2fc5cf2a34053665",
@@ -26001,7 +26001,7 @@
     "tests/unit/scripts/test_rule_surfacing_cli.py": "5b4215e085a2eec6f2fa5d740df1b1ab9760c1987d38437ce9df429ec254b22e",
     "tests/unit/scripts/test_rule_surfacing_inventory.py": "633291ae6c37d670852cb28a7f6d919bef439824bebe885d86d6d28f3eddb343",
     "tests/unit/scripts/test_stable_clause_type_overrides.py": "bf57d308b174a0d378e024f9cf86982d72bc0e0b0f6b322e3dc35eb528b659b0",
-    "tests/unit/scripts/test_sut_clause_diff.py": "97a2b44b5ee4809d7724e5ae8d3de9e86d7083420c6901dddcbb6287fcf2dad9",
+    "tests/unit/scripts/test_sut_clause_diff.py": "d19eab20a550ade56035d9326595948f97b00c19325c9365ac2b669df0884870",
     "tests/unit/scripts/test_verify_clinical_corpus_migration.py": "764eea39bcf2ef32becd5130ed21f5e9fab7ee6445fcb59e05d7f0e2b9d1b3b8"
   },
   "coverage_producer_compiler_dependency_refresh": {

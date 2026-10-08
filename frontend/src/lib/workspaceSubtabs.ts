@@ -154,7 +154,7 @@ export const MAIN_SECTION_ICONS: Record<SutHomeTab, LucideIcon> = {
 };
 
 export interface ResolvedTabInfo {
-  /** The specific display label for the tab (subtab label if active, else parent section/patient ID). */
+  /** The tab label: "Parent · Subtab" when a subtab is active (same text as fullTitle), else the parent section or patient ID. */
   label: string;
   /** Full descriptive title for tooltips, e.g. "Referans Araçları · Branşa Göre". */
   fullTitle: string;
@@ -193,7 +193,7 @@ export function resolveTabInfo(
     const Icon = BILLING_SUB_ICONS[sub];
 
     return {
-      label: subLabel,
+      label: `${parentLabel} · ${subLabel}`,
       fullTitle: `${parentLabel} · ${subLabel}`,
       Icon,
       subtab: sub,
@@ -210,7 +210,7 @@ export function resolveTabInfo(
     const Icon = COMPLIANCE_SUB_ICONS[sub];
 
     return {
-      label: subLabel,
+      label: `${parentLabel} · ${subLabel}`,
       fullTitle: `${parentLabel} · ${subLabel}`,
       Icon,
       subtab: sub,
@@ -227,7 +227,7 @@ export function resolveTabInfo(
     const Icon = RULE_DATABASE_SUB_ICONS[sub];
 
     return {
-      label: subLabel,
+      label: `${parentLabel} · ${subLabel}`,
       fullTitle: `${parentLabel} · ${subLabel}`,
       Icon,
       subtab: sub,

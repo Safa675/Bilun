@@ -138,7 +138,7 @@ def test_orchestrator_without_claim_context_returns_missing_inputs() -> None:
     report = billing_mod.compute_patient_billing_report("P1")
 
     assert report.exactness_status == "missing_exact_inputs"
-    assert report.total_recoverable_try == 0.0
+    assert report.total_recoverable_try is None
     assert report.copay.exactness_status == "missing_exact_inputs"
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.materials.exactness_status == "missing_exact_inputs"

@@ -7,6 +7,8 @@ from datetime import date
 from decimal import Decimal
 
 
+from .adult_gh import AdultGhEvidence
+from .mds_evidence import MdsEvidence
 from .clinical_evidence import AntifungalEvidence, IndicationEvidence, FollowupEvidence, EnteralEvidence, RavulizumabEvidence, RenalEvidence, SmaEvidence
 from .mesothelioma_evidence import MesotheliomaEvidence
 
@@ -342,6 +344,8 @@ class DrugClaimLine:
     enteral_evidence: EnteralEvidence | None = None
     ravulizumab_evidence: RavulizumabEvidence | None = None
     mesothelioma_evidence: MesotheliomaEvidence | None = None
+    adult_gh_evidence: AdultGhEvidence | None = None
+    mds_evidence: MdsEvidence | None = None
 
 
 @dataclass(frozen=True)

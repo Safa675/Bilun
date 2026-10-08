@@ -231,7 +231,7 @@ class _ReviewableUpliftBlockMixin(_UpliftBlockMixin):
 class LabOptimization:
     """Normative lab billing analysis for a single patient."""
 
-    normative_cost_try: float = 0.0
+    normative_cost_try: float | None = None
     hemogram_bundling_savings: float = 0.0
     session_fraction_savings: float = 0.0
     flagged_tests: list[dict[str, Any]] = field(default_factory=list)
@@ -272,12 +272,12 @@ class CopayOptimization:
     copay_primary_outcome: str = "none"
     savings_beneficiary: str = COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK
     gap_kind: str = COPAY_GAP_KIND_EXEMPTION_CORRECTION
-    visit_copay_savings_try: float = 0.0  # procedure-line exemption gap (legacy name)
-    rx_copay_savings_try: float = 0.0  # prescription exemption gap (legacy name)
-    total_copay_savings_try: float = 0.0  # procedure gap only (legacy field name)
-    patient_copay_waived_total_try: float = 0.0  # total exemption gap (visit + rx)
-    patient_copay_try: float = 0.0  # total katılım payı before waiver
-    ilave_ucret_total_try: float = 0.0  # total ilave ücret (never waived)
+    visit_copay_savings_try: float | None = None  # procedure-line exemption gap (legacy name)
+    rx_copay_savings_try: float | None = None  # prescription exemption gap (legacy name)
+    total_copay_savings_try: float | None = None  # procedure gap only (legacy field name)
+    patient_copay_waived_total_try: float | None = None  # total exemption gap (visit + rx)
+    patient_copay_try: float | None = None  # total katılım payı before waiver
+    ilave_ucret_total_try: float | None = None  # total ilave ücret (never waived)
     line_decomposition_status: str = "missing_inputs"
     rx_copay_savings_by_ground: dict[str, float] = field(default_factory=dict)
     rate_corrections: list[dict[str, Any]] = field(default_factory=list)
@@ -767,15 +767,15 @@ class BillingActionReport:
     )
     drug_indication: DrugIndicationReview = field(default_factory=DrugIndicationReview)
     medula_rejection_ingest_available: bool = False
-    sgk_uplift_try: float = 0.0
-    compliance_adjustment_try: float = 0.0
-    audit_exposure_try: float = 0.0
-    capture_gap_try: float = 0.0
-    package_adequacy_review_try: float = 0.0
+    sgk_uplift_try: float | None = None
+    compliance_adjustment_try: float | None = None
+    audit_exposure_try: float | None = None
+    capture_gap_try: float | None = None
+    package_adequacy_review_try: float | None = None
     medula_playbook_entry_count: int = 0
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0
-    total_recoverable_try: float = 0.0
+    total_recoverable_try: float | None = None
     recommended_actions: list[dict[str, Any]] = field(default_factory=list)
     action_count: int = 0
     priority: str = "low"

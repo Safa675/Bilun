@@ -339,7 +339,10 @@ def get_revenue_recovery():
                         for _, report in billing_rows
                     ]
                     summaries.sort(
-                        key=lambda row: row["total_opportunity_try"],
+                        key=lambda row: (
+                            row["total_opportunity_try"] is not None,
+                            row["total_opportunity_try"] or 0.0,
+                        ),
                         reverse=True,
                     )
                     payload = {**payload, "patient_summaries": summaries}
