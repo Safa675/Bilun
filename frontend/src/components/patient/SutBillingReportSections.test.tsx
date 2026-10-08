@@ -1295,8 +1295,12 @@ describe("BillingSummary open metric ownership", () => {
     }
     expect(html).toContain('data-billing-summary="true"');
     expect(html).toContain("@container/billing-summary");
-    expect(html).toContain("@min-[960px]/billing-summary:grid-cols-2");
-    expect(html.match(/@min-\[400px\]\/billing-summary:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(11);
+    expect(html).toContain('<dl class="flex flex-wrap gap-x-6 gap-y-3">');
+    expect(html.match(/@min-\[400px\]\/billing-summary:min-w-min/g)).toHaveLength(11);
+    expect(html.match(/@min-\[400px\]\/billing-summary:basis-\[calc\(50%-0\.75rem\)\]/g)).toHaveLength(11);
+    expect(html).not.toContain("overflow-x-auto");
+    expect(html).not.toContain("overflow-hidden");
+    expect(html).not.toContain("minmax(0,1fr)_auto");
     expect(html).toContain("C-METRIC");
     expect(html).toContain(labels.billDescription);
     expect(html).toContain(labels.dualTotalsFootnote);

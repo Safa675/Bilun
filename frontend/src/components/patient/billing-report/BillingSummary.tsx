@@ -17,7 +17,7 @@ const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
 
 function SummaryMetric({ name, label, value }: { name: string; label: string; value: ReactNode }) {
   return (
-    <div data-billing-metric={name} className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/billing-summary:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/billing-summary:items-center">
+    <div data-billing-metric={name} className="min-w-0 basis-full space-y-1 @min-[400px]/billing-summary:min-w-min @min-[400px]/billing-summary:flex-1 @min-[400px]/billing-summary:basis-[calc(50%-0.75rem)]">
       <dt className="text-[0.68rem] font-semibold uppercase tracking-normal text-[var(--text-muted)]">{label}</dt>
       <dd className="min-w-0 font-sans text-2xl leading-none font-semibold tracking-normal tabular-nums lining-nums text-[var(--text-primary)]">{value}</dd>
     </div>
@@ -86,7 +86,7 @@ export function BillingSummary({
         <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
       </div>
 
-      <dl className="grid grid-cols-1 gap-y-3 @min-[960px]/billing-summary:grid-cols-2 @min-[960px]/billing-summary:gap-x-6">
+      <dl className="flex flex-wrap gap-x-6 gap-y-3">
         <SummaryMetric
           name="sgk-uplift"
           label={t("billing.summary.ruleCalculatedOpportunity")}

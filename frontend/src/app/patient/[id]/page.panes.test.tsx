@@ -7,6 +7,8 @@ import PatientSearch from "@/components/ui/PatientSearch";
 import BillPicker from "@/components/patient/BillPicker";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
+import { BillingSummary } from "@/components/patient/SutBillingReportSections";
+import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import { createWorkspaceStore } from "@/stores/workspaceStore";
 import * as api from "@/lib/api/sut";
 import type { SutChatDockPosition } from "@/stores/storeInterfaces";
@@ -91,6 +93,16 @@ it("restores the embedded pane's own saved bill, section and finding query", asy
   });
   expect(api.getBillBillingReport).toHaveBeenCalledWith("B", "B-2", expect.anything());
   expect(navigation.replace).not.toHaveBeenCalled();
+});
+it.each([null, "B-2"])("retains one distinct financial detail owner without a second overview wrapper for claim %s", async (claimId) => {
+  const pane = await mount("B", true, claimId ? `claim=${claimId}` : "");
+  const workspace = pane.renderer.root.findByType(SutPatientWorkspace);
+  const summary = pane.renderer.root.findByType(BillingSummary);
+  expect(summary.props.billingReport).toBe(workspace.props.billingReport);
+  expect(summary.props.omitPriority).toBe(true);
+  expect(summary.props.billingReport).toMatchObject({ patient_id: "B", ...(claimId ? { claim_id: claimId, scope: "bill" } : {}) });
+  expect(pane.renderer.root.findAllByType(BillingSummary)).toHaveLength(1);
+  expect(pane.renderer.root.findAllByType(BillingReportGroup)).toHaveLength(0);
 });
 it.each([false, true])("opens an optional-method detail target itself and its parent in embedded=%s", async (embedded) => {
   const outer = { tagName: "DETAILS", open: false, parentElement: null };
