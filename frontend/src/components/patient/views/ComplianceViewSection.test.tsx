@@ -88,6 +88,36 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain(">2<");
   });
 
+  it.each(["en", "tr"] as const)("reflows the KPI owner locally without changing long amounts or partial reasons (%s)", (locale) => {
+    const report = {
+      ...baseReport,
+      audit_exposure_try: 123456789012.34,
+      recommended_actions: [
+        { ...baseReport.recommended_actions![0], billed_try: 123456789012.34 },
+        { ...baseReport.recommended_actions![1], billed_try: null },
+      ],
+    } as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} />
+      </WorkspaceProvider>,
+      locale,
+    );
+    const beforeTable = html.slice(0, html.indexOf('id="claim-compliance"'));
+    const amount = locale === "en" ? "123,456,789,012.34 TRY" : "₺123.456.789.012,34";
+    const partial = locale === "en"
+      ? "Partial total: only 1 of 2 findings have a billed amount"
+      : "Kısmi toplam: 2 bulgudan yalnızca 1 tanesinde faturalanan tutar var";
+
+    expect(beforeTable).toContain("grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]");
+    expect(beforeTable).not.toContain("sm:grid-cols-3");
+    expect(beforeTable.match(/class="\[&amp;_\.tabular-nums\]:whitespace-nowrap"/g)).toHaveLength(2);
+    expect(beforeTable.split(amount)).toHaveLength(3);
+    expect(beforeTable).toContain(partial);
+    expect(beforeTable).toContain(">2<");
+    expect(beforeTable).toContain("color:#B91C1C");
+  });
+
   it("renders structural coverage as a distinct subset without implying a clean result", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
@@ -262,6 +292,11 @@ describe("ComplianceViewSection", () => {
       expect(text).toContain("|—|");
       expect(text).not.toContain("0.00");
       expect(text).toContain("None of the 5 findings has a billed amount");
+    });
+
+    it.each(["en", "tr"] as const)("retains a known zero rather than marking it unavailable (%s)", (locale) => {
+      const text = billedKpiText(reportWith([{ billed_try: 0 }]), locale);
+      expect(text).toBe(locale === "en" ? "|0.00 TRY|" : "|₺0,00|");
     });
 
     it("keeps excluding drug_indication findings without marking the sum partial", () => {
