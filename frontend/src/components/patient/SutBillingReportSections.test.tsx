@@ -1197,9 +1197,9 @@ describe("SutOptimizationSection container layout", () => {
       <SutOptimizationSection optimization={optimization} />,
       locale,
     );
-    expect(html).toContain('<dl data-sut-optimization-summary="true" class="@container space-y-3">');
+    expect(html).toContain('<dl data-sut-optimization-summary="true" class="@container/optimization space-y-3">');
     expect([...html.matchAll(/data-optimization-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["copay", "surcharge", "copay-rate", "drg"]);
-    expect(html.match(/@min-\[480px\]:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(4);
+    expect(html.match(/@min-\[400px\]\/optimization:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(4);
     expect(html).not.toContain("md:grid-cols");
     expect(html).not.toContain("xl:grid-cols");
     expect(html).not.toContain("<details");
@@ -1294,6 +1294,9 @@ describe("BillingSummary open metric ownership", () => {
       expect(row).toContain(value);
     }
     expect(html).toContain('data-billing-summary="true"');
+    expect(html).toContain("@container/billing-summary");
+    expect(html).toContain("@min-[960px]/billing-summary:grid-cols-2");
+    expect(html.match(/@min-\[400px\]\/billing-summary:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(11);
     expect(html).toContain("C-METRIC");
     expect(html).toContain(labels.billDescription);
     expect(html).toContain(labels.dualTotalsFootnote);

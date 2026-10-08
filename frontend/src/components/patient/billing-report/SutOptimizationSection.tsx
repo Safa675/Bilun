@@ -32,10 +32,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
 
   return (
     <BillingSectionShell title={t("billing.sutOptimization.title")}>
-      <dl data-sut-optimization-summary className="@container space-y-3">
-        <div data-optimization-metric="copay" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[480px]:grid-cols-[minmax(0,1fr)_auto]">
+      <dl data-sut-optimization-summary className="@container/optimization space-y-3">
+        <div data-optimization-metric="copay" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
           <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.copayEyebrow")}</Eyebrow></dt>
-          <dd className="min-w-0 space-y-2 @min-[480px]:max-w-80">
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <div className="flex flex-wrap items-center gap-2">
             <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
               {optimization.copay_exemptions.exempt
@@ -58,9 +58,9 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
           </dd>
         </div>
 
-        <div data-optimization-metric="surcharge" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[480px]:grid-cols-[minmax(0,1fr)_auto]">
+        <div data-optimization-metric="surcharge" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
           <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.surchargeEyebrow")}</Eyebrow></dt>
-          <dd className="min-w-0 space-y-2 @min-[480px]:max-w-80">
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <Chip
             variant={
               !surchargeExact
@@ -85,9 +85,9 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
           </dd>
         </div>
 
-        <div data-optimization-metric="copay-rate" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[480px]:grid-cols-[minmax(0,1fr)_auto]">
+        <div data-optimization-metric="copay-rate" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
           <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.copayRateEyebrow")}</Eyebrow></dt>
-          <dd className="min-w-0 space-y-2 @min-[480px]:max-w-80">
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <p className="text-sm font-semibold text-[var(--text-primary)]">
             {rateExact
               ? ((rateCount ?? 0) > 0
@@ -105,9 +105,9 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
         </div>
 
         {optimization.drg_unbundling && (
-          <div data-optimization-metric="drg" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[480px]:grid-cols-[minmax(0,1fr)_auto]">
+          <div data-optimization-metric="drg" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
             <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.drgEyebrow")}</Eyebrow></dt>
-            <dd className="min-w-0 space-y-2 @min-[480px]:max-w-80">
+            <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
             <Chip
               variant={
                 !drgExact

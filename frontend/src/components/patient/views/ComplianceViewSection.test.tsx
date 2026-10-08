@@ -109,9 +109,10 @@ describe("ComplianceViewSection", () => {
       ? "Partial total: only 1 of 2 findings have a billed amount"
       : "Kısmi toplam: 2 bulgudan yalnızca 1 tanesinde faturalanan tutar var";
 
-    expect(beforeTable).toContain('<dl data-compliance-metrics="true" class="@container space-y-3">');
+    expect(beforeTable).toContain('<div class="@container/compliance-metrics"><dl data-compliance-metrics="true" class="grid grid-cols-1 gap-3 @min-[960px]/compliance-metrics:grid-cols-3">');
     expect([...beforeTable.matchAll(/data-compliance-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["risk", "findings", "billed-at-risk"]);
-    expect(beforeTable.match(/@min-\[480px\]:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(3);
+    expect(beforeTable.match(/@min-\[400px\]\/compliance-metrics:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(3);
+    expect(beforeTable.match(/@min-\[960px\]\/compliance-metrics:grid-cols-1/g)).toHaveLength(3);
     expect(beforeTable.match(/<dd class="min-w-0 whitespace-nowrap text-2xl/g)).toHaveLength(3);
     expect(beforeTable).not.toContain("overflow-hidden");
     expect(beforeTable.split(amount)).toHaveLength(3);

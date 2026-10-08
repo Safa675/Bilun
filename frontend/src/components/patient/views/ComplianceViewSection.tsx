@@ -89,22 +89,23 @@ export default function ComplianceViewSection({
         {t("billing.views.compliance.description")}
       </p>
 
-      <dl data-compliance-metrics className="@container space-y-3">
-        <div data-compliance-metric="risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+      <div className="@container/compliance-metrics">
+      <dl data-compliance-metrics className="grid grid-cols-1 gap-3 @min-[960px]/compliance-metrics:grid-cols-3">
+        <div data-compliance-metric="risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
           <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiRisk")}</dt>
           <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight" style={{ color: RISK_COLOR }}>
             {auditExposure == null ? "—" : fmtTRY2(auditExposure)}
           </dd>
         </div>
-        <div data-compliance-metric="findings" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+        <div data-compliance-metric="findings" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
           <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiFindings")}</dt>
           <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{fmtNum(rows.length)}</dd>
         </div>
-        <div data-compliance-metric="billed-at-risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+        <div data-compliance-metric="billed-at-risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
           <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiBilledAtRisk")}</dt>
           <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{billedNone ? "—" : fmtTRY2(billed.total)}</dd>
           {!billedComplete && (
-            <dd className="text-xs leading-snug text-[var(--text-secondary)] @min-[480px]:col-span-2">
+            <dd className="text-xs leading-snug text-[var(--text-secondary)] @min-[400px]/compliance-metrics:col-span-2 @min-[960px]/compliance-metrics:col-span-1">
               {billedNone
                 ? t("billing.views.compliance.kpiBilledAtRiskNone", {
                     count: billed.count,
@@ -117,6 +118,7 @@ export default function ComplianceViewSection({
           )}
         </div>
       </dl>
+      </div>
 
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
         <UnifiedComplianceFindingsTable
