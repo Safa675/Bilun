@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import { Fraunces, Inter } from "next/font/google";
 import AppSidebar from "@/components/shell/AppSidebar";
 import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
@@ -22,22 +21,17 @@ function resolveMetaDescription(locale: Locale): string {
 import WorkspaceTabStripMount from "@/components/shell/WorkspaceTabStripMount";
 import { ShellStateProviders } from "@/stores/providers";
 import "./globals.css";
+import "./styles/fonts.css";
 import "./styles/sut-how-modal.css";
 
-const fontDisplay = Fraunces({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-display",
-  weight: ["400", "500", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-const fontSans = Inter({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
+const FONT_PRELOADS = [
+  "/fonts/fraunces/normal-latin.woff2",
+  "/fonts/fraunces/normal-latin-ext.woff2",
+  "/fonts/fraunces/italic-latin.woff2",
+  "/fonts/fraunces/italic-latin-ext.woff2",
+  "/fonts/inter/normal-latin.woff2",
+  "/fonts/inter/normal-latin-ext.woff2",
+];
 
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
@@ -64,7 +58,19 @@ export default async function RootLayout({
   const initialIdentity = await getServerIdentity(cookieStore.toString());
 
   return (
-    <html lang={initialLocale} className={`${fontDisplay.variable} ${fontSans.variable}`}>
+    <html lang={initialLocale} className="bilun-fonts">
+      <head>
+        {FONT_PRELOADS.map((href) => (
+          <link
+            key={href}
+            rel="preload"
+            href={href}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+        ))}
+      </head>
       <body className="antialiased" suppressHydrationWarning>
           <ShellStateProviders initialLocale={initialLocale} initialIdentity={initialIdentity}>
             <SkipToContent />
