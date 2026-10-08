@@ -1015,6 +1015,215 @@ def _own_build_context(value: Any, tables: dict[str, dict], identities: dict) ->
     return pins, routes
 
 
+def _raw_bill_identity_source_proof(old: dict, new: dict, builder: bytes) -> str:
+    for files in (old, new):
+        schema = _node(_tree(files[_BILLING + "types.py"]), ast.ClassDef, "BillingActionReport")
+        patient_fields = [
+            node
+            for node in schema.body
+            if isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "patient_id"
+        ]
+        patient_writes = [
+            node
+            for node in ast.walk(schema)
+            if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+            and any(
+                isinstance(target, ast.Name) and target.id == "patient_id"
+                for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+            )
+        ]
+        names = {
+            node.id
+            for node in ast.walk(schema)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+        } | {node.name for node in schema.body if isinstance(node, (ast.FunctionDef, ast.ClassDef))}
+        _require(
+            not schema.bases
+            and [_ast(node) for node in schema.decorator_list]
+            == [_ast(ast.Name(id="dataclass", ctx=ast.Load()))]
+            and len(patient_fields) == len(patient_writes) == 1
+            and _ast(patient_fields[0]) == _ast(ast.parse('patient_id: str = ""').body[0])
+            and "claim_id" not in names,
+            "raw_bill_source_schema",
+        )
+        report = _node(
+            _tree(files[_BILLING + "patient_report.py"]),
+            ast.FunctionDef,
+            "compute_patient_billing_report",
+        )
+        expected = ast.parse("report = BillingActionReport(patient_id=pid)").body[0]
+        assignments = [
+            node
+            for node in ast.walk(report)
+            if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+            and any(
+                isinstance(target, ast.Name) and target.id == "report"
+                for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+            )
+        ]
+        constructors = [
+            node
+            for node in ast.walk(report)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "BillingActionReport"
+        ]
+        _require(
+            not report.args.posonlyargs
+            and [arg.arg for arg in report.args.args] == ["pid"]
+            and len(assignments) == len(constructors) == 1
+            and assignments[0] in report.body
+            and _ast(assignments[0]) == _ast(expected),
+            "raw_bill_source_constructor",
+        )
+    expected_functions = _tree(b'''def _without_wavea_detail(report: object) -> object:
+    """Avoid serializing the exhaustive drill-down into default report rows."""
+    if dataclasses.is_dataclass(report):
+        return {
+            field.name: getattr(report, field.name)
+            for field in dataclasses.fields(report)
+            if field.name != "wavea_evidence_detail"
+        }
+    if isinstance(report, dict):
+        return {key: value for key, value in report.items() if key != "wavea_evidence_detail"}
+    return report
+
+def _normalize_wavea_bill_detail(bill_key: str, report: object, build_id: str) -> dict[str, Any]:
+    """Validate a bill's own predicate context before storing its evidence."""
+    if not isinstance(bill_key, str) or "::" not in bill_key:
+        raise ValueError("Bill Wave A evidence lacks a composite claim key")
+    patient_id, claim_id = bill_key.split("::", 1)
+    if not patient_id or not claim_id:
+        raise ValueError("Bill Wave A evidence has an empty patient or claim ID")
+    detail = (
+        report.get("wavea_evidence_detail")
+        if isinstance(report, dict)
+        else getattr(report, "wavea_evidence_detail", None)
+    )
+    if detail is None:
+        raise ValueError(f"Bill {bill_key} lacks complete Wave A evidence")
+    normalized = json_ready(detail)
+    validate_full_wavea_evidence_detail(normalized, patient_id)
+    inventory = normalized["claim_scope_inventory"]
+    if inventory["context_state"] != "available" or [
+        row["claim_id"] for row in inventory["claims"]
+    ] != [claim_id]:
+        raise ValueError(f"Bill {bill_key} Wave A scope differs from its claim")
+    normalized["build_id"] = build_id
+    return normalized
+''')
+    tree = _tree(builder)
+    for expected in expected_functions.body:
+        _require(
+            _ast(_node(tree, ast.FunctionDef, expected.name)) == _ast(expected),
+            "raw_bill_builder_function",
+        )
+    run = _node(tree, ast.FunctionDef, "run_build")
+    tries = [node for node in run.body if isinstance(node, ast.Try)]
+    _require(len(tries) == 1, "raw_bill_builder_scope")
+    body = tries[0].body
+    expected_route = ast.parse("""raw_bill_reports = ctx.get("bill_billing_reports", {})
+bill_billing_reports = json_ready(
+    {bill_key: _without_wavea_detail(report) for bill_key, report in raw_bill_reports.items()}
+)
+for report in bill_billing_reports.values():
+    report.pop("wavea_evidence_detail", None)
+write_json_payload_rows(con, "patient_bill_billing_report_rows", build.build_id,
+    {bill_key: attach_bilun_data_source_metadata(report, sut_data_source_metadata)
+     for bill_key, report in bill_billing_reports.items()})
+""").body
+    route = []
+    for expected in expected_route:
+        if isinstance(expected, ast.Assign):
+            matches = [
+                node
+                for node in ast.walk(run)
+                if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+                and any(
+                    _ast(target) == _ast(expected.targets[0])
+                    for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+                )
+            ]
+        else:
+            matches = [node for node in ast.walk(run) if _ast(node) == _ast(expected)]
+        _require(
+            len(matches) == 1 and matches[0] in body and _ast(matches[0]) == _ast(expected),
+            "raw_bill_builder_route",
+        )
+        route.append(matches[0])
+    _require(
+        body.index(route[0]) < body.index(route[1])
+        and [body.index(node) for node in route[1:]]
+        == list(range(body.index(route[1]), body.index(route[1]) + 3))
+        and sum(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "write_json_payload_rows"
+            and len(node.args) > 1
+            and isinstance(node.args[1], ast.Constant)
+            and node.args[1].value == "patient_bill_billing_report_rows"
+            for node in ast.walk(run)
+        )
+        == 1
+        and sum(
+            isinstance(node, ast.Name) and node.id == "raw_bill_reports" for node in ast.walk(run)
+        )
+        == 3
+        and sum(
+            isinstance(node, ast.Name) and node.id == "bill_billing_reports"
+            for node in ast.walk(run)
+        )
+        == 3,
+        "raw_bill_builder_order",
+    )
+    # This proves only bound schema/constructor and builder-owned routes, not
+    # the internals of its imported producer, serializer, validator or reader.
+    return _digest(
+        {
+            "sources": [
+                {
+                    path: hashlib.sha256(files[path]).hexdigest()
+                    for path in (_BILLING + "types.py", _BILLING + "patient_report.py")
+                }
+                for files in (old, new)
+            ],
+            "builder_sha256": hashlib.sha256(builder).hexdigest(),
+        }
+    )
+
+
+def _raw_bill_identity(key: str, report: dict, evidence: dict) -> None:
+    _require(
+        "claim_id" not in report and type(key) is str and "::" in key,
+        "raw_bill_identity",
+    )
+    patient, claim = key.split("::", 1)
+    _require(
+        bool(patient) and bool(claim) and report["patient_id"] == patient,
+        "raw_bill_identity",
+    )
+    _require(type(evidence) is dict and key in evidence, "raw_bill_evidence_identity")
+    detail = evidence[key]
+    _require(
+        type(detail) is dict and detail.get("patient_id") == patient,
+        "raw_bill_evidence_identity",
+    )
+    inventory = detail.get("claim_scope_inventory")
+    _require(
+        type(inventory) is dict
+        and inventory.get("context_state") == "available"
+        and type(inventory.get("claims")) is list
+        and len(inventory["claims"]) == 1
+        and type(inventory["claims"][0]) is dict
+        and type(inventory["claims"][0].get("claim_id")) is str
+        and bool(inventory["claims"][0]["claim_id"])
+        and inventory["claims"][0]["claim_id"] == claim,
+        "raw_bill_scope_identity",
+    )
+
+
 @_payload_free
 def measure_delta(
     baseline: dict,
@@ -1024,9 +1233,14 @@ def measure_delta(
     clause_references: dict,
     clause_source_identities: dict,
     own_build_context: dict | None = None,
+    raw_bill_cache_identity: bool = False,
 ) -> DeltaMeasurement:
     """Reject unknown deltas; a complete measurement still grants no authority."""
     _require(type(policy) is DeltaPolicy, "policy_type")
+    _require(type(raw_bill_cache_identity) is bool, "raw_bill_identity_mode")
+    _require(
+        not raw_bill_cache_identity or own_build_context is not None, "raw_bill_identity_context"
+    )
     derived = derive_policy(policy._baseline, policy._candidate)
     _require(derived._json == policy._json and derived.sha256 == policy.sha256, "policy_derivation")
     data = _document(policy._json.encode())
@@ -1049,6 +1263,15 @@ def measure_delta(
             {"baseline": baseline, "candidate": candidate},
             data["source_identities"],
         )
+    )
+    raw_identity_proof = (
+        _raw_bill_identity_source_proof(
+            _sources(policy._baseline),
+            _sources(policy._candidate),
+            own_build_context["baseline"]["builder_source"]["bytes"],
+        )
+        if raw_bill_cache_identity
+        else None
     )
 
     def add(table, row, path, left, right, kind):
@@ -1327,13 +1550,17 @@ def measure_delta(
                 "report_identity",
             )
             if table == "patient_bill_billing_report_rows":
-                _require(
-                    type(a.get("claim_id")) is str
-                    and bool(a["claim_id"])
-                    and a["claim_id"] == b.get("claim_id")
-                    and key == a["patient_id"] + "::" + a["claim_id"],
-                    "bill_identity",
-                )
+                if raw_bill_cache_identity:
+                    for report, tables in ((a, baseline), (b, candidate)):
+                        _raw_bill_identity(key, report, tables["wavea_bill_evidence_detail"])
+                else:
+                    _require(
+                        type(a.get("claim_id")) is str
+                        and bool(a["claim_id"])
+                        and a["claim_id"] == b.get("claim_id")
+                        and key == a["patient_id"] + "::" + a["claim_id"],
+                        "bill_identity",
+                    )
             else:
                 _require(key == a["patient_id"], "patient_row_identity")
             visit(table, key, (), a, b, a, b)
@@ -1402,7 +1629,7 @@ def measure_delta(
         [item._table, item._row, list(item._path), item._before, item._after, item._kind]
         for item in differences
     ]
-    witness_digest = _digest(
+    witness_payload = (
         witness
         if own_build_context is None
         else {
@@ -1411,6 +1638,12 @@ def measure_delta(
             "build_owner_routes": build_routes,
         }
     )
+    if raw_bill_cache_identity:
+        witness_payload["raw_bill_cache_identity"] = {
+            "enabled": True,
+            "source_proof_sha256": raw_identity_proof,
+        }
+    witness_digest = _digest(witness_payload)
     return DeltaMeasurement(
         tuple(sorted(counts.items())), policy.sha256, witness_digest, tuple(differences)
     )

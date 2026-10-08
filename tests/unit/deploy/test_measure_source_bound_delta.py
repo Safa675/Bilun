@@ -1627,3 +1627,492 @@ def test_each_builder_owner_assignment_and_writer_route_is_source_bound(
     for row in context.values():
         row["builder_source"].update(bytes=raw, sha256=hashlib.sha256(raw).hexdigest())
     _reject(left, right, policy, sources, own_build_context=context)
+
+
+# Parse-only source fixtures; no builder or domain function is executed.
+RAW_BUILDER = (
+    b'''def _without_wavea_detail(report: object) -> object:
+    """Avoid serializing the exhaustive drill-down into default report rows."""
+    if dataclasses.is_dataclass(report):
+        return {
+            field.name: getattr(report, field.name)
+            for field in dataclasses.fields(report)
+            if field.name != "wavea_evidence_detail"
+        }
+    if isinstance(report, dict):
+        return {key: value for key, value in report.items() if key != "wavea_evidence_detail"}
+    return report
+
+def _normalize_wavea_bill_detail(bill_key: str, report: object, build_id: str) -> dict[str, Any]:
+    """Validate a bill's own predicate context before storing its evidence."""
+    if not isinstance(bill_key, str) or "::" not in bill_key:
+        raise ValueError("Bill Wave A evidence lacks a composite claim key")
+    patient_id, claim_id = bill_key.split("::", 1)
+    if not patient_id or not claim_id:
+        raise ValueError("Bill Wave A evidence has an empty patient or claim ID")
+    detail = (
+        report.get("wavea_evidence_detail")
+        if isinstance(report, dict)
+        else getattr(report, "wavea_evidence_detail", None)
+    )
+    if detail is None:
+        raise ValueError(f"Bill {bill_key} lacks complete Wave A evidence")
+    normalized = json_ready(detail)
+    validate_full_wavea_evidence_detail(normalized, patient_id)
+    inventory = normalized["claim_scope_inventory"]
+    if inventory["context_state"] != "available" or [
+        row["claim_id"] for row in inventory["claims"]
+    ] != [claim_id]:
+        raise ValueError(f"Bill {bill_key} Wave A scope differs from its claim")
+    normalized["build_id"] = build_id
+    return normalized
+
+'''
+    + b"def _write_wavea_bill_details"
+    + BUILDER.split(b"def _write_wavea_bill_details", 1)[1]
+)
+RAW_ROUTE = b"""        raw_bill_reports = ctx.get("bill_billing_reports", {})
+        bill_billing_reports = json_ready(
+            {bill_key: _without_wavea_detail(report) for bill_key, report in raw_bill_reports.items()}
+        )
+        for report in bill_billing_reports.values():
+            report.pop("wavea_evidence_detail", None)
+        write_json_payload_rows(con, "patient_bill_billing_report_rows", build.build_id,
+            {bill_key: attach_bilun_data_source_metadata(report, sut_data_source_metadata)
+             for bill_key, report in bill_billing_reports.items()})
+"""
+RAW_BUILDER = RAW_BUILDER.replace(b"    try:\n", b"    try:\n" + RAW_ROUTE, 1)
+
+
+@pytest.fixture
+def raw_sources():
+    files = _missing_context_sources()
+    for side in files:
+        side[BILLING + "types.py"] += (
+            b'\n@dataclass\nclass BillingActionReport:\n    patient_id: str = ""\n'
+        )
+    return _bundle(files[0], candidate=False), _bundle(files[1], candidate=True)
+
+
+@pytest.fixture
+def raw_policy(raw_sources):
+    return delta.derive_policy(*raw_sources)
+
+
+def _raw_bill_tables():
+    left, right = _build_tables()
+    for tables in (left, right):
+        del tables[BILL_REPORT][BILL_KEY]["claim_id"]
+        tables[OWN_TABLES[1]][BILL_KEY]["claim_scope_inventory"] = {
+            "context_state": "available",
+            "claims": [
+                {"claim_id": CLAIM, "material_line_ids": ["synthetic-line-a", "synthetic-line-b"]}
+            ],
+        }
+    return left, right
+
+
+def _raw_context(left, right, sources, builder=RAW_BUILDER):
+    context = _build_context(left, right, sources)
+    for side in context.values():
+        side["builder_source"].update(bytes=builder, sha256=hashlib.sha256(builder).hexdigest())
+    return context
+
+
+def _raw_measure(left, right, policy, sources, **overrides):
+    options = {
+        "own_build_context": _raw_context(left, right, sources),
+        "raw_bill_cache_identity": True,
+    }
+    options.update(overrides)
+    return _measure(left, right, policy, sources, **options)
+
+
+def _raw_reject(left, right, policy, sources, **overrides):
+    options = {
+        "own_build_context": _raw_context(left, right, sources),
+        "raw_bill_cache_identity": True,
+    }
+    options.update(overrides)
+    _reject(left, right, policy, sources, **options)
+
+
+def test_actual_source_shaped_raw_bill_identity_is_private_and_input_preserving(
+    raw_policy, raw_sources, capsys
+):
+    left, right = _raw_bill_tables()
+    context = _raw_context(left, right, raw_sources)
+    snapshot = copy.deepcopy((left, right, context))
+    result = _raw_measure(left, right, raw_policy, raw_sources, own_build_context=context)
+    summary = result.safe_summary()
+    assert summary["change_counts"] == {"own_build_bookkeeping": 3}
+    assert set(summary) == {
+        "status",
+        "changed_cell_count",
+        "change_counts",
+        "source_policy_sha256",
+        "delta_sha256",
+        "deployment_admitted",
+        "semantic_release_admitted",
+        "external_witness_generation_attested",
+        "own_source_cache_equivalence_attested",
+    }
+    assert all(
+        summary[name] is False for name in summary if name.endswith(("admitted", "attested"))
+    )
+    pins, routes = delta._own_build_context(
+        context,
+        {"baseline": left, "candidate": right},
+        {"baseline": raw_sources[0].identity, "candidate": raw_sources[1].identity},
+    )
+    assert summary["delta_sha256"] == delta._digest(
+        {
+            "differences": [
+                [item._table, item._row, list(item._path), item._before, item._after, item._kind]
+                for item in result._differences
+            ],
+            "own_build_context": pins,
+            "build_owner_routes": routes,
+            "raw_bill_cache_identity": {
+                "enabled": True,
+                "source_proof_sha256": delta._raw_bill_identity_source_proof(
+                    dict(raw_sources[0]._files),
+                    dict(raw_sources[1]._files),
+                    RAW_BUILDER,
+                ),
+            },
+        }
+    )
+    for value in (PATIENT, CLAIM, OLD_BUILD, NEW_BUILD, "claim_scope_inventory", "12.5"):
+        assert value not in json.dumps(summary) + repr(result)
+    assert (left, right, context) == snapshot
+    assert capsys.readouterr() == ("", "")
+    assert "claim_id" not in left[BILL_REPORT][BILL_KEY]
+    assert "claim_id" not in right[BILL_REPORT][BILL_KEY]
+
+
+def test_false_raw_mode_preserves_845_context_and_context_free_digests(policy, sources):
+    left, right = _build_tables()
+    context = _build_context(left, right, sources)
+    implicit = _measure(left, right, policy, sources, own_build_context=context)
+    explicit = _measure(
+        left, right, policy, sources, own_build_context=context, raw_bill_cache_identity=False
+    )
+    assert implicit.safe_summary() == explicit.safe_summary()
+    pins, routes = delta._own_build_context(
+        context,
+        {"baseline": left, "candidate": right},
+        {"baseline": sources[0].identity, "candidate": sources[1].identity},
+    )
+    assert implicit.safe_summary()["delta_sha256"] == delta._digest(
+        {
+            "differences": [
+                [item._table, item._row, list(item._path), item._before, item._after, item._kind]
+                for item in implicit._differences
+            ],
+            "own_build_context": pins,
+            "build_owner_routes": routes,
+        }
+    )
+    tables = _tables()
+    assert _measure(tables, tables, policy, sources, raw_bill_cache_identity=False).safe_summary()[
+        "delta_sha256"
+    ] == delta._digest([])
+
+
+@pytest.mark.parametrize("mode", [None, 0, 1, "true", [], {}])
+def test_raw_identity_mode_requires_exact_bool(policy, sources, mode):
+    _reject(_tables(), _tables(), policy, sources, raw_bill_cache_identity=mode)
+
+
+def test_raw_mode_requires_context_and_does_not_weaken_normal_mode(raw_policy, raw_sources):
+    left, right = _raw_bill_tables()
+    _raw_reject(left, right, raw_policy, raw_sources, own_build_context=None)
+    _raw_reject(left, right, raw_policy, raw_sources, raw_bill_cache_identity=False)
+
+
+@pytest.mark.parametrize("side", [0, 1])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "claim_null",
+        "claim_string",
+        "claim_number",
+        "patient_missing",
+        "patient_wrong",
+        "patient_type",
+        "key_separator",
+        "key_patient_empty",
+        "key_claim_empty",
+        "key_patient_wrong",
+        "key_claim_wrong",
+        "report_row_missing",
+        "report_row_extra",
+        "evidence_missing",
+        "evidence_type",
+        "evidence_row_missing",
+        "evidence_row_extra",
+        "evidence_patient_missing",
+        "evidence_patient_wrong",
+        "evidence_patient_type",
+        "inventory_missing",
+        "inventory_type",
+        "state_missing",
+        "state_wrong",
+        "claims_missing",
+        "claims_type",
+        "claims_empty",
+        "claims_extra",
+        "claim_row_type",
+        "scope_claim_missing",
+        "scope_claim_null",
+        "scope_claim_empty",
+        "scope_claim_wrong",
+        "scope_claim_type",
+    ],
+)
+def test_raw_bill_identity_is_strict_on_both_sides(raw_policy, raw_sources, side, mutation):
+    left, right = _raw_bill_tables()
+    tables = (left, right)[side]
+    report = tables[BILL_REPORT][BILL_KEY]
+    evidence = tables[OWN_TABLES[1]]
+    detail = evidence[BILL_KEY]
+    inventory = detail["claim_scope_inventory"]
+    if mutation in ("claim_null", "claim_string", "claim_number"):
+        report["claim_id"] = {"claim_null": None, "claim_string": CLAIM, "claim_number": 2}[
+            mutation
+        ]
+    elif mutation.startswith("patient_"):
+        if mutation == "patient_missing":
+            del report["patient_id"]
+        else:
+            report["patient_id"] = "foreign-patient" if mutation == "patient_wrong" else 2
+    elif mutation.startswith("key_"):
+        key = {
+            "key_separator": PATIENT + CLAIM,
+            "key_patient_empty": "::" + CLAIM,
+            "key_claim_empty": PATIENT + "::",
+            "key_patient_wrong": "foreign-patient::" + CLAIM,
+            "key_claim_wrong": PATIENT + "::foreign-claim",
+        }[mutation]
+        # Change both row inventories together so the identity guard, not a
+        # simple baseline/candidate inventory difference, must reject the key.
+        for value in (left, right):
+            value[BILL_REPORT][key] = value[BILL_REPORT].pop(BILL_KEY)
+            value[OWN_TABLES[1]][key] = value[OWN_TABLES[1]].pop(BILL_KEY)
+    elif mutation.startswith("report_row_"):
+        if mutation == "report_row_missing":
+            del tables[BILL_REPORT][BILL_KEY]
+        else:
+            tables[BILL_REPORT]["foreign-row"] = copy.deepcopy(report)
+    elif mutation == "evidence_missing":
+        tables[OWN_TABLES[1]] = {}
+    elif mutation == "evidence_type":
+        tables[OWN_TABLES[1]] = []
+    elif mutation == "evidence_row_missing":
+        del evidence[BILL_KEY]
+    elif mutation == "evidence_row_extra":
+        evidence["foreign-row"] = copy.deepcopy(detail)
+    elif mutation.startswith("evidence_patient_"):
+        if mutation == "evidence_patient_missing":
+            del detail["patient_id"]
+        else:
+            detail["patient_id"] = "foreign-patient" if mutation == "evidence_patient_wrong" else 2
+    elif mutation == "inventory_missing":
+        del detail["claim_scope_inventory"]
+    elif mutation == "inventory_type":
+        detail["claim_scope_inventory"] = []
+    elif mutation == "state_missing":
+        del inventory["context_state"]
+    elif mutation == "state_wrong":
+        inventory["context_state"] = "missing"
+    elif mutation == "claims_missing":
+        del inventory["claims"]
+    elif mutation == "claims_type":
+        inventory["claims"] = {}
+    elif mutation == "claims_empty":
+        inventory["claims"] = []
+    elif mutation == "claims_extra":
+        inventory["claims"].append(copy.deepcopy(inventory["claims"][0]))
+    elif mutation == "claim_row_type":
+        inventory["claims"] = [CLAIM]
+    elif mutation == "scope_claim_missing":
+        del inventory["claims"][0]["claim_id"]
+    else:
+        inventory["claims"][0]["claim_id"] = {
+            "scope_claim_null": None,
+            "scope_claim_empty": "",
+            "scope_claim_wrong": "foreign-claim",
+            "scope_claim_type": 2,
+        }[mutation]
+    _raw_reject(left, right, raw_policy, raw_sources)
+
+
+@pytest.mark.parametrize(
+    "mutation", ["money", "count", "type", "order", "nested", "status", "field_extra"]
+)
+@pytest.mark.parametrize("table", [BILL_REPORT, OWN_TABLES[1]])
+def test_raw_identity_does_not_allow_unknown_sibling_deltas(
+    raw_policy, raw_sources, mutation, table
+):
+    left, right = _raw_bill_tables()
+    for tables in (left, right):
+        tables[table][BILL_KEY]["ordered_sibling"] = ["first", "second"]
+        tables[table][BILL_KEY]["nested_identity"] = {"claim_id": CLAIM}
+    row = right[table][BILL_KEY]
+    if mutation == "money":
+        row["known_nonzero_try"] = 13.5
+    elif mutation == "count":
+        row["unowned_count"] = 2
+        left[table][BILL_KEY]["unowned_count"] = 1
+    elif mutation == "type":
+        row["known_zero_try"] = 0
+    elif mutation == "order":
+        row["ordered_sibling"].reverse()
+    elif mutation == "nested":
+        row["nested_identity"]["claim_id"] = "foreign-claim"
+    elif mutation == "status":
+        row["unowned_status"] = "evaluated"
+        left[table][BILL_KEY]["unowned_status"] = "not_evaluated"
+    else:
+        row["new_sibling"] = True
+    _raw_reject(left, right, raw_policy, raw_sources)
+
+
+@pytest.mark.parametrize("side", [0, 1])
+@pytest.mark.parametrize(
+    "before,after",
+    [
+        (b'patient_id: str = ""', b"patient_id: int = 0"),
+        (b'patient_id: str = ""', b'other_id: str = ""'),
+        (b'patient_id: str = ""', b'patient_id: str = ""\n    claim_id: str = ""'),
+        (b'patient_id: str = ""', b'patient_id: str = ""\n    patient_id: str = ""'),
+        (b'patient_id: str = ""', b'patient_id: str = ""\n    patient_id = "foreign"'),
+        (b"@dataclass\nclass BillingActionReport:", b"class BillingActionReport:"),
+        (b"BillingActionReport(patient_id=pid)", b"BillingActionReport(patient_id=other_pid)"),
+        (b"BillingActionReport(patient_id=pid)", b"BillingActionReport(pid)"),
+        (
+            b"BillingActionReport(patient_id=pid)",
+            b"BillingActionReport(patient_id=pid, claim_id=other_id)",
+        ),
+        (
+            b"    report = BillingActionReport(patient_id=pid)",
+            b"    report = BillingActionReport(patient_id=pid)\n    report = BillingActionReport(patient_id=pid)",
+        ),
+        (
+            b"    report = BillingActionReport(patient_id=pid)",
+            b"    if injected:\n        report = BillingActionReport(patient_id=pid)",
+        ),
+    ],
+)
+def test_raw_source_schema_and_constructor_proof_checks_both_bound_sides(
+    raw_sources, side, before, after
+):
+    files = [dict(source._files) for source in raw_sources]
+    path = BILLING + (
+        "types.py" if before.startswith((b"patient_id:", b"@dataclass")) else "patient_report.py"
+    )
+    changed = files[side][path].replace(before, after, 1)
+    assert changed != files[side][path]
+    files[side][path] = changed
+    with pytest.raises(delta.MeasurementRejected):
+        delta._raw_bill_identity_source_proof(*files, RAW_BUILDER)
+
+
+@pytest.mark.parametrize(
+    "before,after",
+    [
+        (b'bill_key.split("::", 1)', b'bill_key.split("::")'),
+        (b"if not patient_id or not claim_id:", b"if not patient_id:"),
+        (b'report.get("wavea_evidence_detail")', b'report.get("other_detail")'),
+        (
+            b"validate_full_wavea_evidence_detail(normalized, patient_id)",
+            b"validate_full_wavea_evidence_detail(normalized, other_patient)",
+        ),
+        (b"    validate_full_wavea_evidence_detail(normalized, patient_id)\n", b""),
+        (b'inventory["context_state"] != "available"', b'inventory["context_state"] != "missing"'),
+        (b"] != [claim_id]:", b"] != []:"),
+        (b"    normalized = json_ready(detail)", b"    normalized = json_ready(detail)\n    pass"),
+        (b"    return normalized", b"    return normalized\n    pass"),
+        (
+            b'if field.name != "wavea_evidence_detail"',
+            b'if field.name not in ("wavea_evidence_detail", "patient_id")',
+        ),
+        (b"    return report\n", b'    return {**report, "claim_id": "injected"}\n'),
+        (b'ctx.get("bill_billing_reports", {})', b'ctx.get("billing_reports", {})'),
+        (b"{bill_key: _without_wavea_detail(report)", b"{other_key: _without_wavea_detail(report)"),
+        (
+            b"_without_wavea_detail(report) for bill_key, report",
+            b"_without_wavea_detail(other_report) for bill_key, report",
+        ),
+        (b'report.pop("wavea_evidence_detail", None)', b'report.pop("patient_id", None)'),
+        (b'"patient_bill_billing_report_rows", build.build_id', b'"other_table", build.build_id'),
+        (
+            b'"patient_bill_billing_report_rows", build.build_id',
+            b'"patient_bill_billing_report_rows", other_build',
+        ),
+        (
+            b"attach_bilun_data_source_metadata(report, sut_data_source_metadata)",
+            b"attach_bilun_data_source_metadata(other_report, sut_data_source_metadata)",
+        ),
+        (
+            b"for bill_key, report in bill_billing_reports.items()",
+            b"for bill_key, report in other_reports.items()",
+        ),
+        (
+            b"        for report in bill_billing_reports.values():",
+            b"        bill_billing_reports = foreign_reports\n        for report in bill_billing_reports.values():",
+        ),
+        (
+            b"        bill_billing_reports = json_ready(",
+            b'        raw_bill_reports["foreign"] = injected\n        bill_billing_reports = json_ready(',
+        ),
+        (
+            b'        write_json_payload_rows(con, "patient_bill_billing_report_rows"',
+            b'        report["claim_id"] = injected\n        write_json_payload_rows(con, "patient_bill_billing_report_rows"',
+        ),
+        (
+            b"def _without_wavea_detail(report: object) -> object:",
+            b"def _without_wavea_detail(report: object) -> object:\n    pass\ndef _without_wavea_detail(report: object) -> object:",
+        ),
+        (
+            b"def _normalize_wavea_bill_detail(bill_key:",
+            b"def _normalize_wavea_bill_detail():\n    pass\ndef _normalize_wavea_bill_detail(bill_key:",
+        ),
+    ],
+)
+def test_raw_builder_complete_functions_and_mapping_routes_are_frozen(
+    raw_policy, raw_sources, before, after
+):
+    left, right = _raw_bill_tables()
+    builder = RAW_BUILDER.replace(before, after, 1)
+    assert builder != RAW_BUILDER
+    _raw_reject(
+        left,
+        right,
+        raw_policy,
+        raw_sources,
+        own_build_context=_raw_context(left, right, raw_sources, builder),
+    )
+
+
+def test_raw_builder_duplicate_write_and_bypass_order_are_rejected(raw_policy, raw_sources):
+    left, right = _raw_bill_tables()
+    prefix, suffix = RAW_BUILDER.split(RAW_ROUTE)
+    raw_assignment = RAW_ROUTE.splitlines(keepends=True)[0]
+    raw_write = (
+        b"        write_json_payload_rows"
+        + RAW_ROUTE.split(b"        write_json_payload_rows", 1)[1]
+    )
+    for builder in (
+        prefix + RAW_ROUTE + RAW_ROUTE + suffix,
+        prefix + RAW_ROUTE + raw_write + suffix,
+        prefix + RAW_ROUTE[len(raw_assignment) :] + raw_assignment + suffix,
+    ):
+        _raw_reject(
+            left,
+            right,
+            raw_policy,
+            raw_sources,
+            own_build_context=_raw_context(left, right, raw_sources, builder),
+        )
