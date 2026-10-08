@@ -54,24 +54,25 @@ def _get_active_bilun_build_id(reader) -> str | None:
     return _get_active_build_id_or_none(reader, scope="bilun")
 
 
-def _normalize_medula_playbook_counts(payload: dict[str, Any]) -> dict[str, Any]:
-    """Restore property counts omitted by dataclass/cache serialization."""
-    block = payload.get("medula_rejection_playbook")
-    if isinstance(block, dict) and isinstance(block.get("entries"), list):
-        entries = block["entries"]
-        payload["medula_rejection_playbook"] = {
-            **block,
-            "entry_count": len(entries),
-            "rebill_permitted_count": sum(
-                1 for row in entries if isinstance(row, dict) and row.get("rebill_permitted")
-            ),
-        }
-        payload["medula_playbook_entry_count"] = len(entries)
-    return payload
-
-
+# The deploy rehearsal extracts this function by AST; keep it self-contained
+# and do not add module-level helpers.
 def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> dict[str, Any]:
     """Serialize a BillingActionReport to a JSON-safe dict."""
+    def _normalize_medula_playbook_counts(payload: dict[str, Any]) -> dict[str, Any]:
+        """Restore property counts omitted by dataclass/cache serialization."""
+        block = payload.get("medula_rejection_playbook")
+        if isinstance(block, dict) and isinstance(block.get("entries"), list):
+            entries = block["entries"]
+            payload["medula_rejection_playbook"] = {
+                **block,
+                "entry_count": len(entries),
+                "rebill_permitted_count": sum(
+                    1 for row in entries if isinstance(row, dict) and row.get("rebill_permitted")
+                ),
+            }
+            payload["medula_playbook_entry_count"] = len(entries)
+        return payload
+
     if dataclasses.is_dataclass(report):
         payload = dataclasses.asdict(
             dataclasses.replace(report, wavea_evidence_detail=None)
