@@ -72,7 +72,7 @@ describe("uncomputed backend money displays", () => {
     };
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={populated} omitPriority />, locale);
     expect(html).toContain("data-billing-summary");
-    expect(html).toContain("grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))]");
+    expect(html).toContain("@min-[400px]/billing-summary:basis-[calc(50%-0.75rem)]");
     expect(html).not.toMatch(/(?:md|xl):grid-cols-/);
     expect(html).toContain("@min-[220px]");
     expect(html).toContain("max-sm:p-3");

@@ -250,7 +250,7 @@ describe("claim compliance projection", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider><PatientWorkspaceViews billingReport={report} patientId={report.patient_id} /></WorkspaceProvider>,
     );
-    expect(html).toMatch(new RegExp(`At-risk findings</p><p[^>]*>${count}</p>`));
+    expect(html).toMatch(new RegExp(`At-risk findings</dt><dd[^>]*>${count}</dd>`));
     expect(html).toMatch(new RegExp(`Compliance <span[^>]*>${count}</span>`));
     expect(viewActions(report, "compliance").map((row) => row.action_id)).toEqual(["legacy"]);
     expect(complianceBilledAtRisk(report)).toBe(123.45);
