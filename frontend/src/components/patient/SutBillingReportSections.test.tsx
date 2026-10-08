@@ -640,6 +640,39 @@ describe("MedulaRejectionPlaybookSection", () => {
 });
 
 describe("DrugIndicationReviewSection", () => {
+  it.each(["en", "tr"] as const)("keeps each %s drug and certainty with one shared summary risk and unchanged card risks", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).drugIndication;
+    const findings: DrugIndicationFinding[] = ["evaluated", "missing_inputs", "unavailable"].map((evaluation_status, index) => ({
+      finding_id: `drug-${index}`, patient_id: "P-DRUG", claim_id: "C-DRUG", drug_claim_line_id: `D-${index}`,
+      drug_name: index === 2 ? undefined : `Medicine ${index}`, drug_code: `CODE-${index}`,
+      finding_kind: "indication_mismatch", severity: "review", applicability_status: "indication_mismatch",
+      evaluation_status, observed_icd10_codes: [], matched_icd10_codes: [], unmatched_icd10_codes: [], eligible_routes: [],
+      explanation_tr: `Distinct explanation ${index}`, recommended_action_tr: `Distinct action ${index}`,
+    } as DrugIndicationFinding));
+    const html = renderToStaticMarkupWithLocale(<DrugIndicationReviewSection reviewData={{
+      exactness_status: "partial_exact", unavailable_reason: "Distinct partial reason", violations: [], findings,
+      violation_count: 3, error_count: 0,
+    }} />, locale);
+    const header = html.match(/<details id="drug-indication"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1] ?? "";
+    const lines = [...header.matchAll(/<span class="mt-1 block text-xs font-normal text-\[var\(--text-secondary\)\]">([\s\S]*?)<\/span>/g)]
+      .map((match) => match[1]);
+
+    expect(header.split(labels.riskNotice)).toHaveLength(2);
+    expect(header).toContain("Distinct partial reason");
+    expect(header).toContain("· 3");
+    expect(lines).toEqual([`Medicine 0 · ${labels.certaintyLabels.evaluated}`, `Medicine 1 · ${labels.certaintyLabels.missing_inputs}`,
+      `CODE-2 · ${labels.certaintyLabels.unavailable}`]);
+    expect(html).not.toContain('<details id="drug-indication" open=');
+    const cards = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map((match) => match[1]);
+    expect(cards).toHaveLength(3);
+    cards.forEach((card, index) => {
+      expect(card.split(labels.riskNotice)).toHaveLength(2);
+      expect(card).toContain(`CODE-${index}`);
+      expect(card).toContain(`Distinct explanation ${index}`);
+      expect(card).toContain(`Distinct action ${index}`);
+    });
+  });
+
   it("renders nothing when there are no violations", () => {
     const html = renderToStaticMarkupWithLocale(
       <DrugIndicationReviewSection

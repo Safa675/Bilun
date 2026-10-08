@@ -49,9 +49,11 @@ export function DrugIndicationReviewSection({
         {display.kind === "structured" && display.findings.map((finding, index) => (
           <span key={finding.finding_id ?? index} className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
             {finding.drug_name || finding.drug_code || "—"} · {t(`billing.drugIndication.certaintyLabels.${finding.evaluation_status === "evaluated" ? "evaluated" : finding.evaluation_status === "missing_inputs" ? "missing_inputs" : "unavailable"}`)}
-            <span className="block text-[var(--danger)]">{t("billing.drugIndication.riskNotice")}</span>
           </span>
         ))}
+        {display.kind === "structured" && <span className="mt-1 block text-xs font-normal text-[var(--danger)]">
+          {t("billing.drugIndication.riskNotice")}
+        </span>}
         {display.kind === "evaluations" && <span className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
           {t(display.hasCorpusNoncoverage ? "billing.drugIndication.corpusNoncoverage" : "billing.drugIndication.evaluationOnly")}
           <span className="block">{t(display.hasCorpusNoncoverage ? "billing.drugIndication.corpusNoncoverageDetail" : "billing.drugIndication.evaluationOnlyDetail")}</span>
