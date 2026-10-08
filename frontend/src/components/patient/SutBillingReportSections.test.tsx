@@ -345,7 +345,7 @@ describe("SutBillingReportSections honest gaps", () => {
       />,
     );
 
-    expect(html).toContain("Ilave ücret (informational)");
+    expect(html).toContain("Surcharge (informational)");
     expect(html).toContain(fmtTRY2Fixture(15.00));
     expect(html).toContain("exemption does not waive ilave");
   });
@@ -1326,9 +1326,9 @@ describe("BillingSummary open metric ownership", () => {
       expect(compact).not.toContain(identity);
       expect(compact).not.toContain(description);
       expect(compact).toContain(title);
-      const chip = full.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0];
+      const chip = full.match(/<span class="inline-flex items-center[^"]*"[^>]*><span>[\s\S]*?<\/span><\/span>/)?.[0];
       expect(chip).toBeDefined();
-      expect(compact.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0]).toBe(chip);
+      expect(compact.match(/<span class="inline-flex items-center[^"]*"[^>]*><span>[\s\S]*?<\/span><\/span>/)?.[0]).toBe(chip);
       expect(compact.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]).toBe(full.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]);
       expect(compact.slice(compact.indexOf("</dl>") + 5)).toBe(full.slice(full.indexOf("</dl>") + 5));
       expect(compact).not.toContain("<details");

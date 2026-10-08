@@ -13,7 +13,7 @@ const patient = {
     "eyebrow": "Finansal özet",
     "title": "Tüm faturalar özeti",
     "titleBill": "Fatura {claimId}",
-    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve Bilun'un hâlâ kurtarabileceği miktar.",
+    "description": "Tüm faturaların faturalanan, beklenen ödeme ve geri kazanılabilir tutarları. Eksik tutarlar kullanılamıyor olarak kalır.",
     "descriptionBill": "Yalnızca seçili fatura için toplamlar — aşağıdaki bölümler aynı kapsamı kullanır.",
     "totalBilled": "Toplam faturalanan",
     "expectedPayable": "Beklenen ödenecek",
@@ -23,7 +23,7 @@ const patient = {
   },
   "billingGroups": {
     "overview": "Finansal özet",
-    "overviewDescription": "Aktif kapsam için özet KPI'lar ve önerilen işlemler."
+    "overviewDescription": "Seçili faturaların tutarları ve önerilen işlemleri."
   },
   "billPicker": {
     "label": "Faturalar",
@@ -68,7 +68,7 @@ const patient = {
     "eyebrow": "SUT hasta çalışma alanı",
     "billingTitle": "Fatura",
     "billingEmphasis": "Raporu",
-    "description": "Derin fatura incelemesine geçmeden önce hayatta kalan SUT sonuç ve optimizasyon verilerini birleştiren hasta düzeyinde kesinlik odaklı çalışma alanı.",
+    "description": "Hastanın faturalarını, SUT bulgularını ve geri kazanılabilir tutarlarını inceleyin.",
     "backToPatients": "Hastalara dön",
     "diagnoses": "Tanılar",
     "icdChapters": "ICD bölümleri",
@@ -79,7 +79,7 @@ const patient = {
     "clinicalSnapshotEyebrow": "Klinik ve kural özeti",
     "clinicalSnapshotDescription": "Bu hasta için tanı temelli SUT kural bulguları. Talep kapsamlı optimizasyon için aşağıdan bir fatura seçin.",
     "optimizationTitle": "Optimizasyon özeti",
-    "optimizationDescription": "Hasta düzeyinde SUT kural bulguları kesinlik odaklı kalır: eksik girdiler kullanılamaz olarak gösterilir.",
+    "optimizationDescription": "Bilgisi eksik kontroller kullanılamıyor olarak kalır.",
     "copayEyebrow": "Katılım payı muafiyeti",
     "copayEligible": "Uygun",
     "copayNoMatch": "Muafiyet gerekçesi eşleşmedi",
@@ -124,10 +124,10 @@ const patient = {
       "message": "Hasta {patientId} için hasta düzeyinde SUT analitiği şu anda yüklü değil."
     },
     "outcomeSummary": {
-      "eyebrow": "Yalnızca kesin hasta sonucu",
-      "title": "Talep satırı toplamları açık kalır",
-      "paragraph1": "Tahmine dayalı SUT maliyet aralıkları ve boşluk projeksiyonları kaldırıldı.",
-      "paragraph2": "Bu hasta görünümü analitik önbellekten gelen kesin talep satırı toplamlarını tutar; eksik fiyatlandırma meta verisi kesin sayılmak yerine kullanılamaz kalır."
+      "eyebrow": "Hasta fatura özeti",
+      "title": "Fatura kalemlerinden hesaplanan tutarlar",
+      "paragraph1": "Yalnızca hesaplanmış fatura kalemi tutarları gösterilir; tahmini tutar eklenmez.",
+      "paragraph2": "Fiyat bilgisi eksik tutarlar kullanılamıyor olarak kalır."
     },
     "claimSummary": {
       "title": "Kesin talep satırı özeti",

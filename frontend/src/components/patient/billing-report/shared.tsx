@@ -6,7 +6,7 @@ import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
 import { DataTable, Section } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
-import type { ExactnessLike } from "@/lib/sutExactness";
+import { getExactnessDescription, type ExactnessLike } from "@/lib/sutExactness";
 
 export const ACCENT = theme.accent;
 
@@ -70,7 +70,7 @@ export function BillingSectionShell({
         <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
           {title}{count != null && <span className="tabular-nums"> · {count}</span>}
           {total && <> <span className="ml-3 whitespace-nowrap tabular-nums">{total}</span></>}
-          <span className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
+          <span title={getExactnessDescription(exactness, t)} className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
             {exactnessStatus ? t(`billing.recommendedActions.exactness.${exactnessStatus}`) : t("common.unavailable")}
             {status && <> · {status}</>}
           </span>

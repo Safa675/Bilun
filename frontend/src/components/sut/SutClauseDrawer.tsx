@@ -109,11 +109,11 @@ function SutClauseDrawerBody({
           {clause && (
             <>
               {clause.section_title && (
-                <p className="text-xs font-semibold text-[var(--text-secondary)]">
+                <p lang="tr" className="text-xs font-semibold text-[var(--text-secondary)]">
                   {clause.section_title}
                 </p>
               )}
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-primary)]">
+              <p lang="tr" className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-primary)]">
                 {clause.text_tr ?? t("common.unavailable")}
               </p>
             </>

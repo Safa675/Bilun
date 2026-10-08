@@ -3,7 +3,7 @@ const optimizer = {
     complianceDescription:
       "Cohort compliance alerts from live engines: copay exemptions, surcharge, EK-2C-1 rates, materials, indication, lab, and payment methods.",
     revenueDescription:
-      "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
+      "Review recoverable amounts and checks that need more billing data.",
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
     copay_rates: "Copay Rates",
@@ -40,6 +40,42 @@ const optimizer = {
     surcharge: "Surcharge Compliance",
     copay_rates: "Copay Rates",
   },
+  modules: {
+    exemptionEligibility: "Exemption eligibility",
+    totalPatientsHint: "Out of {count} patients",
+    flaggedPatientsHint: "Flagged patients (total {count})",
+    diagnosisCount: "{count} diagnoses",
+    procedureCount: "{count} procedures",
+    diagnosisChapters: "Diagnoses & ICD chapters",
+    exemptionStatus: "Exemption status",
+    matchedDiagnoses: "Matched diagnoses (EK-1A / emergency)",
+    sourceTextTr: "Source text (Turkish)",
+    exemptEk1a: "Exempt (EK-1A)",
+    standardCopay: "Standard copay",
+    applyExemption: "Apply the exemption flag before billing",
+    collectStandardCopay: "Standard copay collection",
+    surchargeRisk: "Surcharge risk",
+    exposureRate: "Surcharge exposure rate",
+    applicableProcedures: "Applicable procedures",
+    topRules: "Top matched rules",
+    complianceStatus: "Compliance status",
+    noRuleViolations: "No rule violations",
+    compliant: "Compliant",
+    copayRate: "EK-2C-1 copay rate",
+    meanRate: "Mean rate",
+    topProcedures: "Top matched procedures",
+    rateDifference: "Rate difference",
+  },
+  exemptionCategories: {
+    ek1a_chronic: "EK-1A",
+    acil_servis: "Emergency",
+    koruyucu_saglik: "Preventive care",
+    yesil_kart: "Green card",
+    sehit_gazi: "Martyr / veteran",
+    vatani_hizmet: "National service",
+    kanun_2022_65: "65+ (Law 2022)",
+    is_kazasi_meslek: "Work injury / occupational disease",
+  },
   errors: {
     loadAlerts: "Failed to load patient alerts",
     loadAlertsUnexpected:
@@ -47,12 +83,12 @@ const optimizer = {
     loadAlertsBackend: "The backend returned an error while loading patient alerts.",
     alertsTemporarilyUnavailable: "SUT alerts are temporarily unavailable.",
     networkHint:
-      "Could not reach the API server. Start it with `python -m uvicorn src.api:app` and try again.",
+      "The service could not be reached. Try again shortly.",
     alertLoadFailed: "Alert load failed",
     loadRevenueRecovery: "Failed to load revenue recovery",
     revenueRecoveryUnavailable: "Revenue recovery unavailable",
     revenueRecoveryApiHint:
-      "Billing reports require the full pipeline. Start the API with `python -m uvicorn src.api:app`.",
+      "Billing reports are temporarily unavailable. Try again shortly.",
   },
   emptyStates: {
     noPatientsMatchFilter: "No patients match this filter.",
@@ -79,17 +115,17 @@ const optimizer = {
     activeFilters: "Active filters",
     partialExact: "Partial Exact",
     cohortFilterAlertsHint:
-      "Alert tables reflect the active filters. Summary KPI cards still use full-cohort totals until filtered APIs are available.",
+      "Tables use the selected filters; summary cards show all patients.",
     cohortFilterRevenueHint:
-      "Recoverable total and patient count reflect the active filters. Category savings charts still use full-cohort aggregates until filtered APIs are available.",
+      "The total and patient count use the selected filters; category charts show all patients.",
     copayComposableWithProfiles:
-      "Composable copay waiver: EK-1A ({ek1aCount} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. The EK-2C-1 copay rate list (§2.2) is evaluated separately.",
+      "Checks {ek1aCount} EK-1A diagnosis ranges and available visit/status information. EK-2C-1 rates are checked separately.",
     copayEk1aOnly:
-      "Cross-references patient ICD-10 diagnoses against {ek1aCount} chronic disease exemption ranges from gazette annex EK-1A. Rebuild the analytics cache to load status and visit-type exemption fields.",
+      "Checks diagnoses against {ek1aCount} EK-1A exemption ranges. Visit and status information is not loaded.",
     billLevelOverlapNote:
       "A single bill can satisfy multiple exemption grounds, so category totals may exceed the number of exempt bills. Chronic-disease exemption is a patient property, so it applies to every bill of an affected patient.",
     surchargeExact:
-      "Uses exact dated procedure claim lines and explicit surcharge rule flags from the active SUT runtime inputs.",
+      "Checked against dated billed procedures and applicable SUT surcharge rules.",
     revenuePartialExact:
       "Revenue recovery contains exact category-level findings, but aggregate totals are mixed because some billing sections still require exact inputs.",
     revenueUnavailable:
@@ -97,7 +133,7 @@ const optimizer = {
     revenueFooterExact:
       "Normative analysis based on official SUT gazette rule references (EK-1A, EK-2B, EK-2C, EK-4A)",
     revenueFooterPartial:
-      "Partial-exact recovery review: exact category-level savings are shown while incomplete billing sections remain explicit required-input gaps.",
+      "Calculated category amounts are shown; sections with missing information remain incomplete.",
     revenueFooterMixed:
       "Mixed exactness detected: recovery review totals stay unavailable until every billing section is exact.",
     drgAuditFlagsOnly:
@@ -169,7 +205,7 @@ const optimizer = {
     billedAtRisk: "Billed at risk",
     medulaRejections: "MEDULA rejections",
     medulaHint: "Rejection queue",
-    indexUnavailable: "Compliance index is not in this cache. Rebuild the analytics cache.",
+    indexUnavailable: "Compliance results are not loaded for these bills.",
     noFindings: "No compliance findings for this filter.",
     patientId: "Patient ID",
     claim: "Claim",
@@ -179,6 +215,7 @@ const optimizer = {
     sutSection: "SUT",
     inspect: "Inspect",
     openBill: "Open bill",
+    claimComplianceSource: "Claim compliance",
   },
   recoveryList: {
     category: "Category",

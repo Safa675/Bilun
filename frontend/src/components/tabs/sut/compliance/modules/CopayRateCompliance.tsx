@@ -10,6 +10,7 @@ import { getPatientAlerts } from "@/lib/api/sut";
 import type { PatientAlertsResponse, PatientAlertsStatus } from "@/lib/domains/sut";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { cn } from "@/lib/cn";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export interface CopayRateComplianceProps {
   cohortPatientIds: Set<string>;
@@ -30,6 +31,7 @@ export function CopayRateCompliance({
   cohortPatientIds,
   cohortFilterActive,
 }: CopayRateComplianceProps) {
+  const t = useT();
   const [status, setStatus] = useState<PatientAlertsStatus>("all");
   const [data, setData] = useState<PatientAlertsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,9 +73,9 @@ export function CopayRateCompliance({
     <div className="space-y-5">
       <Surface variant="base" padding="md">
         <Stat
-          label="EK-2C-1 katılım oranı"
+          label={t("optimizer.modules.copayRate")}
           value={fmtNum(flaggedCount)}
-          hint={`İşaretli hasta (toplam ${fmtNum(totalCount)})`}
+          hint={t("optimizer.modules.flaggedPatientsHint", { count: fmtNum(totalCount) })}
         />
       </Surface>
 
@@ -85,7 +87,7 @@ export function CopayRateCompliance({
           onClick={() => setStatus("all")}
           className={cn("gap-1.5", status === "all" && buttonActiveClass)}
         >
-          Tümü ({fmtNum(totalCount)})
+          {t("optimizer.filters.status.all")} ({fmtNum(totalCount)})
         </Button>
         <Button
           type="button"
@@ -94,7 +96,7 @@ export function CopayRateCompliance({
           onClick={() => setStatus("flagged")}
           className={cn("gap-1.5", status === "flagged" && buttonActiveClass)}
         >
-          İşaretli ({fmtNum(flaggedCount)})
+          {t("optimizer.filters.status.flagged")} ({fmtNum(flaggedCount)})
         </Button>
         <Button
           type="button"
@@ -103,7 +105,7 @@ export function CopayRateCompliance({
           onClick={() => setStatus("clear")}
           className={cn("gap-1.5", status === "clear" && buttonActiveClass)}
         >
-          Temiz ({fmtNum(totalCount - flaggedCount)})
+          {t("optimizer.filters.status.clear")} ({fmtNum(totalCount - flaggedCount)})
         </Button>
       </div>
 
@@ -113,19 +115,19 @@ export function CopayRateCompliance({
         <DataTable minWidth={900}>
           <thead>
             <tr>
-              <th>Hasta ID</th>
-              <th>Ortalama oran</th>
-              <th>Uygulanabilir işlemler</th>
-              <th>En çok eşleşen işlemler</th>
-              <th>Durum</th>
-              <th className="text-right">İncele</th>
+              <th>{t("optimizer.tables.patientId")}</th>
+              <th>{t("optimizer.modules.meanRate")}</th>
+              <th>{t("optimizer.modules.applicableProcedures")}</th>
+              <th>{t("optimizer.modules.topProcedures")}</th>
+              <th>{t("optimizer.tables.status")}</th>
+              <th className="text-right">{t("optimizer.complianceIndex.inspect")}</th>
             </tr>
           </thead>
           <tbody>
             {filteredPatients.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
-                  Seçili filtre için hasta kaydı bulunamadı.
+                  {t("optimizer.emptyStates.noPatientsMatchFilter")}
                 </td>
               </tr>
             ) : (
@@ -142,12 +144,12 @@ export function CopayRateCompliance({
                     </td>
                     <td className="tabular-nums text-[var(--text-primary)]">
                       {meanRate != null ? `${meanRate}%` : (
-                        <span className="text-[var(--text-muted)]">Kullanılamıyor</span>
+                        <span className="text-[var(--text-muted)]">{t("common.unavailable")}</span>
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
                       {p.copay_rate_exposure?.n_applicable != null
-                        ? `${p.copay_rate_exposure.n_applicable} işlem`
+                        ? t("optimizer.modules.procedureCount", { count: p.copay_rate_exposure.n_applicable })
                         : "—"}
                     </td>
                     <td className="text-[var(--text-secondary)]">
@@ -166,9 +168,9 @@ export function CopayRateCompliance({
                     </td>
                     <td>
                       {flagged ? (
-                        <Chip variant="warning">Oran sapması</Chip>
+                        <Chip variant="warning">{t("optimizer.modules.rateDifference")}</Chip>
                       ) : (
-                        <Chip variant="success">Uyumlu</Chip>
+                        <Chip variant="success">{t("optimizer.modules.compliant")}</Chip>
                       )}
                     </td>
                     <td className="text-right">
@@ -177,7 +179,7 @@ export function CopayRateCompliance({
                         href={buildSutBillingHref(p.patient_id, { section: "billing-copay" })}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-hover)]"
                       >
-                        Faturaya git <ArrowRight className="h-3 w-3" />
+                        {t("optimizer.complianceIndex.openBill")} <ArrowRight className="h-3 w-3" />
                       </PatientTabLink>
                     </td>
                   </tr>

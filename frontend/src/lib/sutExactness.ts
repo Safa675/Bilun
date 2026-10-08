@@ -28,6 +28,17 @@ export function isExactOutput(block: ExactnessLike | null | undefined): boolean 
   return block?.exactness_status === "exact" || block?.pricing_status === "exact";
 }
 
+export function getExactnessDescription(
+  block: ExactnessLike | null | undefined,
+  translateKey: (key: string) => string = t,
+): string {
+  if (isExactOutput(block)) return translateKey("billing.glossary.exact");
+  const status = block?.exactness_status ?? block?.pricing_status;
+  if (status === "partial_exact") return translateKey("billing.glossary.partial");
+  if (status === "not_applicable") return translateKey("billing.glossary.notApplicable");
+  return translateKey("billing.glossary.unavailable");
+}
+
 export function isOptionalIngestPending(
   block: ExactnessLike | null | undefined,
 ): boolean {

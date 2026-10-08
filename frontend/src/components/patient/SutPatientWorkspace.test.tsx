@@ -17,7 +17,8 @@ vi.mock("@/components/tabs/sut/shared", () => ({
   KpiCard: ({ label, value }: { label: string; value: string }) => `${label}:${value}`,
 }));
 
-vi.mock("@/lib/sutExactness", () => ({
+vi.mock("@/lib/sutExactness", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/sutExactness")>(),
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
   hasRecoverableBillingTotals: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>

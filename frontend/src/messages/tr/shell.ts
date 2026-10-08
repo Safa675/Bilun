@@ -59,6 +59,12 @@ const shell = {
     errorTitle: "Gönderim Başarısız",
     errorFallback: "E-posta otomatik iletilemedi. Dilerseniz doğrudan e-posta gönderebilirsiniz:",
     directEmailButton: "E-posta Programında Aç",
+    localOnlyTitle: "E-posta gönderilmedi",
+    localOnlyDescription: "Mesajınız yerel olarak kaydedildi ancak e-posta ile iletilmedi.",
+    localOnlyFallback: "E-posta uygulamanızla doğrudan safaoksuz@bilun.tech adresine gönderebilirsiniz.",
+    mailtoSubject: "[Bilun Geri Bildirim] {category} - {name}",
+    mailtoBody: "Gönderen: {name}\nE-posta: {email}\nKategori: {category}\nSayfa: {tab} ({url})\nRol: {role}\n\nMesaj:\n{message}",
+    anonymousUser: "Kullanıcı",
     close: "Kapat",
   },
 } as const;
