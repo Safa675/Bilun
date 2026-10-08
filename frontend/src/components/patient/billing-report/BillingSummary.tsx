@@ -70,7 +70,7 @@ export function BillingSummary({
   return (
     <Surface
       variant="base"
-      padding="lg"
+      padding={omitHeaderContext ? "md" : "lg"}
       className="@container/billing-summary space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
       data-billing-summary
     >

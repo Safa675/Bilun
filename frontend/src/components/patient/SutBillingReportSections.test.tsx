@@ -1310,6 +1310,14 @@ describe("BillingSummary open metric ownership", () => {
     ] as BillingActionReport[]) {
       const full = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority />, locale);
       const compact = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority omitHeaderContext />, locale);
+      const fullClasses = full.match(/<div\b[^>]*data-billing-summary="true"[^>]*>/)?.[0].match(/class="([^"]+)"/)?.[1].split(" ");
+      const compactClasses = compact.match(/<div\b[^>]*data-billing-summary="true"[^>]*>/)?.[0].match(/class="([^"]+)"/)?.[1].split(" ");
+      expect(fullClasses).toContain("p-6");
+      expect(fullClasses).not.toContain("p-4");
+      expect(compactClasses).toContain("p-4");
+      expect(compactClasses).not.toContain("p-6");
+      expect(fullClasses).toContain("max-sm:p-3");
+      expect(compactClasses).toContain("max-sm:p-3");
       const title = scope === "bill" ? labels.billTitle : labels.title;
       const description = scope === "bill" ? labels.billDescription : labels.description;
       const identity = scope === "bill" ? report.claim_id : report.patient_id;
