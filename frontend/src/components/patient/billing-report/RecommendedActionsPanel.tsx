@@ -79,8 +79,8 @@ export function RecommendedActionsPanel({
             const clauseKey = action.clause_ref?.clause_key ?? "";
             const cite = action.clause_ref?.clause_coordinate || action.sut_section_id || "";
             return (
-              <li key={action.action_id} data-action-id={action.action_id} className={cn("grid grid-cols-1 items-center gap-3 py-2 first:pt-0 last:pb-0 @min-[300px]:grid-cols-[minmax(0,1fr)_auto] @min-[560px]:grid-cols-[minmax(0,1fr)_auto_auto]", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
-                <div className="min-w-0 @min-[300px]:col-span-2 @min-[560px]:col-span-1">
+              <li key={action.action_id} data-action-id={action.action_id} className={cn("grid grid-cols-1 items-center gap-3 py-2 first:pt-0 last:pb-0 @min-[300px]:grid-cols-[minmax(0,1fr)_auto] @min-[420px]:grid-cols-[minmax(0,1fr)_auto_auto]", action.action_id === selectedActionId && "bg-[var(--gold-subtle)]")}>
+                <div className="min-w-0 @min-[300px]:col-span-2 @min-[420px]:col-span-1">
                   <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left text-sm font-medium leading-snug [overflow-wrap:anywhere] text-[var(--text-primary)] hover:text-[var(--gold-hover)]">
                     {recommendedActionTitle(t, action)}
                   </button>
@@ -91,7 +91,7 @@ export function RecommendedActionsPanel({
                     </Chip>
                   </div>
                 </div>
-                <div className="min-w-0 text-left @min-[560px]:text-right">
+                <div className="min-w-0 text-left @min-[420px]:text-right">
                   <span className="whitespace-nowrap tabular-nums text-sm font-semibold text-[var(--text-primary)]">
                     {amount?.value != null ? fmtTRY2(amount.value) : amount?.label ?? "—"}
                   </span>

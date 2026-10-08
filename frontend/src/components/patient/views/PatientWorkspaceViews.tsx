@@ -108,7 +108,10 @@ export default function PatientWorkspaceViews({
       onValueChange={(value) => setActiveView(value as WorkspaceViewId)}
       className="space-y-5 scroll-mt-24"
     >
-      <Tabs.List aria-label={t("billing.views.tabListAria")}>
+      <Tabs.List
+        aria-label={t("billing.views.tabListAria")}
+        className="min-w-0 flex-wrap gap-y-3"
+      >
         <Tabs.Trigger
           value="compliance"
           leading={<ShieldAlert className="h-4 w-4" aria-hidden="true" />}

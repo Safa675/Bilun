@@ -12,7 +12,7 @@ import {
   MaterialsPreCheckSection,
   OptionalOverrideSection,
 } from "@/components/patient/SutBillingReportSections";
-import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
+import { fmtNum, fmtTRY2 } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import { complianceBilledAtRiskSummary } from "@/lib/workspaceViews";
 import {
@@ -89,32 +89,35 @@ export default function ComplianceViewSection({
         {t("billing.views.compliance.description")}
       </p>
 
-      <div className="grid gap-6 sm:grid-cols-3">
-        <KpiCard
-          label={t("billing.views.compliance.kpiRisk")}
-          value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
-          valueColor={RISK_COLOR}
-        />
-        <KpiCard
-          label={t("billing.views.compliance.kpiFindings")}
-          value={fmtNum(rows.length)}
-        />
-        <KpiCard
-          label={t("billing.views.compliance.kpiBilledAtRisk")}
-          value={billedNone ? "—" : fmtTRY2(billed.total)}
-          sub={
-            billedComplete
-              ? undefined
-              : billedNone
+      <div className="@container/compliance-metrics">
+      <dl data-compliance-metrics className="grid grid-cols-1 gap-3 @min-[960px]/compliance-metrics:grid-cols-3">
+        <div data-compliance-metric="risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiRisk")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight" style={{ color: RISK_COLOR }}>
+            {auditExposure == null ? "—" : fmtTRY2(auditExposure)}
+          </dd>
+        </div>
+        <div data-compliance-metric="findings" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiFindings")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{fmtNum(rows.length)}</dd>
+        </div>
+        <div data-compliance-metric="billed-at-risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/compliance-metrics:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/compliance-metrics:items-center @min-[960px]/compliance-metrics:grid-cols-1 @min-[960px]/compliance-metrics:items-start">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiBilledAtRisk")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{billedNone ? "—" : fmtTRY2(billed.total)}</dd>
+          {!billedComplete && (
+            <dd className="text-xs leading-snug text-[var(--text-secondary)] @min-[400px]/compliance-metrics:col-span-2 @min-[960px]/compliance-metrics:col-span-1">
+              {billedNone
                 ? t("billing.views.compliance.kpiBilledAtRiskNone", {
                     count: billed.count,
                   })
                 : t("billing.views.compliance.kpiBilledAtRiskPartial", {
                     known: billed.known,
                     count: billed.count,
-                  })
-          }
-        />
+                  })}
+            </dd>
+          )}
+        </div>
+      </dl>
       </div>
 
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
@@ -130,6 +133,8 @@ export default function ComplianceViewSection({
 
       {detailsPrelude}
 
+      <div className="@container/compliance-secondary">
+      <div data-compliance-secondary className="grid grid-cols-1 items-start gap-4 [&>*]:min-w-0 @min-[500px]/compliance-secondary:grid-cols-2 @min-[500px]/compliance-secondary:[&>details[open]]:col-span-2 @min-[500px]/compliance-secondary:[&>section:has(>details[open])]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-lab]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-optional-override]:col-span-2 @min-[500px]/compliance-secondary:[&>#drug-indication]:col-span-2">
       <details id="claim-coverage" open={selectedSection === "claim-coverage" || undefined} className="scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
         <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
           {t("billing.wavea.coverageDetails")} · {coverage
@@ -217,6 +222,8 @@ export default function ComplianceViewSection({
           selectedSection={selectedSection}
         />
       )}
+      </div>
+      </div>
     </div>
   );
 }

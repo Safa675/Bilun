@@ -5,7 +5,7 @@ import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { isExactOutput } from "@/lib/sutExactness";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
-import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow, Surface } from "@/components/primitives";
+import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
 import { fmtNum, fmtRiskLabel, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
 import { BillingSectionShell } from "./shared";
@@ -32,9 +32,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
 
   return (
     <BillingSectionShell title={t("billing.sutOptimization.title")}>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>{t("billing.sutOptimization.copayEyebrow")}</Eyebrow>
+      <dl data-sut-optimization-summary className="@container/optimization space-y-3">
+        <div data-optimization-metric="copay" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
+          <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.copayEyebrow")}</Eyebrow></dt>
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <div className="flex flex-wrap items-center gap-2">
             <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
               {optimization.copay_exemptions.exempt
@@ -54,10 +55,12 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
                 ? t("billing.sutOptimization.exemptStatusVisit")
                 : t("billing.sutOptimization.noWaiver")}
           </p>
-        </Surface>
+          </dd>
+        </div>
 
-        <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>{t("billing.sutOptimization.surchargeEyebrow")}</Eyebrow>
+        <div data-optimization-metric="surcharge" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
+          <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.surchargeEyebrow")}</Eyebrow></dt>
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <Chip
             variant={
               !surchargeExact
@@ -79,10 +82,12 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
               fallback={t("billing.sutOptimization.surchargeUnavailable")}
             />
           )}
-        </Surface>
+          </dd>
+        </div>
 
-        <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>{t("billing.sutOptimization.copayRateEyebrow")}</Eyebrow>
+        <div data-optimization-metric="copay-rate" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
+          <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.copayRateEyebrow")}</Eyebrow></dt>
+          <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <p className="text-sm font-semibold text-[var(--text-primary)]">
             {rateExact
               ? ((rateCount ?? 0) > 0
@@ -96,11 +101,13 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
               fallback={t("billing.sutOptimization.copayRateUnavailable")}
             />
           )}
-        </Surface>
+          </dd>
+        </div>
 
         {optimization.drg_unbundling && (
-          <Surface variant="soft" padding="md" className="space-y-2">
-            <Eyebrow>{t("billing.sutOptimization.drgEyebrow")}</Eyebrow>
+          <div data-optimization-metric="drg" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-2 @min-[400px]/optimization:grid-cols-[minmax(0,1fr)_auto]">
+            <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.drgEyebrow")}</Eyebrow></dt>
+            <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
             <Chip
               variant={
                 !drgExact
@@ -125,9 +132,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
                 fallback={t("billing.sutOptimization.drgUnavailable")}
               />
             )}
-          </Surface>
+            </dd>
+          </div>
         )}
-      </div>
+      </dl>
     </BillingSectionShell>
   );
 }

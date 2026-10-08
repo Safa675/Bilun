@@ -16,7 +16,6 @@ import {
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
 import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import BillPicker from "@/components/patient/BillPicker";
-import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
 import { Button, Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
@@ -667,12 +666,15 @@ export function SutPatientPageContent({
                       billContent={billContent}
                       detailsContent={
                         <>
-                          <BillingReportGroup
-                            title={t("patient.billingGroups.overview")}
-                            description={t("patient.billingGroups.overviewDescription")}
-                          >
-                            <BillingSummary billingReport={activeBillingReport} omitPriority />
-                          </BillingReportGroup>
+                          <BillingSummary
+                            billingReport={activeBillingReport}
+                            omitPriority
+                            omitHeaderContext={activeBillingReport.patient_id === patientId && (
+                              isBillScoped
+                                ? Boolean(selectedClaimId?.trim()) && activeBillingReport.scope === "bill" && activeBillingReport.claim_id === selectedClaimId
+                                : activeBillingReport.scope == null && activeBillingReport.claim_id == null
+                            )}
+                          />
                           {optimization && <PatientClinicalSnapshot optimization={optimization} />}
                           {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
                           <p className="py-2 text-center text-xs text-[var(--text-muted)]">

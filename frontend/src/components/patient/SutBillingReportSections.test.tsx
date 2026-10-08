@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRY2Fixture } from "@/test/fmtMoney";
-import type { BillingActionReport, DrugIndicationFinding } from "@/lib/domains/sut";
+import enBilling from "@/messages/en/billing";
+import trBilling from "@/messages/tr/billing";
+import type { BillingActionReport, DrugIndicationFinding, PatientOptimization } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   BillingSectionShell,
@@ -13,6 +15,7 @@ import {
   DrugIndicationReviewSection,
   OptionalOverrideSection,
   RecommendedActionsPanel,
+  SutOptimizationSection,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -637,6 +640,39 @@ describe("MedulaRejectionPlaybookSection", () => {
 });
 
 describe("DrugIndicationReviewSection", () => {
+  it.each(["en", "tr"] as const)("keeps each %s drug and certainty with one shared summary risk and unchanged card risks", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).drugIndication;
+    const findings: DrugIndicationFinding[] = ["evaluated", "missing_inputs", "unavailable"].map((evaluation_status, index) => ({
+      finding_id: `drug-${index}`, patient_id: "P-DRUG", claim_id: "C-DRUG", drug_claim_line_id: `D-${index}`,
+      drug_name: index === 2 ? undefined : `Medicine ${index}`, drug_code: `CODE-${index}`,
+      finding_kind: "indication_mismatch", severity: "review", applicability_status: "indication_mismatch",
+      evaluation_status, observed_icd10_codes: [], matched_icd10_codes: [], unmatched_icd10_codes: [], eligible_routes: [],
+      explanation_tr: `Distinct explanation ${index}`, recommended_action_tr: `Distinct action ${index}`,
+    } as DrugIndicationFinding));
+    const html = renderToStaticMarkupWithLocale(<DrugIndicationReviewSection reviewData={{
+      exactness_status: "partial_exact", unavailable_reason: "Distinct partial reason", violations: [], findings,
+      violation_count: 3, error_count: 0,
+    }} />, locale);
+    const header = html.match(/<details id="drug-indication"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1] ?? "";
+    const lines = [...header.matchAll(/<span class="mt-1 block text-xs font-normal text-\[var\(--text-secondary\)\]">([\s\S]*?)<\/span>/g)]
+      .map((match) => match[1]);
+
+    expect(header.split(labels.riskNotice)).toHaveLength(2);
+    expect(header).toContain("Distinct partial reason");
+    expect(header).toContain("· 3");
+    expect(lines).toEqual([`Medicine 0 · ${labels.certaintyLabels.evaluated}`, `Medicine 1 · ${labels.certaintyLabels.missing_inputs}`,
+      `CODE-2 · ${labels.certaintyLabels.unavailable}`]);
+    expect(html).not.toContain('<details id="drug-indication" open=');
+    const cards = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map((match) => match[1]);
+    expect(cards).toHaveLength(3);
+    cards.forEach((card, index) => {
+      expect(card.split(labels.riskNotice)).toHaveLength(2);
+      expect(card).toContain(`CODE-${index}`);
+      expect(card).toContain(`Distinct explanation ${index}`);
+      expect(card).toContain(`Distinct action ${index}`);
+    });
+  });
+
   it("renders nothing when there are no violations", () => {
     const html = renderToStaticMarkupWithLocale(
       <DrugIndicationReviewSection
@@ -1041,7 +1077,7 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
     ],
   } as unknown as BillingActionReport;
 
-  it("shows the three highest existing amounts with their source exactness", () => {
+  it.each(["en", "tr"] as const)("shows the three highest existing amounts with their source exactness in the compact %s container", (locale) => {
     const report = {
       ...panelReport,
       materials: { exactness_status: "partial_exact" },
@@ -1053,16 +1089,48 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
     } as unknown as BillingActionReport;
     const html = renderToStaticMarkupWithLocale(
       <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
     );
-    expect(html).toContain("Next actions");
-    expect(html).toContain("Show all (4)");
-    expect(html).toContain("Partial exact");
-    expect(html).toContain(">Exact<");
+    expect(html).toContain(locale === "en" ? "Next actions" : "Sonraki işlemler");
+    expect(html).toContain(locale === "en" ? "Show all (4)" : "Tümünü göster (4)");
+    expect(html).toContain(locale === "en" ? "Partial exact" : "Kısmi kesin");
+    expect(html).toContain(locale === "en" ? ">Exact<" : ">Kesin<");
     expect(html.indexOf('data-action-id="a1"')).toBeLessThan(html.indexOf('data-action-id="a2"'));
     expect(html.indexOf('data-action-id="a2"')).toBeLessThan(html.indexOf('data-action-id="a4"'));
     expect(html).not.toContain('data-action-id="a3"');
     expect(html).toContain("SUT §3.1.2");
-    expect(html.match(/aria-label="Inspect clause:/g)).toHaveLength(1);
+    expect(html.match(locale === "en" ? /aria-label="Inspect clause:/g : /aria-label="Fıkrayı incele:/g)).toHaveLength(1);
+    expect(html).toContain("100.00 TRY");
+    expect(html).toContain("50.00 TRY");
+    expect(html).toContain("25.00 TRY");
+    expect(html).toContain("@min-[420px]:grid-cols-[minmax(0,1fr)_auto_auto]");
+    expect(html).toContain("@min-[420px]:col-span-1");
+    expect(html).toContain("@min-[420px]:text-right");
+    expect(html).toContain("@min-[300px]:col-span-2");
+    expect(html).not.toContain("@min-[560px]");
+  });
+
+  it.each(["en", "tr"] as const)("preserves a missing exactness and disabled Source for a null compact %s action", (locale) => {
+    const report = {
+      ...panelReport,
+      recommended_actions: [{
+        action_id: "unpriced-material",
+        surface: "materials",
+        kind: "material_pre_auth",
+        billed_try: null,
+        material_name: "UNPRICED-MATERIAL",
+      }],
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    expect(html).toContain('data-action-id="unpriced-material"');
+    expect(html).toContain(locale === "en" ? "Pre-authorization required" : "Ön onay gerekli");
+    expect(html).toContain(locale === "en" ? "Unavailable" : "Kullanılamıyor");
+    expect(html).toContain("disabled=\"\"");
+    expect(html).not.toMatch(/aria-label="(?:Inspect clause|Fıkrayı incele):/);
+    expect(html).not.toMatch(/0(?:[.,]00)?\s*TRY\b/);
   });
 
   it.each([
@@ -1133,5 +1201,222 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
 
     expect(html).not.toContain('<button');
     expect(html).toContain("§3.1.2");
+  });
+});
+
+describe("SutOptimizationSection container layout", () => {
+  it.each(["en", "tr"] as const)("keeps the open %s metric rows and their separate uncertainty inside component-width rows", (locale) => {
+    const optimization: PatientOptimization = {
+      patient_id: "P-CONTAINER",
+      n_diagnoses: 0,
+      diagnoses: [],
+      icd10_chapters: [],
+      copay_exemptions: { exempt: false, n_qualifying: 0, qualifying_diagnoses: [] },
+      surcharge_exposure: {
+        exactness_status: "exact", n_applicable_procedures: 2,
+        n_total_ek2g: 3, exposure_rate: 2 / 3, applicable_rules: [],
+      },
+      copay_rate_exposure: {
+        exactness_status: "partial_exact", unavailable_reason: "RATE-INPUT-MISSING",
+        n_applicable_procedures: null, n_total_ek2c1: null,
+        procedures_with_rates: [], mean_rate: null, rate_distribution: {},
+      },
+      drg_unbundling: {
+        exactness_status: "exact", has_unbundling_risk: true,
+        n_chapters_analyzed: 1, chapter_analysis: [], total_potential_savings: null,
+      },
+    };
+    const html = renderToStaticMarkupWithLocale(
+      <SutOptimizationSection optimization={optimization} />,
+      locale,
+    );
+    expect(html).toContain('<dl data-sut-optimization-summary="true" class="@container/optimization space-y-3">');
+    expect([...html.matchAll(/data-optimization-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["copay", "surcharge", "copay-rate", "drg"]);
+    expect(html.match(/@min-\[400px\]\/optimization:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(4);
+    expect(html).not.toContain("md:grid-cols");
+    expect(html).not.toContain("xl:grid-cols");
+    expect(html).not.toContain("<details");
+    expect(html).toContain("RATE-INPUT-MISSING");
+    expect(html).toContain('role="status">RATE-INPUT-MISSING');
+    expect(html).toContain(locale === "en" ? "2 flags" : "2 bayrak");
+    expect(html).toContain("Unavailable");
+    expect(html).not.toContain("0.00 TRY");
+    expect(html).toContain("whitespace-nowrap tabular-nums");
+    const rate = html.match(/data-optimization-metric="copay-rate"([\s\S]*?)(?=<div data-optimization-metric=|<\/dl>)/)?.[1];
+    expect(rate).toContain("RATE-INPUT-MISSING");
+    const drg = html.match(/data-optimization-metric="drg"([\s\S]*?)<\/dl>/)?.[1];
+    expect(drg).not.toContain("RATE-INPUT-MISSING");
+  });
+
+  it.each(["en", "tr"] as const)("retains qualification, both savings and independent unavailable owners in %s", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).sutOptimization;
+    const optimization = {
+      patient_id: "P-METRIC", n_diagnoses: 2, diagnoses: [], icd10_chapters: [],
+      copay_exemptions: { exempt: true, n_qualifying: 2, qualifying_diagnoses: [{}, {}] },
+      surcharge_exposure: { exactness_status: "exact", n_applicable_procedures: 3, n_total_ek2g: 3, exposure_rate: 1, applicable_rules: [] },
+      copay_rate_exposure: { exactness_status: "exact", n_applicable_procedures: 4, n_total_ek2c1: 4, procedures_with_rates: [], mean_rate: 1, rate_distribution: {} },
+      drg_unbundling: { exactness_status: "exact", has_unbundling_risk: true, n_chapters_analyzed: 1, chapter_analysis: [], total_potential_savings: 600, total_sourced_savings: 700 },
+    } as unknown as PatientOptimization;
+    const html = renderToStaticMarkupWithLocale(<SutOptimizationSection optimization={optimization} />, locale);
+    for (const label of [labels.copayEyebrow, labels.surchargeEyebrow, labels.copayRateEyebrow, labels.drgEyebrow]) {
+      expect(html).toContain(label);
+    }
+    expect(html).toContain("EK-1A");
+    expect(html).toContain(labels.ek1aQualifying.replace("{count}", "2"));
+    expect(html).toContain(labels.flags.replace("{count}", "3"));
+    expect(html).toContain(labels.cappedProcedures.replace("{count}", "4"));
+    expect(html).toContain("high");
+    expect(html).toContain("600.00 TRY");
+    expect(html).toContain("700.00 TRY");
+    expect(html).not.toContain('role="status"');
+    for (const status of ["partial_exact", "missing_exact_inputs"] as const) {
+      const unavailable = renderToStaticMarkupWithLocale(<SutOptimizationSection optimization={{
+        ...optimization,
+        surcharge_exposure: { ...optimization.surcharge_exposure, exactness_status: status, unavailable_reason: "SURCHARGE-MISSING" },
+        copay_rate_exposure: { ...optimization.copay_rate_exposure, exactness_status: status, unavailable_reason: "RATE-MISSING" },
+        drg_unbundling: { ...optimization.drg_unbundling!, exactness_status: status, unavailable_reason: "DRG-MISSING" },
+      }} />, locale);
+      for (const [key, reason] of [["surcharge", "SURCHARGE-MISSING"], ["copay-rate", "RATE-MISSING"], ["drg", "DRG-MISSING"]]) {
+        const row = unavailable.match(new RegExp(`data-optimization-metric="${key}"([\\s\\S]*?)(?=<div data-optimization-metric=|</dl>)`))?.[1];
+        expect(row).toContain(`role="status">${reason}`);
+        expect(row?.match(/role="status"/g)).toHaveLength(1);
+      }
+      expect(unavailable).not.toContain("600.00 TRY");
+      expect(unavailable).not.toContain("700.00 TRY");
+      expect(unavailable).not.toContain("<details");
+    }
+  });
+});
+
+describe("BillingSummary open metric ownership", () => {
+  it.each([
+    ["en", "patient"], ["en", "bill"], ["tr", "patient"], ["tr", "bill"],
+  ] as const)("omits only opted-in duplicate %s/%s identity and copy while keeping all unique content", (locale, scope) => {
+    const labels = (locale === "en" ? enBilling : trBilling).summary;
+    const base = {
+      patient_id: "P-LONG-CONTEXT-IDENTITY-0001", claim_id: scope === "bill" ? "C-LONG-CONTEXT-IDENTITY-0001" : undefined,
+      scope: scope === "bill" ? "bill" : undefined, exactness_status: "exact", priority: "high", total_recoverable_try: 10, sgk_uplift_try: 123456789012.34,
+      compliance_adjustment_try: 20, audit_exposure_try: 30, capture_gap_try: 40, package_adequacy_review_try: 50,
+      medula_playbook_entry_count: 6, drug_indication_violation_count: 7, action_count: 8, recommended_actions: [],
+      copay: { exactness_status: "exact", is_exempt: true, patient_copay_waived_total_try: 90,
+        ilave_ucret_total_try: 100, line_decomposition_status: "exact", rate_corrections: [] },
+    } as unknown as BillingActionReport;
+    for (const report of [base,
+      { ...base, exactness_status: "partial_exact", unavailable_reason: "CONTEXT-PARTIAL",
+        copay: { ...base.copay, line_decomposition_status: "copay_only" } },
+      { ...base, total_recoverable_try: 0, sgk_uplift_try: 0 },
+      { ...base, total_recoverable_try: null, sgk_uplift_try: null },
+      { ...base, exactness_status: "missing_exact_inputs", unavailable_reason: "CONTEXT-MISSING" },
+    ] as BillingActionReport[]) {
+      const full = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority />, locale);
+      const compact = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority omitHeaderContext />, locale);
+      const fullClasses = full.match(/<div\b[^>]*data-billing-summary="true"[^>]*>/)?.[0].match(/class="([^"]+)"/)?.[1].split(" ");
+      const compactClasses = compact.match(/<div\b[^>]*data-billing-summary="true"[^>]*>/)?.[0].match(/class="([^"]+)"/)?.[1].split(" ");
+      expect(fullClasses).toContain("p-6");
+      expect(fullClasses).not.toContain("p-4");
+      expect(compactClasses).toContain("p-4");
+      expect(compactClasses).not.toContain("p-6");
+      expect(fullClasses).toContain("max-sm:p-3");
+      expect(compactClasses).toContain("max-sm:p-3");
+      const title = scope === "bill" ? labels.billTitle : labels.title;
+      const description = scope === "bill" ? labels.billDescription : labels.description;
+      const identity = scope === "bill" ? report.claim_id : report.patient_id;
+      expect(full).toContain(identity);
+      expect(full).toContain(description);
+      expect(compact).not.toContain(identity);
+      expect(compact).not.toContain(description);
+      expect(compact).toContain(title);
+      const chip = full.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0];
+      expect(chip).toBeDefined();
+      expect(compact.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0]).toBe(chip);
+      expect(compact.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]).toBe(full.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]);
+      expect(compact.slice(compact.indexOf("</dl>") + 5)).toBe(full.slice(full.indexOf("</dl>") + 5));
+      expect(compact).not.toContain("<details");
+    }
+  });
+
+  it.each(["en", "tr"] as const)("retains every label, amount, count, condition and report reason in %s", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).summary;
+    const report = {
+      patient_id: "P-METRIC", claim_id: "C-METRIC", scope: "bill",
+      exactness_status: "exact", priority: "high", total_recoverable_try: 10,
+      sgk_uplift_try: 123456789012.34, compliance_adjustment_try: 20,
+      audit_exposure_try: 30, capture_gap_try: 40, package_adequacy_review_try: 50,
+      medula_playbook_entry_count: 6, drug_indication_violation_count: 7,
+      action_count: 8, recommended_actions: [],
+      copay: {
+        exactness_status: "exact", is_exempt: true,
+        patient_copay_waived_total_try: 90, ilave_ucret_total_try: 100,
+        line_decomposition_status: "exact", rate_corrections: [],
+      },
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} />, locale);
+    const metrics = [
+      ["sgk-uplift", labels.ruleCalculatedOpportunity, "123456789012.34 TRY"],
+      ["compliance-adjustment", labels.complianceAdjustment, "20.00 TRY"],
+      ["audit-exposure", labels.auditExposure, "30.00 TRY"],
+      ["capture-gap", labels.captureGap, "40.00 TRY"],
+      ["package-adequacy", labels.packageAdequacyReview, "50.00 TRY"],
+      ["medula-playbook", labels.medulaPlaybook, "6"],
+      ["drug-indication", labels.drugIndicationReview, "7"],
+      ["exemption-gap", labels.exemptionGapCorrective, "90.00 TRY"],
+      ["ilave-ucret", labels.ilaveUcretInfo, "100.00 TRY"],
+      ["recommended-actions", labels.recommendedActions, "8"],
+      ["priority", labels.priorityTier, "high"],
+    ];
+    expect([...html.matchAll(/data-billing-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(metrics.map(([key]) => key));
+    for (const [key, label, value] of metrics) {
+      const row = html.match(new RegExp(`data-billing-metric="${key}"[^>]*>(.*?)</div>`))?.[1];
+      expect(row).toContain(`<dt class=`);
+      expect(row).toContain(label);
+      expect(row).toContain(`<dd class=`);
+      expect(row).toContain(value);
+    }
+    expect(html).toContain('data-billing-summary="true"');
+    expect(html).toContain("@container/billing-summary");
+    expect(html).toContain('<dl class="flex flex-wrap gap-x-6 gap-y-3">');
+    expect(html.match(/@min-\[400px\]\/billing-summary:min-w-min/g)).toHaveLength(11);
+    expect(html.match(/@min-\[400px\]\/billing-summary:basis-\[calc\(50%-0\.75rem\)\]/g)).toHaveLength(11);
+    expect(html).not.toContain("overflow-x-auto");
+    expect(html).not.toContain("overflow-hidden");
+    expect(html).not.toContain("minmax(0,1fr)_auto");
+    expect(html).toContain("C-METRIC");
+    expect(html).toContain(labels.billDescription);
+    expect(html).toContain(labels.dualTotalsFootnote);
+    expect(html).toContain((locale === "en" ? enBilling : trBilling).copay.ilaveUcretFootnote);
+    expect(html).not.toContain("<details");
+
+    const partial = renderToStaticMarkupWithLocale(<BillingSummary billingReport={{
+      ...report, exactness_status: "partial_exact", unavailable_reason: "REPORT-PARTIAL",
+      copay: { ...report.copay, line_decomposition_status: "copay_only" },
+    }} omitPriority />, locale);
+    expect(partial).toContain('role="status">REPORT-PARTIAL');
+    expect(partial).toContain((locale === "en" ? enBilling : trBilling).copay.partialDecompositionNotice);
+    expect(partial).not.toContain('data-billing-metric="priority"');
+    expect(partial).not.toContain('data-billing-metric="ilave-ucret"');
+  });
+
+  it.each(["en", "tr"] as const)("keeps exact zero, unknown and unavailable values separate in %s", (locale) => {
+    for (const state of ["zero", "null", "unavailable"] as const) {
+      const report = {
+        patient_id: "P-METRIC", exactness_status: state === "unavailable" ? "missing_exact_inputs" : "exact",
+        unavailable_reason: state === "unavailable" ? "TOTALS-MISSING" : undefined,
+        priority: "low", total_recoverable_try: state === "zero" ? 0 : null,
+        sgk_uplift_try: state === "zero" ? 0 : null,
+        action_count: 0, recommended_actions: [],
+        copay: { exactness_status: state === "unavailable" ? "missing_exact_inputs" : "exact",
+          is_exempt: false, visit_copay_savings_try: state === "zero" ? 0 : null,
+          rx_copay_savings_try: state === "zero" ? 0 : null, rate_corrections: [] },
+      } as unknown as BillingActionReport;
+      const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} />, locale);
+      const metric = html.match(/data-billing-metric="sgk-uplift"[^>]*>(.*?)<\/div>/)?.[1];
+      expect(metric).toContain(state === "zero" ? "0.00 TRY" : state === "null" ? ">—<" : locale === "en" ? "Unavailable" : "Kullanılamıyor");
+      expect(html.match(/data-billing-metric=/g)).toHaveLength(4);
+      if (state === "unavailable") {
+        expect(html).toContain('role="status">TOTALS-MISSING');
+        expect(html).toContain((locale === "en" ? enBilling : trBilling).summary.reviewSections);
+        expect(html).not.toContain("0.00 TRY");
+      }
+    }
   });
 });

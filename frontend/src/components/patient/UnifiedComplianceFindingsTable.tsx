@@ -55,7 +55,7 @@ export default function UnifiedComplianceFindingsTable({
         <tr>
           <th>{t("billing.views.compliance.colStatus")}</th>
           <th>{t("billing.views.compliance.colSource")}</th>
-          <th>{t("billing.views.compliance.colFinding")}</th>
+          <th className="min-w-[30rem]">{t("billing.views.compliance.colFinding")}</th>
           <th>{t("billing.views.compliance.colClaim")}</th>
           <th>{t("billing.views.compliance.colCode")}</th>
           <th>{t("billing.views.compliance.colSut")}</th>
@@ -170,7 +170,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 3. Bulgu / yapılması gereken */}
-                <td>
+                <td className="min-w-[30rem]">
                   <div className="font-medium text-[var(--text-primary)]">
                     {row.title}
                   </div>

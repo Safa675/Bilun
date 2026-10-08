@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { fmtTRY2 } from "@/components/tabs/sut/shared";
+import enBilling from "@/messages/en/billing";
+import trBilling from "@/messages/tr/billing";
 import { WorkspaceProvider } from "@/stores/workspaceContext";
 import type { RecommendedActionItem, ClaimComplianceFinding } from "@/lib/domains/sut";
 import type { UnifiedComplianceFindingRow } from "@/lib/complianceFindings";
@@ -52,6 +55,40 @@ function renderTable(
 }
 
 describe("UnifiedComplianceFindingsTable", () => {
+  it.each(["en", "tr"] as const)("preserves all ordered %s fields and controls with a readable finding minimum", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).views.compliance;
+    const rows: UnifiedComplianceFindingRow[] = [null, 0, 123456789012345.67].map((amountValue, index) => ({
+      rowId: `ordered-${index}`, canonicalFindingId: `finding-${index}`,
+      sourceKind: "recommended_action", sourceLabels: [`Source ${index}`],
+      status: "review_risk", title: `Title ${index}`, detail: `Complete detail ${index}`,
+      claimId: `C-${index}`, code: `P-${index}`, sutLabel: "2.2.1",
+      amountValue, amountLabel: null, action: mockAction, finding: mockFinding,
+    }));
+    const html = renderTable({ rows, patientId: "P-1", onOpenClause: vi.fn(), selectedActionId: "act-1" }, locale);
+    const headers = [...html.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/g)]
+      .map((match) => match[1].replace(/<[^>]+>/g, ""));
+    const body = html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+    const renderedRows = [...body.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)];
+
+    expect(headers).toEqual([labels.colStatus, labels.colSource, labels.colFinding, labels.colClaim,
+      labels.colCode, labels.colSut, labels.colAmount, labels.colInspect]);
+    expect(html.match(/class="min-w-\[30rem\]"/g)).toHaveLength(4);
+    expect(html).toContain('style="min-width:960px"');
+    expect(html).toContain("overflow-x-auto");
+    expect(renderedRows).toHaveLength(3);
+    renderedRows.forEach((match, index) => {
+      const cells = [...match[1].matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)]
+        .map((cell) => cell[1].replace(/<[^>]+>/g, "").trim());
+      expect(cells).toEqual([labels.statusReviewRisk, `Source ${index}`, `Title ${index}Complete detail ${index}`,
+        `C-${index}`, `P-${index}`, "SUT §2.2.1", rows[index].amountValue == null ? "—" : fmtTRY2(rows[index].amountValue),
+        labels.inspectAction]);
+      expect(match[0]).toContain('tabindex="0"');
+      expect(match[0]).toContain('data-selected="true"');
+      expect(match[0]).toContain("<button");
+      expect(match[0]).toContain(`finding=finding-${index}`);
+    });
+  });
+
   it("renders the eight approved columns and does NOT render Patient ID / Hasta ID", () => {
     const rows: UnifiedComplianceFindingRow[] = [
       {

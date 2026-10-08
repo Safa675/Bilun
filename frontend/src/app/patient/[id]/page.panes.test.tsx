@@ -7,6 +7,8 @@ import PatientSearch from "@/components/ui/PatientSearch";
 import BillPicker from "@/components/patient/BillPicker";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import PatientWorkspaceViews from "@/components/patient/views/PatientWorkspaceViews";
+import { BillingSummary } from "@/components/patient/SutBillingReportSections";
+import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
 import { createWorkspaceStore } from "@/stores/workspaceStore";
 import * as api from "@/lib/api/sut";
 import type { SutChatDockPosition } from "@/stores/storeInterfaces";
@@ -91,6 +93,58 @@ it("restores the embedded pane's own saved bill, section and finding query", asy
   });
   expect(api.getBillBillingReport).toHaveBeenCalledWith("B", "B-2", expect.anything());
   expect(navigation.replace).not.toHaveBeenCalled();
+});
+it.each([null, "B-2"])("retains one distinct financial detail owner without a second overview wrapper for claim %s", async (claimId) => {
+  const pane = await mount("B", true, claimId ? `claim=${claimId}` : "");
+  const workspace = pane.renderer.root.findByType(SutPatientWorkspace);
+  const summary = pane.renderer.root.findByType(BillingSummary);
+  expect(summary.props.billingReport).toBe(workspace.props.billingReport);
+  expect(summary.props.omitPriority).toBe(true);
+  expect(summary.props.billingReport).toMatchObject({ patient_id: "B", ...(claimId ? { claim_id: claimId, scope: "bill" } : {}) });
+  expect(pane.renderer.root.findAllByType(BillingSummary)).toHaveLength(1);
+  expect(pane.renderer.root.findAllByType(BillingReportGroup)).toHaveLength(0);
+});
+it.each([
+  [false, null], [true, null], [false, "B-2"], [true, "B-2"],
+] as const)("omits duplicate context only for a matching report in embedded=%s claim=%s", async (embedded, claimId) => {
+  vi.mocked(api.getPatientBillingReport).mockResolvedValueOnce({
+    patient_id: "B", recommended_actions: [],
+  } as unknown as Awaited<ReturnType<typeof api.getPatientBillingReport>>);
+  navigation.query = claimId ? `claim=${claimId}` : "";
+  const pane = await mount("B", embedded, embedded ? navigation.query : undefined);
+  const summary = pane.renderer.root.findByType(BillingSummary);
+  const workspace = pane.renderer.root.findByType(SutPatientWorkspace);
+  expect(summary.props.omitHeaderContext).toBe(true);
+  expect(summary.props.billingReport).toBe(workspace.props.billingReport);
+  expect(workspace.props.patientId).toBe("B");
+  expect(workspace.props.selectedClaimId).toBe(claimId);
+});
+it.each([
+  [false, "wrong-patient"], [true, "wrong-patient"], [false, "unexpected-scope"], [true, "unexpected-scope"],
+  [false, "bill-scope"], [true, "bill-scope"], [false, "unselected-claim"], [true, "unselected-claim"],
+] as const)("retains full context for %s pane with %s patient report", async (embedded, mismatch) => {
+  vi.mocked(api.getPatientBillingReport).mockResolvedValueOnce({
+    patient_id: mismatch === "wrong-patient" ? "OTHER" : "B",
+    scope: mismatch === "unexpected-scope" ? "patient" : mismatch === "bill-scope" ? "bill" : undefined,
+    claim_id: mismatch === "unselected-claim" ? "UNSELECTED" : undefined, recommended_actions: [],
+  } as unknown as Awaited<ReturnType<typeof api.getPatientBillingReport>>);
+  navigation.query = "";
+  const pane = await mount("B", embedded, embedded ? "" : undefined);
+  expect(pane.renderer.root.findByType(BillingSummary).props.omitHeaderContext).toBe(false);
+});
+it.each([
+  [false, "wrong-patient"], [true, "wrong-patient"], [false, "wrong-claim"], [true, "wrong-claim"],
+  [false, "wrong-scope"], [true, "wrong-scope"],
+] as const)("keeps rejecting a mismatched selected-bill report in %s pane with %s", async (embedded, mismatch) => {
+  vi.mocked(api.getBillBillingReport).mockResolvedValueOnce({
+    patient_id: mismatch === "wrong-patient" ? "OTHER" : "B",
+    claim_id: mismatch === "wrong-claim" ? "B-1" : "B-2", scope: mismatch === "wrong-scope" ? "patient" : "bill",
+    recommended_actions: [],
+  } as unknown as Awaited<ReturnType<typeof api.getBillBillingReport>>);
+  navigation.query = "claim=B-2";
+  const pane = await mount("B", embedded, embedded ? navigation.query : undefined);
+  expect(pane.renderer.root.findAllByType(BillingSummary)).toHaveLength(0);
+  expect(pane.renderer.root.findByType(SutPatientWorkspace).props.billingReport).toBeNull();
 });
 it.each([false, true])("opens an optional-method detail target itself and its parent in embedded=%s", async (embedded) => {
   const outer = { tagName: "DETAILS", open: false, parentElement: null };

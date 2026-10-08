@@ -84,8 +84,57 @@ describe("ComplianceViewSection", () => {
 
     // 2 findings in KPI
     expect(html).toContain("Riskli bulgu");
-    // KPI Card renders label and formatted value
+    // The owned findings row retains its formatted value.
     expect(html).toContain(">2<");
+  });
+
+  it.each(["en", "tr"] as const)("reflows the KPI owner locally without changing long amounts or partial reasons (%s)", (locale) => {
+    const report = {
+      ...baseReport,
+      audit_exposure_try: 123456789012.34,
+      recommended_actions: [
+        { ...baseReport.recommended_actions![0], billed_try: 123456789012.34 },
+        { ...baseReport.recommended_actions![1], billed_try: null },
+      ],
+    } as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} />
+      </WorkspaceProvider>,
+      locale,
+    );
+    const beforeTable = html.slice(0, html.indexOf('id="claim-compliance"'));
+    const amount = locale === "en" ? "123,456,789,012.34 TRY" : "₺123.456.789.012,34";
+    const partial = locale === "en"
+      ? "Partial total: only 1 of 2 findings have a billed amount"
+      : "Kısmi toplam: 2 bulgudan yalnızca 1 tanesinde faturalanan tutar var";
+
+    expect(beforeTable).toContain('<div class="@container/compliance-metrics"><dl data-compliance-metrics="true" class="grid grid-cols-1 gap-3 @min-[960px]/compliance-metrics:grid-cols-3">');
+    expect([...beforeTable.matchAll(/data-compliance-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["risk", "findings", "billed-at-risk"]);
+    expect(beforeTable.match(/@min-\[400px\]\/compliance-metrics:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(3);
+    expect(beforeTable.match(/@min-\[960px\]\/compliance-metrics:grid-cols-1/g)).toHaveLength(3);
+    expect(beforeTable.match(/<dd class="min-w-0 whitespace-nowrap text-2xl/g)).toHaveLength(3);
+    expect(beforeTable).not.toContain("overflow-hidden");
+    expect(beforeTable.split(amount)).toHaveLength(3);
+    expect(beforeTable).toContain(partial);
+    expect(beforeTable).toContain(">2<");
+    expect(beforeTable).toContain("color:#B91C1C");
+  });
+
+  it.each(["en", "tr"] as const)("keeps zero and unknown audit values distinct in their open owner (%s)", (locale) => {
+    for (const amount of [0, null]) {
+      const html = renderToStaticMarkupWithLocale(
+        <WorkspaceProvider>
+          <ComplianceViewSection billingReport={{ ...baseReport, audit_exposure_try: amount }} />
+        </WorkspaceProvider>,
+        locale,
+      );
+      const risk = html.match(/data-compliance-metric="risk"[^>]*>(.*?)<\/div>/)?.[1];
+      expect(risk).toContain("<dt");
+      expect(risk).toContain("<dd");
+      expect(risk).toContain(amount == null ? ">—<" : locale === "en" ? "0.00 TRY" : "₺0,00");
+      expect(risk).not.toContain("<details");
+    }
   });
 
   it("renders structural coverage as a distinct subset without implying a clean result", () => {
@@ -184,6 +233,29 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain('id="materials-pre-check"');
   });
 
+  it.each(["en", "tr"] as const)("groups unchanged secondary roots and gives open or wide owners full-width tracks (%s)", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={baseReport} selectedSection="wavea-coverage" />
+      </WorkspaceProvider>,
+      locale,
+    );
+    expect(html).toContain('<div class="@container/compliance-secondary">');
+    expect(html).toContain('data-compliance-secondary="true"');
+    expect(html).toContain("@min-[500px]/compliance-secondary:grid-cols-2");
+    for (const selector of ["details[open]", "section:has(&gt;details[open])", "#billing-lab", "#billing-optional-override", "#drug-indication"]) {
+      expect(html).toContain(`@min-[500px]/compliance-secondary:[&amp;&gt;${selector}]:col-span-2`);
+    }
+    expect(html).toContain('<details id="claim-coverage"');
+    expect(html).not.toContain('<details id="claim-coverage" open=');
+    expect(html).toContain('<section id="wavea-reviews"');
+    expect(html).toContain('<section id="wavea-advisories"');
+    expect(html).toContain('<details id="wavea-coverage" open=""');
+    expect(html.indexOf('id="claim-coverage"')).toBeLessThan(html.indexOf('id="wavea-reviews"'));
+    expect(html.indexOf('id="wavea-reviews"')).toBeLessThan(html.indexOf('id="wavea-advisories"'));
+    expect(html.indexOf('id="wavea-advisories"')).toBeLessThan(html.indexOf('id="wavea-coverage"'));
+  });
+
   it("wraps the unified table inside the claim-compliance anchor", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
@@ -230,8 +302,7 @@ describe("ComplianceViewSection", () => {
         </WorkspaceProvider>,
         locale,
       );
-      const label = locale === "en" ? "Billed amount at risk" : "Riskli faturalanan tutar";
-      const block = new RegExp(`${label}</p>(.*?)</div>`).exec(html);
+      const block = /data-compliance-metric="billed-at-risk"[^>]*>.*?<\/dt>(.*?)<\/div>/.exec(html);
       expect(block).not.toBeNull();
       return (block as RegExpExecArray)[1].replace(/<[^>]+>/g, "|");
     }
@@ -262,6 +333,11 @@ describe("ComplianceViewSection", () => {
       expect(text).toContain("|—|");
       expect(text).not.toContain("0.00");
       expect(text).toContain("None of the 5 findings has a billed amount");
+    });
+
+    it.each(["en", "tr"] as const)("retains a known zero rather than marking it unavailable (%s)", (locale) => {
+      const text = billedKpiText(reportWith([{ billed_try: 0 }]), locale);
+      expect(text).toBe(locale === "en" ? "|0.00 TRY|" : "|₺0,00|");
     });
 
     it("keeps excluding drug_indication findings without marking the sum partial", () => {

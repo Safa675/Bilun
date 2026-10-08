@@ -1,10 +1,11 @@
 "use client";
 
 import type { BillingActionReport } from "@/lib/domains/sut";
+import type { ReactNode } from "react";
 import { useT } from "@/lib/i18n/useTranslations";
 import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import { copayExemptionGapTotal, copayShowsIlaveColumn } from "@/lib/billingReportFields";
-import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow, Stat, Surface } from "@/components/primitives";
+import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow, Surface } from "@/components/primitives";
 import { fmtNum, fmtPriorityLabel, fmtTRY2 } from "@/components/tabs/sut/shared";
 import { ACCENT, chipVariantFromColor } from "./shared";
 
@@ -14,13 +15,25 @@ const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
   low: ACCENT,
 };
 
+function SummaryMetric({ name, label, value }: { name: string; label: string; value: ReactNode }) {
+  return (
+    <div data-billing-metric={name} className="min-w-0 basis-full space-y-1 @min-[400px]/billing-summary:min-w-min @min-[400px]/billing-summary:flex-1 @min-[400px]/billing-summary:basis-[calc(50%-0.75rem)]">
+      <dt className="text-[0.68rem] font-semibold uppercase tracking-normal text-[var(--text-muted)]">{label}</dt>
+      <dd className="min-w-0 font-sans text-2xl leading-none font-semibold tracking-normal tabular-nums lining-nums text-[var(--text-primary)]">{value}</dd>
+    </div>
+  );
+}
+
 export function BillingSummary({
   billingReport,
   omitPriority = false,
+  omitHeaderContext = false,
 }: {
   billingReport: BillingActionReport;
   /** The page summary already displays this same report's priority. */
   omitPriority?: boolean;
+  /** The containing page already shows this same report's identity and scope. */
+  omitHeaderContext?: boolean;
 }) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
@@ -57,8 +70,8 @@ export function BillingSummary({
   return (
     <Surface
       variant="base"
-      padding="lg"
-      className="@container space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
+      padding={omitHeaderContext ? "md" : "lg"}
+      className="@container/billing-summary space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
       data-billing-summary
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -66,60 +79,66 @@ export function BillingSummary({
           <Eyebrow>
             {isBillScope ? t("billing.summary.billTitle") : t("billing.summary.title")}
           </Eyebrow>
-          <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
+          {!omitHeaderContext && <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
             {isBillScope ? billingReport.claim_id : billingReport.patient_id}
-          </p>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
+          </p>}
+          {!omitHeaderContext && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
             {isBillScope ? t("billing.summary.billDescription") : t("billing.summary.description")}
-          </p>
+          </p>}
         </div>
         <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
       </div>
 
-      <div
-        className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-6 [&>div]:min-w-0 [&>div>p]:break-words"
-      >
-        <Stat
+      <dl className="flex flex-wrap gap-x-6 gap-y-3">
+        <SummaryMetric
+          name="sgk-uplift"
           label={t("billing.summary.ruleCalculatedOpportunity")}
           value={reportHasTotals ? sgkUplift == null ? "—" : fmtTRY2(sgkUplift) : t("common.unavailable")}
         />
         {showCompliance && (
-          <Stat
+          <SummaryMetric
+            name="compliance-adjustment"
             label={t("billing.summary.complianceAdjustment")}
             value={fmtTRY2(complianceAdjustment)}
           />
         )}
         {showAuditExposure && (
-          <Stat
+          <SummaryMetric
+            name="audit-exposure"
             label={t("billing.summary.auditExposure")}
             value={fmtTRY2(auditExposure)}
           />
         )}
         {showCaptureGap && (
-          <Stat
+          <SummaryMetric
+            name="capture-gap"
             label={t("billing.summary.captureGap")}
             value={fmtTRY2(captureGap)}
           />
         )}
         {showPackageAdequacy && (
-          <Stat
+          <SummaryMetric
+            name="package-adequacy"
             label={t("billing.summary.packageAdequacyReview")}
             value={fmtTRY2(packageAdequacyReview)}
           />
         )}
         {showMedulaPlaybook && (
-          <Stat
+          <SummaryMetric
+            name="medula-playbook"
             label={t("billing.summary.medulaPlaybook")}
             value={String(medulaPlaybookCount)}
           />
         )}
         {showDrugIndication && (
-          <Stat
+          <SummaryMetric
+            name="drug-indication"
             label={t("billing.summary.drugIndicationReview")}
             value={String(drugIndicationCount)}
           />
         )}
-        <Stat
+        <SummaryMetric
+          name="exemption-gap"
           label={t("billing.summary.exemptionGapCorrective")}
           value={
             showExemptionGap
@@ -130,16 +149,19 @@ export function BillingSummary({
           }
         />
         {showIlaveInfo && (
-          <Stat
+          <SummaryMetric
+            name="ilave-ucret"
             label={t("billing.summary.ilaveUcretInfo")}
             value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
           />
         )}
-        <Stat
+        <SummaryMetric
+          name="recommended-actions"
           label={t("billing.summary.recommendedActions")}
           value={reportHasTotals ? fmtNum(billingReport.action_count) : t("billing.summary.reviewSections")}
         />
-        {!omitPriority && <Stat
+        {!omitPriority && <SummaryMetric
+          name="priority"
           label={t("billing.summary.priorityTier")}
           value={
             <span style={{ color: priorityColor }}>
@@ -147,7 +169,7 @@ export function BillingSummary({
             </span>
           }
         />}
-      </div>
+      </dl>
       {showExemptionGap && reportHasTotals && (
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.summary.dualTotalsFootnote")}
