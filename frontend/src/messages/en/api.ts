@@ -135,6 +135,8 @@ const api = {
     catalogMiat: "Catalog MIAT period: {period} — verify interval vs patient history",
     preauthNote:
       "EK-3C-1 — medical appropriateness (tıbbi uygunluk) required before SGK submission (§3.1.2)",
+    preauthFlagNote:
+      "Pre-authorization review requested by the material-line input flag; EK-3C-1 catalog membership not verified",
     bundledEk3b1: "Bundled material billed separately — review package inclusion (EK-3B-1)",
     bundledPackageFlag:
       "Marked as package component and billed separately — invoice/package flag, not EK-3B-1 regulatory annex",
