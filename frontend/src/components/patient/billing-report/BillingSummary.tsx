@@ -27,10 +27,13 @@ function SummaryMetric({ name, label, value }: { name: string; label: string; va
 export function BillingSummary({
   billingReport,
   omitPriority = false,
+  omitHeaderContext = false,
 }: {
   billingReport: BillingActionReport;
   /** The page summary already displays this same report's priority. */
   omitPriority?: boolean;
+  /** The containing page already shows this same report's identity and scope. */
+  omitHeaderContext?: boolean;
 }) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
@@ -76,12 +79,12 @@ export function BillingSummary({
           <Eyebrow>
             {isBillScope ? t("billing.summary.billTitle") : t("billing.summary.title")}
           </Eyebrow>
-          <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
+          {!omitHeaderContext && <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
             {isBillScope ? billingReport.claim_id : billingReport.patient_id}
-          </p>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
+          </p>}
+          {!omitHeaderContext && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
             {isBillScope ? t("billing.summary.billDescription") : t("billing.summary.description")}
-          </p>
+          </p>}
         </div>
         <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
       </div>
