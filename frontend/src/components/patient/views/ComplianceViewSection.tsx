@@ -133,6 +133,8 @@ export default function ComplianceViewSection({
 
       {detailsPrelude}
 
+      <div className="@container/compliance-secondary">
+      <div data-compliance-secondary className="grid grid-cols-1 items-start gap-4 [&>*]:min-w-0 @min-[500px]/compliance-secondary:grid-cols-2 @min-[500px]/compliance-secondary:[&>details[open]]:col-span-2 @min-[500px]/compliance-secondary:[&>section:has(>details[open])]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-lab]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-optional-override]:col-span-2 @min-[500px]/compliance-secondary:[&>#drug-indication]:col-span-2">
       <details id="claim-coverage" open={selectedSection === "claim-coverage" || undefined} className="scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
         <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
           {t("billing.wavea.coverageDetails")} · {coverage
@@ -220,6 +222,8 @@ export default function ComplianceViewSection({
           selectedSection={selectedSection}
         />
       )}
+      </div>
+      </div>
     </div>
   );
 }

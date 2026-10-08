@@ -233,6 +233,29 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain('id="materials-pre-check"');
   });
 
+  it.each(["en", "tr"] as const)("groups unchanged secondary roots and gives open or wide owners full-width tracks (%s)", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={baseReport} selectedSection="wavea-coverage" />
+      </WorkspaceProvider>,
+      locale,
+    );
+    expect(html).toContain('<div class="@container/compliance-secondary">');
+    expect(html).toContain('data-compliance-secondary="true"');
+    expect(html).toContain("@min-[500px]/compliance-secondary:grid-cols-2");
+    for (const selector of ["details[open]", "section:has(&gt;details[open])", "#billing-lab", "#billing-optional-override", "#drug-indication"]) {
+      expect(html).toContain(`@min-[500px]/compliance-secondary:[&amp;&gt;${selector}]:col-span-2`);
+    }
+    expect(html).toContain('<details id="claim-coverage"');
+    expect(html).not.toContain('<details id="claim-coverage" open=');
+    expect(html).toContain('<section id="wavea-reviews"');
+    expect(html).toContain('<section id="wavea-advisories"');
+    expect(html).toContain('<details id="wavea-coverage" open=""');
+    expect(html.indexOf('id="claim-coverage"')).toBeLessThan(html.indexOf('id="wavea-reviews"'));
+    expect(html.indexOf('id="wavea-reviews"')).toBeLessThan(html.indexOf('id="wavea-advisories"'));
+    expect(html.indexOf('id="wavea-advisories"')).toBeLessThan(html.indexOf('id="wavea-coverage"'));
+  });
+
   it("wraps the unified table inside the claim-compliance anchor", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>
