@@ -84,7 +84,7 @@ describe("ComplianceViewSection", () => {
 
     // 2 findings in KPI
     expect(html).toContain("Riskli bulgu");
-    // KPI Card renders label and formatted value
+    // The owned findings row retains its formatted value.
     expect(html).toContain(">2<");
   });
 
@@ -109,13 +109,31 @@ describe("ComplianceViewSection", () => {
       ? "Partial total: only 1 of 2 findings have a billed amount"
       : "Kısmi toplam: 2 bulgudan yalnızca 1 tanesinde faturalanan tutar var";
 
-    expect(beforeTable).toContain("grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]");
-    expect(beforeTable).not.toContain("sm:grid-cols-3");
-    expect(beforeTable.match(/class="\[&amp;_\.tabular-nums\]:whitespace-nowrap"/g)).toHaveLength(2);
+    expect(beforeTable).toContain('<dl data-compliance-metrics="true" class="@container space-y-3">');
+    expect([...beforeTable.matchAll(/data-compliance-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["risk", "findings", "billed-at-risk"]);
+    expect(beforeTable.match(/@min-\[480px\]:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(3);
+    expect(beforeTable.match(/<dd class="min-w-0 whitespace-nowrap text-2xl/g)).toHaveLength(3);
+    expect(beforeTable).not.toContain("overflow-hidden");
     expect(beforeTable.split(amount)).toHaveLength(3);
     expect(beforeTable).toContain(partial);
     expect(beforeTable).toContain(">2<");
     expect(beforeTable).toContain("color:#B91C1C");
+  });
+
+  it.each(["en", "tr"] as const)("keeps zero and unknown audit values distinct in their open owner (%s)", (locale) => {
+    for (const amount of [0, null]) {
+      const html = renderToStaticMarkupWithLocale(
+        <WorkspaceProvider>
+          <ComplianceViewSection billingReport={{ ...baseReport, audit_exposure_try: amount }} />
+        </WorkspaceProvider>,
+        locale,
+      );
+      const risk = html.match(/data-compliance-metric="risk"[^>]*>(.*?)<\/div>/)?.[1];
+      expect(risk).toContain("<dt");
+      expect(risk).toContain("<dd");
+      expect(risk).toContain(amount == null ? ">—<" : locale === "en" ? "0.00 TRY" : "₺0,00");
+      expect(risk).not.toContain("<details");
+    }
   });
 
   it("renders structural coverage as a distinct subset without implying a clean result", () => {
@@ -260,8 +278,7 @@ describe("ComplianceViewSection", () => {
         </WorkspaceProvider>,
         locale,
       );
-      const label = locale === "en" ? "Billed amount at risk" : "Riskli faturalanan tutar";
-      const block = new RegExp(`${label}</p>(.*?)</div>`).exec(html);
+      const block = /data-compliance-metric="billed-at-risk"[^>]*>.*?<\/dt>(.*?)<\/div>/.exec(html);
       expect(block).not.toBeNull();
       return (block as RegExpExecArray)[1].replace(/<[^>]+>/g, "|");
     }

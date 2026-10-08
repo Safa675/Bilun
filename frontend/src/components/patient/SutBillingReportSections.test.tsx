@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRY2Fixture } from "@/test/fmtMoney";
+import enBilling from "@/messages/en/billing";
+import trBilling from "@/messages/tr/billing";
 import type { BillingActionReport, DrugIndicationFinding, PatientOptimization } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
@@ -1170,7 +1172,7 @@ describe("RecommendedActionsPanel workspace-view integration", () => {
 });
 
 describe("SutOptimizationSection container layout", () => {
-  it.each(["en", "tr"] as const)("keeps the open %s cards and their separate uncertainty inside component-width columns", (locale) => {
+  it.each(["en", "tr"] as const)("keeps the open %s metric rows and their separate uncertainty inside component-width rows", (locale) => {
     const optimization: PatientOptimization = {
       patient_id: "P-CONTAINER",
       n_diagnoses: 0,
@@ -1195,7 +1197,9 @@ describe("SutOptimizationSection container layout", () => {
       <SutOptimizationSection optimization={optimization} />,
       locale,
     );
-    expect(html).toContain('<div class="@container"><div class="grid grid-cols-1 gap-3 @min-[480px]:grid-cols-2 @min-[960px]:grid-cols-4">');
+    expect(html).toContain('<dl data-sut-optimization-summary="true" class="@container space-y-3">');
+    expect([...html.matchAll(/data-optimization-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(["copay", "surcharge", "copay-rate", "drg"]);
+    expect(html.match(/@min-\[480px\]:grid-cols-\[minmax\(0,1fr\)_auto\]/g)).toHaveLength(4);
     expect(html).not.toContain("md:grid-cols");
     expect(html).not.toContain("xl:grid-cols");
     expect(html).not.toContain("<details");
@@ -1205,5 +1209,128 @@ describe("SutOptimizationSection container layout", () => {
     expect(html).toContain("Unavailable");
     expect(html).not.toContain("0.00 TRY");
     expect(html).toContain("whitespace-nowrap tabular-nums");
+    const rate = html.match(/data-optimization-metric="copay-rate"([\s\S]*?)(?=<div data-optimization-metric=|<\/dl>)/)?.[1];
+    expect(rate).toContain("RATE-INPUT-MISSING");
+    const drg = html.match(/data-optimization-metric="drg"([\s\S]*?)<\/dl>/)?.[1];
+    expect(drg).not.toContain("RATE-INPUT-MISSING");
+  });
+
+  it.each(["en", "tr"] as const)("retains qualification, both savings and independent unavailable owners in %s", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).sutOptimization;
+    const optimization = {
+      patient_id: "P-METRIC", n_diagnoses: 2, diagnoses: [], icd10_chapters: [],
+      copay_exemptions: { exempt: true, n_qualifying: 2, qualifying_diagnoses: [{}, {}] },
+      surcharge_exposure: { exactness_status: "exact", n_applicable_procedures: 3, n_total_ek2g: 3, exposure_rate: 1, applicable_rules: [] },
+      copay_rate_exposure: { exactness_status: "exact", n_applicable_procedures: 4, n_total_ek2c1: 4, procedures_with_rates: [], mean_rate: 1, rate_distribution: {} },
+      drg_unbundling: { exactness_status: "exact", has_unbundling_risk: true, n_chapters_analyzed: 1, chapter_analysis: [], total_potential_savings: 600, total_sourced_savings: 700 },
+    } as unknown as PatientOptimization;
+    const html = renderToStaticMarkupWithLocale(<SutOptimizationSection optimization={optimization} />, locale);
+    for (const label of [labels.copayEyebrow, labels.surchargeEyebrow, labels.copayRateEyebrow, labels.drgEyebrow]) {
+      expect(html).toContain(label);
+    }
+    expect(html).toContain("EK-1A");
+    expect(html).toContain(labels.ek1aQualifying.replace("{count}", "2"));
+    expect(html).toContain(labels.flags.replace("{count}", "3"));
+    expect(html).toContain(labels.cappedProcedures.replace("{count}", "4"));
+    expect(html).toContain("high");
+    expect(html).toContain("600.00 TRY");
+    expect(html).toContain("700.00 TRY");
+    expect(html).not.toContain('role="status"');
+    for (const status of ["partial_exact", "missing_exact_inputs"] as const) {
+      const unavailable = renderToStaticMarkupWithLocale(<SutOptimizationSection optimization={{
+        ...optimization,
+        surcharge_exposure: { ...optimization.surcharge_exposure, exactness_status: status, unavailable_reason: "SURCHARGE-MISSING" },
+        copay_rate_exposure: { ...optimization.copay_rate_exposure, exactness_status: status, unavailable_reason: "RATE-MISSING" },
+        drg_unbundling: { ...optimization.drg_unbundling!, exactness_status: status, unavailable_reason: "DRG-MISSING" },
+      }} />, locale);
+      for (const [key, reason] of [["surcharge", "SURCHARGE-MISSING"], ["copay-rate", "RATE-MISSING"], ["drg", "DRG-MISSING"]]) {
+        const row = unavailable.match(new RegExp(`data-optimization-metric="${key}"([\\s\\S]*?)(?=<div data-optimization-metric=|</dl>)`))?.[1];
+        expect(row).toContain(`role="status">${reason}`);
+        expect(row?.match(/role="status"/g)).toHaveLength(1);
+      }
+      expect(unavailable).not.toContain("600.00 TRY");
+      expect(unavailable).not.toContain("700.00 TRY");
+      expect(unavailable).not.toContain("<details");
+    }
+  });
+});
+
+describe("BillingSummary open metric ownership", () => {
+  it.each(["en", "tr"] as const)("retains every label, amount, count, condition and report reason in %s", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).summary;
+    const report = {
+      patient_id: "P-METRIC", claim_id: "C-METRIC", scope: "bill",
+      exactness_status: "exact", priority: "high", total_recoverable_try: 10,
+      sgk_uplift_try: 123456789012.34, compliance_adjustment_try: 20,
+      audit_exposure_try: 30, capture_gap_try: 40, package_adequacy_review_try: 50,
+      medula_playbook_entry_count: 6, drug_indication_violation_count: 7,
+      action_count: 8, recommended_actions: [],
+      copay: {
+        exactness_status: "exact", is_exempt: true,
+        patient_copay_waived_total_try: 90, ilave_ucret_total_try: 100,
+        line_decomposition_status: "exact", rate_corrections: [],
+      },
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} />, locale);
+    const metrics = [
+      ["sgk-uplift", labels.ruleCalculatedOpportunity, "123456789012.34 TRY"],
+      ["compliance-adjustment", labels.complianceAdjustment, "20.00 TRY"],
+      ["audit-exposure", labels.auditExposure, "30.00 TRY"],
+      ["capture-gap", labels.captureGap, "40.00 TRY"],
+      ["package-adequacy", labels.packageAdequacyReview, "50.00 TRY"],
+      ["medula-playbook", labels.medulaPlaybook, "6"],
+      ["drug-indication", labels.drugIndicationReview, "7"],
+      ["exemption-gap", labels.exemptionGapCorrective, "90.00 TRY"],
+      ["ilave-ucret", labels.ilaveUcretInfo, "100.00 TRY"],
+      ["recommended-actions", labels.recommendedActions, "8"],
+      ["priority", labels.priorityTier, "high"],
+    ];
+    expect([...html.matchAll(/data-billing-metric="([^"]+)"/g)].map((match) => match[1])).toEqual(metrics.map(([key]) => key));
+    for (const [key, label, value] of metrics) {
+      const row = html.match(new RegExp(`data-billing-metric="${key}"[^>]*>(.*?)</div>`))?.[1];
+      expect(row).toContain(`<dt class=`);
+      expect(row).toContain(label);
+      expect(row).toContain(`<dd class=`);
+      expect(row).toContain(value);
+    }
+    expect(html).toContain('data-billing-summary="true"');
+    expect(html).toContain("C-METRIC");
+    expect(html).toContain(labels.billDescription);
+    expect(html).toContain(labels.dualTotalsFootnote);
+    expect(html).toContain((locale === "en" ? enBilling : trBilling).copay.ilaveUcretFootnote);
+    expect(html).not.toContain("<details");
+
+    const partial = renderToStaticMarkupWithLocale(<BillingSummary billingReport={{
+      ...report, exactness_status: "partial_exact", unavailable_reason: "REPORT-PARTIAL",
+      copay: { ...report.copay, line_decomposition_status: "copay_only" },
+    }} omitPriority />, locale);
+    expect(partial).toContain('role="status">REPORT-PARTIAL');
+    expect(partial).toContain((locale === "en" ? enBilling : trBilling).copay.partialDecompositionNotice);
+    expect(partial).not.toContain('data-billing-metric="priority"');
+    expect(partial).not.toContain('data-billing-metric="ilave-ucret"');
+  });
+
+  it.each(["en", "tr"] as const)("keeps exact zero, unknown and unavailable values separate in %s", (locale) => {
+    for (const state of ["zero", "null", "unavailable"] as const) {
+      const report = {
+        patient_id: "P-METRIC", exactness_status: state === "unavailable" ? "missing_exact_inputs" : "exact",
+        unavailable_reason: state === "unavailable" ? "TOTALS-MISSING" : undefined,
+        priority: "low", total_recoverable_try: state === "zero" ? 0 : null,
+        sgk_uplift_try: state === "zero" ? 0 : null,
+        action_count: 0, recommended_actions: [],
+        copay: { exactness_status: state === "unavailable" ? "missing_exact_inputs" : "exact",
+          is_exempt: false, visit_copay_savings_try: state === "zero" ? 0 : null,
+          rx_copay_savings_try: state === "zero" ? 0 : null, rate_corrections: [] },
+      } as unknown as BillingActionReport;
+      const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} />, locale);
+      const metric = html.match(/data-billing-metric="sgk-uplift"[^>]*>(.*?)<\/div>/)?.[1];
+      expect(metric).toContain(state === "zero" ? "0.00 TRY" : state === "null" ? ">—<" : locale === "en" ? "Unavailable" : "Kullanılamıyor");
+      expect(html.match(/data-billing-metric=/g)).toHaveLength(4);
+      if (state === "unavailable") {
+        expect(html).toContain('role="status">TOTALS-MISSING');
+        expect(html).toContain((locale === "en" ? enBilling : trBilling).summary.reviewSections);
+        expect(html).not.toContain("0.00 TRY");
+      }
+    }
   });
 });
