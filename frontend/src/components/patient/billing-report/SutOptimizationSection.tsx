@@ -32,7 +32,7 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
 
   return (
     <BillingSectionShell title={t("billing.sutOptimization.title")}>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="@container"><div className="grid grid-cols-1 gap-3 @min-[480px]:grid-cols-2 @min-[960px]:grid-cols-4">
         <Surface variant="soft" padding="md" className="space-y-2">
           <Eyebrow>{t("billing.sutOptimization.copayEyebrow")}</Eyebrow>
           <div className="flex flex-wrap items-center gap-2">
@@ -127,7 +127,7 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
             )}
           </Surface>
         )}
-      </div>
+      </div></div>
     </BillingSectionShell>
   );
 }
