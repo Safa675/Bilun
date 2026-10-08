@@ -12,7 +12,7 @@ import {
   MaterialsPreCheckSection,
   OptionalOverrideSection,
 } from "@/components/patient/SutBillingReportSections";
-import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
+import { fmtNum, fmtTRY2 } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import { complianceBilledAtRiskSummary } from "@/lib/workspaceViews";
 import {
@@ -89,37 +89,34 @@ export default function ComplianceViewSection({
         {t("billing.views.compliance.description")}
       </p>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-6 [&>div]:min-w-0">
-        <div className="[&_.tabular-nums]:whitespace-nowrap">
-          <KpiCard
-            label={t("billing.views.compliance.kpiRisk")}
-            value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
-            valueColor={RISK_COLOR}
-          />
+      <dl data-compliance-metrics className="@container space-y-3">
+        <div data-compliance-metric="risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiRisk")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight" style={{ color: RISK_COLOR }}>
+            {auditExposure == null ? "—" : fmtTRY2(auditExposure)}
+          </dd>
         </div>
-        <KpiCard
-          label={t("billing.views.compliance.kpiFindings")}
-          value={fmtNum(rows.length)}
-        />
-        <div className="[&_.tabular-nums]:whitespace-nowrap">
-          <KpiCard
-            label={t("billing.views.compliance.kpiBilledAtRisk")}
-            value={billedNone ? "—" : fmtTRY2(billed.total)}
-            sub={
-              billedComplete
-                ? undefined
-                : billedNone
-                  ? t("billing.views.compliance.kpiBilledAtRiskNone", {
-                      count: billed.count,
-                    })
-                  : t("billing.views.compliance.kpiBilledAtRiskPartial", {
-                      known: billed.known,
-                      count: billed.count,
-                    })
-            }
-          />
+        <div data-compliance-metric="findings" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiFindings")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{fmtNum(rows.length)}</dd>
         </div>
-      </div>
+        <div data-compliance-metric="billed-at-risk" className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+          <dt className="text-xs font-medium text-[var(--text-muted)]">{t("billing.views.compliance.kpiBilledAtRisk")}</dt>
+          <dd className="min-w-0 whitespace-nowrap text-2xl font-semibold tabular-nums lining-nums leading-tight text-[var(--text-primary)]">{billedNone ? "—" : fmtTRY2(billed.total)}</dd>
+          {!billedComplete && (
+            <dd className="text-xs leading-snug text-[var(--text-secondary)] @min-[480px]:col-span-2">
+              {billedNone
+                ? t("billing.views.compliance.kpiBilledAtRiskNone", {
+                    count: billed.count,
+                  })
+                : t("billing.views.compliance.kpiBilledAtRiskPartial", {
+                    known: billed.known,
+                    count: billed.count,
+                  })}
+            </dd>
+          )}
+        </div>
+      </dl>
 
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
         <UnifiedComplianceFindingsTable
