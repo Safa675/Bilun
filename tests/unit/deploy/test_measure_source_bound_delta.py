@@ -915,3 +915,195 @@ def test_measurement_changes_digest_by_location_without_exporting_values(policy,
     assert first["delta_sha256"] != second["delta_sha256"]
     assert json.dumps(first).find(PATIENT) == -1
     assert json.dumps(second).find(CLAIM) == -1
+
+
+def _missing_context_source(*, candidate):
+    return (
+        "from synthetic import finalize_report_totals\n"
+        "def compute_patient_billing_report(pid, *, claim_context=None):\n"
+        "    report = BillingActionReport(patient_id=pid)\n"
+        "    if claim_context is None:\n"
+        "        if SUT_REQUIRE_CLAIM_LINES:\n"
+        "            set_missing_inputs_report(report)\n"
+        + ("" if candidate else "            finalize_report_totals(report, claim_context=None)\n")
+        + "            finalize_report_exactness(report)\n"
+        "            return report\n"
+        "    assert claim_context is not None\n"
+        "    report.lab, capture = compute_lab_and_capture_gap_from_claims(claim_context)\n"
+        "    finalize_report_totals(report, claim_context=claim_context)\n"
+        "    finalize_report_exactness(report)\n"
+        "    return report\n"
+    ).encode()
+
+
+def _missing_context_sources():
+    old, new = _source_files(candidate=False), _source_files(candidate=True)
+    for files, candidate in ((old, False), (new, True)):
+        files[BILLING + "patient_report.py"] = _missing_context_source(candidate=candidate)
+    return old, new
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_exact_missing_context_removal_is_in_policy_digest_without_data_allowance(changed):
+    old, new = _missing_context_sources()
+    if not changed:
+        new[BILLING + "patient_report.py"] = old[BILLING + "patient_report.py"]
+    sources = _bundle(old, candidate=False), _bundle(new, candidate=True)
+    policy = delta.derive_policy(*sources)
+    document = json.loads(policy._json)
+    expected = "remove_missing_context_totals_finalization" if changed else "unchanged"
+    assert document["patient_report_transform"] == expected
+    assert hashlib.sha256(policy._json.encode()).hexdigest() == policy.sha256
+    summary = _measure(_tables(), _tables(), policy, sources).safe_summary()
+    assert summary["changed_cell_count"] == 0
+    assert summary["change_counts"] == {}
+    assert summary["deployment_admitted"] is False
+    assert summary["semantic_release_admitted"] is False
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "outer_condition",
+        "inner_condition",
+        "wrong_owner",
+        "wrong_report_argument",
+        "wrong_call",
+        "wrong_keyword",
+        "positional_context",
+        "extra_keyword",
+        "wrong_return",
+        "old_sequence_order",
+        "new_sequence_order",
+        "duplicate_call",
+        "duplicate_branch",
+        "duplicate_owner",
+        "extra_branch_statement",
+        "inner_else",
+        "outer_else",
+        "populated_finalization",
+        "wrong_branch_removal",
+        "import",
+        "signature",
+        "medula_counter",
+        "other_statement",
+        "lab_producer",
+    ],
+)
+def test_missing_context_source_proof_rejects_every_other_transformation(mutation):
+    old, new = _missing_context_sources()
+    path = BILLING + "patient_report.py"
+    missing = b"            set_missing_inputs_report(report)\n"
+    totals = b"            finalize_report_totals(report, claim_context=None)\n"
+    exactness = b"            finalize_report_exactness(report)\n"
+    populated = b"    finalize_report_totals(report, claim_context=claim_context)\n"
+    if mutation in ("outer_condition", "inner_condition", "wrong_owner", "wrong_return"):
+        before, after = {
+            "outer_condition": (b"if claim_context is None:", b"if claim_context is not None:"),
+            "inner_condition": (b"if SUT_REQUIRE_CLAIM_LINES:", b"if not SUT_REQUIRE_CLAIM_LINES:"),
+            "wrong_owner": (b"def compute_patient_billing_report(", b"def another_report("),
+            "wrong_return": (b"            return report", b"            return None"),
+        }[mutation]
+        for files in (old, new):
+            files[path] = files[path].replace(before, after)
+    elif mutation in (
+        "wrong_report_argument",
+        "wrong_call",
+        "wrong_keyword",
+        "positional_context",
+        "extra_keyword",
+    ):
+        replacement = {
+            "wrong_report_argument": b"finalize_report_totals(other_report, claim_context=None)",
+            "wrong_call": b"finalize_other_totals(report, claim_context=None)",
+            "wrong_keyword": b"finalize_report_totals(report, context=None)",
+            "positional_context": b"finalize_report_totals(report, None)",
+            "extra_keyword": b"finalize_report_totals(report, claim_context=None, extra=True)",
+        }[mutation]
+        old[path] = old[path].replace(totals, b"            " + replacement + b"\n")
+    elif mutation == "old_sequence_order":
+        old[path] = old[path].replace(missing + totals, totals + missing)
+    elif mutation == "new_sequence_order":
+        new[path] = new[path].replace(missing + exactness, exactness + missing)
+    elif mutation == "duplicate_call":
+        old[path] = old[path].replace(totals, totals + totals)
+    elif mutation == "duplicate_branch":
+        for files, candidate in ((old, False), (new, True)):
+            branch = (
+                b"    if claim_context is None:\n"
+                b"        if SUT_REQUIRE_CLAIM_LINES:\n"
+                + missing
+                + (b"" if candidate else totals)
+                + exactness
+                + b"            return report\n"
+            )
+            files[path] = files[path].replace(branch, branch + branch)
+    elif mutation == "duplicate_owner":
+        for files in (old, new):
+            files[path] += files[path]
+    elif mutation == "extra_branch_statement":
+        for files in (old, new):
+            files[path] = files[path].replace(
+                missing, missing + b"            extra_guard(report)\n"
+            )
+    elif mutation in ("inner_else", "outer_else"):
+        statement = (
+            b"        else:\n            return None\n"
+            if mutation == "inner_else"
+            else b"    else:\n        return None\n"
+        )
+        for files in (old, new):
+            files[path] = files[path].replace(
+                b"    assert claim_context is not None\n",
+                statement + b"    assert claim_context is not None\n",
+            )
+    elif mutation == "populated_finalization":
+        new[path] = new[path].replace(
+            populated, b"    finalize_report_totals(report, claim_context=None)\n"
+        )
+    elif mutation == "wrong_branch_removal":
+        new[path] = old[path].replace(populated, b"")
+    elif mutation == "import":
+        new[path] = new[path].replace(b"from synthetic import", b"from other_source import")
+    elif mutation == "signature":
+        new[path] = new[path].replace(
+            b"pid, *, claim_context", b"pid, extra=None, *, claim_context"
+        )
+    elif mutation == "medula_counter":
+        new[path] = new[path].replace(populated, b"    report.medula_counter = 1\n" + populated)
+    elif mutation == "other_statement":
+        new[path] += b"other_behavior = True\n"
+    elif mutation == "lab_producer":
+        new[path] = new[path].replace(
+            b"compute_lab_and_capture_gap_from_claims(claim_context)",
+            b"other_lab_producer(claim_context)",
+        )
+    sources = _bundle(old, candidate=False), _bundle(new, candidate=True)
+    with pytest.raises(delta.MeasurementRejected):
+        delta.derive_policy(*sources)
+
+
+@pytest.mark.parametrize(
+    "field,before,after",
+    [
+        ("known_zero_try", 0.0, None),
+        ("known_nonzero_try", 12.5, None),
+        ("known_nonzero_try", 12.5, 12.6),
+        ("known_zero_try", 0.0, 0),
+        ("clinical_result", "not_evaluated", "evaluated"),
+        ("result_count", 0, 1),
+        ("build_id", "synthetic-old-build", "synthetic-new-build"),
+        ("data_source", "synthetic-old-source", "synthetic-new-source"),
+        ("normative_cost_try", 0.0, None),
+    ],
+)
+def test_missing_context_source_proof_adds_no_financial_clinical_metadata_allowance(
+    field, before, after
+):
+    old, new = _missing_context_sources()
+    sources = _bundle(old, candidate=False), _bundle(new, candidate=True)
+    policy = delta.derive_policy(*sources)
+    left, right = _tables(), _tables()
+    left[REPORT][PATIENT][field] = before
+    right[REPORT][PATIENT][field] = after
+    _reject(left, right, policy, sources)

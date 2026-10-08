@@ -374,6 +374,54 @@ def _manifest_policy(old: dict, new: dict, rules: dict) -> list[str]:
     )
 
 
+def _patient_report_policy(old: bytes, new: bytes) -> str:
+    if old == new:
+        return "unchanged"
+    before, after = _tree(old), _tree(new)
+    report = _node(before, ast.FunctionDef, "compute_patient_billing_report")
+    condition = ast.parse("claim_context is None", mode="eval").body
+    branches = [
+        node
+        for node in ast.walk(report)
+        if isinstance(node, ast.If) and _ast(node.test) == _ast(condition)
+    ]
+    _require(
+        len(branches) == 1 and branches[0] in report.body,
+        "missing_context_unique_branch",
+    )
+    branch = branches[0]
+    _require(
+        not branch.orelse
+        and len(branch.body) == 1
+        and isinstance(branch.body[0], ast.If)
+        and _ast(branch.body[0].test)
+        == _ast(ast.parse("SUT_REQUIRE_CLAIM_LINES", mode="eval").body)
+        and not branch.body[0].orelse,
+        "missing_context_required_lines_branch",
+    )
+    required = branch.body[0]
+    sequence = ast.parse(
+        "set_missing_inputs_report(report)\n"
+        "finalize_report_totals(report, claim_context=None)\n"
+        "finalize_report_exactness(report)\n"
+        "return report"
+    ).body
+    _require(
+        [_ast(node) for node in required.body] == [_ast(node) for node in sequence]
+        and sum(
+            isinstance(node, ast.Expr) and _ast(node) == _ast(sequence[1])
+            for node in ast.walk(before)
+        )
+        == 1,
+        "missing_context_finalization_sequence",
+    )
+    # Removing only this unique middle statement must reconstruct the whole
+    # candidate module, including all populated-context behavior and imports.
+    del required.body[1]
+    _require(_ast(before) == _ast(after), "unknown_patient_report_change")
+    return "remove_missing_context_totals_finalization"
+
+
 def _lab_policy(old: dict[str, bytes], new: dict[str, bytes]) -> list[str]:
     trees = [_tree(files[_BILLING + "types.py"]) for files in (old, new)]
     labs = [_node(tree, ast.ClassDef, "LabOptimization") for tree in trees]
@@ -473,10 +521,6 @@ def _lab_policy(old: dict[str, bytes], new: dict[str, bytes]) -> list[str]:
     merged = transform.visit(copy.deepcopy(merge_trees[0]))
     _require(transform.count == 1 and _ast(merged) == _ast(merge_trees[1]), "lab_merge_transform")
     report = _tree(old[_BILLING + "patient_report.py"])
-    _require(
-        old[_BILLING + "patient_report.py"] == new[_BILLING + "patient_report.py"],
-        "lab_report_source",
-    )
     writes = [
         node
         for node in ast.walk(report)
@@ -634,9 +678,15 @@ def derive_policy(baseline: SourceBundle, candidate: SourceBundle) -> DeltaPolic
     stable = SOURCE_PATHS - {
         _RULES,
         _MANIFEST,
-        *(_BILLING + name + ".py" for name in ("types", "claim_materials", "lab_bill_merge")),
+        *(
+            _BILLING + name + ".py"
+            for name in ("types", "claim_materials", "lab_bill_merge", "patient_report")
+        ),
     }
     _require(all(old[path] == new[path] for path in stable), "stable_source_changed")
+    report_transform = _patient_report_policy(
+        old[_BILLING + "patient_report.py"], new[_BILLING + "patient_report.py"]
+    )
     actions = _tree(old[_BILLING + "billing_actions.py"])
     detail = _node(actions, ast.FunctionDef, "_material_row_detail")
     _require(
@@ -682,6 +732,7 @@ def derive_policy(baseline: SourceBundle, candidate: SourceBundle) -> DeltaPolic
         _document(old[_MANIFEST]), _document(new[_MANIFEST]), data["rules"]
     )
     data["lab_fields"] = _lab_policy(old, new)
+    data["patient_report_transform"] = report_transform
     data["materials"] = _material_policy(
         old[_BILLING + "claim_materials.py"], new[_BILLING + "claim_materials.py"]
     )
