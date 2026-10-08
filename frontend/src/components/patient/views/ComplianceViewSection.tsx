@@ -89,32 +89,36 @@ export default function ComplianceViewSection({
         {t("billing.views.compliance.description")}
       </p>
 
-      <div className="grid gap-6 sm:grid-cols-3">
-        <KpiCard
-          label={t("billing.views.compliance.kpiRisk")}
-          value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
-          valueColor={RISK_COLOR}
-        />
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-6 [&>div]:min-w-0">
+        <div className="[&_.tabular-nums]:whitespace-nowrap">
+          <KpiCard
+            label={t("billing.views.compliance.kpiRisk")}
+            value={auditExposure == null ? "—" : fmtTRY2(auditExposure)}
+            valueColor={RISK_COLOR}
+          />
+        </div>
         <KpiCard
           label={t("billing.views.compliance.kpiFindings")}
           value={fmtNum(rows.length)}
         />
-        <KpiCard
-          label={t("billing.views.compliance.kpiBilledAtRisk")}
-          value={billedNone ? "—" : fmtTRY2(billed.total)}
-          sub={
-            billedComplete
-              ? undefined
-              : billedNone
-                ? t("billing.views.compliance.kpiBilledAtRiskNone", {
-                    count: billed.count,
-                  })
-                : t("billing.views.compliance.kpiBilledAtRiskPartial", {
-                    known: billed.known,
-                    count: billed.count,
-                  })
-          }
-        />
+        <div className="[&_.tabular-nums]:whitespace-nowrap">
+          <KpiCard
+            label={t("billing.views.compliance.kpiBilledAtRisk")}
+            value={billedNone ? "—" : fmtTRY2(billed.total)}
+            sub={
+              billedComplete
+                ? undefined
+                : billedNone
+                  ? t("billing.views.compliance.kpiBilledAtRiskNone", {
+                      count: billed.count,
+                    })
+                  : t("billing.views.compliance.kpiBilledAtRiskPartial", {
+                      known: billed.known,
+                      count: billed.count,
+                    })
+            }
+          />
+        </div>
       </div>
 
       <section id="claim-compliance" className="space-y-3 scroll-mt-24">
