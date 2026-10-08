@@ -181,6 +181,43 @@ def test_precheck_rows_include_sut_section_claim_and_price(
     assert row["material_name"] == "Test material"
 
 
+def test_preauth_note_distinguishes_real_catalog_member_and_input_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.bilun.domain.billing import claim_materials as cm
+    from src.bilun.domain.billing.billing_actions import collect_billing_actions
+    from src.bilun.domain.billing.types import BillingActionReport
+
+    catalog_codes = {row["sut_code"] for row in cm._get_ek3c1_preauth()}
+    assert "100000" in catalog_codes and "NF1040" not in catalog_codes
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+    monkeypatch.setattr(cm, "check_specialty_materials_for_context", lambda _ctx: [])
+    member = _material_line(code="100000", line_id="MEMBER", claim_id="C-MEMBER")
+    flag_only = _material_line(
+        code="NF1040", line_id="FLAG", claim_id="C-FLAG", requires_pre_auth=True,
+    )
+    result = cm.precheck_materials_from_claims(_ctx(member, flag_only))
+    by_code = {row["sut_code"]: row for row in result.pre_auth_required}
+    assert set(by_code) == {"100000", "NF1040"}
+    assert by_code["100000"]["note"] == cm._PREAUTH_NOTE
+    assert "material-line input flag" in by_code["NF1040"]["note"]
+    assert "catalog membership not verified" in by_code["NF1040"]["note"]
+    assert by_code["NF1040"]["claim_id"] == "C-FLAG"
+    assert by_code["NF1040"]["price_try"] == 100.0
+    assert result.exactness_status == "exact"
+    actions = collect_billing_actions(BillingActionReport(patient_id="PT1", materials=result))
+    flagged = next(row for row in actions if row["material_code"] == "NF1040")
+    assert flagged["kind"] == "material_pre_auth"
+    assert flagged["detail"] == by_code["NF1040"]["note"]
+    assert flagged["sut_section_id"] == "3.1.2"
+    assert flagged["clause_ref"] is None
+    assert flagged["sgk_uplift_try"] is None
+    assert cm.precheck_materials_from_claims(
+        _ctx(_material_line(code="NF1040", requires_pre_auth=False)),
+    ).pre_auth_required == []
+
+
 def test_none_material_date_does_not_crash_latest_line_selection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
