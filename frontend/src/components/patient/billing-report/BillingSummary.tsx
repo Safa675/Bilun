@@ -17,7 +17,7 @@ const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
 
 function SummaryMetric({ name, label, value }: { name: string; label: string; value: ReactNode }) {
   return (
-    <div data-billing-metric={name} className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[480px]:grid-cols-[minmax(0,1fr)_auto] @min-[480px]:items-center">
+    <div data-billing-metric={name} className="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-1 @min-[400px]/billing-summary:grid-cols-[minmax(0,1fr)_auto] @min-[400px]/billing-summary:items-center">
       <dt className="text-[0.68rem] font-semibold uppercase tracking-normal text-[var(--text-muted)]">{label}</dt>
       <dd className="min-w-0 font-sans text-2xl leading-none font-semibold tracking-normal tabular-nums lining-nums text-[var(--text-primary)]">{value}</dd>
     </div>
@@ -68,7 +68,7 @@ export function BillingSummary({
     <Surface
       variant="base"
       padding="lg"
-      className="@container space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
+      className="@container/billing-summary space-y-5 max-sm:p-3 [&_.tabular-nums]:whitespace-nowrap [&_.tabular-nums]:text-xs @min-[180px]:[&_.tabular-nums]:text-sm @min-[220px]:[&_.tabular-nums]:text-2xl"
       data-billing-summary
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -86,7 +86,7 @@ export function BillingSummary({
         <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
       </div>
 
-      <dl className="space-y-3">
+      <dl className="grid grid-cols-1 gap-y-3 @min-[960px]/billing-summary:grid-cols-2 @min-[960px]/billing-summary:gap-x-6">
         <SummaryMetric
           name="sgk-uplift"
           label={t("billing.summary.ruleCalculatedOpportunity")}
