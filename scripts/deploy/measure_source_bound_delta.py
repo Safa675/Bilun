@@ -306,12 +306,22 @@ def _rules_policy(old: dict, new: dict) -> dict:
             "material_message_source",
         )
         gates = [row.get("gate_b_sources") for row in (left, right)]
+        unchanged_links = (
+            all("gate_b_sources" in row for row in (left, right))
+            and all(type(value) is list for value in gates)
+            and _same(*gates)
+        )
         for row, value in zip((left, right), gates, strict=True):
             _require(
                 value is None
                 and "gate_b_sources" not in row
                 or type(value) is list
-                and all(type(ref) is str and _COORDINATE.fullmatch(ref) for ref in value)
+                and all(
+                    type(ref) is str
+                    and bool(ref)
+                    and (unchanged_links or _COORDINATE.fullmatch(ref))
+                    for ref in value
+                )
                 and len(value) == len(set(value)),
                 "material_gate_source",
             )

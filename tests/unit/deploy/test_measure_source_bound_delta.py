@@ -1107,3 +1107,159 @@ def test_missing_context_source_proof_adds_no_financial_clinical_metadata_allowa
     left[REPORT][PATIENT][field] = before
     right[REPORT][PATIENT][field] = after
     _reject(left, right, policy, sources)
+
+
+def _historical_link_sources():
+    old, new = _source_files(candidate=False), _source_files(candidate=True)
+    for files in (old, new):
+        document = json.loads(files[RULES])
+        document["rules"][0]["gate_b_sources"] = ["3.1.2.c#01234567", "3.2.1.A.(2)"]
+        document["rules"][1]["gate_b_sources"] = ["3.1.4.x#89abcdef"]
+        files[RULES] = _json(document)
+    return old, new
+
+
+@pytest.mark.parametrize(
+    "refs",
+    [
+        ["3.1.2.c#01234567"],
+        ["3.2.1.A.(2)"],
+        ["3.1.4.\u00e7"],
+        ["3.1.2.c#01234567", "3.2.1.A.(2)"],
+    ],
+)
+def test_identical_owner_bound_historical_links_are_preserved_without_delta(refs):
+    old, new = _historical_link_sources()
+    for files in (old, new):
+        document = json.loads(files[RULES])
+        document["rules"][0]["gate_b_sources"] = refs
+        files[RULES] = _json(document)
+    sources = _bundle(old, candidate=False), _bundle(new, candidate=True)
+    policy = delta.derive_policy(*sources)
+    assert json.loads(policy._json)["rules"][RULE]["gate_sources"] == [refs, refs]
+    tables = _tables()
+    for table, row in ((REPORT, PATIENT), (BILL_REPORT, BILL_KEY)):
+        tables[table][row]["materials"]["prose_bundling_violations"][0]["gate_b_sources"] = refs
+    summary = _measure(tables, copy.deepcopy(tables), policy, sources).safe_summary()
+    assert summary["changed_cell_count"] == 0
+    assert summary["change_counts"] == {}
+    assert summary["deployment_admitted"] is False
+    assert summary["semantic_release_admitted"] is False
+
+
+@pytest.mark.parametrize(
+    "mutation", ["changed", "reordered", "appended", "deleted", "key_removed", "owner_swapped"]
+)
+def test_changed_historical_links_never_receive_the_unchanged_exception(mutation):
+    old, new = _historical_link_sources()
+    document = json.loads(new[RULES])
+    rule, other = document["rules"]
+    refs = rule["gate_b_sources"]
+    if mutation == "changed":
+        refs[0] = "3.1.2.c#76543210"
+    elif mutation == "reordered":
+        refs.reverse()
+    elif mutation == "appended":
+        refs.append("3.1.1.(10)")
+    elif mutation == "deleted":
+        refs.pop()
+    elif mutation == "key_removed":
+        rule.pop("gate_b_sources")
+    elif mutation == "owner_swapped":
+        rule["gate_b_sources"], other["gate_b_sources"] = other["gate_b_sources"], refs
+    new[RULES] = _json(document)
+    with pytest.raises(delta.MeasurementRejected):
+        delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+@pytest.mark.parametrize(
+    "value",
+    [None, "3.1.2.c#01234567", {}, [""], [1], [None], [[]], ["same", "same"]],
+)
+def test_equal_historical_links_still_reject_null_bad_shape_entries_and_duplicates(value):
+    old, new = _historical_link_sources()
+    for files in (old, new):
+        document = json.loads(files[RULES])
+        document["rules"][0]["gate_b_sources"] = value
+        files[RULES] = _json(document)
+    with pytest.raises(delta.MeasurementRejected):
+        delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+@pytest.mark.parametrize("missing_side", ["baseline", "candidate"])
+def test_historical_link_presence_change_cannot_use_the_unchanged_exception(missing_side):
+    old, new = _historical_link_sources()
+    files = old if missing_side == "baseline" else new
+    document = json.loads(files[RULES])
+    document["rules"][0].pop("gate_b_sources")
+    files[RULES] = _json(document)
+    with pytest.raises(delta.MeasurementRejected):
+        delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+@pytest.mark.parametrize(
+    "left,right",
+    [
+        (None, None),
+        (None, ["3.1.1.(10)"]),
+        (["3.1.1.(12)"], ["3.1.1.(10)"]),
+        (["3.1.1.(10)"], ["3.1.1.(10)"]),
+        ([], []),
+    ],
+)
+def test_original_absent_and_numeric_material_link_paths_remain_valid(left, right):
+    old, new = _source_files(candidate=False), _source_files(candidate=True)
+    for files, value in ((old, left), (new, right)):
+        document = json.loads(files[RULES])
+        if value is None:
+            document["rules"][0].pop("gate_b_sources")
+        else:
+            document["rules"][0]["gate_b_sources"] = value
+        files[RULES] = _json(document)
+    delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+def test_original_numeric_material_link_removal_guard_is_preserved():
+    old, new = _source_files(candidate=False), _source_files(candidate=True)
+    document = json.loads(new[RULES])
+    document["rules"][0].pop("gate_b_sources")
+    new[RULES] = _json(document)
+    with pytest.raises(delta.MeasurementRejected, match="material_gate_removed"):
+        delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
+
+
+@pytest.mark.parametrize("field", ["known_zero_try", "clinical_result", "result_count", "build_id"])
+def test_unchanged_historical_source_links_add_no_observed_data_allowance(field):
+    old, new = _historical_link_sources()
+    sources = _bundle(old, candidate=False), _bundle(new, candidate=True)
+    policy = delta.derive_policy(*sources)
+    left, right = _tables(), _tables()
+    if field == "known_zero_try":
+        right[REPORT][PATIENT][field] = None
+    elif field == "clinical_result":
+        right[REPORT][PATIENT][field] = "evaluated"
+    elif field == "result_count":
+        left[REPORT][PATIENT][field] = 0
+        right[REPORT][PATIENT][field] = 1
+    elif field == "build_id":
+        left[REPORT][PATIENT][field] = "synthetic-old-build"
+        right[REPORT][PATIENT][field] = "synthetic-new-build"
+    _reject(left, right, policy, sources)
+
+
+@pytest.mark.parametrize("mutation", ["executable_rule", "rule_document", "module", "rule_owner"])
+def test_unchanged_historical_links_cannot_hide_other_source_changes(mutation):
+    old, new = _historical_link_sources()
+    if mutation == "module":
+        new[BILLING + "billing_actions.py"] += b"extra_behavior = True\n"
+    else:
+        document = json.loads(new[RULES])
+        if mutation == "executable_rule":
+            document["rules"][0]["predicate"]["mode"] = "pay"
+        elif mutation == "rule_document":
+            document["extra_behavior"] = True
+        elif mutation == "rule_owner":
+            document["rules"][0]["rule_id"] = "OTHER-SYNTHETIC-OWNER"
+        new[RULES] = _json(document)
+    with pytest.raises(delta.MeasurementRejected):
+        delta.derive_policy(_bundle(old, candidate=False), _bundle(new, candidate=True))
