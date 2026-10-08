@@ -1289,6 +1289,44 @@ describe("SutOptimizationSection container layout", () => {
 });
 
 describe("BillingSummary open metric ownership", () => {
+  it.each([
+    ["en", "patient"], ["en", "bill"], ["tr", "patient"], ["tr", "bill"],
+  ] as const)("omits only opted-in duplicate %s/%s identity and copy while keeping all unique content", (locale, scope) => {
+    const labels = (locale === "en" ? enBilling : trBilling).summary;
+    const base = {
+      patient_id: "P-LONG-CONTEXT-IDENTITY-0001", claim_id: scope === "bill" ? "C-LONG-CONTEXT-IDENTITY-0001" : undefined,
+      scope: scope === "bill" ? "bill" : undefined, exactness_status: "exact", priority: "high", total_recoverable_try: 10, sgk_uplift_try: 123456789012.34,
+      compliance_adjustment_try: 20, audit_exposure_try: 30, capture_gap_try: 40, package_adequacy_review_try: 50,
+      medula_playbook_entry_count: 6, drug_indication_violation_count: 7, action_count: 8, recommended_actions: [],
+      copay: { exactness_status: "exact", is_exempt: true, patient_copay_waived_total_try: 90,
+        ilave_ucret_total_try: 100, line_decomposition_status: "exact", rate_corrections: [] },
+    } as unknown as BillingActionReport;
+    for (const report of [base,
+      { ...base, exactness_status: "partial_exact", unavailable_reason: "CONTEXT-PARTIAL",
+        copay: { ...base.copay, line_decomposition_status: "copay_only" } },
+      { ...base, total_recoverable_try: 0, sgk_uplift_try: 0 },
+      { ...base, total_recoverable_try: null, sgk_uplift_try: null },
+      { ...base, exactness_status: "missing_exact_inputs", unavailable_reason: "CONTEXT-MISSING" },
+    ] as BillingActionReport[]) {
+      const full = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority />, locale);
+      const compact = renderToStaticMarkupWithLocale(<BillingSummary billingReport={report} omitPriority omitHeaderContext />, locale);
+      const title = scope === "bill" ? labels.billTitle : labels.title;
+      const description = scope === "bill" ? labels.billDescription : labels.description;
+      const identity = scope === "bill" ? report.claim_id : report.patient_id;
+      expect(full).toContain(identity);
+      expect(full).toContain(description);
+      expect(compact).not.toContain(identity);
+      expect(compact).not.toContain(description);
+      expect(compact).toContain(title);
+      const chip = full.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0];
+      expect(chip).toBeDefined();
+      expect(compact.match(/<span class="inline-flex items-center[^"]*"><span>[\s\S]*?<\/span><\/span>/)?.[0]).toBe(chip);
+      expect(compact.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]).toBe(full.match(/<dl\b[\s\S]*?<\/dl>/)?.[0]);
+      expect(compact.slice(compact.indexOf("</dl>") + 5)).toBe(full.slice(full.indexOf("</dl>") + 5));
+      expect(compact).not.toContain("<details");
+    }
+  });
+
   it.each(["en", "tr"] as const)("retains every label, amount, count, condition and report reason in %s", (locale) => {
     const labels = (locale === "en" ? enBilling : trBilling).summary;
     const report = {

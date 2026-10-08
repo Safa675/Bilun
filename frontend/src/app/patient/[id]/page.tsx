@@ -666,7 +666,15 @@ export function SutPatientPageContent({
                       billContent={billContent}
                       detailsContent={
                         <>
-                          <BillingSummary billingReport={activeBillingReport} omitPriority />
+                          <BillingSummary
+                            billingReport={activeBillingReport}
+                            omitPriority
+                            omitHeaderContext={activeBillingReport.patient_id === patientId && (
+                              isBillScoped
+                                ? Boolean(selectedClaimId?.trim()) && activeBillingReport.scope === "bill" && activeBillingReport.claim_id === selectedClaimId
+                                : activeBillingReport.scope == null && activeBillingReport.claim_id == null
+                            )}
+                          />
                           {optimization && <PatientClinicalSnapshot optimization={optimization} />}
                           {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
                           <p className="py-2 text-center text-xs text-[var(--text-muted)]">
