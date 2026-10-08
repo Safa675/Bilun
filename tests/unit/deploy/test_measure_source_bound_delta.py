@@ -2835,3 +2835,917 @@ def test_observed_prose_does_not_project_any_other_category_or_object(
         left[COHORT]["rows"][0]["nested"] = row
         right[COHORT]["rows"][0]["nested"] = changed
     _material_reject(left, right, material_policy, material_sources)
+
+
+# Parse-only exact scoped owner fixtures; no product functions are executed.
+ORDERED_ACTION_SOURCE = (
+    b"def _action_row(\n"
+    b"    *,\n"
+    b"    action_id: str,\n"
+    b"    surface: str,\n"
+    b"    kind: str,\n"
+    b"    claim_id: str | None = None,\n"
+    b"    procedure_code: str | None = None,\n"
+    b"    procedure_name: str | None = None,\n"
+    b"    material_code: str | None = None,\n"
+    b"    drug_code: str | None = None,\n"
+    b"    drug_name: str | None = None,\n"
+    b"    drug_claim_line_id: str | None = None,\n"
+    b"    finding_id: str | None = None,\n"
+    b"    severity: str | None = None,\n"
+    b"    applicability_status: str | None = None,\n"
+    b"    evaluation_status: str | None = None,\n"
+    b"    observed_icd10_codes: list[str] | None = None,\n"
+    b"    matched_icd10_codes: list[str] | None = None,\n"
+    b"    unmatched_icd10_codes: list[str] | None = None,\n"
+    b"    eligible_routes: list[dict[str, Any]] | None = None,\n"
+    b"    eligible_route_count: int | None = None,\n"
+    b"    eligible_routes_truncated: bool | None = None,\n"
+    b"    observed_icd10_count: int | None = None,\n"
+    b"    observed_icd10_truncated: bool | None = None,\n"
+    b"    clinical_restrictions: list[dict[str, Any]] | None = None,\n"
+    b"    source_authority: dict[str, Any] | None = None,\n"
+    b"    selected_rule_id: str | None = None,\n"
+    b"    recommended_action_tr: str | None = None,\n"
+    b"    sgk_uplift_try: float | None = None,\n"
+    b"    audit_risk_try: float | None = None,\n"
+    b"    compliance_savings_try: float | None = None,\n"
+    b"    billed_try: float | None = None,\n"
+    b"    material_name: str | None = None,\n"
+    b"    detail: str | None = None,\n"
+    b"    sut_section_id: str | None = None,\n"
+    b"    clause_ref: dict | None = None,\n"
+    b"    finding_type: str | None = None,\n"
+    b"    message_code: str | None = None,\n"
+    b"    message_params: dict | None = None,\n"
+    b") -> dict[str, Any]:\n"
+    b"    authority = source_authority_payload(source_authority)\n"
+    b"    clinical = clinical_evidence_payload(bounded_clinical_restrictions(clinical_restrictions))\n"
+    b"    return {\n"
+    b'        "action_id": action_id,\n'
+    b'        "surface": surface,\n'
+    b'        "kind": kind,\n'
+    b'        "claim_id": claim_id,\n'
+    b'        "procedure_code": procedure_code,\n'
+    b'        "procedure_name": procedure_name,\n'
+    b'        "material_code": material_code,\n'
+    b'        "drug_code": drug_code,\n'
+    b'        "drug_name": drug_name,\n'
+    b'        "drug_claim_line_id": drug_claim_line_id,\n'
+    b'        "finding_id": finding_id,\n'
+    b'        "severity": severity,\n'
+    b'        "applicability_status": applicability_status,\n'
+    b'        "evaluation_status": evaluation_status,\n'
+    b'        "observed_icd10_codes": observed_icd10_codes,\n'
+    b'        "matched_icd10_codes": matched_icd10_codes,\n'
+    b'        "unmatched_icd10_codes": unmatched_icd10_codes,\n'
+    b'        "eligible_routes": eligible_routes,\n'
+    b'        "eligible_route_count": eligible_route_count,\n'
+    b'        "eligible_routes_truncated": eligible_routes_truncated,\n'
+    b'        "observed_icd10_count": observed_icd10_count,\n'
+    b'        "observed_icd10_truncated": observed_icd10_truncated,\n'
+    b"        **clinical,\n"
+    b"        **authority,\n"
+    b'        **({"selected_rule_id": selected_rule_id} if clinical or authority else {}),\n'
+    b'        "recommended_action_tr": recommended_action_tr,\n'
+    b'        "sgk_uplift_try": _money(sgk_uplift_try),\n'
+    b'        "audit_risk_try": _money(audit_risk_try),\n'
+    b'        "compliance_savings_try": _money(compliance_savings_try),\n'
+    b'        "billed_try": _money(billed_try),\n'
+    b'        "material_name": material_name,\n'
+    b'        "detail": detail,\n'
+    b'        "sut_section_id": sut_section_id,\n'
+    b'        "clause_ref": clause_ref,\n'
+    b'        "finding_type": finding_type,\n'
+    b'        "message_code": message_code,\n'
+    b'        "message_params": message_params,\n'
+    b"    }\n"
+    b"\n"
+    b"def _material_row_detail(row: dict[str, object]) -> str | None:\n"
+    b'    for key in ("note", "detail", "message", "rule_id"):\n'
+    b"        value = row.get(key)\n"
+    b"        if value:\n"
+    b"            return str(value)\n"
+    b"    return None\n"
+    b"\n"
+    b"def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]:\n"
+    b'    """Return one structured row per counted recommended action."""\n'
+    b"\n"
+    b"    actions: list[dict[str, Any]] = []\n"
+    b"\n"
+    b"    for index, test in enumerate(report.lab.flagged_tests):\n"
+    b"        actions.append(\n"
+    b"            _action_row(\n"
+    b"                action_id=f\"lab:{test.get('sut_code') or index}\",\n"
+    b'                surface="lab",\n'
+    b'                kind=str(test.get("flag_type") or "lab_flag"),\n'
+    b'                procedure_code=test.get("sut_code"),\n'
+    b'                procedure_name=test.get("test_name"),\n'
+    b'                compliance_savings_try=test.get("savings_try"),\n'
+    b'                detail=test.get("detail"),\n'
+    b'                finding_type=_finding_type("lab"),\n'
+    b"            )\n"
+    b"        )\n"
+    b"\n"
+    b"    actions.extend(_copay_exemption_rows(report.copay))\n"
+    b"\n"
+    b"    for index, row in enumerate(report.billing_strategy.recommendations):\n"
+    b'        if row.get("type") == "informational":\n'
+    b"            continue\n"
+    b'        message_code = row.get("message_code")\n'
+    b'        savings = row.get("savings_try") or row.get("recoverable_uplift_try")\n'
+    b"        if (\n"
+    b'            message_code in ("claim_package_ok", "claim_itemized_ok")\n'
+    b"            and not (savings and savings > 0)\n"
+    b"        ):\n"
+    b"            continue\n"
+    b'        code = row.get("procedure_code")\n'
+    b'        claim_id = row.get("claim_id")\n'
+    b'        kind = str(row.get("type") or row.get("recommendation_kind") or "strategy")\n'
+    b'        savings = row.get("savings_try") or row.get("recoverable_uplift_try")\n'
+    b'        included = row.get("included_in_sgk_total")\n'
+    b"        sgk = savings if included is not False and savings else None\n"
+    b"        actions.append(\n"
+    b"            _action_row(\n"
+    b'                action_id=f"strategy:{claim_id}:{code or index}:{kind}",\n'
+    b'                surface="billing_strategy",\n'
+    b"                kind=kind,\n"
+    b"                claim_id=claim_id,\n"
+    b'                procedure_code=code or row.get("recommended_package_code"),\n'
+    b'                procedure_name=row.get("procedure_name"),\n'
+    b"                sgk_uplift_try=sgk,\n"
+    b'                detail=row.get("detail"),\n'
+    b'                sut_section_id=row.get("sut_section_id") or row.get("sut_section"),\n'
+    b'                finding_type=_finding_type("billing_strategy", kind),\n'
+    b'                message_code=row.get("message_code"),\n'
+    b'                message_params=row.get("message_params"),\n'
+    b"            )\n"
+    b"        )\n"
+    b"\n"
+    b"    for surface_name, block, uplift_field in (\n"
+    b'        ("session_uplift", report.session_uplift, "recoverable_uplift_try"),\n'
+    b'        ("drg_uplift", report.drg_uplift, "recoverable_uplift_try"),\n'
+    b'        ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),\n'
+    b'        ("yatak_puani", report.yatak_puani, "expected_yatak_try"),\n'
+    b'        ("material_uplift", report.material_uplift, "recoverable_uplift_try"),\n'
+    b'        ("care_setting_review", report.care_setting_review, "recoverable_uplift_try"),\n'
+    b'        ("procedure_addon_uplift", report.procedure_addon_uplift, "recoverable_uplift_try"),\n'
+    b'        ("drg_package_adequacy", report.drg_package_adequacy, "recoverable_uplift_try"),\n'
+    b"    ):\n"
+    b'        opportunities = getattr(block, "opportunities", [])\n'
+    b"        for index, row in enumerate(opportunities):\n"
+    b"            actions.append(\n"
+    b"                _action_row(\n"
+    b"                    action_id=f\"{surface_name}:{row.get('claim_id')}:{index}\",\n"
+    b"                    surface=surface_name,\n"
+    b'                    kind=str(row.get("type") or row.get("recommendation_kind") or surface_name),\n'
+    b'                    claim_id=row.get("claim_id"),\n'
+    b'                    procedure_code=row.get("procedure_code")\n'
+    b'                    or row.get("trigger_procedure_code"),\n'
+    b'                    procedure_name=row.get("procedure_name"),\n'
+    b'                    material_code=row.get("material_code"),\n'
+    b'                    material_name=row.get("material_name"),\n'
+    b'                    sgk_uplift_try=row.get(uplift_field) or row.get("recoverable_uplift_try"),\n'
+    b'                    detail=row.get("detail"),\n'
+    b'                    sut_section_id=row.get("sut_section_id") or row.get("sut_section"),\n'
+    b"                    finding_type=_finding_type(surface_name),\n"
+    b"                )\n"
+    b"            )\n"
+    b"\n"
+    b"    for index, row in enumerate(report.procedure_capture_gap.opportunities):\n"
+    b"        actions.append(\n"
+    b"            _action_row(\n"
+    b"                action_id=f\"procedure_capture:{row.get('claim_id')}:{index}\",\n"
+    b'                surface="procedure_capture_gap",\n'
+    b'                kind=str(row.get("type") or "capture_gap"),\n'
+    b'                claim_id=row.get("claim_id"),\n'
+    b'                procedure_code=row.get("procedure_code"),\n'
+    b'                procedure_name=row.get("procedure_name"),\n'
+    b'                sgk_uplift_try=row.get("recoverable_gap_try"),\n'
+    b'                detail=row.get("detail"),\n'
+    b'                finding_type=_finding_type("procedure_capture_gap"),\n'
+    b"            )\n"
+    b"        )\n"
+    b"\n"
+    b"    for index, row in enumerate(report.medula_rejection_playbook.entries):\n"
+    b"        actions.append(\n"
+    b"            _action_row(\n"
+    b"                action_id=f\"medula_playbook:{row.get('claim_id')}:{row.get('sonuc_kodu') or index}\",\n"
+    b'                surface="medula_playbook",\n'
+    b'                kind=str(row.get("playbook_id") or "medula_rejection"),\n'
+    b'                claim_id=row.get("claim_id"),\n'
+    b'                detail=row.get("detail") or row.get("playbook_id"),\n'
+    b'                sut_section_id=row.get("sut_section_id"),\n'
+    b'                finding_type=_finding_type("medula_playbook"),\n'
+    b"            )\n"
+    b"        )\n"
+    b"\n"
+    b"    for index, row in enumerate(report.claim_submission_checklist.items):\n"
+    b"        actions.append(\n"
+    b"            _action_row(\n"
+    b"                action_id=f\"claim_checklist:{row.get('claim_id')}:{index}\",\n"
+    b'                surface="claim_checklist",\n'
+    b'                kind=str(row.get("checklist_kind") or "submission_check"),\n'
+    b'                claim_id=row.get("claim_id"),\n'
+    b'                procedure_code=row.get("procedure_code"),\n'
+    b'                material_code=row.get("material_code"),\n'
+    b'                detail=row.get("detail"),\n'
+    b'                finding_type=_finding_type("claim_checklist"),\n'
+    b"            )\n"
+    b"        )\n"
+    b"\n"
+    b"    if report.drug_indication.findings:\n"
+    b"        for finding in report.drug_indication.findings:\n"
+    b"            route_section = next(\n"
+    b"                (route.sut_section for route in finding.eligible_routes if route.sut_section),\n"
+    b"                None,\n"
+    b"            )\n"
+    b"            actions.append(\n"
+    b"                _action_row(\n"
+    b"                    action_id=finding.finding_id,\n"
+    b'                    surface="drug_indication",\n'
+    b"                    kind=finding.finding_kind,\n"
+    b"                    claim_id=finding.claim_id,\n"
+    b"                    drug_code=finding.drug_code,\n"
+    b"                    drug_name=finding.drug_name,\n"
+    b"                    drug_claim_line_id=finding.drug_claim_line_id,\n"
+    b"                    finding_id=finding.finding_id,\n"
+    b"                    severity=finding.severity,\n"
+    b"                    applicability_status=finding.applicability_status,\n"
+    b"                    evaluation_status=finding.evaluation_status,\n"
+    b"                    observed_icd10_codes=list(finding.observed_icd10_codes),\n"
+    b"                    matched_icd10_codes=list(finding.matched_icd10_codes),\n"
+    b"                    unmatched_icd10_codes=list(finding.unmatched_icd10_codes),\n"
+    b"                    eligible_routes=[\n"
+    b"                        route.to_dict() for route in finding.eligible_routes\n"
+    b"                    ],\n"
+    b"                    eligible_route_count=finding.eligible_route_count,\n"
+    b"                    eligible_routes_truncated=finding.eligible_routes_truncated,\n"
+    b"                    observed_icd10_count=finding.observed_icd10_count,\n"
+    b"                    observed_icd10_truncated=finding.observed_icd10_truncated,\n"
+    b"                    clinical_restrictions=[x.to_dict() for x in finding.clinical_restrictions],\n"
+    b"                    source_authority=finding.source_authority,\n"
+    b"                    selected_rule_id=finding.selected_rule_id,\n"
+    b"                    detail=finding.explanation_tr,\n"
+    b"                    recommended_action_tr=finding.recommended_action_tr,\n"
+    b"                    sut_section_id=route_section,\n"
+    b'                    finding_type=_finding_type("drug_indication"),\n'
+    b"                )\n"
+    b"            )\n"
+    b"    else:\n"
+    b"        for index, row in enumerate(report.drug_indication.violations):\n"
+    b"            actions.append(\n"
+    b"                _action_row(\n"
+    b'                    action_id=row.get("finding_id")\n'
+    b"                    or f\"drug_indication:{row.get('claim_id')}:{index}\",\n"
+    b'                    surface="drug_indication",\n'
+    b'                    kind=str(row.get("violation_kind") or "drug_indication"),\n'
+    b'                    claim_id=row.get("claim_id"),\n'
+    b'                    drug_code=row.get("drug_code") or row.get("inn"),\n'
+    b'                    drug_name=row.get("drug_name"),\n'
+    b'                    drug_claim_line_id=row.get("drug_claim_line_id"),\n'
+    b'                    finding_id=row.get("finding_id"),\n'
+    b'                    severity=row.get("severity"),\n'
+    b'                    applicability_status=row.get("applicability_status"),\n'
+    b'                    evaluation_status=row.get("evaluation_status"),\n'
+    b'                    observed_icd10_codes=row.get("observed_icd10_codes"),\n'
+    b'                    matched_icd10_codes=row.get("matched_icd10_codes"),\n'
+    b'                    unmatched_icd10_codes=row.get("unmatched_icd10_codes"),\n'
+    b'                    eligible_routes=row.get("eligible_routes"),\n'
+    b'                    clinical_restrictions=row.get("clinical_restrictions"),\n'
+    b'                    source_authority=row.get("source_authority"),\n'
+    b'                    selected_rule_id=row.get("selected_rule_id"),\n'
+    b'                    eligible_route_count=row.get("eligible_route_count"),\n'
+    b'                    eligible_routes_truncated=row.get("eligible_routes_truncated"),\n'
+    b'                    observed_icd10_count=row.get("observed_icd10_count"),\n'
+    b'                    observed_icd10_truncated=row.get("observed_icd10_truncated"),\n'
+    b'                    detail=row.get("detail") or row.get("message_tr"),\n'
+    b'                    sut_section_id=row.get("sut_section_id") or row.get("sut_section"),\n'
+    b'                    finding_type=_finding_type("drug_indication"),\n'
+    b"                )\n"
+    b"            )\n"
+    b"\n"
+    b"    material_lists = (\n"
+    b'        ("pre_auth_required", "material_pre_auth"),\n'
+    b'        ("miat_restricted", "material_miat"),\n'
+    b'        ("bundled_separate_billing", "material_bundling"),\n'
+    b'        ("miat_interval_violations", "material_miat_interval"),\n'
+    b'        ("prose_bundling_violations", "material_prose_bundling"),\n'
+    b'        ("specialty_prose_violations", "material_specialty_prose"),\n'
+    b"    )\n"
+    b"    materials = report.materials\n"
+    b"    for attr, kind in material_lists:\n"
+    b"        for index, row in enumerate(getattr(materials, attr, []) or []):\n"
+    b"            row_dict = row if isinstance(row, dict) else {}\n"
+    b"            actions.append(\n"
+    b"                _action_row(\n"
+    b"                    action_id=f\"materials:{kind}:{row_dict.get('claim_id')}:{index}\",\n"
+    b'                    surface="materials",\n'
+    b"                    kind=kind,\n"
+    b'                    claim_id=row_dict.get("claim_id"),\n'
+    b'                    procedure_code=row_dict.get("procedure_code"),\n'
+    b'                    material_code=row_dict.get("material_code") or row_dict.get("sut_code"),\n'
+    b'                    material_name=row_dict.get("material_name"),\n'
+    b"                    billed_try=_material_row_billed_try(row_dict),\n"
+    b"                    detail=_material_row_detail(row_dict),\n"
+    b"                    sut_section_id=(\n"
+    b'                        row_dict.get("sut_section_id")\n'
+    b'                        or row_dict.get("sut_section")\n'
+    b"                        or _MATERIAL_KIND_SUT_SECTION.get(kind)\n"
+    b"                    ),\n"
+    b'                    finding_type=_finding_type("materials"),\n'
+    b"                )\n"
+    b"            )\n"
+    b"\n"
+    b"    return actions\n"
+    b"\n"
+    b"def _finding_type(surface: str, kind: str | None = None) -> str:\n"
+    b'    """User-facing finding class for a row; mirrors frontend getFindingType.\n'
+    b"\n"
+    b"    billing_strategy is classified by kind (parity with the frontend); every\n"
+    b"    other surface is surface-primary and unlisted surfaces default to\n"
+    b"    informational.\n"
+    b'    """\n'
+    b'    if surface == "billing_strategy":\n'
+    b'        if kind == "optional_override":\n'
+    b'            return "opportunity"\n'
+    b'        if kind in ("compliance_violation", "mandatory_compliance", "strategy"):\n'
+    b'            return "compliance"\n'
+    b'        return "informational"\n'
+    b"    if surface in _COMPLIANCE_SURFACES:\n"
+    b'        return "compliance"\n'
+    b"    if surface in _OPPORTUNITY_SURFACES:\n"
+    b'        return "opportunity"\n'
+    b"    if surface in _INFORMATIONAL_SURFACES:\n"
+    b'        return "informational"\n'
+    b'    return "informational"\n'
+    b"\n"
+    b"_MATERIAL_KIND_SUT_SECTION: dict[str, str] = {\n"
+    b'    "material_pre_auth": "3.1.2",\n'
+    b'    "material_miat": "3.1.4",\n'
+    b'    "material_miat_interval": "3.1.4",\n'
+    b'    "material_bundling": "EK-3B-1",\n'
+    b'    "material_prose_bundling": "3.1.5",\n'
+    b'    "material_specialty_prose": "3.3",\n'
+    b"}\n"
+    b"\n"
+    b'_COMPLIANCE_SURFACES: frozenset[str] = frozenset({"materials", "drug_indication", "lab"})\n'
+    b"\n"
+    b"_OPPORTUNITY_SURFACES: frozenset[str] = frozenset(\n"
+    b"    {\n"
+    b'        "session_uplift",\n'
+    b'        "drg_uplift",\n'
+    b'        "blood_uplift",\n'
+    b'        "yatak_puani",\n'
+    b'        "material_uplift",\n'
+    b'        "procedure_addon_uplift",\n'
+    b'        "procedure_capture_gap",\n'
+    b'        "drg_package_adequacy",\n'
+    b'        "care_setting_review",\n'
+    b'        "copay",\n'
+    b"    }\n"
+    b")\n"
+    b"\n"
+    b'_INFORMATIONAL_SURFACES: frozenset[str] = frozenset({"medula_playbook", "claim_checklist"})\n'
+    b""
+)
+
+ORDERED_COHORT_SOURCE = (
+    b"def _include_action(action: Mapping[str, Any]) -> bool:\n"
+    b'    if action.get("finding_type") != "compliance":\n'
+    b"        return False\n"
+    b'    surface = action.get("surface")\n'
+    b'    if surface == "copay":\n'
+    b"        return False\n"
+    b"    return surface in COMPLIANCE_INDEX_SURFACES\n"
+    b"\n"
+    b"def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, Any]:\n"
+    b'    authority = source_authority_payload(action.get("source_authority"))\n'
+    b'    clinical = clinical_evidence_payload(bounded_clinical_restrictions(action.get("clinical_restrictions")))\n'
+    b'    surface = str(action.get("surface") or "")\n'
+    b'    billed = None if surface in _NONFINANCIAL_SURFACES else action.get("billed_try")\n'
+    b"    if billed is None and surface not in _NONFINANCIAL_SURFACES:\n"
+    b'        billed = action.get("compliance_savings_try")\n'
+    b'    finding_id = action.get("finding_id")\n'
+    b'    if finding_id is None and surface == "drug_indication":\n'
+    b'        finding_id = action.get("action_id")\n'
+    b"    return {\n"
+    b'        "patient_id": patient_id,\n'
+    b'        "claim_id": action.get("claim_id"),\n'
+    b'        "surface": COMPLIANCE_INDEX_SURFACES[surface],\n'
+    b'        "source_surface": surface,\n'
+    b'        "kind": action.get("kind"),\n'
+    b'        "finding_type": "compliance",\n'
+    b'        "billed_try": _money(billed) if billed is not None else None,\n'
+    b'        "detail": action.get("detail"),\n'
+    b'        "procedure_code": action.get("procedure_code"),\n'
+    b'        "procedure_name": action.get("procedure_name"),\n'
+    b'        "material_code": action.get("material_code"),\n'
+    b'        "material_name": action.get("material_name"),\n'
+    b'        "drug_code": action.get("drug_code"),\n'
+    b'        "drug_name": action.get("drug_name"),\n'
+    b'        "drug_claim_line_id": action.get("drug_claim_line_id"),\n'
+    b'        "finding_id": finding_id,\n'
+    b'        "severity": action.get("severity"),\n'
+    b'        "applicability_status": action.get("applicability_status"),\n'
+    b'        "evaluation_status": action.get("evaluation_status"),\n'
+    b'        "observed_icd10_codes": action.get("observed_icd10_codes"),\n'
+    b'        "matched_icd10_codes": action.get("matched_icd10_codes"),\n'
+    b'        "unmatched_icd10_codes": action.get("unmatched_icd10_codes"),\n'
+    b'        "eligible_routes": action.get("eligible_routes"),\n'
+    b"        **clinical,\n"
+    b"        **authority,\n"
+    b'        **({"selected_rule_id": action.get("selected_rule_id")} if clinical or authority else {}),\n'
+    b'        "eligible_route_count": action.get("eligible_route_count"),\n'
+    b'        "eligible_routes_truncated": action.get("eligible_routes_truncated"),\n'
+    b'        "observed_icd10_count": action.get("observed_icd10_count"),\n'
+    b'        "observed_icd10_truncated": action.get("observed_icd10_truncated"),\n'
+    b'        "recommended_action_tr": action.get("recommended_action_tr"),\n'
+    b'        "sut_section_id": action.get("sut_section_id"),\n'
+    b'        "action_id": action.get("action_id"),\n'
+    b"    }\n"
+    b"\n"
+    b"def build_cohort_compliance_index(reports: Mapping[str, Any]) -> dict[str, Any]:\n"
+    b'    """Flatten compliance ``recommended_actions`` from per-patient reports."""\n'
+    b"    n_patients = len(reports)\n"
+    b"    rows: list[dict[str, Any]] = []\n"
+    b"    counts_by_patient: dict[str, dict[str, int]] = {}\n"
+    b"    evaluation_details: list[dict[str, Any]] = []\n"
+    b"    for patient_id, report in reports.items():\n"
+    b"        payload = _as_report_dict(report)\n"
+    b'        for action in payload.get("recommended_actions") or []:\n'
+    b"            if not isinstance(action, Mapping):\n"
+    b"                continue\n"
+    b"            if not _include_action(action):\n"
+    b"                continue\n"
+    b"            rows.append(_row_from_action(str(patient_id), action))\n"
+    b"        projection = _claim_projection(str(patient_id), payload)\n"
+    b'        rows.extend(projection["findings"])\n'
+    b"        counts = dict.fromkeys(_CLAIM_EVALUATION_STATUSES, 0)\n"
+    b'        for evaluation in projection["evaluations"]:\n'
+    b'            status = str(evaluation.get("status") or "unavailable")\n'
+    b"            if status not in counts:\n"
+    b'                status = "unavailable"\n'
+    b"            counts[status] += 1\n"
+    b"            if (\n"
+    b'                status != "evaluated"\n'
+    b"                and len(evaluation_details) < _CLAIM_EVALUATION_DETAIL_LIMIT\n"
+    b"            ):\n"
+    b"                evaluation_details.append(dict(evaluation))\n"
+    b"        counts_by_patient[str(patient_id)] = counts\n"
+    b"    result = _summarize_rows(rows, n_patients=n_patients)\n"
+    b'    result["claim_compliance"] = {\n'
+    b'        "counts_by_patient": counts_by_patient,\n'
+    b'        "details": evaluation_details,\n'
+    b'        "detail_limit": _CLAIM_EVALUATION_DETAIL_LIMIT,\n'
+    b"    }\n"
+    b"    return result\n"
+    b"\n"
+    b"COMPLIANCE_INDEX_SURFACES: dict[str, str] = {\n"
+    b'    "materials": "materials",\n'
+    b'    "drug_indication": "drug_indication",\n'
+    b'    "lab": "lab",\n'
+    b'    "billing_strategy": "payment_methods",\n'
+    b"}\n"
+    b"\n"
+    b'_NONFINANCIAL_SURFACES = frozenset({"claim_compliance", "drug_indication"})\n'
+    b""
+)
+
+
+ORDERED_DIRECT_FIELDS = (
+    "claim_id",
+    "kind",
+    "detail",
+    "procedure_code",
+    "procedure_name",
+    "material_code",
+    "material_name",
+    "drug_code",
+    "drug_name",
+    "drug_claim_line_id",
+    "severity",
+    "applicability_status",
+    "evaluation_status",
+    "observed_icd10_codes",
+    "matched_icd10_codes",
+    "unmatched_icd10_codes",
+    "eligible_routes",
+    "eligible_route_count",
+    "eligible_routes_truncated",
+    "observed_icd10_count",
+    "observed_icd10_truncated",
+    "recommended_action_tr",
+    "sut_section_id",
+    "action_id",
+)
+
+
+@pytest.fixture
+def ordered_sources():
+    files = _material_files()
+    for side in files:
+        side[BILLING + "billing_actions.py"] = ORDERED_ACTION_SOURCE
+        side[BILLING + "cohort_compliance.py"] = ORDERED_COHORT_SOURCE
+        side[BILLING + "patient_report.py"] = side[BILLING + "patient_report.py"].replace(
+            b"\n    return report\n",
+            b"\n    report.recommended_actions = collect_billing_actions(report)\n"
+            b"    report.action_count = len(report.recommended_actions)\n    return report\n",
+        )
+    return _bundle(files[0], candidate=False), _bundle(files[1], candidate=True)
+
+
+@pytest.fixture
+def ordered_policy(ordered_sources):
+    return delta.derive_policy(*ordered_sources)
+
+
+def _ordered_tables(*, raw=False, changed=True, reuse=True):
+    left, right = _material_tables(raw=raw, changed=changed)
+    for tables in (left, right):
+        for table, key in ((REPORT, PATIENT), (BILL_REPORT, BILL_KEY)):
+            action = {
+                **dict.fromkeys(ORDERED_DIRECT_FIELDS),
+                **tables[table][key]["recommended_actions"][0],
+                "finding_type": "compliance",
+            }
+            rows = [action]
+            if reuse:
+                rows += [
+                    {
+                        "action_id": "lab:synthetic-reused",
+                        "surface": "lab",
+                        "kind": kind,
+                        "detail": "Stable synthetic lab detail",
+                        "billed_try": billed,
+                        "finding_type": "compliance",
+                    }
+                    for kind, billed in (("first", 2.0), ("second", 3.0))
+                ]
+            tables[table][key]["recommended_actions"] = rows
+            tables[table][key]["action_count"] = len(rows)
+        action = tables[REPORT][PATIENT]["recommended_actions"][0]
+        tables[COHORT]["rows"] = [
+            {
+                **{name: action[name] for name in ORDERED_DIRECT_FIELDS},
+                "patient_id": PATIENT,
+                "surface": "materials",
+                "source_surface": "materials",
+                "finding_type": "compliance",
+                "billed_try": action["billed_try"],
+            }
+        ]
+        if reuse:
+            tables[COHORT]["rows"] += [
+                {**copy.deepcopy(row), "patient_id": PATIENT, "source_surface": "lab"}
+                for row in tables[REPORT][PATIENT]["recommended_actions"][1:]
+            ]
+        tables[COHORT]["n_findings"] = len(tables[COHORT]["rows"])
+    return left, right
+
+
+def _ordered_measure(left, right, policy, sources, *, raw=False, **overrides):
+    overrides.setdefault("ordered_material_action_linkage", True)
+    return _material_measure(left, right, policy, sources, raw=raw, **overrides)
+
+
+def _ordered_reject(left, right, policy, sources, **overrides):
+    with pytest.raises(delta.MeasurementRejected):
+        _ordered_measure(left, right, policy, sources, **overrides)
+
+
+@pytest.mark.parametrize("raw", [False, True])
+@pytest.mark.parametrize("changed", [False, True])
+def test_source_bound_ordered_reuse_preserves_every_row_and_authority(
+    ordered_policy, ordered_sources, raw, changed, capsys
+):
+    left, right = _ordered_tables(raw=raw, changed=changed)
+    before = copy.deepcopy((left, right))
+    result = _ordered_measure(left, right, ordered_policy, ordered_sources, raw=raw)
+    summary = result.safe_summary()
+    counts = (
+        {
+            "material_rule_message_citation": 4,
+            "material_manifest_clause_reference": 2,
+            "material_action_detail_source_pair": 3,
+        }
+        if changed
+        else {}
+    )
+    if raw:
+        counts["own_build_bookkeeping"] = 3
+    assert summary["change_counts"] == counts
+    assert summary["changed_cell_count"] == sum(counts.values())
+    assert (left, right) == before
+    assert len(left[REPORT][PATIENT]["recommended_actions"]) == 3
+    assert len(left[COHORT]["rows"]) == 3
+    assert all(
+        summary[name] is False for name in summary if name.endswith(("admitted", "attested"))
+    )
+    assert set(summary) == {
+        "status",
+        "changed_cell_count",
+        "change_counts",
+        "source_policy_sha256",
+        "delta_sha256",
+        "deployment_admitted",
+        "semantic_release_admitted",
+        "external_witness_generation_attested",
+        "own_source_cache_equivalence_attested",
+    }
+    assert PATIENT not in repr(summary) and CLAIM not in repr(summary)
+    assert "synthetic-reused" not in repr(summary)
+    assert capsys.readouterr() == ("", "")
+    with pytest.raises(delta.MeasurementRejected, match="action_identity"):
+        _ordered_measure(
+            left,
+            right,
+            ordered_policy,
+            ordered_sources,
+            raw=raw,
+            ordered_material_action_linkage=False,
+        )
+
+
+@pytest.mark.parametrize("mode", ["legacy", "own_build", "raw", "material"])
+def test_ordered_default_false_keeps_all_previous_private_digests(
+    policy, sources, raw_policy, raw_sources, material_policy, material_sources, mode
+):
+    options = {}
+    if mode == "raw":
+        left, right = _raw_bill_tables()
+        policy, sources = raw_policy, raw_sources
+        options.update(
+            own_build_context=_raw_context(left, right, sources), raw_bill_cache_identity=True
+        )
+    elif mode == "own_build":
+        left, right = _build_tables()
+        options["own_build_context"] = _build_context(left, right, sources)
+    elif mode == "material":
+        left, right = _material_tables()
+        policy, sources = material_policy, material_sources
+        options["material_prose_context"] = _material_context(sources)
+    else:
+        left, right = _tables(), _tables()
+    default = _measure(left, right, policy, sources, **options).safe_summary()
+    explicit = _measure(
+        left, right, policy, sources, ordered_material_action_linkage=False, **options
+    ).safe_summary()
+    assert default == explicit
+
+
+def test_ordered_source_proof_and_mode_are_bound_only_privately(ordered_policy, ordered_sources):
+    left, right = _ordered_tables(reuse=False)
+    legacy = _ordered_measure(
+        left, right, ordered_policy, ordered_sources, ordered_material_action_linkage=False
+    ).safe_summary()
+    ordered = _ordered_measure(left, right, ordered_policy, ordered_sources).safe_summary()
+    assert set(legacy) == set(ordered)
+    assert legacy["change_counts"] == ordered["change_counts"]
+    assert legacy["source_policy_sha256"] == ordered["source_policy_sha256"]
+    assert legacy["delta_sha256"] != ordered["delta_sha256"]
+    proof, fields = delta._ordered_material_action_source_proof(
+        *[dict(source._files) for source in ordered_sources],
+        {"baseline": ordered_sources[0].identity, "candidate": ordered_sources[1].identity},
+    )
+    assert fields == ORDERED_DIRECT_FIELDS
+    assert proof not in repr(ordered)
+    assert len(delta.SOURCE_PATHS) == 12
+
+
+@pytest.mark.parametrize("mode", [None, 0, 1, "true", [], {}])
+def test_ordered_mode_requires_exact_bool(ordered_policy, ordered_sources, mode):
+    left, right = _ordered_tables()
+    _ordered_reject(
+        left, right, ordered_policy, ordered_sources, ordered_material_action_linkage=mode
+    )
+
+
+@pytest.mark.parametrize("table,key", [(REPORT, PATIENT), (BILL_REPORT, BILL_KEY)])
+@pytest.mark.parametrize("mutation", ["missing", "empty", "type", "changed"])
+def test_ordered_id_types_and_candidate_identity_remain_strict(
+    ordered_policy, ordered_sources, table, key, mutation
+):
+    left, right = _ordered_tables()
+    for tables in (left, right):
+        row = tables[table][key]["recommended_actions"][1]
+        if mutation == "missing":
+            del row["action_id"]
+        elif mutation == "empty":
+            row["action_id"] = ""
+        elif mutation == "type":
+            row["action_id"] = 2
+    if mutation == "changed":
+        right[table][key]["recommended_actions"][1]["action_id"] = "changed-id"
+    _ordered_reject(left, right, ordered_policy, ordered_sources)
+
+
+@pytest.mark.parametrize("changed_duplicate", [False, True])
+def test_changed_material_owner_rejects_duplicate_even_when_duplicate_is_equal(
+    ordered_policy, ordered_sources, changed_duplicate
+):
+    left, right = _ordered_tables()
+    for tables in (left, right):
+        duplicate = copy.deepcopy(tables[REPORT][PATIENT]["recommended_actions"][0])
+        if not changed_duplicate:
+            duplicate["detail"] = OLD_MESSAGE
+        tables[REPORT][PATIENT]["recommended_actions"].append(duplicate)
+        tables[REPORT][PATIENT]["action_count"] += 1
+    _ordered_reject(left, right, ordered_policy, ordered_sources)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "duplicate",
+        "missing",
+        "source",
+        "id",
+        "kind",
+        "claim",
+        "code",
+        "text",
+        "missing_field",
+        "wrong_field",
+        "type",
+    ],
+)
+def test_changed_material_cohort_requires_one_complete_source_owner(
+    ordered_policy, ordered_sources, mutation
+):
+    left, right = _ordered_tables()
+    for tables in (left, right):
+        rows = tables[COHORT]["rows"]
+        if mutation == "duplicate":
+            rows.append(copy.deepcopy(rows[0]))
+        elif mutation == "missing":
+            del rows[0]
+        elif mutation == "type":
+            tables[COHORT]["rows"] = {}
+        elif mutation == "missing_field":
+            del rows[0]["procedure_name"]
+        elif mutation == "wrong_field":
+            rows[0]["procedure_name"] = "unowned-procedure"
+        else:
+            field = {
+                "source": "source_surface",
+                "id": "action_id",
+                "kind": "kind",
+                "claim": "claim_id",
+                "code": "material_code",
+                "text": "detail",
+            }[mutation]
+            rows[0][field] = "unowned"
+    _ordered_reject(left, right, ordered_policy, ordered_sources)
+
+
+@pytest.mark.parametrize("mutation", ["category", "index", "claim", "code", "text", "finding_type"])
+def test_changed_material_action_owner_remains_source_generated(
+    ordered_policy, ordered_sources, mutation
+):
+    left, right = _ordered_tables()
+    for tables in (left, right):
+        action = tables[REPORT][PATIENT]["recommended_actions"][0]
+        field = {
+            "category": "kind",
+            "index": "action_id",
+            "claim": "claim_id",
+            "code": "material_code",
+            "text": "detail",
+            "finding_type": "finding_type",
+        }[mutation]
+        action[field] = "unowned"
+    _ordered_reject(left, right, ordered_policy, ordered_sources)
+
+
+@pytest.mark.parametrize("scope", ["report", "cohort"])
+@pytest.mark.parametrize(
+    "mutation", ["money", "status", "clinical", "sibling", "add", "delete", "reorder", "type"]
+)
+def test_ordered_reuse_preserves_money_state_fields_count_order_and_types(
+    ordered_policy, ordered_sources, scope, mutation
+):
+    left, right = _ordered_tables()
+    rows = (
+        right[REPORT][PATIENT]["recommended_actions"]
+        if scope == "report"
+        else right[COHORT]["rows"]
+    )
+    old_rows = (
+        left[REPORT][PATIENT]["recommended_actions"] if scope == "report" else left[COHORT]["rows"]
+    )
+    if mutation == "money":
+        rows[1]["billed_try"] = 9.0
+    elif mutation in ("status", "clinical", "sibling"):
+        field = {"status": "status", "clinical": "clinical_restrictions", "sibling": "extra"}[
+            mutation
+        ]
+        old_rows[1][field] = []
+        rows[1][field] = [True]
+    elif mutation == "add":
+        rows.append(copy.deepcopy(rows[1]))
+    elif mutation == "delete":
+        del rows[1]
+    elif mutation == "reorder":
+        rows[1], rows[2] = rows[2], rows[1]
+    else:
+        rows[1]["billed_try"] = 2
+    _ordered_reject(left, right, ordered_policy, ordered_sources)
+
+
+@pytest.mark.parametrize("side", [0, 1])
+@pytest.mark.parametrize(
+    "path,before,after",
+    [
+        ("billing_actions.py", b'"action_id": action_id', b'"action_id": "injected"'),
+        (
+            "billing_actions.py",
+            b'("note", "detail", "message", "rule_id")',
+            b'("message", "detail", "note", "rule_id")',
+        ),
+        (
+            "billing_actions.py",
+            b"row_dict.get('claim_id')}:{index}",
+            b"row_dict.get('claim_id')}:{index + 1}",
+        ),
+        (
+            "billing_actions.py",
+            b"if surface in _COMPLIANCE_SURFACES:",
+            b"if surface in _OPPORTUNITY_SURFACES:",
+        ),
+        (
+            "billing_actions.py",
+            b'"material_prose_bundling": "3.1.5"',
+            b'"material_prose_bundling": "unknown"',
+        ),
+        (
+            "billing_actions.py",
+            b'{"materials", "drug_indication", "lab"}',
+            b'{"drug_indication", "lab"}',
+        ),
+        ("billing_actions.py", b'"blood_uplift",', b'"unowned_surface",'),
+        ("billing_actions.py", b'{"medula_playbook", "claim_checklist"}', b'{"claim_checklist"}'),
+        ("cohort_compliance.py", b'!= "compliance"', b'== "compliance"'),
+        (
+            "cohort_compliance.py",
+            b'"detail": action.get("detail")',
+            b'"detail": action.get("message")',
+        ),
+        (
+            "cohort_compliance.py",
+            b"rows.append(_row_from_action(str(patient_id), action))",
+            b"rows.insert(0, _row_from_action(str(patient_id), action))",
+        ),
+        ("cohort_compliance.py", b'"materials": "materials"', b'"materials": "other"'),
+        (
+            "cohort_compliance.py",
+            b'{"claim_compliance", "drug_indication"}',
+            b'{"materials", "drug_indication"}',
+        ),
+        (
+            "patient_report.py",
+            b"collect_billing_actions(report)",
+            b"collect_billing_actions(other_report)",
+        ),
+        (
+            "patient_report.py",
+            b"len(report.recommended_actions)",
+            b"len(other_report.recommended_actions)",
+        ),
+        (
+            "patient_report.py",
+            b"    return report\n",
+            b"    report.recommended_actions.append(injected)\n    return report\n",
+        ),
+    ],
+)
+def test_ordered_whole_scoped_asts_and_report_routes_reject_mutation(
+    ordered_sources, side, path, before, after
+):
+    files = [dict(source._files) for source in ordered_sources]
+    path = BILLING + path
+    changed = files[side][path].replace(before, after, 1)
+    assert changed != files[side][path]
+    files[side][path] = changed
+    with pytest.raises(delta.MeasurementRejected):
+        delta._ordered_material_action_source_proof(
+            *files,
+            {"baseline": ordered_sources[0].identity, "candidate": ordered_sources[1].identity},
+        )
+
+
+@pytest.mark.parametrize("side", [0, 1])
+def test_ordered_missing_and_duplicate_source_owner_rejects(ordered_sources, side):
+    files = [dict(source._files) for source in ordered_sources]
+    for replacement in (
+        b"",
+        b"def _include_action(action):\n    return True\n",
+        ORDERED_COHORT_SOURCE + b"\ndef _include_action(action):\n    return True\n",
+    ):
+        changed = copy.deepcopy(files)
+        changed[side][BILLING + "cohort_compliance.py"] = replacement
+        with pytest.raises(delta.MeasurementRejected):
+            delta._ordered_material_action_source_proof(
+                *changed,
+                {"baseline": ordered_sources[0].identity, "candidate": ordered_sources[1].identity},
+            )

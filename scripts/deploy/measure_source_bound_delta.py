@@ -1399,6 +1399,132 @@ def _material_prose_context(value: Any, policy: DeltaPolicy, identities: dict) -
     return pins, proof
 
 
+def _ordered_material_action_source_proof(
+    old: dict, new: dict, identities: dict
+) -> tuple[str, tuple[str, ...]]:
+    # Full scoped Git5c/01f owner pins; imported helper execution is not attested.
+    pins = {
+        "billing_actions.py": {
+            "_action_row": "b6d7f10a6ba137bfbc25682da15271dd743cca18babe2a2b1357db572f5a82f6",
+            "_material_row_detail": "e8f026ed8363c1bb2cda2993a98f4a34974a036caabe1d47444bfb79bdcda8ef",
+            "collect_billing_actions": "07971abdf0ee10afa1b994d7ba2688d6c3ec985fbb55587de623a23db6524e51",
+            "_finding_type": "e1c82b6715ccc89af29ebd9a1fe723752695ef72435c43e4fd6e0583dcc0f941",
+            "_MATERIAL_KIND_SUT_SECTION": "2e6edfc376daf31f2f46019599a0f48d01d427c315541064075b833b33c0c8ab",
+            "_COMPLIANCE_SURFACES": "524fdb7832b06db0b22169674310c0cf3e416b9619ade855bdc11c45d7760680",
+            "_OPPORTUNITY_SURFACES": "7cffa1904e763d28eba57275977f2ec2a8f6bbbdb37ef60a296b4cab6dcddfd0",
+            "_INFORMATIONAL_SURFACES": "477a8dcb0f995b37ec133efd0ddd128b639eec23b435d808b4f61e0ef8d0f0bf",
+        },
+        "cohort_compliance.py": {
+            "_include_action": "86c6db2f8dd7ce9d1adaaf8161a39593bdb32f3fc28a81b864910fa875e9704e",
+            "_row_from_action": "ba4d27c724623c1ad1feb7de1ffbda4556a28ce91b5554d097e14484c0c87af8",
+            "build_cohort_compliance_index": "090f462ad278189536631466bab1d5bf58696e5dc80d45a719e731d85cc9f996",
+            "COMPLIANCE_INDEX_SURFACES": "0a897fc9ace398939e93b66457aa3ce0f8f6f6008e21870d1b6ec9c1b1219c01",
+            "_NONFINANCIAL_SURFACES": "4c6c20e8ed39303afe43c58be2e6f55e4abfa3f3291718e9b788414768d04a43",
+        },
+    }
+    direct_fields = None
+    for files in (old, new):
+        for path, expected in pins.items():
+            tree = _tree(files[_BILLING + path])
+            for name, sha in expected.items():
+                nodes = [
+                    node
+                    for node in ast.walk(tree)
+                    if (isinstance(node, ast.FunctionDef) and node.name == name)
+                    or (
+                        isinstance(node, (ast.Assign, ast.AnnAssign))
+                        and any(
+                            isinstance(target, ast.Name) and target.id == name
+                            for target in (
+                                node.targets if isinstance(node, ast.Assign) else [node.target]
+                            )
+                        )
+                    )
+                ]
+                _require(
+                    len(nodes) == 1
+                    and nodes[0] in tree.body
+                    and hashlib.sha256(_ast(nodes[0]).encode()).hexdigest() == sha,
+                    "ordered_material_source_ast",
+                )
+            if path == "cohort_compliance.py":
+                output = _node(tree, ast.FunctionDef, "_row_from_action").body[-1].value
+                fields = tuple(
+                    key.value
+                    for key, value in zip(output.keys, output.values, strict=True)
+                    if isinstance(key, ast.Constant)
+                    and type(key.value) is str
+                    and _ast(value)
+                    == _ast(ast.parse(f"action.get({key.value!r})", mode="eval").body)
+                )
+                _require(
+                    bool(fields) and (direct_fields is None or direct_fields == fields),
+                    "ordered_material_projection_fields",
+                )
+                direct_fields = fields
+        report = _node(
+            _tree(files[_BILLING + "patient_report.py"]),
+            ast.FunctionDef,
+            "compute_patient_billing_report",
+        )
+        routes = []
+        for source in (
+            "report.recommended_actions = collect_billing_actions(report)",
+            "report.action_count = len(report.recommended_actions)",
+        ):
+            expected = ast.parse(source).body[0]
+            writes = [
+                node
+                for node in ast.walk(report)
+                if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+                and any(
+                    _ast(target) == _ast(expected.targets[0])
+                    for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+                )
+            ]
+            _require(
+                len(writes) == 1 and writes[0] in report.body and _ast(writes[0]) == _ast(expected),
+                "ordered_material_report_route",
+            )
+            routes.append(writes[0])
+        _require(
+            report.body.index(routes[0]) < report.body.index(routes[1])
+            and sum(
+                isinstance(node, ast.Attribute)
+                and node.attr == "recommended_actions"
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "report"
+                for node in ast.walk(report)
+            )
+            == 2,
+            "ordered_material_report_route",
+        )
+        _require(
+            sum(
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "collect_billing_actions"
+                for node in ast.walk(report)
+            )
+            == 1,
+            "ordered_material_report_route",
+        )
+    return _digest(
+        {
+            "source_identities": identities,
+            "scoped_ast_sha256": pins,
+            "source_sha256": [
+                {
+                    path: hashlib.sha256(files[_BILLING + path]).hexdigest()
+                    for path in (*pins, "patient_report.py")
+                }
+                for files in (old, new)
+            ],
+            "direct_copy_fields": list(direct_fields),
+        }
+    ), direct_fields
+
+
 @_payload_free
 def measure_delta(
     baseline: dict,
@@ -1410,10 +1536,12 @@ def measure_delta(
     own_build_context: dict | None = None,
     raw_bill_cache_identity: bool = False,
     material_prose_context: dict | None = None,
+    ordered_material_action_linkage: bool = False,
 ) -> DeltaMeasurement:
     """Reject unknown deltas; a complete measurement still grants no authority."""
     _require(type(policy) is DeltaPolicy, "policy_type")
     _require(type(raw_bill_cache_identity) is bool, "raw_bill_identity_mode")
+    _require(type(ordered_material_action_linkage) is bool, "ordered_material_mode")
     _require(
         not raw_bill_cache_identity or own_build_context is not None, "raw_bill_identity_context"
     )
@@ -1453,6 +1581,13 @@ def measure_delta(
         (None, None)
         if material_prose_context is None
         else _material_prose_context(material_prose_context, policy, data["source_identities"])
+    )
+    ordered_proof, direct_copy_fields = (
+        _ordered_material_action_source_proof(
+            _sources(policy._baseline), _sources(policy._candidate), data["source_identities"]
+        )
+        if ordered_material_action_linkage
+        else (None, ())
     )
 
     def add(table, row, path, left, right, kind):
@@ -1639,6 +1774,21 @@ def measure_delta(
                 and type(path[1]) is int
             ):
                 action_detail(report_old, report_new, left, right)
+                if ordered_material_action_linkage and table == "patient_billing_report_rows":
+                    identity = (report_old["patient_id"], left["action_id"])
+                    for report in (report_old, report_new):
+                        owners = [
+                            item
+                            for item in report["recommended_actions"]
+                            if item.get("surface") == "materials"
+                            and item.get("action_id") == identity[1]
+                        ]
+                        _require(
+                            len(owners) == 1 and owners[0].get("finding_type") == "compliance",
+                            "ordered_material_action_owner",
+                        )
+                    _require(identity not in actions, "ordered_material_action_owner")
+                    actions[identity] = [left, right]
                 add(
                     table,
                     row,
@@ -1775,8 +1925,30 @@ def measure_delta(
                             ),
                             "material_prose_projected_gate",
                         )
+            if ordered_material_action_linkage:
+                old_actions, new_actions = (
+                    a.get("recommended_actions", []),
+                    b.get("recommended_actions", []),
+                )
+                _require(
+                    type(old_actions) is list
+                    and type(new_actions) is list
+                    and len(old_actions) == len(new_actions),
+                    "action_inventory",
+                )
+                for left, right in zip(old_actions, new_actions, strict=True):
+                    _require(type(left) is dict and type(right) is dict, "action_shape")
+                    _require(
+                        "action_id" in left
+                        and "action_id" in right
+                        and type(left["action_id"]) is str
+                        and bool(left["action_id"])
+                        and type(right["action_id"]) is str
+                        and left["action_id"] == right["action_id"],
+                        "action_identity",
+                    )
             visit(table, key, (), a, b, a, b)
-            if table == "patient_billing_report_rows":
+            if not ordered_material_action_linkage and table == "patient_billing_report_rows":
                 old_actions, new_actions = (
                     a.get("recommended_actions", []),
                     b.get("recommended_actions", []),
@@ -1792,6 +1964,34 @@ def measure_delta(
                         "action_identity",
                     )
                     actions[identity] = [left, right]
+    if ordered_material_action_linkage:
+        # Validate every required owner before equality can skip a cohort row.
+        for (patient, action_id), pair in actions.items():
+            for tables, action in zip((baseline, candidate), pair, strict=True):
+                _require(
+                    type(tables["cohort_compliance_index"]) is dict,
+                    "ordered_material_cohort_inventory",
+                )
+                rows = tables["cohort_compliance_index"].get("rows")
+                _require(type(rows) is list, "ordered_material_cohort_inventory")
+                owners = [
+                    item
+                    for item in rows
+                    if type(item) is dict
+                    and item.get("patient_id") == patient
+                    and item.get("action_id") == action_id
+                    and item.get("surface") == item.get("source_surface") == "materials"
+                ]
+                _require(len(owners) == 1, "ordered_material_cohort_owner")
+                owner = owners[0]
+                _require(
+                    owner.get("finding_type") == "compliance"
+                    and all(
+                        name in owner and name in action and _same(owner[name], action[name])
+                        for name in direct_copy_fields
+                    ),
+                    "ordered_material_cohort_projection",
+                )
     for table in sorted(TABLES - _REPORT_TABLES):
         if table in build_routes:
             old, new = baseline[table], candidate[table]
@@ -1861,6 +2061,13 @@ def measure_delta(
         witness_payload["material_prose_context"] = {
             "sources": material_pins,
             "projection_proof_sha256": material_proof,
+        }
+    if ordered_material_action_linkage:
+        if type(witness_payload) is list:
+            witness_payload = {"differences": witness_payload}
+        witness_payload["ordered_material_action_linkage"] = {
+            "enabled": True,
+            "source_proof_sha256": ordered_proof,
         }
     witness_digest = _digest(witness_payload)
     return DeltaMeasurement(
