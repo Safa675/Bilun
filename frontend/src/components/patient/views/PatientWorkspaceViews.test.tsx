@@ -76,6 +76,45 @@ describe("PatientWorkspaceViews", () => {
     expect(html).toContain('aria-label="Billing review views"');
   });
 
+  it.each([
+    ["en", ["Compliance", "Revenue Dashboard", "Documents"]],
+    ["tr", ["Uyumluluk", "Gelir Dashboard", "Evrak"]],
+  ] as const)("wraps the local %s tab list without removing names, icons or counts", (locale, labels) => {
+    const html = renderToStaticMarkupWithLocale(
+      <PatientWorkspaceViews billingReport={report} patientId="P-VIEWS" />,
+      locale,
+    );
+    const list = html.match(/<div\b[^>]*role="tablist"[^>]*>/)?.[0];
+    const triggers = [...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g)]
+      .map((match) => match[0]);
+
+    expect(list).toContain("min-w-0 flex-wrap gap-y-3");
+    expect(triggers).toHaveLength(3);
+    triggers.forEach((trigger, index) => {
+      expect(trigger).toContain(labels[index]);
+      expect(trigger).toContain("<svg");
+      expect(trigger).toContain(index === 0 ? ">2</span>" : ">1</span>");
+    });
+  });
+
+  it.each([
+    ["billing-lab", 0, "MOCK-COMPLIANCE"],
+    ["billing-copay", 1, "MOCK-REVENUE"],
+    ["claim-submission-checklist", 2, "MOCK-AUDIT"],
+  ] as const)("keeps the owning view selected for the %s query anchor", (sectionQuery, selectedIndex, marker) => {
+    const html = renderToStaticMarkupWithLocale(
+      <PatientWorkspaceViews billingReport={report} patientId="P-VIEWS" sectionQuery={sectionQuery} />,
+    );
+    const triggers = [...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g)]
+      .map((match) => match[0]);
+
+    expect(triggers).toHaveLength(3);
+    triggers.forEach((trigger, index) => {
+      expect(trigger).toContain(`aria-selected="${index === selectedIndex}"`);
+    });
+    expect(html).toContain(marker);
+  });
+
   it("forwards the patient-route finding query into the Compliance view", () => {
     renderToStaticMarkupWithLocale(
       <PatientWorkspaceViews
