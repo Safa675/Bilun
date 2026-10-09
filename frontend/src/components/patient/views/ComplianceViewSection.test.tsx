@@ -118,7 +118,7 @@ describe("ComplianceViewSection", () => {
     expect(beforeTable.split(amount)).toHaveLength(3);
     expect(beforeTable).toContain(partial);
     expect(beforeTable).toContain(">2<");
-    expect(beforeTable).toContain("color:#B91C1C");
+    expect(beforeTable).toContain("color:var(--danger)");
   });
 
   it.each(["en", "tr"] as const)("keeps zero and unknown audit values distinct in their open owner (%s)", (locale) => {
