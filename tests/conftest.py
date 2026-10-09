@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pytest
 
@@ -77,3 +78,27 @@ def pytest_addoption(parser):
         default=False,
         help="Run smoke tests against a live server at localhost:8001",
     )
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "strict_release: paused paired-release deployment contracts, run only in the strict lane",
+    )
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(config, items):
+    """Mark all paired-release tests before pytest applies -m selection."""
+    tests_root = Path(__file__).resolve().parent
+    strict_dirs = {("unit", "deploy"), ("integration", "deploy")}
+    for item in items:
+        if item.path.is_relative_to(tests_root):
+            relative = item.path.relative_to(tests_root)
+            if relative.parts[:2] in strict_dirs:
+                item.add_marker(pytest.mark.strict_release)
+
+    if not config.option.markexpr and os.environ.get("BILUN_STRICT_RELEASE") != "1":
+        deselected = [item for item in items if item.get_closest_marker("strict_release")]
+        items[:] = [item for item in items if not item.get_closest_marker("strict_release")]
+        config.hook.pytest_deselected(items=deselected)
