@@ -11,6 +11,7 @@ import {
   type WorkspaceViewId,
 } from "@/lib/workspaceViews";
 import { buildUnifiedComplianceFindings } from "@/lib/complianceFindings";
+import { motionScrollBehavior } from "@/lib/motion";
 import AuditViewSection from "./AuditViewSection";
 import ComplianceViewSection from "./ComplianceViewSection";
 import RevenueViewSection from "./RevenueViewSection";
@@ -41,6 +42,7 @@ export default function PatientWorkspaceViews({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  activeClauseKey,
   sectionQuery,
   selectedFindingId,
   selectedClaimId,
@@ -52,6 +54,7 @@ export default function PatientWorkspaceViews({
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  activeClauseKey?: string | null;
   sectionQuery?: string | null;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
@@ -94,7 +97,7 @@ export default function PatientWorkspaceViews({
         ancestor = ancestor.parentElement;
       }
       targetElement?.scrollIntoView({
-        behavior: "smooth",
+        behavior: motionScrollBehavior(),
         block: "start",
       });
     });
@@ -140,6 +143,7 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
           selectedFindingId={selectedFindingId}
           selectedClaimId={selectedClaimId}
           selectedSection={sectionQuery}
@@ -153,6 +157,7 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
           selectedFindingId={selectedFindingId}
           selectedClaimId={selectedClaimId}
           detailsPrelude={detailsPrelude}
@@ -166,6 +171,7 @@ export default function PatientWorkspaceViews({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
           detailsPrelude={detailsPrelude}
         />
       </Tabs.Content>

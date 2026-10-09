@@ -7,6 +7,7 @@ import { ExactnessBlock as ExactnessNotice } from "@/components/primitives";
 import { buildDrugIndicationSectionModel } from "./DrugIndicationReviewSection.model";
 import { DrugIndicationFindingCard } from "./DrugIndicationFindingCard";
 import { DrugIndicationLegacyTable, DrugIndicationEvaluationNotice } from "./DrugIndicationDetails";
+import { motionScrollBehavior } from "@/lib/motion";
 
 export function DrugIndicationReviewSection({
   reviewData,
@@ -28,7 +29,7 @@ export function DrugIndicationReviewSection({
     for (let ancestor = target.parentElement; ancestor; ancestor = ancestor.parentElement) {
       if (ancestor.tagName === "DETAILS") (ancestor as HTMLDetailsElement).open = true;
     }
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.scrollIntoView({ behavior: motionScrollBehavior(), block: "center" });
     target.focus({ preventScroll: true });
   }, [reviewData.findings, selectedFindingId]);
 

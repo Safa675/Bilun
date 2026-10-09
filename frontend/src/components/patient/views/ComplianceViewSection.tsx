@@ -56,6 +56,7 @@ export default function ComplianceViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  activeClauseKey,
   selectedFindingId,
   selectedClaimId,
   selectedSection,
@@ -67,6 +68,7 @@ export default function ComplianceViewSection({
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  activeClauseKey?: string | null;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
   selectedSection?: string | null;
@@ -127,6 +129,7 @@ export default function ComplianceViewSection({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
           selectedFindingId={selectedFindingId}
         />
       </section>

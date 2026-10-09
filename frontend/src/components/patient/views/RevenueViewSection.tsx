@@ -32,6 +32,7 @@ export default function RevenueViewSection({
   selectedActionId,
   onSelectAction,
   onOpenClause,
+  activeClauseKey,
   selectedFindingId,
   selectedClaimId,
   detailsPrelude,
@@ -40,6 +41,7 @@ export default function RevenueViewSection({
   selectedActionId?: string | null;
   onSelectAction?: (action: RecommendedActionItem) => void;
   onOpenClause?: (sectionId: string) => void;
+  activeClauseKey?: string | null;
   selectedFindingId?: string | null;
   selectedClaimId?: string | null;
   detailsPrelude?: ReactNode;
@@ -75,6 +77,7 @@ export default function RevenueViewSection({
           selectedActionId={selectedActionId}
           onSelectAction={onSelectAction}
           onOpenClause={onOpenClause}
+          activeClauseKey={activeClauseKey}
         />
       )}
 

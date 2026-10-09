@@ -95,7 +95,14 @@ No accent-tinted shadows. No 32px hero radius.
 --dur   120ms
 ```
 
-Applied to hover and focus only. Zero entry animations in workspace panels. The skip-link transition stays.
+Hover and focus use these tokens. Exactly four user-triggered workspace motions
+are allowed, each at most 240ms with `var(--ease)`: Source drawer slide, native
+section expand/collapse, finding-row association while its Source drawer is open,
+and owning-pane bill-switch crossfade. Every motion and smooth scroll is disabled
+under `prefers-reduced-motion`. Unsupported native transitions fall back to an
+instant update. Bill snapshots retain their own claim label; live reports must
+still match the selected patient and claim. No page-load or panel-entry
+animations. The skip-link transition stays, except under reduced motion.
 
 ### Status semantics separate from brand
 
