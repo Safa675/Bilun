@@ -218,7 +218,11 @@ async function main() {
       await row.getByRole("button").first().click();
       const section = page.locator("#materials-pre-check"); await section.waitFor({ state: "visible" });
       const material = report.materials.pre_auth_required.find(item => item.claim_id === action.claim_id && item.sut_code === action.material_code);
-      check(material && normalized(await section.innerText()).includes(material.sut_code), "Materials pre-check does not own the selected action");
+      check(material, "Materials pre-check does not own the selected action");
+      // The section can be visible a moment before its rows are rendered (workspace transition): wait for the
+      // real material code, then keep the strict ownership check on the final text.
+      await page.waitForFunction(({ selector, code }) => (document.querySelector(selector)?.innerText ?? "").replace(/\s+/g, " ").includes(code), { selector: "#materials-pre-check", code: material.sut_code }, { timeout: 10_000 }).catch(() => { throw new Error("Materials pre-check does not own the selected action"); });
+      check(normalized(await section.innerText()).includes(material.sut_code), "Materials pre-check does not own the selected action");
       await checkpoint("precheck");
       const key = action.clause_ref?.clause_key;
       if (!key) {
