@@ -59,10 +59,8 @@ include = ["src", "src.*", "scripts", "scripts.*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-addopts = '-m "not strict_release"'
 testpaths = ["tests"]
 markers = [
-    "strict_release: paused paired-release deployment contracts, run only in the strict lane",
     "unit: fast unit tests with no external services",
     "smoke: integration/smoke tests that may need a running app or cache",
     "live: tests against a live deployed server",

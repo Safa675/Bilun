@@ -8,7 +8,7 @@ Strict scope: `scripts/deploy/*`, `docs/operations/single-vps-wavea-release.md`,
 
 The fast lane is **staging only, synthetic data only**. Require `BILUN_DATA_MODE=synthetic_demo`; the application defaults to this mode and validates synthetic input paths and provenance. Existing generic `real_claims` configuration support is not a launch authorization. A real-claims launch path must be added deliberately and reviewed before use.
 
-Default pytest and CI select `-m "not strict_release"`; product imports of deploy modules remain tested. The separate Strict Release workflow audits only `-m strict_release` on the laptop runner. Strict failures may document drift while paused; do not fix them or treat them as a fast-lane merge gate.
+Default pytest and CI exclude `strict_release` through the collection hook when no `-m` expression is given and `BILUN_STRICT_RELEASE` is not `1`; `scripts/ci_local.sh` explicitly selects `-m "not strict_release"`. Product imports of deploy modules remain tested. The separate Strict Release workflow audits only `-m strict_release` on the laptop runner. Strict failures may document drift while paused; do not fix them or treat them as a fast-lane merge gate.
 
 ## Reopen trigger and checklist
 
