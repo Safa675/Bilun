@@ -170,7 +170,7 @@ export default function UnifiedComplianceFindingsTable({
                 </td>
 
                 {/* 3. Bulgu / yapılması gereken */}
-                <td className="min-w-[30rem]" data-label={t("billing.views.compliance.colFinding")} data-stack-wide>
+                <td className="min-w-0 min-[641px]:min-w-[30rem]" data-label={t("billing.views.compliance.colFinding")} data-stack-wide>
                   <div className="font-medium text-[var(--text-primary)]">
                     {row.title}
                   </div>
