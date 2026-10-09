@@ -72,7 +72,7 @@ describe("UnifiedComplianceFindingsTable", () => {
 
     expect(headers).toEqual([labels.colStatus, labels.colSource, labels.colFinding, labels.colClaim,
       labels.colCode, labels.colSut, labels.colAmount, labels.colInspect]);
-    expect(html.match(/class="min-w-\[30rem\]"/g)).toHaveLength(4);
+    expect(html.match(/class="(?:min-w-0 min-\[641px\]:)?min-w-\[30rem\]"/g)).toHaveLength(4);
     expect(html).toContain('style="min-width:960px"');
     expect(html).toContain("overflow-x-auto");
     expect(renderedRows).toHaveLength(3);
