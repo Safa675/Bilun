@@ -352,3 +352,9 @@ is a critical failure — it silently breaks the next deploy.
 
 7. **Zero Assumptions**
    Ask questions before implementing if anything is unclear.
+
+- Read [RELEASE-LANES.md](docs/operations/RELEASE-LANES.md) before release-lane work.
+- The strict paired-release lane is PAUSED; keep its code, pins and existing runbook.
+- Do not start strict-lane work unless Safa explicitly says the reopen trigger has happened.
+- Reopen before any non-synthetic data, real claims or real money reaches the product.
+- The fast lane is staging-only and synthetic-only (`BILUN_DATA_MODE=synthetic_demo`).

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pytest
 
@@ -77,3 +78,15 @@ def pytest_addoption(parser):
         default=False,
         help="Run smoke tests against a live server at localhost:8001",
     )
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(items):
+    """Mark all paired-release tests before pytest applies -m selection."""
+    tests_root = Path(__file__).resolve().parent
+    strict_dirs = {("unit", "deploy"), ("integration", "deploy")}
+    for item in items:
+        if item.path.is_relative_to(tests_root):
+            relative = item.path.relative_to(tests_root)
+            if relative.parts[:2] in strict_dirs:
+                item.add_marker(pytest.mark.strict_release)

@@ -12,7 +12,7 @@ basetemp=$(mktemp -d "$HOME/.cache/codex-ci-pytest.XXXXXX")
 trap 'rm -rf -- "$basetemp"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-"$python" -m pytest -q -n auto --durations=20 --basetemp="$basetemp"
+"$python" -m pytest -q -n auto -m "not strict_release" --durations=20 --basetemp="$basetemp"
 rm -rf -- "$basetemp"
 
 "$python" scripts/sut/compile_rules.py --check
