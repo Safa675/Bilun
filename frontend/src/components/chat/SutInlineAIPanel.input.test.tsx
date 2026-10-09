@@ -28,6 +28,8 @@ vi.mock("react", async (importOriginal) => ({
   },
   useCallback: (callback: unknown) => callback,
   useEffect: () => undefined,
+  useLayoutEffect: () => undefined,
+  useSyncExternalStore: () => false,
 }));
 
 vi.mock("@/lib/api/sutChat", async (importOriginal) => ({

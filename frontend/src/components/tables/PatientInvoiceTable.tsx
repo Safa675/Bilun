@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getRevenueRecovery, getSutPatients } from "@/lib/api/sut";
 import type { CohortRecoverySummary } from "@/lib/domains/sut";
@@ -10,6 +11,7 @@ import { fmtTRY2, fmtPriorityLabel, fmtLabel, fmtNum } from "@/components/tabs/s
 import { buildSutPatientHref } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
+import { useSmallScreen } from "@/lib/useSmallScreen";
 import { isBackgroundTabPointer } from "@/lib/patientTabOpen";
 import PatientTabLink, {
   PatientTabContextMenu,
@@ -135,6 +137,7 @@ function SortHeader({
   direction,
   onClick,
   align,
+  phone,
 }: {
   label: string;
   sortTitle: string;
@@ -142,10 +145,11 @@ function SortHeader({
   direction: SortDirection;
   onClick: () => void;
   align?: "left" | "right";
+  phone: boolean;
 }) {
   return (
     <th
-      onClick={onClick}
+      aria-sort={active ? direction === "asc" ? "ascending" : "descending" : "none"}
       className={cn(
         "cursor-pointer select-none transition-colors hover:bg-[var(--surface-tint)]",
         align === "right" && "text-right",
@@ -153,14 +157,14 @@ function SortHeader({
       style={{ whiteSpace: "nowrap" }}
       title={sortTitle}
     >
-      <span className="inline-flex items-center gap-1">
+      <button type="button" tabIndex={phone ? -1 : 0} onClick={onClick} className="inline-flex items-center gap-1" aria-label={sortTitle}>
         {label}
         {active && (
           <span className="text-xs text-[var(--gold)]">
-            {direction === "desc" ? "▼" : "▲"}
+            {direction === "desc" ? <ArrowDown className="h-3 w-3" aria-hidden="true" /> : <ArrowUp className="h-3 w-3" aria-hidden="true" />}
           </span>
         )}
-      </span>
+      </button>
     </th>
   );
 }
@@ -173,6 +177,7 @@ export default function PatientInvoiceTable({
   cohortFilterActive?: boolean;
 } = {}) {
   const t = useT();
+  const phone = useSmallScreen();
   const tRef = useRef(t);
   tRef.current = t;
   const sortByTitle = (label: string) => t("home.patientTable.sortBy", { label });
@@ -352,17 +357,31 @@ export default function PatientInvoiceTable({
 
   return (
     <Surface variant="base" padding="md" className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
         <span className="text-xs text-[var(--text-muted)]">
           {patientCountLabel}
         </span>
       </div>
 
-      <DataTable minWidth={720} className="text-sm">
+      <div className="flex items-center gap-2 min-[641px]:hidden" data-phone-patient-sort>
+        <select value={sort?.column ?? ""} onChange={event => handleSort(event.target.value as SortableColumn)} aria-label={sortByTitle(t("home.patientTable.headers.patientId"))} className="min-w-0 flex-1 rounded-[var(--r-sm)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 py-2 text-sm">
+          <option value="" disabled>{sortByTitle(t("home.patientTable.headers.patientId"))}</option>
+          {([
+            ["patient_id", "patientId"], ["age", "age"], ["sex", "sex"],
+            ["total_opportunity_try", "recoverable"], ["priority", "priority"],
+            ["action_count", "actions"], ["top_action_type", "topAction"],
+          ] as const).map(([column, key]) => <option key={column} value={column}>{t(`home.patientTable.headers.${key}`)}</option>)}
+        </select>
+        <button type="button" disabled={!sort} onClick={() => sort && handleSort(sort.column)} aria-label={sortByTitle(t("home.patientTable.headers.patientId"))} title={sortByTitle(t("home.patientTable.headers.patientId"))} className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--r-sm)] border border-[var(--border-subtle)] disabled:opacity-50">
+          {sort?.direction === "asc" ? <ArrowUp className="h-4 w-4" aria-hidden="true" /> : <ArrowDown className="h-4 w-4" aria-hidden="true" />}
+        </button>
+      </div>
+      <DataTable minWidth={720} mobileStacked className="text-sm">
         <thead>
           <tr>
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.patientId")}
               sortTitle={sortByTitle(t("home.patientTable.headers.patientId"))}
               active={sort?.column === "patient_id"}
@@ -370,6 +389,7 @@ export default function PatientInvoiceTable({
               onClick={() => handleSort("patient_id")}
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.age")}
               sortTitle={sortByTitle(t("home.patientTable.headers.age"))}
               active={sort?.column === "age"}
@@ -377,6 +397,7 @@ export default function PatientInvoiceTable({
               onClick={() => handleSort("age")}
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.sex")}
               sortTitle={sortByTitle(t("home.patientTable.headers.sex"))}
               active={sort?.column === "sex"}
@@ -384,6 +405,7 @@ export default function PatientInvoiceTable({
               onClick={() => handleSort("sex")}
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.recoverable")}
               sortTitle={sortByTitle(t("home.patientTable.headers.recoverable"))}
               active={sort?.column === "total_opportunity_try"}
@@ -392,6 +414,7 @@ export default function PatientInvoiceTable({
               align="right"
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.priority")}
               sortTitle={sortByTitle(t("home.patientTable.headers.priority"))}
               active={sort?.column === "priority"}
@@ -399,6 +422,7 @@ export default function PatientInvoiceTable({
               onClick={() => handleSort("priority")}
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.actions")}
               sortTitle={sortByTitle(t("home.patientTable.headers.actions"))}
               active={sort?.column === "action_count"}
@@ -407,6 +431,7 @@ export default function PatientInvoiceTable({
               align="right"
             />
             <SortHeader
+              phone={phone}
               label={t("home.patientTable.headers.topAction")}
               sortTitle={sortByTitle(t("home.patientTable.headers.topAction"))}
               active={sort?.column === "top_action_type"}
@@ -443,17 +468,17 @@ export default function PatientInvoiceTable({
                 setTabMenu({ x: event.clientX, y: event.clientY, patientId: row.patient_id });
               }}
             >
-              <td className="font-mono text-xs font-medium">
+              <td data-label={t("home.patientTable.headers.patientId")} data-stack-wide className="font-mono text-xs font-medium">
                 <PatientTabLink patientId={row.patient_id} href={href} className="text-inherit hover:text-[var(--gold-hover)]">
                   {row.patient_id}
                 </PatientTabLink>
               </td>
-              <td>{row.age ?? "—"}</td>
-              <td className="capitalize">{row.sex ?? "—"}</td>
-              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+              <td data-label={t("home.patientTable.headers.age")}>{row.age ?? "—"}</td>
+              <td data-label={t("home.patientTable.headers.sex")} className="capitalize">{row.sex ?? "—"}</td>
+              <td data-label={t("home.patientTable.headers.recoverable")} className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 <OpportunityCell row={row} />
               </td>
-              <td>
+              <td data-label={t("home.patientTable.headers.priority")}>
                 {row.priority ? (
                   <span
                     className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
@@ -478,10 +503,10 @@ export default function PatientInvoiceTable({
                   "—"
                 )}
               </td>
-              <td className="num-col tabular-nums text-right">
+              <td data-label={t("home.patientTable.headers.actions")} className="num-col tabular-nums text-right">
                 {row.action_count !== null ? fmtNum(row.action_count) : "—"}
               </td>
-              <td className="text-[var(--text-secondary)]">
+              <td data-label={t("home.patientTable.headers.topAction")} className="text-[var(--text-secondary)]">
                 {row.top_action_type ? fmtLabel(row.top_action_type) : "—"}
               </td>
             </tr>
@@ -541,6 +566,7 @@ export default function PatientInvoiceTable({
             min={1}
             max={totalPages}
             value={jumpInput}
+            aria-label={t("home.patientTable.pagination.jumpToPage")}
             onChange={(e) => setJumpInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleJump();

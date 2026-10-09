@@ -72,7 +72,7 @@ describe("UnifiedComplianceFindingsTable", () => {
 
     expect(headers).toEqual([labels.colStatus, labels.colSource, labels.colFinding, labels.colClaim,
       labels.colCode, labels.colSut, labels.colAmount, labels.colInspect]);
-    expect(html.match(/class="min-w-\[30rem\]"/g)).toHaveLength(4);
+    expect(html.match(/class="(?:min-w-0 min-\[641px\]:)?min-w-\[30rem\]"/g)).toHaveLength(4);
     expect(html).toContain('style="min-width:960px"');
     expect(html).toContain("overflow-x-auto");
     expect(renderedRows).toHaveLength(3);
@@ -110,6 +110,13 @@ describe("UnifiedComplianceFindingsTable", () => {
     ];
 
     const html = renderTable({ rows, patientId: "P-1" });
+
+    expect(html).toContain('data-mobile-stacked="true"');
+    expect((html.match(/data-label=/g) ?? []).length).toBe(8);
+    expect(html).toContain('data-label="Fatura"');
+    expect(html).toContain('data-label="Risk tutarı"');
+    expect(html).toContain("C-100");
+    expect(html).toContain("₺350,00");
 
     // 8 columns in Turkish
     expect(html).toContain("Durum");

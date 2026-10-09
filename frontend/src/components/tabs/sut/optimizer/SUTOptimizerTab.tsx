@@ -1212,7 +1212,7 @@ function RevenueRecoveryDashboard({
           <Eyebrow tone="gold" as="h3" className="mb-3">
             {cohortFilterActive ? t("optimizer.sections.topPatientsFiltered") : t("optimizer.sections.topPatientsDefault")}
           </Eyebrow>
-          <DataTable minWidth={640} className="text-sm">
+          <DataTable minWidth={640} mobileStacked className="text-sm">
             <thead>
               <tr>
                 <th>{t("optimizer.tables.patientId")}</th>
@@ -1225,7 +1225,7 @@ function RevenueRecoveryDashboard({
             <tbody>
               {displayData.top_patients.map((p, i) => (
                 <tr key={i}>
-                  <td className="font-mono text-xs">
+                  <td data-label={t("optimizer.tables.patientId")} data-stack-wide className="font-mono text-xs">
                     <PatientTabLink
                       patientId={p.patient_id}
                       href={buildSutBillingHref(p.patient_id)}
@@ -1235,7 +1235,7 @@ function RevenueRecoveryDashboard({
                       {p.patient_id}
                     </PatientTabLink>
                   </td>
-                  <td className="num-col font-semibold text-[var(--text-primary)]">
+                  <td data-label={t("optimizer.tables.ruleCalculated")} className="num-col font-semibold text-[var(--text-primary)]">
                     {(() => {
                       const total = p.total_opportunity_try ?? (
                         p.total_recoverable_try != null && p.exemption_gap_try != null
@@ -1245,14 +1245,14 @@ function RevenueRecoveryDashboard({
                       return total == null ? "—" : fmtTRY(total);
                     })()}
                   </td>
-                  <td>
+                  <td data-label={t("optimizer.tables.priority")}>
                     <AlertBadge
                       label={fmtPriorityLabel(p.priority)}
                       color={priorityColors[p.priority?.toLowerCase() ?? ""] || theme.textMuted}
                     />
                   </td>
-                  <td className="num-col text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
-                  <td className="text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>
+                  <td data-label={t("optimizer.tables.actions")} className="num-col text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
+                  <td data-label={t("optimizer.tables.topType")} className="text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>
                 </tr>
               ))}
             </tbody>
