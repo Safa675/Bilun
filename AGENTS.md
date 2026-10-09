@@ -358,3 +358,9 @@ is a critical failure — it silently breaks the next deploy.
 - Do not start strict-lane work unless Safa explicitly says the reopen trigger has happened.
 - Reopen before any non-synthetic data, real claims or real money reaches the product.
 - The fast lane is staging-only and synthetic-only (`BILUN_DATA_MODE=synthetic_demo`).
+- Read [AI-RUNBOOK.md](docs/operations/AI-RUNBOOK.md) before CI, staging or handoff work.
+- Use the reviewed laptop runner image; finish queued checks and leave zero registered runners when idle.
+- Update staging only through the reviewed wrapper; preserve live PIDs and both live health answers.
+- Keep live, Caddy, UFW, Tailscale, OS packages and keys untouched; only wrapper-owned VPS cleanup is allowed.
+- Preserve self-contained billing serialization and coverage-evidence dependency pins.
+- Follow the paused strict-lane trigger in RELEASE-LANES.md; report real failures or product questions without guessing.
