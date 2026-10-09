@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 import AppSidebar from "@/components/shell/AppSidebar";
 import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
@@ -33,6 +33,15 @@ const FONT_PRELOADS = [
   "/fonts/inter/normal-latin-ext.woff2",
 ];
 
+const fontDisplay = {
+  variable: "--font-fraunces",
+  family: '"Fraunces", "Fraunces Fallback"',
+};
+const fontSans = {
+  variable: "--font-inter",
+  family: '"Inter", "Inter Fallback"',
+};
+
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
@@ -58,7 +67,14 @@ export default async function RootLayout({
   const initialIdentity = await getServerIdentity(cookieStore.toString());
 
   return (
-    <html lang={initialLocale} className="bilun-fonts">
+    <html
+      lang={initialLocale}
+      className="bilun-fonts"
+      style={{
+        [fontDisplay.variable]: fontDisplay.family,
+        [fontSans.variable]: fontSans.family,
+      } as CSSProperties}
+    >
       <head>
         {FONT_PRELOADS.map((href) => (
           <link

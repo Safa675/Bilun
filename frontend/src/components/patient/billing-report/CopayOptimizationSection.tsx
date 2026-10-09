@@ -41,7 +41,7 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
     hasEk1aVisitSavings,
     usesClaimTableHeader,
   } = model;
-  const savingsColor = exemptionGapTotal != null && exemptionGapTotal > 0 ? ACCENT : "#71717A";
+  const savingsColor = exemptionGapTotal != null && exemptionGapTotal > 0 ? ACCENT : "var(--text-muted)";
 
   const waiverGroundLabel = (ground: string | null) => {
     if (!ground) {
@@ -71,14 +71,14 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <Chip variant={chipVariantFromColor(copayData.is_exempt ? ACCENT : "#A1A1AA")}>
+          <Chip variant={chipVariantFromColor(copayData.is_exempt ? ACCENT : "var(--text-disabled)")}>
             {copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
           </Chip>
           {copayData.is_exempt && (
             <Chip variant="outline">{t("billing.copay.medulaActionChip")}</Chip>
           )}
           {copayData.exemption_disease && (
-            <span className="text-sm" style={{ color: "#71717A" }}>
+            <span className="text-sm" style={{ color: "var(--text-muted)" }}>
               {copayData.exemption_disease} ({copayData.exemption_range})
             </span>
           )}
@@ -117,7 +117,7 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
                 <KpiCard
                   label={t("billing.copay.ilaveUcretTotal")}
                   value={ilaveTotal == null ? "—" : fmtTRY2(ilaveTotal)}
-                  valueColor="#71717A"
+                  valueColor="var(--text-muted)"
                 />
               )}
             </div>

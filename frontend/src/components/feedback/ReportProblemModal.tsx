@@ -138,7 +138,7 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-[color-mix(in_srgb,var(--text-primary)_60%,transparent)] backdrop-blur-xs transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -211,7 +211,7 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
               <div className="mt-5 flex items-center gap-3">
                 <a
                   href={effectiveMailtoHref}
-                  className="inline-flex items-center gap-1.5 rounded-[var(--r-md)] bg-[var(--gold)] px-4 py-2 text-xs font-medium text-black hover:bg-[var(--gold-hover)] transition-all"
+                  className="inline-flex items-center gap-1.5 rounded-[var(--r-md)] bg-[var(--gold)] px-4 py-2 text-xs font-medium text-[var(--text-inverse)] hover:bg-[var(--gold-hover)] transition-all"
                 >
                   <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>{t("shell.feedback.directEmailButton")}</span>
@@ -336,7 +336,7 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
                 />
                 <label
                   htmlFor="feedback-context"
-                  className="text-[11px] text-[var(--text-muted)] cursor-pointer select-none"
+                  className="text-xs text-[var(--text-muted)] cursor-pointer select-none"
                 >
                   {t("shell.feedback.systemInfoLabel")} ({activeTab} · {userRole})
                 </label>
@@ -349,12 +349,12 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <div className="flex-1">
                       <p className="font-semibold">{errorMessage}</p>
-                      <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                      <p className="mt-1 text-xs text-[var(--text-secondary)]">
                         {t("shell.feedback.errorFallback")}
                       </p>
                       <a
                         href={effectiveMailtoHref}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded bg-[var(--surface-base)] border border-[var(--border-subtle)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-primary)] hover:border-[var(--gold)] transition-colors"
+                        className="mt-2 inline-flex items-center gap-1.5 rounded bg-[var(--surface-base)] border border-[var(--border-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-primary)] hover:border-[var(--gold)] transition-colors"
                       >
                         <Mail className="h-3 w-3" aria-hidden="true" />
                         {t("shell.feedback.directEmailButton")} (safaoksuz@bilun.tech)
@@ -377,7 +377,7 @@ export default function ReportProblemModal({ open, onClose }: ReportProblemModal
                   type="submit"
                   disabled={status === "submitting" || !name.trim() || !email.trim() || !message.trim()}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-[var(--r-md)] px-4 py-1.5 text-xs font-medium text-black transition-all",
+                    "inline-flex items-center gap-1.5 rounded-[var(--r-md)] px-4 py-1.5 text-xs font-medium text-[var(--text-inverse)] transition-all",
                     "bg-[var(--gold)] hover:bg-[var(--gold-hover)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
                   )}
                 >

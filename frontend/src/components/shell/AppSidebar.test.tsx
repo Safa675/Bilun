@@ -1,4 +1,4 @@
-import { act } from "react";
+import { act, type ReactNode } from "react";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AppSidebar from "./AppSidebar";
@@ -13,8 +13,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams("tab=patients"),
 }));
-vi.mock("next/link", () => ({ default: () => null }));
-vi.mock("@/components/brand/BilunWordmark", () => ({ default: () => null }));
+vi.mock("next/link", () => ({ default: ({ children }: { children: ReactNode }) => <span>{children}</span> }));
 vi.mock("@/components/sut/SyntheticDemoProvenance", () => ({ SyntheticDemoChip: () => null }));
 vi.mock("@/components/shell/LocaleSwitcher", () => ({ default: () => null }));
 vi.mock("@/components/shell/RoleSwitcher", () => ({ default: () => null }));
@@ -69,6 +68,26 @@ afterEach(async () => {
 });
 
 describe("AppSidebar first width", () => {
+  it("renders the existing full-resolution wordmark at a readable size", async () => {
+    const { aside } = await mount();
+    const logo = aside.findByType("img");
+    expect(logo.props.src).toBe("/brand/full.png");
+    expect(logo.props.width).toBe(75);
+    expect(logo.props.height).toBe(40);
+    expect(logo.props.style.height).toBe(40);
+  });
+
+  it("keeps the larger crest inside the existing collapsed rail", async () => {
+    saved.sidebar = "1";
+    const { aside, width } = await mount();
+    const logo = aside.findByType("img");
+    expect(width).toBe(64);
+    expect(logo.props.src).toBe("/brand/nameless.png");
+    expect(logo.props.width).toBe(27);
+    expect(logo.props.height).toBe(32);
+    expect(logo.props.className).toContain("h-8 w-auto");
+  });
+
   it("is the 64px rail from the first paint when the saved chat dock is right", async () => {
     saved.dock = "right";
     const sidebar = await mount();

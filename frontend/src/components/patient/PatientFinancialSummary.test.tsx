@@ -66,6 +66,8 @@ describe("PatientFinancialSummary", () => {
     expect(html.match(/Unavailable/g)).toHaveLength(2);
     expect(html).not.toContain(">0.00 TRY<");
     expect(html).toContain("whitespace-nowrap tabular-nums");
+    expect(html).toContain("p-3 @container space-y-3 sm:p-4");
+    expect(html).not.toContain("tracking-tight");
   });
   it("renders all-bills totals and recoverable priority", () => {
     const claimTotals = {

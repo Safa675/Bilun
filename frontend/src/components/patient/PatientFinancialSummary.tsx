@@ -13,9 +13,9 @@ import { getExactnessDescription, hasRecoverableBillingTotals, isExactOutput } f
 import { useT } from "@/lib/i18n/useTranslations";
 
 const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
-  high: "#B91C1C",
-  medium: "#D97706",
-  low: "#2F6E4E",
+  high: "var(--danger)",
+  medium: "var(--warning)",
+  low: "var(--success)",
 };
 
 export interface PatientFinancialSummaryProps {
@@ -58,7 +58,7 @@ export function PatientFinancialSummary({
     claimCount ??
     null;
   const priority = reportHasTotals ? billingReport?.priority : null;
-  const priorityColor = priority ? PRIORITY_COLORS[priority] : "#71717A";
+  const priorityColor = priority ? PRIORITY_COLORS[priority] : "var(--text-muted)";
   const statusLabel = priority
     ? fmtPriorityLabel(priority)
     : reportHasTotals
@@ -105,7 +105,7 @@ export function PatientFinancialSummary({
   ];
 
   return (
-    <Surface variant="base" padding="md" className="@container space-y-3" data-patient-summary>
+    <Surface variant="base" padding="sm" className="@container space-y-3 sm:p-4" data-patient-summary>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-[var(--text-primary)]">
           {isBillScoped
@@ -125,7 +125,7 @@ export function PatientFinancialSummary({
         {values.map(({ label, value, gold, explanation }) => (
           <div key={label} className="min-w-0 space-y-2">
             <dt title={explanation} className="min-h-8 text-xs leading-4 text-[var(--text-muted)]">{label}</dt>
-            <dd title={value === t("common.unavailable") ? t("billing.glossary.unavailable") : undefined} className={`whitespace-nowrap tabular-nums text-xs leading-6 tracking-tight @min-[180px]:text-lg @min-[800px]:text-xl ${gold ? "font-[var(--font-display)] italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
+            <dd title={value === t("common.unavailable") ? t("billing.glossary.unavailable") : undefined} className={`whitespace-nowrap tabular-nums text-xs leading-6 @min-[180px]:text-lg @min-[800px]:text-xl ${gold ? "font-display italic text-[var(--gold)]" : "font-semibold text-[var(--text-primary)]"}`}>
               {value}
             </dd>
           </div>

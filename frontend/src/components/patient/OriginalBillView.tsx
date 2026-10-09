@@ -260,7 +260,7 @@ export default function OriginalBillView({ claim, highlightCodes }: OriginalBill
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
         <div className="min-w-0">
           <Eyebrow>{t("patient.originalBill.eyebrow")}</Eyebrow>
-          <h2 className="mt-1 font-[var(--font-display)] text-xl font-medium tracking-tight text-[var(--text-primary)]">
+          <h2 className="mt-1 font-display text-xl font-medium tracking-normal text-[var(--text-primary)]">
             {t("patient.originalBill.title")}
           </h2>
           <p className="mt-1 font-mono text-sm text-[var(--text-secondary)]">{claim.claim_id}</p>
@@ -292,7 +292,7 @@ export default function OriginalBillView({ claim, highlightCodes }: OriginalBill
       </p>
       <p className="text-xs text-[var(--text-muted)]">{t("patient.originalBill.optimizationHint")}</p>
       {legacyGhostLineCount > 0 && (
-        <p className="text-xs text-amber-700 dark:text-amber-400">
+        <p className="text-xs text-[var(--warning)]">
           {t("patient.originalBill.legacyGhostLineFootnote", {
             count: legacyGhostLineCount,
           })}

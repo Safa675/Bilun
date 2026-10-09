@@ -26,12 +26,12 @@ export function ExemptionBasisChips({
   return (
     <span className={`inline-flex flex-wrap gap-1 ${className}`.trim()}>
       {categories.slice(0, max).map((category) => (
-        <Chip key={category} variant="outline" className="text-[10px] uppercase tracking-wide">
+        <Chip key={category} variant="outline" className="text-xs uppercase tracking-wide">
           {formatExemptionCategory(category, t)}
         </Chip>
       ))}
       {categories.length > max && (
-        <Chip variant="outline" className="text-[10px]">
+        <Chip variant="outline" className="text-xs">
           +{categories.length - max}
         </Chip>
       )}

@@ -89,7 +89,7 @@ export function SutPatientAnalyticsSkeleton({
         {navigation && <div className="mt-5">{navigation}</div>}
       </Surface>
       <Surface variant="base" padding="lg">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        <p className="text-xs font-semibold text-[var(--text-muted)]">
           {patientId
             ? t("common.skeleton.patientAnalyticsWithId", { patientId })
             : t("common.skeleton.patientAnalytics")}
@@ -141,7 +141,7 @@ export function SutAlertTableSkeleton() {
 export function SutReferenceSectionSkeleton({ title }: { title: string }) {
   return (
     <Surface variant="base" padding="lg">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        <p className="text-xs font-semibold text-[var(--text-muted)]">
         {title}
       </p>
       <div className="mt-4">

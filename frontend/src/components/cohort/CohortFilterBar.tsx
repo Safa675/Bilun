@@ -84,7 +84,7 @@ export default function CohortFilterBar({
       }
     >
       <label className="flex w-full shrink-0 flex-col gap-1 sm:w-[310px]">
-        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.patientLabel")}
         </span>
         <select
@@ -111,7 +111,7 @@ export default function CohortFilterBar({
       </label>
 
       <label className="flex w-[116px] shrink-0 flex-col gap-1">
-        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.sexLabel")}
         </span>
         <select
@@ -128,7 +128,7 @@ export default function CohortFilterBar({
       </label>
 
       <label className="flex w-[112px] shrink-0 flex-col gap-1">
-        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.ageLabel")}
         </span>
         <input
@@ -146,7 +146,7 @@ export default function CohortFilterBar({
       </label>
 
       <label className="flex w-[120px] shrink-0 flex-col gap-1">
-        <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {t("cohort.filterBar.doctorCodeLabel")}
         </span>
         <input

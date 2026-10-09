@@ -50,7 +50,7 @@ function RelatedLineCell({
   const id = lineId || procedureCode;
   return (
     <div className="flex flex-col gap-1">
-      <span className="inline-flex w-fit rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+      <span className="inline-flex w-fit rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
         {shownChip}
       </span>
       {id ? (
@@ -270,7 +270,7 @@ export default function MedulaRejectionQueueTab() {
             </span>
           }
         >
-          <DataTable minWidth={1180} className="text-[0.82rem]">
+          <DataTable minWidth={1180} className="text-sm">
             <thead>
               <tr>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.patient")}</th>
@@ -347,7 +347,7 @@ export default function MedulaRejectionQueueTab() {
                     {expanded && (
                       <tr>
                         <td colSpan={9} className="bg-[var(--surface-soft)]">
-                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                             {t("operations.queue.correctiveSteps")}
                           </p>
                           {steps.length > 0 ? (
