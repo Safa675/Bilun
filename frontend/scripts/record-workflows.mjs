@@ -50,7 +50,7 @@ async function settle(page, watch) {
   let previous = "";
   let stable = start;
   while (Date.now() - start < 60_000) {
-    check(!watch.errors.length && watch.chat === 0, "Browser/console/API error or unexpected chat request");
+    check(!watch.errors.length && watch.chat === 0, `Browser/console/API error or unexpected chat request: ${watch.errors.slice(0, 3).join(" | ") || `chat requests ${watch.chat}`}`);
     const snapshot = await page.evaluate(selector => {
       const scopes = window.__bilunCapture.scopesOf(selector);
       return { count: scopes.length, busy: scopes.some(s => s.querySelector('.skeleton, [aria-busy="true"]')), text: scopes.map(s => s.innerText).join("\n") };
