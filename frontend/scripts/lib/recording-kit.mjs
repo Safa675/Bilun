@@ -5,6 +5,15 @@ export const PATIENTS = ["SENTETIK-HASTA-0003", "SENTETIK-HASTA-0017"];
 export const DPR = 2;
 export const HELP = "Usage: node scripts/record-workflows.mjs --out <new-directory-outside-git> [--base-url http://127.0.0.1:13000] [--locale tr|en] [--size 1440x900]";
 
+/**
+ * Chrome reports "preloaded but not used" for a self-hosted font that a later page found in its
+ * memory cache, although the font is loaded and in use (checked with document.fonts). Tolerate only
+ * that exact hint for the two same-origin font families; any other warning still fails the run.
+ */
+export function isKnownFontPreloadHint(text) {
+  return /^The resource https?:\/\/127\.0\.0\.1:\d+\/fonts\/(?:inter|fraunces)\/[a-z-]+\.woff2 was preloaded using link preload but not used within a few seconds from the window's load event\./.test(text);
+}
+
 export function check(condition, message) {
   if (!condition) throw new Error(message);
 }

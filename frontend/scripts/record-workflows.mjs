@@ -8,7 +8,7 @@ import { execFileSync } from "node:child_process";
 import { INSPECT_CLAUSE_LABEL } from "./lib/capture-routes.mjs";
 import { installPageProbes } from "./lib/page-probes.mjs";
 import { safeMessage } from "./lib/safe-message.mjs";
-import { assertAction, assertClause, assertPlaybook, assertReport, assertSynthetic, check, DPR, HELP, parseRecordingArgs, PATIENTS, pngSize, prepareRecordingOutput, rankedActions, selectRejection } from "./lib/recording-kit.mjs";
+import { assertAction, assertClause, isKnownFontPreloadHint, assertPlaybook, assertReport, assertSynthetic, check, DPR, HELP, parseRecordingArgs, PATIENTS, pngSize, prepareRecordingOutput, rankedActions, selectRejection } from "./lib/recording-kit.mjs";
 
 const SCOPE = '#main-content, [role="dialog"][aria-modal="true"]';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -18,6 +18,7 @@ function watchPage(page) {
   const pending = new Set();
   const errors = [];
   let known404 = 0;
+  let knownFontHints = 0;
   let chat = 0;
   page.on("request", request => {
     if (new URL(request.url()).pathname.startsWith("/api/")) pending.add(request);
@@ -37,10 +38,11 @@ function watchPage(page) {
   page.on("pageerror", error => errors.push(safeMessage(error)));
   page.on("console", message => {
     if (!["error", "warning"].includes(message.type())) return;
+    if (message.type() === "warning" && isKnownFontPreloadHint(message.text())) { knownFontHints++; return; }
     if (new URL(message.location().url || page.url()).pathname === "/api/frontend-config" && /404/.test(message.text())) return;
     errors.push(`console ${message.type()}: ${safeMessage(message.text())}`);
   });
-  return { pending, errors, get known404() { return known404; }, get chat() { return chat; } };
+  return { pending, errors, get known404() { return known404; }, get knownFontHints() { return knownFontHints; }, get chat() { return chat; } };
 }
 
 async function settle(page, watch) {
@@ -161,7 +163,7 @@ async function record(browser, cfg, facts, name, workflow) {
     const size = pngSize(fs.readFileSync(frame));
     check(size.width === cfg.width * DPR && size.height === cfg.height * DPR, "Extracted video frame dimensions differ");
   }
-  return { name, ...result, file: filename, dimensions: `${probe.streams[0].width}x${probe.streams[0].height}`, seconds: probe.format.duration, capturedFrames: frames.length, known404: watch.known404, chatRequests: watch.chat, browserErrors: watch.errors.length, steps };
+  return { name, ...result, file: filename, dimensions: `${probe.streams[0].width}x${probe.streams[0].height}`, seconds: probe.format.duration, capturedFrames: frames.length, known404: watch.known404, knownFontPreloadHints: watch.knownFontHints, chatRequests: watch.chat, browserErrors: watch.errors.length, steps };
 }
 
 async function openSource(page, context, cfg, watch, control, key) {

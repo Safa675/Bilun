@@ -44,7 +44,9 @@ ancestors. Loopback HTTP origins only; no credentials or developer cookies.
 Preflight refuses non-synthetic or unknown provenance before creating recorded
 pages. Chat stays unopened and any accidental request is blocked and fails the
 run. Browser errors and console warnings/errors fail, except the already known
-GET `/api/frontend-config` 404, which is counted. One compact `run.txt` contains
+GET `/api/frontend-config` 404 and Chrome's "preloaded but not used" hint for the
+self-hosted `/fonts/inter|fraunces/*.woff2` files (a memory-cache false alarm on
+later pages; the fonts are loaded and in use), which are counted separately. One compact `run.txt` contains
 commit, ownership identifiers, limitations, video dimensions and frame positions;
 no full API payload or secrets are logged. WebMs and extracted representative
 frames stay outside Git. Inspect those frames before sharing a recording.

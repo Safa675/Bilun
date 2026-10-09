@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { assertAction, assertClause, assertPlaybook, assertReport, assertSynthetic, parseRecordingArgs, PATIENTS, prepareRecordingOutput, rankedActions, selectRejection } from "./recording-kit.mjs";
+import { assertAction, assertClause, isKnownFontPreloadHint, assertPlaybook, assertReport, assertSynthetic, parseRecordingArgs, PATIENTS, prepareRecordingOutput, rankedActions, selectRejection } from "./recording-kit.mjs";
 
 const temporary = [];
 afterEach(() => temporary.splice(0).forEach(dir => fs.rmSync(dir, { recursive: true, force: true })));
@@ -67,5 +67,20 @@ describe("actual API ownership gates (unit fixtures only)", () => {
     expect(() => assertPlaybook({ medula_rejection_playbook: { entries: [{ ...row, claim_id: "unit-claim-b" }] } }, row)).toThrow();
     expect(() => assertPlaybook({ medula_rejection_playbook: { entries: [{ ...row, corrective_steps_tr: ["Different step"] }] } }, row)).toThrow();
     assertPlaybook({ medula_rejection_playbook: { entries: [row] } }, row);
+  });
+});
+
+describe("known browser hints", () => {
+  const hint = file => `The resource http://127.0.0.1:13008/fonts/${file} was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate \`as\` value and it is preloaded intentionally.`;
+  it("tolerates only the exact font preload hint for the two self-hosted families", () => {
+    expect(isKnownFontPreloadHint(hint("inter/normal-latin.woff2"))).toBe(true);
+    expect(isKnownFontPreloadHint(hint("fraunces/italic-latin-ext.woff2"))).toBe(true);
+  });
+  it("still rejects every other warning, other hosts and other paths", () => {
+    expect(isKnownFontPreloadHint(hint("other/normal-latin.woff2"))).toBe(false);
+    expect(isKnownFontPreloadHint(hint("inter/../../secret.woff2"))).toBe(false);
+    expect(isKnownFontPreloadHint(hint("inter/normal-latin.woff2").replace("127.0.0.1", "example.com"))).toBe(false);
+    expect(isKnownFontPreloadHint("The resource http://127.0.0.1:13008/api/x was preloaded using link preload but not used")).toBe(false);
+    expect(isKnownFontPreloadHint("Failed to load resource: the server responded with a status of 404 (Not Found)")).toBe(false);
   });
 });
