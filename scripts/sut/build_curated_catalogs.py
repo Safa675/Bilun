@@ -193,6 +193,9 @@ def main() -> int:
                     results.append({"annex": annex, "status": "missing", "rows": 0})
                     continue
                 curated = extractor(raw, as_of=args.as_of) if spec.get("snapshot_as_of") else extractor(raw)
+            elif source == "raw_timeline":
+                # Builds from every raw version of the annex; see catalogs/ek4a_history.py.
+                curated = extractor(parquet_root / "raw")
             elif source == "raw_all_versions":
                 if manifest is None:
                     manifest = _load_manifest(parquet_root)

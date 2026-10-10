@@ -208,6 +208,15 @@ def _validate_ek4a_source(
 
 def extract_ek4a(df: pd.DataFrame, *, as_of: dt.date | None = None) -> pd.DataFrame:
     """Extract drug reimbursement data from EK-4A raw parquet."""
+    out = ek4a_records(df)
+    _validate_ek4a_source(
+        df, out, as_of if as_of is not None else dt.datetime.now(dt.UTC).date(), explicit_cutoff=as_of is not None
+    )
+    return out
+
+
+def ek4a_records(df: pd.DataFrame) -> pd.DataFrame:
+    """Parse the drug rows of any raw EK-4A list, current or MÜLGA, without admission checks."""
     cols = _data_cols(df)
     body = df.iloc[1:]
 
@@ -256,11 +265,7 @@ def extract_ek4a(df: pd.DataFrame, *, as_of: dt.date | None = None) -> pd.DataFr
         records.append(rec)
 
     out = pd.DataFrame(records)
-    out = out.reset_index(drop=True)
-    _validate_ek4a_source(
-        df, out, as_of if as_of is not None else dt.datetime.now(dt.UTC).date(), explicit_cutoff=as_of is not None
-    )
-    return out
+    return out.reset_index(drop=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
