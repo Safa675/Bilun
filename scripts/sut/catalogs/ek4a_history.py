@@ -121,10 +121,6 @@ def _apply_announcement(spans: list[dict], announcement: Announcement, versions:
     window = next((v for v in versions if v.valid_from <= day and (v.valid_to is None or day < v.valid_to)), None)
     if window is None:
         raise ValueError(f"EK-4A announcement {announcement.number} takes effect outside every list window")
-    if announcement.published is not None and announcement.published < window.valid_from:
-        # The list published after the announcement most likely includes it already.
-        raise ValueError(f"EK-4A announcement {announcement.number} predates the list it would change "
-                         f"({window.valid_from}); reconcile it with that list first")
     end = window.valid_to
     changed = {record["kamu_no"]: record for record in announcement.upserts}
     targets = changed.keys() | set(announcement.removals)

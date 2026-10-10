@@ -10,8 +10,6 @@ effective date as read from the PDF, and the SHA-256 of both files under raw dat
 
 A sheet this module does not know, an unexpected header, a data row without a kamu_no or
 one drug with two different rows makes loading fail, so a format change is never guessed.
-Only announcements published after the consolidated list they change are applied; an older
-one is normally already folded into that list (see ek4a_history._apply_announcement).
 """
 
 from __future__ import annotations
@@ -47,7 +45,6 @@ class Announcement:
     effective: dt.date
     upserts: tuple[dict[str, str], ...]
     removals: tuple[str, ...]
-    published: dt.date | None = None
 
 
 def _label(value: object) -> str:
@@ -125,5 +122,5 @@ def load_announcements(manifest: Path, project_root: Path) -> list[Announcement]
                 raise ValueError(f"EK-4A announcement {entry['number']} {key} does not match its SHA-256")
         upserts, removals = read_workbook(project_root / entry["workbook"])
         announcements.append(Announcement(entry["number"], dt.date.fromisoformat(entry["effective"]),
-                                          upserts, removals, dt.date.fromisoformat(entry["published"])))
+                                          upserts, removals))
     return sorted(announcements, key=lambda item: (item.effective, item.number))

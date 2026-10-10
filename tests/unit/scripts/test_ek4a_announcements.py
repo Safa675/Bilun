@@ -75,8 +75,7 @@ def test_manifest_pins_both_files(tmp_path: Path) -> None:
     workbook = _workbook(tmp_path / "a.xlsx", {"4A EKLENENLER": [_drug("A1")]})
     notice = tmp_path / "a.pdf"
     notice.write_bytes(b"%PDF notice")
-    entry = {"number": "2026/40", "published": "2026-10-14", "effective": "2026-10-16",
-             "workbook": "a.xlsx", "notice": "a.pdf",
+    entry = {"number": "2026/40", "effective": "2026-10-16", "workbook": "a.xlsx", "notice": "a.pdf",
              "workbook_sha256": hashlib.sha256(workbook.read_bytes()).hexdigest(),
              "notice_sha256": hashlib.sha256(notice.read_bytes()).hexdigest()}
     manifest = tmp_path / "ek4a_announcements.json"
