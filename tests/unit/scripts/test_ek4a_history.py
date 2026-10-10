@@ -159,6 +159,10 @@ def test_announcements_change_drugs_from_their_date_until_the_next_list(tmp_path
     _write(tmp_path / "gap", "unknown", _footer("01/03/2026"), [_row("A1", "ONE")])
     with pytest.raises(ValueError, match="outside every list window"):
         ek4a_history(tmp_path / "gap", [_announced("A1", "2026-02-15")])
+    # Published before the list whose window it falls in: that list probably includes it already.
+    early = Announcement("2026/41", D("2026-03-05"), (changed,), (), published=D("2026-02-25"))
+    with pytest.raises(ValueError, match="predates the list"):
+        ek4a_history(tmp_path, [early])
 
 
 def test_committed_history_matches_a_fresh_build_of_the_official_lists() -> None:
