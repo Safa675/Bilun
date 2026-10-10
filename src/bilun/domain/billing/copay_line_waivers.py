@@ -258,6 +258,7 @@ def waiver_ek4d_drug(
         drug_code=str(line.drug_code or ""),
         barkod=str(line.barkod or ""),
         has_health_report=has_health_report,
+        service_date=line.drug_claim_date,
     )
     if ek4d is None:
         return None

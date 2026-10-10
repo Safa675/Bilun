@@ -8,6 +8,7 @@ Modules:
 - specialty: All EK-3 specialty catalogs
 - exclusions: EK-3B-1 bundled consumables, EK-3B-2 non-reimbursable
 - drugs: EK-4A drug reimbursement data
+- ek4a_as_of: EK-4A as it applied on a service date
 
 Re-exports for backward compatibility.
 """

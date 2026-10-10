@@ -1,198 +1,99 @@
 """
 src/bilun/domain/materials/drugs.py
 EK-4A drug reimbursement data and tier classification.
+
+All reads go through ek4a_as_of(): records are the list in force on a service date, each
+with its "state" (active, passive, not_yet_listed, undated) and history "status". Without
+a service date (catalog browsing) the list in force today is used.
 """
 
 from __future__ import annotations
 
-import logging
+import datetime as dt
+from functools import lru_cache
 from typing import Any
 
-import polars as pl
-
-from ..constants import EK4A_PARQUET_PATH
-from ..utils import _safe_float, turkish_lower
-
-logger = logging.getLogger("ilay.sut_catalog")
-
-_ek4a_cache: dict[str, Any] | None = None
-_ek4a_name_index: dict[str, dict[str, Any]] | None = None
-_prefix3_index: dict[str, dict[str, Any]] | None = None
-_prefix2_index: dict[str, dict[str, Any]] | None = None
+from ..utils import turkish_lower
+from .ek4a_as_of import Ek4aAsOf, ek4a_as_of
 
 
-def _load_ek4a() -> list[dict[str, Any]]:
-    """Load EK-4A drug list from curated parquet."""
-    if not EK4A_PARQUET_PATH.exists():
-        logger.warning("EK-4A curated parquet not found: %s", EK4A_PARQUET_PATH)
-        return []
-    try:
-        df = pl.read_parquet(EK4A_PARQUET_PATH)
-        records: list[dict[str, Any]] = []
-        for row in df.iter_rows(named=True):
-            drug_name = str(row.get("drug_name", "")).strip()
-            if not drug_name:
-                continue
-            d1 = _safe_float(str(row.get("discount_tier_1", "")).replace(",", "."))
-            d2 = _safe_float(str(row.get("discount_tier_2", "")).replace(",", "."))
-            d3 = _safe_float(str(row.get("discount_tier_3", "")).replace(",", "."))
-            d4 = _safe_float(str(row.get("discount_tier_4", "")).replace(",", "."))
-            records.append(
-                {
-                    "kamu_no": str(row.get("kamu_no", "")).strip(),
-                    "barcode": str(row.get("barcode", "")).strip(),
-                    "drug_name": drug_name,
-                    "equivalence_group": str(row.get("equivalence_group", "")).strip(),
-                    "discount_status": str(row.get("discount_status", "")).strip(),
-                    "discount_tier_1": d1,
-                    "discount_tier_2": d2,
-                    "discount_tier_3": d3,
-                    "discount_tier_4": d4,
-                    "passivation_date": str(row.get("passivation_date", "")).strip(),
-                }
-            )
-        logger.info("EK-4A loaded: %d drugs", len(records))
-        return records
-    except Exception as e:
-        logger.warning("Failed to load EK-4A: %s", e)
-        return []
+def _snapshot(service_date: dt.date | None) -> Ek4aAsOf:
+    return ek4a_as_of(service_date if service_date is not None else dt.date.today())
 
 
-def get_ek4a_drugs() -> list[dict[str, Any]]:
-    """Get the full EK-4A drug list (cached)."""
-    global _ek4a_cache
-    if _ek4a_cache is None:
-        _ek4a_cache = {"drugs": _load_ek4a()}
-    return _ek4a_cache["drugs"]
+def get_ek4a_drugs(service_date: dt.date | None = None) -> list[dict[str, Any]]:
+    """The EK-4A list in force on ``service_date`` (default: today), every row with its state."""
+    return _snapshot(service_date).drugs()
 
 
-def _build_drug_name_index() -> dict[str, dict[str, Any]]:
-    """Build a Turkish-lowered drug name index for fuzzy matching."""
-    global _ek4a_name_index
-    if _ek4a_name_index is not None:
-        return _ek4a_name_index
-
-    drugs = get_ek4a_drugs()
-    index: dict[str, dict[str, Any]] = {}
-    for d in drugs:
-        if d["passivation_date"] and d["passivation_date"] not in ("", "nan", "None"):
-            continue
-        key = turkish_lower(d["drug_name"])
-        index[key] = d
-    _ek4a_name_index = index
-    return _ek4a_name_index
-
-
-def _build_prefix_indexes() -> tuple[
-    dict[str, dict[str, Any]], dict[str, dict[str, Any]]
+@lru_cache(maxsize=8)
+def _name_indexes(service_date: dt.date) -> tuple[
+    dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]
 ]:
-    """Build prefix-keyed indexes for O(1) prefix matching."""
-    global _prefix3_index, _prefix2_index
-    if _prefix3_index is not None and _prefix2_index is not None:
-        return _prefix3_index, _prefix2_index
+    """Turkish-lowered name, 3-token and 2-token prefix indexes of the drugs active on the date.
 
-    idx = _build_drug_name_index()
-    p3: dict[str, dict[str, Any]] = {}
-    p2: dict[str, dict[str, Any]] = {}
-
-    for key, drug in idx.items():
+    Only active rows whose history status is "ok" are matchable: a passive or not yet listed
+    drug, or a row SGK published ambiguously, must not be presented as reimbursable.
+    """
+    names: dict[str, dict[str, Any]] = {}
+    prefix3: dict[str, dict[str, Any]] = {}
+    prefix2: dict[str, dict[str, Any]] = {}
+    for drug in ek4a_as_of(service_date).drugs():
+        if drug["state"] != "active" or drug["status"] != "ok":
+            continue
+        key = turkish_lower(drug["drug_name"])
+        names.setdefault(key, drug)
         tokens = key.split()
         if len(tokens) >= 3:
-            prefix3 = " ".join(tokens[:3])
-            if prefix3 not in p3:
-                p3[prefix3] = drug
+            prefix3.setdefault(" ".join(tokens[:3]), drug)
         if len(tokens) >= 2:
-            prefix2 = " ".join(tokens[:2])
-            if prefix2 not in p2:
-                p2[prefix2] = drug
-
-    _prefix3_index = p3
-    _prefix2_index = p2
-    return _prefix3_index, _prefix2_index
+            prefix2.setdefault(" ".join(tokens[:2]), drug)
+    return names, prefix3, prefix2
 
 
-def lookup_drug(rx_name: str) -> dict[str, Any] | None:
-    """Look up a prescription drug name in EK-4A.
-
-    Args:
-        rx_name: Drug name from prescription data.
-
-    Returns:
-        EK-4A drug record dict if found, None otherwise.
-    """
-    idx = _build_drug_name_index()
-    if not idx:
-        return None
-
-    needle = turkish_lower(rx_name.strip())
-
-    if needle in idx:
-        return idx[needle]
-
-    normalized = needle.replace(".", ",")
-    if normalized in idx:
-        return idx[normalized]
-
+def _match(name: str, indexes: tuple[dict, dict, dict]) -> dict[str, Any] | None:
+    names, prefix3, prefix2 = indexes
+    needle = turkish_lower(name.strip())
+    for key in (needle, needle.replace(".", ",")):
+        if key in names:
+            return names[key]
     tokens = needle.split()
-    if len(tokens) >= 3:
-        prefix = " ".join(tokens[:3])
-        for key, drug in idx.items():
-            if key.startswith(prefix):
-                return drug
-
-    if len(tokens) >= 2:
-        prefix2 = " ".join(tokens[:2])
-        for key, drug in idx.items():
-            if key.startswith(prefix2):
-                return drug
-
+    if len(tokens) >= 3 and " ".join(tokens[:3]) in prefix3:
+        return prefix3[" ".join(tokens[:3])]
+    if len(tokens) >= 2 and " ".join(tokens[:2]) in prefix2:
+        return prefix2[" ".join(tokens[:2])]
     return None
 
 
-def lookup_drug_bulk(drug_names: list[str]) -> dict[str, dict[str, Any] | None]:
+def lookup_drug(rx_name: str, service_date: dt.date | None = None) -> dict[str, Any] | None:
+    """Look up a prescription drug name in the EK-4A list in force on ``service_date``.
+
+    Args:
+        rx_name: Drug name from prescription data.
+        service_date: Claim date; default today.
+
+    Returns:
+        EK-4A drug record dict if an active drug matches, None otherwise.
+    """
+    day = service_date if service_date is not None else dt.date.today()
+    return _match(rx_name, _name_indexes(day))
+
+
+def lookup_drug_bulk(
+    drug_names: list[str], service_date: dt.date | None = None
+) -> dict[str, dict[str, Any] | None]:
     """Lookup multiple drug names at once with O(1) prefix matching.
 
     Args:
         drug_names: List of drug names.
+        service_date: Claim date; default today.
 
     Returns:
         Dict mapping each unique drug name to its EK-4A record (or None).
     """
-    idx = _build_drug_name_index()
-    p3, p2 = _build_prefix_indexes()
-
-    if not idx:
-        return {name: None for name in drug_names}
-
-    results: dict[str, dict[str, Any] | None] = {}
-    for name in set(drug_names):
-        needle = turkish_lower(name.strip())
-
-        if needle in idx:
-            results[name] = idx[needle]
-            continue
-
-        normalized = needle.replace(".", ",")
-        if normalized in idx:
-            results[name] = idx[normalized]
-            continue
-
-        tokens = needle.split()
-        if len(tokens) >= 3:
-            prefix = " ".join(tokens[:3])
-            if prefix in p3:
-                results[name] = p3[prefix]
-                continue
-
-        if len(tokens) >= 2:
-            prefix2 = " ".join(tokens[:2])
-            if prefix2 in p2:
-                results[name] = p2[prefix2]
-                continue
-
-        results[name] = None
-
-    return results
+    day = service_date if service_date is not None else dt.date.today()
+    indexes = _name_indexes(day)
+    return {name: _match(name, indexes) for name in set(drug_names)}
 
 
 def classify_drug_tier(drug: dict[str, Any] | None) -> str:

@@ -34,12 +34,13 @@
       "repealed_raw_parquet": "data/gazette/raw/annex=EK-4A/effective_date=2026-10-02/MULGA_EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI_Yur._02.10.2026__EK-4A.parquet",
       "repealed_raw_sha256": "478428b4c87ad0586c64d6367159e40507f1ea973aed99c1c05415d4b65b0ea8",
       "source_snapshot_drug_rows": 8183,
-      "status": "raw_verified_curated_deferred",
+      "status": "service_date_history",
       "future_marker_effective_date": "2026-10-10",
       "retained_runtime_curated_sha256": "6ed75694326342eb31e696304b82906a3e22a9f73b8648e6fbdbee1b69d739be",
       "retained_runtime_curated_rows": 8078,
-      "runtime_catalog_matches_current_source": false,
-      "deferral_reason": "No service-date-safe projection across direct parquet consumers; explicit future footnotes must not activate early."
+      "runtime_catalog_matches_current_source": true,
+      "runtime_reader": "src/bilun/domain/materials/ek4a_as_of.py selects EK-4A by service date from data/gazette/curated/ek4a_history.parquet and ek4a_windows.parquet (every list version)",
+      "snapshot_catalog": "data/gazette/curated/ek4a_drugs.parquet stays the 2026-05-23 list (retained_runtime_curated_*); no runtime module reads it, only the synthetic data generator"
     }
   }
 }

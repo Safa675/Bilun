@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import logging
 from functools import lru_cache
@@ -9,7 +10,8 @@ from typing import Any
 
 import pandas as pd
 
-from ..constants import EK4A_PARQUET_PATH, EK4D_ENTRIES_PATH, EK4D_SECTIONS_PATH
+from ..constants import EK4D_ENTRIES_PATH, EK4D_SECTIONS_PATH
+from ..materials.ek4a_as_of import ek4a_as_of
 from ..optimization.shared import _icd10_in_range
 from ..utils import fuzzy_match_name
 
@@ -108,30 +110,28 @@ def _diagnosis_matches_section(diagnosis: str, bucket: dict[str, Any]) -> bool:
     return False
 
 
-def _normalize_drug_query(drug_name: str, drug_code: str, barkod: str) -> str:
+def _normalize_drug_query(
+    drug_name: str, drug_code: str, barkod: str, service_date: dt.date | None = None
+) -> str:
     name = str(drug_name or "").strip()
     if name:
         return name
 
-    if not EK4A_PARQUET_PATH.is_file():
+    # A code resolves to a name only in the EK-4A list in force on the claim date.
+    if isinstance(service_date, dt.datetime):
+        service_date = service_date.date()
+    if not isinstance(service_date, dt.date):
         return ""
-
-    try:
-        df = pd.read_parquet(EK4A_PARQUET_PATH)
-    except Exception:
-        return ""
-
+    snapshot = ek4a_as_of(service_date)
     for token in (str(barkod or "").strip(), str(drug_code or "").strip()):
         if not token:
             continue
-        for column in ("barcode", "kamu_no"):
-            if column not in df.columns:
-                continue
-            hits = df[df[column].astype(str).str.strip() == token]
-            if not hits.empty:
-                resolved = str(hits.iloc[0].get("drug_name", "")).strip()
-                if resolved:
-                    return resolved
+        for lookup in (snapshot.by_barcode, snapshot.by_kamu_no):
+            names = {hit["drug_name"] for hit in lookup(token) if hit["status"] == "ok"}
+            if len(names) == 1:
+                return names.pop()
+            if names:
+                return ""  # one code, several drugs: do not pick one
     return ""
 
 
@@ -170,18 +170,20 @@ def match_ek4d_copay_exempt_drug(
     drug_code: str = "",
     barkod: str = "",
     has_health_report: bool | None = None,
+    service_date: dt.date | None = None,
 ) -> dict[str, Any] | None:
     """Return match evidence when §1.8.2(3) EK-4/D drug copay exemption applies.
 
     Requires health report per SUT when ``has_health_report`` is explicitly False.
     When ``has_health_report`` is unknown (None), returns a partial match without
-    asserting savings (same pattern as EK-1/A).
+    asserting savings (same pattern as EK-1/A). Without ``drug_name``, the barcode or
+    code is resolved in the EK-4A list in force on ``service_date``; no date, no match.
     """
     index = _section_index()
     if not index:
         return None
 
-    drug_query = _normalize_drug_query(drug_name, drug_code, barkod)
+    drug_query = _normalize_drug_query(drug_name, drug_code, barkod, service_date)
     if not drug_query:
         return None
 
