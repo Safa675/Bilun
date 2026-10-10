@@ -1,0 +1,13 @@
+[
+  {
+    "number": "2026/39",
+    "published": "2026-10-07",
+    "effective": "2026-10-09",
+    "effective_source": "PDF: \"Bu düzenlemeler 09.10.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202639-2026-10-07-04-54-48",
+    "workbook": "raw data/ek4a-duyuru/2026-39/duyuru-2026-39.xlsx",
+    "workbook_sha256": "9c9bd3b499228bac941954c323383ebbe0ef2a4f87d2babb8aae4deae45b069c",
+    "notice": "raw data/ek4a-duyuru/2026-39/duyuru-2026-39.pdf",
+    "notice_sha256": "966ea644fede8275e2ef6512af93248b03c4aa423ea132232c42a2144e90ed08"
+  }
+]

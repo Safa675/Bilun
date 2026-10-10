@@ -15,6 +15,9 @@ kamu_no that one list gives to two drugs gives both rows "duplicate_kamu_no". A
 pre-marker span whose predecessor is not known (oldest version, after a gap, or after a
 duplicated kamu_no) has status "unknown_predecessor".
 
+Pinned SGK announcements between consolidated lists (ek4a_announcements.py) are applied on
+top: from the effective date, changed drugs get their announced row and removed drugs end.
+
 Outputs (strings, ISO dates, half-open [valid_from, valid_until), null = open):
   ek4a_history.parquet  one row per drug and run of identical values
   ek4a_windows.parquet  the version windows and the gaps no version covers
@@ -32,6 +35,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.sut._common import _safe_str
+from scripts.sut.catalogs.ek4a_announcements import Announcement, load_announcements
 from scripts.sut.catalogs.ek4a_timeline import ek4a_timeline
 from scripts.sut.catalogs.simple_materials import ek4a_records
 
@@ -106,8 +110,44 @@ def _iso(value: dt.date | None) -> str | None:
     return None if value is None else value.isoformat()
 
 
-def ek4a_history(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Build (history spans, version windows and gaps) from the raw EK-4A partitions."""
+def _apply_announcement(spans: list[dict], announcement: Announcement, versions: list) -> list[dict]:
+    """Give changed drugs their announced row from the effective date and close removed ones.
+
+    The new values last until the end of the list window holding the effective date; the
+    next consolidated list already includes them. A list span of a changed drug that starts
+    on or after the effective date in that window is a conflict a reviewer must settle.
+    """
+    day = announcement.effective
+    window = next((v for v in versions if v.valid_from <= day and (v.valid_to is None or day < v.valid_to)), None)
+    if window is None:
+        raise ValueError(f"EK-4A announcement {announcement.number} takes effect outside every list window")
+    end = window.valid_to
+    changed = {record["kamu_no"]: record for record in announcement.upserts}
+    targets = changed.keys() | set(announcement.removals)
+    result = []
+    for span in spans:
+        if (span["kamu_no"] not in targets or (span["valid_until"] is not None and span["valid_until"] <= day)
+                or (end is not None and span["valid_from"] >= end)):
+            result.append(span)
+        elif span["valid_from"] < day:
+            result.append(dict(span, valid_until=day))
+        else:
+            raise ValueError(f"EK-4A {span['kamu_no']} has a list span from {span['valid_from']} "
+                             f"inside announcement {announcement.number}'s window")
+    for record in changed.values():
+        result.append(dict({field: record[field] for field in FIELDS}, valid_from=day, valid_until=end,
+                           status="ok", source=f"announcement {announcement.number}"))
+    return result
+
+
+def ek4a_history(
+    raw_root: Path, announcements: list[Announcement] | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build (history spans, version windows and gaps) from the raw EK-4A partitions.
+
+    Announcements (default: those pinned in ek4a_announcements.json next to the raw root)
+    are applied on top of the list versions.
+    """
     versions, gaps = ek4a_timeline(raw_root)
     spans: list[dict] = []
     # kamu_no -> (values, status) at the end of the previous version; None when ambiguous.
@@ -134,15 +174,20 @@ def ek4a_history(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 head_end = starts if end is None else min(starts, end)
                 if after_gap or (kamu_no in previous and previous[kamu_no] is None):
                     spans.append(dict(values, valid_from=version.valid_from, valid_until=head_end,
-                                      status="unknown_predecessor", source=version.valid_from))
+                                      status="unknown_predecessor", source=_iso(version.valid_from)))
                 elif kamu_no in previous:
                     old_values, old_status = previous[kamu_no]
                     spans.append(dict(old_values, valid_from=version.valid_from, valid_until=head_end,
-                                      status=old_status, source=version.valid_from))
+                                      status=old_status, source=_iso(version.valid_from)))
             if end is None or starts < end:
                 spans.append(dict(values, valid_from=starts, valid_until=end, status=status,
-                                  source=version.valid_from))
+                                  source=_iso(version.valid_from)))
         previous, previous_until = current, version.valid_to
+
+    applied = announcements if announcements is not None else load_announcements(
+        raw_root.parent / "ek4a_announcements.json", raw_root.parents[2])
+    for announcement in applied:
+        spans = _apply_announcement(spans, announcement, versions)
 
     # Join contiguous spans with identical values; grouping by value keeps duplicates apart.
     key_fields = (*FIELDS, "status")
@@ -163,7 +208,7 @@ def ek4a_history(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     merged.sort(key=lambda item: (item["kamu_no"], item["valid_from"], item["barcode"]))
     history = pd.DataFrame(
         [dict({field: span[field] for field in FIELDS}, valid_from=_iso(span["valid_from"]),
-              valid_until=_iso(span["valid_until"]), status=span["status"], source_list=_iso(span["source"]))
+              valid_until=_iso(span["valid_until"]), status=span["status"], source_list=span["source"])
          for span in merged],
         columns=[*FIELDS, "valid_from", "valid_until", "status", "source_list"],
     ).astype("string")
@@ -171,7 +216,9 @@ def ek4a_history(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         [{"kind": "version", "valid_from": _iso(v.valid_from), "valid_until": _iso(v.valid_to),
           "source": v.parquet_path} for v in versions]
         + [{"kind": "gap", "valid_from": _iso(start), "valid_until": _iso(end), "source": None}
-           for start, end in gaps],
+           for start, end in gaps]
+        + [{"kind": "announcement", "valid_from": _iso(item.effective), "valid_until": None,
+            "source": f"announcement {item.number}"} for item in applied],
         columns=["kind", "valid_from", "valid_until", "source"],
     ).astype("string")
     return history, windows
@@ -185,6 +232,7 @@ def _built(raw_root: Path, signature: tuple) -> tuple[pd.DataFrame, pd.DataFrame
 def _ek4a_outputs(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build once per builder run; the two specs below share the result."""
     files = sorted(raw_root.glob("annex=EK-4A/effective_date=*/*.parquet"))
+    files += [path for path in [raw_root.parent / "ek4a_announcements.json"] if path.is_file()]
     signature = tuple((str(path), path.stat().st_size, path.stat().st_mtime_ns) for path in files)
     history, windows = _built(raw_root.resolve(), signature)
     return history.copy(), windows.copy()
