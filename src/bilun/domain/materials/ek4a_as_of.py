@@ -27,8 +27,13 @@ from typing import Any, Literal
 
 import polars as pl
 
-from ..constants import EK4A_HISTORY_PATH, EK4A_WINDOWS_PATH
+from ..constants import EK4A_PARQUET_PATH
 from ..utils import _safe_float, turkish_lower
+
+# Built next to the snapshot catalog by scripts/sut/catalogs/ek4a_history.py. Derived here
+# because data/gazette/sut_coverage_evidence.json pins the bytes of constants.py.
+EK4A_HISTORY_PATH = EK4A_PARQUET_PATH.with_name("ek4a_history.parquet")
+EK4A_WINDOWS_PATH = EK4A_PARQUET_PATH.with_name("ek4a_windows.parquet")
 
 Coverage = Literal["covered", "before_history", "gap", "unavailable"]
 

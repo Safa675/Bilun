@@ -97,9 +97,6 @@ EK2A_PARQUET_PATH = _GAZETTE_CURATED_DIR / "ek2a_outpatient_visits.parquet"
 
 # Curated EK-4A drug reimbursement data
 EK4A_PARQUET_PATH = _GAZETTE_CURATED_DIR / "ek4a_drugs.parquet"
-# Service-date EK-4A (scripts/sut/catalogs/ek4a_history.py): drug spans and version windows.
-EK4A_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek4a_history.parquet"
-EK4A_WINDOWS_PATH = _GAZETTE_CURATED_DIR / "ek4a_windows.parquet"
 
 # EK-4/D — copay-exempt drugs by disease (from SUT .doc annex)
 EK4D_SECTIONS_PATH = _GAZETTE_CURATED_DIR / "ek4d_sections.parquet"
