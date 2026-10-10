@@ -4,6 +4,7 @@ browser endpoints."""
 from __future__ import annotations
 
 import dataclasses
+from datetime import date
 from typing import Any
 
 from fastapi import APIRouter
@@ -299,27 +300,34 @@ def get_bill_billing_report(patient_id: str, claim_id: str):
 
 
 @router.get("/drugs", response_model=DrugCatalogResponse)
-def get_drug_catalog(q: str = "", page: int = 1, per_page: int = 50):
-    """Browse or search the EK-4A drug reimbursement list."""
-    from src.bilun.domain.materials import get_ek4a_drugs, lookup_drug
+def get_drug_catalog(q: str = "", page: int = 1, per_page: int = 50, service_date: date | None = None):
+    """Browse or search EK-4A as it applied on ``service_date`` (default: today)."""
+    from src.bilun.domain.materials import lookup_drug
+    from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
 
     per_page = max(1, min(per_page, 200))
     q = q.strip()
+    day = service_date or date.today()
+    snapshot = ek4a_as_of(day)
+    context = {
+        "as_of": day.isoformat(),
+        "coverage": snapshot.coverage,
+        "list_valid_from": snapshot.list_valid_from.isoformat() if snapshot.list_valid_from else None,
+    }
 
     if q:
         # Single drug search
-        match = lookup_drug(q)
+        match = lookup_drug(q, day)
         if match:
-            return {"drugs": [match], "total": 1, "page": 1, "total_pages": 1}
+            return {"drugs": [match], "total": 1, "page": 1, "total_pages": 1, **context}
         # Fallback: substring filter
-        all_drugs = get_ek4a_drugs()
         q_lower = turkish_lower(q)
         filtered = [
-            d for d in all_drugs
+            d for d in snapshot.drugs()
             if q_lower in turkish_lower(d.get("drug_name", ""))
         ]
     else:
-        filtered = get_ek4a_drugs()
+        filtered = snapshot.drugs()
 
     total = len(filtered)
     total_pages = max(1, (total + per_page - 1) // per_page)
@@ -330,6 +338,7 @@ def get_drug_catalog(q: str = "", page: int = 1, per_page: int = 50):
         "total": total,
         "page": page,
         "total_pages": total_pages,
+        **context,
     }
 
 
