@@ -3,7 +3,7 @@ import { canUseBilling, canUseDeveloper, isBillingPage, requestsDeveloper } from
 import { getServerIdentity } from "@/lib/authServer";
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand/|fonts/).*)"],
 };
 
 export async function middleware(request: NextRequest) {

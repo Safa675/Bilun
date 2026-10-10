@@ -24,13 +24,12 @@ import "./globals.css";
 import "./styles/fonts.css";
 import "./styles/sut-how-modal.css";
 
+// Preload only the two faces that every page paints (Latin body text and Latin headings).
+// The latin-ext and italic faces load on demand through their @font-face unicode-range;
+// preloading them made Chrome warn "preloaded but not used" on pages that never need them.
 const FONT_PRELOADS = [
   "/fonts/fraunces/normal-latin.woff2",
-  "/fonts/fraunces/normal-latin-ext.woff2",
-  "/fonts/fraunces/italic-latin.woff2",
-  "/fonts/fraunces/italic-latin-ext.woff2",
   "/fonts/inter/normal-latin.woff2",
-  "/fonts/inter/normal-latin-ext.woff2",
 ];
 
 const fontDisplay = {
