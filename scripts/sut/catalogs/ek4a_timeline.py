@@ -10,6 +10,9 @@ next version's RG date, and a MÜLGA date must equal that next RG date. A MÜLGA
 before the next RG date is a gap: a version SGK no longer ships. One after it would be
 an overlap, which is refused.
 
+Until 2025 the lists were filed in the EK-4 folder as "EK-4-A"; those from OLDEST_LIST on
+are read too, and the current list of such an older package ends where the next starts.
+
 Marker rows inside a version ((*), (**), (***) footnotes) are not resolved here.
 """
 
@@ -25,6 +28,10 @@ import pandas as pd
 from scripts.sut._common import _data_cols, _safe_str
 
 _RG_DATE = re.compile(r"RG-\s*(\d{2})[./](\d{2})[./](\d{4})")
+# Older lists from the EK-4 folder are read from the one published on this date on. Before it
+# the layout and footer wording change several times and versions overlap at their
+# boundaries; no claim date in the data needs them.
+OLDEST_LIST = dt.date(2022, 8, 25)
 
 
 @dataclass(frozen=True)
@@ -52,14 +59,29 @@ def publication_date(footer: str) -> dt.date:
     return dt.date(year, month, day)
 
 
+def _sources(raw_root: Path):
+    """(raw parquet, filed in the pre-2025 EK-4 folder) for every EK-4A list."""
+    for path in sorted(raw_root.glob("annex=EK-4A/effective_date=*/*.parquet")):
+        yield path, False
+    # Until 2025 the lists sat in the EK-4 package folder as "EK-4-A", next to EK-4/B and EK-4/C.
+    for path in sorted(raw_root.glob("annex=EK-4/effective_date=*/*.parquet")):
+        if "EK-4-A_" in path.name:
+            yield path, True
+
+
 def ek4a_timeline(raw_root: Path) -> tuple[list[Ek4aVersion], list[tuple[dt.date, dt.date]]]:
     """All EK-4A versions oldest first, plus the [start, end) gaps no version covers."""
     found = []
-    for path in sorted(raw_root.glob("annex=EK-4A/effective_date=*/*.parquet")):
+    for path, older in _sources(raw_root):
         partition = path.parent.name.split("=", 1)[1]
         replaced_on = None if partition == "unknown" else dt.date.fromisoformat(partition)
+        if older and replaced_on is not None and replaced_on <= OLDEST_LIST:
+            continue  # ended before OLDEST_LIST; its footer is not read at all
         footer = ek4a_footer(pd.read_parquet(path))
-        found.append((publication_date(footer), replaced_on, path.relative_to(raw_root).as_posix(), footer))
+        published = publication_date(footer)
+        if older and published < OLDEST_LIST:
+            continue
+        found.append((published, replaced_on, path.relative_to(raw_root).as_posix(), footer, older))
     if not found:
         raise ValueError("No raw EK-4A partitions found")
     found.sort(key=lambda item: item[0])
@@ -69,13 +91,15 @@ def ek4a_timeline(raw_root: Path) -> tuple[list[Ek4aVersion], list[tuple[dt.date
 
     versions: list[Ek4aVersion] = []
     gaps: list[tuple[dt.date, dt.date]] = []
-    for index, (valid_from, replaced_on, parquet_path, footer) in enumerate(found):
+    for index, (valid_from, replaced_on, parquet_path, footer, older) in enumerate(found):
         if index == len(found) - 1:
-            if replaced_on is not None:
+            if replaced_on is not None or older:
                 raise ValueError("The newest EK-4A version is MÜLGA; the current list is missing")
-        elif replaced_on is None:
+        elif replaced_on is None and not older:
             raise ValueError(f"Only the newest EK-4A version may be current: {parquet_path}")
         else:
+            # The current list of an older package ends where the next list starts.
+            replaced_on = replaced_on or found[index + 1][0]
             next_from = found[index + 1][0]
             if not valid_from < replaced_on <= next_from:
                 raise ValueError(
