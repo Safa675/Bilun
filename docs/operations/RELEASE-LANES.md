@@ -10,6 +10,15 @@ The fast lane is **staging only, synthetic data only**. Require `BILUN_DATA_MODE
 
 Default pytest and CI exclude `strict_release` through the collection hook when no `-m` expression is given and `BILUN_STRICT_RELEASE` is not `1`; `scripts/ci_local.sh` explicitly selects `-m "not strict_release"`. Product imports of deploy modules remain tested. The separate Strict Release workflow audits only `-m strict_release` on the laptop runner. Strict failures may document drift while paused; do not fix them or treat them as a fast-lane merge gate.
 
+## Public URL currently served by staging
+
+Since 2026-10-09 the Caddy site `app.bilun.tech` proxies to **staging** (`/api/*` and `/health` to `127.0.0.1:8101`, everything else to `127.0.0.1:3100`); the strict lane's live pair (`5c89ed53`, ports 8001/3000) keeps running but receives no traffic. Switch with `/opt/bilun-staging/caddy-switch.sh to-staging|to-live|status`; every switch backs up the Caddyfile to `/root/caddy-backups`, validates it, only reloads Caddy and rolls back on a failed check. Consequences:
+
+1. While public traffic points to staging, `/etc/caddy/Caddyfile` differs from the strict release lane's exact `OLD_CADDYFILE`.
+2. Before reopening the strict release lane, run `/opt/bilun-staging/caddy-switch.sh to-live` and verify that the reviewed live Caddyfile and the live health checks are restored.
+3. Staging updates restart the staging backend and frontend services; while public traffic points to staging this causes a few seconds of public downtime.
+4. Developer sign-in on `app.bilun.tech` does not work while staging serves public traffic: staging has no developer identity by design.
+
 ## Reopen trigger and checklist
 
 Reopen **before any non-synthetic data, real claims or real money reaches the product**. Safa must explicitly confirm that this trigger has happened before agents start strict-lane work.
