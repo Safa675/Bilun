@@ -110,34 +110,52 @@ def _iso(value: dt.date | None) -> str | None:
     return None if value is None else value.isoformat()
 
 
-def _apply_announcement(spans: list[dict], announcement: Announcement, versions: list) -> list[dict]:
-    """Give changed drugs their announced row from the effective date and close removed ones.
+def _replace_from(spans: list[dict], kamu_no: str, start: dt.date, end: dt.date | None,
+                  window_start: dt.date, number: str) -> list[dict]:
+    """Clear one drug's spans on [start, end) so an announced change can take that stretch.
 
-    The new values last until the end of the list window holding the effective date; the
-    next consolidated list already includes them. A list span of a changed drug that starts
-    on or after the effective date in that window is a conflict a reviewer must settle.
+    A span running into the stretch is cut at `start`. A span starting exactly at a list's
+    start is that list's own row (or an earlier announcement re-applied there) and is
+    superseded. Any other span starting inside the stretch is a conflict to settle by hand.
     """
-    day = announcement.effective
-    window = next((v for v in versions if v.valid_from <= day and (v.valid_to is None or day < v.valid_to)), None)
-    if window is None:
-        raise ValueError(f"EK-4A announcement {announcement.number} takes effect outside every list window")
-    end = window.valid_to
-    changed = {record["kamu_no"]: record for record in announcement.upserts}
-    targets = changed.keys() | set(announcement.removals)
     result = []
     for span in spans:
-        if (span["kamu_no"] not in targets or (span["valid_until"] is not None and span["valid_until"] <= day)
+        if (span["kamu_no"] != kamu_no or (span["valid_until"] is not None and span["valid_until"] <= start)
                 or (end is not None and span["valid_from"] >= end)):
             result.append(span)
-        elif span["valid_from"] < day:
-            result.append(dict(span, valid_until=day))
-        else:
-            raise ValueError(f"EK-4A {span['kamu_no']} has a list span from {span['valid_from']} "
-                             f"inside announcement {announcement.number}'s window")
-    for record in changed.values():
-        result.append(dict({field: record[field] for field in FIELDS}, valid_from=day, valid_until=end,
-                           status="ok", source=f"announcement {announcement.number}"))
+        elif span["valid_from"] < start:
+            result.append(dict(span, valid_until=start))
+        elif span["valid_from"] != start or start != window_start:
+            raise ValueError(f"EK-4A {kamu_no} has a span from {span['valid_from']} "
+                             f"inside announcement {number}'s change from {start}")
     return result
+
+
+def _apply_announcement(spans: list[dict], announcement: Announcement, versions: list) -> list[dict]:
+    """Give changed drugs their announced row from its date and end removed drugs.
+
+    The change lasts until the consolidated list that includes it (`folded_into`). A list
+    published before that one does not carry it, so it is applied again from that list's
+    start, replacing the list's own row for the drug.
+    """
+    stop = announcement.folded_into
+    changes = [(dt.date.fromisoformat(record["effective"]), record["kamu_no"], record)
+               for record in announcement.upserts]
+    changes += [(announcement.effective, kamu_no, None) for kamu_no in announcement.removals]
+    for day, kamu_no, record in changes:
+        if not any(v.valid_from <= day and (v.valid_to is None or day < v.valid_to) for v in versions):
+            raise ValueError(f"EK-4A announcement {announcement.number} takes effect outside every list window")
+        for window in versions:
+            if (window.valid_to is not None and window.valid_to <= day) or (
+                    stop is not None and window.valid_from >= stop):
+                continue
+            start = max(day, window.valid_from)
+            spans = _replace_from(spans, kamu_no, start, window.valid_to, window.valid_from, announcement.number)
+            if record is not None:
+                spans.append(dict({field: record[field] for field in FIELDS}, valid_from=start,
+                                  valid_until=window.valid_to, status="ok",
+                                  source=f"announcement {announcement.number}"))
+    return spans
 
 
 def ek4a_history(
@@ -217,7 +235,7 @@ def ek4a_history(
           "source": v.parquet_path} for v in versions]
         + [{"kind": "gap", "valid_from": _iso(start), "valid_until": _iso(end), "source": None}
            for start, end in gaps]
-        + [{"kind": "announcement", "valid_from": _iso(item.effective), "valid_until": None,
+        + [{"kind": "announcement", "valid_from": _iso(item.effective), "valid_until": _iso(item.folded_into),
             "source": f"announcement {item.number}"} for item in applied],
         columns=["kind", "valid_from", "valid_until", "source"],
     ).astype("string")

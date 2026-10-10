@@ -127,7 +127,7 @@ def test_history_spans_carry_values_across_versions_markers_gaps_and_duplicates(
 
 
 def _announced(kamu_no: str, effective: str, **values: str) -> Announcement:
-    row = dict(dict.fromkeys(FIELDS, ""), kamu_no=kamu_no, drug_name=f"DRUG {kamu_no}", **values)
+    row = dict(dict.fromkeys(FIELDS, ""), kamu_no=kamu_no, drug_name=f"DRUG {kamu_no}", effective=effective, **values)
     return Announcement("2026/40", D(effective), (row,), ())
 
 
@@ -137,9 +137,13 @@ def test_announcements_change_drugs_from_their_date_until_the_next_list(tmp_path
     _write(tmp_path, "2026-03-01", _footer("01/02/2026", name_marker), [
         _row("A1", "ONE"), _row("A2", "TWO**"), _row("A3", "THREE")])
     _write(tmp_path, "unknown", _footer("01/03/2026"), [_row("A1", "ONE"), _row("A3", "THREE")])
-    changed = dict(dict.fromkeys(FIELDS, ""), kamu_no="A1", drug_name="ONE", discount_tier_1="9,99")
-    new = dict(dict.fromkeys(FIELDS, ""), kamu_no="A9", drug_name="NINE", entry_date="2026-02-10 00:00:00")
-    history, windows = ek4a_history(tmp_path, [Announcement("2026/40", D("2026-02-10"), (changed, new), ("A3",))])
+    changed = dict(dict.fromkeys(FIELDS, ""), kamu_no="A1", drug_name="ONE", discount_tier_1="9,99",
+                   effective="2026-02-10")
+    new = dict(dict.fromkeys(FIELDS, ""), kamu_no="A9", drug_name="NINE", entry_date="2026-02-10 00:00:00",
+               effective="2026-02-10")
+    # The 2026-03-01 list includes the announcement, so it applies only until that list.
+    folded = Announcement("2026/40", D("2026-02-10"), (changed, new), ("A3",), folded_into=D("2026-03-01"))
+    history, windows = ek4a_history(tmp_path, [folded])
 
     def spans(kamu_no: str) -> list[tuple]:
         rows = history[history["kamu_no"] == kamu_no]
@@ -151,7 +155,14 @@ def test_announcements_change_drugs_from_their_date_until_the_next_list(tmp_path
                            ("2026-03-01", None, "1,00", "2026-03-01")]
     assert spans("A9") == [("2026-02-10", "2026-03-01", "", "announcement 2026/40")]
     assert spans("A3") == [("2026-01-01", "2026-02-10", "1,00", "2026-01-01"), ("2026-03-01", None, "1,00", "2026-03-01")]
-    assert windows.iloc[-1].tolist()[:2] == ["announcement", "2026-02-10"]
+    assert windows.iloc[-1].tolist()[:3] == ["announcement", "2026-02-10", "2026-03-01"]
+    # No list includes it yet: it is applied again on top of the 2026-03-01 list.
+    carried = Announcement("2026/40", D("2026-02-10"), (changed, new), ("A3",))
+    history, _ = ek4a_history(tmp_path, [carried])
+    assert spans("A1") == [("2026-01-01", "2026-02-10", "1,00", "2026-01-01"),
+                           ("2026-02-10", None, "9,99", "announcement 2026/40")]
+    assert spans("A9") == [("2026-02-10", None, "", "announcement 2026/40")]
+    assert spans("A3") == [("2026-01-01", "2026-02-10", "1,00", "2026-01-01")]
     # A2's own list marker starts on 2026-02-20, inside the announcement's window: a reviewer decides.
     with pytest.raises(ValueError, match="inside announcement 2026/40"):
         ek4a_history(tmp_path, [_announced("A2", "2026-02-10")])
@@ -167,8 +178,8 @@ def test_committed_history_matches_a_fresh_build_of_the_official_lists() -> None
     pd.testing.assert_frame_equal(pd.read_parquet(curated / "ek4a_history.parquet"), history)
     pd.testing.assert_frame_equal(pd.read_parquet(curated / "ek4a_windows.parquet"), windows)
     assert history["status"].value_counts().to_dict() == {
-        "ok": 19198, "unknown_predecessor": 76, "duplicate_kamu_no": 4, "unrecognized_marker": 1}
-    assert history["valid_until"].isna().sum() == 8219  # the 2026-10-02 list after announcement 2026/39
+        "ok": 19222, "unknown_predecessor": 76, "duplicate_kamu_no": 4, "unrecognized_marker": 1}
+    assert history["valid_until"].isna().sum() == 8219  # the 2026-10-02 list after the announcements
     marked = history.set_index("kamu_no")
     assert marked.loc["A20335", "entry_date"] == "2026-10-10"  # ENSPRYNG, (*) of the 2026-10-02 list
     adenuric = history[(history["kamu_no"] == "A16935") & (history["valid_from"] == "2026-06-29")]
@@ -177,3 +188,11 @@ def test_committed_history_matches_a_fresh_build_of_the_official_lists() -> None
     assert flagyl[["valid_until", "passivation_date"]].values.tolist()[0][0] == "2026-10-09"
     assert flagyl["passivation_date"].tolist()[-1] == "2026-10-09 00:00:00"  # passivated by 2026/39
     assert history.loc[history["kamu_no"] == "A20340", "source_list"].tolist() == ["announcement 2026/39"]
+    # 2026/34's '*' passivations apply from 29.08.2026; the extraordinary decision's drug stays
+    # after the 2026-10-02 list, which does not include it; 2026/38 changes that list's barcodes.
+    starred = history[(history["kamu_no"] == "A20149") & (history["valid_from"] == "2026-08-29")]
+    assert starred[["passivation_date", "source_list"]].values.tolist() == [["2026-08-29 00:00:00", "announcement 2026/34"]]
+    anflu = history[history["kamu_no"] == "A20339"]
+    assert anflu["valid_from"].min() == "2026-09-28" and anflu["valid_until"].isna().any()
+    relabelled = history[(history["kamu_no"] == "A16076") & (history["valid_from"] == "2026-10-02")]
+    assert relabelled["source_list"].tolist() == ["announcement 2026/38"]
