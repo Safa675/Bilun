@@ -50,8 +50,9 @@ ACTIONS = {
         "workflow (`ingest: true`); its pull request needs human review."
     ),
     "drug_list": (
-        "Apply the EK-4A changes with their effective dates. The runtime EK-4A catalog is "
-        "still the 2026-08-29 one; see the EK-4A receipt in `data/gazette/ingest_state.json`."
+        "Apply the EK-4A changes with their effective dates. First check which EK-4A version the "
+        "runtime uses (EK-4A receipt in `data/gazette/ingest_state.json`); on 2026-10-10 it was "
+        "still the list replaced on 2026-06-29."
     ),
     "billing": "Check whether the announcement changes Bilun's billing or MEDULA rules.",
 }
