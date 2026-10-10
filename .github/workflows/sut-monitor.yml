@@ -5,13 +5,41 @@ on:
     # 2×/day at 06:00 and 18:00 UTC (09:00/21:00 TRT)
     - cron: "0 6,18 * * *"
   workflow_dispatch: # Manual trigger
+    inputs:
+      ingest:
+        description: "Also ingest a new SUT package and open a PR (human review required)"
+        type: boolean
+        default: false
 
 concurrency:
   group: sut-monitor
   cancel-in-progress: false
 
 jobs:
+  notify:
+    # Scheduled runs only report: one issue per new SGK announcement, never an ingest PR.
+    # The script uses the standard library only, so nothing is installed.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/sut/sgk_watch.py
+            data/gazette/ingest_state.json
+          sparse-checkout-cone-mode: false
+
+      - name: Open issues for new SGK announcements
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/sut/sgk_watch.py
+
   monitor:
+    # Full package ingestion stays available, but only on an explicit manual run.
+    if: github.event_name == 'workflow_dispatch' && inputs.ingest
     runs-on: ubuntu-latest
     permissions:
       contents: write
