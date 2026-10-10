@@ -162,8 +162,15 @@ _EK4A_FOOTNOTE = re.compile(
 )
 
 
-def _validate_ek4a_source(df: pd.DataFrame, out: pd.DataFrame, cutoff: dt.date) -> None:
-    """Admit a current snapshot only after its source-bound marker dates."""
+def _validate_ek4a_source(
+    df: pd.DataFrame, out: pd.DataFrame, cutoff: dt.date, *, explicit_cutoff: bool = True
+) -> None:
+    """Admit a current snapshot only after its source-bound marker dates.
+
+    A list with marker-dated rows needs an explicit cutoff: the snapshot replaces the
+    catalog for every service date, so the wall clock passing a marker date must not
+    promote it on its own.
+    """
     if "__is_mulga" in df and df["__is_mulga"].map(_safe_str).str.lower().isin({"true", "1"}).any():
         raise ValueError("EK-4A source is MÜLGA; a current list is required")
     if "__source_file" in df:
@@ -182,6 +189,8 @@ def _validate_ek4a_source(df: pd.DataFrame, out: pd.DataFrame, cutoff: dt.date) 
     publication_marker = out["drug_name"].str.contains(r"(?<!\*)\*\*\*$", regex=True).any()
     if not (entry_marker or name_marker or publication_marker):
         return
+    if not explicit_cutoff:
+        raise ValueError("EK-4A source has marker-dated rows; admit it only with an explicit as_of date")
     footers = [" ".join(_safe_str(value).split()) for value in df[_data_cols(df)[0]] if "Yürürlük:" in _safe_str(value)]
     match = _EK4A_FOOTNOTE.fullmatch(footers[0]) if len(footers) == 1 else None
     if match is None:
@@ -248,7 +257,9 @@ def extract_ek4a(df: pd.DataFrame, *, as_of: dt.date | None = None) -> pd.DataFr
 
     out = pd.DataFrame(records)
     out = out.reset_index(drop=True)
-    _validate_ek4a_source(df, out, as_of if as_of is not None else dt.datetime.now(dt.UTC).date())
+    _validate_ek4a_source(
+        df, out, as_of if as_of is not None else dt.datetime.now(dt.UTC).date(), explicit_cutoff=as_of is not None
+    )
     return out
 
 

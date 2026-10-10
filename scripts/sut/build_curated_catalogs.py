@@ -126,7 +126,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--as-of",
         type=dt.date.fromisoformat,
-        help="Snapshot selection date (YYYY-MM-DD; default: UTC today). Histories retain all versions.",
+        help=(
+            "Snapshot selection date (YYYY-MM-DD; default: UTC today). Histories retain all versions. "
+            "An EK-4A list with marker-dated rows is admitted only with an explicit --as-of."
+        ),
     )
     parser.add_argument(
         "--overwrite",

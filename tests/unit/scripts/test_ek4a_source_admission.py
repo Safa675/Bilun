@@ -199,6 +199,38 @@ def test_builder_before_boundary_preserves_existing_curated_bytes(
     assert pd.read_parquet(output).loc[0, "entry_date"] == "*"
 
 
+@pytest.mark.parametrize("entry_date,drug_name", [
+    ("*", "Example drug"), ("2006-09-04", "Example drug**"), ("2006-09-04", "Example drug***"),
+])
+def test_marker_dated_list_needs_an_explicit_as_of_not_the_wall_clock(entry_date: str, drug_name: str) -> None:
+    with pytest.raises(ValueError, match="explicit as_of"):
+        extract_ek4a(_source(entry_date=entry_date, drug_name=drug_name))
+
+
+def test_marker_free_list_still_defaults_to_today() -> None:
+    assert extract_ek4a(_source()).loc[0, "kamu_no"] == "A00001"
+
+
+def test_builder_without_as_of_never_promotes_a_marker_dated_list(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    raw = tmp_path / "raw/annex=EK-4A/effective_date=unknown/current.parquet"
+    raw.parent.mkdir(parents=True)
+    _source(entry_date="*").to_parquet(raw, index=False)
+    output = tmp_path / "curated/ek4a_drugs.parquet"
+    output.parent.mkdir()
+    extract_ek4a(_source(kamu_no="A00002"), as_of=PUBLICATION).to_parquet(output, index=False, compression=None)
+    before = output.read_bytes(), output.stat().st_mtime_ns
+    monkeypatch.setattr("sys.argv", ["builder", "--parquet-root", str(tmp_path), "--annex", "EK-4A", "--overwrite"])
+    assert builder.main() == 1
+    assert (output.read_bytes(), output.stat().st_mtime_ns) == before
+
+
+def test_official_october_list_is_not_promoted_by_the_wall_clock() -> None:
+    with pytest.raises(ValueError, match="explicit as_of"):
+        extract_ek4a(pd.read_parquet(OFFICIAL_RAW))
+
+
 def test_exact_official_raw_footer_and_current_snapshot_boundary() -> None:
     source = pd.read_parquet(OFFICIAL_RAW)
     before = source.copy(deep=True)
