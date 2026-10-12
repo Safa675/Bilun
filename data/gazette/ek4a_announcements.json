@@ -1,0 +1,86 @@
+[
+  {
+    "number": "2026/34",
+    "published": "2026-09-02",
+    "effective": "2026-09-04",
+    "effective_source": "PDF: \"Bu düzenlemeler 04.09.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202634-2026-09-02-02-07-41",
+    "workbook": "raw data/ek4a-duyuru/2026-34/duyuru-2026-34.xlsx",
+    "workbook_sha256": "2550d66695322488864990ddc257bb4a56f3fe327a3b5d0d00adc113e0064ab1",
+    "notice": "raw data/ek4a-duyuru/2026-34/duyuru-2026-34.pdf",
+    "notice_sha256": "07782b2b172c34360badd480359a0a426129093aa265bd4d81a8a67a5ae6e88b",
+    "folded_into_list": "2026-10-02"
+  },
+  {
+    "number": "2026/35",
+    "published": "2026-09-09",
+    "effective": "2026-09-11",
+    "effective_source": "PDF: \"Bu düzenlemeler 11.09.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202635-2026-09-09-04-50-41",
+    "workbook": "raw data/ek4a-duyuru/2026-35/duyuru-2026-35.xlsx",
+    "workbook_sha256": "8d4de611c0e2e3ebdf08b430d0f7c5be7db5cf20bf6c2c3fd3bcec751da1a731",
+    "notice": "raw data/ek4a-duyuru/2026-35/duyuru-2026-35.pdf",
+    "notice_sha256": "a34225a4c5ec498b13266e9821a49c317f4f6ed9942b655b9cb23c78441cd708",
+    "folded_into_list": "2026-10-02"
+  },
+  {
+    "number": "2026/36",
+    "published": "2026-09-16",
+    "effective": "2026-09-18",
+    "effective_source": "PDF: \"Bu düzenlemeler 18.09.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202636-2026-09-16-05-07-45",
+    "workbook": "raw data/ek4a-duyuru/2026-36/duyuru-2026-36.xlsx",
+    "workbook_sha256": "7e25d75fb5f459ef622dd0f7fb9b699a983d1edf14a20b8a8d675e6b53b43b56",
+    "notice": "raw data/ek4a-duyuru/2026-36/duyuru-2026-36.pdf",
+    "notice_sha256": "3d17f70b841563fdffbdb16e3b3602cbd85d42d7c62ec0003199dfdbca88a55c",
+    "folded_into_list": "2026-10-02"
+  },
+  {
+    "number": "2026/37",
+    "published": "2026-09-23",
+    "effective": "2026-09-25",
+    "effective_source": "PDF: \"Bu düzenlemeler 25.09.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202637-2026-09-23-11-39-31",
+    "workbook": "raw data/ek4a-duyuru/2026-37/duyuru-2026-37.xlsx",
+    "workbook_sha256": "d3004eb1db5b12bac9af0f3331372a32563e912f9c010992cae1af79a612cd6a",
+    "notice": "raw data/ek4a-duyuru/2026-37/duyuru-2026-37.pdf",
+    "notice_sha256": "4de31710259c0daf11fa1de5bba926ff1e9ce9943cf0306b08e19fcb9af6e837",
+    "folded_into_list": "2026-10-02"
+  },
+  {
+    "number": "olağanüstü 2026/2",
+    "published": "2026-09-25",
+    "effective": "2026-09-28",
+    "effective_source": "PDF: \"Bu düzenlemeler yayım tarihini takip eden ilk iş günü yürürlüğe girecektir.\"; published Friday 2026-09-25, first working day Monday 2026-09-28",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/2026-Yili-2-Olaganustu-Ilac-Geri-Odeme-Komisyonu-Kararina-Istinaden-Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-2026-09-25-10-50-59",
+    "workbook": "raw data/ek4a-duyuru/2026-olaganustu-2/duyuru-2026-olaganustu-2.xlsx",
+    "workbook_sha256": "d95b74804b2c570c437d694963827d90947ece4f07e2fc9ce37a5d05ad3cffed",
+    "notice": "raw data/ek4a-duyuru/2026-olaganustu-2/duyuru-2026-olaganustu-2.pdf",
+    "notice_sha256": "6d127bfa990af093c220a9b499b3985eb43ba7fcab3a3a908b23c77838ed169b",
+    "folded_into_list": null
+  },
+  {
+    "number": "2026/38",
+    "published": "2026-09-30",
+    "effective": "2026-10-02",
+    "effective_source": "PDF: \"Bu düzenlemeler 02.10.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202638-2026-09-30-09-19-22",
+    "workbook": "raw data/ek4a-duyuru/2026-38/duyuru-2026-38.xlsx",
+    "workbook_sha256": "f1644df73e0096b51511741bfc46abd491a62f7b04990f6b70a596e36fa58a2d",
+    "notice": "raw data/ek4a-duyuru/2026-38/duyuru-2026-38.pdf",
+    "notice_sha256": "54257ffe8afbc59a9ece12dd8f97be9adaee88dd93dd52056d8d2b6aced27fe2",
+    "folded_into_list": null
+  },
+  {
+    "number": "2026/39",
+    "published": "2026-10-07",
+    "effective": "2026-10-09",
+    "effective_source": "PDF: \"Bu düzenlemeler 09.10.2026 tarihinde yürürlüğe girecektir.\"",
+    "page": "https://www.sgk.gov.tr/duyuru/detay/Bedeli-Odenecek-Ilaclar-Listesinde-Yapilan-Duzenlemeler-Hakkinda-Duyuru-202639-2026-10-07-04-54-48",
+    "workbook": "raw data/ek4a-duyuru/2026-39/duyuru-2026-39.xlsx",
+    "workbook_sha256": "9c9bd3b499228bac941954c323383ebbe0ef2a4f87d2babb8aae4deae45b069c",
+    "notice": "raw data/ek4a-duyuru/2026-39/duyuru-2026-39.pdf",
+    "notice_sha256": "966ea644fede8275e2ef6512af93248b03c4aa423ea132232c42a2144e90ed08",
+    "folded_into_list": null
+  }
+]
