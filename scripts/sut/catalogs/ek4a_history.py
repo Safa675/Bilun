@@ -46,6 +46,7 @@ FIELDS = (
     "special_discount", "pharmacist_discount",
 )
 DATE_COLUMNS = {"entry_date": "giriş", "activation_date": "aktiflenme", "passivation_date": "pasiflenme"}
+NAME_WORDS = ("isminin", "adında")
 _CLAUSE_SPLIT = re.compile(r"(?:^|\s)\d\)\s")
 _TOKEN = re.compile(r"\((\*{1,4})\)")
 _DATE = re.compile(r"(\d{2})[./](\d{2})[./](\d{4})")
@@ -73,10 +74,12 @@ def marker_rules(footer: str, published: dt.date) -> Rules:
             if token in rules:
                 raise ValueError(f"EK-4A footer defines ({token}) twice")
             if token == "*":
-                head = clause[: clause.index("(*)")]
-                columns = frozenset(column for column, word in DATE_COLUMNS.items() if word in head)
+                # Before 2025 "(*)" also marked names ("isminin yanında", "ilaç adında").
+                head = clause[: clause.index("(*)")].lower()
+                columns = frozenset({column for column, word in DATE_COLUMNS.items() if word in head}
+                                    | ({"drug_name"} if any(word in head for word in NAME_WORDS) else set()))
                 if not columns:
-                    raise ValueError("EK-4A footer (*) clause names no date column")
+                    raise ValueError("EK-4A footer (*) clause names no column")
             else:
                 columns = frozenset({"drug_name"})
             rules[token] = (date, columns)
@@ -250,6 +253,7 @@ def _built(raw_root: Path, signature: tuple) -> tuple[pd.DataFrame, pd.DataFrame
 def _ek4a_outputs(raw_root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build once per builder run; the two specs below share the result."""
     files = sorted(raw_root.glob("annex=EK-4A/effective_date=*/*.parquet"))
+    files += sorted(raw_root.glob("annex=EK-4/effective_date=*/*EK-4-A_*.parquet"))
     files += [path for path in [raw_root.parent / "ek4a_announcements.json"] if path.is_file()]
     signature = tuple((str(path), path.stat().st_size, path.stat().st_mtime_ns) for path in files)
     history, windows = _built(raw_root.resolve(), signature)

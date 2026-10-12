@@ -53,11 +53,19 @@ def test_footer_clauses_give_marker_dates_and_columns() -> None:
     assert rules["***"][0] == D("2026-05-15")
     assert rules["****"][0] == D("2026-06-29")  # "yayımı tarihinde" is the publication date
     assert marker_rules(_footer("24/05/2025"), D("2025-05-24")) == {}
+    # Before 2025 "(*)" also marked names, and column words may be capitalised.
+    for clause, columns in (
+        ("Listede isminin yanında (*) işareti bulunan ilaçlar 03.09.2023 tarihinde,", {"drug_name"}),
+        ("Listede isminin yanında veya listeye giriş tarihinde (*) işareti bulunan ilaçlar 27.10.2023 tarihinde,",
+         {"drug_name", "entry_date"}),
+        ("Aktiflenme tarihinde (*) işareti bulunan ilaçlar 02/03/2024 tarihinde;", {"activation_date"}),
+    ):
+        assert marker_rules(_footer("24/08/2023", clause), D("2023-08-24"))["*"][1] == frozenset(columns)
 
 
 @pytest.mark.parametrize("clause,message", [
     ("İlaç adında (**) işareti bulunan ilaçlar bir gün", "no effective date"),
-    ("Listede (*) işareti bulunan ilaçlar 10/10/2026 tarihinde", "names no date column"),
+    ("Listede (*) işareti bulunan ilaçlar 10/10/2026 tarihinde", "names no column"),
 ])
 def test_unreadable_footer_clauses_are_refused(clause: str, message: str) -> None:
     with pytest.raises(ValueError, match=message):
@@ -178,7 +186,7 @@ def test_committed_history_matches_a_fresh_build_of_the_official_lists() -> None
     pd.testing.assert_frame_equal(pd.read_parquet(curated / "ek4a_history.parquet"), history)
     pd.testing.assert_frame_equal(pd.read_parquet(curated / "ek4a_windows.parquet"), windows)
     assert history["status"].value_counts().to_dict() == {
-        "ok": 19222, "unknown_predecessor": 76, "duplicate_kamu_no": 4, "unrecognized_marker": 1}
+        "ok": 26295, "unrecognized_marker": 33, "duplicate_kamu_no": 10, "unknown_predecessor": 3}
     assert history["valid_until"].isna().sum() == 8219  # the 2026-10-02 list after the announcements
     marked = history.set_index("kamu_no")
     assert marked.loc["A20335", "entry_date"] == "2026-10-10"  # ENSPRYNG, (*) of the 2026-10-02 list

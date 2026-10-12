@@ -4,8 +4,8 @@ EK-4A as it applied on a service date.
 
 Reads the curated history built by scripts/sut/catalogs/ek4a_history.py. The list version
 whose window holds the service date gives the drugs. A date in a gap between versions gives
-no drugs (coverage "gap"), and a date before the oldest version uses the oldest version
-(coverage "before_history"; the synthetic demo cohort is dated 2023-2024). Each drug's
+no drugs (coverage "gap"), and a date before the oldest version (2022-08-25) uses the oldest
+version (coverage "before_history"). Each drug's
 entry, activation and passivation dates are then evaluated on the service date itself:
   not_yet_listed  every entry date is after the service date
   passive         the latest activation/passivation event on or before it is a passivation

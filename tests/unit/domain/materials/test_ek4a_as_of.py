@@ -38,7 +38,8 @@ def test_drug_state_follows_entry_activation_and_passivation_events() -> None:
 
 
 @pytest.mark.parametrize("day,coverage,list_from", [
-    (date(2023, 6, 1), "before_history", date(2025, 3, 8)),  # the synthetic demo cohort's years
+    (date(2021, 6, 1), "before_history", date(2022, 8, 25)),
+    (date(2023, 6, 1), "covered", date(2023, 3, 16)),  # the synthetic demo cohort's years
     (date(2025, 3, 10), "covered", date(2025, 3, 8)),
     (date(2025, 4, 1), "gap", None),  # SGK no longer ships the list for 2025-03-25..2025-04-25
     (date(2026, 6, 1), "covered", date(2026, 5, 23)),
