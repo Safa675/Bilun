@@ -1,0 +1,12 @@
+[Unit]
+Description=Look for queued Bilun laptop CI jobs every minute
+
+[Timer]
+# First run 30 s after the timer starts, then 60 s after each run ends: runs never overlap
+# and a long run (several jobs) simply delays the next look.
+OnActiveSec=30s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

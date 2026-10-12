@@ -1,0 +1,22 @@
+[Unit]
+Description=Serve queued Bilun laptop CI jobs with isolated one-job runners
+# Runs the reviewed copy installed by the runbook, never a working tree: a PR branch checked
+# out somewhere must not be able to change code that runs unattended with admin credentials.
+ConditionPathExists=%h/.local/share/bilun-ci/laptop_watcher.py
+
+[Service]
+Type=oneshot
+Environment=BILUN_CI_IMAGE=bilun-laptop-ci:20261008-runtime-complete
+Environment=TMPDIR=%h/.cache/bilun-land
+ExecStartPre=/usr/bin/mkdir -p %h/.cache/bilun-land
+ExecStart=/usr/bin/python3 %h/.local/share/bilun-ci/laptop_watcher.py
+# One run serves at most six runners of at most 60 minutes each; a wedged run must not
+# stall the timer for good (oneshot services have no start timeout by default).
+TimeoutStartSec=8h
+# SIGTERM goes to the watcher only. It forwards one SIGTERM to its runner and waits for the
+# runner's own cleanup (container, volume, registration). With the default KillMode the
+# runner would be signalled twice, and a second SIGTERM aborts that cleanup.
+KillMode=mixed
+TimeoutStopSec=120
+# The watcher exits 143 when it is told to stop; that is a clean stop, not a failure.
+SuccessExitStatus=143
