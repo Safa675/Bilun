@@ -36,4 +36,4 @@ Based on `~/work/bilun-deploy-plan/DEPLOY-PLAN.md` (2026-10-08):
 
 ## Source freshness
 
-The SGK 2026/39 drug list takes effect on **2026-10-09** and is **not applied to the rules yet**; see [PR #187](https://github.com/Safa675/Bilun/pull/187). This pause does not change rules or imply real-claims readiness.
+The SGK 2026/39 drug list takes effect on **2026-10-09** and is applied to the EK-4A history as of [PR #222](https://github.com/Safa675/Bilun/pull/222). Bounded clinical-source continuity is admitted through **2026-10-05** only; see `docs/gazette/clinical-source-authority.md`. This pause does not change rules or imply real-claims readiness.
