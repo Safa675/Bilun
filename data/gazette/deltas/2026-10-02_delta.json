@@ -1,0 +1,399 @@
+{
+  "old_date": "2026-08-29",
+  "new_date": "2026-10-02",
+  "generated_at": "2026-10-13",
+  "input_fingerprints": {
+    "algorithm": "sha256-typed-catalog-inputs-v1",
+    "catalogs": {
+      "ek1a_chronic_exemptions.parquet": "946e2d86a430ced075602fc119efdc3dc655a9bd8ddfa4b90e3ad0547d00ece8",
+      "ek2a_outpatient_visits.parquet": "c5237db7247bdac36c77d626de7875770bad57a35905c2c1c48a20bd770ca588",
+      "ek2b_catalog_history.parquet": "317b91343f695d12ead8bb31034ac7ca7fa441b5874d627cf3f2bed42084a9cd",
+      "ek2c1_copay_rates.parquet": "4ef2b85b41c3180b344bb3260eb41f6e3678a008a19d2813d1602d0e395affc1",
+      "ek2c_catalog_history.parquet": "3a22328d3ca17b20f83c880fb55c14e61c972c3c42da9454982abbb06cfd631d",
+      "ek2c_dental_catalog_history.parquet": "e5904cbec319ffe2ffe7c524e9d3500f05cf5dd464dd71e825b687838fee83a8",
+      "ek2g_no_surcharge.parquet": "c3e836c0c9b75c1a6f92420066b4c6db3a2996c460f5a9c6e2b2e101deeec6fd",
+      "ek3a_multibranch_materials.parquet": "18a1ae2eeee06cc41c3c96b3e6ceb321e83a90a84a50c95f99fb0a8af818f2e7",
+      "ek3b1_bundled_consumables.parquet": "e5b9be0e002696783aca5d702966b3980b5fe888938a5c3043ae65337d57d1f8",
+      "ek3b2_non_reimbursable.parquet": "ac32406928e28815658a8a72c1cbacb7373c607e7889be4dbb3248603183d190",
+      "ek3c1_materials.parquet": "ec68a441c99b611aa647e5680ea672b2fa82843faefb726d36c64b81394ecf9a",
+      "ek3c2_materials.parquet": "6b0e9c55777f9e897eda95047c7e66578b9b4633dffc582d8ba16e8b305a933d",
+      "ek3c3_materials.parquet": "969ff065542cdeb7d63bb3d6de7958cec56f1407556352fc14d9aa5ef90018a8",
+      "ek3c4_materials.parquet": "7a761d2b9200872d0d19aad993cb00ef28636a038cfe6b45c41796aca31a926f",
+      "ek3c5_materials.parquet": "411394eead6bb6f5e47550a72684586da6c1d45387166563ccc4355762502abf",
+      "ek3d_vision_materials.parquet": "745fe6314b2f7f5c3ac83d46ac3a1ea78fde5323c5af2061b4c552a36bc975d8",
+      "ek3e1_spine_surgery_materials.parquet": "03ac07a1952033f025565fc9efc93ff065a1bf30c8eb2844226ac3c66871756b",
+      "ek3e2_cranial_surgery_materials.parquet": "8bfe596d9ad415b17e5e2c6cd274299e1831fe93b547d994ef56701d27a869ff",
+      "ek3f1_arthroplasty_materials.parquet": "66c9bb05d1d0e178383a88db8955d388bef29ef3900f8eef07b80965b06e0957",
+      "ek3f2_arthroscopy_materials.parquet": "77d7ab1f66f9f8bb9978e459aeafda353ca7477be7748e3b3502ae8165eadb29",
+      "ek3f3_tumor_resection_materials.parquet": "9080684f16e33acec0a6f595759d2fc75e4d327e4581873a4499dd3b14cb4fc9",
+      "ek3f4_trauma_reconstruction_materials.parquet": "91d6f9b37b47e60e38e29cb6ac4f4845e95f2315403f3cef3f075d70c5c7b323",
+      "ek3g_ophthalmology_materials.parquet": "5bf6211fe13a8aaf4d9ea221208fd93e5eda9dbfc2f7950cea638e4748a03900",
+      "ek3h_cardiology_materials.parquet": "194bc7a5d488121d6bb604fe25aa24b8ab3b4fde4c0449f87c1dc7cd8c22130f",
+      "ek3i_cv_surgery_materials.parquet": "f04756deda839730a8da53f544dca65a7f289746284cbc514f476b293b48e620",
+      "ek3j_ent_materials.parquet": "c8889a9144c8830689c151f1c28f42bf528253829bb7fd735888fc884b8c0ffb",
+      "ek3k_obgyn_materials.parquet": "e4f1e32f8bdc5c803cbba1476671a5db20cc25172cc616aaf921382761fd3060",
+      "ek3l_urology_materials.parquet": "15f0737e76c3a9a458e7e779ff96dab31b1b744e121f4c59a513d0af79365288",
+      "ek3m_radiology_materials.parquet": "64afc46c6b0d11857222ce8a37a7cfef1989c67b05f9cb65dbc0e2702ff23303",
+      "ek3n1_allograft_materials.parquet": "4d1ebe5b43e28f74a05cb24d24924437bcdd712e25e64d4ade906eec239cd6a6",
+      "ek3n2_xenograft_materials.parquet": "b3e2136f539068b83db76a426a12e296c158c26a8e174dcfeda807bd63e40fb4",
+      "ek3n3_synthetic_graft_materials.parquet": "76e2a33455e7c19252cda8b8745834986c521eaa2e3c00f9d5685bfbaed4b09b",
+      "ek3o_hematology_oncology_materials.parquet": "996cc63df9cf7ce7be9c3c05dca9fae7a4d3bb9db47f9c41195ce84a0b124124",
+      "ek3p_nephrology_materials.parquet": "8d0804aa465802e179b85bad32d4647dcfd31c9c742090442f256e5e90107b3e",
+      "ek3r_gastroenterology_materials.parquet": "d1d8b3353c695d4fd0739a764edb2f0fbe9a27b1e1775b83269431fa86eedc8b",
+      "ek3s_pulmonology_materials.parquet": "bbd8cfbfaff06580581b832a0ecbb03089d2fb62b2928de5746e59f8d38f221b",
+      "ek3t_anesthesiology_materials.parquet": "1df610b716d893af403109737a12a98568c54d2824c4b04cb1e113288524afe4",
+      "ek4a_drugs.parquet": "368e2a55c1fbbc23d97aa98bb627c6beb36c9513dae007ceccdff742f0fa0cef",
+      "ek4a_history.parquet": "d0cb7e7a7de9a4879d5824b16ad0e2cdbccaf34399c328aefeae6f28842089b9",
+      "ek4a_windows.parquet": "3fb14120e1d36c24b58140af3c3d30e5c92b11bc3b6c36f831fb47825fa15ef4",
+      "ek4d_copay_exempt_entries.parquet": "0df529ead404fa523173cbfa4afb39d6e87fc4709bc267bb0000d15b76b6a9f1",
+      "ek4d_sections.parquet": "0ccb9beaee633e5555b1d9a9126e911a4991ad699893aa2f52fd93eb624b4ad6"
+    }
+  },
+  "catalogs": [
+    {
+      "annex": "ek2b",
+      "type": "temporal",
+      "old_count": 7317,
+      "new_count": 7317,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 7317,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek2c",
+      "type": "temporal",
+      "old_count": 2445,
+      "new_count": 2445,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 2445,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek2c_dental",
+      "type": "temporal",
+      "old_count": 214,
+      "new_count": 214,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 214,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek1a chronic exemptions",
+      "type": "snapshot",
+      "row_count": 98,
+      "col_count": 3,
+      "content_hash": "fc16be58a6bb",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2a outpatient visits",
+      "type": "snapshot",
+      "row_count": 87,
+      "col_count": 35,
+      "content_hash": "1ca93730cb5f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2c1 copay rates",
+      "type": "snapshot",
+      "row_count": 465,
+      "col_count": 3,
+      "content_hash": "d789a15842f4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek2g no surcharge",
+      "type": "snapshot",
+      "row_count": 213,
+      "col_count": 2,
+      "content_hash": "04239511cc0f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3a multibranch materials",
+      "type": "snapshot",
+      "row_count": 401,
+      "col_count": 6,
+      "content_hash": "a807016beca0",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3b1 bundled consumables",
+      "type": "snapshot",
+      "row_count": 54,
+      "col_count": 3,
+      "content_hash": "06c327d22867",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3b2 non reimbursable",
+      "type": "snapshot",
+      "row_count": 13,
+      "col_count": 2,
+      "content_hash": "614f125b7b19",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c1 materials",
+      "type": "snapshot",
+      "row_count": 506,
+      "col_count": 2,
+      "content_hash": "7c2be62edd15",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c2 materials",
+      "type": "snapshot",
+      "row_count": 460,
+      "col_count": 9,
+      "content_hash": "b89df09de8e4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c3 materials",
+      "type": "snapshot",
+      "row_count": 77,
+      "col_count": 9,
+      "content_hash": "2d1ee251f3bd",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c4 materials",
+      "type": "snapshot",
+      "row_count": 99,
+      "col_count": 6,
+      "content_hash": "ffa23f5c3b64",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3c5 materials",
+      "type": "snapshot",
+      "row_count": 74,
+      "col_count": 9,
+      "content_hash": "733da2782617",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3d vision materials",
+      "type": "snapshot",
+      "row_count": 83,
+      "col_count": 6,
+      "content_hash": "3834d764a08b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3e1 spine surgery materials",
+      "type": "snapshot",
+      "row_count": 237,
+      "col_count": 6,
+      "content_hash": "2e15a60620d2",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3e2 cranial surgery materials",
+      "type": "snapshot",
+      "row_count": 136,
+      "col_count": 6,
+      "content_hash": "4594c6335277",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f1 arthroplasty materials",
+      "type": "snapshot",
+      "row_count": 337,
+      "col_count": 6,
+      "content_hash": "93ee4404fbf3",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f2 arthroscopy materials",
+      "type": "snapshot",
+      "row_count": 184,
+      "col_count": 6,
+      "content_hash": "e9116f84f606",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f3 tumor resection materials",
+      "type": "snapshot",
+      "row_count": 185,
+      "col_count": 6,
+      "content_hash": "21469ef92ba1",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3f4 trauma reconstruction materials",
+      "type": "snapshot",
+      "row_count": 315,
+      "col_count": 6,
+      "content_hash": "061b7d4a76c3",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3g ophthalmology materials",
+      "type": "snapshot",
+      "row_count": 224,
+      "col_count": 6,
+      "content_hash": "b43aa33f753b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3h cardiology materials",
+      "type": "snapshot",
+      "row_count": 275,
+      "col_count": 6,
+      "content_hash": "e14460b4b5e6",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3i cv surgery materials",
+      "type": "snapshot",
+      "row_count": 424,
+      "col_count": 6,
+      "content_hash": "3b62853179c1",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3j ent materials",
+      "type": "snapshot",
+      "row_count": 23,
+      "col_count": 6,
+      "content_hash": "dc4f71a5245d",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3k obgyn materials",
+      "type": "snapshot",
+      "row_count": 21,
+      "col_count": 6,
+      "content_hash": "ebe5e421b9ae",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3l urology materials",
+      "type": "snapshot",
+      "row_count": 83,
+      "col_count": 6,
+      "content_hash": "5e88bd41c86f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3m radiology materials",
+      "type": "snapshot",
+      "row_count": 297,
+      "col_count": 6,
+      "content_hash": "19db42ceb921",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n1 allograft materials",
+      "type": "snapshot",
+      "row_count": 102,
+      "col_count": 6,
+      "content_hash": "051496f20ef8",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n2 xenograft materials",
+      "type": "snapshot",
+      "row_count": 31,
+      "col_count": 6,
+      "content_hash": "88db86c6069f",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3n3 synthetic graft materials",
+      "type": "snapshot",
+      "row_count": 18,
+      "col_count": 6,
+      "content_hash": "ad57aad06091",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3o hematology oncology materials",
+      "type": "snapshot",
+      "row_count": 21,
+      "col_count": 6,
+      "content_hash": "05cf56d44a11",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3p nephrology materials",
+      "type": "snapshot",
+      "row_count": 35,
+      "col_count": 6,
+      "content_hash": "39b1ebc4416c",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3r gastroenterology materials",
+      "type": "snapshot",
+      "row_count": 159,
+      "col_count": 6,
+      "content_hash": "287c04b9bad8",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3s pulmonology materials",
+      "type": "snapshot",
+      "row_count": 82,
+      "col_count": 6,
+      "content_hash": "8a6e4a6e0ba2",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek3t anesthesiology materials",
+      "type": "snapshot",
+      "row_count": 39,
+      "col_count": 6,
+      "content_hash": "f96b945cd53b",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4a drugs",
+      "type": "snapshot",
+      "row_count": 8078,
+      "col_count": 16,
+      "content_hash": "5cb58f21c6e4",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4a history",
+      "type": "snapshot",
+      "row_count": 26341,
+      "col_count": 20,
+      "content_hash": "a491a33f77bf",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4a windows",
+      "type": "snapshot",
+      "row_count": 33,
+      "col_count": 4,
+      "content_hash": "3109712333b9",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4d copay exempt entries",
+      "type": "snapshot",
+      "row_count": 3196,
+      "col_count": 6,
+      "content_hash": "a212ccc178c7",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    },
+    {
+      "annex": "ek4d sections",
+      "type": "snapshot",
+      "row_count": 15,
+      "col_count": 3,
+      "content_hash": "2dc791bdb4e6",
+      "note": "Snapshot parquet — no temporal slicing. Compare content_hash and row_count against the previous delta to detect changes."
+    }
+  ]
+}
