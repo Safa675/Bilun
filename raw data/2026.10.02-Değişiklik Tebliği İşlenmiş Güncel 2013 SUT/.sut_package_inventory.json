@@ -1,0 +1,1753 @@
+{
+  "schema_version": 1,
+  "teblig_date": "2026-10-02",
+  "download_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
+  "zip_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+  "files": [
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
+      "sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+      "size_bytes": 1200635
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/EK-1A AYAKTA TED.HEK.DİŞ HEK MUA KAT PAY.ALIN KRN HAST LİS..xls",
+      "sha256": "b842aab8ebeb08b05337d021a4412f6a9334f78a531856a19be26ee3cd4cc9f3",
+      "size_bytes": 48128
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/EK-1B HAST. SUN.  HİZM. VE İLAVE ÜCR. GÖST. BELGE (Yürürlük 01.05.2013).docx",
+      "sha256": "1b6ae9b0c13c744cb1bb28cd87e2948a8694e8f246bde77f1f4c2da5ab0577f6",
+      "size_bytes": 22681
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/EK-1C  İSTİSNAİ SAĞLIK HİZMETLERİ LİSTESİ.xlsx",
+      "sha256": "85d04b56c87737f331624085b69d39e6cc3947741c4be19316f21d6019902599",
+      "size_bytes": 12556
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/EK-1D ACİL HALİN SONA ERMESİNE İLİŞKİN BİLG. FORMU ( Yür.15.02.2018 ).doc",
+      "sha256": "7db39f5191f0929a79bdece9756121eecbc8afd93a5b02201aaf2364c00efa35",
+      "size_bytes": 25088
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/EK-1E SÖZLEŞMESİZ SAĞ.HİZ.SUN.ACİL HAL.SUN.SAĞ.HİZ.İL.BİL.FORMU (Yür.15.03.2025).docx",
+      "sha256": "e0236b4d8255703a84dc391b3cab71ad1538eb201881626f11d6d440f108f2e8",
+      "size_bytes": 16900
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ/MÜLGA/MÜLGA EK-1B - HAST. SUN.  HİZM. VE İLAVE ÜCR. GÖST. BELGE(Yürürlük 01.05.2013).docx",
+      "sha256": "aa4d9a69a67bae9b33c68521b0ea74b149e467ad26a905868f949aaaf1961ec8",
+      "size_bytes": 20465
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.07.07.2026).xlsx",
+      "sha256": "34d0c7e8caeb9db7c6e7e1cc35327b453f20c214e55bd6a790b4ec2183f07e7b",
+      "size_bytes": 18677
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2A-1 SAĞLIK HİZMETİ SUN. AYAKTA TED. SINIFLANDIRILMASI LİS. (Yür. 19.09.2025).docx",
+      "sha256": "0476c7fd4e7138f7bd32b7688b7ef2f251189934c05d42d6c7e955134f62d9c2",
+      "size_bytes": 18084
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "48e03208cd749b2561d05bf618afabaa6237ee3fc46f34eaddd8f4aaf504adf7",
+      "size_bytes": 29891
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.07.07.2026).xlsx",
+      "sha256": "1093470f92f5e36800364cc7ea1c8304473c55ca2c32991bf1e5ae1a7f1722b9",
+      "size_bytes": 384598
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.07.07.2026).xlsx",
+      "sha256": "dc40d20c84ba088d91d17cc0990a0ad571a36841ef437e08d76b0e4718558d1c",
+      "size_bytes": 197266
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2C-1 İLAVE ORAN UYGULANACAK İŞLEMLER LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "8af132975dd3bca473c09efcc32e9e5fcc98ac2f4b3587d84ff2af251eec827b",
+      "size_bytes": 31785
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2D-1 POZİT. EMİ.TOM. (PET) GÖR. KLİNİK UYG. (Yür. 30.04.2024).docx",
+      "sha256": "853e4d07bd05cf3daeb00c0548b4648d8f587f9c50eb65f49b15594ae131f8aa",
+      "size_bytes": 51762
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2D-2 FİZİK TED.VE REH. TANI LİST (Yür. 01.10.2014).xlsx",
+      "sha256": "643653e873d1034db698dbf51a110f0887a970fc607f1f6ec035f54c94f922e6",
+      "size_bytes": 16923
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2D-3 HİPERBARİK OKSİJEN TEDAVİSİ UYGULAMA LİSTESİ.xls",
+      "sha256": "0d6c3b43b15a3a922d05e3615e2e26c831564f79c138a8129ba23cd6c0cc616f",
+      "size_bytes": 48128
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2D-4 İNT.NÖROMON.İŞL.AYR.FAT.İŞ. LİSTESİ (Yür.01.01.2026).xlsx",
+      "sha256": "f2f5f21d7f1ca425c542484fe0d529e644777d87b2370f748a283536355b0a30",
+      "size_bytes": 13500
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2D-5 “İNTRAOPERATİF NÖRONAVİGASYON” İŞL AYR FATURALAN İŞL LİST (Yür.25.12.2021).docx",
+      "sha256": "a94b59da24eda7b8e50ee909ce5eaad608af45f8e7030e91c659bad40e8ba45d",
+      "size_bytes": 16788
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2E-1 YURT DIŞINA TEDAVİYE GÖNDERİLECEKLERE İLİŞKİN.doc",
+      "sha256": "3d2be38a40d144b69920b8282cd5a7c3986987fe7fb83ebc20de2593491c209c",
+      "size_bytes": 35328
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2E-2 YURT DIŞI TETKİKE İLİŞKİN SAĞLIK KURULU RAPORU.doc",
+      "sha256": "cbbb03d9cf1663f6ede33c7209e0011067c35064272282d43a4220c16b2f7d0c",
+      "size_bytes": 35840
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2E-3 YURT DIŞI TEDAVİ TETKİK İÇİN HASTA İZLEME ÇİZELGESİ.doc",
+      "sha256": "666cf305b24ae77c28c914c22f81913dceb94ba0608dff93d22790724f22d741",
+      "size_bytes": 35328
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2F HASTA SEVK FORMU.doc",
+      "sha256": "7344f14f3475ad10cb555662b1dcb44b83ca007579cdef6e71f41a92ea0af33b",
+      "size_bytes": 40960
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2G İLAVE ÜCRET UYGULANMAYACAK İŞLEMLER LİSTESİ (Yür. 05.07.2018).xlsx",
+      "sha256": "50c94b91556da43af292b082c597ae8f79377401e1d2cbee6b6db9a437a2fb1b",
+      "size_bytes": 22792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2K PREİMPLANT.GEN.TANI(PGT) İLE İNVİTRO FER.(IVF) YAP.KAL.HAS.LİS. (Yür.11.08.2021).xls",
+      "sha256": "45a70da433d7632d4a4d6e80329cc8de3324e760b45f2b1224ede568f9b2de01",
+      "size_bytes": 36352
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2L MUTAT TAŞIT YOL ÜCRETİ LİSTESİ (Yür.30.04.2024).xlsx",
+      "sha256": "62fae1d6da09628fe0b3c3ee93a33487702368c2bda64218fceaec5b6074cdb0",
+      "size_bytes": 10468
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2Y YASA DIŞI VE KÖTÜYE KULL. MAD. DOĞ. ANALİZ. FORMU (Yür.11.02.2020).docx",
+      "sha256": "e0f95b1fae087780019c10342bad6c31dd5c45e6f3259b94adf01df7c7907d53",
+      "size_bytes": 31818
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.01.01.2026).xls",
+      "sha256": "2bb331dcfcdb417b92159c70291dc12c475c15f8a247cae04b08910fa9753e20",
+      "size_bytes": 95744
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2Ç-1 DİŞ TEDAVİLERİ PUAN LİSTESİNE İLİŞKİN AÇIKLAMALAR.doc",
+      "sha256": "6d229c04d68de13b6eaeb62fcb131f2ca1112fe683161a60122b6a8f822d9069",
+      "size_bytes": 44032
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2Ç-2  DİŞ TEDAVİLERİ KONTROL FORMU (Yür. 25.07.2014).doc",
+      "sha256": "38010f578247579b6f0516721ab6d19f63c9e4b1f011e1ccca882abdcab7f9cc",
+      "size_bytes": 49152
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/EK-2Ç-3 TANIYA DAYALI ORTODONTİK TEDAVİ KONTROL FORMU (Yür. 04.03.2019).docx",
+      "sha256": "ea488e79368c241b77453546e5e37bf568e4a7732309ccf6e8c67b129a5d9a9b",
+      "size_bytes": 65449
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK 2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 29.06.2016).xlsx",
+      "sha256": "df0c121af7bd8bb25df7947da5e582d842830cecfc2063226a3c1d45d362f169",
+      "size_bytes": 20928
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "69c870337eecad88a4f808ba1b9c312e857950202fdbdb9b97e8b34079bc59ab",
+      "size_bytes": 19224
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 02.09.2023).xlsx",
+      "sha256": "cd8a3d34fac7cec9f57a0749a9c24081999d7cb259ef60cca3a6613ab12f1051",
+      "size_bytes": 18036
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 05.04.2025).xlsx",
+      "sha256": "745a082926b18288c7200f9d18ee69128c23645b19df4fe5869a3b89e40ce0dd",
+      "size_bytes": 18216
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 19.09.2025).xlsx",
+      "sha256": "c2704b88d1b068992ab6040ef35aa028999614e72d64579e10d52dd5b0176743",
+      "size_bytes": 18697
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 24.03.2023).xlsx",
+      "sha256": "c8a2e170451451b6c6aa8dde00cb4406f49bb0f2aa856ccba5beb1d8188988c4",
+      "size_bytes": 17613
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.01.01.2026).xlsx",
+      "sha256": "0b31f1612ff2158b66a80bfb4ac6343bb7ef98c67fe91e3cd49fcda23d62845d",
+      "size_bytes": 18598
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.03.09.2022).docx",
+      "sha256": "73d60d10d3d476220d03a59c30be9695eb68e29591e7d0032dfbeebde19c0c21",
+      "size_bytes": 38888
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.11.03.2020).xlsx",
+      "sha256": "5afd465914cdf04dba055b016fdd0a1cc87415b1cd0a2fa0e1b43803dc5287a1",
+      "size_bytes": 18877
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.11.05.2024).xlsx",
+      "sha256": "a36c10730394293b90e0e71f105b2db4f519d8c89d179bb31d26bc10c0562c65",
+      "size_bytes": 18099
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.16.02.2022).xlsx",
+      "sha256": "cc5e12b95bca7e1ff51591d1b1f7754ea015aa2823cf88f13a5a91f9eedf8dcf",
+      "size_bytes": 20839
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ(Yürürlük 29.06.2016).xls",
+      "sha256": "3338302366d227188f2ba79636cc9ee506ed8aba5d44c563c68c86dc7d58a7ff",
+      "size_bytes": 39936
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A-1 SAĞ.HİZ. SUN.AYAKTA TED.SINIFLANDIRILMASI LİS. (Yür.03.09.2022).docx",
+      "sha256": "1460724f62e8822257cf3c976d68f99d64641870a8796e3957957ff178ea9551",
+      "size_bytes": 17009
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A-1 SAĞLIK KURUM ve KURULUŞ AYAK. TED. SINIF LİSTESİ (Yür. 29.06.2016).docx",
+      "sha256": "d89953168e48efbfb569dfa1fd84e44bb37a5c9d2f9de2ac9ce5988050a2aa93",
+      "size_bytes": 16723
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A-1 SAĞLIK KURUM. AYAK. TED SINIF. LİSTESİ.doc",
+      "sha256": "760c0eef6c69e5a0f64b23dc1121ff122f5c2eeb3d976d05719ed3c45f0d2212",
+      "size_bytes": 46592
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİS..xls",
+      "sha256": "e1a261f3f27149ecf8c3903125cba158d1e17e41506904ce18ab252ebef0bb2c",
+      "size_bytes": 135680
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİSTESİ (Yür.11.03.2020).xlsx",
+      "sha256": "5a0ed98933ecaccb72dbeaf9c79bca721702c45372baa003224b9998b16db64e",
+      "size_bytes": 31100
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "6f46610feac622996d521b97852790f3cbc35b0750d5d28fff1c8fbe1931dc05",
+      "size_bytes": 393281
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 02.09.2023).xlsx",
+      "sha256": "5d35880b9639c65f528a95021df89dfa014faf309992d775c10bb9f52f8fe9d7",
+      "size_bytes": 373571
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 05.07.2018 ).xlsx",
+      "sha256": "1fcb33c39249dfdedc5aa4edad8fccd5c6a4155c6996d7366391e0bac32ffb84",
+      "size_bytes": 507708
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 24.03.2023).xlsx",
+      "sha256": "5133193334ae613b2a2b132041b326066bbe519a8d8930f2ea6893625a70d33d",
+      "size_bytes": 365625
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 31.01.2026).xlsx",
+      "sha256": "c0ed0cefa4fe61a99cedfdf539ce7a715f2a360fcabce96981235c936add693f",
+      "size_bytes": 381399
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.01.01.2026).xlsx",
+      "sha256": "fbc91e3a67902a110e09c33fdd6dff62d472818afb912787f6dba1e1a2b6889d",
+      "size_bytes": 376923
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "888f04651772bcc9c758d2f7dd6917e52fb76fa559647899061ea0f2e2d5ceb1",
+      "size_bytes": 364192
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.11.03.2020).xlsx",
+      "sha256": "a5d127bca8d488fecc02cddccfd6683b53c15a732bfc11d775fc16e708d1fe13",
+      "size_bytes": 367196
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.11.05.2024).xlsx",
+      "sha256": "a202ae7ab215f4c38b41b51ef8ef1072e268a28b3c471bd4196e06ff1bf496e6",
+      "size_bytes": 400551
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.16.02.2022).xlsx",
+      "sha256": "a78af960f0e86d489be2bc9d65f820408eef549c81033265c8a3e6f3825e3e23",
+      "size_bytes": 392355
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ.xlsx",
+      "sha256": "d4cccd18449b58e797b361e7f20301207c14c420e8cd75757c90dd29f3ba13fe",
+      "size_bytes": 509520
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "aecd712a94f17f9f2a39bdc493aefd76c571bed1203297f7c7cd2acd429fa9b7",
+      "size_bytes": 185674
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "9ab9691799aa27dccc939e5f67ee8cd63a8ec1b30c716cfeb2c8b8d2183cc5de",
+      "size_bytes": 199340
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 02.09.2023).xlsx",
+      "sha256": "1009c5bf1e39af31901bf231d3fdf62626122ac730a8325c3a9403a4a722d23f",
+      "size_bytes": 185984
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 05.07.2018 ).xlsx",
+      "sha256": "7f2a59c0e5a1ee06bc1c3b8a48e1329db945ae79e6bc70a24f463aea5eed9c2a",
+      "size_bytes": 219614
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 31.01.2026).xlsx",
+      "sha256": "4051e2e948a1d923a54e293cdf1f4699dc24fc152dc75184b69624805e0bfc9e",
+      "size_bytes": 193991
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.01.01.2026).xlsx",
+      "sha256": "2c298cbd61785ada400dac41a67a48ebf371b49ca93bbb320b5cb9fa4f2d5baf",
+      "size_bytes": 192118
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "7979c6ebdf2a1b2a37a0027edbd22da1ed9b8de1607061d5e6f4aa950b341131",
+      "size_bytes": 185154
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.11.03.2020).xlsx",
+      "sha256": "57e7379621b9f2b65b4e73a3eee6f90be8f080008063849fdc7fcb2005444c17",
+      "size_bytes": 209406
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.11.05.2024).xlsx",
+      "sha256": "37556f1891896fa9088a698ccaf4362796e92b1a7b8b5a4af73b68c07bb12711",
+      "size_bytes": 196838
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.16.02.2022).xlsx",
+      "sha256": "720ec5bba0781015af32b02c73dece9556d4902e5ecea10f86cf8f895f9d853e",
+      "size_bytes": 186228
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ.xlsx",
+      "sha256": "b88816cd9bb7983f619c2e517971e5252e9a713fe96707d46f97593e3d0145c5",
+      "size_bytes": 257622
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C-1  İLAVE ORAN UYGULANACAK İŞLEMLER LİSTESİ (Yür. 29.06.2016).xlsx",
+      "sha256": "dd4e7f3e874dc522061ad7b958d09bc36c044e563ea00e6e40976a996db606ba",
+      "size_bytes": 31668
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2C-1  İLAVE ORAN UYGULANACAK İŞLEMLER LİSTESİ (Yür.11.03.2020).xlsx",
+      "sha256": "9ab70c52127b2805f40ea3670df1baabcb64e9957343ab6310ad70fb90c601db",
+      "size_bytes": 31112
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2D-1  POZ. EMİ. TOMO (PET) GÖRÜN. KLİNİK UYG..doc",
+      "sha256": "1524c245c0b522a7835f20a5cbff7234031839e92336743c0c72903db009b981",
+      "size_bytes": 166400
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2D-1 POZİT. EMİ.TOM. (PET) GÖR. KLİNİK UYG. (Yür. 10.04.2014).docx",
+      "sha256": "53fc954038ba0d367c33f1d2e72220bb27a84e3f120ffeef3772e4c23b5df799",
+      "size_bytes": 45612
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2D-2 FİZİK TED.VE REH. TANI LİSTESİ  ( Yür-01.10.2014).xls",
+      "sha256": "aa8fc60387b2e54850bdb2863cce1baaacb2376bc9b076580f18b60084672057",
+      "size_bytes": 57344
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2D-4 İNT.NÖROMON.İŞL.AYR.FAT.İŞ. LİSTESİ.xlsx",
+      "sha256": "abc48520944a402d22c01c7da31322e0c53134b5d6e09cb3f7830f89ae29750e",
+      "size_bytes": 12432
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2L MUTAT TAŞIT YOL ÜCRETİ LİSTESİ (Yür.09.06.2022).docx",
+      "sha256": "0e74b37cf314b0ca94f5c318779a43fc5606b0f2b806ddd8d526341420d4e3cf",
+      "size_bytes": 17502
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ  (Yür.03.09.2022).xls",
+      "sha256": "b8e297643f0ebbb50aceceb856109628932cae485fc66c6f23cfde04507463ea",
+      "size_bytes": 90112
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 01.06.2021).xls",
+      "sha256": "f00edf1160251664d022071c300c1144991803fb44448ca230f3d08c434609c6",
+      "size_bytes": 91648
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 02.09.2023).xls",
+      "sha256": "6192d7f4f88b8dedb0c53a60cf9fca6233053a3e02dcee0cd993c7e0e7817209",
+      "size_bytes": 88064
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 24.03.2023).xls",
+      "sha256": "b5f49510eef625232c6bc68732da4a022ccc75b91997547272a952ca4d71cb87",
+      "size_bytes": 92672
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.03.2020).xls",
+      "sha256": "bd59607e305a79a24d502ca3a5c5be73b5d223244df6049bfcd6daab5d33ff48",
+      "size_bytes": 91648
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.05.2024).xls",
+      "sha256": "5d2173129c47ceb7bce02cfed1291c7626edd9863bba75ea4e8ac6b9f41859b2",
+      "size_bytes": 107008
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.16.02.2022).xls",
+      "sha256": "2ba909a4ab2dfb6de9a6188a4c8e9e263609293cf5b6d4221258d49a0f084f4c",
+      "size_bytes": 81408
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ.xls",
+      "sha256": "af456aa6a0ba13a4dfc970c50e613987c59c1965de9049110880763d9616aedd",
+      "size_bytes": 105984
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç-2 -DİŞ TEDAVİLERİ SEVK FORMU ( Yürürlük 25.07.2014).doc",
+      "sha256": "46d5d8c0f0f803139dd508e7b9c0a09a5c0b9d8cfad134166f4201b8aa4ed9c5",
+      "size_bytes": 48640
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ/MÜLGA EK-2 LİSTELERİ/MÜLGA EK-2Ç-3 TANIYA DAYALI ORTODONTİK TEDAVİ KONTROL FORMU (Yür.01.02.2019).docx",
+      "sha256": "93e93f39b579ca9d0378f05263a4aca81bce2af2463e93888e21d860b633869d",
+      "size_bytes": 28458
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER LİS. (Yür.13.12.2025).xlsx",
+      "sha256": "bbd020c517ed46d4b5e1c04d87f34e7372a18f6310ec05da55125b21e2a90021",
+      "size_bytes": 40485
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3B KURUMCA BEDELİ KARŞILANMAYAN TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "332fba2e8aff56276c7de940f4d6e80db97923ea628f0b392829981ba290b6d2",
+      "size_bytes": 35840
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3B-1 İŞLEM PUANINA DAHİL BASİT SIHHİ SARF MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "b63d1f9dc655c5597e6990b8f8e126cf192ba1052754073f397f5c9d58dc07be",
+      "size_bytes": 35840
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3B-2 KURUMCA BEDELİ KARŞILANMAYAN DİĞER TIBBİ MALZ. LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "03940c3237bc0173599602f288ed54b643c0e511d69770ba9936fc13a11fc32c",
+      "size_bytes": 36352
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "fe0e3255175ff6edcc831549c28ccd8ada79d2bc5188de8ec8569eec2b663d99",
+      "size_bytes": 38912
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "a468c8ac84a54dcb07a608b61401407ed3987f69fd6baf1f15a0006061123013",
+      "size_bytes": 115200
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-2 EKSTERNAL ALT VE ÜST EKSTREMİTE GÖVDE PROT. ORTEZ. LİS. (Yür. 24.01.2026).xls",
+      "sha256": "4dbf8a74d2e43cc2c4ff6d78c445cfa8509b79d380714a9217056ed5063692ab",
+      "size_bytes": 222720
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 24.01.2026).xls",
+      "sha256": "5f536992b5f5510433c211cdab4dc50fda850f1d96ca9a1b74cb48eb9e7c3c61",
+      "size_bytes": 97792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür. 24.01.2026).xls",
+      "sha256": "fe71ade5f5bd796cc49ebd846c1cbed6a3e590b8e1dc6b222c1769d644e415bd",
+      "size_bytes": 89088
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-5 ÖZEL HALLERDE KARŞILANAN TIBBİ MALZEMELER LİST.(Yür. 24.01.2026).xls",
+      "sha256": "5d2779c533a84b8e1764ff71bd3b5aea199028f018fbf97a3c529882fc1f9952",
+      "size_bytes": 81408
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3C-6 AMPUTE MOB. ÖLÇEĞİ FORMU (Yür.22.03.2025).docx",
+      "sha256": "7fc6aa82ffd1f1f76bbda1d80b8a1aa1046cb4d08f5c11bc21f78674eaaaa936",
+      "size_bytes": 23687
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür.01.01.2026).xlsx",
+      "sha256": "c705d828bf7f44b2a9316da6dbe4352f994ad45c5c6d64b736089ae786e915fb",
+      "size_bytes": 697792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "98f6dcd3ae49870c346c591cc6e352489685ca0811d81f86fca617a24693e658",
+      "size_bytes": 28832
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3E-2 BEYİN CER.BR.KRANİAL CER. ALAN GR.AİT TIB.MAL.LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "fdb90450f32d9d2cd42a45321334e9bc0d7509468bd24a7debef65e6cb2b6732",
+      "size_bytes": 22077
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3F-1 ORT.TRAV.BR.ARTROPLASTİ ALAN GR. AİT TIB. MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "af51d165c90b0fa3bda338efa4b64339c4f2bfd7137ba0e3d89a5c78790f8103",
+      "size_bytes": 34973
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3F-2 ORT.TRAV.BR.ARTROS.EKL.CER.ALAN GR.AİT TIB.MALZ.LİS. (Yür.13.12.2025).xlsx",
+      "sha256": "9241bc1273d38223916becb0c43af6f12e68621ca3bbf0c8cf1c87fbd8ce1978",
+      "size_bytes": 25197
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3F-3 ORT.TRAV.BR.TÜMÖR REZEK.ALAN GR.AİT TIB. MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "3ec86608327a0d4ce8d0da52d3d7a7e654b4839c5a9aaf41003111361fe884e9",
+      "size_bytes": 23386
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3F-4 ORT.TRAV.BR.TRAV. REKONS.ALAN GR. AİT TIB.MALZ.LİST (Yür.13.12.2025).xlsx",
+      "sha256": "d81940574e7d531b31d39208824154d10ad4fbf14324ad48cbf5910a97066e03",
+      "size_bytes": 48728
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3G GÖZ SAĞLIĞI VE HAST. BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "234495012383875d163a598774ddc1ef84680b476452d4c7d8d88ab689a8b93c",
+      "size_bytes": 23315
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "213665e18c82c1c23f204be2b4a87902439a1402377d2434bf74e1dafddf8f50",
+      "size_bytes": 35052
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3I KALP DAMAR CERRAHİSİ BRNŞ. AİT TIBBİ MALZ. LİST. (Yür 13.12.2025).xlsx",
+      "sha256": "f6ad91971e7fe09200a539a9d56e07882fd615df5bf1fec5959bf2bf483dc258",
+      "size_bytes": 49435
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3J KULAK BURUN BOĞAZ BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "5a501eb3ca068ebe60710a96d6a917f7ca0c7f4769d04b3f89331e52e6aea4ab",
+      "size_bytes": 17504
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3K KADIN HAST. VE DOĞUM BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "101561bf39b34d79e727e11473a0f3450059f76dbabb9e4bd8cb1e91ad36419c",
+      "size_bytes": 13978
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3L ÜROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.13.12.2025).xlsx",
+      "sha256": "1d7edafeede753c68aa543519cf4c10992f9e5a500fdbd54c3036255ad296676",
+      "size_bytes": 19352
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3M RADYOLOJİ BR VE END.NONV. GİR İŞL AİT TIB MALZ LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "e84502de4b0d21a5f7320317f98fe634a88e674f9eb7e575218856510b4bb583",
+      "size_bytes": 36882
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ (Yür.13.12.2025).xlsx",
+      "sha256": "edceb06c754a7de66e54017b05c2b27e192186373c883d33a838f5f0ccc8a89d",
+      "size_bytes": 15200
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ (Yür.13.12.2025).xlsx",
+      "sha256": "f8fad5ebc85728643751ea0124d9954319c2ef9f56f6aee4effbce5856d3e904",
+      "size_bytes": 13455
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU LİSTESİ (Yür.13.12.2025).xlsx",
+      "sha256": "5e7d3f31d3791b4d444a6107657198c21fa788472ddea43eb979e611be3c660b",
+      "size_bytes": 11870
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3O HEMATOLOJİ-ONKOLOJİ BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "3eb83ca33f69c7a8d33d36fb209792070f7c3de549b8bb43ea850d1cdc768631",
+      "size_bytes": 14293
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.13.12.2025).xlsx",
+      "sha256": "37ba0a8cff9087a2e0d7207b945b040ab06cca00e5c0824dacb0da1e3b19854f",
+      "size_bytes": 14050
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3R GASTROENTEROLOJİ BRANŞINA AİT TIBBİ MALZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "6ff338bfb9453c7f4ea9af0666f74ce3a281e92db9877d02d94cb625d06ef10a",
+      "size_bytes": 21492
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3S GÖĞÜS HAST VE GÖĞ. CERR. BRNŞ. AİT TIBBİ MLZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "c6fe2ccb60bf4f6e690b553bd076b144e117acfc9d163d453735a1339073bf93",
+      "size_bytes": 17102
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/EK-3T ANEST, REAN VE AĞRI TED. BRNŞ. AİT TIBBİ MLZ. LİST. (Yür.13.12.2025).xlsx",
+      "sha256": "3888fc66a06311b1f666339a0d9dc5aa6cc4b6e907430819af77da92f42e5024",
+      "size_bytes": 19769
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZ. BRŞ. KUL.TIB. ML.(Ek-Yür. 01.10.2014).xls",
+      "sha256": "2864f85c2cb29e9ed0170a41a2e187bc2c8468f69fb1baea42f90d1bcca7010a",
+      "size_bytes": 270336
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST (Yür. 24.03.2023).xlsx",
+      "sha256": "a4b45a979d9a8e73916892b58f77af8cfc05e41205bd9062f3ca7fc28541f5f7",
+      "size_bytes": 43781
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür. 01.06.2021).xlsx",
+      "sha256": "76802d38a6d5024307f793673e5e69d719761a6541c276e8ee291484d9057cb9",
+      "size_bytes": 45059
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür.03.09.2022).xlsx",
+      "sha256": "3dcef3ddde22315334ff9f2065fd6d07ab4b3fcff330e6e09565931e23129b06",
+      "size_bytes": 43722
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür.08.02.2022).xlsx",
+      "sha256": "4f610951ef9cdaab212331bc2397a36f54fa10d26e8f972c641a1bcf2c2af76a",
+      "size_bytes": 45626
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "bc97dd40dc80bdd990027d9f9636660357796f117219e380a109367034af022f",
+      "size_bytes": 45532
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER.xls",
+      "sha256": "f073e6c0a1980e1a5e9ac69ecfc3e0a0db9994e921f2c7ea20ee365d5a7e132c",
+      "size_bytes": 97280
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3B KURUMCA BEDELİ KARŞILANMAYAN TIBBİ MALZEMELER.xls",
+      "sha256": "420836e288805cc37a8e21a90c3fe3197821ead0d20edbbdf8f178814854b521",
+      "size_bytes": 25600
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3B-1 İŞLEM PUANINA DAHİL BASİT SIHHİ SARF MALZEMELER.xls",
+      "sha256": "2795dc5be146f27fea7feea9bc732d44a3d8a5e3f9cf2ee38bc19e3878c98927",
+      "size_bytes": 27136
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3B-2 KURUMCA BEDELİ KARŞILANMAYAN DİĞER TIBBİ MALZEMELER.xls",
+      "sha256": "24410de7bc9129d04151cd488b7e3b345d4f69f3deedef6a2ffdb1ece377564e",
+      "size_bytes": 28672
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C  AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER.xls",
+      "sha256": "f310cf2b76607980918adbf6c128b9671932bd9c4d1d0ebca19f4bb8b1472c36",
+      "size_bytes": 28160
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER (Yür. 08.02.2022).xls",
+      "sha256": "b2f4b0474c08c351eaaab2e6feca7e38bdac9bbd2f2b653a1f91d1ead2dd9173",
+      "size_bytes": 29184
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-1 (Yür-01.01.2015)TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER.xls",
+      "sha256": "a1455d4defedea0a72d5bc8ac8da735066c25ec7764afb962b25c5a38629c5cf",
+      "size_bytes": 87040
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür-01.01.2015).xls",
+      "sha256": "a1455d4defedea0a72d5bc8ac8da735066c25ec7764afb962b25c5a38629c5cf",
+      "size_bytes": 87040
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür. 08.02.2022).xls",
+      "sha256": "3441743608677ab3ea342f2ab52723a2d13b91406ad12f20914ce9d0ea0e2118",
+      "size_bytes": 105472
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür.01.01.2015).xls",
+      "sha256": "5befa5dfb7a934a99b047709f84ccc7fe9f38f5072160994efec029838055ec2",
+      "size_bytes": 151552
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2   EKST.ALT VE ÜST PROT.ORT. (Yür. 01.10.2014).xls",
+      "sha256": "57485f3bda17c8d923871a09865e4da0e82d155d205dd4def4bd9ed43ac9a918",
+      "size_bytes": 241664
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKST. ALT VE ÜST EKST.GÖVDE PRO. ORT (Yür-01.10.2014).xls",
+      "sha256": "21043e87eaaf34e093ff149a7d8d442f1d1058c9e5e4033b58132ac28b7bb764",
+      "size_bytes": 188928
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKST. ALT VE ÜST PROT. ORT(Yür.01.01.2015).xls",
+      "sha256": "fc53f95f0d1926bf91fa3b8b5baec9fa202069226678a66db4ba45057a597b13",
+      "size_bytes": 298496
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKST.ALT VE ÜST EKST. GÖVDE PROTEZ ORT. LİS. (Yür.23.08.2024).xls",
+      "sha256": "71351d455d2c555fcbacc069050dd71e9c73715ff9215b70917bef7a19ad20a7",
+      "size_bytes": 220160
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT ORT. LİST (Yür.13.08.2024).xls",
+      "sha256": "66e3ceed543882f4e7f19af462d4768e551fb3fdb32ea56eb69a71fae9a804e0",
+      "size_bytes": 223744
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür. 01.06.2021).xls",
+      "sha256": "b517f135800a162c583119458c23dee5b439737136aa1743213df39a773bc93f",
+      "size_bytes": 262144
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür.08.02.2022).xls",
+      "sha256": "a797a7941c47a8c9d4bec62deb134670f74ebce51f09cdee834093f9dc89b090",
+      "size_bytes": 222720
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST(Yür.03.09.2022).xls",
+      "sha256": "97b1f590fbb6523227e503fde878460b2ae5d6b925b6a14ef3af83fad56764d6",
+      "size_bytes": 230400
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST.(Yür. 24.03.2023).xls",
+      "sha256": "4b1c7b696edd358ffd6a276d3279cac2cdb3413725c07c4c35947ee87dc7ee72",
+      "size_bytes": 225792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-2(Yür-01.01.2015)YENİ EKST.ALT VE ÜST PROT.ORT.Ek-Yür. 01.10.2014).xls",
+      "sha256": "57485f3bda17c8d923871a09865e4da0e82d155d205dd4def4bd9ed43ac9a918",
+      "size_bytes": 241664
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 01.06.2021).xls",
+      "sha256": "424ae427c6ac2b69733510af6c79ee3833044f3f2480f38fd76b185cab4463dd",
+      "size_bytes": 95744
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 24.03.2023).xls",
+      "sha256": "5d89efc6f5d2079d094d59d6056d83934e6071ebd131861ab7fce474f7f1b09b",
+      "size_bytes": 97792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 30.04.2024).xls",
+      "sha256": "ac1ee1a8b86714d9944191a623b85b9e4a1cfb121332406832361911972e586e",
+      "size_bytes": 97792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "3bea0595ba6112f667519b215290b4cd4ea2bf0ff7b054bd2a10753d82e1fc89",
+      "size_bytes": 99328
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.08.02.2022).xls",
+      "sha256": "f017fb7714439893c9bd044b02084a0f6d600ed63e1bcf07b0898dc9eb691243",
+      "size_bytes": 86528
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.13.08.2024).xls",
+      "sha256": "790d7a4b88fccfc06afa8a15408897e1d826d318414fafb8a9ea451029ec6a96",
+      "size_bytes": 97792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER.xls",
+      "sha256": "41e02cdc2747db92b963d6d9948de62a13851e8b85c3afd5f6560d81d0d3a494",
+      "size_bytes": 166400
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls",
+      "sha256": "ca5abb27d4c53ea57c823dbca49e29af599b2ac0f2369cbfdfcd115b0df14928",
+      "size_bytes": 88576
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür. 01.06.2021).xls",
+      "sha256": "57a1ec13be7d318cd6541f254010ba6805599eaf928196d8371097c56604bf58",
+      "size_bytes": 97280
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "16cec0d2d391793f60beba4d598eebeb659d8301d79df87a6f9c322df6cd7720",
+      "size_bytes": 92672
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.08.02.2022).xls",
+      "sha256": "46f2ea5881f1a329df2d729d44856093d3d25d4a209a52df5e8e7a815983c46a",
+      "size_bytes": 102400
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.13.08.2024).xls",
+      "sha256": "7b41b50caff45b306f6cfde57e3fed26efdd70c7ec64ce31887fd6a1fc0b32a0",
+      "size_bytes": 87040
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER.xls",
+      "sha256": "ccb33d56fd7a241126c140a024dd760f246994915d7cae09fd69889bc8eb7643",
+      "size_bytes": 179200
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST.  (Yür. 24.03.2023).xls",
+      "sha256": "3b1539195d20efad6ba206e28337beb5e9dcde1a58ec2ab14e5cd8aeb86e2bbc",
+      "size_bytes": 83456
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür. 01.01.2015).xlsx",
+      "sha256": "00d2d787f673bcde0c60e2bb188fec898e50eb78619bb1483d3de027aaba5cab",
+      "size_bytes": 23864
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "2b80adf6250712907dde702f599203992819aa98a54d9fc39c9d3f941f112616",
+      "size_bytes": 22133
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.03.09.2022).xls",
+      "sha256": "434a0397ecdd79fa8e6c4031c25b2f98461f1a700e30da525ee6141d4c579fc5",
+      "size_bytes": 84992
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.08.02.2022).xls",
+      "sha256": "cd2aed9c6876de020e40b436a4c357288221f79100645b5150be611e3d1a1e26",
+      "size_bytes": 75264
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5 ÖZEL HALLERDE KARŞILANAN TIBBİ MALZ. LİST (Yür.13.08.2024).xls",
+      "sha256": "14e9171148459e777442afeee9714ba6b3badfdaeae98078594d421c40a8fa57",
+      "size_bytes": 81408
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5(Yür-01.01.2015) YENİ ÖZEL HAL. KARŞ. TIBBİ MALZ (Yür.-01.10.2014).xlsx",
+      "sha256": "683d919abe0b3cb7279f9507c37906484c1cf6b43bb0ca0051c8864eb9a48704",
+      "size_bytes": 19187
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3C-5(Yür-01.10.2014)ÖZEL HALLERDE KARŞ. TIBBİ MAL..xls",
+      "sha256": "d800d8ef85bdffebde2f72e5166c29a16f6aef5b47ad28add1cbd18f683141de",
+      "size_bytes": 31744
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls",
+      "sha256": "0ebba8bbd32d48ad995ec33ac664266b76f13a057a06ec6189d416c3bda85645",
+      "size_bytes": 54272
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür. 01.06.2021).xls",
+      "sha256": "6f2e2623b0af1773e7e39860b673c68872ba2ad8b056e3232941c8095f64d880",
+      "size_bytes": 40960
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls",
+      "sha256": "2291ac514b806dc755e8e20e68a0defdce993dcba51e6d01794f970723a438e3",
+      "size_bytes": 51712
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER.xls",
+      "sha256": "9cdfe62c0ee3add8097122a410e3f9167d56d2084ee24049494fe5f2610bc6e7",
+      "size_bytes": 43520
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1  OMURGA CERRAHİSİ.xls",
+      "sha256": "4ea0f2cc5a52a18f6124e19d05a0359d497aa992e5812d84e322aaab8033c5b8",
+      "size_bytes": 138752
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CER. ALAN GRUBUNA AİT TIBBİ MLZ. LİST.  (Yür. 24.03.2023).xlsx",
+      "sha256": "14d6eb3fc203ca6480b1bb8eaf873d5aa3b6a4b1b058b43f033442f2e6202d43",
+      "size_bytes": 29448
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CERRAHİSİ (Yürürlük 18.03.2014).xls",
+      "sha256": "5c69be5a8375660f3c47f6f12cdda3c3a516751944341f711b44bec68b3afa2c",
+      "size_bytes": 171008
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür. 01.06.2021).xlsx",
+      "sha256": "9160a80ed186bc329ded1f7439833b0c5154194142d29cc018c15b2d8cce36b2",
+      "size_bytes": 29522
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür.03.09.2022).xlsx",
+      "sha256": "b208fe73ebd944acf2706df69822d574899b952cf14ca800836bc607d985898d",
+      "size_bytes": 29529
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür.08.02.2022).xlsx",
+      "sha256": "c1296904cd931ec697d32e0933b46ab61feaf8ec95d415b6d64dfb3ae5e06909",
+      "size_bytes": 29379
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GRUBUNA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "ac1167e744dceadb70bf5415388cb31cf9c6ea1e2aa1cf60cea818a5603d16dc",
+      "size_bytes": 29465
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 (Yür-01.10.2014)YENİ BEY.CERR.KRA.CERR.(Yür.01.08.13).xls",
+      "sha256": "ed7935cfa5743dcb460d2b496c175399e5af1f3fd6d788f92b7267aa0290bf1c",
+      "size_bytes": 95232
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEY. CERR. KRAN. CERR..xlsx",
+      "sha256": "1466f22ad9b653e434bd89804630783b573f78bfb4be6777128051ef7e7fa69e",
+      "size_bytes": 23814
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CER. BR.KRANİAL CERRAHİSİ ALAN GR. AİT TIB.MAL.LİS.(Yür.30.08.2023).xlsx",
+      "sha256": "6619cedced070f6aaed671cda5f8faa720e7716c36bf654144295b399087f6f9",
+      "size_bytes": 22564
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST  (Yür.08.02.2022).xlsx",
+      "sha256": "79fec177f927af9303d984d844f138f4bb91fb11b458f7285e3f8e12f3353cf3",
+      "size_bytes": 21912
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür. 01.06.2021).xlsx",
+      "sha256": "bb41113e51179b6bfb07c940c7d31597f285cbfb288afc2e7f20f87e1f22de8f",
+      "size_bytes": 22650
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür. 24.03.2023).xlsx",
+      "sha256": "d89bb60cacc74a651ba1415eeee5b461819c448d5503bb3200c77f270c53da1c",
+      "size_bytes": 21921
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür.03.09.2022).xlsx",
+      "sha256": "294a4357232a6b7eee666b3f5ed64c0b49cb8a99c4de7f4cfa60eaf69bd20cff",
+      "size_bytes": 22071
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3E-2 BEYİN CERRH. KRANİAL CERR.  (Yür. 01.10.2014).xls",
+      "sha256": "70efebef2df62ab310d184cd64962ae1e9c651773d52d30eae559a45f27e0ab1",
+      "size_bytes": 117248
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ( Yür 01.07.2015)-ORT.VE TRAVM. BRA. ARTROPLASTİ (Yür. 01.08.2014).xlsx",
+      "sha256": "a37ba2c8f7ffc49855a21dc72a82b59e39152252959e8101664a4eaea4af0166",
+      "size_bytes": 32817
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT VE TRAV.BRA.ART.xlsx",
+      "sha256": "e9a8c4a72eefba44bfe576a8248415d4a57403bb5c51ee1e3ee6ce65138680e2",
+      "size_bytes": 34582
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT. VE TRAV. BR. ARTROPLASTİ ALAN GR. AİT TIB. MALZ. LİST. (Yür.30.08.2023).xlsx",
+      "sha256": "4a21e2ddc0c8df2a8a4502bf1d8ad531dbc1639f2a0be15a7bf5c66d5ebdd55b",
+      "size_bytes": 35449
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür. 08.02.2022).xlsx",
+      "sha256": "1af512582d20d84775f795255f09e4404fa319b224d57113584b29f28e329097",
+      "size_bytes": 33526
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür. 24.03.2023).xlsx",
+      "sha256": "156bce02d8b241de3bf76cb0ea93c2015069e99967b2222038da197e3132c79c",
+      "size_bytes": 33698
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür.03.09.2022).xlsx",
+      "sha256": "e54413554116e02b98277c8ce6e9e1320e421cfa7b3fe3d1206a85afa1e69a97",
+      "size_bytes": 33895
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT.VE TRAVM. BRA. ARTROPLASTİ (Yür. 01.07.2015).xlsx",
+      "sha256": "66b8d5465bf04c982060c700699081702bbee410de810ed6121a086bd660d90d",
+      "size_bytes": 39275
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-1 ORT.VE TRAVM. BRA. ARTROPLASTİ LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "83f0e46cd70931cedfe5dfe12560577c4d64ef204841a8a0b54dafd3de64bcff",
+      "size_bytes": 33274
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 (Yür-01.10.14)ORT.VE TRAV.BRA.ART.(EK Yür.01.08.14).xls",
+      "sha256": "c9312603996e919d22f50d5827841891754f0033adf5ed5dc3620646468b47d0",
+      "size_bytes": 61440
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT. VE TRAV. BR. ARTR. VE EKLEM CERR. ALAN GR. AİT TIBBİ MALZ. LİST (Yür.30.08.2023).xlsx",
+      "sha256": "c7659e2af3506f05a67386dd5141c09f8c1e542b6b8eb6312ddaa3d34e046334",
+      "size_bytes": 25020
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT. VE TRAV. BRANŞ ART. LİST. (Yür.01.06.2021).xlsx",
+      "sha256": "c20d9c7e9b186a214633298d78c8e11ef98dd333dd95fb50a48781640e9c817f",
+      "size_bytes": 24733
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT. VE TRAV. BRANŞ ART.( Yür. 01.10.2014).xls",
+      "sha256": "57c48173cc5686a6147a83dcbb27d209ee93ad398079082b8d307b6cbac9d266",
+      "size_bytes": 101376
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT.VE TR.BR.AR.VE EKLEM CR.AL.GR.AİT TIB ML.LİS(Yür. 24.03.2023).xlsx",
+      "sha256": "fb9533889691c9469456b870481923dcf3800df93b17d84e29243e1734eebbff",
+      "size_bytes": 24996
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT.VE TR.BR.AR.VE EKLEM CR.AL.GR.AİT TIB ML.LİS(Yür.03.09.2022).xlsx",
+      "sha256": "8e9bcbd10a93aefbe7b9902c8b8d4e993896ea67dae6dbf4941dbfb28e2f610c",
+      "size_bytes": 24954
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-2 ORT.VE TR.BR.AR.VE EKLEM CR.AL.GR.AİT TIB ML.LİS(Yür.08.02.2022).xlsx",
+      "sha256": "927affdabd487deed724aafea26c1cc888659219b81ba99a24e8f38843da84fc",
+      "size_bytes": 24908
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 (Yür.14.10.14)ORT.TRAV BRA.TÜM. REZ  (Yür.01.10.14).xls",
+      "sha256": "fffa20f6439f512112e513c63018d92f48487a59fbddc5ecc18283eb1cb8ec72",
+      "size_bytes": 88576
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 ORT VE TRAV BRANŞ. TÜMÖR REZ (Yür.14.10.2014).xlsx",
+      "sha256": "f828c0c1d1f669480513d11902962f48a3e9283bd3fb848008862fe2bd320bdf",
+      "size_bytes": 33754
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 ORT. VE TRAV. BR. TÜMÖR REZ.LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "d18749af5c8e8147e511eb5c3691c22cbe189c2badb2ced15d31c7286a4fa3cc",
+      "size_bytes": 23168
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 ORT. VE TRAV. BR. TÜMÖR REZEKSİYON ALAN GR. AİT TIB. MALZ. LİST. (Yür.30.08.2023).xlsx",
+      "sha256": "75fbf77bdb0bf999e7631e1761698b8957e73f8452ce477af7347da38922abe7",
+      "size_bytes": 23600
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 ORT.VE TRAV.BR.TÜMÖR REZ.AL.GR.AİT TIB.ML.LİST (Yür. 24.03.2023).xlsx",
+      "sha256": "ddaf4cd57374c3346125a9735450e0a61ce92f46f1611ea4326a612dacf24832",
+      "size_bytes": 23241
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3 ORT.VE TRAV.BR.TÜMÖR REZ.AL.GR.AİT TIB.ML.LİST(Yür.03.09.2022).xlsx",
+      "sha256": "00aef190b2ed83da16e4ebcc7067d89e83e4779279fd94ab687aedf14b8420ee",
+      "size_bytes": 23213
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3(Yür.01.10.2014)ORT.TRAV.BRATÜM.REZ( EK Yür 01.08.14).xls",
+      "sha256": "f2371993efa133285862d187c8b83b0b72815f1665e9f288a8fcae7bd2ce18a9",
+      "size_bytes": 87040
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-3ORT.VE TRAV.BR.TÜMÖR REZ.AL.GR.AİT TIB.ML.LİST(Yür. 08.02.2022).xlsx",
+      "sha256": "38843de4afa5b04f4da5a88d996cc34c374f689778d88e9aac59110030da1831",
+      "size_bytes": 23081
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT VE TRAV BRŞ TRAV VE REK  (EK-Yürürlük 01.10.2014).xlsx",
+      "sha256": "a9e44fde4e255124b4680cd2bf2a98500da9d84ab703633aba357258bf4f4826",
+      "size_bytes": 47788
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT VE TRAV BRŞ TRAV VE REK LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "bb08c9a3100309b8b52c0cba9ff285057d5eb64507b7ee4095763425012605af",
+      "size_bytes": 47643
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT. VE TRAV. BR. TRAV. VE REKONS. ALAN GR. AİT TIB. MALZ. LİST. (Yür.30.08.2023).xlsx",
+      "sha256": "c06103b1b83a634381d8d232d16db2e6dbe0db1e13b19c0960a7c3adad81bd2a",
+      "size_bytes": 50327
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT.VE TR.BR.TRAV.VE REK.AL.GR.AİT TIB.ML.LİS.(Yür. 08.02.2022).xlsx",
+      "sha256": "5281a55f1259d696f85c145895b337cf6698bcc3a3094f070266c46cf65784fc",
+      "size_bytes": 47803
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT.VE TR.BR.TRAV.VE REK.AL.GR.AİT TIB.ML.LİS.(Yür. 24.03.2023).xlsx",
+      "sha256": "d1743c9b901c952b25b4926c7f75ad567dd0b1e4b8b9ccb89b5693d91e26f882",
+      "size_bytes": 47985
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4 ORT.VE TR.BR.TRAV.VE REK.AL.GR.AİT TIB.ML.LİS.(Yür.03.09.2022).xlsx",
+      "sha256": "a949eb61ea70609144a4070edecdec256cc33c0a5354e501f8e6f4c0da3c5ba0",
+      "size_bytes": 48036
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4(Yür-01.10.14)ORT TRA  BRA.TRA. REK.  (Yür 01.10.14).xlsx",
+      "sha256": "fd40b5df898cbf830a8525779c89dcb5b57eb9e80c7ed50c3c2a40615cddb89c",
+      "size_bytes": 43641
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3F-4(Yür-01.10.14)YENİ ORT.TRAV.BRA.TRA (EK-Yür 01.08.14).xlsx",
+      "sha256": "19c83a4e126eb286365fa7acca1b4af9664270da84cf853580ae5424909f9ad8",
+      "size_bytes": 42027
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G  (Yür-01.10.2014)YENİ-GÖZ SAG.VE HAST.(Yür. 01.08.2013).xls",
+      "sha256": "41bc98a962d37378e3731ee12c64adaab149c1886b80d2466e002c22414c1934",
+      "size_bytes": 55808
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.08.2013).xls",
+      "sha256": "003e15a3abab38ab4ddfda8bf9e894a1f216af896712a4d460f93d4c863af9f0",
+      "size_bytes": 61952
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.10.2014).xls",
+      "sha256": "366a13d2634aa0ce7308b0d0f43f1d1fb45baa49e8c6040eac4bcd8911e76315",
+      "size_bytes": 98816
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAĞ.VE HAST.BR.AİT TIB.ML.LİS. (Yür. 24.03.2023).xlsx",
+      "sha256": "d028fde6f934def1801d211d59c84f88f8417d89ea66e7d776119919aaf8127e",
+      "size_bytes": 22949
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAĞ.VE HAST.BR.AİT TIB.ML.LİS.(Yür. 08.02.2022).xlsx",
+      "sha256": "5126a5a5e0988a66b0186a6e2d0eaac64137a5fc4c777fcfc824ab117249c562",
+      "size_bytes": 23778
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAĞ.VE HAST.BR.AİT TIB.ML.LİS.(Yür.03.09.2022).xlsx",
+      "sha256": "80c583a0f1d3cf66f6a5fe5c536a846de28d089729b30bc0cdf7d88d9f3822c1",
+      "size_bytes": 22889
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAĞLIĞI VE HAS. BR. AİT TIBBİ MALZEMELER LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "8d800fbd08fe69d5ce178a254fc55bf3567423428fe8c7c6d5b7cb7519e8f3ea",
+      "size_bytes": 24616
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3G GÖZ SAĞLIĞI VE HASTALIKLARI BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "20f8511679bed9643792d4a2ba8d92a46dba7aff55baae27de146ccedcb82d1c",
+      "size_bytes": 23446
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H  KARDİYOLOJİ ( Yürürlük 01.08.2013).xlsx",
+      "sha256": "c0e670e70c830cc4c9e119f19c1b501e6025cabac537e5995ca553eb666b7c8f",
+      "size_bytes": 30504
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ (Yür 01.10.14).xls",
+      "sha256": "fa18917529b66f4ead68a269a7601bd2f87657e04aed06f6667784021c73359b",
+      "size_bytes": 212480
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "a73920f6d47a434ea17115ae66ea7ce0a453da5073068f0d28ac7e571176d06a",
+      "size_bytes": 33961
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "0eea948b6752930e101c449bac01a0a2832230d6d17853bb14d6ec4e47462ef3",
+      "size_bytes": 33732
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür. 08.02.2022).xlsx",
+      "sha256": "3275f3b36461988bac119fd5a1ee8b1942d1fffa9b099f3c54cc7bbaa94a19b3",
+      "size_bytes": 33542
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "15d726776c6e2605e36c6226a874feb4691e5f19cf69ba0f2cc2eed3a79edfd9",
+      "size_bytes": 33769
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H KARDİYOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "212b12e53f7f0f25990de81959ba2438cb64f62d0dbd23cd4d135f10fb32975d",
+      "size_bytes": 34963
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3H YENİ(Yür-01.10.2014)-KARDİYOLOJİ (Yürürlük 01.08.2013).xls",
+      "sha256": "2f7cfe178a50a55e882779f3bba33a1a6112332d5e995ebaa813c3a9e86462cb",
+      "size_bytes": 112640
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I  KALP DAMAR CERRAHİSİ (Yürürlük 01.08.2013).xlsx",
+      "sha256": "bc0b6d461adf42117728f6c7791b4517da1ba54f30469849cfb598e8a23985ea",
+      "size_bytes": 38948
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I (Yür-01.10.2014)YENİ-KALP DAMAR CERR. (Yür. 01.08.2013).xls",
+      "sha256": "6219bfa1322ab7e2bf26060ab8b2988165ee54c7af8a7325e79075766d8e7dc1",
+      "size_bytes": 168448
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CER.BR.AİT TIB.ML.LİST.(Yür. 08.02.2022).xlsx",
+      "sha256": "39fc8cc5de8b5f3954f98b92d0324c791292d916ad3b7316c95733f39a01cb99",
+      "size_bytes": 46942
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CER.BR.AİT TIB.ML.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "1a8642fc878f78328cf42952f7eaad136ca765f2382d3d499f6f9d4d608f7f84",
+      "size_bytes": 47014
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CER.BR.AİT TIB.ML.LİST.(Yür.24.03.2023).xlsx",
+      "sha256": "46c0fae6104cfd5ecb24303e2a1cbfe3a49986aee9993ac34ec3475d03cd1100",
+      "size_bytes": 47018
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CERRAHİSİ (Yürürlük 01.10.2014).xls",
+      "sha256": "aed7ba8e0872270b4035d2e6cc760ec34a77ca169e387489a56f0c02bbf6da68",
+      "size_bytes": 332288
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CERRAHİSİ BR. AİT TIBBİ MALZ. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "f9674d5164d80d38da385000f18f9b916aabd5684c170382034e3a7cdca55914",
+      "size_bytes": 47057
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3I KALP DAMAR CERRAHİSİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "d4aa0251f0068030b26d527bd2094159b60c0b947a0385d8c9bad7c20f74920c",
+      "size_bytes": 50290
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KBB (Yürürlük 01.08.2013).xls",
+      "sha256": "7279c61ee86d0356ae44190ab4f6c085fa24ad02543e0381ad348ad7072a80ca",
+      "size_bytes": 71168
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KBB (Yürürlük 01.08.2013).xlsx",
+      "sha256": "ec81a29fab5988ef4654026aae97f3db8695057f3c97bd3cf88fbca07d46b58d",
+      "size_bytes": 14933
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KULAK BURUN BOĞAZ BR.AİT TIB.ML.LİST.(Yür. 01.06.2021).xlsx",
+      "sha256": "81c248d7fc1fbcf2d8000e995c79e356efa5e87b1834f4104c3ae5817628f401",
+      "size_bytes": 12874
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KULAK BURUN BOĞAZ BR.AİT TIB.ML.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "c676666e9cf50b7e1d9dee3958837618ae03872e0d5cd97f843de8faca60e24e",
+      "size_bytes": 17489
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KULAK BURUN BOĞAZ BR.AİT TIB.ML.LİST.(Yür.08.02.2022).xlsx",
+      "sha256": "0ef9984df5bc19c415044f7fabc2f7f46dc72604f93b53b351c97eb46a2226d4",
+      "size_bytes": 19016
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KULAK BURUN BOĞAZ BR.AİT TIB.ML.LİST.(Yür.24.03.2023).xlsx",
+      "sha256": "db5cfd292943af8776077efbba1cdf6314061a537fc12cbc08a46501dd09bb59",
+      "size_bytes": 17626
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3J KULAK BURUN BOĞAZ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "1b0bcd4228650338d59d0e904b50680fe9b9b4f04ef8d26b99762403f5357cb7",
+      "size_bytes": 17423
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HAS. VE DOĞUM BR. AİT TIBBİ MALZEMELER LİST.(Yür. 01.06.2021).xlsx",
+      "sha256": "50c42065da6c72f8cce8b46806ed284b1e36bff67bf0d80e9de9b6dfddec4563",
+      "size_bytes": 14259
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HAST. VE DOĞUM BRANŞINA AİT TIBBİ MLZ LİST (Yür. 24.03.2023).xlsx",
+      "sha256": "77feb188df3ca1ef66216db782cf07e190eeafe25f381b4c546caddd65a80b49",
+      "size_bytes": 14015
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HAST. VE DOĞUM BRANŞINA AİT TIBBİ MLZ LİST(Yür. 08.02.2022).xlsx",
+      "sha256": "7b832b359283450d53dfd41274bc28982259309d9cc5084e646b035702f07f75",
+      "size_bytes": 13942
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HAST. VE DOĞUM BRANŞINA AİT TIBBİ MLZ LİST(Yür.03.09.2022).xlsx",
+      "sha256": "176c0ca9868eb28c895e78dc587bb574528392e69fc4fac3120fe86c8eacc3f7",
+      "size_bytes": 13983
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yür. 01.08.2013).xls",
+      "sha256": "31372989b886c0ab51396ad9112c589320a69b89620c35d5414eb6181bd82004",
+      "size_bytes": 52736
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yürürlük 01.08.2013).xls",
+      "sha256": "83f13a47f3436a6d33c59eab8fb8de5c0d8c71f665ac7b543864cd72d98cba57",
+      "size_bytes": 36352
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3K KADIN HASTALIKLARI VE DOĞUM BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "a2eaec0ad623713b68ce332689fba0a4e9208e3a5e42d3f1cb7300fd71e1f3ae",
+      "size_bytes": 14078
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L  ÜROLOJİ (Yürürlük 01.08.2013).xls",
+      "sha256": "d449e22eefa3838cfec4dc467b23139eaa4e427e34beff01be92d87cd567d00f",
+      "size_bytes": 52736
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ (Yürürlük 01.08.2013).xls",
+      "sha256": "9bff1c0c63ece51b5012e60638d2967d020b078ea853497e9843ca10689c9720",
+      "size_bytes": 82944
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ BR. AİT TIBBİ MALZ. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "729e8d3fe9d8ac7f970ee8cd0bed09f3dbf102c1a09459d2d317f693261eace4",
+      "size_bytes": 20140
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "294c0a385304f0cd059821f167d8a5975763aebf9bf9b5faf5c4799d0f05087f",
+      "size_bytes": 19989
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür. 08.02.2022).xlsx",
+      "sha256": "b3c6a4430f9aeca4059655cf30cb38f9c6a42e3ccbcc4abf65194d5aa9427bce",
+      "size_bytes": 19783
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "7ffe1d88c031dac719636baf09ba358e2f6ebb5e7e13751d94ea1c8cd57198e1",
+      "size_bytes": 19982
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3L ÜROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "2bfee26dda9c6b1541a31db35845b3546ae1f737b400107d4796183cb56c57f3",
+      "size_bytes": 20922
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RAD. BRANŞ. VE ENDO.GİR  İŞL(Yürürlük 01 10 2014).xls",
+      "sha256": "0c8f7ededbcb23f7a652b2503c9f848879a4298c02ee9814a2b338bb05f4b115",
+      "size_bytes": 223232
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADY.BR. ENDOV.NONV.GRŞ. İŞL.AİT TIB.ML.LİST(Yür. 24.03.2023).xlsx",
+      "sha256": "374b2afa415392057ef6f7c06be10bb229094fb63a13c7e70c9c161ade28d415",
+      "size_bytes": 34967
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADY.BR. ENDOV.NONV.GRŞ.İŞL.AİT TIB.ML.LİST(Yür. 08.02.2022).xlsx",
+      "sha256": "17d0c2ee45f602d716823cc36face662c5e988b184e69e995853d853f012c7ca",
+      "size_bytes": 34694
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADY.BR. ENDOV.NONV.GRŞ.İŞL.AİT TIB.ML.LİST(Yür.03.09.2022).xlsx",
+      "sha256": "cc894059a9a6602752bbf4a91d5d163e38fe742fd454abf3cb188ae3f5a3500f",
+      "size_bytes": 35154
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADY.BR.ENDOV.NONV.GRŞ. İŞL. AİT TIB.ML.LİST(Yür. 01.06.2021).xlsx",
+      "sha256": "90edc8c04c8a5e3a78401ee014f4a92943b03822debbb55bffbd24de1b7c4014",
+      "size_bytes": 34676
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADYOLOJİ BR VE ENDOVASNONVAS GİR İŞL AİT TIB MALZ LİST (Yür.30.08.2023).xlsx",
+      "sha256": "f72808e1bf3aafc956ef17c64c13616d97b213f5575d8f5d779b532db37c992a",
+      "size_bytes": 37994
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M RADYOLOJİ VE ENDOVASK. GİR. İŞL. (Yürürlük 01.08.2013).xlsx",
+      "sha256": "f727fca26d01196fdfce157a6852a4e748e0e3ee97eac3b56fe2873503507aa2",
+      "size_bytes": 31615
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3M Yür.01.10.14 YENİ RAD.BRA.END..GİR. İŞL.(Yür. 01.08.13).xls",
+      "sha256": "7941f294067c92678ed5a6a05a581ffee81eabdf30534a51db3e6079b1ace3c4",
+      "size_bytes": 117248
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU  ( Yürürlük 01.08.2014).xlsx",
+      "sha256": "34951a929d8778a07de86f0471633a0ad7a20fb681919d43b48ca0f17f2d735a",
+      "size_bytes": 18290
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU (Yürürlük 01.08.2014).xls",
+      "sha256": "96d9dd705a4d34c4484b232630b623777b7869e2c047b47b858062b70633273c",
+      "size_bytes": 49152
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "3292e6a6c0b38216f17a68966b36e10360131d9541cbf2400e07025a750537e6",
+      "size_bytes": 15155
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "25b1aa6cdb669c5a6636800b66b65abb02be3d21c7c5d1ec60d7ae9c06e58315",
+      "size_bytes": 15888
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ (Yür. 08.02.2022).xlsx",
+      "sha256": "1df75230d1911ed0c8a72f8c7a3a1f4d610c2e18acf94fc747f6704abdcacc00",
+      "size_bytes": 15150
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "948beafbcf71ae766dc63ac395fdfaf2706750e77adb0723e2947a75a79559af",
+      "size_bytes": 15155
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "6ead3e3e1013d6fc88244c3a605985436c0ee177e034d16f9ac7dcacc6f2c914",
+      "size_bytes": 15129
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU (Yürürlük 14.10.2014).xlsx",
+      "sha256": "183abe7bb3805db33f3a7329db2e41e16f6a97c3e265223ec0eaa0a48135ecd4",
+      "size_bytes": 11432
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "938b972f96a413251c1e11fc4de10dc278faef376adf415197f240320d53a1b2",
+      "size_bytes": 12895
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "461b237ee35a2741bb16777683e3adfa64a9ca84f8e4e498d0777a2e0cf9f86a",
+      "size_bytes": 12674
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "fdf1226997998e2fcefabc66c08c5e91920f11ab500d53a498d29cb69f361b76",
+      "size_bytes": 12966
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ (Yür.08.02.2022).xlsx",
+      "sha256": "694bf63361c81a2d8db0fe956e40e70fce7faa85c7d7abf9ea4a536ae5133807",
+      "size_bytes": 12630
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "48e50da1abee27dbec35fa7738e148a4b93b0eb284a554f6b0d765fe52d7fecb",
+      "size_bytes": 12788
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2(Yür-01.10.2014)XENOGREFT ÜRÜN GR(EK-Yür. 01.08.2014).xlsx",
+      "sha256": "5bf787e2d94a77bb752d2be6e8fece1be19c00e899c1450b8ad3cb06b6bf4026",
+      "size_bytes": 10355
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-2(Yür.14.10.14) XENOGREFT ÜRÜN GRUBU (Yür 01.10.2014).xlsx",
+      "sha256": "34cd27a8bb8e0a238528311a421a26a48b5ed43a85f85770674aa41a53127b21",
+      "size_bytes": 10542
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU (EK-Yürürlük 01.08.2014).xlsx",
+      "sha256": "1714d468b8305911bd4fa0a81865ba9c7fddaf8996ce3de25fde06cb0e0168ba",
+      "size_bytes": 10485
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "13f6ed2cf8e0d06cee64b4c336ec5ac631126cc47940e310981f30b6049328f7",
+      "size_bytes": 11997
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU LİSTESİ (Yür. 01.06.2021).xlsx",
+      "sha256": "e38389b7c9220ee5ffb17233ede99353f0e3bbf9183da82120c5f242425b5b71",
+      "size_bytes": 11939
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "b5a8cfe8b29b0786642d5e37bcd5ea3bf3057339ecbd5cd5fa88271ede23f5cf",
+      "size_bytes": 11948
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BR. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "d202a6a80aeff331af5827e0e2cf088b377622fd4075e29826ccb2425e7ae9e7",
+      "size_bytes": 14062
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BR.AİT TIB. ML.LİST.(Yür. 08.02.2022).xlsx",
+      "sha256": "cf8ff620b58ed4ecc942301d1610fee28f5ff280165efe5ce59ad965f3aa942e",
+      "size_bytes": 13463
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BR.AİT TIB. ML.LİST.(Yür. 24.03.2023).xlsx",
+      "sha256": "1b641b3251ee5ee5a4570f48e27de4841c1d7d9951ada3a7e8cf2f1783b084f1",
+      "size_bytes": 13608
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BR.AİT TIB. ML.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "6352111d50bded59cafe2caa0d8d1d190950614ce4940f640f5d4e86a43c9159",
+      "size_bytes": 13672
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BRANŞI  (EK-Yürürlük 01.08.2013).xls",
+      "sha256": "10af64477146f42c5241b16afa840c8249fe4893d4b0cd02d98932235dd58a00",
+      "size_bytes": 49152
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "d1d35093dcd8d94b4f8cb06ae7618922367c4c4dcfe7867fce52337cef0b8644",
+      "size_bytes": 15792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞI (EK- Yürürlük 01.08.2013).xls",
+      "sha256": "ab80ce50034f80a813ca0e053fe0a6acc749e294c87a139b8f09df52fbc3da06",
+      "size_bytes": 61440
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "dc6061dec591fa534eaa6d5aa841b942604ff75056858df21e5223f3baf6ecf3",
+      "size_bytes": 14208
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xlsx",
+      "sha256": "4813073a7f38b2a60c0a843209beec5758565faa92c5eb1fe6f2e96c2e67b12f",
+      "size_bytes": 14185
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür. 08.02.2022).xlsx",
+      "sha256": "c3aedb135b8f9a0c899ca0239a993a176e0e449173a783326a0d1642ac8f7841",
+      "size_bytes": 14062
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xlsx",
+      "sha256": "8bc7d2c0c77681d5cfff5f3817b004ec65024cfdbb4f8a8345216561f1e9a6f7",
+      "size_bytes": 14168
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3P NEFROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "627f8e83041a149145e61a3f1732c42f36e87340a24654aff7969897f74c53b2",
+      "size_bytes": 14520
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R (Yür-01.10.2014)GASTRO. BRA.(EK-Yür. 01.08.2014 ).xls",
+      "sha256": "a8af220be07098a42a93ecb07316e55329d4062f6ee7bd1c657e7ecc7ba37d09",
+      "size_bytes": 55296
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "91bc3ac8d14183117965ea21414bc3e818cf2d9de2dec09aefeaccb4cafb14d3",
+      "size_bytes": 20998
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST. (Yür. 24.03.2023).xlsx",
+      "sha256": "ab9412ea6eb4a90a33fcec74ce5eacd98d15920b266220aa59c54458903b4d96",
+      "size_bytes": 20404
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST. (Yür.08.02.2022).xlsx",
+      "sha256": "aa95383eec8be8f1d61093e3c84c75677e6407602df3da5d0b2014db8590f340",
+      "size_bytes": 20423
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "6b119de77374c886c1210654c21e6c8d840cd079914758065fbe412d750c0bff",
+      "size_bytes": 20532
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTROENTEROLOJİ BRANŞI (EK-Yürürlük 01.10.2014 ).xls",
+      "sha256": "24f52150794ac1507ff83c3f3685fc7227870d6d7bf889ffeb4ecba8de1e4702",
+      "size_bytes": 100352
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3R GASTROENTEROLOJİ BRANŞINA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx",
+      "sha256": "74023e27340025e304ed81b8105dcf0a37ea69ba2644a02b9821bd1e41ca868f",
+      "size_bytes": 20801
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S (Yür-01.10.2014)GÖĞÜS H. GÖĞ CERR.BRA(EK.Yür 01.08.14 ).xls",
+      "sha256": "0a8810056319cc8adc640c1e9241a2dc91339394f2daa78c743527ce82125482",
+      "size_bytes": 45056
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST VE GÖĞÜS CERR. BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.30.08.2023).xlsx",
+      "sha256": "5640a7e7ac105039c74b63ec46ca1863d216b2c6eb15d93a178262add894b9b6",
+      "size_bytes": 18062
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür. 24.03.2023).xlsx",
+      "sha256": "d20789a179c237055e18193b4382241a86e7b31fe11f3c045eedecb8f1a5eded",
+      "size_bytes": 17093
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "fc7c4cef81f1185ca10307964e2bae4c0a2f95f2884381a6aef6e7dd521de8a5",
+      "size_bytes": 17079
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür.08.02.2022).xlsx",
+      "sha256": "1322ce90043749e8c8e7100f79acafc4ffab60d5d052f5e6a9587d66ee56bf31",
+      "size_bytes": 16958
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CERR. BR. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "657ce0f2cff7691fd496f294d197830d1d94df767679ae94780b32b5270589d9",
+      "size_bytes": 16968
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CERR. BRANŞ. (EK-Yür. 01.10.2014).xls",
+      "sha256": "38c8a721502a96bc64dab1a1d7084f4c6efe37fc28f545d27c39784a83bdf3b5",
+      "size_bytes": 77312
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANES. REAN. VE AĞRI TED. BR. LİST. (Yür. 01.06.2021).xlsx",
+      "sha256": "8026b59fb64d3eb422d16be25d2685c3bd8aaffd315eb0ca9175bd104b450bb1",
+      "size_bytes": 13560
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANES. REAN. VE AĞRI TED. BRANŞ (Yür.-01.10.2014).xlsx",
+      "sha256": "7c927ec721d660cb35f585472724cab3eb1a3dc84421cc5cdd93dbe7d098c104",
+      "size_bytes": 15837
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür. 08.02.2022).xlsx",
+      "sha256": "bb87cbafd7c3b943dd0f540ca6f70864286a437ccebafe9ca34e9e40d757c957",
+      "size_bytes": 13634
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür. 24.03.2023).xlsx",
+      "sha256": "b850a666d370f3853d30561f3ad2f6fac12c4b98eb28648f6fe9a5fbfaac472d",
+      "size_bytes": 15591
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür.03.09.2022).xlsx",
+      "sha256": "5db7fda3983721ec26af48a5f7171cd915cdd9485ad2aec8e394833844787b22",
+      "size_bytes": 15530
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T ANESTEZİYOLOJİ, REAN VE AĞRI TED. BRNŞ. AİT TIBBİ MALZ. LİST. (Yür.30.08.2023).xlsx",
+      "sha256": "6e61f0c297fef148b533ee7f0486b76dc2162e7b136ac4e1d0fcc80d0ba86106",
+      "size_bytes": 17553
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ/MÜLGA EK-3 LİSTELERİ/MÜLGA EK-3T(Yür.01.10.14)ANES. REA. AĞRI TED.BRA(EK-Yür-01.08.14 ).xlsx",
+      "sha256": "70b4a62f3bc28c7f511c642a87c090f0837d71d4a12283f3fb7f3aee62b74f6c",
+      "size_bytes": 13032
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
+      "sha256": "927918fa6c7459c27bc01619722a9ee6f69cf6eb49ccb7d620534788b453935a",
+      "size_bytes": 1010815
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4B HAST. ÖZ. (DOĞ.MET.HAST.KİSTİK FİBR. İNEK SÜTÜ ALRJ) DİY. ÜR. TIBBİ MAM. LİST..xlsx",
+      "sha256": "e838b89d776fed8d8f8849f0283355fe89707ba526772225b87fe8be64e4791a",
+      "size_bytes": 383876
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ.xlsx",
+      "sha256": "227df3089b692d5e8150f9d6a93ee07284e265c8516cded58e297f5c1aaf1866",
+      "size_bytes": 3706656
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4D HASTA KATILIM PAYINDAN MUAF İLAÇLAR LİSTESİ.doc",
+      "sha256": "3556730389fae138bb507b1bc7b8de008a6e8df470226e5f89d1385ee39aa9f4",
+      "size_bytes": 2226176
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4E SİSTEMİK ANTİMİKROBİK VE DİĞER İLAÇLARIN REÇETELEME KURALLARI LİSTESİ.docx",
+      "sha256": "6cafffd0278c99d119bd64f43ee2359b029c897bb2c66efde48e6c358cf33009",
+      "size_bytes": 78697
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4F AYAKTA TED. SAĞ.RAP (Uzm. Hek. Rap. Sağ. Kur. Rap.) İLE VER. İLAÇLAR.doc",
+      "sha256": "a1a684f6f16ad7e9a190dff1496c6392398ee3d7f2e64d01de44c5072f9eb54b",
+      "size_bytes": 210944
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4G SADECE YATARAK TEDAVİLERDE KULLANIMI HALİNDE BEDELLERİ ÖDENECEK İLAÇLAR LİSTESİ.doc",
+      "sha256": "e9356de67c99f1e27028aeb2adaedd17e3077b8eb5801181d66b7375f74a8357",
+      "size_bytes": 135168
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4Ç TEŞHİS KISALTMALARI LİSTESİ.doc",
+      "sha256": "c5f5a0a07dfe63e51954cac4ea52e426ab2121ded75937ef1549e3886ec8ab0b",
+      "size_bytes": 66048
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 02.10.2026).xlsx",
+      "sha256": "e453d4c0f6a4b027bfd59c3de58a88f47a3dce17792fe8de6ead82ff23b5cbd6",
+      "size_bytes": 1003269
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 08.04.2026).xlsx",
+      "sha256": "2ff6d460fdb71123a50ed23139f20daa97797ec7f10e40da9c7d4efb89a47c24",
+      "size_bytes": 2044792
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 10.07.2025).xlsx",
+      "sha256": "a29f892ca4126afb28b1f28a31e90d9170520ba0fb555c7e8a68a59e436dc6af",
+      "size_bytes": 2097628
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 17.10.2025).xlsx",
+      "sha256": "a45922a8e249758ae59bcf37f937a6530fab52ff2b543b2ccb781abcbd9cb61f",
+      "size_bytes": 1799574
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 24.05.2025).xlsx",
+      "sha256": "67a52f6c5d029f414b301e1212dddc65fd1eac2cee50da1b643b665f70d40ff9",
+      "size_bytes": 1354508
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 25.03.2025).xlsx",
+      "sha256": "a941381678f5e482c1be58911599d6ded5f28ce97729e9c2e3c122c3205db5e3",
+      "size_bytes": 1360854
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 25.11.2025).xlsx",
+      "sha256": "10de27614826c166e32bdcfaf03176603d3a7c25be9fdeda8af1469e2730c262",
+      "size_bytes": 1052063
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 26.06.2025).xlsx",
+      "sha256": "01116aefa0d63f614ab44f715180a50026ca37c97ef73499d2016b4f6355942d",
+      "size_bytes": 1370862
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 29.06.2026).xlsx",
+      "sha256": "d8c516d7fdb89660cc6564d8e3b308662f185b3e69fb189715699f8d4396093b",
+      "size_bytes": 954024
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 29.08.2026).xlsx",
+      "sha256": "4c55e0c0ed8ddb76361695090a9599a74a47b9d438448b9165c0ddd23920d539",
+      "size_bytes": 985402
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür.17.01.2026).xlsx",
+      "sha256": "9ede792d7be14a30faac9248b32e7fca84795bf785129c9ccbe1d9bb7846d01f",
+      "size_bytes": 970514
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür.23.05.2026).xlsx",
+      "sha256": "a27421e81f72544b9027a47e57305d18b1694d6e319e2b2e311693f994ef1253",
+      "size_bytes": 998511
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4B HAS.ÖZ.DĞ.MT.HS.KS.FB. VEİNEK SÜT AL.DİY.ÜR.TIB.M.LİS.(Yür. 02.11.2024).xlsx",
+      "sha256": "89f1bf721ff88ccd1e1d6ab87a1819543bb308601d8a6567092b78ccc7cbb1ee",
+      "size_bytes": 290579
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 08.03.2025).xlsx",
+      "sha256": "fcb35c6b70629b9ce8020d1739f9ac91e4fdc826e033bb5bb2dac101326dd41c",
+      "size_bytes": 3785015
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 08.04.2026).xlsx",
+      "sha256": "401057620d972eb361f9a5e0fe8a6d6115c6b55b3f2243d1eb076057c520acd4",
+      "size_bytes": 3775810
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 10.07.2025).xlsx",
+      "sha256": "303997141f3194e7f77cf1cde00aae08e757057490297daf9c9a1d356f483fd6",
+      "size_bytes": 3744132
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 17.01.2026).xlsx",
+      "sha256": "d6c683bbde509ceff00b0990038ed527b725e66dbb4ac50822d14318b270ee5a",
+      "size_bytes": 3746773
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 26.06.2025).xlsx",
+      "sha256": "025c3cc416db0f7fdeea0f85ab0bfb93276801d7b6c97096a031963230b8d85a",
+      "size_bytes": 83509
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 29.06.2026).xlsx",
+      "sha256": "00d1783e84d31b449abe73efd05e8fd082962d8c7cd67ad5b3fcad93482c3a55",
+      "size_bytes": 3777078
+    },
+    {
+      "path": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 29.08.2026).xlsx",
+      "sha256": "cd7fde0334046c3defb1b79f34465941aa98884b873d15e741d1d2365056979d",
+      "size_bytes": 3733732
+    }
+  ]
+}
