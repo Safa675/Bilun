@@ -1,46 +1,17 @@
 {
-  "last_ingested_folder": "2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT",
-  "last_ingested_date": "2026-08-29",
-  "last_ingested_at": "2026-09-06T09:53:50.108714+00:00",
+  "last_ingested_folder": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT",
+  "last_ingested_date": "2026-10-02",
+  "last_ingested_at": "2026-10-13T15:59:21.420663+00:00",
   "manifest_row_count": 328,
-  "manifest_sha256": "dad185e3be75a4cb",
+  "manifest_sha256": "2f83ff4901bce21b",
   "pipeline_version": 2,
-  "completion_scope": "partial",
-  "pending_full_package_date": "2026-10-02",
-  "pending_full_package_workbook_count": 318,
-  "component_receipts": {
-    "prose": {
-      "source_docx": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/02.10.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx",
-      "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
-      "corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec",
-      "corpus_rows": 8413,
-      "source_snapshot_date": "2026-10-02",
-      "status": "verified_existing_corpus"
-    },
-    "EK-4A": {
-      "source_publication_url": "https://www.sgk.gov.tr/Download/DownloadFile?f=8ee647e7-923a-448b-8eac-a91772f34a78.zip&d=f5bf9aae-c24d-4bcd-aa89-6f870210736a",
-      "source_zip_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
-      "source_package_date": "2026-10-02",
-      "source_file": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
-      "source_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx",
-      "source_sha256": "927918fa6c7459c27bc01619722a9ee6f69cf6eb49ccb7d620534788b453935a",
-      "raw_parquet": "data/gazette/raw/annex=EK-4A/effective_date=unknown/EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI__EK-4A.parquet",
-      "raw_sha256": "57202f7b1b1c2e5eef3be315f6dbebb9243f02ee82919bfe77d1dcb810370cf0",
-      "raw_rows": 8188,
-      "raw_data_columns": 16,
-      "repealed_source_file": "raw data/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 02.10.2026).xlsx",
-      "repealed_source_member": "2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ/MÜLGA EK-4 LİSTELERİ/MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 02.10.2026).xlsx",
-      "repealed_source_sha256": "e453d4c0f6a4b027bfd59c3de58a88f47a3dce17792fe8de6ead82ff23b5cbd6",
-      "repealed_raw_parquet": "data/gazette/raw/annex=EK-4A/effective_date=2026-10-02/MULGA_EK-4A_BEDELI_ODENECEK_ILACLAR_LISTESI_Yur._02.10.2026__EK-4A.parquet",
-      "repealed_raw_sha256": "478428b4c87ad0586c64d6367159e40507f1ea973aed99c1c05415d4b65b0ea8",
-      "source_snapshot_drug_rows": 8183,
-      "status": "service_date_history",
-      "future_marker_effective_date": "2026-10-10",
-      "retained_runtime_curated_sha256": "6ed75694326342eb31e696304b82906a3e22a9f73b8648e6fbdbee1b69d739be",
-      "retained_runtime_curated_rows": 8078,
-      "runtime_catalog_matches_current_source": true,
-      "runtime_reader": "src/bilun/domain/materials/ek4a_as_of.py selects EK-4A by service date from data/gazette/curated/ek4a_history.parquet and ek4a_windows.parquet (every list version)",
-      "snapshot_catalog": "data/gazette/curated/ek4a_drugs.parquet stays the 2026-05-23 list (retained_runtime_curated_*); no runtime module reads it, only the synthetic data generator"
-    }
+  "completion_scope": "complete",
+  "completed_package": {
+    "inventory_sha256": "92dc9f7bae22d4cadcabdfe28cbd917af262c62ab0b06ecd0b362dfa03a470a6",
+    "zip_sha256": "03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61",
+    "workbook_count": 49,
+    "sheet_count": 49,
+    "source_docx_sha256": "227b508558840f6c8083c6b6cc8c4efcbf1fcf342e115df5519b0f3e63d7f573",
+    "corpus_sha256": "40b2b7ebdb44c2483867d5413f7af3d97bb55c92d43d3a4be2737d80135425ec"
   }
 }
