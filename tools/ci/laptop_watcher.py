@@ -27,16 +27,23 @@ RUNNER = Path(__file__).with_name("laptop_runner.py")
 STALE_AFTER = timedelta(days=1)  # e.g. a 2026-08-06 run that still reads "queued" and has no jobs
 POLL_SECONDS = 10
 CALL_TIMEOUT = 60  # one gh or docker call; a hung call must not stall the timer for good
+CONNECT_TRIES = 3  # a fresh `gh` process sometimes fails its first connection to api.github.com
+CONNECT_WAIT = 5
 
 
 def github(path):
     """Read-only GitHub REST call through the existing `gh` login. Any failure is a RuntimeError."""
     name = path.split("?")[0]
-    try:
-        result = subprocess.run(["gh", "api", path], text=True, capture_output=True,
-                                check=False, timeout=CALL_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired) as error:
-        raise RuntimeError(f"gh api {name} did not run: {error}") from error
+    for attempt in range(1, CONNECT_TRIES + 1):
+        try:
+            result = subprocess.run(["gh", "api", path], text=True, capture_output=True,
+                                    check=False, timeout=CALL_TIMEOUT)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise RuntimeError(f"gh api {name} did not run: {error}") from error
+        blip = result.returncode and "error connecting" in result.stderr
+        if not blip or attempt == CONNECT_TRIES:
+            break
+        time.sleep(CONNECT_WAIT)  # a dropped connection is not an answer: ask again
     if result.returncode:
         raise RuntimeError(f"GitHub API failed for {name}: {result.stderr.strip()[:200]}")
     try:

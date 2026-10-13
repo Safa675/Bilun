@@ -373,6 +373,47 @@ def test_every_github_failure_is_a_runtime_error(monkeypatch, failure):
         watcher.github("repos/Safa675/Bilun/actions/runners?per_page=100")
 
 
+def _scripted_runs(monkeypatch, outcomes):
+    """`gh api` answers from `outcomes` in order; returns the list of calls and sleeps."""
+    calls, sleeps = [], []
+    queue = list(outcomes)
+
+    def fake(arguments, **kwargs):
+        calls.append(arguments)
+        returncode, stdout, stderr = queue.pop(0)
+        return subprocess.CompletedProcess(arguments, returncode, stdout, stderr)
+
+    monkeypatch.setattr(watcher.subprocess, "run", fake)
+    monkeypatch.setattr(watcher.time, "sleep", sleeps.append)
+    return calls, sleeps
+
+
+BLIP = (1, "", "error connecting to api.github.com\ncheck your internet connection")
+
+
+def test_a_dropped_connection_is_asked_again_before_giving_up(monkeypatch):
+    calls, sleeps = _scripted_runs(monkeypatch, [BLIP, BLIP, (0, '{"ok": true}', "")])
+    assert watcher.github("repos/Safa675/Bilun/actions/runs?status=queued") == {"ok": True}
+    assert len(calls) == 3
+    assert sleeps == [watcher.CONNECT_WAIT, watcher.CONNECT_WAIT]
+
+
+def test_a_connection_that_stays_down_fails_after_the_last_try(monkeypatch):
+    calls, sleeps = _scripted_runs(monkeypatch, [BLIP] * watcher.CONNECT_TRIES)
+    with pytest.raises(RuntimeError, match="error connecting"):
+        watcher.github("repos/Safa675/Bilun/actions/runs")
+    assert len(calls) == watcher.CONNECT_TRIES
+    assert sleeps == [watcher.CONNECT_WAIT] * (watcher.CONNECT_TRIES - 1)  # no pause after the last try
+
+
+def test_a_real_api_error_is_not_retried(monkeypatch):
+    calls, sleeps = _scripted_runs(monkeypatch, [(1, "", "gh: Bad credentials (HTTP 401)")])
+    with pytest.raises(RuntimeError, match="401"):
+        watcher.github("repos/Safa675/Bilun/actions/runs")
+    assert len(calls) == 1
+    assert sleeps == []
+
+
 def test_a_good_github_answer_is_parsed(monkeypatch):
     _run_returning(monkeypatch, stdout='{"total_count": 0, "runners": []}')
     assert watcher.github("repos/Safa675/Bilun/actions/runners") == {"total_count": 0, "runners": []}
