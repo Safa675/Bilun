@@ -60,7 +60,7 @@
   3. Compare the pending announcements' rows with the new list.
   4. Set `folded_into_list` for every announcement the new list includes.
 - **New weekly announcement.**
-  1. The SUT Monitor opens an issue (or run `python3 scripts/sut/sgk_watch.py --dry-run`).
+  1. Run `python3 scripts/sut/sgk_watch.py` (`--dry-run` only lists). The SUT Monitor workflow is disabled, so nothing runs it on a schedule.
   2. Save the PDF and xlsx under `raw data/ek4a-duyuru/<year>-<number>/`.
   3. Add a manifest entry, with the effective date taken from the PDF.
   4. Rebuild.

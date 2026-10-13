@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,8 @@ from scripts.sut.sgk_watch import (
 )
 
 pytestmark = pytest.mark.unit
+
+REPO = Path(__file__).resolve().parents[3]
 
 # Slugs as they appear on https://www.sgk.gov.tr/duyuru/index/TumBirimler (October 2026).
 SUT_PACKAGE = "02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06"
@@ -95,3 +98,19 @@ def test_scheduled_runs_only_notify() -> None:
     assert any("scripts/sut/sgk_watch.py" in str(step.get("run", "")) for step in notify["steps"])
     ingest = workflow["jobs"]["monitor"]
     assert ingest["if"] == "github.event_name == 'workflow_dispatch' && inputs.ingest"
+
+
+def test_next_steps_name_files_that_exist_and_no_disabled_workflow() -> None:
+    package = issue_body(classify(SUT_PACKAGE), "2026-10-02")
+    drug = issue_body(classify(DRUG_39), "2026-10-02")
+    # The hosted SUT Monitor cannot ingest; a package is ingested by hand (runbook).
+    assert "ingest: true" not in package
+    assert "docs/operations/AI-RUNBOOK.md" in package
+    # Completing an ingest removes the EK-4A receipt that the old text told the reader to check.
+    assert "receipt" not in drug and "ingest_state.json" not in drug
+    assert "data/gazette/ek4a_announcements.json" in drug
+    assert "reports/sut-ingest/2026-10-10-ek4a-service-date.md" in drug
+    for body in (package, drug):
+        assert "scheduled SUT Monitor" not in body
+        for path in re.findall(r"`((?:docs|reports|data|raw data)/[^`]+)`", body):
+            assert (REPO / path).exists(), path

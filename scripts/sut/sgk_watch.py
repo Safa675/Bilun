@@ -46,13 +46,15 @@ MARKER_PATTERN = re.compile(r"<!-- sgk-duyuru: ([^ ]+) -->")
 
 ACTIONS = {
     "sut_package": (
-        "Review the amendment, then ingest the package with a manual run of the SUT Monitor "
-        "workflow (`ingest: true`); its pull request needs human review."
+        "Review the amendment, then ingest the package by hand with the steps in "
+        "`docs/operations/AI-RUNBOOK.md` (Local SUT package ingest); its pull request needs "
+        "human review."
     ),
     "drug_list": (
-        "Apply the EK-4A changes with their effective dates. First check which EK-4A version the "
-        "runtime uses (EK-4A receipt in `data/gazette/ingest_state.json`); on 2026-10-10 it was "
-        "still the list replaced on 2026-06-29."
+        "Apply the EK-4A changes with their effective dates: save the announcement's PDF and "
+        "workbook under `raw data/ek4a-duyuru/`, add it to `data/gazette/ek4a_announcements.json` "
+        "and rebuild, as in `reports/sut-ingest/2026-10-10-ek4a-service-date.md` (Keeping it "
+        "current)."
     ),
     "billing": "Check whether the announcement changes Bilun's billing or MEDULA rules.",
 }
@@ -114,8 +116,8 @@ def issue_body(item: dict, baseline: str) -> str:
         f"- Last fully ingested SUT package: {baseline}",
         f"- Next step: {ACTIONS[item['kind']]}",
         "",
-        "Opened by the scheduled SUT Monitor (`scripts/sut/sgk_watch.py`). Close this issue "
-        "once Bilun reflects the announcement or a reviewer decides it does not apply.",
+        "Opened by `scripts/sut/sgk_watch.py`. Close this issue once Bilun reflects the "
+        "announcement or a reviewer decides it does not apply.",
         "",
         f"<!-- sgk-duyuru: {item['slug']} -->",
     ])
