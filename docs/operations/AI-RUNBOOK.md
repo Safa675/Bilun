@@ -28,6 +28,21 @@ gh api repos/Safa675/Bilun/actions/runners --jq '.total_count'
 
 The script removes its container, `<runner-name>-work` volume and registration. Idle runner count must be **0**. For verified owned, stopped remnants only: `docker rm "$runner_name"`, `docker volume rm "${runner_name}-work"`, `gh api -X DELETE "repos/Safa675/Bilun/actions/runners/$runner_id"`. No global pruning.
 
+### Automatic start
+
+`tools/ci/laptop_watcher.py` does the start and stop above by itself. A systemd user timer runs it, and a minute after each run ends it runs again. A run lists the jobs queued for the `bilun-laptop-ci` label (runs that are `queued` or `in_progress`; a run idle for more than a day is a stale record and ignored). Only while jobs are queued, no runner with the label is online and the image exists, it runs `laptop_runner.py --jobs 1`, then looks again, at most six runners per run. An idle laptop has nothing registered. A runner that receives no job within five minutes is stopped; once a runner has a job it is left to finish, and a runner status that cannot be read never counts as "no job". It uses the existing `gh` login and only starts the reviewed image; it never builds one.
+
+Install and update from a checkout of the reviewed commit. The units run the copy in `~/.local/share/bilun-ci`, never a working tree, so a PR branch checked out elsewhere cannot change what runs unattended:
+
+```bash
+install -D -m 0755 tools/ci/laptop_watcher.py tools/ci/laptop_runner.py -t ~/.local/share/bilun-ci && install -D -m 0644 tools/ci/systemd/bilun-ci-watcher.service tools/ci/systemd/bilun-ci-watcher.timer -t ~/.config/systemd/user
+systemctl --user daemon-reload && systemctl --user enable --now bilun-ci-watcher.timer
+```
+
+Look: `systemctl --user list-timers bilun-ci-watcher.timer` and `journalctl --user -u bilun-ci-watcher -n 50`. What it would do right now: `BILUN_CI_IMAGE=bilun-laptop-ci:20261008-runtime-complete python3 ~/.local/share/bilun-ci/laptop_watcher.py --dry-run`. Stop: `systemctl --user disable --now bilun-ci-watcher.timer`. A run that is already serving keeps going until the queue is empty (at most six runners); to end it at once, stop the timer first and then `systemctl --user stop bilun-ci-watcher.service`, which also stops the job in progress (stopping only the service lets the timer start it again a minute later). The image tag lives in `tools/ci/systemd/bilun-ci-watcher.service`: change it there when the reviewed image changes and run the install commands again.
+
+Limits: the laptop must be awake with Docker running. The `gh` login is stored in the desktop keyring, which a logged-out user does not have, so expect the timer to work only while you are logged in; `loginctl enable-linger "$USER"` would not change that unless `gh` keeps its token in `hosts.yml`. Manual `laptop_runner.py` runs stay valid: the watcher stays out of the way while a runner is online. In the seconds between the slots of a manual `--jobs N` run it may start a competing runner, which finds no job, is stopped after five minutes and makes that watcher run exit 1; that is harmless.
+
 Known intermittent main-CI failures are network failures. For `npm ECONNRESET` setup errors: `gh run rerun "$run_id" --failed --repo Safa675/Bilun`, once only. A repeat is real. For `gh`/API connection errors, wait 30 seconds and retry up to five times. Stop a step on real test/build failure or product decisions; record the first error/question in `REPORT.md` (maximum ten lines), without tuning dependencies/workflows.
 
 Verify the PR head still matches its green CI before the authorized merge:

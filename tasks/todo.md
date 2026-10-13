@@ -1,3 +1,32 @@
+## Task: Start the laptop CI runner automatically while jobs are queued (2026-10-12)
+
+### Goal
+A pushed PR, or a merge to main, has its backend and frontend jobs served by the laptop within about a minute without anyone starting `laptop_runner.py`, and no runner stays registered once the queue is empty.
+
+### Subtasks
+- [x] `tools/ci/laptop_watcher.py`: each run reads the jobs queued for the `bilun-laptop-ci` label (runs that are `queued` or `in_progress`; a run last updated more than a day ago is a stale record and ignored); only while jobs are queued, no runner with the label is online and the image exists, it starts `laptop_runner.py --jobs 1`, re-reads the queue after every job and stops after `--max-runs`.
+- [x] Safety: a file lock stops overlapping runs; a runner that receives no job within `--pickup-timeout` is stopped with SIGTERM (the script then removes its container, volume and registration); a busy runner is never stopped; SIGTERM to the watcher is forwarded; a failing runner makes the run exit 1 and the next timer run retries.
+- [x] `tools/ci/systemd/bilun-ci-watcher.service` (oneshot) and `bilun-ci-watcher.timer` (30 s after start, then 60 s after each run ends). The service runs a copy under `~/.local/share/bilun-ci`, so a PR branch checked out in a working tree cannot change code that an unattended timer runs with admin credentials.
+- [x] Tests in `tests/unit/tools/test_laptop_watcher.py` with a fake GitHub and a fake process: label, status and age filter; nothing queued; online runner present; serve until empty; max runs; never-picked-up runner stopped; busy runner kept; failure stops the run; dry run; missing image; lock; missing image argument.
+- [x] Real checks: `ruff check`, the new tests, `systemd-analyze --user verify`, `--dry-run` against GitHub, and one run as a transient systemd user service (gh keyring and docker are reachable there).
+- [x] `docs/operations/AI-RUNBOOK.md`: install, update, status, log and stop commands, and the limits (laptop awake, Docker up, linger for logged-out use).
+- [x] Independent review of the diff by a second agent (findings and what was done about them in Review below).
+- [ ] PR against main. Nothing is installed on the laptop before it merges.
+
+### Out of Scope
+Installing or enabling the timer on the laptop (done by the owner after the merge), changes to `laptop_runner.py`, the CI image, the workflows or the runner labels, an always-on runner, GitHub-hosted runners.
+
+### Review (2026-10-12)
+An independent review found two real bugs and several risks; all were checked against the code before acting on them.
+- Real: systemd signals the whole cgroup on stop and the watcher then forwards another SIGTERM, which can abort `laptop_runner.py`'s cleanup (its handler raises even inside `finally`). Fixed with `KillMode=mixed`, `TimeoutStopSec=120` and `SuccessExitStatus=143`.
+- Real: only `RuntimeError` was caught around the status poll, so a non-JSON answer or a missing `gh` could orphan a running job. `github()` now turns every failure (missing `gh`, timeout, non-JSON) into `RuntimeError`, and the poll catches any exception and retries.
+- Risk: a hung `gh` or `docker` call would stall the timer for good. Both calls have a 60 s timeout and the service has `TimeoutStartSec=8h`.
+- Risk: a job that asks for a label our runner lacks would make an idle runner start and stop all day. A job now counts only if its labels are a subset of the runner's.
+- Smaller: `--dry-run` reported "would start" without checking the image; a down Docker daemon was reported as a missing image; a misleading `Nice=`; runbook statements about stopping, linger with the keyring-stored `gh` login, and where the image tag lives were corrected.
+- Tests: the behaviours the review found unpinned (runner-label filter, kill fallback, pickup-timeout boundary, runner command line, defaults, SIGTERM handler, non-JSON and missing-`gh` answers, a job assigned after the pickup timeout) now have tests, and the vacuous `online == []` assertion is gone. A mutation check of 14 injected regressions found one survivor (a runner that gets its job after the timeout); a test now pins it, so 14 of 14 are caught.
+- Found by the first live run (a transient systemd unit serving the queued jobs): `gh` failed its very first connection with "error connecting to api.github.com" and the run exited 1 after 10 s; two retries a moment later worked. `github()` now asks again up to 3 times, 5 s apart, for a dropped connection only (a real API error such as 401 is not retried); the runbook already says to retry connection errors.
+- Left as is on purpose: a status that keeps failing never stops a runner, because not knowing is not a reason to stop a job; an unpicked runner exits 1 so the failure is visible in `systemctl --user status`.
+
 ## Task: Stop counting missing amounts as zero in uplift, savings and recoverable totals
 
 ### Goal
