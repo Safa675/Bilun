@@ -4,6 +4,25 @@ Bu dosya, BILUN'un aktif SUT kaynağının hangi tebliği temel aldığını ve 
 
 ---
 
+## 2026-10-02 — Aktif SUT 2026.08.29 → 2026.10.02 (konsolide)
+
+RG-02/10/2026-33388. Yürürlük tarihleri madde bazında değişir (10/10/2026, 08/10/2026, 05/09/2026). Kaynak: `2026.10.02-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT`.
+
+### Ingest (Safa675/Bilun#217)
+- Paket tamamlandı: `ingest_state.json` `completion_scope: complete`, `last_ingested_date: 2026-10-02`. ZIP sha256 `03bf37df…`; 349 dosya, 318 çalışma kitabı (49 güncel, 269 MÜLGA).
+- Clause diff (kural korpusu daha önce işlendi): 8,375 STABLE / 42 AMENDED / 0 NEW / 0 REMOVED.
+- Değer değişiklikleri: EK-1A **N11**; EK-2B ve EK-2C **608310** (değişik) ve **609541** (ek); EK-2C kemik iliği paketi (4-b); EK-3O HO1000 (3) notu; EK-4G Satralizumab (`.doc`, veri tablosu yok).
+- EK-4A servis tarihine göre okunuyor (#222); `ek4a_drugs.parquet` 2026-05-23 anlık görüntüsü olarak kaldı.
+
+### Bilinen boşluklar (kural/ürün kararı gerektirir)
+- `extract_ek2b` ek/değişik işaretli kod hücrelerini düşürüyor: 30 prosedür (609541 dahil) EK-2B kataloğunda yok.
+- Satır düzeyindeki yürürlük tarihleri okunmuyor; yeni satırlar dosya düzeyindeki 2026-07-07 tarihinden itibaren geçerli sayılıyor.
+- `sut_delta.py` bir liste sürümü içindeki değişiklikleri görmüyor.
+
+Ayrıntı: `reports/sut-ingest/2026-10-13-package-2026-10-02-completion.md`.
+
+---
+
 ## 2026-08-29 — Aktif SUT 2026.07.01 → 2026.08.29 (konsolide + kural korpusu)
 
 RG-29/08/2026-33355, yürürlük **05/09/2026**. Kaynak: `2026.08.29-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT`.
