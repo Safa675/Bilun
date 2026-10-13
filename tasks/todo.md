@@ -1,3 +1,19 @@
+## Task: Stop the runbook from quoting live PIDs that change on every VPS reboot
+
+### Goal
+`docs/operations/AI-RUNBOOK.md` points at the `LIVE_PIDS` pin in `staging-update.sh` instead of quoting PIDs, and says what to do when the wrapper stops after a reboot.
+
+### Subtasks
+- [x] 1. Find every place the repo quotes the live PIDs: `git grep` for 914/915, 898/899, 911/912 and "live PIDs" finds only `docs/operations/AI-RUNBOOK.md:63` ("live PIDs **914/915**"); no test or script pins that text.
+- [x] 2. Replace the numbers in that sentence with "the live pair's MainPIDs and start times against the `LIVE_PIDS` pin in the script (a VPS reboot changes them; see below)".
+- [x] 3. Add one short paragraph after "Interrupted transfer": the wrapper stops before any VPS write (`update_exit: not_started`, "Canlı backend beklenen PID … değil"); read the live pair first (read-only, the `systemctl show` and `/proc/<pid>/cwd` check); only if both units are in the frozen `5c89ed53` bundle, re-pin `LIVE_PIDS` in the operator's script (outside this repo) and rerun; never loosen the check. No PID numbers in the paragraph.
+- [x] 4. `git diff` shows only that sentence and the new paragraph; `git grep -E "914/915|898/899|911/912"` finds nothing; `tests/unit/scripts/test_sgk_watch.py` (it names this file) passes in the CI image.
+- [ ] 5. One commit; CI status of `main` checked before the push (rule 10); PR opened; checks green.
+- [ ] 6. Merge is Safa's call; after the merge remove this worktree and branch and leave the main checkout on `main`.
+
+### Out of Scope
+Changing the wrapper (it lives in `~/work/bilun-deploy-plan/staging-ops`, outside the repo), `RELEASE-LANES.md`, any deploy behavior, a script that reads the live PIDs.
+
 ## Task: Complete the ingestion of the 2026-10-02 SUT package (Safa675/Bilun#217)
 
 ### Goal
