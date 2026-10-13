@@ -1,3 +1,82 @@
+## Task: Complete the ingestion of the 2026-10-02 SUT package (Safa675/Bilun#217)
+
+### Goal
+`data/gazette/ingest_state.json` says `completion_scope: complete` with `last_ingested_date: 2026-10-02` after every current workbook of the official package is converted and validated, while the prose corpus, the EK-4A snapshot catalog and the clause diff stay byte-identical and the review delta is committed.
+
+### Subtasks
+Setup (read-only)
+- [x] 0.1 `git fetch origin`; `.worktrees/sut-package-2026-10-02` is at the `origin/main` tip (b003ae12 or newer) and `git status` is clean. Done when both are shown.
+- [x] 0.2 Choose the environment and write the choice in Review: the CI image `bilun-laptop-ci:20261008-runtime-complete` if it carries `requirements-ci.lock` (pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1), else `.venv` (pandas 3.0.3, polars 1.41.2, pyarrow 24.0.0) with the byte-identity checks below as the guard.
+- [x] 0.3 Record the sha256 of the files that must not change (scratchpad): `data/gazette/sut_clauses.parquet` (40b2b7eb…), `data/gazette/curated/ek4a_drugs.parquet` (6ed75694…), `data/gazette/deltas/2026-10-02_clause_diff.json` (faa8909f…), `data/gazette/curated/ek4a_history.parquet`, `data/gazette/curated/ek4a_windows.parquet`, `data/gazette/ek4a_announcements.json`, `data/gazette/sut_coverage_evidence.json`.
+
+Fetch (one 33 MB download from sgk.gov.tr)
+- [x] 1.1 `python scripts/sut/sut_fetch.py "https://www.sgk.gov.tr/duyuru/detay/02102026-SUT-Degisiklik-Tebligi-Islenmis-Guncel-2013-SUT-2026-10-02-02-50-06" 2026-10-02` (it downloads the same file again; the script cannot read a local ZIP). Done when: exit 0; the inventory's `zip_sha256` is `03bf37df87ff48358e23b1018405405bbb436032c9424b17ddbcb828525f7a61`; 349 files, 318 workbooks (49 current, 269 MÜLGA); the 3 files already committed show no change in `git status`.
+
+Convert and curate
+- [x] 2.1 Copy `data/gazette/sut_clauses.parquet` to the scratchpad as the old side of the clause diff.
+- [x] 2.2 `python scripts/sut/convert_xlsx_to_parquet.py --input-dir <input_dir> --defer-state` exits 0 and converts the 49 current workbooks (the 269 MÜLGA files are skipped by design). Verified with Polars, no row loops, per rewritten raw partition ignoring `__source_file` and `__ingested_at`: values change only in EK-1A (+N11 on one row), EK-2B (+2 rows), EK-2C (+3 net rows) and EK-3O (one row's text); every other partition differs in provenance only.
+- [x] 2.3 `python scripts/sut/build_curated_catalogs.py --overwrite` exits 1 from exactly one spec, the EK-4A snapshot ("marker-dated rows", by design: `reports/sut-ingest/2026-10-10-ek4a-service-date.md`); no other spec fails; `ek4a_drugs.parquet` keeps its hash; the other curated changes derive from EK-1A, EK-2B, EK-2C or EK-3O only.
+- [x] 2.4 `python scripts/sut/sut_ingest_state.py --input-dir <input_dir> --inventory <input_dir>/.sut_package_inventory.json --prepare-corpus` exits 0 and `sut_clauses.parquet` keeps its hash. If it changed: stop, restore the file and report (a corpus change forces coverage closure, `tasks/lessons.md:5-9`).
+
+Reports
+- [x] 3.1 `python scripts/sut/sut_clause_diff.py <old corpus> data/gazette/sut_clauses.parquet --new-date 2026-10-02 --legacy-input-fingerprints data/gazette/deltas/2026-10-02_clause_diff_inputs.json` exits 0 and `2026-10-02_clause_diff.json` stays byte-identical.
+- [x] 3.2 `python scripts/sut/sut_delta.py 2026-08-29 2026-10-02` creates `data/gazette/deltas/2026-10-02_delta.json` (no `2026-10-02_delta_inputs.json` receipt exists, so no legacy argument). Done when its annexes and row counts agree with the independent cell diff under Evidence; a disagreement is investigated first, not waved through.
+
+Completion
+- [x] 4.1 Write `reports/sut-ingest/2026-10-13-package-2026-10-02-completion.md`: the delta table, the hashes, the commands, and the EK-4A component receipt copied verbatim. Completion removes `component_receipts` (`scripts/sut/sut_ingest_state.py:147-149`) and the service-date report does not hold those hashes.
+- [x] 4.2 `python scripts/sut/sut_ingest_state.py --input-dir <input_dir> --inventory <input_dir>/.sut_package_inventory.json` exits 0. Done when `ingest_state.json` shows `completion_scope: complete`, `last_ingested_date: 2026-10-02`, `completed_package.zip_sha256` `03bf37df…`, no `pending_full_package_*`, no `component_receipts`, and `manifest_row_count` / `manifest_sha256` equal `version_manifest.parquet`.
+
+Follow-through (small, separable)
+- [x] 5.1 `tests/unit/scripts/test_sgk_watch.py` first (RED), then `scripts/sut/sgk_watch.py:48-57`: the `sut_package` and `drug_list` action texts stop pointing at the disabled SUT Monitor workflow and at the receipt that completion deletes; they point at the local steps and the service-date report.
+- [x] 5.2 `docs/operations/AI-RUNBOOK.md`: a short "Local SUT package ingest" section with steps 1.1 to 4.2, because the hosted workflow cannot run.
+
+Verify
+- [x] 6.1 The CI commands of `.github/workflows/ci.yml:56-68` (ruff, `python -m pytest -q -n auto`, `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`), reading every "Failures: N" and FAIL line (`tasks/lessons.md:270-280`); the SUT and EK-4A tests first.
+- [x] 6.2 `git status` after pytest lists only intended paths (pytest mutates the tree, `tasks/lessons.md:109-119`); `git diff --check` is clean; `sut_coverage_evidence.json` and `src/bilun/domain/constants.py` are untouched.
+- [x] 6.3 `python scripts/sut/sgk_watch.py --dry-run` (read-only listing request) reports nothing new for 2026-10-02.
+- [x] 6.4 A second agent reviews the diff; real findings are fixed, skipped ones are written down with the reason.
+
+Hand-off (nothing is pushed)
+- [x] 7.1 Five local commits: (A) raw package files plus inventory, (B) generated data plus the completion report, (C) sgk_watch, its test, the runbook and one stale sentence, (D) the changelog entry, (E) plan, review and lesson. Generated data stays in its own commit (`tasks/lessons.md:429-433`).
+- [ ] 7.2 Stop and report. Push, draft PR, CI check and PR review check (AGENTS.md rules 10 and 11) only on Safa's go.
+- [ ] 7.3 After the merge, on Safa's go: close #217 with the PR link, remove this worktree and branch; the main checkout stays on `main`.
+
+If any gate above fails, stop and report. No gate is loosened and no pinned hash is refreshed to make a step pass.
+
+### Out of Scope
+Rule and product follow-ups that the new data enables: procedures 608310 and 609541 (rule coverage, the "not billed together with 604070/604071/608880" exclusions), EK-1A code N11 in co-payment logic, EK-4G Satralizumab (a `.doc`; no converter exists), the retroactive 2026-09-05 marker on the bone-marrow package row. Promoting the 2026-10-02 EK-4A list into `ek4a_drugs.parquet` (regenerates the synthetic demo cohort). Fixing or re-enabling the SUT Monitor workflow and the hosted-runner refusal; letting `sut_fetch.py` read a local ZIP; the stale comment at `sut-monitor.yml:93`. Any change to the prose corpus, rules, coverage-evidence hashes or the frontend.
+
+### Evidence (2026-10-13)
+- Package: the official ZIP (32,973,194 bytes) hashes to the pinned `03bf37df…`; 349 files, 318 workbooks of which 269 are MÜLGA (repealed lists the converter skips) and 49 are current; no current workbook name carries a "Yür." date after 2026-10-13, so the future-date gate cannot trip.
+- State today: `completion_scope: partial`, `pending_full_package_date: 2026-10-02`; prose corpus (8,413 rows) and EK-4A are already in (`data/gazette/ingest_state.json`).
+- Independent cell diff of the package against the 2026-08-29 one (341 files identical, 6 changed):
+  - EK-1A: the row "Kronik Tübülo-İnterstisyel Nefrit" gains code N11.
+  - EK-2B: +608310 (Bronkoskopi, 1,073.67; amended by RG-02/10/2026-33388 art. 3-a, effective 2026-10-10) and +609541 (Özofagus atrezi primer onarımı, 25,278.02; art. 3-b, effective 2026-10-10).
+  - EK-2C: +P608310 (group D, 5,456.7) and +P609541 (group A3, 215,007.17); the "Kemik İliği Nakilleri" row gains a second marker (art. 4-b, effective 2026-09-05).
+  - EK-3O: HO1000 FOTOFEREZ SETİ gains only the marker "(Ek: RG-02/10/2026-33388/5 md. Yürürlük: 08/10/2026)"; its values are unchanged.
+  - EK-4A: already handled (#222). EK-4G (.doc): "92. Satralizumab" added (art. 7, effective 2026-10-10).
+- The hosted workflow cannot do this: `SUT Monitor` is `disabled_manually`, its builder step exits 1 on the October EK-4A list, and `ubuntu-latest` jobs are refused for this account (`reports/sut-ingest/2026-10-10-ek4a-service-date.md:75-81`).
+- Gates that completion enforces: inventory bytes and workbook set, one manifest row per sheet, raw parquet equals a fresh read, corpus equals the DOCX extraction (`scripts/sut/sut_ingest_state.py:34-158`).
+- Size: earlier full ingests were one ~600-file PR (#84); this one is about 350 raw-data paths plus ~48 rewritten raw parquets, most of them provenance-only.
+
+### Decisions (before step 1.1)
+1. Keep `data/gazette/curated/ek4a_drugs.parquet` as the 2026-05-23 snapshot. Recommended: yes. No runtime module reads it (only the synthetic generator), and promoting it changes the demo cohort.
+2. Approve this plan as written.
+
+### Review (2026-10-13)
+Both decisions were approved as recommended. Steps 1.1 to 4.2 and the CI commands ran in `bilun-laptop-ci:20261008-runtime-complete` with `requirements-ci.lock` installed offline (Python 3.13.15, pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1), the worktree mounted in. `sut_fetch.py` downloaded the 33 MB package once more; its hash equals the pinned one.
+- Result: `completion_scope: complete`, `last_ingested_date: 2026-10-02`, `completed_package.zip_sha256` 03bf37df…, `manifest_sha256` equal to the file on disk. 49 workbooks converted, 48 raw partitions rewritten (44 provenance only, 4 with values). Curated: ek1a (+N11), ek2c (+P609541, amended P608310), ek3o (clause (3) and marker); ek2b unchanged. Guarded files byte-identical.
+- CI commands: ruff passed; pytest 8,306 passed; `compile_rules.py --check` and manifest parity exit 0; `sgk_watch.py --dry-run` finds 0 new.
+- Where the run differed from the plan: 2.3 exits 1 as predicted, from the EK-4A snapshot spec only. 3.2 shows no EK-2B or EK-2C change because `sut_delta.py` cannot see in-place amendments (report F1); the raw-level comparison in the report is the review delta. Follow-through added after the review: a changelog entry (the 2026-08-29 ingest added one), four runbook gaps and one stale sentence in the 2026-10-10 report.
+- Independent review (second agent) reproduced the numbers, hashes and byte-identity. Findings and what was done:
+  - Real, claims: the EK-3O clause (3) and the EK-2C bone-marrow row were described wrongly in the report and in a commit message. Fixed in both; lesson added (`tasks/lessons.md`, 2026-10-13).
+  - Risk, runtime: rows with a later "Yürürlük" date are eligible from the list's file-level date, so P609541 is eligible from 2026-07-07 (report F3). Written up, not fixed: it needs service-date reading for EK-1A, EK-2B, EK-2C and EK-3O the way #219 to #222 did for EK-4A.
+  - Risk: the known gaps (30 EK-2B procedures, Satralizumab) are recorded only in the report and the changelog; no issue tracks them. Left for Safa's decision.
+  - Risk: the new baseline might hide announcements. Checked: none are hidden (the 4 without an issue are dated 2026-08-12 to 2026-08-29).
+  - Nits fixed: runbook steps 2, 4, 5 and 6; the test also checks `raw data/` paths; changelog entry; stale monitor sentence.
+  - Nit skipped: `ingest_state.json` has no trailing newline; `sut_ingest_state.py:153` writes it that way and the old file was written by the same code.
+- Not done on purpose: nothing is pushed, no PR is opened, #217 stays open until the merge.
+
 ## Task: Start the laptop CI runner automatically while jobs are queued (2026-10-12)
 
 ### Goal

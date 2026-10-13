@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-13 — "Unchanged" needs the whole value, not a print cut at N characters
+
+**Pattern:** Diffing two SUT packages cell by cell, I printed the changed cells cut at 400 characters, saw only a provenance marker at the end of the EK-3O row and wrote "values unchanged" in the plan, the report and a commit message. The cell had a third clause after the marker. In the same pass I described a changed bone-marrow package row as "gains a second marker" from a truncated print; the new row restored a clause the previous amendment had dropped. An independent review caught both. The data was right; my claims were not.
+
+**Rule:** A statement that something did not change, or changed in only one way, must come from comparing the full values (equality, or a word-level diff of the whole text) and quote that output. A truncated print is for orientation only. Run the independent review before the report and the commit messages are written, not after.
+
 ## 2026-10-04 — Corpus compatibility includes every positional consumer
 
 **Pattern:** Bounded clinical bindings and focused tests stayed valid after a corpus replacement, but old coverage, manifest traces and retrieval artifacts still joined positional C* IDs to different clause bodies. Updating a renal test literal alone would conceal the wider dependency break.
