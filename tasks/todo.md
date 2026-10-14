@@ -1,3 +1,23 @@
+## Task: Fix icu_puani day counting and add §2.4.4.H ICU tier overbilling detector (Safa675/Bilun#242)
+
+### Goal
+`icu_puani.py` derives ICU days from billed ICU procedure lines (`510090` and `P552001`–`P552008`) without defaulting to 3rd-level `P552003` or treating the entire hospital stay as ICU days, and `detect_icu_tier_overbilling` flags 3rd-level ICU packages (`P552003` / `P552008`) billed without 3rd-level organ-support / invasive mechanical ventilation / dialysis / ECMO procedures on the episode.
+
+### Subtasks
+- [x] 1. Update `src/bilun/domain/prose_rules/icu_puani.py` (`detect_icu_puani_opportunities`) to compute ICU days from billed `510090` and `P552001`–`P552008` procedure lines (capped by hospital LOS) and remove the `_DEFAULT_INTERMEDIATE_CODE = "552003"` fallback when no intermediate package is on the claim.
+- [x] 2. Implement `detect_icu_tier_overbilling` in `src/bilun/domain/prose_rules/icu_puani.py` and wire it into `src/bilun/domain/billing/engine.py` (`analyze_claim`) so 3rd-level ICU packages (`P552003` / `P552008`) without 3rd-level qualifying organ-support/ventilation/dialysis/ECMO procedure codes emit a §2.4.4.H audit-exposure finding with the price gap to 2nd-level (`P552002` / `P552007`) and 1st-level (`P552001` / `P552006`).
+- [x] 3. Update and expand `tests/unit/domain/prose_rules/test_icu_puani.py` to test ward stays with 3-day ICU segments, no-default-`P552003` behavior, and `detect_icu_tier_overbilling` (with and without 3rd-level qualifying procedures); run unit tests and `ruff`; commit, check `main` CI, push, open PR for `#242`, and return to `main`.
+
+### Out of Scope
+Re-generating the synthetic demo cohort parquets or adding new columns to `ClaimHeader`.
+
+### Review
+- **Delivered:**
+  - `src/bilun/domain/prose_rules/icu_puani.py`: replaced hospital-LOS day counting and the `_DEFAULT_INTERMEDIATE_CODE = "552003"` fallback with `_infer_billed_icu_days` (derived from `510090` and `P552001`–`P552008` quantities/distinct service dates, capped by hospital LOS), and implemented `detect_icu_tier_overbilling` for §2.4.4.H / EK-2/C-A 3rd-level ICU packages (`P552003` / `P552008`) billed without invasive ventilation, dialysis/hemofiltration/plasmapheresis, or ECMO/cardiopulmonary-support procedure codes.
+  - `src/bilun/domain/billing/engine.py`: wired `detect_icu_tier_overbilling` into `analyze_claim` alongside `detect_yatak_icu_overlap`.
+  - `tests/unit/domain/prose_rules/test_icu_puani.py`: updated `test_basamak_inferred_from_submitted_package` and added 4 unit tests covering segmented ICU day counting, no-default-`P552003`, and `detect_icu_tier_overbilling`.
+- **Verification:** `78 passed` across `test_icu_puani.py`, `test_claim_compliance.py`, and `test_claim_compliance_pipeline.py`; `ruff check` clean.
+
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
 ### Goal
