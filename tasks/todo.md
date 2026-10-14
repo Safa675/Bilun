@@ -1,3 +1,28 @@
+## Task: Fix companion-bed (510121) ICU suppression, admission-date pricing, and billed subtraction (Safa675/Bilun#236)
+
+### Goal
+`detect_refakatci_opportunities` (`src/bilun/domain/prose_rules/refakatci.py`) suppresses companion-bed opportunities on all ICU indicator codes (`510090` and `P552001`–`P552008` / `552001`–`552008`), prices `510121` at the EK-2B rate in force on the claim's admission date instead of the undated 2026 rate, subtracts any already-billed `510121` amount on the claim into `recoverable_uplift_try`, and `RefakatciReview.confirmed_refakat_try` sums `recoverable_uplift_try`.
+
+### Subtasks
+- [x] 1. Write failing unit tests in `tests/unit/domain/prose_rules/test_refakatci.py` covering:
+  - ICU suppression when a claim carries `P552001`–`P552008` (or bare `552001`–`552008`) without `510090`;
+  - historical admission-date pricing (`2023-06-15` → `27.44 TL/day`, `2024-07-01` → `61.75 TL/day`, `2026-07-10` → `74.10 TL/day`);
+  - subtracting already-billed `510121` lines (`actual_billed_try` and `recoverable_uplift_try = max(0.0, expected_try - actual_billed_try)`), including full billing (`recoverable_uplift_try == 0.0` and `RefakatciReview.confirmed_refakat_try == 0.0`).
+- [x] 2. Update `src/bilun/domain/prose_rules/refakatci.py`:
+  - Replace `_ICU_PROCEDURE_CODES = frozenset({"510090", "P55200x"})` with `_ICU_PROCEDURE_CODES` matching `510090` and `("552001", "552002", "552003", "552006", "552007", "552008")` (with or without leading `P`/`p`, case-insensitive, matching `icu_puani.py` and `yatak_icu_overlap.py`);
+  - Resolve `puan` and `daily_rate` per claim as of `claim.admission_date` via `get_ek2b_price_for_date("510121", claim.admission_date, ...)` (falling back to the undated catalog only when `admission_date` predates the catalog history);
+  - Sum billed `510121` lines on the claim as `actual_billed_try` and set `recoverable_uplift_try = _money(max(0.0, expected - actual_billed_try))` (and `0.0` on suppressed rows).
+- [x] 3. Update `RefakatciReview.confirmed_refakat_try` in `src/bilun/domain/billing/types.py` to sum `recoverable_uplift_try` when present (without truthiness fallback when `0.0`), and add `"actual_billed_try": true` to `refakatci.opportunities` in `src/bilun/api/public_contracts.json`.
+- [x] 4. Run `ruff check`, the new and existing unit tests (`test_refakatci.py`, `test_elkitabi_tablo23.py`, `test_claim_integration.py`, `test_sgk_uplift_synthetic_demos.py`, `test_orchestrator_grand_total.py`, `test_orchestrator_claim_cohort_flow.py`, `test_focused_legacy_materializer.py`), and `compile_rules.py --check` / `audit_manifest_parity.py --drug-only`; confirm zero unintended tracked file diffs.
+
+### Out of Scope
+Changing the default policy that unbilled non-ICU inpatient stays emit a confirmed uplift (`included_in_sgk_total=True`, confirmed with Safa), fixing the `valid_to` price-history loader bug (#241), or changing other prose/billing rules (#230–#234, #237–#242).
+
+### Review (2026-10-14)
+- Confirmed with Safa before coding: keep unbilled non-ICU inpatient stays in confirmed uplift (`included_in_sgk_total=True`) while fixing `P552001`–`P552008` ICU suppression, admission-date EK-2B pricing, and subtracting already-billed `510121`.
+- Cohort effect on the 50 synthetic patients: `total_refakatci` drops from `34,308.30 TL` (priced at 2026's `74.10 TL/day`) to `17,709.88 TL` (priced at each claim's 2023–2024 admission-date EK-2B rate) across 22 patients.
+- Verification: `ruff check` clean; 18 unit tests in `test_refakatci.py` (including RED→GREEN tests for `P552001`–`P552008`, 2023/2024/2026 admission-date rates, partial/full `510121` billing subtraction, and public response projection) + 40 billing/orchestrator integration tests pass; `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
+
 ## Task: Fix price history valid_to, MULGA_ duplicates, and date-aware pricing in 5 rules (Safa675/Bilun#241)
 
 ### Goal

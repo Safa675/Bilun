@@ -500,7 +500,11 @@ class RefakatciReview:
     def confirmed_refakat_try(self) -> float:
         return round(
             sum(
-                float(row.get("expected_try") or 0.0)
+                float(
+                    row["recoverable_uplift_try"]
+                    if row.get("recoverable_uplift_try") is not None
+                    else (row.get("expected_try") or 0.0)
+                )
                 for row in self.opportunities
                 if row.get("included_in_sgk_total", True)
             ),
