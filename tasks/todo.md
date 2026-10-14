@@ -1,21 +1,22 @@
-## Task: Evaluate material pre-check and §3.1/§3.3 prose rules per material line (#238)
+## Task: Fix price history valid_to, MULGA_ duplicates, and date-aware pricing in 5 rules (Safa675/Bilun#241)
 
 ### Goal
-`precheck_materials_from_claims()`, `check_material_bundling_prose()`, and `check_specialty_materials_prose()` evaluate pre-auth, bundling, and §3.1/§3.3 prose rules per `material_line_id` (preserving `material_line_id` and `claim_id` on every finding) while keeping cross-line `material_code` grouping exclusively for cross-claim MIAT interval checks.
+Curated EK-2B and EK-2C history tables contain zero duplicate `(code, valid_from)` or `valid_to < valid_from` rows and cap `valid_to` when a code disappears in the next snapshot; runtime readers enforce `valid_to`; and the 5 inpatient/bed/ICU/anaesthesia rules look up catalog prices as of the claim/procedure date.
 
 ### Subtasks
-- [x] 1. Write RED unit tests in `tests/unit/domain/billing/test_claim_materials_precheck.py`, `tests/unit/domain/prose_rules/test_material_bundling.py`, and `tests/unit/domain/prose_rules/test_specialty_materials.py` covering duplicate `material_code` lines (including `F-SENTETIK-HASTA-0038-053` `GHC1220` where `MLZ-…-003` has `requires_pre_auth=True` and `MLZ-…-004` has `requires_pre_auth=False`, plus `material_line_id` and `claim_id` preservation across multi-claim contexts).
-- [x] 2. Update `src/bilun/domain/billing/claim_materials.py`, `src/bilun/domain/prose_rules/material_bundling.py`, `src/bilun/domain/prose_rules/specialty_materials.py`, and `src/bilun/api/public_contracts.json` so pre-auth, bundling, and prose rules evaluate every material line and attach `material_line_id` and `claim_id`.
-- [x] 3. Run unit/contract test suites (`5,359 passed` across billing/prose/materials + `608 passed` in API tests) and `ruff check` to verify GREEN and zero regressions, then return checkout to `main` (Rule 11.5).
+- [x] 1. Update `scripts/sut/build_curated_catalogs.py` (`_build_history`) to prefer non-MÜLGA raw parquets when an `effective_date` has both current and `MULGA_` files, and update `scripts/sut/_common.py` (`_add_validity_ranges`) to deduplicate `(key_col, effective_date_parsed)` (`keep="last"`) and cap `valid_to` at `next_global_eff - 1 day` when a code disappears in the next snapshot.
+- [x] 2. Rebuild `data/gazette/curated/ek2b_catalog_history.parquet` and `data/gazette/curated/ek2c_catalog_history.parquet` and verify zero rows have `valid_to < valid_from` or duplicate `(code, valid_from)`, and `804460` expires before `2024-08-01`.
+- [x] 3. Enforce `valid_to` in `src/bilun/domain/loaders/gazette.py`, `src/bilun/domain/pricing/temporal.py`, and `src/bilun/domain/prose_rules/catalog_membership.py`.
+- [x] 4. Pass claim/procedure dates into catalog lookups in `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py` so historical claims use historical tariffs.
+- [x] 5. Add unit tests for `valid_to` expiration (`get_ek2b_price_for_date("804460", "2024-08-01") is None`), history invariant checks, and historical tariff resolution in the 5 rules; run unit tests and `ruff`; commit, check `main` CI, push, open PR for `#241`, and return to `main`.
 
 ### Out of Scope
-Changing MIAT catalog rules, modifying synthetic cohort parquet files, or changing non-material prose evaluators.
+Re-generating the synthetic demo cohort parquets or changing EK-4A drug catalogs.
 
 ### Review
-- Scoped `latest_line_by_code` in `claim_materials.precheck_materials_from_claims` strictly to the cross-claim MIAT check (`if code in miat_catalog and latest_line_by_code.get(code_key) is line:`), so `pre_auth_required` and `bundled_separate_billing` evaluate every material line.
-- Updated `check_material_bundling_prose` and `check_specialty_materials_prose` to key `seen` by `(material_line_id or f"idx:{idx}", rule_id)` instead of `(code or name, rule_id)`, and forwarded `material_line_id` and `claim_id` from `PatientClaimContext.material_lines` through `_violation_from_rule` and `_enrich_material_precheck_row`.
-- Added `material_line_id` to `MaterialPreCheck` list schemas in `src/bilun/api/public_contracts.json`.
-- Verified `F-SENTETIK-HASTA-0038-053` emits `pre_auth_required` for `MLZ-F-SENTETIK-HASTA-0038-053-003` (`GHC1220`, `requires_pre_auth=True`) and prose findings for both `MLZ-…-003` and `MLZ-…-004`.
+- Rebuilt `ek2b_catalog_history.parquet` (`69,546` rows, down from `76,673`) and `ek2c_catalog_history.parquet` (`24,063` rows, down from `26,489`) with zero `valid_to < valid_from` rows and zero duplicate `(code, valid_from)` rows.
+- Enforced `valid_to` in `gazette.py`, `temporal.py`, and `catalog_membership.py`; `804460` expires on `2021-05-31` and returns `None` on `2024-08-01`.
+- Wired claim/procedure dates into `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py`.
 
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
@@ -68,6 +69,25 @@ Executing either plan, fixing the engine bugs, deleting any file (locally, on th
 **KVKK side effect**
 - Two subagent logs on this laptop contain pseudonymized ILAY patient IDs: `~/.claude/projects/-home-safa-Documents-Bilun/a9cf6beb-…/subagents/agent-a225743e213a4fbab.jsonl` (6 distinct IDs) and `agent-a93e236386ee82143.jsonl` (11).
 - Reported to Safa. Deleting them is his call.
+
+## Task: Evaluate material pre-check and §3.1/§3.3 prose rules per material line (#238)
+
+### Goal
+`precheck_materials_from_claims()`, `check_material_bundling_prose()`, and `check_specialty_materials_prose()` evaluate pre-auth, bundling, and §3.1/§3.3 prose rules per `material_line_id` (preserving `material_line_id` and `claim_id` on every finding) while keeping cross-line `material_code` grouping exclusively for cross-claim MIAT interval checks.
+
+### Subtasks
+- [x] 1. Write RED unit tests in `tests/unit/domain/billing/test_claim_materials_precheck.py`, `tests/unit/domain/prose_rules/test_material_bundling.py`, and `tests/unit/domain/prose_rules/test_specialty_materials.py` covering duplicate `material_code` lines (including `F-SENTETIK-HASTA-0038-053` `GHC1220` where `MLZ-…-003` has `requires_pre_auth=True` and `MLZ-…-004` has `requires_pre_auth=False`, plus `material_line_id` and `claim_id` preservation across multi-claim contexts).
+- [x] 2. Update `src/bilun/domain/billing/claim_materials.py`, `src/bilun/domain/prose_rules/material_bundling.py`, `src/bilun/domain/prose_rules/specialty_materials.py`, and `src/bilun/api/public_contracts.json` so pre-auth, bundling, and prose rules evaluate every material line and attach `material_line_id` and `claim_id`.
+- [x] 3. Run unit/contract test suites (`5,359 passed` across billing/prose/materials + `608 passed` in API tests) and `ruff check` to verify GREEN and zero regressions, then return checkout to `main` (Rule 11.5).
+
+### Out of Scope
+Changing MIAT catalog rules, modifying synthetic cohort parquet files, or changing non-material prose evaluators.
+
+### Review
+- Scoped `latest_line_by_code` in `claim_materials.precheck_materials_from_claims` strictly to the cross-claim MIAT check (`if code in miat_catalog and latest_line_by_code.get(code_key) is line:`), so `pre_auth_required` and `bundled_separate_billing` evaluate every material line.
+- Updated `check_material_bundling_prose` and `check_specialty_materials_prose` to key `seen` by `(material_line_id or f"idx:{idx}", rule_id)` instead of `(code or name, rule_id)`, and forwarded `material_line_id` and `claim_id` from `PatientClaimContext.material_lines` through `_violation_from_rule` and `_enrich_material_precheck_row`.
+- Added `material_line_id` to `MaterialPreCheck` list schemas in `src/bilun/api/public_contracts.json`.
+- Verified `F-SENTETIK-HASTA-0038-053` emits `pre_auth_required` for `MLZ-F-SENTETIK-HASTA-0038-053-003` (`GHC1220`, `requires_pre_auth=True`) and prose findings for both `MLZ-…-003` and `MLZ-…-004`.
 
 ## Task: Stop the runbook from quoting live PIDs that change on every VPS reboot
 

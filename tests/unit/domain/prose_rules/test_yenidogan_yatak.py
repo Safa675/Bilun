@@ -184,3 +184,21 @@ def test_department_only_detection() -> None:
     )
     assert len(opps) == 1
     assert opps[0]["bed_code"] == "510070"
+
+
+def test_historical_2023_newborn_claim_uses_2023_tariff() -> None:
+    """2023 newborn claim resolves the 2023 510070 tariff (275.43 puan), not 2026."""
+    from src.bilun.domain.prose_rules.yenidogan_yatak import (
+        detect_yenidogan_yatak_opportunities,
+    )
+
+    header = _make_claim_header(
+        admission=date(2023, 6, 10), discharge=date(2023, 6, 12)
+    )
+    opps = detect_yenidogan_yatak_opportunities(
+        [header], (), claim_ids_with_procs={"C1"}
+    )
+    assert len(opps) == 1
+    assert opps[0]["puan"] == pytest.approx(275.43, abs=0.01)
+    assert opps[0]["expected_try"] == pytest.approx(3 * 163.33, abs=0.02)
+

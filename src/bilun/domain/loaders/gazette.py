@@ -59,15 +59,22 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
 
     # Parse effective_date once on first load and stash on the cached frame so
     # every date-variant reuses the parsed column instead of re-parsing.
-    if "effective_date_parsed" not in df.columns:
+    if "effective_date_parsed" not in df.columns or "valid_to_parsed" not in df.columns:
         df = df.copy()
         df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+        if "valid_to" in df.columns:
+            df["valid_to_parsed"] = pd.to_datetime(df["valid_to"], errors="coerce")
+        else:
+            df["valid_to_parsed"] = pd.NaT
         _ek2b_raw_cache = df
 
     cutoff = pd.to_datetime(asof_date)
     parsed = df[df["effective_date_parsed"].notna()]
-    eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
-    if eligible.empty:
+    eligible = parsed[
+        (parsed["effective_date_parsed"] <= cutoff)
+        & (parsed["valid_to_parsed"].isna() | (parsed["valid_to_parsed"] >= cutoff))
+    ]
+    if eligible.empty and (parsed["effective_date_parsed"] > cutoff).all():
         eligible = parsed.sort_values(["code", "effective_date_parsed"]).drop_duplicates(
             subset=["code"], keep="first"
         )
@@ -91,6 +98,7 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
             "puan": _safe_float(row.get("puan")),
             "price_try": _safe_float(row.get("price_try")),
             "effective_date": _safe_str(row.get("effective_date")),
+            "valid_to": _safe_str(row.get("valid_to")) or None,
         }
         if entry["name"] and entry["price_try"] is not None:
             entry["price_try"] = round(float(entry["price_try"]), 2)
@@ -129,15 +137,22 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "stats": {"total_packages": 0},
         }
 
-    if "effective_date_parsed" not in df.columns:
+    if "effective_date_parsed" not in df.columns or "valid_to_parsed" not in df.columns:
         df = df.copy()
         df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+        if "valid_to" in df.columns:
+            df["valid_to_parsed"] = pd.to_datetime(df["valid_to"], errors="coerce")
+        else:
+            df["valid_to_parsed"] = pd.NaT
         _ek2c_raw_cache = df
 
     cutoff = pd.to_datetime(asof_date)
     parsed = df[df["effective_date_parsed"].notna()]
-    eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
-    if eligible.empty:
+    eligible = parsed[
+        (parsed["effective_date_parsed"] <= cutoff)
+        & (parsed["valid_to_parsed"].isna() | (parsed["valid_to_parsed"] >= cutoff))
+    ]
+    if eligible.empty and (parsed["effective_date_parsed"] > cutoff).all():
         eligible = parsed.sort_values(
             ["package_code", "effective_date_parsed"]
         ).drop_duplicates(subset=["package_code"], keep="first")
@@ -163,6 +178,7 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "puan": _safe_float(row.get("puan")),
             "price_try": round(float(price), 2),
             "effective_date": _safe_str(row.get("effective_date")),
+            "valid_to": _safe_str(row.get("valid_to")) or None,
         }
         packages.append(entry)
         by_code[code] = entry

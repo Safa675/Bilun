@@ -101,3 +101,17 @@ def test_claim_without_procs_skipped() -> None:
     # C1 NOT in the set
     opps = detect_yatak_puani_opportunities([header], claim_ids_with_procs={"OTHER"})
     assert opps == []
+
+
+def test_historical_2023_claim_uses_2023_bed_tariff() -> None:
+    """2023 inpatient claim resolves the 2023 510010 tariff (82.36 TRY), not 2026."""
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2023, 6, 10), discharge=date(2023, 6, 13)
+    )
+    opps = detect_yatak_puani_opportunities([header], claim_ids_with_procs={"C1"})
+    assert len(opps) == 1
+    assert opps[0]["daily_rate_try"] == pytest.approx(82.36, abs=0.01)
+    assert opps[0]["expected_yatak_try"] == pytest.approx(4 * 82.36, abs=0.01)
+
