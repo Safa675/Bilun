@@ -49,3 +49,34 @@ def test_get_ek2c_price_for_date_uses_canonical_catalog(monkeypatch):
 
     assert temporal.get_ek2c_price_for_date("P613380", "2023-06-15") == 5274.86
     assert temporal.get_ek2c_price_for_date("P613380", "2023-01-01") is None
+
+
+def test_expired_code_804460_respects_valid_to_in_temporal_and_membership():
+    import src.bilun.domain.pricing.temporal as temporal
+    from src.bilun.domain.prose_rules.catalog_membership import get_ek2b_codes_as_of
+
+    assert temporal.get_ek2b_price_for_date("804460", "2020-06-01") == pytest.approx(67.92, abs=0.01)
+    assert temporal.get_ek2b_price_for_date("804460", "2024-08-01") is None
+    assert "804460" in get_ek2b_codes_as_of("2020-06-01")
+    assert "804460" not in get_ek2b_codes_as_of("2024-08-01")
+
+
+def test_curated_history_parquets_have_no_inverted_validity_or_duplicate_valid_from():
+    import polars as pl
+    from src.bilun.domain.constants import (
+        EK2B_CURATED_HISTORY_PATH,
+        EK2C_CURATED_HISTORY_PATH,
+    )
+
+    for path, key_col in (
+        (EK2B_CURATED_HISTORY_PATH, "code"),
+        (EK2C_CURATED_HISTORY_PATH, "package_code"),
+    ):
+        df = pl.read_parquet(path)
+        inverted = df.filter(
+            pl.col("valid_to").is_not_null() & (pl.col("valid_to") < pl.col("valid_from"))
+        )
+        assert len(inverted) == 0, f"{path.name} has rows with valid_to < valid_from"
+        dups = df.group_by([key_col, "valid_from"]).len().filter(pl.col("len") > 1)
+        assert len(dups) == 0, f"{path.name} has duplicate ({key_col}, valid_from) rows"
+

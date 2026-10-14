@@ -35,20 +35,37 @@ def _load_katsayi_history() -> dict[str, Any]:
         return _katsayi_history_cache
 
 
-def resolve_current_katsayi(history: dict[str, Any] | None = None) -> float:
-    """Pick the open-ended (or latest) katsayi from history; fallback DEFAULT_KATSAYI."""
+def resolve_current_katsayi(
+    history: dict[str, Any] | None = None,
+    *,
+    as_of: str | None = None,
+) -> float:
+    """Pick the katsayi in force on as_of (or the open-ended/latest row); fallback DEFAULT_KATSAYI."""
     payload = history if history is not None else _load_katsayi_history()
     coefficients = payload.get("coefficients") or []
     if not isinstance(coefficients, list) or not coefficients:
         return DEFAULT_KATSAYI
 
     current: dict[str, Any] | None = None
-    for entry in coefficients:
-        if not isinstance(entry, dict):
-            continue
-        if entry.get("effective_to") is None and entry.get("katsayi") is not None:
+    as_of_str = str(as_of or "").strip()[:10]
+    if as_of_str:
+        for entry in coefficients:
+            if not isinstance(entry, dict) or entry.get("katsayi") is None:
+                continue
+            eff_from = str(entry.get("effective_from") or "").strip()[:10]
+            eff_to = str(entry.get("effective_to") or "").strip()[:10]
+            if eff_from and eff_from > as_of_str:
+                continue
+            if eff_to and eff_to.lower() not in ("none", "null") and as_of_str > eff_to:
+                continue
             current = entry
-            break
+    if current is None:
+        for entry in coefficients:
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("effective_to") is None and entry.get("katsayi") is not None:
+                current = entry
+                break
     if current is None:
         for entry in reversed(coefficients):
             if isinstance(entry, dict) and entry.get("katsayi") is not None:

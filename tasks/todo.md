@@ -1,30 +1,22 @@
-## Task: Fix demo-only vignette and scenario_tag inputs (Safa675/Bilun#239)
+## Task: Fix price history valid_to, MULGA_ duplicates, and date-aware pricing in 5 rules (Safa675/Bilun#241)
 
 ### Goal
-`claim_strategy.py` computes optional-override package and itemized totals purely from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs (with `demo_vignette_lookup.py` removed from `src/bilun/`), and `gap_closing.py` / `fatura_inceleme.py` derive `is_emergency` from `claim_type` and `department` without reading `scenario_tag`.
+Curated EK-2B and EK-2C history tables contain zero duplicate `(code, valid_from)` or `valid_to < valid_from` rows and cap `valid_to` when a code disappears in the next snapshot; runtime readers enforce `valid_to`; and the 5 inpatient/bed/ICU/anaesthesia rules look up catalog prices as of the claim/procedure date.
 
 ### Subtasks
-- [x] 1. Remove `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`, and update `tests/unit/domain/test_money_helper.py` to drop the removed module path.
-- [x] 2. Update `src/bilun/domain/billing/claim_strategy.py`:
-  - Inline `recommended_package_code_for_claim(claim, claim_procs)` using `claim_procs` `paket` line codes, `package_code`, and EK-2C procedure code lookups (no vignette lookup).
-  - Extend `resolve_package_total_try` to fall back to `get_ek2c_entry(line.procedure_code, as_of_date=as_of)` when `package_lines` and `line.package_code` are absent.
-  - Add `resolve_catalog_itemized_alternative(claim, claim_procs, performed_lines=...)` so package-only submissions (when `eligible_lines` is empty) resolve their itemized alternative from `performed_procedure_lines` or `claim_procs` via `get_ek2b_price_for_date` and `compute_session_adjusted_itemized_total` (`itemized_price_methodology = "ek2b_catalog"`).
-- [x] 3. Update `src/bilun/domain/prose_rules/gap_closing.py:341-345` and `src/bilun/domain/prose_rules/fatura_inceleme.py:190-194` to derive `context["is_emergency"]` from `claim_type_lower` and `dept` (`"acil" in claim_type_lower or "emergency" in claim_type_lower or "acil" in dept or "emergency" in dept`), never `scenario_tag`.
-- [x] 4. Update synthetic demo golden bands in `data/synthetic/demo_vignettes.json` (`0002` and `0003`) and test assertions in `tests/unit/domain/billing/test_billing_actions.py`, `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py`, `tests/unit/domain/billing/test_claim_strategy_sut.py`, and `tests/unit/domain/prose_rules/test_gap_closing_for_context.py` to match catalog-resolved prices and add regression tests verifying:
-  - Blanking `scenario_tag` across all 50 synthetic patients leaves `compute_patient_billing_report` outputs and rule evaluations unchanged.
-  - A claim with `claim_type="acil"` and `department="Ic Hastaliklari"` has `is_emergency is True` in `_build_gap_closing_context`.
-- [x] 5. Run `ruff` and relevant unit tests, commit, check `main` CI (Rule 10), push `claude/fix-demo-vignette-emergency-239`, open PR for `#239`, and return to `main` (Rule 11.5).
+- [x] 1. Update `scripts/sut/build_curated_catalogs.py` (`_build_history`) to prefer non-MÜLGA raw parquets when an `effective_date` has both current and `MULGA_` files, and update `scripts/sut/_common.py` (`_add_validity_ranges`) to deduplicate `(key_col, effective_date_parsed)` (`keep="last"`) and cap `valid_to` at `next_global_eff - 1 day` when a code disappears in the next snapshot.
+- [x] 2. Rebuild `data/gazette/curated/ek2b_catalog_history.parquet` and `data/gazette/curated/ek2c_catalog_history.parquet` and verify zero rows have `valid_to < valid_from` or duplicate `(code, valid_from)`, and `804460` expires before `2024-08-01`.
+- [x] 3. Enforce `valid_to` in `src/bilun/domain/loaders/gazette.py`, `src/bilun/domain/pricing/temporal.py`, and `src/bilun/domain/prose_rules/catalog_membership.py`.
+- [x] 4. Pass claim/procedure dates into catalog lookups in `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py` so historical claims use historical tariffs.
+- [x] 5. Add unit tests for `valid_to` expiration (`get_ek2b_price_for_date("804460", "2024-08-01") is None`), history invariant checks, and historical tariff resolution in the 5 rules; run unit tests and `ruff`; commit, check `main` CI, push, open PR for `#241`, and return to `main`.
 
 ### Out of Scope
-Regenerating `data/synthetic/sut/claims/*.parquet`, removing `data/synthetic/demo_vignettes.json` from `scripts/deploy/generate_candidate_source_roster.py` (strict-lane pause rule), or changing `traffic_accident_billing.py`.
+Re-generating the synthetic demo cohort parquets or changing EK-4A drug catalogs.
 
 ### Review
-- Removed `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`.
-- Added `recommended_package_code_for_claim` and `resolve_catalog_itemized_alternative` in `src/bilun/domain/billing/claim_strategy.py` so optional-override package and itemized totals resolve from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs.
-- Updated `src/bilun/domain/prose_rules/gap_closing.py` and `src/bilun/domain/prose_rules/fatura_inceleme.py` so `is_emergency` is derived from `claim_type` and `department`, never `scenario_tag`.
-- Verified `ruff` clean and `1,275` synthetic, billing, and deploy unit tests + `18` `test_gap_closing_for_context.py` tests pass.
-
----
+- Rebuilt `ek2b_catalog_history.parquet` (`69,546` rows, down from `76,673`) and `ek2c_catalog_history.parquet` (`24,063` rows, down from `26,489`) with zero `valid_to < valid_from` rows and zero duplicate `(code, valid_from)` rows.
+- Enforced `valid_to` in `gazette.py`, `temporal.py`, and `catalog_membership.py`; `804460` expires on `2021-05-31` and returns `None` on `2024-08-01`.
+- Wired claim/procedure dates into `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py`.
 
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
@@ -172,6 +164,34 @@ Both decisions were approved as recommended. Steps 1.1 to 4.2 and the CI command
   - Nits fixed: runbook steps 2, 4, 5 and 6; the test also checks `raw data/` paths; changelog entry; stale monitor sentence.
   - Nit skipped: `ingest_state.json` has no trailing newline; `sut_ingest_state.py:153` writes it that way and the old file was written by the same code.
 - Not done on purpose: nothing is pushed, no PR is opened, #217 stays open until the merge.
+
+## Task: Fix demo-only vignette and scenario_tag inputs (Safa675/Bilun#239)
+
+### Goal
+`claim_strategy.py` computes optional-override package and itemized totals purely from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs (with `demo_vignette_lookup.py` removed from `src/bilun/`), and `gap_closing.py` / `fatura_inceleme.py` derive `is_emergency` from `claim_type` and `department` without reading `scenario_tag`.
+
+### Subtasks
+- [x] 1. Remove `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`, and update `tests/unit/domain/test_money_helper.py` to drop the removed module path.
+- [x] 2. Update `src/bilun/domain/billing/claim_strategy.py`:
+  - Inline `recommended_package_code_for_claim(claim, claim_procs)` using `claim_procs` `paket` line codes, `package_code`, and EK-2C procedure code lookups (no vignette lookup).
+  - Extend `resolve_package_total_try` to fall back to `get_ek2c_entry(line.procedure_code, as_of_date=as_of)` when `package_lines` and `line.package_code` are absent.
+  - Add `resolve_catalog_itemized_alternative(claim, claim_procs, performed_lines=...)` so package-only submissions (when `eligible_lines` is empty) resolve their itemized alternative from `performed_procedure_lines` or `claim_procs` via `get_ek2b_price_for_date` and `compute_session_adjusted_itemized_total` (`itemized_price_methodology = "ek2b_catalog"`).
+- [x] 3. Update `src/bilun/domain/prose_rules/gap_closing.py:341-345` and `src/bilun/domain/prose_rules/fatura_inceleme.py:190-194` to derive `context["is_emergency"]` from `claim_type_lower` and `dept` (`"acil" in claim_type_lower or "emergency" in claim_type_lower or "acil" in dept or "emergency" in dept`), never `scenario_tag`.
+- [x] 4. Update synthetic demo golden bands in `data/synthetic/demo_vignettes.json` (`0002` and `0003`) and test assertions in `tests/unit/domain/billing/test_billing_actions.py`, `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py`, `tests/unit/domain/billing/test_claim_strategy_sut.py`, and `tests/unit/domain/prose_rules/test_gap_closing_for_context.py` to match catalog-resolved prices and add regression tests verifying:
+  - Blanking `scenario_tag` across all 50 synthetic patients leaves `compute_patient_billing_report` outputs and rule evaluations unchanged.
+  - A claim with `claim_type="acil"` and `department="Ic Hastaliklari"` has `is_emergency is True` in `_build_gap_closing_context`.
+- [x] 5. Run `ruff` and relevant unit tests, commit, check `main` CI (Rule 10), push `claude/fix-demo-vignette-emergency-239`, open PR for `#239`, and return to `main` (Rule 11.5).
+
+### Out of Scope
+Regenerating `data/synthetic/sut/claims/*.parquet`, removing `data/synthetic/demo_vignettes.json` from `scripts/deploy/generate_candidate_source_roster.py` (strict-lane pause rule), or changing `traffic_accident_billing.py`.
+
+### Review
+- Removed `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`.
+- Added `recommended_package_code_for_claim` and `resolve_catalog_itemized_alternative` in `src/bilun/domain/billing/claim_strategy.py` so optional-override package and itemized totals resolve from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs.
+- Updated `src/bilun/domain/prose_rules/gap_closing.py` and `src/bilun/domain/prose_rules/fatura_inceleme.py` so `is_emergency` is derived from `claim_type` and `department`, never `scenario_tag`.
+- Verified `ruff` clean and `1,275` synthetic, billing, and deploy unit tests + `18` `test_gap_closing_for_context.py` tests pass.
+
+---
 
 ## Task: Start the laptop CI runner automatically while jobs are queued (2026-10-12)
 
