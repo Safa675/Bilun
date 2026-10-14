@@ -40,9 +40,9 @@ _OPPORTUNITY_TYPE = "yatak_puani_standard_bed"
 _BED_CODE = "510010"
 
 
-def _daily_rate() -> float:
-    """Look up the current 510010 price_try (already puan × katsayı)."""
-    result = lookup_procedure_code(_BED_CODE)
+def _daily_rate(visit_date: date | str | None = None) -> float:
+    """Look up the 510010 price_try (already puan × katsayı) as of visit_date."""
+    result = lookup_procedure_code(_BED_CODE, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     return float(entry.get("price_try") or 0.0)
 
@@ -93,10 +93,6 @@ def detect_yatak_puani_opportunities(
             claims that also have procedure lines (matches the patient_report
             wiring gate ``if claim_context.procedure_lines``).
     """
-    daily_rate = _daily_rate()
-    if daily_rate <= 0:
-        return []
-
     # Group procedure lines by claim for package-bundling detection.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     if procedure_lines:
@@ -116,6 +112,11 @@ def detect_yatak_puani_opportunities(
 
         # Must have both dates.
         if claim.admission_date is None or claim.discharge_date is None:
+            continue
+
+        visit_date = claim.admission_date or claim.claim_start_date
+        daily_rate = _daily_rate(visit_date)
+        if daily_rate <= 0:
             continue
 
         # Inclusive LOS: discharge day IS billed (+1).

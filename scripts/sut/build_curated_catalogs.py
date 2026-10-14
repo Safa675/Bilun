@@ -28,6 +28,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from scripts.sut._common import (  # noqa: E402
     _add_validity_ranges,
+    _is_mulga_parquet,
     _load_manifest,
     _read_raw,
 )
@@ -82,6 +83,15 @@ def _build_history(
     """Build a price-history catalog for one annex by iterating all manifest versions."""
     rows = manifest[manifest["annex_code"] == annex_code].copy()
     rows = rows[rows["effective_date_parsed"].notna()]
+    rows["_is_mulga"] = rows["parquet_path"].map(
+        lambda p: _is_mulga_parquet(Path(str(p)))
+    )
+    has_non_mulga_by_date = rows.groupby("effective_date_parsed")[
+        "_is_mulga"
+    ].transform(lambda s: (~s).any())
+    rows = rows[~(has_non_mulga_by_date & rows["_is_mulga"])].drop(
+        columns=["_is_mulga"]
+    )
     rows = rows.sort_values("effective_date_parsed")
 
     outputs: list[pd.DataFrame] = []
