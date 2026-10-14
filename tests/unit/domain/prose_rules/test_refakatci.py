@@ -147,3 +147,19 @@ def test_outpatient_skipped() -> None:
     header = _make_claim_header(claim_type="ayakta")
     opps = detect_refakatci_opportunities([header], [_make_procedure_line()])
     assert opps == []
+
+
+def test_historical_2023_companion_claim_uses_2023_tariff() -> None:
+    """2023 inpatient claim resolves 2023 510121 puan (46.28), not 2026 (124.95)."""
+    from src.bilun.domain.prose_rules.refakatci import (
+        detect_refakatci_opportunities,
+    )
+
+    header = _make_claim_header(
+        admission=date(2023, 6, 10), discharge=date(2023, 6, 13)
+    )
+    opps = detect_refakatci_opportunities([header], [_make_procedure_line()])
+    assert len(opps) == 1
+    assert opps[0]["puan"] == pytest.approx(46.28, abs=0.01)
+    assert opps[0]["expected_try"] == pytest.approx(82.32, abs=0.02)
+

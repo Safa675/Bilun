@@ -164,9 +164,19 @@ def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
     work["effective_date_parsed"] = pd.to_datetime(
         work["effective_date"], errors="coerce"
     )
-    work = work.sort_values([key_col, "effective_date_parsed"]).reset_index(drop=True)
+    work = (
+        work.sort_values([key_col, "effective_date_parsed"])
+        .drop_duplicates(subset=[key_col, "effective_date_parsed"], keep="last")
+        .reset_index(drop=True)
+    )
     work["valid_from"] = work["effective_date"]
-    next_eff = work.groupby(key_col)["effective_date_parsed"].shift(-1)
+    next_code_eff = work.groupby(key_col)["effective_date_parsed"].shift(-1)
+    all_dates = sorted(work["effective_date_parsed"].dropna().unique())
+    next_global_map = {
+        all_dates[i]: all_dates[i + 1] for i in range(len(all_dates) - 1)
+    }
+    next_global_eff = work["effective_date_parsed"].map(next_global_map)
+    next_eff = next_code_eff.fillna(next_global_eff)
     work["valid_to"] = (next_eff - pd.to_timedelta(1, unit="D")).dt.date.astype(
         "string"
     )
