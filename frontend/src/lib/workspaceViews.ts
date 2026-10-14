@@ -105,17 +105,31 @@ export interface BilledAtRiskSummary {
 export function complianceBilledAtRiskSummary(
   report: BillingActionReport,
 ): BilledAtRiskSummary {
-  let total = 0;
   let known = 0;
   let count = 0;
-  for (const action of viewActions(report, "compliance")) {
+  const lineAmounts = new Map<string, number>();
+  const actions = viewActions(report, "compliance");
+  for (let i = 0; i < actions.length; i += 1) {
+    const action = actions[i];
     if (action.surface === "drug_indication") continue;
     count += 1;
     if (action.billed_try == null) continue;
-    total += action.billed_try;
     known += 1;
+    const lineKey =
+      action.material_line_id?.trim() ||
+      action.drug_claim_line_id?.trim() ||
+      action.action_id?.trim() ||
+      `idx:${i}`;
+    const prev = lineAmounts.get(lineKey);
+    if (prev === undefined || action.billed_try > prev) {
+      lineAmounts.set(lineKey, action.billed_try);
+    }
   }
-  return { total, known, count };
+  let total = 0;
+  for (const amount of lineAmounts.values()) {
+    total += amount;
+  }
+  return { total: Math.round(total * 100) / 100, known, count };
 }
 
 /**

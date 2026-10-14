@@ -177,6 +177,22 @@ describe("workspaceViews", () => {
       expect(complianceBilledAtRiskSummary(mixed)).toEqual({ total: 100, known: 1, count: 1 });
       expect(complianceBilledAtRisk(mixed)).toBe(100);
     });
+
+    it("counts a material line hit by multiple rules once in billed-at-risk total (#232)", () => {
+      const multiRuleSameLine = withActions([
+        { material_line_id: "MLZ-001", kind: "material_pre_auth", billed_try: 18528.13 },
+        { material_line_id: "MLZ-001", kind: "material_miat", billed_try: 18528.13 },
+        { material_line_id: "MLZ-001", kind: "material_prose_bundling", billed_try: 18528.13 },
+        { material_line_id: "MLZ-002", kind: "material_pre_auth", billed_try: 2964.5 },
+        { material_line_id: "MLZ-002", kind: "material_prose_bundling", billed_try: 2964.5 },
+      ]);
+      expect(complianceBilledAtRiskSummary(multiRuleSameLine)).toEqual({
+        total: 21492.63,
+        known: 5,
+        count: 5,
+      });
+      expect(complianceBilledAtRisk(multiRuleSameLine)).toBe(21492.63);
+    });
   });
 
   it("keeps generic claim-compliance findings scoped and keyed by canonical identity", () => {

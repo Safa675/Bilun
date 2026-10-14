@@ -439,6 +439,25 @@ Delivery C publication: [PR #103](https://github.com/Safa675/Bilun/pull/103) at 
 
 ---
 
+## Task: Deduplicate billed-at-risk per bill line across cohort and patient compliance views (#232)
+
+### Goal
+Ensure a bill line hit by $N$ compliance rules adds its `billed_try` amount once in both `build_cohort_compliance_index` / `slice_compliance_index` and `complianceBilledAtRiskSummary` while preserving all individual rule findings.
+
+### Subtasks
+- [x] Propagate `material_line_id` onto material action rows in `src/bilun/domain/billing/billing_actions.py` and allowlist it on `RecommendedActionItem` in `src/bilun/api/public_contracts.json` and `frontend/src/lib/domains/sut.ts`.
+- [x] Preserve `material_line_id` on compliance index rows and deduplicate `billed_try` per `(patient_id, line_key)` in `_summarize_rows` (`src/bilun/domain/billing/cohort_compliance.py`).
+- [x] Deduplicate `billed_try` per line in `complianceBilledAtRiskSummary` (`frontend/src/lib/workspaceViews.ts`) so patient-level and cohort-level billed at risk agree.
+- [x] Add unit tests in `tests/unit/domain/billing/test_cohort_compliance.py` and `frontend/src/lib/workspaceViews.test.ts`.
+
+### Out of Scope
+Changing which rules fire or removing duplicate findings from the action lists.
+
+### Review
+Carried `material_line_id` onto `RecommendedActionItem` and compliance index rows, and deduplicated `billed_try` per distinct bill line in both `_summarize_rows` (`cohort_compliance.py`) and `complianceBilledAtRiskSummary` (`workspaceViews.ts`). Verified with backend pytest/ruff and frontend vitest.
+
+---
+
 ## Task: Complete hotspot refactoring delivery B — report section extraction
 
 ### Goal

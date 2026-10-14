@@ -365,6 +365,7 @@ def _row_from_action(patient_id: str, action: Mapping[str, Any]) -> dict[str, An
         "procedure_name": action.get("procedure_name"),
         "material_code": action.get("material_code"),
         "material_name": action.get("material_name"),
+        "material_line_id": action.get("material_line_id"),
         "drug_code": action.get("drug_code"),
         "drug_name": action.get("drug_name"),
         "drug_claim_line_id": action.get("drug_claim_line_id"),
@@ -411,13 +412,47 @@ def _summarize_rows(
         return empty
 
     df = pl.from_dicts(rows, infer_schema_length=None)
-    billed = pl.col("billed_try").fill_null(0.0)
-    billed_at_risk = float(df.select(billed.sum()).item() or 0.0)
-    grouped = df.group_by("surface").agg(
+    billed = pl.col("billed_try").cast(pl.Float64).fill_null(0.0)
+    line_id_exprs = [
+        pl.when(pl.col(c).cast(pl.Utf8).str.strip_chars() != "")
+        .then(pl.col(c).cast(pl.Utf8).str.strip_chars())
+        .otherwise(None)
+        for c in (
+            "material_line_id",
+            "drug_claim_line_id",
+            "procedure_line_id",
+            "line_id",
+            "action_id",
+        )
+        if c in df.columns
+    ]
+    line_key = (
+        pl.coalesce(line_id_exprs)
+        if line_id_exprs
+        else pl.int_range(0, pl.len()).cast(pl.Utf8)
+    )
+    df = df.with_columns(
+        _billed_clean=billed,
+        _line_key=line_key,
+    )
+    billed_at_risk = float(
+        df.group_by("patient_id", "_line_key")
+        .agg(_line_billed=pl.col("_billed_clean").max())
+        .select(pl.col("_line_billed").sum())
+        .item()
+        or 0.0
+    )
+    surface_counts = df.group_by("surface").agg(
         n=pl.len(),
-        billed_try=billed.sum(),
         n_patients=pl.col("patient_id").n_unique(),
     )
+    surface_billed = (
+        df.group_by("surface", "patient_id", "_line_key")
+        .agg(_line_billed=pl.col("_billed_clean").max())
+        .group_by("surface")
+        .agg(billed_try=pl.col("_line_billed").sum())
+    )
+    grouped = surface_counts.join(surface_billed, on="surface", how="left")
     by_surface = _zero_by_surface()
     for rec in grouped.iter_rows(named=True):
         surface = rec["surface"]
