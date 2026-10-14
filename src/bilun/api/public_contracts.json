@@ -1950,12 +1950,16 @@
           "sut_section_id": true,
           "recoverable_uplift_try": true,
           "expected_try": true,
+          "actual_billed_try": true,
           "anestezi_code": true,
           "anestezi_group": true,
           "anestezi_puan": true,
           "katsayi": true,
           "procedure_code": true,
-          "procedure_puan": true
+          "procedure_puan": true,
+          "secondary_procedure_codes": {
+            "$list": true
+          }
         }
       }
     }
