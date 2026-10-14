@@ -195,3 +195,119 @@ def test_explicit_mode_overrides_environment_and_normalizes_cache(monkeypatch):
     explicit = load_sut_claim_dataset(mode="synthetic_demo")
     padded = load_sut_claim_dataset(mode=" synthetic_demo ")
     assert explicit is padded
+
+
+def test_real_claims_mode_loads_without_expected_outputs_or_payable_columns(
+    tmp_path: Path,
+) -> None:
+    """real_claims mode succeeds without expected_rule_outputs.parquet or expected_*_payable_try (#240)."""
+    import polars as pl
+
+    claims_dir = tmp_path / "hospital_export"
+    shutil.copytree(DEFAULT_SYNTHETIC_CLAIMS_DIR, claims_dir)
+    (claims_dir / "expected_rule_outputs.parquet").unlink()
+
+    headers_path = claims_dir / "claim_headers.parquet"
+    pl.read_parquet(headers_path).drop(
+        ["expected_total_billed_try", "expected_total_payable_try", "scenario_tag"],
+        strict=False,
+    ).write_parquet(headers_path)
+
+    for filename in ("procedure_claim_lines.parquet", "material_claim_lines.parquet"):
+        path = claims_dir / filename
+        pl.read_parquet(path).drop(
+            ["expected_payable_try", "unit_price_try"],
+            strict=False,
+        ).write_parquet(path)
+
+    drugs_path = claims_dir / "drug_claim_lines.parquet"
+    pl.read_parquet(drugs_path).drop(
+        ["expected_payable_try", "unit_price_try", "discount_tier_expected"],
+        strict=False,
+    ).write_parquet(drugs_path)
+
+    clear_sut_claim_dataset_cache()
+    dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    soft_floor(len(dataset.claims), 80, label="real_claims without expected outputs")
+    assert dataset.expected_outputs == {}
+    for claim_id, claim in dataset.claims.items():
+        totals = dataset.claim_totals[claim_id]
+        assert claim.expected_total_billed_try == totals.total_billed_try
+        assert claim.expected_total_payable_try == totals.total_expected_payable_try
+        assert claim.scenario_tag == ""
+    for proc in dataset.procedure_lines.values():
+        assert proc.expected_payable_try == proc.billed_amount_try
+        assert proc.unit_price_try == proc.billed_amount_try
+    for mat in dataset.material_lines.values():
+        assert mat.expected_payable_try == mat.billed_amount_try
+        assert mat.unit_price_try == mat.billed_amount_try
+    for drug in dataset.drug_lines.values():
+        assert drug.expected_payable_try == drug.billed_amount_try
+        assert drug.unit_price_try == drug.billed_amount_try
+        assert drug.discount_tier_expected == Decimal("0.00")
+    clear_sut_claim_dataset_cache()
+
+
+def test_real_claims_mode_accepts_empty_expected_outputs_and_null_payable_values(
+    tmp_path: Path,
+) -> None:
+    """real_claims mode succeeds when expected_rule_outputs is empty and payable columns are null (#240)."""
+    import polars as pl
+
+    claims_dir = tmp_path / "hospital_export_nulls"
+    shutil.copytree(DEFAULT_SYNTHETIC_CLAIMS_DIR, claims_dir)
+
+    outputs_path = claims_dir / "expected_rule_outputs.parquet"
+    pl.read_parquet(outputs_path).head(0).drop(["scenario_tag"], strict=False).write_parquet(
+        outputs_path
+    )
+
+    headers_path = claims_dir / "claim_headers.parquet"
+    pl.read_parquet(headers_path).with_columns(
+        pl.lit(None, dtype=pl.Float64).alias("expected_total_billed_try"),
+        pl.lit(None, dtype=pl.Float64).alias("expected_total_payable_try"),
+        pl.lit(None, dtype=pl.String).alias("scenario_tag"),
+    ).write_parquet(headers_path)
+
+    for filename in (
+        "procedure_claim_lines.parquet",
+        "material_claim_lines.parquet",
+        "drug_claim_lines.parquet",
+    ):
+        path = claims_dir / filename
+        pl.read_parquet(path).with_columns(
+            pl.lit(None, dtype=pl.Float64).alias("expected_payable_try"),
+        ).write_parquet(path)
+
+    clear_sut_claim_dataset_cache()
+    dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    soft_floor(len(dataset.claims), 80, label="real_claims with null payables")
+    assert dataset.expected_outputs == {}
+    clear_sut_claim_dataset_cache()
+
+
+def test_from_rows_validates_present_expected_outputs_without_requiring_exhaustive_rows() -> None:
+    """Present expected_rule_outputs validate linkage and payable reconciliation without requiring rows for every clean claim/line (#240)."""
+    tables = read_claim_tables()
+    single_output = [dict(tables.expected_outputs[0])]
+
+    partial_dataset = SUTClaimDataset.from_rows(
+        claim_headers=tables.headers,
+        diagnoses=tables.diagnoses,
+        procedure_lines=tables.procedures,
+        material_lines=tables.materials,
+        drug_lines=tables.drugs,
+        expected_outputs=single_output,
+    )
+    assert len(partial_dataset.expected_outputs) == 1
+
+    bad_payable = [dict(tables.expected_outputs[0], expected_payable_try=Decimal("99999999.99"))]
+    with pytest.raises(ClaimValidationError, match="expected_payable_try does not reconcile"):
+        SUTClaimDataset.from_rows(
+            claim_headers=tables.headers,
+            diagnoses=tables.diagnoses,
+            procedure_lines=tables.procedures,
+            material_lines=tables.materials,
+            drug_lines=tables.drugs,
+            expected_outputs=bad_payable,
+        )

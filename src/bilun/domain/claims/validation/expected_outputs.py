@@ -32,8 +32,6 @@ def validate_expected_outputs(
     outputs: Iterable[ExpectedRuleOutput],
     errors: list[str],
 ) -> None:
-    outputs_by_line: dict[str, ExpectedRuleOutput] = {}
-    claim_level_claims: set[str] = set()
     line_maps: dict[str, Mapping[str, Any]] = {
         "islem": procedures,
         "procedure": procedures,
@@ -58,7 +56,6 @@ def validate_expected_outputs(
                 errors.append(
                     f"{output.expected_output_id} claim-level output should not have line_id"
                 )
-            claim_level_claims.add(output.claim_id)
             validate_expected_payable(output, claim.expected_total_payable_try, errors)
             continue
         line_map = line_maps.get(output.line_type)
@@ -81,21 +78,3 @@ def validate_expected_outputs(
         if line.claim_id != output.claim_id or line.patient_id != output.patient_id:
             errors.append(f"{output.expected_output_id} line_id crosses claim or patient")
         validate_expected_payable(output, line.expected_payable_try, errors)
-        outputs_by_line[output.line_id] = output
-
-    missing_claim_outputs = sorted(set(claims) - claim_level_claims)
-    if missing_claim_outputs:
-        errors.append(f"Missing claim-level expected output rows: {missing_claim_outputs}")
-
-    required_line_outputs = {
-        line.procedure_line_id for line in procedures.values() if line.is_package_included
-    }
-    required_line_outputs.update(
-        line.material_line_id
-        for line in materials.values()
-        if line.is_bundled or line.requires_pre_auth
-    )
-    required_line_outputs.update(line.drug_claim_line_id for line in drugs.values())
-    missing_line_outputs = sorted(required_line_outputs - set(outputs_by_line))
-    if missing_line_outputs:
-        errors.append(f"Missing line-level expected outputs: {missing_line_outputs}")

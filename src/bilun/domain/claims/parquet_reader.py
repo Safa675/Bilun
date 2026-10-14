@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from src.bilun.domain.claims.types import RowDict
 
 import polars as pl
 
-from src.bilun.domain.claims.config import resolve_sut_claims_dir
+from src.bilun.domain.claims.config import REAL_CLAIMS_MODE, resolve_sut_data_source
 from src.bilun.domain.claims.dataset import ClaimTables
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.claims.schema import (
@@ -54,6 +55,24 @@ def _read_parquet_table(
     return tuple(frame.to_dicts())
 
 
+def _effective_spec_for_mode(spec: ParquetTableSpec, mode: str) -> ParquetTableSpec:
+    if mode != REAL_CLAIMS_MODE:
+        return spec
+    if spec is CLAIM_HEADERS:
+        return replace(
+            spec,
+            required_columns=spec.required_columns - {"expected_total_billed_try"},
+        )
+    if spec is EXPECTED_RULE_OUTPUTS:
+        return replace(
+            spec,
+            required_columns=spec.required_columns - {"scenario_tag"},
+            optional=True,
+            reject_if_empty=False,
+        )
+    return spec
+
+
 def read_claim_tables(
     claims_dir: str | Path | None = None,
     *,
@@ -61,12 +80,16 @@ def read_claim_tables(
 ) -> ClaimTables:
     """Read exact claim Parquets into row dictionaries after schema checks."""
 
-    directory = resolve_sut_claims_dir(mode=mode, claims_dir=claims_dir)
+    config = resolve_sut_data_source(
+        mode=mode, claims_dir=claims_dir, require_clean_dir=False,
+    )
+    directory = config.claims_dir
     errors: list[str] = []
     required_rows: dict[str, tuple[RowDict, ...]] = {}
 
     for spec in REQUIRED_CLAIM_TABLES:
-        rows = _read_parquet_table(spec, directory, errors)
+        effective_spec = _effective_spec_for_mode(spec, config.mode)
+        rows = _read_parquet_table(effective_spec, directory, errors)
         required_rows[spec.filename] = rows
 
     optional_rows: dict[str, tuple[RowDict, ...]] = {}

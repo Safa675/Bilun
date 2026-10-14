@@ -125,6 +125,35 @@ Changing MIAT catalog rules, modifying synthetic cohort parquet files, or changi
 ### Out of Scope
 Changing the wrapper (it lives in `~/work/bilun-deploy-plan/staging-ops`, outside the repo), `RELEASE-LANES.md`, any deploy behavior, a script that reads the live PIDs.
 
+## Task: Make expected_rule_outputs.parquet and expected_*_payable_try optional in real_claims mode (Safa675/Bilun#240)
+
+### Goal
+`load_sut_claim_dataset(mode="real_claims")` and `read_claim_tables(mode="real_claims")` succeed when `expected_rule_outputs.parquet` is absent or empty and `expected_*_payable_try` / `expected_total_billed_try` / `discount_tier_expected` / `unit_price_try` / `scenario_tag` columns are null or absent, while present `expected_rule_outputs` rows in `synthetic_demo` and `real_claims` still validate their linkage and payable reconciliation.
+
+### Subtasks
+- [x] 1. Write failing RED unit tests in `tests/unit/domain/claims/test_loader.py` covering:
+  - `load_sut_claim_dataset(claims_dir, mode="real_claims")` when `expected_rule_outputs.parquet` is absent and `expected_total_billed_try`, `expected_total_payable_try`, `expected_payable_try`, `discount_tier_expected`, `unit_price_try`, and `scenario_tag` columns are absent or null;
+  - `load_sut_claim_dataset(claims_dir, mode="real_claims")` when `expected_rule_outputs.parquet` exists with 0 rows;
+  - `SUTClaimDataset.from_rows` validating present `expected_rule_outputs` linkage and payable reconciliation without requiring answer rows for clean baseline claims/lines.
+- [x] 2. Update `src/bilun/domain/claims/parquet_reader.py` so `read_claim_tables` resolves `mode` via `resolve_sut_data_source(..., require_clean_dir=False)` and, in `real_claims` mode, treats `expected_rule_outputs.parquet` as optional (`optional=True`, `reject_if_empty=False`, `scenario_tag` optional) and `expected_total_billed_try` on `claim_headers.parquet` as optional.
+- [x] 3. Update `src/bilun/domain/claims/parsing/row_parsers.py`, `src/bilun/domain/claims/dataset_builder.py`, `src/bilun/domain/claims/totals.py`, and `src/bilun/domain/claims/validation/expected_outputs.py`:
+  - Default missing `expected_payable_try` and `unit_price_try` on procedure/material/drug lines to `billed_amount_try` and missing `discount_tier_expected` on drug lines to `0.00` (while still rejecting malformed values);
+  - Backfill missing `expected_total_billed_try` / `expected_total_payable_try` on `ClaimHeader` from `claim_totals` while reconciling any explicitly supplied header totals;
+  - Validate linkage and payable reconciliation for all present `ExpectedRuleOutput` rows without requiring exhaustive claim/line answer rows for clean baseline claims/lines;
+  - Update `src/bilun/domain/claims/README.md` to document the `real_claims` optionality contract.
+- [x] 4. Run `ruff check`, the claims/deploy/synthetic/billing unit tests, update `tasks/todo.md`, commit, push `claude/fix-claims-loader-real-mode-240`, open the PR, and return to `main`.
+
+### Out of Scope
+Changing `REQUIRED_CLAIM_TABLES` / `SUT_CLAIM_FILENAMES` roster constants used by the paused strict paired-release lane, or modifying synthetic data generator scripts (`#239`, `#241`, `#242`).
+
+### Review (2026-10-14)
+- Kept `REQUIRED_CLAIM_TABLES` and `OPTIONAL_CLAIM_TABLES` intact in `src/bilun/domain/claims/schema.py` so the strict-lane source-roster contract (`tests/unit/deploy/test_generate_candidate_source_roster.py`) and `build_synthetic_claim_validation_columns()` remain untouched.
+- In `src/bilun/domain/claims/parquet_reader.py`, `_effective_spec_for_mode` relaxes `EXPECTED_RULE_OUTPUTS` (`optional=True`, `reject_if_empty=False`, `scenario_tag` optional) and `CLAIM_HEADERS` (`expected_total_billed_try` optional) when `config.mode == "real_claims"`.
+- In `src/bilun/domain/claims/parsing/row_parsers.py` and `src/bilun/domain/claims/dataset_builder.py`, missing `expected_payable_try` / `unit_price_try` default to `billed_amount_try`, missing `discount_tier_expected` defaults to `0.00`, and missing header `expected_total_billed_try` / `expected_total_payable_try` are backfilled from `claim_totals` while explicitly supplied values continue to be reconciled.
+- In `src/bilun/domain/claims/validation/expected_outputs.py`, all present `ExpectedRuleOutput` rows still validate their claim/patient/line linkage and `expected_payable_try` reconciliation without requiring exhaustive answer rows for clean baseline claims/lines.
+- Verification: `ruff check` clean; 318 unit tests across `tests/unit/domain/claims/`, `tests/unit/deploy/`, and `tests/unit/synthetic/` (including 3 RED→GREEN tests in `test_loader.py`) pass.
+
+
 ## Task: Complete the ingestion of the 2026-10-02 SUT package (Safa675/Bilun#217)
 
 ### Goal
