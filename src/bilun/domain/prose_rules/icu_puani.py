@@ -46,6 +46,7 @@ from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
+    SAVINGS_CATEGORY_AUDIT_EXPOSURE,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
 
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
 _OPPORTUNITY_TYPE = "icu_puani_yogun_bakim"
+_TIER_OVERBILLING_TYPE = "icu_tier_overbilling"
+_TIER_OVERBILLING_RULE_ID = "icu_tier_overbilling_2_4_4_H"
 _DAY_RATE_CODE = "510090"  # Yoğun bakım (EK-2B, hizmet başı)
 _SUT_SECTION_ID = "2.4.4.H"
 
@@ -60,11 +63,80 @@ _SUT_SECTION_ID = "2.4.4.H"
 # care (matches refakatci._ICU_PROCEDURE_CODES convention).
 _ICU_DAY_RATE_CODE = "510090"
 _ICU_PACKAGE_PREFIXES = ("552001", "552002", "552003", "552006", "552007", "552008")
+_TIER_3_PACKAGE_CODES: dict[str, tuple[str, str]] = {
+    "552003": ("552002", "552001"),  # Adult 3rd -> (2nd, 1st)
+    "552008": ("552007", "552006"),  # Newborn 3rd -> (2nd, 1st)
+}
 
-# Default intermediate package when a specific ICU basamak cannot be inferred
-# from procedure lines. 3rd basamak adult (P552003) is the conservative
-# (highest) default so we never under-state the recoverable amount.
-_DEFAULT_INTERMEDIATE_CODE = "552003"
+# SUT EK-2B procedure codes that evidence 3rd-level ICU organ support /
+# invasive mechanical ventilation / renal replacement / ECMO / CPR under
+# SUT §2.4.4.H and EK-2/C-A. Note: 530700 (non-invasive mechanical ventilation)
+# is a 2nd-level ICU criterion and does NOT by itself qualify 3rd-level ICU.
+_TIER_3_SUPPORT_PROCEDURE_CODES: frozenset[str] = frozenset(
+    {
+        "530130",  # Hastanın mekanik ventilatöre bağlanması (invaziv MV)
+        "530490",  # Ventilatör ile takip
+        "530800",  # Endotrakeal entübasyon, yenidoğan
+        "550030",  # Endotrakeal entübasyon, ameliyathane dışı
+        "550070",  # Kardiyopulmoner resüsitasyon
+        "550110",  # Nazal entübasyon, ameliyathane dışı
+        "605960",  # Kardiyopulmoner by-pass cerrahi işlemi, ilk gün pompa takibi dahil
+        "605969",  # Sol ventriküle uzun süreli yardımcı cihaz ve sağ ventriküle ECMO
+        "605975",  # Santral (Veno-arteriyel) VA-ECMO takılması veya çıkartılması
+        "605976",  # Perkütan (Veno-arteriyel) VA-ECMO takılması veya çıkartılması
+        "605977",  # Perkütan (Veno-venöz) VV-ECMO takılması veya çıkartılması
+        "605978",  # Perkütan (Veno-arteriyel-venöz) VAV-ECMO takılması veya çıkartılması
+        "605979",  # Arteriyal greft kullanılarak VA-ECMO takılması veya çıkartılması
+        "704210",  # Acil hemodiyaliz
+        "704230",  # Hemodiyaliz
+        "704231",  # Hemodiyaliz için kateter yerleştirilmesi
+        "704250",  # İzole ultrafiltrasyon
+        "704260",  # Periton diyalizi takibi
+        "704290",  # Sürekli hemodiafiltrasyon/hemofiltrasyon tedavisi
+        "704920",  # Aferez, Terapötik plazma değişimi (1 seans)
+    }
+)
+
+_TIER_3_SUPPORT_KEYWORDS: tuple[str, ...] = (
+    "mekanik ventilatore baglan",
+    "ventilator ile takip",
+    "endotrakeal entubasyon",
+    "nazal entubasyon",
+    "hemodiyaliz",
+    "hemodiafiltrasyon",
+    "hemofiltrasyon",
+    "ultrafiltrasyon",
+    "ecmo",
+    "kardiyopulmoner resusitasyon",
+    "plazma degisimi",
+    "plazmaferez",
+)
+
+
+def _fold_tr(text: str) -> str:
+    return (
+        str(text or "")
+        .translate(
+            str.maketrans(
+                {
+                    "Ç": "c",
+                    "ç": "c",
+                    "Ğ": "g",
+                    "ğ": "g",
+                    "I": "i",
+                    "İ": "i",
+                    "ı": "i",
+                    "Ö": "o",
+                    "ö": "o",
+                    "Ş": "s",
+                    "ş": "s",
+                    "Ü": "u",
+                    "ü": "u",
+                }
+            )
+        )
+        .lower()
+    )
 
 
 def _normalize_code(raw: str) -> str:
@@ -78,12 +150,24 @@ def _normalize_code(raw: str) -> str:
     )
 
 
+def _strip_p(normalized: str) -> str:
+    return normalized[1:] if normalized.startswith("P") else normalized
+
+
 def _is_icu_code(normalized: str) -> bool:
     """True for 510090 or any P55200x package code."""
-    stripped = normalized[1:] if normalized.startswith("P") else normalized
+    stripped = _strip_p(_normalize_code(normalized))
     if stripped == _ICU_DAY_RATE_CODE:
         return True
     return stripped in _ICU_PACKAGE_PREFIXES
+
+
+def _is_day_rate_code(raw: str) -> bool:
+    return _strip_p(_normalize_code(raw)) == _ICU_DAY_RATE_CODE
+
+
+def _is_icu_package_code(raw: str) -> bool:
+    return _strip_p(_normalize_code(raw)) in _ICU_PACKAGE_PREFIXES
 
 
 def _day_rate_puan(visit_date: date | str | None = None) -> float:
@@ -122,22 +206,12 @@ def _intermediate_package_price_try(
     return float(entry.get("price_try") or 0.0)
 
 
-def _resolve_ilave_oran(claim: ClaimHeader, intermediate_code: str) -> tuple[float, str]:
-    """EK-2/C-1 ilave oran (%) for ICU intermediate days, gated on facility tier.
-
-    Returns ``(oran_pct, reason)``. ``oran_pct`` is ``0.0`` when no uplift
-    applies.
-
-    Gate (SUT §2.2.(20) + EK-2/C-1): the +100% uplift applies only when the
-    procedure is performed by a 3rd-basamak (Sınıf-3) facility. The facility
-    tier is resolved from the claim header; if unresolved or not 3rd-basamak,
-    no uplift is applied (honest skip, not a default-apply).
-
-    Note: ``get_ek2c1_copay_rates()`` returns a dict-of-dicts keyed by the
-    P-prefixed code (e.g. ``"P552003"``), and each value is
-    ``{"procedure_name": str, "copay_rate_pct": float}`` — we extract the float
-    rather than treating the value itself as the rate.
-    """
+def _resolve_ilave_oran(
+    claim: ClaimHeader, intermediate_code: str | None
+) -> tuple[float, str]:
+    """EK-2/C-1 ilave oran (%) for ICU intermediate days, gated on facility tier."""
+    if not intermediate_code:
+        return 0.0, "no_intermediate_package"
     tier = normalize_facility_tier(
         claim.facility_tier, provider_type=claim.provider_type
     )
@@ -155,15 +229,9 @@ def _resolve_ilave_oran(claim: ClaimHeader, intermediate_code: str) -> tuple[flo
 def _claim_icu_package_code(
     procedure_lines: list[ProcedureClaimLine],
 ) -> str | None:
-    """If the claim's procedure lines carry a P55200x code, return its code.
-
-    This lets us pick the correct basamak (1./2./3.) and newborn vs adult
-    variant from what the hospital actually submitted. Falls back to None
-    when no package code is present (caller uses the default).
-    """
+    """If the claim's procedure lines carry a P55200x code, return its code."""
     for line in procedure_lines:
-        normalized = _normalize_code(line.procedure_code)
-        stripped = normalized[1:] if normalized.startswith("P") else normalized
+        stripped = _strip_p(_normalize_code(line.procedure_code))
         if stripped in _ICU_PACKAGE_PREFIXES:
             return stripped
     return None
@@ -173,10 +241,55 @@ def _claim_has_icu_code(
     procedure_lines: list[ProcedureClaimLine],
 ) -> bool:
     """True when any procedure line on the claim is an ICU indicator code."""
-    return any(
-        _is_icu_code(_normalize_code(line.procedure_code))
-        for line in procedure_lines
+    return any(_is_icu_code(line.procedure_code) for line in procedure_lines)
+
+
+def _infer_billed_icu_days(
+    claim_procs: list[ProcedureClaimLine],
+    hospital_raw_days: int,
+) -> tuple[int, int]:
+    """Compute (icu_days, intermediate_days) from billed ICU procedure lines.
+
+    Under SUT §2.4.4.H.(8), intermediate packages (P552001–P552008) are billed
+    exclusively on days between the first ICU day (510090) and last ICU day
+    (510090). Therefore:
+      - When K >= 1 intermediate package units are billed, the ICU segment
+        spans ``max(K + 2, D + K)`` days (bounded by the hospital stay), with
+        ``intermediate_days = max(icu_days - 2, 0)``. A 14-day ward stay with
+        a 3-day ICU segment (510090 + P552001 + 510090, D=2, K=1) yields 3 ICU
+        days and 1 intermediate day rather than 14 ICU days.
+      - When K == 0 (only 510090 is billed, no P55200x tier code), there are
+        zero intermediate days (we never default to 3rd-level P552003). A
+        same-day stay (hospital_raw_days == 0) is 1 ICU day; a 2-day stay
+        without ward-bed (510010) lines or with D >= 2 is 2 ICU days; otherwise
+        1 ICU day.
+    """
+    hospital_cap = max(hospital_raw_days, 1)
+    day_rate_units = sum(
+        max(int(getattr(p, "quantity", 1) or 1), 1)
+        for p in claim_procs
+        if _is_day_rate_code(p.procedure_code)
     )
+    pkg_units = sum(
+        max(int(getattr(p, "quantity", 1) or 1), 1)
+        for p in claim_procs
+        if _is_icu_package_code(p.procedure_code)
+    )
+    has_ward_bed = any(
+        _strip_p(_normalize_code(p.procedure_code)) in ("510010", "510070", "510081")
+        for p in claim_procs
+    )
+
+    if pkg_units > 0:
+        icu_days = min(max(pkg_units + 2, day_rate_units + pkg_units), hospital_cap)
+        intermediate_days = max(icu_days - 2, 0)
+        return icu_days, intermediate_days
+
+    if hospital_raw_days == 0:
+        return 1, 0
+    if day_rate_units >= 2 or (hospital_raw_days == 2 and not has_ward_bed):
+        return min(2, hospital_cap), 0
+    return 1, 0
 
 
 def detect_icu_puani_opportunities(
@@ -185,37 +298,7 @@ def detect_icu_puani_opportunities(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Detect expected ICU (yoğun bakım) charges for inpatient claims.
-
-    For each inpatient claim with non-null admission + discharge dates AND at
-    least one ICU indicator code (510090 / P55200x) on its procedure lines,
-    computes the dual-charge expected total:
-
-      - 510090 (first ICU day) + P55200x × (days-2) intermediate days
-        + 510090 (last ICU day).
-
-    Day counting: ICU days = ``(discharge - admission).days``. A 1-day stay
-    is billed as a single 510090 (first=last). A 2-day stay is two 510090s
-    with no intermediate.
-
-    Args:
-        claims: ClaimHeaders to evaluate.
-        procedure_lines: Procedure claim lines used (a) to detect ICU
-            presence and (b) to infer the submitted basamak package. When
-            omitted, ICU presence cannot be confirmed and no opportunities
-            are emitted.
-        claim_ids_with_procs: Optional filter — only emit opportunities for
-            claims that also have procedure lines (matches the
-            patient_report wiring gate ``if claim_context.procedure_lines``).
-
-    Returns:
-        Opportunity dicts with: type, claim_id, icu_days, first_day_code,
-        last_day_code, intermediate_package, intermediate_days, total_puan,
-        total_try, recoverable_uplift_try, sut_section_id, rule_id, detail,
-        plus EK-2/C-1 ilave-oran fields: ilave_oran_pct, ilave_oran_eligible,
-        ilave_oran_reason, intermediate_puan_base, intermediate_puan_uplifted.
-    """
-    # Group procedure lines by claim for the ICU gate + basamak inference.
+    """Detect expected ICU (yoğun bakım) charges for inpatient claims."""
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     if procedure_lines:
         for line in procedure_lines:
@@ -224,21 +307,17 @@ def detect_icu_puani_opportunities(
     opportunities: list[dict[str, Any]] = []
 
     for claim in claims:
-        # Gate on inpatient.
         if infer_care_setting(claim) != "inpatient":
             continue
 
-        # Gate on procedure lines present (if filter provided).
         if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
             continue
 
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
 
-        # Must have ICU codes present on the claim.
         if not _claim_has_icu_code(claim_procs):
             continue
 
-        # Must have both dates.
         if claim.admission_date is None or claim.discharge_date is None:
             continue
 
@@ -247,40 +326,34 @@ def detect_icu_puani_opportunities(
         if day_rate_puan <= 0:
             continue
 
-        # ICU days = (discharge - admission).days — NOT inclusive (+0).
-        # A same-day admission/discharge is a 0-day span; treat it as a
-        # 1-day stay (single 510090) per §2.4.4.H.(8) first=last.
         raw_days = (claim.discharge_date - claim.admission_date).days
-        icu_days = max(raw_days, 1)
         same_day = raw_days == 0
+        icu_days, intermediate_days = _infer_billed_icu_days(claim_procs, raw_days)
 
-        # Intermediate (ara günü) days = days between first and last.
-        # days=1 → 0 intermediate; days=2 → 0; days=3 → 1; days=n → n-2.
-        intermediate_days = max(icu_days - 2, 0)
-
-        # Pick the intermediate package basamak from submitted lines, else
-        # fall back to the conservative default (3rd basamak adult).
-        intermediate_code = (
-            _claim_icu_package_code(claim_procs) or _DEFAULT_INTERMEDIATE_CODE
-        )
-        intermediate_puan_base = _intermediate_package_puan(
-            intermediate_code, as_of_date
-        )
-        intermediate_price_try_base = _intermediate_package_price_try(
-            intermediate_code, as_of_date
-        )
+        # Pick the intermediate package basamak strictly from submitted lines;
+        # never default to 3rd-basamak P552003 when no package code is present.
+        intermediate_code = _claim_icu_package_code(claim_procs)
+        if intermediate_code is not None:
+            intermediate_puan_base = _intermediate_package_puan(
+                intermediate_code, as_of_date
+            )
+            intermediate_price_try_base = _intermediate_package_price_try(
+                intermediate_code, as_of_date
+            )
+        else:
+            intermediate_days = 0
+            intermediate_puan_base = 0.0
+            intermediate_price_try_base = 0.0
         day_rate_price_try = _day_rate_price_try(as_of_date)
 
-        # EK-2/C-1 ilave oran: +100% for Sınıf-3 facilities, applied
-        # to intermediate days ONLY (the 510090 day-rate is EK-2B hizmet başı, never uplifted).
-        ilave_oran_pct, ilave_oran_reason = _resolve_ilave_oran(claim, intermediate_code)
+        ilave_oran_pct, ilave_oran_reason = _resolve_ilave_oran(
+            claim, intermediate_code
+        )
         ilave_oran_eligible = ilave_oran_pct > 0
         uplift_mult = 1 + ilave_oran_pct / 100
         intermediate_puan = intermediate_puan_base * uplift_mult
         intermediate_price_try = intermediate_price_try_base * uplift_mult
 
-        # Puan totals: first 510090 + intermediate packages + last 510090.
-        # For a 1-day stay first==last so only one 510090 is counted.
         first_last_count = 1 if icu_days == 1 else 2
         total_puan = _money(
             first_last_count * day_rate_puan
@@ -291,10 +364,6 @@ def detect_icu_puani_opportunities(
             + intermediate_days * intermediate_price_try
         )
 
-        # Net out actual billed ICU amounts (510090 + P55200x) so the
-        # recoverable uplift reflects only the UNBILLED portion, not the
-        # full expected charge. A correctly-billed ICU stay produces zero
-        # recoverable uplift rather than a full-sized false opportunity.
         actual_billed_try = _money(
             sum(
                 float(p.billed_amount_try)
@@ -304,12 +373,11 @@ def detect_icu_puani_opportunities(
         )
         recoverable_try = _money(max(0.0, total_try - actual_billed_try))
 
-        # Build the human-readable charge breakdown.
         charge_lines = [
             f"510090 (yoğun bakım, hizmet başı): {first_last_count} day(s) × "
             f"{day_rate_puan:.2f} puan",
         ]
-        if intermediate_days > 0 and intermediate_puan_base > 0:
+        if intermediate_days > 0 and intermediate_code and intermediate_puan_base > 0:
             charge_lines.append(
                 f"P{intermediate_code} (EK-2C ara günü): {intermediate_days} day(s) × "
                 f"{intermediate_puan_base:.2f} puan"
@@ -341,7 +409,9 @@ def detect_icu_puani_opportunities(
                 "same_day_stay": same_day,
                 "first_day_code": _DAY_RATE_CODE,
                 "last_day_code": _DAY_RATE_CODE,
-                "intermediate_package": f"P{intermediate_code}",
+                "intermediate_package": (
+                    f"P{intermediate_code}" if intermediate_code else None
+                ),
                 "intermediate_days": intermediate_days,
                 "day_rate_puan": day_rate_puan,
                 "intermediate_puan": intermediate_puan_base,
@@ -364,3 +434,134 @@ def detect_icu_puani_opportunities(
         )
 
     return opportunities
+
+
+def _line_is_tier_3_support(line: ProcedureClaimLine) -> bool:
+    """True when a procedure line evidences 3rd-level ICU organ/ventilator support."""
+    code = _strip_p(_normalize_code(line.procedure_code))
+    if code in _TIER_3_SUPPORT_PROCEDURE_CODES:
+        return True
+    if code == "530700":
+        # Non-invasive mechanical ventilation is a 2nd-level criterion per EK-2/C-A.
+        return False
+    folded_name = _fold_tr(getattr(line, "procedure_name", "") or "")
+    if "non invaziv" in folded_name or "non-invaziv" in folded_name:
+        return False
+    return any(kw in folded_name for kw in _TIER_3_SUPPORT_KEYWORDS)
+
+
+def detect_icu_tier_overbilling(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine] | None = None,
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Detect 3rd-level ICU packages (P552003 / P552008) billed without 3rd-level support.
+
+    Under SUT §2.4.4.H and EK-2/C-A, 3rd-level (3. basamak) ICU billing requires
+    documented multi-organ failure or invasive organ support (invasive mechanical
+    ventilation / endotracheal intubation, hemodialysis / continuous renal
+    replacement / plasmapheresis, ECMO, or CPR). When a claim bills ``P552003``
+    (adult 3rd-level) or ``P552008`` (newborn 3rd-level) without any qualifying
+    3rd-level support procedure on the episode, this detector emits an
+    audit-exposure review finding showing the price gap to 2nd-level
+    (``P552002`` / ``P552007``) and 1st-level (``P552001`` / ``P552006``).
+    """
+    if not procedure_lines:
+        return []
+
+    procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
+    procedures_by_episode: dict[str, list[ProcedureClaimLine]] = {}
+    for line in procedure_lines:
+        procedures_by_claim.setdefault(line.claim_id, []).append(line)
+        ep_id = getattr(line, "episode_id", "") or ""
+        if ep_id:
+            procedures_by_episode.setdefault(ep_id, []).append(line)
+
+    findings: list[dict[str, Any]] = []
+
+    for claim in claims:
+        if infer_care_setting(claim) != "inpatient":
+            continue
+        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
+            continue
+
+        claim_procs = procedures_by_claim.get(claim.claim_id, [])
+        if not claim_procs:
+            continue
+
+        ep_id = getattr(claim, "episode_id", "") or ""
+        episode_procs = procedures_by_episode.get(ep_id, claim_procs) if ep_id else claim_procs
+        if any(_line_is_tier_3_support(p) for p in episode_procs):
+            continue
+
+        as_of_date = claim.admission_date or claim.claim_start_date
+        for line in claim_procs:
+            stripped = _strip_p(_normalize_code(line.procedure_code))
+            if stripped not in _TIER_3_PACKAGE_CODES:
+                continue
+
+            tier2_stripped, tier1_stripped = _TIER_3_PACKAGE_CODES[stripped]
+            ilave_oran_pct, _ = _resolve_ilave_oran(claim, stripped)
+            uplift_mult = 1.0 + ilave_oran_pct / 100.0
+            qty = max(int(getattr(line, "quantity", 1) or 1), 1)
+
+            tier3_unit = _money(
+                _intermediate_package_price_try(stripped, as_of_date) * uplift_mult
+            )
+            tier2_unit = _money(
+                _intermediate_package_price_try(tier2_stripped, as_of_date) * uplift_mult
+            )
+            tier1_unit = _money(
+                _intermediate_package_price_try(tier1_stripped, as_of_date) * uplift_mult
+            )
+
+            tier3_total = _money(tier3_unit * qty)
+            tier2_total = _money(tier2_unit * qty)
+            tier1_total = _money(tier1_unit * qty)
+            billed_try = _money(float(getattr(line, "billed_amount_try", 0.0) or 0.0))
+            reference_top = billed_try if billed_try > 0 else tier3_total
+            gap_to_tier2 = _money(max(0.0, reference_top - tier2_total))
+            gap_to_tier1 = _money(max(0.0, reference_top - tier1_total))
+
+            detail = (
+                f"3. basamak yoğun bakım paketi (P{stripped}, {qty} gün) "
+                f"invaziv mekanik ventilasyon / entübasyon / diyaliz / ECMO / "
+                f"organ desteği işlemi olmaksızın faturalandırılmış (SUT §2.4.4.H, "
+                f"EK-2/C-A). P{tier2_stripped} (2. basamak) farkı: "
+                f"{gap_to_tier2:.2f} TRY; P{tier1_stripped} (1. basamak) farkı: "
+                f"{gap_to_tier1:.2f} TRY."
+            )
+
+            findings.append(
+                {
+                    "type": _TIER_OVERBILLING_TYPE,
+                    "rule": _TIER_OVERBILLING_RULE_ID,
+                    "rule_id": _TIER_OVERBILLING_RULE_ID,
+                    "sut_section_id": _SUT_SECTION_ID,
+                    "severity": "warning",
+                    "claim_id": claim.claim_id,
+                    "procedure_line_id": line.procedure_line_id,
+                    "procedure_code": f"P{stripped}",
+                    "billed_tier": 3,
+                    "recommended_tier_2_code": f"P{tier2_stripped}",
+                    "recommended_tier_1_code": f"P{tier1_stripped}",
+                    "quantity": qty,
+                    "billed_amount_try": billed_try,
+                    "tier_3_expected_try": tier3_total,
+                    "tier_2_expected_try": tier2_total,
+                    "tier_1_expected_try": tier1_total,
+                    "price_gap_to_tier_2_try": gap_to_tier2,
+                    "price_gap_to_tier_1_try": gap_to_tier1,
+                    "at_risk_try": gap_to_tier2,
+                    "savings_try": gap_to_tier2,
+                    "risk_amount": gap_to_tier2,
+                    "included_in_sgk_total": False,
+                    "savings_category": SAVINGS_CATEGORY_AUDIT_EXPOSURE,
+                    "savings_basis": SAVINGS_BASIS_SOURCED,
+                    "message": detail,
+                    "detail": detail,
+                }
+            )
+
+    return findings
