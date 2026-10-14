@@ -36,6 +36,7 @@ See plans/billing/icu-ilave-oran-plan.md for the regulatory basis.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_ek2c1_copay_rates, lookup_procedure_code
@@ -85,33 +86,37 @@ def _is_icu_code(normalized: str) -> bool:
     return stripped in _ICU_PACKAGE_PREFIXES
 
 
-def _day_rate_puan() -> float:
-    """Look up the 510090 puan (hizmet başı) from the EK-2B catalog."""
-    result = lookup_procedure_code(_DAY_RATE_CODE)
+def _day_rate_puan(visit_date: date | str | None = None) -> float:
+    """Look up the 510090 puan (hizmet başı) from the EK-2B catalog as of visit_date."""
+    result = lookup_procedure_code(_DAY_RATE_CODE, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     puan = entry.get("puan")
     return float(puan) if puan is not None else 0.0
 
 
-def _day_rate_price_try() -> float:
-    """510090 price_try (already puan × katsayı)."""
-    result = lookup_procedure_code(_DAY_RATE_CODE)
+def _day_rate_price_try(visit_date: date | str | None = None) -> float:
+    """510090 price_try (already puan × katsayı) as of visit_date."""
+    result = lookup_procedure_code(_DAY_RATE_CODE, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     return float(entry.get("price_try") or 0.0)
 
 
-def _intermediate_package_puan(package_code: str) -> float:
-    """P55200x base puan from EK-2C (Phase 1: no ilave oran)."""
-    entry = get_ek2c_entry(package_code)
+def _intermediate_package_puan(
+    package_code: str, as_of_date: date | str | None = None
+) -> float:
+    """P55200x base puan from EK-2C (Phase 1: no ilave oran) as of as_of_date."""
+    entry = get_ek2c_entry(package_code, as_of_date=as_of_date)
     if entry is None:
         return 0.0
     puan = entry.get("puan")
     return float(puan) if puan is not None else 0.0
 
 
-def _intermediate_package_price_try(package_code: str) -> float:
-    """P55200x price_try (already puan × katsayı, base — no ilave oran)."""
-    entry = get_ek2c_entry(package_code)
+def _intermediate_package_price_try(
+    package_code: str, as_of_date: date | str | None = None
+) -> float:
+    """P55200x price_try (already puan × katsayı, base — no ilave oran) as of as_of_date."""
+    entry = get_ek2c_entry(package_code, as_of_date=as_of_date)
     if entry is None:
         return 0.0
     return float(entry.get("price_try") or 0.0)
@@ -210,10 +215,6 @@ def detect_icu_puani_opportunities(
         plus EK-2/C-1 ilave-oran fields: ilave_oran_pct, ilave_oran_eligible,
         ilave_oran_reason, intermediate_puan_base, intermediate_puan_uplifted.
     """
-    day_rate_puan = _day_rate_puan()
-    if day_rate_puan <= 0:
-        return []
-
     # Group procedure lines by claim for the ICU gate + basamak inference.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     if procedure_lines:
@@ -241,6 +242,11 @@ def detect_icu_puani_opportunities(
         if claim.admission_date is None or claim.discharge_date is None:
             continue
 
+        as_of_date = claim.admission_date or claim.claim_start_date
+        day_rate_puan = _day_rate_puan(as_of_date)
+        if day_rate_puan <= 0:
+            continue
+
         # ICU days = (discharge - admission).days — NOT inclusive (+0).
         # A same-day admission/discharge is a 0-day span; treat it as a
         # 1-day stay (single 510090) per §2.4.4.H.(8) first=last.
@@ -257,9 +263,13 @@ def detect_icu_puani_opportunities(
         intermediate_code = (
             _claim_icu_package_code(claim_procs) or _DEFAULT_INTERMEDIATE_CODE
         )
-        intermediate_puan_base = _intermediate_package_puan(intermediate_code)
-        intermediate_price_try_base = _intermediate_package_price_try(intermediate_code)
-        day_rate_price_try = _day_rate_price_try()
+        intermediate_puan_base = _intermediate_package_puan(
+            intermediate_code, as_of_date
+        )
+        intermediate_price_try_base = _intermediate_package_price_try(
+            intermediate_code, as_of_date
+        )
+        day_rate_price_try = _day_rate_price_try(as_of_date)
 
         # EK-2/C-1 ilave oran: +100% for Sınıf-3 facilities, applied
         # to intermediate days ONLY (the 510090 day-rate is EK-2B hizmet başı, never uplifted).

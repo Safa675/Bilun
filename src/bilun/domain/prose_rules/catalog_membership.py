@@ -101,9 +101,16 @@ def _eligible_history_rows(
         return work.drop_duplicates(subset=[code_column], keep="last")
 
     work["effective_date_parsed"] = pd.to_datetime(work["effective_date"], errors="coerce")
+    if "valid_to" in work.columns:
+        work["valid_to_parsed"] = pd.to_datetime(work["valid_to"], errors="coerce")
+    else:
+        work["valid_to_parsed"] = pd.NaT
     cutoff = pd.to_datetime(asof_key)
     work = work[work["effective_date_parsed"].notna()]
-    eligible = work[work["effective_date_parsed"] <= cutoff]
+    eligible = work[
+        (work["effective_date_parsed"] <= cutoff)
+        & (work["valid_to_parsed"].isna() | (work["valid_to_parsed"] >= cutoff))
+    ]
     if eligible.empty:
         # B-H2: no amendment is effective on or before the cutoff (e.g. a
         # claim dated before the earliest curated gazette, or a date.min

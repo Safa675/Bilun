@@ -263,15 +263,15 @@ def get_visit_prices(visit_date: Any | None = None) -> dict[str, float]:
     return result
 
 
-def get_katsayi() -> float:
+def get_katsayi(as_of: str | None = None) -> float:
     """
-    Get the current SUT coefficient (katsayi) for puan -> TL conversion.
+    Get the SUT coefficient (katsayi) for puan -> TL conversion as of date.
 
     Formula: Islem Bedeli (TL) = Puan x Katsayi
 
     Source: ``data/gazette/sut_katsayi_history.json`` (open-ended coefficient row).
     """
-    return resolve_current_katsayi()
+    return resolve_current_katsayi(as_of=as_of)
 
 
 def get_ek2a_visit_prices() -> dict[str, Any]:
