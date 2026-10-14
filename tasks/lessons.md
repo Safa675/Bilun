@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-14 — A data-realism audit is a checklist with coverage, not a list of what the samples showed
+
+**Pattern:** Asked to evaluate the synthetic demo cohort, I merged three sampled audits (three patient pages, a price check, a few agent passes) into a verdict that read as the list of problems. Safa found a class it never measured (one bill mixing unrelated departments: VA-ECMO, colectomy and a nail-bed revision on a neurology sleep-apnoea claim), then said the evaluation still was not good enough. The gap was method, not effort: no dimension list, so whatever the samples happened to show became "the problems".
+
+**Rule:** Before auditing a dataset's realism, write the dimension checklist first and measure each one over the whole cohort: identity against the catalogs as of the service date; arithmetic; cross-table links; coherence within one line, within one bill, across one patient's timeline; care setting and facility; sex and age; dates; money against a real-world anchor; and what the product shows on it. Report every dimension as checked (with count/denominator), clean, or not checked. Never present a sampled audit as an inventory; say what was not covered.
+
 ## 2026-10-13 — "Unchanged" needs the whole value, not a print cut at N characters
 
 **Pattern:** Diffing two SUT packages cell by cell, I printed the changed cells cut at 400 characters, saw only a provenance marker at the end of the EK-3O row and wrote "values unchanged" in the plan, the report and a commit message. The cell had a third clause after the marker. In the same pass I described a changed bone-marrow package row as "gains a second marker" from a truncated print; the new row restored a clause the previous amendment had dropped. An independent review caught both. The data was right; my claims were not.

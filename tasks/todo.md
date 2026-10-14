@@ -1,3 +1,55 @@
+## Task: Plans and issues from the 2026-10-14 synthetic data audit
+
+### Goal
+Two reviewed plans exist in `plans/` (removing the real ILAY data; redesigning the synthetic generator), GitHub issues track the engine bugs from `reports/synthetic-data/2026-10-14-demo-cohort-audit.md` each with its evidence, and the audit, its scripts, the plans and these task files are on `main` through one docs PR.
+
+### Subtasks
+- [x] 1. ILAY footprint, by file name only (the data is never opened): tracked files, the commits and branches that contain them, and every code, test, doc, CI and deploy reference. Read-only listing of whether the staging (`/opt/bilun-staging`) and live release trees on the VPS hold copies.
+  - Result: 5 files plus a second set in `golden/ilay` (15 JSON files).
+  - Copies: 2 staging releases, the staging bare repository and its bundle, 2 live trees (pinned in live's own release records), and 88 laptop folders.
+- [x] 2. Write `plans/security/2026-10-14-remove-ilay-real-data-plan.md` (draft done; review is subtask 7). It covers removal from the repo, staging cleanup through the wrapper, the live tree as a decision for Safa, the optional history purge with its costs, and verification steps.
+- [x] 3. Generator research: reusable catalog data (EK-2B chapters and surgical groups, anaesthesia groups, bed and ICU codes, EK-3 ↔ procedure links, EK-4A groups, a drug price source), the tests that pin synthetic patient IDs, and the consumers of the schema.
+  - Key results: there is no ICU-tier detector; the loader enforces the circular labels; the engine reads demo vignette prices and `scenario_tag`; about 42 test files hold about 375 pins.
+- [x] 4. Write `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md`. It covers Tier A first, care pathways, prices in force on the service date, labels from injected causes, plausibility validators in CI, re-pinning tests, and open questions.
+- [x] 5. Confirm the E1–E5 mechanisms with file:line references, check for duplicate issues, and draft the five issue bodies.
+  - No duplicates were found.
+  - I re-checked every citation. E1 gained the EK-2B group table (raw 2026-07-07 rows 124–130); E5 turned out to be wrong on this cohort.
+- [x] 6. Open the five issues in Safa675/Bilun and record their links in the audit report: Safa675/Bilun#230, #231, #232, #233 and #234, all labelled `bug`.
+- [x] 7. Have a subagent review both plans independently against the audit and the code, then fix what it finds.
+  - Verdict: the ILAY plan was "not ready" and the generator plan "ready after fixes".
+  - Both plans are rewritten (rev 2). I re-checked every reviewer claim I used, against the code, the git metadata or the VPS, read-only.
+
+- [x] 8. Safa approved the second batch (2026-10-14): the docs PR and the further engine issues, but not ILAY Phase 1. Confirmed and reshaped the seven candidates (companion bed and ICU, temporal-anomaly 50/51, duplicate material code, demo-only inputs, loader answer rows, price-history `valid_to`, ICU-tier detector), checked duplicates across all open/closed issues and PRs, and drafted the seven bodies.
+- [x] 9. Re-checked each citation in the drafts against the repository code and data, then filed them in Safa675/Bilun: #236, #237, #238, #239, #240, #241 (all `bug`) and #242 (`enhancement`).
+- [x] 10. Replaced the "not filed yet" lists in the generator plan (D6) and in the audit report with the new issue numbers (#236–#242).
+- [x] 11. Docs PR from a branch of `main` (no extra worktree, so no further copy of the ILAY files): KVKK and secret scan of the files first (0 patient IDs, 0 token-like strings); CI of `main` green on `6b35d543` (checked before the push, rule 10); PR #235 opened and updated with #236–#242. Merge is Safa's call.
+- [x] 12. Return the checkout to `main` (rule 11.5); leave no extra branch or worktree. (The PR branch stays on origin only.)
+
+### Out of Scope
+Executing either plan, fixing the engine bugs, deleting any file (locally, on the VPS or in git history), starting ILAY Phase 1 (waiting for Safa's answer), and merging the PR (Safa's call).
+
+### Review
+**Delivered so far**
+- **Issues:** Safa675/Bilun#230–#234 and #236–#242 (12 total: 11 `bug`, 1 `enhancement`).
+- **Plans:** `plans/security/2026-10-14-remove-ilay-real-data-plan.md` and `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md`, both rev 2.
+- **Audit report** updated with all 12 issue links (#230–#234, #236–#242).
+- **Audit scripts** preserved in `reports/synthetic-data/2026-10-14-audit-scripts/`.
+
+**What the review changed**
+- **ILAY plan.**
+  - Added the `golden/ilay` set and the live releases' baseline copy.
+  - Stopped any hand deletion on live.
+  - Gated the history rewrite behind the "No force-push" exception, a backup and green CI.
+  - Added three full bundles and two more real-data files in history (`reports/finans_flagged.xlsx`, the interviews docx).
+- **Generator plan.**
+  - Moved the fault registry before the showcase bills.
+  - Tied the anaesthesia source to #230.
+  - Fixed the EK-3 date claim, the drug price facts and the reconcile reuse.
+
+**KVKK side effect**
+- Two subagent logs on this laptop contain pseudonymized ILAY patient IDs: `~/.claude/projects/-home-safa-Documents-Bilun/a9cf6beb-…/subagents/agent-a225743e213a4fbab.jsonl` (6 distinct IDs) and `agent-a93e236386ee82143.jsonl` (11).
+- Reported to Safa. Deleting them is his call.
+
 ## Task: Stop the runbook from quoting live PIDs that change on every VPS reboot
 
 ### Goal
@@ -8,8 +60,8 @@
 - [x] 2. Replace the numbers in that sentence with "the live pair's MainPIDs and start times against the `LIVE_PIDS` pin in the script (a VPS reboot changes them; see below)".
 - [x] 3. Add one short paragraph after "Interrupted transfer": the wrapper stops before any VPS write (`update_exit: not_started`, "Canlı backend beklenen PID … değil"); read the live pair first (read-only, the `systemctl show` and `/proc/<pid>/cwd` check); only if both units are in the frozen `5c89ed53` bundle, re-pin `LIVE_PIDS` in the operator's script (outside this repo) and rerun; never loosen the check. No PID numbers in the paragraph.
 - [x] 4. `git diff` shows only that sentence and the new paragraph; `git grep -E "914/915|898/899|911/912"` finds nothing; `tests/unit/scripts/test_sgk_watch.py` (it names this file) passes in the CI image.
-- [ ] 5. One commit; CI status of `main` checked before the push (rule 10); PR opened; checks green.
-- [ ] 6. Merge is Safa's call; after the merge remove this worktree and branch and leave the main checkout on `main`.
+- [x] 5. One commit; CI status of `main` checked before the push (rule 10); PR opened; checks green. (PR #229, merged as `6b35d543`.)
+- [x] 6. Merge is Safa's call; after the merge remove this worktree and branch and leave the main checkout on `main`. (Merged by Safa; `git worktree list` shows only the main checkout and `git branch -a` only `main`, checked 2026-10-14.)
 
 ### Out of Scope
 Changing the wrapper (it lives in `~/work/bilun-deploy-plan/staging-ops`, outside the repo), `RELEASE-LANES.md`, any deploy behavior, a script that reads the live PIDs.
