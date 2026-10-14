@@ -378,6 +378,25 @@ E publication: [PR #105](https://github.com/Safa675/Bilun/pull/105) at `671fc9e0
 
 ---
 
+## Task: Restrict anaesthesia uplift to EK-2B §6 surgeries, use service-date EK-2B §4 group table, and subtract billed anaesthesia (Safa675/Bilun#230)
+
+### Goal
+`detect_anestezi_puani_opportunities` evaluates only EK-2B §6 surgical lines (`600000`–`629999`), resolves single-surgery (`550130`–`550190`) and multi-surgery same-session (`550200`–`550260`) anaesthesia groups from the service-date EK-2B §4 group table (with no 5,000 puan ceiling), subtracts already-billed anaesthesia (`550130`–`550346`) from `recoverable_uplift_try`, and cites SUT §2.2.2.A + EK-2/B §4 instead of §2.4.4.A (ESWL).
+
+### Subtasks
+- [x] 1. Restrict `_surgical_puan` in `src/bilun/domain/prose_rules/anestezi_puani.py` to EK-2B §6 surgical codes (`600000`–`629999`) so lab, exam, bed, and anaesthesia codes are skipped.
+- [x] 2. Replace the wrong hardcoded `1–5000` group table in `anestezi_puani.py` with the service-date EK-2B §4 group table (`2026-07-07` onwards: A1 `>=39001`, A2 `18501–39000`, A3 `9001–18500`, B `6001–9000`, C `3005–6000`, D `1301–3004`, E `0–1300`; plus `2026-01-01`, `2022-09-03`, and `2020-03-11` historical tables) and emit one increased anaesthesia (`550200`–`550260`) per multi-surgery session.
+- [x] 3. Subtract already-billed anaesthesia (`550130`–`550346`) from `recoverable_uplift_try`, update `AnesteziPuaniReview.confirmed_anestezi_try` and SUT §2.2.2.A / EK-2/B §4 citation, and update unit tests (`test_anestezi_puani.py`, `test_elkitabi_tablo23.py`).
+
+### Out of Scope
+Newborn/geriatric ASA 3–4 modifiers (`550270`–`550346`) when ASA score is not present in claim inputs.
+
+### Review
+- **Delivered:** Restricted `_surgical_puan` to EK-2B §6 (`600000`–`629999`), implemented service-date EK-2B §4 single (`550130`–`550190`) and multi-surgery (`550200`–`550260`) group tables, subtracted billed `550130`–`550346` into `recoverable_uplift_try`, updated `AnesteziPuaniReview.confirmed_anestezi_try` and SUT §2.2.2.A citation.
+- **Verification:** `test_anestezi_puani.py`, `test_elkitabi_tablo23.py`, and `test_claim_integration.py` pass; `ruff check` clean.
+
+---
+
 ## Task: Prepare and implement hotspot refactoring delivery D — drug corpus and matching
 
 ### Goal
