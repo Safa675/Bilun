@@ -736,3 +736,70 @@ def test_duplicate_material_code_lines_both_evaluated_in_bundling_prose() -> Non
     assert [h["material_line_id"] for h in hits] == ["MLZ-003", "MLZ-004"]
     assert [h["claim_id"] for h in hits] == ["F-053", "F-053"]
 
+
+def test_coronary_stent_clause_3_1_4_g_excludes_non_coronary_stents() -> None:
+    """#231: non-coronary stents must not get §3.1.4(g), while coronary stents do."""
+    non_coronary_hits = check_material_bundling_prose(
+        [
+            {
+                "name": "STENT, TRAKEAL, SİLİKON, DÜZ, İNCE DUVARLI",
+                "code": "GHC1230",
+                "unit_price": 18528.13,
+            },
+            {
+                "name": "Üreteral J stent",
+                "code": "UR1000",
+                "unit_price": 2400.0,
+            },
+        ]
+    )
+    assert not any(
+        h["rule_id"] == "3.1.4.(g).coronary_stents" for h in non_coronary_hits
+    )
+    # Non-coronary stent lines still receive applicable §3.1 rules (e.g. procedure_pairing / not_in_ek3c)
+    assert len(non_coronary_hits) == 2
+
+    coronary_hits = check_material_bundling_prose(
+        [
+            {
+                "name": "KORONER STENT, İLAÇ SALINIMLI",
+                "code": "KR1151",
+                "unit_price": 9500.0,
+            },
+            {
+                "name": "STENT, KORONER, BALONA MONTE EDİLMİŞ ÇIPLAK",
+                "code": "KR1150",
+                "unit_price": 8000.0,
+            },
+        ]
+    )
+    coronary_rule_hits = [
+        h for h in coronary_hits if h["rule_id"] == "3.1.4.(g).coronary_stents"
+    ]
+    assert len(coronary_rule_hits) == 2
+
+
+def test_informational_3_1_4_finding_adds_zero_billed_at_risk_and_does_not_mask_violations() -> None:
+    """#231: §3.1.4 informational findings have 0.0 risk_amount (0 TL billed at risk)
+    and do not suppress subsequent §3.1 violation rules on the same material line."""
+    from src.bilun.domain.billing.billing_actions import _material_row_billed_try
+
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "KORONER STENT, İLAÇ SALINIMLI",
+                "unit_price": 9500.0,
+            }
+        ]
+    )
+    info_hits = [h for h in hits if h["rule_id"] == "3.1.4.(g).coronary_stents"]
+    violation_hits = [
+        h for h in hits if h["rule_id"] == "3.1.1.(11).missing_material_code"
+    ]
+    assert len(info_hits) == 1
+    assert info_hits[0]["severity"] == "info"
+    assert info_hits[0]["risk_amount"] == 0.0
+    assert _material_row_billed_try(info_hits[0]) is None
+    assert len(violation_hits) == 1
+    assert violation_hits[0]["risk_amount"] == 9500.0
+

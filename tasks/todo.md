@@ -410,6 +410,24 @@ D was rebased onto C's merged main `20873ff6` without any source/test content ch
 
 ---
 
+## Task: Narrow §3.1.4(g) coronary-stent keyword and zero informational §3.1.4 risk (#231)
+
+### Goal
+Ensure `3.1.4.(g).coronary_stents` matches only coronary stents (not tracheal, urology, or other non-coronary stents), keep informational `§3.1.4` findings at `0.0` risk amount (`0 TL` billed at risk), and continue evaluating subsequent `§3.1` rules on lines that match an informational rule.
+
+### Subtasks
+- [x] Replace bare `stent` with `stent, koroner` in `data/gazette/prose_rule_sources/material_bundling/3.1.4.yaml` and recompile `data/gazette/prose_rules/material_bundling_prose.json`.
+- [x] In `src/bilun/domain/prose_rules/material_bundling.py`, set `risk_amount = 0.0` when `action.get("severity") == "info"` and do not terminate the per-line rule loop on `severity == "info"` matches.
+- [x] Add unit tests in `tests/unit/domain/prose_rules/test_material_bundling.py` covering non-coronary stents (`STENT, TRAKEAL, SİLİKON`, `Üreteral J stent`), coronary stents (`KORONER STENT, İLAÇ SALINIMLI`, `STENT, KORONER, BALONA MONTE EDİLMİŞ ÇIPLAK`), zero billed-at-risk on `§3.1.4` info findings, and non-info `§3.1` rules firing alongside `§3.1.4` info findings.
+
+### Out of Scope
+Re-architecting other `§3.1.4` sub-clauses or line-level billed-at-risk deduplication (`#232`).
+
+### Review
+Replaced bare `stent` with `stent, koroner` in `3.1.4.(g).coronary_stents`, recompiled `material_bundling_prose.json`, set `risk_amount = 0.0` for `severity == "info"` findings, and allowed subsequent `§3.1` rules to evaluate after an informational rule match. Verified with `test_material_bundling.py`, `test_material_bundling_golden.py`, `test_material_bundling_gate_b.py`, and `tests/smoke/test_sut.py`.
+
+---
+
 ## Task: Complete hotspot refactoring delivery C — section presentation decisions
 
 ### Goal

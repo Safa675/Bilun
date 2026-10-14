@@ -327,15 +327,16 @@ def _violation_from_rule(
     claim_id: str = "",
 ) -> dict[str, Any]:
     action = rule.get("action") or {}
+    severity = action.get("severity", "warning")
     display_name = name or resolve_material_name_by_code(code) or code or "—"
     finding: dict[str, Any] = {
         "rule": "material_bundling_prose",
-        "severity": action.get("severity", "warning"),
+        "severity": severity,
         "material_name": display_name,
         "material_code": code,
         "message": action.get("message_tr", rule.get("rule_id", "")),
         "savings_try": 0.0,
-        "risk_amount": unit_price,
+        "risk_amount": 0.0 if severity == "info" else unit_price,
         "sut_section": rule.get("sut_section", "3.1"),
         "rule_id": rule.get("rule_id", ""),
         "material_outcome": action.get("material_outcome", "no_pay"),
@@ -409,20 +410,20 @@ def check_material_bundling_prose(
 
             key = (line_key, str(rule.get("rule_id", "")))
             if key in seen:
-                break
+                continue
             seen.add(key)
-            violations.append(
-                _violation_from_rule(
-                    rule,
-                    name=name,
-                    code=code,
-                    unit_price=unit_price,
-                    ruleset=ruleset,
-                    material_line_id=line_id,
-                    claim_id=claim_id,
-                )
+            finding = _violation_from_rule(
+                rule,
+                name=name,
+                code=code,
+                unit_price=unit_price,
+                ruleset=ruleset,
+                material_line_id=line_id,
+                claim_id=claim_id,
             )
-            break
+            violations.append(finding)
+            if finding.get("severity") != "info":
+                break
 
     return violations
 

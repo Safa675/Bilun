@@ -157,8 +157,8 @@ rules:
     material_name_any:
     - koroner stent
     - koroner stentler
+    - stent, koroner
     - coronary stent
-    - stent
   action:
     material_outcome: review_required
     severity: info
