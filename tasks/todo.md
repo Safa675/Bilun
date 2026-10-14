@@ -18,6 +18,26 @@ Re-generating the synthetic demo cohort parquets or changing EK-4A drug catalogs
 - Enforced `valid_to` in `gazette.py`, `temporal.py`, and `catalog_membership.py`; `804460` expires on `2021-05-31` and returns `None` on `2024-08-01`.
 - Wired claim/procedure dates into `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py`.
 
+## Task: Fix temporal-anomaly surgical code prefix filter (Safa675/Bilun#237)
+
+### Goal
+`detect_procedure_time_overlap` (`src/bilun/domain/prose_rules/temporal_anomaly.py`) classifies EK-2B/EK-2C surgical procedure codes (`60xxxx`–`62xxxx` and `P60xxxx`–`P62xxxx`) as surgical when `procedure_category` lacks a surgical keyword, and never classifies `50xxxx`/`51xxxx` bed/stay tariffs (`510010`–`510121`) as surgery.
+
+### Subtasks
+- [x] 1. Write failing unit tests in `tests/unit/domain/prose_rules/test_temporal_anomaly.py` covering:
+  - two same-date, same-specialty `60xxxx`–`62xxxx` (and `P60xxxx`–`P62xxxx`) lines with generic `procedure_category="islem"` / `"paket"` flagging `procedure_time_overlap`;
+  - two same-date, same-specialty `51xxxx` bed/stay lines (`510010`, `510121`) not flagging `procedure_time_overlap` even when `procedure_category` is `"islem"` or `"cerrahi"`.
+- [x] 2. Update `src/bilun/domain/prose_rules/temporal_anomaly.py`:
+  - Change `_SURGICAL_CODE_PREFIXES` from `("50", "51")` to `("60", "61", "62")` and exclude `51xxxx` bed/stay codes (`_BED_CODE_PREFIXES = ("51",)`) in `_is_surgical`, normalizing optional leading `P`/`p` and punctuation.
+- [x] 3. Run `ruff check`, `pytest` on `test_temporal_anomaly.py`, `compile_rules.py --check`, and `audit_manifest_parity.py --drug-only`.
+
+### Out of Scope
+Populating `procedure_specialty_code` in the synthetic generator (tracked under the care-pathway generator plan) or changing `detect_los_procedure_density_anomaly`.
+
+### Review (2026-10-14)
+- `_SURGICAL_CODE_PREFIXES` updated from `("50", "51")` to `("60", "61", "62")` (matching all 2,407 EK-2B surgical procedures in `600000`–`629999` and `P600000`–`P629999` in EK-2C), and `51xxxx` bed/stay tariffs (`510010`–`510121`) are excluded unconditionally in `_is_surgical`.
+- Verification: `ruff check` clean; 16/16 unit tests in `test_temporal_anomaly.py` pass (RED→GREEN on 8 new cases); `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
+
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
 ### Goal
