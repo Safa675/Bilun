@@ -19,6 +19,7 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
@@ -41,9 +42,9 @@ _REFAKATCI_PUAN = 124.95
 _ICU_PROCEDURE_CODES = frozenset({"510090", "P55200x"})
 
 
-def _refakatci_puan() -> float:
-    """Look up the current 510121 puan from the EK-2B catalog."""
-    result = lookup_procedure_code(_REFAKATCI_CODE)
+def _refakatci_puan(visit_date: date | str | None = None) -> float:
+    """Look up the 510121 puan from the EK-2B catalog as of visit_date."""
+    result = lookup_procedure_code(_REFAKATCI_CODE, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     puan = entry.get("puan")
     if puan is None:
@@ -84,16 +85,6 @@ def detect_refakatci_opportunities(
         Opportunity dicts with: type, claim_id, days, puan (124.95),
         expected_try, sut_section_id, rule_id, detail, suppression_notes.
     """
-    puan = _refakatci_puan()
-    if puan <= 0:
-        return []
-
-    katsayi = get_katsayi()
-    if katsayi <= 0:
-        return []
-
-    daily_rate = _money(puan * katsayi)
-
     # Group procedure lines by claim for the ICU gate.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     for line in procedure_lines:
@@ -109,6 +100,18 @@ def detect_refakatci_opportunities(
         # Must have both dates.
         if claim.admission_date is None or claim.discharge_date is None:
             continue
+
+        visit_date = claim.admission_date or claim.claim_start_date
+        puan = _refakatci_puan(visit_date)
+        if puan <= 0:
+            continue
+
+        as_of_str = visit_date.isoformat() if isinstance(visit_date, date) else visit_date
+        katsayi = get_katsayi(as_of=as_of_str)
+        if katsayi <= 0:
+            continue
+
+        daily_rate = _money(puan * katsayi)
 
         companion_days = (claim.discharge_date - claim.admission_date).days
 

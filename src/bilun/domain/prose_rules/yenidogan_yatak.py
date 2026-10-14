@@ -30,6 +30,7 @@ prohibition on billing rooming-in bassinet stays.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import lookup_procedure_code
@@ -55,9 +56,9 @@ _PERINATAL_RANGE = ("P00", "P96")  # P00–P96 — perinatal conditions
 _NEWBORN_DEPT_TOKENS = ("yenidoğan", "yenedogan", "çocuk", "cocuk", "neonatal", "newborn", "pediatri")
 
 
-def _daily_rate(bed_code: str) -> float:
-    """Look up the current newborn bed ``price_try`` (already puan × katsayı)."""
-    result = lookup_procedure_code(bed_code)
+def _daily_rate(bed_code: str, visit_date: date | str | None = None) -> float:
+    """Look up the newborn bed ``price_try`` (already puan × katsayı) as of visit_date."""
+    result = lookup_procedure_code(bed_code, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     return float(entry.get("price_try") or 0.0)
 
@@ -124,11 +125,6 @@ def detect_yenidogan_yatak_opportunities(
         Opportunity dicts with: type, claim_id, bed_code (510070 or 510081),
         days, puan, expected_try, sut_section_id, rule_id, detail.
     """
-    kuvoz_rate = _daily_rate(_BED_KUVOZ)
-    kot_rate = _daily_rate(_BED_KOT)
-    if kuvoz_rate <= 0 and kot_rate <= 0:
-        return []
-
     rooming_in = rooming_in_claim_ids or set()
     opportunities: list[dict[str, Any]] = []
 
@@ -156,6 +152,12 @@ def detect_yenidogan_yatak_opportunities(
         # Inclusive LOS: discharge day IS billed (+1), matching yatak puani.
         days = (claim.discharge_date - claim.admission_date).days + 1
         if days <= 0:
+            continue
+
+        visit_date = claim.admission_date or claim.claim_start_date
+        kuvoz_rate = _daily_rate(_BED_KUVOZ, visit_date)
+        kot_rate = _daily_rate(_BED_KOT, visit_date)
+        if kuvoz_rate <= 0 and kot_rate <= 0:
             continue
 
         # Mutually exclusive bed selection.
@@ -203,7 +205,7 @@ def detect_yenidogan_yatak_opportunities(
                 "claim_id": claim.claim_id,
                 "bed_code": bed_code,
                 "days": days,
-                "puan": _puan_for(bed_code),
+                "puan": _puan_for(bed_code, visit_date),
                 "expected_try": expected,
                 "recoverable_uplift_try": expected,
                 "same_day_stay": same_day,
@@ -220,8 +222,8 @@ def detect_yenidogan_yatak_opportunities(
     return opportunities
 
 
-def _puan_for(bed_code: str) -> float:
-    """Return the raw EK-2B puan (pre-katsayı) for a newborn bed code."""
-    result = lookup_procedure_code(bed_code)
+def _puan_for(bed_code: str, visit_date: date | str | None = None) -> float:
+    """Return the raw EK-2B puan (pre-katsayı) for a newborn bed code as of visit_date."""
+    result = lookup_procedure_code(bed_code, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     return float(entry.get("puan") or 0.0)
