@@ -126,10 +126,6 @@ def detect_refakatci_opportunities(
     if fallback_puan <= 0:
         return []
 
-    katsayi = get_katsayi(as_of=as_of_date)
-    if katsayi <= 0:
-        return []
-
     # Group procedure lines by claim for the ICU gate and billed 510121 check.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     for line in procedure_lines:
@@ -144,6 +140,12 @@ def detect_refakatci_opportunities(
 
         # Must have both dates.
         if claim.admission_date is None or claim.discharge_date is None:
+            continue
+
+        visit_date = claim.admission_date or claim.claim_start_date
+        as_of_str = visit_date.isoformat() if isinstance(visit_date, date) else visit_date
+        katsayi = get_katsayi(as_of=as_of_str)
+        if katsayi <= 0:
             continue
 
         puan, daily_rate = _refakatci_tariff_for_date(
