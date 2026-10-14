@@ -461,6 +461,24 @@ F was rebased onto E's merged main `46a694d0`; all reviewed F source/tests remai
 
 ---
 
+## Task: Count patients with recoverable > 0 in n_patients_with_actions (Safa675/Bilun#234)
+
+### Goal
+`CohortRecoverySummary` exposes `n_patients_with_actions` (counting patients with `total_recoverable_try > 0`) while keeping `n_patients` as the loaded patient count, and `RevenueRecoverySummary.tsx` displays `n_patients_with_actions` under "Eylemli Hastalar" / "Patients with Actions".
+
+### Subtasks
+- [x] 1. Add `n_patients_with_actions: int = 0` to `CohortRecoverySummary` (`src/bilun/domain/billing/types.py`), compute it in `build_cohort_recovery_summary` (`src/bilun/domain/billing/cohort_summary.py`) and backfill in `get_revenue_recovery` (`src/bilun/api/routes/optimization.py`), and allowlist it in `src/bilun/api/public_contracts.json`.
+- [x] 2. Add `n_patients_with_actions?: number` to `CohortRecoverySummary` in `frontend/src/lib/domains/sut.ts`, update `RevenueRecoverySummary.tsx` and `SUTOptimizerTab.tsx` cohort filtering, and add unit tests in backend and frontend.
+
+### Out of Scope
+Changing `n_patients` semantics or regenerating the synthetic demo cohort parquets.
+
+### Review
+- **Delivered:** Added `n_patients_with_actions` across `CohortRecoverySummary`, `cohort_summary.py`, `optimization.py`, `public_contracts.json`, `sut.ts`, `RevenueRecoverySummary.tsx`, and `SUTOptimizerTab.tsx`.
+- **Verification:** Backend `test_cohort_recovery_summary.py` and frontend `RevenueRecoverySummary.test.tsx` pass; `ruff check` clean.
+
+---
+
 ## Task: Complete hotspot refactoring delivery E — drug routing, constraints and evaluation
 
 ### Goal

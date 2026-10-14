@@ -1195,6 +1195,7 @@ export interface PatientRecoverySummaryRow {
 
 export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarrier {
   n_patients: number;
+  n_patients_with_actions?: number;
   total_lab_savings: number;
   total_copay_savings: number;
   total_strategy_savings: number;

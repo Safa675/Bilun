@@ -179,3 +179,42 @@ def test_copay_partial_sum_is_unknown_but_computed_zero_is_known(missing: float 
     assert summary["total_opportunity_try"] == (None if missing is None else 120.0)
     payload["copay"]["patient_copay_waived_total_try"] = 0.0
     assert patient_recovery_summary_from_payload(payload)["exemption_gap_try"] == 0.0
+
+
+def test_n_patients_with_actions_counts_only_positive_recoverable() -> None:
+    """n_patients_with_actions counts patients with recoverable > 0 while n_patients stays loaded count (#234)."""
+    from dataclasses import asdict
+
+    from src.bilun.api.public_responses import project_public_response
+    from src.bilun.domain.billing.cohort_summary import build_cohort_recovery_summary
+
+    three_reports = {
+        "P1": BillingActionReport(
+            patient_id="P1", total_recoverable_try=150.0, sgk_uplift_try=150.0, action_count=2
+        ),
+        "P2": BillingActionReport(
+            patient_id="P2", total_recoverable_try=75.0, sgk_uplift_try=75.0, action_count=1
+        ),
+        "P3": BillingActionReport(
+            patient_id="P3", total_recoverable_try=0.0, sgk_uplift_try=0.0, action_count=3
+        ),
+    }
+    summary = build_cohort_recovery_summary(three_reports, claim_dataset=None)
+    assert summary.n_patients == 3
+    assert summary.n_patients_with_actions == 2
+    projected = project_public_response(asdict(summary), "get_revenue_recovery")
+    assert projected["n_patients"] == 3
+    assert projected["n_patients_with_actions"] == 2
+
+    zero_reports = {
+        "P1": BillingActionReport(
+            patient_id="P1", total_recoverable_try=0.0, sgk_uplift_try=0.0, action_count=1
+        ),
+        "P2": BillingActionReport(
+            patient_id="P2", total_recoverable_try=0.0, sgk_uplift_try=0.0, action_count=0
+        ),
+    }
+    zero_summary = build_cohort_recovery_summary(zero_reports, claim_dataset=None)
+    assert zero_summary.n_patients == 2
+    assert zero_summary.n_patients_with_actions == 0
+

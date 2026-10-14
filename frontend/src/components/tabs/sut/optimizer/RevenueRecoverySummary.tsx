@@ -79,6 +79,11 @@ export default function RevenueRecoverySummary({ data }: { data: RecoverySummary
     return label === key ? fmtLabel(row.key) : label;
   };
   const state = exact ? "exact" : partial ? "partial_exact" : data.exactness_status ?? "missing_exact_inputs";
+  const patientsWithActions =
+    data.n_patients_with_actions ??
+    (data.patient_summaries
+      ? data.patient_summaries.filter((p) => (p.total_recoverable_try ?? 0) > 0).length
+      : data.n_patients);
 
   return (
     <Surface variant="inset" padding="none" className="space-y-5 min-w-0">
@@ -89,7 +94,7 @@ export default function RevenueRecoverySummary({ data }: { data: RecoverySummary
           display="gold"
         />
         <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
-          <span>{t("optimizer.kpis.patientsWithActions")}: <strong className="tabular-nums">{fmtNum(data.n_patients)}</strong></span>
+          <span>{t("optimizer.kpis.patientsWithActions")}: <strong className="tabular-nums">{fmtNum(patientsWithActions)}</strong></span>
           <Chip variant={exact ? "success" : "warning"}>{t(`billing.recommendedActions.exactness.${state}`)}</Chip>
         </div>
       </div>

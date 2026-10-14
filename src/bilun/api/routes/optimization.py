@@ -349,6 +349,26 @@ def get_revenue_recovery():
                     top = summaries[:10]
                     if top != payload.get("top_patients"):
                         payload = {**payload, "top_patients": top}
+                if "n_patients_with_actions" not in payload:
+                    rows_for_count = (
+                        payload.get("patient_summaries")
+                        or payload.get("top_patients")
+                        or []
+                    )
+                    payload = {
+                        **payload,
+                        "n_patients_with_actions": sum(
+                            1
+                            for row in rows_for_count
+                            if isinstance(row, dict)
+                            and (
+                                row.get("total_recoverable_try")
+                                or row.get("sgk_uplift_try")
+                                or 0.0
+                            )
+                            > 0
+                        ),
+                    }
                 return attach_bilun_data_source(payload)
         if mode == "persistent":
             raise ServiceUnavailableError(
