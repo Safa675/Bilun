@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-14 — Check `~/second-brain/inbox/` and local config (`~/.gemini/config/config.json`) before answering runtime/billing questions
+
+**Pattern:** When Safa asked whether his GCP Free Trial credit (`01D62C-CF9CBE-0ADC91`) covers `gemini-4-argon` in Antigravity and why the balance looked unchanged, I relied on a stale Sep 10 `gbrain` recall and generic Antigravity OAuth assumptions, claiming Argon in Antigravity runs on a built-in subscription quota rather than GCP Vertex AI. Two hours earlier on the same day, another session had enabled Antigravity Enterprise ADC mode (`"enableAdc": true` in `~/.gemini/config/config.json` against `golden-index-505019-r1`) and logged the setup in `~/second-brain/inbox/20261014T163857Z-safa-loq-17irx10-claude-code-acb223.md` (not yet indexed by nightly `gbrain`). Furthermore, comparing the earlier `₺12,401` credit balance with Safa's pasted `₺12,291.36` balance and querying `monitoring.googleapis.com` (`aiplatform.googleapis.com/publisher/online_serving/model_invocation_count`) proved that 143 `gemini-4-argon` calls (19.42M input / 131k output tokens) hit `golden-index-505019-r1` and deducted `₺109.64` from the Free Trial credit.
+
+**Rule:** Before answering any question about Safa's local environment, model routing, or billing: (1) check `~/second-brain/inbox/` in addition to `gbrain recall`, because same-day `brain add` entries live in `inbox/` until the nightly filing run; (2) inspect the actual local config (`~/.gemini/config/config.json`, ADC files) and live telemetry (`monitoring.googleapis.com`) rather than assuming default consumer auth.
+
 ## 2026-10-14 — A data-realism audit is a checklist with coverage, not a list of what the samples showed
 
 **Pattern:** Asked to evaluate the synthetic demo cohort, I merged three sampled audits (three patient pages, a price check, a few agent passes) into a verdict that read as the list of problems. Safa found a class it never measured (one bill mixing unrelated departments: VA-ECMO, colectomy and a nail-bed revision on a neurology sleep-apnoea claim), then said the evaluation still was not good enough. The gap was method, not effort: no dimension list, so whatever the samples happened to show became "the problems".

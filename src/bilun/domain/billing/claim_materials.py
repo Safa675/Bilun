@@ -67,10 +67,23 @@ def _enrich_material_precheck_row(
     *,
     list_key: str,
     claim_id: str | None = None,
+    material_line_id: str | None = None,
 ) -> dict[str, object]:
-    """Attach claim scope, SUT section, and optional package code for action rows."""
+    """Attach claim scope, line identity, SUT section, and optional package code for action rows."""
     enriched = dict(row)
+    resolved_line_id = (
+        str(material_line_id or enriched.get("material_line_id") or "").strip() or None
+    )
+    if resolved_line_id:
+        enriched["material_line_id"] = resolved_line_id
+
     resolved_claim_id = str(claim_id or enriched.get("claim_id") or "").strip() or None
+    if resolved_claim_id is None and resolved_line_id:
+        for line in ctx.material_lines:
+            if line.material_line_id == resolved_line_id:
+                resolved_claim_id = str(line.claim_id or "").strip() or None
+                if resolved_claim_id:
+                    break
     if resolved_claim_id is None and len(ctx.claims) == 1:
         resolved_claim_id = ctx.claims[0].claim_id
     if resolved_claim_id:
@@ -125,22 +138,25 @@ def _append_kdv_price_reviews(
         billed = float(line.billed_amount_try)
         if _money(billed - ceiling) <= 0.01:
             continue
-        result.kdv_price_reviews.append(
-            {
-                "sut_code": code,
-                "material_name": line.material_name,
-                "billed_try": billed,
-                "gazette_ex_vat_try": round(float(ex_vat), 2),
-                "gazette_ceiling_try": ceiling,
-                "kdv_applied": apply_kdv,
-                "kdv_rate": DEFAULT_MATERIAL_KDV_RATE if apply_kdv else 0.0,
-                "note": (
-                    "Billed amount exceeds EK-3 list price"
-                    + (" + KDV" if apply_kdv else " (KDV exempt path)")
-                    + " (§3.1.1(10))."
-                ),
-            }
-        )
+        review_row: dict[str, object] = {
+            "sut_code": code,
+            "material_name": line.material_name,
+            "billed_try": billed,
+            "gazette_ex_vat_try": round(float(ex_vat), 2),
+            "gazette_ceiling_try": ceiling,
+            "kdv_applied": apply_kdv,
+            "kdv_rate": DEFAULT_MATERIAL_KDV_RATE if apply_kdv else 0.0,
+            "note": (
+                "Billed amount exceeds EK-3 list price"
+                + (" + KDV" if apply_kdv else " (KDV exempt path)")
+                + " (§3.1.1(10))."
+            ),
+        }
+        if line.material_line_id:
+            review_row["material_line_id"] = line.material_line_id
+        if line.claim_id:
+            review_row["claim_id"] = line.claim_id
+        result.kdv_price_reviews.append(review_row)
 
 
 def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck:
@@ -162,6 +178,11 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
     preauth_codes = {item["sut_code"]: item for item in _get_ek3c1_preauth()}
     miat_catalog = {item["sut_code"]: item for item in _get_ek3c2_miat()}
 
+    # Only cross-claim MIAT interval / catalog-advisory checks group by
+    # material_code (selecting the latest line per code so a historical line
+    # does not emit a redundant MIAT advisory alongside its renewal).
+    # Per-line checks (pre_auth_required, bundled_separate_billing) evaluate
+    # every material line (#238).
     latest_line_by_code: dict[str, object] = {}
     for line in ctx.material_lines:
         code_key = line.material_code.strip().upper()
@@ -181,8 +202,6 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
 
     for line in ctx.material_lines:
         code_key = line.material_code.strip().upper()
-        if latest_line_by_code.get(code_key) is not line:
-            continue
         code = line.material_code.strip()
         in_preauth_catalog = code in preauth_codes
         if in_preauth_catalog or line.requires_pre_auth:
@@ -198,10 +217,11 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                     },
                     list_key="pre_auth_required",
                     claim_id=line.claim_id,
+                    material_line_id=line.material_line_id,
                 )
             )
 
-        if code in miat_catalog:
+        if code in miat_catalog and latest_line_by_code.get(code_key) is line:
             catalog = miat_catalog[code]
             miat_period = str(catalog.get("miat_period", ""))
             interval_hit = check_miat_interval_violation(
@@ -216,6 +236,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                         interval_hit,
                         list_key="miat_interval_violations",
                         claim_id=line.claim_id,
+                        material_line_id=line.material_line_id,
                     )
                 )
             else:
@@ -235,6 +256,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                         },
                         list_key="miat_restricted",
                         claim_id=line.claim_id,
+                        material_line_id=line.material_line_id,
                     )
                 )
 
@@ -267,6 +289,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                     },
                     list_key="bundled_separate_billing",
                     claim_id=line.claim_id,
+                    material_line_id=line.material_line_id,
                 )
             )
 

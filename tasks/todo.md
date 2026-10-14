@@ -1,3 +1,22 @@
+## Task: Evaluate material pre-check and §3.1/§3.3 prose rules per material line (#238)
+
+### Goal
+`precheck_materials_from_claims()`, `check_material_bundling_prose()`, and `check_specialty_materials_prose()` evaluate pre-auth, bundling, and §3.1/§3.3 prose rules per `material_line_id` (preserving `material_line_id` and `claim_id` on every finding) while keeping cross-line `material_code` grouping exclusively for cross-claim MIAT interval checks.
+
+### Subtasks
+- [x] 1. Write RED unit tests in `tests/unit/domain/billing/test_claim_materials_precheck.py`, `tests/unit/domain/prose_rules/test_material_bundling.py`, and `tests/unit/domain/prose_rules/test_specialty_materials.py` covering duplicate `material_code` lines (including `F-SENTETIK-HASTA-0038-053` `GHC1220` where `MLZ-…-003` has `requires_pre_auth=True` and `MLZ-…-004` has `requires_pre_auth=False`, plus `material_line_id` and `claim_id` preservation across multi-claim contexts).
+- [x] 2. Update `src/bilun/domain/billing/claim_materials.py`, `src/bilun/domain/prose_rules/material_bundling.py`, `src/bilun/domain/prose_rules/specialty_materials.py`, and `src/bilun/api/public_contracts.json` so pre-auth, bundling, and prose rules evaluate every material line and attach `material_line_id` and `claim_id`.
+- [x] 3. Run unit/contract test suites (`5,359 passed` across billing/prose/materials + `608 passed` in API tests) and `ruff check` to verify GREEN and zero regressions, then return checkout to `main` (Rule 11.5).
+
+### Out of Scope
+Changing MIAT catalog rules, modifying synthetic cohort parquet files, or changing non-material prose evaluators.
+
+### Review
+- Scoped `latest_line_by_code` in `claim_materials.precheck_materials_from_claims` strictly to the cross-claim MIAT check (`if code in miat_catalog and latest_line_by_code.get(code_key) is line:`), so `pre_auth_required` and `bundled_separate_billing` evaluate every material line.
+- Updated `check_material_bundling_prose` and `check_specialty_materials_prose` to key `seen` by `(material_line_id or f"idx:{idx}", rule_id)` instead of `(code or name, rule_id)`, and forwarded `material_line_id` and `claim_id` from `PatientClaimContext.material_lines` through `_violation_from_rule` and `_enrich_material_precheck_row`.
+- Added `material_line_id` to `MaterialPreCheck` list schemas in `src/bilun/api/public_contracts.json`.
+- Verified `F-SENTETIK-HASTA-0038-053` emits `pre_auth_required` for `MLZ-F-SENTETIK-HASTA-0038-053-003` (`GHC1220`, `requires_pre_auth=True`) and prose findings for both `MLZ-…-003` and `MLZ-…-004`.
+
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
 ### Goal
