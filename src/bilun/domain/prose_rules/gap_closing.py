@@ -337,11 +337,13 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         context["care_setting"] = "outpatient"
     else:
         context["care_setting"] = claim_type_lower or "outpatient"
-    # Emergency: department or scenario_tag carries emergency signal.
+    # Emergency: claim_type or department carries emergency signal.
     dept = (header.department or "").lower()
-    tag = (header.scenario_tag or "").lower()
     context["is_emergency"] = (
-        "acil" in dept or "emergency" in dept or "acil" in tag or "emergency" in tag
+        "acil" in claim_type_lower
+        or "emergency" in claim_type_lower
+        or "acil" in dept
+        or "emergency" in dept
     )
     # Facility contracting: uncontracted if provider_type indicates it.
     # The Turkish contracted/uncontracted marker is "sozlesmesiz" (single s);

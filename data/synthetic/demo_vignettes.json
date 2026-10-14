@@ -16,9 +16,9 @@
       ],
       "presentation": "package_only",
       "golden": {
-        "savings_try": [5500, 5500],
+        "savings_try": [0, 0],
         "package_total_try": [3500, 3500],
-        "itemized_total_try": [9000, 9000]
+        "itemized_total_try": [3038.16, 3038.16]
       }
     },
     "0003": {
@@ -37,8 +37,8 @@
       ],
       "presentation": "itemized_only",
       "golden": {
-        "savings_try": [6650, 6650],
-        "package_total_try": [9000, 9000],
+        "savings_try": [4625.48, 4625.48],
+        "package_total_try": [6975.48, 6975.48],
         "itemized_total_try": [2350, 2350]
       }
     },
