@@ -389,6 +389,25 @@ Implementation & verification evidence:
 
 ---
 
+## Task: Use recoverable_uplift_try for bed-day and ICU totals and actions (Safa675/Bilun#233)
+
+### Goal
+`YatakPuaniReview.confirmed_yatak_try` and `collect_billing_actions` read `recoverable_uplift_try` (skipping zero-gap bed-day actions), and `IcuPuaniReview.confirmed_icu_try` uses `recoverable_uplift_try` even when it is `0.0` instead of falling back to `total_try`.
+
+### Subtasks
+- [x] 1. Update `YatakPuaniReview.confirmed_yatak_try` and `IcuPuaniReview.confirmed_icu_try` in `src/bilun/domain/billing/types.py` to use `row["recoverable_uplift_try"]` whenever `row.get("recoverable_uplift_try") is not None` (preserving `0.0`).
+- [x] 2. Update `collect_billing_actions` in `src/bilun/domain/billing/billing_actions.py` to read `recoverable_uplift_try` for `yatak_puani` and skip `yatak_puani` action rows when the gap is `0.0`.
+- [x] 3. Update and add unit tests in `tests/unit/domain/prose_rules/test_yatak_puani.py` and `tests/unit/domain/prose_rules/test_yatak_icu_overlap.py`; run pytest and ruff.
+
+### Out of Scope
+Re-generating the synthetic demo cohort parquets.
+
+### Review
+- **Delivered:** `YatakPuaniReview.confirmed_yatak_try` and `IcuPuaniReview.confirmed_icu_try` read `recoverable_uplift_try` when present (including `0.0`), and `collect_billing_actions` reads `recoverable_uplift_try` for `yatak_puani` and omits zero-gap bed-day action rows.
+- **Verification:** `62 passed` across `test_yatak_puani.py`, `test_yatak_icu_overlap.py`, `test_icu_puani.py`, `test_billing_actions.py`, `test_claim_integration.py`, and `test_block_spec_integrity.py`; `ruff check` clean.
+
+---
+
 ## Task: Complete hotspot refactoring delivery F — audit decomposition
 
 ### Goal
