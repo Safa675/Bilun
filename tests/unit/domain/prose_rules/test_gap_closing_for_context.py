@@ -30,6 +30,7 @@ def _make_header(
     provider_type: str = "sozlesmeli",
     department: str = "genel",
     package_candidate: bool | None = None,
+    scenario_tag: str = "test",
 ) -> ClaimHeader:
     from datetime import date
     return ClaimHeader(
@@ -49,7 +50,7 @@ def _make_header(
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",
-        scenario_tag="test",
+        scenario_tag=scenario_tag,
     )
 
 
@@ -113,6 +114,27 @@ def test_build_context_derives_emergency_from_department() -> None:
     ctx = _make_ctx(header=_make_header(department="acil servis"))
     context = _build_gap_closing_context(ctx)
     assert context["is_emergency"] is True
+
+
+def test_build_context_derives_emergency_from_claim_type_and_ignores_scenario_tag() -> None:
+    """Safa675/Bilun#239: claim_type='acil' sets is_emergency=True even when department is non-ER, and scenario_tag never sets is_emergency."""
+    ctx_er = _make_ctx(
+        header=_make_header(
+            claim_type="acil",
+            department="Ic Hastaliklari",
+            scenario_tag="",
+        )
+    )
+    assert _build_gap_closing_context(ctx_er)["is_emergency"] is True
+
+    ctx_tag_only = _make_ctx(
+        header=_make_header(
+            claim_type="ayakta",
+            department="Ic Hastaliklari",
+            scenario_tag="acil_sozlesmesiz_kurum",
+        )
+    )
+    assert _build_gap_closing_context(ctx_tag_only)["is_emergency"] is False
 
 
 @pytest.mark.parametrize("claim_type", ["yatis", "yatarak", "YATARAK", "inpatient"])

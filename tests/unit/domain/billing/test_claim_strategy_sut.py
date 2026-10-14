@@ -546,3 +546,37 @@ class TestClaimStrategySut:
             "Claim F-SENTETIK-HASTA-0045-078 is billed correctly as package "
             "per SUT §2.2.2(1). Package total 7218.58 TRY."
         )
+
+    def test_package_only_submission_resolves_catalog_itemized_alternative(self) -> None:
+        claim = _claim(
+            facility_tier="egitim_arastirma",
+            claim_type="yatis",
+            admission_date=date(2024, 3, 12),
+            discharge_date=date(2024, 3, 14),
+            claim_start_date=date(2024, 3, 12),
+            claim_end_date=date(2024, 3, 14),
+            scenario_tag="",
+        )
+        lines = [
+            _proc(
+                procedure_code="609270",
+                procedure_category="paket",
+                procedure_date=date(2024, 3, 12),
+                unit_price_try=Decimal("2000.00"),
+                billed_amount_try=Decimal("2000.00"),
+                expected_payable_try=Decimal("2000.00"),
+                package_code="609270",
+            ),
+        ]
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_rec = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("claim_id") == "CLM1"
+            and rec.get("recommendation_kind") == "optional_override"
+        )
+        assert claim_rec["itemized_price_methodology"] == "ek2b_catalog"
+        assert claim_rec["itemized_total_try"] == pytest.approx(3038.16)
+        assert claim_rec["package_total_try"] == pytest.approx(2000.00)
+        assert claim_rec["recommendation"] == "itemized"
+        assert claim_rec["savings_try"] == pytest.approx(1038.16)

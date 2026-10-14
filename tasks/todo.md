@@ -233,6 +233,34 @@ Both decisions were approved as recommended. Steps 1.1 to 4.2 and the CI command
   - Nit skipped: `ingest_state.json` has no trailing newline; `sut_ingest_state.py:153` writes it that way and the old file was written by the same code.
 - Not done on purpose: nothing is pushed, no PR is opened, #217 stays open until the merge.
 
+## Task: Fix demo-only vignette and scenario_tag inputs (Safa675/Bilun#239)
+
+### Goal
+`claim_strategy.py` computes optional-override package and itemized totals purely from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs (with `demo_vignette_lookup.py` removed from `src/bilun/`), and `gap_closing.py` / `fatura_inceleme.py` derive `is_emergency` from `claim_type` and `department` without reading `scenario_tag`.
+
+### Subtasks
+- [x] 1. Remove `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`, and update `tests/unit/domain/test_money_helper.py` to drop the removed module path.
+- [x] 2. Update `src/bilun/domain/billing/claim_strategy.py`:
+  - Inline `recommended_package_code_for_claim(claim, claim_procs)` using `claim_procs` `paket` line codes, `package_code`, and EK-2C procedure code lookups (no vignette lookup).
+  - Extend `resolve_package_total_try` to fall back to `get_ek2c_entry(line.procedure_code, as_of_date=as_of)` when `package_lines` and `line.package_code` are absent.
+  - Add `resolve_catalog_itemized_alternative(claim, claim_procs, performed_lines=...)` so package-only submissions (when `eligible_lines` is empty) resolve their itemized alternative from `performed_procedure_lines` or `claim_procs` via `get_ek2b_price_for_date` and `compute_session_adjusted_itemized_total` (`itemized_price_methodology = "ek2b_catalog"`).
+- [x] 3. Update `src/bilun/domain/prose_rules/gap_closing.py:341-345` and `src/bilun/domain/prose_rules/fatura_inceleme.py:190-194` to derive `context["is_emergency"]` from `claim_type_lower` and `dept` (`"acil" in claim_type_lower or "emergency" in claim_type_lower or "acil" in dept or "emergency" in dept`), never `scenario_tag`.
+- [x] 4. Update synthetic demo golden bands in `data/synthetic/demo_vignettes.json` (`0002` and `0003`) and test assertions in `tests/unit/domain/billing/test_billing_actions.py`, `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py`, `tests/unit/domain/billing/test_claim_strategy_sut.py`, and `tests/unit/domain/prose_rules/test_gap_closing_for_context.py` to match catalog-resolved prices and add regression tests verifying:
+  - Blanking `scenario_tag` across all 50 synthetic patients leaves `compute_patient_billing_report` outputs and rule evaluations unchanged.
+  - A claim with `claim_type="acil"` and `department="Ic Hastaliklari"` has `is_emergency is True` in `_build_gap_closing_context`.
+- [x] 5. Run `ruff` and relevant unit tests, commit, check `main` CI (Rule 10), push `claude/fix-demo-vignette-emergency-239`, open PR for `#239`, and return to `main` (Rule 11.5).
+
+### Out of Scope
+Regenerating `data/synthetic/sut/claims/*.parquet`, removing `data/synthetic/demo_vignettes.json` from `scripts/deploy/generate_candidate_source_roster.py` (strict-lane pause rule), or changing `traffic_accident_billing.py`.
+
+### Review
+- Removed `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`.
+- Added `recommended_package_code_for_claim` and `resolve_catalog_itemized_alternative` in `src/bilun/domain/billing/claim_strategy.py` so optional-override package and itemized totals resolve from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs.
+- Updated `src/bilun/domain/prose_rules/gap_closing.py` and `src/bilun/domain/prose_rules/fatura_inceleme.py` so `is_emergency` is derived from `claim_type` and `department`, never `scenario_tag`.
+- Verified `ruff` clean and `1,275` synthetic, billing, and deploy unit tests + `18` `test_gap_closing_for_context.py` tests pass.
+
+---
+
 ## Task: Start the laptop CI runner automatically while jobs are queued (2026-10-12)
 
 ### Goal
