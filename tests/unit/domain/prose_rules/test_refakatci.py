@@ -45,6 +45,7 @@ def _make_procedure_line(
     claim_id: str = "C1",
     code: str = "510010",
     line_id: str = "L1",
+    billed_amount_try: Decimal = Decimal("0"),
 ):
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
@@ -58,9 +59,9 @@ def _make_procedure_line(
         procedure_name="test",
         procedure_category="test",
         quantity=1,
-        unit_price_try=Decimal("0"),
-        billed_amount_try=Decimal("0"),
-        expected_payable_try=Decimal("0"),
+        unit_price_try=billed_amount_try,
+        billed_amount_try=billed_amount_try,
+        expected_payable_try=billed_amount_try,
         is_package_included=False,
         package_code="",
         surcharge_applicable=False,
@@ -88,6 +89,8 @@ def test_3day_inpatient_stay_companion_opportunity() -> None:
     assert opp["puan"] == pytest.approx(124.95, abs=0.01)
     # 3 × 124.95 × 0.593 = 222.29
     assert opp["expected_try"] == pytest.approx(222.29, abs=0.02)
+    assert opp["actual_billed_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == pytest.approx(222.29, abs=0.02)
     assert opp["rule_id"] == "refakatci_510121"
     assert opp["sut_section_id"] == "2.6.3"
     assert opp["included_in_sgk_total"] is True
@@ -109,6 +112,7 @@ def test_same_day_stay_suppressed_day_case() -> None:
     opp = opps[0]
     assert opp["days"] == 0
     assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
     assert opp["included_in_sgk_total"] is False
     notes = opp["suppression_notes"]
     assert any("day_case" in n or "günübirlik" in n.lower() for n in notes)
@@ -132,10 +136,121 @@ def test_icu_claim_suppressed() -> None:
     # Days are still counted for informational purposes.
     assert opp["days"] == 3
     assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
     assert opp["included_in_sgk_total"] is False
     notes = opp["suppression_notes"]
     assert any("icu" in n.lower() or "per_diem" in n.lower() for n in notes)
     assert "§2.6.3.(3)" in opp["detail"]
+
+
+@pytest.mark.parametrize(
+    "icu_code",
+    [
+        "P552001",
+        "P552002",
+        "P552003",
+        "P552006",
+        "P552007",
+        "P552008",
+        "552001",
+        "552003",
+        "p552002",
+    ],
+)
+def test_icu_package_codes_suppressed(icu_code: str) -> None:
+    """ICU package codes P552001–P552008 (and bare 552001–552008) suppress 510121."""
+    from src.bilun.domain.prose_rules.refakatci import (
+        detect_refakatci_opportunities,
+    )
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 13)
+    )
+    procs = [_make_procedure_line(code=icu_code, line_id="L-icu-pkg")]
+    opps = detect_refakatci_opportunities([header], procs)
+
+    assert len(opps) == 1
+    opp = opps[0]
+    assert opp["days"] == 3
+    assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
+    assert opp["included_in_sgk_total"] is False
+    assert "§2.6.3.(3)" in opp["detail"]
+
+
+@pytest.mark.parametrize(
+    ("admission", "discharge", "expected_puan", "expected_daily_rate", "expected_total"),
+    [
+        (date(2023, 6, 15), date(2023, 6, 18), 46.28, 27.44, 82.32),
+        (date(2024, 7, 1), date(2024, 7, 4), 104.13, 61.75, 185.25),
+        (date(2026, 7, 10), date(2026, 7, 13), 124.95, 74.10, 222.29),
+    ],
+)
+def test_historical_admission_date_pricing(
+    admission: date,
+    discharge: date,
+    expected_puan: float,
+    expected_daily_rate: float,
+    expected_total: float,
+) -> None:
+    """Companion-bed rate uses the EK-2B 510121 tariff in force on admission_date."""
+    from src.bilun.domain.prose_rules.refakatci import (
+        detect_refakatci_opportunities,
+    )
+
+    header = _make_claim_header(admission=admission, discharge=discharge)
+    procs = [_make_procedure_line(code="510010")]
+    opps = detect_refakatci_opportunities([header], procs)
+
+    assert len(opps) == 1
+    opp = opps[0]
+    assert opp["days"] == 3
+    assert opp["puan"] == pytest.approx(expected_puan, abs=0.01)
+    assert opp["expected_try"] == pytest.approx(expected_total, abs=0.02)
+    assert opp["recoverable_uplift_try"] == pytest.approx(expected_total, abs=0.02)
+    assert f"{expected_daily_rate:.2f} TRY/day" in opp["detail"]
+
+
+def test_already_billed_510121_subtracted_from_recoverable() -> None:
+    """Already-billed 510121 lines reduce recoverable_uplift_try and confirmed_refakat_try."""
+    from src.bilun.domain.billing.types import RefakatciReview
+    from src.bilun.domain.prose_rules.refakatci import (
+        detect_refakatci_opportunities,
+    )
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 13)
+    )
+    # Partial billing: 1 day (74.10 TL) billed out of 3 days (3 × 74.10 = 222.30 TL)
+    partial_procs = [
+        _make_procedure_line(code="510010", line_id="L-bed"),
+        _make_procedure_line(
+            code="510121", line_id="L-ref", billed_amount_try=Decimal("74.10")
+        ),
+    ]
+    partial_opps = detect_refakatci_opportunities([header], partial_procs)
+    assert len(partial_opps) == 1
+    opp = partial_opps[0]
+    assert opp["expected_try"] == pytest.approx(222.30, abs=0.01)
+    assert opp["actual_billed_try"] == pytest.approx(74.10, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(148.20, abs=0.01)
+    assert RefakatciReview(opportunities=partial_opps).confirmed_refakat_try == pytest.approx(
+        148.20, abs=0.01
+    )
+
+    # Full billing: all 222.30 TL already billed -> 0.0 recoverable
+    full_procs = [
+        _make_procedure_line(code="510010", line_id="L-bed"),
+        _make_procedure_line(
+            code="510121", line_id="L-ref", billed_amount_try=Decimal("222.30")
+        ),
+    ]
+    full_opps = detect_refakatci_opportunities([header], full_procs)
+    assert len(full_opps) == 1
+    assert full_opps[0]["expected_try"] == pytest.approx(222.30, abs=0.01)
+    assert full_opps[0]["actual_billed_try"] == pytest.approx(222.30, abs=0.01)
+    assert full_opps[0]["recoverable_uplift_try"] == 0.0
+    assert RefakatciReview(opportunities=full_opps).confirmed_refakat_try == 0.0
 
 
 def test_outpatient_skipped() -> None:
@@ -147,3 +262,32 @@ def test_outpatient_skipped() -> None:
     header = _make_claim_header(claim_type="ayakta")
     opps = detect_refakatci_opportunities([header], [_make_procedure_line()])
     assert opps == []
+
+
+def test_refakatci_opportunities_survive_public_projection() -> None:
+    """expected_try, actual_billed_try, and recoverable_uplift_try survive public projection."""
+    from dataclasses import asdict
+
+    from src.bilun.api.public_responses import project_public_response
+    from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT, RefakatciReview
+    from src.bilun.domain.prose_rules.refakatci import (
+        detect_refakatci_opportunities,
+    )
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 13)
+    )
+    procs = [
+        _make_procedure_line(code="510010", line_id="L-bed"),
+        _make_procedure_line(
+            code="510121", line_id="L-ref", billed_amount_try=Decimal("74.10")
+        ),
+    ]
+    opps = detect_refakatci_opportunities([header], procs)
+    review = RefakatciReview(opportunities=opps, exactness_status=EXACTNESS_STATUS_EXACT)
+    projected = project_public_response({"refakatci": asdict(review)}, "get_billing_report")
+
+    proj_opp = projected["refakatci"]["opportunities"][0]
+    assert proj_opp["expected_try"] == pytest.approx(222.30, abs=0.01)
+    assert proj_opp["actual_billed_try"] == pytest.approx(74.10, abs=0.01)
+    assert proj_opp["recoverable_uplift_try"] == pytest.approx(148.20, abs=0.01)

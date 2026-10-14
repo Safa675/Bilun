@@ -19,10 +19,12 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
@@ -35,10 +37,29 @@ if TYPE_CHECKING:
 _OPPORTUNITY_TYPE = "refakatci_companion_bed"
 _REFAKATCI_CODE = "510121"
 _REFAKATCI_PUAN = 124.95
+_ICU_DAY_RATE_CODE = "510090"
+_ICU_PACKAGE_PREFIXES = ("552001", "552002", "552003", "552006", "552007", "552008")
 # ICU indicator procedure codes — presence on a claim marks it as intensive
 # care, where the companion bed (510121) is suppressed in favour of a
 # separate per-diem (§2.6.3.(3)).
-_ICU_PROCEDURE_CODES = frozenset({"510090", "P55200x"})
+_ICU_PROCEDURE_CODES = frozenset(
+    {
+        _ICU_DAY_RATE_CODE,
+        *(f"P{code}" for code in _ICU_PACKAGE_PREFIXES),
+        *_ICU_PACKAGE_PREFIXES,
+    }
+)
+
+
+def _normalize_code(raw: str) -> str:
+    return (
+        str(raw or "")
+        .strip()
+        .replace(".", "")
+        .replace(" ", "")
+        .replace("-", "")
+        .upper()
+    )
 
 
 def _refakatci_puan() -> float:
@@ -52,13 +73,29 @@ def _refakatci_puan() -> float:
     return float(puan)
 
 
+def _refakatci_tariff_for_date(
+    admission_date: date,
+    fallback_puan: float,
+    katsayi: float,
+) -> tuple[float, float]:
+    """Return (puan, daily_rate_try) for 510121 as of ``admission_date``."""
+    dated_puan = get_ek2b_price_for_date(_REFAKATCI_CODE, admission_date, "puan")
+    dated_price = get_ek2b_price_for_date(_REFAKATCI_CODE, admission_date, "price_try")
+    puan = float(dated_puan) if dated_puan is not None and dated_puan > 0 else fallback_puan
+    if dated_price is not None and dated_price > 0:
+        daily_rate = _money(float(dated_price))
+    else:
+        daily_rate = _money(puan * katsayi)
+    return puan, daily_rate
+
+
 def _claim_is_icu(procedure_lines: list[ProcedureClaimLine]) -> bool:
     """True when any procedure line on the claim is an ICU indicator code."""
-    codes = {
-        line.procedure_code.strip().replace(".", "").replace(" ", "").replace("-", "")
-        for line in procedure_lines
-    }
-    return any(code in _ICU_PROCEDURE_CODES for code in codes)
+    for line in procedure_lines:
+        code = _normalize_code(line.procedure_code)
+        if code in _ICU_PROCEDURE_CODES:
+            return True
+    return False
 
 
 def detect_refakatci_opportunities(
@@ -69,32 +106,31 @@ def detect_refakatci_opportunities(
 
     For each inpatient claim with non-null admission + discharge dates:
       * Skip outpatient / day-case (<24h) stays with an informational note.
-      * Skip ICU stays (510090 / P55200x) — companion per-diem applies
+      * Skip ICU stays (510090 / P552001–P552008) — companion per-diem applies
         instead (§2.6.3.(3)).
-      * Otherwise compute companion days = ``(discharge - admission).days``
-        and expected charge = days × 124.95 puan × katsayı.
+      * Otherwise compute companion days = ``(discharge - admission).days``,
+        expected charge = days × admission-date 510121 rate, and subtract any
+        already-billed 510121 lines into ``recoverable_uplift_try``.
 
     Args:
         claims: ClaimHeaders to evaluate.
-        procedure_lines: Procedure claim lines used to detect ICU claims.
-            Only lines belonging to a given claim are consulted for the ICU
-            gate.
+        procedure_lines: Procedure claim lines used to detect ICU claims and
+            already-billed 510121 lines.
 
     Returns:
-        Opportunity dicts with: type, claim_id, days, puan (124.95),
-        expected_try, sut_section_id, rule_id, detail, suppression_notes.
+        Opportunity dicts with: type, claim_id, days, puan, expected_try,
+        actual_billed_try, recoverable_uplift_try, sut_section_id, rule_id,
+        detail, suppression_notes.
     """
-    puan = _refakatci_puan()
-    if puan <= 0:
+    fallback_puan = _refakatci_puan()
+    if fallback_puan <= 0:
         return []
 
     katsayi = get_katsayi()
     if katsayi <= 0:
         return []
 
-    daily_rate = _money(puan * katsayi)
-
-    # Group procedure lines by claim for the ICU gate.
+    # Group procedure lines by claim for the ICU gate and billed 510121 check.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
     for line in procedure_lines:
         procedures_by_claim.setdefault(line.claim_id, []).append(line)
@@ -110,7 +146,18 @@ def detect_refakatci_opportunities(
         if claim.admission_date is None or claim.discharge_date is None:
             continue
 
+        puan, daily_rate = _refakatci_tariff_for_date(
+            claim.admission_date, fallback_puan, katsayi
+        )
         companion_days = (claim.discharge_date - claim.admission_date).days
+        claim_procs = procedures_by_claim.get(claim.claim_id, [])
+        actual_billed_try = _money(
+            sum(
+                float(p.billed_amount_try)
+                for p in claim_procs
+                if _normalize_code(p.procedure_code) == _REFAKATCI_CODE
+            )
+        )
 
         # Suppression rule 1 (§2.2.2.(5)): never paid for günübirlik /
         # day-case stays (<24h).
@@ -122,6 +169,8 @@ def detect_refakatci_opportunities(
                     "days": 0,
                     "puan": puan,
                     "expected_try": 0.0,
+                    "actual_billed_try": actual_billed_try,
+                    "recoverable_uplift_try": 0.0,
                     "katsayi": katsayi,
                     "sut_section_id": "2.6.3",
                     "rule_id": "refakatci_510121",
@@ -143,7 +192,6 @@ def detect_refakatci_opportunities(
 
         # Suppression rule 2 (§2.6.3.(3)): ICU days → companion gets a
         # separate per-diem instead of 510121.
-        claim_procs = procedures_by_claim.get(claim.claim_id, [])
         if _claim_is_icu(claim_procs):
             opportunities.append(
                 {
@@ -152,6 +200,8 @@ def detect_refakatci_opportunities(
                     "days": companion_days,
                     "puan": puan,
                     "expected_try": 0.0,
+                    "actual_billed_try": actual_billed_try,
+                    "recoverable_uplift_try": 0.0,
                     "katsayi": katsayi,
                     "sut_section_id": "2.6.3",
                     "rule_id": "refakatci_510121",
@@ -174,6 +224,7 @@ def detect_refakatci_opportunities(
             continue
 
         expected = _money(companion_days * daily_rate)
+        recoverable_try = _money(max(0.0, expected - actual_billed_try))
 
         opportunities.append(
             {
@@ -182,6 +233,8 @@ def detect_refakatci_opportunities(
                 "days": companion_days,
                 "puan": puan,
                 "expected_try": expected,
+                "actual_billed_try": actual_billed_try,
+                "recoverable_uplift_try": recoverable_try,
                 "katsayi": katsayi,
                 "sut_section_id": "2.6.3",
                 "rule_id": "refakatci_510121",
