@@ -318,7 +318,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("session_uplift", report.session_uplift, "recoverable_uplift_try"),
         ("drg_uplift", report.drg_uplift, "recoverable_uplift_try"),
         ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),
-        ("yatak_puani", report.yatak_puani, "expected_yatak_try"),
+        ("yatak_puani", report.yatak_puani, "recoverable_uplift_try"),
         ("material_uplift", report.material_uplift, "recoverable_uplift_try"),
         ("care_setting_review", report.care_setting_review, "recoverable_uplift_try"),
         ("procedure_addon_uplift", report.procedure_addon_uplift, "recoverable_uplift_try"),
@@ -326,6 +326,17 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
     ):
         opportunities = getattr(block, "opportunities", [])
         for index, row in enumerate(opportunities):
+            if surface_name == "yatak_puani":
+                raw_uplift = (
+                    row.get("recoverable_uplift_try")
+                    if row.get("recoverable_uplift_try") is not None
+                    else row.get("expected_yatak_try")
+                )
+                if raw_uplift is not None and float(raw_uplift) <= 0:
+                    continue
+                sgk_uplift = raw_uplift
+            else:
+                sgk_uplift = row.get(uplift_field) or row.get("recoverable_uplift_try")
             actions.append(
                 _action_row(
                     action_id=f"{surface_name}:{row.get('claim_id')}:{index}",
@@ -337,7 +348,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     procedure_name=row.get("procedure_name"),
                     material_code=row.get("material_code"),
                     material_name=row.get("material_name"),
-                    sgk_uplift_try=row.get(uplift_field) or row.get("recoverable_uplift_try"),
+                    sgk_uplift_try=sgk_uplift,
                     detail=row.get("detail"),
                     sut_section_id=row.get("sut_section_id") or row.get("sut_section"),
                     finding_type=_finding_type(surface_name),

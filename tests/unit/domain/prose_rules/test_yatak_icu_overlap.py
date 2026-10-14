@@ -775,6 +775,7 @@ def test_wrapper_reconciles_yatak_review() -> None:
             procedure_code="510010",
             procedure_name="Standart yatak",
             procedure_date=date(2026, 7, 13),
+            billed_amount_try="0.00",
         ),
     ]
     ctx = _make_ctx([icu, srv], procs)
@@ -856,6 +857,7 @@ def test_patient_report_wires_reconcile() -> None:
             procedure_code="510010",
             procedure_name="Standart yatak",
             procedure_date=date(2026, 7, 13),
+            billed_amount_try="0.00",
         ),
     ]
     ctx = _make_ctx([icu, srv], procs)
