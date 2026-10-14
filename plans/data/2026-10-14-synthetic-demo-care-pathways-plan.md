@@ -49,8 +49,8 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
 **3. Beds, ICU and visits**
 - **Bed and ICU codes (EK-2B):** 510010 ward, 510120 day bed (under 24 h), 510090 ICU day rate, 510121 companion, 530000 ER critical bed. ICU tiers are P552001–003 (adult) and P552006–008 (newborn).
 - **Where the engine defines them.** Its code map holds only some of these (`src/bilun/domain/catalog.py:246-254`). The companion code is in `prose_rules/refakatci.py:36` and the ICU tiers in `prose_rules/icu_puani.py:13-17,61`.
-- **The companion-bed rule cannot see ICU.** Its ICU list holds the literal string `"P55200x"` (`refakatci.py:41`), which never matches a real tier code. So ICU stays would wrongly get a companion-bed charge.
-- **No ICU-tier detector exists.** Nothing detects ICU billed above its tier. In the TÜSEB anchor, that cause is about 81% of SGK deductions.
+- **The companion-bed rule cannot see ICU.** Its ICU list holds the literal string `"P55200x"` (`refakatci.py:41`), which never matches a real tier code. So ICU stays would wrongly get a companion-bed charge (Safa675/Bilun#236).
+- **No ICU-tier detector exists.** Nothing detects ICU billed above its tier (Safa675/Bilun#242). In the TÜSEB anchor, that cause is about 81% of SGK deductions.
 - **Visit codes:** 520010 consultation, 520020 ER, 520021 green area, 520030 outpatient, 520080/520090 primary care.
 - **Tıp/dal merkezi visit prices are not read.** EK-2A has columns for them, but `lookup_ek2a_visit_price_try` reads only U1/A1/B and nothing calls it (`catalog.py:282-318`). `prose_rules/facility_tier.py:26-42` has no tıp/dal merkezi tier.
 
@@ -64,13 +64,13 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
 - **Drugs: brand names.** It matches INN words inside brand names (`_drug_indication/matching.py:93-115`), but only 97 of 792 INNs appear in any EK-4A name. A brand→INN crosswalk is needed.
 - **ICD-10:** the repo holds no ICD-10 reference (valid codes, names, sex or age edits).
 
-**5. The app refuses any bill set without a pre-written answer for each bill, and real bills have none**
+**5. The app refuses any bill set without a pre-written answer for each bill, and real bills have none (Safa675/Bilun#240)**
 - The loader requires the expected-outputs file (`src/bilun/domain/claims/parquet_reader.py:37-39`).
 - It requires expected rows for every claim, every package-included procedure, every bundled or pre-authorised material and every drug (`claims/validation/expected_outputs.py:86-99`).
 - The payable in each row must match the line (`:18-24`).
 - `claims/dataset_builder.py:170` runs this in every data mode.
 
-**6. The engine reads demo-only inputs**
+**6. The engine reads demo-only inputs (Safa675/Bilun#239)**
 - **Optional-override showcases.** For 0002 and 0003, the billing strategy takes its package and itemised totals from `data/synthetic/demo_vignettes.json` (`billing/demo_vignette_lookup.py`; `claim_strategy.py:480-498`). Example: 0003's package total is 9,000 TL, while the catalog prices P609300 at 31,625.05.
 - **Other claims** take the package total from the generator-written lines (`claim_strategy.py:93-97`).
 - **Emergency detection** reads `scenario_tag` (`src/bilun/domain/prose_rules/gap_closing.py:341-345`).
@@ -80,7 +80,7 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
 - **EK-3 has no curated history.** The curated table is one snapshot that already includes changes effective 2026-07-07 and 2026-09-05 (e.g. KV4001, HO1005; `scripts/sut/build_curated_catalogs.py:189`).
 - **A dated EK-3 index can be built** from the raw snapshots; the audit built one from 229 of them (`reports/synthetic-data/2026-10-14-audit-scripts/materials/10_build_ek3_index.py`).
 - **The rule corpus is 2026 text.**
-- **The price lookups ignore `valid_to`** (`src/bilun/domain/pricing/temporal.py:80-82`). Their history has 7,127 zero-length duplicate EK-2B rows on 2026-01-31, and 17 EK-2C packages with two different puan values. Related: Safa675/Bilun#226 and #227.
+- **The price lookups ignore `valid_to`** (`src/bilun/domain/pricing/temporal.py:80-82`). Their history has 7,127 zero-length duplicate EK-2B rows on 2026-01-31, and 17 EK-2C packages with two different puan values. Tracked in Safa675/Bilun#241 (related: #226 and #227).
 
 **8. Test impact:** about 42 test files hold about 375 pins on synthetic IDs, tags, amounts or counts. The largest are:
 - `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py` (79);
@@ -156,8 +156,8 @@ No test renders the UI with the 50 patients. The screenshot script pins 0003, 00
   - the TL effect.
 - **Rates (judgment).** Faults touch about 1–3% of billed TL across the cohort, anchored to the 1.72% deduction rate, and sit mostly on showcase and regression patients. Most bills are clean.
 - **Mix of causes.** It follows the anchor where the engine can detect the cause.
-- **ICU tiering is the exception.** No detector exists for it (fact 3). Either the engine gains one first, or the demo says plainly that it does not cover it.
-- **The injection log is the answer key.** The loader rule (fact 5) changes, so that answer rows are required only for injected faults and checked against the injected effect. This changes production code in `src/bilun/domain/claims/validation/`, needs its own tests, and needs a decision on what real data requires.
+- **ICU tiering is the exception.** No detector exists for it (fact 3, Safa675/Bilun#242). Either the engine gains one first, or the demo says plainly that it does not cover it.
+- **The injection log is the answer key.** The loader rule (fact 5, Safa675/Bilun#240) changes, so that answer rows are required only for injected faults and checked against the injected effect. This changes production code in `src/bilun/domain/claims/validation/`, needs its own tests, and needs a decision on what real data requires.
 - **No fake codes or prices.** No sentinel prices; every code and name comes from its catalog as of the service date (lesson of `plans/data/2026-08-22-purge-fake-demo-claim-lines-plan.md`).
 
 ### D5. Plausibility tests in CI
@@ -174,15 +174,16 @@ No test renders the UI with the 50 patients. The screenshot script pins 0003, 00
 
 ### D6. Engine work this depends on (tracked as issues, not part of this plan)
 
-- **Filed:** Safa675/Bilun#230 (anaesthesia), #231 (stent clause), #232 (double counting), #233 (bed-day gap) and #234 (the "patients with actions" KPI).
-- **Not filed yet (needs Safa's go):**
-  - the companion-bed rule's `"P55200x"` (fact 3), and that it charges every stay without checking billed 510121 (`refakatci.py:176-184`);
-  - `temporal_anomaly.py:55-58` treating 50/51 codes as surgery;
-  - a second line with the same material code never being checked (`claim_materials.py:165-185`);
-  - the demo-only inputs (fact 6);
-  - the loader rule (fact 5);
-  - the price-history `valid_to` handling (fact 7).
-- **Order:** these must land before P7, or the new cohort shows the engine's errors on clean data.
+- **Filed (first batch):** Safa675/Bilun#230 (anaesthesia), #231 (stent clause), #232 (double counting), #233 (bed-day gap) and #234 (the "patients with actions" KPI).
+- **Filed (second batch):**
+  - Safa675/Bilun#236: companion-bed rule's `"P55200x"` (fact 3), and that it charges every stay at 2026 rates without checking billed 510121 (`refakatci.py:41,176-184`);
+  - Safa675/Bilun#237: `temporal_anomaly.py:55-58` treating 50/51 codes as surgery and missing 60xxxx–62xxxx;
+  - Safa675/Bilun#238: duplicate `material_code` deduplication skipping additional lines (`claim_materials.py:165-185`, `material_bundling.py:401-404`, `specialty_materials.py:205-208`);
+  - Safa675/Bilun#239: demo-only inputs (`demo_vignettes.json` and `scenario_tag`, fact 6);
+  - Safa675/Bilun#240: the loader requiring answer rows and payable columns in `real_claims` mode (fact 5);
+  - Safa675/Bilun#241: price-history `valid_to` handling, open-ended repealed codes and duplicate 2026-01-31 rows (fact 7);
+  - Safa675/Bilun#242: ICU tier (`yoğun bakım basamaklandırması`) overbilling detector under SUT §2.4.4.H (fact 3).
+- **Order:** #230–#234 and #236–#241 must land before P7, or the new cohort shows the engine's errors on clean data; #242 is needed if ICU tiering is included in the fault registry (D4).
 
 ## Phases
 

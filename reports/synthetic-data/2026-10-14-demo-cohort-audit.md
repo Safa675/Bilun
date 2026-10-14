@@ -183,14 +183,14 @@
 | E4 | Bed-day "recoverable" is the full expected charge; the gap is computed but not read. The ICU sum falls back to the full charge when the gap is 0 | `yatak_puani.py:143-152` (gap computed); `types.py:419-427,447`; `billing_actions.py:321` † | 18,331 TL already billed counted as recoverable | Safa675/Bilun#233 |
 | E5 | The "patients with actions" KPI counts loaded patients | `cohort_summary.py:168`; `RevenueRecoverySummary.tsx:92` † | Shows 50. Patients with a revenue action: 34; with recoverable > 0: 28 | Safa675/Bilun#234 |
 
-**More engine problems found while drafting (no issues opened yet):**
-- `temporal_anomaly.py:55-58` treats codes starting 50/51 as surgery; 51xxxx is beds.
-- The companion-bed rule charges every inpatient stay without checking billed 510121 (`refakatci.py:176-184`). That is 34,308 TL, 10.1% of recoverable.
-- A second line with the same material code is never checked (`claim_materials.py:165-185`).
-- Emergency detection reads the synthetic `scenario_tag` (`prose_rules/gap_closing.py:341-345`).
-- The billing strategy prices showcase claims 0002/0003 from `demo_vignettes.json` (`demo_vignette_lookup.py`, `claim_strategy.py:480-498`).
-- The loader demands expected-output rows in every data mode (`claims/dataset_builder.py:170`), so real claims would most likely fail to load (inference).
-- No detector exists for ICU billed above its tier, which is the anchor's 81% cause.
+**More engine problems found while drafting (filed as Safa675/Bilun#236–#242):**
+- `temporal_anomaly.py:55-58` treats codes starting 50/51 as surgery; 51xxxx is beds, while surgeries are 60xxxx–62xxxx (Safa675/Bilun#237).
+- The companion-bed rule misses `P552001`–`P552008` ICU codes (`"P55200x"`, `refakatci.py:41`) and charges every inpatient stay at 2026 rates without checking billed 510121 (`refakatci.py:176-184`). That is 34,308 TL, 10.1% of recoverable (Safa675/Bilun#236).
+- A second line with the same material code is never checked (`claim_materials.py:165-185`; `material_bundling.py:401-404`; `specialty_materials.py:205-208`, Safa675/Bilun#238).
+- Emergency detection reads the synthetic `scenario_tag` (`prose_rules/gap_closing.py:341-345`), and the billing strategy prices showcase claims 0002/0003 from `demo_vignettes.json` (`demo_vignette_lookup.py`, `claim_strategy.py:480-498`, Safa675/Bilun#239).
+- The loader demands expected-output rows and payable columns in every data mode including `real_claims` (`claims/dataset_builder.py:170`, `parquet_reader.py:37-39`, `validation/expected_outputs.py:18-24,86-99`, Safa675/Bilun#240).
+- Price-history lookups ignore `valid_to`, repealed codes stay open-ended (`valid_to = null`), and 2026-01-31 has 7,127 duplicate EK-2B and 2,424 EK-2C rows (`pricing/temporal.py:80-82`, `loaders/gazette.py:67-78`, `scripts/sut/_common.py:155-168`, Safa675/Bilun#241).
+- No detector exists for ICU billed above its tier under SUT §2.4.4.H, which is the anchor's 81% cause (Safa675/Bilun#242).
 
 ## Tier A: the eight showcase bills
 

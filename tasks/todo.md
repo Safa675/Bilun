@@ -19,10 +19,10 @@ Two reviewed plans exist in `plans/` (removing the real ILAY data; redesigning t
   - Verdict: the ILAY plan was "not ready" and the generator plan "ready after fixes".
   - Both plans are rewritten (rev 2). I re-checked every reviewer claim I used, against the code, the git metadata or the VPS, read-only.
 
-- [ ] 8. Safa approved the second batch (2026-10-14): the docs PR and the further engine issues, but not ILAY Phase 1. A subagent was to confirm or reshape seven candidates (companion bed and ICU, temporal-anomaly 50/51, duplicate material code, demo-only inputs, loader answer rows, price-history `valid_to`, ICU-tier detector), check duplicates, and draft the bodies. **Not done: the usage limit stopped it mid-way, so no draft is verified.**
-- [ ] 9. Re-check each citation in the drafts, then file them in Safa675/Bilun. **Waiting on 8.**
-- [ ] 10. Replace the "not filed yet" lists in the generator plan (D6) and in the audit report with the new issue numbers. **Waiting on 9; the lists are accurate until then.**
-- [x] 11. Docs PR from a branch of `main` (no extra worktree, so no further copy of the ILAY files): KVKK and secret scan of the files first (0 patient IDs, 0 token-like strings); CI of `main` green on `6b35d543` (checked before the push, rule 10); one commit; PR opened. Merge is Safa's call.
+- [x] 8. Safa approved the second batch (2026-10-14): the docs PR and the further engine issues, but not ILAY Phase 1. Confirmed and reshaped the seven candidates (companion bed and ICU, temporal-anomaly 50/51, duplicate material code, demo-only inputs, loader answer rows, price-history `valid_to`, ICU-tier detector), checked duplicates across all open/closed issues and PRs, and drafted the seven bodies.
+- [x] 9. Re-checked each citation in the drafts against the repository code and data, then filed them in Safa675/Bilun: #236, #237, #238, #239, #240, #241 (all `bug`) and #242 (`enhancement`).
+- [x] 10. Replaced the "not filed yet" lists in the generator plan (D6) and in the audit report with the new issue numbers (#236–#242).
+- [x] 11. Docs PR from a branch of `main` (no extra worktree, so no further copy of the ILAY files): KVKK and secret scan of the files first (0 patient IDs, 0 token-like strings); CI of `main` green on `6b35d543` (checked before the push, rule 10); PR #235 opened and updated with #236–#242. Merge is Safa's call.
 - [x] 12. Return the checkout to `main` (rule 11.5); leave no extra branch or worktree. (The PR branch stays on origin only.)
 
 ### Out of Scope
@@ -30,9 +30,9 @@ Executing either plan, fixing the engine bugs, deleting any file (locally, on th
 
 ### Review
 **Delivered so far**
-- **Issues:** Safa675/Bilun#230–#234.
+- **Issues:** Safa675/Bilun#230–#234 and #236–#242 (12 total: 11 `bug`, 1 `enhancement`).
 - **Plans:** `plans/security/2026-10-14-remove-ilay-real-data-plan.md` and `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md`, both rev 2.
-- **Audit report** updated with the issue links.
+- **Audit report** updated with all 12 issue links (#230–#234, #236–#242).
 - **Audit scripts** preserved in `reports/synthetic-data/2026-10-14-audit-scripts/`.
 
 **What the review changed**
