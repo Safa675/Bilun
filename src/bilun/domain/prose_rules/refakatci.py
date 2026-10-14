@@ -126,7 +126,7 @@ def detect_refakatci_opportunities(
     if fallback_puan <= 0:
         return []
 
-    katsayi = get_katsayi()
+    katsayi = get_katsayi(as_of=as_of_date)
     if katsayi <= 0:
         return []
 

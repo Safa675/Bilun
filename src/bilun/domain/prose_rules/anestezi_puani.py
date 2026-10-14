@@ -28,6 +28,7 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
@@ -44,11 +45,8 @@ if TYPE_CHECKING:
 _OPPORTUNITY_TYPE = "anestezi_puani_group"
 _SUT_SECTION_ID = "2.4.4.A"
 
-# Hardcoded lookup table — surgical puan range → anesthesia group.
-# (min_puan, max_puan, group_name, sut_code, anestezi_puan)
-# The anestezi_puan values are the EK-2B group point values (verified
-# from the asof_2026-01-31 snapshot). They are NOT looked up dynamically
-# in Phase 1 — only the surgical procedure's puan is resolved dynamically.
+# Lookup table — surgical puan range → anesthesia group.
+# (min_puan, max_puan, group_name, sut_code, fallback_anestezi_puan)
 _ANESTEZI_GROUPS: list[tuple[float, float, str, str, float]] = [
     (3000, 5000, "A1", "550130", 8942.14),
     (2000, 2999, "A2", "550140", 5589.58),
@@ -59,7 +57,6 @@ _ANESTEZI_GROUPS: list[tuple[float, float, str, str, float]] = [
     (1, 99, "E", "550190", 372.93),
 ]
 
-# Upper bound of the standard anesthesia group table. Procedures with a
 
 def _resolve_anestezi_group(
     procedure_puan: float,
@@ -80,13 +77,15 @@ def _resolve_anestezi_group(
     return None
 
 
-def _surgical_puan(procedure_code: str) -> float | None:
-    """Look up a surgical procedure's puan via the EK-2B catalog.
+def _surgical_puan(
+    procedure_code: str, visit_date: date | str | None = None
+) -> float | None:
+    """Look up a surgical procedure's puan via the EK-2B catalog as of visit_date.
 
     Returns ``None`` when the code is not found (non-surgical / unknown
     procedure) or has no puan.
     """
-    result = lookup_procedure_code(procedure_code)
+    result = lookup_procedure_code(procedure_code, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     puan = entry.get("puan")
     if puan is None:
@@ -95,6 +94,23 @@ def _surgical_puan(procedure_code: str) -> float | None:
         return float(puan)
     except (TypeError, ValueError):
         return None
+
+
+def _anestezi_group_puan(
+    anestezi_code: str,
+    fallback_puan: float,
+    visit_date: date | str | None = None,
+) -> float:
+    """Look up the anesthesia group code's EK-2B puan as of visit_date."""
+    result = lookup_procedure_code(anestezi_code, visit_date=visit_date)
+    entry = (result or {}).get("entry") or {}
+    puan = entry.get("puan")
+    if puan is None:
+        return fallback_puan
+    try:
+        return float(puan)
+    except (TypeError, ValueError):
+        return fallback_puan
 
 
 def detect_anestezi_puani_opportunities(
@@ -135,10 +151,6 @@ def detect_anestezi_puani_opportunities(
         anestezi_group, anestezi_code, anestezi_puan, expected_try,
         recoverable_uplift_try, sut_section_id, rule_id, detail.
     """
-    katsayi = get_katsayi()
-    if katsayi <= 0:
-        return []
-
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
 
     opportunities: list[dict[str, Any]] = []
@@ -164,8 +176,14 @@ def detect_anestezi_puani_opportunities(
         if line.procedure_category == "paket":
             continue
 
-        # Look up the surgical procedure's puan.
-        procedure_puan = _surgical_puan(line.procedure_code)
+        visit_date = line.procedure_date or claim.admission_date or claim.claim_start_date
+        as_of_str = visit_date.isoformat() if isinstance(visit_date, date) else visit_date
+        katsayi = get_katsayi(as_of=as_of_str)
+        if katsayi <= 0:
+            continue
+
+        # Look up the surgical procedure's puan as of visit_date.
+        procedure_puan = _surgical_puan(line.procedure_code, visit_date=visit_date)
         if procedure_puan is None:
             continue
 
@@ -173,7 +191,10 @@ def detect_anestezi_puani_opportunities(
         resolved = _resolve_anestezi_group(procedure_puan)
         if resolved is None:
             continue
-        group_name, anestezi_code, anestezi_puan = resolved
+        group_name, anestezi_code, fallback_anestezi_puan = resolved
+        anestezi_puan = _anestezi_group_puan(
+            anestezi_code, fallback_anestezi_puan, visit_date=visit_date
+        )
 
         expected = _money(anestezi_puan * katsayi)
 

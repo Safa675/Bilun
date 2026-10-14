@@ -79,7 +79,16 @@ def _normalize_required_asof_date(procedure_date: date | datetime | str) -> str:
 
 def _is_effective_on_or_before(entry: dict[str, object], asof_date: str) -> bool:
     effective_date = str(entry.get("effective_date") or "").strip()
-    return bool(effective_date) and effective_date <= asof_date
+    if not effective_date or effective_date > asof_date:
+        return False
+    valid_to = str(entry.get("valid_to") or "").strip()
+    if (
+        valid_to
+        and valid_to.lower() not in ("none", "nan", "nat", "<na>")
+        and asof_date > valid_to
+    ):
+        return False
+    return True
 
 
 def _normalize_procedure_code(code: str) -> str:

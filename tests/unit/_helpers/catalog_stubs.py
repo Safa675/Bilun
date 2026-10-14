@@ -39,7 +39,7 @@ def install_anestezi_catalog_stub(
 
     monkeypatch.setattr(
         "src.bilun.domain.prose_rules.anestezi_puani.get_katsayi",
-        lambda: katsayi,
+        lambda *args, **kwargs: katsayi,
     )
     monkeypatch.setattr(
         "src.bilun.domain.prose_rules.anestezi_puani.lookup_procedure_code",
