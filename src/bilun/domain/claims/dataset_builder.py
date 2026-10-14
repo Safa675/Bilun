@@ -9,6 +9,7 @@ from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.claims.indexing import index_non_blank, index_rows, index_sequence
 from src.bilun.domain.claims.models import ClaimHeader, MaterialClaimLine
+from src.bilun.domain.claims.parsing.primitives import is_missing, parse_text
 from src.bilun.domain.claims.parsing.row_parsers import (
     parse_claim_header,
     parse_copay_profile,
@@ -97,6 +98,16 @@ def build_sut_claim_dataset_from_rows(
     """Build a validated dataset from raw row dictionaries."""
 
     errors: list[str] = []
+    claims_missing_expected_billed: set[str] = set()
+    claims_missing_expected_payable: set[str] = set()
+    for row in claim_headers:
+        cid = parse_text(row, "claim_id")
+        if cid:
+            if is_missing(row.get("expected_total_billed_try")):
+                claims_missing_expected_billed.add(cid)
+            if is_missing(row.get("expected_total_payable_try")):
+                claims_missing_expected_payable.add(cid)
+
     claims = index_rows(
         (parse_claim_header(row, errors) for row in claim_headers),
         "claim_id",
@@ -158,6 +169,25 @@ def build_sut_claim_dataset_from_rows(
     if errors:
         raise ClaimValidationError(errors)
 
+    claim_totals = build_claim_totals(claims, procedures.values(), materials.values(), drugs.values())
+    if claims_missing_expected_billed or claims_missing_expected_payable:
+        claims = {
+            claim_id: replace(
+                claim,
+                expected_total_billed_try=(
+                    claim_totals[claim_id].total_billed_try
+                    if claim_id in claims_missing_expected_billed
+                    else claim.expected_total_billed_try
+                ),
+                expected_total_payable_try=(
+                    claim_totals[claim_id].total_expected_payable_try
+                    if claim_id in claims_missing_expected_payable
+                    else claim.expected_total_payable_try
+                ),
+            )
+            for claim_id, claim in claims.items()
+        }
+
     validate_claim_links(
         claims, claim_diagnoses.values(), procedures.values(), materials.values(), drugs.values(), errors
     )
@@ -168,8 +198,6 @@ def build_sut_claim_dataset_from_rows(
     validate_prescription_ids(drugs.values(), errors)
     validate_lab_linkage(procedures.values(), errors)
     validate_expected_outputs(claims, procedures, materials, drugs, outputs.values(), errors)
-
-    claim_totals = build_claim_totals(claims, procedures.values(), materials.values(), drugs.values())
     validate_claim_total_reconciliation(claims, claim_totals, errors)
     if errors:
         raise ClaimValidationError(errors)
