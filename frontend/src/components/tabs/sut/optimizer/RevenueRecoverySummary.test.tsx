@@ -68,4 +68,18 @@ describe("RevenueRecoverySummary honesty", () => {
     expect(html).not.toContain("billing.recommendedActions.exactness.");
     expect(html).not.toContain("data-recovery-no-findings");
   });
+
+  it("shows n_patients_with_actions rather than loaded n_patients (#234)", () => {
+    const twoOfThree = renderToStaticMarkupWithLocale(
+      <RevenueRecoverySummary data={{ ...summary, n_patients: 3, n_patients_with_actions: 2 }} />,
+      "tr",
+    );
+    expect(twoOfThree).toContain("Eylemli Hastalar: <strong class=\"tabular-nums\">2</strong>");
+
+    const zeroOfThree = renderToStaticMarkupWithLocale(
+      <RevenueRecoverySummary data={{ ...summary, n_patients: 3, n_patients_with_actions: 0 }} />,
+      "tr",
+    );
+    expect(zeroOfThree).toContain("Eylemli Hastalar: <strong class=\"tabular-nums\">0</strong>");
+  });
 });

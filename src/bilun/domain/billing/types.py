@@ -797,6 +797,7 @@ class CohortRecoverySummary:
     """Cohort-level revenue recovery aggregation."""
 
     n_patients: int = 0
+    n_patients_with_actions: int = 0
     total_lab_savings: float = 0.0
     total_copay_savings: float = 0.0
     total_strategy_savings: float = 0.0

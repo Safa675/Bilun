@@ -1965,6 +1965,7 @@
   },
   "CohortRecoverySummary": {
     "n_patients": true,
+    "n_patients_with_actions": true,
     "total_lab_savings": true,
     "total_copay_savings": true,
     "total_strategy_savings": true,
