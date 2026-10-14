@@ -1491,6 +1491,7 @@
         "price_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "sut_section_id": true,
         "procedure_code": true
       }
@@ -1503,6 +1504,7 @@
         "price_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "sut_section_id": true,
         "procedure_code": true
       }
@@ -1519,6 +1521,7 @@
         "savings_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "sut_section_id": true,
         "procedure_code": true
       }
@@ -1530,6 +1533,7 @@
         "price_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "sut_section_id": true,
         "procedure_code": true
       }
@@ -1551,6 +1555,7 @@
         "price_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "procedure_code": true,
         "clause_ref": {
           "$ref": "SutClauseReference"
@@ -1574,6 +1579,7 @@
         "price_try": true,
         "note": true,
         "claim_id": true,
+        "material_line_id": true,
         "procedure_code": true,
         "clause_ref": {
           "$ref": "SutClauseReference"
@@ -1589,7 +1595,9 @@
         "gazette_ceiling_try": true,
         "kdv_applied": true,
         "kdv_rate": true,
-        "note": true
+        "note": true,
+        "claim_id": true,
+        "material_line_id": true
       }
     },
     "gazette_ceiling_by_specialty": {

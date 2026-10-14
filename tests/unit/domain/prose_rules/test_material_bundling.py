@@ -10,7 +10,6 @@ from src.bilun.domain.materials.catalog_lookup import (
 )
 from src.bilun.domain.materials.coverage_scope import prose_engine_status
 from src.bilun.domain.prose_rules.material_bundling import (
-    check_material_bundling_for_context,
     check_material_bundling_prose,
 )
 
@@ -710,3 +709,30 @@ def test_inpatient_rule_uses_per_material_care_setting() -> None:
         h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
         for h in op_hits
     )
+
+
+def test_duplicate_material_code_lines_both_evaluated_in_bundling_prose() -> None:
+    """#238 regression: two distinct lines sharing the same material_code must
+    each be evaluated and preserve their material_line_id and claim_id."""
+    hits = check_material_bundling_prose(
+        [
+            {
+                "material_line_id": "MLZ-003",
+                "claim_id": "F-053",
+                "name": "STENT, TRAKEAL, SİLİKON, DÜZ",
+                "code": "GHC1220",
+                "unit_price": 18528.13,
+            },
+            {
+                "material_line_id": "MLZ-004",
+                "claim_id": "F-053",
+                "name": "STENT, TRAKEAL, SİLİKON, DÜZ",
+                "code": "GHC1220",
+                "unit_price": 18528.13,
+            },
+        ]
+    )
+    assert len(hits) == 2
+    assert [h["material_line_id"] for h in hits] == ["MLZ-003", "MLZ-004"]
+    assert [h["claim_id"] for h in hits] == ["F-053", "F-053"]
+

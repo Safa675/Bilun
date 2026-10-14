@@ -323,6 +323,8 @@ def _violation_from_rule(
     code: str,
     unit_price: float,
     ruleset: dict[str, Any],
+    material_line_id: str = "",
+    claim_id: str = "",
 ) -> dict[str, Any]:
     action = rule.get("action") or {}
     display_name = name or resolve_material_name_by_code(code) or code or "—"
@@ -342,6 +344,10 @@ def _violation_from_rule(
             "prose_rule_set": ruleset.get("rule_set_id"),
         },
     }
+    if material_line_id:
+        finding["material_line_id"] = material_line_id
+    if claim_id:
+        finding["claim_id"] = claim_id
     # Phase 2 canonical clause linking: attach the structured SUT clause
     # reference when this rule_id resolves via the prose-manifest
     # clause_traces join. Additive only — message and amounts unchanged;
@@ -372,11 +378,14 @@ def check_material_bundling_prose(
     violations: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
 
-    for mat in materials:
+    for idx, mat in enumerate(materials):
         name, code, unit_price = _material_fields(mat)
         if unit_price <= 0 and not code and not name:
             continue
 
+        line_id = str(mat.get("material_line_id") or "").strip()
+        claim_id = str(mat.get("claim_id") or "").strip()
+        line_key = line_id or f"idx:{idx}"
         proc_line_id = str(mat.get("procedure_line_id") or "").strip()
         # Per-material care setting when available (mixed-claim patients),
         # else the caller's global default.
@@ -398,13 +407,19 @@ def check_material_bundling_prose(
             ):
                 continue
 
-            key = (code or name, str(rule.get("rule_id", "")))
+            key = (line_key, str(rule.get("rule_id", "")))
             if key in seen:
                 break
             seen.add(key)
             violations.append(
                 _violation_from_rule(
-                    rule, name=name, code=code, unit_price=unit_price, ruleset=ruleset
+                    rule,
+                    name=name,
+                    code=code,
+                    unit_price=unit_price,
+                    ruleset=ruleset,
+                    material_line_id=line_id,
+                    claim_id=claim_id,
                 )
             )
             break
@@ -435,6 +450,8 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
     materials = []
     for line in ctx.material_lines:
         row: dict[str, Any] = {
+            "material_line_id": getattr(line, "material_line_id", ""),
+            "claim_id": getattr(line, "claim_id", ""),
             "name": line.material_name,
             "code": line.material_code,
             "unit_price": float(line.billed_amount_try),

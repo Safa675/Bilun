@@ -346,3 +346,31 @@ def test_wheelchair_duplicate_rule_fires_with_comaterial() -> None:
         h for h in hits if h["rule_id"] == "3.3.7.B.(2).wheelchair_stand_device_duplicate"
     ]
     assert len(wheelchair_hits) == 1, "wheelchair rule must fire when a wheelchair is co-billed"
+
+
+def test_duplicate_material_code_lines_both_evaluated_in_specialty_prose() -> None:
+    """#238 regression: two distinct lines with the same material_code must both
+    emit specialty prose findings and retain their material_line_id and claim_id."""
+    hits = check_specialty_materials_prose(
+        [
+            {
+                "material_line_id": "MLZ-1",
+                "claim_id": "C1",
+                "name": "Transparan film yara örtüsü",
+                "code": "WD1",
+                "unit_price": 25.0,
+            },
+            {
+                "material_line_id": "MLZ-2",
+                "claim_id": "C1",
+                "name": "Transparan film yara örtüsü",
+                "code": "WD1",
+                "unit_price": 40.0,
+            },
+        ]
+    )
+    assert len(hits) == 2
+    assert [h["material_line_id"] for h in hits] == ["MLZ-1", "MLZ-2"]
+    assert [h["claim_id"] for h in hits] == ["C1", "C1"]
+    assert [h["risk_amount"] for h in hits] == [25.0, 40.0]
+

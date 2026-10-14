@@ -310,3 +310,167 @@ def test_miat_catalog_advisory_when_no_prior_use(monkeypatch: pytest.MonkeyPatch
     assert len(result.miat_restricted) == 1
     assert "Catalog MIAT period" in result.miat_restricted[0]["note"]
     assert result.miat_interval_violations == []
+
+
+def test_duplicate_material_code_preserves_preauth_and_bundled_per_line(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """#238 regression: two lines with the same material_code (like GHC1220 on
+    F-SENTETIK-HASTA-0038-053) must both be evaluated for pre-auth and bundling
+    and preserve their own material_line_id and claim_id."""
+    from src.bilun.domain.billing import claim_materials as cm
+
+    monkeypatch.setattr(cm, "_get_ek3c1_preauth", lambda: [])
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+    monkeypatch.setattr(cm, "check_specialty_materials_for_context", lambda _ctx: [])
+
+    line_003 = _material_line(
+        code="GHC1220",
+        claim_id="F-SENTETIK-HASTA-0038-053",
+        line_id="MLZ-F-SENTETIK-HASTA-0038-053-003",
+        material_date=date(2023, 10, 6),
+        requires_pre_auth=True,
+        is_bundled=False,
+        billed="18528.13",
+    )
+    line_004 = _material_line(
+        code="GHC1220",
+        claim_id="F-SENTETIK-HASTA-0038-053",
+        line_id="MLZ-F-SENTETIK-HASTA-0038-053-004",
+        material_date=date(2023, 10, 6),
+        requires_pre_auth=False,
+        is_bundled=True,
+        billed="18528.13",
+    )
+
+    result = cm.precheck_materials_from_claims(_ctx(line_003, line_004))
+
+    assert len(result.pre_auth_required) == 1
+    assert (
+        result.pre_auth_required[0]["material_line_id"]
+        == "MLZ-F-SENTETIK-HASTA-0038-053-003"
+    )
+    assert result.pre_auth_required[0]["claim_id"] == "F-SENTETIK-HASTA-0038-053"
+
+    assert len(result.bundled_separate_billing) == 1
+    assert (
+        result.bundled_separate_billing[0]["material_line_id"]
+        == "MLZ-F-SENTETIK-HASTA-0038-053-004"
+    )
+    assert result.bundled_separate_billing[0]["claim_id"] == "F-SENTETIK-HASTA-0038-053"
+
+
+def test_multi_claim_prose_violations_preserve_claim_id_and_material_line_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """#238 regression: when a patient has multiple claims, prose findings
+    must retain each line's own claim_id and material_line_id."""
+    from src.bilun.domain.billing import claim_materials as cm
+    from src.bilun.domain.claims.models import ClaimHeader
+
+    monkeypatch.setattr(cm, "_get_ek3c1_preauth", lambda: [])
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+
+    c1 = ClaimHeader(
+        claim_id="C1",
+        patient_id="PT1",
+        episode_id="E1",
+        claim_type="yatis",
+        facility_tier="3",
+        provider_type="kamu",
+        department="GÖĞÜS CERRAHİSİ",
+        admission_date=date(2023, 10, 1),
+        discharge_date=date(2023, 10, 7),
+        claim_start_date=date(2023, 10, 1),
+        claim_end_date=date(2023, 10, 7),
+        primary_icd10="J98.0",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("1000"),
+        expected_total_payable_try=Decimal("1000"),
+        expected_denial_reason="",
+        scenario_tag="",
+    )
+    c2 = ClaimHeader(
+        claim_id="C2",
+        patient_id="PT1",
+        episode_id="E2",
+        claim_type="yatis",
+        facility_tier="3",
+        provider_type="kamu",
+        department="ORTOPEDİ",
+        admission_date=date(2024, 2, 1),
+        discharge_date=date(2024, 2, 5),
+        claim_start_date=date(2024, 2, 1),
+        claim_end_date=date(2024, 2, 5),
+        primary_icd10="M16.1",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("1000"),
+        expected_total_payable_try=Decimal("1000"),
+        expected_denial_reason="",
+        scenario_tag="",
+    )
+    m1 = _material_line(
+        code="GHC1220",
+        claim_id="C1",
+        line_id="MLZ-1",
+        material_name="STENT, TRAKEAL, SİLİKON, DÜZ",
+        billed="100",
+    )
+    m2 = _material_line(
+        code="GHC1220",
+        claim_id="C2",
+        line_id="MLZ-2",
+        material_name="STENT, TRAKEAL, SİLİKON, DÜZ",
+        billed="200",
+    )
+    ctx = PatientClaimContext(
+        patient_id="PT1",
+        claims=(c1, c2),
+        procedure_lines=(),
+        material_lines=(m1, m2),
+        drug_lines=(),
+        diagnoses=(),
+    )
+    result = cm.precheck_materials_from_claims(ctx)
+    assert len(result.prose_bundling_violations) == 2
+    by_line = {row["material_line_id"]: row for row in result.prose_bundling_violations}
+    assert by_line["MLZ-1"]["claim_id"] == "C1"
+    assert by_line["MLZ-1"]["price_try"] == pytest.approx(100.0)
+    assert by_line["MLZ-2"]["claim_id"] == "C2"
+    assert by_line["MLZ-2"]["price_try"] == pytest.approx(200.0)
+
+
+def test_synthetic_cohort_0038_053_duplicate_ghc1220_preserves_preauth_and_prose() -> None:
+    """#238 acceptance criteria: on F-SENTETIK-HASTA-0038-053, MLZ-...-003
+    (requires_pre_auth=True) emits its pre_auth_required finding even when
+    MLZ-...-004 shares code GHC1220, and both lines emit prose findings with
+    their own material_line_id and claim_id."""
+    from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
+    from src.bilun.domain.claims.loader import load_sut_claim_dataset
+    from src.bilun.domain.claims.patient_context import build_bill_claim_context
+
+    ds = load_sut_claim_dataset()
+    ctx = build_bill_claim_context(
+        "SENTETIK-HASTA-0038", "F-SENTETIK-HASTA-0038-053", ds
+    )
+    assert ctx is not None
+    result = precheck_materials_from_claims(ctx)
+
+    preauth_line_ids = {row["material_line_id"] for row in result.pre_auth_required}
+    assert "MLZ-F-SENTETIK-HASTA-0038-053-003" in preauth_line_ids
+
+    ghc1220_prose = [
+        row
+        for row in result.prose_bundling_violations
+        if row.get("sut_code") == "GHC1220"
+    ]
+    assert [row["material_line_id"] for row in ghc1220_prose] == [
+        "MLZ-F-SENTETIK-HASTA-0038-053-003",
+        "MLZ-F-SENTETIK-HASTA-0038-053-004",
+    ]
+    assert all(
+        row["claim_id"] == "F-SENTETIK-HASTA-0038-053" for row in ghc1220_prose
+    )
+
+

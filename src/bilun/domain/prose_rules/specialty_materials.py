@@ -144,10 +144,12 @@ def _violation_from_rule(
     code: str,
     unit_price: float,
     ruleset: dict[str, Any],
+    material_line_id: str = "",
+    claim_id: str = "",
 ) -> dict[str, Any]:
     action = rule.get("action") or {}
     display_name = name or code or "—"
-    return {
+    finding: dict[str, Any] = {
         "rule": "specialty_materials_prose",
         "severity": action.get("severity", "warning"),
         "material_name": display_name,
@@ -163,6 +165,11 @@ def _violation_from_rule(
             "prose_rule_set": ruleset.get("rule_set_id"),
         },
     }
+    if material_line_id:
+        finding["material_line_id"] = material_line_id
+    if claim_id:
+        finding["claim_id"] = claim_id
+    return finding
 
 
 def check_specialty_materials_prose(
@@ -186,10 +193,14 @@ def check_specialty_materials_prose(
         str(_material_fields(m)[0]).casefold() for m in materials if _material_fields(m)[0]
     )
 
-    for mat in materials:
+    for idx, mat in enumerate(materials):
         name, code, unit_price = _material_fields(mat)
         if unit_price <= 0:
             continue
+
+        line_id = str(mat.get("material_line_id") or "").strip()
+        claim_id = str(mat.get("claim_id") or "").strip()
+        line_key = line_id or f"idx:{idx}"
 
         for rule in rules:
             condition = rule.get("condition") or {}
@@ -202,13 +213,19 @@ def check_specialty_materials_prose(
             ):
                 continue
 
-            key = (code or name, str(rule.get("rule_id", "")))
+            key = (line_key, str(rule.get("rule_id", "")))
             if key in seen:
                 break
             seen.add(key)
             violations.append(
                 _violation_from_rule(
-                    rule, name=name, code=code, unit_price=unit_price, ruleset=ruleset
+                    rule,
+                    name=name,
+                    code=code,
+                    unit_price=unit_price,
+                    ruleset=ruleset,
+                    material_line_id=line_id,
+                    claim_id=claim_id,
                 )
             )
             break
@@ -221,6 +238,8 @@ def check_specialty_materials_for_context(ctx: Any) -> list[dict[str, Any]]:
     materials = []
     for line in ctx.material_lines:
         row: dict[str, Any] = {
+            "material_line_id": getattr(line, "material_line_id", ""),
+            "claim_id": getattr(line, "claim_id", ""),
             "name": line.material_name,
             "code": line.material_code,
             "unit_price": float(line.billed_amount_try),
