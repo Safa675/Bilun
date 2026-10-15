@@ -141,11 +141,12 @@ class TestBillingActionsBreakdown:
             if row.get("kind") == "optional_override"
         ]
         assert len(override) == 1
-        assert override[0]["sgk_uplift_try"] == pytest.approx(4625.48)
+        assert override[0]["sgk_uplift_try"] == pytest.approx(4515.48)
 
         strategy_override = report.billing_strategy.optional_override_opportunities[0]
-        # 600160 is primary by catalog points: 1800 + 25% of 600150's own 2200.
-        assert strategy_override["itemized_total_try"] == pytest.approx(2350.0)
+        # 600160 is primary by catalog points: 1800 + the hizmet başı §2.2.2.A(5)
+        # 30 % of 600150's own 2200 (was the package 25 %: 2350.0, uplift 4625.48).
+        assert strategy_override["itemized_total_try"] == pytest.approx(2460.0)
         assert strategy_override["package_total_try"] == pytest.approx(6975.48)
         assert strategy_override.get("recommended_package_code") == "609300"
 

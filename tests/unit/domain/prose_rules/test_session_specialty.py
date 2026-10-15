@@ -91,10 +91,25 @@ class TestSessionSpecialtyDetect:
             ("", "", False),
         ],
     )
-    def test_cross_specialty_needs_a_branch_on_every_line(
+    def test_two_lines_need_a_branch_on_both(
         self, first, second, expected,
     ) -> None:
         lines = [_proc("P609235", specialty=first), _proc("P603840", specialty=second)]
+        assert detect_cross_specialty_session(lines, _claim()) is expected
+
+    @pytest.mark.parametrize(
+        "branches, expected",
+        [
+            (("1900", "2600", ""), True),  # Two known branches differ: established.
+            (("1900", "1900", ""), False),  # The unknown line adds no specialty.
+            (("1900", "", ""), False),
+        ],
+    )
+    def test_a_line_without_a_branch_does_not_cancel_a_known_difference(
+        self, branches, expected,
+    ) -> None:
+        codes = ("600020", "600140", "600120")
+        lines = [_proc(code, specialty=branch) for code, branch in zip(codes, branches, strict=True)]
         assert detect_cross_specialty_session(lines, _claim()) is expected
 
     def test_compute_session_adjusted_total_uses_auto_detect(self, monkeypatch) -> None:

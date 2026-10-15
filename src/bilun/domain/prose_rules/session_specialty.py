@@ -33,13 +33,14 @@ def detect_cross_specialty_session(
     lines: list[ProcedureClaimLine],
     claim: ClaimHeader | None = None,
 ) -> bool:
-    """True when every procedure in the session has a branch and two or more differ.
+    """True when two or more procedures carry different known branches.
 
-    The 25 points apply only when the operations were done "farklı uzmanlık
-    dallarında"; a line without a branch leaves that unknown, so it never adds
-    them (#264). ``claim`` is accepted for callers' signature and is not used.
+    The 25 points apply when the operations were done "farklı uzmanlık
+    dallarında" (C000662, C000674); two known branches that differ establish
+    that, and the percentages rise for the whole session. A line without a
+    branch is unknown: it neither adds a specialty nor cancels a known
+    difference, so two lines need a branch on both (#264). ``claim`` is
+    accepted for callers' signature and is not used.
     """
-    keys = [resolve_procedure_specialty_key(line) for line in lines]
-    if not all(keys):
-        return False
-    return len(set(keys)) >= 2
+    known = {key for key in (resolve_procedure_specialty_key(line) for line in lines) if key}
+    return len(known) >= 2

@@ -114,7 +114,10 @@ def _apply_session_point_billed_factors(
     """Scale secondary same-day billed lines per SUT §2.2.2; returns billed/payable deltas."""
     from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
     from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
-    from src.bilun.domain.prose_rules.session_scope import is_session_operation_code
+    from src.bilun.domain.prose_rules.session_scope import (
+        is_session_operation_code,
+        line_billed_as_package,
+    )
     from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
 
     locked = {
@@ -152,6 +155,7 @@ def _apply_session_point_billed_factors(
             codes,
             same_incision=True,
             cross_specialty=cross_specialty,
+            billed_as_package=[line_billed_as_package(line) for line in stub_lines],
         )
         if session.rule_id == "single_procedure":
             continue

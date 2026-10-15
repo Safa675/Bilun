@@ -85,7 +85,7 @@ class TestProcedureAddonWiring:
         )
         assert report.sgk_uplift_try >= report.procedure_addon_uplift.confirmed_uplift_try
 
-    def test_underbilled_addon_is_not_a_missing_addon(self) -> None:
+    def test_underbilled_addon_uses_session_not_missing_addon(self) -> None:
         claim = _claim()
         procs = (
             _proc(),
@@ -111,6 +111,21 @@ class TestProcedureAddonWiring:
             copay_exemption={"exempt": False},
         )
         assert report.procedure_addon_uplift.opportunities == []
-        # #261: endoscopy (EK-2/B §7) is not a session operation, so the
-        # under-billed polypectomy is no longer a §2.2.2.A(5) session secondary.
-        assert report.session_uplift.opportunities == []
+        assert report.session_uplift.confirmed_uplift_try > 0
+
+    def test_addon_factor_reads_the_branches_of_session_operations_only(self) -> None:
+        from src.bilun.domain.prose_rules.procedure_addon_uplift import (
+            detect_missing_procedure_addon_opportunities,
+        )
+
+        # #261: the anaesthesia line (another branch) is not a session operation,
+        # so the missing polypectomy stays at 30 %, not 30 + 25 cross-specialty.
+        procs = [
+            _proc(procedure_specialty_code="1900"),
+            _proc(procedure_line_id="PL2", procedure_code="550160", procedure_name="Anestezi",
+                  procedure_specialty_code="3100"),
+        ]
+        rows = detect_missing_procedure_addon_opportunities(_claim(), procs)
+        assert [(r["expected_addon_procedure_code"], r["addon_factor"]) for r in rows] == [
+            ("701460", 0.3),
+        ]

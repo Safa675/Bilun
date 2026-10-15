@@ -1,10 +1,13 @@
-"""§2.2.2.A(5) / §2.2.2.B(3) sessions hold EK-2/B §6 operations only (#261)."""
+"""§2.2.2.A(5) / §2.2.2.B(3) sessions hold procedures, not every line of a date (#261)."""
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
+import polars as pl
 import pytest
 
 from src.bilun.domain.claims.models import ProcedureClaimLine
@@ -15,6 +18,10 @@ from src.bilun.domain.prose_rules.session_scope import (
 )
 
 pytestmark = pytest.mark.unit
+
+_ROOT = Path(__file__).resolve().parents[4]
+_EK2B_CHAPTERS = _ROOT / "data/synthetic/reference/ek2b_code_chapter.parquet"
+_PAIRING_RULES = _ROOT / "data/gazette/prose_rules/procedure_pairing_prose.json"
 
 
 @pytest.mark.parametrize(
@@ -28,19 +35,42 @@ def test_ek2b_section_6_codes_and_their_packages_are_operations(code) -> None:
 @pytest.mark.parametrize(
     "code",
     [
+        "P700810", "700810",  # Coronary angiography, package or hizmet başı (C000993).
+        "P700910",  # PTCA and stent.
+        "P700660", "P700732",  # Pacemaker and pocket revision (incision).
+        "P701360", "P701310",  # ERCP and biliary endoprosthesis.
+        "P750000",  # Limb transplant.
+        "P551031",  # RFT, işlem grubu D.
+        "P802520",  # Arch aortography (RADYOLOJİ-1).
+        "701450", "701540",  # Colonoscopy, upper GİS endoscopy (F000067).
+        "701370",  # Endoscopic sphincterotomy (F000066).
+        "802830", "802780",  # Stent and PTA (F000155).
+        "803150",  # Percutaneous nephrostomy (F000156).
+    ],
+)
+def test_procedure_packages_and_sgk_guide_interventions_are_session_procedures(code) -> None:
+    assert is_session_operation_code(code) is True
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
         "510010",  # Bed.
         "510121",  # Companion.
         "520020",  # ER exam.
         "530350",  # Nebuliser.
         "530100",  # ECG.
+        "530080",  # IV line.
         "550160",  # Anaesthesia B group.
-        "701450",  # Colonoscopy (§7, non-OR).
         "705430",  # Blood component.
         "801720",  # Chest X-ray.
         "R101450",  # CT angiography.
         "910230",  # Pathology.
         "L107020",  # Lab.
-        "P552001",  # ICU day package.
+        "P552001",  # ICU day package: no işlem grubu.
+        "P560000",  # Palliative care.
+        "P704230",  # Hemodialysis session.
+        "P915030",  # FTR group.
         "401010",  # EK-2/Ç dental range.
         "630000",
         "",
@@ -49,6 +79,37 @@ def test_ek2b_section_6_codes_and_their_packages_are_operations(code) -> None:
 )
 def test_other_lines_are_never_session_lines(code) -> None:
     assert is_session_operation_code(code) is False
+
+
+@pytest.mark.parametrize("code", ["530650", "530670", "530060", "530270"])
+def test_incisional_section_3_codes_await_the_include_list(code) -> None:
+    # Port, tunnelled catheter, surgical biopsy, lymph-node excision: the clauses
+    # do not exclude them; they stay out until Safa decides the include list.
+    assert is_session_operation_code(code) is False
+
+
+def test_scope_by_ek2b_group_matches_the_chapter_map() -> None:
+    codes = pl.read_parquet(_EK2B_CHAPTERS, columns=["code", "group_id"])
+    in_scope = {
+        group: [is_session_operation_code(code) for code in frame.get_column("code")]
+        for (group,), frame in codes.group_by("group_id")
+    }
+    assert all(in_scope["6"])  # Every §6 operation.
+    for group in ("1", "2", "3", "4", "9", "10"):  # Beds, visits, ER/general, OR, labs.
+        assert not any(in_scope[group]), group
+
+
+def test_pairing_rule_codes_share_the_session_scope() -> None:
+    rules = json.loads(_PAIRING_RULES.read_text(encoding="utf-8"))["rules"]
+    codes = {
+        str(code)
+        for rule in rules
+        if rule.get("sut_section") == "2.2.2.A.(5)"
+        for code in (*rule.get("trigger_procedure_codes", []),
+                     *rule.get("expected_addon_procedure_codes", []))
+    }
+    assert codes
+    assert all(is_session_operation_code(code) for code in codes)
 
 
 def _line(line_id: str, code: str, amount: str) -> ProcedureClaimLine:

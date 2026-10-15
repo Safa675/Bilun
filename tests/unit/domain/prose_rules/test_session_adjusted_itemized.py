@@ -154,9 +154,11 @@ class TestSessionAdjustedItemizedTotal:
             (False, False, False, Decimal("0.50")),
             (False, True, True, Decimal("0.55")),
             (False, False, True, Decimal("0.75")),
-            (True, True, False, Decimal("0.25")),
+            # Hizmet başı lines take §2.2.2.A(5) even when the codes are also
+            # EK-2/C packages; B(3)(a) 25 % is for lines billed as packages.
+            (True, True, False, Decimal("0.30")),
             (True, False, False, Decimal("0.50")),
-            (True, True, True, Decimal("0.50")),
+            (True, True, True, Decimal("0.55")),
             (True, False, True, Decimal("0.75")),
         ],
     )
@@ -188,10 +190,10 @@ class TestSessionAdjustedItemizedTotal:
     def test_mixed_membership_keeps_each_full_factor_package_line(
         self, catalog, same_incision, expected,
     ) -> None:
-        catalog(ek2c=("611111", "622222"))
+        # Lines billed as packages (P codes) next to a hizmet başı line: §2.2.2.B(3)(c)/(ç).
         lines = [
-            _priced("primary", "611111", "1000"),
-            _priced("other-package", "622222", "300"),
+            _priced("primary", "P611111", "1000"),
+            _priced("other-package", "P622222", "300"),
             _priced("itemized", "623333", "100"),
         ]
         total, _ = compute_session_adjusted_itemized_total(
@@ -200,9 +202,8 @@ class TestSessionAdjustedItemizedTotal:
         assert total == expected
 
     def test_mixed_membership_itemized_primary_uses_itemized_fallback(self, catalog) -> None:
-        catalog(ek2c=("622222",))
         total, _ = compute_session_adjusted_itemized_total(
-            [_priced("primary", "611111", "1000"), _priced("secondary", "622222", "100")],
+            [_priced("primary", "611111", "1000"), _priced("secondary", "P622222", "100")],
             cross_specialty=False,
         )
         assert total == 1030.0

@@ -42,3 +42,20 @@ def test_lines_without_a_second_operation_are_untouched() -> None:
     rows = [_row(1, "615931", 3837.32), _row(2, "550160", 928.09), _row(3, "510010", 222.36)]
     assert _apply_session_point_billed_factors(rows) == (0.0, 0.0)
     assert [row["fatura_tutari_try"] for row in rows] == [3837.32, 928.09, 222.36]
+
+
+@pytest.mark.parametrize(
+    "codes, category, secondary",
+    [
+        # Hizmet başı operations that are also EK-2/C packages: §2.2.2.A(5) 30 %.
+        (("613730", "601200"), "islem", 3021.89),
+        # The same operations billed as packages: §2.2.2.B(3)(a) 25 %.
+        (("P613730", "P601200"), "paket", 2518.24),
+    ],
+)
+def test_the_secondary_factor_follows_how_the_line_is_billed(codes, category, secondary) -> None:
+    rows = [_row(1, codes[0], 13917.02), _row(2, codes[1], 10072.97)]
+    for row in rows:
+        row["islem_kategorisi"] = category
+    _apply_session_point_billed_factors(rows)
+    assert [row["fatura_tutari_try"] for row in rows] == [13917.02, secondary]

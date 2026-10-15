@@ -17,10 +17,21 @@ import pytest
 from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
-from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine, ProcedureClaimLine
+from src.bilun.domain.claims.models import (
+    ClaimHeader,
+    DrugClaimLine,
+    MaterialClaimLine,
+    ProcedureClaimLine,
+)
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.optimization.unbundling import detect_drg_unbundling
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
+from src.bilun.domain.prose_rules.drg_unbundling import (
+    analyze_claim_unbundling,
+    detect_session_point_violations,
+)
+from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.session_uplift import iter_session_secondary_assessments
 
 pytestmark = pytest.mark.unit
@@ -44,11 +55,13 @@ def _price(code: str, day: date) -> Decimal:
 
 class _Bill:
     def __init__(self, cid: str, claim_type: str, start: date, end: date, *,
-                 inpatient: bool = True, package_candidate: bool = False) -> None:
+                 inpatient: bool = True, package_candidate: bool = False,
+                 tier: str = "2_3_basamak_ozel") -> None:
         self.cid, self.claim_type, self.start, self.end = cid, claim_type, start, end
-        self.inpatient, self.package_candidate = inpatient, package_candidate
+        self.inpatient, self.package_candidate, self.tier = inpatient, package_candidate, tier
         self.procs: list[ProcedureClaimLine] = []
         self.drugs: list[DrugClaimLine] = []
+        self.materials: list[MaterialClaimLine] = []
 
     def proc(self, code: str, day: date, qty: int = 1, *, specialty: str = "",
              factor: str = "1") -> ProcedureClaimLine:
@@ -77,11 +90,11 @@ class _Bill:
         for day in days[:-1] if companion else ():
             self.proc("510121", day, specialty=specialty)
 
-    def drug(self, day: date, amount: str) -> None:
+    def drug(self, day: date, amount: str, *, claim_id: str | None = None) -> None:
         money = Decimal(amount)
         self.drugs.append(DrugClaimLine(
             drug_claim_line_id=f"{self.cid}-D{len(self.drugs) + 1:02d}",
-            prescription_id=f"{self.cid}-RX1", claim_id=self.cid, patient_id="SH",
+            prescription_id=f"{self.cid}-RX1", claim_id=claim_id or self.cid, patient_id="SH",
             episode_id="E", drug_claim_date=day, drug_name="IESEF 1 G", drug_code="",
             barkod="8699508270224", equivalence_group="", quantity=1, unit_price_try=money,
             billed_amount_try=money, expected_payable_try=money,
@@ -89,11 +102,23 @@ class _Bill:
             rule_trace_expected="",
         ))
 
+    def material(self, day: date, name: str, amount: str, *, bundled: bool,
+                 claim_id: str | None = None) -> None:
+        money = Decimal(amount)
+        self.materials.append(MaterialClaimLine(
+            material_line_id=f"{self.cid}-M{len(self.materials) + 1:02d}",
+            claim_id=claim_id or self.cid, procedure_line_id=f"{self.cid}-P01", patient_id="SH",
+            material_date=day, material_code="", material_name=name, material_type="",
+            specialty_category="", quantity=1, unit_price_try=money, billed_amount_try=money,
+            expected_payable_try=money, is_bundled=bundled, requires_pre_auth=False,
+            denial_reason_expected="", rule_trace_expected="",
+        ))
+
     def ctx(self) -> PatientClaimContext:
         total = sum((line.billed_amount_try for line in self.procs), Decimal("0"))
         header = ClaimHeader(
             claim_id=self.cid, patient_id="SH", episode_id="E", claim_type=self.claim_type,
-            facility_tier="2_3_basamak_ozel", provider_type="Ozel", department="",
+            facility_tier=self.tier, provider_type="Ozel", department="",
             admission_date=self.start if self.inpatient else None,
             discharge_date=self.end if self.inpatient else None,
             claim_start_date=self.start, claim_end_date=self.end, primary_icd10="R69",
@@ -102,7 +127,7 @@ class _Bill:
         )
         return PatientClaimContext(
             patient_id="SH", claims=(header,), procedure_lines=tuple(self.procs),
-            material_lines=(), drug_lines=tuple(self.drugs), diagnoses=(),
+            material_lines=tuple(self.materials), drug_lines=tuple(self.drugs), diagnoses=(),
         )
 
 
@@ -110,10 +135,10 @@ def _d(text: str) -> date:
     return date.fromisoformat(text)
 
 
-def s1(variant: str) -> _Bill:
+def s1(variant: str, *, package_candidate: bool = True) -> _Bill:
     """Laparoscopic appendectomy: package P610131, or the stay billed hizmet başı."""
     a, d = _d("2026-07-14"), _d("2026-07-16")
-    bill = _Bill("C-SH01", "yatis", a, d, package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", a, d, package_candidate=package_candidate)
     if variant == "clean":
         bill.proc("P610131", a, specialty=GENCER)
         return bill
@@ -231,6 +256,66 @@ class TestSessionScope261:
         assert compute_audit_exposure_from_claims(s8("faulty").ctx()) == 5377.20
         assert compute_audit_exposure_from_claims(s8("clean").ctx()) == 0.0
 
+    @pytest.mark.parametrize("same_incision, factor", [(True, 0.30), (False, 0.50)])
+    def test_hizmet_basi_operations_with_package_namesakes_keep_100_30_or_100_50(
+        self, same_incision, factor,
+    ) -> None:
+        # Review: 613730 and 601200 are also EK-2/C packages. Billed hizmet başı
+        # (legal here) they take §2.2.2.A(5), not the package rule's 25 %.
+        day = _d("2026-07-14")
+        bill = _Bill("C-PR", "yatis", day, day, tier="egitim_arastirma")
+        bill.proc("613730", day, specialty=ORTO)
+        bill.proc("601200", day, specialty=ORTO)
+        ctx = bill.ctx()
+        rows = detect_session_point_violations(
+            list(ctx.procedure_lines), same_incision=same_incision, claim=ctx.claims[0],
+        )
+        assert [(r["procedure_code"], r["rule_id"], r["expected_point_factor"]) for r in rows] == [
+            ("601200", "2.2.2.A.(5)", factor),
+        ]
+
+    def test_hizmet_basi_secondary_billed_at_30_percent_is_not_exposure(self) -> None:
+        day = _d("2026-07-14")
+        bill = _Bill("C-PR", "yatis", day, day, tier="egitim_arastirma")
+        bill.proc("613730", day, specialty=ORTO)
+        bill.proc("601200", day, specialty=ORTO, factor="0.3")
+        assert compute_audit_exposure_from_claims(bill.ctx()) == 0.0  # Was 503.65 (25 %).
+
+    @pytest.mark.parametrize(
+        "codes, rule_id, factor, risk",
+        [
+            (("P700910", "P700810"), "2.2.2.B.a", 0.25, 3060.48),  # PTCA + angio (C000993).
+            (("P700660", "P700732"), "2.2.2.B.a", 0.25, 1400.59),  # Pacemaker + pocket.
+            (("701450", "701540"), "2.2.2.A.(5)", 0.30, 338.79),  # SGK GENEL CERRAHİ-2.
+            (("802830", "802780"), "2.2.2.A.(5)", 0.30, 1524.82),  # SGK RADYOLOJİ-3.
+        ],
+        ids=["angio-ptca", "pacemaker-pocket", "colonoscopy-ogd", "stent-pta"],
+    )
+    def test_procedures_outside_section_6_still_form_sessions(
+        self, codes, rule_id, factor, risk,
+    ) -> None:
+        day = _d("2026-07-14")
+        bill = _Bill("C-PR", "yatis", day, day)
+        for code in codes:
+            bill.proc(code, day)
+        ctx = bill.ctx()
+        finding = analyze_claim_unbundling(ctx.claims[0], list(ctx.procedure_lines), same_incision=True)
+        assert [
+            (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
+            for r in finding.session_violations
+        ] == [(codes[1], rule_id, factor, risk)]
+
+    def test_itemized_total_reads_the_branches_of_operations_only(self) -> None:
+        # Anaesthesia (3100) and neurology (1300) lines do not make S3 cross-specialty.
+        ctx = s3(second_operation=True).ctx()
+        lines = list(ctx.procedure_lines)
+        total, meta = compute_session_adjusted_itemized_total(
+            lines, cross_specialty=None, claim=ctx.claims[0],
+        )
+        assert (meta["sessions_cross_specialty"], meta["sessions_with_adjustment"]) == (0, 1)
+        raw = sum(float(line.billed_amount_try) for line in lines)
+        assert total == pytest.approx(raw - 0.70 * float(lines[1].billed_amount_try), abs=0.01)
+
 
 class TestCrossSpecialty264:
     def test_clean_s8_without_branch_codes_has_no_uplift_or_exposure(self) -> None:
@@ -238,6 +323,16 @@ class TestCrossSpecialty264:
         ctx = s8("clean", branches=("", "")).ctx()
         assert recommend_session_uplift_from_claims(ctx).opportunities == []
         assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    def test_a_line_without_a_branch_does_not_cancel_two_known_branches(self) -> None:
+        # Review: 1900 and 2600 establish "farklı uzmanlık dallarında"; the third
+        # line's missing branch leaves the 25 points in place (was 3,769.86 TL).
+        op = _d("2026-09-15")
+        bill = _Bill("C-SH08", "yatis", op, op, package_candidate=True)
+        bill.proc("P609235", op, specialty=GENCER)
+        bill.proc("P603840", op, specialty=ORTO, factor="0.5")
+        bill.proc("P603830", op, factor="0.5")
+        assert compute_audit_exposure_from_claims(bill.ctx()) == 0.0
 
     def test_branches_1900_and_2600_still_add_25_points(self) -> None:
         ctx = s8("clean", branches=(GENCER, ORTO)).ctx()
@@ -248,9 +343,24 @@ class TestCrossSpecialty264:
         assert rows[0]["included_in_sgk_total"] is True
 
 
-def _claim_row(ctx: PatientClaimContext) -> dict:
+def _claim_rows(ctx: PatientClaimContext) -> list[dict]:
     rows = recommend_billing_strategy_from_claims(ctx).recommendations
-    return next(row for row in rows if row.get("recommendation_kind"))
+    return [row for row in rows if row.get("recommendation_kind")]
+
+
+def _claim_row(ctx: PatientClaimContext) -> dict:
+    return _claim_rows(ctx)[0]
+
+
+def _finding(ctx: PatientClaimContext):
+    return analyze_claim_unbundling(
+        ctx.claims[0], list(ctx.procedure_lines), same_incision=True,
+        drug_lines=ctx.drug_lines, material_lines=ctx.material_lines,
+    )
+
+
+def _payment_risk(ctx: PatientClaimContext) -> list[tuple[str, float]]:
+    return [(r["procedure_code"], r["risk_amount_try"]) for r in _finding(ctx).payment_method_violations]
 
 
 class TestMandatedPackageGap269:
@@ -301,8 +411,105 @@ class TestMandatedPackageGap269:
         assert row["itemized_total_try"] == 10550.64
         assert row["savings_try"] == 1914.13  # 10,550.64 − 8,636.51.
         assert row["savings_category"] == "compliance_adjustment"
+        # The bill overstates what the package pays: a compliance figure, not SGK uplift.
+        assert row["included_in_sgk_total"] is False
+        assert recommend_billing_strategy_from_claims(ctx).uplift_savings_try == 0.0
         # The package pays less than the bill, so the mandated line stays at risk.
-        assert compute_audit_exposure_from_claims(ctx) > 0
+        assert _payment_risk(ctx) == [("610131", 3022.31)]
+
+    def test_a_package_equal_to_the_bill_clears_the_risk_without_savings(self) -> None:
+        bill = s1("faulty")
+        bill.drug(bill.start, "4085.87")  # Brings the bill to the package's 8,636.51.
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert (row["itemized_total_try"], row["savings_try"], row["savings_category"]) == (
+            8636.51, 0.0, None,
+        )
+        assert _payment_risk(ctx) == [("610131", 0.0)]
+
+    def test_a_claim_without_a_strategy_row_keeps_its_risk(self) -> None:
+        # Review: the risk is cleared only where the strategy reports the gap.
+        ctx = s1("faulty", package_candidate=False).ctx()
+        assert _claim_rows(ctx) == []
+        assert _payment_risk(ctx) == [("610131", 3022.31)]
+        assert compute_audit_exposure_from_claims(ctx) == 3022.31
+
+    def test_a_line_already_at_risk_in_full_adds_no_session_risk(self) -> None:
+        # Without a strategy row the must-package lines stay at risk in full; the
+        # session factor on the second one is part of that money, not extra.
+        bill = s1("faulty", package_candidate=False)
+        second = bill.proc("603840", bill.start, specialty=GENCER)
+        ctx = bill.ctx()
+        assert [(r["procedure_code"], r["risk_amount_try"]) for r in _finding(ctx).session_violations] == [
+            ("603840", 0.0),
+        ]
+        assert compute_audit_exposure_from_claims(ctx) == round(
+            3022.31 + float(second.billed_amount_try), 2,
+        )
+
+    def test_session_factors_inside_a_package_that_pays_more_are_not_exposure(self) -> None:
+        # Review: two must-package operations billed hizmet başı at 100 %; the
+        # package replaces the bill and pays more, so nothing can be clawed back.
+        bill = s1("faulty")
+        bill.proc("603840", bill.start, specialty=GENCER)
+        ctx = bill.ctx()
+        finding = _finding(ctx)
+        assert [(r["procedure_code"], r["risk_amount_try"]) for r in finding.session_violations] == [
+            ("603840", 0.0),
+        ]
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        row = _claim_row(ctx)
+        assert row["savings_category"] == "sgk_uplift"
+        assert row["savings_try"] == round(8636.51 - row["itemized_total_try"], 2)
+
+    def test_a_large_drug_line_keeps_the_risk_in_both_exposure_surfaces(self) -> None:
+        bill = s1("faulty")
+        bill.drug(bill.start, "5000.00")
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert (row["itemized_total_try"], row["savings_try"], row["savings_category"]) == (
+            9550.64, 914.13, "compliance_adjustment",
+        )
+        assert compute_audit_exposure_from_claims(ctx) == 3022.31
+        assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 3022.31
+
+    def test_lines_of_another_claim_are_ignored(self) -> None:
+        bill = s1("faulty")
+        bill.drug(bill.start, "5000.00", claim_id="C-OTHER")
+        bill.material(bill.start, "SARF SETİ", "5000.00", bundled=True, claim_id="C-OTHER")
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert (row["itemized_total_try"], row["savings_try"]) == (4550.64, 4085.87)
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
+
+    def test_a_material_paid_next_to_the_package_leaves_the_gap(self) -> None:
+        # SUT §3.1.4(a): a plate is paid on top of the package, so it is on
+        # neither side of the comparison (review: it flipped the row to 914.13).
+        bill = s1("faulty")
+        bill.material(bill.start, "KİLİTLİ PLAK", "5000.00", bundled=False)
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert (row["itemized_raw_try"], row["itemized_total_try"]) == (9550.64, 4550.64)
+        assert (row["savings_try"], row["savings_category"]) == (4085.87, "sgk_uplift")
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    def test_a_package_included_material_counts_in_the_bill(self) -> None:
+        bill = s1("faulty")
+        bill.material(bill.start, "SARF SETİ", "100.00", bundled=True)
+        row = _claim_row(bill.ctx())
+        assert (row["itemized_total_try"], row["savings_try"]) == (4650.64, 3985.87)
+
+    def test_the_blood_share_billed_next_to_the_package_drops_out(self) -> None:
+        bill = s1("faulty")
+        blood = bill.proc("705430", bill.start, specialty=GENCER)
+        row = _claim_row(bill.ctx())
+        # C000694: 36 % of 705430 is billed next to the package either way.
+        replaced = 4550.64 + float(blood.billed_amount_try) * (1 - 0.36)
+        assert row["itemized_total_try"] == pytest.approx(replaced, abs=0.01)
+        assert row["itemized_raw_try"] == pytest.approx(
+            4550.64 + float(blood.billed_amount_try), abs=0.01,
+        )
 
     def test_package_billed_claim_keeps_risk_on_an_itemized_mandated_line(self) -> None:
         bill = s1("clean")

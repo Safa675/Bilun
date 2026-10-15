@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -16,7 +16,11 @@ from .catalog_membership import (
     procedure_annex_membership,
 )
 from .claim_utils import group_procedure_lines_by_session
-from .session_scope import is_session_operation_code, session_operation_lines
+from .session_scope import (
+    is_session_operation_code,
+    line_billed_as_package,
+    session_operation_lines,
+)
 from .session_specialty import detect_cross_specialty_session
 from .types import ProseRuleTrace, SessionPricingResult, SessionProcedureFactor
 
@@ -106,16 +110,14 @@ def _factor_with_uplift(base: float, cross_specialty: bool) -> float:
     return base
 
 
-def _procedure_point_score(code: str, *, as_of_date: date | str | None = None) -> float:
-    """EK-2/C puan from catalog; EK-2/B-only via lookup; fallback for unknown codes."""
-    normalized = normalize_procedure_code(code)
-    if not normalized:
-        return 0.0
-
+def _ek2c_puan(normalized: str, *, as_of_date: date | str | None) -> float | None:
     ek2c_entry = get_ek2c_entry(normalized, as_of_date=as_of_date)
     if ek2c_entry is not None and ek2c_entry.get("puan") is not None:
         return float(ek2c_entry["puan"])
+    return None
 
+
+def _ek2b_puan(normalized: str, *, as_of_date: date | str | None) -> float | None:
     try:
         from ..catalog import lookup_procedure_code
 
@@ -129,19 +131,49 @@ def _procedure_point_score(code: str, *, as_of_date: date | str | None = None) -
             return float(entry["puan"])
     except Exception:
         pass
+    return None
+
+
+def _procedure_point_score(
+    code: str,
+    *,
+    as_of_date: date | str | None = None,
+    billed_as_package: bool | None = None,
+) -> float:
+    """EK-2/C puan from catalog; EK-2/B-only via lookup; fallback for unknown codes.
+
+    A line billed hizmet başı (``billed_as_package`` False) ranks by its EK-2/B
+    puan first, since that is the işlem puanı §2.2.2.A(5) compares.
+    """
+    normalized = normalize_procedure_code(code)
+    if not normalized:
+        return 0.0
+
+    lookups = (_ek2c_puan, _ek2b_puan) if billed_as_package is not False else (_ek2b_puan, _ek2c_puan)
+    for lookup in lookups:
+        points = lookup(normalized, as_of_date=as_of_date)
+        if points is not None:
+            return points
 
     _, in_ek2c = procedure_annex_membership(normalized, as_of_date=as_of_date)
     return 2.0 if in_ek2c else 1.0
 
 
 def _primary_index_by_points(
-    codes: list[str], *, as_of_date: date | str | None = None,
+    codes: list[str],
+    *,
+    as_of_date: date | str | None = None,
+    billed_as_package: list[bool] | None = None,
 ) -> int:
     """Index of highest EK puan procedure; ties → first occurrence (SUT §2.2.2.B)."""
     best_idx = 0
     best_points = -1.0
     for idx, code in enumerate(codes):
-        points = _procedure_point_score(code, as_of_date=as_of_date)
+        points = _procedure_point_score(
+            code,
+            as_of_date=as_of_date,
+            billed_as_package=None if billed_as_package is None else billed_as_package[idx],
+        )
         if points > best_points:
             best_points = points
             best_idx = idx
@@ -203,12 +235,29 @@ def compute_session_point_factors(
     same_incision: bool,
     cross_specialty: bool = False,
     as_of_date: date | str | None = None,
+    billed_as_package: Sequence[bool] | None = None,
 ) -> SessionPricingResult:
-    """Apply §2.2.2.B / §2.2.2.A(5) point factors for procedures in the same session."""
-    normalized = [normalize_procedure_code(code) for code in procedure_codes if code]
-    normalized = [code for code in normalized if code]
+    """Apply §2.2.2.B / §2.2.2.A(5) point factors for procedures in the same session.
+
+    ``billed_as_package`` (one flag per code) prices each line by how it was
+    billed: a package line as EK-2/C (§2.2.2.B(3)(a)/(b), 25 % / 50 %), a hizmet
+    başı line as EK-2/B (§2.2.2.A(5), 30 % / 50 %), both kinds together by
+    §2.2.2.B(3)(c)/(ç). Most §6 codes are in both lists, so catalog membership
+    alone, used when the flags are omitted, cannot tell the two apart.
+    """
+    if billed_as_package is not None and len(billed_as_package) != len(procedure_codes):
+        raise ValueError("billed_as_package needs one flag per procedure code")
+    flags = list(billed_as_package) if billed_as_package is not None else [None] * len(procedure_codes)
+    kept = [
+        (normalize_procedure_code(code), flag)
+        for code, flag in zip(procedure_codes, flags, strict=True)
+        if code
+    ]
+    kept = [(code, flag) for code, flag in kept if code]
+    normalized = [code for code, _ in kept]
     if not normalized:
         return SessionPricingResult(factors=(), rule_id="", sut_section="")
+    package_flags = None if billed_as_package is None else [bool(flag) for _, flag in kept]
 
     memberships = [procedure_annex_membership(code, as_of_date=as_of_date) for code in normalized]
     if as_of_date is not None and not any(in_b or in_c for in_b, in_c in memberships):
@@ -228,12 +277,17 @@ def compute_session_point_factors(
             rule_id="session_tariff_unavailable", sut_section="",
             metadata={"historical_catalog_unavailable": True, "as_of_date": str(as_of_date)},
         )
+    if package_flags is not None:
+        # Price by billing method: package lines as EK-2/C, hizmet başı as EK-2/B.
+        memberships = [(not flag, flag) for flag in package_flags]
     all_in_ek2c = all(in_ek2c for _, in_ek2c in memberships)
     any_in_ek2c = any(in_ek2c for _, in_ek2c in memberships)
     any_ek2b_only = any(in_ek2b and not in_ek2c for in_ek2b, in_ek2c in memberships)
     mixed = any_in_ek2c and any_ek2b_only
 
-    primary_idx = _primary_index_by_points(normalized, as_of_date=as_of_date)
+    primary_idx = _primary_index_by_points(
+        normalized, as_of_date=as_of_date, billed_as_package=package_flags,
+    )
     _, primary_in_ek2c = memberships[primary_idx]
 
     if len(normalized) == 1:
@@ -475,6 +529,7 @@ def compute_session_adjusted_itemized_total(
                 same_incision=same_incision,
                 cross_specialty=session_cross,
                 as_of_date=session_date,
+                billed_as_package=[line_billed_as_package(line) for line in operations],
             )
             if any(f.point_factor != 1.0 for f in session.factors):
                 sessions_with_adjustment += 1

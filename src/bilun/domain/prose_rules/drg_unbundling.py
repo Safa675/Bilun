@@ -16,7 +16,7 @@ from .session_pricing import (
     compute_session_point_factors,
     expected_session_billed_try,
 )
-from .session_scope import session_operation_lines
+from .session_scope import line_billed_as_package, session_operation_lines
 from .session_specialty import detect_cross_specialty_session
 from .types import CareSetting
 
@@ -134,6 +134,7 @@ def detect_session_point_violations(
             same_incision=same_incision,
             cross_specialty=session_cross,
             as_of_date=session_date,
+            billed_as_package=[line_billed_as_package(line) for line in billable],
         )
         if session.rule_id == "single_procedure":
             continue
@@ -236,43 +237,57 @@ def detect_blood_component_violations(
 
 
 def _clear_risk_when_mandated_package_pays_more(
-    violations: list[dict[str, Any]],
+    finding: ClaimUnbundlingFinding,
     claim: ClaimHeader,
     lines: list[ProcedureClaimLine],
     *,
     drug_lines: Sequence[DrugClaimLine],
     material_lines: Sequence[MaterialClaimLine],
 ) -> None:
-    """A hizmet başı bill that the package pays more for carries no over-billing risk.
+    """A hizmet başı bill that the mandated package pays more for carries no over-billing risk.
 
-    The must-package lines stay as compliance findings (SUT §2.2.2(1)); on
-    package-candidate claims the billing strategy reports the gap as
-    package-billing uplift (#269).
+    The package replaces the bill, so neither the must-package lines nor the
+    session factors among them can be clawed back. The rows stay as findings
+    (SUT §2.2.2(1)); the billing strategy reports the gap as package-billing
+    uplift, and it uses the same gate, so the money never leaves both (#269).
     """
     package_rows = [
-        row for row in violations
+        row for row in finding.payment_method_violations
         if row["mandated_method"] == "package" and not row["billed_as_package"]
     ]
     if not package_rows:
         return
-    from src.bilun.domain.billing.claim_strategy import (
-        _infer_current_billing,
-        billed_itemized_total_try,
-        resolve_package_total_try,
-    )
+    from src.bilun.domain.billing.claim_strategy import mandated_package_gap_try
 
-    if _infer_current_billing(lines) != "itemized":
-        return
-    package_total, _ = resolve_package_total_try(claim, lines)
-    billed_total = billed_itemized_total_try(
+    gap = mandated_package_gap_try(
         claim, lines, drug_lines=drug_lines, material_lines=material_lines,
     )
-    if package_total <= 0 or package_total < billed_total:
+    if gap is None or gap[0] < gap[1]:
         return
-    for row in package_rows:
+    package_total, replaced_total = gap
+    for row in (*package_rows, *finding.session_violations):
         row["risk_amount_try"] = 0.0
         row["package_total_try"] = package_total
-        row["billed_itemized_total_try"] = billed_total
+        row["billed_itemized_total_try"] = replaced_total
+
+
+def _net_session_risk_of_payment_method_risk(finding: ClaimUnbundlingFinding) -> None:
+    """A line's exposure never exceeds what was billed on it.
+
+    A must-package line billed hizmet başı already puts its billed amount at
+    risk (payment-method row); a session factor on the same line is part of
+    that money, so it adds only what the payment-method row leaves.
+    """
+    counted: dict[str, float] = {}
+    for row in finding.payment_method_violations:
+        line_id = str(row.get("procedure_line_id") or "")
+        counted[line_id] = counted.get(line_id, 0.0) + float(row.get("risk_amount_try") or 0.0)
+    for row in finding.session_violations:
+        already = counted.get(str(row.get("procedure_line_id") or ""), 0.0)
+        if already <= 0:
+            continue
+        left = float(row["actual_billed_try"]) - already
+        row["risk_amount_try"] = _money(max(0.0, min(float(row["risk_amount_try"]), left)))
 
 
 def analyze_claim_unbundling(
@@ -308,19 +323,20 @@ def analyze_claim_unbundling(
     ]
 
     finding.payment_method_violations = detect_payment_method_violations(claim, lines)
-    _clear_risk_when_mandated_package_pays_more(
-        finding.payment_method_violations,
-        claim,
-        lines,
-        drug_lines=drug_lines,
-        material_lines=material_lines,
-    )
     if same_incision is not None:
         finding.session_violations = detect_session_point_violations(
             lines,
             same_incision=same_incision,
             claim=claim,
         )
+    _clear_risk_when_mandated_package_pays_more(
+        finding,
+        claim,
+        lines,
+        drug_lines=drug_lines,
+        material_lines=material_lines,
+    )
+    _net_session_risk_of_payment_method_risk(finding)
     finding.blood_component_violations = detect_blood_component_violations(lines)
 
     finding.itemized_total_try = _money(
