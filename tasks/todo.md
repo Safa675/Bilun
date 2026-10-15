@@ -1,3 +1,55 @@
+## Task: Synthetic demo v3 — P0 decisions and baselines, P1 reference data, showcase story drafts (2026-10-15)
+
+### Goal
+Start `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md`:
+- record Safa's answers;
+- keep the engine baseline;
+- classify the test pins;
+- build the P1 reference tables with schema tests;
+- hand Safa 8 showcase story drafts to review.
+
+The generator and the cohort do not change in this task.
+
+### Subtasks
+- [x] 1. Record the answers in the plan:
+  - Q1 2026 February–September service dates;
+  - Q2 one SGK-contracted private hospital;
+  - Q3 Safa reviews the 8 showcase stories;
+  - Q4 TİTCK price list;
+  - Q5 public ICD-10 list;
+  - Q6 50 patients, 100–150 bills, 8 showcase.
+- [x] 2. P0 baseline: commit the engine numbers before and after the overnight fixes (`6b35d543` vs `1c22ee9c`) to `reports/synthetic-data/2026-10-15-engine-baseline.md`, with a JSON summary next to it.
+- [ ] 3. P0 test pins: classify each test file that pins synthetic IDs, tags, amounts or counts as drop, re-point or keep, with a fixture strategy. A read-only subagent does this; the result goes into a plan appendix.
+- [x] 4. P1 chapter table:
+  - builder: `scripts/synthetic/reference/build_ek2b_chapters.py`, from the raw EK-2B heading rows;
+  - outputs: `data/synthetic/reference/ek2b_chapters.csv` (chapter ranges, reviewable) and a code→chapter parquet;
+  - a schema test, plus a check that each chapter's codes are contiguous.
+  - Result: 7,175 codes in 43 chapters, each one block in the list. The pattern handles lettered ("9.A") and two-line headings. Every code in force on 2026-02-01, 2026-07-07 and 2026-09-30 has a chapter (10 tests).
+- [x] 5. P1 anaesthesia groups. **Changed:** the engine's bands switch on the wrong dates, so the generator takes the bands and their dates from the list instead (`code_sets.yaml` → `surgical_group_bands`).
+  - The raw EK-2B markers say the 32,561 table starts 2024-08-07 and the 39,001 table starts 2026-04-16. `_group_table_for_date` switches on 2026-01-01 and 2026-07-07.
+  - Pinned by two strict `xfail` tests. An issue is waiting for Safa's yes.
+- [x] 6. P1 code sets: `data/synthetic/reference/code_sets.yaml` (visits by setting, beds, ICU tiers, anaesthesia, companion). A test checks that every code exists in the catalog in force across 2026-02-01..2026-09-30.
+  - Result: 15 tests pass. Notes quote the EK-2B explanation column (510120 under 24 h; 510090 bundles ventilation and monitoring; 520021 never with other procedures; 530000 once a day).
+- [ ] 7. P1 EK-3 prices. **Changed:** no general dated index yet.
+  - The surgical sub-annexes have full lists only up to 2025-12-13; later changes are amendment markers, the mechanism of open #227.
+  - Pathways will use a small reviewed material set instead. A test checks each code's price on its service date against every snapshot and marker.
+  - The general index waits for #227's fix.
+- [ ] 8. P1 lab reference table draft: about 40 routine and condition tests, each with EK-2B L-code, unit, sex-specific range and panel. A subagent drafts it and Safa reviews it.
+- [x] 9. Price-history cleanup: already done by #248 (0 zero-length rows, 0 duplicate windows, `valid_to` honoured; checked 2026-10-15).
+- [ ] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
+- [ ] 11. Showcase story drafts (8) for Safa's review. Each gives:
+  - patient, diagnosis, setting and dates;
+  - every line with a code valid on its date;
+  - one injected fault and the engine rule that should catch it.
+
+  Draft to the scratchpad first; it goes into `plans/data/` once Safa has reviewed it.
+- [ ] 12. Verify, in sequence: ruff, the new tests, the full suite, `compile_rules.py --check`, manifest parity. One PR; merge is Safa's call.
+
+### Out of Scope
+- The generator rewrite (P3–P4), the loader change (P3) and the regeneration (P7).
+- Any download without Safa's yes for that file.
+- Fixing #255 or #256.
+
 ## Task: Fix companion-bed (510121) ICU suppression, admission-date pricing, and billed subtraction (Safa675/Bilun#236)
 
 ### Goal

@@ -1,7 +1,7 @@
 # Synthetic demo cohort v3: care pathways instead of random draws
 
 Date: 2026-10-14 (rev 2, after an independent review)
-Status: **plan only.** Implementation needs Safa's answers to Q1–Q6, then a task block in `tasks/todo.md` (AGENTS.md §7).
+Status: **approved 2026-10-15; P0 and P1 in progress** (branch `claude/synthetic-v3-p0-p1`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
 Inputs:
 - the audit `reports/synthetic-data/2026-10-14-demo-cohort-audit.md`;
 - its scripts in `reports/synthetic-data/2026-10-14-audit-scripts/`;
@@ -45,6 +45,7 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
   - It agrees with the EK-2B bands on 8 of 2,407 codes and with EK-2C on 5 of 2,198.
   - It assigns no group to 1,295 codes (puan above 5,000).
 - **Where this is tracked.** Safa675/Bilun#230 fixes the engine with the EK-2B bands.
+- **Band dates (found in P1, 2026-10-15).** The raw EK-2B markers date the tables: the 32,561 table starts 2024-08-07 (RG 05/08/2024-32623) and the 39,001 table starts 2026-04-16 (RG 08/04/2026-33218). The engine switches on 2026-01-01 and 2026-07-07 (`anestezi_puani.py:129-139`). So the generator takes the bands and dates from `data/synthetic/reference/code_sets.yaml`, and two strict `xfail` tests pin the engine's dates until it is fixed.
 
 **3. Beds, ICU and visits**
 - **Bed and ICU codes (EK-2B):** 510010 ward, 510120 day bed (under 24 h), 510090 ICU day rate, 510121 companion, 530000 ER critical bed. ICU tiers are P552001–003 (adult) and P552006–008 (newborn).
@@ -94,7 +95,20 @@ No test renders the UI with the 50 patients. The screenshot script pins 0003, 00
 - **Reusable as-is:** the exporters' writers, the ID scheme, `get_ek2b_price_for_date` and `get_ek2c_price_for_date` (`src/bilun/domain/pricing/temporal.py:89-165`, after the `valid_to` fix), `claims/schema.py`, and the totals part of `gen/reconcile.py:12-43`.
 - **Not reusable:** `gen/reconcile.py:44-50`, which writes the answer rows from the generator's own sums (the circular labels).
 
-## Open questions for Safa
+## Decisions (answered by Safa on 2026-10-15)
+
+| Question | Decision |
+|---|---|
+| Q1 Service dates | 2026, February–September, with a dated EK-3 index built from the raw snapshots |
+| Q2 Customer shown | One SGK-contracted private hospital (2nd–3rd level, klinik grubu member) |
+| Q3 Reviewer of the 8 showcase stories | Safa |
+| Q4 Drug prices and INN | Public TİTCK price list; each download named (file, source, size) and approved first |
+| Q5 ICD-10 list | Public list (WHO ICD-10 or the Turkish MoH list); download approved first |
+| Q6 Size | 50 patients, 100–150 bills, 8 showcase |
+
+Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 zero-length rows, 0 duplicate windows; `_is_effective_on_or_before` now honours `valid_to`, `src/bilun/domain/pricing/temporal.py:80-92`).
+
+### The questions as originally asked
 
 - **Q1. Service dates.**
   - Recommendation (judgment): **2026, February–September**, with a dated EK-3 index built from the raw snapshots (fact 7). EK-2B, EK-2C and the rule text then line up, and the 2026-01-31 repricing still allows a "stale price" fault.
