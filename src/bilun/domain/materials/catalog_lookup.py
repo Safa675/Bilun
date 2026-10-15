@@ -38,33 +38,77 @@ _CODE_LIST_IN_PARENS = re.compile(r"\(([^()]*?\b[A-Z]{1,4}\d{3,5}(?:\s*,\s*[A-Z]
 _INDIVIDUAL_CODE = re.compile(r"\b([A-Z]{1,4}\d{3,5})\b")
 
 # SUT §3.1.4(2) (C002857) lists materials that are outside the diagnosis-based
-# package score and paid separately — "SUT veya eklerinde" permission in the
-# sense of §3.1.1(13) (C002751), even when the material's own EK-3 row carries
-# no marker. A category covers a code through the EK-3 sub-annex it comes from:
-# (ç) "Her türlü eklem implantı" (C002861) is the EK-3/F-1 arthroplasty list,
-# minus the single-use instruments and kits that list also prices (tourniquet,
-# pulsed lavage, cement-pressurisation kit, ultrasonic tip): not implants.
-_JOINT_IMPLANT_ANNEX = "EK-3F-1"
-_EK3F1_NON_IMPLANT_COMPONENTS = (
-    "TURNİKE",
-    "YIKAMA",
-    "ÇİMENTOLAMA SİSTEMİ",
-    "ULTRASONİK CERRAHİ UÇ",
+# (EK-2/C) package score and paid separately: "SUT veya eklerinde" permission in
+# the sense of §3.1.1(13) (C002751) even when the material's own EK-3 row has no
+# marker. Each item covers EK-3 codes by the row's definition text (name and
+# spec, payment notes cut), optionally limited to the sub-annex that lists it.
+# Items without a clean code-based boundary are not encoded yet: (a) plak/çivi/
+# vida/ankor, (d) omurga implantı, (i) valf ringi, (j) greft/şant/suni damar.
+# (item, clause_id, sub-annexes or None for every non-EK-3/C list, include, exclude)
+_SUT_3_1_4_ITEMS: tuple[tuple[str, str, tuple[str, ...] | None, str, str | None], ...] = (
+    (
+        "b", "C002859", None,
+        r"KEMİK ÇİMENTOSU|VERTEBROPLASTİ ÇİMENTOSU|VİSKOZİTELİ ÇİMENTO|KİFOPLASTİ, ÇİMENTO", None,
+    ),
+    ("c", "C002860", ("EK-3F-4",), r"EKSTERNAL FİKSATÖR|EKSTERNAL FİKSASYON", None),
+    # EK-3/F-1 arthroplasty and EK-3/F-3 tumour-resection endoprosthesis lists.
+    ("ç", "C002861", ("EK-3F-1", "EK-3F-3"), r".", None),
+    ("e", "C002863", None, r"KALP PİLİ", r"ELEKTRODU"),
+    ("f", "C002864", ("EK-3H", "EK-3I"), r"ELEKTROD", r"İÇİN|ADAPTÖR"),
+    ("g", "C002865", None, r"STENT, KORONER", None),
+    ("ğ", "C002866", None, r"KALP KAPAĞI|KAPAK SETİ|AORTİK KAPAK", None),
+    ("h", "C002867", None, r"İNTRAAORTİK BALON|VENTRİKÜLE?R? DESTEK", None),
+    ("ı", "C002868", None, r"KONDUİT|KONDÜİT", None),
+    ("k", "C002871", None, r"PROTEZ", r"İÇİN"),
+    ("l", "C002872", None, r"ATEREKTOMİ", None),
+    ("m", "C002873", None, r"ÇİFT YÜZLÜ YAMA", None),
+    ("o", "C002875", ("EK-3F-2",), r"MALZEME SETİ", None),
 )
+# Single-use instruments and kits EK-3/F-1 also prices (tourniquet, pulsed
+# lavage, cement-pressurisation kit, ultrasonic cement-removal tip): no item.
+_EK3F1_INSTRUMENTS = r"TURNİKE|YIKAMA|ÇİMENTOLAMA SİSTEMİ|ULTRASONİK CERRAHİ UÇ"
+_PAYMENT_NOTES = r"(?s)\(\d+\).*$"
 
-# EK-2/C açıklama sentences that bill a material on top of the package, the
-# §3.1.4(2)(n) category (C002874): "Protez ayrıca faturalandırılır.", "KN1271,
-# ... malzemeleri ayrıca faturalandırılır." Negated verbs ("faturalandırılmaz",
-# "fatura edilemez") and "... dahildir" clauses grant nothing. Text is folded.
-_EK2C_SEPARATE_BILLING_VERB = re.compile(r"\bayrica\s+(fatura\w*(?:\s+edil\w*)?)")
-_EK2C_NEGATED_VERB = re.compile(r"m[ae][zmy]")
-_EK2C_INCLUDED_CLAUSE = re.compile(r"d[aâ]hil\w*")
+# EK-3 row statements that pay a material only with named procedures, e.g.
+# AE0900 "(1) P613180, P612760, 613180 ve 612760 işlem kodlarında kullanılması
+# halinde bedeli karşılanır." — annex permission tied to those procedures.
+_PROCEDURE_CONDITION_TEXT = "işlem kodlarında kullanılması halinde bedeli karşılanır"
+_PROCEDURE_CODE = re.compile(r"\bp?(\d{6})\b")
+
+# EK-2/C açıklama clauses (§3.1.4(2)(n), C002874). "X ayrıca faturalandırılır"
+# bills X on top of the package; "X dahildir" and negated verbs ("Konuşma
+# işlemcisi ... fatura edilemez") keep X inside it. Text is folded.
 _EK2C_SENTENCE_BREAK = re.compile(r"[.;\n]+")
-_PROSTHESIS_TERMS = re.compile(r"protez|implant|prostetik")
+_EK2C_PREDICATE = re.compile(
+    r"(?P<separate>\bayrica\s+fatura\w*(?:\s+edil\w*)?)"
+    r"|(?P<billing>\bfatura\w*(?:\s+edil\w*)?)"
+    r"|(?P<included>\bd[aâ]hil\w*)"
+)
+_EK2C_NEGATED_VERB = re.compile(r"m[ae][zmy]")
+_EK2C_PHRASE_BREAK = re.compile(r",|/|\(|\)|\bve\b|\bveya\b")
+_EK2C_PARENTHETICAL = re.compile(r"\([^()]*\)")
+_WORD = re.compile(r"[0-9a-zçğöşüâîû]+")
+# Words that name no material: context, quantifiers, generic containers.
+_EK2C_STOPWORDS_RAW = (
+    "ve veya ile bu için olarak de da vb vs ayrıca birlikte kodu kodlu işlem işlemi "
+    "işlemleri işlemler işleme ameliyat ameliyatı puanı puanına puanlarına fiyata "
+    "bedeli ücreti her türlü tüm bütün diğer set seti setleri kit kiti "
+    "malzeme malzemeler malzemeleri malzemesi"
+)
+_MATERIAL_NOUNS_RAW = "malzeme malzemeler malzemeleri malzemesi"
+# Nominative, possessive and plural endings: "PROTEZLERİ", "KAPAĞI", "ELEKTRODU"
+# name the item; case and adjective endings ("BALONA", "ÇİMENTOSUZ") do not.
+_NOUN_SUFFIXES = ("leri", "lari", "ler", "lar", "si", "su", "sü", "i", "u", "ü")
+_FINAL_CONSONANT = {"d": "t", "b": "p", "c": "ç", "ğ": "k"}
 
 
 def _fold_tr(text: str) -> str:
     return turkish_lower(str(text)).replace("ı", "i")
+
+
+_PROCEDURE_CONDITION = re.compile(r"([^.]*?)" + re.escape(_fold_tr(_PROCEDURE_CONDITION_TEXT)))
+_EK2C_STOPWORDS = frozenset(_fold_tr(_EK2C_STOPWORDS_RAW).split())
+_MATERIAL_NOUNS = frozenset(_fold_tr(_MATERIAL_NOUNS_RAW).split())
 
 
 def _text_indicates_separate_billing_allowed(*parts: object) -> bool:
@@ -201,39 +245,27 @@ def is_separate_billing_allowed(material_code: str) -> bool:
     return code in ek3_separate_billing_allowed_codes()
 
 
-def _sut_codes(frame: pl.DataFrame) -> frozenset[str]:
-    codes = frame.select(pl.col("sut_code").cast(pl.Utf8).str.strip_chars().str.to_uppercase())
-    return frozenset(code for code in codes.to_series().drop_nulls().to_list() if code)
+def _normalized_code(material_code: object) -> str:
+    return str(material_code or "").strip().upper()
 
 
 @lru_cache(maxsize=1)
-def sut_3_1_4_joint_implant_codes() -> frozenset[str]:
-    """EK-3/F-1 implant codes: SUT §3.1.4(2)(ç) "Her türlü eklem implantı"."""
-    filename, _desc = _EK3_SPECIALTY_CATALOGS[_JOINT_IMPLANT_ANNEX]
-    path = _GAZETTE_CURATED_DIR / filename
-    try:
-        df = pl.read_parquet(path, columns=["sut_code", "description"])
-    except Exception as exc:
-        logger.warning("Failed to read material catalog %s: %s", path, exc)
-        return frozenset()
-    instrument = pl.col("description").fill_null("").str.contains_any(
-        list(_EK3F1_NON_IMPLANT_COMPONENTS)
-    )
-    return _sut_codes(df.filter(~instrument))
+def _ek3_definition_frame() -> pl.DataFrame:
+    """Every EK-3 row as (annex, sut_code, text, definition).
 
-
-def is_covered_by_sut_3_1_4_category(material_code: str) -> bool:
-    """True when a SUT §3.1.4(2) category bills the material separately."""
-    code = str(material_code or "").strip().upper()
-    return bool(code) and code in sut_3_1_4_joint_implant_codes()
-
-
-@lru_cache(maxsize=1)
-def ek3_prosthesis_codes() -> frozenset[str]:
-    """EK-3 codes that are prostheses or implants: §3.1.4(2)(ç) joint implants
-    plus every row whose name or description says PROTEZ, İMPLANT or PROSTETİK."""
-    codes = set(sut_3_1_4_joint_implant_codes())
-    for path in _all_ek3_catalog_paths():
+    ``text`` is the row's name and description; ``definition`` is the same text
+    with the "(1) ..." payment notes cut, i.e. what the material is.
+    """
+    sources = [("EK-3H", EK3H_PARQUET_PATH), ("EK-3I", EK3I_PARQUET_PATH)]
+    sources += [
+        (annex, _GAZETTE_CURATED_DIR / name)
+        for annex, (name, _d) in _EK3_SPECIALTY_CATALOGS.items()
+    ]
+    sources.append(("EK-3C-1", _GAZETTE_CURATED_DIR / _EK3C_PARQUET_NAMES[0]))
+    frames: list[pl.DataFrame] = []
+    for annex, path in sources:
+        if not path.exists():
+            continue
         try:
             df = pl.read_parquet(path)
         except Exception as exc:
@@ -242,49 +274,172 @@ def ek3_prosthesis_codes() -> frozenset[str]:
         text_cols = [c for c in ("material_name", "name", "description") if c in df.columns]
         if "sut_code" not in df.columns or not text_cols:
             continue
-        text = pl.concat_str([pl.col(c).fill_null("") for c in text_cols], separator=" ")
-        codes |= _sut_codes(df.filter(text.str.contains(r"PROTEZ|İMPLANT|IMPLANT|PROSTETİK")))
-    return frozenset(codes)
+        frames.append(
+            df.select(
+                pl.lit(annex).alias("annex"),
+                pl.col("sut_code").cast(pl.Utf8).str.strip_chars().str.to_uppercase(),
+                pl.concat_str(
+                    [pl.col(c).cast(pl.Utf8).fill_null("") for c in text_cols], separator=" | "
+                ).alias("text"),
+            )
+        )
+    if not frames:
+        columns = ("annex", "sut_code", "text", "definition")
+        return pl.DataFrame(schema=dict.fromkeys(columns, pl.Utf8))
+    return (
+        pl.concat(frames)
+        .filter(pl.col("sut_code").is_not_null() & (pl.col("sut_code") != ""))
+        .with_columns(pl.col("text").str.replace(_PAYMENT_NOTES, "").alias("definition"))
+    )
 
 
-def ek2c_separate_billing_subjects(description: object) -> tuple[str, ...]:
-    """Folded subjects of the EK-2/C açıklama sentences that bill something separately.
+@lru_cache(maxsize=1)
+def sut_3_1_4_item_codes() -> dict[str, str]:
+    """EK-3 code -> the SUT §3.1.4(2) item letter that bills it separately.
 
-    "Balon dahildir, stent ayrıca faturalandırılır." yields "stent": text after
-    the last "dahil..." clause and before the verb.
+    EK-3/C lists are out of scope (their own pairing rules apply).
     """
-    subjects: list[str] = []
-    for sentence in _EK2C_SENTENCE_BREAK.split(_fold_tr(str(description or ""))):
-        verb = _EK2C_SEPARATE_BILLING_VERB.search(sentence)
-        if verb is None or _EK2C_NEGATED_VERB.search(verb.group(1)):
-            continue
-        subject = _EK2C_INCLUDED_CLAUSE.split(sentence[: verb.start()])[-1].strip(" ,()")
-        if subject:
-            subjects.append(subject)
-    return tuple(subjects)
+    frame = _ek3_definition_frame().filter(
+        ~pl.col("annex").str.starts_with("EK-3C")
+        & ~pl.col("sut_code").is_in(list(ek3c_material_code_set()))
+        & ~((pl.col("annex") == "EK-3F-1") & pl.col("definition").str.contains(_EK3F1_INSTRUMENTS))
+    )
+    items: dict[str, str] = {}
+    for item, _clause, annexes, include, exclude in _SUT_3_1_4_ITEMS:
+        hit = pl.col("definition").str.contains(include)
+        if annexes:
+            hit &= pl.col("annex").is_in(list(annexes))
+        if exclude:
+            hit &= ~pl.col("definition").str.contains(exclude)
+        for code in frame.filter(hit)["sut_code"].to_list():
+            items.setdefault(code, item)
+    return items
 
 
-def ek2c_description_allows_separate_billing(
-    description: object,
-    material_code: str,
-    material_name: str = "",
-) -> bool:
-    """True when an EK-2/C açıklama bills this material on top of the package.
+def sut_3_1_4_item(material_code: str) -> str | None:
+    """The SUT §3.1.4(2) item (e.g. "ç", "k") covering an EK-3 code, if any."""
+    return sut_3_1_4_item_codes().get(_normalized_code(material_code))
 
-    The sentence must name the material's SUT code, or name a prosthesis or
-    implant ("Protez ayrıca faturalandırılır.") when the material is one (by
-    its EK-3 row or its billed name).
+
+@lru_cache(maxsize=1)
+def _ek3_procedure_conditions() -> dict[str, frozenset[str]]:
+    conditions: dict[str, frozenset[str]] = {}
+    frame = _ek3_definition_frame().filter(
+        pl.col("text").str.contains(_PROCEDURE_CONDITION_TEXT, literal=True)
+    )
+    for code, text in frame.select("sut_code", "text").iter_rows():
+        procedures = {
+            proc
+            for clause in _PROCEDURE_CONDITION.findall(_fold_tr(text))
+            for proc in _PROCEDURE_CODE.findall(clause)
+        }
+        if procedures:
+            conditions[code] = frozenset(procedures)
+    return conditions
+
+
+def ek3_procedure_condition_codes(material_code: str) -> frozenset[str]:
+    """Procedure codes (no "P", e.g. "613180") the material's EK-3 row pays it with."""
+    return _ek3_procedure_conditions().get(_normalized_code(material_code), frozenset())
+
+
+@lru_cache(maxsize=1)
+def _ek3_definitions() -> dict[str, str]:
+    frame = _ek3_definition_frame().unique("sut_code", keep="first", maintain_order=True)
+    return dict(zip(frame["sut_code"].to_list(), frame["definition"].to_list(), strict=True))
+
+
+def _noun_forms(word: str) -> frozenset[str]:
+    """The word and its stem without a nominative/possessive/plural ending."""
+    stems = {word}
+    stems.update(
+        word[: -len(s)] for s in _NOUN_SUFFIXES if word.endswith(s) and len(word) - len(s) >= 3
+    )
+    return frozenset(s[:-1] + _FINAL_CONSONANT.get(s[-1], s[-1]) for s in stems)
+
+
+@lru_cache(maxsize=4096)
+def _ek3_noun_forms(material_code: str) -> frozenset[str]:
+    words = _WORD.findall(_fold_tr(_ek3_definitions().get(material_code, "")))
+    return frozenset(form for word in words for form in _noun_forms(word))
+
+
+@lru_cache(maxsize=2048)
+def _ek2c_clauses(description: str) -> tuple[tuple[str, tuple[tuple[str, ...], ...], bool], ...]:
+    """(kind, phrases, all_materials) per açıklama clause; kind is "separate" or "included".
+
+    "Balon dahildir, stent ayrıca faturalandırılır." yields ("included",
+    (("balon",),), False) and ("separate", (("stent",),), False). A phrase is the
+    tuple of its content words; "Tüm malzemeler dahildir" sets all_materials.
     """
-    code = str(material_code or "").strip().upper()
-    if not code:
-        return False
-    subjects = ek2c_separate_billing_subjects(description)
-    named = re.compile(rf"\b{re.escape(_fold_tr(code))}\b")
-    if any(named.search(subject) for subject in subjects):
-        return True
-    if not any(_PROSTHESIS_TERMS.search(subject) for subject in subjects):
-        return False
-    return code in ek3_prosthesis_codes() or bool(_PROSTHESIS_TERMS.search(_fold_tr(material_name)))
+    clauses = []
+    for sentence in _EK2C_SENTENCE_BREAK.split(_fold_tr(description)):
+        start = 0
+        for verb in _EK2C_PREDICATE.finditer(sentence):
+            subject, start = sentence[start : verb.start()], verb.end()
+            if verb.lastgroup == "included":
+                kind = "included"
+            elif _EK2C_NEGATED_VERB.search(verb.group()):
+                kind = "included"  # "faturalandırılmaz", "fatura edilemez"
+            elif verb.lastgroup == "separate":
+                kind = "separate"
+            else:
+                continue  # affirmative "faturalandırılır" without "ayrıca"
+            phrases, all_materials = [], False
+            for raw in _EK2C_PHRASE_BREAK.split(_EK2C_PARENTHETICAL.sub(" ", subject)):
+                words = _WORD.findall(raw)
+                context = [w for w in words if w not in _EK2C_STOPWORDS or w in _MATERIAL_NOUNS]
+                if context and all(w in _MATERIAL_NOUNS for w in context):
+                    all_materials = True
+                content = tuple(w for w in words if w not in _EK2C_STOPWORDS and len(w) >= 3)
+                if content:
+                    phrases.append(content)
+            clauses.append((kind, tuple(phrases), all_materials))
+    return tuple(clauses)
+
+
+def ek2c_aciklama_verdict(
+    material_code: str, descriptions: tuple[str, ...] | list[str]
+) -> str | None:
+    """What the EK-2/C açıklamas of the packages billed with a material say about it.
+
+    "separate" when an açıklama bills it on top of the package (§3.1.4(2)(n),
+    C002874), "included" when one keeps it inside, None when none names it.
+    The material is matched by its SUT code or by its EK-3 row definition, never
+    by the provider's free-text name: a phrase names it when each content word
+    is a word of the row in a bare, possessive or plural form ("Testis protezi"
+    names UR1079 TESTİS PROTEZİ, not UR1001; "balon" does not name a stent
+    "BALONA MONTE"). An "included" phrase also names it by its last word alone
+    ("Penil protez dahildir" keeps any prosthesis in). Precedence, across all
+    the açıklamas: a fully named inclusion, a fully named multi-word grant, a
+    last-word or one-word inclusion, a one-word grant, then "Tüm malzemeler
+    dahildir" when every package says so.
+    """
+    code = _normalized_code(material_code)
+    texts = [str(text or "") for text in descriptions]
+    if not code or not texts:
+        return None
+    folded_code = _fold_tr(code)
+    forms = _ek3_noun_forms(code)
+    signals: set[str] = set()
+    all_included = True
+    for text in texts:
+        clauses = _ek2c_clauses(text)
+        all_included &= any(kind == "included" and every for kind, _p, every in clauses)
+        for kind, phrases, _every in clauses:
+            for phrase in phrases:
+                if folded_code in phrase:
+                    signals.add(f"{kind}:strong")
+                    continue
+                named = [bool(_noun_forms(word) & forms) for word in phrase]
+                if all(named):
+                    signals.add(f"{kind}:{'strong' if len(phrase) > 1 else 'weak'}")
+                elif kind == "included" and named[-1]:
+                    signals.add("included:weak")
+    for signal in ("included:strong", "separate:strong", "included:weak", "separate:weak"):
+        if signal in signals:
+            return signal.split(":")[0]
+    return "included" if all_included else None
 
 
 @lru_cache(maxsize=1)

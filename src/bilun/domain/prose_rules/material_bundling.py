@@ -8,14 +8,15 @@ from functools import lru_cache
 from typing import Any
 
 from src.bilun.domain.materials.catalog_lookup import (
-    ek2c_description_allows_separate_billing,
-    is_covered_by_sut_3_1_4_category,
+    ek2c_aciklama_verdict,
+    ek3_procedure_condition_codes,
     is_material_in_ek3c_catalog,
     is_material_in_ek3_catalog,
     is_separate_billing_allowed,
     resolve_material_name_by_code,
+    sut_3_1_4_item,
 )
-from .catalog_membership import get_ek2c_description, normalize_procedure_code
+from .catalog_membership import get_ek2c_description, get_ek2c_entry, normalize_procedure_code
 from .clause_linking import clause_ref_for_rule_id
 
 from ..constants import _PROSE_RULES_DIR
@@ -173,6 +174,65 @@ def _procedure_pairing_satisfied(
     return bool(norm_claim_codes)
 
 
+# Claim context the separate-billing rule reads from a material dict: the
+# açıklama of each EK-2/C package it is billed with ("" when a package has
+# none), the normalized codes of those procedures, and what the açıklamas say.
+_PACKAGES_KEY = "ek2c_package_descriptions"
+_PROCEDURES_KEY = "procedure_context_codes"
+_VERDICT_KEY = "ek2c_aciklama_verdict"
+
+
+def _separate_billing_permitted(code: str, mat: dict[str, Any]) -> bool:
+    """§3.1.1(13) (C002751): SUT or an annex lets the EK-3 code be billed on top.
+
+    In order: the material's own EK-3 row marker; its EK-3 row paying it with a
+    procedure it is billed with (EK-3/F-2 sets); the açıklama of its EK-2/C
+    package (§3.1.4(2)(n)), whose "dahildir" also overrides the last step; a
+    §3.1.4(2) item, which covers materials outside an EK-2/C package score only.
+    """
+    if is_separate_billing_allowed(code):
+        return True
+    if ek3_procedure_condition_codes(code) & mat[_PROCEDURES_KEY]:
+        return True
+    if mat[_VERDICT_KEY] is not None:
+        return mat[_VERDICT_KEY] == "separate"
+    return bool(mat[_PACKAGES_KEY]) and sut_3_1_4_item(code) is not None
+
+
+def _billed_package(code: object, as_of_date: Any = None) -> str | None:
+    """Normalized EK-2/C package code a billed "P..." code stands for, else None.
+
+    EK-2/B lines share the digits ("612320") but are no package.
+    """
+    raw = str(code or "").strip().upper()
+    if not raw.startswith("P") or get_ek2c_entry(raw, as_of_date=as_of_date) is None:
+        return None
+    return normalize_procedure_code(raw)
+
+
+def _with_package_context(
+    mat: dict[str, Any],
+    code: str,
+    default: tuple[tuple[str, ...], frozenset[str]],
+) -> dict[str, Any]:
+    packages = tuple(mat[_PACKAGES_KEY]) if _PACKAGES_KEY in mat else default[0]
+    procedures = frozenset(mat[_PROCEDURES_KEY]) if _PROCEDURES_KEY in mat else default[1]
+    return {
+        **mat,
+        _PACKAGES_KEY: packages,
+        _PROCEDURES_KEY: procedures,
+        _VERDICT_KEY: ek2c_aciklama_verdict(code, packages),
+    }
+
+
+def _is_sut_3_1_4_item_rule(rule: dict[str, Any]) -> bool:
+    """The §3.1.4(2) info rows: "... bedeli ... ayrıca karşılanır (§3.1.4(x))"."""
+    condition = rule.get("condition") or {}
+    return str(rule.get("rule_id", "")).startswith("3.1.4.(") and bool(
+        condition.get("material_name_any")
+    )
+
+
 def _condition_matches(
     condition: dict[str, Any],
     *,
@@ -215,15 +275,7 @@ def _condition_matches(
             return False
         if unit_price <= 0:
             return False
-        # §3.1.1(13) accepts permission from "SUT veya eklerinde", not only the
-        # material's own EK-3 row: a §3.1.4(2) category, or the açıklama of the
-        # EK-2/C package billed with it (§3.1.4(2)(n)).
-        if is_separate_billing_allowed(code) or is_covered_by_sut_3_1_4_category(code):
-            return False
-        if any(
-            ek2c_description_allows_separate_billing(text, code, name)
-            for text in mat.get("ek2c_package_descriptions") or ()
-        ):
+        if _separate_billing_permitted(code, mat):
             return False
         if is_material_in_ek3c_catalog(code) and _procedure_pairing_satisfied(
             code,
@@ -388,11 +440,23 @@ def check_material_bundling_prose(
     billed_ids = frozenset(billed_procedure_line_ids or ())
     violations: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
+    # Materials without their own claim context (validator input) are billed
+    # with the caller's procedure codes, as in force today.
+    context_codes = list(dict.fromkeys((procedure_code, *sorted(claim_codes))))
+    default_context = (
+        tuple(
+            get_ek2c_description(raw)
+            for raw in context_codes
+            if _billed_package(raw) is not None
+        ),
+        frozenset(normalize_procedure_code(raw) for raw in context_codes) - {""},
+    )
 
     for idx, mat in enumerate(materials):
         name, code, unit_price = _material_fields(mat)
         if unit_price <= 0 and not code and not name:
             continue
+        mat = _with_package_context(mat, code, default_context)
 
         line_id = str(mat.get("material_line_id") or "").strip()
         claim_id = str(mat.get("claim_id") or "").strip()
@@ -404,6 +468,10 @@ def check_material_bundling_prose(
 
         for rule in rules:
             condition = rule.get("condition") or {}
+            # A package whose açıklama keeps the material inside ("Tüm
+            # malzemeler dahildir") makes "paid separately" untrue for it.
+            if mat[_VERDICT_KEY] == "included" and _is_sut_3_1_4_item_rule(rule):
+                continue
             if not _condition_matches(
                 condition,
                 mat=mat,
@@ -438,17 +506,6 @@ def check_material_bundling_prose(
     return violations
 
 
-def _ek2c_package_description(proc_line: Any) -> str:
-    """açıklama of the EK-2/C package a procedure line bills or belongs to."""
-    for raw in (proc_line.procedure_code, getattr(proc_line, "package_code", "")):
-        code = str(raw or "").strip().upper()
-        if code.startswith("P"):
-            return get_ek2c_description(
-                code, as_of_date=getattr(proc_line, "procedure_date", None)
-            )
-    return ""
-
-
 def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
     """Run prose material rules on a PatientClaimContext."""
     from .claim_utils import infer_care_setting
@@ -469,25 +526,48 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
         for line in ctx.procedure_lines
         if float(line.billed_amount_try) > 0
     )
-    # EK-2/C açıklama that may bill a material on top of its package: a material
-    # linked to a procedure line reads that line's package, an unlinked one every
-    # package on its claim, each as in force on the package line's date.
+    # The procedures a material is billed with: its linked line (and the
+    # package that line belongs to), else every billed line on its claim. EK-2/C
+    # packages count when billed (> 0) on that claim, read as in force on the
+    # package line's date.
     procedure_by_id = {
         line.procedure_line_id: line for line in ctx.procedure_lines if line.procedure_line_id
     }
-    package_texts_by_claim: dict[str, list[str]] = {}
+    packages_by_claim: dict[str, dict[str, str]] = {}
+    codes_by_claim: dict[str, set[str]] = {}
     for proc_line in ctx.procedure_lines:
-        text = _ek2c_package_description(proc_line)
-        if text:
-            package_texts_by_claim.setdefault(str(proc_line.claim_id), []).append(text)
+        if float(proc_line.billed_amount_try) <= 0:
+            continue
+        claim_key = str(proc_line.claim_id)
+        codes_by_claim.setdefault(claim_key, set()).add(
+            normalize_procedure_code(proc_line.procedure_code)
+        )
+        day = getattr(proc_line, "procedure_date", None)
+        package = _billed_package(proc_line.procedure_code, day)
+        if package is not None:
+            packages_by_claim.setdefault(claim_key, {})[package] = get_ek2c_description(
+                package, as_of_date=day
+            )
     materials = []
     for line in ctx.material_lines:
         linked = procedure_by_id.get(line.procedure_line_id)
-        package_texts = (
-            [_ek2c_package_description(linked)]
-            if linked is not None
-            else package_texts_by_claim.get(str(getattr(line, "claim_id", "")), [])
-        )
+        if linked is not None:
+            linked_codes = (linked.procedure_code, getattr(linked, "package_code", ""))
+            claim_packages = packages_by_claim.get(str(linked.claim_id), {})
+            packages = tuple(
+                claim_packages[key]
+                for key in dict.fromkeys(
+                    normalize_procedure_code(raw)
+                    for raw in linked_codes
+                    if str(raw or "").strip().upper().startswith("P")
+                )
+                if key in claim_packages
+            )
+            procedures = {normalize_procedure_code(raw) for raw in linked_codes}
+        else:
+            claim_key = str(getattr(line, "claim_id", ""))
+            packages = tuple(packages_by_claim.get(claim_key, {}).values())
+            procedures = codes_by_claim.get(claim_key, set())
         row: dict[str, Any] = {
             "material_line_id": getattr(line, "material_line_id", ""),
             "claim_id": getattr(line, "claim_id", ""),
@@ -498,7 +578,8 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
             "care_setting": claim_care.get(
                 getattr(line, "claim_id", ""), "inpatient"
             ),
-            "ek2c_package_descriptions": tuple(text for text in package_texts if text),
+            _PACKAGES_KEY: packages,
+            _PROCEDURES_KEY: frozenset(procedures) - {""},
         }
         for flag in (
             "titubb_registered",
