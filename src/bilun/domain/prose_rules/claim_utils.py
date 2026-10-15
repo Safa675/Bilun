@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
@@ -12,6 +13,19 @@ if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
 CareSetting = Literal["inpatient", "outpatient"]
+
+# Explicit traffic-accident values, compared as whole values after folding
+# ("Trafik Kazası" -> "trafik_kazasi"). Never a substring match: "kaza" is
+# also inside a work accident ("iş kazası", the engine's ``is_kazasi``),
+# which is not a traffic accident (#268).
+_TRAFFIC_ACCIDENT_VALUES = frozenset({"trafik_kazasi", "traffic_accident"})
+
+# Header fields that carry the accident origin. The claim model has no MEDULA
+# ``provizyonTipi`` field: ``occupational_context`` holds the origin and
+# ``claim_type`` the visit type, which carries the same values (``is_kazasi``
+# in copay_line_waivers.py). ``scenario_tag`` is synthetic-only (#239) and
+# ``department`` is the service unit, so neither is read.
+_ACCIDENT_ORIGIN_FIELDS = ("occupational_context", "claim_type")
 
 
 @dataclass(frozen=True)
@@ -26,6 +40,25 @@ class CareSettingAmbiguity:
 
 def _normalized_claim_type(claim: ClaimHeader) -> str:
     return str(getattr(claim, "claim_type", "") or "").casefold()
+
+
+def _fold_header_value(value: object) -> str:
+    """Case- and Turkish-fold a header value; spaces and hyphens become ``_``."""
+    folded = unicodedata.normalize("NFKD", str(value or "").casefold().replace("ı", "i"))
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    return "_".join(folded.replace("-", " ").split())
+
+
+def claim_is_traffic_accident(claim: ClaimHeader) -> bool:
+    """True when the header explicitly classifies the claim as a traffic accident.
+
+    Shared by the §2-09 traffic-accident detector and the §2.4
+    ``origin_is_traffic_accident`` context key, so both give the same answer.
+    """
+    return any(
+        _fold_header_value(getattr(claim, field, "")) in _TRAFFIC_ACCIDENT_VALUES
+        for field in _ACCIDENT_ORIGIN_FIELDS
+    )
 
 
 def infer_care_setting(claim: ClaimHeader) -> str:
