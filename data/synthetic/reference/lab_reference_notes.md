@@ -96,12 +96,10 @@ Status: **draft for Safa's review** (2026-10-15). Table: `lab_reference.csv` in 
 5. **Linkage:**
    - One billed lab line maps to one `lab_result_id` (`claims/validation/lab.py:10-37`).
    - Today's `lab_clean.parquet` has no parameter column (only `SUB_CODE`). Multi-parameter tests need one.
-6. **Wrong codes in `BILUN_TO_SUT_CODE`** (`src/bilun/domain/constants.py:148-196`):
-   - PT and INR map to L106290 (PAP).
-   - aPTT maps to L100050 (an androgen metabolite).
-   - Prokalsitonin maps to L106230 (Progesteron).
-   - Protein maps to L107180 (CDT).
-   - The "Lab Prices" API and UI show those prices (`api/routes/pricing.py:189-203`). The generator must not reuse this map.
+6. **`BILUN_TO_SUT_CODE`** (`src/bilun/domain/constants.py:149-197`), shown by the "Lab Prices" API and UI (`api/routes/pricing.py:189-203`):
+   - Until 2026-10-15, PT and INR mapped to L106290 (PAP), aPTT to L100050 (an androgen metabolite), Prokalsitonin to L106230 (Progesteron) and Protein to L107180 (CDT).
+   - Fixed on 2026-10-15: they map to L106430, L101050, L106240 and L106300, and Kalsiyum and CRP to L103860 and L101850, the picks in this table. `tests/unit/domain/catalog/test_lab_code_map.py` pins each code's catalog name.
+   - The generator must not reuse this map.
 
 ## Generation rules (judgment)
 
