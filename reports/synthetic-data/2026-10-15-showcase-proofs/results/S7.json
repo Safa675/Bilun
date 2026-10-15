@@ -1,0 +1,505 @@
+{
+ "story": "S7",
+ "clean": {
+  "total_billed": "1633.02",
+  "rows": [
+   {
+    "date": "2026-02-19",
+    "code": "520020",
+    "name": "Acil poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "530080",
+    "name": "Damar yolu açılması",
+    "qty": 1,
+    "unit": "35.74",
+    "billed": "35.74",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L102090",
+    "name": "D-dimer (Kantitatif)",
+    "qty": 1,
+    "unit": "145.50",
+    "billed": "145.50",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L102890",
+    "name": "Glukoz (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L106910",
+    "name": "Sodyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L106150",
+    "name": "Potasyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "801720",
+    "name": "Akciğer grafisi P.A. (Tek yön)",
+    "qty": 1,
+    "unit": "44.75",
+    "billed": "44.75",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "R101450",
+    "name": "BT anjiografi, pulmoner arter",
+    "qty": 1,
+    "unit": "1138.22",
+    "billed": "1138.22",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "8699688771559",
+    "name": "OMNIPAQUE 350 MGL/ML 100 ML FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "R07.1",
+    true
+   ],
+   [
+    "R06.0",
+    false
+   ]
+  ],
+  "performed": [
+   [
+    "530100",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "530080",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "801720",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "R101450",
+    "2026-02-19",
+    "pacs"
+   ]
+  ],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 222.67,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 0
+  }
+ },
+ "faulty": {
+  "total_billed": "494.80",
+  "rows": [
+   {
+    "date": "2026-02-19",
+    "code": "520020",
+    "name": "Acil poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "530080",
+    "name": "Damar yolu açılması",
+    "qty": 1,
+    "unit": "35.74",
+    "billed": "35.74",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L102090",
+    "name": "D-dimer (Kantitatif)",
+    "qty": 1,
+    "unit": "145.50",
+    "billed": "145.50",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L102890",
+    "name": "Glukoz (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L106910",
+    "name": "Sodyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L106150",
+    "name": "Potasyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "801720",
+    "name": "Akciğer grafisi P.A. (Tek yön)",
+    "qty": 1,
+    "unit": "44.75",
+    "billed": "44.75",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "8699688771559",
+    "name": "OMNIPAQUE 350 MGL/ML 100 ML FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-02-19",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "R07.1",
+    true
+   ],
+   [
+    "R06.0",
+    false
+   ]
+  ],
+  "performed": [
+   [
+    "530100",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "530080",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "801720",
+    "2026-02-19",
+    "emr"
+   ],
+   [
+    "R101450",
+    "2026-02-19",
+    "pacs"
+   ]
+  ],
+  "direct": [
+   {
+    "rule_id": "performed_not_submitted",
+    "procedure_code": "R101450",
+    "procedure_name": "BT anjiografi, pulmoner arter",
+    "service_date": "2026-02-19",
+    "source": "pacs",
+    "list_price_try": 1138.22,
+    "recoverable_gap_try": 1138.22,
+    "price_methodology": "ek2b_list_price",
+    "detail": "EMR log shows R101450 performed on 2026-02-19 (pacs) but claim submission has 0.00 TRY billed."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 157.2,
+   "capture_gap_try": 1138,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 1
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "procedure_capture_gap",
+   "performed_not_submitted",
+   "R101450",
+   1138.22
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   157.2
+  ],
+  [
+   "scalar",
+   "capture_gap_try",
+   "",
+   "",
+   1138.0
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   222.67
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   222.67
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "never_principal_diagnosis_blocklist",
+   "",
+   0.0
+  ]
+ ]
+}

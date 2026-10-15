@@ -1,0 +1,86 @@
+# Reference code sets for the synthetic demo generator (synthetic demo v3, P1).
+#
+# Names are copied from the EK-2B / EK-2C lists in force in 2026; notes quote the
+# list's own explanation column. tests/unit/synthetic/test_reference_code_sets.py checks
+# every code against the catalog in force on 2026-02-01, 2026-04-16, 2026-07-07 and
+# 2026-09-30, and the surgical group bands against the raw EK-2B list rows.
+# Plan: plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md (P1).
+
+window:
+  start: "2026-02-01"
+  end: "2026-09-30"
+
+visits:  # EK-2B chapter 2
+  poliklinik: {code: "520030", name: "Normal poliklinik muayenesi"}
+  acil: {code: "520020", name: "Acil poliklinik muayenesi"}
+  acil_green_area:
+    code: "520021"
+    name: "Yeşil alan muayenesi"
+    note: "EK-2B: not billed together with other SUT procedures."
+  consultation: {code: "520010", name: "Konsültasyon (Her bir branş için)"}
+  health_board_report: {code: "520050", name: "Sağlık kurulu raporu"}
+  specialist_report: {code: "520051", name: "Uzman hekim raporu"}
+
+beds:  # EK-2B chapter 1
+  ward_day:
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    note: "EK-2B: covers meals, bed and ward rounds; one per night of stay."
+  day_bed:
+    code: "510120"
+    name: "Gündüz yatak tarifesi"
+    note: "EK-2B: day treatment, stays under 24 hours, emergency observation."
+  companion:
+    code: "510121"
+    name: "Refakat"
+    note: "EK-2B: covers the companion's meals and bed."
+  icu_day_fee_for_service:
+    code: "510090"
+    name: "Yoğun bakım"
+    note: >-
+      EK-2B: monitoring, mechanical ventilation (530130, 530490), nebuliser, oxygen and
+      deep tracheal aspiration are not billed separately with this code.
+  incubator: {code: "510070", name: "Kuvöz"}
+  cot: {code: "510081", name: "Kot (beşik)"}
+
+emergency:  # EK-2B chapter 3
+  critical_bed:
+    code: "530000"
+    name: "Acil serviste kritik hasta yatak ve takibi"
+    note: "EK-2B: by an emergency physician, once a day; not with 510120 or 530003."
+
+icu_packages:  # EK-2C, one per ICU day
+  adult:
+    1: {code: "P552001", name: "Birinci basamak yoğun bakım hastası"}
+    2: {code: "P552002", name: "İkinci basamak yoğun bakım hastası"}
+    3: {code: "P552003", name: "Üçüncü basamak yoğun bakım hastası"}
+  newborn:
+    1: {code: "P552006", name: "Yenidoğan birinci basamak yoğun bakım hastası"}
+    2: {code: "P552007", name: "Yenidoğan ikinci basamak yoğun bakım hastası"}
+    3: {code: "P552008", name: "Yenidoğan üçüncü basamak yoğun bakım hastası"}
+
+anaesthesia:  # EK-2B chapter 5; one line per session for itemised operations
+  single:
+    A1: "550130"
+    A2: "550140"
+    A3: "550150"
+    B: "550160"
+    C: "550170"
+    D: "550180"
+    E: "550190"
+  multiple_operations:  # "Birden fazla ameliyatın ... yapıldığı anesteziler", by total puan
+    A1: "550200"
+    A2: "550210"
+    A3: "550220"
+    B: "550230"
+    C: "550240"
+    D: "550250"
+    E: "550260"
+
+# EK-2B section 4 "AMELİYATHANE ve AMELİYATHANE DIŞI İŞLEM TANIMLARI": the lowest
+# operation puan of each group. Dates come from the list's own amendment markers.
+surgical_group_bands:
+  - effective_from: "2024-08-07"  # Değişik: RG-05/08/2024-32623/10 md.
+    lower_bounds: {A1: 32561, A2: 15401, A3: 7584, B: 5001, C: 2501, D: 943, E: 0}
+  - effective_from: "2026-04-16"  # Değişik: RG-08/04/2026-33218/9-a md.
+    lower_bounds: {A1: 39001, A2: 18501, A3: 9001, B: 6001, C: 3005, D: 1301, E: 0}

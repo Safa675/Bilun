@@ -1,0 +1,63 @@
+{
+ "sources": {
+  "before": {
+   "commit": "6b35d543",
+   "how": "in-process run of reports/synthetic-data/2026-10-14-audit-scripts/engine_output/run_reports.py on the repo, under an audit hook that refuses access to the ILAY folders (0 violations)"
+  },
+  "after": {
+   "commit": "1c22ee9c",
+   "how": "same script on a git-archive snapshot of origin/main without the ILAY folders (0 guard violations)"
+  }
+ },
+ "cohort": {
+  "patients": 50,
+  "bills": 94,
+  "billed_total_try": 3738654.04
+ },
+ "metrics": {
+  "before": {
+   "grand_total_recoverable": 339836.52,
+   "total_anestezi_puani": 175786.0,
+   "n_anestezi_puani_patients": 25,
+   "total_yatak_puani": 107399.88,
+   "n_yatak_puani_patients": 22,
+   "total_refakatci": 34308.3,
+   "n_refakatci_patients": 22,
+   "total_strategy_uplift": 12150.0,
+   "n_optional_override_patients": 2,
+   "total_copay_savings": 93255.1,
+   "total_audit_exposure": 676458.59,
+   "total_material_flags": 163,
+   "total_icu_puani": 0.0,
+   "n_patients_with_actions": null,
+   "cohort_billed_at_risk_try": 5947865.52,
+   "compliance_findings": 270,
+   "material_index_rows_without_claim_id": 47,
+   "coronary_stent_clause_hits": 10,
+   "patient_pages_at_risk_above_billed": 10,
+   "anaesthesia_rows": 203
+  },
+  "after": {
+   "grand_total_recoverable": 107258.06,
+   "total_anestezi_puani": 29617.84,
+   "n_anestezi_puani_patients": 17,
+   "total_yatak_puani": 45112.52,
+   "n_yatak_puani_patients": 19,
+   "total_refakatci": 17709.88,
+   "n_refakatci_patients": 22,
+   "total_strategy_uplift": 4625.48,
+   "n_optional_override_patients": 1,
+   "total_copay_savings": 93255.1,
+   "total_audit_exposure": 676458.59,
+   "total_material_flags": 171,
+   "total_icu_puani": 0.0,
+   "n_patients_with_actions": 26,
+   "cohort_billed_at_risk_try": 1891394.22,
+   "compliance_findings": 278,
+   "material_index_rows_without_claim_id": 0,
+   "coronary_stent_clause_hits": 0,
+   "patient_pages_at_risk_above_billed": 0,
+   "anaesthesia_rows": 24
+  }
+ }
+}

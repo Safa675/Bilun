@@ -1,0 +1,442 @@
+{
+ "story": "S1",
+ "clean": {
+  "total_billed": "8636.51",
+  "rows": [
+   {
+    "date": "2026-07-14",
+    "code": "P610131",
+    "name": "Appendektomi, laparoskopik",
+    "qty": 1,
+    "unit": "8636.51",
+    "billed": "8636.51",
+    "source": "EK-2C valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K35.8",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "check_payment_method_compliance",
+    "code": "610131",
+    "kind": "DRG_MANDATORY",
+    "mandated": "package",
+    "compliant": true,
+    "section": "2.2.2.(1)",
+    "detail": "Billed correctly as package."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "recommendation": "package",
+    "payment_method_kind": "DRG_MANDATORY",
+    "current_billing": "package",
+    "package_total_try": 8636.51,
+    "itemized_total_try": 0.0,
+    "savings_try": 0.0,
+    "sut_section_id": "2.2.2.(1)",
+    "detail": "Claim C-SH01 is billed correctly as package per SUT §2.2.2(1). Package total 8636.51 TRY."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 592.92,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "faulty": {
+  "total_billed": "4550.64",
+  "rows": [
+   {
+    "date": "2026-07-14",
+    "code": "610131",
+    "name": "Appendektomi, laparoskopik",
+    "qty": 1,
+    "unit": "3022.31",
+    "billed": "3022.31",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "550170",
+    "name": "Anestezi C grubu",
+    "qty": 1,
+    "unit": "530.33",
+    "billed": "530.33",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "910230",
+    "name": "Apendiks, insidental dışında",
+    "qty": 1,
+    "unit": "258.54",
+    "billed": "258.54",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "8699508270224",
+    "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
+    "qty": 3,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "8697637691743",
+    "name": "NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI)",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K35.8",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "check_payment_method_compliance",
+    "code": "610131",
+    "kind": "DRG_MANDATORY",
+    "mandated": "package",
+    "compliant": false,
+    "section": "2.2.2.(1)",
+    "detail": "Procedure 610131 must use package billing (tanıya dayalı işlem üzerinden ödeme) per 2.2.2.(1)."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "type": "compliance_violation",
+    "procedure_code": "610131",
+    "payment_method_kind": "DRG_MANDATORY",
+    "sut_section_id": "2.2.2.(1)",
+    "detail": "Procedure 610131 must use package billing (tanıya dayalı işlem üzerinden ödeme) per 2.2.2.(1)."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "recommendation": "package",
+    "payment_method_kind": "DRG_MANDATORY",
+    "current_billing": "itemized",
+    "package_total_try": 8636.51,
+    "itemized_total_try": 1231.0,
+    "savings_try": 0.0,
+    "sut_section_id": "2.2.2.(1)",
+    "detail": "SUT §2.2 mandates package billing for claim C-SH01 (EK-2/C procedure present). Package total 8636.51 TRY vs itemized 1231.00 TRY."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 148.2,
+   "audit_exposure_try": 3558.29,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 6
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "billing_strategy",
+   "compliance_violation",
+   "610131",
+   0.0
+  ],
+  [
+   "action",
+   "billing_strategy",
+   "mandatory_compliance",
+   "P610131",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   3558.29
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "action",
+   "yatak_puani",
+   "yatak_puani_standard_bed",
+   "",
+   444.72
+  ],
+  [
+   "compliance",
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "error",
+   "P610131",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "P610131",
+   0.0
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "yatak_puani",
+   "yatak_puani_standard_bed",
+   "",
+   444.72
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "block",
+   "refakatci",
+   "refakatci_510121",
+   "",
+   148.2
+  ],
+  [
+   "compliance",
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "error",
+   "P610131",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "P610131",
+   0.0
+  ]
+ ]
+}

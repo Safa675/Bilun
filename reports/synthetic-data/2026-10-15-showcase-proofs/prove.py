@@ -1,0 +1,159 @@
+"""Prove each showcase fault: target detector fires on the faulty bill, silent on the clean bill.
+
+Run from the repo root: .venv/bin/python reports/synthetic-data/2026-10-15-showcase-proofs/prove.py [S1 ...]
+Writes results/<story>.json with bill rows, direct-detector output and the
+full-report signal diff. Read-only on the repo.
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from collections import Counter
+
+from harness import bill_rows, run_engine, ui_signals
+from stories import STORIES
+
+from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
+from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
+from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
+from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
+from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
+from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
+from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
+from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
+from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+os.makedirs(OUT, exist_ok=True)
+
+
+def _keep(d: dict, keys) -> dict:
+    return {k: d.get(k) for k in keys if k in d}
+
+
+def direct(story: str, ctx) -> list[dict]:
+    """Call the target rule the way the unit tests do; return its raw rows (trimmed)."""
+    claims, procs = list(ctx.claims), list(ctx.procedure_lines)
+    claim = claims[0]
+    if story == "S1":
+        rows = []
+        for line in procs:
+            if line.procedure_code in ("610131", "P610131"):
+                c = check_payment_method_compliance(
+                    line.procedure_code, billed_as_package=line.procedure_category == "paket",
+                    care_setting="inpatient", facility_tier=claim.facility_tier,
+                    provider_type=claim.provider_type, as_of_date=line.procedure_date)
+                rows.append({"fn": "check_payment_method_compliance", "code": c.procedure_code,
+                             "kind": c.kind, "mandated": c.mandated_method, "compliant": c.is_compliant,
+                             "section": c.trace.sut_section, "detail": c.detail})
+        for r in recommend_billing_strategy_from_claims(ctx).recommendations:
+            if r.get("type") == "informational":
+                continue
+            rows.append({"fn": "recommend_billing_strategy_from_claims", **_keep(r, (
+                "type", "procedure_code", "recommendation", "payment_method_kind", "current_billing",
+                "package_total_try", "itemized_total_try", "savings_try", "sut_section_id", "detail"))})
+        return rows
+    if story == "S2":
+        return [_keep(o, ("rule_id", "bed_days", "gross_bed_days", "daily_rate_try", "expected_yatak_try",
+                          "actual_billed_try", "recoverable_uplift_try", "detail"))
+                for o in detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={claim.claim_id})]
+    if story == "S3":
+        return [_keep(o, ("rule_id", "procedure_code", "procedure_puan", "anestezi_group", "anestezi_code",
+                          "anestezi_puan", "katsayi", "expected_try", "actual_billed_try",
+                          "recoverable_uplift_try", "detail"))
+                for o in detect_anestezi_puani_opportunities(claims, procs)]
+    if story == "S4":
+        return [_keep(o, ("rule_id", "days", "puan", "expected_try", "actual_billed_try",
+                          "recoverable_uplift_try", "detail"))
+                for o in detect_refakatci_opportunities(claims, procs)]
+    if story == "S5":
+        return [_keep(v, ("rule_id", "severity", "material_code", "risk_amount", "material_outcome",
+                          "sut_section", "message"))
+                for v in check_material_bundling_for_context(ctx) if v.get("rule_id") == "3.1.1.(2).titubb_uts_incomplete"]
+    if story == "S6":
+        rows = []
+        for dl in ctx.drug_lines:
+            if not dl.drug_name.startswith("PK-MERZ"):
+                continue
+            res = evaluate_drug_indication_line_detailed(drug_line=dl, claim=claim, diagnoses=list(ctx.diagnoses))
+            v = res.get("violation") or {}
+            rows.append({"fn": "evaluate_drug_indication_line_detailed",
+                         "applicability_status": res.get("applicability_status"),
+                         "selected_rule_id": res.get("selected_rule_id"),
+                         "eligible_icd10": res.get("eligible_icd10_codes_or_ranges"),
+                         "observed_icd10": res.get("observed_icd10_codes"),
+                         "violation_kind": v.get("violation_kind"), "severity": v.get("severity"),
+                         "message_tr": v.get("message_tr")})
+        for f in evaluate_drug_indication_findings(ctx.patient_id, ctx).findings:
+            rows.append({"fn": "evaluate_drug_indication_findings", "drug": f.drug_name,
+                         "finding_kind": f.finding_kind, "severity": f.severity,
+                         "applicability_status": f.applicability_status})
+        return rows
+    if story == "S7":
+        return [_keep(o, ("rule_id", "procedure_code", "procedure_name", "service_date", "source",
+                          "list_price_try", "recoverable_gap_try", "price_methodology", "detail"))
+                for o in detect_procedure_capture_gaps(claim, list(ctx.performed_procedure_lines), procs)]
+    if story == "S8":
+        f = analyze_claim_unbundling(claim, procs, same_incision=True)
+        return [_keep(v, ("rule_id", "procedure_code", "primary_procedure_code", "expected_point_factor",
+                          "expected_billed_try", "actual_billed_try", "risk_amount_try", "sut_section", "detail"))
+                for v in f.session_violations]
+    raise KeyError(story)
+
+
+def prove(story: str) -> dict:
+    builder = STORIES[story]
+    out: dict = {"story": story}
+    sig: dict = {}
+    for variant in ("clean", "faulty"):
+        bill = builder(variant)
+        ctx = bill.ctx()
+        rep, viol = run_engine(ctx)
+        sig[variant] = ui_signals(rep, viol)
+        out[variant] = {
+            "total_billed": str(bill.total()),
+            "rows": bill_rows(bill),
+            "diagnoses": [(d.icd10_code, d.is_primary) for d in bill.dx],
+            "performed": [(p.procedure_code, p.service_date.isoformat(), p.source) for p in bill.performed],
+            "direct": direct(story, ctx),
+            "report": {"sgk_uplift_try": rep.sgk_uplift_try, "audit_exposure_try": rep.audit_exposure_try,
+                       "capture_gap_try": rep.capture_gap_try,
+                       "compliance_adjustment_try": rep.compliance_adjustment_try,
+                       "action_count": rep.action_count},
+        }
+    c, f = Counter(sig["clean"]), Counter(sig["faulty"])
+    out["only_in_faulty"] = [list(x) for x in (f - c).elements()]
+    out["only_in_clean"] = [list(x) for x in (c - f).elements()]
+    out["noise_in_clean"] = [list(x) for x in sig["clean"]]
+    with open(os.path.join(OUT, f"{story}.json"), "w", encoding="utf-8") as fh:
+        json.dump(out, fh, ensure_ascii=False, indent=1, default=str)
+    return out
+
+
+def _print(out: dict) -> None:
+    s = out["story"]
+    print(f"\n######## {s}  clean total {out['clean']['total_billed']}  faulty total {out['faulty']['total_billed']}")
+    for v in ("clean", "faulty"):
+        print(f"  [{v}] direct:")
+        for r in out[v]["direct"] or [{"(none)": "rule silent"}]:
+            print("     ", r)
+        print(f"  [{v}] report:", out[v]["report"])
+    print("  ONLY IN FAULTY:")
+    for x in out["only_in_faulty"]:
+        print("     ", x)
+    print("  ONLY IN CLEAN:")
+    for x in out["only_in_clean"]:
+        print("     ", x)
+    hide = {"wavea", "validate"}
+    print("  NOISE ON CLEAN (actions/blocks/scalars/compliance):")
+    for x in out["noise_in_clean"]:
+        if x[0] not in hide:
+            print("     ", x)
+
+
+if __name__ == "__main__":
+    which = sys.argv[1:] or list(STORIES)
+    for s in which:
+        _print(prove(s))
