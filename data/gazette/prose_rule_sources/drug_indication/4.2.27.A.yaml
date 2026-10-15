@@ -11,10 +11,6 @@ rules:
   drug_names:
   - prothrombin complex
   - pcc
-  - fresh frozen plasma
-  - ffp
-  - vitamin k
-  - k vitamini
   report_required: true
   report_specialties:
   - hematoloji
@@ -41,8 +37,6 @@ rules:
   drug_names:
   - prothrombin complex
   - pcc
-  - fresh frozen plasma
-  - ffp
   - beriplex
   - kanama durdurucu
   report_required: true
@@ -149,9 +143,6 @@ rules:
   - prothrombin complex
   - beriplex
   - octaplex
-  - k vitamini
-  - vitamin k
-  - konakion
   icd10_ranges:
   - T45
   - D68
@@ -254,9 +245,6 @@ rules:
   - beriplex
   - octaplex
   - kombine koagülasyon
-  - k vitamini
-  - vitamin k
-  - konakion
   icd10_ranges:
   - T45
   - D68
@@ -428,9 +416,6 @@ rules:
   - beriplex
   - octaplex
   - kombine koagülasyon
-  - k vitamini
-  - vitamin k
-  - konakion
   icd10_ranges:
   - D66
   - D67

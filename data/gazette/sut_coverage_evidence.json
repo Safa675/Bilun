@@ -1942,7 +1942,7 @@
     "data/gazette/prose_rules/dental_2_4_1.json": "007cf6e109eb1f14e63b5e791bdba2a774e04d456f6d56b9ecd6b57d9329412a",
     "data/gazette/prose_rules/drg_package_adequacy_prose.json": "b8c1e09368e7da413f07c58358b402b0b5f48fbdcd7984b9cd39fb30e6cc07e9",
     "data/gazette/prose_rules/drug_combination_4_2.json": "c653ac682ac6745a053546e4c8cf4a72c6050d206a1d06f2e7974d74bfc06192",
-    "data/gazette/prose_rules/drug_indication_prose.json": "d42c86b2bcb69b230c68b281dbb0ff78a21cb34bcd63032afd3d2249eb3e322d",
+    "data/gazette/prose_rules/drug_indication_prose.json": "c85e2628aca55ffa7af884071cfb1f4e43275cdc8655000e3c82888b732c2fa3",
     "data/gazette/prose_rules/drug_indication_prose.schema.json": "3aaec31474bff0e1a35ee49e8d5bd6096c51aaa999a09860e60e0aaf81e4cabc",
     "data/gazette/prose_rules/ek2c_prose_drg_locked_codes.json": "c858c02c1b47fc2d69d4f6e3b68e84bbcbdd61bfec10d8d56ec7edbfb7b2f5e4",
     "data/gazette/prose_rules/ek2d5_neuronavigation_codes.json": "667d781669d5f6de1d6d30942cc997073219ed5c0e265efa2d69a94fb6d12064",
@@ -2053,7 +2053,7 @@
     "src/bilun/domain/sut/rule_registry.py": "6de6e627692e63f23539c6e3a6dd48526db81d682afd145b5391d2ebe0248a65",
     "src/bilun/domain/sut/source_authority_schema.py": "4241d3dd268f5847da94c6abb6a24e5c6306cb34a5b8929deddd72085e461748"
   },
-  "input_sha256": "3f0054350c1daf70b975209b8db526f7f154876f8dd5e4a37d77e7232f0b4749",
+  "input_sha256": "db2f8dd718bd3b1d926ba72b462eab51ffc5eb2e04dcbb3b73a8bf0a2c734dd4",
   "inputs_available_count": null,
   "limitations": [
     "Source representation includes encoded text; it does not prove executable clinical conditions.",
