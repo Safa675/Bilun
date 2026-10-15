@@ -1951,7 +1951,7 @@
     "data/gazette/prose_rules/fatura_inceleme_prose.schema.json": "85e6a37695c579b8b1df48effc29e1c04e413add2a8c96f40238b83bb97ba5bc",
     "data/gazette/prose_rules/gap_closing_misc.json": "2c5e6f187bd56bc24d891d2f6dcd427efc8fc77d10f9d78eb9848bb52ed7ec73",
     "data/gazette/prose_rules/gap_closing_treatment_2.json": "3f4ccd544be398da538f979bd2ef7e4ff9c1e824e243771f4a52e77c53042080",
-    "data/gazette/prose_rules/material_bundling_prose.json": "534f58bfe9e11e78d1450e32bb7660c1d873e2d5d708d973d20ab91190c33d5f",
+    "data/gazette/prose_rules/material_bundling_prose.json": "0ad07c152c12008184955b38e0acce3e237d32eb486c387831fcc63ab35936c8",
     "data/gazette/prose_rules/material_bundling_prose.schema.json": "30ddd881f65ebf9485b11fe18f23366ed7ade5d0cfd67ddb26a307a1bbe64145",
     "data/gazette/prose_rules/material_pairing_uplift.json": "928bdfc3b47bd98a9d6c322bf2b454dfcb517597b4a7611ae60e855a8283d2aa",
     "data/gazette/prose_rules/payment_method_2_2.json": "8102cb83b7171cd710425b6b69a442536630f2460ae565c2481932c41e6c299f",
