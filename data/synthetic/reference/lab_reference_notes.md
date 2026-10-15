@@ -88,7 +88,7 @@ Status: **draft for Safa's review** (2026-10-15). Table: `lab_reference.csv` in 
    - `src/bilun/domain/billing/claim_lab.py:28-37` matches CBC lines by name keywords from `constants.py:228-244`. "Glike hemoglobin (Hb A1c)" contains "hemoglobin".
    - So a clean claim with L107020 and L102820 on the same date is flagged (`:80-83`).
    - Probe: 26.34 TL of "savings" were reported on a clean bill.
-2. **Lab capture gap** (`prose_rules/lab_capture_gap.py:74-136`): any L-code that has results but no billed line on the claim is reported as unbilled.
+2. **Lab capture gap** (`prose_rules/lab_capture_gap.py:70-132`): any L-code that has results but no billed line on the claim is reported as unbilled.
    - Derived rows must therefore carry the parent's code.
    - Labs in an EK-2C package period, ACR on a creatinine date, and Na/K/Ca/lactate on a blood-gas date will show false gaps if their results are emitted under their own codes.
 3. **Duplicate test rule** (`prose_rules/common_billing_errors.py:81`, `:284-351`): the same L-code on a different claim of the same patient within 7 days is flagged. ED→ward and clinic→admission transitions are at risk.
