@@ -14,13 +14,14 @@ Two consequences the BILUN detector enforces:
    Medula provizyon tipi ``trafik kazası`` and booked to account
    ``120.05.01.04 - Trafik Sigortası Kapsamında Verilen Hizmetlere Karşın
    SGK'dan Alacaklar``. A claim that *is* a traffic accident (per its
-   occupational_context / scenario_tag / ICD-10 diagnosis) but was *not*
+   occupational_context / claim_type / ICD-10 diagnosis) but was *not*
    classified as such is a payment-pathway error. Because the dataset does not
    yet carry an explicit ``provision_type`` field, the detector flags any
-   detected traffic-accident claim that lacks an explicit traffic marker on the
-   *claim header* (``scenario_tag``/``occupational_context``) — i.e. one that
-   was only recoverable from the diagnosis, signalling it was likely billed via
-   the normal SGK pathway instead of the traffic provision.
+   detected traffic-accident claim that lacks an explicit traffic value on the
+   *claim header* (``occupational_context``/``claim_type``, read by
+   ``claim_utils.claim_is_traffic_accident``) — i.e. one that was only
+   recoverable from the diagnosis, signalling it was likely billed via the
+   normal SGK pathway instead of the traffic provision.
 
 2. **Copay on traffic-accident treatment.** Traffic-accident treatment is
    patient-pay-exempt (kişinin bizzat kendisinden tedavi bedeli talep
@@ -40,6 +41,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
+from src.bilun.domain.prose_rules.claim_utils import claim_is_traffic_accident
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_COMPLIANCE,
@@ -75,58 +77,13 @@ _CLAUSE_REF = non_sut_reference(
 ).to_dict()
 
 # ---------------------------------------------------------------------------
-# Traffic-accident detection vocabulary.
+# Traffic-accident detection.
 # ---------------------------------------------------------------------------
-
-# Markers reused verbatim from treatment_pricing._derive_context (the canonical
-# traffic-accident origin detector). Kept as a local copy so this detector
-# stays self-contained; any change to the origin logic should be mirrored here.
-_TRAFFIC_MARKERS: tuple[str, ...] = (
-    "traffic_accident",
-    "trafik",
-    "traffic",
-    "ykm",
-    "kaza",
-)
-
-# Explicit occupational_context / scenario_tag sentinels that mean "this claim
-# was *classified* as a traffic accident" (vs. only *being* one by diagnosis).
-# When a claim carries one of these the pathway is considered correct; absence
-# of an explicit marker on a diagnosis-detected claim triggers the wrong-
-# pathway finding.
-_TRAFFIC_CONTEXT_VALUES: frozenset[str] = frozenset(
-    {
-        "traffic_accident",
-        "trafik_kazasi",
-        "trafik kazasi",
-        "traffic",
-        "trafik",
-        "ykm",
-        "kaza",
-        "trafik_kazasi_ykm",
-    }
-)
 
 
 def _normalize(value: str) -> str:
     """Lower-case + strip helper mirroring copay_exemption_rules."""
     return str(value or "").strip().lower()
-
-
-def _context_is_traffic_claim(claim: ClaimHeader) -> bool:
-    """True when the claim header was explicitly classified as traffic.
-
-    This is the "happy path": the scenario_tag / occupational_context carry a
-    traffic sentinel, so the pathway was set up correctly.
-    """
-    scenario = _normalize(getattr(claim, "scenario_tag", ""))
-    context = _normalize(getattr(claim, "occupational_context", ""))
-    for candidate in (scenario, context):
-        if candidate in _TRAFFIC_CONTEXT_VALUES:
-            return True
-    # Substring fallback (matches "trafik_kazasi_ykm" style compound tags).
-    blob = f"{scenario} {context}"
-    return any(marker in blob for marker in _TRAFFIC_MARKERS)
 
 
 def _diagnosis_is_traffic(icd10: str) -> bool:
@@ -149,9 +106,10 @@ def _claim_is_traffic_accident(claim: ClaimHeader) -> tuple[bool, str]:
 
     ``evidence_source`` is one of ``"context"``, ``"diagnosis"`` or ``""`` —
     callers use it to distinguish a claim that was *classified* as traffic
-    (context) from one that *is* traffic only by diagnosis (likely mis-routed).
+    (context: an explicit header value, so the pathway was set up correctly)
+    from one that *is* traffic only by diagnosis (likely mis-routed).
     """
-    if _context_is_traffic_claim(claim):
+    if claim_is_traffic_accident(claim):
         return True, "context"
     if _diagnosis_is_traffic(getattr(claim, "primary_icd10", "")):
         return True, "diagnosis"
@@ -175,8 +133,8 @@ def detect_traffic_accident_wrong_pathway(
     under Medula provizyon tipi ``trafik kazası`` (account code
     ``120.05.01.04``). This detector flags traffic-accident claims that were
     only recoverable from the *diagnosis* (ICD-10 V01–V99 transport-accident
-    block) rather than from an explicit ``scenario_tag`` /
-    ``occupational_context`` traffic marker — a strong signal that the claim
+    block) rather than from an explicit ``occupational_context`` /
+    ``claim_type`` traffic value — a strong signal that the claim
     was billed via the normal SGK provision instead of the dedicated traffic
     pathway.
 

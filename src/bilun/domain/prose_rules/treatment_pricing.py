@@ -599,14 +599,12 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
             )
 
     # origin_is_traffic_accident — traffic-accident origin waives HBO/FTR session
-    # limits (§2.4.4.B(13), §2.4.4.F-2(10)). Derived from scenario_tag /
-    # occupational_context / department carrying a traffic-accident marker.
-    traffic_markers = ("traffic_accident", "trafik", "traffic", "ykm", "kaza")
-    origin_text = " ".join(
-        str(getattr(header, attr, "") or "").lower()
-        for attr in ("scenario_tag", "occupational_context", "department", "claim_type")
-    )
-    context["origin_is_traffic_accident"] = any(m in origin_text for m in traffic_markers)
+    # limits (§2.4.4.B(13), §2.4.4.F-2(10)). Read from explicit header values by
+    # the helper shared with the §2-09 traffic-accident detector, so a work
+    # accident (``is_kazasi``) is not a traffic accident (#268).
+    from .claim_utils import claim_is_traffic_accident
+
+    context["origin_is_traffic_accident"] = claim_is_traffic_accident(header)
 
     # Visit-type / care-setting derived fields. visit_type mirrors the raw
     # claim_type vocabulary the rules use (outpatient/inpatient/gunubirlik);

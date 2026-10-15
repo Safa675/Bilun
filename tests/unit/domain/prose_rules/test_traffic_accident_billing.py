@@ -14,16 +14,20 @@ Cases exercised:
 - Non-traffic ICD-10 → not detected as traffic.
 - Aggregate wrapper returns both finding classes when applicable.
 - ``claim_ids_with_procs`` gate filters claims correctly.
+- Header classification reads explicit values only (#268): a work accident
+  (``is_kazasi``) is not traffic, and ``scenario_tag`` is never read.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
 import pytest
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+from src.bilun.domain.prose_rules.claim_utils import claim_is_traffic_accident
 from src.bilun.domain.prose_rules.traffic_accident_billing import (
     detect_traffic_accident_billing,
     detect_traffic_accident_copay,
@@ -174,7 +178,7 @@ def test_no_copay_on_traffic_accident_claim_no_violation() -> None:
     """Traffic claim with copay-exempt lines → no copay finding."""
     claim = _make_claim_header(
         claim_id="C1",
-        scenario_tag="trafik_kazasi",
+        occupational_context="trafik_kazasi",
     )
     line = _make_proc_line(
         claim_id="C1",
@@ -360,3 +364,67 @@ def test_claim_ids_with_procs_gate_includes_claim() -> None:
     )
 
     assert len(violations) == 2
+
+
+# ===========================================================================
+# Header classification: explicit values only (#268)
+# ===========================================================================
+
+# Every header field the old substring check read.
+_HEADER_FIELDS = ("occupational_context", "claim_type", "department", "scenario_tag")
+
+
+def _hbo_claim_and_copay_line(**header: str) -> tuple[ClaimHeader, ProcedureClaimLine]:
+    """The #268 claim: inpatient HBO (P702590) for decompression sickness."""
+    claim = replace(_make_claim_header(primary_icd10="T70.3"), **header)
+    line = _make_proc_line(
+        procedure_code="P702590",
+        procedure_category="hyperbaric_oxygen",
+        copay_rate_applicable=True,
+    )
+    return claim, line
+
+
+@pytest.mark.parametrize("field", _HEADER_FIELDS)
+@pytest.mark.parametrize("value", ["is_kazasi", "iş kazası", "is kazasi", "İŞ KAZASI"])
+def test_work_accident_is_not_traffic(field: str, value: str) -> None:
+    """A work accident contains "kaza" but is not a traffic accident: no
+    pathway finding and no ``trafik_kazasi_copay_charged`` on its copay line."""
+    claim, line = _hbo_claim_and_copay_line(**{field: value})
+
+    assert claim_is_traffic_accident(claim) is False
+    assert detect_traffic_accident_billing([claim], [line]) == []
+
+
+@pytest.mark.parametrize("field", ["occupational_context", "claim_type"])
+@pytest.mark.parametrize(
+    "value", ["trafik_kazasi", "traffic_accident", "Trafik Kazası", "TRAFİK KAZASI"]
+)
+def test_explicit_traffic_value_is_traffic(field: str, value: str) -> None:
+    """An explicit traffic value classifies the claim: copay finding only."""
+    claim, line = _hbo_claim_and_copay_line(**{field: value})
+
+    assert claim_is_traffic_accident(claim) is True
+    violations = detect_traffic_accident_billing([claim], [line])
+    assert [v["rule_id"] for v in violations] == ["trafik_kazasi_copay_charged"]
+
+
+@pytest.mark.parametrize("occupational_context", ["none", "is_kazasi", "trafik_kazasi"])
+@pytest.mark.parametrize("primary_icd10", ["T70.3", "V89.9"])
+def test_scenario_tag_changes_no_finding(occupational_context: str, primary_icd10: str) -> None:
+    """``scenario_tag`` is synthetic-only: blanking it changes no output (#239)."""
+    line = _make_proc_line(copay_rate_applicable=True)
+    outputs = [
+        detect_traffic_accident_billing(
+            [
+                _make_claim_header(
+                    primary_icd10=primary_icd10,
+                    occupational_context=occupational_context,
+                    scenario_tag=tag,
+                )
+            ],
+            [line],
+        )
+        for tag in ("", "trafik_kazasi", "is_kazasi")
+    ]
+    assert outputs[0] == outputs[1] == outputs[2]

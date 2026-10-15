@@ -85,9 +85,9 @@ Status: **draft for Safa's review** (2026-10-15). Table: `lab_reference.csv` in 
 ## Engine behaviour the new cohort will hit (verified by probes)
 
 1. **False hemogram-unbundling finding.**
-   - `src/bilun/domain/billing/claim_lab.py:28-37` matches CBC lines by name keywords from `constants.py:228-244`. "Glike hemoglobin (Hb A1c)" contains "hemoglobin".
-   - So a clean claim with L107020 and L102820 on the same date is flagged (`:80-83`).
-   - Probe: 26.34 TL of "savings" were reported on a clean bill.
+   - Until 2026-10-15, `src/bilun/domain/billing/claim_lab.py:28-37` matched CBC lines by name keywords from `HEMOGRAM_TESTS` (`constants.py:235-251`). "Glike hemoglobin (Hb A1c)" contains "hemoglobin".
+   - Fixed on 2026-10-15 (#272): `_is_hemogram_line` matches CBC codes (`L107020`, `L103120`) or exact parameter names, so a clean claim with L107020 and L102820 on the same date is no longer flagged.
+   - Probe before fix: 26.34 TL of "savings" were reported on a clean bill.
 2. **Lab capture gap** (`prose_rules/lab_capture_gap.py:70-132`): any L-code that has results but no billed line on the claim is reported as unbilled.
    - Derived rows must therefore carry the parent's code.
    - Labs in an EK-2C package period, ACR on a creatinine date, and Na/K/Ca/lactate on a blood-gas date will show false gaps if their results are emitted under their own codes.
@@ -96,12 +96,10 @@ Status: **draft for Safa's review** (2026-10-15). Table: `lab_reference.csv` in 
 5. **Linkage:**
    - One billed lab line maps to one `lab_result_id` (`claims/validation/lab.py:10-37`).
    - Today's `lab_clean.parquet` has no parameter column (only `SUB_CODE`). Multi-parameter tests need one.
-6. **Wrong codes in `BILUN_TO_SUT_CODE`** (`src/bilun/domain/constants.py:148-196`):
-   - PT and INR map to L106290 (PAP).
-   - aPTT maps to L100050 (an androgen metabolite).
-   - Prokalsitonin maps to L106230 (Progesteron).
-   - Protein maps to L107180 (CDT).
-   - The "Lab Prices" API and UI show those prices (`api/routes/pricing.py:189-203`). The generator must not reuse this map.
+6. **`BILUN_TO_SUT_CODE`** (`src/bilun/domain/constants.py:149-197`), shown by the "Lab Prices" API and UI (`api/routes/pricing.py:189-203`):
+   - Until 2026-10-15, PT and INR mapped to L106290 (PAP), aPTT to L100050 (an androgen metabolite), Prokalsitonin to L106230 (Progesteron) and Protein to L107180 (CDT).
+   - Fixed on 2026-10-15: they map to L106430, L101050, L106240 and L106300, and Kalsiyum and CRP to L103860 and L101850, the picks in this table. `tests/unit/domain/catalog/test_lab_code_map.py` pins each code's catalog name.
+   - The generator must not reuse this map.
 
 ## Generation rules (judgment)
 

@@ -145,10 +145,11 @@ _EK3_SPECIALTY_CATALOGS: dict[str, tuple[str, str]] = {
 # BILUN test name -> SUT code mapping  (updated to current L1xxxxx format)
 # ═══════════════════════════════════════════════════════════════════════════
 
+# Each code's EK-2B name must name its test: tests/unit/domain/catalog/test_lab_code_map.py
 BILUN_TO_SUT_CODE: dict[str, str] = {
     # ── Inflammatory panel ────────────────────────────────────────────
-    "CRP": "L101840",
-    "Prokalsitonin": "L106230",
+    "CRP": "L101850",  # Quantitative; latex L101840 is never billed with it
+    "Prokalsitonin": "L106240",
     # ── Renal panel ───────────────────────────────────────────────────
     "Kreatinin": "L104780",
     "Üre": "L107420",
@@ -183,45 +184,51 @@ BILUN_TO_SUT_CODE: dict[str, str] = {
     "HDL": "L103050",
     "Sodyum": "L106910",
     "Potasyum": "L106150",
-    "Kalsiyum": "L103820",
-    "Protein": "L107180",
+    "Kalsiyum": "L103860",  # Total; ionized calcium is L103820
+    "Protein": "L106300",
     # ── Endocrine panel ───────────────────────────────────────────────
     "TSH": "L107380",
     "T3": "L106760",
     "T4": "L106770",
     # ── Coagulation panel ─────────────────────────────────────────────
-    "PT": "L106290",
-    "aPTT": "L100050",
-    "INR": "L106290",  # Same as PT (INR calculated from PT)
+    "PT": "L106430",
+    "aPTT": "L101050",
+    "INR": "L106430",  # Same as PT (INR calculated from PT; EK-2B has no INR code)
+}
+
+# Old-format code -> BILUN test name. The new-format code is read from
+# BILUN_TO_SUT_CODE, so an alias always follows its test name's code.
+_OLD_CODE_TO_TEST_NAME: dict[str, str] = {
+    "900890": "CRP",
+    "903170": "Prokalsitonin",
+    "902210": "Kreatinin",
+    "904100": "Üre",
+    "900200": "ALT",
+    "900580": "AST",
+    "900340": "ALP",
+    "901390": "GGT",
+    "900210": "Albumin",
+    "900690": "Bilirubin",
+    "901620": "Hemoglobin",  # Hemogram (every CBC component maps to L107020)
+    "901500": "Glukoz",
+    "901450": "HbA1c",
+    "902110": "Kolesterol",
+    "903990": "Trigliserid",
+    "902290": "LDL",
+    "901580": "HDL",
+    "903670": "Sodyum",
+    "903130": "Potasyum",
+    "901910": "Kalsiyum",
+    "904030": "TSH",
+    "903470": "T3",
+    "903480": "T4",
+    "905320": "PT",  # PT / INR
+    "904290": "aPTT",
 }
 
 # Old-format code -> new-format code (for backward compatibility lookups)
 _OLD_TO_NEW_CODE: dict[str, str] = {
-    "900890": "L101840",  # CRP
-    "903170": "L106230",  # Prokalsitonin
-    "902210": "L104780",  # Kreatinin
-    "904100": "L107420",  # Üre
-    "900200": "L100300",  # ALT
-    "900580": "L101280",  # AST
-    "900340": "L100710",  # ALP
-    "901390": "L102780",  # GGT
-    "900210": "L100320",  # Albümin
-    "900690": "L101730",  # Bilirubin
-    "901620": "L107020",  # Hemogram
-    "901500": "L102890",  # Glukoz
-    "901450": "L102820",  # HbA1c
-    "902110": "L104520",  # Kolesterol
-    "903990": "L107250",  # Trigliserid
-    "902290": "L105000",  # LDL
-    "901580": "L103050",  # HDL
-    "903670": "L106910",  # Sodyum
-    "903130": "L106150",  # Potasyum
-    "901910": "L103820",  # Kalsiyum
-    "904030": "L107380",  # TSH
-    "903470": "L106760",  # T3
-    "903480": "L106770",  # T4
-    "905320": "L106290",  # PT / INR
-    "904290": "L100050",  # aPTT
+    old_code: BILUN_TO_SUT_CODE[test_name] for old_code, test_name in _OLD_CODE_TO_TEST_NAME.items()
 }
 
 # Hemogram bundle: all these BILUN test names map to a SINGLE SUT test (L107020).

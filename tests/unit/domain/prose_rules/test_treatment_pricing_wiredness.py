@@ -58,6 +58,7 @@ def _make_header(
     department: str = "genel",
     primary_icd10: str = "Z00.0",
     scenario_tag: str = "test",
+    occupational_context: str = "none",
     claim_start_date: date | None = None,
 ) -> ClaimHeader:
     return ClaimHeader(
@@ -78,6 +79,7 @@ def _make_header(
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",
         scenario_tag=scenario_tag,
+        occupational_context=occupational_context,
     )
 
 
@@ -390,7 +392,7 @@ class TestEk2d3Loader:
 
 
 class TestHboContextKeys:
-    """HBO keys are surfaced from the diagnosis + scenario data."""
+    """HBO keys are surfaced from the diagnosis + header data."""
 
     def test_indication_in_ek2d3_true(self) -> None:
         ctx = _make_ctx(
@@ -409,10 +411,28 @@ class TestHboContextKeys:
         context = _build_treatment_pricing_context(ctx)
         assert context["indication_in_ek2d3"] is False
 
-    def test_origin_is_traffic_accident_from_scenario_tag(self) -> None:
-        ctx = _make_ctx(header=_make_header(scenario_tag="traffic_accident"))
+    @pytest.mark.parametrize("field", ["occupational_context", "claim_type"])
+    @pytest.mark.parametrize("value", ["trafik_kazasi", "traffic_accident", "Trafik Kazası"])
+    def test_origin_is_traffic_accident_from_explicit_value(self, field: str, value: str) -> None:
+        ctx = _make_ctx(header=_make_header(**{field: value}))
         context = _build_treatment_pricing_context(ctx)
         assert context["origin_is_traffic_accident"] is True
+
+    @pytest.mark.parametrize(
+        "field", ["occupational_context", "claim_type", "department", "scenario_tag"]
+    )
+    @pytest.mark.parametrize("value", ["is_kazasi", "iş kazası", "is kazasi"])
+    def test_work_accident_is_not_traffic_origin(self, field: str, value: str) -> None:
+        """#268: "kaza" inside a work accident does not make it traffic."""
+        ctx = _make_ctx(header=_make_header(**{field: value}))
+        context = _build_treatment_pricing_context(ctx)
+        assert context["origin_is_traffic_accident"] is False
+
+    def test_scenario_tag_does_not_set_traffic_origin(self) -> None:
+        """scenario_tag is synthetic-only and never read (#239, #268)."""
+        ctx = _make_ctx(header=_make_header(scenario_tag="trafik_kazasi"))
+        context = _build_treatment_pricing_context(ctx)
+        assert context["origin_is_traffic_accident"] is False
 
     def test_origin_is_traffic_accident_false_default(self) -> None:
         ctx = _make_ctx(header=_make_header(scenario_tag="routine"))
@@ -430,7 +450,7 @@ class TestHboRuleFiresEndToEnd:
             header=_make_header(
                 claim_type="yatis",
                 primary_icd10="S82.0",
-                scenario_tag="traffic_accident",
+                occupational_context="traffic_accident",
             ),
             procedure_lines=(_make_procedure(code="P530010", category="hyperbaric_oxygen"),),
         )
@@ -449,3 +469,72 @@ class TestHboRuleFiresEndToEnd:
         )
         ids = {v["rule_id"] for v in check_treatment_pricing_for_context(ctx)}
         assert "2.4.4.B.(6).hbo_start_10d_gap_7_biz_days" in ids
+
+
+class TestTrafficOriginRulesEndToEnd:
+    """#268: the traffic-origin HBO / FTR rules fire for a traffic accident
+    and stay silent for a work accident."""
+
+    # (procedure code, category, primary ICD-10, rule id); the HBO case is the
+    # #268 claim (P702590, decompression sickness T70.3).
+    _HBO = (
+        "P702590",
+        "hyperbaric_oxygen",
+        "T70.3",
+        "2.4.4.B.(13).hbo_traffic_accident_no_session_limit",
+    )
+    _FTR = (
+        "P915001",
+        "physiotherapy_rehab",
+        "S82.0",
+        "2.4.4.F-2.(10).traffic_accident_physio_controls_isolated",
+    )
+
+    @pytest.mark.parametrize(("code", "category", "icd10", "rule_id"), [_HBO, _FTR])
+    @pytest.mark.parametrize(
+        ("occupational_context", "fires"),
+        [
+            ("trafik_kazasi", True),
+            ("traffic_accident", True),
+            ("is_kazasi", False),
+            ("iş kazası", False),
+            ("is kazasi", False),
+        ],
+    )
+    def test_rule_fires_only_for_traffic_accident(
+        self,
+        code: str,
+        category: str,
+        icd10: str,
+        rule_id: str,
+        occupational_context: str,
+        fires: bool,
+    ) -> None:
+        ctx = _make_ctx(
+            header=_make_header(
+                claim_type="yatis", primary_icd10=icd10, occupational_context=occupational_context
+            ),
+            procedure_lines=(_make_procedure(code=code, category=category),),
+        )
+        ids = {v["rule_id"] for v in check_treatment_pricing_for_context(ctx)}
+        assert (rule_id in ids) is fires
+
+    @pytest.mark.parametrize("occupational_context", ["none", "is_kazasi", "trafik_kazasi"])
+    def test_scenario_tag_changes_no_rule_output(self, occupational_context: str) -> None:
+        """Blanking the synthetic-only scenario_tag changes no output (#239)."""
+        code, category, icd10, _ = self._HBO
+        outputs = [
+            check_treatment_pricing_for_context(
+                _make_ctx(
+                    header=_make_header(
+                        claim_type="yatis",
+                        primary_icd10=icd10,
+                        occupational_context=occupational_context,
+                        scenario_tag=tag,
+                    ),
+                    procedure_lines=(_make_procedure(code=code, category=category),),
+                )
+            )
+            for tag in ("", "trafik_kazasi", "is_kazasi")
+        ]
+        assert outputs[0] == outputs[1] == outputs[2]

@@ -18,8 +18,8 @@ The `get_lab_price` fallback in `lab_capture_gap._resolve_lab_list_price`, the c
 - [x] 6. Refresh the hash: run the builder into `<scratch>/after`; prove the evidence parses equal to the committed file except `file_sha256["src/bilun/domain/constants.py"]`, that the new value equals `sha256(constants.py)`, and that the four parquets are frame-equal to the committed ones; replace only that value; `git diff` shows one changed line; commit on its own.
 - [x] 7. Verify one after the other, never in parallel: `ruff check src/ scripts/`; full `python -m pytest -q -n auto`; `python scripts/sut/compile_rules.py --check`; `python scripts/sut/audit_manifest_parity.py --drug-only`; `git status` shows only the intended files, checked again after pytest.
 - [x] 8. Confirm main CI is green and whether `origin/main` moved (if #271 merged first: merge main, redo item 6 on the merged `constants.py`). Before the push, main CI was green on `91fb756c`, `origin/main` had not moved, and #271 was still open.
-- [ ] 9. Push the branch, open the PR, follow its CI.
-- [ ] 10. Ask Safa before merging.
+- [x] 9. Push the branch, open the PR, follow its CI.
+- [x] 10. Ask Safa before merging.
 
 ### Out of Scope
 - `_load_gazette_visit_prices` (`src/bilun/domain/loaders/gazette.py:472`) has no callers either (removed in the same `7e2cdfdc`), and `get_visit_prices` (`src/bilun/domain/catalog.py:235`) is only called by it. These are visit and bed prices, not lab prices, so they are reported, not removed.
@@ -38,6 +38,37 @@ The `get_lab_price` fallback in `lab_capture_gap._resolve_lab_list_price`, the c
 - CI image `bilun-laptop-ci:20261008-runtime-complete` with `requirements-ci.lock` (Python 3.13.15, pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1), on a shallow clone of `032b071e` (same tree as `76316b99`), running CI's backend steps in order: ruff clean; pytest 8,407 passed, 1 skipped, 4 xfailed; `compile_rules.py --check` 119 byte-identical; parity 0 issues; no tracked file changed.
 - `git status` after every step showed only `tasks/todo.md`.
 - Independent read-only review: none of the three claims falsified. A differential run of main's and this branch's `_resolve_lab_list_price` over 23 catalog dates and 1,971 inputs made 45,333 calls with 0 differences; main's fallback was reached 359 times and never returned a price. I re-ran it with the same result. The review's corrections, all applied: "every input" became "every code the caller can pass"; the map's history starts at `1f146824`, not `a27c5298`; the 1,948 count is dated; and `get_lab_price` is left without callers. It also found the `match_type` problem listed under Out of Scope, which I reproduced. Commit `10d67d68` alone fails the coverage-evidence test until `76316b99` refreshes the hash. That split is the separate commit Safa asked for, and it is harmless under the squash merges this repo uses.
+
+## Task: Fix wrong EK-2B codes in the BILUN lab test map and its old-code aliases
+
+### Goal
+Every name in `BILUN_TO_SUT_CODE` and every old code in `_OLD_TO_NEW_CODE` (`src/bilun/domain/constants.py`) resolves to the EK-2B code whose in-force catalog name is that test, so `/api/lab-prices` serves PT/INR `L106430` 39.49, aPTT `L101050` 35.53, Prokalsitonin `L106240` 167.91 and Protein `L106300` 7.20 TL (2026-07-07 edition), and a test fails when a mapped code is missing from the catalog in force or names another test.
+
+### Subtasks
+- [x] 1. Add `tests/unit/domain/catalog/test_lab_code_map.py` and see it fail on the current map:
+  - every mapped code is a real entry of the EK-2B catalog in force (`load_sut_catalog()`, today, as `/api/lab-prices` serves it) and `get_all_lab_prices()` prices every name;
+  - the test name appears as whole words in the catalog name after Turkish case folding (`turkish_lower`, `src/bilun/domain/utils.py:16`); names the catalog spells differently are listed explicitly (13 hemogram components -> Hemogram, GFR -> Kreatinin, ALP -> Alkalen fosfataz, HbA1c -> Hb A1c, PT/INR -> Protrombin zamanı, Albumin -> Albümin);
+  - every entry is pinned to its reviewed exact catalog name (the containment check alone accepts e.g. T3 -> Revers T3, Kreatinin -> Albümin/Kreatinin);
+  - every old code resolves through `lookup_procedure_code` to the entry, and reviewed name, of its test name's code;
+  - the `/api/lab-prices` route function returns, for every row, the mapped code and that code's catalog price (no 0.00 rows).
+- [x] 2. Fix `BILUN_TO_SUT_CODE`: PT and INR -> `L106430`, aPTT -> `L101050`, Prokalsitonin -> `L106240`, Protein -> `L106300`; Kalsiyum -> `L103860` (total, not ionized) and CRP -> `L101850` (quantitative, not latex), both confirmed by Safa on 2026-10-15.
+- [x] 3. Replace the literal `_OLD_TO_NEW_CODE` values with an old-code -> test-name table and derive the codes from `BILUN_TO_SUT_CODE`, so an alias cannot point elsewhere than its test name (fixes 905320, 904290, 903170).
+- [x] 4. Refresh the `src/bilun/domain/constants.py` hash pinned in `data/gazette/sut_coverage_evidence.json` (checked by `tests/unit/domain/sut/test_coverage_evidence.py::test_committed_coverage_artifacts_match_current_source_rules_and_api`): run `scripts/sut/build_sut_coverage.py --output-dir <scratch>`, prove the four coverage parquets equal the committed ones and the evidence JSON differs from HEAD only in that hash, then copy only the JSON.
+- [x] 5. Verify: the new test passes; `ruff check src/ scripts/`; full `python -m pytest -q -n auto`; `python scripts/sut/compile_rules.py --check`; `python scripts/sut/audit_manifest_parity.py --drug-only`; `git status` lists only the intended files.
+- [x] 6. Commit the fix and test, then the hash refresh as its own commit; confirm main CI is green; push the branch, open the PR, follow its CI.
+
+### Out of Scope
+- `src/bilun/domain/prose_rules/lab_capture_gap.py:39` passes an SUT code to `get_lab_price`, which expects a test name, so that fallback never resolves; the map fix does not change it.
+- `_load_gazette_lab_prices` (`src/bilun/domain/loaders/gazette.py:449`) and `_SUT_CODE_TO_BILUN` (`constants.py:254`) have no callers.
+- Renaming test-name keys (e.g. `Albumin`), adding tests to the map, the synthetic cohort's lab units, staging deploy.
+
+### Review (2026-10-15)
+- Confirmed with Safa before coding: Kalsiyum -> `L103860` (total) and CRP -> `L101850` (quantitative); merge after green CI.
+- `/api/lab-prices`: PT/INR 55.96 -> 39.49, aPTT 17.09 -> 35.53, Prokalsitonin 46.06 -> 167.91, Protein 55.96 -> 7.20, Kalsiyum 17.09 -> 7.20, CRP 9.86 -> 16.46 TL; 40 rows, none at 0.00.
+- Test (107 cases) fails on the old map for exactly PT, INR, aPTT, Prokalsitonin and Protein in the containment check; the exact-name pins (all 40 entries, added after review) also catch Kalsiyum and CRP. A mutation script caught 14 wrong map codes (e.g. T3 -> Revers T3, Kreatinin -> Albümin/Kreatinin) and the 5 old wrong aliases.
+- `sut_coverage_evidence.json`: only the `constants.py` hash changed; the regenerated evidence parses equal and the four coverage parquets are frame-equal.
+- Main moved during the work (#257, #258). After merging it (only `tasks/todo.md` conflicted; both sides kept): ruff clean; pytest 8,514 passed, 1 skipped, 4 xfailed; `compile_rules.py --check` 119 byte-identical; parity 0 issues; tree clean. Item 6 of `data/synthetic/reference/lab_reference_notes.md` now says the codes are fixed.
+- PR: Safa675/Bilun#271.
 
 ## Task: Synthetic demo v3 — P0 decisions and baselines, P1 reference data, showcase story drafts (2026-10-15)
 
