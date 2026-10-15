@@ -3,7 +3,7 @@
 Anesthesia is charged as a flat **group point** based on the surgical
 procedure's point value (or total surgical point value when multiple surgeries
 are performed in the same session). The mapping is a **point-range lookup** in
-EK-2/B section "4. ANESTEZİ VE REANİMASYON" (2026-07-07 list):
+EK-2/B section "4. ANESTEZİ VE REANİMASYON" (in force from 2026-04-16):
 
     Surgical procedure puan >= 39001     → A1 group (550130 / multi 550200)
     Surgical procedure puan 18501-39000  → A2 group (550140 / multi 550210)
@@ -13,8 +13,10 @@ EK-2/B section "4. ANESTEZİ VE REANİMASYON" (2026-07-07 list):
     Surgical procedure puan  1301-3004   → D  group (550180 / multi 550250)
     Surgical procedure puan     1-1300   → E  group (550190 / multi 550260)
 
-Earlier EK-2/B effective dates (2020-03-11, 2022-09-03, 2026-01-01) use their
-respective EK-2/B §4 point thresholds and group puan values.
+Earlier service dates use the EK-2/B §4 point thresholds in force on that
+date. Each table starts on the Yürürlük date of the amendment marker on its
+rows in the raw EK-2/B lists (2018-02-15, 2022-08-04, 2024-08-07, 2026-04-16),
+not on the date of the list that later consolidated it.
 
 **Formula:** ``anestezi_charge_try = group_puan × katsayi``.
 Already-billed surgical anesthesia lines (550130-550346) on the claim are
@@ -43,7 +45,8 @@ _SUT_SECTION_ID = "2.2.2.A"
 # (min_puan, group_name, single_code, multi_code, fallback_single_puan, fallback_multi_puan)
 _GroupBand = tuple[float, str, str, str, float, float]
 
-_ANESTEZI_GROUPS_2026_07_07: tuple[_GroupBand, ...] = (
+# Değişik: RG-08/04/2026-33218/9-a md., Yürürlük 16/04/2026 (raw EK-2B list 2026-01-31).
+_ANESTEZI_GROUPS_2026_04_16: tuple[_GroupBand, ...] = (
     (39001.0, "A1", "550130", "550200", 8942.14, 12338.02),
     (18501.0, "A2", "550140", "550210", 5589.58, 6706.36),
     (9001.0, "A3", "550150", "550220", 3353.79, 4024.47),
@@ -53,7 +56,8 @@ _ANESTEZI_GROUPS_2026_07_07: tuple[_GroupBand, ...] = (
     (0.01, "E", "550190", "550260", 372.93, 447.12),
 )
 
-_ANESTEZI_GROUPS_2026_01_01: tuple[_GroupBand, ...] = (
+# Değişik: RG-05/08/2024-32623/10 md., Yürürlük 07/08/2024 (raw EK-2B list 2024-05-11).
+_ANESTEZI_GROUPS_2024_08_07: tuple[_GroupBand, ...] = (
     (32561.0, "A1", "550130", "550200", 8942.14, 12338.02),
     (15401.0, "A2", "550140", "550210", 5589.58, 6706.36),
     (7584.0, "A3", "550150", "550220", 3353.79, 4024.47),
@@ -63,7 +67,8 @@ _ANESTEZI_GROUPS_2026_01_01: tuple[_GroupBand, ...] = (
     (0.01, "E", "550190", "550260", 372.93, 447.12),
 )
 
-_ANESTEZI_GROUPS_2022_09_03: tuple[_GroupBand, ...] = (
+# Değişik: RG-27/07/2022-31905/1-a md., Yürürlük 04/08/2022 (raw EK-2B list 2022-02-16).
+_ANESTEZI_GROUPS_2022_08_04: tuple[_GroupBand, ...] = (
     (12001.0, "A1", "550130", "550200", 7451.79, 10281.69),
     (5201.0, "A2", "550140", "550210", 4657.99, 5588.64),
     (2351.0, "A3", "550150", "550220", 2794.83, 3353.73),
@@ -73,7 +78,8 @@ _ANESTEZI_GROUPS_2022_09_03: tuple[_GroupBand, ...] = (
     (0.01, "E", "550190", "550260", 310.78, 372.60),
 )
 
-_ANESTEZI_GROUPS_2020_03_11: tuple[_GroupBand, ...] = (
+# Değişik: RG-04/02/2018-30322/22-a md., Yürürlük 15/02/2018 (raw EK-2B list, date unknown).
+_ANESTEZI_GROUPS_2018_02_15: tuple[_GroupBand, ...] = (
     (3000.0, "A1", "550130", "550200", 1594.57, 2200.12),
     (2000.0, "A2", "550140", "550210", 996.74, 1195.88),
     (900.0, "A3", "550150", "550220", 598.05, 717.65),
@@ -84,7 +90,7 @@ _ANESTEZI_GROUPS_2020_03_11: tuple[_GroupBand, ...] = (
 )
 
 # Backwards-compatible module export for any external caller inspecting the
-# current 2026-07-07 single-surgery table.
+# current (2026-04-16) single-surgery table.
 _ANESTEZI_GROUPS: list[tuple[float, float, str, str, float]] = [
     (39001.0, float("inf"), "A1", "550130", 8942.14),
     (18501.0, 39000.99, "A2", "550140", 5589.58),
@@ -128,15 +134,15 @@ def _is_anestezi_group_code(raw_code: str) -> bool:
 
 def _group_table_for_date(visit_date: date | str | None) -> tuple[_GroupBand, ...]:
     if visit_date is None:
-        return _ANESTEZI_GROUPS_2026_07_07
+        return _ANESTEZI_GROUPS_2026_04_16
     as_of = visit_date.isoformat() if isinstance(visit_date, date) else str(visit_date)[:10]
-    if as_of >= "2026-07-07":
-        return _ANESTEZI_GROUPS_2026_07_07
-    if as_of >= "2026-01-01":
-        return _ANESTEZI_GROUPS_2026_01_01
-    if as_of >= "2022-09-03":
-        return _ANESTEZI_GROUPS_2022_09_03
-    return _ANESTEZI_GROUPS_2020_03_11
+    if as_of >= "2026-04-16":
+        return _ANESTEZI_GROUPS_2026_04_16
+    if as_of >= "2024-08-07":
+        return _ANESTEZI_GROUPS_2024_08_07
+    if as_of >= "2022-08-04":
+        return _ANESTEZI_GROUPS_2022_08_04
+    return _ANESTEZI_GROUPS_2018_02_15
 
 
 def _resolve_anestezi_group(
@@ -148,7 +154,7 @@ def _resolve_anestezi_group(
     """Given surgical puan, return ``(group_name, sut_code, fallback_anestezi_puan)``.
 
     Uses the EK-2/B §4 group table in force on ``visit_date`` (defaulting to the
-    2026-07-07 table). When ``multiple_surgeries=True``, returns the increased
+    2026-04-16 table). When ``multiple_surgeries=True``, returns the increased
     multi-surgery anesthesia code (550200–550260) for the session's total
     surgical puan.
     """

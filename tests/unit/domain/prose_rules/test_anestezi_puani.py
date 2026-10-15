@@ -9,7 +9,7 @@ tests do not freeze live gazette prices/katsayı.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
@@ -215,6 +215,77 @@ def test_billed_anaesthesia_subtracted_to_zero_recoverable() -> None:
     ctx = _ctx(claim, surg_line, anes_line)
     review = recommend_anestezi_puani_from_claims(ctx)
     assert review.confirmed_anestezi_try == 0.0
+
+
+# ── Band-table cutovers (Safa675/Bilun#265) ──────────────────────────────────
+# Each EK-2B §4 table starts on the Yürürlük date of its raw-list marker:
+# RG 27/07/2022-31905/1-a → 04/08/2022, RG 05/08/2024-32623/10 → 07/08/2024,
+# RG 08/04/2026-33218/9-a → 16/04/2026. 615995 puans are the catalog's per date.
+
+
+@pytest.mark.parametrize(
+    ("service_date", "puan", "group", "code"),
+    [
+        pytest.param(date(2022, 8, 3), 1221.75, "A3", "550150", id="2022-08-03-3000-bands"),
+        pytest.param(date(2022, 8, 4), 1221.75, "C", "550170", id="2022-08-04-12001-bands"),
+        pytest.param(date(2022, 8, 20), 1221.75, "C", "550170", id="2022-08-20-12001-bands"),
+        pytest.param(date(2024, 8, 6), 4260.84, "A3", "550150", id="2024-08-06-12001-bands"),
+        pytest.param(date(2024, 8, 7), 4260.84, "C", "550170", id="2024-08-07-32561-bands"),
+        pytest.param(date(2026, 4, 15), 5113.0, "B", "550160", id="2026-04-15-32561-bands"),
+        pytest.param(date(2026, 4, 16), 5113.0, "C", "550170", id="2026-04-16-39001-bands"),
+    ],
+)
+def test_group_bands_switch_on_the_amendment_yururluk_dates(
+    monkeypatch: pytest.MonkeyPatch, service_date: date, puan: float, group: str, code: str
+) -> None:
+    """615995 on either side of a cutover gets the group of the band table in force that day."""
+    install_anestezi_catalog_stub(monkeypatch, puan_by_code={"615995": puan})
+    claim = _make_claim_header(admission=service_date, discharge=service_date + timedelta(days=1))
+    line = _make_proc_line(procedure_code="615995", procedure_date=service_date)
+    opps = detect_anestezi_puani_opportunities([claim], [line], claim_ids_with_procs={"C1"})
+    assert [(o["anestezi_group"], o["anestezi_code"]) for o in opps] == [(group, code)]
+
+
+@pytest.mark.parametrize(
+    ("service_date", "puan", "c_group_puan", "billed_try"),
+    [
+        # Old cutover 2026-07-07 kept the 32561 bands here: B (550160), a false 397.76 TL.
+        pytest.param(date(2026, 5, 10), 5113.0, 894.31, Decimal("530.33"), id="2026-05-10"),
+        # Old cutover 2026-01-01 kept the 12001 bands here: A3 (550150), a false 1,215.39 TL.
+        pytest.param(date(2025, 3, 1), 4260.84, 745.26, Decimal("441.94"), id="2025-03-01"),
+    ],
+)
+def test_group_c_billed_with_615995_yields_no_uplift(
+    monkeypatch: pytest.MonkeyPatch,
+    service_date: date,
+    puan: float,
+    c_group_puan: float,
+    billed_try: Decimal,
+) -> None:
+    """615995 billed with 550170 (group C) is complete under the bands in force that day."""
+    install_anestezi_catalog_stub(
+        monkeypatch, puan_by_code={"615995": puan, "550170": c_group_puan}
+    )
+    claim = _make_claim_header(admission=service_date, discharge=service_date + timedelta(days=1))
+    surgery = _make_proc_line(
+        procedure_line_id="PL-SURG", procedure_code="615995", procedure_date=service_date
+    )
+    anaesthesia = _make_proc_line(
+        procedure_line_id="PL-ANES",
+        procedure_code="550170",
+        procedure_date=service_date,
+        billed_amount_try=billed_try,
+    )
+    opps = detect_anestezi_puani_opportunities(
+        [claim], [surgery, anaesthesia], claim_ids_with_procs={"C1"}
+    )
+
+    assert len(opps) == 1
+    opp = opps[0]
+    assert (opp["anestezi_group"], opp["anestezi_code"]) == ("C", "550170")
+    assert opp["expected_try"] == pytest.approx(float(billed_try), abs=0.01)
+    assert opp["recoverable_uplift_try"] == 0.0
+    assert opp["included_in_sgk_total"] is False
 
 
 # ── Skip cases ───────────────────────────────────────────────────────────────
