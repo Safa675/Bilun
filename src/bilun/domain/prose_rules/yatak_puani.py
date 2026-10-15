@@ -8,13 +8,12 @@ discharge day IS billed per the Turkish SUT convention ("standart yatak
 gönderilmelidir" = must be submitted on the discharge day). Matches the
 existing ``drg.py:225`` LOS convention.
 
-**Package-bundling rule (El Kitabı Tablo 23):** When a claim carries an
-EK-2C package procedure (paket category), the **surgery-day** bed fee is
-included in the package ("Yatak ve malzemeler P610130 kodlu işleme
-dahildir"). The surgery day is identified as the ``procedure_date`` of
-the package procedure line, and one day is subtracted from the inclusive
-LOS before multiplying by the daily rate. Non-surgery bed-days remain
-separately billable.
+**Package-bundling rule (SUT §2.2.2.B-1(1)(h), (3)-(4) & El Kitabı Tablo 23):**
+When an inpatient claim carries an EK-2/C package procedure (``paket``
+category), bed and companion fees from inpatient admission through the end
+of the package group's window (A1/A2/A3=15, B=10, C=8, D=5, E=3 calendar
+days starting on ``procedure_date``) are included in the package price. Only
+days after the package window are separately billable under EK-2/B 510010.
 
 See plans/refactor/rule-encoding-gap-closure-roadmap.md + the approved
 yatak-puani plan.
@@ -22,11 +21,12 @@ yatak-puani plan.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
@@ -39,6 +39,19 @@ if TYPE_CHECKING:
 _OPPORTUNITY_TYPE = "yatak_puani_standard_bed"
 _BED_CODE = "510010"
 
+# SUT §2.2.2.B-1(3) EK-2/C package window lengths (inclusive calendar days
+# starting on the package procedure date).
+PACKAGE_WINDOW_DAYS: dict[str, int] = {
+    "A1": 15,
+    "A2": 15,
+    "A3": 15,
+    "A": 15,
+    "B": 10,
+    "C": 8,
+    "D": 5,
+    "E": 3,
+}
+
 
 def _daily_rate(visit_date: date | str | None = None) -> float:
     """Look up the 510010 price_try (already puan × katsayı) as of visit_date."""
@@ -47,23 +60,61 @@ def _daily_rate(visit_date: date | str | None = None) -> float:
     return float(entry.get("price_try") or 0.0)
 
 
+def _resolve_package_window_days(
+    line: ProcedureClaimLine,
+    *,
+    fallback_date: date | None = None,
+) -> int:
+    """Return the §2.2.2.B-1(3) window length in days for a paket line."""
+    as_of = line.procedure_date or fallback_date
+    entry = get_ek2c_entry(line.procedure_code, as_of_date=as_of)
+    if entry is None and getattr(line, "package_code", ""):
+        entry = get_ek2c_entry(line.package_code, as_of_date=as_of)
+    group = str(
+        (entry or {}).get("group") or getattr(line, "ek2c_group", "") or ""
+    ).strip().upper()
+    return PACKAGE_WINDOW_DAYS.get(group, 1)
+
+
 def _find_package_surgery_day(
     procedure_lines: list[ProcedureClaimLine],
 ) -> date | None:
-    """Return the surgery date if the claim has an EK-2C package procedure.
-
-    Per El Kitabı Tablo 23: "Yatak ve malzemeler P610130 kodlu işleme
-    dahildir" — when an EK-2/C package procedure (paket category) is
-    performed, the surgery-day bed fee is bundled into the package. We
-    identify the surgery day as the ``procedure_date`` of the first
-    ``paket``-category procedure line. Returns ``None`` when no package
-    line is present (standard non-package inpatient billing — all days
-    billed).
-    """
+    """Return the surgery date if the claim has an EK-2C package procedure."""
     for line in procedure_lines:
         if (line.procedure_category or "").strip().lower() == "paket":
             return line.procedure_date
     return None
+
+
+def _find_package_window_end(
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    admission_date: date | None = None,
+    discharge_date: date | None = None,
+) -> date | None:
+    """Return the last calendar date covered by any EK-2/C package on the claim.
+
+    Per SUT §2.2.2.B-1(1) ("takip alındıktan sonraki") and §2.2.2.B-1(3)-(4),
+    an EK-2/C package bundles bed and companion fees from admission through
+    ``procedure_date + timedelta(days=window_days - 1)``. When multiple
+    package lines exist on a claim, the latest window end governs.
+    """
+    window_end: date | None = None
+    for line in procedure_lines:
+        if (line.procedure_category or "").strip().lower() != "paket":
+            continue
+        p_date = line.procedure_date or admission_date
+        if p_date is None:
+            continue
+        if admission_date is not None and p_date < admission_date:
+            continue
+        if discharge_date is not None and p_date > discharge_date:
+            continue
+        w_days = _resolve_package_window_days(line, fallback_date=admission_date)
+        candidate_end = p_date + timedelta(days=w_days - 1)
+        if window_end is None or candidate_end > window_end:
+            window_end = candidate_end
+    return window_end
 
 
 def detect_yatak_puani_opportunities(
@@ -77,21 +128,12 @@ def detect_yatak_puani_opportunities(
     For each inpatient claim with non-null admission + discharge dates,
     computes inclusive LOS × daily_rate and returns an opportunity dict.
 
-    **Package-bundling (El Kitabı Tablo 23):** When a claim has an EK-2C
-    package procedure (paket category), the surgery-day bed fee is bundled
-    into the package. ``procedure_lines`` is used to detect this — when a
-    paket line is found on the claim, its ``procedure_date`` is treated as
-    the surgery day and excluded from the LOS. Without ``procedure_lines``,
-    all days are billed (backwards-compatible default).
-
-    Args:
-        claims: ClaimHeaders to evaluate.
-        procedure_lines: Optional procedure lines used to detect package
-            bundling. When a ``paket``-category line is found on a claim,
-            its surgery day is excluded from the bed-day count.
-        claim_ids_with_procs: Optional filter — only emit opportunities for
-            claims that also have procedure lines (matches the patient_report
-            wiring gate ``if claim_context.procedure_lines``).
+    **Package-bundling (SUT §2.2.2.B-1(1), (3)-(4)):** When a claim has an
+    EK-2/C package procedure (``paket`` category), bed days from admission
+    through the end of the package group's window (A1/A2/A3=15, B=10, C=8,
+    D=5, E=3 days from ``procedure_date``) are bundled into the package;
+    only post-window days are billed. Without ``procedure_lines``, all days
+    are billed (backwards-compatible default).
     """
     # Group procedure lines by claim for package-bundling detection.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
@@ -124,19 +166,23 @@ def detect_yatak_puani_opportunities(
         if gross_days <= 0:
             continue
 
-        # Package-bundling: if the claim has an EK-2C package procedure,
-        # the surgery-day bed fee is bundled into the package (El Kitabı
-        # Tablo 23: "Yatak ve malzemeler P610130 kodlu işleme dahildir").
+        # Package-bundling (§2.2.2.B-1(1), (3)-(4)): when the claim carries an
+        # EK-2/C package procedure, all bed days from admission through the
+        # package group's window end are bundled into the package.
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
         surgery_day = _find_package_surgery_day(claim_procs)
-        surgery_day_bundled = surgery_day is not None
-        bundled_days = (
-            1
-            if surgery_day_bundled
-            and claim.admission_date <= surgery_day <= claim.discharge_date
-            else 0
+        window_end = _find_package_window_end(
+            claim_procs,
+            admission_date=claim.admission_date,
+            discharge_date=claim.discharge_date,
         )
-        days = max(gross_days - bundled_days, 0)
+        surgery_day_bundled = window_end is not None
+        if window_end is not None:
+            days = max((claim.discharge_date - window_end).days, 0)
+            bundled_days = gross_days - days
+        else:
+            days = gross_days
+            bundled_days = 0
 
         expected = _money(days * daily_rate)
         same_day = gross_days == 1 and claim.admission_date == claim.discharge_date
@@ -158,7 +204,8 @@ def detect_yatak_puani_opportunities(
         ]
         if surgery_day_bundled:
             detail_parts[0] += (
-                f", surgery day {surgery_day} bundled into EK-2/C package"
+                f", {bundled_days} day(s) bundled into EK-2/C package window "
+                f"(surgery {surgery_day}, window through {window_end})"
             )
         detail_parts[0] += ")"
         detail_parts.append(f"= {expected:.2f} TRY (inclusive LOS, discharge day billed).")

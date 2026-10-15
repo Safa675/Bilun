@@ -175,11 +175,12 @@ def test_tablo23_yatak_days_count_no_procedures() -> None:
 
 
 def test_tablo23_yatak_days_count_with_package_bundling() -> None:
-    """With P610130 paket line, surgery day is bundled → 3 billable days.
+    """With P610130 (Group C, 8-day window), all 4 bed-days are bundled → 0 billable days.
 
-    Per El Kitabı Tablo 23: "Yatak ve malzemeler P610130 kodlu işleme
-    dahildir" — the surgery-day bed fee is included in the package. BILUN
-    should bill 4 gross LOS − 1 bundled surgery day = 3 billable days.
+    Per El Kitabı Tablo 23 ("Yatak ve malzemeler P610130 kodlu işleme
+    dahildir") and SUT §2.2.2.B-1(1), (3): P610130 is an EK-2/C Group C
+    package (8-day window starting 2026-07-11 through 2026-07-18). All 4
+    bed-days of the Jul 10→13 stay are bundled into the package.
     """
     claim = _make_tablo23_claim()
     procs = _make_tablo23_procedures()
@@ -191,11 +192,11 @@ def test_tablo23_yatak_days_count_with_package_bundling() -> None:
     assert len(opps) == 1
     opp = opps[0]
     assert opp["gross_bed_days"] == 4
-    assert opp["bed_days"] == 3
+    assert opp["bed_days"] == 0
     assert opp["surgery_day_bundled"] is True
-    assert opp["bundled_days"] == 1
+    assert opp["bundled_days"] == 4
     assert opp["daily_rate_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
-    assert opp["expected_yatak_try"] == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert opp["expected_yatak_try"] == 0.0
 
 
 def test_tablo23_yatak_amount_matches_catalog() -> None:
@@ -208,7 +209,7 @@ def test_tablo23_yatak_amount_matches_catalog() -> None:
 
 
 def test_tablo23_yatak_bundled_amount() -> None:
-    """With package bundling, 3 billable days × stubbed daily rate."""
+    """With Group C package bundling, 0 billable days Inside the 8-day window."""
     claim = _make_tablo23_claim()
     procs = _make_tablo23_procedures()
     opps = detect_yatak_puani_opportunities(
@@ -216,7 +217,7 @@ def test_tablo23_yatak_bundled_amount() -> None:
         procedure_lines=procs,
         claim_ids_with_procs={"TABLO23-C1"},
     )
-    assert opps[0]["expected_yatak_try"] == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert opps[0]["expected_yatak_try"] == 0.0
 
 
 # ── Anestezi puani — the anesthesia charge should match the handbook ────────
@@ -263,31 +264,26 @@ def test_tablo23_anestezi_group_is_a1() -> None:
     assert opp["expected_try"] == pytest.approx(_C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
 
 
-# ── Refakatçi (companion bed) — El Kitabı does not mention a companion ───────
+# ── Refakatçi (companion bed) — bundled inside P610130 Group C window ───────
 
 
 def test_tablo23_refakatci_emitted_for_inpatient() -> None:
-    """BILUN emits a companion-bed opportunity for inpatient stays.
+    """BILUN suppresses companion-bed uplift inside P610130's 8-day package window.
 
-    The El Kitabı Tablo 23 does NOT mention a companion bed (refakatçi) —
-    the scenario is a standard adult appendectomy with no companion noted.
-    BILUN's motor, however, emits a companion opportunity for any inpatient
-    claim that is not ICU or day-case. This is a conservative "expected
-    recovery" — if a companion was present but not billed, BILUN flags it.
-
-    This is informational, not a hard gap — the hospital may simply not have
-    had a companion. But it shows BILUN's motor assumes companions by default.
+    Per SUT §2.2.2.B-1(1)(h) and (3), companion expenses during the Group C
+    (8-day) package window are included in the EK-2/C package price, matching
+    El Kitabı Tablo 23 where no separate refakatçi charge is billed.
     """
     claim = _make_tablo23_claim()
     procs = _make_tablo23_procedures()
     opps = detect_refakatci_opportunities([claim], procs)
-    # Refakatçi will emit because: inpatient, no ICU code, >24h stay.
-    # El Kitabı says nothing about a companion for this patient.
-    assert len(opps) == 1, (
-        "BILUN emits a companion-bed opportunity by default for inpatient "
-        "stays — even when the El Kitabı scenario has no companion. This "
-        "is a known conservatism in the motor."
-    )
+    assert len(opps) == 1
+    opp = opps[0]
+    assert opp["days"] == 0
+    assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
+    assert opp["included_in_sgk_total"] is False
+    assert any("package_window_bundled" in n for n in opp["suppression_notes"])
 
 
 # ── Full context integration: all motors on the Tablo 23 patient ────────────
@@ -296,13 +292,10 @@ def test_tablo23_refakatci_emitted_for_inpatient() -> None:
 def test_tablo23_full_billing_summary() -> None:
     """Run all applicable motors on the Tablo 23 patient and summarize.
 
-    This is the integration check — it shows the COMPLETE picture of what
-    BILUN computes vs what the El Kitabı says should appear on the invoice.
-
     Key findings:
-    - Yatak: BILUN bills 3 days (₺667.08) — surgery day bundled into P610130.
-    - Anestezi: BILUN bills A1 group (₺5,302.69) → matches handbook.
-    - Refakatçi: BILUN bills 3 days (₺~222) → not mentioned in handbook.
+    - Yatak: 0 TL — all 4 days bundled into P610130 Group C (8-day) window.
+    - Anestezi: C group (550170) → matches handbook.
+    - Refakatçi: 0 TL — all 3 companion nights bundled into P610130 window.
     - ICU: no opportunity (no 510090 code) → correct.
     - Yenidoğan: no opportunity (not a newborn) → correct.
     """
@@ -362,6 +355,6 @@ def test_tablo23_full_billing_summary() -> None:
     ) if refakatci_opps else 0.0
 
     # Summary assertions — values are catalog-derived + bundling rule
-    assert yatak_total == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert yatak_total == 0.0
     assert anestezi_total == pytest.approx(_C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
-    assert refakatci_total > 0, "Refakatçi should produce a positive amount"
+    assert refakatci_total == 0.0

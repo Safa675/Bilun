@@ -51,6 +51,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
+from src.bilun.domain.prose_rules.yatak_puani import _find_package_window_end
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -287,19 +288,18 @@ def reconcile_yatak_bed_days(
             continue
         admission, discharge = dates
 
-        # Days already excluded by package-surgery bundling (yatak_puani
-        # Tablo 23) — never double-subtract them.
-        surgery_day = _find_package_surgery_day(
-            procedures_by_claim.get(opp.get("claim_id", ""), [])
+        # Days already excluded by package-window bundling (yatak_puani
+        # §2.2.2.B-1(1), (3)-(4)) — never double-subtract them.
+        window_end = _find_package_window_end(
+            procedures_by_claim.get(opp.get("claim_id", ""), []),
+            admission_date=admission,
+            discharge_date=discharge,
         )
-        already_excluded: set[date] = set()
-        if surgery_day is not None and admission <= surgery_day <= discharge:
-            already_excluded.add(surgery_day)
 
         overlapping = sorted(
             d
             for d in icu_last_days
-            if admission <= d <= discharge and d not in already_excluded
+            if admission <= d <= discharge and (window_end is None or d > window_end)
         )
         if not overlapping:
             adjusted.append(opp)

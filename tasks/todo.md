@@ -1,3 +1,45 @@
+## Task: Step 3 engine and lab fixes — #280, #281, #255, #256, #259 (2026-10-15)
+
+### Goal
+Resolve the 5 remaining engine and lab-price issues (#280, #281, #255, #256, #259) in atomic commits on a single branch so all showcase-bill and lab-pricing defects are closed and verified green in CI.
+
+### Subtasks
+- [x] 1. **#280 (`lab_capture_gap` & `prose_rules` `lookup_procedure_code` `match_type` audit):**
+  - Require `lookup.get("match_type") == "exact"` in `lab_capture_gap._resolve_lab_list_price` (`src/bilun/domain/prose_rules/lab_capture_gap.py`).
+  - Guard reachable `prose_rules` `lookup_procedure_code` call sites (`dental_ga_uplift.py`, `procedure_addon_uplift.py`, `procedure_capture_gap.py`, `session_pricing.py`) against `match_type == "prefix_search"`, and record the runtime audit of all 10 call sites.
+  - Add regression tests in `tests/unit/domain/prose_rules/test_lab_capture_gap.py` proving `L1070`, `L100`, `L10702` emit no finding while `L107020` prices at 19.73 TL on 2026-10-15.
+- [x] 2. **#281 (Remove caller-less `_load_gazette_visit_prices`, `get_visit_prices`, and `get_lab_price`):**
+  - Remove `_load_gazette_visit_prices` from `src/bilun/domain/loaders/gazette.py` and its re-export in `src/bilun/domain/loaders/__init__.py`.
+  - Remove `get_visit_prices` and `get_lab_price` from `src/bilun/domain/catalog.py`.
+  - Update `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md:52` to cite `yatak_puani.py:40`, `refakatci.py:38`, and `icu_puani.py:59,65`.
+  - Verify `git grep -n -w` returns zero hits in code/tests for the 3 removed names.
+- [x] 3. **#255 (`detect_icu_tier_overbilling` sourced evidence & informational-only review):**
+  - Cite `SUT §2.4.4.H.(1), (2), (4)` (`C001233`, `C001234`, `C001236`) and remove the non-existent `"EK-2/C-A"` citation in `src/bilun/domain/prose_rules/icu_puani.py`.
+  - Count only separately billable items on EK-2/C ICU package days as positive support evidence: EK-2/C `A/B/C`-group procedures (e.g., ECMO `605960`, `605969`–`605979`, or any line whose EK-2/C group is in `A1`/`A2`/`A3`/`B`/`C`) and `§2.4.4.H.(4)` items (`704210`, `704230`, `704290`, `704920`, plus their keywords).
+  - Emit an informational review (`severity="info"`, `at_risk_try=0.0`, `savings_try=0.0`, `risk_amount=0.0`) when `P552003`/`P552008` has no separately billed support item on the episode; update `tests/unit/domain/prose_rules/test_icu_puani.py`.
+- [x] 4. **#256 (Turkish capital & filler-word normalization in `_specialty_matches`):**
+  - Update `_normalize_tr` and `_specialty_matches` in `src/bilun/domain/prose_rules/_drug_indication/matching.py` so Turkish capitals (`I`→`ı`→`i`, `İ`→`i`) and filler words (`"ve"`, punctuation/abbreviations like `"(KVC)"`) normalize cleanly without cross-matching unrelated specialties (e.g. `"Kalp ve Damar Cerrahisi (KVC)"` matches `"kalp damar cerrahisi"` and never `"kardiyoloji"`).
+  - Remove the two strict `xfail` marks in `tests/unit/domain/prose_rules/test_specialty_scope_cases.py` and add unit tests for `"ACİL TIP"`, `"GÖZ HASTALIKLARI"`, and non-matching `"kardiyoloji"`.
+  - Refresh `file_sha256["src/bilun/domain/prose_rules/_drug_indication/matching.py"]` in `data/gazette/sut_coverage_evidence.json`.
+- [x] 5. **#259 (EK-2C package window for `yatak_puani.py` and `refakatci.py`):**
+  - Resolve the EK-2/C group (`A1`/`A2`/`A3`/`A`: 15, `B`: 10, `C`: 8, `D`: 5, `E`: 3 days) as of the package procedure date via `get_ek2c_entry` (with fallback to `line.ek2c_group`, or 1 day when ungrouped).
+  - Bundle pre-op days on the same inpatient takip (`§2.2.2.B-1(1)`) and the `1..W` package window days starting on the procedure date (`§2.2.2.B-1(3)`), expecting `510010` and `510121` only for days after `window_end` (`§2.2.2.B-1(4)`).
+  - Update `tests/unit/domain/billing/test_elkitabi_tablo23.py` and add regression tests in `test_yatak_puani.py` and `test_refakatci.py` covering clean S1/S5/S8 (0 TL uplift) and stays exceeding the package window.
+- [x] 6. **Verification & CI:**
+  - Run `ruff check src/ scripts/`, full `pytest -q`, `compile_rules.py --check`, and `audit_manifest_parity.py --drug-only`.
+  - Push branch, open PR, run CI via `laptop_runner.py`, check reviews, squash-merge to `main`, and verify `main` CI green.
+
+### Review (2026-10-15)
+- **#280:** Required `match_type == "exact"` in `lab_capture_gap._resolve_lab_list_price` and rejected `prefix_search` across the 5 reachable `prose_rules` call sites (`dental_ga_uplift.py`, `procedure_addon_uplift.py`, `procedure_capture_gap.py`, `session_pricing.py:124,436`). Added regression tests for `L1070`, `L100`, `L10702`, `L1018`, and `L107020`.
+- **#281:** Removed caller-less `_load_gazette_visit_prices`, `get_visit_prices`, and `get_lab_price`, and updated the plan citation in `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md:52`.
+- **#255:** Removed non-existent `"EK-2/C-A"` citation in `icu_puani.py`; scoped positive Tier 3 support evidence to separately billable EK-2/C `A/B/C`-group procedures and `§2.4.4.H.(4)` items (`704210`, `704230`, `704290`, `704920`, ECMO `605960`/`605969`–`605979`); emitted informational-only review (`severity="info"`, `at_risk_try=0.0`) when `P552003`/`P552008` lacks separately billed support items.
+- **#256:** Fixed Turkish capital folding (`İ`→`i`, `I`→`ı`→`i`) and filler/abbreviation normalization in `_drug_indication/matching.py`, un-xfailed both tests in `test_specialty_scope_cases.py`, and refreshed `matching.py` SHA-256 in `sut_coverage_evidence.json`.
+- **#259:** Applied SUT `§2.2.2.B-1(1), (3)-(4)` EK-2/C group package windows (`A1/A2/A3/A=15`, `B=10`, `C=8`, `D=5`, `E=3`) to `yatak_puani.py`, `refakatci.py`, and `yatak_icu_overlap.py`, and updated Tablo 23 + unit tests.
+
+### Out of Scope
+- Catalog parser / temporal issues `#226` and `#227`.
+- Rewriting committed showcase `results/` snapshots.
+
 ## Task: Remove three dead lab-price code paths (follow-up to Safa675/Bilun#271, 2026-10-15)
 
 ### Goal

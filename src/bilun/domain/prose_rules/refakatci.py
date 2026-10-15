@@ -19,7 +19,7 @@ See plans/refactor/rule-encoding-gap-closure-roadmap.md.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
@@ -30,6 +30,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.prose_rules.yatak_puani import _find_package_window_end
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -224,6 +225,48 @@ def detect_refakatci_opportunities(
                 }
             )
             continue
+
+        # Suppression rule 3 (§2.2.2.B-1(1)(h), (3)-(4)): EK-2/C package window
+        # bundles companion expenses through the end of the group window.
+        window_end = _find_package_window_end(
+            claim_procs,
+            admission_date=claim.admission_date,
+            discharge_date=claim.discharge_date,
+        )
+        if window_end is not None:
+            billable_companion_days = max(
+                (claim.discharge_date - timedelta(days=1) - window_end).days,
+                0,
+            )
+            if billable_companion_days < 1:
+                opportunities.append(
+                    {
+                        "type": _OPPORTUNITY_TYPE,
+                        "claim_id": claim.claim_id,
+                        "days": 0,
+                        "puan": puan,
+                        "expected_try": 0.0,
+                        "actual_billed_try": actual_billed_try,
+                        "recoverable_uplift_try": 0.0,
+                        "katsayi": katsayi,
+                        "sut_section_id": "2.6.3",
+                        "rule_id": "refakatci_510121",
+                        "detail": (
+                            f"Companion bed (510121) bundled into EK-2/C package "
+                            f"window through {window_end} ({companion_days} night(s), "
+                            f"{claim.admission_date} → {claim.discharge_date}) per "
+                            f"§2.2.2.B-1(1)(h) and §2.2.2.B-1(3)."
+                        ),
+                        "suppression_notes": [
+                            "package_window_bundled (§2.2.2.B-1(1)(h), (3))",
+                        ],
+                        "included_in_sgk_total": False,
+                        "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                        "savings_basis": SAVINGS_BASIS_SOURCED,
+                    }
+                )
+                continue
+            companion_days = billable_companion_days
 
         expected = _money(companion_days * daily_rate)
         recoverable_try = _money(max(0.0, expected - actual_billed_try))
