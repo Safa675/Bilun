@@ -135,6 +135,77 @@ The generator and the cohort do not change in this task.
 - Any download without Safa's yes for that file.
 - Fixing #255 or #256.
 
+## Task: Engine fixes wave 1 — false findings on correct bills (#260, #263, #265, #266, #267, #268, #270) (2026-10-15)
+
+### Goal
+Seven independent PRs, each making one rule stop misfiring on correct bills. Each keeps the rule's true positives and pins the fix with the issue's acceptance criteria as tests.
+
+### Subtasks
+- [x] 1. #270 hemogram: identify CBC lines by code (L107020, L103120) or exact parameter names, not substrings (`claim_lab.py`). `constants.py` stays untouched, because the lab-code session edits it.
+  - Result: PR Safa675/Bilun#272 (`fdf2180a`), with 12 new tests.
+  - Suite: 8,419 passed, 0 failed. Showcase results byte-identical.
+  - The stale note in `lab_reference_notes.md` item 1 gets updated after #271 (the lab-code PR, same file) merges.
+- [x] 2. #260 `tablo15_4`: stop reading `is_package_included` as "billed as package". Review `detect_vakabasi_wrong_method`, which shares the helper.
+  - Result: PR Safa675/Bilun#277 (`0c5f091b`). #4 emits nothing: the payment-method check already flags the same 26 cohort cases, so a second row would double every fault. #3 is unchanged.
+  - Suite: 8,411 passed, 0 failed. Showcase: tablo15_4 rows gone from S1/S5/S8.
+  - Open for Safa: Tablo 15 #3/#4 may concern the outpatient visit fee (520030 vs EK-2/A), not EK-2C. That needs the El Kitabı text.
+- [x] 3. #263 temporal anomaly:
+  - LOS density counts services, not tariff or lab lines.
+  - Ghost stay means "bed lines only".
+  - No same-date overlap finding without real times.
+  - Result: PR Safa675/Bilun#274 (`01e5bb7f`), 9 net new tests. Suite: 8,416 passed, 0 failed.
+  - Showcase: the density warning is gone from S2/S4 and the overlap warning from S8. Cohort overlap warnings went from 29 to 0.
+- [x] 4. #265 anaesthesia bands: switch on the list's markers (2022-08-04, 2024-08-07, 2026-04-16) and drop the two strict xfails in `test_reference_code_sets.py`.
+  - Result: PR Safa675/Bilun#273 (`35df6544`). Bounds were verified against the raw rows; the 2024-01-09 amendment restates the same bounds, so it adds no switch date.
+  - Suite: 8,418 passed, 0 failed. Showcase results byte-identical.
+- [x] 5. #266 capture gap: a package line counts as submitted for its own code, with or without `P`. Never price a gap from EK-2B when the claim carries that code's package.
+  - Result: PR Safa675/Bilun#275 (`1f6bfa74`), 10 new tests. Suite: 8,417 passed, 0 failed. Showcase results byte-identical.
+  - Left open: package scope/window coverage (no code-based package contents in the repo).
+  - Found: `lab_capture_gap.py` flags in-package labs on package bills (candidate issue).
+- [x] 6. #267 §4.2.27.A:
+  - Remove vitamin K and FFP names from the 4 rules' drug lists, then recompile.
+  - Refresh the `sut_coverage_evidence.json` hash pins.
+  - Result: PR Safa675/Bilun#278 (`e4af299f`), 11 new tests. Suite: 8,418 passed, 0 failed.
+  - FFP was also removed from a fifth rule (`coumarin_noac_bleed_report_free`): same defect, and it skewed routing.
+  - Two coverage-evidence lines changed (1945, 2056). #271 changes line 2020, which is not adjacent.
+- [x] 7. #268 traffic accident: match explicit values, never the substring `kaza`. Stop reading `scenario_tag` if a real header field carries the accident type.
+  - Result: PR Safa675/Bilun#276 (`c1f5116e`), 61 new tests. Suite: 8,468 passed, 0 failed.
+  - `scenario_tag` and `department` are no longer read. Showcase results and the 50-patient demo output are unchanged.
+  - Open for Safa: should a traffic accident during work use the iş kazası or the trafik kazası provision?
+- [x] 8. Per PR, in sequence:
+  - targeted tests, then the full suite;
+  - `compile_rules.py --check` and manifest parity;
+  - the showcase proofs show the rule's noise gone on the clean bills and the target faults still firing;
+  - ruff.
+  - Result: every branch has 0 failed. A baseline on clean `main` in a fresh worktree gave 8,407 passed / 1 skipped / 4 xfailed.
+  - Full suites ran one at a time behind a shared `flock`.
+  - Every target fault still fires, and `results/` was never committed.
+- [x] 9. Before each push: CI on `main` is green, and the lab-code session's diff still does not touch the PR's files. One PR per fix; merges are Safa's call.
+  - Result: `main` CI is green at 91fb756c.
+  - Across the 7 branches and #271, the only shared file is `sut_coverage_evidence.json` (#278 vs #271), on non-adjacent lines.
+
+### Review (2026-10-15)
+- **Opened:** 7 PRs, #272–#278, with 116 new tests across them (#270 12, #265 9, #263 9, #266 10, #268 61, #260 4, #267 11).
+- **Showcase noise removed:**
+  - tablo15_4 on S1/S5/S8;
+  - density on S2/S4;
+  - overlap on S8.
+  - #265, #266, #267, #268 and #270 do not change the committed showcase bills. Their cases are covered by unit tests.
+- **Questions for Safa:**
+  - the meaning of Tablo 15 #3/#4 (outpatient visit fee?);
+  - the provision for a traffic accident during work;
+  - whether `lab_capture_gap.py` (in-package labs flagged as gaps) should become an issue.
+- **After merge:**
+  - update `lab_reference_notes.md` item 1 (after #271);
+  - remove the agent worktrees;
+  - wave 2 (#261 + #264 + #269, #262) and #259, after Safa's answer.
+
+### Out of Scope
+- #259 (waits for Safa's reading of the package window), #261/#264/#269 and #262 (wave 2), #255, #256, #226, #227.
+- `BILUN_TO_SUT_CODE` (the lab-code session).
+- Staging (waits for Safa's yes).
+- Showcase `results/` files (a historical record at 1c22ee9c; not rewritten).
+
 ## Task: Fix companion-bed (510121) ICU suppression, admission-date pricing, and billed subtraction (Safa675/Bilun#236)
 
 ### Goal

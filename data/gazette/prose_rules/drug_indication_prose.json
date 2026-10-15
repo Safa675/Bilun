@@ -15728,11 +15728,7 @@
       ],
       "drug_names": [
         "prothrombin complex",
-        "pcc",
-        "fresh frozen plasma",
-        "ffp",
-        "vitamin k",
-        "k vitamini"
+        "pcc"
       ],
       "report_required": true,
       "report_specialties": [
@@ -15762,8 +15758,6 @@
       "drug_names": [
         "prothrombin complex",
         "pcc",
-        "fresh frozen plasma",
-        "ffp",
         "beriplex",
         "kanama durdurucu"
       ],
@@ -16073,10 +16067,7 @@
         "protrombin kompleksi",
         "prothrombin complex",
         "beriplex",
-        "octaplex",
-        "k vitamini",
-        "vitamin k",
-        "konakion"
+        "octaplex"
       ],
       "icd10_ranges": [
         "T45",
@@ -16204,10 +16195,7 @@
         "prothrombin complex",
         "beriplex",
         "octaplex",
-        "kombine koagülasyon",
-        "k vitamini",
-        "vitamin k",
-        "konakion"
+        "kombine koagülasyon"
       ],
       "icd10_ranges": [
         "T45",
@@ -16449,10 +16437,7 @@
         "prothrombin complex",
         "beriplex",
         "octaplex",
-        "kombine koagülasyon",
-        "k vitamini",
-        "vitamin k",
-        "konakion"
+        "kombine koagülasyon"
       ],
       "icd10_ranges": [
         "D66",
