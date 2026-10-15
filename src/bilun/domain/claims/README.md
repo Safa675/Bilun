@@ -105,3 +105,7 @@ hospital claim export and `BILUN_CLEAN_DIR` at the matching clean clinical feed.
 The real adapter must map hospital rows into the same `ClaimHeader`,
 `ProcedureClaimLine`, `MaterialClaimLine`, and `DrugClaimLine` contract so rule
 modules continue to consume `SUTClaimDataset` without source-specific branches.
+In `real_claims` mode, `expected_rule_outputs.parquet`, `expected_total_billed_try`,
+`expected_total_payable_try`, `expected_payable_try`, `discount_tier_expected`,
+`unit_price_try`, and `scenario_tag` are optional; omitted line payables default to
+`billed_amount_try` and omitted header totals are derived from `claim_totals`.

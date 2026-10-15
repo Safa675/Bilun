@@ -52,10 +52,13 @@ _SURGICAL_CATEGORY_KEYWORDS: tuple[str, ...] = (
     "surgical",
 )
 
-# Error #8 — SUT procedure-code prefix range that is surgical (the 500xxx-
-# 519xxx block in the SUT catalog). Used as a fallback when the category
-# string does not carry a surgical keyword.
-_SURGICAL_CODE_PREFIXES: tuple[str, ...] = ("50", "51")
+# Error #8 — SUT procedure-code prefix range that is surgical (the 600xxx-
+# 629xxx block in EK-2B and P600xxx-P629xxx in EK-2C). Used as a fallback
+# when the category string does not carry a surgical keyword.
+_SURGICAL_CODE_PREFIXES: tuple[str, ...] = ("60", "61", "62")
+# EK-2B 51xxxx codes (510010–510121) are inpatient bed/stay tariffs, never
+# surgical procedures even if a line's category was miscoded.
+_BED_CODE_PREFIXES: tuple[str, ...] = ("51",)
 
 # Error #9 — procedure_count / LOS_days threshold above which the billing
 # pattern is implausible (too many concurrent procedures per inpatient day).
@@ -66,19 +69,35 @@ _PROCEDURE_DENSITY_RATIO_MAX = 5
 _GHOST_STAY_MIN_LOS_DAYS = 3
 
 
+def _normalize_surgical_code(raw: str | None) -> str:
+    code = (
+        str(raw or "")
+        .strip()
+        .replace(".", "")
+        .replace(" ", "")
+        .replace("-", "")
+        .upper()
+    )
+    if code.startswith("P") and len(code) > 1 and code[1:].isdigit():
+        return code[1:]
+    return code
+
+
 def _is_surgical(line: ProcedureClaimLine) -> bool:
     """True when a procedure line is an operative / surgical service.
 
-    Determined first by ``procedure_category`` carrying a surgical keyword
+    Excludes EK-2B ``51xxxx`` bed/stay tariffs unconditionally, then checks
+    whether ``procedure_category`` carries a surgical keyword
     (``cerrahi``/``surgery``/``operative``/``ameliyat``), falling back to
-    the SUT 500xxx-519xxx surgical code-prefix range when the category is
-    blank or non-descriptive. Mirrors the discriminator used by
-    :mod:`common_billing_errors` for inpatient-only categories.
+    the SUT ``600xxx``–``629xxx`` (and ``P600xxx``–``P629xxx``) surgical
+    code-prefix range when the category is blank or non-descriptive.
     """
+    code = _normalize_surgical_code(line.procedure_code)
+    if code[:2] in _BED_CODE_PREFIXES:
+        return False
     category = (line.procedure_category or "").casefold()
     if any(kw in category for kw in _SURGICAL_CATEGORY_KEYWORDS):
         return True
-    code = line.procedure_code or ""
     return code[:2] in _SURGICAL_CODE_PREFIXES
 
 

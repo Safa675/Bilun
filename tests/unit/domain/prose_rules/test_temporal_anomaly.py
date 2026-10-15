@@ -63,7 +63,7 @@ def _make_proc_line(
     *,
     procedure_line_id: str = "PL1",
     claim_id: str = "C1",
-    procedure_code: str = "510010",
+    procedure_code: str = "610130",
     procedure_category: str = "cerrahi",
     procedure_date: date = date(2026, 7, 10),
     procedure_specialty_code: str = "1000",
@@ -103,7 +103,7 @@ def test_procedure_time_overlap_positive() -> None:
     l1 = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
-        procedure_code="510010",
+        procedure_code="610130",
         procedure_category="cerrahi",
         procedure_date=date(2026, 7, 10),
         procedure_specialty_code="1000",
@@ -111,7 +111,7 @@ def test_procedure_time_overlap_positive() -> None:
     l2 = _make_proc_line(
         procedure_line_id="PL2",
         claim_id="C1",
-        procedure_code="510020",
+        procedure_code="610140",
         procedure_category="cerrahi",
         procedure_date=date(2026, 7, 10),  # same date, same specialty
         procedure_specialty_code="1000",
@@ -128,7 +128,72 @@ def test_procedure_time_overlap_positive() -> None:
     assert v["sut_section_id"] == "2.4"
     assert v["procedure_specialty_code"] == "1000"
     assert v["procedure_date"] == date(2026, 7, 10)
-    assert set(v["procedure_codes"]) == {"510010", "510020"}
+    assert set(v["procedure_codes"]) == {"610130", "610140"}
+
+
+@pytest.mark.parametrize(
+    ("code_a", "code_b", "category"),
+    [
+        ("600010", "600020", "islem"),
+        ("610130", "619999", "islem"),
+        ("620010", "629999", ""),
+        ("P610130", "P620010", "paket"),
+    ],
+)
+def test_procedure_time_overlap_code_prefix_fallback_60_to_62(
+    code_a: str,
+    code_b: str,
+    category: str,
+) -> None:
+    """Surgical codes in 60xxxx–62xxxx (and P60xxxx–P62xxxx) match via code prefix when category lacks a keyword."""
+    claim = _make_claim_header(claim_id="C1")
+    l1 = _make_proc_line(
+        procedure_line_id="PL1",
+        claim_id="C1",
+        procedure_code=code_a,
+        procedure_category=category,
+        procedure_date=date(2026, 7, 10),
+        procedure_specialty_code="1000",
+    )
+    l2 = _make_proc_line(
+        procedure_line_id="PL2",
+        claim_id="C1",
+        procedure_code=code_b,
+        procedure_category=category,
+        procedure_date=date(2026, 7, 10),
+        procedure_specialty_code="1000",
+    )
+
+    violations = detect_procedure_time_overlap([claim], [l1, l2])
+
+    assert len(violations) == 1
+    assert set(violations[0]["procedure_codes"]) == {code_a, code_b}
+
+
+@pytest.mark.parametrize("category", ["islem", "yatak", "", "cerrahi"])
+def test_procedure_time_overlap_excludes_51xxxx_bed_codes(category: str) -> None:
+    """51xxxx bed/stay tariffs (510010–510121) are never classified as surgical overlap."""
+    claim = _make_claim_header(claim_id="C1")
+    l1 = _make_proc_line(
+        procedure_line_id="PL1",
+        claim_id="C1",
+        procedure_code="510010",
+        procedure_category=category,
+        procedure_date=date(2026, 7, 10),
+        procedure_specialty_code="1000",
+    )
+    l2 = _make_proc_line(
+        procedure_line_id="PL2",
+        claim_id="C1",
+        procedure_code="510121",
+        procedure_category=category,
+        procedure_date=date(2026, 7, 10),
+        procedure_specialty_code="1000",
+    )
+
+    violations = detect_procedure_time_overlap([claim], [l1, l2])
+
+    assert violations == []
 
 
 def test_procedure_time_overlap_single_surgery_no_flag() -> None:

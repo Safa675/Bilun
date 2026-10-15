@@ -1081,6 +1081,9 @@ function RevenueRecoveryDashboard({
     ? {
         ...data,
         n_patients: summarySource.length,
+        n_patients_with_actions: summarySource.filter(
+          (patient) => (patient.total_recoverable_try ?? 0) > 0,
+        ).length,
         grand_total_recoverable: filteredGrandTotal,
         top_patients: [...summarySource]
           .sort((a, b) => {

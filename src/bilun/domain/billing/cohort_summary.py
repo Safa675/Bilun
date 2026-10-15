@@ -201,6 +201,11 @@ def build_cohort_recovery_summary(
         reverse=True,
     )
     summary.patient_summaries = [patient_recovery_summary_entry(r) for r in sorted_reports]
+    summary.n_patients_with_actions = sum(
+        1
+        for row in summary.patient_summaries
+        if (row.get("total_recoverable_try") or row.get("sgk_uplift_try") or 0.0) > 0
+    )
     summary.top_patients = summary.patient_summaries[:10]
     summary.savings_by_category = _savings_by_category(summary)
     finalize_summary_exactness(summary, reports)

@@ -188,9 +188,11 @@ def _build_fatura_inceleme_context(ctx: Any) -> dict[str, Any]:
 
     # Emergency detection
     dept = (header.department or "").lower()
-    tag = (header.scenario_tag or "").lower()
     context["is_emergency"] = (
-        "acil" in dept or "emergency" in dept or "acil" in tag or "emergency" in tag
+        "acil" in claim_type_lower
+        or "emergency" in claim_type_lower
+        or "acil" in dept
+        or "emergency" in dept
     )
 
     # Facility contracting

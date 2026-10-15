@@ -131,7 +131,6 @@ def test_migrated_modules_import_shared_helper() -> None:
         "src/bilun/domain/billing/claim_strategy.py",
         "src/bilun/domain/billing/billing_actions.py",
         "src/bilun/domain/billing/claim_audit_exposure.py",
-        "src/bilun/domain/billing/demo_vignette_lookup.py",
         "src/bilun/domain/billing/claim_drg_uplift.py",
         "src/bilun/domain/prose_rules/session_uplift.py",
         "src/bilun/domain/prose_rules/drg_unbundling.py",

@@ -46,14 +46,13 @@ from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportun
 from tests.unit._helpers.catalog_stubs import (
     FIXTURE_BED_DAILY_TRY,
     FIXTURE_KATSAYI,
-    FIXTURE_PROC_PUAN,
     install_anestezi_catalog_stub,
     install_yatak_catalog_stub,
 )
 
 pytestmark = pytest.mark.unit
 
-_A1_GROUP_PUAN = 8942.14
+_C_GROUP_PUAN = 894.31
 
 
 @pytest.fixture(autouse=True)
@@ -224,13 +223,12 @@ def test_tablo23_yatak_bundled_amount() -> None:
 
 
 def test_tablo23_anestezi_group_is_a1() -> None:
-    """Appendektomi (puan 3397.78) → anesthesia group A1 (code 550130).
+    """Appendektomi (puan 3397.78) on 2026-07-11 → anesthesia group C (code 550170).
 
-    Puan range 3000-5000 → A1. This is the correct group per SUT §2.4.4.A.
+    Per EK-2/B §4 (2026-07-07 list), puan range 3005-6000 → C (550170).
     The El Kitabı lists "Anestezi işlemleri" as a separately billable item.
     """
     claim = _make_tablo23_claim()
-    procs = _make_tablo23_procedures()
     # Anestezi only looks at non-package surgical procedures — but the
     # anestezi motor uses the *catalog* puan of the procedure code, not the
     # submitted procedure_category. Test with the raw code.
@@ -259,10 +257,10 @@ def test_tablo23_anestezi_group_is_a1() -> None:
     )
     assert len(opps) == 1
     opp = opps[0]
-    assert opp["anestezi_group"] == "A1"
-    assert opp["anestezi_code"] == "550130"
-    assert opp["anestezi_puan"] == pytest.approx(_A1_GROUP_PUAN)
-    assert opp["expected_try"] == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
+    assert opp["anestezi_group"] == "C"
+    assert opp["anestezi_code"] == "550170"
+    assert opp["anestezi_puan"] == pytest.approx(_C_GROUP_PUAN)
+    assert opp["expected_try"] == pytest.approx(_C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
 
 
 # ── Refakatçi (companion bed) — El Kitabı does not mention a companion ───────
@@ -365,5 +363,5 @@ def test_tablo23_full_billing_summary() -> None:
 
     # Summary assertions — values are catalog-derived + bundling rule
     assert yatak_total == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
-    assert anestezi_total == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
+    assert anestezi_total == pytest.approx(_C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
     assert refakatci_total > 0, "Refakatçi should produce a positive amount"

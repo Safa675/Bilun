@@ -3237,7 +3237,7 @@
       "runtime_id": "analyze_claim:detect_admission_billing_window",
       "runtime_status": "gated",
       "source_lines": [
-        302
+        312
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3286,7 +3286,7 @@
       "runtime_id": "analyze_claim:detect_blood_component_isbt128_violations",
       "runtime_status": "gated",
       "source_lines": [
-        277
+        287
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3374,7 +3374,7 @@
       "runtime_id": "analyze_claim:detect_dental_ga_uplift_violations",
       "runtime_status": "gated",
       "source_lines": [
-        330
+        340
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3416,7 +3416,7 @@
       "runtime_id": "analyze_claim:detect_diagnosis_procedure_mismatch_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        346
+        356
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3459,7 +3459,7 @@
       "runtime_id": "analyze_claim:detect_donor_prep_as_exam",
       "runtime_status": "gated",
       "source_lines": [
-        314
+        324
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3502,7 +3502,7 @@
       "runtime_id": "analyze_claim:detect_drug_quantity_error",
       "runtime_status": "gated",
       "source_lines": [
-        324
+        334
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3545,7 +3545,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_exam_10day",
       "runtime_status": "gated",
       "source_lines": [
-        293
+        303
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3588,7 +3588,7 @@
       "runtime_id": "analyze_claim:detect_duplicate_tests",
       "runtime_status": "gated",
       "source_lines": [
-        294
+        304
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3629,7 +3629,7 @@
       "runtime_id": "analyze_claim:detect_exam_admission_date_mismatch",
       "runtime_status": "gated",
       "source_lines": [
-        295
+        305
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3672,7 +3672,7 @@
       "runtime_id": "analyze_claim:detect_green_area_bundled_extras",
       "runtime_status": "gated",
       "source_lines": [
-        308
+        318
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3715,7 +3715,7 @@
       "runtime_id": "analyze_claim:detect_inpatient_on_outpatient",
       "runtime_status": "gated",
       "source_lines": [
-        312
+        322
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3757,7 +3757,7 @@
       "runtime_id": "analyze_claim:detect_los_procedure_density_anomaly_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        361
+        371
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3800,7 +3800,7 @@
       "runtime_id": "analyze_claim:detect_material_preauth_missing",
       "runtime_status": "gated",
       "source_lines": [
-        319
+        329
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3843,7 +3843,7 @@
       "runtime_id": "analyze_claim:detect_material_type_missing",
       "runtime_status": "gated",
       "source_lines": [
-        321
+        331
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3885,7 +3885,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_imaging_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        351
+        361
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3927,7 +3927,7 @@
       "runtime_id": "analyze_claim:detect_missing_laterality_surgery_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        354
+        364
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -3968,7 +3968,7 @@
       "runtime_id": "analyze_claim:detect_never_principal_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        340
+        350
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4011,7 +4011,7 @@
       "runtime_id": "analyze_claim:detect_normal_poliklinik_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        306
+        316
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4053,7 +4053,7 @@
       "runtime_id": "analyze_claim:detect_procedure_time_overlap_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        358
+        368
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4107,7 +4107,7 @@
       "runtime_id": "analyze_claim:detect_radiation_oncology_violations",
       "runtime_status": "gated",
       "source_lines": [
-        282
+        292
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4149,7 +4149,7 @@
       "runtime_id": "analyze_claim:detect_sct_temporal_window_violations_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        286
+        296
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4190,7 +4190,7 @@
       "runtime_id": "analyze_claim:detect_traffic_accident_billing",
       "runtime_status": "gated",
       "source_lines": [
-        334
+        344
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4274,7 +4274,7 @@
       "runtime_id": "analyze_claim:detect_unnecessary_additional_diagnosis_for_context",
       "runtime_status": "gated",
       "source_lines": [
-        342
+        352
       ],
       "visibility_status": "hidden_runtime"
     },
@@ -4317,7 +4317,7 @@
       "runtime_id": "analyze_claim:detect_vakabasi_wrong_method",
       "runtime_status": "gated",
       "source_lines": [
-        305
+        315
       ],
       "visibility_status": "hidden_runtime"
     },

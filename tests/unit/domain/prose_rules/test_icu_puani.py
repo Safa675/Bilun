@@ -57,6 +57,8 @@ def _make_proc_line(
     claim_id: str = "C1",
     procedure_code: str = "510090",
     procedure_name: str = "Yogun bakim",
+    quantity: int = 1,
+    billed_amount_try: Decimal = Decimal("742.60"),
 ):
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
@@ -69,9 +71,9 @@ def _make_proc_line(
         procedure_code=procedure_code,
         procedure_name=procedure_name,
         procedure_category="islem",
-        quantity=1,
+        quantity=quantity,
         unit_price_try=Decimal("742.60"),
-        billed_amount_try=Decimal("742.60"),
+        billed_amount_try=billed_amount_try,
         expected_payable_try=Decimal("700.00"),
         is_package_included=False,
         package_code="",
@@ -244,8 +246,10 @@ def test_basamak_inferred_from_submitted_package() -> None:
     procs = [
         _make_proc_line(procedure_code="510090"),
         _make_proc_line(
-            procedure_line_id="ISL-2", procedure_code="P552001",
+            procedure_line_id="ISL-2",
+            procedure_code="P552001",
             procedure_name="Birinci basamak yogun bakim",
+            quantity=2,
         ),
     ]
     opps = detect_icu_puani_opportunities(
@@ -362,7 +366,7 @@ def test_no_uplift_unresolved_tier() -> None:
 # ── Wrapper test ───────────────────────────────────────────────────────────
 
 
-def _make_ctx(claims, procs) -> "object":
+def _make_ctx(claims, procs) -> object:
     from src.bilun.domain.claims.patient_context import PatientClaimContext
 
     return PatientClaimContext(
@@ -418,3 +422,129 @@ def test_wrapper_no_procedure_lines_returns_missing_inputs() -> None:
     assert review.opportunities == []
     assert review.required_inputs_missing  # non-empty
     assert review.confirmed_icu_try == 0.0
+
+
+# ── Issue #242: ICU segment day-counting & §2.4.4.H tier overbilling ───────
+
+
+def test_ward_stay_with_3day_icu_segment_does_not_count_14_hospital_days() -> None:
+    """A 14-day ward stay with 3 billed ICU nights (510090 + P552001 + 510090) counts 3 ICU days, not 14."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 1),
+        discharge=date(2026, 7, 15),
+        facility_tier="2_basamak_kamu",
+    )
+    procs = [
+        _make_proc_line(procedure_line_id="ISL-1", procedure_code="510090", billed_amount_try=Decimal("742.59")),
+        _make_proc_line(
+            procedure_line_id="ISL-2",
+            procedure_code="P552001",
+            procedure_name="Birinci basamak yogun bakim",
+            billed_amount_try=Decimal("1910.55"),
+        ),
+        _make_proc_line(procedure_line_id="ISL-3", procedure_code="510090", billed_amount_try=Decimal("742.59")),
+    ]
+    opps = detect_icu_puani_opportunities(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    assert len(opps) == 1
+    opp = opps[0]
+    assert opp["icu_days"] == 3
+    assert opp["intermediate_days"] == 1
+    assert opp["recoverable_uplift_try"] == pytest.approx(0.0, abs=0.05)
+
+
+def test_no_default_p552003_when_only_510090_billed() -> None:
+    """When only 510090 is billed (no P55200x package), never default to 3rd-level P552003."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 1),
+        discharge=date(2026, 7, 10),
+    )
+    procs = [_make_proc_line(procedure_code="510090", quantity=2)]
+    opps = detect_icu_puani_opportunities(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    assert len(opps) == 1
+    opp = opps[0]
+    assert opp["icu_days"] == 2
+    assert opp["intermediate_days"] == 0
+    assert opp["intermediate_package"] is None
+
+
+def test_tier_overbilling_detected_when_p552003_lacks_3rd_level_support() -> None:
+    """P552003 billed without invasive MV / dialysis / ECMO / CPR emits §2.4.4.H tier-review finding."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+        facility_tier="2_basamak_kamu",
+    )
+    procs = [
+        _make_proc_line(procedure_line_id="ISL-1", procedure_code="510090"),
+        _make_proc_line(
+            procedure_line_id="ISL-2",
+            procedure_code="P552003",
+            procedure_name="Ucuncu basamak yogun bakim",
+            billed_amount_try=Decimal("7647.44"),
+        ),
+        # Non-invasive MV (530700) is a 2nd-level criterion, not 3rd-level:
+        _make_proc_line(
+            procedure_line_id="ISL-3",
+            procedure_code="530700",
+            procedure_name="Non invaziv mekanik ventilatör uygulaması",
+        ),
+    ]
+    findings = detect_icu_tier_overbilling(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    assert len(findings) == 1
+    f = findings[0]
+    assert f["rule_id"] == "icu_tier_overbilling_2_4_4_H"
+    assert f["sut_section_id"] == "2.4.4.H"
+    assert f["procedure_code"] == "P552003"
+    assert f["recommended_tier_2_code"] == "P552002"
+    assert f["recommended_tier_1_code"] == "P552001"
+    assert f["price_gap_to_tier_2_try"] > 0.0
+    assert f["price_gap_to_tier_1_try"] > f["price_gap_to_tier_2_try"]
+    assert f["included_in_sgk_total"] is False
+    assert f["savings_category"] == "audit_exposure"
+
+
+def test_tier_overbilling_not_emitted_when_invasive_mv_or_dialysis_present() -> None:
+    """P552003 billed with invasive MV (530130) or hemodialysis (704230) emits no tier overbilling."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+    )
+    for support_code, support_name in (
+        ("530130", "Hastanın mekanik ventilatöre bağlanması"),
+        ("704230", "Hemodiyaliz"),
+        ("605977", "Perkütan (Veno-venöz) VV-ECMO takılması veya çıkartılması"),
+    ):
+        procs = [
+            _make_proc_line(procedure_line_id="ISL-1", procedure_code="510090"),
+            _make_proc_line(
+                procedure_line_id="ISL-2",
+                procedure_code="P552003",
+                procedure_name="Ucuncu basamak yogun bakim",
+            ),
+            _make_proc_line(
+                procedure_line_id="ISL-3",
+                procedure_code=support_code,
+                procedure_name=support_name,
+            ),
+        ]
+        assert (
+            detect_icu_tier_overbilling(
+                [header], procs, claim_ids_with_procs={"C1"}
+            )
+            == []
+        )
+

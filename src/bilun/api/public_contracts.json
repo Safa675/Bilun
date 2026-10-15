@@ -1922,6 +1922,7 @@
           "sut_section_id": true,
           "recoverable_uplift_try": true,
           "expected_try": true,
+          "actual_billed_try": true,
           "days": true,
           "katsayi": true,
           "puan": true,
@@ -1950,12 +1951,16 @@
           "sut_section_id": true,
           "recoverable_uplift_try": true,
           "expected_try": true,
+          "actual_billed_try": true,
           "anestezi_code": true,
           "anestezi_group": true,
           "anestezi_puan": true,
           "katsayi": true,
           "procedure_code": true,
-          "procedure_puan": true
+          "procedure_puan": true,
+          "secondary_procedure_codes": {
+            "$list": true
+          }
         }
       }
     }
@@ -1973,6 +1978,7 @@
   },
   "CohortRecoverySummary": {
     "n_patients": true,
+    "n_patients_with_actions": true,
     "total_lab_savings": true,
     "total_copay_savings": true,
     "total_strategy_savings": true,

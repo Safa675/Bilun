@@ -15,6 +15,7 @@ from src.bilun.domain.claims.mesothelioma_evidence import parse_mesothelioma_evi
 
 from dataclasses import fields
 from datetime import date
+from decimal import Decimal
 
 from src.bilun.domain.claims.models import (
     ClaimDiagnosis,
@@ -84,6 +85,16 @@ def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
     try:
         claim_id = parse_text(row, "claim_id")
         primary_icd10_raw = row.get("primary_icd10")
+        expected_total_billed_try = (
+            Decimal("0.00")
+            if is_missing(row.get("expected_total_billed_try"))
+            else parse_money(row, "expected_total_billed_try", claim_id, errors)
+        )
+        expected_total_payable_try = (
+            Decimal("0.00")
+            if is_missing(row.get("expected_total_payable_try"))
+            else parse_money(row, "expected_total_payable_try", claim_id, errors)
+        )
         return ClaimHeader(
             claim_id=claim_id,
             patient_id=parse_text(row, "patient_id"),
@@ -103,8 +114,8 @@ def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
             ),
             primary_icd10_available=isinstance(primary_icd10_raw, str),
             package_candidate=parse_bool(row.get("package_candidate")),
-            expected_total_billed_try=parse_money(row, "expected_total_billed_try", claim_id, errors),
-            expected_total_payable_try=parse_money(row, "expected_total_payable_try", claim_id, errors),
+            expected_total_billed_try=expected_total_billed_try,
+            expected_total_payable_try=expected_total_payable_try,
             expected_denial_reason=parse_text(row, "expected_denial_reason"),
             scenario_tag=parse_text(row, "scenario_tag"),
             occupational_context=parse_text(
@@ -247,6 +258,22 @@ def parse_performed_procedure_line(
 def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine | None:
     try:
         line_id = parse_text(row, "procedure_line_id")
+        billed_amount_try = parse_money(row, "billed_amount_try", line_id, errors)
+        unit_price_try = (
+            billed_amount_try
+            if is_missing(row.get("unit_price_try"))
+            else parse_money(row, "unit_price_try", line_id, errors)
+        )
+        expected_payable_try = (
+            billed_amount_try
+            if is_missing(row.get("expected_payable_try"))
+            else parse_money(row, "expected_payable_try", line_id, errors)
+        )
+        quantity = (
+            1
+            if is_missing(row.get("quantity"))
+            else parse_integer(row.get("quantity"), "quantity", line_id, errors)
+        )
         return ProcedureClaimLine(
             procedure_line_id=line_id,
             claim_id=parse_text(row, "claim_id"),
@@ -256,10 +283,10 @@ def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine 
             procedure_code=parse_text(row, "procedure_code"),
             procedure_name=parse_text(row, "procedure_name"),
             procedure_category=parse_text(row, "procedure_category"),
-            quantity=parse_integer(row.get("quantity"), "quantity", line_id, errors),
-            unit_price_try=parse_money(row, "unit_price_try", line_id, errors),
-            billed_amount_try=parse_money(row, "billed_amount_try", line_id, errors),
-            expected_payable_try=parse_money(row, "expected_payable_try", line_id, errors),
+            quantity=quantity,
+            unit_price_try=unit_price_try,
+            billed_amount_try=billed_amount_try,
+            expected_payable_try=expected_payable_try,
             is_package_included=parse_bool(row.get("is_package_included")),
             package_code=parse_text(row, "package_code"),
             surcharge_applicable=parse_bool(row.get("surcharge_applicable")),
@@ -282,6 +309,22 @@ def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine 
 def parse_material_line(row: RowDict, errors: list[str]) -> MaterialClaimLine | None:
     try:
         line_id = parse_text(row, "material_line_id")
+        billed_amount_try = parse_money(row, "billed_amount_try", line_id, errors)
+        unit_price_try = (
+            billed_amount_try
+            if is_missing(row.get("unit_price_try"))
+            else parse_money(row, "unit_price_try", line_id, errors)
+        )
+        expected_payable_try = (
+            billed_amount_try
+            if is_missing(row.get("expected_payable_try"))
+            else parse_money(row, "expected_payable_try", line_id, errors)
+        )
+        quantity = (
+            1
+            if is_missing(row.get("quantity"))
+            else parse_integer(row.get("quantity"), "quantity", line_id, errors)
+        )
         return MaterialClaimLine(
             material_line_id=line_id,
             claim_id=parse_text(row, "claim_id"),
@@ -292,10 +335,10 @@ def parse_material_line(row: RowDict, errors: list[str]) -> MaterialClaimLine | 
             material_name=parse_text(row, "material_name"),
             material_type=parse_text(row, "material_type"),
             specialty_category=parse_text(row, "specialty_category"),
-            quantity=parse_integer(row.get("quantity"), "quantity", line_id, errors),
-            unit_price_try=parse_money(row, "unit_price_try", line_id, errors),
-            billed_amount_try=parse_money(row, "billed_amount_try", line_id, errors),
-            expected_payable_try=parse_money(row, "expected_payable_try", line_id, errors),
+            quantity=quantity,
+            unit_price_try=unit_price_try,
+            billed_amount_try=billed_amount_try,
+            expected_payable_try=expected_payable_try,
             is_bundled=parse_bool(row.get("is_bundled")),
             requires_pre_auth=parse_bool(row.get("requires_pre_auth")),
             denial_reason_expected=parse_text(row, "denial_reason_expected"),
@@ -320,6 +363,27 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
     try:
         line_id = parse_text(row, "drug_claim_line_id")
         annual_count = row.get("annual_application_count")
+        billed_amount_try = parse_money(row, "billed_amount_try", line_id, errors)
+        unit_price_try = (
+            billed_amount_try
+            if is_missing(row.get("unit_price_try"))
+            else parse_money(row, "unit_price_try", line_id, errors)
+        )
+        expected_payable_try = (
+            billed_amount_try
+            if is_missing(row.get("expected_payable_try"))
+            else parse_money(row, "expected_payable_try", line_id, errors)
+        )
+        discount_tier_expected = (
+            Decimal("0.00")
+            if is_missing(row.get("discount_tier_expected"))
+            else parse_money(row, "discount_tier_expected", line_id, errors)
+        )
+        quantity = (
+            1
+            if is_missing(row.get("quantity"))
+            else parse_integer(row.get("quantity"), "quantity", line_id, errors)
+        )
         return DrugClaimLine(
             drug_claim_line_id=line_id,
             prescription_id=parse_text(row, "prescription_id"),
@@ -331,11 +395,11 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             drug_code=parse_text(row, "drug_code"),
             barkod=parse_text(row, "barkod"),
             equivalence_group=parse_text(row, "equivalence_group"),
-            quantity=parse_integer(row.get("quantity"), "quantity", line_id, errors),
-            unit_price_try=parse_money(row, "unit_price_try", line_id, errors),
-            billed_amount_try=parse_money(row, "billed_amount_try", line_id, errors),
-            expected_payable_try=parse_money(row, "expected_payable_try", line_id, errors),
-            discount_tier_expected=parse_money(row, "discount_tier_expected", line_id, errors),
+            quantity=quantity,
+            unit_price_try=unit_price_try,
+            billed_amount_try=billed_amount_try,
+            expected_payable_try=expected_payable_try,
+            discount_tier_expected=discount_tier_expected,
             denial_reason_expected=parse_text(row, "denial_reason_expected"),
             rule_trace_expected=parse_text(row, "rule_trace_expected"),
             copay_rate=optional_money(row.get("copay_rate"), line_id, errors),

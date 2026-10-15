@@ -419,7 +419,11 @@ class YatakPuaniReview:
     def confirmed_yatak_try(self) -> float:
         return round(
             sum(
-                float(row.get("expected_yatak_try") or 0.0)
+                float(
+                    row["recoverable_uplift_try"]
+                    if row.get("recoverable_uplift_try") is not None
+                    else (row.get("expected_yatak_try") or 0.0)
+                )
                 for row in self.opportunities
                 if row.get("included_in_sgk_total", True)
             ),
@@ -444,7 +448,11 @@ class IcuPuaniReview:
     def confirmed_icu_try(self) -> float:
         return round(
             sum(
-                float(row.get("recoverable_uplift_try") or row.get("total_try") or 0.0)
+                float(
+                    row["recoverable_uplift_try"]
+                    if row.get("recoverable_uplift_try") is not None
+                    else (row.get("total_try") or 0.0)
+                )
                 for row in self.opportunities
                 if row.get("included_in_sgk_total", True)
             ),
@@ -492,7 +500,11 @@ class RefakatciReview:
     def confirmed_refakat_try(self) -> float:
         return round(
             sum(
-                float(row.get("expected_try") or 0.0)
+                float(
+                    row["recoverable_uplift_try"]
+                    if row.get("recoverable_uplift_try") is not None
+                    else (row.get("expected_try") or 0.0)
+                )
                 for row in self.opportunities
                 if row.get("included_in_sgk_total", True)
             ),
@@ -509,14 +521,18 @@ class AnesteziPuaniReview:
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
     rule_source: str = (
-        "SUT §2.4.4.A anestezi — surgical puan range → group puan (EK-2B 550130-550190)"
+        "SUT §2.2.2.A + EK-2/B §4 anestezi — surgical puan range → group puan (550130-550260)"
     )
 
     @property
     def confirmed_anestezi_try(self) -> float:
         return round(
             sum(
-                float(row.get("expected_try") or 0.0)
+                float(
+                    row["recoverable_uplift_try"]
+                    if row.get("recoverable_uplift_try") is not None
+                    else (row.get("expected_try") or 0.0)
+                )
                 for row in self.opportunities
                 if row.get("included_in_sgk_total", True)
             ),
@@ -797,6 +813,7 @@ class CohortRecoverySummary:
     """Cohort-level revenue recovery aggregation."""
 
     n_patients: int = 0
+    n_patients_with_actions: int = 0
     total_lab_savings: float = 0.0
     total_copay_savings: float = 0.0
     total_strategy_savings: float = 0.0

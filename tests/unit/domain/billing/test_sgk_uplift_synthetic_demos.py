@@ -60,14 +60,20 @@ class TestOptionalOverrideSyntheticDemos:
             copay_exemption={"exempt": False},
         )
 
-        rows = _override_rows_for_claim(report, demo_claim.claim_id)
+        rows = [
+            row
+            for row in report.billing_strategy.recommendations
+            if row.get("claim_id") == demo_claim.claim_id
+            and row.get("recommendation_kind") == "optional_override"
+        ]
         assert len(rows) == 1
         row = rows[0]
-        assert row["recommendation"] == "itemized"
         assert row["current_billing"] == "package"
-        assert row["savings_try"] > 0
-        assert row["included_in_sgk_total"] is True
-        assert report.billing_strategy.optional_override_uplift_try > 0
+        assert row["package_total_try"] == pytest.approx(3500.0)
+        assert row["itemized_total_try"] == pytest.approx(3038.16)
+        assert row["itemized_price_methodology"] == "ek2b_catalog"
+        assert row["recommendation"] == "package"
+        assert row["savings_try"] == 0.0
 
     def test_0003_package_higher_demo_has_recoverable_override(self, dataset) -> None:
         patient_id = _patient_for_scenario("sgk_optional_override_package_higher")

@@ -3,16 +3,25 @@
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 from typing import Any
 
-from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+from src.bilun.domain.claims.models import (
+    ClaimHeader,
+    PerformedProcedureLine,
+    ProcedureClaimLine,
+)
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules import (
     check_payment_method_compliance,
     resolve_payment_method,
 )
-from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
+from src.bilun.domain.prose_rules.catalog_membership import (
+    get_ek2c_entry,
+    normalize_procedure_code,
+)
 from src.bilun.domain.prose_rules.care_setting_review import _pick_claim_kind
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.session_pricing import (
@@ -30,11 +39,6 @@ from src.bilun.domain.prose_rules.types import (
 )
 from src.bilun.domain.sut.clause_reference import sut_clause_reference
 
-from .demo_vignette_lookup import (
-    hypothetical_itemized_total_try,
-    hypothetical_package_total_try,
-    recommended_package_code_for_claim,
-)
 from .types import EXACTNESS_STATUS_EXACT, EXACTNESS_STATUS_MISSING_INPUTS, BillingStrategyRecommendation
 
 _PROSE_RULE_SOURCE = (
@@ -123,7 +127,167 @@ def resolve_package_total_try(
                 package_price_methodology = "ek2c_candidate_code"
                 break
 
+    if package_total <= 0:
+        for line in claim_procs:
+            code = str(line.procedure_code or "").strip()
+            if not code:
+                continue
+            as_of = _line_as_of_date(line, claim)
+            entry = get_ek2c_entry(code, as_of_date=as_of)
+            price_try = entry.get("price_try") if entry else None
+            if price_try is not None and float(price_try) > package_total:
+                package_total = float(price_try)
+                package_price_methodology = "ek2c_procedure_code"
+
     return _money(package_total), package_price_methodology
+
+
+def recommended_package_code_for_claim(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> str | None:
+    """Resolve EK-2/C package code from claim procedure lines and catalog."""
+    for line in claim_procs:
+        if line.procedure_category == "paket" and str(line.procedure_code or "").strip():
+            return str(line.procedure_code).strip()
+
+    package_codes = sorted(
+        {
+            str(line.package_code).strip()
+            for line in claim_procs
+            if str(line.package_code or "").strip()
+        }
+    )
+    if package_codes:
+        return package_codes[0]
+
+    best_code: str | None = None
+    best_price = 0.0
+    for line in claim_procs:
+        code = str(line.procedure_code or "").strip()
+        if not code:
+            continue
+        as_of = _line_as_of_date(line, claim)
+        entry = get_ek2c_entry(code, as_of_date=as_of)
+        price_try = entry.get("price_try") if entry else None
+        if price_try is not None and float(price_try) > best_price:
+            best_price = float(price_try)
+            best_code = str(entry.get("package_code") or code).strip()
+    return best_code
+
+
+def resolve_catalog_itemized_alternative(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+    *,
+    performed_lines: tuple[PerformedProcedureLine, ...] = (),
+    care_setting: str | None = None,
+) -> list[ProcedureClaimLine]:
+    """Build catalog-priced itemized ProcedureClaimLines when only a package is submitted."""
+    if care_setting is None:
+        care_setting = infer_care_setting(claim)
+
+    candidates: list[ProcedureClaimLine] = []
+    seen_keys: set[tuple[str, str]] = set()
+    claim_performed = [
+        perf for perf in performed_lines if perf.claim_id == claim.claim_id
+    ]
+    for idx, perf in enumerate(claim_performed, start=1):
+        code = normalize_procedure_code(perf.procedure_code)
+        if not code:
+            continue
+        as_of = perf.service_date or claim.admission_date or claim.claim_start_date
+        key = (str(as_of), code)
+        if key in seen_keys:
+            continue
+        compliance = check_payment_method_compliance(
+            code,
+            billed_as_package=False,
+            care_setting=care_setting,  # type: ignore[arg-type]
+            facility_tier=claim.facility_tier,
+            provider_type=claim.provider_type,
+            as_of_date=as_of,
+        )
+        if not compliance.is_compliant:
+            continue
+        ek2b_price = get_ek2b_price_for_date(code, as_of)
+        if ek2b_price is None or ek2b_price <= 0:
+            continue
+        seen_keys.add(key)
+        price_dec = Decimal(f"{_money(ek2b_price):.2f}")
+        candidates.append(
+            ProcedureClaimLine(
+                procedure_line_id=perf.performed_line_id or f"{claim.claim_id}-PERF-{idx}",
+                claim_id=claim.claim_id,
+                patient_id=claim.patient_id,
+                episode_id=claim.episode_id,
+                procedure_date=as_of,
+                procedure_code=code,
+                procedure_name=perf.procedure_name or code,
+                procedure_category="islem",
+                quantity=1,
+                unit_price_try=price_dec,
+                billed_amount_try=price_dec,
+                expected_payable_try=price_dec,
+                is_package_included=False,
+                package_code="",
+                surcharge_applicable=False,
+                copay_rate_applicable=False,
+                denial_reason_expected="",
+                rule_trace_expected="EK-2B",
+                procedure_specialty_code=claim.department or "",
+            )
+        )
+
+    if candidates:
+        return candidates
+
+    for line in claim_procs:
+        code = normalize_procedure_code(line.procedure_code)
+        if not code:
+            continue
+        as_of = _line_as_of_date(line, claim)
+        compliance = check_payment_method_compliance(
+            code,
+            billed_as_package=False,
+            care_setting=care_setting,  # type: ignore[arg-type]
+            facility_tier=claim.facility_tier,
+            provider_type=claim.provider_type,
+            as_of_date=as_of,
+        )
+        if not compliance.is_compliant:
+            continue
+        ek2b_price = get_ek2b_price_for_date(code, as_of)
+        if ek2b_price is None or ek2b_price <= 0:
+            continue
+        qty = max(int(line.quantity or 1), 1)
+        unit_dec = Decimal(f"{_money(ek2b_price):.2f}")
+        total_dec = Decimal(f"{_money(float(ek2b_price) * qty):.2f}")
+        candidates.append(
+            ProcedureClaimLine(
+                procedure_line_id=line.procedure_line_id,
+                claim_id=line.claim_id,
+                patient_id=line.patient_id,
+                episode_id=line.episode_id,
+                procedure_date=line.procedure_date,
+                procedure_code=code,
+                procedure_name=line.procedure_name,
+                procedure_category="islem",
+                quantity=qty,
+                unit_price_try=unit_dec,
+                billed_amount_try=total_dec,
+                expected_payable_try=total_dec,
+                is_package_included=False,
+                package_code=line.package_code,
+                surcharge_applicable=line.surcharge_applicable,
+                copay_rate_applicable=line.copay_rate_applicable,
+                denial_reason_expected="",
+                rule_trace_expected="EK-2B",
+                procedure_specialty_code=line.procedure_specialty_code,
+            )
+        )
+
+    return candidates
 
 
 def lines_for_legal_itemized_alternative(
@@ -462,40 +626,41 @@ def recommend_billing_strategy_from_claims(
         excluded_count, excluded_codes = _itemized_exclusion_metadata(
             claim_procs, claim, eligible_lines=eligible_lines
         )
-        itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
-        itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
-            eligible_lines,
-            same_incision=True,
-            cross_specialty=None,
-            claim=claim,
-        )
-        itemized_price_methodology = str(
-            itemized_meta.get("methodology") or "claim_lines"
-        )
+        if eligible_lines:
+            itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
+            itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
+                eligible_lines,
+                same_incision=True,
+                cross_specialty=None,
+                claim=claim,
+            )
+            itemized_price_methodology = str(
+                itemized_meta.get("methodology") or "claim_lines"
+            )
+        else:
+            catalog_candidates = resolve_catalog_itemized_alternative(
+                claim,
+                claim_procs,
+                performed_lines=ctx.performed_procedure_lines,
+                care_setting=care_setting,
+            )
+            itemized_raw = sum(
+                float(line.expected_payable_try) for line in catalog_candidates
+            )
+            itemized_total, _ = compute_session_adjusted_itemized_total(
+                catalog_candidates,
+                same_incision=True,
+                cross_specialty=None,
+                claim=claim,
+            )
+            itemized_price_methodology = (
+                "ek2b_catalog" if catalog_candidates else "claim_lines"
+            )
 
         package_total, package_price_methodology = resolve_package_total_try(
             claim,
             claim_procs,
         )
-        hypothetical_package = hypothetical_package_total_try(
-            claim,
-            claim_procs,
-            resolved_package_total=package_total,
-        )
-        if hypothetical_package is not None:
-            package_total = max(package_total, hypothetical_package)
-            if package_total == hypothetical_package:
-                package_price_methodology = "demo_vignette_hypothesis"
-
-        hypothetical_itemized = hypothetical_itemized_total_try(
-            claim,
-            claim_procs,
-            resolved_itemized_total=itemized_total,
-        )
-        if hypothetical_itemized is not None:
-            itemized_total = max(itemized_total, hypothetical_itemized)
-            if itemized_total == hypothetical_itemized:
-                itemized_price_methodology = "demo_vignette_hypothesis"
 
         if package_total <= 0 and itemized_total <= 0:
             continue

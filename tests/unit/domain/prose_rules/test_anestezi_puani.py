@@ -1,7 +1,7 @@
 """Unit tests for anestezi puanı (anesthesia group billing) detector.
 
 Covers the surgical-procedure-puan → anesthesia-group lookup defined in
-SUT §2.4.4.A and EK-2B section "5. ANESTEZİ VE REANİMASYON".
+SUT §2.2.2.A and EK-2/B section "4. ANESTEZİ VE REANİMASYON".
 
 Catalog lookups are stubbed via ``install_anestezi_catalog_stub`` so these
 tests do not freeze live gazette prices/katsayı.
@@ -33,15 +33,24 @@ from tests.unit._helpers.catalog_stubs import (
 
 pytestmark = pytest.mark.unit
 
-# Group puan values come from the module's Phase-1 hardcoded table
-# (``_ANESTEZI_GROUPS``), not the live catalog.
 _A1_GROUP_PUAN = 8942.14
+_B_MULTI_GROUP_PUAN = 1863.93
+_C_GROUP_PUAN = 894.31
 _E_GROUP_PUAN = 372.93
 
 
 @pytest.fixture(autouse=True)
 def _stub_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
-    install_anestezi_catalog_stub(monkeypatch)
+    puan_map = {
+        **FIXTURE_PROC_PUAN,
+        "612070": 303.16,  # Surgical E group (1-1300)
+        "610180": 48329.72,  # Surgical A1 group (>= 39001)
+        "510010": 374.97,  # Bed code (EK-2B §1 — non-surgical)
+        "520030": 195.0,  # Exam code (EK-2B §2 — non-surgical)
+        "550170": 894.31,  # Anesthesia C group (EK-2B §4 — non-surgical)
+        "L107480": 18.5,  # Lab code (EK-2B §9 — non-surgical)
+    }
+    install_anestezi_catalog_stub(monkeypatch, puan_by_code=puan_map)
 
 
 def _make_claim_header(
@@ -78,20 +87,22 @@ def _make_proc_line(
     claim_id: str = "C1",
     procedure_code: str = "610130",
     procedure_category: str = "islem",
+    procedure_date: date = date(2026, 7, 10),
+    billed_amount_try: Decimal = Decimal("1000"),
 ) -> ProcedureClaimLine:
     return ProcedureClaimLine(
         procedure_line_id=procedure_line_id,
         claim_id=claim_id,
         patient_id="P1",
         episode_id="E1",
-        procedure_date=date(2026, 7, 10),
+        procedure_date=procedure_date,
         procedure_code=procedure_code,
         procedure_name="test procedure",
         procedure_category=procedure_category,
         quantity=1,
-        unit_price_try=Decimal("1000"),
-        billed_amount_try=Decimal("1000"),
-        expected_payable_try=Decimal("1000"),
+        unit_price_try=billed_amount_try,
+        billed_amount_try=billed_amount_try,
+        expected_payable_try=billed_amount_try,
         is_package_included=False,
         package_code="",
         surcharge_applicable=False,
@@ -104,8 +115,8 @@ def _make_proc_line(
 # ── Group resolution cases ───────────────────────────────────────────────────
 
 
-def test_a1_group_appendektomi() -> None:
-    """Appendektomi (stubbed puan) → A1 group (550130)."""
+def test_c_group_appendektomi() -> None:
+    """610130 Appendektomi (3,397.78 puan), 2026-07-07 list → group C (550170)."""
     claim = _make_claim_header()
     line = _make_proc_line(procedure_code="610130")
     opps = detect_anestezi_puani_opportunities(
@@ -114,22 +125,23 @@ def test_a1_group_appendektomi() -> None:
 
     assert len(opps) == 1
     opp = opps[0]
-    assert opp["anestezi_group"] == "A1"
-    assert opp["anestezi_code"] == "550130"
-    assert opp["anestezi_puan"] == pytest.approx(_A1_GROUP_PUAN)
+    assert opp["anestezi_group"] == "C"
+    assert opp["anestezi_code"] == "550170"
+    assert opp["anestezi_puan"] == pytest.approx(_C_GROUP_PUAN)
     assert opp["procedure_puan"] == pytest.approx(FIXTURE_PROC_PUAN["610130"], abs=0.01)
-    assert opp["expected_try"] == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
+    assert opp["expected_try"] == pytest.approx(_C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(
+        _C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01
+    )
     assert opp["rule_id"] == "anestezi_puani_group_lookup"
     assert opp["included_in_sgk_total"] is True
-    assert opp["sut_section_id"] == "2.4.4.A"
+    assert opp["sut_section_id"] == "2.2.2.A"
 
 
-def test_e_group_low_puan_procedure() -> None:
-    """Low-puan stubbed procedure → E group (550190)."""
+def test_e_group_low_puan_surgical_procedure() -> None:
+    """Low-puan EK-2B §6 surgical procedure (612070, 303.16 puan) → E group (550190)."""
     claim = _make_claim_header()
-    line = _make_proc_line(
-        procedure_line_id="PL2", procedure_code="530390"
-    )
+    line = _make_proc_line(procedure_line_id="PL2", procedure_code="612070")
     opps = detect_anestezi_puani_opportunities(
         [claim], [line], claim_ids_with_procs={"C1"}
     )
@@ -139,30 +151,95 @@ def test_e_group_low_puan_procedure() -> None:
     assert opp["anestezi_group"] == "E"
     assert opp["anestezi_code"] == "550190"
     assert opp["anestezi_puan"] == pytest.approx(_E_GROUP_PUAN)
-    assert opp["procedure_puan"] == pytest.approx(FIXTURE_PROC_PUAN["530390"], abs=0.01)
+    assert opp["procedure_puan"] == pytest.approx(303.16, abs=0.01)
     assert opp["expected_try"] == pytest.approx(_E_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
 
 
+def test_surgical_line_above_5000_puan_emits_row() -> None:
+    """Surgical procedures above 5,000 puan yield a row (C for 5,053.36; A1 for 48,329.72)."""
+    claim = _make_claim_header()
+    line_c = _make_proc_line(procedure_line_id="PL3", procedure_code="620462")
+    opps_c = detect_anestezi_puani_opportunities(
+        [claim], [line_c], claim_ids_with_procs={"C1"}
+    )
+    assert len(opps_c) == 1
+    assert opps_c[0]["anestezi_group"] == "C"
+    assert opps_c[0]["anestezi_code"] == "550170"
+
+    line_a1 = _make_proc_line(procedure_line_id="PL3B", procedure_code="610180")
+    opps_a1 = detect_anestezi_puani_opportunities(
+        [claim], [line_a1], claim_ids_with_procs={"C1"}
+    )
+    assert len(opps_a1) == 1
+    assert opps_a1[0]["anestezi_group"] == "A1"
+    assert opps_a1[0]["anestezi_code"] == "550130"
+    assert opps_a1[0]["anestezi_puan"] == pytest.approx(_A1_GROUP_PUAN)
+
+
+def test_multiple_surgeries_same_session_uses_increased_code() -> None:
+    """Multiple surgical lines on the same session emit one 550200-550260 row."""
+    claim = _make_claim_header()
+    l1 = _make_proc_line(procedure_line_id="PL-S1", procedure_code="610130")
+    l2 = _make_proc_line(procedure_line_id="PL-S2", procedure_code="620462")
+    opps = detect_anestezi_puani_opportunities(
+        [claim], [l1, l2], claim_ids_with_procs={"C1"}
+    )
+    assert len(opps) == 1
+    opp = opps[0]
+    # 3397.78 + 5053.36 = 8451.14 → Group B (6001-9000), multi-surgery code 550230
+    assert opp["anestezi_group"] == "B"
+    assert opp["anestezi_code"] == "550230"
+    assert opp["session_procedure_count"] == 2
+    assert opp["procedure_puan"] == pytest.approx(8451.14, abs=0.01)
+    assert opp["anestezi_puan"] == pytest.approx(_B_MULTI_GROUP_PUAN)
+
+
+def test_billed_anaesthesia_subtracted_to_zero_recoverable() -> None:
+    """Already-billed anaesthesia on the claim reduces recoverable_uplift_try to 0."""
+    claim = _make_claim_header()
+    surg_line = _make_proc_line(procedure_line_id="PL-SURG", procedure_code="610130")
+    anes_line = _make_proc_line(
+        procedure_line_id="PL-ANES",
+        procedure_code="550170",
+        billed_amount_try=Decimal("530.33"),
+    )
+    opps = detect_anestezi_puani_opportunities(
+        [claim], [surg_line, anes_line], claim_ids_with_procs={"C1"}
+    )
+    assert len(opps) == 1
+    assert opps[0]["expected_try"] == pytest.approx(530.33, abs=0.01)
+    assert opps[0]["actual_billed_try"] == pytest.approx(530.33, abs=0.01)
+    assert opps[0]["recoverable_uplift_try"] == 0.0
+    assert opps[0]["included_in_sgk_total"] is False
+
+    ctx = _ctx(claim, surg_line, anes_line)
+    review = recommend_anestezi_puani_from_claims(ctx)
+    assert review.confirmed_anestezi_try == 0.0
+
+
 # ── Skip cases ───────────────────────────────────────────────────────────────
+
+
+def test_non_surgical_lab_exam_bed_and_anaesthesia_lines_skipped() -> None:
+    """An inpatient bill with only lab, exam, bed, injection, and anaesthesia lines yields no rows."""
+    claim = _make_claim_header()
+    lines = [
+        _make_proc_line(procedure_line_id="PL-LAB", procedure_code="L107480"),
+        _make_proc_line(procedure_line_id="PL-EXAM", procedure_code="520030"),
+        _make_proc_line(procedure_line_id="PL-BED", procedure_code="510010"),
+        _make_proc_line(procedure_line_id="PL-INJ", procedure_code="530390"),
+        _make_proc_line(procedure_line_id="PL-ANES", procedure_code="550170"),
+    ]
+    opps = detect_anestezi_puani_opportunities(
+        [claim], lines, claim_ids_with_procs={"C1"}
+    )
+    assert opps == []
 
 
 def test_outpatient_skipped() -> None:
     """Outpatient claim → no anesthesia opportunity (anesthesia is inpatient-only)."""
     claim = _make_claim_header(claim_type="ayakta")
     line = _make_proc_line(procedure_code="610130")
-    opps = detect_anestezi_puani_opportunities(
-        [claim], [line], claim_ids_with_procs={"C1"}
-    )
-    assert opps == []
-
-
-def test_puan_beyond_table_skipped() -> None:
-    """Procedure with puan > 5000 → skip (beyond standard group table)."""
-    claim = _make_claim_header()
-    # 620462 (Labioplasti) puan = 5053.36 → above 5000 table ceiling
-    line = _make_proc_line(
-        procedure_line_id="PL3", procedure_code="620462"
-    )
     opps = detect_anestezi_puani_opportunities(
         [claim], [line], claim_ids_with_procs={"C1"}
     )
@@ -195,7 +272,7 @@ def test_unknown_procedure_skipped() -> None:
     """Procedure code not in catalog (no puan) → skip."""
     claim = _make_claim_header()
     line = _make_proc_line(
-        procedure_line_id="PL5", procedure_code="9999999"
+        procedure_line_id="PL5", procedure_code="619999"
     )
     opps = detect_anestezi_puani_opportunities(
         [claim], [line], claim_ids_with_procs={"C1"}
@@ -237,14 +314,14 @@ def test_wrapper_missing_inputs_when_no_procedure_lines() -> None:
 
 
 def test_wrapper_exact_with_appendektomi() -> None:
-    """Wrapper with an inpatient appendektomi line → EXACT, one opportunity."""
+    """Wrapper with an inpatient appendektomi line → EXACT, one group-C opportunity."""
     claim = _make_claim_header()
     line = _make_proc_line(procedure_code="610130")
     ctx = _ctx(claim, line)
     review = recommend_anestezi_puani_from_claims(ctx)
     assert review.exactness_status == EXACTNESS_STATUS_EXACT
     assert len(review.opportunities) == 1
-    # confirmed_anestezi_try sums included expected_try values
     assert review.confirmed_anestezi_try == pytest.approx(
-        _A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01
+        _C_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01
     )
+

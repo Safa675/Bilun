@@ -35,8 +35,8 @@ ANESTEZI_PUANI_UNAVAILABLE_REASON = (
 )
 
 _PROSE_RULE_SOURCE = (
-    "SUT §2.4.4.A anestezi — surgical procedure puan range → anesthesia "
-    "group puan (EK-2B 550130-550190) × katsayı"
+    "SUT §2.2.2.A + EK-2/B §4 anestezi — surgical procedure puan range → "
+    "anesthesia group puan (550130-550260) × katsayı"
 )
 
 

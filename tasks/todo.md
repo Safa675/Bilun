@@ -1,3 +1,28 @@
+## Task: Fix companion-bed (510121) ICU suppression, admission-date pricing, and billed subtraction (Safa675/Bilun#236)
+
+### Goal
+`detect_refakatci_opportunities` (`src/bilun/domain/prose_rules/refakatci.py`) suppresses companion-bed opportunities on all ICU indicator codes (`510090` and `P552001`–`P552008` / `552001`–`552008`), prices `510121` at the EK-2B rate in force on the claim's admission date instead of the undated 2026 rate, subtracts any already-billed `510121` amount on the claim into `recoverable_uplift_try`, and `RefakatciReview.confirmed_refakat_try` sums `recoverable_uplift_try`.
+
+### Subtasks
+- [x] 1. Write failing unit tests in `tests/unit/domain/prose_rules/test_refakatci.py` covering:
+  - ICU suppression when a claim carries `P552001`–`P552008` (or bare `552001`–`552008`) without `510090`;
+  - historical admission-date pricing (`2023-06-15` → `27.44 TL/day`, `2024-07-01` → `61.75 TL/day`, `2026-07-10` → `74.10 TL/day`);
+  - subtracting already-billed `510121` lines (`actual_billed_try` and `recoverable_uplift_try = max(0.0, expected_try - actual_billed_try)`), including full billing (`recoverable_uplift_try == 0.0` and `RefakatciReview.confirmed_refakat_try == 0.0`).
+- [x] 2. Update `src/bilun/domain/prose_rules/refakatci.py`:
+  - Replace `_ICU_PROCEDURE_CODES = frozenset({"510090", "P55200x"})` with `_ICU_PROCEDURE_CODES` matching `510090` and `("552001", "552002", "552003", "552006", "552007", "552008")` (with or without leading `P`/`p`, case-insensitive, matching `icu_puani.py` and `yatak_icu_overlap.py`);
+  - Resolve `puan` and `daily_rate` per claim as of `claim.admission_date` via `get_ek2b_price_for_date("510121", claim.admission_date, ...)` (falling back to the undated catalog only when `admission_date` predates the catalog history);
+  - Sum billed `510121` lines on the claim as `actual_billed_try` and set `recoverable_uplift_try = _money(max(0.0, expected - actual_billed_try))` (and `0.0` on suppressed rows).
+- [x] 3. Update `RefakatciReview.confirmed_refakat_try` in `src/bilun/domain/billing/types.py` to sum `recoverable_uplift_try` when present (without truthiness fallback when `0.0`), and add `"actual_billed_try": true` to `refakatci.opportunities` in `src/bilun/api/public_contracts.json`.
+- [x] 4. Run `ruff check`, the new and existing unit tests (`test_refakatci.py`, `test_elkitabi_tablo23.py`, `test_claim_integration.py`, `test_sgk_uplift_synthetic_demos.py`, `test_orchestrator_grand_total.py`, `test_orchestrator_claim_cohort_flow.py`, `test_focused_legacy_materializer.py`), and `compile_rules.py --check` / `audit_manifest_parity.py --drug-only`; confirm zero unintended tracked file diffs.
+
+### Out of Scope
+Changing the default policy that unbilled non-ICU inpatient stays emit a confirmed uplift (`included_in_sgk_total=True`, confirmed with Safa), fixing the `valid_to` price-history loader bug (#241), or changing other prose/billing rules (#230–#234, #237–#242).
+
+### Review (2026-10-14)
+- Confirmed with Safa before coding: keep unbilled non-ICU inpatient stays in confirmed uplift (`included_in_sgk_total=True`) while fixing `P552001`–`P552008` ICU suppression, admission-date EK-2B pricing, and subtracting already-billed `510121`.
+- Cohort effect on the 50 synthetic patients: `total_refakatci` drops from `34,308.30 TL` (priced at 2026's `74.10 TL/day`) to `17,709.88 TL` (priced at each claim's 2023–2024 admission-date EK-2B rate) across 22 patients.
+- Verification: `ruff check` clean; 18 unit tests in `test_refakatci.py` (including RED→GREEN tests for `P552001`–`P552008`, 2023/2024/2026 admission-date rates, partial/full `510121` billing subtraction, and public response projection) + 40 billing/orchestrator integration tests pass; `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
+
 ## Task: Fix price history valid_to, MULGA_ duplicates, and date-aware pricing in 5 rules (Safa675/Bilun#241)
 
 ### Goal
@@ -17,6 +42,26 @@ Re-generating the synthetic demo cohort parquets or changing EK-4A drug catalogs
 - Rebuilt `ek2b_catalog_history.parquet` (`69,546` rows, down from `76,673`) and `ek2c_catalog_history.parquet` (`24,063` rows, down from `26,489`) with zero `valid_to < valid_from` rows and zero duplicate `(code, valid_from)` rows.
 - Enforced `valid_to` in `gazette.py`, `temporal.py`, and `catalog_membership.py`; `804460` expires on `2021-05-31` and returns `None` on `2024-08-01`.
 - Wired claim/procedure dates into `yatak_puani.py`, `yenidogan_yatak.py`, `anestezi_puani.py`, `icu_puani.py`, and `refakatci.py`.
+
+## Task: Fix temporal-anomaly surgical code prefix filter (Safa675/Bilun#237)
+
+### Goal
+`detect_procedure_time_overlap` (`src/bilun/domain/prose_rules/temporal_anomaly.py`) classifies EK-2B/EK-2C surgical procedure codes (`60xxxx`–`62xxxx` and `P60xxxx`–`P62xxxx`) as surgical when `procedure_category` lacks a surgical keyword, and never classifies `50xxxx`/`51xxxx` bed/stay tariffs (`510010`–`510121`) as surgery.
+
+### Subtasks
+- [x] 1. Write failing unit tests in `tests/unit/domain/prose_rules/test_temporal_anomaly.py` covering:
+  - two same-date, same-specialty `60xxxx`–`62xxxx` (and `P60xxxx`–`P62xxxx`) lines with generic `procedure_category="islem"` / `"paket"` flagging `procedure_time_overlap`;
+  - two same-date, same-specialty `51xxxx` bed/stay lines (`510010`, `510121`) not flagging `procedure_time_overlap` even when `procedure_category` is `"islem"` or `"cerrahi"`.
+- [x] 2. Update `src/bilun/domain/prose_rules/temporal_anomaly.py`:
+  - Change `_SURGICAL_CODE_PREFIXES` from `("50", "51")` to `("60", "61", "62")` and exclude `51xxxx` bed/stay codes (`_BED_CODE_PREFIXES = ("51",)`) in `_is_surgical`, normalizing optional leading `P`/`p` and punctuation.
+- [x] 3. Run `ruff check`, `pytest` on `test_temporal_anomaly.py`, `compile_rules.py --check`, and `audit_manifest_parity.py --drug-only`.
+
+### Out of Scope
+Populating `procedure_specialty_code` in the synthetic generator (tracked under the care-pathway generator plan) or changing `detect_los_procedure_density_anomaly`.
+
+### Review (2026-10-14)
+- `_SURGICAL_CODE_PREFIXES` updated from `("50", "51")` to `("60", "61", "62")` (matching all 2,407 EK-2B surgical procedures in `600000`–`629999` and `P600000`–`P629999` in EK-2C), and `51xxxx` bed/stay tariffs (`510010`–`510121`) are excluded unconditionally in `_is_surgical`.
+- Verification: `ruff check` clean; 16/16 unit tests in `test_temporal_anomaly.py` pass (RED→GREEN on 8 new cases); `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
 
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
@@ -105,6 +150,35 @@ Changing MIAT catalog rules, modifying synthetic cohort parquet files, or changi
 ### Out of Scope
 Changing the wrapper (it lives in `~/work/bilun-deploy-plan/staging-ops`, outside the repo), `RELEASE-LANES.md`, any deploy behavior, a script that reads the live PIDs.
 
+## Task: Make expected_rule_outputs.parquet and expected_*_payable_try optional in real_claims mode (Safa675/Bilun#240)
+
+### Goal
+`load_sut_claim_dataset(mode="real_claims")` and `read_claim_tables(mode="real_claims")` succeed when `expected_rule_outputs.parquet` is absent or empty and `expected_*_payable_try` / `expected_total_billed_try` / `discount_tier_expected` / `unit_price_try` / `scenario_tag` columns are null or absent, while present `expected_rule_outputs` rows in `synthetic_demo` and `real_claims` still validate their linkage and payable reconciliation.
+
+### Subtasks
+- [x] 1. Write failing RED unit tests in `tests/unit/domain/claims/test_loader.py` covering:
+  - `load_sut_claim_dataset(claims_dir, mode="real_claims")` when `expected_rule_outputs.parquet` is absent and `expected_total_billed_try`, `expected_total_payable_try`, `expected_payable_try`, `discount_tier_expected`, `unit_price_try`, and `scenario_tag` columns are absent or null;
+  - `load_sut_claim_dataset(claims_dir, mode="real_claims")` when `expected_rule_outputs.parquet` exists with 0 rows;
+  - `SUTClaimDataset.from_rows` validating present `expected_rule_outputs` linkage and payable reconciliation without requiring answer rows for clean baseline claims/lines.
+- [x] 2. Update `src/bilun/domain/claims/parquet_reader.py` so `read_claim_tables` resolves `mode` via `resolve_sut_data_source(..., require_clean_dir=False)` and, in `real_claims` mode, treats `expected_rule_outputs.parquet` as optional (`optional=True`, `reject_if_empty=False`, `scenario_tag` optional) and `expected_total_billed_try` on `claim_headers.parquet` as optional.
+- [x] 3. Update `src/bilun/domain/claims/parsing/row_parsers.py`, `src/bilun/domain/claims/dataset_builder.py`, `src/bilun/domain/claims/totals.py`, and `src/bilun/domain/claims/validation/expected_outputs.py`:
+  - Default missing `expected_payable_try` and `unit_price_try` on procedure/material/drug lines to `billed_amount_try` and missing `discount_tier_expected` on drug lines to `0.00` (while still rejecting malformed values);
+  - Backfill missing `expected_total_billed_try` / `expected_total_payable_try` on `ClaimHeader` from `claim_totals` while reconciling any explicitly supplied header totals;
+  - Validate linkage and payable reconciliation for all present `ExpectedRuleOutput` rows without requiring exhaustive claim/line answer rows for clean baseline claims/lines;
+  - Update `src/bilun/domain/claims/README.md` to document the `real_claims` optionality contract.
+- [x] 4. Run `ruff check`, the claims/deploy/synthetic/billing unit tests, update `tasks/todo.md`, commit, push `claude/fix-claims-loader-real-mode-240`, open the PR, and return to `main`.
+
+### Out of Scope
+Changing `REQUIRED_CLAIM_TABLES` / `SUT_CLAIM_FILENAMES` roster constants used by the paused strict paired-release lane, or modifying synthetic data generator scripts (`#239`, `#241`, `#242`).
+
+### Review (2026-10-14)
+- Kept `REQUIRED_CLAIM_TABLES` and `OPTIONAL_CLAIM_TABLES` intact in `src/bilun/domain/claims/schema.py` so the strict-lane source-roster contract (`tests/unit/deploy/test_generate_candidate_source_roster.py`) and `build_synthetic_claim_validation_columns()` remain untouched.
+- In `src/bilun/domain/claims/parquet_reader.py`, `_effective_spec_for_mode` relaxes `EXPECTED_RULE_OUTPUTS` (`optional=True`, `reject_if_empty=False`, `scenario_tag` optional) and `CLAIM_HEADERS` (`expected_total_billed_try` optional) when `config.mode == "real_claims"`.
+- In `src/bilun/domain/claims/parsing/row_parsers.py` and `src/bilun/domain/claims/dataset_builder.py`, missing `expected_payable_try` / `unit_price_try` default to `billed_amount_try`, missing `discount_tier_expected` defaults to `0.00`, and missing header `expected_total_billed_try` / `expected_total_payable_try` are backfilled from `claim_totals` while explicitly supplied values continue to be reconciled.
+- In `src/bilun/domain/claims/validation/expected_outputs.py`, all present `ExpectedRuleOutput` rows still validate their claim/patient/line linkage and `expected_payable_try` reconciliation without requiring exhaustive answer rows for clean baseline claims/lines.
+- Verification: `ruff check` clean; 318 unit tests across `tests/unit/domain/claims/`, `tests/unit/deploy/`, and `tests/unit/synthetic/` (including 3 RED→GREEN tests in `test_loader.py`) pass.
+
+
 ## Task: Complete the ingestion of the 2026-10-02 SUT package (Safa675/Bilun#217)
 
 ### Goal
@@ -184,6 +258,34 @@ Both decisions were approved as recommended. Steps 1.1 to 4.2 and the CI command
   - Nit skipped: `ingest_state.json` has no trailing newline; `sut_ingest_state.py:153` writes it that way and the old file was written by the same code.
 - Not done on purpose: nothing is pushed, no PR is opened, #217 stays open until the merge.
 
+## Task: Fix demo-only vignette and scenario_tag inputs (Safa675/Bilun#239)
+
+### Goal
+`claim_strategy.py` computes optional-override package and itemized totals purely from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs (with `demo_vignette_lookup.py` removed from `src/bilun/`), and `gap_closing.py` / `fatura_inceleme.py` derive `is_emergency` from `claim_type` and `department` without reading `scenario_tag`.
+
+### Subtasks
+- [x] 1. Remove `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`, and update `tests/unit/domain/test_money_helper.py` to drop the removed module path.
+- [x] 2. Update `src/bilun/domain/billing/claim_strategy.py`:
+  - Inline `recommended_package_code_for_claim(claim, claim_procs)` using `claim_procs` `paket` line codes, `package_code`, and EK-2C procedure code lookups (no vignette lookup).
+  - Extend `resolve_package_total_try` to fall back to `get_ek2c_entry(line.procedure_code, as_of_date=as_of)` when `package_lines` and `line.package_code` are absent.
+  - Add `resolve_catalog_itemized_alternative(claim, claim_procs, performed_lines=...)` so package-only submissions (when `eligible_lines` is empty) resolve their itemized alternative from `performed_procedure_lines` or `claim_procs` via `get_ek2b_price_for_date` and `compute_session_adjusted_itemized_total` (`itemized_price_methodology = "ek2b_catalog"`).
+- [x] 3. Update `src/bilun/domain/prose_rules/gap_closing.py:341-345` and `src/bilun/domain/prose_rules/fatura_inceleme.py:190-194` to derive `context["is_emergency"]` from `claim_type_lower` and `dept` (`"acil" in claim_type_lower or "emergency" in claim_type_lower or "acil" in dept or "emergency" in dept`), never `scenario_tag`.
+- [x] 4. Update synthetic demo golden bands in `data/synthetic/demo_vignettes.json` (`0002` and `0003`) and test assertions in `tests/unit/domain/billing/test_billing_actions.py`, `tests/unit/domain/billing/test_sgk_uplift_synthetic_demos.py`, `tests/unit/domain/billing/test_claim_strategy_sut.py`, and `tests/unit/domain/prose_rules/test_gap_closing_for_context.py` to match catalog-resolved prices and add regression tests verifying:
+  - Blanking `scenario_tag` across all 50 synthetic patients leaves `compute_patient_billing_report` outputs and rule evaluations unchanged.
+  - A claim with `claim_type="acil"` and `department="Ic Hastaliklari"` has `is_emergency is True` in `_build_gap_closing_context`.
+- [x] 5. Run `ruff` and relevant unit tests, commit, check `main` CI (Rule 10), push `claude/fix-demo-vignette-emergency-239`, open PR for `#239`, and return to `main` (Rule 11.5).
+
+### Out of Scope
+Regenerating `data/synthetic/sut/claims/*.parquet`, removing `data/synthetic/demo_vignettes.json` from `scripts/deploy/generate_candidate_source_roster.py` (strict-lane pause rule), or changing `traffic_accident_billing.py`.
+
+### Review
+- Removed `src/bilun/domain/billing/demo_vignette_lookup.py` and `tests/unit/domain/billing/test_demo_vignette_lookup.py`.
+- Added `recommended_package_code_for_claim` and `resolve_catalog_itemized_alternative` in `src/bilun/domain/billing/claim_strategy.py` so optional-override package and itemized totals resolve from claim/performed procedure lines and the as-of EK-2B/EK-2C catalogs.
+- Updated `src/bilun/domain/prose_rules/gap_closing.py` and `src/bilun/domain/prose_rules/fatura_inceleme.py` so `is_emergency` is derived from `claim_type` and `department`, never `scenario_tag`.
+- Verified `ruff` clean and `1,275` synthetic, billing, and deploy unit tests + `18` `test_gap_closing_for_context.py` tests pass.
+
+---
+
 ## Task: Start the laptop CI runner automatically while jobs are queued (2026-10-12)
 
 ### Goal
@@ -212,6 +314,26 @@ An independent review found two real bugs and several risks; all were checked ag
 - Tests: the behaviours the review found unpinned (runner-label filter, kill fallback, pickup-timeout boundary, runner command line, defaults, SIGTERM handler, non-JSON and missing-`gh` answers, a job assigned after the pickup timeout) now have tests, and the vacuous `online == []` assertion is gone. A mutation check of 14 injected regressions found one survivor (a runner that gets its job after the timeout); a test now pins it, so 14 of 14 are caught.
 - Found by the first live run (a transient systemd unit serving the queued jobs): `gh` failed its very first connection with "error connecting to api.github.com" and the run exited 1 after 10 s; two retries a moment later worked. `github()` now asks again up to 3 times, 5 s apart, for a dropped connection only (a real API error such as 401 is not retried); the runbook already says to retry connection errors.
 - Left as is on purpose: a status that keeps failing never stops a runner, because not knowing is not a reason to stop a job; an unpicked runner exits 1 so the failure is visible in `systemctl --user status`.
+
+## Task: Fix icu_puani day counting and add §2.4.4.H ICU tier overbilling detector (Safa675/Bilun#242)
+
+### Goal
+`icu_puani.py` derives ICU days from billed ICU procedure lines (`510090` and `P552001`–`P552008`) without defaulting to 3rd-level `P552003` or treating the entire hospital stay as ICU days, and `detect_icu_tier_overbilling` flags 3rd-level ICU packages (`P552003` / `P552008`) billed without 3rd-level organ-support / invasive mechanical ventilation / dialysis / ECMO procedures on the episode.
+
+### Subtasks
+- [x] 1. Update `src/bilun/domain/prose_rules/icu_puani.py` (`detect_icu_puani_opportunities`) to compute ICU days from billed `510090` and `P552001`–`P552008` procedure lines (capped by hospital LOS) and remove the `_DEFAULT_INTERMEDIATE_CODE = "552003"` fallback when no intermediate package is on the claim.
+- [x] 2. Implement `detect_icu_tier_overbilling` in `src/bilun/domain/prose_rules/icu_puani.py` and wire it into `src/bilun/domain/billing/engine.py` (`analyze_claim`) so 3rd-level ICU packages (`P552003` / `P552008`) without 3rd-level qualifying organ-support/ventilation/dialysis/ECMO procedure codes emit a §2.4.4.H audit-exposure finding with the price gap to 2nd-level (`P552002` / `P552007`) and 1st-level (`P552001` / `P552006`).
+- [x] 3. Update and expand `tests/unit/domain/prose_rules/test_icu_puani.py` to test ward stays with 3-day ICU segments, no-default-`P552003` behavior, and `detect_icu_tier_overbilling` (with and without 3rd-level qualifying procedures); run unit tests and `ruff`; commit, check `main` CI, push, open PR for `#242`, and return to `main`.
+
+### Out of Scope
+Re-generating the synthetic demo cohort parquets or adding new columns to `ClaimHeader`.
+
+### Review
+- **Delivered:**
+  - `src/bilun/domain/prose_rules/icu_puani.py`: replaced hospital-LOS day counting and the `_DEFAULT_INTERMEDIATE_CODE = "552003"` fallback with `_infer_billed_icu_days` (derived from `510090` and `P552001`–`P552008` quantities/distinct service dates, capped by hospital LOS), and implemented `detect_icu_tier_overbilling` for §2.4.4.H / EK-2/C-A 3rd-level ICU packages (`P552003` / `P552008`) billed without invasive ventilation, dialysis/hemofiltration/plasmapheresis, or ECMO/cardiopulmonary-support procedure codes.
+  - `src/bilun/domain/billing/engine.py`: wired `detect_icu_tier_overbilling` into `analyze_claim` alongside `detect_yatak_icu_overlap`.
+  - `tests/unit/domain/prose_rules/test_icu_puani.py`: updated `test_basamak_inferred_from_submitted_package` and added 4 unit tests covering segmented ICU day counting, no-default-`P552003`, and `detect_icu_tier_overbilling`.
+- **Verification:** `78 passed` across `test_icu_puani.py`, `test_claim_compliance.py`, and `test_claim_compliance_pipeline.py`; `ruff check` clean.
 
 ## Task: Stop counting missing amounts as zero in uplift, savings and recoverable totals
 
@@ -312,6 +434,25 @@ Implementation & verification evidence:
 
 ---
 
+## Task: Use recoverable_uplift_try for bed-day and ICU totals and actions (Safa675/Bilun#233)
+
+### Goal
+`YatakPuaniReview.confirmed_yatak_try` and `collect_billing_actions` read `recoverable_uplift_try` (skipping zero-gap bed-day actions), and `IcuPuaniReview.confirmed_icu_try` uses `recoverable_uplift_try` even when it is `0.0` instead of falling back to `total_try`.
+
+### Subtasks
+- [x] 1. Update `YatakPuaniReview.confirmed_yatak_try` and `IcuPuaniReview.confirmed_icu_try` in `src/bilun/domain/billing/types.py` to use `row["recoverable_uplift_try"]` whenever `row.get("recoverable_uplift_try") is not None` (preserving `0.0`).
+- [x] 2. Update `collect_billing_actions` in `src/bilun/domain/billing/billing_actions.py` to read `recoverable_uplift_try` for `yatak_puani` and skip `yatak_puani` action rows when the gap is `0.0`.
+- [x] 3. Update and add unit tests in `tests/unit/domain/prose_rules/test_yatak_puani.py` and `tests/unit/domain/prose_rules/test_yatak_icu_overlap.py`; run pytest and ruff.
+
+### Out of Scope
+Re-generating the synthetic demo cohort parquets.
+
+### Review
+- **Delivered:** `YatakPuaniReview.confirmed_yatak_try` and `IcuPuaniReview.confirmed_icu_try` read `recoverable_uplift_try` when present (including `0.0`), and `collect_billing_actions` reads `recoverable_uplift_try` for `yatak_puani` and omits zero-gap bed-day action rows.
+- **Verification:** `62 passed` across `test_yatak_puani.py`, `test_yatak_icu_overlap.py`, `test_icu_puani.py`, `test_billing_actions.py`, `test_claim_integration.py`, and `test_block_spec_integrity.py`; `ruff check` clean.
+
+---
+
 ## Task: Complete hotspot refactoring delivery F — audit decomposition
 
 ### Goal
@@ -345,6 +486,24 @@ F was rebased onto E's merged main `46a694d0`; all reviewed F source/tests remai
 
 ---
 
+## Task: Count patients with recoverable > 0 in n_patients_with_actions (Safa675/Bilun#234)
+
+### Goal
+`CohortRecoverySummary` exposes `n_patients_with_actions` (counting patients with `total_recoverable_try > 0`) while keeping `n_patients` as the loaded patient count, and `RevenueRecoverySummary.tsx` displays `n_patients_with_actions` under "Eylemli Hastalar" / "Patients with Actions".
+
+### Subtasks
+- [x] 1. Add `n_patients_with_actions: int = 0` to `CohortRecoverySummary` (`src/bilun/domain/billing/types.py`), compute it in `build_cohort_recovery_summary` (`src/bilun/domain/billing/cohort_summary.py`) and backfill in `get_revenue_recovery` (`src/bilun/api/routes/optimization.py`), and allowlist it in `src/bilun/api/public_contracts.json`.
+- [x] 2. Add `n_patients_with_actions?: number` to `CohortRecoverySummary` in `frontend/src/lib/domains/sut.ts`, update `RevenueRecoverySummary.tsx` and `SUTOptimizerTab.tsx` cohort filtering, and add unit tests in backend and frontend.
+
+### Out of Scope
+Changing `n_patients` semantics or regenerating the synthetic demo cohort parquets.
+
+### Review
+- **Delivered:** Added `n_patients_with_actions` across `CohortRecoverySummary`, `cohort_summary.py`, `optimization.py`, `public_contracts.json`, `sut.ts`, `RevenueRecoverySummary.tsx`, and `SUTOptimizerTab.tsx`.
+- **Verification:** Backend `test_cohort_recovery_summary.py` and frontend `RevenueRecoverySummary.test.tsx` pass; `ruff check` clean.
+
+---
+
 ## Task: Complete hotspot refactoring delivery E — drug routing, constraints and evaluation
 
 ### Goal
@@ -375,6 +534,25 @@ After provisional D integration, 12 boundary/cache tests and the immutable compl
 E was rebased onto D's head-guarded merged main `ec368706` with byte-identical E source/test content. The immutable complete comparator, 868 focused tests (three warnings), Ruff and isolated audit `--check` passed again on the integrated tree; all 1,119 current tracked artifact hashes remain unchanged. D's merge-main CI run `36487251655` passed. PR publication and E current-head hosted CI remain.
 
 E publication: [PR #105](https://github.com/Safa675/Bilun/pull/105) at `671fc9e0` passed both hosted jobs in run `36488702448`, independent review and feedback review, with no human/inline findings (Copilot reported quota exhaustion). It merged with an exact-head guard as `46a694d054ec3a557e25977de386c09405bce215` at 2026-09-28 21:57:26 UTC; the merged tree equals the tested branch. Both main CI jobs passed in run `36489455355`. The app attachment call did not return, so attachment is unconfirmed. Delivery F was then rebased onto this merged tree.
+
+---
+
+## Task: Restrict anaesthesia uplift to EK-2B §6 surgeries, use service-date EK-2B §4 group table, and subtract billed anaesthesia (Safa675/Bilun#230)
+
+### Goal
+`detect_anestezi_puani_opportunities` evaluates only EK-2B §6 surgical lines (`600000`–`629999`), resolves single-surgery (`550130`–`550190`) and multi-surgery same-session (`550200`–`550260`) anaesthesia groups from the service-date EK-2B §4 group table (with no 5,000 puan ceiling), subtracts already-billed anaesthesia (`550130`–`550346`) from `recoverable_uplift_try`, and cites SUT §2.2.2.A + EK-2/B §4 instead of §2.4.4.A (ESWL).
+
+### Subtasks
+- [x] 1. Restrict `_surgical_puan` in `src/bilun/domain/prose_rules/anestezi_puani.py` to EK-2B §6 surgical codes (`600000`–`629999`) so lab, exam, bed, and anaesthesia codes are skipped.
+- [x] 2. Replace the wrong hardcoded `1–5000` group table in `anestezi_puani.py` with the service-date EK-2B §4 group table (`2026-07-07` onwards: A1 `>=39001`, A2 `18501–39000`, A3 `9001–18500`, B `6001–9000`, C `3005–6000`, D `1301–3004`, E `0–1300`; plus `2026-01-01`, `2022-09-03`, and `2020-03-11` historical tables) and emit one increased anaesthesia (`550200`–`550260`) per multi-surgery session.
+- [x] 3. Subtract already-billed anaesthesia (`550130`–`550346`) from `recoverable_uplift_try`, update `AnesteziPuaniReview.confirmed_anestezi_try` and SUT §2.2.2.A / EK-2/B §4 citation, and update unit tests (`test_anestezi_puani.py`, `test_elkitabi_tablo23.py`).
+
+### Out of Scope
+Newborn/geriatric ASA 3–4 modifiers (`550270`–`550346`) when ASA score is not present in claim inputs.
+
+### Review
+- **Delivered:** Restricted `_surgical_puan` to EK-2B §6 (`600000`–`629999`), implemented service-date EK-2B §4 single (`550130`–`550190`) and multi-surgery (`550200`–`550260`) group tables, subtracted billed `550130`–`550346` into `recoverable_uplift_try`, updated `AnesteziPuaniReview.confirmed_anestezi_try` and SUT §2.2.2.A citation.
+- **Verification:** `test_anestezi_puani.py`, `test_elkitabi_tablo23.py`, and `test_claim_integration.py` pass; `ruff check` clean.
 
 ---
 

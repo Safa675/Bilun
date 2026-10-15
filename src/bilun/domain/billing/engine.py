@@ -266,6 +266,16 @@ def analyze_claim(
         # runs in patient_report.reconcile_yatak_icu_overlap.
         if ctx.procedure_lines:
             violations.extend(focused_rows.rows("detect_yatak_icu_overlap"))
+            from src.bilun.domain.prose_rules.icu_puani import (
+                detect_icu_tier_overbilling,
+            )
+
+            violations.extend(
+                detect_icu_tier_overbilling(
+                    list(ctx.claims),
+                    list(ctx.procedure_lines),
+                )
+            )
 
         # 14.7. SUT §4.6 — blood components must carry ISBT 128 barcodes.
         # Rules 4.6.ek2b/4.6.ek2c: EK-2/B payment is conditioned on the

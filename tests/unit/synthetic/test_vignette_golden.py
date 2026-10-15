@@ -111,14 +111,43 @@ class TestOptionalOverrideGoldenBands:
         )
         row = next(
             entry
-            for entry in report.billing_strategy.optional_override_opportunities
+            for entry in report.billing_strategy.recommendations
             if entry.get("claim_id") == demo_claim.claim_id
+            and entry.get("recommendation_kind") == "optional_override"
         )
         assert vignette.golden.contains(
             savings=float(row["savings_try"]),
             package_total=float(row["package_total_try"]),
             itemized_total=float(row["itemized_total_try"]),
         )
+
+    def test_blanking_scenario_tag_leaves_all_patient_reports_unchanged(
+        self,
+        dataset,
+    ) -> None:
+        from dataclasses import replace
+
+        for patient_id in ("SENTETIK-HASTA-0001", "SENTETIK-HASTA-0002", "SENTETIK-HASTA-0003", "SENTETIK-HASTA-0032", "SENTETIK-HASTA-0041", "SENTETIK-HASTA-0049"):
+            ctx = build_patient_claim_context(patient_id, dataset)
+            assert ctx is not None
+            blanked_ctx = replace(
+                ctx,
+                claims=tuple(replace(c, scenario_tag="") for c in ctx.claims),
+            )
+            r_orig = compute_patient_billing_report(
+                patient_id,
+                claim_context=ctx,
+                copay_exemption={"exempt": False},
+            )
+            r_blank = compute_patient_billing_report(
+                patient_id,
+                claim_context=blanked_ctx,
+                copay_exemption={"exempt": False},
+            )
+            assert r_orig.sgk_uplift_try == r_blank.sgk_uplift_try
+            assert r_orig.billing_strategy.recommendations == r_blank.billing_strategy.recommendations
+            assert r_orig.wavea_coverage == r_blank.wavea_coverage
+            assert r_orig.wavea_evidence_detail == r_blank.wavea_evidence_detail
 
 
 class TestTierANoGhostPackageLines:
