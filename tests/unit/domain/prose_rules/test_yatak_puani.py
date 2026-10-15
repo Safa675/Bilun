@@ -192,3 +192,64 @@ def test_confirmed_yatak_and_actions_use_recoverable_gap() -> None:
     )
     assert icu_review.confirmed_icu_try == 0.0
 
+
+def test_package_window_bundles_stay_inside_and_bills_excess_days() -> None:
+    """SUT §2.2.2.B-1(1), (3)-(4): EK-2/C package window bundles days through window end and bills only post-window days (#259)."""
+    from src.bilun.domain.claims.models import ProcedureClaimLine
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    def _pkg_line(claim_id: str, code: str, proc_date: date) -> ProcedureClaimLine:
+        return ProcedureClaimLine(
+            procedure_line_id=f"PKG-{claim_id}",
+            claim_id=claim_id,
+            patient_id="P1",
+            episode_id="E1",
+            procedure_date=proc_date,
+            procedure_code=code,
+            procedure_name="Paket işlem",
+            procedure_category="paket",
+            quantity=1,
+            unit_price_try=Decimal("5000.00"),
+            billed_amount_try=Decimal("5000.00"),
+            expected_payable_try=Decimal("5000.00"),
+            is_package_included=True,
+            package_code=f"P{code}",
+            surcharge_applicable=False,
+            copay_rate_applicable=False,
+            denial_reason_expected="",
+            rule_trace_expected="",
+        )
+
+    # Stay inside Group C (8-day) window: Jul 10 → Jul 15 (6 gross days), surgery Jul 11 (window through Jul 18) -> 0 billable days
+    inside_claim = _make_claim_header(
+        claim_id="C-IN",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 15),
+    )
+    inside_opps = detect_yatak_puani_opportunities(
+        [inside_claim],
+        [_pkg_line("C-IN", "610130", date(2026, 7, 11))],
+    )
+    assert len(inside_opps) == 1
+    assert inside_opps[0]["gross_bed_days"] == 6
+    assert inside_opps[0]["bundled_days"] == 6
+    assert inside_opps[0]["bed_days"] == 0
+    assert inside_opps[0]["expected_yatak_try"] == 0.0
+
+    # Stay exceeding Group C (8-day) window: Jul 10 → Jul 20 (11 gross days), surgery Jul 11 (window through Jul 18) -> 2 post-window days (Jul 19, Jul 20)
+    excess_claim = _make_claim_header(
+        claim_id="C-OUT",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 20),
+    )
+    excess_opps = detect_yatak_puani_opportunities(
+        [excess_claim],
+        [_pkg_line("C-OUT", "610130", date(2026, 7, 11))],
+    )
+    assert len(excess_opps) == 1
+    assert excess_opps[0]["gross_bed_days"] == 11
+    assert excess_opps[0]["bundled_days"] == 9
+    assert excess_opps[0]["bed_days"] == 2
+    assert excess_opps[0]["expected_yatak_try"] == pytest.approx(2 * 222.36, abs=0.01)
+
+

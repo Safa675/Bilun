@@ -476,7 +476,7 @@ def test_no_default_p552003_when_only_510090_billed() -> None:
 
 
 def test_tier_overbilling_detected_when_p552003_lacks_3rd_level_support() -> None:
-    """P552003 billed without invasive MV / dialysis / ECMO / CPR emits §2.4.4.H tier-review finding."""
+    """#255: P552003 without separately billed §2.4.4.H.(2)/(4) support emits a 0-TL info review."""
     from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
 
     header = _make_claim_header(
@@ -492,12 +492,6 @@ def test_tier_overbilling_detected_when_p552003_lacks_3rd_level_support() -> Non
             procedure_name="Ucuncu basamak yogun bakim",
             billed_amount_try=Decimal("7647.44"),
         ),
-        # Non-invasive MV (530700) is a 2nd-level criterion, not 3rd-level:
-        _make_proc_line(
-            procedure_line_id="ISL-3",
-            procedure_code="530700",
-            procedure_name="Non invaziv mekanik ventilatör uygulaması",
-        ),
     ]
     findings = detect_icu_tier_overbilling(
         [header], procs, claim_ids_with_procs={"C1"}
@@ -506,17 +500,23 @@ def test_tier_overbilling_detected_when_p552003_lacks_3rd_level_support() -> Non
     f = findings[0]
     assert f["rule_id"] == "icu_tier_overbilling_2_4_4_H"
     assert f["sut_section_id"] == "2.4.4.H"
+    assert f["severity"] == "info"
     assert f["procedure_code"] == "P552003"
     assert f["recommended_tier_2_code"] == "P552002"
     assert f["recommended_tier_1_code"] == "P552001"
     assert f["price_gap_to_tier_2_try"] > 0.0
     assert f["price_gap_to_tier_1_try"] > f["price_gap_to_tier_2_try"]
+    assert f["at_risk_try"] == 0.0
+    assert f["savings_try"] == 0.0
+    assert f["risk_amount"] == 0.0
     assert f["included_in_sgk_total"] is False
     assert f["savings_category"] == "audit_exposure"
+    assert "EK-2/C-A" not in f["detail"]
+    assert "2.4.4.H" in f["detail"]
 
 
-def test_tier_overbilling_not_emitted_when_invasive_mv_or_dialysis_present() -> None:
-    """P552003 billed with invasive MV (530130) or hemodialysis (704230) emits no tier overbilling."""
+def test_tier_overbilling_not_emitted_when_ecmo_or_dialysis_present() -> None:
+    """#255: P552003 with separately billable §2.4.4.H.(2)/(4) items (ECMO A3, haemodialysis, haemofiltration) clears."""
     from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
 
     header = _make_claim_header(
@@ -524,9 +524,10 @@ def test_tier_overbilling_not_emitted_when_invasive_mv_or_dialysis_present() -> 
         discharge=date(2026, 7, 13),
     )
     for support_code, support_name in (
-        ("530130", "Hastanın mekanik ventilatöre bağlanması"),
-        ("704230", "Hemodiyaliz"),
         ("605977", "Perkütan (Veno-venöz) VV-ECMO takılması veya çıkartılması"),
+        ("704230", "Hemodiyaliz"),
+        ("704290", "Sürekli hemodiafiltrasyon/hemofiltrasyon tedavisi"),
+        ("704920", "Aferez, Terapötik plazma değişimi (1 seans)"),
     ):
         procs = [
             _make_proc_line(procedure_line_id="ISL-1", procedure_code="510090"),

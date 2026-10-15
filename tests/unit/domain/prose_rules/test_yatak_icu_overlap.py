@@ -241,11 +241,11 @@ def test_reconcile_different_days_behavior_unchanged() -> None:
 
 
 def test_reconcile_package_surgery_plus_icu_regression() -> None:
-    """(c) Paket ameliyat günü + YB kombinasyonu — iki farklı gün düşülür.
+    """(c) Paket penceresi + YB kombinasyonu — paket sonrası YB son günü düşülür.
 
-    Service claim Jul 13→15 with P610130 paket surgery on Jul 14 (bundled
-    day) and ICU last day Jul 13 (transition day) → 3 − 1 − 1 = 1 billable
-    day. Package-bundling logic (:126-138) is preserved.
+    Service claim Jul 10→20 (11 gross days) with P610130 (Group C, 8-day
+    window Jul 10→17) on Jul 10 (8 bundled days → 3 post-window billable days:
+    Jul 18, 19, 20) and an ICU stay ending on Jul 18 → 3 − 1 = 2 billable days.
     """
     from src.bilun.domain.prose_rules.yatak_icu_overlap import (
         reconcile_yatak_bed_days,
@@ -254,11 +254,15 @@ def test_reconcile_package_surgery_plus_icu_regression() -> None:
         detect_yatak_puani_opportunities,
     )
 
-    icu = _make_claim_header(claim_id="ICU")
+    icu = _make_claim_header(
+        claim_id="ICU",
+        admission=date(2026, 7, 17),
+        discharge=date(2026, 7, 18),
+    )
     srv = _make_claim_header(
         claim_id="SRV",
-        admission=date(2026, 7, 13),
-        discharge=date(2026, 7, 15),
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 20),
         department="genel_cerrahi",
     )
     procs = [
@@ -268,7 +272,7 @@ def test_reconcile_package_surgery_plus_icu_regression() -> None:
             procedure_line_id="SRV-PKG",
             procedure_code="610130",
             procedure_name="Appendektomi",
-            procedure_date=date(2026, 7, 14),
+            procedure_date=date(2026, 7, 10),
             procedure_category="paket",
         ),
         _make_proc_line(
@@ -276,33 +280,33 @@ def test_reconcile_package_surgery_plus_icu_regression() -> None:
             procedure_line_id="SRV-1",
             procedure_code="510010",
             procedure_name="Standart yatak",
-            procedure_date=date(2026, 7, 15),
+            procedure_date=date(2026, 7, 19),
         ),
     ]
     claims = [icu, srv]
     opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
 
     srv_opp = _yatak_opp("SRV", opps)
-    assert srv_opp["gross_bed_days"] == 3
+    assert srv_opp["gross_bed_days"] == 11
     assert srv_opp["surgery_day_bundled"] is True
-    assert srv_opp["bed_days"] == 2  # surgery day Jul 14 bundled
+    assert srv_opp["bed_days"] == 3  # 8-day Group C window Jul 10-17 bundled
 
     reconciled = reconcile_yatak_bed_days(opps, claims, procs)
 
     srv_rec = _yatak_opp("SRV", reconciled)
-    # Jul 13 (ICU last day) additionally dropped → 1 billable day.
-    assert srv_rec["bed_days"] == 1
+    # Jul 18 (post-window ICU last day) additionally dropped → 2 billable days.
+    assert srv_rec["bed_days"] == 2
     assert srv_rec["icu_overlap_days"] == 1
-    assert srv_rec["icu_overlap_dates"] == ["2026-07-13"]
-    assert srv_rec["expected_yatak_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert srv_rec["icu_overlap_dates"] == ["2026-07-18"]
+    assert srv_rec["expected_yatak_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)
 
 
 def test_reconcile_package_surgery_day_equals_icu_last_day_no_double_subtract() -> None:
-    """Paket ameliyat günü == YB son günü → sadece bir gün düşülür (regresyon).
+    """Paket penceresi içindeki YB son günü ikinci kez düşülmez (regresyon).
 
-    When the EK-2C surgery day coincides with the ICU discharge day, the day
+    When the ICU discharge day falls inside the EK-2C package window, the day
     is already excluded by package bundling; the reconcile must NOT subtract
-    it a second time.
+    it a second time from post-window days.
     """
     from src.bilun.domain.prose_rules.yatak_icu_overlap import (
         reconcile_yatak_bed_days,
@@ -315,7 +319,7 @@ def test_reconcile_package_surgery_day_equals_icu_last_day_no_double_subtract() 
     srv = _make_claim_header(
         claim_id="SRV",
         admission=date(2026, 7, 13),
-        discharge=date(2026, 7, 15),
+        discharge=date(2026, 7, 22),
         department="genel_cerrahi",
     )
     procs = [
@@ -325,7 +329,7 @@ def test_reconcile_package_surgery_day_equals_icu_last_day_no_double_subtract() 
             procedure_line_id="SRV-PKG",
             procedure_code="610130",
             procedure_name="Appendektomi",
-            procedure_date=date(2026, 7, 13),  # surgery day == ICU last day
+            procedure_date=date(2026, 7, 13),  # surgery day == ICU last day (window Jul 13-20)
             procedure_category="paket",
         ),
         _make_proc_line(
@@ -333,14 +337,14 @@ def test_reconcile_package_surgery_day_equals_icu_last_day_no_double_subtract() 
             procedure_line_id="SRV-1",
             procedure_code="510010",
             procedure_name="Standart yatak",
-            procedure_date=date(2026, 7, 15),
+            procedure_date=date(2026, 7, 21),
         ),
     ]
     claims = [icu, srv]
     opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
 
     srv_opp = _yatak_opp("SRV", opps)
-    assert srv_opp["bed_days"] == 2  # Jul 13 bundled as surgery day
+    assert srv_opp["bed_days"] == 2  # Jul 13-20 bundled in 8-day Group C window; Jul 21-22 billable
 
     reconciled = reconcile_yatak_bed_days(opps, claims, procs)
 

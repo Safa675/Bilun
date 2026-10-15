@@ -291,3 +291,63 @@ def test_refakatci_opportunities_survive_public_projection() -> None:
     assert proj_opp["expected_try"] == pytest.approx(222.30, abs=0.01)
     assert proj_opp["actual_billed_try"] == pytest.approx(74.10, abs=0.01)
     assert proj_opp["recoverable_uplift_try"] == pytest.approx(148.20, abs=0.01)
+
+
+def test_package_window_bundles_companion_days_and_bills_excess() -> None:
+    """SUT §2.2.2.B-1(1)(h), (3)-(4): companion nights inside EK-2/C package window are bundled (#259)."""
+    from src.bilun.domain.claims.models import ProcedureClaimLine
+    from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
+
+    def _pkg_line(claim_id: str, code: str, proc_date: date) -> ProcedureClaimLine:
+        return ProcedureClaimLine(
+            procedure_line_id=f"PKG-{claim_id}",
+            claim_id=claim_id,
+            patient_id="P1",
+            episode_id="E1",
+            procedure_date=proc_date,
+            procedure_code=code,
+            procedure_name="Paket işlem",
+            procedure_category="paket",
+            quantity=1,
+            unit_price_try=Decimal("5000.00"),
+            billed_amount_try=Decimal("5000.00"),
+            expected_payable_try=Decimal("5000.00"),
+            is_package_included=True,
+            package_code=f"P{code}",
+            surcharge_applicable=False,
+            copay_rate_applicable=False,
+            denial_reason_expected="",
+            rule_trace_expected="",
+        )
+
+    # Stay inside Group C (8-day) window: Jul 10 → Jul 15 (5 companion nights: Jul 10..14), surgery Jul 11 (window through Jul 18) -> suppressed (0 days)
+    inside_claim = _make_claim_header(
+        claim_id="C-IN",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 15),
+    )
+    inside_opps = detect_refakatci_opportunities(
+        [inside_claim],
+        [_pkg_line("C-IN", "610130", date(2026, 7, 11))],
+    )
+    assert len(inside_opps) == 1
+    assert inside_opps[0]["days"] == 0
+    assert inside_opps[0]["expected_try"] == 0.0
+    assert inside_opps[0]["recoverable_uplift_try"] == 0.0
+    assert inside_opps[0]["included_in_sgk_total"] is False
+
+    # Stay exceeding Group C (8-day) window: Jul 10 → Jul 21 (11 companion nights: Jul 10..20), surgery Jul 11 (window through Jul 18) -> 2 post-window nights (Jul 19, Jul 20)
+    excess_claim = _make_claim_header(
+        claim_id="C-OUT",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 21),
+    )
+    excess_opps = detect_refakatci_opportunities(
+        [excess_claim],
+        [_pkg_line("C-OUT", "610130", date(2026, 7, 11))],
+    )
+    assert len(excess_opps) == 1
+    assert excess_opps[0]["days"] == 2
+    assert excess_opps[0]["expected_try"] == pytest.approx(2 * 74.10, abs=0.01)
+    assert excess_opps[0]["included_in_sgk_total"] is True
+

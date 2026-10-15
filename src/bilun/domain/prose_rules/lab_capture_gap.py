@@ -28,9 +28,9 @@ _CLAUSE_REF = non_sut_reference(
 
 
 def _resolve_lab_list_price(code: str, service_date: Any | None = None) -> tuple[float | None, str]:
-    """Return (list_price_try, price_methodology) for a lab SUT code."""
+    """Return (list_price_try, price_methodology) for an exact lab SUT code."""
     lookup = lookup_procedure_code(code, visit_date=service_date)
-    entry = lookup.get("entry") if lookup else None
+    entry = lookup.get("entry") if lookup and lookup.get("match_type") == "exact" else None
     if entry is not None:
         price = entry.get("price_try")
         if price:

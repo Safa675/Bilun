@@ -80,7 +80,11 @@ def _is_dental_code(procedure_code: str) -> bool:
     (all dental codes start with 4 and never collide with EK-2B code space).
     """
     result = lookup_procedure_code(procedure_code)
-    entry = (result or {}).get("entry") or {}
+    entry = (
+        (result or {}).get("entry")
+        if result and result.get("match_type") in {"exact", "package_prefix"}
+        else None
+    ) or {}
     annex = entry.get("annex")
     if annex:
         # Normalise the ç/Ç variants defensively.

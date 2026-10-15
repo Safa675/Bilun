@@ -445,38 +445,3 @@ def get_cached_ek3i() -> list[dict[str, Any]]:
         _ek3i_cache = _load_ek3_materials_parquet(EK3I_PARQUET_PATH, "EK-3I")
     return _ek3i_cache
 
-
-def _load_gazette_visit_prices(
-    fallback: dict[str, tuple[float, float]],
-) -> dict[str, tuple[float, float]]:
-    """Load real SUT gazette visit/bed prices. Falls back to representative ranges."""
-    try:
-        from ..catalog import get_visit_prices
-
-        gazette = get_visit_prices()
-        if gazette:
-            result: dict[str, tuple[float, float]] = {}
-            op = gazette.get("outpatient_visit")
-            if op:
-                result["outpatient"] = (op, op)
-            bed = gazette.get("standard_bed")
-            if bed:
-                result["inpatient_day"] = (bed, bed)
-            icu = gazette.get("icu")
-            if icu:
-                result["icu_day"] = (icu, icu)
-            er = gazette.get("emergency_visit")
-            if er:
-                result["emergency"] = (er, er)
-            fu = gazette.get("primary_care_visit")
-            if fu:
-                result["follow_up"] = (fu, fu)
-            if result:
-                logger.info("Loaded %d gazette visit prices", len(result))
-                for k, v in fallback.items():
-                    if k not in result:
-                        result[k] = v
-                return result
-    except Exception as e:
-        logger.warning("Failed to load gazette visit prices, using fallback: %s", e)
-    return fallback.copy()

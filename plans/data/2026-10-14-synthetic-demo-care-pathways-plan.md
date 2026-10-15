@@ -49,7 +49,7 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
 
 **3. Beds, ICU and visits**
 - **Bed and ICU codes (EK-2B):** 510010 ward, 510120 day bed (under 24 h), 510090 ICU day rate, 510121 companion, 530000 ER critical bed. ICU tiers are P552001–003 (adult) and P552006–008 (newborn).
-- **Where the engine defines them.** Its code map holds only some of these (`src/bilun/domain/catalog.py:246-254`). The companion code is in `prose_rules/refakatci.py:36` and the ICU tiers in `prose_rules/icu_puani.py:13-17,61`.
+- **Where the engine defines them.** Standard bed (`510010`) is in `prose_rules/yatak_puani.py:40`, companion (`510121`) in `prose_rules/refakatci.py:38`, and ICU day rate (`510090`) and tiers (`P552001`–`P552008`) in `prose_rules/icu_puani.py:59,65`.
 - **The companion-bed rule cannot see ICU.** Its ICU list holds the literal string `"P55200x"` (`refakatci.py:41`), which never matches a real tier code. So ICU stays would wrongly get a companion-bed charge (Safa675/Bilun#236).
 - **No ICU-tier detector exists.** Nothing detects ICU billed above its tier (Safa675/Bilun#242). In the TÜSEB anchor, that cause is about 81% of SGK deductions.
 - **Visit codes:** 520010 consultation, 520020 ER, 520021 green area, 520030 outpatient, 520080/520090 primary care.
