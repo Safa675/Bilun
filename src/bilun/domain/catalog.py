@@ -189,29 +189,6 @@ def load_sut_catalog(
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def get_lab_price(test_name: str, visit_date: Any | None = None) -> float | None:
-    """
-    Get the SUT gazette price (TRY) for a BILUN lab test name.
-
-    Args:
-        test_name: BILUN test name (e.g., "ALT", "CRP", "Hemoglobin")
-        visit_date: Optional date for temporal catalog selection.
-
-    Returns:
-        Price in TRY, or None if the test is not in the mapping or catalog.
-    """
-    sut_code = BILUN_TO_SUT_CODE.get(test_name)
-    if sut_code is None:
-        return None
-
-    catalog = load_sut_catalog(visit_date=visit_date)
-    entry = catalog["ek2b"]["by_code"].get(sut_code)
-    if entry is not None:
-        return entry["price_try"]
-
-    return None
-
-
 def get_all_lab_prices(visit_date: Any | None = None) -> dict[str, float]:
     """
     Get SUT gazette prices for all mapped BILUN lab test names.
@@ -228,37 +205,6 @@ def get_all_lab_prices(visit_date: Any | None = None) -> dict[str, float]:
         entry = by_code.get(sut_code)
         if entry is not None:
             result[test_name] = entry["price_try"]
-
-    return result
-
-
-def get_visit_prices(visit_date: Any | None = None) -> dict[str, float]:
-    """
-    Get SUT gazette prices for bed and visit codes.
-
-    Returns:
-        Dict mapping descriptive key -> price_try.
-    """
-    catalog = load_sut_catalog(visit_date=visit_date)
-    by_code = catalog["ek2b"]["by_code"]
-
-    visit_code_map = {
-        "standard_bed": "510010",  # Standart yatak tarifesi
-        "incubator": "510070",  # Kuvoz
-        "icu": "510090",  # Yogun bakim
-        "sterile_room": "510100",  # Steril oda
-        "day_bed": "510120",  # Gunduz yatak tarifesi
-        "consultation": "520010",  # Konsultasyon
-        "emergency_visit": "520020",  # Acil poliklinik muayenesi
-        "outpatient_visit": "520030",  # Normal poliklinik muayenesi
-        "primary_care_visit": "520080",  # Birinci basamak poliklinik muayenesi
-    }
-
-    result: dict[str, float] = {}
-    for key, code in visit_code_map.items():
-        entry = by_code.get(code)
-        if entry is not None:
-            result[key] = entry["price_try"]
 
     return result
 
