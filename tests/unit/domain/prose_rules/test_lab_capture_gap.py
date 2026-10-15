@@ -144,3 +144,37 @@ def test_only_laboratuvar_category_suppresses_gap() -> None:
     )
     gaps = detect_lab_capture_gaps(lab_df, [non_lab_line], "V1", service_date="2024-01-01")
     assert len(gaps) == 1
+
+
+@pytest.mark.parametrize("truncated_code", ["L1070", "L100", "L10702", "L1018"])
+def test_truncated_lab_code_is_not_priced_via_prefix_search(truncated_code: str) -> None:
+    """#280: truncated lab codes must not price as another test via catalog prefix_search."""
+    from src.bilun.domain.prose_rules.lab_capture_gap import (
+        _resolve_lab_list_price,
+        detect_lab_capture_gaps,
+    )
+
+    assert _resolve_lab_list_price(truncated_code, service_date="2026-10-15") == (None, "")
+    lab_df = _lab_df([{"patient_id": "P1", "visit_id": "V1", "test_name": truncated_code}])
+    assert detect_lab_capture_gaps(lab_df, [], "V1", service_date="2026-10-15") == []
+
+
+def test_exact_lab_code_l107020_still_prices_correctly_on_2026_10_15() -> None:
+    """#280: exact 7-character L-codes continue to resolve their EK-2B list price."""
+    from src.bilun.domain.prose_rules.lab_capture_gap import (
+        _resolve_lab_list_price,
+        detect_lab_capture_gaps,
+    )
+
+    price, method = _resolve_lab_list_price("L107020", service_date="2026-10-15")
+    assert price == pytest.approx(19.73, abs=0.01)
+    assert method == "ek2b_list_price"
+
+    lab_df = _lab_df([{"patient_id": "P1", "visit_id": "V1", "test_name": "L107020"}])
+    gaps = detect_lab_capture_gaps(lab_df, [], "V1", service_date="2026-10-15")
+    assert len(gaps) == 1
+    assert gaps[0]["procedure_code"] == "L107020"
+    assert gaps[0]["list_price_try"] == 19.73
+    assert gaps[0]["recoverable_gap_try"] == 19.73
+    assert gaps[0]["price_methodology"] == "ek2b_list_price"
+

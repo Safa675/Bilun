@@ -122,7 +122,11 @@ def _ek2b_puan(normalized: str, *, as_of_date: date | str | None) -> float | Non
         from ..catalog import lookup_procedure_code
 
         lookup = lookup_procedure_code(normalized, visit_date=as_of_date)
-        entry = lookup.get("entry") if lookup else None
+        entry = (
+            lookup.get("entry")
+            if lookup and lookup.get("match_type") in {"exact", "package_prefix"}
+            else None
+        )
         # The general catalog may return its oldest row before history starts.
         # Session ranking must not treat that future amendment as dated evidence.
         effective = str(entry.get("effective_date") or "") if entry else ""
@@ -432,7 +436,11 @@ def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
         from ..catalog import lookup_procedure_code
 
         lookup = lookup_procedure_code(normalized, visit_date=line.procedure_date)
-        entry = lookup.get("entry") if lookup else None
+        entry = (
+            lookup.get("entry")
+            if lookup and lookup.get("match_type") in {"exact", "package_prefix"}
+            else None
+        )
         effective = str(entry.get("effective_date") or "") if entry else ""
         if entry is not None and (not effective or effective <= str(line.procedure_date)):
             price = float(entry.get("price_try") or 0)

@@ -58,7 +58,11 @@ def _procedure_name(code: str) -> str:
         from src.bilun.domain.catalog import lookup_procedure_code
 
         lookup = lookup_procedure_code(code)
-        entry = lookup.get("entry") if lookup else None
+        entry = (
+            lookup.get("entry")
+            if lookup and lookup.get("match_type") in {"exact", "package_prefix"}
+            else None
+        )
         if entry is not None and entry.get("name"):
             return str(entry["name"])
     except Exception:
