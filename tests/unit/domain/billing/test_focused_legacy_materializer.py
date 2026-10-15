@@ -292,13 +292,15 @@ def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> N
     assert {row["rule_id"] for row in report.claim_compliance.evaluations} == ORIGINAL_FIVE_RULE_IDS
     assert report.wavea_evidence_detail is not None
     assert {row["rule_id"] for row in report.wavea_evidence_detail["evaluations"]} >= _RULE_IDS
+    # #261: an exam and radiotherapy lines on one date are not a session of
+    # operations, so no §2.2.2.A(5) audit exposure (was 140.0).
     assert (
         report.sgk_uplift_try,
         report.compliance_adjustment_try,
         report.audit_exposure_try,
         report.total_recoverable_try,
         report.action_count,
-    ) == (0.0, 0.0, 140.0, 0.0, 1)
+    ) == (0.0, 0.0, 0.0, 0.0, 1)
     assert [
         (row["surface"], row["kind"], row["material_code"], row["billed_try"])
         for row in report.recommended_actions

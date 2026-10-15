@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -15,6 +16,7 @@ from .catalog_membership import (
     procedure_annex_membership,
 )
 from .claim_utils import group_procedure_lines_by_session
+from .session_scope import is_session_operation_code, session_operation_lines
 from .session_specialty import detect_cross_specialty_session
 from .types import ProseRuleTrace, SessionPricingResult, SessionProcedureFactor
 
@@ -432,8 +434,9 @@ def compute_session_adjusted_itemized_total(
 ) -> tuple[float, dict[str, Any]]:
     """Sum itemized payables with §2.2.2.B / §2.2.2.A(5) session point factors applied.
 
+    Factors apply to the operations of each session only (``session_scope``).
     When ``cross_specialty`` is ``None``, each session auto-detects different
-    specialties from line ``procedure_specialty_code`` and EK-2/C (or EK-2/B) ``group``.
+    specialties from the lines' ``procedure_specialty_code`` (branch codes).
     """
     # Hypothetical itemized alternatives omit package rows and must retain
     # full itemized blood prices. Candidate flags/codes are not billed packages.
@@ -455,42 +458,37 @@ def compute_session_adjusted_itemized_total(
             continue
 
         lines_in_scope += len(billable)
-        if len(billable) == 1:
-            line = billable[0]
-            total += _session_adjusted_line_payable(
-                line,
-                point_factor=1.0,
-                apply_blood_fraction=(
-                    apply_blood_fraction
-                    and (line.patient_id, line.claim_id, line.episode_id) in package_scopes
-                ),
+        # Only operations form a session (#261); beds, visits, labs, anaesthesia
+        # and the other lines keep their own payable at 100 %.
+        operations = session_operation_lines(billable)
+        factors: Iterator[SessionProcedureFactor] | None = None
+        if len(operations) >= 2:
+            session_cross = (
+                detect_cross_specialty_session(operations, claim)
+                if cross_specialty is None
+                else cross_specialty
             )
-            continue
+            if session_cross:
+                sessions_cross_specialty += 1
+            session = compute_session_point_factors(
+                [line.procedure_code for line in operations],
+                same_incision=same_incision,
+                cross_specialty=session_cross,
+                as_of_date=session_date,
+            )
+            if any(f.point_factor != 1.0 for f in session.factors):
+                sessions_with_adjustment += 1
+            factors = iter(session.factors)
 
-        codes = [line.procedure_code for line in billable]
-        session_cross = (
-            detect_cross_specialty_session(billable, claim)
-            if cross_specialty is None
-            else cross_specialty
-        )
-        if session_cross:
-            sessions_cross_specialty += 1
-        session = compute_session_point_factors(
-            codes,
-            same_incision=same_incision,
-            cross_specialty=session_cross,
-            as_of_date=session_date,
-        )
-        if any(f.point_factor != 1.0 for f in session.factors):
-            sessions_with_adjustment += 1
-
-        # Factors preserve input occurrence order, excluding empty normalized
-        # codes. A code-keyed map would discard the primary factor when two
-        # distinct lines normalize to the same code.
-        factors = iter(session.factors)
+        # Factors preserve the operations' occurrence order (their codes are
+        # never empty). A code-keyed map would discard the primary factor when
+        # two distinct lines normalize to the same code.
         for line in billable:
-            factor = next(factors) if normalize_procedure_code(line.procedure_code) else None
-            point_factor = factor.point_factor if factor is not None else 1.0
+            point_factor = (
+                next(factors).point_factor
+                if factors is not None and is_session_operation_code(line.procedure_code)
+                else 1.0
+            )
             total += _session_adjusted_line_payable(
                 line,
                 point_factor=point_factor,

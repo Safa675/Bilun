@@ -183,7 +183,7 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 2. For each claim flagged as a package candidate:
    - **Bundled-line violations:** Identifies procedure lines marked `is_package_included` that were billed separately with a positive billed amount. These are services that the package price already covers. Savings = billed amount - expected payable.
    - **Package vs itemized comparison:** Computes the total expected payable if billed itemized vs. if billed as a package. If itemized > package, the hospital is losing money by staying itemized. If package > itemized, the hospital is over-billing and at audit risk.
-3. **Same-session point factors (§2.2.2.B / §2.2.2.A(5)):** Flags secondary procedures billed above allowed fractions (25%/50% for EK-2/C-only sessions; 30%/50% for EK-2/B itemized; mixed-session fallback to A(5) when EK-2/B has highest puan). `cross_specialty` adds +25 percentage points to secondary factors; billing strategy auto-detects different specialties per session from `procedure_specialty_code` and EK-2/C (or EK-2/B) catalog `group` (`session_specialty.py`).
+3. **Same-session point factors (§2.2.2.B / §2.2.2.A(5)):** Flags secondary procedures billed above allowed fractions (25%/50% for EK-2/C-only sessions; 30%/50% for EK-2/B itemized; mixed-session fallback to A(5) when EK-2/B has highest puan). A session holds only EK-2/B §6 operations (600000–629999) and the EK-2/C packages with the same code; beds, visits, ER interventions, anaesthesia, labs, imaging, blood and other lines are never session lines (`session_scope.py`, #261). `cross_specialty` adds +25 percentage points to secondary factors; it is auto-detected only when every operation carries a branch (`procedure_specialty_code`) and two branches differ. The EK-2/C işlem grubu is not a specialty (`session_specialty.py`, #264).
 4. Aggregates findings by ICD-10 chapter; `patient_icd10_chapters` from diagnoses union claim chapters for `n_chapters_analyzed`.
 5. Returns per-patient: unbundling risk, sourced vs heuristic savings split, and chapter breakdown.
 
@@ -278,7 +278,7 @@ Session-fraction / seans kesir oranı rules are **not** applied to laboratory te
    - Uses `ClaimHeader.facility_tier` via `prose_rules/facility_tier.py`, `has_star`, and `procedure_prose_drg_locked()` from curated EK-2C + `ek2c_prose_drg_locked_codes.json`
 
 2. **Per claim** (when `package_candidate` is true):
-   - Computes **itemized total** via `compute_session_adjusted_itemized_total()` (§2.2.2.B / §2.2.2.A(5) session point factors on same-day procedures); exposes `itemized_raw_try` and `itemized_price_methodology` (`session_adjusted` vs `claim_lines`)
+   - Computes **itemized total** via `compute_session_adjusted_itemized_total()` (§2.2.2.B / §2.2.2.A(5) session point factors on same-day operations); exposes `itemized_raw_try` and `itemized_price_methodology` (`session_adjusted` vs `claim_lines`)
    - Computes **package total** from `paket` category lines, or DRG chapter price lookup when no package lines exist
    - Aggregates claim kind (strictest wins): `DRG_MANDATORY` > `DRG_OVERRIDABLE` > `ITEMIZED`
    - Emits recommendation with `recommendation_kind`:

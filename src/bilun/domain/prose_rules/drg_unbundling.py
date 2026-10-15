@@ -15,6 +15,7 @@ from .session_pricing import (
     compute_session_point_factors,
     expected_session_billed_try,
 )
+from .session_scope import session_operation_lines
 from .session_specialty import detect_cross_specialty_session
 from .types import CareSetting
 
@@ -110,7 +111,7 @@ def detect_session_point_violations(
     for session_date, session_lines in group_procedure_lines_by_session(lines).items():
         billable = [
             line
-            for line in session_lines
+            for line in session_operation_lines(session_lines)
             if not line.is_package_included and _line_billed(line) > 0
         ]
         if len(billable) < 2:

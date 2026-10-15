@@ -13,6 +13,7 @@ from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
 from src.bilun.domain.prose_rules.claim_utils import group_procedure_lines_by_session
 from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+from src.bilun.domain.prose_rules.session_scope import session_operation_lines
 from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
@@ -114,9 +115,10 @@ def _resolve_addon_factor(
 ) -> float:
     """Match §2.2.2.B / §2.2.2.A(5) session point factors for the add-on code."""
     same_incision = bool(rule.get("same_incision", True))
+    # Only the session's operations join the rule's trigger/add-on pair (#261).
     billable = [
         line
-        for line in session_lines
+        for line in session_operation_lines(session_lines)
         if line.procedure_category != "paket"
         and not line.is_package_included
         and _line_billed(line) > 0

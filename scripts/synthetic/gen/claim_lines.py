@@ -114,6 +114,7 @@ def _apply_session_point_billed_factors(
     """Scale secondary same-day billed lines per SUT §2.2.2; returns billed/payable deltas."""
     from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
     from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+    from src.bilun.domain.prose_rules.session_scope import is_session_operation_code
     from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
 
     locked = {
@@ -124,12 +125,14 @@ def _apply_session_point_billed_factors(
     old_billed = sum(float(row.get("fatura_tutari_try") or 0) for row in rows)
     old_payable = sum(float(row.get("beklenen_odenebilir_tutar_try") or 0) for row in rows)
 
+    # Same session scope as the engine: operations only (Safa675/Bilun#261).
     billable = [
         row
         for row in rows
         if not row.get("pakete_dahil_mi")
         and float(row.get("fatura_tutari_try") or 0) > 0
         and normalize_procedure_code(str(row.get("islem_kodu") or "")) not in locked
+        and is_session_operation_code(str(row.get("islem_kodu") or ""))
     ]
     if len(billable) < 2:
         return 0.0, 0.0

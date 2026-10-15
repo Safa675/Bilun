@@ -85,7 +85,7 @@ class TestProcedureAddonWiring:
         )
         assert report.sgk_uplift_try >= report.procedure_addon_uplift.confirmed_uplift_try
 
-    def test_underbilled_addon_uses_session_not_missing_addon(self) -> None:
+    def test_underbilled_addon_is_not_a_missing_addon(self) -> None:
         claim = _claim()
         procs = (
             _proc(),
@@ -111,4 +111,6 @@ class TestProcedureAddonWiring:
             copay_exemption={"exempt": False},
         )
         assert report.procedure_addon_uplift.opportunities == []
-        assert report.session_uplift.confirmed_uplift_try > 0
+        # #261: endoscopy (EK-2/B §7) is not a session operation, so the
+        # under-billed polypectomy is no longer a §2.2.2.A(5) session secondary.
+        assert report.session_uplift.opportunities == []

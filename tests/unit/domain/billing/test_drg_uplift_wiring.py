@@ -123,21 +123,22 @@ class TestDrgUpliftWiring:
         monkeypatch.setattr(
             session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
         )
+        # #261: placeholder codes sit in EK-2/B §6, the only lines that form a session.
         monkeypatch.setattr(
             session_pricing, "_procedure_point_score",
-            lambda code, **kwargs: {"111111": 20, "222222": 10}[code],
+            lambda code, **kwargs: {"611111": 20, "622222": 10}[code],
         )
         claim = _claim(package_candidate=False)
         lines = [
             _proc(
-                procedure_code="111111",
+                procedure_code="611111",
                 procedure_specialty_code="same-specialty",
                 expected_payable_try=Decimal("1000"),
                 billed_amount_try=Decimal("1000"),
             ),
             _proc(
                 procedure_line_id="PL2",
-                procedure_code="222222",
+                procedure_code="622222",
                 procedure_specialty_code="same-specialty",
                 unit_price_try=Decimal("100"),
                 expected_payable_try=Decimal("100"),
