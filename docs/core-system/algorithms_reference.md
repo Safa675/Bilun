@@ -279,6 +279,7 @@ Session-fraction / seans kesir oranı rules are **not** applied to laboratory te
 
 2. **Per claim** (when `package_candidate` is true):
    - Computes **itemized total** via `compute_session_adjusted_itemized_total()` (§2.2.2.B / §2.2.2.A(5) session point factors on same-day operations); exposes `itemized_raw_try` and `itemized_price_methodology` (`session_adjusted` vs `claim_lines`)
+   - When the package is mandated (`DRG_MANDATORY`) but the bill is itemized, the itemized total is what was billed: every itemized procedure, drug and material line, with no compliance filter and no session re-pricing (`billed_itemized_total_try`, `itemized_price_methodology = billed_lines`). A package that pays more is reported as package-billing uplift (`savings_category = sgk_uplift`); a higher itemized bill is a compliance saving. The mandated line is then not audit exposure (#269)
    - Computes **package total** from `paket` category lines, or DRG chapter price lookup when no package lines exist
    - Aggregates claim kind (strictest wins): `DRG_MANDATORY` > `DRG_OVERRIDABLE` > `ITEMIZED`
    - Emits recommendation with `recommendation_kind`:

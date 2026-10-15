@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -20,7 +21,12 @@ from .session_specialty import detect_cross_specialty_session
 from .types import CareSetting
 
 if TYPE_CHECKING:
-    from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+    from src.bilun.domain.claims.models import (
+        ClaimHeader,
+        DrugClaimLine,
+        MaterialClaimLine,
+        ProcedureClaimLine,
+    )
 
 _BILLING_TOLERANCE = 0.02
 
@@ -229,11 +235,53 @@ def detect_blood_component_violations(
     return violations
 
 
+def _clear_risk_when_mandated_package_pays_more(
+    violations: list[dict[str, Any]],
+    claim: ClaimHeader,
+    lines: list[ProcedureClaimLine],
+    *,
+    drug_lines: Sequence[DrugClaimLine],
+    material_lines: Sequence[MaterialClaimLine],
+) -> None:
+    """A hizmet başı bill that the package pays more for carries no over-billing risk.
+
+    The must-package lines stay as compliance findings (SUT §2.2.2(1)); on
+    package-candidate claims the billing strategy reports the gap as
+    package-billing uplift (#269).
+    """
+    package_rows = [
+        row for row in violations
+        if row["mandated_method"] == "package" and not row["billed_as_package"]
+    ]
+    if not package_rows:
+        return
+    from src.bilun.domain.billing.claim_strategy import (
+        _infer_current_billing,
+        billed_itemized_total_try,
+        resolve_package_total_try,
+    )
+
+    if _infer_current_billing(lines) != "itemized":
+        return
+    package_total, _ = resolve_package_total_try(claim, lines)
+    billed_total = billed_itemized_total_try(
+        claim, lines, drug_lines=drug_lines, material_lines=material_lines,
+    )
+    if package_total <= 0 or package_total < billed_total:
+        return
+    for row in package_rows:
+        row["risk_amount_try"] = 0.0
+        row["package_total_try"] = package_total
+        row["billed_itemized_total_try"] = billed_total
+
+
 def analyze_claim_unbundling(
     claim: ClaimHeader,
     lines: list[ProcedureClaimLine],
     *,
     same_incision: bool | None = None,
+    drug_lines: Sequence[DrugClaimLine] = (),
+    material_lines: Sequence[MaterialClaimLine] = (),
 ) -> ClaimUnbundlingFinding | None:
     if not lines:
         return None
@@ -260,6 +308,13 @@ def analyze_claim_unbundling(
     ]
 
     finding.payment_method_violations = detect_payment_method_violations(claim, lines)
+    _clear_risk_when_mandated_package_pays_more(
+        finding.payment_method_violations,
+        claim,
+        lines,
+        drug_lines=drug_lines,
+        material_lines=material_lines,
+    )
     if same_incision is not None:
         finding.session_violations = detect_session_point_violations(
             lines,

@@ -62,7 +62,13 @@ def detect_drg_unbundling(
             continue
 
         # Same-incision (kesi) is not on claim lines yet; assume same session until wired.
-        finding = analyze_claim_unbundling(claim, claim_procs, same_incision=True)
+        finding = analyze_claim_unbundling(
+            claim,
+            claim_procs,
+            same_incision=True,
+            drug_lines=claim_context.drug_lines,
+            material_lines=claim_context.material_lines,
+        )
         if finding is None or not finding.has_risk:
             continue
 

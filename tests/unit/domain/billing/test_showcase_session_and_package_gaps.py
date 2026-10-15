@@ -1,13 +1,14 @@
-"""Session scope and cross-specialty acceptance on the showcase bills.
+"""Session scope, cross-specialty and package-gap acceptance on the showcase bills.
 
 The bills mirror reports/synthetic-data/2026-10-15-showcase-proofs/stories.py
-(S2, S3, S4, S6, S7, S8), priced from the catalog in force on each line date.
-Safa675/Bilun#261 (session = operations only) and #264 (no specialty from the
-EK-2/C işlem grubu).
+(S1, S2, S3, S4, S6, S7, S8), priced from the catalog in force on each line date.
+Safa675/Bilun#261 (session = operations only), #264 (no specialty from the EK-2/C
+işlem grubu) and #269 (a mandated package compared with what was billed).
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
@@ -15,7 +16,8 @@ import pytest
 
 from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
-from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
+from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
@@ -46,6 +48,7 @@ class _Bill:
         self.cid, self.claim_type, self.start, self.end = cid, claim_type, start, end
         self.inpatient, self.package_candidate = inpatient, package_candidate
         self.procs: list[ProcedureClaimLine] = []
+        self.drugs: list[DrugClaimLine] = []
 
     def proc(self, code: str, day: date, qty: int = 1, *, specialty: str = "",
              factor: str = "1") -> ProcedureClaimLine:
@@ -74,6 +77,18 @@ class _Bill:
         for day in days[:-1] if companion else ():
             self.proc("510121", day, specialty=specialty)
 
+    def drug(self, day: date, amount: str) -> None:
+        money = Decimal(amount)
+        self.drugs.append(DrugClaimLine(
+            drug_claim_line_id=f"{self.cid}-D{len(self.drugs) + 1:02d}",
+            prescription_id=f"{self.cid}-RX1", claim_id=self.cid, patient_id="SH",
+            episode_id="E", drug_claim_date=day, drug_name="IESEF 1 G", drug_code="",
+            barkod="8699508270224", equivalence_group="", quantity=1, unit_price_try=money,
+            billed_amount_try=money, expected_payable_try=money,
+            discount_tier_expected=Decimal("0"), denial_reason_expected="",
+            rule_trace_expected="",
+        ))
+
     def ctx(self) -> PatientClaimContext:
         total = sum((line.billed_amount_try for line in self.procs), Decimal("0"))
         header = ClaimHeader(
@@ -87,12 +102,28 @@ class _Bill:
         )
         return PatientClaimContext(
             patient_id="SH", claims=(header,), procedure_lines=tuple(self.procs),
-            material_lines=(), drug_lines=(), diagnoses=(),
+            material_lines=(), drug_lines=tuple(self.drugs), diagnoses=(),
         )
 
 
 def _d(text: str) -> date:
     return date.fromisoformat(text)
+
+
+def s1(variant: str) -> _Bill:
+    """Laparoscopic appendectomy: package P610131, or the stay billed hizmet başı."""
+    a, d = _d("2026-07-14"), _d("2026-07-16")
+    bill = _Bill("C-SH01", "yatis", a, d, package_candidate=True)
+    if variant == "clean":
+        bill.proc("P610131", a, specialty=GENCER)
+        return bill
+    bill.proc("610131", a, specialty=GENCER)
+    bill.proc("550170", a, specialty=ANEST)
+    bill.stay(GENCER, companion=False)
+    bill.labs(a, ("L107020", "L101850"), GENCER)
+    bill.labs(a + timedelta(days=1), ("L107020", "L101850"), GENCER)
+    bill.proc("910230", a + timedelta(days=1), specialty=GENCER)
+    return bill
 
 
 def s2() -> _Bill:
@@ -215,3 +246,65 @@ class TestCrossSpecialty264:
         assert rows[0]["expected_point_factor"] == 0.50  # §2.2.2.B(3)(a) 25 % + 25.
         assert rows[0]["recoverable_uplift_try"] == 1792.40
         assert rows[0]["included_in_sgk_total"] is True
+
+
+def _claim_row(ctx: PatientClaimContext) -> dict:
+    rows = recommend_billing_strategy_from_claims(ctx).recommendations
+    return next(row for row in rows if row.get("recommendation_kind"))
+
+
+class TestMandatedPackageGap269:
+    def test_faulty_s1_compares_the_package_with_the_whole_bill(self) -> None:
+        ctx = s1("faulty").ctx()
+        row = _claim_row(ctx)
+        assert row["payment_method_kind"] == "DRG_MANDATORY"
+        assert row["current_billing"] == "itemized"
+        assert row["package_total_try"] == 8636.51
+        assert row["itemized_total_try"] == 4550.64  # Was 1,231.00 (610131 dropped).
+        assert row["itemized_price_methodology"] == "billed_lines"
+        assert row["savings_try"] == 4085.87  # Was 0.00.
+        assert row["savings_category"] == "sgk_uplift"
+        assert row["included_in_sgk_total"] is True
+        assert row["message_code"] == "claim_mandate_package"
+
+    def test_faulty_s1_mandated_operation_line_is_not_audit_exposure(self) -> None:
+        ctx = s1("faulty").ctx()
+        assert compute_audit_exposure_from_claims(ctx) == 0.0  # Was 3,558.29.
+        violations = [
+            row for row in recommend_billing_strategy_from_claims(ctx).recommendations
+            if row.get("type") == "compliance_violation"
+        ]
+        assert [row["procedure_code"] for row in violations] == ["610131"]
+
+    def test_drug_lines_count_in_the_billed_total(self) -> None:
+        bill = s1("faulty")
+        bill.drug(bill.start, "100.00")
+        row = _claim_row(bill.ctx())
+        assert row["itemized_total_try"] == 4650.64
+        assert row["savings_try"] == 3985.87
+
+    def test_clean_s1_is_unchanged(self) -> None:
+        row = _claim_row(s1("clean").ctx())
+        assert row["current_billing"] == "package"
+        assert row["message_code"] == "claim_package_ok"
+        assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
+            8636.51, 0.0, 0.0,
+        )
+
+    def test_itemized_bill_above_the_package_keeps_the_compliance_saving(self) -> None:
+        bill = s1("faulty")
+        extra = bill.proc("615931", bill.start, specialty=BEYIN)
+        bill.procs[-1] = replace(extra, billed_amount_try=Decimal("6000.00"),
+                                 expected_payable_try=Decimal("6000.00"))
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert row["itemized_total_try"] == 10550.64
+        assert row["savings_try"] == 1914.13  # 10,550.64 − 8,636.51.
+        assert row["savings_category"] == "compliance_adjustment"
+        # The package pays less than the bill, so the mandated line stays at risk.
+        assert compute_audit_exposure_from_claims(ctx) > 0
+
+    def test_package_billed_claim_keeps_risk_on_an_itemized_mandated_line(self) -> None:
+        bill = s1("clean")
+        bill.proc("610131", bill.start, specialty=GENCER)
+        assert compute_audit_exposure_from_claims(bill.ctx()) == 3022.31
