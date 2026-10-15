@@ -1652,6 +1652,7 @@
     "procedure_code": true,
     "procedure_name": true,
     "material_code": true,
+    "material_line_id": true,
     "drug_code": true,
     "drug_name": true,
     "drug_claim_line_id": true,

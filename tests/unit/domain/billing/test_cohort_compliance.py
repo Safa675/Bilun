@@ -876,3 +876,67 @@ def test_claim_compliance_evaluation_summary_is_exact_bounded_and_filterable() -
     assert filtered["non_evaluated_total"] == 1
     assert filtered["details_truncated"] is True
     assert filtered["evaluations"] == []
+
+
+def test_billed_at_risk_deduplicates_material_line_across_multiple_rules() -> None:
+    """#232: a material line hit by N rules adds its billed amount once while
+    keeping all N findings in the index rows."""
+    from src.bilun.domain.billing.billing_actions import collect_billing_actions
+    from src.bilun.domain.billing.types import BillingActionReport, MaterialPreCheck
+
+    materials = MaterialPreCheck(
+        pre_auth_required=[
+            {
+                "claim_id": "F-023",
+                "material_line_id": "MLZ-OP1592",
+                "sut_code": "OP1592",
+                "material_name": "Implant",
+                "price_try": 999999.0,
+            }
+        ],
+        miat_restricted=[
+            {
+                "claim_id": "F-023",
+                "material_line_id": "MLZ-OP1592",
+                "sut_code": "OP1592",
+                "material_name": "Implant",
+                "price_try": 999999.0,
+            }
+        ],
+        prose_bundling_violations=[
+            {
+                "claim_id": "F-023",
+                "material_line_id": "MLZ-OP1592",
+                "sut_code": "OP1592",
+                "material_name": "Implant",
+                "price_try": 999999.0,
+            }
+        ],
+        specialty_prose_violations=[
+            {
+                "claim_id": "F-023",
+                "material_line_id": "MLZ-OP1592",
+                "sut_code": "OP1592",
+                "material_name": "Implant",
+                "price_try": 999999.0,
+            }
+        ],
+    )
+    report = BillingActionReport(patient_id="P-0023", materials=materials)
+    actions = collect_billing_actions(report)
+    assert len(actions) == 4
+    assert all(a["material_line_id"] == "MLZ-OP1592" for a in actions)
+
+    index = build_cohort_compliance_index(
+        {"P-0023": {"recommended_actions": actions}}
+    )
+    assert index["n_findings"] == 4
+    assert index["billed_at_risk_try"] == 999999.0
+    assert index["by_surface"]["materials"]["n"] == 4
+    assert index["by_surface"]["materials"]["billed_try"] == 999999.0
+
+    patient_slice = slice_compliance_index(
+        index, patient_ids=frozenset({"P-0023"})
+    )
+    assert patient_slice["billed_at_risk_try"] == 999999.0
+

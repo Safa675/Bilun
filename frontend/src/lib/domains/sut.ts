@@ -1107,6 +1107,7 @@ export interface RecommendedActionItem {
   procedure_code?: string | null;
   procedure_name?: string | null;
   material_code?: string | null;
+  material_line_id?: string | null;
   drug_code?: string | null;
   drug_name?: string | null;
   drug_claim_line_id?: string | null;
