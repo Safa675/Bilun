@@ -12,8 +12,12 @@ import pytest
 
 from src.bilun.domain.materials.catalog_lookup import (
     _extract_aggregate_codes,
+    ek2c_description_allows_separate_billing,
+    ek2c_separate_billing_subjects,
     ek3_separate_billing_allowed_codes,
+    is_covered_by_sut_3_1_4_category,
     is_separate_billing_allowed,
+    sut_3_1_4_joint_implant_codes,
 )
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_prose
 
@@ -76,3 +80,59 @@ class TestRuleDoesNotFireOnAggregateCodes:
             h for h in hits if "separate_billing" in h.get("rule_id", "")
         ]
         assert separate_hits == [], "HO1018 must not be flagged (EK-3/O allows co-billing)"
+
+
+class TestSut314JointImplantCategory:
+    """#262: §3.1.4(2)(ç) "Her türlü eklem implantı" covers EK-3/F-1 implants."""
+
+    def test_hip_stem_and_bipolar_head_are_joint_implants(self) -> None:
+        # Neither EK-3/F-1 row carries a separate-billing marker of its own.
+        for code in ("AP2070", "AP1880"):
+            assert is_separate_billing_allowed(code) is False
+            assert is_covered_by_sut_3_1_4_category(code) is True
+
+    def test_single_use_instruments_in_ek3f1_are_not_implants(self) -> None:
+        instruments = {
+            "AP3120", "AP3130", "AP3140",  # cement-pressurisation kits
+            "AP3150", "AP3160", "AP3170",  # pulsed lavage
+            "AP3260", "AP3270", "AP3280",  # single-use tourniquets
+            "AP3275",  # ultrasonic cement-removal tip
+        }
+        implants = sut_3_1_4_joint_implant_codes()
+        assert not implants & instruments
+        assert len(implants) == 337 - len(instruments)
+
+    def test_codes_outside_ek3f1_are_not_covered(self) -> None:
+        assert is_covered_by_sut_3_1_4_category("KN1064") is False
+        assert is_covered_by_sut_3_1_4_category("") is False
+
+
+class TestEk2cAciklamaSeparateBilling:
+    """#262: §3.1.4(2)(n) — the EK-2/C açıklama can bill a material separately."""
+
+    def test_subjects_keep_affirmative_sentences_only(self) -> None:
+        text = (
+            "P621190, P621280 ile birlikte faturalandırılmaz. Balon dahildir, "
+            "stent ayrıca faturalandırılır. Bronkoskopi işlemi ayrıca faturalandırılmaz."
+        )
+        assert ek2c_separate_billing_subjects(text) == ("stent",)
+
+    def test_negated_or_included_prosthesis_grants_nothing(self) -> None:
+        for text in (
+            "P621180, P621280 ile birlikte faturalandırılmaz. Penil protez dahildir.",
+            "Protez ayrıca faturalandırılmaz.",
+            "Protez ayrıca fatura edilemez.",
+        ):
+            assert ek2c_description_allows_separate_billing(text, "UR1001") is False
+
+    def test_prosthesis_sentence_covers_prosthesis_materials_only(self) -> None:
+        text = "Protez ayrıca faturalandırılır."
+        assert ek2c_description_allows_separate_billing(text, "UR1001") is True  # EK-3/L penile prosthesis
+        assert ek2c_description_allows_separate_billing(text, "AP3260") is False  # tourniquet
+        # A material is also a prosthesis when its billed name says so.
+        assert ek2c_description_allows_separate_billing(text, "ZZ9999", "Testis protezi") is True
+
+    def test_sentence_naming_the_code_covers_it(self) -> None:
+        text = "KN1271, KN1272, KN1273, KN1064, KN1065, KN1066, KN1067 malzemeleri ayrıca faturalandırılır."
+        assert ek2c_description_allows_separate_billing(text, "KN1064") is True
+        assert ek2c_description_allows_separate_billing(text, "KN1063") is False

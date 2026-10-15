@@ -37,6 +37,31 @@ _SEPARATE_BILLING_ALLOW_MARKERS = (
 _CODE_LIST_IN_PARENS = re.compile(r"\(([^()]*?\b[A-Z]{1,4}\d{3,5}(?:\s*,\s*[A-Z]{1,4}\d{3,5})+[^()]*?)\)")
 _INDIVIDUAL_CODE = re.compile(r"\b([A-Z]{1,4}\d{3,5})\b")
 
+# SUT §3.1.4(2) (C002857) lists materials that are outside the diagnosis-based
+# package score and paid separately — "SUT veya eklerinde" permission in the
+# sense of §3.1.1(13) (C002751), even when the material's own EK-3 row carries
+# no marker. A category covers a code through the EK-3 sub-annex it comes from:
+# (ç) "Her türlü eklem implantı" (C002861) is the EK-3/F-1 arthroplasty list,
+# minus the single-use instruments and kits that list also prices (tourniquet,
+# pulsed lavage, cement-pressurisation kit, ultrasonic tip): not implants.
+_JOINT_IMPLANT_ANNEX = "EK-3F-1"
+_EK3F1_NON_IMPLANT_COMPONENTS = (
+    "TURNİKE",
+    "YIKAMA",
+    "ÇİMENTOLAMA SİSTEMİ",
+    "ULTRASONİK CERRAHİ UÇ",
+)
+
+# EK-2/C açıklama sentences that bill a material on top of the package, the
+# §3.1.4(2)(n) category (C002874): "Protez ayrıca faturalandırılır.", "KN1271,
+# ... malzemeleri ayrıca faturalandırılır." Negated verbs ("faturalandırılmaz",
+# "fatura edilemez") and "... dahildir" clauses grant nothing. Text is folded.
+_EK2C_SEPARATE_BILLING_VERB = re.compile(r"\bayrica\s+(fatura\w*(?:\s+edil\w*)?)")
+_EK2C_NEGATED_VERB = re.compile(r"m[ae][zmy]")
+_EK2C_INCLUDED_CLAUSE = re.compile(r"d[aâ]hil\w*")
+_EK2C_SENTENCE_BREAK = re.compile(r"[.;\n]+")
+_PROSTHESIS_TERMS = re.compile(r"protez|implant|prostetik")
+
 
 def _fold_tr(text: str) -> str:
     return turkish_lower(str(text)).replace("ı", "i")
@@ -174,6 +199,92 @@ def is_separate_billing_allowed(material_code: str) -> bool:
     if not code:
         return False
     return code in ek3_separate_billing_allowed_codes()
+
+
+def _sut_codes(frame: pl.DataFrame) -> frozenset[str]:
+    codes = frame.select(pl.col("sut_code").cast(pl.Utf8).str.strip_chars().str.to_uppercase())
+    return frozenset(code for code in codes.to_series().drop_nulls().to_list() if code)
+
+
+@lru_cache(maxsize=1)
+def sut_3_1_4_joint_implant_codes() -> frozenset[str]:
+    """EK-3/F-1 implant codes: SUT §3.1.4(2)(ç) "Her türlü eklem implantı"."""
+    filename, _desc = _EK3_SPECIALTY_CATALOGS[_JOINT_IMPLANT_ANNEX]
+    path = _GAZETTE_CURATED_DIR / filename
+    try:
+        df = pl.read_parquet(path, columns=["sut_code", "description"])
+    except Exception as exc:
+        logger.warning("Failed to read material catalog %s: %s", path, exc)
+        return frozenset()
+    instrument = pl.col("description").fill_null("").str.contains_any(
+        list(_EK3F1_NON_IMPLANT_COMPONENTS)
+    )
+    return _sut_codes(df.filter(~instrument))
+
+
+def is_covered_by_sut_3_1_4_category(material_code: str) -> bool:
+    """True when a SUT §3.1.4(2) category bills the material separately."""
+    code = str(material_code or "").strip().upper()
+    return bool(code) and code in sut_3_1_4_joint_implant_codes()
+
+
+@lru_cache(maxsize=1)
+def ek3_prosthesis_codes() -> frozenset[str]:
+    """EK-3 codes that are prostheses or implants: §3.1.4(2)(ç) joint implants
+    plus every row whose name or description says PROTEZ, İMPLANT or PROSTETİK."""
+    codes = set(sut_3_1_4_joint_implant_codes())
+    for path in _all_ek3_catalog_paths():
+        try:
+            df = pl.read_parquet(path)
+        except Exception as exc:
+            logger.warning("Failed to read material catalog %s: %s", path, exc)
+            continue
+        text_cols = [c for c in ("material_name", "name", "description") if c in df.columns]
+        if "sut_code" not in df.columns or not text_cols:
+            continue
+        text = pl.concat_str([pl.col(c).fill_null("") for c in text_cols], separator=" ")
+        codes |= _sut_codes(df.filter(text.str.contains(r"PROTEZ|İMPLANT|IMPLANT|PROSTETİK")))
+    return frozenset(codes)
+
+
+def ek2c_separate_billing_subjects(description: object) -> tuple[str, ...]:
+    """Folded subjects of the EK-2/C açıklama sentences that bill something separately.
+
+    "Balon dahildir, stent ayrıca faturalandırılır." yields "stent": text after
+    the last "dahil..." clause and before the verb.
+    """
+    subjects: list[str] = []
+    for sentence in _EK2C_SENTENCE_BREAK.split(_fold_tr(str(description or ""))):
+        verb = _EK2C_SEPARATE_BILLING_VERB.search(sentence)
+        if verb is None or _EK2C_NEGATED_VERB.search(verb.group(1)):
+            continue
+        subject = _EK2C_INCLUDED_CLAUSE.split(sentence[: verb.start()])[-1].strip(" ,()")
+        if subject:
+            subjects.append(subject)
+    return tuple(subjects)
+
+
+def ek2c_description_allows_separate_billing(
+    description: object,
+    material_code: str,
+    material_name: str = "",
+) -> bool:
+    """True when an EK-2/C açıklama bills this material on top of the package.
+
+    The sentence must name the material's SUT code, or name a prosthesis or
+    implant ("Protez ayrıca faturalandırılır.") when the material is one (by
+    its EK-3 row or its billed name).
+    """
+    code = str(material_code or "").strip().upper()
+    if not code:
+        return False
+    subjects = ek2c_separate_billing_subjects(description)
+    named = re.compile(rf"\b{re.escape(_fold_tr(code))}\b")
+    if any(named.search(subject) for subject in subjects):
+        return True
+    if not any(_PROSTHESIS_TERMS.search(subject) for subject in subjects):
+        return False
+    return code in ek3_prosthesis_codes() or bool(_PROSTHESIS_TERMS.search(_fold_tr(material_name)))
 
 
 @lru_cache(maxsize=1)

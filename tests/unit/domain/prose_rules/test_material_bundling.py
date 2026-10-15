@@ -264,6 +264,7 @@ def test_separate_billing_not_authorized_for_unlisted_ek3_code() -> None:
     from src.bilun.domain.materials.catalog_lookup import (
         ek3_all_material_code_set,
         ek3c_material_code_set,
+        is_covered_by_sut_3_1_4_category,
         is_separate_billing_allowed,
     )
 
@@ -271,6 +272,8 @@ def test_separate_billing_not_authorized_for_unlisted_ek3_code() -> None:
         c
         for c in sorted(ek3_all_material_code_set() - ek3c_material_code_set())
         if not is_separate_billing_allowed(c)
+        # #262: a §3.1.4(2) category is SUT permission too.
+        and not is_covered_by_sut_3_1_4_category(c)
     )
     hits = check_material_bundling_prose(
         [
@@ -802,4 +805,179 @@ def test_informational_3_1_4_finding_adds_zero_billed_at_risk_and_does_not_mask_
     assert _material_row_billed_try(info_hits[0]) is None
     assert len(violation_hits) == 1
     assert violation_hits[0]["risk_amount"] == 9500.0
+
+
+# ── #262: hip hemiarthroplasty (showcase S5) ────────────────────────────────
+_SEPARATE_BILLING = "3.1.1.(15).separate_billing_not_authorized"
+_BONE_CEMENT = "3.1.4.(b).bone_cement"
+_TITUBB_UTS = "3.1.1.(2).titubb_uts_incomplete"
+_S5_STEM = ("AP2070", "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOSUZ | CoCr/TİTANYUM | KAPLAMALI - KUMLAMA")
+_S5_HEAD = ("AP1880", "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | CoCr")
+
+
+def _package_claim_ctx(
+    package_code: str,
+    materials: list[tuple[str, str]],
+    *,
+    linked: bool = True,
+    uts_registered: tuple[bool, ...] = (),
+):
+    """One inpatient claim: an EK-2/C package line on 2026-09-04 plus materials."""
+    from datetime import date
+    from decimal import Decimal
+
+    from src.bilun.domain.claims.models import (
+        ClaimHeader,
+        MaterialClaimLine,
+        ProcedureClaimLine,
+    )
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
+
+    day, amount = date(2026, 9, 4), Decimal("1000.00")
+    header = ClaimHeader(
+        claim_id="C1", patient_id="PT1", episode_id="E1", claim_type="yatis",
+        facility_tier="2_3_basamak_ozel", provider_type="Ozel",
+        department="Ortopedi ve Travmatoloji", admission_date=day, discharge_date=day,
+        claim_start_date=day, claim_end_date=day, primary_icd10="S72.0",
+        package_candidate=True, expected_total_billed_try=amount,
+        expected_total_payable_try=amount, expected_denial_reason="", scenario_tag="",
+    )
+    package = ProcedureClaimLine(
+        procedure_line_id="C1-P01", claim_id="C1", patient_id="PT1", episode_id="E1",
+        procedure_date=day, procedure_code=package_code, procedure_name="paket",
+        procedure_category="paket", quantity=1, unit_price_try=amount,
+        billed_amount_try=amount, expected_payable_try=amount, is_package_included=False,
+        package_code="", surcharge_applicable=False, copay_rate_applicable=False,
+        denial_reason_expected="", rule_trace_expected="",
+    )
+    lines = tuple(
+        MaterialClaimLine(
+            material_line_id=f"C1-M{i:02d}", claim_id="C1",
+            procedure_line_id="C1-P01" if linked else "", patient_id="PT1",
+            material_date=day, material_code=code, material_name=name,
+            material_type="implant", specialty_category="", quantity=1,
+            unit_price_try=amount, billed_amount_try=amount, expected_payable_try=amount,
+            is_bundled=False, requires_pre_auth=False, denial_reason_expected="",
+            rule_trace_expected="", titubb_registered=True,
+            uts_registered=uts_registered[i - 1] if uts_registered else True,
+        )
+        for i, (code, name) in enumerate(materials, start=1)
+    )
+    return PatientClaimContext(
+        patient_id="PT1", claims=(header,), procedure_lines=(package,),
+        material_lines=lines, drug_lines=(), diagnoses=(),
+    )
+
+
+def _rules_by_code(ctx) -> dict[str, list[str]]:
+    from src.bilun.domain.prose_rules.material_bundling import (
+        check_material_bundling_for_context,
+    )
+
+    out: dict[str, list[str]] = {}
+    for hit in check_material_bundling_for_context(ctx):
+        out.setdefault(hit["material_code"], []).append(hit["rule_id"])
+    return out
+
+
+def test_clean_hip_hemiarthroplasty_gets_no_separate_billing_or_bone_cement_row() -> None:
+    """#262: P612320 + EK-3/F-1 cementless stem and bipolar head is a correct bill."""
+    rules = _rules_by_code(_package_claim_ctx("P612320", [_S5_STEM, _S5_HEAD]))
+    flat = [rule for hits in rules.values() for rule in hits]
+    assert _SEPARATE_BILLING not in flat
+    assert _BONE_CEMENT not in flat
+
+
+def test_faulty_hip_hemiarthroplasty_still_gets_titubb_uts_incomplete() -> None:
+    """#262: the stem billed without a completed ÜTS notification is still no-pay."""
+    rules = _rules_by_code(
+        _package_claim_ctx("P612320", [_S5_STEM, _S5_HEAD], uts_registered=(False, True))
+    )
+    assert _TITUBB_UTS in rules["AP2070"]
+    assert _SEPARATE_BILLING not in rules.get("AP1880", [])
+
+
+def test_joint_implant_category_holds_without_a_package_line() -> None:
+    """#262: §3.1.4(2)(ç) is SUT permission for the joint implant on any claim."""
+    hits = check_material_bundling_prose(
+        [{"name": _S5_STEM[1], "code": _S5_STEM[0], "unit_price": 12630.99}]
+    )
+    assert not any(hit["rule_id"] == _SEPARATE_BILLING for hit in hits)
+
+
+def test_material_without_any_permission_is_still_warned_on_a_package_claim() -> None:
+    """#262 true positive: an EK-3/F-1 tourniquet is no implant, and P612320 bills only the prosthesis."""
+    tourniquet = ("AP3260", "DİZ | PRİMER/REVİZYON | TEK KULLANIMLIK TURNİKE | TÜM BOYLAR")
+    rules = _rules_by_code(_package_claim_ctx("P612320", [_S5_STEM, tourniquet]))
+    assert rules["AP3260"] == [_SEPARATE_BILLING]
+    assert _SEPARATE_BILLING not in rules.get("AP2070", [])
+
+    hits = check_material_bundling_prose(
+        [{"name": tourniquet[1], "code": tourniquet[0], "unit_price": 980.67}]
+    )
+    assert [hit["rule_id"] for hit in hits] == [_SEPARATE_BILLING]
+    assert hits[0]["risk_amount"] == 980.67
+    # rule_id keeps its legacy (15) label; the clause it cites is §3.1.1(13) (C002751).
+    assert hits[0]["clause_ref"]["clause_coordinate"] == "3.1.1.(13)"
+
+
+def test_ek2c_aciklama_naming_the_code_allows_separate_billing() -> None:
+    """#262: P614870 "KN1271, ..., KN1064 ... malzemeleri ayrıca faturalandırılır"."""
+    electrode = ("KN1064", "BEYİN ELEKTRODU (LEAD)")
+    assert _SEPARATE_BILLING not in _rules_by_code(
+        _package_claim_ctx("P614870", [electrode])
+    ).get("KN1064", [])
+    # Unlinked materials read every package on their claim.
+    assert _SEPARATE_BILLING not in _rules_by_code(
+        _package_claim_ctx("P614870", [electrode], linked=False)
+    ).get("KN1064", [])
+    # Without that package nothing in SUT or its annexes bills it separately.
+    assert _SEPARATE_BILLING in _rules_by_code(
+        _package_claim_ctx("P612320", [electrode])
+    )["KN1064"]
+
+
+def test_ek2c_aciklama_dahildir_keeps_the_separate_billing_warning() -> None:
+    """#262: P621180 bills the penile prosthesis separately; P621190 includes it."""
+    prosthesis = ("UR1001", "İNFLATABLE PROTEZLERİ SET (İKİ PARÇALI)")
+    assert _SEPARATE_BILLING not in _rules_by_code(
+        _package_claim_ctx("P621180", [prosthesis])
+    ).get("UR1001", [])
+    assert _SEPARATE_BILLING in _rules_by_code(
+        _package_claim_ctx("P621190", [prosthesis])
+    )["UR1001"]
+
+
+def test_bone_cement_rule_matches_real_cement_rows_and_no_ek3f1_row() -> None:
+    """#262: the bare keyword "çimento" also matched ÇİMENTOSUZ/ÇİMENTOLU stems."""
+    import polars as pl
+
+    from src.bilun.domain.constants import _GAZETTE_CURATED_DIR
+
+    cement_rows = [
+        # EK-3/F-1 bone cements (repealed 30/04/2024, so absent from the curated list).
+        ("AP3180", "KALÇA/DİZ | PRİMER/REVİZYON | KEMİK ÇİMENTOSU - ANTİBİYOTİKLİ | STANDART - 40 gr | PMMA"),
+        ("AP3220", "KALÇA/DİZ | PRİMER/REVİZYON | KEMİK ÇİMENTOSU - NORMAL | STANDART - 40 gr | PMMA"),
+    ]
+    spine = pl.read_parquet(_GAZETTE_CURATED_DIR / "ek3e1_spine_surgery_materials.parquet")
+    cement_rows += spine.filter(pl.col("sut_code").is_in(["102295", "102296", "102465"])).select(
+        "sut_code", "material_name"
+    ).rows()
+    assert len(cement_rows) == 5
+    hits = check_material_bundling_prose(
+        [{"name": name, "code": code, "unit_price": 100.0} for code, name in cement_rows]
+    )
+    assert sorted(h["material_code"] for h in hits if h["rule_id"] == _BONE_CEMENT) == sorted(
+        code for code, _ in cement_rows
+    )
+
+    ek3f1 = pl.read_parquet(_GAZETTE_CURATED_DIR / "ek3f1_arthroplasty_materials.parquet")
+    names = ek3f1.select(
+        "sut_code", pl.concat_str(["material_name", "description"], separator=" | ")
+    ).rows()
+    assert len(names) == 337
+    hits = check_material_bundling_prose(
+        [{"name": name, "code": code, "unit_price": 100.0} for code, name in names]
+    )
+    assert not [h["material_code"] for h in hits if h["rule_id"] == _BONE_CEMENT]
 
