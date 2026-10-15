@@ -68,48 +68,38 @@ _TIER_3_PACKAGE_CODES: dict[str, tuple[str, str]] = {
     "552008": ("552007", "552006"),  # Newborn 3rd -> (2nd, 1st)
 }
 
-# SUT EK-2B procedure codes that evidence 3rd-level ICU organ support /
-# invasive mechanical ventilation / renal replacement / ECMO / CPR under
-# SUT §2.4.4.H and EK-2/C-A. Note: 530700 (non-invasive mechanical ventilation)
-# is a 2nd-level ICU criterion and does NOT by itself qualify 3rd-level ICU.
+# Separately billable procedure codes on EK-2/C ICU package days under
+# SUT §2.4.4.H.(2) (C001234: EK-2/C A/B/C-group operations) and §2.4.4.H.(4)
+# (C001236: continuous haemodiafiltration/haemofiltration, plasmapheresis,
+# haemodialysis, therapeutic hypothermia). Included ICU care (mechanical
+# ventilation 530130/530490, intubation 530800/550030/550110, CPR 550070) is
+# not separately billable on package days, so its absence on the bill is never
+# evidence of overbilling (#255).
+_SEPARATELY_BILLABLE_EK2C_GROUPS: frozenset[str] = frozenset({"A1", "A2", "A3", "B", "C"})
 _TIER_3_SUPPORT_PROCEDURE_CODES: frozenset[str] = frozenset(
     {
-        "530130",  # Hastanın mekanik ventilatöre bağlanması (invaziv MV)
-        "530490",  # Ventilatör ile takip
-        "530800",  # Endotrakeal entübasyon, yenidoğan
-        "550030",  # Endotrakeal entübasyon, ameliyathane dışı
-        "550070",  # Kardiyopulmoner resüsitasyon
-        "550110",  # Nazal entübasyon, ameliyathane dışı
-        "605960",  # Kardiyopulmoner by-pass cerrahi işlemi, ilk gün pompa takibi dahil
-        "605969",  # Sol ventriküle uzun süreli yardımcı cihaz ve sağ ventriküle ECMO
-        "605975",  # Santral (Veno-arteriyel) VA-ECMO takılması veya çıkartılması
-        "605976",  # Perkütan (Veno-arteriyel) VA-ECMO takılması veya çıkartılması
-        "605977",  # Perkütan (Veno-venöz) VV-ECMO takılması veya çıkartılması
-        "605978",  # Perkütan (Veno-arteriyel-venöz) VAV-ECMO takılması veya çıkartılması
-        "605979",  # Arteriyal greft kullanılarak VA-ECMO takılması veya çıkartılması
-        "704210",  # Acil hemodiyaliz
-        "704230",  # Hemodiyaliz
-        "704231",  # Hemodiyaliz için kateter yerleştirilmesi
-        "704250",  # İzole ultrafiltrasyon
-        "704260",  # Periton diyalizi takibi
-        "704290",  # Sürekli hemodiafiltrasyon/hemofiltrasyon tedavisi
-        "704920",  # Aferez, Terapötik plazma değişimi (1 seans)
+        "605960",  # Kardiyopulmoner by-pass cerrahi işlemi (EK-2/C A3)
+        "605969",  # Sol ventriküle uzun süreli yardımcı cihaz ve sağ ventriküle ECMO (EK-2/C A2)
+        "605975",  # Santral (Veno-arteriyel) VA-ECMO takılması veya çıkartılması (EK-2/C A3)
+        "605976",  # Perkütan (Veno-arteriyel) VA-ECMO takılması veya çıkartılması (EK-2/C A3)
+        "605977",  # Perkütan (Veno-venöz) VV-ECMO takılması veya çıkartılması (EK-2/C A3)
+        "605978",  # Perkütan (Veno-arteriyel-venöz) VAV-ECMO takılması veya çıkartılması (EK-2/C A3)
+        "605979",  # Arteriyal greft kullanılarak VA-ECMO takılması veya çıkartılması (EK-2/C A3)
+        "704210",  # Acil hemodiyaliz (§2.4.4.H.(4))
+        "704230",  # Hemodiyaliz (§2.4.4.H.(4))
+        "704290",  # Sürekli hemodiafiltrasyon/hemofiltrasyon tedavisi (§2.4.4.H.(4))
+        "704920",  # Aferez, Terapötik plazma değişimi (§2.4.4.H.(4))
     }
 )
 
 _TIER_3_SUPPORT_KEYWORDS: tuple[str, ...] = (
-    "mekanik ventilatore baglan",
-    "ventilator ile takip",
-    "endotrakeal entubasyon",
-    "nazal entubasyon",
     "hemodiyaliz",
     "hemodiafiltrasyon",
     "hemofiltrasyon",
-    "ultrafiltrasyon",
     "ecmo",
-    "kardiyopulmoner resusitasyon",
     "plazma degisimi",
     "plazmaferez",
+    "terapotik hipotermi",
 )
 
 
@@ -436,17 +426,24 @@ def detect_icu_puani_opportunities(
     return opportunities
 
 
-def _line_is_tier_3_support(line: ProcedureClaimLine) -> bool:
-    """True when a procedure line evidences 3rd-level ICU organ/ventilator support."""
+def _line_is_tier_3_support(
+    line: ProcedureClaimLine,
+    *,
+    as_of_date: date | str | None = None,
+) -> bool:
+    """True when a line is a separately billable §2.4.4.H.(2)/(4) ICU support/A-B-C item."""
     code = _strip_p(_normalize_code(line.procedure_code))
+    if not code or code == _ICU_DAY_RATE_CODE or code.startswith(_ICU_PACKAGE_PREFIXES):
+        return False
     if code in _TIER_3_SUPPORT_PROCEDURE_CODES:
         return True
-    if code == "530700":
-        # Non-invasive mechanical ventilation is a 2nd-level criterion per EK-2/C-A.
-        return False
+    line_group = str(getattr(line, "ek2c_group", "") or "").strip().upper()
+    if line_group in _SEPARATELY_BILLABLE_EK2C_GROUPS:
+        return True
+    entry = get_ek2c_entry(code, as_of_date=getattr(line, "procedure_date", None) or as_of_date)
+    if entry and str(entry.get("group") or "").strip().upper() in _SEPARATELY_BILLABLE_EK2C_GROUPS:
+        return True
     folded_name = _fold_tr(getattr(line, "procedure_name", "") or "")
-    if "non invaziv" in folded_name or "non-invaziv" in folded_name:
-        return False
     return any(kw in folded_name for kw in _TIER_3_SUPPORT_KEYWORDS)
 
 
@@ -456,16 +453,19 @@ def detect_icu_tier_overbilling(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Detect 3rd-level ICU packages (P552003 / P552008) billed without 3rd-level support.
+    """Review 3rd-level ICU packages (P552003 / P552008) without separately billed support.
 
-    Under SUT §2.4.4.H and EK-2/C-A, 3rd-level (3. basamak) ICU billing requires
-    documented multi-organ failure or invasive organ support (invasive mechanical
-    ventilation / endotracheal intubation, hemodialysis / continuous renal
-    replacement / plasmapheresis, ECMO, or CPR). When a claim bills ``P552003``
-    (adult 3rd-level) or ``P552008`` (newborn 3rd-level) without any qualifying
-    3rd-level support procedure on the episode, this detector emits an
-    audit-exposure review finding showing the price gap to 2nd-level
-    (``P552002`` / ``P552007``) and 1st-level (``P552001`` / ``P552006``).
+    Under SUT §2.4.4.H.(1) (C001233), ICU bed standards and patient-level tier
+    criteria follow Ministry of Health regulations. On EK-2/C ICU package days,
+    only EK-2/C A/B/C-group operations (§2.4.4.H.(2), C001234) and the treatments
+    listed in §2.4.4.H.(4) (C001236: continuous haemodiafiltration/haemofiltration,
+    plasmapheresis, haemodialysis, therapeutic hypothermia) are billed separately;
+    mechanical ventilation, intubation, and CPR are included in the ICU package.
+    When a claim bills ``P552003`` or ``P552008`` with no separately billed
+    §2.4.4.H.(2)/(4) item on the episode, this detector emits an informational
+    review row ("tier evidence not on the bill") with 0.00 TL audit exposure so
+    epikriz documentation can be checked without flagging included care as
+    overbilling (#255).
     """
     if not procedure_lines:
         return []
@@ -490,12 +490,12 @@ def detect_icu_tier_overbilling(
         if not claim_procs:
             continue
 
+        as_of_date = claim.admission_date or claim.claim_start_date
         ep_id = getattr(claim, "episode_id", "") or ""
         episode_procs = procedures_by_episode.get(ep_id, claim_procs) if ep_id else claim_procs
-        if any(_line_is_tier_3_support(p) for p in episode_procs):
+        if any(_line_is_tier_3_support(p, as_of_date=as_of_date) for p in episode_procs):
             continue
 
-        as_of_date = claim.admission_date or claim.claim_start_date
         for line in claim_procs:
             stripped = _strip_p(_normalize_code(line.procedure_code))
             if stripped not in _TIER_3_PACKAGE_CODES:
@@ -525,10 +525,12 @@ def detect_icu_tier_overbilling(
             gap_to_tier1 = _money(max(0.0, reference_top - tier1_total))
 
             detail = (
-                f"3. basamak yoğun bakım paketi (P{stripped}, {qty} gün) "
-                f"invaziv mekanik ventilasyon / entübasyon / diyaliz / ECMO / "
-                f"organ desteği işlemi olmaksızın faturalandırılmış (SUT §2.4.4.H, "
-                f"EK-2/C-A). P{tier2_stripped} (2. basamak) farkı: "
+                f"3. basamak yoğun bakım paketi (P{stripped}, {qty} gün) için "
+                f"faturada ayrıca faturalandırılabilir A/B/C grubu işlem veya "
+                f"diyaliz/hemodiafiltrasyon/plazmaferez/ECMO satırı yer almıyor; "
+                f"basamak kriterleri epikriz ve Sağlık Bakanlığı düzenlemeleri "
+                f"üzerinden teyit edilmelidir (SUT §2.4.4.H.(1), (2), (4)). "
+                f"Referans P{tier2_stripped} (2. basamak) farkı: "
                 f"{gap_to_tier2:.2f} TRY; P{tier1_stripped} (1. basamak) farkı: "
                 f"{gap_to_tier1:.2f} TRY."
             )
@@ -539,7 +541,7 @@ def detect_icu_tier_overbilling(
                     "rule": _TIER_OVERBILLING_RULE_ID,
                     "rule_id": _TIER_OVERBILLING_RULE_ID,
                     "sut_section_id": _SUT_SECTION_ID,
-                    "severity": "warning",
+                    "severity": "info",
                     "claim_id": claim.claim_id,
                     "procedure_line_id": line.procedure_line_id,
                     "procedure_code": f"P{stripped}",
@@ -553,9 +555,9 @@ def detect_icu_tier_overbilling(
                     "tier_1_expected_try": tier1_total,
                     "price_gap_to_tier_2_try": gap_to_tier2,
                     "price_gap_to_tier_1_try": gap_to_tier1,
-                    "at_risk_try": gap_to_tier2,
-                    "savings_try": gap_to_tier2,
-                    "risk_amount": gap_to_tier2,
+                    "at_risk_try": 0.0,
+                    "savings_try": 0.0,
+                    "risk_amount": 0.0,
                     "included_in_sgk_total": False,
                     "savings_category": SAVINGS_CATEGORY_AUDIT_EXPOSURE,
                     "savings_basis": SAVINGS_BASIS_SOURCED,
