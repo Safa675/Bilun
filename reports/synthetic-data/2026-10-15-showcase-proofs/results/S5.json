@@ -1,0 +1,367 @@
+{
+ "story": "S5",
+ "clean": {
+  "total_billed": "36413.68",
+  "rows": [
+   {
+    "date": "2026-09-04",
+    "code": "P612320",
+    "name": "Büyük eklem parsiyel protezleri, primer",
+    "qty": 1,
+    "unit": "18390.80",
+    "billed": "18390.80",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP2070",
+    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOSUZ | CoCr/TİTANYUM | KAPLAMALI - KUMLAMA",
+    "qty": 1,
+    "unit": "12630.99",
+    "billed": "12630.99",
+    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP1880",
+    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | CoCr",
+    "qty": 1,
+    "unit": "5391.89",
+    "billed": "5391.89",
+    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+   }
+  ],
+  "diagnoses": [
+   [
+    "S72.0",
+    true
+   ],
+   [
+    "I10",
+    false
+   ],
+   [
+    "M81.0",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 1482.3,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 8
+  }
+ },
+ "faulty": {
+  "total_billed": "36413.68",
+  "rows": [
+   {
+    "date": "2026-09-04",
+    "code": "P612320",
+    "name": "Büyük eklem parsiyel protezleri, primer",
+    "qty": 1,
+    "unit": "18390.80",
+    "billed": "18390.80",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP2070",
+    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOSUZ | CoCr/TİTANYUM | KAPLAMALI - KUMLAMA",
+    "qty": 1,
+    "unit": "12630.99",
+    "billed": "12630.99",
+    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP1880",
+    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | CoCr",
+    "qty": 1,
+    "unit": "5391.89",
+    "billed": "5391.89",
+    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+   }
+  ],
+  "diagnoses": [
+   [
+    "S72.0",
+    true
+   ],
+   [
+    "I10",
+    false
+   ],
+   [
+    "M81.0",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "3.1.1.(2).titubb_uts_incomplete",
+    "severity": "error",
+    "material_code": "AP2070",
+    "risk_amount": 12630.99,
+    "material_outcome": "no_pay",
+    "sut_section": "3.1.1",
+    "message": "TİTUBB/ÜTS kayıt-bildirim tamamlanmamış — Kurumca karşılanmaz (§3.1.1(2))."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 1482.3,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 9
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "claim_checklist",
+   "submission_check",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "material_bundling_prose",
+   "3.1.1.(2).titubb_uts_incomplete",
+   "AP2070",
+   12630.99
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "validate",
+   "material_bundling_prose",
+   "3.1.1.(15).separate_billing_not_authorized",
+   "AP2070",
+   12630.99
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "yatak_puani",
+   "yatak_puani_standard_bed",
+   "",
+   1111.8
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "materials",
+   "material_prose_bundling",
+   "AP2070",
+   0.0
+  ],
+  [
+   "action",
+   "materials",
+   "material_prose_bundling",
+   "AP2070",
+   12630.99
+  ],
+  [
+   "action",
+   "materials",
+   "material_prose_bundling",
+   "AP1880",
+   5391.89
+  ],
+  [
+   "block",
+   "refakatci",
+   "refakatci_510121",
+   "",
+   370.5
+  ],
+  [
+   "compliance",
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "error",
+   "P612320",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "material_bundling_prose",
+   "3.1.4.(b).bone_cement",
+   "AP2070",
+   0.0
+  ],
+  [
+   "validate",
+   "material_bundling_prose",
+   "3.1.1.(15).separate_billing_not_authorized",
+   "AP2070",
+   12630.99
+  ],
+  [
+   "validate",
+   "material_bundling_prose",
+   "3.1.1.(15).separate_billing_not_authorized",
+   "AP1880",
+   5391.89
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "P612320",
+   0.0
+  ]
+ ]
+}

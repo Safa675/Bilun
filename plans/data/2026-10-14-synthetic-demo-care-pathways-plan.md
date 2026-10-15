@@ -171,6 +171,7 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 - **Rates (judgment).** Faults touch about 1–3% of billed TL across the cohort, anchored to the 1.72% deduction rate, and sit mostly on showcase and regression patients. Most bills are clean.
 - **Mix of causes.** It follows the anchor where the engine can detect the cause.
 - **ICU tiering is the exception.** No detector exists for it (fact 3, Safa675/Bilun#242). Either the engine gains one first, or the demo says plainly that it does not cover it.
+- **Cohort registry for tests.** The generator writes `data/synthetic/cohort_registry.json` in the same run as the parquet files: file hashes, counts, named roles (e.g. `default_landing`, `multi_bill_patient`) and the fault rows of the injection log. Tests read it through `tests/fixtures/synthetic_cohort.py` instead of hard-coding patient ids, tags or amounts, and `empty_parameter_set_mark = "fail_at_collect"` stops an empty cohort from passing silently (see the test-pin appendix).
 - **The injection log is the answer key.** The loader rule (fact 5, Safa675/Bilun#240) changes, so that answer rows are required only for injected faults and checked against the injected effect. This changes production code in `src/bilun/domain/claims/validation/`, needs its own tests, and needs a decision on what real data requires.
 - **No fake codes or prices.** No sentinel prices; every code and name comes from its catalog as of the service date (lesson of `plans/data/2026-08-22-purge-fake-demo-claim-lines-plan.md`).
 
@@ -204,7 +205,7 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 ### P0 — Decisions and baselines
 - [ ] Q1–Q6 answered.
 - [ ] The engine output on today's cohort is recorded as a baseline (`reports/synthetic-data/2026-10-14-audit-scripts/engine_output/`).
-- [ ] The 42 test files are classified: drop (old-data pins), re-point (mixed), or keep with new IDs (engine behaviour).
+- [x] The test files are classified (`plans/data/2026-10-15-synthetic-v3-test-pins.md`): 25 files with about 280 load-bearing pins need work in P6; 54 tests failed under ID, tag or seed changes alone.
 
 ### P1 — Reference data
 - [ ] Chapter table from the raw EK-2B headings.

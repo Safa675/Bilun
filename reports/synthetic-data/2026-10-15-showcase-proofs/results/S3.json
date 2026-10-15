@@ -1,0 +1,445 @@
+{
+ "story": "S3",
+ "clean": {
+  "total_billed": "5607.62",
+  "rows": [
+   {
+    "date": "2026-08-18",
+    "code": "615931",
+    "name": "Dar spinal kanalda unilateral dekompresyon",
+    "qty": 1,
+    "unit": "3837.32",
+    "billed": "3837.32",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "550160",
+    "name": "Anestezi B grubu",
+    "qty": 1,
+    "unit": "928.09",
+    "billed": "928.09",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-20",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M48.0",
+    true
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "anestezi_puani_group_lookup",
+    "procedure_code": "615931",
+    "procedure_puan": 6471.03,
+    "anestezi_group": "B",
+    "anestezi_code": "550160",
+    "anestezi_puan": 1565.07,
+    "katsayi": 0.593,
+    "expected_try": 928.09,
+    "actual_billed_try": 928.09,
+    "recoverable_uplift_try": 0.0,
+    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.09 TRY (SUT §2.2.2.A, EK-2/B §4)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 621.76,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "4679.53",
+  "rows": [
+   {
+    "date": "2026-08-18",
+    "code": "615931",
+    "name": "Dar spinal kanalda unilateral dekompresyon",
+    "qty": 1,
+    "unit": "3837.32",
+    "billed": "3837.32",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-20",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-19",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M48.0",
+    true
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "anestezi_puani_group_lookup",
+    "procedure_code": "615931",
+    "procedure_puan": 6471.03,
+    "anestezi_group": "B",
+    "anestezi_code": "550160",
+    "anestezi_puan": 1565.07,
+    "katsayi": 0.593,
+    "expected_try": 928.09,
+    "actual_billed_try": 0.0,
+    "recoverable_uplift_try": 928.09,
+    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.09 TRY (SUT §2.2.2.A, EK-2/B §4)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 928.09,
+   "audit_exposure_try": 278.24,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "only_in_faulty": [
+  [
+   "block",
+   "anestezi_puani",
+   "anestezi_puani_group_lookup",
+   "615931",
+   928.09
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   278.24
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   621.76
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   621.76
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

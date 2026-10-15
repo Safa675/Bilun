@@ -19,7 +19,8 @@ The generator and the cohort do not change in this task.
   - Q5 public ICD-10 list;
   - Q6 50 patients, 100–150 bills, 8 showcase.
 - [x] 2. P0 baseline: commit the engine numbers before and after the overnight fixes (`6b35d543` vs `1c22ee9c`) to `reports/synthetic-data/2026-10-15-engine-baseline.md`, with a JSON summary next to it.
-- [ ] 3. P0 test pins: classify each test file that pins synthetic IDs, tags, amounts or counts as drop, re-point or keep, with a fixture strategy. A read-only subagent does this; the result goes into a plan appendix.
+- [x] 3. P0 test pins: classify each test file that pins synthetic IDs, tags, amounts or counts as drop, re-point or keep, with a fixture strategy. A read-only subagent does this; the result goes into a plan appendix.
+  - Result: `plans/data/2026-10-15-synthetic-v3-test-pins.md`. P6 has 25 files and about 280 pins. The fixture strategy (cohort registry plus helper) is now in plan D4. It also found that traffic-accident detection reads `scenario_tag`/"kaza" substrings (`traffic_accident_billing.py:84-90,122-129`; `treatment_pricing.py:603-608`).
 - [x] 4. P1 chapter table:
   - builder: `scripts/synthetic/reference/build_ek2b_chapters.py`, from the raw EK-2B heading rows;
   - outputs: `data/synthetic/reference/ek2b_chapters.csv` (chapter ranges, reviewable) and a code→chapter parquet;
@@ -34,15 +35,22 @@ The generator and the cohort do not change in this task.
   - The surgical sub-annexes have full lists only up to 2025-12-13; later changes are amendment markers, the mechanism of open #227.
   - Pathways will use a small reviewed material set instead. A test checks each code's price on its service date against every snapshot and marker.
   - The general index waits for #227's fix.
-- [ ] 8. P1 lab reference table draft: about 40 routine and condition tests, each with EK-2B L-code, unit, sex-specific range and panel. A subagent drafts it and Safa reviews it.
+- [x] 8. P1 lab reference table draft: about 40 routine and condition tests, each with EK-2B L-code, unit, sex-specific range and panel. A subagent drafts it and Safa reviews it.
+  - Result: `data/synthetic/reference/lab_reference.csv` (45 billed tests, 77 result rows, 16 panels) with notes; it is a draft for Safa's review.
+  - `test_reference_lab_table.py` checks codes, names and prices across the window.
+  - It also found two engine bugs: the hemogram keyword match catches HbA1c, and wrong codes in `BILUN_TO_SUT_CODE` (PT/INR, aPTT, procalcitonin, protein).
 - [x] 9. Price-history cleanup: already done by #248 (0 zero-length rows, 0 duplicate windows, `valid_to` honoured; checked 2026-10-15).
 - [ ] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
-- [ ] 11. Showcase story drafts (8) for Safa's review. Each gives:
+- [x] 11. Showcase story drafts (8) for Safa's review. Each gives:
   - patient, diagnosis, setting and dates;
   - every line with a code valid on its date;
   - one injected fault and the engine rule that should catch it.
 
   Draft to the scratchpad first; it goes into `plans/data/` once Safa has reviewed it.
+  - Result: `plans/data/2026-10-15-showcase-stories-draft.md`, with proofs in `reports/synthetic-data/2026-10-15-showcase-proofs/`.
+  - All 8 faults fire, and the clean versions stay silent for their target rule.
+  - Other rules misfire on every clean bill (N1–N13). I verified N1 (SUT §2.2.2.B-1(1)(a),(h),(3)), N2 (`common_billing_errors.py:527`) and N4 (P612320 "Protez ayrıca faturalandırılır").
+  - The draft is waiting for Safa's review.
 - [ ] 12. Verify, in sequence: ruff, the new tests, the full suite, `compile_rules.py --check`, manifest parity. One PR; merge is Safa's call.
 
 ### Out of Scope

@@ -1,0 +1,755 @@
+{
+ "story": "S4",
+ "clean": {
+  "total_billed": "1941.97",
+  "rows": [
+   {
+    "date": "2026-05-11",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-14",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-14",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-15",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L102890",
+    "name": "Glukoz (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107420",
+    "name": "Üre (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L106910",
+    "name": "Sodyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L106150",
+    "name": "Potasyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L100300",
+    "name": "Alanin aminotransferaz (ALT) (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L101280",
+    "name": "Aspartat aminotransferaz (AST) (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107010",
+    "name": "Tam idrar analizi (Strip+Mikroskopi)",
+    "qty": 1,
+    "unit": "26.31",
+    "billed": "26.31",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "905671",
+    "name": "İdrar Kültürü",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "906020",
+    "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
+    "qty": 1,
+    "unit": "65.82",
+    "billed": "65.82",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699508270224",
+    "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "N10",
+    true
+   ],
+   [
+    "F05.1",
+    false
+   ],
+   [
+    "G30.1",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "refakatci_510121",
+    "days": 5,
+    "puan": 124.95,
+    "expected_try": 370.5,
+    "actual_billed_try": 370.5,
+    "recoverable_uplift_try": 0.0,
+    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.10 TRY/day → 370.50 TRY (admission IN, discharge OUT)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 425.46,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "1571.47",
+  "rows": [
+   {
+    "date": "2026-05-11",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-14",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L102890",
+    "name": "Glukoz (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107420",
+    "name": "Üre (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L106910",
+    "name": "Sodyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L106150",
+    "name": "Potasyum (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L100300",
+    "name": "Alanin aminotransferaz (ALT) (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L101280",
+    "name": "Aspartat aminotransferaz (AST) (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107010",
+    "name": "Tam idrar analizi (Strip+Mikroskopi)",
+    "qty": 1,
+    "unit": "26.31",
+    "billed": "26.31",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "905671",
+    "name": "İdrar Kültürü",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "906020",
+    "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
+    "qty": 1,
+    "unit": "65.82",
+    "billed": "65.82",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "L104780",
+    "name": "Kreatinin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "7.20",
+    "billed": "7.20",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699508270224",
+    "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699606694649",
+    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A"
+   }
+  ],
+  "diagnoses": [
+   [
+    "N10",
+    true
+   ],
+   [
+    "F05.1",
+    false
+   ],
+   [
+    "G30.1",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "refakatci_510121",
+    "days": 5,
+    "puan": 124.95,
+    "expected_try": 370.5,
+    "actual_billed_try": 0.0,
+    "recoverable_uplift_try": 370.5,
+    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.10 TRY/day → 370.50 TRY (admission IN, discharge OUT)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 370.5,
+   "audit_exposure_try": 166.11,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "only_in_faulty": [
+  [
+   "block",
+   "refakatci",
+   "refakatci_510121",
+   "",
+   370.5
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   166.11
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   425.46
+  ],
+  [
+   "validate",
+   null,
+   "los_procedure_density_anomaly",
+   "",
+   0.0
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   425.46
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "los_procedure_density_anomaly",
+   "",
+   0.0
+  ]
+ ]
+}
