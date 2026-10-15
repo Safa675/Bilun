@@ -15,26 +15,34 @@ from typing import TYPE_CHECKING, Any
 
 from ..pricing.temporal import get_ek2b_price_for_date
 from ..constants import HEMOGRAM_TESTS
+from ..utils import turkish_lower
 from .types import LabOptimization
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 
-# Lower-case hemogram subtest keywords for matching against SUT procedure names.
-_HEMOGRAM_NAME_KEYWORDS = frozenset(name.lower() for name in HEMOGRAM_TESTS)
+# EK-2B has no per-parameter CBC codes: the hemogram is the single line L107020, and
+# L103120 "Hematokrit (Manuel)" is the only separately coded CBC test.
+_CBC_CODES = frozenset({"L107020", "L103120"})
+
+
+def _fold_lab_name(name: Any) -> str:
+    """Case-fold a lab name for exact equality; Turkish İ, I, ı and i all fold to "i"."""
+    return turkish_lower(str(name or "").strip()).replace("ı", "i")
+
+
+# Exact BILUN CBC parameter names, never substrings: catalog tests such as
+# "Glike hemoglobin (Hb A1c)" or "Folat (Eritrosit)" are not CBC lines (#270).
+_CBC_PARAMETER_NAMES = frozenset(_fold_lab_name(name) for name in HEMOGRAM_TESTS)
 
 
 def _is_hemogram_subtest_line(line: Any) -> bool:
-    """Return True when a lab claim line looks like a CBC subtest."""
-    name = str(line.procedure_name or "").lower()
-    # Direct keyword match against BILUN hemogram test names.
-    if any(keyword in name for keyword in _HEMOGRAM_NAME_KEYWORDS):
-        return True
-    # SUT code match: all BILUN hemogram subtests map to L107020 in this catalog.
-    if line.procedure_code == "L107020":
-        return True
-    return False
+    """Return True when a lab claim line is a CBC line, by code or exact parameter name."""
+    return (
+        line.procedure_code in _CBC_CODES
+        or _fold_lab_name(line.procedure_name) in _CBC_PARAMETER_NAMES
+    )
 
 
 def _hemogram_gazette_price(service_date: Any | None = None) -> float:
