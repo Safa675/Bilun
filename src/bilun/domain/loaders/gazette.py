@@ -446,29 +446,6 @@ def get_cached_ek3i() -> list[dict[str, Any]]:
     return _ek3i_cache
 
 
-def _load_gazette_lab_prices(
-    fallback: dict[str, tuple[float, float]],
-) -> dict[str, tuple[float, float]]:
-    """Load real SUT gazette lab prices. Falls back to representative ranges."""
-    try:
-        from ..catalog import get_all_lab_prices
-
-        gazette_prices = get_all_lab_prices()
-        if gazette_prices:
-            result: dict[str, tuple[float, float]] = {}
-            for name, price in gazette_prices.items():
-                result[name] = (price, price)
-            logger.info(
-                "Loaded %d real gazette lab prices (e.g. CRP=%.2f TRY)",
-                len(result),
-                gazette_prices.get("CRP", 0),
-            )
-            return result
-    except Exception as e:
-        logger.warning("Failed to load gazette lab prices, using fallback: %s", e)
-    return fallback.copy()
-
-
 def _load_gazette_visit_prices(
     fallback: dict[str, tuple[float, float]],
 ) -> dict[str, tuple[float, float]]:

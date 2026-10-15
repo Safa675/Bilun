@@ -9,7 +9,7 @@ from typing import Any
 
 import polars as pl
 
-from src.bilun.domain.catalog import get_lab_price, lookup_procedure_code
+from src.bilun.domain.catalog import lookup_procedure_code
 from src.bilun.domain.sut.clause_reference import SOURCE_REHBER, non_sut_reference
 
 SAVINGS_CATEGORY_CAPTURE_GAP = "capture_gap"
@@ -35,10 +35,6 @@ def _resolve_lab_list_price(code: str, service_date: Any | None = None) -> tuple
         price = entry.get("price_try")
         if price:
             return float(price), "ek2b_list_price"
-
-    price = get_lab_price(code, visit_date=service_date)
-    if price:
-        return float(price), "ek2b_list_price"
 
     return None, ""
 

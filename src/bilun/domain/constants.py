@@ -250,11 +250,6 @@ HEMOGRAM_TESTS: frozenset[str] = frozenset(
     }
 )
 
-# Reverse mapping: SUT code -> BILUN test names
-_SUT_CODE_TO_BILUN: dict[str, list[str]] = {}
-for _name, _code in BILUN_TO_SUT_CODE.items():
-    _SUT_CODE_TO_BILUN.setdefault(_code, []).append(_name)
-
 
 # Runtime policy: when True, all billing surfaces require SUT claim lines.
 # Missing claim context returns explicit "missing_exact_inputs" instead of
