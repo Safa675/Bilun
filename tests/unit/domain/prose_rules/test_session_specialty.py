@@ -8,10 +8,7 @@ from decimal import Decimal
 import pytest
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
-from src.bilun.domain.prose_rules.session_pricing import (
-    compute_session_adjusted_itemized_total,
-    compute_session_point_factors,
-)
+from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.session_specialty import (
     detect_cross_specialty_session,
     resolve_procedure_specialty_key,
@@ -77,27 +74,48 @@ class TestSessionSpecialtyDetect:
         lines = [_proc("A", specialty="Kardiyoloji"), _proc("B", specialty="kardiyoloji")]
         assert detect_cross_specialty_session(lines, claim) is False
 
-    def test_ek2c_group_auto_detect(self, monkeypatch) -> None:
+    def test_ek2c_group_is_not_a_specialty(self) -> None:
+        # #264: the EK-2/C işlem grubu (P609235 group B, P603840 group C) is a
+        # price group, not a branch; without branch codes the specialty is unknown.
         claim = _claim()
+        lines = [_proc("P609235"), _proc("P603840")]
+        assert resolve_procedure_specialty_key(lines[0]) == ""
+        assert detect_cross_specialty_session(lines, claim) is False
 
-        def _entry(code: str, *, as_of_date=None):
-            groups = {"111": "Grup A", "222": "Grup B", "P111": "Grup A", "P222": "Grup B"}
-            group = groups.get(code)
-            if group:
-                return {"group": group, "puan": 10.0}
-            return None
+    @pytest.mark.parametrize(
+        "first, second, expected",
+        [
+            ("1900", "2600", True),  # Genel cerrahi + ortopedi: +25 points.
+            ("1900", "1900", False),
+            ("1900", "", False),  # One branch missing: specialty unknown (#264).
+            ("", "", False),
+        ],
+    )
+    def test_two_lines_need_a_branch_on_both(
+        self, first, second, expected,
+    ) -> None:
+        lines = [_proc("P609235", specialty=first), _proc("P603840", specialty=second)]
+        assert detect_cross_specialty_session(lines, _claim()) is expected
 
-        monkeypatch.setattr(
-            "src.bilun.domain.prose_rules.session_specialty.get_ek2c_entry",
-            _entry,
-        )
-        lines = [_proc("P111"), _proc("P222")]
-        assert detect_cross_specialty_session(lines, claim) is True
-        assert resolve_procedure_specialty_key(lines[0], claim) == "grup_a"
+    @pytest.mark.parametrize(
+        "branches, expected",
+        [
+            (("1900", "2600", ""), True),  # Two known branches differ: established.
+            (("1900", "1900", ""), False),  # The unknown line adds no specialty.
+            (("1900", "", ""), False),
+        ],
+    )
+    def test_a_line_without_a_branch_does_not_cancel_a_known_difference(
+        self, branches, expected,
+    ) -> None:
+        codes = ("600020", "600140", "600120")
+        lines = [_proc(code, specialty=branch) for code, branch in zip(codes, branches, strict=True)]
+        assert detect_cross_specialty_session(lines, _claim()) is expected
 
     def test_compute_session_adjusted_total_uses_auto_detect(self, monkeypatch) -> None:
         claim = _claim()
-        lines = [_proc("A", payable=100.0), _proc("B", payable=100.0)]
+        # #261: only EK-2/B §6 operations form a session, so the codes are surgical.
+        lines = [_proc("610070", payable=100.0), _proc("610080", payable=100.0)]
 
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing.procedure_annex_membership",
@@ -105,7 +123,7 @@ class TestSessionSpecialtyDetect:
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing._procedure_point_score",
-            lambda code, **kwargs: 10.0 if code == "B" else 5.0,
+            lambda code, **kwargs: 10.0 if code == "610080" else 5.0,
         )
         monkeypatch.setattr(
             "src.bilun.domain.prose_rules.session_pricing.detect_cross_specialty_session",

@@ -17,6 +17,7 @@ from .session_pricing import (
     compute_session_point_factors,
     expected_session_billed_try,
 )
+from .session_scope import line_billed_as_package, session_operation_lines
 from .session_specialty import detect_cross_specialty_session
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
@@ -94,7 +95,7 @@ def iter_session_secondary_assessments(
     for claim_lines in by_claim.values():
         for session_date, session_lines in group_procedure_lines_by_session(claim_lines).items():
             billable = [
-                line for line in session_lines
+                line for line in session_operation_lines(session_lines)
                 if not line.is_package_included and _line_billed(line) > 0
             ]
             if len(billable) < 2:
@@ -108,6 +109,7 @@ def iter_session_secondary_assessments(
                 same_incision=same_incision,
                 cross_specialty=session_cross,
                 as_of_date=session_date,
+                billed_as_package=[line_billed_as_package(line) for line in billable],
             )
             if session.rule_id == "single_procedure":
                 continue

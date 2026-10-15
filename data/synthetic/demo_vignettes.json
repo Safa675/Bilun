@@ -37,9 +37,9 @@
       ],
       "presentation": "itemized_only",
       "golden": {
-        "savings_try": [4625.48, 4625.48],
+        "savings_try": [4515.48, 4515.48],
         "package_total_try": [6975.48, 6975.48],
-        "itemized_total_try": [2350, 2350]
+        "itemized_total_try": [2460, 2460]
       }
     },
     "0004": {

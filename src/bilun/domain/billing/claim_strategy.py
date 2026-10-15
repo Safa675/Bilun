@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date
 from decimal import Decimal
 from typing import Any
 
 from src.bilun.domain.claims.models import (
     ClaimHeader,
+    DrugClaimLine,
+    MaterialClaimLine,
     PerformedProcedureLine,
     ProcedureClaimLine,
 )
@@ -26,6 +29,7 @@ from src.bilun.domain.prose_rules.care_setting_review import _pick_claim_kind
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.session_pricing import (
     _line_itemized_payable,
+    blood_component_billable_fraction,
     compute_session_adjusted_itemized_total,
 )
 from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
@@ -325,6 +329,129 @@ def lines_for_legal_itemized_alternative(
     return eligible
 
 
+def _itemized_procedure_lines(
+    claim: ClaimHeader,
+    claim_procs: Iterable[ProcedureClaimLine],
+) -> list[ProcedureClaimLine]:
+    return [
+        line
+        for line in claim_procs
+        if line.claim_id == claim.claim_id
+        and line.procedure_category != "paket"
+        and not line.is_package_included
+        and float(line.billed_amount_try) > 0
+    ]
+
+
+def billed_itemized_total_try(
+    claim: ClaimHeader,
+    claim_procs: Iterable[ProcedureClaimLine],
+    *,
+    drug_lines: Iterable[DrugClaimLine] = (),
+    material_lines: Iterable[MaterialClaimLine] = (),
+) -> float:
+    """What a hizmet başı bill actually billed: every itemized line at its billed amount.
+
+    No compliance filter and no session re-pricing (#269).
+    """
+    procedures = (
+        float(line.billed_amount_try) for line in _itemized_procedure_lines(claim, claim_procs)
+    )
+    others = (
+        float(line.billed_amount_try)
+        for line in (*drug_lines, *material_lines)
+        if line.claim_id == claim.claim_id
+    )
+    return _money(sum(amount for amount in (*procedures, *others) if amount > 0))
+
+
+def package_replaced_total_try(
+    claim: ClaimHeader,
+    claim_procs: Iterable[ProcedureClaimLine],
+    *,
+    drug_lines: Iterable[DrugClaimLine] = (),
+    material_lines: Iterable[MaterialClaimLine] = (),
+) -> float:
+    """The part of a hizmet başı bill that a mandated package would replace (#269).
+
+    Lines count at their billed amount, with no compliance filter and no session
+    re-pricing. What the SUT pays next to the package either way drops out of
+    the comparison, so neither side carries it:
+
+    - materials the bill marks outside the package (``is_bundled`` False), e.g.
+      the SUT §3.1.4 implants, plates and stents (C000582, C002857–C002875);
+    - the share of a blood component billed next to the package (C000694).
+
+    Drugs count in full: §2.2.2.B-1(1)(d) puts the stay's drugs inside the
+    package. Its exceptions (blood products, haemostatic and sealant drugs;
+    C000690) and services after the package window (C000707) are not separated
+    yet, so a bill with them is compared as if the package replaced them.
+    """
+    procedures = 0.0
+    for line in _itemized_procedure_lines(claim, claim_procs):
+        billed = float(line.billed_amount_try)
+        fraction = blood_component_billable_fraction(line.procedure_code)
+        procedures += billed * (1.0 - fraction) if fraction is not None else billed
+    drugs = sum(
+        float(line.billed_amount_try)
+        for line in drug_lines
+        if line.claim_id == claim.claim_id and float(line.billed_amount_try) > 0
+    )
+    materials = sum(
+        float(line.billed_amount_try)
+        for line in material_lines
+        if line.claim_id == claim.claim_id
+        and line.is_bundled
+        and float(line.billed_amount_try) > 0
+    )
+    return _money(procedures + drugs + materials)
+
+
+def _package_mandated_itemized(
+    claim: ClaimHeader,
+    claim_kind: PaymentMethodKind | None,
+    current_billing: str,
+) -> bool:
+    """The strategy compares a mandated package with the hizmet başı bill (#269)."""
+    return (
+        bool(claim.package_candidate)
+        and claim_kind == "DRG_MANDATORY"
+        and current_billing == "itemized"
+    )
+
+
+def mandated_package_gap_try(
+    claim: ClaimHeader,
+    claim_procs: Iterable[ProcedureClaimLine],
+    *,
+    drug_lines: Iterable[DrugClaimLine] = (),
+    material_lines: Iterable[MaterialClaimLine] = (),
+) -> tuple[float, float] | None:
+    """(package total, replaced bill) for a claim whose strategy row shows this gap.
+
+    Same gate as ``recommend_billing_strategy_from_claims``: a package candidate
+    whose lines mandate the package (SUT §2.2.2(1)) but were billed hizmet başı,
+    with a package price on file. ``None`` for every other claim, so audit
+    exposure is only cleared where the strategy reports the gap.
+    """
+    procs = [line for line in claim_procs if line.claim_id == claim.claim_id]
+    if not procs:
+        return None
+    care_setting = infer_care_setting(claim)
+    claim_kind = _aggregate_claim_kind(
+        [_resolve_line_payment_method(line, claim, care_setting=care_setting) for line in procs]
+    )
+    if not _package_mandated_itemized(claim, claim_kind, _infer_current_billing(procs)):
+        return None
+    package_total, _ = resolve_package_total_try(claim, procs)
+    if package_total <= 0:
+        return None
+    replaced = package_replaced_total_try(
+        claim, procs, drug_lines=drug_lines, material_lines=material_lines,
+    )
+    return package_total, replaced
+
+
 def _itemized_exclusion_metadata(
     lines: list[ProcedureClaimLine],
     claim: ClaimHeader,
@@ -394,9 +521,12 @@ def _compute_claim_savings(
         return _money(abs(package_total - itemized_total))
 
     if recommendation == "package":
-        if current_billing == "package":
+        if current_billing == "package" or package_total <= 0:
             return 0.0
-        return _money(max(0.0, itemized_total - package_total))
+        # The mandated package replaces the itemized bill, so the gap is money
+        # either way: package-billing uplift when the package pays more (#269),
+        # a compliance saving when the itemized bill is higher.
+        return _money(abs(itemized_total - package_total))
 
     if current_billing == "itemized":
         return 0.0
@@ -622,11 +752,36 @@ def recommend_billing_strategy_from_claims(
         if claim_kind is None:
             continue
 
-        eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim)
-        excluded_count, excluded_codes = _itemized_exclusion_metadata(
-            claim_procs, claim, eligible_lines=eligible_lines
+        current_billing = _infer_current_billing(claim_procs)
+        # A mandated package replaces the hizmet başı bill: compare it with what
+        # was billed, not with a legal itemized alternative (#269). The audit
+        # exposure side uses the same gate (``mandated_package_gap_try``).
+        package_mandated_itemized = _package_mandated_itemized(
+            claim, claim_kind, current_billing
         )
-        if eligible_lines:
+        eligible_lines: list[ProcedureClaimLine] = []
+        excluded_count, excluded_codes = 0, []
+        if not package_mandated_itemized:
+            eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim)
+            excluded_count, excluded_codes = _itemized_exclusion_metadata(
+                claim_procs, claim, eligible_lines=eligible_lines
+            )
+        if package_mandated_itemized:
+            # Raw: every billed line. Total: the part the package replaces.
+            itemized_raw = billed_itemized_total_try(
+                claim,
+                claim_procs,
+                drug_lines=ctx.drug_lines,
+                material_lines=ctx.material_lines,
+            )
+            itemized_total = package_replaced_total_try(
+                claim,
+                claim_procs,
+                drug_lines=ctx.drug_lines,
+                material_lines=ctx.material_lines,
+            )
+            itemized_price_methodology = "billed_lines"
+        elif eligible_lines:
             itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
             itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
                 eligible_lines,
@@ -666,7 +821,6 @@ def recommend_billing_strategy_from_claims(
             continue
 
         primary = _primary_line_result(line_results, claim_kind)
-        current_billing = _infer_current_billing(claim_procs)
 
         if claim_kind == "DRG_MANDATORY":
             recommendation = "package"
@@ -709,9 +863,15 @@ def recommend_billing_strategy_from_claims(
         else:
             savings_basis = "claim_line"
 
+        # The mandated package paying more than the itemized bill is
+        # package-billing uplift, not a compliance saving (#269).
+        package_billing_uplift = (
+            package_mandated_itemized and package_total > itemized_total
+        )
         savings_category = (
             SAVINGS_CATEGORY_SGK_UPLIFT
-            if recommendation_kind == "optional_override" and savings > 0
+            if (recommendation_kind == "optional_override" or package_billing_uplift)
+            and savings > 0
             else SAVINGS_CATEGORY_COMPLIANCE
             if recommendation_kind == "mandatory_compliance" and savings > 0
             else None
@@ -737,7 +897,8 @@ def recommend_billing_strategy_from_claims(
             "recoverable_uplift_try": savings,
             "savings_basis": savings_basis,
             "savings_category": savings_category,
-            "included_in_sgk_total": bool(savings_category),
+            # A compliance saving is money the bill overstates, not SGK uplift.
+            "included_in_sgk_total": savings_category == SAVINGS_CATEGORY_SGK_UPLIFT,
             "current_billing": current_billing,
             "detail": message["detail"],
             "message_code": message["message_code"],

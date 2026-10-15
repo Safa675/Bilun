@@ -13,6 +13,10 @@ from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
 from src.bilun.domain.prose_rules.claim_utils import group_procedure_lines_by_session
 from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+from src.bilun.domain.prose_rules.session_scope import (
+    is_session_operation_code,
+    session_operation_lines,
+)
 from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
@@ -114,9 +118,11 @@ def _resolve_addon_factor(
 ) -> float:
     """Match §2.2.2.B / §2.2.2.A(5) session point factors for the add-on code."""
     same_incision = bool(rule.get("same_incision", True))
+    # The session's operations and the rule's trigger/add-on pair, under the
+    # same session scope as every other §2.2.2 consumer (#261).
     billable = [
         line
-        for line in session_lines
+        for line in session_operation_lines(session_lines)
         if line.procedure_category != "paket"
         and not line.is_package_included
         and _line_billed(line) > 0
@@ -124,7 +130,7 @@ def _resolve_addon_factor(
     codes = list(
         dict.fromkeys(
             [normalize_procedure_code(line.procedure_code) for line in billable]
-            + [trigger_code, addon_code]
+            + [code for code in (trigger_code, addon_code) if is_session_operation_code(code)]
         )
     )
     cross_specialty = detect_cross_specialty_session(billable, claim)
@@ -133,6 +139,7 @@ def _resolve_addon_factor(
         same_incision=same_incision,
         cross_specialty=cross_specialty,
         as_of_date=session_date,
+        billed_as_package=[False] * len(codes),
     )
     factors = {
         normalize_procedure_code(f.procedure_code): f for f in session.factors

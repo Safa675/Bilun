@@ -176,13 +176,23 @@ class TestProseDrgUnbundling:
         assert finding is not None
         assert finding.session_violations == []
 
-    def test_detects_session_point_overbilling(self) -> None:
+    @pytest.mark.parametrize(
+        "category, rule_id, risk",
+        [
+            # Hizmet başı: §2.2.2.A(5) 30 %; both codes are also EK-2/C packages.
+            ("islem", "2.2.2.A.(5)", 700.0),
+            # Billed as packages: §2.2.2.B(3)(a) 25 %.
+            ("paket", "2.2.2.B.a", 750.0),
+        ],
+    )
+    def test_detects_session_point_overbilling(self, category, rule_id, risk) -> None:
         claim = _claim()
         session_day = date(2026, 1, 10)
         lines = [
             _proc(
                 procedure_line_id="PL1",
                 procedure_code="610070",
+                procedure_category=category,
                 procedure_date=session_day,
                 billed_amount_try=Decimal("1000"),
                 procedure_specialty_code="cerrahi",
@@ -190,6 +200,7 @@ class TestProseDrgUnbundling:
             _proc(
                 procedure_line_id="PL2",
                 procedure_code="609270",
+                procedure_category=category,
                 procedure_date=session_day,
                 billed_amount_try=Decimal("1000"),
                 procedure_specialty_code="cerrahi",
@@ -198,9 +209,9 @@ class TestProseDrgUnbundling:
         finding = analyze_claim_unbundling(claim, lines, same_incision=True)
         assert finding is not None
         assert len(finding.session_violations) == 1
-        assert finding.session_violations[0]["rule_id"] == "2.2.2.B.a"
+        assert finding.session_violations[0]["rule_id"] == rule_id
         assert finding.session_violations[0]["procedure_code"] == "610070"
-        assert finding.session_violations[0]["risk_amount_try"] == pytest.approx(750.0, rel=0.01)
+        assert finding.session_violations[0]["risk_amount_try"] == pytest.approx(risk, rel=0.01)
 
     def test_detects_payment_method_mismatch(self) -> None:
         claim = _claim(facility_tier="2_basamak_kamu")

@@ -201,10 +201,10 @@ def test_itemized_session_and_hypothetical_strategy_do_not_use_package_blood_cap
     primary = _proc(procedure_line_id="primary", procedure_code="P610070",
                     procedure_specialty_code="surgery", billed_amount_try=Decimal("1000"))
     lines = [primary, blood]
-    rows = detect_session_underbilling_opportunities(lines, cross_specialty=False)
-    assert rows[0]["expected_billed_try"] == 300  # §4.6 package cap would be 200.
+    # #261: blood is not a session operation (was a 30 % secondary, expected 300).
+    assert detect_session_underbilling_opportunities(lines, cross_specialty=False) == []
     total, _ = compute_session_adjusted_itemized_total(lines, same_incision=False, cross_specialty=False)
-    assert total == 1500
+    assert total == 2000  # Full itemized blood; the §4.6 package cap would give 1200.
 
 
 def test_material_quantity_preserves_unit_rounding_and_one_cent_tolerance(monkeypatch):

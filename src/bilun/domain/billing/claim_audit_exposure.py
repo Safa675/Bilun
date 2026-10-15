@@ -20,7 +20,13 @@ def compute_audit_exposure_from_claims(ctx: PatientClaimContext) -> float:
         if not claim_procs:
             continue
 
-        finding = analyze_claim_unbundling(claim, claim_procs, same_incision=True)
+        finding = analyze_claim_unbundling(
+            claim,
+            claim_procs,
+            same_incision=True,
+            drug_lines=ctx.drug_lines,
+            material_lines=ctx.material_lines,
+        )
         if finding is None:
             continue
 
