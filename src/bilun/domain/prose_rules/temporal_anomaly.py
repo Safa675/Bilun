@@ -1,14 +1,15 @@
 """Temporal-anomaly detectors (Workstream C — diagnosis-coding plan).
 
-Two heuristics flag billing patterns that are physically or clinically
+Two heuristics for billing patterns that are physically or clinically
 implausible and therefore almost always signal a coding / documentation
 defect:
 
-- **#8** Generic procedure time-overlap — two surgical-category procedures
-  on the *same claim*, *same service date*, *same specialty* cannot both
-  have been performed by one team in one room. Flagged as a review warning.
-- **#9** LOS vs procedure density — too many procedures per inpatient day
-  (ratio > 5) or a multi-day inpatient stay with zero billable procedures
+- **#8** Generic procedure time-overlap — honest skip. MEDULA procedure
+  lines carry a service date but no start/end time, and two operations on
+  the *same claim*, *same date*, *same branch* are the same-session case the
+  SUT prices (§2.2.2.A(5), §2.2.2.B(3)), so a shared date is no overlap.
+- **#9** LOS vs service density — too many services per inpatient night
+  (ratio > 5) or a multi-night stay billed with daily bed/stay tariffs only
   (ghost stay) are both temporal anomalies.
 
 Each detector takes plain ``ClaimHeader`` / ``ProcedureClaimLine`` lists
@@ -24,9 +25,6 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
-from src.bilun.domain.prose_rules.claim_utils import (
-    group_procedure_lines_by_session,
-)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -40,36 +38,26 @@ if TYPE_CHECKING:
 _OPPORTUNITY_TYPE = "temporal_anomaly"
 _SUT_SECTION_ID = "2.4"
 
-# Error #8 — procedure_category keywords signalling an operative / surgical
-# service. Two of these on the same date + same claim + same specialty
-# cannot physically have been performed concurrently by the same team.
-_SURGICAL_CATEGORY_KEYWORDS: tuple[str, ...] = (
-    "cerrahi",
-    "surgery",
-    "operative",
-    "ameliyat",
-    "cerrahi_dis",
-    "surgical",
-)
-
-# Error #8 — SUT procedure-code prefix range that is surgical (the 600xxx-
-# 629xxx block in EK-2B and P600xxx-P629xxx in EK-2C). Used as a fallback
-# when the category string does not carry a surgical keyword.
-_SURGICAL_CODE_PREFIXES: tuple[str, ...] = ("60", "61", "62")
-# EK-2B 51xxxx codes (510010–510121) are inpatient bed/stay tariffs, never
-# surgical procedures even if a line's category was miscoded.
-_BED_CODE_PREFIXES: tuple[str, ...] = ("51",)
+# Error #9 — the density ratio counts services, not every line (#263). EK-2B
+# 51xxxx codes (510010 standard bed … 510121 companion) are daily bed/stay
+# tariffs whose count tracks the stay length, and L-codes are laboratory-list
+# tests billed one line per analyte; counting either pushed normal medical
+# stays over the ratio. A stay billed with daily tariffs only is the ghost
+# stay; a lab line still evidences care there.
+_DAILY_TARIFF_CODE_PREFIXES: tuple[str, ...] = ("51",)
+_LAB_CODE_PREFIXES: tuple[str, ...] = ("L",)
 
 # Error #9 — procedure_count / LOS_days threshold above which the billing
 # pattern is implausible (too many concurrent procedures per inpatient day).
 _PROCEDURE_DENSITY_RATIO_MAX = 5
 
-# Error #9 — ghost-stay: an inpatient stay this long or longer with zero
-# billable procedures is almost certainly a capture/documentation defect.
+# Error #9 — ghost-stay: an inpatient stay longer than this (LOS > 3 nights)
+# billed with daily tariffs only is almost certainly a capture/documentation
+# defect.
 _GHOST_STAY_MIN_LOS_DAYS = 3
 
 
-def _normalize_surgical_code(raw: str | None) -> str:
+def _normalize_code(raw: str | None) -> str:
     code = (
         str(raw or "")
         .strip()
@@ -83,99 +71,23 @@ def _normalize_surgical_code(raw: str | None) -> str:
     return code
 
 
-def _is_surgical(line: ProcedureClaimLine) -> bool:
-    """True when a procedure line is an operative / surgical service.
-
-    Excludes EK-2B ``51xxxx`` bed/stay tariffs unconditionally, then checks
-    whether ``procedure_category`` carries a surgical keyword
-    (``cerrahi``/``surgery``/``operative``/``ameliyat``), falling back to
-    the SUT ``600xxx``–``629xxx`` (and ``P600xxx``–``P629xxx``) surgical
-    code-prefix range when the category is blank or non-descriptive.
-    """
-    code = _normalize_surgical_code(line.procedure_code)
-    if code[:2] in _BED_CODE_PREFIXES:
-        return False
-    category = (line.procedure_category or "").casefold()
-    if any(kw in category for kw in _SURGICAL_CATEGORY_KEYWORDS):
-        return True
-    return code[:2] in _SURGICAL_CODE_PREFIXES
-
-
 def detect_procedure_time_overlap(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """#8: Two surgical procedures on the same claim, same date, same specialty.
+    """#8: Procedure time-overlap — honest skip until lines carry times.
 
-    Two operative procedures performed by the *same specialty* on the
-    *same service date* on the *same claim* cannot both have been carried
-    out concurrently — one team / one room / one anaesthetic cannot service
-    two surgeries at once. The pair is flagged for review (conservative:
-    only same date + both surgical + same specialty counts).
-
-    Date grouping uses :func:`group_procedure_lines_by_session`
-    (the §2.2.2.B session helper), which isolates undated sentinel lines
-    into their own sessions so unrelated procedures are not falsely paired.
-
-    Honest skips: claim filtered out by ``claim_ids_with_procs``, fewer
-    than two surgical procedures on a date, or no ``procedure_specialty_code``
-    (cannot determine same-specialty without it).
+    An overlap needs a start/end time on both lines, and a MEDULA procedure
+    line (``ProcedureClaimLine``) carries its service date only. Two
+    operations on the same claim, date and branch are therefore one session
+    with several operations, which the SUT prices at reduced rates rather
+    than forbids (§2.2.2.A(5), §2.2.2.B(3)). Flagging a shared date warned
+    on every legal multi-operation session (#263), so no violation is
+    emitted; the signature stays for the engine wiring.
     """
-    # Group procedure lines by claim, then by service-date session.
-    by_claim: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
-    for line in procedure_lines:
-        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
-            continue
-        by_claim[line.claim_id].append(line)
-
-    violations: list[dict[str, Any]] = []
-    for claim in claims:
-        lines = by_claim.get(claim.claim_id)
-        if not lines:
-            continue
-        # group_procedure_lines_by_session keys sessions by service date.
-        sessions = group_procedure_lines_by_session(lines)
-        for session_date, session_lines in sessions.items():
-            # Only surgical lines can physically overlap.
-            surgical = [ln for ln in session_lines if _is_surgical(ln)]
-            if len(surgical) < 2:
-                continue
-            # Same-specialty check — a line without a specialty code cannot
-            # be safely paired, so it is excluded from the comparison.
-            by_specialty: dict[str, list[ProcedureClaimLine]] = defaultdict(list)
-            for ln in surgical:
-                if ln.procedure_specialty_code:
-                    by_specialty[ln.procedure_specialty_code].append(ln)
-            for specialty, spec_lines in by_specialty.items():
-                if len(spec_lines) < 2:
-                    continue
-                detail = (
-                    f"Takip {claim.claim_id}: aynı branşta ({specialty}) iki cerrahi "
-                    f"işlem {session_date} tarihinde aynı anda faturalandırılmış — "
-                    f"aynı ekip/oda aynı anda iki ameliyatı aynı günde yapamaz "
-                    f"(zaman çakışması, SUT §{_SUT_SECTION_ID})."
-                )
-                violations.append(
-                    {
-                        "type": _OPPORTUNITY_TYPE,
-                        "claim_id": claim.claim_id,
-                        "rule_id": "procedure_time_overlap",
-                        "detail": detail,
-                        "sut_section_id": _SUT_SECTION_ID,
-                        "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                        "savings_basis": SAVINGS_BASIS_SOURCED,
-                        "severity": "warning",
-                        "procedure_date": session_date,
-                        "procedure_specialty_code": specialty,
-                        "procedure_codes": [ln.procedure_code for ln in spec_lines],
-                        "procedure_line_ids": [
-                            ln.procedure_line_id for ln in spec_lines
-                        ],
-                    }
-                )
-    return violations
+    return []
 
 
 def detect_los_procedure_density_anomaly(
@@ -184,16 +96,17 @@ def detect_los_procedure_density_anomaly(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """#9: LOS vs procedure-density anomaly (too many / zero procedures per day).
+    """#9: LOS vs service-density anomaly (too many services / tariff-only stay).
 
     Two sub-patterns, both review warnings:
 
-    - **High density** — ``procedure_count / LOS_days > 5`` signals that the
-      claim is over-loaded with procedures relative to the stay length
-      (unbundling / upcoding嫌疑).
-    - **Ghost stay** — an inpatient stay of ``> 3`` days with **zero**
-      billable procedures is almost certainly a capture/documentation defect
-      (the episode was billed as bed-days only).
+    - **High density** — ``service_count / LOS_days > 5`` signals that the
+      claim is over-loaded with services relative to the stay length
+      (suspected unbundling / upcoding). Daily bed/stay tariff lines
+      (``51xxxx``) and laboratory L-code lines are not services here.
+    - **Ghost stay** — an inpatient stay of ``> 3`` days billed with daily
+      bed/stay tariff lines only (no service, no lab line) is almost
+      certainly a capture/documentation defect.
 
     LOS is computed as ``(discharge_date - admission_date).days``.
     Outpatient claims (no ``admission_date`` or LOS <= 0) are skipped — the
@@ -203,12 +116,18 @@ def detect_los_procedure_density_anomaly(
     Honest skips: claim filtered out by ``claim_ids_with_procs``, missing
     admission/discharge date, non-positive LOS, or LOS <= 0.
     """
-    # Count procedure lines per claim (each line is one billed procedure).
-    count_by_claim: dict[str, int] = defaultdict(int)
+    # Per claim: lines other than daily tariffs, and the services among them.
+    non_tariff_by_claim: dict[str, int] = defaultdict(int)
+    services_by_claim: dict[str, int] = defaultdict(int)
     for line in procedure_lines:
         if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
             continue
-        count_by_claim[line.claim_id] += 1
+        code = _normalize_code(line.procedure_code)
+        if code.startswith(_DAILY_TARIFF_CODE_PREFIXES):
+            continue
+        non_tariff_by_claim[line.claim_id] += 1
+        if not code.startswith(_LAB_CODE_PREFIXES):
+            services_by_claim[line.claim_id] += 1
 
     violations: list[dict[str, Any]] = []
     for claim in claims:
@@ -219,13 +138,14 @@ def detect_los_procedure_density_anomaly(
         los_days = (claim.discharge_date - claim.admission_date).days
         if los_days <= 0:
             continue
-        proc_count = count_by_claim.get(claim.claim_id, 0)
+        proc_count = services_by_claim.get(claim.claim_id, 0)
         density = proc_count / los_days
 
         if density > _PROCEDURE_DENSITY_RATIO_MAX:
             detail = (
                 f"Takip {claim.claim_id}: yatış süresi {los_days} gün için işlem "
-                f"yoğunluğu çok yüksek ({proc_count} işlem, oran {density:.2f} > "
+                f"yoğunluğu çok yüksek ({proc_count} işlem; günlük yatak/refakat ve "
+                f"laboratuvar satırları hariç, oran {density:.2f} > "
                 f"{_PROCEDURE_DENSITY_RATIO_MAX}) — gün başına işlem sayısı "
                 f"fiziksel olarak uygulanabilir değil (SUT §{_SUT_SECTION_ID})."
             )
@@ -246,11 +166,12 @@ def detect_los_procedure_density_anomaly(
                 }
             )
             continue
-        if proc_count == 0 and los_days > _GHOST_STAY_MIN_LOS_DAYS:
+        tariff_only = non_tariff_by_claim.get(claim.claim_id, 0) == 0
+        if tariff_only and los_days > _GHOST_STAY_MIN_LOS_DAYS:
             detail = (
                 f"Takip {claim.claim_id}: yatış süresi {los_days} gün ancak "
-                f"hattında hiç faturalandırılabilir işlem yok — hayalet yatış "
-                f"(sadece yatak günü faturalandırılmış, SUT §{_SUT_SECTION_ID})."
+                f"günlük yatak/refakat tarifesi dışında hiç işlem yok — hayalet "
+                f"yatış (sadece yatak günü faturalandırılmış, SUT §{_SUT_SECTION_ID})."
             )
             violations.append(
                 {
