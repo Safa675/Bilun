@@ -52,7 +52,9 @@ rules:
     - kemik çimentosu
     - kemikimentosu
     - bone cement
-    - çimento
+    - vertebroplasti çimentosu
+    - viskoziteli çimento
+    - kifoplasti, çimento
   action:
     material_outcome: review_required
     severity: info

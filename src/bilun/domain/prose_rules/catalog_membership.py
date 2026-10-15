@@ -186,6 +186,28 @@ def _ek2c_entry_map_asof(asof_key: str) -> dict[str, dict[str, object]]:
     return entries
 
 
+@lru_cache(maxsize=64)
+def _ek2c_description_map_asof(asof_key: str) -> dict[str, str]:
+    work = _ek2c_frame_asof(asof_key)
+    if work.empty or "description" not in work.columns:
+        return {}
+    codes = work["package_code"].astype(str).map(normalize_procedure_code)
+    texts = work["description"].fillna("").astype(str).str.strip()
+    return {code: text for code, text in zip(codes, texts, strict=True) if code and text}
+
+
+def get_ek2c_description(
+    procedure_code: str,
+    *,
+    as_of_date: date | str | None = None,
+) -> str:
+    """EK-2C açıklama of a package code in force on the given date ("" if none)."""
+    normalized = normalize_procedure_code(procedure_code)
+    if not normalized:
+        return ""
+    return _ek2c_description_map_asof(_coerce_asof_key(as_of_date)).get(normalized, "")
+
+
 def get_ek2b_codes() -> frozenset[str]:
     """Latest EK-2B membership (as of today)."""
     return get_ek2b_codes_as_of(_coerce_asof_key(None))
