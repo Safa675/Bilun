@@ -63,19 +63,29 @@ def _rule_tier_b_score(rule: dict[str, Any]) -> int:
     return score
 
 
+def _specialty_phrase(text: str) -> str:
+    words = [w for w in re.split(r"[^a-z0-9]+", _normalize_tr(text)) if w and w != "ve"]
+    return " ".join(words)
+
+
 def _specialty_matches(actual: str | None, allowed: list[str]) -> bool:
     normalized_actual = _normalize_tr(actual or "")
     if not normalized_actual:
         return False
+    phrase_actual = _specialty_phrase(actual or "")
     for specialty in allowed:
         token = _normalize_tr(specialty)
         if token and token in normalized_actual:
+            return True
+        phrase_token = _specialty_phrase(specialty)
+        if phrase_token and phrase_token in phrase_actual:
             return True
     return False
 
 
 def _normalize_tr(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", str(text or "").casefold())
+    lowered = str(text or "").replace("İ", "i").replace("I", "ı").casefold().replace("ı", "i")
+    folded = unicodedata.normalize("NFKD", lowered)
     return "".join(ch for ch in folded if not unicodedata.combining(ch))
 
 

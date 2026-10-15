@@ -135,27 +135,24 @@ def test_prescriber_inside_rule_specialties_is_not_flagged(
 @pytest.mark.parametrize(
     ("rule_id", "drug_name", "icd10", "department"),
     [
-        pytest.param(
-            _ACS,
-            _PLAVIX,
-            "I21.4",
-            "Kalp ve Damar Cerrahisi (KVC)",
-            marks=pytest.mark.xfail(
-                strict=True, reason="#256: 've' between the words breaks the substring match"
-            ),
-        ),
-        pytest.param(
-            _ACS,
-            _PLAVIX,
-            "I21.4",
-            "İÇ HASTALIKLARI",
-            marks=pytest.mark.xfail(
-                strict=True, reason="#256: casefold() maps 'I' to 'i', not the Turkish 'ı'"
-            ),
-        ),
+        (_ACS, _PLAVIX, "I21.4", "Kalp ve Damar Cerrahisi (KVC)"),
+        (_ACS, _PLAVIX, "I21.4", "İÇ HASTALIKLARI"),
+        (_ACS, _PLAVIX, "I21.4", "ACİL TIP"),
     ],
 )
 def test_real_world_department_spellings_are_not_flagged(
     rule_id: str, drug_name: str, icd10: str, department: str
 ) -> None:
     assert _evaluate(rule_id, drug_name, icd10, department) is None
+
+
+def test_turkish_capitals_and_kvc_do_not_overmatch_kardiyoloji() -> None:
+    """#256: Turkish uppercase tokens match their own specialty and KVC does not match kardiyoloji."""
+    from src.bilun.domain.prose_rules._drug_indication.matching import _specialty_matches
+
+    assert _specialty_matches("GÖZ HASTALIKLARI", ["göz hastalıkları"]) is True
+    assert _specialty_matches("ACİL TIP", ["acil tıp"]) is True
+    assert _specialty_matches("İÇ HASTALIKLARI", ["iç hastalıkları"]) is True
+    assert _specialty_matches("Kalp ve Damar Cerrahisi (KVC)", ["kalp damar cerrahisi"]) is True
+    assert _specialty_matches("Kalp ve Damar Cerrahisi (KVC)", ["kardiyoloji"]) is False
+
