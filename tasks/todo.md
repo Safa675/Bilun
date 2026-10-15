@@ -28,7 +28,8 @@ The generator and the cohort do not change in this task.
   - Result: 7,175 codes in 43 chapters, each one block in the list. The pattern handles lettered ("9.A") and two-line headings. Every code in force on 2026-02-01, 2026-07-07 and 2026-09-30 has a chapter (10 tests).
 - [x] 5. P1 anaesthesia groups. **Changed:** the engine's bands switch on the wrong dates, so the generator takes the bands and their dates from the list instead (`code_sets.yaml` → `surgical_group_bands`).
   - The raw EK-2B markers say the 32,561 table starts 2024-08-07 and the 39,001 table starts 2026-04-16. `_group_table_for_date` switches on 2026-01-01 and 2026-07-07.
-  - Pinned by two strict `xfail` tests. An issue is waiting for Safa's yes.
+  - Pinned by two strict `xfail` tests.
+  - Filed as Safa675/Bilun#265. The re-check found a third wrong cutover: the 12001 bands are marked 04/08/2022, but the engine uses them from 2022-09-03.
 - [x] 6. P1 code sets: `data/synthetic/reference/code_sets.yaml` (visits by setting, beds, ICU tiers, anaesthesia, companion). A test checks that every code exists in the catalog in force across 2026-02-01..2026-09-30.
   - Result: 15 tests pass. Notes quote the EK-2B explanation column (510120 under 24 h; 510090 bundles ventilation and monitoring; 520021 never with other procedures; 530000 once a day).
 - [ ] 7. P1 EK-3 prices. **Changed:** no general dated index yet.
@@ -41,6 +42,29 @@ The generator and the cohort do not change in this task.
   - It also found two engine bugs: the hemogram keyword match catches HbA1c, and wrong codes in `BILUN_TO_SUT_CODE` (PT/INR, aPTT, procalcitonin, protein).
 - [x] 9. Price-history cleanup: already done by #248 (0 zero-length rows, 0 duplicate windows, `valid_to` honoured; checked 2026-10-15).
 - [ ] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
+  - [x] 10a. Safa approved the 7 files on 2026-10-15. They are fetched into separate scratch folders, and each size matches the HEAD check (9,428,064 bytes in all):
+    - SKRS `ICD10Listesi.xlsx` (15,805 codes, Turkish names) and `ICD10MSVSIliskisiListesi.xlsx` (sex flags on 97 cancer codes);
+    - WHO `icd102019enMeta.zip`;
+    - TİTCK licensed-product lists of 2026-02-06 and 2026-09-25;
+    - SKRS e-prescription lists of 2026-02-03 and 2026-09-29.
+  - **The September e-prescription list** links to another workbook. Its 3 essential-medicine-list columns are formulas over a March file, so they are not used.
+  - **The WHO file** has no sex/age edits. Its licence is CC BY-ND 3.0 IGO, so it serves only as a local cross-check, and nothing derived from it is committed.
+  - [ ] 10b. ICD-10 table `data/synthetic/reference/icd10_tr.parquet`, built from the SKRS export:
+    - code, Turkish name, parent, level, active flag, high-risk-pregnancy flag, created/updated/passive dates;
+    - sex from the active SKRS ICD10MSVS rows.
+  - [ ] 10c. Drug crosswalk `data/synthetic/reference/drug_crosswalk.parquet`:
+    - one row per curated EK-4A barcode;
+    - from TİTCK: product name, active ingredient, ATC code;
+    - from SKRS e-prescription: ATC name and active/passive status;
+    - both 2026 snapshots;
+    - an exact barcode join, with the match coverage reported.
+  - [ ] 10d. Builder `scripts/synthetic/reference/build_icd10_and_drugs.py` (Polars over openpyxl, the repo's convention):
+    - the download folder is passed as an argument; raw files stay outside the repo;
+    - the builder refuses any input whose sha256 differs from `data/synthetic/reference/sources.yaml` (publisher, page, file URL, date, size, sha256, terms).
+  - [ ] 10e. Tests: schema, unique keys, code formats, sex flags matching the source, crosswalk coverage, and well-formed provenance entries. The parse is cross-checked against an independent stdlib reader.
+  - Still open for Safa:
+    - drug prices: the TİTCK price list needs a login;
+    - sex/age edits beyond the 97 SKRS codes: none of these files has them, so the pathway table (D2) carries sex and age per pathway.
 - [x] 11. Showcase story drafts (8) for Safa's review. Each gives:
   - patient, diagnosis, setting and dates;
   - every line with a code valid on its date;
@@ -51,7 +75,16 @@ The generator and the cohort do not change in this task.
   - All 8 faults fire, and the clean versions stay silent for their target rule.
   - Other rules misfire on every clean bill (N1–N13). I verified N1 (SUT §2.2.2.B-1(1)(a),(h),(3)), N2 (`common_billing_errors.py:527`) and N4 (P612320 "Protez ayrıca faturalandırılır").
   - The draft is waiting for Safa's review.
-- [ ] 12. Verify, in sequence: ruff, the new tests, the full suite, `compile_rules.py --check`, manifest parity. One PR; merge is Safa's call.
+  - **Filed 2026-10-15 (Safa's yes):** #259–#269, 11 issues covering N1–N6, N8, N9 and N11–N13, the traffic-accident "kaza" match and the S1 strategy amount. N10 and the lab-code map are being fixed in separate sessions; N7 stays Safa's call.
+  - The re-check for the issues corrected the draft: N9's amount, the cause of S1's 1.231,00, N11's scope, N13's rule count, and the N2, N4 and N1 citations. Those edits are marked "Corrected 2026-10-15".
+  - The proof scripts now find the repo from their own path, and a re-run reproduced `results/` byte for byte.
+- [x] 12. Verify, in sequence: ruff, the new tests, the full suite, `compile_rules.py --check`, manifest parity. One PR; merge is Safa's call.
+  - Result (2026-10-15, at `4465fe3c`), all green:
+    - `ruff check src/ scripts/` clean;
+    - 8,382 passed and 2 xfailed (the band-date pins);
+    - 134 artifacts byte-identical;
+    - parity 0 issues.
+  - Pushed; PR Safa675/Bilun#258 is open.
 
 ### Out of Scope
 - The generator rewrite (P3–P4), the loader change (P3) and the regeneration (P7).

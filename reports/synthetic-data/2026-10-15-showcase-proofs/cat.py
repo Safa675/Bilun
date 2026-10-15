@@ -1,7 +1,8 @@
-"""Read-only catalog helpers for the showcase-story drafts (scratch only)."""
+"""Read-only catalog helpers for the showcase-story drafts."""
 from __future__ import annotations
+from pathlib import Path
 import polars as pl
-ROOT = "/home/safa/Documents/Bilun"
+ROOT = Path(__file__).resolve().parents[3]
 EK2B = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2b_catalog_history.parquet")
 EK2C = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2c_catalog_history.parquet")
 EK4A = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek4a_history.parquet")

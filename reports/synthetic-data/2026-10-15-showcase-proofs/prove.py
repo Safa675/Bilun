@@ -1,6 +1,6 @@
 """Prove each showcase fault: target detector fires on the faulty bill, silent on the clean bill.
 
-Run: /home/safa/Documents/Bilun/.venv/bin/python prove.py [S1 ...]
+Run from the repo root: .venv/bin/python reports/synthetic-data/2026-10-15-showcase-proofs/prove.py [S1 ...]
 Writes results/<story>.json with bill rows, direct-detector output and the
 full-report signal diff. Read-only on the repo.
 """

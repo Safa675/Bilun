@@ -9,6 +9,7 @@ Plan: `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md` (D1–D6, Q1�
 - Each bill was built twice: clean, and with exactly one injected fault.
 - **All 8 proven:** the target rule fires on the faulty bill and stays silent on the clean bill (scripts below; output in `results/`).
 - **But no clean bill is fully silent today.** Other rules misfire on correct bills (section "Noise on clean bills"). I list thirteen causes (N1–N13); twelve look like engine defects and one (N7) needs your call. None is in the known list (#226/#227/#255/#256). Fix them, or the demo shows findings on bills that are correct.
+- **Filed on 2026-10-15** as #259–#269 (issue numbers in the defect table). N10 and the wrong lab codes in `BILUN_TO_SUT_CODE` are being fixed in separate sessions. Re-checking each defect for its issue corrected parts of this draft; the corrections are marked "Corrected 2026-10-15".
 - Codes, names and prices come from the curated catalogs in force on each line date. Drug prices are "TBD (Q4)". ICD-10 codes are WHO codes from memory (no ICD list in the repo yet; Q5).
 
 ## Summary table
@@ -67,19 +68,21 @@ Also on every bill, at info level only: Wave A review rows (ORTAK-*, including "
 
 | # | Defect | Evidence (file:line) | Effect |
 |---|---|---|---|
-| N1 | Bed and companion ignore the EK-2C package window. SUT §2.2.2.B-1(1)(a),(h) put "Yatak bedeli" and "Refakatçi bedeli" inside the package for A 15 / B 10 / C 8 / D 5 / E 3 days (§2.2.2.B-1(3)). The engine bundles only the surgery day and never gates the companion. | `yatak_puani.py:127-139`; `refakatci.py:136-226` | FP on every package stay. On an ICU-only claim the bed rule also expected 444,72 TL (side test) |
-| N2 | `tablo15_4` reads `is_package_included` inverted: a correct package line (flag False, as in the data) is reported as "billed Normal Poliklinik". | `common_billing_errors.py:500-552` (check at :527) | Error-level compliance row on every inpatient package line |
-| N3 | §2.2.2.A(5) session factors are applied to every line on the date (anaesthesia, bed, companion, labs, ER exam). On clean S3 the correct 550160 line itself is reported as over-billed by 417,64 TL (treated as a secondary procedure at 55 %). | `drg_unbundling.py:104-180`; `claim_audit_exposure.py:10-32` | Audit-exposure header on every itemized bill |
-| N4 | `3.1.1.(15).separate_billing_not_authorized` looks for "ayrıca faturalandırılabilir" in the EK-3 row only; EK-3F-1 prostheses never qualify, although EK-2C P612320 and SUT §3.1.4(2)(ç) say they are billed separately. | `material_bundling.py:209-226` | 12.630,99 + 5.391,89 TL "must not bill separately" on a correct implant bill |
-| N5 | Bone-cement keyword matches "ÇİMENTOSUZ". | rule `3.1.4.(b).bone_cement`, keyword match `material_bundling.py:135-142` | Info row |
-| N6 | LOS density counts every line, so a normal 6-night stay with daily bed/companion lines and an admission panel exceeds 5 lines per night. | `temporal_anomaly.py:206-224` | Warning on medical stays |
+| N1 (#259) | Bed and companion ignore the EK-2C package window. SUT §2.2.2.B-1(1)(a),(h) put "Yatak bedeli" and "Refakatçi bedeli" inside the package for A 15 / B 10 / C 8 / D 5 / E 3 days (§2.2.2.B-1(3)). The engine bundles only the surgery day and never gates the companion. | `yatak_puani.py:127-139`; `refakatci.py:136-257` (corrected 2026-10-15) | FP on every package stay. On an ICU-only claim the bed rule also expected 444,72 TL (side test) |
+| N2 (#260) | `tablo15_4` reads `is_package_included` as "billed as package". That flag marks a component bundled into a package, never the package line itself. So every correct package line is reported as "billed Normal Poliklinik", and a bill that really was itemized has no package line and is never caught. (Corrected 2026-10-15: not just "inverted".) | `common_billing_errors.py:500-552` (check at :527) | Error-level compliance row on every inpatient package line |
+| N3 (#261) | §2.2.2.A(5) session factors are applied to every line on the date (anaesthesia, bed, companion, labs, ER exam). On clean S3 the correct 550160 line itself is reported as over-billed by 417,64 TL (treated as a secondary procedure at 55 %). They also shrink S1's strategy total (see S1). | `drg_unbundling.py:101-185`; `claim_audit_exposure.py:10-35` | Audit-exposure header on every itemized bill |
+| N4 (#262) | `3.1.1.(15).separate_billing_not_authorized` looks for "ayrıca faturalandırılabilir" in the EK-3 row only, and no EK-3F-1 row has it (0 of 337). EK-2C P612320 and SUT §3.1.4(2)(ç), (k) and (n) say these prostheses are billed separately. Corrected 2026-10-15: the rule id cites §3.1.1(15), which is now about barcode mismatch (C002753); the separate-billing text moved to §3.1.1(13) (C002751, "SUT veya eklerinde"). | `material_bundling.py:209-226` | 12.630,99 + 5.391,89 TL "must not bill separately" on a correct implant bill |
+| N5 (#262) | Bone-cement keyword matches "ÇİMENTOSUZ". | rule `3.1.4.(b).bone_cement`, keyword match `material_bundling.py:135-142` | Info row |
+| N6 (#263) | LOS density counts every line, so a normal 6-night stay with daily bed/companion lines and an admission panel exceeds 5 lines per night. | `temporal_anomaly.py:206-224` | Warning on medical stays |
 | N7 | All R-codes are "never principal". WHO ICD-10 allows a symptom code as principal when no definitive diagnosis is found (S7: PE ruled out). | `diagnosis_coding_quality.py:164` | Needs your call |
-| N8 | Time overlap flags two surgical lines on the same date and branch, which is exactly the legal same-session case. | `temporal_anomaly.py:104` | Warning on S8 |
-| N9 | Session cross-specialty uses the EK-2C **İŞLEM GRUBU** (A1–E) as a "specialty" when the branch is empty, so P609235 (B) + P603840 (C) get +25 points (50 % instead of 25 %). | `session_specialty.py:58-61` | FP 896,20 TL on clean S8 without branch codes |
-| N10 | Hemogram unbundling treats "Glike hemoglobin (Hb A1c)" as a CBC component (keyword "hemoglobin"). | `claim_lab.py:32`; `constants.py:228-244` | 26,34 TL compliance finding when CBC + HbA1c share a day (side test) |
-| N11 | Anaesthesia bands switch at 2026-07-07, but the EK-2B rows carry "(Değişik: RG-08/04/2026-33218/9-a md. Yürürlük: 16/04/2026)". | `anestezi_puani.py:133`; raw `annex=EK-2B/effective_date=2026-01-31`, rows 124-137 | Side test: 615995 (5.113 puan) on 2026-05-10 billed C → engine expects B, false 397,76 TL. Same bill on 2026-07-20 is silent |
-| N12 | Capture gap skips package lines when it builds "what was submitted". An OR log on a correct package bill turns the packaged operation into "performed, not submitted". | `procedure_capture_gap.py:45` | Side test: S8 +4.099,42 and +1.914,43; S5 +3.688,87; S1 +3.022,31 TL |
-| N13 | Three §4.2.27.A PCC rules list "konakion", "k vitamini" as drug names; the clause (C006358–C006359) is about prothrombin complex concentrates. | `drug_indication_prose.json` lines 16079, 16210, 16455 (`4.2.27.anticoagulant_bleed_reversal_one_day`, `…coumarin_active_bleed_one_day`, `…pcc_acquired_coagulopathy_board`) | Vitamin K would be judged against PCC routes |
+| N8 (#263) | Time overlap flags two surgical lines on the same date and branch, which is exactly the legal same-session case. | `temporal_anomaly.py:104` | Warning on S8 |
+| N9 (#264) | Session cross-specialty uses the EK-2C **İŞLEM GRUBU** (A1–E) as a "specialty" when the branch is empty, so P609235 (B) + P603840 (C) get +25 points (50 % instead of 25 %). | `session_specialty.py:58-61` | Corrected 2026-10-15: with this story's lines (unit = list price, billed at 25 %), a false **+1.792,40 TL** `session_underbilling` action on clean S8 without branch codes. The 896,20 TL audit exposure appears only if the unit price carries the cut |
+| N10 | Hemogram unbundling treats "Glike hemoglobin (Hb A1c)" as a CBC component (keyword "hemoglobin"). | `claim_lab.py:32`; `constants.py:228-244` | 26,34 TL compliance finding when CBC + HbA1c share a day (side test). Fix in a separate session |
+| N11 (#265) | The engine's band cutovers do not match the list's markers. Corrected 2026-10-15: there are three wrong cutovers, not one. 12001 bands: marker 04/08/2022, engine 2022-09-03. 32561 bands: marker 07/08/2024, engine 2026-01-01. 39001 bands: marker 16/04/2026, engine 2026-07-07. | `anestezi_puani.py:129-139`; raw `annex=EK-2B` 2022-02-16 rows 160-172, 2024-05-11 rows 126-139, 2026-01-31 rows 124-137 | Side tests (615995 billed C): on 2026-05-10 the engine expects B, false 397,76 TL; on 2025-03-01 it expects A3, false 1.215,39 TL. The largest window is 2024-08-07 to 2025-12-31. 2026-07-20 is silent |
+| N12 (#266) | Capture gap skips package lines when it builds "what was submitted". An OR log on a correct package bill turns the packaged operation into "performed, not submitted". | `procedure_capture_gap.py:45` | Side test: S8 +4.099,42 and +1.914,43; S5 +3.688,87; S1 +3.022,31 TL |
+| N13 (#267) | Corrected 2026-10-15: **four** §4.2.27.A rules list vitamin K ("konakion", "k vitamini") as a drug name; the clause (C006349–C006359) is about prothrombin complex concentrates. The fourth, `4.2.27.A.acquired_coagulopathy_bleed_report_free`, also lists "fresh frozen plasma"/"ffp", a blood product. | `4.2.27.A.yaml:14-17, 152-154, 257-259, 431-433` (`drug_indication_prose.json` 15732-15735, 16077-16079, 16208-16210, 16453-16455) | Measured: Konakion with R79.1, newborn Z38.0, or K74.6 + K92.2 gets an error-level `indication_mismatch` |
+
+Also filed from this work: #268 (work accidents read as traffic accidents through the substring "kaza"; found by the test-pin review) and #269 (S1's strategy amount, below).
 
 Smaller items:
 - `capture_gap_try` is cast to int (1.138 instead of 1.138,22): `report_totals.py:56` with the default `scalar_default=0`.
@@ -126,7 +129,8 @@ Total 4.550,64 TL + drugs. The hospital under-bills by about 4.086 TL minus the 
 **Proof (actual output).**
 - Clean: `check_payment_method_compliance('610131', billed_as_package=True)` → `DRG_MANDATORY, compliant`. Strategy: "Claim C-SH01 is billed correctly as package per SUT §2.2.2(1). Package total 8636.51 TRY." No violation.
 - Faulty: `compliance_violation` on 610131: "Procedure 610131 must use package billing (tanıya dayalı işlem üzerinden ödeme) per 2.2.2.(1)." Claim row: "SUT §2.2 mandates package billing … Package total 8636.51 TRY vs itemized 1231.00 TRY", `savings_try 0.0`. Audit exposure 3.558,29 TL (3.022,31 = the 610131 line + 535,98 session noise N3).
-- **Defect in the amount.** The "itemized 1231.00" leaves out the operation line itself (non-compliant lines are dropped, `claim_strategy.py:293-325`), and savings are floored at 0 when the package is higher (`:383-403`). So the engine detects the error but does not show the ~4.086 TL the hospital loses.
+- **Defect in the amount (#269).** The "itemized 1231.00" leaves out the operation line itself (non-compliant lines are dropped, `claim_strategy.py:293-325`), and savings are floored at 0 when the package is higher (`:383-403`). So the engine detects the error but does not show the ~4.086 TL the hospital loses.
+  - Corrected 2026-10-15: dropping the line is only part of it. The remaining lines total 1.528,33 TL. N3's session factors (`:629-636`) then cut them to 1.231,00. That includes 25 extra points because the anaesthesia line carries another branch (3100); without those points the total would be 1.166,36.
 
 **Noise on the clean bill.** N1 (444,72 + 148,20 TL), N2, 3 documentation reminders.
 
@@ -380,12 +384,12 @@ The unit price stays the list price; the billed amount carries the reduction (op
 
 **SUT.** §2.2.2.B(3)(a) (C000670): "Aynı seansta aynı kesi ile birden fazla işlem yapılması halinde; işlem puanı yüksek olan tanıya dayalı işlemin puanı tam olarak, diğer işlemler ise kendi tanıya dayalı işlem puanının %25'i alınarak," (… faturalandırılır, C000674).
 
-**Engine rule.** `analyze_claim_unbundling(...).session_violations` (`drg_unbundling.py:104-180`) → `audit_exposure_try`.
+**Engine rule.** `analyze_claim_unbundling(...).session_violations` (`drg_unbundling.py:101-185`) → `audit_exposure_try`.
 
 **Proof.**
 - Clean: no session violation; audit exposure 0.
 - Faulty: rule `2.2.2.B.a`, P603840, primary P609235, factor 0.25, expected 1.792,40, billed 7.169,60, **risk 5.377,20 TL**: "Secondary procedure billed at full rate; SUT §2.2.2.B.a requires 25% point factor in same session." Shown only as the audit-exposure header.
-- Without branch codes on the lines the clean bill is flagged too (N9: factor 0.50, 896,20 TL). The story sets branch 1900 on both lines.
+- Without branch codes on the lines the clean bill is flagged too (N9, #264: factor 0.50). With these lines, unit = list price and billed at 25 %, the result is a false **+1.792,40 TL** `session_underbilling` action, and the SGK uplift total becomes 2.088,86 TL. The 896,20 TL audit exposure in the first draft appears only if the unit price carries the cut (corrected 2026-10-15). The story sets branch 1900 on both lines.
 
 **Noise on the clean bill.** N1 (222,36 + 74,10), N2 (both lines), N8, 3 documentation reminders.
 
@@ -410,6 +414,8 @@ The unit price stays the list price; the billed amount carries the reduction (op
 2. **Package window.** Do you read §2.2.2.B-1(1),(3) the same way: bed and companion inside the package for the whole A/B/C/D/E window? If yes, N1 is a real defect on every package bill.
 3. **S1 realism.** Would MEDULA accept EK-2B 610131 on a private hospital's inpatient takip?
 4. **Session reductions.** Does the hospital send the reduced amount for the second package, or does MEDULA compute it?
+   - This decides more than the story. Suppose the hospital puts the 25 % into the unit price. Then clean S8 shows 1.344,30 TL of audit exposure even with correct branch codes. The engine takes unit × quantity as the list price (`session_pricing.py:360-388`) and applies the 25 % a second time.
+   - Not filed yet: it depends on your answer.
 5. **S8 incision.** Umbilical-port hernia repair: same incision (25 %) or separate (50 %)?
 6. **Implants.** Cemented stem + cement is usual at 84; which bone-cement code? Is KDV sent on MEDULA material lines, and at 10 % or 20 % (the engine uses 20 %)?
 7. **Partial drug boxes** on inpatient invoices (S6).
@@ -422,10 +428,11 @@ The unit price stays the list price; the billed amount carries the reduction (op
 
 ## Reproduction
 
-Scratch folder: `/tmp/claude-1000/-home-safa-Documents-Bilun/a9cf6beb-cd1a-4613-ab9e-bddecbe1db1a/scratchpad/showcase_stories/`.
+Folder: `reports/synthetic-data/2026-10-15-showcase-proofs/` (see its README).
 - `harness.py`: builds `ClaimHeader`/`ProcedureClaimLine`/`MaterialClaimLine`/`DrugClaimLine` as the unit tests do, prices each line from the catalog row in force (fails if not exactly one row), enriches materials with the loader's `_enrich_material_regulatory_flags`, runs `compute_patient_billing_report` and `analyze_claim`.
 - `stories.py`: the eight stories, clean and faulty.
-- `prove.py`: calls each target detector directly, then diffs the full outputs. Output: `results/S1.json` … `results/S8.json`, `results/prove_output.txt`.
-- `checks.py`, `exp_emr_pkg.py`, `exp_icu.py`, `exp_drug.py`, `exp_session2.py`: side tests behind N3, N9–N12 and the replaced candidates.
-- Run: `cd <scratch> && /home/safa/Documents/Bilun/.venv/bin/python prove.py` (about 15 s).
-- Run context: branch `claude/synthetic-v3-p0-p1`. During the run another session committed 0a205223 (reference data, scripts, tests, reports only; no file under `src/` changed), so the engine code tested equals main at 1c22ee9c.
+- `prove.py`: calls each target detector directly, then diffs the full outputs. Output: `results/S1.json` … `results/S8.json` and `results/S*_tables.md`.
+- `checks.py`: catalog checks.
+- The side tests behind N3, N9–N12 and the replaced candidates ran in the session's scratch folder and are not in the repo. Their measured results are in issues #259–#269.
+- Run from the repo root: `.venv/bin/python reports/synthetic-data/2026-10-15-showcase-proofs/prove.py` (about 10 s).
+- Run context: the engine code tested equals main at 1c22ee9c. A re-run on 2026-10-15, after the issues were filed, reproduced `results/` byte for byte.

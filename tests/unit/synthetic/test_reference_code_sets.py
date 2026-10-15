@@ -123,7 +123,7 @@ def test_engine_uses_the_newest_bands_after_july() -> None:
 )
 @pytest.mark.xfail(
     strict=True,
-    reason="engine switches the EK-2B §4 bands on 2026-01-01 and 2026-07-07; "
+    reason="Safa675/Bilun#265: engine switches the EK-2B §4 bands on 2026-01-01 and 2026-07-07; "
     "the list's markers say 2024-08-07 and 2026-04-16",
 )
 def test_engine_switches_bands_on_the_lists_amendment_dates(day: str, table_index: int) -> None:

@@ -16,8 +16,8 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
-ROOT = "/home/safa/Documents/Bilun"
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
 os.chdir(ROOT)
