@@ -9,11 +9,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
+import polars as pl
 import pytest
 
 pytestmark = pytest.mark.unit
+
+_REPO = Path(__file__).resolve().parents[4]
+# EK-2B prices in force on this day: L107020 19.73, L102820 26.34, L103120 5.88 TL.
+_DAY = "2026-03-01"
 
 
 @dataclass(frozen=True)
@@ -69,13 +76,14 @@ def _lab_line(
     billed: str,
     episode: str = "V1",
     claim: str = "C1",
+    day: str = "2024-01-01",
 ) -> _MockProcedureClaimLine:
     return _MockProcedureClaimLine(
         procedure_line_id=f"L-{code}",
         claim_id=claim,
         patient_id="P1",
         episode_id=episode,
-        procedure_date="2024-01-01",
+        procedure_date=day,
         procedure_code=code,
         procedure_name=name,
         procedure_category="laboratuvar",
@@ -147,3 +155,87 @@ def test_no_hemogram_bundling_for_single_cbc_line() -> None:
     result = _optimize_lab_billing_from_claims(ctx)
     assert result.hemogram_bundling_savings == 0.0
     assert not result.flagged_tests
+
+
+_HEMOGRAM = {"code": "L107020", "name": "Tam Kan Sayımı (Hemogram)", "billed": "19.73"}
+_MANUAL_HCT = {"code": "L103120", "name": "Hematokrit (Manuel)", "billed": "5.88"}
+_HBA1C = {"code": "L102820", "name": "Glike hemoglobin (Hb A1c)", "billed": "26.34"}
+
+
+def _one_date(*lines: dict[str, str]) -> _MockPatientClaimContext:
+    return _MockPatientClaimContext(
+        patient_id="P1",
+        claims=(_MockClaimHeader("C1", "P1", "V1"),),
+        procedure_lines=tuple(_lab_line(day=_DAY, **line) for line in lines),
+    )
+
+
+def test_hemogram_with_hba1c_on_one_date_is_not_unbundling() -> None:
+    """#270: "Glike hemoglobin (Hb A1c)" contains "hemoglobin" but is not a CBC test."""
+    from src.bilun.domain.billing.claim_lab import _optimize_lab_billing_from_claims
+
+    result = _optimize_lab_billing_from_claims(_one_date(_HEMOGRAM, _HBA1C))
+    assert result.hemogram_bundling_savings == 0.0
+    assert result.flagged_tests == []
+
+
+@pytest.mark.parametrize(
+    ("second", "savings"),
+    [(_HEMOGRAM, 19.73), (_MANUAL_HCT, 5.88)],
+    ids=["two_hemograms", "hemogram_and_manual_hematocrit"],
+)
+def test_coded_cbc_lines_on_one_date_are_unbundling(second: dict[str, str], savings: float) -> None:
+    """Savings stay billed total minus one dated L107020 price."""
+    from src.bilun.domain.billing.claim_lab import _optimize_lab_billing_from_claims
+
+    result = _optimize_lab_billing_from_claims(_one_date(_HEMOGRAM, second))
+    assert result.hemogram_bundling_savings == savings
+    flags = [(f["flag_type"], f["gazette_price"], f["savings_try"]) for f in result.flagged_tests]
+    assert flags == [("hemogram_unbundling", 19.73, savings)]
+
+
+@pytest.mark.parametrize(
+    ("name", "is_cbc"),
+    [
+        ("Hemoglobin", True),
+        ("HEMOGLOBİN", True),
+        ("HEMOGLOBIN", True),
+        (" lökosit ", True),
+        ("LÖKOSİT", True),
+        ("Glike hemoglobin (Hb A1c)", False),
+        ("Lökosit sayımı, manuel (Vücut sıvıları)", False),
+        (None, False),
+    ],
+)
+def test_cbc_parameter_names_match_exactly_after_turkish_case_folding(
+    name: str | None, is_cbc: bool
+) -> None:
+    from src.bilun.domain.billing.claim_lab import _is_hemogram_subtest_line
+
+    line = SimpleNamespace(procedure_code="", procedure_name=name)
+    assert _is_hemogram_subtest_line(line) is is_cbc
+
+
+def test_only_hemogram_and_manual_hematocrit_codes_are_cbc_lines() -> None:
+    """#270: of the EK-2B L-codes in force on 2026-03-01, only two are CBC lines."""
+    from src.bilun.domain.billing.claim_lab import _is_hemogram_subtest_line
+
+    in_force = (
+        pl.scan_parquet(_REPO / "data/gazette/curated/ek2b_catalog_history.parquet")
+        .filter(
+            pl.col("code").str.starts_with("L")
+            & (pl.col("valid_from") <= _DAY)
+            & (pl.col("valid_to").is_null() | (pl.col("valid_to") >= _DAY))
+        )
+        .select("code", "name")
+        .collect()
+    )
+    # The classifier reads one claim line; the catalog slicing around it is vectorised.
+    is_cbc = pl.struct("code", "name").map_elements(
+        lambda row: _is_hemogram_subtest_line(
+            SimpleNamespace(procedure_code=row["code"], procedure_name=row["name"])
+        ),
+        return_dtype=pl.Boolean,
+    )
+    assert in_force.height > 1000
+    assert in_force.filter(is_cbc)["code"].sort().to_list() == ["L103120", "L107020"]
