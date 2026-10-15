@@ -4,8 +4,10 @@ Reads the violation_log produced by validate_drug_rules.py and extracts
 clean, hand-verifiable test cases in the same JSON format Bilun's existing
 golden tests use (see data/gazette/prose_rules/golden/drug_indication_4.2.*.json).
 
-These become permanent regression tests for Bilun's CI pipeline — real-world
-test cases that replace synthetic data.
+The cases are derived from real prescriptions, so they are written to
+$BILUN_ILAY_VALIDATION_DIR/golden_ilay/ for local use only and never committed
+(KVKK; see scripts/validation/output_paths.py). CI covers the same rules with
+synthetic cases in tests/unit/domain/prose_rules/test_specialty_scope_cases.py.
 
 Usage:
     cd /home/safa/Documents/Bilun
@@ -16,16 +18,14 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from pathlib import Path
 
 import polars as pl
 
-BILUN_ROOT = Path(__file__).resolve().parents[2]
-VIOLATION_LOG = BILUN_ROOT / "data/synthetic/sut/claims/ilay_validation/violation_log.parquet"
-SPECIALTY_VIOLATION_LOG = (
-    BILUN_ROOT / "data/synthetic/sut/claims/ilay_validation/specialty_violation_log.parquet"
-)
-OUTPUT_DIR = BILUN_ROOT / "data/gazette/prose_rules/golden/ilay"
+from scripts.validation.output_paths import golden_dir, logs_dir
+
+VIOLATION_LOG = logs_dir() / "violation_log.parquet"
+SPECIALTY_VIOLATION_LOG = logs_dir() / "specialty_violation_log.parquet"
+OUTPUT_DIR = golden_dir()
 
 # How many samples per (drug, violation_kind) combination
 MAX_SAMPLES_PER_COMBO = 3

@@ -31,7 +31,7 @@ Repo geneli tarama (parquet/pyc/git hariç). Kritik bulgu: `C*` ayak izi tek dos
 | `data/gazette/prose_rules/drug_indication_prose.json` | 710 | Derlenmiş prose artifact |
 | `data/gazette/prose_corpus/*.json` | 513+338+113 | Analiz/özet dosyaları |
 | `reports/agent/reimbursement/stale_clause_refs.md` | 692 | Reporter çıktısı |
-| `data/synthetic/sut/claims/ilay_validation/rule_compliance.csv` | 110 | Sentetik test verisi |
+| `data/synthetic/sut/claims/ilay_validation/rule_compliance.csv` | 110 | Gerçek ILAY reçetelerinden türetilmiş özet (sentetik değil); 2026-10-15'te KVKK gereği repodan çıkarıldı |
 
 ### Çıkarım
 Kalan load-bearing `C*` (~2930), **tam olarak content-hash'in çözeceği collision kümesi**. Unique coordinate'ler zaten migrate (1612); geriye yalnız coordinate'in benzersiz olmadığı vakalar kalmış. Bu, Track E tasarımını doğruluyor.

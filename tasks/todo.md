@@ -63,6 +63,45 @@ Populating `procedure_specialty_code` in the synthetic generator (tracked under 
 - `_SURGICAL_CODE_PREFIXES` updated from `("50", "51")` to `("60", "61", "62")` (matching all 2,407 EK-2B surgical procedures in `600000`–`629999` and `P600000`–`P629999` in EK-2C), and `51xxxx` bed/stay tariffs (`510010`–`510121`) are excluded unconditionally in `_is_surgical`.
 - Verification: `ruff check` clean; 16/16 unit tests in `test_temporal_anomaly.py` pass (RED→GREEN on 8 new cases); `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
 
+## Task: ILAY Phase 1 — take the real ILAY-derived files out of the repo (2026-10-15)
+
+### Goal
+`main` tracks no file under `data/synthetic/sut/claims/ilay_validation/` or `data/gazette/prose_rules/golden/ilay/`. One local copy is kept outside every repo. The specialty regression test runs on synthetic cases instead of real rows. A CI test fails if either folder comes back. This is Phase 1 of `plans/security/2026-10-14-remove-ilay-real-data-plan.md`, approved by Safa on 2026-10-15 with the synthetic-test adjustment.
+
+### Subtasks
+- [x] 1. File the issue for the specialty-name matching defects ("Kalp ve Damar Cerrahisi (KVC)"; Turkish capitals such as "İÇ HASTALIKLARI"), using the evidence from a run on `main` @ `1c22ee9c`. → Safa675/Bilun#256: 29 of the 102 specialty tokens fail in Turkish capitals, and 266 of the 404 specialty-restricted rules list at least one of them.
+- [x] 2. Copy both folders to `~/bilun-local/ilay-validation/` (not a git repo, mode 700). Check the copy by checksum without printing any content.
+- [x] 3. Fast-forward local `main` and create a branch from it in this checkout. Do not add a worktree, which would be one more copy of the files.
+- [x] 4. `git rm -r` both folders (20 files). Add `.gitignore` lines for them.
+- [x] 5. Harness (`scripts/validation/validate_drug_rules.py`, `validate_specialty_rules.py`, `build_golden_dataset.py`):
+  - write and read under `$BILUN_ILAY_VALIDATION_DIR` (default `~/bilun-local/ilay-validation`);
+  - refuse any path inside the repo.
+- [x] 6. Replace `tests/unit/domain/prose_rules/test_specialty_real_data.py` with `test_specialty_scope_cases.py`:
+  - synthetic cases for the same three rules (rule ids are the only thing read from the old files);
+  - mismatch and match cases;
+  - the two known matching defects as strict `xfail` cases linked to the new issue.
+- [x] 7. Add `tests/unit/test_no_real_patient_data_paths.py`:
+  - a pure check over tracked paths;
+  - a mutation test that feeds it the forbidden paths;
+  - the check run against `git ls-files`, with a filesystem fallback when the checkout has no `.git`.
+- [x] 8. Update the references:
+  - `scripts/validation/README.md`: output paths, and make the line-81 promise true;
+  - `plans/backend/specialty-scope-validation-plan.md:157,180-181,194,269,287`: add a note;
+  - `plans/update/2026-08-07-track-e-phase0-audit.md:34`: the wrong "synthetic" label;
+  - tick Phase 1 in the ILAY plan.
+- [x] 9. Verify (full suite run alone: 8,354 passed, 2 xfailed; an earlier run done in parallel with the artifact checks gave 4 false failures, which passed on `main` and alone; lesson added):
+  - `git ls-files | grep -c -E "ilay_validation|golden/ilay"` is 0;
+  - ruff on `src/` and `scripts/`;
+  - the new and changed tests;
+  - the full pytest suite;
+  - `compile_rules.py --check` and `audit_manifest_parity.py --drug-only` (the other CI steps).
+- [x] 10. Check CI on `main` (green on `1c22ee9c`), make one commit, push and open the PR. Merge is Safa's call. Return the checkout to `main`.
+
+### Out of Scope
+- Phases 2–5 of the ILAY plan: staging, live, history rewrite and laptop copies.
+- Fixing the matching defects (only filed and pinned as `xfail`).
+- The hash manifest entries in `data/gazette/source_authority/corpus_consumer_review_pr128.json`, left as they are on purpose (hashes only, no code reads them).
+
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 
 ### Goal

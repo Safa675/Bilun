@@ -34,8 +34,14 @@ Runtime: ~5-10 minutes. No GPU, no cloud. Pure Python regex matching.
 
 ## Output
 
+Outputs are derived from real prescriptions (the violation logs carry pseudonymized
+patient and visit IDs), so they never go into this repo (KVKK). They are written to
+`$BILUN_ILAY_VALIDATION_DIR` (default `~/bilun-local/ilay-validation`); a path inside the
+repo is refused (`output_paths.py`), `.gitignore` covers the old repo folders, and
+`tests/unit/test_no_real_patient_data_paths.py` fails if they are tracked again.
+
 ```
-data/synthetic/sut/claims/ilay_validation/
+$BILUN_ILAY_VALIDATION_DIR/ilay_validation/
 ├── violation_log.parquet    # one row per prescription × fired rule
 └── rule_compliance.csv      # per-rule: did it match? what fired? is it dead?
 ```
@@ -78,7 +84,11 @@ ILAY-Health/data/clean/
 
 ## Notes
 
-- The ILAY data stays in `ILAY-Health/data/clean/` — it's read by absolute path, never copied.
+- The raw ILAY data stays in `ILAY-Health/data/clean/` and is read by absolute path. The
+  outputs derived from it stay outside every repo too (see Output). Until 2026-10-15 they
+  were committed under `data/synthetic/sut/claims/ilay_validation/` and
+  `data/gazette/prose_rules/golden/ilay/`; they were removed from the tree then
+  (`plans/security/2026-10-14-remove-ilay-real-data-plan.md`).
 - Tier-B clinical fields (board report, biomarkers, prior therapies) are left as `None`,
   which triggers the realistic "needs_*_verification" review path. This mirrors the
   state of a real hospital claim before HIM review.
@@ -118,14 +128,17 @@ in scope (vs 18K for item 1) and only specialty-restricted rules are loaded.
 ## Output
 
 ```
-data/synthetic/sut/claims/ilay_validation/
+$BILUN_ILAY_VALIDATION_DIR/ilay_validation/
 ├── specialty_pairs.parquet             # intermediate: prescription × department join
 ├── specialty_violation_log.parquet     # one row per prescriber_specialty_mismatch
 └── specialty_rule_compliance.csv       # per-rule: violations, top violating departments
 
-data/gazette/prose_rules/golden/ilay/
-└── specialty_ilay_*.json               # golden test cases for CI regression
+$BILUN_ILAY_VALIDATION_DIR/golden_ilay/
+└── specialty_ilay_*.json               # golden cases, local use only
 ```
+
+CI covers the same three specialty rules with synthetic cases in
+`tests/unit/domain/prose_rules/test_specialty_scope_cases.py`.
 
 ## Verified numbers (first run)
 
