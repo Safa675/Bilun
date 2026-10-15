@@ -41,7 +41,7 @@ The generator and the cohort do not change in this task.
   - `test_reference_lab_table.py` checks codes, names and prices across the window.
   - It also found two engine bugs: the hemogram keyword match catches HbA1c, and wrong codes in `BILUN_TO_SUT_CODE` (PT/INR, aPTT, procalcitonin, protein).
 - [x] 9. Price-history cleanup: already done by #248 (0 zero-length rows, 0 duplicate windows, `valid_to` honoured; checked 2026-10-15).
-- [ ] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
+- [x] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
   - [x] 10a. Safa approved the 7 files on 2026-10-15. They are fetched into separate scratch folders, and each size matches the HEAD check (9,428,064 bytes in all):
     - SKRS `ICD10Listesi.xlsx` (15,805 codes, Turkish names) and `ICD10MSVSIliskisiListesi.xlsx` (sex flags on 97 cancer codes);
     - WHO `icd102019enMeta.zip`;
@@ -49,19 +49,32 @@ The generator and the cohort do not change in this task.
     - SKRS e-prescription lists of 2026-02-03 and 2026-09-29.
   - **The September e-prescription list** links to another workbook. Its 3 essential-medicine-list columns are formulas over a March file, so they are not used.
   - **The WHO file** has no sex/age edits. Its licence is CC BY-ND 3.0 IGO, so it serves only as a local cross-check, and nothing derived from it is committed.
-  - [ ] 10b. ICD-10 table `data/synthetic/reference/icd10_tr.parquet`, built from the SKRS export:
+  - [x] 10b. ICD-10 table `data/synthetic/reference/icd10_tr.parquet`, built from the SKRS export:
     - code, Turkish name, parent, level, active flag, high-risk-pregnancy flag, created/updated/passive dates;
     - sex from the active SKRS ICD10MSVS rows.
-  - [ ] 10c. Drug crosswalk `data/synthetic/reference/drug_crosswalk.parquet`:
+    - Result: 15,804 codes (15,799 active) and 97 sex-flagged (63 F, 34 M).
+    - SKRS follows an older WHO edition plus national codes (COVID-19 = U07.3, no K35.8, no X85–Y09). In the story draft, K35.8 is invalid and M48.0, M81.0 and S72.0 have sub-codes (question 12).
+  - [x] 10c. Drug crosswalk `data/synthetic/reference/drug_crosswalk.parquet`:
     - one row per curated EK-4A barcode;
     - from TİTCK: product name, active ingredient, ATC code;
     - from SKRS e-prescription: ATC name and active/passive status;
     - both 2026 snapshots;
     - an exact barcode join, with the match coverage reported.
-  - [ ] 10d. Builder `scripts/synthetic/reference/build_icd10_and_drugs.py` (Polars over openpyxl, the repo's convention):
+    - Result: 8,078 rows. Coverage: 8,048 matched (99.6%), 7,692 with active ingredient, 8,047 with ATC.
+    - The ATC comes from the e-prescription list first, so code and name come from one row; the licence list lags the WHO ATC moves on 182 barcodes.
+    - 10 barcodes with ambiguous licence rows stay blank.
+    - 12 rows are filled from EK-4A old barcodes.
+  - [x] 10d. Builder `scripts/synthetic/reference/build_icd10_and_drugs.py` (Polars over openpyxl, the repo's convention):
     - the download folder is passed as an argument; raw files stay outside the repo;
     - the builder refuses any input whose sha256 differs from `data/synthetic/reference/sources.yaml` (publisher, page, file URL, date, size, sha256, terms).
-  - [ ] 10e. Tests: schema, unique keys, code formats, sex flags matching the source, crosswalk coverage, and well-formed provenance entries. The parse is cross-checked against an independent stdlib reader.
+    - Result: it never loads external links, and two runs give byte-identical output.
+    - Terms recorded as found: no data licence, footers "Tüm hakları saklıdır"; WHO is CC BY-ND, so nothing derived from it is committed.
+  - [x] 10e. Tests: schema, unique keys, code formats, sex flags matching the source, crosswalk coverage, and well-formed provenance entries. The parse is cross-checked against an independent stdlib reader.
+    - Result: `test_reference_icd10_drugs.py` has 24 tests and passes; the rebuild test skips without downloads.
+    - With `BILUN_REFERENCE_DOWNLOADS`, all 25 pass under `python -I`, including the byte-identical rebuild.
+    - The stdlib parse matches: 8 sheets, 0 differing key cells.
+    - 20 deliberate faults were all caught.
+    - Notes for review: `data/synthetic/reference/icd10_drugs_notes.md` (6 questions).
   - Still open for Safa:
     - drug prices: the TİTCK price list needs a login;
     - sex/age edits beyond the 97 SKRS codes: none of these files has them, so the pathway table (D2) carries sex and age per pathway.

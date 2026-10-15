@@ -1,0 +1,116 @@
+# Public files behind the synthetic-demo reference tables (P1). The files stay outside the repo.
+# scripts/synthetic/reference/build_icd10_and_drugs.py reads them from --downloads DIR (one folder
+# per file, at `path`) and refuses any file whose size or sha256 differs from this list.
+
+sources:
+  icd10_skrs:
+    path: icd10_skrs/ICD10Listesi.xlsx
+    publisher: T.C. Sağlık Bakanlığı, Sağlık Kodlama Referans Sunucusu (SKRS)
+    title: ICD10 code system (SKRS id 475), Excel export
+    page_url: https://skrs.saglik.gov.tr/Anasayfa/ICD10IslemleriDetay/475
+    file_url: https://skrs.saglik.gov.tr/Anasayfa/ICD10ExportExcel
+    downloaded: 2026-10-15
+    bytes: 679725
+    sha256: 4e268278a06fbf8154ed0df15c8fec11dfa9056d437f7fc25519c944c669a796
+    terms: >-
+      Public page; viewing and export need no login. No licence or reuse terms found for the
+      data. The site footer reads "Copyright © 2019 Sağlık Bakanlığı. Tüm Hakları Saklıdır.";
+      its "Aydınlatma Metni - Kullanım Koşulları" link opens a KVKK privacy notice.
+    note: The export is generated on request (no Last-Modified header); it is the list as of the download date.
+    used_by: [icd10_tr.parquet]
+
+  icd10msvs_skrs:
+    path: icd10msvs_skrs/ICD10MSVSIliskisiListesi.xlsx
+    publisher: T.C. Sağlık Bakanlığı, Sağlık Kodlama Referans Sunucusu (SKRS)
+    title: ICD10MSVS İlişkisi (SKRS id 469), Excel export
+    page_url: https://skrs.saglik.gov.tr/Anasayfa/ICD10MSVSIslemleriDetay/469
+    file_url: https://skrs.saglik.gov.tr/Anasayfa/ICD10MSVSIliskisiExportExcel
+    downloaded: 2026-10-15
+    bytes: 132559
+    sha256: 8ec8f54202c366ef18303c62c481303bb392b0220db6819b2e3f4e7a8e423801
+    terms: >-
+      Public page; viewing and export need no login. No licence or reuse terms found for the
+      data. The site footer reads "Copyright © 2019 Sağlık Bakanlığı. Tüm Hakları Saklıdır.";
+      its "Aydınlatma Metni - Kullanım Koşulları" link opens a KVKK privacy notice.
+    note: The export is generated on request (no Last-Modified header); it is the list as of the download date.
+    used_by: [icd10_tr.parquet]
+
+  titck_ruhsat_2026_02:
+    path: titck_ruhsat_2026-02-06/ruhsat_2026-02-06.xlsx
+    publisher: Türkiye İlaç ve Tıbbi Cihaz Kurumu (TİTCK)
+    title: Ruhsatlı Beşeri Tıbbi Ürünler Listesi, 06.02.2026
+    page_url: https://titck.gov.tr/dinamikmodul/85
+    file_url: https://titck.gov.tr/storage/Archive/2026/dynamicModulesAttachment/RuhsatlBeeriTbbirnlerListesi06.02.2026_c4b1a2af-f99e-4d47-8693-6d16be103409.xlsx
+    downloaded: 2026-10-15
+    bytes: 2233038
+    sha256: ca3fbb6c19d9646b3c4245b4a873aefddd219952a8b4c4de32f5031123117a3a
+    terms: &titck_terms >-
+      Public page; no login. No licence or reuse terms found for the list. The page footer
+      reads "© 2026 T.C. Sağlık Bakanlığı - Türkiye İlaç ve Tıbbi Cihaz Kurumu. Tüm hakları
+      saklıdır."
+    used_by: [drug_crosswalk.parquet]
+
+  titck_ruhsat_2026_09:
+    path: titck_ruhsat_2026-09-25/ruhsat_2026-09-25.xlsx
+    publisher: Türkiye İlaç ve Tıbbi Cihaz Kurumu (TİTCK)
+    title: Ruhsatlı Beşeri Tıbbi Ürünler Listesi, 25.09.2026
+    page_url: https://titck.gov.tr/dinamikmodul/85
+    file_url: https://titck.gov.tr/storage/Archive/2026/dynamicModulesAttachment/RuhsatlBeeriTbbirnlerListesi25.09.2026_dac5dbe2-69ed-4f11-b902-67100efbff12.xlsx
+    downloaded: 2026-10-15
+    bytes: 2282071
+    sha256: 34741f57ab7f83b4a97b2a8612bb2d52deebf09ba15fb97790a05dcc619bd451
+    terms: *titck_terms
+    used_by: [drug_crosswalk.parquet]
+
+  titck_erecete_2026_02:
+    path: titck_erecete_2026-02-03/erecete_2026-02-03.xlsx
+    publisher: Türkiye İlaç ve Tıbbi Cihaz Kurumu (TİTCK)
+    title: SKRS E-Reçete İlaç ve Diğer Farmasötik Ürünler Listesi, 03.02.2026 (changes of 27.01-02.02.2026)
+    page_url: https://titck.gov.tr/dinamikmodul/43
+    file_url: https://titck.gov.tr/storage/Archive/2026/dynamicModulesAttachment/AKLST0203.02.2026skrserecetilacvedigerfarmasotikurunler_3a8c73d5-d39e-4f61-af6a-febd7dada5de.xlsx
+    downloaded: 2026-10-15
+    bytes: 1434193
+    sha256: 57833ffa899259671686a46448d7324e4aaedf9e018ad59bd17ae7af2a7f8b94
+    terms: *titck_terms
+    used_by: [drug_crosswalk.parquet]
+
+  titck_erecete_2026_09:
+    path: titck_erecete_2026-09-29/erecete_2026-09-29.xlsx
+    publisher: Türkiye İlaç ve Tıbbi Cihaz Kurumu (TİTCK)
+    title: SKRS E-Reçete İlaç ve Diğer Farmasötik Ürünler Listesi, 29.09.2026 (changes of 22.09-28.09.2026)
+    page_url: https://titck.gov.tr/dinamikmodul/43
+    file_url: https://titck.gov.tr/storage/Archive/2026/dynamicModulesAttachment/AKLST0229.09.2026skrserecetilacvedigerfarmasotikurunler_b3f0b424-5425-4875-b933-a70664c2cff4.xlsx
+    downloaded: 2026-10-15
+    bytes: 2429407
+    sha256: f238a5a8b661051beb1a7a4baf68727bb69a6d775e3b0a733f61cb5270119968
+    terms: *titck_terms
+    note: >-
+      The workbook links to another workbook. Its three essential-medicine-list columns are
+      formulas over that file and are not read; the builder never loads external links.
+    used_by: [drug_crosswalk.parquet]
+
+  icd10_who_2019:
+    path: icd10_who_meta/icd102019enMeta.zip
+    publisher: World Health Organization (WHO)
+    title: ICD-10 2019 plain-text tabular metadata, English
+    page_url: https://icdcdn.who.int/icd10/index.html
+    file_url: https://icdcdn.who.int/icd10/meta/icd102019enMeta.zip
+    downloaded: 2026-10-15
+    bytes: 237071
+    sha256: a9fa787fa79076e199e46ca645bbc076449853e93e62cd3b2050b96dc96bbc1d
+    terms: >-
+      WHO's licensing page (https://www.who.int/about/policies/publishing/copyright) puts the
+      WHO classifications (ICD, ICF, ICHI) under CC BY-ND 3.0 IGO: commercial and non-commercial
+      use, no adaptation of the codes, cite the work. The ICD-10 download index shows no licence
+      text of its own.
+    committed_derivatives: none
+    note: Used only for a local cross-check of the SKRS codes; nothing derived from it is committed.
+    used_by: []
+
+outputs:
+  icd10_tr.parquet:
+    inputs: [icd10_skrs, icd10msvs_skrs]
+    repo_inputs: []
+  drug_crosswalk.parquet:
+    inputs: [titck_ruhsat_2026_02, titck_ruhsat_2026_09, titck_erecete_2026_02, titck_erecete_2026_09]
+    repo_inputs: [data/gazette/curated/ek4a_drugs.parquet]

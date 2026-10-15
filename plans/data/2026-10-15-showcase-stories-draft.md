@@ -424,6 +424,13 @@ The unit price stays the list price; the billed amount carries the reduction (op
 10. **Rounding.** SUT §2.2(15) says no rounding; the catalog rounds half-up (1 kuruş per line). Which does MEDULA use?
 11. **ICU.** Is an ICU stay its own takip in MEDULA (the engine assumes so)?
 12. **ICD-10.** Codes are WHO 4-character codes from memory (K35.8, M48.0, S72.0 …). Confirm against the Q5 list, including whether MEDULA wants 5th characters (M48.06, S72.00).
+    - **Checked 2026-10-15** against the SKRS list (`data/synthetic/reference/icd10_tr.parquet`). 13 of the 17 story codes are active SKRS codes with no sub-codes.
+    - **K35.8 (S1) does not exist in SKRS.** SKRS has only K35.0, K35.1 and K35.9; it follows an older WHO edition. Proposed: K35.9 "AKUT APANDİSİT, TANIMLANMAMIŞ".
+    - **Three codes have SKRS five-character sub-codes.** Proposed:
+      - M48.0 (S3) → M48.06 "SPİNAL STENOZ, LOMBER BÖLGE";
+      - S72.0 (S5) → S72.00 "FEMUR BOYUN KIRIĞI, KAPALI";
+      - M81.0 (S5) → M81.0x by site, e.g. M81.05 "PELVİK BÖLGE VE KALÇA" (judgment).
+    - Not verified: whether MEDULA rejects a code that has sub-codes. The story data stays unchanged until you answer.
 13. **Which noise to fix first.** My order: N1, N2, N3, N4 (they hit S1, S5, S8 and every itemized bill), then N12 before any OR log is attached, then the surfacing gap for anaesthesia/companion/session rows.
 
 ## Reproduction
