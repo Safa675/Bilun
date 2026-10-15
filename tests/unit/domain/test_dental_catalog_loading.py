@@ -143,7 +143,7 @@ def test_dental_codes_do_not_collide_with_ek2b() -> None:
     """
     from src.bilun.domain.catalog import lookup_procedure_code
 
-    # CRP maps to L101840 — a lab test, not a dental procedure.
+    # L101840 is the latex CRP test — a lab test, not a dental procedure.
     crp = lookup_procedure_code("L101840")
     assert crp["match_type"] == "exact"
     assert crp["entry"] is not None
