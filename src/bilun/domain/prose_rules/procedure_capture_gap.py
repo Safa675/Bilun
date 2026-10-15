@@ -39,7 +39,10 @@ def _procedure_name(code: str) -> str:
 def _submitted_amount_by_code_date(
     claim_procs: list[ProcedureClaimLine],
 ) -> dict[tuple[str, str], float]:
-    """Map (service_date, procedure_code) → max billed amount on the claim."""
+    """Map (service_date, procedure_code) → max billed amount on the claim.
+
+    Itemized lines only; ``paket`` lines are matched by ``_package_billed_by_code``.
+    """
     submitted: dict[tuple[str, str], float] = {}
     for line in claim_procs:
         if line.procedure_category == "paket" or line.is_package_included:
@@ -53,11 +56,38 @@ def _submitted_amount_by_code_date(
     return submitted
 
 
-def _resolve_catalog_price(code: str, service_date) -> tuple[float | None, str]:
-    """Return (price_try, price_methodology) from EK-2B or EK-2C."""
-    ek2b = get_ek2b_price_for_date(code, service_date)
-    if ek2b is not None and ek2b > 0:
-        return _money(ek2b), "ek2b_list_price"
+def _package_billed_by_code(
+    claim_procs: list[ProcedureClaimLine],
+) -> dict[str, float]:
+    """Map EK-2C package code → max billed amount of its ``paket`` lines (#266).
+
+    ``normalize_procedure_code`` drops the ``P`` prefix, so a log row with
+    ``P609235`` or the EK-2B ``609235`` hits the ``P609235`` package. A
+    package bills its operation once per claim, so the line date is ignored.
+    """
+    packages: dict[str, float] = {}
+    for line in claim_procs:
+        if line.procedure_category != "paket":
+            continue
+        code = normalize_procedure_code(line.procedure_code)
+        if not code:
+            continue
+        packages[code] = max(packages.get(code, 0.0), float(line.billed_amount_try))
+    return packages
+
+
+def _resolve_catalog_price(
+    code: str, service_date, *, claim_has_package: bool = False
+) -> tuple[float | None, str]:
+    """Return (price_try, price_methodology) from EK-2B or EK-2C.
+
+    When the claim carries the EK-2C package for ``code``, only EK-2C prices
+    the gap: an EK-2B line would unbundle the package (#266).
+    """
+    if not claim_has_package:
+        ek2b = get_ek2b_price_for_date(code, service_date)
+        if ek2b is not None and ek2b > 0:
+            return _money(ek2b), "ek2b_list_price"
     ek2c = get_ek2c_price_for_date(code, service_date)
     if ek2c is not None and ek2c > 0:
         return _money(ek2c), "ek2c_package_price"
@@ -74,6 +104,7 @@ def detect_procedure_capture_gaps(
         return []
 
     submitted = _submitted_amount_by_code_date(claim_procs)
+    packages = _package_billed_by_code(claim_procs)
     opportunities: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -90,11 +121,15 @@ def detect_procedure_capture_gaps(
         if dedupe_key in seen:
             continue
 
-        billed = submitted.get((service_date_str, code), 0.0)
+        billed = max(
+            submitted.get((service_date_str, code), 0.0), packages.get(code, 0.0)
+        )
         if billed > _BILLING_TOLERANCE:
             continue
 
-        list_price, methodology = _resolve_catalog_price(code, performed.service_date)
+        list_price, methodology = _resolve_catalog_price(
+            code, performed.service_date, claim_has_package=code in packages
+        )
         if list_price is None or list_price <= _BILLING_TOLERANCE:
             continue
 
