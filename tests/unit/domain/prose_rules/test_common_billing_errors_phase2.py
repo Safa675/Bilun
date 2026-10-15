@@ -1,7 +1,8 @@
 """Unit tests for the Phase 2 Tablo 15 common billing error detectors.
 
 Error #9 retains its legacy callable but cannot emit without a period-closure
-date; the other detectors cover positive and negative cases.
+date; error #4 emits nothing because §2.2 payment-method compliance owns it
+(#260). The other detectors cover positive and negative cases.
 """
 
 from __future__ import annotations
@@ -11,12 +12,15 @@ from decimal import Decimal
 
 import pytest
 
+from src.bilun.domain.billing.engine import analyze_claim
+from src.bilun.domain.billing.patient_report import compute_patient_billing_report
 from src.bilun.domain.claims.models import (
     ClaimHeader,
     DrugClaimLine,
     MaterialClaimLine,
     ProcedureClaimLine,
 )
+from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
     detect_donor_prep_as_exam,
@@ -51,21 +55,24 @@ def _make_claim_header(
     primary_icd10: str = "K35.8",
     department: str = "genel",
     occupational_context: str = "none",
+    facility_tier: str = "devlet",
+    provider_type: str = "sozlesmeli",
+    package_candidate: bool = False,
 ) -> ClaimHeader:
     return ClaimHeader(
         claim_id=claim_id,
         patient_id=patient_id,
         episode_id=episode_id,
         claim_type=claim_type,
-        facility_tier="devlet",
-        provider_type="sozlesmeli",
+        facility_tier=facility_tier,
+        provider_type=provider_type,
         department=department,
         admission_date=admission,
         discharge_date=discharge,
         claim_start_date=admission or date.today(),
         claim_end_date=claim_end or discharge or date.today(),
         primary_icd10=primary_icd10,
-        package_candidate=False,
+        package_candidate=package_candidate,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",
@@ -230,8 +237,11 @@ def test_vakabasi_wrong_method_negative() -> None:
 # ===========================================================================
 
 
-def test_normal_poliklinik_wrong_method_positive() -> None:
-    """Inpatient package-category line billed itemized → violation."""
+_TABLO15_4 = "tablo15_4_normal_poliklinik_wrong_method"
+
+
+def test_normal_poliklinik_wrong_method_ignores_correct_package_line() -> None:
+    """Inpatient package line billed as the package → no violation."""
     claim = _make_claim_header(
         claim_id="C1",
         claim_type="yatis",
@@ -241,38 +251,135 @@ def test_normal_poliklinik_wrong_method_positive() -> None:
     line = _make_proc_line(
         procedure_line_id="PL1",
         claim_id="C1",
+        procedure_code="P610131",
         procedure_category="paket",
-        is_package_included=False,  # inpatient package billed itemized — wrong
-    )
-
-    violations = detect_normal_poliklinik_wrong_method([claim], [line])
-
-    assert len(violations) == 1
-    v = violations[0]
-    assert v["claim_id"] == "C1"
-    assert v["rule_id"] == "tablo15_4_normal_poliklinik_wrong_method"
-    assert v["procedure_line_id"] == "PL1"
-    assert v["severity"] == "error"
-
-
-def test_normal_poliklinik_wrong_method_negative() -> None:
-    """Inpatient package line correctly marked package-included → no violation."""
-    claim = _make_claim_header(
-        claim_id="C1",
-        claim_type="yatis",
-        admission=date(2026, 7, 10),
-        discharge=date(2026, 7, 13),
-    )
-    line = _make_proc_line(
-        procedure_line_id="PL1",
-        claim_id="C1",
-        procedure_category="paket",
-        is_package_included=True,  # correct package billing
+        is_package_included=False,  # #260: a package line never carries the bundled-component flag
     )
 
     violations = detect_normal_poliklinik_wrong_method([claim], [line])
 
     assert violations == []
+
+
+def test_normal_poliklinik_wrong_method_ignores_bundled_component() -> None:
+    """Component bundled into the inpatient package → no violation."""
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="yatis",
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+    )
+    package = _make_proc_line(
+        procedure_line_id="PL1",
+        claim_id="C1",
+        procedure_code="P610131",
+        procedure_category="paket",
+    )
+    bundled = _make_proc_line(
+        procedure_line_id="PL2",
+        claim_id="C1",
+        procedure_code="550170",
+        procedure_category="islem",
+        is_package_included=True,  # #260: the flag marks a bundled component, not package billing
+    )
+
+    violations = detect_normal_poliklinik_wrong_method([claim], [package, bundled])
+
+    assert violations == []
+
+
+def _inpatient_bill(
+    *lines: tuple[str, str, date],
+    admission: date,
+    discharge: date,
+) -> PatientClaimContext:
+    """One inpatient bill at the showcase facility (``2_3_basamak_ozel``, ``Ozel``)."""
+    claim = _make_claim_header(
+        claim_id="C1",
+        claim_type="yatis",
+        admission=admission,
+        discharge=discharge,
+        facility_tier="2_3_basamak_ozel",
+        provider_type="Ozel",
+        package_candidate=True,
+    )
+    procedure_lines = tuple(
+        _make_proc_line(
+            procedure_line_id=f"PL{index}",
+            claim_id="C1",
+            procedure_code=code,
+            procedure_category=category,
+            procedure_date=on,
+        )
+        for index, (code, category, on) in enumerate(lines, start=1)
+    )
+    return PatientClaimContext(
+        patient_id="P1",
+        claims=(claim,),
+        procedure_lines=procedure_lines,
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
+    )
+
+
+# Clean showcase package bills: admission, discharge, (package code, line date).
+# Source: reports/synthetic-data/2026-10-15-showcase-proofs/stories.py.
+_CLEAN_PACKAGE_BILLS: dict[str, tuple[date, date, tuple[tuple[str, date], ...]]] = {
+    "S1": (date(2026, 7, 14), date(2026, 7, 16), (("P610131", date(2026, 7, 14)),)),
+    "S5": (date(2026, 9, 3), date(2026, 9, 8), (("P612320", date(2026, 9, 4)),)),
+    "S8": (
+        date(2026, 9, 15),
+        date(2026, 9, 16),
+        (("P609235", date(2026, 9, 15)), ("P603840", date(2026, 9, 15))),
+    ),
+}
+
+
+@pytest.mark.parametrize("story", sorted(_CLEAN_PACKAGE_BILLS))
+def test_clean_inpatient_package_bill_gets_no_tablo15_4_row(story: str) -> None:
+    """#260: a correctly billed EK-2/C package bill is clean on both rule paths."""
+    admission, discharge, packages = _CLEAN_PACKAGE_BILLS[story]
+    ctx = _inpatient_bill(
+        *((code, "paket", on) for code, on in packages),
+        admission=admission,
+        discharge=discharge,
+    )
+
+    report = compute_patient_billing_report("P1", claim_context=ctx)
+
+    assert not [row for row in analyze_claim(ctx) if row.get("rule_id") == _TABLO15_4]
+    assert not [
+        row for row in report.claim_compliance.findings if row.get("rule_id") == _TABLO15_4
+    ]
+    assert not [
+        row
+        for row in report.billing_strategy.recommendations
+        if row.get("type") == "compliance_violation"
+    ]
+
+
+def test_itemized_610131_in_place_of_p610131_keeps_payment_method_finding() -> None:
+    """#260: EK-2/B 610131 billed instead of the mandatory P610131 is still reported."""
+    ctx = _inpatient_bill(
+        ("610131", "islem", date(2026, 7, 14)),
+        admission=date(2026, 7, 14),
+        discharge=date(2026, 7, 16),
+    )
+
+    report = compute_patient_billing_report("P1", claim_context=ctx)
+
+    violations = [
+        (row.get("procedure_code"), row.get("mandated_method"), row.get("sut_section_id"))
+        for row in report.billing_strategy.recommendations
+        if row.get("type") == "compliance_violation"
+    ]
+    assert violations == [("610131", "package", "2.2.2.(1)")]
+    assert ("billing_strategy", "compliance_violation", "610131") in {
+        (row.get("surface"), row.get("kind"), row.get("procedure_code"))
+        for row in report.recommended_actions
+    }
+    assert not [row for row in analyze_claim(ctx) if row.get("rule_id") == _TABLO15_4]
 
 
 # ===========================================================================
