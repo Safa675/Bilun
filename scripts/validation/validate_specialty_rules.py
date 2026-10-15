@@ -12,7 +12,8 @@ Runtime: ~3-5 minutes (15K prescriptions, ~10ms each).
 No GPU, no cloud, no external services.
 
 Output:
-    data/synthetic/sut/claims/ilay_validation/
+    $BILUN_ILAY_VALIDATION_DIR/ilay_validation/   (default ~/bilun-local/ilay-validation/;
+    never inside this repo, see scripts/validation/output_paths.py)
     ├── specialty_violation_log.parquet    # one row per specialty mismatch
     └── specialty_rule_compliance.csv      # per-rule summary with top violating departments
 """
@@ -20,7 +21,6 @@ Output:
 from __future__ import annotations
 
 import time
-from pathlib import Path
 
 import polars as pl
 
@@ -30,6 +30,7 @@ from src.bilun.domain.prose_rules.drug_indication import (
 )
 
 from scripts.validation.claim_builder import build_claim, build_drug_line
+from scripts.validation.output_paths import logs_dir
 from scripts.validation.rx_loader import load_specialty_pairs
 
 
@@ -37,8 +38,7 @@ from scripts.validation.rx_loader import load_specialty_pairs
 # Config
 # ──────────────────────────────────────────────────────────────────────────
 
-BILUN_ROOT = Path(__file__).resolve().parents[2]
-OUTPUT_DIR = BILUN_ROOT / "data/synthetic/sut/claims/ilay_validation"
+OUTPUT_DIR = logs_dir()
 
 
 # ──────────────────────────────────────────────────────────────────────────

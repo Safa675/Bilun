@@ -46,6 +46,12 @@ data/gazette/coverage/
 !data/legacy/
 !data/medula/
 !data/medula/**
+# Real ILAY-derived validation outputs — never commit (KVKK). The harness in
+# scripts/validation/ writes them to $BILUN_ILAY_VALIDATION_DIR instead
+# (default ~/bilun-local/ilay-validation); tests/unit/test_no_real_patient_data_paths.py
+# fails if either folder is tracked again.
+data/synthetic/sut/claims/ilay_validation/
+data/gazette/prose_rules/golden/ilay/
 
 # Track C4 — Gate B corpus CSVs are optional human exports only
 data/gazette/prose_corpus/*.csv

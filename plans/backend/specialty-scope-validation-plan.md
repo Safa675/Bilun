@@ -1,5 +1,11 @@
 # Specialty Scope Validation — Implementation Plan
 
+> **2026-10-15:** the outputs this plan wrote into the repo (`data/synthetic/sut/claims/ilay_validation/`,
+> `data/gazette/prose_rules/golden/ilay/`) are derived from real ILAY prescriptions and were removed
+> from the tree for KVKK. The harness now writes to `$BILUN_ILAY_VALIDATION_DIR` outside the repo, and
+> the specialty regression test uses synthetic cases. Paths below are historical; see
+> `plans/security/2026-10-14-remove-ilay-real-data-plan.md`.
+
 ## Status
 
 **Pre-build phase.** No code written yet. Plan based on verified investigation
