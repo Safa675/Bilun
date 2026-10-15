@@ -16,7 +16,7 @@ Phase 1 errors covered:
 
 Phase 2 errors covered:
 - **#3** Vakabaşı billed where Normal Poliklinik required → ``detect_vakabasi_wrong_method``
-- **#4** Normal Poliklinik billed where vakabaşı required → ``detect_normal_poliklinik_wrong_method``
+- **#4** Normal Poliklinik billed where vakabaşı required (owned by §2.2 payment-method compliance, #260) → ``detect_normal_poliklinik_wrong_method``
 - **#5** Material identity errors (SUT/barcode) → ``detect_material_identity_errors``
 - **#7** Green-area exam + bundled extras → ``detect_green_area_bundled_extras``
 - **#9** Billing-period timing (unavailable from claim dates alone) → ``detect_admission_billing_window``
@@ -86,12 +86,6 @@ _DUPLICATE_TEST_WINDOW_DAYS = 7
 _TEST_CATEGORIES: frozenset[str] = frozenset(
     {"laboratuvar", "radioloji", "radyoloji", "patoloji", "test"}
 )
-
-# Error #3/#4 — Procedure categories signalling package (vakabaşı / case-fee)
-# billing vs per-visit (Normal Poliklinik) itemized billing. A line is
-# "billed as package" when its category is ``paket`` or ``is_package_included``
-# is set; this mirrors procedure_capture_gap._submitted_amount_by_code_date.
-_PACKAGE_CATEGORIES: frozenset[str] = frozenset({"paket", "vakabasi", "vakabaşı"})
 
 # Error #7 — Green-area (yeşil alan) poliklinik exam code. Sourced from
 # copay_line_waivers._GREEN_ZONE_EXAM_CODE (verified canonical constant).
@@ -431,13 +425,6 @@ def _is_outpatient_claim(claim: ClaimHeader) -> bool:
     return infer_care_setting(claim) == "outpatient"
 
 
-def _line_billed_as_package(line: ProcedureClaimLine) -> bool:
-    """True when a procedure line carries package/case-fee (vakabaşı) billing."""
-    if line.is_package_included:
-        return True
-    return (line.procedure_category or "").casefold() in _PACKAGE_CATEGORIES
-
-
 def detect_vakabasi_wrong_method(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],
@@ -451,11 +438,9 @@ def detect_vakabasi_wrong_method(
     is instead marked as package-included (vakabaşı) is a payment-method
     mismatch — the case-fee path is reserved for inpatient DRG episodes.
 
-    Detection uses ``procedure_category`` (exam) + ``is_package_included``
-    / package category on the line, gated to outpatient claims. This mirrors
-    the package-vs-itemized discriminator in
-    ``payment_method._classify_payment_method_kind`` without depending on the
-    catalog (owned by another module).
+    Detection: an exam-category line on an outpatient claim that is marked
+    ``is_package_included``, i.e. the exam is bundled into a package instead
+    of being billed per visit.
     """
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
 
@@ -469,7 +454,9 @@ def detect_vakabasi_wrong_method(
         # Only exam/muayene lines are in scope for the per-visit rule.
         if (line.procedure_category or "").casefold() not in _EXAM_CATEGORIES:
             continue
-        if not _line_billed_as_package(line):
+        # The flag marks a component bundled into a package (here the exam
+        # itself), never the package line (#260).
+        if not line.is_package_included:
             continue
         detail = (
             f"Poliklinik muayenesi ({line.procedure_code}) vakabaşı/paket olarak "
@@ -503,53 +490,22 @@ def detect_normal_poliklinik_wrong_method(
     *,
     claim_ids_with_procs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Error #4: Normal Poliklinik (per-visit) billed where vakabaşı required.
+    """Legacy Error #4 entry point; §2.2 payment-method compliance owns the verdict.
 
-    Inverse of #3: on an inpatient (yatış) episode, services that are mandated
-    as package (DRG/vakabaşı) billing under §2.2.2 must NOT be split out as a
-    per-visit Normal Poliklinik exam. A package-category line on an inpatient
-    claim that is billed itemized (not package-included) is the mismatch.
+    The old predicate read ``is_package_included`` as "billed as package", but
+    that flag marks a component bundled into a package, never the package line.
+    It flagged every correct inpatient ``paket`` line and stayed silent on a
+    bill that really was itemized, which has no package line (#260).
 
-    Detection: inpatient claim + a package category line that is NOT marked
-    ``is_package_included``.
+    A package-mandated (EK-2/C) procedure billed itemized is decided by
+    ``payment_method.check_payment_method_compliance`` on the engine's
+    billed-as-package signal (``procedure_category == "paket"``) and reported
+    per line by ``claim_strategy.recommend_billing_strategy_from_claims``
+    (SUT §2.2.2(1)) and ``drg_unbundling.detect_payment_method_violations``.
+    A second, El Kitabı-labelled row for the same line would show one fault
+    twice in the compliance views, so this callable emits nothing.
     """
-    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
-
-    violations: list[dict[str, Any]] = []
-    for line in procedure_lines:
-        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
-            continue
-        claim = claims_by_id.get(line.claim_id)
-        if claim is None or infer_care_setting(claim) != "inpatient":
-            continue
-        if (line.procedure_category or "").casefold() not in _PACKAGE_CATEGORIES:
-            continue
-        if line.is_package_included:
-            continue  # correctly billed as package
-        detail = (
-            f"Yatan hasta paket işlemi ({line.procedure_code}) Normal Poliklinik "
-            f"(hizmet başına) olarak faturalandırılmış — yatış takiplerinde "
-            f"vakabaşı/paket ödeme yöntemi zorunludur (Tablo 15 #4)."
-        )
-        violations.append(
-            {
-                "type": _OPPORTUNITY_TYPE,
-                "claim_id": line.claim_id,
-                "procedure_line_id": line.procedure_line_id,
-                "rule_id": "tablo15_4_normal_poliklinik_wrong_method",
-                "detail": detail,
-                "sut_section_id": _SUT_SECTION_ID,
-                "source_type": _SOURCE_TYPE,
-                "clause_ref": _CLAUSE_REF,
-                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
-                "savings_basis": SAVINGS_BASIS_SOURCED,
-                "severity": "error",
-                "procedure_code": line.procedure_code,
-                "procedure_category": line.procedure_category,
-                "is_package_included": line.is_package_included,
-            }
-        )
-    return violations
+    return []
 
 
 def detect_material_identity_errors(

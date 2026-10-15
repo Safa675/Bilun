@@ -253,10 +253,11 @@ def _all_tablo15_findings() -> list[dict]:
         [outpatient_a],
         [_proc(claim_id="C1", is_package_included=True)],
     )
-    findings += cbe.detect_normal_poliklinik_wrong_method(
+    # #260: #4 no longer fires on a correct package line; §2.2 payment-method compliance owns it.
+    assert cbe.detect_normal_poliklinik_wrong_method(
         [inpatient],
         [_proc(claim_id="C3", procedure_category="paket", is_package_included=False)],
-    )
+    ) == []
     findings += cbe.detect_material_identity_errors(
         [], [_material(barcode_sut_mismatch=True)]
     )
@@ -284,11 +285,11 @@ def _all_tablo15_findings() -> list[dict]:
     return findings
 
 
-def test_all_14_active_tablo15_detectors_carry_el_kitabi_provenance() -> None:
+def test_all_13_active_tablo15_detectors_carry_el_kitabi_provenance() -> None:
     findings = _all_tablo15_findings()
-    assert len(findings) == 14
+    assert len(findings) == 13  # #260: #4 emits nothing (was 14)
     rule_ids = {f["rule_id"] for f in findings}
-    assert len(rule_ids) == 14  # one distinct rule id per active detector
+    assert len(rule_ids) == 13  # one distinct rule id per active detector
     for finding in findings:
         _assert_non_sut_provenance(
             finding,
