@@ -21,6 +21,112 @@ Every name in `BILUN_TO_SUT_CODE` and every old code in `_OLD_TO_NEW_CODE` (`src
 - `_load_gazette_lab_prices` (`src/bilun/domain/loaders/gazette.py:449`) and `_SUT_CODE_TO_BILUN` (`constants.py:254`) have no callers.
 - Renaming test-name keys (e.g. `Albumin`), adding tests to the map, the synthetic cohort's lab units, staging deploy.
 
+## Task: Synthetic demo v3 — P0 decisions and baselines, P1 reference data, showcase story drafts (2026-10-15)
+
+### Goal
+Start `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md`:
+- record Safa's answers;
+- keep the engine baseline;
+- classify the test pins;
+- build the P1 reference tables with schema tests;
+- hand Safa 8 showcase story drafts to review.
+
+The generator and the cohort do not change in this task.
+
+### Subtasks
+- [x] 1. Record the answers in the plan:
+  - Q1 2026 February–September service dates;
+  - Q2 one SGK-contracted private hospital;
+  - Q3 Safa reviews the 8 showcase stories;
+  - Q4 TİTCK price list;
+  - Q5 public ICD-10 list;
+  - Q6 50 patients, 100–150 bills, 8 showcase.
+- [x] 2. P0 baseline: commit the engine numbers before and after the overnight fixes (`6b35d543` vs `1c22ee9c`) to `reports/synthetic-data/2026-10-15-engine-baseline.md`, with a JSON summary next to it.
+- [x] 3. P0 test pins: classify each test file that pins synthetic IDs, tags, amounts or counts as drop, re-point or keep, with a fixture strategy. A read-only subagent does this; the result goes into a plan appendix.
+  - Result: `plans/data/2026-10-15-synthetic-v3-test-pins.md`. P6 has 25 files and about 280 pins. The fixture strategy (cohort registry plus helper) is now in plan D4. It also found that traffic-accident detection reads `scenario_tag`/"kaza" substrings (`traffic_accident_billing.py:84-90,122-129`; `treatment_pricing.py:603-608`).
+- [x] 4. P1 chapter table:
+  - builder: `scripts/synthetic/reference/build_ek2b_chapters.py`, from the raw EK-2B heading rows;
+  - outputs: `data/synthetic/reference/ek2b_chapters.csv` (chapter ranges, reviewable) and a code→chapter parquet;
+  - a schema test, plus a check that each chapter's codes are contiguous.
+  - Result: 7,175 codes in 43 chapters, each one block in the list. The pattern handles lettered ("9.A") and two-line headings. Every code in force on 2026-02-01, 2026-07-07 and 2026-09-30 has a chapter (10 tests).
+- [x] 5. P1 anaesthesia groups. **Changed:** the engine's bands switch on the wrong dates, so the generator takes the bands and their dates from the list instead (`code_sets.yaml` → `surgical_group_bands`).
+  - The raw EK-2B markers say the 32,561 table starts 2024-08-07 and the 39,001 table starts 2026-04-16. `_group_table_for_date` switches on 2026-01-01 and 2026-07-07.
+  - Pinned by two strict `xfail` tests.
+  - Filed as Safa675/Bilun#265. The re-check found a third wrong cutover: the 12001 bands are marked 04/08/2022, but the engine uses them from 2022-09-03.
+- [x] 6. P1 code sets: `data/synthetic/reference/code_sets.yaml` (visits by setting, beds, ICU tiers, anaesthesia, companion). A test checks that every code exists in the catalog in force across 2026-02-01..2026-09-30.
+  - Result: 15 tests pass. Notes quote the EK-2B explanation column (510120 under 24 h; 510090 bundles ventilation and monitoring; 520021 never with other procedures; 530000 once a day).
+- [ ] 7. P1 EK-3 prices. **Changed:** no general dated index yet.
+  - The surgical sub-annexes have full lists only up to 2025-12-13; later changes are amendment markers, the mechanism of open #227.
+  - Pathways will use a small reviewed material set instead. A test checks each code's price on its service date against every snapshot and marker.
+  - The general index waits for #227's fix.
+- [x] 8. P1 lab reference table draft: about 40 routine and condition tests, each with EK-2B L-code, unit, sex-specific range and panel. A subagent drafts it and Safa reviews it.
+  - Result: `data/synthetic/reference/lab_reference.csv` (45 billed tests, 77 result rows, 16 panels) with notes; it is a draft for Safa's review.
+  - `test_reference_lab_table.py` checks codes, names and prices across the window.
+  - It also found two engine bugs: the hemogram keyword match catches HbA1c, and wrong codes in `BILUN_TO_SUT_CODE` (PT/INR, aPTT, procalcitonin, protein).
+- [x] 9. Price-history cleanup: already done by #248 (0 zero-length rows, 0 duplicate windows, `valid_to` honoured; checked 2026-10-15).
+- [x] 10. Downloads (Q4, Q5): find the exact files (URL, name, size, terms) and ask Safa per file. Only then fetch them into a scratch folder and build the ICD-10 table and the drug crosswalk.
+  - [x] 10a. Safa approved the 7 files on 2026-10-15. They are fetched into separate scratch folders, and each size matches the HEAD check (9,428,064 bytes in all):
+    - SKRS `ICD10Listesi.xlsx` (15,805 codes, Turkish names) and `ICD10MSVSIliskisiListesi.xlsx` (sex flags on 97 cancer codes);
+    - WHO `icd102019enMeta.zip`;
+    - TİTCK licensed-product lists of 2026-02-06 and 2026-09-25;
+    - SKRS e-prescription lists of 2026-02-03 and 2026-09-29.
+  - **The September e-prescription list** links to another workbook. Its 3 essential-medicine-list columns are formulas over a March file, so they are not used.
+  - **The WHO file** has no sex/age edits. Its licence is CC BY-ND 3.0 IGO, so it serves only as a local cross-check, and nothing derived from it is committed.
+  - [x] 10b. ICD-10 table `data/synthetic/reference/icd10_tr.parquet`, built from the SKRS export:
+    - code, Turkish name, parent, level, active flag, high-risk-pregnancy flag, created/updated/passive dates;
+    - sex from the active SKRS ICD10MSVS rows.
+    - Result: 15,804 codes (15,799 active) and 97 sex-flagged (63 F, 34 M).
+    - SKRS follows an older WHO edition plus national codes (COVID-19 = U07.3, no K35.8, no X85–Y09). In the story draft, K35.8 is invalid and M48.0, M81.0 and S72.0 have sub-codes (question 12).
+  - [x] 10c. Drug crosswalk `data/synthetic/reference/drug_crosswalk.parquet`:
+    - one row per curated EK-4A barcode;
+    - from TİTCK: product name, active ingredient, ATC code;
+    - from SKRS e-prescription: ATC name and active/passive status;
+    - both 2026 snapshots;
+    - an exact barcode join, with the match coverage reported.
+    - Result: 8,078 rows. Coverage: 8,048 matched (99.6%), 7,692 with active ingredient, 8,047 with ATC.
+    - The ATC comes from the e-prescription list first, so code and name come from one row; the licence list lags the WHO ATC moves on 182 barcodes.
+    - 10 barcodes with ambiguous licence rows stay blank.
+    - 12 rows are filled from EK-4A old barcodes.
+  - [x] 10d. Builder `scripts/synthetic/reference/build_icd10_and_drugs.py` (Polars over openpyxl, the repo's convention):
+    - the download folder is passed as an argument; raw files stay outside the repo;
+    - the builder refuses any input whose sha256 differs from `data/synthetic/reference/sources.yaml` (publisher, page, file URL, date, size, sha256, terms).
+    - Result: it never loads external links, and two runs give byte-identical output.
+    - Terms recorded as found: no data licence, footers "Tüm hakları saklıdır"; WHO is CC BY-ND, so nothing derived from it is committed.
+  - [x] 10e. Tests: schema, unique keys, code formats, sex flags matching the source, crosswalk coverage, and well-formed provenance entries. The parse is cross-checked against an independent stdlib reader.
+    - Result: `test_reference_icd10_drugs.py` has 24 tests and passes; the rebuild test skips without downloads.
+    - With `BILUN_REFERENCE_DOWNLOADS`, all 25 pass under `python -I`, including the byte-identical rebuild.
+    - The stdlib parse matches: 8 sheets, 0 differing key cells.
+    - 20 deliberate faults were all caught.
+    - Notes for review: `data/synthetic/reference/icd10_drugs_notes.md` (6 questions).
+  - Still open for Safa:
+    - drug prices: the TİTCK price list needs a login;
+    - sex/age edits beyond the 97 SKRS codes: none of these files has them, so the pathway table (D2) carries sex and age per pathway.
+- [x] 11. Showcase story drafts (8) for Safa's review. Each gives:
+  - patient, diagnosis, setting and dates;
+  - every line with a code valid on its date;
+  - one injected fault and the engine rule that should catch it.
+
+  Draft to the scratchpad first; it goes into `plans/data/` once Safa has reviewed it.
+  - Result: `plans/data/2026-10-15-showcase-stories-draft.md`, with proofs in `reports/synthetic-data/2026-10-15-showcase-proofs/`.
+  - All 8 faults fire, and the clean versions stay silent for their target rule.
+  - Other rules misfire on every clean bill (N1–N13). I verified N1 (SUT §2.2.2.B-1(1)(a),(h),(3)), N2 (`common_billing_errors.py:527`) and N4 (P612320 "Protez ayrıca faturalandırılır").
+  - The draft is waiting for Safa's review.
+  - **Filed 2026-10-15 (Safa's yes):** #259–#269, 11 issues covering N1–N6, N8, N9 and N11–N13, the traffic-accident "kaza" match and the S1 strategy amount. N10 and the lab-code map are being fixed in separate sessions; N7 stays Safa's call.
+  - The re-check for the issues corrected the draft: N9's amount, the cause of S1's 1.231,00, N11's scope, N13's rule count, and the N2, N4 and N1 citations. Those edits are marked "Corrected 2026-10-15".
+  - The proof scripts now find the repo from their own path, and a re-run reproduced `results/` byte for byte.
+- [x] 12. Verify, in sequence: ruff, the new tests, the full suite, `compile_rules.py --check`, manifest parity. One PR; merge is Safa's call.
+  - Result (2026-10-15, at `4465fe3c`), all green:
+    - `ruff check src/ scripts/` clean;
+    - 8,382 passed and 2 xfailed (the band-date pins);
+    - 134 artifacts byte-identical;
+    - parity 0 issues.
+  - Pushed; PR Safa675/Bilun#258 is open.
+
+### Out of Scope
+- The generator rewrite (P3–P4), the loader change (P3) and the regeneration (P7).
+- Any download without Safa's yes for that file.
+- Fixing #255 or #256.
+
 ## Task: Fix companion-bed (510121) ICU suppression, admission-date pricing, and billed subtraction (Safa675/Bilun#236)
 
 ### Goal
@@ -85,6 +191,45 @@ Populating `procedure_specialty_code` in the synthetic generator (tracked under 
 ### Review (2026-10-14)
 - `_SURGICAL_CODE_PREFIXES` updated from `("50", "51")` to `("60", "61", "62")` (matching all 2,407 EK-2B surgical procedures in `600000`–`629999` and `P600000`–`P629999` in EK-2C), and `51xxxx` bed/stay tariffs (`510010`–`510121`) are excluded unconditionally in `_is_surgical`.
 - Verification: `ruff check` clean; 16/16 unit tests in `test_temporal_anomaly.py` pass (RED→GREEN on 8 new cases); `compile_rules.py --check` (134 byte-identical) and `audit_manifest_parity.py --drug-only` (23 manifests, 0 issues) pass.
+
+## Task: ILAY Phase 1 — take the real ILAY-derived files out of the repo (2026-10-15)
+
+### Goal
+`main` tracks no file under `data/synthetic/sut/claims/ilay_validation/` or `data/gazette/prose_rules/golden/ilay/`. One local copy is kept outside every repo. The specialty regression test runs on synthetic cases instead of real rows. A CI test fails if either folder comes back. This is Phase 1 of `plans/security/2026-10-14-remove-ilay-real-data-plan.md`, approved by Safa on 2026-10-15 with the synthetic-test adjustment.
+
+### Subtasks
+- [x] 1. File the issue for the specialty-name matching defects ("Kalp ve Damar Cerrahisi (KVC)"; Turkish capitals such as "İÇ HASTALIKLARI"), using the evidence from a run on `main` @ `1c22ee9c`. → Safa675/Bilun#256: 29 of the 102 specialty tokens fail in Turkish capitals, and 266 of the 404 specialty-restricted rules list at least one of them.
+- [x] 2. Copy both folders to `~/bilun-local/ilay-validation/` (not a git repo, mode 700). Check the copy by checksum without printing any content.
+- [x] 3. Fast-forward local `main` and create a branch from it in this checkout. Do not add a worktree, which would be one more copy of the files.
+- [x] 4. `git rm -r` both folders (20 files). Add `.gitignore` lines for them.
+- [x] 5. Harness (`scripts/validation/validate_drug_rules.py`, `validate_specialty_rules.py`, `build_golden_dataset.py`):
+  - write and read under `$BILUN_ILAY_VALIDATION_DIR` (default `~/bilun-local/ilay-validation`);
+  - refuse any path inside the repo.
+- [x] 6. Replace `tests/unit/domain/prose_rules/test_specialty_real_data.py` with `test_specialty_scope_cases.py`:
+  - synthetic cases for the same three rules (rule ids are the only thing read from the old files);
+  - mismatch and match cases;
+  - the two known matching defects as strict `xfail` cases linked to the new issue.
+- [x] 7. Add `tests/unit/test_no_real_patient_data_paths.py`:
+  - a pure check over tracked paths;
+  - a mutation test that feeds it the forbidden paths;
+  - the check run against `git ls-files`, with a filesystem fallback when the checkout has no `.git`.
+- [x] 8. Update the references:
+  - `scripts/validation/README.md`: output paths, and make the line-81 promise true;
+  - `plans/backend/specialty-scope-validation-plan.md:157,180-181,194,269,287`: add a note;
+  - `plans/update/2026-08-07-track-e-phase0-audit.md:34`: the wrong "synthetic" label;
+  - tick Phase 1 in the ILAY plan.
+- [x] 9. Verify (full suite run alone: 8,354 passed, 2 xfailed; an earlier run done in parallel with the artifact checks gave 4 false failures, which passed on `main` and alone; lesson added):
+  - `git ls-files | grep -c -E "ilay_validation|golden/ilay"` is 0;
+  - ruff on `src/` and `scripts/`;
+  - the new and changed tests;
+  - the full pytest suite;
+  - `compile_rules.py --check` and `audit_manifest_parity.py --drug-only` (the other CI steps).
+- [x] 10. Check CI on `main` (green on `1c22ee9c`), make one commit, push and open the PR. Merge is Safa's call. Return the checkout to `main`.
+
+### Out of Scope
+- Phases 2–5 of the ILAY plan: staging, live, history rewrite and laptop copies.
+- Fixing the matching defects (only filed and pinned as `xfail`).
+- The hash manifest entries in `data/gazette/source_authority/corpus_consumer_review_pr128.json`, left as they are on purpose (hashes only, no code reads them).
 
 ## Task: Plans and issues from the 2026-10-14 synthetic data audit
 

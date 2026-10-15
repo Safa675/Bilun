@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-15 — Run the artifact checks and the test suite one after the other, never at the same time
+
+**Pattern:** For the ILAY Phase 1 branch I started the full pytest suite in the background and, at the same moment, ran `scripts/sut/compile_rules.py --check` and `scripts/sut/audit_manifest_parity.py --drug-only`. Four tests failed: manifest hash mismatches, a coverage count of 758 vs 732, and bucket ids "not in clause_traces". All four passed on unchanged `main`, on the branch when run alone, and in a second full run on its own (8,354 passed). The failures came from the concurrent scripts touching the same manifest artifacts, not from the change.
+
+**Rule:** Run `compile_rules.py --check`, `audit_manifest_parity.py` and anything else that rebuilds or compares `data/gazette` artifacts sequentially with pytest, never in parallel. When a failure shows up, prove causation first. Run the failing tests on unchanged `main` (stash) and alone on the branch before blaming or clearing the change (see the 2026-06-30 lesson).
+
 ## 2026-10-14 — Check `~/second-brain/inbox/` and local config (`~/.gemini/config/config.json`) before answering runtime/billing questions
 
 **Pattern:** When Safa asked whether his GCP Free Trial credit (`01D62C-CF9CBE-0ADC91`) covers `gemini-4-argon` in Antigravity and why the balance looked unchanged, I relied on a stale Sep 10 `gbrain` recall and generic Antigravity OAuth assumptions, claiming Argon in Antigravity runs on a built-in subscription quota rather than GCP Vertex AI. Two hours earlier on the same day, another session had enabled Antigravity Enterprise ADC mode (`"enableAdc": true` in `~/.gemini/config/config.json` against `golden-index-505019-r1`) and logged the setup in `~/second-brain/inbox/20261014T163857Z-safa-loq-17irx10-claude-code-acb223.md` (not yet indexed by nightly `gbrain`). Furthermore, comparing the earlier `₺12,401` credit balance with Safa's pasted `₺12,291.36` balance and querying `monitoring.googleapis.com` (`aiplatform.googleapis.com/publisher/online_serving/model_invocation_count`) proved that 143 `gemini-4-argon` calls (19.42M input / 131k output tokens) hit `golden-index-505019-r1` and deducted `₺109.64` from the Free Trial credit.

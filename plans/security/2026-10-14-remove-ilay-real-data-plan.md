@@ -1,7 +1,7 @@
 # Remove the real ILAY data from the repo, the servers and the laptop
 
 Date: 2026-10-14 (rev 2, after an independent review)
-Status: **plan only; nothing has been executed.**
+Status: **Phase 1 done on 2026-10-15** (branch `claude/ilay-phase1-remove-real-data`, PR pending Safa's merge). Phases 2–5 not started.
 
 **Who runs what**
 - An agent may edit the repo on a branch (Phase 1) and prepare lists.
@@ -115,23 +115,23 @@ find /home/safa /tmp -xdev \( -name ilay_validation -o -path '*golden/ilay' \)
 
 ### Phase 1 — The repo's current files (normal PR; an agent may do it on a branch)
 
-- [ ] **1.1** Safa copies both folders to the local folder from decision 2. Then, on a branch:
+- [x] **1.1** Safa copies both folders to the local folder from decision 2. Then, on a branch: *(done 2026-10-15 with Safa's approval: copied to `~/bilun-local/ilay-validation/` (mode 700, outside any git work tree, identical by checksum, 5 + 15 files), then removed from the branch)*
   ```
   git rm -r data/synthetic/sut/claims/ilay_validation data/gazette/prose_rules/golden/ilay
   ```
   (the second folder per decision 3).
-- [ ] **1.2** The harness writes to a folder named by an environment variable, outside the repo (`validate_drug_rules.py:40`, `validate_specialty_rules.py:41`, `build_golden_dataset.py:24-28`). Add `.gitignore` lines for both repo paths; `.gitignore:42-43` currently re-includes all of `data/synthetic/`.
-- [ ] **1.3** `tests/unit/domain/prose_rules/test_specialty_real_data.py` skips, with a reason, when the local golden folder is missing. Today it fails at lines 106-116.
-- [ ] **1.4** Update the references:
+- [x] **1.2** The harness writes to a folder named by an environment variable, outside the repo (`validate_drug_rules.py:40`, `validate_specialty_rules.py:41`, `build_golden_dataset.py:24-28`). Add `.gitignore` lines for both repo paths; `.gitignore:42-43` currently re-includes all of `data/synthetic/`. *(done: `scripts/validation/output_paths.py` reads `$BILUN_ILAY_VALIDATION_DIR`, default `~/bilun-local/ilay-validation`, and refuses paths inside the repo; `.gitignore` lists both folders)*
+- [x] **1.3** ~~`tests/unit/domain/prose_rules/test_specialty_real_data.py` skips, with a reason, when the local golden folder is missing.~~ Changed with Safa's approval: the test is replaced by `test_specialty_scope_cases.py`, synthetic cases for the same three rules (only the rule ids were read from the old files), plus two strict `xfail` cases for the matching defects in Safa675/Bilun#256.
+- [x] **1.4** Update the references:
   - `scripts/validation/README.md:38-40,66,121-127`; make line 81's promise true.
   - `plans/backend/specialty-scope-validation-plan.md:157,180-181,194,269,287`.
   - `plans/update/2026-08-07-track-e-phase0-audit.md:34`, which wrongly calls `rule_compliance.csv` synthetic.
-- [ ] **1.5** Add a CI test that fails when any tracked path contains `ilay_validation` or `golden/ilay`. Prove it with a mutation: stage a dummy file at each path and see it fail.
-- [ ] **1.6** Verify:
+- [x] **1.5** Add a CI test that fails when any tracked path contains `ilay_validation` or `golden/ilay`. Prove it with a mutation: stage a dummy file at each path and see it fail. *(done: `tests/unit/test_no_real_patient_data_paths.py`; an empty file force-staged in each folder made it fail, and it passes again after cleanup and with git missing from PATH)*
+- [x] **1.6** Verify (results in the PR description):
   - `git ls-files | grep -c -E "ilay_validation|golden/ilay"` prints 0.
   - The full suite passes in the CI image.
   - A synthetic cache build gives the same report numbers before and after.
-- [ ] **1.7** Check CI on `main` first (rule 10), then open the PR. Merge is Safa's call.
+- [x] **1.7** Check CI on `main` first (rule 10), then open the PR. Merge is Safa's call. *(CI on `main` @ `1c22ee9c` green before the push)*
 
 ### Phase 2 — Staging (the reviewed wrapper; Safa runs it)
 

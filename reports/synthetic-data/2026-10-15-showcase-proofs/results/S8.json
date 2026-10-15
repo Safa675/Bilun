@@ -1,0 +1,300 @@
+{
+ "story": "S8",
+ "clean": {
+  "total_billed": "13858.13",
+  "rows": [
+   {
+    "date": "2026-09-15",
+    "code": "P609235",
+    "name": "Kolesistektomi, laparoskopik",
+    "qty": 1,
+    "unit": "12065.73",
+    "billed": "12065.73",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-15",
+    "code": "P603840",
+    "name": "Greftsiz umblikal herni onarımı",
+    "qty": 1,
+    "unit": "7169.60",
+    "billed": "1792.40",
+    "source": "EK-2C valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.2",
+    true
+   ],
+   [
+    "K42.9",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 296.46,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "faulty": {
+  "total_billed": "19235.33",
+  "rows": [
+   {
+    "date": "2026-09-15",
+    "code": "P609235",
+    "name": "Kolesistektomi, laparoskopik",
+    "qty": 1,
+    "unit": "12065.73",
+    "billed": "12065.73",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-15",
+    "code": "P603840",
+    "name": "Greftsiz umblikal herni onarımı",
+    "qty": 1,
+    "unit": "7169.60",
+    "billed": "7169.60",
+    "source": "EK-2C valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.2",
+    true
+   ],
+   [
+    "K42.9",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "2.2.2.B.a",
+    "procedure_code": "P603840",
+    "primary_procedure_code": "P609235",
+    "expected_point_factor": 0.25,
+    "expected_billed_try": 1792.4,
+    "actual_billed_try": 7169.6,
+    "risk_amount_try": 5377.2,
+    "sut_section": "2.2.2.B.a",
+    "detail": "Secondary procedure billed at full rate; SUT §2.2.2.B.a requires 25% point factor in same session."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 296.46,
+   "audit_exposure_try": 5377.2,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "only_in_faulty": [
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   5377.2
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "yatak_puani",
+   "yatak_puani_standard_bed",
+   "",
+   222.36
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "block",
+   "refakatci",
+   "refakatci_510121",
+   "",
+   74.1
+  ],
+  [
+   "compliance",
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "error",
+   "P609235",
+   0.0
+  ],
+  [
+   "compliance",
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "error",
+   "P603840",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "P609235",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_4_normal_poliklinik_wrong_method",
+   "P603840",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "procedure_time_overlap",
+   "",
+   0.0
+  ]
+ ]
+}
