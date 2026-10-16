@@ -1,3 +1,32 @@
+## Task: Review the synthetic v3 drafts on Safa's behalf — stories, lab table, ICD/drug notes (2026-10-16)
+
+### Goal
+Answer the open review questions with evidence and correct the drafts, so the v3 generator (P3/P4) has an approved recipe. Safa then confirms only the answers that need field knowledge.
+
+### Subtasks
+- [ ] 1. Answer the SUT/MEDULA questions with clause ids, docs/medula and public sources, each with a confidence label:
+  - stories: Q1 bed days, Q3 S1 realism, Q4 session amounts, Q6 KDV, Q7 drug boxes, Q9 companion, Q10 rounding, Q11 ICU takip;
+  - lab: Q1 LDL billing, Q2 "birlikte faturalandırılmaz".
+- [ ] 2. Clinical plausibility review of S1–S8 and the lab panels and ranges:
+  - stories: Q5 S8 incision, Q6 cemented stem + cement code, Q8 R-codes;
+  - lab: Q1 LDL, Q3 analyzers.
+- [ ] 3. Data validity on current `main` (257d1e89):
+  - every story code against the catalogs on its date, ICD against SKRS, drugs against EK-4A and the crosswalk;
+  - re-run the proofs;
+  - ICD/drug Q1–Q6; lab Q4.
+- [ ] 4. Consolidate:
+  - one review report with each answer, its evidence and confidence;
+  - apply the corrections to the drafts and `stories.py`;
+  - one docs PR.
+- [ ] 5. Safa confirms the short list of field-knowledge answers.
+
+### Already answered
+- Stories:
+  - Q2: package window, decided 2026-10-16;
+  - Q12: SKRS codes; replacements to apply;
+  - Q13: noise; fixed by #259–#270 and #283/#288.
+- Lab Q4: #270 and #271 merged.
+
 ## Task: Catalog dates (#226, #227), package-gap double count and capture-gap rounding, independent review of #283 (2026-10-16)
 
 ### Goal
