@@ -14,8 +14,7 @@
 | 02-19 | L106150 | Potasyum (Serum/Plazma) | 1 | 7,20 | 7,20 | EK-2B from 2026-01-31 |
 | 02-19 | 801720 | Akciğer grafisi P.A. (Tek yön) | 1 | 44,75 | 44,75 | EK-2B from 2026-01-31 |
 | 02-19 | R101450 | BT anjiografi, pulmoner arter | 1 | 1.138,22 | 1.138,22 | EK-2B from 2026-01-31 |
-| 02-19 | 8699688771559 | OMNIPAQUE 350 MGL/ML 100 ML FLK | 1 | TBD (Q4) | TBD (Q4) | EK-4A A05705 from 2025-04-26 |
-| 02-19 | 8699606694649 | PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK | 1 | TBD (Q4) | TBD (Q4) | EK-4A A14359 from 2025-04-26 |
+| 02-19 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 1 vial | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
 
 ### S7 faulty — total 494,80 TL (drugs excluded)
 
@@ -32,6 +31,5 @@
 | 02-19 | L106910 | Sodyum (Serum/Plazma) | 1 | 7,20 | 7,20 | EK-2B from 2026-01-31 |
 | 02-19 | L106150 | Potasyum (Serum/Plazma) | 1 | 7,20 | 7,20 | EK-2B from 2026-01-31 |
 | 02-19 | 801720 | Akciğer grafisi P.A. (Tek yön) | 1 | 44,75 | 44,75 | EK-2B from 2026-01-31 |
-| 02-19 | 8699688771559 | OMNIPAQUE 350 MGL/ML 100 ML FLK | 1 | TBD (Q4) | TBD (Q4) | EK-4A A05705 from 2025-04-26 |
-| 02-19 | 8699606694649 | PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK | 1 | TBD (Q4) | TBD (Q4) | EK-4A A14359 from 2025-04-26 |
+| 02-19 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 1 vial | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
 

@@ -1,7 +1,7 @@
 {
  "story": "S6",
  "clean": {
-  "total_billed": "2311.13",
+  "total_billed": "2416.40",
   "rows": [
    {
     "date": "2026-06-08",
@@ -221,11 +221,29 @@
    },
    {
     "date": "2026-06-08",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-08",
     "code": "520010",
     "name": "Konsültasyon (Her bir branş için)",
     "qty": 1,
     "unit": "33.17",
     "billed": "33.17",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-10",
+    "code": "530340",
+    "name": "Nazogastrik sonda uygulaması",
+    "qty": 1,
+    "unit": "88.61",
+    "billed": "88.61",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -262,25 +280,53 @@
     "qty": 7,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
    },
    {
     "date": "2026-06-08",
-    "code": "8697637691743",
-    "name": "NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI)",
-    "qty": 21,
+    "code": "8697637690128",
+    "name": "NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI COZELTISI PP-TORBA 1000 ML(SETLI)",
+    "qty": 3,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A09604 from 2025-04-26",
+    "ingredient": "sodyum klorür",
+    "qty_unit": "bag"
+   },
+   {
+    "date": "2026-06-08",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    },
    {
     "date": "2026-06-09",
     "code": "8699708690525",
     "name": "PK-MERZ IV INF. COZ. 2x500 ML",
-    "qty": 2,
+    "qty": 3,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A12140 from 2025-04-26",
+    "ingredient": "amantadin sülfat",
+    "qty_unit": "bottle (box of 2)"
+   },
+   {
+    "date": "2026-06-10",
+    "code": "8699525094841",
+    "name": "MADOPAR 125 MG 30 TB",
+    "qty": 20,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A04817 from 2025-04-26",
+    "ingredient": "levodopa ve benserazid hcl",
+    "qty_unit": "tablet (box of 30)"
    }
   ],
   "diagnoses": [
@@ -326,14 +372,14 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 422.73,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
   }
  },
  "faulty": {
-  "total_billed": "2311.13",
+  "total_billed": "2416.40",
   "rows": [
    {
     "date": "2026-06-08",
@@ -553,11 +599,29 @@
    },
    {
     "date": "2026-06-08",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-08",
     "code": "520010",
     "name": "Konsültasyon (Her bir branş için)",
     "qty": 1,
     "unit": "33.17",
     "billed": "33.17",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-10",
+    "code": "530340",
+    "name": "Nazogastrik sonda uygulaması",
+    "qty": 1,
+    "unit": "88.61",
+    "billed": "88.61",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -594,25 +658,53 @@
     "qty": 7,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
    },
    {
     "date": "2026-06-08",
-    "code": "8697637691743",
-    "name": "NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI)",
-    "qty": 21,
+    "code": "8697637690128",
+    "name": "NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI COZELTISI PP-TORBA 1000 ML(SETLI)",
+    "qty": 3,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A09604 from 2025-04-26",
+    "ingredient": "sodyum klorür",
+    "qty_unit": "bag"
+   },
+   {
+    "date": "2026-06-08",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    },
    {
     "date": "2026-06-09",
     "code": "8699708690525",
     "name": "PK-MERZ IV INF. COZ. 2x500 ML",
-    "qty": 2,
+    "qty": 3,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A12140 from 2025-04-26",
+    "ingredient": "amantadin sülfat",
+    "qty_unit": "bottle (box of 2)"
+   },
+   {
+    "date": "2026-06-10",
+    "code": "8699525094841",
+    "name": "MADOPAR 125 MG 30 TB",
+    "qty": 20,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A04817 from 2025-04-26",
+    "ingredient": "levodopa ve benserazid hcl",
+    "qty_unit": "tablet (box of 30)"
    }
   ],
   "diagnoses": [
@@ -660,7 +752,7 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 422.73,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 3
@@ -697,13 +789,6 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   422.73
   ],
   [
    "wavea",

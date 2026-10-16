@@ -6,6 +6,8 @@ ROOT = Path(__file__).resolve().parents[3]
 EK2B = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2b_catalog_history.parquet")
 EK2C = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2c_catalog_history.parquet")
 EK4A = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek4a_history.parquet")
+EK3F1 = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek3f1_arthroplasty_materials.parquet")
+XWALK = pl.read_parquet(f"{ROOT}/data/synthetic/reference/drug_crosswalk.parquet")
 
 def _inforce(df: pl.DataFrame, d: str, until_col: str = "valid_to") -> pl.DataFrame:
     return df.filter((pl.col("valid_from") <= d) & (pl.col(until_col).is_null() | (pl.col(until_col) >= d)))

@@ -1,7 +1,7 @@
 {
  "story": "S5",
  "clean": {
-  "total_billed": "36413.68",
+  "total_billed": "31233.66",
   "rows": [
    {
     "date": "2026-09-04",
@@ -14,49 +14,62 @@
    },
    {
     "date": "2026-09-04",
-    "code": "AP2070",
-    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOSUZ | CoCr/TİTANYUM | KAPLAMALI - KUMLAMA",
+    "code": "AP2000",
+    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOLU | ÇELİK | PARLATILMIŞ",
     "qty": 1,
-    "unit": "12630.99",
-    "billed": "12630.99",
-    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+    "unit": "6465.27",
+    "billed": "6465.27",
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
    },
    {
     "date": "2026-09-04",
     "code": "AP1880",
-    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | CoCr",
+    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | (Değişik:RG-17/01/2026-33140/14 md. Yürürlük:24/01/2026)                        CoCr /TİTANYUM CoCr",
     "qty": 1,
     "unit": "5391.89",
     "billed": "5391.89",
-    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP3220",
+    "name": "PRİMER/REVİZYON | KEMİK ÇİMENTOSU - NORMAL | STANDART - 40 gr | PMMA",
+    "qty": 2,
+    "unit": "492.85",
+    "billed": "985.70",
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
    }
   ],
   "diagnoses": [
    [
-    "S72.0",
+    "S72.00",
     true
+   ],
+   [
+    "W19",
+    false
    ],
    [
     "I10",
     false
    ],
    [
-    "M81.0",
+    "M81.09",
     false
    ]
   ],
   "performed": [],
   "direct": [],
   "report": {
-   "sgk_uplift_try": 1482.3,
+   "sgk_uplift_try": 0.0,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 8
+   "action_count": 5
   }
  },
  "faulty": {
-  "total_billed": "36413.68",
+  "total_billed": "31233.66",
   "rows": [
    {
     "date": "2026-09-04",
@@ -69,34 +82,47 @@
    },
    {
     "date": "2026-09-04",
-    "code": "AP2070",
-    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOSUZ | CoCr/TİTANYUM | KAPLAMALI - KUMLAMA",
+    "code": "AP2000",
+    "name": "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOLU | ÇELİK | PARLATILMIŞ",
     "qty": 1,
-    "unit": "12630.99",
-    "billed": "12630.99",
-    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+    "unit": "6465.27",
+    "billed": "6465.27",
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
    },
    {
     "date": "2026-09-04",
     "code": "AP1880",
-    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | CoCr",
+    "name": "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | (Değişik:RG-17/01/2026-33140/14 md. Yürürlük:24/01/2026)                        CoCr /TİTANYUM CoCr",
     "qty": 1,
     "unit": "5391.89",
     "billed": "5391.89",
-    "source": "EK-3F-1 (Yür. 13.12.2025, consolidated SUT 2026-10-02; curated ek3f1_arthroplasty_materials)"
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
+   },
+   {
+    "date": "2026-09-04",
+    "code": "AP3220",
+    "name": "PRİMER/REVİZYON | KEMİK ÇİMENTOSU - NORMAL | STANDART - 40 gr | PMMA",
+    "qty": 2,
+    "unit": "492.85",
+    "billed": "985.70",
+    "source": "EK-3F-1 from 2025-12-13 (curated ek3f1_arthroplasty_materials)"
    }
   ],
   "diagnoses": [
    [
-    "S72.0",
+    "S72.00",
     true
+   ],
+   [
+    "W19",
+    false
    ],
    [
     "I10",
     false
    ],
    [
-    "M81.0",
+    "M81.09",
     false
    ]
   ],
@@ -105,19 +131,19 @@
    {
     "rule_id": "3.1.1.(2).titubb_uts_incomplete",
     "severity": "error",
-    "material_code": "AP2070",
-    "risk_amount": 12630.99,
+    "material_code": "AP2000",
+    "risk_amount": 6465.27,
     "material_outcome": "no_pay",
     "sut_section": "3.1.1",
     "message": "TİTUBB/ÜTS kayıt-bildirim tamamlanmamış — Kurumca karşılanmaz (§3.1.1(2))."
    }
   ],
   "report": {
-   "sgk_uplift_try": 1482.3,
+   "sgk_uplift_try": 0.0,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 9
+   "action_count": 7
   }
  },
  "only_in_faulty": [
@@ -129,32 +155,24 @@
    0.0
   ],
   [
+   "action",
+   "materials",
+   "material_prose_bundling",
+   "AP2000",
+   6465.27
+  ],
+  [
    "validate",
    "material_bundling_prose",
    "3.1.1.(2).titubb_uts_incomplete",
-   "AP2070",
-   12630.99
+   "AP2000",
+   6465.27
   ]
  ],
- "only_in_clean": [
-  [
-   "validate",
-   "material_bundling_prose",
-   "3.1.1.(15).separate_billing_not_authorized",
-   "AP2070",
-   12630.99
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
   [
    "action",
-   "yatak_puani",
-   "yatak_puani_standard_bed",
-   "",
-   1111.8
-  ],
-  [
-   "action",
    "claim_checklist",
    "documentation_requirement",
    "",
@@ -185,35 +203,7 @@
    "action",
    "materials",
    "material_prose_bundling",
-   "AP2070",
-   0.0
-  ],
-  [
-   "action",
-   "materials",
-   "material_prose_bundling",
-   "AP2070",
-   12630.99
-  ],
-  [
-   "action",
-   "materials",
-   "material_prose_bundling",
-   "AP1880",
-   5391.89
-  ],
-  [
-   "block",
-   "refakatci",
-   "refakatci_510121",
-   "",
-   370.5
-  ],
-  [
-   "compliance",
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "error",
-   "P612320",
+   "AP3220",
    0.0
   ],
   [
@@ -269,22 +259,8 @@
    "validate",
    "material_bundling_prose",
    "3.1.4.(b).bone_cement",
-   "AP2070",
+   "AP3220",
    0.0
-  ],
-  [
-   "validate",
-   "material_bundling_prose",
-   "3.1.1.(15).separate_billing_not_authorized",
-   "AP2070",
-   12630.99
-  ],
-  [
-   "validate",
-   "material_bundling_prose",
-   "3.1.1.(15).separate_billing_not_authorized",
-   "AP1880",
-   5391.89
   ],
   [
    "validate",
@@ -354,13 +330,6 @@
    "treatment_pricing_2_4",
    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
    "",
-   0.0
-  ],
-  [
-   "validate",
-   null,
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "P612320",
    0.0
   ]
  ]

@@ -86,17 +86,30 @@
    },
    {
     "date": "2026-08-18",
-    "code": "8699606694649",
-    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
-    "qty": 1,
+    "code": "8699814270253",
+    "name": "EQIZOLIN 1 GR IM/IV 1 FLK",
+    "qty": 2,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A02786 from 2025-04-26",
+    "ingredient": "cefazolin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
    }
   ],
   "diagnoses": [
    [
-    "M48.0",
+    "M48.06",
     true
    ],
    [
@@ -122,7 +135,7 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 621.76,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
@@ -205,17 +218,30 @@
    },
    {
     "date": "2026-08-18",
-    "code": "8699606694649",
-    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
-    "qty": 1,
+    "code": "8699814270253",
+    "name": "EQIZOLIN 1 GR IM/IV 1 FLK",
+    "qty": 2,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A02786 from 2025-04-26",
+    "ingredient": "cefazolin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-08-18",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
    }
   ],
   "diagnoses": [
    [
-    "M48.0",
+    "M48.06",
     true
    ],
    [
@@ -241,7 +267,7 @@
   ],
   "report": {
    "sgk_uplift_try": 928.09,
-   "audit_exposure_try": 278.24,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
@@ -254,24 +280,9 @@
    "anestezi_puani_group_lookup",
    "615931",
    928.09
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   278.24
   ]
  ],
- "only_in_clean": [
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   621.76
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
   [
    "action",
@@ -286,13 +297,6 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   621.76
   ],
   [
    "wavea",

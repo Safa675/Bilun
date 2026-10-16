@@ -122,21 +122,14 @@
    },
    {
     "date": "2026-02-19",
-    "code": "8699688771559",
-    "name": "OMNIPAQUE 350 MGL/ML 100 ML FLK",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
-   },
-   {
-    "date": "2026-02-19",
-    "code": "8699606694649",
-    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
-    "qty": 1,
-    "unit": "0.00",
-    "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
    }
   ],
   "diagnoses": [
@@ -174,7 +167,7 @@
   "direct": [],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 222.67,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 0
@@ -293,21 +286,14 @@
    },
    {
     "date": "2026-02-19",
-    "code": "8699688771559",
-    "name": "OMNIPAQUE 350 MGL/ML 100 ML FLK",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
-   },
-   {
-    "date": "2026-02-19",
-    "code": "8699606694649",
-    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
-    "qty": 1,
-    "unit": "0.00",
-    "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
    }
   ],
   "diagnoses": [
@@ -357,8 +343,8 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 157.2,
-   "capture_gap_try": 1138,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 1138.22,
    "compliance_adjustment_try": 0.0,
    "action_count": 1
   }
@@ -373,36 +359,14 @@
   ],
   [
    "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   157.2
-  ],
-  [
-   "scalar",
    "capture_gap_try",
    "",
    "",
-   1138.0
+   1138.22
   ]
  ],
- "only_in_clean": [
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   222.67
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   222.67
-  ],
   [
    "wavea",
    "claim_reviews",
