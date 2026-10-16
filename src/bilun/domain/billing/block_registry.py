@@ -53,7 +53,10 @@ class BillingBlockSpec:
     uplift_field: str | None = None
     report_scalar: str | None = None
     block_scalar: str | None = None
-    scalar_default: float | int = 0
+    # The default's type is the scalar's type (``_apply_report_scalar``): a
+    # count passes ``0`` and is cast to int; a TRY amount keeps this float
+    # default and its kuruş.
+    scalar_default: float | int = 0.0
     cohort_total_field: str | None = None
     cohort_patient_counter_field: str | None = None
     cohort_value_from_report: str | None = None
