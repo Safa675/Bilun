@@ -49,18 +49,17 @@ class TestBillingActionsBreakdown:
         assert report.action_count == len(report.recommended_actions)
 
         surfaces = {row["surface"] for row in report.recommended_actions}
-        assert surfaces == {"copay", "claim_checklist", "billing_strategy"}
+        assert surfaces == {"copay", "claim_checklist"}
 
+        # 613080 on this outpatient (poliklinik) claim is in EK-2/C but not on
+        # EK-2/A-2, so §2.2.1.B-1(10)(a) mandates no package for it: no
+        # compliance violation (was one, from the old every-EK-2/C reading).
         violations = [
             row
             for row in report.recommended_actions
             if row["kind"] == "compliance_violation"
         ]
-        # Post 2026-07-01 amendment + rule-wiring drift, procedure 613080 on this
-        # claim is package-mandated (§2.2.1.B-1.a), so one compliance violation now
-        # accompanies the copay review + documentation checklist.
-        assert len(violations) == 1
-        assert "613080" in (violations[0].get("detail") or "")
+        assert violations == []
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
@@ -84,7 +83,13 @@ class TestBillingActionsBreakdown:
         ]
         assert len(doc_rows) == 3
         assert any("muayene" in (row.get("detail") or "").lower() for row in doc_rows)
-        assert report.action_count == len(copay_rows) + len(violations) + len(doc_rows)
+        # No package gap row either: 613080 needs no package on an outpatient bill
+        # (the #269 comparison gave one from the every-EK-2/C reading, 7,074.34).
+        gap_rows = [
+            row for row in report.recommended_actions if row["kind"] == "mandatory_compliance"
+        ]
+        assert gap_rows == []
+        assert report.action_count == len(copay_rows) + len(doc_rows)
 
         checklist_docs = [
             item
@@ -141,12 +146,15 @@ class TestBillingActionsBreakdown:
             if row.get("kind") == "optional_override"
         ]
         assert len(override) == 1
-        assert override[0]["sgk_uplift_try"] == pytest.approx(4515.48)
+        # Safa 2026-10-16: unknown incision → lenient reading. The package's gain
+        # is money only above the highest itemized total, A(5)(b) 50 % (was 4515.48).
+        assert override[0]["sgk_uplift_try"] == pytest.approx(4075.48)
 
         strategy_override = report.billing_strategy.optional_override_opportunities[0]
         # 600160 is primary by catalog points: 1800 + the hizmet başı §2.2.2.A(5)
-        # 30 % of 600150's own 2200 (was the package 25 %: 2350.0, uplift 4625.48).
-        assert strategy_override["itemized_total_try"] == pytest.approx(2460.0)
+        # 50 % of 600150's own 2200 (30 % with one incision: 2460.0; the package
+        # 25 % before that: 2350.0, uplift 4625.48).
+        assert strategy_override["itemized_total_try"] == pytest.approx(2900.0)
         assert strategy_override["package_total_try"] == pytest.approx(6975.48)
         assert strategy_override.get("recommended_package_code") == "609300"
 

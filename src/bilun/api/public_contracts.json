@@ -733,7 +733,14 @@
         "review_uplift_try": true,
         "savings_category": true,
         "savings_basis": true,
-        "rule_id": true
+        "rule_id": true,
+        "missing_facts": {
+          "$list": true
+        },
+        "strict_point_factor": true,
+        "strict_expected_billed_try": true,
+        "lenient_point_factor": true,
+        "lenient_expected_billed_try": true
       }
     },
     "total_uplift_try": true,

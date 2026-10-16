@@ -35,6 +35,8 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
+from src.bilun.domain.prose_rules.yatak_puani import mandated_package_lines
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -231,13 +233,28 @@ def detect_anestezi_puani_opportunities(
         (550200–550260) from the session's total surgical puan.
       - Subtracts already-billed surgical anesthesia (550130–550346) on the
         claim from ``recoverable_uplift_try``.
+
+    A line that must be billed as an EK-2/C package (§2.2.2(1)) on a bill
+    sent hizmet başı counts as a package line: the package includes its
+    anaesthesia (SUT §2.2.2.B-1(1)(g)).
     """
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+    lines_by_claim: dict[str, list[ProcedureClaimLine]] = {}
+    for line in procedure_lines:
+        lines_by_claim.setdefault(line.claim_id, []).append(line)
+    mandated_by_claim: dict[str, list[ProcedureClaimLine]] = {}
+
+    def _is_mandated_package_line(line: ProcedureClaimLine, claim: ClaimHeader) -> bool:
+        if claim.claim_id not in mandated_by_claim:
+            mandated_by_claim[claim.claim_id] = mandated_package_lines(
+                claim, lines_by_claim.get(claim.claim_id, [])
+            )
+        return line in mandated_by_claim[claim.claim_id]
 
     # Sum already-billed anesthesia (550130-550346) per claim.
     remaining_billed_by_claim: dict[str, float] = {}
     for line in procedure_lines:
-        if line.procedure_category == "paket":
+        if line_billed_as_package(line):
             continue
         if _is_anestezi_group_code(line.procedure_code):
             remaining_billed_by_claim[line.claim_id] = _money(
@@ -259,12 +276,14 @@ def detect_anestezi_puani_opportunities(
             and line.claim_id not in claim_ids_with_procs
         ):
             continue
-        if line.procedure_category == "paket":
+        if line_billed_as_package(line):
             continue
 
         visit_date = line.procedure_date or claim.admission_date or claim.claim_start_date
         procedure_puan = _surgical_puan(line.procedure_code, visit_date=visit_date)
         if procedure_puan is None:
+            continue
+        if _is_mandated_package_line(line, claim):
             continue
 
         session_key = (line.claim_id, visit_date)

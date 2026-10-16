@@ -15,6 +15,7 @@ from src.bilun.domain.prose_rules.claim_utils import group_procedure_lines_by_se
 from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
 from src.bilun.domain.prose_rules.session_scope import (
     is_session_operation_code,
+    line_billed_as_package,
     session_operation_lines,
 )
 from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
@@ -127,7 +128,7 @@ def _resolve_addon_factor(
     billable = [
         line
         for line in session_operation_lines(session_lines)
-        if line.procedure_category != "paket"
+        if not line_billed_as_package(line)
         and not line.is_package_included
         and _line_billed(line) > 0
     ]
@@ -182,7 +183,7 @@ def detect_missing_procedure_addon_opportunities(
         triggers = [
             line
             for line in session_lines
-            if line.procedure_category != "paket"
+            if not line_billed_as_package(line)
             and not line.is_package_included
             and _line_billed(line) > 0
             and normalize_procedure_code(line.procedure_code) in rules_by_trigger

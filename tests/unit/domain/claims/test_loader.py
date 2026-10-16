@@ -237,7 +237,9 @@ def test_real_claims_mode_loads_without_expected_outputs_or_payable_columns(
         assert claim.scenario_tag == ""
     for proc in dataset.procedure_lines.values():
         assert proc.expected_payable_try == proc.billed_amount_try
-        assert proc.unit_price_try == proc.billed_amount_try
+        # Unknown, not the billed amount: §2.2.2 session pricing reads the
+        # catalog list price instead (review item 8).
+        assert proc.unit_price_try == 0
     for mat in dataset.material_lines.values():
         assert mat.expected_payable_try == mat.billed_amount_try
         assert mat.unit_price_try == mat.billed_amount_try

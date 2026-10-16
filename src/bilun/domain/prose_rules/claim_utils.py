@@ -61,6 +61,19 @@ def claim_is_traffic_accident(claim: ClaimHeader) -> bool:
     )
 
 
+def claim_is_day_case(claim: ClaimHeader | None) -> bool:
+    """Günübirlik tedavi (day case), which ``infer_care_setting`` reads as outpatient.
+
+    SUT counts it as yatarak tedavi ("Yatarak tedavilerde (yatan hasta ve günübirlik
+    tedavi)", C003484) and §2.2.2(4) (C000649) bills its EK-2/C procedures there, so
+    the payment-method rules SUT writes for yatarak services apply to it.
+    """
+    if claim is None:
+        return False
+    claim_type = _normalized_claim_type(claim)
+    return "gunubirlik" in claim_type or "day_case" in claim_type
+
+
 def infer_care_setting(claim: ClaimHeader) -> str:
     claim_type = _normalized_claim_type(claim)
     if "yatis" in claim_type or "yatarak" in claim_type or "inpatient" in claim_type:

@@ -20,10 +20,11 @@ def compute_audit_exposure_from_claims(ctx: PatientClaimContext) -> float:
         if not claim_procs:
             continue
 
+        # No claim line carries the incision: session money is taken above the
+        # most lenient reading (``detect_session_point_violations``).
         finding = analyze_claim_unbundling(
             claim,
             claim_procs,
-            same_incision=True,
             drug_lines=ctx.drug_lines,
             material_lines=ctx.material_lines,
         )

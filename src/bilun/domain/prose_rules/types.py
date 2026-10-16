@@ -15,6 +15,9 @@ PaymentMethodKind = Literal[
     "ITEMIZED",
     "MISSING_INPUTS",
     "NOT_IN_SUT",
+    # Outpatient EK-2/C procedure not on EK-2/A-2 on its date: §2.2.1.B-1(10)
+    # mandates no package for it, so no billing method is checked.
+    "OUTPATIENT_UNLISTED",
 ]
 PatientCopayProfile = Literal["sgk_income_recipient", "other"]
 

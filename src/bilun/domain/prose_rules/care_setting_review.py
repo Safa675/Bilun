@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from src.bilun.domain.money import money_round_half_up as _money
-from src.bilun.domain.prose_rules.claim_utils import detect_care_setting_ambiguity
+from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, detect_care_setting_ambiguity
 from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
 from src.bilun.domain.prose_rules.payment_method import resolve_payment_method
 from src.bilun.domain.prose_rules.session_pricing import (
@@ -48,8 +48,9 @@ def _pick_claim_kind(kinds: set[PaymentMethodKind]) -> PaymentMethodKind | None:
     Shared selection logic used by both ``_aggregate_claim_kind`` (kinds input)
     in care_setting_review and ``_aggregate_claim_kind`` (results input) in
     claim_strategy. Precedence: DRG_MANDATORY > DRG_OVERRIDABLE > ITEMIZED > rest.
+    NOT_IN_SUT and OUTPATIENT_UNLISTED lines set no method, so they set no kind.
     """
-    filtered = {kind for kind in kinds if kind != "NOT_IN_SUT"}
+    filtered = {kind for kind in kinds if kind not in ("NOT_IN_SUT", "OUTPATIENT_UNLISTED")}
     if not filtered:
         return None
     if filtered == {"ITEMIZED"}:
@@ -81,6 +82,7 @@ def _resolve_claim_kind(
             facility_tier=claim.facility_tier,
             provider_type=claim.provider_type,
             as_of_date=_line_as_of_date(line, claim),
+            day_case=claim_is_day_case(claim),
         )
         kinds.append(result.kind)
     return _aggregate_claim_kind(kinds)

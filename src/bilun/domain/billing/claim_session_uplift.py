@@ -38,10 +38,11 @@ def recommend_session_uplift_from_claims(
         if not claim_procs:
             continue
         opportunities.extend(
+            # No claim line carries the incision: money below the strictest
+            # reading, a 0-TL review up to the most lenient one.
             detect_session_underbilling_opportunities(
                 claim_procs,
                 claim_id=claim.claim_id,
-                same_incision=True,
                 cross_specialty=None,
                 claim=claim,
             )

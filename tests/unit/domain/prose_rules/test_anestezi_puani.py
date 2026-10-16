@@ -22,6 +22,7 @@ from src.bilun.domain.billing.claim_anestezi_puani import (
 )
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules import anestezi_puani
 from src.bilun.domain.prose_rules.anestezi_puani import (
     detect_anestezi_puani_opportunities,
 )
@@ -51,6 +52,11 @@ def _stub_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
         "L107480": 18.5,  # Lab code (EK-2B §9 — non-surgical)
     }
     install_anestezi_catalog_stub(monkeypatch, puan_by_code=puan_map)
+    # These tests pin the EK-2/B §4 group lookup on hizmet başı surgery. 610130,
+    # 612070 and 620462 have starred EK-2/C packages that must be billed instead
+    # (§2.2.2(1)), whose price includes the anaesthesia (§2.2.2.B-1(1)(g)); that
+    # is pinned in tests/unit/domain/billing/test_mandated_package_window.py.
+    monkeypatch.setattr(anestezi_puani, "mandated_package_lines", lambda claim, lines: [])
 
 
 def _make_claim_header(

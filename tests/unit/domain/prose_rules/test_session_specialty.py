@@ -11,6 +11,7 @@ from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.session_specialty import (
     detect_cross_specialty_session,
+    normalize_specialty_key,
     resolve_procedure_specialty_key,
 )
 
@@ -74,6 +75,13 @@ class TestSessionSpecialtyDetect:
         lines = [_proc("A", specialty="Kardiyoloji"), _proc("B", specialty="kardiyoloji")]
         assert detect_cross_specialty_session(lines, claim) is False
 
+    @pytest.mark.parametrize("raw", ["KARDİYOLOJİ", "Kardiyoloji", "KARDIYOLOJI", "kardıyolojı"])
+    def test_branch_names_fold_the_turkish_i(self, raw) -> None:
+        # Review: the dotless "ı" made "kardıyolojı" a second branch (+25 points).
+        assert normalize_specialty_key(raw) == "kardiyoloji"
+        lines = [_proc("A", specialty="KARDİYOLOJİ"), _proc("B", specialty=raw)]
+        assert detect_cross_specialty_session(lines, _claim()) is False
+
     def test_ek2c_group_is_not_a_specialty(self) -> None:
         # #264: the EK-2/C işlem grubu (P609235 group B, P603840 group C) is a
         # price group, not a branch; without branch codes the specialty is unknown.
@@ -126,7 +134,7 @@ class TestSessionSpecialtyDetect:
             lambda code, **kwargs: 10.0 if code == "610080" else 5.0,
         )
         monkeypatch.setattr(
-            "src.bilun.domain.prose_rules.session_pricing.detect_cross_specialty_session",
+            "src.bilun.domain.prose_rules.session_specialty.detect_cross_specialty_session",
             lambda _lines, _claim: True,
         )
 

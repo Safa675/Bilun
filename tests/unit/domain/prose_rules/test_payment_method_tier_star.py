@@ -73,15 +73,43 @@ class TestPaymentMethodTierStar:
         assert "override not permitted" in result.trace.detail
 
     def test_outpatient_ek2c_skips_override_even_at_tier_3(self) -> None:
+        # 608310 is on EK-2/A-2 and in EK-2/C: §2.2.1.B-1(10)(a) bills it as its
+        # package, whatever the tier (no §2.2.2(2) override for outpatients).
         from src.bilun.domain.prose_rules import resolve_payment_method
+
+        result = resolve_payment_method(
+            "608310",
+            care_setting="outpatient",
+            facility_tier=TIER_3,
+        )
+        assert result.kind == "DRG_MANDATORY"
+        assert result.trace.rule_id == "2.2.1.B-1.a"
+
+    def test_outpatient_ek2c_off_ek2a2_has_no_package_mandate(self) -> None:
+        # 600150 is in EK-2/C but not on EK-2/A-2: an outpatient visit has no
+        # package for it (§2.2.1.B-1(10)), so no billing method is checked.
+        from src.bilun.domain.prose_rules import (
+            check_payment_method_compliance,
+            resolve_payment_method,
+        )
 
         result = resolve_payment_method(
             NON_STAR_DUAL,
             care_setting="outpatient",
             facility_tier=TIER_3,
         )
-        assert result.kind == "DRG_MANDATORY"
-        assert result.trace.rule_id == "2.2.1.B-1.a"
+        assert (result.kind, result.payment_method) == ("OUTPATIENT_UNLISTED", "unknown")
+        assert result.trace.rule_id == "2.2.1.B-1.(10).not_on_ek2a2"
+        for billed_as_package in (False, True):
+            assert check_payment_method_compliance(
+                NON_STAR_DUAL, billed_as_package=billed_as_package,
+                care_setting="outpatient", facility_tier=TIER_3,
+            ).is_compliant
+        # A day case (günübirlik) read as outpatient is yatarak tedavi (C003484).
+        day_case = resolve_payment_method(
+            NON_STAR_DUAL, care_setting="outpatient", facility_tier=TIER_3, day_case=True,
+        )
+        assert day_case.kind == "DRG_MANDATORY"
 
     def test_unknown_tier_reports_missing_inputs_for_override_eligible_code(self) -> None:
         from src.bilun.domain.prose_rules import resolve_payment_method

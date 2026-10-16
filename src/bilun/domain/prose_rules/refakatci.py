@@ -30,7 +30,10 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
-from src.bilun.domain.prose_rules.yatak_puani import _find_package_window_end
+from src.bilun.domain.prose_rules.yatak_puani import (
+    claim_package_window,
+    counts_against_expected_days,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -109,6 +112,9 @@ def detect_refakatci_opportunities(
       * Skip outpatient / day-case (<24h) stays with an informational note.
       * Skip ICU stays (510090 / P552001–P552008) — companion per-diem applies
         instead (§2.6.3.(3)).
+      * Inside an EK-2/C package window (a billed package, or a mandated one
+        on a bill sent hizmet başı) companion nights are bundled; only the
+        nights after it are expected (§2.2.2.B-1(1)(h), (3)-(4)).
       * Otherwise compute companion days = ``(discharge - admission).days``,
         expected charge = days × admission-date 510121 rate, and subtract any
         already-billed 510121 lines into ``recoverable_uplift_try``.
@@ -154,13 +160,10 @@ def detect_refakatci_opportunities(
         )
         companion_days = (claim.discharge_date - claim.admission_date).days
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
-        actual_billed_try = _money(
-            sum(
-                float(p.billed_amount_try)
-                for p in claim_procs
-                if _normalize_code(p.procedure_code) == _REFAKATCI_CODE
-            )
-        )
+        companion_lines = [
+            p for p in claim_procs if _normalize_code(p.procedure_code) == _REFAKATCI_CODE
+        ]
+        actual_billed_try = _money(sum(float(p.billed_amount_try) for p in companion_lines))
 
         # Suppression rule 1 (§2.2.2.(5)): never paid for günübirlik /
         # day-case stays (<24h).
@@ -227,18 +230,26 @@ def detect_refakatci_opportunities(
             continue
 
         # Suppression rule 3 (§2.2.2.B-1(1)(h), (3)-(4)): EK-2/C package window
-        # bundles companion expenses through the end of the group window.
-        window_end = _find_package_window_end(
-            claim_procs,
-            admission_date=claim.admission_date,
-            discharge_date=claim.discharge_date,
-        )
-        if window_end is not None:
+        # bundles companion expenses through the end of the group window. The
+        # package is billed, or mandated (§2.2.2(1)) on a bill sent hizmet başı.
+        window = claim_package_window(claim, claim_procs)
+        if window is not None:
+            window_end = window.end
+            actual_billed_try = _money(
+                sum(
+                    float(p.billed_amount_try)
+                    for p in companion_lines
+                    if counts_against_expected_days(p, window)
+                )
+            )
             billable_companion_days = max(
                 (claim.discharge_date - timedelta(days=1) - window_end).days,
                 0,
             )
             if billable_companion_days < 1:
+                package_label = (
+                    "the mandated EK-2/C package" if window.mandated else "EK-2/C package"
+                )
                 opportunities.append(
                     {
                         "type": _OPPORTUNITY_TYPE,
@@ -252,13 +263,18 @@ def detect_refakatci_opportunities(
                         "sut_section_id": "2.6.3",
                         "rule_id": "refakatci_510121",
                         "detail": (
-                            f"Companion bed (510121) bundled into EK-2/C package "
+                            f"Companion bed (510121) bundled into {package_label} "
                             f"window through {window_end} ({companion_days} night(s), "
                             f"{claim.admission_date} → {claim.discharge_date}) per "
                             f"§2.2.2.B-1(1)(h) and §2.2.2.B-1(3)."
                         ),
                         "suppression_notes": [
                             "package_window_bundled (§2.2.2.B-1(1)(h), (3))",
+                            *(
+                                ["package_mandated_billed_itemized (§2.2.2(1))"]
+                                if window.mandated
+                                else []
+                            ),
                         ],
                         "included_in_sgk_total": False,
                         "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,

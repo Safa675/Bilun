@@ -1,9 +1,10 @@
 """
 EK-2B / EK-2C: service-based and package-based procedure prices.
 
-These are the only catalogs built with source='raw_all_versions' — each gazette
-version contributes one slice of the price-history timeline, which the
-orchestrator concatenates and decorates with valid_from / valid_to ranges.
+These and EK-2/A-2 (outpatient_procedures.py) are built with
+source='raw_all_versions' — each gazette version contributes one slice of the
+timeline, which the orchestrator concatenates and decorates with valid_from /
+valid_to ranges.
 EK-2B and EK-2C rows also carry the amendment marker of their code cell, so a
 row SGK added or amended inside a version applies from its own Yürürlük date
 (scripts/sut/_common.py::_add_validity_ranges).

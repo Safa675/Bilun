@@ -51,7 +51,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
-from src.bilun.domain.prose_rules.yatak_puani import _find_package_window_end
+from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -90,22 +90,6 @@ def _is_icu_code(normalized: str) -> bool:
     if stripped == _ICU_DAY_RATE_CODE:
         return True
     return stripped in _ICU_PACKAGE_PREFIXES
-
-
-def _find_package_surgery_day(
-    procedure_lines: list[ProcedureClaimLine],
-) -> date | None:
-    """Return the surgery date if the claim has an EK-2C package procedure.
-
-    Duplicates ``yatak_puani._find_package_surgery_day`` (El Kitabı Tablo 23:
-    surgery-day bed fee is bundled into the EK-2C package). The reconcile
-    uses it to avoid double-subtracting a day already excluded by
-    ``yatak_puani``'s package-bundling logic.
-    """
-    for line in procedure_lines:
-        if (line.procedure_category or "").strip().lower() == "paket":
-            return line.procedure_date
-    return None
 
 
 def _collect_icu_discharge_claims(
@@ -273,8 +257,8 @@ def reconcile_yatak_bed_days(
     for line in procedure_lines:
         procedures_by_claim.setdefault(line.claim_id, []).append(line)
 
-    claim_dates: dict[str, tuple[date, date]] = {
-        claim.claim_id: (claim.admission_date, claim.discharge_date)
+    claims_with_dates: dict[str, ClaimHeader] = {
+        claim.claim_id: claim
         for claim in claims
         if claim.admission_date is not None and claim.discharge_date is not None
     }
@@ -282,19 +266,19 @@ def reconcile_yatak_bed_days(
     adjusted: list[dict[str, Any]] = []
     changed = False
     for opp in yatak_opportunities:
-        dates = claim_dates.get(opp.get("claim_id", ""))
-        if dates is None:
+        claim = claims_with_dates.get(opp.get("claim_id", ""))
+        if claim is None:
             adjusted.append(opp)
             continue
-        admission, discharge = dates
+        admission, discharge = claim.admission_date, claim.discharge_date
 
         # Days already excluded by package-window bundling (yatak_puani
-        # §2.2.2.B-1(1), (3)-(4)) — never double-subtract them.
-        window_end = _find_package_window_end(
-            procedures_by_claim.get(opp.get("claim_id", ""), []),
-            admission_date=admission,
-            discharge_date=discharge,
+        # §2.2.2.B-1(1), (3)-(4)) — never double-subtract them. The same
+        # window as yatak_puani: a billed package, or a mandated one.
+        window = claim_package_window(
+            claim, procedures_by_claim.get(claim.claim_id, []),
         )
+        window_end = window.end if window is not None else None
 
         overlapping = sorted(
             d

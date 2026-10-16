@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -21,7 +22,7 @@ from .session_scope import (
     line_billed_as_package,
     session_operation_lines,
 )
-from .session_specialty import detect_cross_specialty_session
+from .session_specialty import cross_specialty_readings
 from .types import ProseRuleTrace, SessionPricingResult, SessionProcedureFactor
 
 if TYPE_CHECKING:
@@ -108,6 +109,27 @@ def _factor_with_uplift(base: float, cross_specialty: bool) -> float:
     if cross_specialty:
         return min(1.0, base + 0.25)
     return base
+
+
+def _package_secondary_factor(*, same_incision: bool, cross_specialty: bool) -> tuple[str, float]:
+    """Rule id and factor of a tanıya dayalı işlem after the session's highest one.
+
+    §2.2.2.B(3)(a)/(b) (C000670 / C000671): 25 % / 50 % of its own package puan,
+    +25 points across specialties (C000674).
+    """
+    rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
+    factor = (
+        _FALLBACK_OTHER_FACTOR_SAME_INCISION
+        if same_incision
+        else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION
+    )
+    matched_rule = _match_session_pricing_rule(
+        same_incision=same_incision, all_in_ek2c=True, mixed_ek2c_ek2b=False,
+    )
+    if matched_rule is not None:
+        rule_id = matched_rule.get("rule_id", rule_id)
+        factor = float((matched_rule.get("action") or {}).get("other_procedure_factor", factor))
+    return rule_id, _factor_with_uplift(factor, cross_specialty)
 
 
 def _ek2c_puan(normalized: str, *, as_of_date: date | str | None) -> float | None:
@@ -324,6 +346,10 @@ def compute_session_point_factors(
         )
 
     if mixed:
+        # C000672 / C000673: a procedure outside EK-2/C takes 30 % / 50 % of its
+        # EK-2/B puan. The tanıya dayalı işlemler among themselves keep
+        # §2.2.2.B(3)(a)/(b) (C000670 / C000671): the highest in full, the others
+        # at 25 % / 50 %. C000674 adds 25 points to each percentage.
         matched_rule = _match_session_pricing_rule(
             same_incision=same_incision,
             all_in_ek2c=all_in_ek2c,
@@ -337,26 +363,30 @@ def compute_session_point_factors(
             rule_id = "2.2.2.B.c" if same_incision else "2.2.2.B.ç"
             ek2b_factor = _FALLBACK_EK2B_FACTOR_SAME_INCISION if same_incision else _FALLBACK_EK2B_FACTOR_DIFFERENT_INCISION
         ek2b_factor = _factor_with_uplift(ek2b_factor, cross_specialty)
+        package_rule_id, package_factor = _package_secondary_factor(
+            same_incision=same_incision, cross_specialty=cross_specialty,
+        )
         factors: list[SessionProcedureFactor] = []
         for idx, code in enumerate(normalized):
             _, in_ek2c = memberships[idx]
-            if in_ek2c:
-                factor = 1.0
+            if idx == primary_idx:
+                factor, line_rule, detail = 1.0, rule_id, "highest-point EK-2/C procedure at 100%"
+            elif in_ek2c:
+                factor, line_rule = package_factor, package_rule_id
+                detail = f"another EK-2/C procedure at {package_factor:.0%}"
             else:
-                factor = ek2b_factor
+                factor, line_rule = ek2b_factor, rule_id
+                detail = f"EK-2/B procedure at {ek2b_factor:.0%}"
             factors.append(
                 SessionProcedureFactor(
                     procedure_code=code,
                     point_factor=factor,
                     is_primary=idx == primary_idx,
                     trace=ProseRuleTrace(
-                        rule_id=rule_id,
-                        sut_section=rule_id,
+                        rule_id=line_rule,
+                        sut_section=line_rule,
                         rule_set_id=_RULE_SET_ID,
-                        detail=(
-                            f"Mixed EK-2/C + EK-2/B session: EK-2/C at 100%, "
-                            f"EK-2/B at {factor:.0%}."
-                        ),
+                        detail=f"Mixed EK-2/C + EK-2/B session: {detail}.",
                     ),
                 )
             )
@@ -368,19 +398,9 @@ def compute_session_point_factors(
         )
 
     if all_in_ek2c:
-        matched_rule = _match_session_pricing_rule(
-            same_incision=same_incision,
-            all_in_ek2c=all_in_ek2c,
-            mixed_ek2c_ek2b=False,
+        rule_id, other_factor = _package_secondary_factor(
+            same_incision=same_incision, cross_specialty=cross_specialty,
         )
-        if matched_rule is not None:
-            rule_id = matched_rule.get("rule_id", "2.2.2.B.a" if same_incision else "2.2.2.B.b")
-            action = matched_rule.get("action") or {}
-            other_factor = float(action.get("other_procedure_factor", _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION))
-        else:
-            rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
-            other_factor = _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION
-        other_factor = _factor_with_uplift(other_factor, cross_specialty)
         factors = []
         for idx, code in enumerate(normalized):
             is_primary = idx == primary_idx
@@ -416,21 +436,96 @@ def compute_session_point_factors(
     )
 
 
+# Facts a bill may not show (Safa, 2026-10-16, "2b"). No claim line carries the
+# incision (kesi) of two operations in one session, so it is always unknown on a
+# bill; a line without ``procedure_specialty_code`` leaves its branch (branş) unknown.
+MISSING_INCISION = "kesi"
+MISSING_BRANCH = "branş"
 
-def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
-    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math."""
+
+@dataclass(frozen=True)
+class SessionReadings:
+    """One session's factors under the strictest and the most lenient legal reading.
+
+    ``strict``: one incision (§2.2.2.A(5)(a) 30 %, B(3)(a) 25 %, B(3)(c) 30 %) and the
+    25 points only across two known, different branches. ``lenient``: separate
+    incisions (A(5)(b), B(3)(b), B(3)(ç): 50 %) and the 25 points whenever a branch
+    is unknown (C000662, C000674). The two are one result when the bill shows both
+    facts (``missing_facts`` empty). Money is claimed only where every reading
+    agrees: over-billing above ``lenient``, under-billing below ``strict``; in
+    between a 0-TL review row names the missing fact.
+    """
+
+    strict: SessionPricingResult
+    lenient: SessionPricingResult
+    missing_facts: tuple[str, ...] = ()
+
+
+def compute_session_readings(
+    operations: Sequence[ProcedureClaimLine],
+    *,
+    same_incision: bool | None = None,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
+    as_of_date: date | str | None = None,
+    billed_as_package: Sequence[bool] | None = None,
+) -> SessionReadings:
+    """§2.2.2.A(5) / B(3) factors of one session's operations under both readings.
+
+    ``same_incision`` None: the incision is unknown. ``cross_specialty`` None: read
+    from the operations' branches (``cross_specialty_readings``). A known value
+    fixes that fact for both readings, which then keep the single-reading result.
+    """
+    missing: list[str] = []
+    if same_incision is None:
+        incisions = (True, False)
+        missing.append(MISSING_INCISION)
+    else:
+        incisions = (same_incision, same_incision)
+    if cross_specialty is None:
+        crosses = cross_specialty_readings(list(operations), claim)
+        if crosses[0] != crosses[1]:
+            missing.append(MISSING_BRANCH)
+    else:
+        crosses = (cross_specialty, cross_specialty)
+    codes = [line.procedure_code for line in operations]
+    flags = None if billed_as_package is None else list(billed_as_package)
+    strict = compute_session_point_factors(
+        codes, same_incision=incisions[0], cross_specialty=crosses[0],
+        as_of_date=as_of_date, billed_as_package=flags,
+    )
+    if not missing:
+        return SessionReadings(strict, strict)
+    lenient = compute_session_point_factors(
+        codes, same_incision=incisions[1], cross_specialty=crosses[1],
+        as_of_date=as_of_date, billed_as_package=flags,
+    )
+    return SessionReadings(strict, lenient, tuple(missing))
+
+
+
+def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float | None:
+    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math.
+
+    The bill's unit price when it states one; otherwise the catalog list price
+    on the procedure date: EK-2/C for a line billed as a package, EK-2/B for the
+    rest. Never the billed amount, which is what the factor checks: a secondary
+    correctly billed at 30 % would read as its own 100 %. ``None`` when neither
+    is known, so the line cannot be assessed.
+    """
     qty = max(int(line.quantity), 1)
     unit = float(line.unit_price_try)
     if unit > 0:
         return _money(unit * qty)
 
-    billed = float(line.billed_amount_try)
-    if billed > 0:
-        return billed
-
     normalized = normalize_procedure_code(line.procedure_code)
     if not normalized:
-        return 0.0
+        return None
+
+    if line_billed_as_package(line):
+        entry = get_ek2c_entry(line.procedure_code, as_of_date=line.procedure_date) or {}
+        price = float(entry.get("price_try") or 0)
+        return _money(price * qty) if price > 0 else None
 
     try:
         from ..catalog import lookup_procedure_code
@@ -449,16 +544,20 @@ def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
     except Exception:
         pass
 
-    return 0.0
+    return None
 
 
 def expected_session_billed_try(
     line: ProcedureClaimLine,
     *,
     point_factor: float,
-) -> float:
-    """Expected billed TRY for a line at its §2.2.2 session point factor (list × factor)."""
-    return _money(line_gazette_list_billed_try(line) * point_factor)
+) -> float | None:
+    """Expected billed TRY at the line's §2.2.2 session point factor (list × factor).
+
+    ``None`` when the line's list price is unknown.
+    """
+    listed = line_gazette_list_billed_try(line)
+    return None if listed is None else _money(listed * point_factor)
 
 
 def _line_itemized_payable(line: ProcedureClaimLine) -> float:
@@ -489,16 +588,20 @@ def _session_adjusted_line_payable(
 def compute_session_adjusted_itemized_total(
     lines: list[ProcedureClaimLine],
     *,
-    same_incision: bool = True,
+    same_incision: bool | None = True,
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
     apply_blood_fraction: bool = True,
+    lenient: bool = False,
 ) -> tuple[float, dict[str, Any]]:
     """Sum itemized payables with §2.2.2.B / §2.2.2.A(5) session point factors applied.
 
     Factors apply to the operations of each session only (``session_scope``).
     When ``cross_specialty`` is ``None``, each session auto-detects different
     specialties from the lines' ``procedure_specialty_code`` (branch codes).
+    A fact the bill does not show (``same_incision`` None, a line without a
+    branch) takes its strictest reading, or its most lenient one with
+    ``lenient`` (``SessionReadings``).
     """
     # Hypothetical itemized alternatives omit package rows and must retain
     # full itemized blood prices. Candidate flags/codes are not billed packages.
@@ -507,12 +610,13 @@ def compute_session_adjusted_itemized_total(
     sessions_with_adjustment = 0
     lines_in_scope = 0
     sessions_cross_specialty = 0
+    missing: set[str] = set()
 
     for session_date, session_lines in group_procedure_lines_by_session(lines).items():
         billable = [
             line
             for line in session_lines
-            if line.procedure_category != "paket"
+            if not line_billed_as_package(line)
             and not line.is_package_included
             and _line_itemized_payable(line) > 0
         ]
@@ -525,16 +629,21 @@ def compute_session_adjusted_itemized_total(
         operations = session_operation_lines(billable)
         factors: Iterator[SessionProcedureFactor] | None = None
         if len(operations) >= 2:
-            session_cross = (
-                detect_cross_specialty_session(operations, claim)
+            crosses = (
+                cross_specialty_readings(operations, claim)
                 if cross_specialty is None
-                else cross_specialty
+                else (cross_specialty, cross_specialty)
             )
+            session_cross = crosses[1 if lenient else 0]
+            if same_incision is None:
+                missing.add(MISSING_INCISION)
+            if crosses[0] != crosses[1]:
+                missing.add(MISSING_BRANCH)
             if session_cross:
                 sessions_cross_specialty += 1
             session = compute_session_point_factors(
                 [line.procedure_code for line in operations],
-                same_incision=same_incision,
+                same_incision=(not lenient) if same_incision is None else same_incision,
                 cross_specialty=session_cross,
                 as_of_date=session_date,
                 billed_as_package=[line_billed_as_package(line) for line in operations],
@@ -574,6 +683,8 @@ def compute_session_adjusted_itemized_total(
         "same_incision": same_incision,
         "cross_specialty": cross_specialty,
         "cross_specialty_mode": "auto" if cross_specialty is None else "fixed",
+        "reading": "lenient" if lenient else "strict",
+        "missing_facts": [fact for fact in (MISSING_INCISION, MISSING_BRANCH) if fact in missing],
     }
 
 
@@ -610,7 +721,7 @@ def billed_package_scopes(
     """
     return frozenset(
         (line.patient_id, line.claim_id, line.episode_id) for line in lines
-        if line.procedure_category == "paket" and float(line.billed_amount_try) > 0
+        if line_billed_as_package(line) and float(line.billed_amount_try) > 0
     )
 
 

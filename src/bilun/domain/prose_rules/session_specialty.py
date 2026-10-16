@@ -10,8 +10,12 @@ if TYPE_CHECKING:
 
 
 def normalize_specialty_key(raw: str) -> str:
-    """Stable key for comparing procedure specialties (branch codes or names)."""
-    text = str(raw or "").strip().casefold()
+    """Stable key for comparing procedure specialties (branch codes or names).
+
+    The Turkish dotless "ı" folds to "i" as "İ" and "I" do, so "KARDİYOLOJİ",
+    "KARDIYOLOJI" and "kardıyolojı" are one branch.
+    """
+    text = str(raw or "").strip().casefold().replace("ı", "i")
     if not text:
         return ""
     folded = unicodedata.normalize("NFKD", text)
@@ -44,3 +48,19 @@ def detect_cross_specialty_session(
     """
     known = {key for key in (resolve_procedure_specialty_key(line) for line in lines) if key}
     return len(known) >= 2
+
+
+def cross_specialty_readings(
+    lines: list[ProcedureClaimLine],
+    claim: ClaimHeader | None = None,
+) -> tuple[bool, bool]:
+    """The +25 points of a session under its strictest and most lenient reading.
+
+    Two known branches that differ add the 25 points under both readings. When
+    a line has no branch the bill cannot show whether the operations were done
+    in different branches: the strict reading leaves the points out, the
+    lenient one adds them (Safa, 2026-10-16, "2b").
+    """
+    known_cross = detect_cross_specialty_session(lines, claim)
+    every_branch_known = all(resolve_procedure_specialty_key(line) for line in lines)
+    return known_cross, known_cross or not every_branch_known

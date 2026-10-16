@@ -60,9 +60,14 @@ def _blood(**overrides):
 
 
 def _operation(**overrides):
-    """An EK-2/B §6 secondary operation in the primary's session (list 1000)."""
+    """An EK-2/B §6 secondary operation in the primary's session (list 1000).
+
+    615995 is EK-2/B only. 610080 was used before, but its EK-2/C package makes
+    it a must-package line at this tier, which has no hizmet başı session
+    uplift (review item 9).
+    """
     values = dict(
-        procedure_line_id="second-operation", procedure_code="610080",
+        procedure_line_id="second-operation", procedure_code="615995",
         procedure_specialty_code="surgery", unit_price_try=Decimal("1000"),
         expected_payable_try=Decimal("1000"), billed_amount_try=Decimal("100"),
     )
@@ -230,7 +235,7 @@ def test_blank_line_ids_do_not_collapse_distinct_occurrences():
 
 def test_operation_secondary_gap_remains_independent_of_blood():
     # #261: the secondary must be an EK-2/B §6 operation to form a session
-    # (was placeholder 111111); P610070 (EK-2/C) + 610080 (EK-2/B) is §2.2.2.B.c, 30 %.
+    # (was placeholder 111111); P610070 (EK-2/C) + 615995 (EK-2/B) is §2.2.2.B.c, 30 %.
     lines = [_primary(billed_amount_try=Decimal("1000")), _blood(), _operation()]
     session, blood = _blocks(lines)
     assert [r["procedure_line_id"] for r in session.opportunities] == ["second-operation"]
@@ -263,7 +268,7 @@ def test_direct_detectors_share_nondefault_session_options(
 
 
 def test_claim_context_reaches_both_detectors(monkeypatch):
-    from src.bilun.domain.prose_rules import session_uplift
+    from src.bilun.domain.prose_rules import session_specialty
 
     seen = []
 
@@ -271,7 +276,8 @@ def test_claim_context_reaches_both_detectors(monkeypatch):
         seen.append(claim.claim_id if claim else None)
         return claim is not None and claim.department == "cross-specialty"
 
-    monkeypatch.setattr(session_uplift, "detect_cross_specialty_session", cross_specialty)
+    # Both readings of a session read the branches here (cross_specialty_readings).
+    monkeypatch.setattr(session_specialty, "detect_cross_specialty_session", cross_specialty)
     # #261: a session needs two operations; the blood line keeps its own gap.
     session, blood = _blocks(
         [_primary(billed_amount_try=Decimal("1000")), _operation(), _blood()],

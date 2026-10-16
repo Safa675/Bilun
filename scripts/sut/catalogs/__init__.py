@@ -15,12 +15,14 @@ from scripts.sut.catalogs.ek4a_history import SPECS as EK4A_HISTORY_SPECS
 from scripts.sut.catalogs.hierarchical_materials import SPECS as HIERARCHICAL_SPECS
 from scripts.sut.catalogs.optimization import SPECS as OPTIMIZATION_SPECS
 from scripts.sut.catalogs.orthopedic_materials import SPECS as ORTHOPEDIC_SPECS
+from scripts.sut.catalogs.outpatient_procedures import SPECS as OUTPATIENT_PROCEDURE_SPECS
 from scripts.sut.catalogs.price_history import SPECS as PRICE_HISTORY_SPECS
 from scripts.sut.catalogs.simple_materials import SPECS as SIMPLE_SPECS
 from scripts.sut.catalogs.vision_materials import SPECS as VISION_SPECS
 
 CATALOG_SPECS: list[dict] = (
     PRICE_HISTORY_SPECS
+    + OUTPATIENT_PROCEDURE_SPECS
     + SIMPLE_SPECS
     + EK4A_HISTORY_SPECS
     + HIERARCHICAL_SPECS
