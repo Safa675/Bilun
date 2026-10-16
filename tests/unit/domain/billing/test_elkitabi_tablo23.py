@@ -38,6 +38,7 @@ import pytest
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules import anestezi_puani
 from src.bilun.domain.prose_rules.anestezi_puani import (
     detect_anestezi_puani_opportunities,
 )
@@ -223,12 +224,24 @@ def test_tablo23_yatak_bundled_amount() -> None:
 # ── Anestezi puani — the anesthesia charge should match the handbook ────────
 
 
-def test_tablo23_anestezi_group_is_a1() -> None:
+def _lookup_group_of_a_must_package_line(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Let the itemized 610130 line below reach the group lookup.
+
+    610130 has a starred EK-2/C package, so a hizmet başı 610130 line counts as
+    that package and gets no separate anaesthesia (SUT §2.2.2.B-1(1)(g);
+    tests/unit/domain/billing/test_mandated_package_window.py). These
+    tests only read the anaesthesia group the handbook names.
+    """
+    monkeypatch.setattr(anestezi_puani, "mandated_package_lines", lambda claim, lines: [])
+
+
+def test_tablo23_anestezi_group_is_a1(monkeypatch: pytest.MonkeyPatch) -> None:
     """Appendektomi (puan 3397.78) on 2026-07-11 → anesthesia group C (code 550170).
 
     Per EK-2/B §4 (2026-07-07 list), puan range 3005-6000 → C (550170).
     The El Kitabı lists "Anestezi işlemleri" as a separately billable item.
     """
+    _lookup_group_of_a_must_package_line(monkeypatch)
     claim = _make_tablo23_claim()
     # Anestezi only looks at non-package surgical procedures — but the
     # anestezi motor uses the *catalog* puan of the procedure code, not the
@@ -289,7 +302,7 @@ def test_tablo23_refakatci_emitted_for_inpatient() -> None:
 # ── Full context integration: all motors on the Tablo 23 patient ────────────
 
 
-def test_tablo23_full_billing_summary() -> None:
+def test_tablo23_full_billing_summary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Run all applicable motors on the Tablo 23 patient and summarize.
 
     Key findings:
@@ -321,6 +334,7 @@ def test_tablo23_full_billing_summary() -> None:
     ) if yatak_opps else 0.0
 
     # Anestezi (use islem-category line for detection)
+    _lookup_group_of_a_must_package_line(monkeypatch)
     surgical_line = ProcedureClaimLine(
         procedure_line_id="TABLO23-PL-ANES",
         claim_id="TABLO23-C1",
