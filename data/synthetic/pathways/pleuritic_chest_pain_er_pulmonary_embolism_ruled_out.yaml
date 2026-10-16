@@ -1,0 +1,171 @@
+# Pleuritic chest pain and dyspnoea in the ER, pulmonary embolism ruled out by CT angiography; ER only, billed itemized (hizmet başı).
+# Showcase story S7 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+# Every line below is a clean-bill line (faults are not part of a pathway): the bill carries every procedure the EMR and the PACS logged.
+schema_version: 1
+id: pleuritic_chest_pain_er_pulmonary_embolism_ruled_out
+title: "Pleuritic chest pain and dyspnoea in the ER, pulmonary embolism ruled out, billed itemized"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tip"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Pleuritic chest pain and dyspnoea occur in both sexes; R07.1 and R06.0 have no sex gate. Story S7 is a woman. Clinician to confirm."
+  age:
+    min: 18
+    max: 80
+    basis: judgment
+    source: "Story S7 patient is 58. Adults only; 80 is the author's judgment. The story's D-dimer 920 is above the age-adjusted cut-off at every age in range."
+
+diagnoses:
+  - icd10: R07.1
+    name: "SOLUNUMDA GÖĞÜS AĞRISI"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "WHO ICD-10 Vol. 2 (2019) §4.5 and TİG guide 2019: R07.1 is a correct principal diagnosis when no diagnosis is made (review 2026-10-16 Q8)."
+  - icd10: R06.0
+    name: "DİSPNE"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 Vol. 2. Story S7: dyspnoea with the chest pain; pulmonary embolism is ruled out."
+
+procedures:
+  # --- the ER visit
+  - id: er_exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000603, C000604, C000607, C000617 (SUT 2.2.1.B-2(2) a): ER services of 2nd/3rd tier providers are billed hizmet başı on EK-2B points, not EK-2A."
+  - id: ecg
+    kind: procedure
+    code: "530100"
+    name: "Elektrokardiyogram"
+    days: admit
+    basis: judgment
+    source: "Story S7: a 12-lead ECG at presentation with chest pain (530100 açıklama: 12 derivasyonlu); no guideline named."
+  - id: iv_line
+    kind: procedure
+    code: "530080"
+    name: "Damar yolu açılması"
+    days: admit
+    basis: ek2b_aciklama
+    source: "530080 açıklama: 'Günde bir adet faturalandırılır.' One line on the visit day; 530150 and 530870 are not billed."
+
+  # --- laboratory
+  - id: blood_routine
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+      - {code: "L102890", name: "Glukoz (Serum/Plazma)"}
+      - {code: "L106910", name: "Sodyum (Serum/Plazma)"}
+      - {code: "L106150", name: "Potasyum (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "Story S7: CBC, creatinine, glucose, sodium, potassium; lab_reference_notes.md panels vte and admission_routine (judgment)."
+  # The next two lines are one code on one day: the 0 h and the 2 h draw. A panel cannot list a code
+  # twice, so the format writes a repeated test as two lines.
+  - id: troponin_0h
+    kind: lab
+    code: "L107360"
+    name: "Troponin I"
+    days: admit
+    basis: guideline
+    source: "ESC 2023 0/2 h algorithm, as story S7 cites: troponin I at presentation (0 h)."
+  - id: troponin_2h
+    kind: lab
+    code: "L107360"
+    name: "Troponin I"
+    days: admit
+    basis: guideline
+    source: "ESC 2023 0/2 h algorithm, as story S7 cites: troponin I repeated at 2 h. lab_reference_notes.md: serial troponin is 2 lines."
+  - id: d_dimer
+    kind: lab
+    code: "L102090"
+    name: "D-dimer (Kantitatif)"
+    days: admit
+    basis: judgment
+    source: "Story S7: D-dimer 920 ng/mL FEU, above the age-adjusted cut-off of 580 (age x 10 above 50, lab_reference_notes.md); it leads to the CT."
+
+  # --- imaging
+  - id: chest_xray
+    kind: imaging
+    code: "801720"
+    name: "Akciğer grafisi P.A. (Tek yön)"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: judgment
+    source: "Story S7: a PA chest film for pleuritic pain and dyspnoea; no guideline named."
+  - id: ct_angiography
+    kind: imaging
+    code: "R101450"
+    name: "BT anjiografi, pulmoner arter"
+    days: admit
+    specialty: "3300"
+    basis: ek2b_aciklama
+    source: "R101450 açıklama: 'Kontrast ilaçlar ve sarf malzemeleri ayrıca faturalandırılmaz.' The contrast is inside the CT line; none is billed."
+
+drugs:
+  - id: paracetamol_iv
+    barcode: "8699844770716"
+    name: "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK"
+    inn: "parasetamol"
+    unit: vial
+    per_box: 1
+    day: admit
+    qty: 1                             # one 1 g / 100 mL vial
+    basis: judgment
+    source: "Review 2026-10-16 (S7): paracetamol, 1 vial; taken as analgesia for the pleuritic pain. No guideline named."
+
+# What the EMR and the PACS logged as performed. The clean bill bills every one of them.
+performed:
+  - id: ecg_emr
+    code: "530100"
+    name: "Elektrokardiyogram"
+    day: admit
+    system: emr
+    basis: judgment
+    source: "Story S7: the EMR log shows the ECG; the bill carries it too."
+  - id: iv_line_emr
+    code: "530080"
+    name: "Damar yolu açılması"
+    day: admit
+    system: emr
+    basis: judgment
+    source: "Story S7: the EMR log shows the IV line; the bill carries it too."
+  - id: chest_xray_emr
+    code: "801720"
+    name: "Akciğer grafisi P.A. (Tek yön)"
+    day: admit
+    system: emr
+    basis: judgment
+    source: "Story S7: the EMR log shows the chest X-ray; the bill carries it too."
+  - id: ct_angiography_pacs
+    code: "R101450"
+    name: "BT anjiografi, pulmoner arter"
+    day: admit
+    system: pacs
+    basis: judgment
+    source: "Story S7: the PACS log shows the CT angiography; the bill carries it too."
+
+notes:
+  - "Story S7: the CT is normal, pulmonary embolism is ruled out and the patient goes home from the ER. There is no admission, so the bill has no stay."
+  - "D-dimer 920 ng/mL FEU, above the age-adjusted cut-off of 580 for the story patient (age 58), is why the CT was done."
+  - "No contrast line: R101450 includes its contrast (EK-2B açıklama). The first story draft billed OMNIPAQUE beside it; the review of 2026-10-16 removed it (engine gap: issue #303)."
+  - "The engine flags an R-code principal diagnosis as an error row of 0 TL (never_principal_diagnosis_blocklist, issue #304); the review judges R07.1 correct as principal (Q8), so the diagnoses stay."
+
+showcase:
+  story: S7
+  sex: F
+  age: 58
+  admit: "2026-02-19"

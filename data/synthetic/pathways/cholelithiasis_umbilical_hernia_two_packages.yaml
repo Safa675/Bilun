@@ -1,0 +1,83 @@
+# Symptomatic gallstones with a small umbilical hernia: laparoscopic cholecystectomy, then a graftless umbilical hernia
+# repair through the umbilical camera port in the same session, billed as two EK-2C packages (groups B and C).
+# Showcase story S8 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. A package bill carries package lines only: the stay, anaesthesia, labs,
+# pathology and drugs are inside the packages (C000685 to C000699), so none is listed.
+schema_version: 1
+id: cholelithiasis_umbilical_hernia_two_packages
+title: "Symptomatic gallstones with a small umbilical hernia, laparoscopic cholecystectomy and hernia repair billed as two EK-2C packages"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi (both operations are by this one specialty)
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+# Both packages are in force in EK-2C on every day of it.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "K80.2 and K42.9 have no sex gate. Gallstones are more frequent in women but occur in men; story S8 is a woman. Clinician to confirm."
+  age:
+    min: 18
+    max: 75
+    basis: judgment
+    source: "Story S8 patient is 47. Adults only: children go to paediatric surgery. The upper bound is the author's judgment for an elective case without comorbidity."
+
+nights:
+  min: 1
+  max: 3
+  basis: judgment
+  source: "Story S8 has 1 night. Max 3 is the author's judgment (slow recovery after laparoscopic surgery); the group C window of 8 days (C000704) would allow 7 nights."
+
+op_day: admit                        # elective, operated on the day of admission
+
+diagnoses:
+  - icd10: K80.2
+    name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S8: symptomatic gallstones without cholecystitis."
+  - icd10: K42.9
+    name: "UMBİLİKAL HERNİ, OBSTRÜKSİYONSUZ, GANGRENSİZ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S8: defect 0,8 cm found at the pre-op exam; it is the reason for the second operation."
+
+procedures:
+  - id: cholecystectomy_package
+    kind: package
+    code: "P609235"
+    name: "Kolesistektomi, laparoskopik"
+    days: op
+    qty: 1
+    session_role: primary              # the higher puan of the session: billed in full
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package. C000670: the higher-puan package of the session is paid in full."
+  - id: hernia_package
+    kind: package
+    code: "P603840"
+    name: "Greftsiz umblikal herni onarımı"
+    days: op
+    qty: 1
+    session_role: same_incision        # repaired through the umbilical port: 25 % of its own puan
+    basis: sut
+    source: "C000670 (SUT 2.2.2.B(3) a): same session, same incision: 25 % of its own puan. Same incision: review 2026-10-16 Q5 (klinik yargı)."
+
+notes:
+  - "The umbilical hernia (defect 0,8 cm) is found at the pre-operative exam, which is not on this bill (story S8). The op note records the pre-existing hernia, the defect size and the sac."
+  - "The repair is a primary (suture) repair, which fits the graftless code P603840: a defect under 1 cm can be sutured (EHS/AHS 2020, as story S8 cites)."
+  - "Same incision: the repair goes through the umbilical camera port, so the second package is billed at 25 % of its own puan (C000670). With a separate skin incision it would be 50 % (C000671). Review 2026-10-16 Q5: klinik yargı (Gundogdu 2023, PMC10565757, as the review cites)."
+  - "In MEDULA the hospital sends P603840 with ayniFarkliKesi = 1 (aynı seans + aynı kesi) and no reduced amount; MEDULA applies the 25 % (Kılavuz p.190; review Q4). The claim model has no such field, so the clean bill carries the 25 % as a billed ratio, which the expander derives from the session role."
+  - "Both operations are by the same specialty, so the +25 points for different specialties (C000662, C000674) do not arise here."
+  - "Open field question (review 2026-10-16, clinicians Q3): whether auditors challenge an umbilical-port hernia repair as a port-site closure. A general surgeon should answer it."
+
+showcase:
+  story: S8
+  sex: F
+  age: 47
+  admit: "2026-09-15"
+  nights: 1

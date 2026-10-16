@@ -1,0 +1,232 @@
+# Aspiration pneumonia in advanced Parkinson's disease, ward stay, billed itemized (hizmet başı).
+# Showcase story S6 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# G20 is the indication of the PK-MERZ line (SUT 4.2.36(3)): it is never optional.
+schema_version: 1
+id: aspiration_pneumonia_parkinson_ward
+title: "Aspiration pneumonia in advanced Parkinson's disease, ward stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Ic Hastaliklari"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Parkinson's disease and aspiration pneumonia occur in both sexes; G20 and J69.0 have no sex gate. Story S6 is a man. Clinician to confirm."
+  age:
+    min: 60
+    max: 90
+    basis: judgment
+    source: "Story S6 patient is 79. Advanced Parkinson's disease with aspiration pneumonia is a disease of old age; both bounds are the author's judgment."
+
+nights:
+  min: 4
+  max: 9
+  basis: judgment
+  source: "Story S6 has 6 nights. Min 4 because the day-5 control chest X-ray is fixed (admit+4); max is the author's judgment."
+
+diagnoses:
+  - icd10: J69.0
+    name: "PNÖMONİT, GIDA VE KUSMUĞA BAĞLI"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (checked by the review 2026-10-16); WHO ICD-10 Vol. 2 coding. Story S6: aspiration pneumonia, nil by mouth."
+  - icd10: R13
+    name: "DİSFAJİ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (checked by the review 2026-10-16); WHO ICD-10 Vol. 2 coding. Story S6: dysphagia is why the patient is nil by mouth."
+  - icd10: G20
+    name: "PARKİNSON HASTALIĞI"
+    role: secondary
+    day: admit
+    basis: sut
+    source: "C006824 (SUT 4.2.36(3)): amantadine sulfate is for Parkinson's disease, so the bill carries G20. Story S6: advanced Parkinson's disease."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    optional:
+      probability: 0.6
+      basis: judgment
+      source: "Story S6 patient has hypertension. How often it comes with this picture is the author's judgment. Clinician to confirm."
+    basis: judgment
+    source: "Story S6 lists I10 as a comorbidity; the story gives no source."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 7 lines for 6 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz v3.1.1 p.62, p.168: review 2026-10-16 Q1, one line per calendar day, discharge day included. C000648: under 24 h the day bed 510120."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 6 lines for 6 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): doctor's order and refakatçi belgesi; Kılavuz p.264 counts the days as entered."
+
+  # --- consultation, ECG, laboratory
+  - id: neurology_consult
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1300"                  # EK-2A: Nöroloji; 520010 açıklama: 'Hekim branşı yazılmalıdır'
+    basis: judgment
+    source: "Story S6: neurology consultation on day 1; the amantadine specialist report is the neurologist's (C006824). 520010 açıklama: write the branch."
+  - id: ecg
+    kind: procedure
+    code: "530100"
+    name: "Elektrokardiyogram"
+    days: admit
+    basis: judgment
+    source: "Review 2026-10-16 (S6): a baseline ECG for the QT interval before IV amantadine; no guideline named."
+  - id: chemistry_admission
+    kind: lab
+    items:
+      - {code: "L102890", name: "Glukoz (Serum/Plazma)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+      - {code: "L107420", name: "Üre (Serum/Plazma)"}
+      - {code: "L106910", name: "Sodyum (Serum/Plazma)"}
+      - {code: "L106150", name: "Potasyum (Serum/Plazma)"}
+      - {code: "L100300", name: "Alanin aminotransferaz (ALT) (Serum/Plazma)"}
+      - {code: "L101280", name: "Aspartat aminotransferaz (AST) (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panel admission_routine (judgment) without hemogram and CRP, which cbc_crp bills. No blood gas is billed, so Na and K stay."
+  - id: cbc_crp
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L101850", name: "C reaktif protein (CRP)"}
+    days: [admit, admit+3]             # story S6: day 1 and day 4
+    basis: judgment
+    source: "lab_reference_notes.md panels admission_routine and infection (judgment); story S6 bills both on day 1 and day 4."
+  - id: blood_culture
+    kind: lab
+    code: "906020"
+    name: "Kan kültürü (Aerob-anaerob) otomatik sistem"
+    days: admit
+    basis: judgment
+    source: "Story S6 bills one blood-culture set on day 1; no guideline named. 906020 açıklama: not with 906010, which is not billed."
+  - id: chest_xray
+    kind: imaging
+    code: "801720"
+    name: "Akciğer grafisi P.A. (Tek yön)"
+    days: [admit, admit+4]
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: judgment
+    source: "Story S6: an admission film on day 1 and a control film on day 5; no guideline named."
+
+  # --- treatment procedure
+  - id: ng_tube
+    kind: procedure
+    code: "530340"
+    name: "Nazogastrik sonda uygulaması"
+    days: admit+2                      # day 3: levodopa goes through the tube from this day
+    basis: judgment
+    source: "Review 2026-10-16 (S6): nasogastric tube on day 3, levodopa through it. 530340 açıklama: at most one a day; one line here."
+
+drugs:
+  - id: sodium_chloride
+    barcode: "8697637690128"
+    name: "NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI COZELTISI PP-TORBA 1000 ML(SETLI)"
+    inn: "sodyum klorür"
+    unit: bag
+    per_box: 1
+    day: admit
+    per_day: 1
+    course_days:
+      min: 3
+      max: 3
+      basis: judgment
+      source: "Story S6: 1000 ml a day on days 1-3 while nil by mouth; the course ends on the fixed NG-tube day (admit+2), so min = max."
+    basis: judgment
+    source: "Review 2026-10-16 (S6): IV NaCl 0.9 %, 1000 ml a day on days 1-3 while nil by mouth; no guideline named."
+  - id: ceftriaxone
+    barcode: "8699508270224"
+    name: "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU"
+    inn: "seftriakson"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_day: 1
+    course_days:
+      min: 5
+      max: 7
+      basis: judgment
+      source: "Story S6 gives 1 g a day for 7 days. ATS/IDSA 2019: at least 5 days, until clinically stable. The upper bound is the author's judgment."
+    basis: guideline
+    source: "ATS/IDSA 2019, as story S6 cites: no routine anaerobic cover for aspiration pneumonia, so ceftriaxone without metronidazole."
+  - id: enoxaparin
+    barcode: "8699809950696"
+    name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"
+    inn: "enoksaparin sodyum"
+    unit: syringe
+    per_box: 10
+    day: admit
+    per_night: 1                       # 40 mg a day, one syringe per night of stay
+    basis: judgment
+    source: "Story S6: enoxaparin 40 mg a day; review 2026-10-16: 6 syringes. One syringe per night of stay; guideline not named."
+  - id: pk_merz
+    barcode: "8699708690525"
+    name: "PK-MERZ IV INF. COZ. 2x500 ML"
+    inn: "amantadin sülfat"
+    unit: bottle
+    per_box: 2                         # a box holds 2 x 500 ml; the bill counts bottles used
+    day: admit+1                       # day 2
+    per_day: 1
+    course_days:
+      min: 2
+      max: 4
+      basis: judgment
+      source: "Story S6 gives days 2-4, one 500 ml bottle a day, while oral levodopa is impossible. The range is the author's judgment; a neurologist confirms."
+    indication: G20
+    flags:
+      drug_specialty_board_report_present: true
+      prescriber_specialty: "İç Hastalıkları"
+      drug_inpatient_supply: true
+    basis: sut
+    source: "C006824 (SUT 4.2.36(3)): amantadine sulfate for Parkinson's disease, by a neurologist or geriatrician or on their specialist report."
+  - id: levodopa_benserazide
+    barcode: "8699525094841"
+    name: "MADOPAR 125 MG 30 TB"
+    inn: "levodopa ve benserazid hcl"
+    unit: tablet
+    per_box: 30
+    day: admit+2                       # day 3: through the NG tube from the day it is placed
+    per_day: 4
+    course_days:
+      min: 3
+      max: 8
+      basis: judgment
+      source: "Story S6: days 3-7 (to discharge), 20 tablets, 4 a day. The range is the days from day 3 to discharge: 3 for 4 nights, 8 for 9 nights."
+    basis: judgment
+    source: "Review 2026-10-16 (S6): levodopa through the NG tube from day 3. Story S6 bills 20 tablets over days 3-7, 4 a day; no guideline named."
+
+notes:
+  - "Story S6 patient: creatinine 1.1 mg/dL at 72 kg gives a Cockcroft-Gault CrCl of about 55 mL/min. The Turkish SmPC halves the amantadine dose only at CrCl 30-50, so there is no dose reduction: the clean dose is the full bottle a day."
+  - "Lab values are not part of a pathway. A composer that draws creatinine for this pathway must keep CrCl above 50 mL/min, or the full bottle a day stops being the clean dose."
+  - "PK-MERZ is a box of 2 x 500 ml. The bill counts the bottles used (3), not 1.5 boxes (review Q7, Kılavuz p.21-22; the integer quantity is issue #302)."
+  - "Open question for a neurologist (review, clinicians Q4): an IV PK-MERZ bridge or NG levodopa alone. The story keeps the bridge: it is the drug that needs its indication diagnosis."
+
+showcase:
+  story: S6
+  sex: M
+  age: 79
+  admit: "2026-06-08"
+  nights: 6
+  include: [I10]
+  course_days: {sodium_chloride: 3, ceftriaxone: 7, pk_merz: 3, levodopa_benserazide: 5}

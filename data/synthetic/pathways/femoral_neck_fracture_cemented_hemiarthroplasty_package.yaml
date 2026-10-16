@@ -1,0 +1,126 @@
+# Femoral neck fracture, cemented bipolar hemiarthroplasty, ward stay billed as the EK-2C package.
+# Showcase story S5 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. A package bill carries the package line and its linked EK-3/F-1 materials:
+# bed, companion, labs and drugs are inside the package; the joint implants and the bone cement are billed apart.
+schema_version: 1
+id: femoral_neck_fracture_cemented_hemiarthroplasty_package
+title: "Femoral neck fracture, cemented bipolar hemiarthroplasty, ward stay billed as the EK-2C package"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Ortopedi ve Travmatoloji"
+  specialty: "2600"                  # EK-2A: Ortopedi ve Travmatoloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+# P612320 (group B) and the three materials are in force on every day of it.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S5 is a woman. M81.09 is postmenopausal osteoporosis, which a man cannot carry, and a pathway cannot tie a diagnosis to a sex. Clinician to confirm."
+  age:
+    min: 70
+    max: 95
+    basis: judgment
+    source: "Story S5 patient is 84 and walked with a walker, so hemiarthroplasty fits (NICE CG124 1.6.3, as the story cites). Both bounds are the author's judgment."
+
+nights:
+  min: 4
+  max: 8
+  basis: judgment
+  source: "Story S5 has 5 nights. Min 4: operated on day 1, then three nights. Max 8 is the author's judgment; the group B package window is 10 days (C000703)."
+
+op_day: admit+1                      # reaches the ward from the ER on day 0, operated on the day after
+
+diagnoses:
+  - icd10: S72.00
+    name: "FEMUR BOYUN KIRIĞI, KAPALI"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12). Cemented hemiarthroplasty per NICE CG124 1.6.3 and 1.6.4, as story S5 cites."
+  - icd10: W19
+    name: "DÜŞME, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12). WHO ICD-10 Ch. XX: an external-cause code is used in addition to the injury code. The review added W19."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    optional:
+      probability: 0.6
+      basis: judgment
+      source: "Story S5 patient has hypertension. How often it comes with a hip fracture at this age is the author's judgment. Clinician to confirm."
+    basis: judgment
+    source: "Story S5 lists I10 as a comorbidity; the story gives no source."
+  - icd10: M81.09
+    name: "POSTMENAPOZAL OSTEOPOROZ, YER TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    optional:
+      probability: 0.4
+      basis: judgment
+      source: "Story S5 patient has osteoporosis, no DXA on file. How often a hip fracture bill carries M81.09 is the author's judgment. Clinician to confirm."
+    basis: judgment
+    source: "SKRS leaf code, site unspecified because story S5 has no DXA (review 2026-10-16 Q12). The story gives no source for the osteoporosis."
+
+procedures:
+  - id: hemiarthroplasty_package
+    kind: package
+    code: "P612320"
+    name: "Büyük eklem parsiyel protezleri, primer"
+    days: op
+    qty: 1
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; C000685, C000699 list what is inside."
+
+materials:
+  # Billed on top of the package: SUT 3.1.4(2) lists joint implants and bone cement as outside the diagnosis-based payment.
+  - id: femoral_stem
+    code: "AP2000"
+    name: "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOLU | ÇELİK | PARLATILMIŞ"
+    material_type: implant
+    qty: 1
+    day: op
+    linked_to: hemiarthroplasty_package
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: guideline
+    source: "Cemented stem per NICE CG124 1.6.4, AAOS 2021, WHiTE 5; any joint implant is billed apart, C002861. AP2000 or AP1980: field question."
+  - id: bipolar_head
+    code: "AP1880"
+    name: "KALÇA | PRİMER | FEMORAL BIPOLAR BAŞ ( SHELL + İNSERT) | TÜM BOYLAR | (Değişik:RG-17/01/2026-33140/14 md. Yürürlük:24/01/2026) CoCr /TİTANYUM CoCr"
+    material_type: implant
+    qty: 1
+    day: op
+    linked_to: hemiarthroplasty_package
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: sut
+    source: "EK-3F-1 Genel Hükümler (15): head, cup and liner under one barcode count as the bipolar prosthesis; any joint implant is billed apart, C002861."
+  - id: bone_cement
+    code: "AP3220"
+    name: "PRİMER/REVİZYON | KEMİK ÇİMENTOSU - NORMAL | STANDART - 40 gr | PMMA"
+    material_type: consumable
+    qty: 2                           # two 40 g packs
+    day: op
+    linked_to: hemiarthroplasty_package
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: judgment
+    source: "Story S5 bills two 40 g packs; the count is a field question for an orthopaedist (review Q6a). Bone cement is billed apart, C002859 (SUT 3.1.4(2)(b))."
+
+notes:
+  - "The patient reaches the ward from the ER after a fall at home. That ER visit is billed on its own acil takip and is not part of this bill (story S5)."
+  - "Operated on day 1. The night before the operation is inside the package: the package covers everything after the takip is opened (C000685; decided 2026-10-16, review answer 2)."
+  - "Bed, companion, labs and drugs are inside the group B package (10-day window counted from the package day), so none of them is listed (story S5)."
+  - "The implants and the bone cement are billed on top of the package: SUT 3.1.4(2), C002861 and C002859. The P612320 açıklama (prosthesis billed apart) is an EK-2/C exception that C000700 makes binding."
+  - "Every material has its TİTUBB record and ÜTS usage notification complete, which SUT 3.1.1(2) (C002740) requires before the Kurum pays for a material."
+  - "Open for an orthopaedist (review 2026-10-16, Q6a and clinician question 1): which stem (AP2000 or AP1980), how many cement packs at this age, and whether the cement restrictor (AP2200) is billed. The bill carries AP2000 and no restrictor."
+
+showcase:
+  story: S5
+  sex: F
+  age: 84
+  admit: "2026-09-03"
+  nights: 5
+  include: [I10, M81.09]

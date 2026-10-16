@@ -1,0 +1,131 @@
+# Lumbar spinal stenosis, unilateral decompression, ward stay billed itemized (hizmet başı).
+# Showcase story S3 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# 615931 has no EK-2C package, so the whole stay is hizmet başı: the operation, a separate anaesthesia line,
+# bed, companion, labs and drugs.
+schema_version: 1
+id: lumbar_stenosis_decompression_itemized
+title: "Lumbar spinal stenosis, unilateral decompression, stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"                  # EK-2A: Beyin ve Sinir Cerrahisi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+# The anaesthesia group holds on every day of it: the puan of 615931 is in band B under both band tables
+# (5001-7583 before 2026-04-16, 6001-9000 from then), so the window needs no narrowing.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Lumbar stenosis occurs in both sexes and M48.06 has no sex gate; story S3 is a woman. Clinician to confirm."
+  age:
+    min: 55
+    max: 80
+    basis: judgment
+    source: "Story S3 patient is 77. Stenosis surgery is mostly 55 and over. Max 80 keeps ASA 2 plausible: over 75 with ASA 3-4 the geriatric codes apply (not modelled)."
+
+nights:
+  min: 2
+  max: 4
+  basis: judgment
+  source: "Story S3 has 2 nights. Min 2: one night can be under 24 h, billed as the day bed 510120 (C000648). Max 4 is the author's judgment for an elective decompression."
+
+op_day: admit                        # elective admission, operated the day of admission
+
+diagnoses:
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S3: neurogenic claudication from lumbar stenosis."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code. Story S3: controlled hypertension, ASA 2 (the ASA Physical Status Classification lists well-controlled hypertension as an ASA 2 example)."
+
+procedures:
+  # --- the operation and its anaesthesia
+  - id: decompression
+    kind: operation
+    code: "615931"
+    name: "Dar spinal kanalda unilateral dekompresyon"
+    days: op
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): no P615931 in EK-2C, so hizmet başı; C000652 (2.2.2.A(1)): billed on the EK-2B list."
+  - id: anaesthesia
+    kind: anaesthesia
+    code: "550160"
+    name: "Anestezi B grubu"
+    days: op
+    specialty: "3100"                # EK-2A: Anesteziyoloji ve Reanimasyon (overrides the department's branch)
+    group: B
+    operations: [decompression]
+    basis: sut
+    source: "EK-2B section 4: the puan of 615931 is in band 'B grubu' (6001-9000 from 2026-04-16, 5001-7583 before); billed apart in hizmet başı, C000652."
+
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 3 lines for 2 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz v3.1.1 p.62, p.168; C000648. Review 2026-10-16 Q1: one line per calendar day, discharge day included."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 2 lines for 2 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): doctor's order (post-op fall risk, story S3) and refakatçi belgesi; Kılavuz p.264 counts the days as entered."
+
+  # --- laboratory: the first post-operative day
+  - id: post_op_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+    days: op+1
+    basis: judgment
+    source: "lab_reference_notes.md tests hemogram and creatinine (panels admission_routine, preop); story S3 bills both on the first post-op day only."
+
+drugs:
+  - id: cefazolin
+    barcode: "8699814270253"
+    name: "EQIZOLIN 1 GR IM/IV 1 FLK"
+    inn: "cefazolin"
+    unit: vial
+    per_box: 1
+    day: op
+    qty: 2                             # 2 g once before the incision, 1 g vials
+    basis: guideline
+    source: "ASHP/IDSA/SIS/SHEA 2013 (Bratzler et al.), as story S3 cites: cefazolin 2 g IV once before the incision."
+  - id: paracetamol
+    barcode: "8699844770716"
+    name: "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK"
+    inn: "parasetamol"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_night: 3                       # 1 g three times a day: 6 vials for the story's 2 nights
+    basis: judgment
+    source: "Review 2026-10-16 (S3): about 6 vials for 2 nights, read as 1 g three times a day. Scaling with the nights is the author's judgment; no guideline named."
+
+notes:
+  - "Elective admission. The pre-operative exam and labs were done on an earlier outpatient takip and are not on this bill (story S3)."
+  - "The clean bill assumes ASA 2 (controlled hypertension) at every age in the range, so the standard group B code 550160 applies."
+  - "A patient over 75 with ASA 3-4 would take the geriatric code 550300 ('75 yaş üstü ve ASA 3-4') instead; this pathway does not model that."
+  - "EK-2B açıklama of 615931: not billed with 614040, 614050 (posterior instrumentation) or 614900 (facet denervation). None is on this bill."
+
+showcase:
+  story: S3
+  sex: F
+  age: 77
+  admit: "2026-08-18"
+  nights: 2

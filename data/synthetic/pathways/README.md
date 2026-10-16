@@ -134,7 +134,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 2. Write the clean story only: no item the story does not have, none dropped. Generalize only the sexes, the age range, the nights, drug course days and items the story or the review treats as optional. Give every range and every item a `basis` and a `source`.
 3. Run the checks (command above) until they are silent. To find a catalog name, write the code with a placeholder name (`"??"`) and copy the real name from the `procedure.name`, `material.name`, `drug.name` or `icd.name` message. A `*.in_force` message names the first day a code is missing: narrow the `window` to the days it is in force and say why in a comment, as S2 does.
 4. Write the `showcase` pins from the story and make the round trip pass: `expand(pathway)` must equal `tests/fixtures/pathways/golden/<story>.json`. Never edit the golden to fit the YAML.
-5. In `tests/unit/synthetic/test_pathways_roundtrip.py` delete the story from `PENDING`, and update the status table below.
+5. Update the status table below.
 
 ## Tests
 
@@ -143,7 +143,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 ```
 
 - `test_pathways_schema.py`: every real pathway loads and passes every check; every check id in `CHECKS` has a mutation case that takes a real pathway, proves it clean, applies one defect and asserts that exactly the expected ids fire.
-- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a changed pin changes the bill; pins outside the ranges are refused; every golden has a pathway and every pathway a golden (`PENDING` lists the stories not written yet). A broken file fails only its own cases.
+- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a changed pin changes the bill; pins outside the ranges are refused; every golden has a pathway and every pathway a golden. A broken file fails only its own cases.
 - `test_pathways_golden.py`: the golden files are well formed.
 
 ## Not expressible yet
@@ -161,9 +161,9 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 |---|---|---|
 | S1 | `appendicitis_lap_appendectomy_package` | done |
 | S2 | `copd_exacerbation_pneumonia_ward` | done |
-| S3 | lumbar spinal stenosis decompression, itemized | next |
-| S4 | dementia and pyelonephritis, ward | next |
-| S5 | femoral neck fracture, cemented hemiarthroplasty, package | next |
-| S6 | Parkinson disease with aspiration pneumonia, ward | next |
-| S7 | pleuritic chest pain, ER only | next |
-| S8 | gallstones and umbilical hernia, two packages | next |
+| S3 | `lumbar_stenosis_decompression_itemized` | done |
+| S4 | `pyelonephritis_dementia_delirium_ward` | done |
+| S5 | `femoral_neck_fracture_cemented_hemiarthroplasty_package` | done |
+| S6 | `aspiration_pneumonia_parkinson_ward` | done |
+| S7 | `pleuritic_chest_pain_er_pulmonary_embolism_ruled_out` | done |
+| S8 | `cholelithiasis_umbilical_hernia_two_packages` | done |

@@ -29,17 +29,6 @@ _GOLDEN = _REPO / "tests/fixtures/pathways/golden"
 _FILES = sorted(_DIR.glob("*.yaml"))
 _STORIES = [f"S{n}" for n in range(1, 9)]
 
-# Stories whose golden exists but whose pathway is not written yet (P2 fan-out). Delete a story's
-# line when its pathway lands; the set must be empty when P2 is done.
-PENDING = {
-    "S3",
-    "S4",
-    "S5",
-    "S6",
-    "S7",
-    "S8",
-}
-
 
 def _golden(story: str) -> dict:
     return json.loads((_GOLDEN / f"{story}.json").read_text(encoding="utf-8"))
@@ -149,7 +138,7 @@ def test_every_golden_has_a_pathway_and_every_pathway_has_a_golden() -> None:
     assert goldens == set(_STORIES)
     assert len(stories) == len(set(stories)), "two pathways claim the same story"
     assert set(stories) - goldens == set(), "a pathway without a golden"
-    assert goldens - set(stories) == PENDING, "update PENDING: a story's pathway landed or went"
+    assert goldens - set(stories) == set(), "a golden without a pathway"
 
 
 def test_a_broken_sibling_fails_only_its_own_case(tmp_path: Path) -> None:
