@@ -33,12 +33,13 @@ def _extract_orthopedic_materials(df: pd.DataFrame, source_label: str) -> pd.Dat
         name = _safe_str(row.iloc[c_name])
         price = _safe_float(row.iloc[c_price])
 
-        if not name:
-            continue
-
         if not code:
-            current_category = name
+            if name:
+                current_category = name
             continue
+        # A coded row is a material even when its first descriptive cell is blank:
+        # RG 21/04/2024-32524 (Yürürlük 30/04/2024) repealed the "KALÇA/DİZ" site of
+        # the EK-3/F-1 bone cements AP3180-AP3250, which stay priced and in force.
 
         if "SUT" in code.upper() or "KODU" in code.upper():
             continue
