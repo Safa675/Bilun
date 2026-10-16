@@ -148,7 +148,6 @@ def detect_session_underbilling_opportunities(
         line = assessment.line
         primary_line = assessment.primary_line
         factor = assessment.factor
-        session = assessment.session
         session_expected = expected_session_billed_try(line, point_factor=factor.point_factor)
         blood_ceiling = blood_component_max_billable_try(
             line, package_context=(line.patient_id, line.claim_id, line.episode_id) in package_scopes,
@@ -176,7 +175,7 @@ def detect_session_underbilling_opportunities(
             recoverable_uplift_try=_money(session_expected - actual_billed),
         )
         detail = (
-            f"Secondary procedure billed below SUT §{session.sut_section} "
+            f"Secondary procedure billed below SUT §{factor.trace.sut_section} "
             f"allowed {factor.point_factor:.0%} point factor; "
             f"recoverable uplift {uplift_money:.2f} TRY."
         )
@@ -206,8 +205,8 @@ def detect_session_underbilling_opportunities(
             "included_in_sgk_total": not clinical_review,
             "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
             "savings_basis": SAVINGS_BASIS_SOURCED,
-            "sut_section_id": session.sut_section,
-            "rule_id": session.rule_id,
+            "sut_section_id": factor.trace.sut_section,
+            "rule_id": factor.trace.rule_id,
             "detail": detail,
         }
         if blood_ceiling is not None:

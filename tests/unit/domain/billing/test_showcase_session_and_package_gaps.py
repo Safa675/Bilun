@@ -368,6 +368,45 @@ class TestSessionScope261:
         ] == [("603830", "603840", 0.30, 1148.48)]
 
 
+class TestMixedSessions:
+    """Packages and hizmet başı lines in one session (C000670–C000674)."""
+
+    @staticmethod
+    def _bill(third: str, factor: str, *, second_factor: str = "1") -> _Bill:
+        day = _d("2026-07-14")
+        bill = _Bill("C-MIX", "yatis", day, day, package_candidate=True)
+        bill.proc("P609235", day, specialty=GENCER)
+        bill.proc("P603840", day, specialty=GENCER, factor=second_factor)
+        bill.proc(third, day, specialty=GENCER, factor=factor)
+        return bill
+
+    @pytest.mark.parametrize(
+        "third, factor",
+        [("601200", "0.3"), ("601200", "1"), ("615931", "0.3"), ("615931", "1")],
+    )
+    def test_the_packages_among_themselves_keep_b3a(self, third, factor) -> None:
+        # Review item 2: every package line of a mixed session was priced at 100 %,
+        # so the second package billed in full was missed (base 91fb756c caught it).
+        rows = _finding(self._bill(third, factor).ctx()).session_violations
+        assert [
+            (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
+            for r in rows if r["procedure_code"] == "P603840"
+        ] == [("P603840", "2.2.2.B.a", 0.25, 5377.20)]
+
+    def test_the_hizmet_basi_line_takes_b3c(self) -> None:
+        rows = _finding(self._bill("615931", "1", second_factor="0.25").ctx()).session_violations
+        assert [
+            (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
+            for r in rows
+        ] == [("615931", "2.2.2.B.c", 0.30, 2686.12)]
+
+    def test_a_correct_mixed_bill_has_no_exposure(self) -> None:
+        ctx = self._bill("615931", "0.3", second_factor="0.25").ctx()
+        assert _finding(ctx).session_violations == []
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert recommend_session_uplift_from_claims(ctx).opportunities == []
+
+
 class TestRepeatedCodes:
     """MEDULA sends one line per occurrence; factors pair with lines, not codes."""
 

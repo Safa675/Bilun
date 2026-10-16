@@ -110,6 +110,27 @@ def _factor_with_uplift(base: float, cross_specialty: bool) -> float:
     return base
 
 
+def _package_secondary_factor(*, same_incision: bool, cross_specialty: bool) -> tuple[str, float]:
+    """Rule id and factor of a tanıya dayalı işlem after the session's highest one.
+
+    §2.2.2.B(3)(a)/(b) (C000670 / C000671): 25 % / 50 % of its own package puan,
+    +25 points across specialties (C000674).
+    """
+    rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
+    factor = (
+        _FALLBACK_OTHER_FACTOR_SAME_INCISION
+        if same_incision
+        else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION
+    )
+    matched_rule = _match_session_pricing_rule(
+        same_incision=same_incision, all_in_ek2c=True, mixed_ek2c_ek2b=False,
+    )
+    if matched_rule is not None:
+        rule_id = matched_rule.get("rule_id", rule_id)
+        factor = float((matched_rule.get("action") or {}).get("other_procedure_factor", factor))
+    return rule_id, _factor_with_uplift(factor, cross_specialty)
+
+
 def _ek2c_puan(normalized: str, *, as_of_date: date | str | None) -> float | None:
     ek2c_entry = get_ek2c_entry(normalized, as_of_date=as_of_date)
     if ek2c_entry is not None and ek2c_entry.get("puan") is not None:
@@ -324,6 +345,10 @@ def compute_session_point_factors(
         )
 
     if mixed:
+        # C000672 / C000673: a procedure outside EK-2/C takes 30 % / 50 % of its
+        # EK-2/B puan. The tanıya dayalı işlemler among themselves keep
+        # §2.2.2.B(3)(a)/(b) (C000670 / C000671): the highest in full, the others
+        # at 25 % / 50 %. C000674 adds 25 points to each percentage.
         matched_rule = _match_session_pricing_rule(
             same_incision=same_incision,
             all_in_ek2c=all_in_ek2c,
@@ -337,26 +362,30 @@ def compute_session_point_factors(
             rule_id = "2.2.2.B.c" if same_incision else "2.2.2.B.ç"
             ek2b_factor = _FALLBACK_EK2B_FACTOR_SAME_INCISION if same_incision else _FALLBACK_EK2B_FACTOR_DIFFERENT_INCISION
         ek2b_factor = _factor_with_uplift(ek2b_factor, cross_specialty)
+        package_rule_id, package_factor = _package_secondary_factor(
+            same_incision=same_incision, cross_specialty=cross_specialty,
+        )
         factors: list[SessionProcedureFactor] = []
         for idx, code in enumerate(normalized):
             _, in_ek2c = memberships[idx]
-            if in_ek2c:
-                factor = 1.0
+            if idx == primary_idx:
+                factor, line_rule, detail = 1.0, rule_id, "highest-point EK-2/C procedure at 100%"
+            elif in_ek2c:
+                factor, line_rule = package_factor, package_rule_id
+                detail = f"another EK-2/C procedure at {package_factor:.0%}"
             else:
-                factor = ek2b_factor
+                factor, line_rule = ek2b_factor, rule_id
+                detail = f"EK-2/B procedure at {ek2b_factor:.0%}"
             factors.append(
                 SessionProcedureFactor(
                     procedure_code=code,
                     point_factor=factor,
                     is_primary=idx == primary_idx,
                     trace=ProseRuleTrace(
-                        rule_id=rule_id,
-                        sut_section=rule_id,
+                        rule_id=line_rule,
+                        sut_section=line_rule,
                         rule_set_id=_RULE_SET_ID,
-                        detail=(
-                            f"Mixed EK-2/C + EK-2/B session: EK-2/C at 100%, "
-                            f"EK-2/B at {factor:.0%}."
-                        ),
+                        detail=f"Mixed EK-2/C + EK-2/B session: {detail}.",
                     ),
                 )
             )
@@ -368,19 +397,9 @@ def compute_session_point_factors(
         )
 
     if all_in_ek2c:
-        matched_rule = _match_session_pricing_rule(
-            same_incision=same_incision,
-            all_in_ek2c=all_in_ek2c,
-            mixed_ek2c_ek2b=False,
+        rule_id, other_factor = _package_secondary_factor(
+            same_incision=same_incision, cross_specialty=cross_specialty,
         )
-        if matched_rule is not None:
-            rule_id = matched_rule.get("rule_id", "2.2.2.B.a" if same_incision else "2.2.2.B.b")
-            action = matched_rule.get("action") or {}
-            other_factor = float(action.get("other_procedure_factor", _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION))
-        else:
-            rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
-            other_factor = _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION
-        other_factor = _factor_with_uplift(other_factor, cross_specialty)
         factors = []
         for idx, code in enumerate(normalized):
             is_primary = idx == primary_idx

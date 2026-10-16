@@ -186,11 +186,14 @@ class TestSessionAdjustedItemizedTotal:
             total, _ = compute_session_adjusted_itemized_total(lines, cross_specialty=False)
             assert total == 400.0
 
-    @pytest.mark.parametrize("same_incision, expected", [(True, 1330.0), (False, 1350.0)])
-    def test_mixed_membership_keeps_each_full_factor_package_line(
+    @pytest.mark.parametrize("same_incision, expected", [(True, 1105.0), (False, 1200.0)])
+    def test_mixed_membership_prices_the_other_package_by_b3(
         self, catalog, same_incision, expected,
     ) -> None:
-        # Lines billed as packages (P codes) next to a hizmet başı line: §2.2.2.B(3)(c)/(ç).
+        # Lines billed as packages (P codes) next to a hizmet başı line: the
+        # hizmet başı line takes §2.2.2.B(3)(c)/(ç) 30 % / 50 %; the packages among
+        # themselves keep B(3)(a)/(b) 25 % / 50 % (C000670 / C000671; review item
+        # 2: every package line stayed at 100 %, 1,330 / 1,350).
         lines = [
             _priced("primary", "P611111", "1000"),
             _priced("other-package", "P622222", "300"),

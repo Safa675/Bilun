@@ -120,7 +120,10 @@ def detect_session_point_violations(
     for assessment in iter_session_secondary_assessments(
         lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
     ):
-        line, factor, session = assessment.line, assessment.factor, assessment.session
+        line, factor = assessment.line, assessment.factor
+        # The line's own clause: in a mixed session a package secondary is
+        # §2.2.2.B(3)(a)/(b), an EK-2/B one (c)/(ç).
+        rule = factor.trace
         expected_billed = expected_session_billed_try(line, point_factor=factor.point_factor)
         actual_billed = _line_billed(line)
         if actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
@@ -138,10 +141,10 @@ def detect_session_point_violations(
                 "expected_billed_try": _money(expected_billed),
                 "actual_billed_try": _money(actual_billed),
                 "risk_amount_try": _money(max(0.0, overbill)),
-                "sut_section": session.sut_section,
-                "rule_id": session.rule_id,
+                "sut_section": rule.sut_section,
+                "rule_id": rule.rule_id,
                 "detail": (
-                    f"Secondary procedure billed at full rate; SUT §{session.sut_section} "
+                    f"Secondary procedure billed at full rate; SUT §{rule.sut_section} "
                     f"requires {factor.point_factor:.0%} point factor in same session."
                 ),
             }
