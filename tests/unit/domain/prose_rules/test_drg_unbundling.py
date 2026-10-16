@@ -95,6 +95,8 @@ class TestProseDrgUnbundling:
             _proc(
                 procedure_line_id="PL2",
                 procedure_category="paket",
+                # Another day: no §2.2.2 session with PL1 (sessions are always read).
+                procedure_date=date(2026, 1, 11),
                 expected_payable_try=Decimal("1000"),
                 billed_amount_try=Decimal("1000"),
             ),
@@ -158,7 +160,10 @@ class TestProseDrgUnbundling:
         assert "total_heuristic_savings" not in result
         assert "has_heuristic_savings" not in result
 
-    def test_session_violations_skipped_when_same_incision_unknown(self) -> None:
+    def test_unknown_incision_and_branch_take_the_most_lenient_reading(self) -> None:
+        # Safa 2026-10-16: unknown incision → lenient reading. No line shows the
+        # incision or a branch: money only above A(5)(b) 50 % + 25 points (75 %);
+        # the 30 % of one incision in one branch is a 0-TL review (was: skipped).
         claim = _claim()
         session_day = date(2026, 1, 10)
         lines = [
@@ -177,7 +182,13 @@ class TestProseDrgUnbundling:
         ]
         finding = analyze_claim_unbundling(claim, lines)
         assert finding is not None
-        assert finding.session_violations == []
+        assert [
+            (r["procedure_code"], r["expected_point_factor"], r["risk_amount_try"],
+             r["review_risk_try"], r["missing_facts"])
+            for r in finding.session_violations
+        ] == [("610070", 0.75, 250.0, 450.0, ["kesi", "branş"])]
+        assert finding.session_reviews == []
+        assert finding.sourced_savings_try == 250.0
 
     @pytest.mark.parametrize(
         "category, rule_id, risk",

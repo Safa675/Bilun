@@ -255,7 +255,10 @@ class TestSessionScope261:
         assert row["risk_amount_try"] == pytest.approx(list_price * (1 - factor), abs=0.01)
 
     def test_faulty_s8_second_package_at_full_points_is_still_exposure(self) -> None:
-        assert compute_audit_exposure_from_claims(s8("faulty").ctx()) == 5377.20
+        # Safa 2026-10-16: unknown incision → lenient reading. P603840 (list
+        # 7,169.60) billed in full is over-billed above B(3)(b)'s 50 % (3,584.80);
+        # the 25 % of B(3)(a) only holds with one incision (was 5,377.20).
+        assert compute_audit_exposure_from_claims(s8("faulty").ctx()) == 3584.80
         assert compute_audit_exposure_from_claims(s8("clean").ctx()) == 0.0
 
     @pytest.mark.parametrize("same_incision, factor", [(True, 0.30), (False, 0.50)])
@@ -299,7 +302,8 @@ class TestSessionScope261:
         day = _d("2026-07-14")
         bill = _Bill("C-PR", "yatis", day, day)
         for code in codes:
-            bill.proc(code, day)
+            # One known branch: the 25 points stay out of both readings (2b).
+            bill.proc(code, day, specialty=GENCER)
         ctx = bill.ctx()
         finding = analyze_claim_unbundling(ctx.claims[0], list(ctx.procedure_lines), same_incision=True)
         assert [
@@ -348,8 +352,15 @@ class TestSessionScope261:
     def test_session_uplift_reads_the_branches_of_operations_only(self) -> None:
         # Review mutant M37: reading the anaesthesia (3100) and neurology (1300)
         # lines' branches made the correct 30 % secondary owe +25 points (758.01).
+        # Safa 2026-10-16: unknown incision → lenient reading. Both operations are
+        # 2400, so only the incision is missing: a 0-TL review up to A(5)(b)'s 50 %.
         ctx = s3(second_operation=True, second_factor="0.3").ctx()
-        assert recommend_session_uplift_from_claims(ctx).opportunities == []
+        rows = recommend_session_uplift_from_claims(ctx).opportunities
+        assert [
+            (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
+             r["expected_point_factor"], r["missing_facts"])
+            for r in rows
+        ] == [("615995", 0.0, 606.41, 0.50, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_hizmet_basi_operations_rank_by_their_ek2b_puan(self) -> None:
@@ -406,7 +417,14 @@ class TestMixedSessions:
         ctx = self._bill("615931", "0.3", second_factor="0.25").ctx()
         assert _finding(ctx).session_violations == []
         assert compute_audit_exposure_from_claims(ctx) == 0.0
-        assert recommend_session_uplift_from_claims(ctx).opportunities == []
+        # Safa 2026-10-16: unknown incision → lenient reading. Correct with one
+        # incision; separate incisions (B(3)(b), B(3)(ç): 50 %) would pay more,
+        # so each secondary is a 0-TL review, never money.
+        rows = recommend_session_uplift_from_claims(ctx).opportunities
+        assert [
+            (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"], r["rule_id"])
+            for r in rows
+        ] == [("P603840", 0.0, 1792.40, "2.2.2.B.b"), ("615931", 0.0, 767.46, "2.2.2.B.ç")]
 
 
 def _without_unit_price(bill: _Bill) -> PatientClaimContext:
@@ -479,20 +497,23 @@ class TestBilledAsPackage:
 
     def test_a_second_package_without_a_category_is_still_flagged(self) -> None:
         ctx = _blank_categories(s8("faulty").ctx())
-        assert compute_audit_exposure_from_claims(ctx) == 5377.20  # Was 19,235.33.
+        # Was 19,235.33, then 5,377.20 (Safa 2026-10-16: unknown incision → lenient reading).
+        assert compute_audit_exposure_from_claims(ctx) == 3584.80
 
 
 class TestRepeatedCodes:
     """MEDULA sends one line per occurrence; factors pair with lines, not codes."""
 
     @pytest.mark.parametrize(
-        "code, risk",
+        "code, risk, exposure",
         [
-            ("P603840", 5377.20),  # Was 0: the repeated code lost its primary.
-            ("P621510", 3589.97),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
+            ("P603840", 5377.20, 3584.80),  # Was 0: the repeated code lost its primary.
+            ("P621510", 3589.97, 2393.31),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
         ],
     )
-    def test_a_repeated_package_pays_the_second_occurrence_at_25_percent(self, code, risk) -> None:
+    def test_a_repeated_package_pays_the_second_occurrence_at_25_percent(
+        self, code, risk, exposure,
+    ) -> None:
         day = _d("2026-07-14")
         bill = _Bill("C-REP", "yatis", day, day, package_candidate=True)
         bill.proc(code, day, specialty=GENCER)
@@ -503,14 +524,125 @@ class TestRepeatedCodes:
             (r["procedure_line_id"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
             for r in rows
         ] == [("C-REP-P02", "2.2.2.B.a", 0.25, risk)]
-        assert compute_audit_exposure_from_claims(ctx) == risk
+        # Safa 2026-10-16: unknown incision → lenient reading. The bill does not
+        # show the one incision, so the money is above B(3)(b)'s 50 %.
+        assert compute_audit_exposure_from_claims(ctx) == exposure
+
+
+class TestUnknownIncisionOrBranch2b:
+    """Safa 2026-10-16 ("2b"): no money on the stricter reading of a missing fact.
+
+    No claim line carries the incision; a line may lack its branch. Over-billing
+    is money only above the most lenient reading (separate incision: A(5)(b),
+    B(3)(b), B(3)(ç) 50 %; +25 points when a branch is unknown), SGK uplift only
+    below the strictest one; in between a 0-TL "kontrol et" row names the fact.
+    """
+
+    @staticmethod
+    def _pair(factor: str, branches: tuple[str, str] = (ORTO, ORTO)) -> PatientClaimContext:
+        # 613730 + 601200 billed hizmet başı (legal at a training hospital).
+        day = _d("2026-07-14")
+        bill = _Bill("C-PR", "yatis", day, day, tier="egitim_arastirma")
+        bill.proc("613730", day, specialty=branches[0])
+        bill.proc("601200", day, specialty=branches[1], factor=factor)
+        return bill.ctx()
+
+    def test_a_correct_separate_incision_secondary_at_50_percent_is_no_exposure(self) -> None:
+        # A reviewer measured 2,014.60 of false exposure here (601200 list 10,072.96).
+        ctx = self._pair("0.5")
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        finding = _finding_unknown_incision(ctx)
+        assert finding.session_violations == []
+        assert [
+            (r["procedure_code"], r["risk_amount_try"], r["review_risk_try"], r["review_kind"],
+             r["missing_facts"])
+            for r in finding.session_reviews
+        ] == [("601200", 0.0, 2014.60, "needs_clinical_review", ["kesi"])]
+        assert "kesi bilgisi" in finding.session_reviews[0]["detail"]
+        assert not finding.has_risk
+        assert detect_drg_unbundling(set(), ctx)["has_unbundling_risk"] is False
+
+    def test_a_secondary_at_full_price_is_still_exposure_above_the_lenient_50_percent(
+        self,
+    ) -> None:
+        ctx = self._pair("1")
+        assert compute_audit_exposure_from_claims(ctx) == 5036.48  # Was 7,051.08 (30 %).
+        row = _finding_unknown_incision(ctx).session_violations[0]
+        assert (row["expected_point_factor"], row["risk_amount_try"], row["review_risk_try"]) == (
+            0.50, 5036.48, 2014.60,
+        )
+        assert row["missing_facts"] == ["kesi"]  # 2600 twice: the branch is known.
+
+    def test_a_blank_branch_pair_at_55_percent_is_no_exposure(self) -> None:
+        # A reviewer measured 2,518.24 here: 55 % sits between one incision in one
+        # branch (30 %) and separate incisions across branches (50 % + 25 = 75 %).
+        ctx = self._pair("0.55", ("", ""))
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        reviews = _finding_unknown_incision(ctx).session_reviews
+        assert [(r["review_risk_try"], r["missing_facts"]) for r in reviews] == [
+            (2518.24, ["kesi", "branş"]),
+        ]
+        assert "kesi ve branş bilgisi" in reviews[0]["detail"]
+        uplift = recommend_session_uplift_from_claims(ctx)
+        assert uplift.confirmed_uplift_try == 0.0
+        assert [(r["recoverable_uplift_try"], r["review_uplift_try"]) for r in uplift.opportunities] == [
+            (0.0, 2014.60),
+        ]
+
+    def test_known_branches_keep_todays_numbers(self) -> None:
+        # Known incision and branches: one reading, today's rows exactly.
+        ctx = self._pair("1")
+        rows = detect_session_point_violations(
+            list(ctx.procedure_lines), same_incision=True, claim=ctx.claims[0],
+        )
+        assert [
+            (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
+            for r in rows
+        ] == [("601200", "2.2.2.A.(5)", 0.30, 7051.08)]
+        assert "missing_facts" not in rows[0]
+        # Known branches with an unknown incision: the branch part adds nothing to
+        # either reading (50 %, not 75 %) and SGK uplift keeps today's strict money.
+        assert compute_audit_exposure_from_claims(self._pair("1")) == 5036.48
+        uplift = recommend_session_uplift_from_claims(s8("clean", branches=(GENCER, ORTO)).ctx())
+        assert [(r["recoverable_uplift_try"], r["missing_facts"]) for r in uplift.opportunities] == [
+            (1792.40, ["kesi"]),
+        ]
+
+    def test_s8_fires_at_the_excess_over_the_lenient_50_percent(self) -> None:
+        # P603840 (list 7,169.60) billed in full next to P609235, both 1900: the
+        # branch is known, the incision is not. B(3)(b) 50 % = 3,584.80 is the most
+        # a separate incision allows; the rest of the bill is over-billed in every
+        # reading. One incision (B(3)(a) 25 %) would add 1,792.40: kontrol et.
+        ctx = s8("faulty").ctx()
+        assert compute_audit_exposure_from_claims(ctx) == 3584.80
+        row = _finding_unknown_incision(ctx).session_violations[0]
+        assert (row["rule_id"], row["expected_point_factor"], row["expected_billed_try"]) == (
+            "2.2.2.B.b", 0.50, 3584.80,
+        )
+        assert (row["strict_point_factor"], row["review_risk_try"]) == (0.25, 1792.40)
+        assert "Aynı kesi ise SUT §2.2.2.B.a %25 uygulanır ve 1792.40 TRY" in row["detail"]
+
+
+def _finding_unknown_incision(ctx: PatientClaimContext):
+    return analyze_claim_unbundling(
+        ctx.claims[0], list(ctx.procedure_lines),
+        drug_lines=ctx.drug_lines, material_lines=ctx.material_lines,
+    )
 
 
 class TestCrossSpecialty264:
     def test_clean_s8_without_branch_codes_has_no_uplift_or_exposure(self) -> None:
         # Was +1,792.40 TL session_underbilling: groups B and C read as two specialties.
+        # Safa 2026-10-16: unknown incision → lenient reading. Without the incision
+        # and the branches the 25 % is the strict reading; separate incisions in two
+        # branches (B(3)(b) 50 % + 25) would pay 75 %: a 0-TL review, never money.
         ctx = s8("clean", branches=("", "")).ctx()
-        assert recommend_session_uplift_from_claims(ctx).opportunities == []
+        rows = recommend_session_uplift_from_claims(ctx).opportunities
+        assert [
+            (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
+             r["expected_point_factor"], r["missing_facts"], r["included_in_sgk_total"])
+            for r in rows
+        ] == [("P603840", 0.0, 3584.80, 0.75, ["kesi", "branş"], False)]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_line_without_a_branch_does_not_cancel_two_known_branches(self) -> None:
@@ -664,6 +796,36 @@ class TestMandatedPackageGap269:
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["itemized_total_try"]) == (10428.91, 6465.07)
         assert (row["savings_try"], row["savings_category"]) == (3963.84, "sgk_uplift")
+
+    @pytest.mark.parametrize(
+        "drug, exposure, review, package, savings, category",
+        [
+            # Between B(3)(a) 25 % (10,428.91) and B(3)(b) 50 % (12,221.31): no money.
+            ("5000.00", 0.0, 1036.16, 10428.91, 0.0, None),
+            # Above the lenient side: over-billed in every reading (was 6,036.16).
+            ("10000.00", 4243.76, 1792.40, 12221.31, 4243.76, "compliance_adjustment"),
+        ],
+        ids=["review-band", "above-lenient"],
+    )
+    def test_several_mandated_operations_claim_over_billing_above_the_lenient_side(
+        self, drug, exposure, review, package, savings, category,
+    ) -> None:
+        # Safa 2026-10-16: unknown incision → lenient reading. With separate
+        # incisions P603840 is 50 % of its package next to P610131 (C000671).
+        bill = s1("faulty")
+        bill.proc("603840", bill.start, specialty=GENCER)
+        bill.drug(bill.start, drug)
+        ctx = bill.ctx()
+        assert compute_audit_exposure_from_claims(ctx) == exposure
+        first = _finding(ctx).payment_method_violations[0]
+        assert (first["procedure_code"], first["review_risk_try"]) == ("610131", review)
+        assert first["package_total_lenient_try"] == 12221.31
+        row = _claim_row(ctx)
+        assert (row["package_total_try"], row["savings_try"], row["savings_category"]) == (
+            package, savings, category,
+        )
+        assert row["included_in_sgk_total"] is False
+        assert "kesi bilgisi" in row["detail"]
 
     @pytest.mark.parametrize(
         "drug, risk",
@@ -932,7 +1094,13 @@ class TestC000672:
 
     @pytest.mark.parametrize(
         "factor, exposure, uplift",
-        [("1", 125.84, []), ("0.3", 0.0, []), ("0.1", 0.0, [("612070", 35.95)])],
+        [
+            # Safa 2026-10-16: unknown incision → lenient reading (A(5)(b) 50 %):
+            # 100 % was 125.84 at risk; 30 % is a 0-TL review (35.96 up to 50 %).
+            ("1", 89.88, []),
+            ("0.3", 0.0, [("612070", 0.0, 35.96)]),
+            ("0.1", 0.0, [("612070", 35.95, 0.0)]),
+        ],
     )
     def test_the_session_is_billed_hizmet_basi_under_a5(self, factor, exposure, uplift) -> None:
         # Review: the payment-method row kept 612070 at risk in full and the
@@ -941,7 +1109,7 @@ class TestC000672:
         assert _finding(ctx).payment_method_violations == []
         assert compute_audit_exposure_from_claims(ctx) == exposure
         assert [
-            (r["procedure_code"], r["recoverable_uplift_try"])
+            (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"])
             for r in recommend_session_uplift_from_claims(ctx).opportunities
         ] == uplift
 

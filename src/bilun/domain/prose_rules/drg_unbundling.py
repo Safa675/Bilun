@@ -16,7 +16,12 @@ from .session_pricing import (
     expected_session_billed_try,
 )
 from .session_scope import line_billed_as_package
-from .session_uplift import iter_session_secondary_assessments
+from .session_uplift import (
+    REVIEW_KIND_CLINICAL,
+    iter_session_secondary_assessments,
+    session_money_note_tr,
+    session_review_detail_tr,
+)
 from .yatak_puani import c000672_hizmet_basi_lines
 
 if TYPE_CHECKING:
@@ -37,6 +42,9 @@ class ClaimUnbundlingFinding:
     bundled_violations: list[dict[str, Any]] = field(default_factory=list)
     payment_method_violations: list[dict[str, Any]] = field(default_factory=list)
     session_violations: list[dict[str, Any]] = field(default_factory=list)
+    # 0-TL "kontrol et" rows: correct under one reading of a fact the bill does
+    # not show, over-billed under the other. Never risk, never ``has_risk``.
+    session_reviews: list[dict[str, Any]] = field(default_factory=list)
     blood_component_violations: list[dict[str, Any]] = field(default_factory=list)
     itemized_total_try: float = 0.0
     package_total_try: float = 0.0
@@ -100,10 +108,93 @@ def detect_payment_method_violations(
     return violations
 
 
+def _session_point_rows(
+    lines: list[ProcedureClaimLine],
+    *,
+    same_incision: bool | None,
+    cross_specialty: bool | None,
+    claim: ClaimHeader | None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Session money rows and 0-TL review rows (``detect_session_point_violations``)."""
+    violations: list[dict[str, Any]] = []
+    reviews: list[dict[str, Any]] = []
+
+    for assessment in iter_session_secondary_assessments(
+        lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
+    ):
+        line, strict, lenient = assessment.line, assessment.factor, assessment.lenient
+        # The line's own clause: in a mixed session a package secondary is
+        # §2.2.2.B(3)(a)/(b), an EK-2/B one (c)/(ç).
+        strict_expected = expected_session_billed_try(line, point_factor=strict.point_factor)
+        lenient_expected = expected_session_billed_try(line, point_factor=lenient.point_factor)
+        actual_billed = _line_billed(line)
+        if strict_expected is None or lenient_expected is None:
+            continue
+        if actual_billed <= strict_expected * (1.0 + _BILLING_TOLERANCE):
+            continue
+        row: dict[str, Any] = {
+            "procedure_line_id": line.procedure_line_id,
+            "procedure_code": line.procedure_code,
+            "procedure_name": line.procedure_name,
+            "session_date": str(assessment.session_date),
+            "primary_procedure_code": assessment.primary_line.procedure_code,
+            "actual_billed_try": _money(actual_billed),
+        }
+        readings = {} if not assessment.missing_facts else {
+            "missing_facts": list(assessment.missing_facts),
+            "strict_point_factor": strict.point_factor,
+            "strict_expected_billed_try": _money(strict_expected),
+            "lenient_point_factor": lenient.point_factor,
+            "lenient_expected_billed_try": _money(lenient_expected),
+        }
+        if actual_billed <= lenient_expected * (1.0 + _BILLING_TOLERANCE):
+            # Correct under the lenient reading, over-billed under the strict one.
+            reviews.append({
+                **row,
+                "expected_point_factor": strict.point_factor,
+                "expected_billed_try": _money(strict_expected),
+                "risk_amount_try": 0.0,
+                "review_risk_try": _money(actual_billed - strict_expected),
+                "review_kind": REVIEW_KIND_CLINICAL,
+                "sut_section": strict.trace.sut_section,
+                "rule_id": strict.trace.rule_id,
+                "detail": session_review_detail_tr(
+                    assessment, actual_billed_try=actual_billed,
+                    strict_expected_try=strict_expected,
+                    lenient_expected_try=lenient_expected, overbilled=True,
+                ),
+                **readings,
+            })
+            continue
+
+        detail = (
+            f"Secondary procedure billed at full rate; SUT §{lenient.trace.sut_section} "
+            f"requires {lenient.point_factor:.0%} point factor in same session."
+        )
+        if assessment.missing_facts:
+            detail += " " + session_money_note_tr(
+                assessment, other_reading_extra_try=lenient_expected - strict_expected,
+                overbilled=True,
+            )
+            readings["review_risk_try"] = _money(lenient_expected - strict_expected)
+        violations.append({
+            **row,
+            "expected_point_factor": lenient.point_factor,
+            "expected_billed_try": _money(lenient_expected),
+            "risk_amount_try": _money(max(0.0, actual_billed - lenient_expected)),
+            "sut_section": lenient.trace.sut_section,
+            "rule_id": lenient.trace.rule_id,
+            "detail": detail,
+            **readings,
+        })
+
+    return violations, reviews
+
+
 def detect_session_point_violations(
     lines: list[ProcedureClaimLine],
     *,
-    same_incision: bool = True,
+    same_incision: bool | None = None,
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
@@ -111,44 +202,32 @@ def detect_session_point_violations(
 
     Sessions and factors come from ``iter_session_secondary_assessments``, the
     uplift side's, which pairs factors with lines by occurrence: MEDULA sends one
-    line per occurrence, so a repeated code keeps its primary.
+    line per occurrence, so a repeated code keeps its primary. No claim line
+    carries the incision, and a line may lack its branch: then the money is only
+    what the bill overstates under the most lenient legal reading (separate
+    incision, +25 points; Safa, 2026-10-16, "2b"), and a line between the two
+    readings gets a 0-TL review row (``detect_session_point_reviews``) instead.
+    A known ``same_incision`` / ``cross_specialty`` keeps the single reading.
     """
-    violations: list[dict[str, Any]] = []
-
-    for assessment in iter_session_secondary_assessments(
+    return _session_point_rows(
         lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
-    ):
-        line, factor = assessment.line, assessment.factor
-        # The line's own clause: in a mixed session a package secondary is
-        # §2.2.2.B(3)(a)/(b), an EK-2/B one (c)/(ç).
-        rule = factor.trace
-        expected_billed = expected_session_billed_try(line, point_factor=factor.point_factor)
-        actual_billed = _line_billed(line)
-        if expected_billed is None or actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
-            continue
+    )[0]
 
-        overbill = actual_billed - expected_billed
-        violations.append(
-            {
-                "procedure_line_id": line.procedure_line_id,
-                "procedure_code": line.procedure_code,
-                "procedure_name": line.procedure_name,
-                "session_date": str(assessment.session_date),
-                "expected_point_factor": factor.point_factor,
-                "primary_procedure_code": assessment.primary_line.procedure_code,
-                "expected_billed_try": _money(expected_billed),
-                "actual_billed_try": _money(actual_billed),
-                "risk_amount_try": _money(max(0.0, overbill)),
-                "sut_section": rule.sut_section,
-                "rule_id": rule.rule_id,
-                "detail": (
-                    f"Secondary procedure billed at full rate; SUT §{rule.sut_section} "
-                    f"requires {factor.point_factor:.0%} point factor in same session."
-                ),
-            }
-        )
 
-    return violations
+def detect_session_point_reviews(
+    lines: list[ProcedureClaimLine],
+    *,
+    same_incision: bool | None = None,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
+) -> list[dict[str, Any]]:
+    """0-TL "kontrol et" rows: secondaries billed above the strict reading only.
+
+    Each names the fact the bill does not show (kesi bilgisi / branş bilgisi).
+    """
+    return _session_point_rows(
+        lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
+    )[1]
 
 
 def detect_blood_component_violations(
@@ -206,12 +285,15 @@ def _apply_mandated_package_gap(
 
     The package replaces the lines inside its window, so the money at risk on
     them is what the bill overstates (``MandatedPackageGap.excess_try``): 0 when
-    the package pays at least as much, never the full lines. The rows stay as
-    findings (SUT §2.2.2(1)) and share the excess: the must-package rows first,
-    then the session rows of the covered lines, each in its detector's order and
-    up to the risk it showed alone. The replaced lines without a row (tests,
-    stay, drugs) leave their part on the first must-package row. The billing
-    strategy row reports the same comparison.
+    the package pays at least as much under the most lenient reading, never the
+    full lines. The rows stay as findings (SUT §2.2.2(1)) and share the excess:
+    the must-package rows first, then the session rows of the covered lines,
+    each in its detector's order and up to the risk it showed alone. The
+    replaced lines without a row (tests, stay, drugs) leave their part on the
+    first must-package row, which also carries what the strict reading alone
+    would add (``review_risk_try``, 0-TL). The package prices the covered
+    lines, so their session reviews go. The billing strategy row reports the
+    same comparison.
     """
     gap = mandated_package_gap(
         claim, lines, drug_lines=drug_lines, material_lines=material_lines,
@@ -219,6 +301,9 @@ def _apply_mandated_package_gap(
     if gap is None:
         return
     covered = gap.replaced_line_ids
+    finding.session_reviews = [
+        row for row in finding.session_reviews if row["procedure_line_id"] not in covered
+    ]
     package_rows = [
         row for row in finding.payment_method_violations
         if row["mandated_method"] == "package" and not row["billed_as_package"]
@@ -235,8 +320,12 @@ def _apply_mandated_package_gap(
         left = _money(left - share)
         row["package_total_try"] = gap.package_total_try
         row["billed_itemized_total_try"] = gap.replaced_total_try
+        if gap.lenient_package_total_try is not None:
+            row["package_total_lenient_try"] = gap.lenient_package_total_try
     if left > 0 and package_rows:
         package_rows[0]["risk_amount_try"] = _money(package_rows[0]["risk_amount_try"] + left)
+    if gap.review_excess_try > 0 and package_rows:
+        package_rows[0]["review_risk_try"] = gap.review_excess_try
 
 
 def _net_session_risk_of_payment_method_risk(finding: ClaimUnbundlingFinding) -> None:
@@ -291,12 +380,17 @@ def analyze_claim_unbundling(
     ]
 
     finding.payment_method_violations = detect_payment_method_violations(claim, lines)
-    if same_incision is not None:
-        finding.session_violations = detect_session_point_violations(
-            lines,
-            same_incision=same_incision,
-            claim=claim,
-        )
+    # ``same_incision`` None: the bill does not show the incision (no claim line
+    # carries it), so session money is taken above the most lenient reading.
+    finding.session_violations, reviews = _session_point_rows(
+        lines, same_incision=same_incision, cross_specialty=None, claim=claim,
+    )
+    # A line billed by the wrong method is at risk as a whole; its session
+    # factor is no separate question.
+    wrong_method = {row["procedure_line_id"] for row in finding.payment_method_violations}
+    finding.session_reviews = [
+        row for row in reviews if row["procedure_line_id"] not in wrong_method
+    ]
     # Net first: the gap shares its excess by the risk each row shows alone.
     _net_session_risk_of_payment_method_risk(finding)
     _apply_mandated_package_gap(
@@ -365,6 +459,7 @@ def finding_to_dict(finding: ClaimUnbundlingFinding) -> dict[str, Any]:
         "bundled_violations": len(finding.bundled_violations),
         "payment_method_violations": len(finding.payment_method_violations),
         "session_violations": len(finding.session_violations),
+        "session_reviews": len(finding.session_reviews),
         "blood_component_violations": len(finding.blood_component_violations),
         "itemized_total_try": finding.itemized_total_try,
         "package_total_try": finding.package_total_try,
@@ -376,6 +471,7 @@ def finding_to_dict(finding: ClaimUnbundlingFinding) -> dict[str, Any]:
             "bundled": finding.bundled_violations,
             "payment_method": finding.payment_method_violations,
             "session": finding.session_violations,
+            "session_review": finding.session_reviews,
             "blood_component": finding.blood_component_violations,
         },
     }

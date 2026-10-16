@@ -48,7 +48,13 @@ def _historical_lines():
 def test_historical_primary_is_preserved_at_audit_uplift_and_strategy_boundaries():
     lines = _historical_lines()
     assert detect_session_point_violations(lines, cross_specialty=False) == []
-    assert detect_session_underbilling_opportunities(lines, cross_specialty=False) == []
+    # Safa 2026-10-16: unknown incision → lenient reading. P609830 stays the
+    # secondary at 25 % (no money); separate incisions would pay B(3)(b)'s 50 %.
+    rows = detect_session_underbilling_opportunities(lines, cross_specialty=False)
+    assert [
+        (r["procedure_line_id"], r["recoverable_uplift_try"], r["review_uplift_try"], r["missing_facts"])
+        for r in rows
+    ] == [("secondary", 0.0, 2001.60, ["kesi"])]
     # P codes are billed as packages (line_billed_as_package, review item 4), so a
     # hypothetical itemized total holds neither line (was 11,664.96 at B(3)(a)).
     total, meta = compute_session_adjusted_itemized_total(lines, cross_specialty=False)

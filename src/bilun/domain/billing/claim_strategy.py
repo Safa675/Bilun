@@ -31,6 +31,7 @@ from src.bilun.domain.prose_rules.session_pricing import (
 from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
 from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
 from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
+from src.bilun.domain.prose_rules.session_uplift import missing_fact_wording
 from src.bilun.domain.prose_rules.yatak_puani import c000672_hizmet_basi_lines
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
@@ -382,6 +383,46 @@ def _primary_line_result(
     return line_results[0]
 
 
+def _itemized_side_for_money(
+    package_total: float,
+    strict_itemized: float,
+    lenient_itemized: float,
+) -> tuple[float, bool]:
+    """The itemized total a package comparison claims money against, and the review band.
+
+    No claim line carries the incision and a line may lack its branch, so the
+    session-adjusted itemized side has a strict and a lenient total. A difference
+    is money only where both readings agree: the package above the lenient total
+    or below the strict one; in between it is a 0-TL review (Safa, 2026-10-16, "2b").
+    """
+    if package_total >= lenient_itemized:
+        return lenient_itemized, False
+    return strict_itemized, package_total > strict_itemized
+
+
+def _two_readings_note_tr(
+    missing_facts: tuple[str, ...] | list[str],
+    *,
+    side: str,
+    strict_total: float,
+    lenient_total: float,
+    other_total: float,
+    review_band: bool,
+) -> str:
+    """Turkish "kontrol et" note on a strategy row whose side has two readings."""
+    missing, lenient, strict, check = missing_fact_wording(tuple(missing_facts))
+    side_tr, other_tr = (
+        ("paket tarafı", "Fatura") if side == "package" else ("hizmet başı tutar", "Paket")
+    )
+    note = (
+        f"Kontrol et: faturada {missing} yok; {side_tr} {strict} ile {strict_total:.2f} TRY, "
+        f"{lenient} ile {lenient_total:.2f} TRY."
+    )
+    if review_band:
+        return f"{note} {other_tr} ({other_total:.2f} TRY) bu aralıkta; kesin fark yok. {check}"
+    return f"{note} Tutar iki okumada da geçerli olan farktır. {check}"
+
+
 def _compute_claim_savings(
     *,
     claim_kind: PaymentMethodKind,
@@ -649,6 +690,8 @@ def recommend_billing_strategy_from_claims(
 
         current_billing = _infer_current_billing(claim_procs)
         package_mandated_itemized = gap is not None
+        lenient_itemized: float | None = None
+        missing_facts: list[str] = []
         eligible_lines: list[ProcedureClaimLine] = []
         excluded_count, excluded_codes = 0, []
         if not package_mandated_itemized:
@@ -663,12 +706,18 @@ def recommend_billing_strategy_from_claims(
             itemized_price_methodology = "billed_lines"
         elif eligible_lines:
             itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
+            # No claim line carries the incision: strict and lenient totals.
             itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
                 eligible_lines,
-                same_incision=True,
+                same_incision=None,
                 cross_specialty=None,
                 claim=claim,
             )
+            lenient_itemized, _ = compute_session_adjusted_itemized_total(
+                eligible_lines, same_incision=None, cross_specialty=None, claim=claim,
+                lenient=True,
+            )
+            missing_facts = list(itemized_meta.get("missing_facts") or [])
             itemized_price_methodology = str(
                 itemized_meta.get("methodology") or "claim_lines"
             )
@@ -682,24 +731,61 @@ def recommend_billing_strategy_from_claims(
             itemized_raw = sum(
                 float(line.expected_payable_try) for line in catalog_candidates
             )
-            itemized_total, _ = compute_session_adjusted_itemized_total(
+            itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
                 catalog_candidates,
-                same_incision=True,
+                same_incision=None,
                 cross_specialty=None,
                 claim=claim,
             )
+            lenient_itemized, _ = compute_session_adjusted_itemized_total(
+                catalog_candidates, same_incision=None, cross_specialty=None, claim=claim,
+                lenient=True,
+            )
+            missing_facts = list(itemized_meta.get("missing_facts") or [])
             itemized_price_methodology = (
                 "ek2b_catalog" if catalog_candidates else "claim_lines"
             )
 
+        review_band = False
+        reading_note = ""
         if gap is not None:
-            # The mandated packages priced by session (§2.2.2.B(3), C000672, C000678).
-            package_total, package_price_methodology = gap.package_total_try, "mandated_package_sessions"
+            # The mandated packages priced by session (§2.2.2.B(3), C000672, C000678),
+            # on the reading a money claim holds under (MandatedPackageGap).
+            package_total, package_price_methodology = (
+                gap.comparison_package_total_try, "mandated_package_sessions",
+            )
+            review_band = gap.in_review_band
+            if gap.lenient_package_total_try is not None:
+                reading_note = _two_readings_note_tr(
+                    gap.missing_facts, side="package", strict_total=gap.package_total_try,
+                    lenient_total=gap.lenient_package_total_try,
+                    other_total=gap.replaced_total_try, review_band=review_band,
+                )
         else:
             package_total, package_price_methodology = resolve_package_total_try(
                 claim,
                 claim_procs,
             )
+            # Only a claim the package would pay more than the itemized bill
+            # (DRG kinds billed itemized) or that over-bills a package (ITEMIZED
+            # billed as one) reads the lenient side; the other direction keeps
+            # the strict total, which already claims the least.
+            package_minus_itemized = (claim_kind == "ITEMIZED") == (current_billing == "package")
+            if (
+                package_minus_itemized
+                and lenient_itemized is not None
+                and lenient_itemized != itemized_total
+            ):
+                strict_itemized = itemized_total
+                itemized_total, review_band = _itemized_side_for_money(
+                    package_total, strict_itemized, lenient_itemized,
+                )
+                if missing_facts:
+                    reading_note = _two_readings_note_tr(
+                        missing_facts, side="itemized", strict_total=strict_itemized,
+                        lenient_total=lenient_itemized, other_total=package_total,
+                        review_band=review_band,
+                    )
 
         if package_total <= 0 and itemized_total <= 0:
             continue
@@ -725,6 +811,9 @@ def recommend_billing_strategy_from_claims(
             package_total=package_total,
             itemized_total=itemized_total,
         )
+        if review_band:
+            # The difference changes sign between the two readings: no money.
+            savings = 0.0
         message = _claim_recommendation_message(
             claim_id=claim.claim_id,
             claim_kind=claim_kind,
@@ -784,7 +873,7 @@ def recommend_billing_strategy_from_claims(
             # A compliance saving is money the bill overstates, not SGK uplift.
             "included_in_sgk_total": savings_category == SAVINGS_CATEGORY_SGK_UPLIFT,
             "current_billing": current_billing,
-            "detail": message["detail"],
+            "detail": f"{message['detail']} {reading_note}" if reading_note else message["detail"],
             "message_code": message["message_code"],
             "message_params": message["message_params"],
             "catalog_as_of_date": catalog_dates[-1] if catalog_dates else None,

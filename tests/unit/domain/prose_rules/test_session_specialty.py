@@ -134,7 +134,7 @@ class TestSessionSpecialtyDetect:
             lambda code, **kwargs: 10.0 if code == "610080" else 5.0,
         )
         monkeypatch.setattr(
-            "src.bilun.domain.prose_rules.session_pricing.detect_cross_specialty_session",
+            "src.bilun.domain.prose_rules.session_specialty.detect_cross_specialty_session",
             lambda _lines, _claim: True,
         )
 

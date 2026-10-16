@@ -12,21 +12,26 @@ flag: no line is billed as a package (``line_billed_as_package``) and
 ``mandated_package_lines`` (#286) finds a line that must be one, with a package
 price and an işlem grubu on its date.
 
-Package side, what the correct bill pays for the replaced part. The incision is
-not on the claim lines, so one incision is assumed, as in the other session
-detectors:
+Package side, what the correct bill pays for the replaced part:
 
 - a mandated line at its EK-2/C package price on its procedure date, +30 % for a
   starred package at the tiers C000678 names (training and research hospitals,
   university hospitals with a medical faculty);
-- several mandated operations in one session by §2.2.2.B(3)(a) (C000670): the
-  highest in full, the others at 25 %;
-- a hizmet başı operation in the same session at 30 % of its EK-2/B price
-  (C000672); when such an operation outranks the packages, C000672 bills the
-  whole session hizmet başı under §2.2.2.A(5) (``c000672_hizmet_basi_lines``);
+- several mandated operations in one session by §2.2.2.B(3)(a)/(b) (C000670,
+  C000671): the highest in full, the others at 25 % / 50 %;
+- a hizmet başı operation in the same session at 30 % / 50 % of its EK-2/B price
+  (C000672, C000673); when such an operation outranks the packages, C000672 bills
+  the whole session hizmet başı under §2.2.2.A(5) (``c000672_hizmet_basi_lines``);
 - neuromonitoring and neuronavigation in full next to their operation
   (C001389, C001413);
 - +25 points across specialties (C000674), read per session as elsewhere.
+
+The incision is on no claim line and a line may lack its branch, so a session
+with several operations has two package sides (``SessionReadings``): the strict
+one (one incision, no +25 without two known branches) and the lenient one
+(separate incisions, +25 when a branch is unknown). SGK uplift is claimed below
+the strict side, over-billing above the lenient side; a bill between the two is
+a 0-TL review (Safa, 2026-10-16, "2b").
 
 Replaced side, what the hizmet başı bill billed for that part: every line of the
 claim dated through the package window's last day (C000701–C000706) at its
@@ -65,8 +70,10 @@ from .facility_tier import normalize_facility_tier
 from .material_bundling import material_paid_next_to_package
 from .payment_method import check_payment_method_compliance
 from .session_pricing import (
+    MISSING_BRANCH,
+    MISSING_INCISION,
     blood_component_billable_fraction,
-    compute_session_point_factors,
+    compute_session_readings,
     line_gazette_list_billed_try,
 )
 from .session_scope import (
@@ -74,7 +81,6 @@ from .session_scope import (
     line_billed_as_package,
     session_operation_lines,
 )
-from .session_specialty import detect_cross_specialty_session
 from .types import PaymentMethodCompliance
 from .yatak_puani import (
     c000672_hizmet_basi_lines,
@@ -115,9 +121,11 @@ _PACKAGE_EXCLUDED_DRUG_ATC = (
 class MandatedPackageScope:
     """A claim billed hizmet başı whose package is mandated, and the lines it covers.
 
-    ``package_total_try`` is what the correct bill pays for those lines.
-    ``covers_the_stay`` is False when only neuromonitoring or neuronavigation
-    must be packages: each is its own package and nothing else is inside it.
+    ``package_total_try`` is what the correct bill pays for those lines under
+    the strict reading, ``lenient_package_total_try`` under the most lenient one
+    (module docstring; ``None`` when the two agree). ``covers_the_stay`` is False
+    when only neuromonitoring or neuronavigation must be packages: each is its
+    own package and nothing else is inside it.
     """
 
     mandated: tuple[ProcedureClaimLine, ...]
@@ -125,11 +133,17 @@ class MandatedPackageScope:
     lines: tuple[ProcedureClaimLine, ...]
     package_total_try: float
     covers_the_stay: bool = True
+    lenient_package_total_try: float | None = None
+    missing_facts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class MandatedPackageGap:
-    """The mandated package against the part of the hizmet başı bill it replaces."""
+    """The mandated package against the part of the hizmet başı bill it replaces.
+
+    ``package_total_try`` is the strict package side, ``lenient_package_total_try``
+    the most lenient one (``None`` when the bill shows every fact they need).
+    """
 
     package_total_try: float
     replaced_total_try: float
@@ -137,11 +151,40 @@ class MandatedPackageGap:
     window_end: date
     mandated_line_ids: frozenset[str]
     replaced_line_ids: frozenset[str]
+    lenient_package_total_try: float | None = None
+    missing_facts: tuple[str, ...] = ()
+
+    @property
+    def most_lenient_package_try(self) -> float:
+        return max(self.package_total_try, self.lenient_package_total_try or 0.0)
 
     @property
     def excess_try(self) -> float:
-        """What the bill overstates: 0 when the package pays at least as much."""
-        return _money(max(0.0, self.replaced_total_try - self.package_total_try))
+        """What the bill overstates under every reading: 0 up to the lenient package."""
+        return _money(max(0.0, self.replaced_total_try - self.most_lenient_package_try))
+
+    @property
+    def review_excess_try(self) -> float:
+        """What the bill overstates under the strict reading only (0-TL review)."""
+        strict_excess = max(0.0, self.replaced_total_try - self.package_total_try)
+        return _money(strict_excess - self.excess_try)
+
+    @property
+    def in_review_band(self) -> bool:
+        """The bill lies strictly between the two package sides: no money either way."""
+        return self.package_total_try < self.replaced_total_try < self.most_lenient_package_try
+
+    @property
+    def comparison_package_total_try(self) -> float:
+        """The package side a money claim compares with.
+
+        The strict side when the package pays more (SGK uplift), the lenient one
+        when the bill is higher (over-billing); the strict side, with no money,
+        in the review band.
+        """
+        if self.replaced_total_try >= self.most_lenient_package_try:
+            return self.most_lenient_package_try
+        return self.package_total_try
 
 
 def line_payment_method_compliance(
@@ -180,8 +223,9 @@ def _package_side_try(
     claim: ClaimHeader,
     mandated_lines: Sequence[ProcedureClaimLine],
     lines: Sequence[ProcedureClaimLine],
-) -> tuple[float, bool]:
-    """What the correct bill pays for ``lines`` and whether any package is in it.
+) -> tuple[float, float, bool, tuple[str, ...]]:
+    """What the correct bill pays for ``lines``, strict and lenient, whether any
+    package is in it, and the facts the bill does not show that set the gap.
 
     The sessions with a mandated line price their operations (module
     docstring), and so do the sessions C000672 bills hizmet başı. Neuromonitoring
@@ -194,49 +238,58 @@ def _package_side_try(
     ).is_university_eah
     mandated = {id(line) for line in mandated_lines}
     hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, list(lines))}
-    total = 0.0
+    strict_total = lenient_total = 0.0
     priced_a_package = False
+    missing: set[str] = set()
     for session_date, session_lines in group_procedure_lines_by_session(lines).items():
         for line in session_lines:
             if billed_without_session_rules(line.procedure_code):
-                total += (
+                amount = (
                     _package_price_try(line, starred_uplift=starred_uplift)
                     if must_be_billed_as_package(claim, line)
                     else _hizmet_basi_price_try(line)
                 )
+                strict_total += amount
+                lenient_total += amount
         if not any(id(line) in mandated or id(line) in hizmet_basi for line in session_lines):
             continue
         operations = [
             line for line in session_operation_lines(session_lines)
             if normalize_procedure_code(line.procedure_code)
         ]
-        factors = [1.0] * len(operations)
+        strict_factors = lenient_factors = [1.0] * len(operations)
         itemized_session = False
         if len(operations) >= 2:
-            session = compute_session_point_factors(
-                [line.procedure_code for line in operations],
-                same_incision=True,
-                cross_specialty=detect_cross_specialty_session(operations, claim),
+            readings = compute_session_readings(
+                operations,
+                claim=claim,
                 as_of_date=session_date,
                 billed_as_package=[id(line) in mandated for line in operations],
             )
-            factors = [factor.point_factor for factor in session.factors]
+            strict_factors = [factor.point_factor for factor in readings.strict.factors]
+            missing.update(readings.missing_facts)
+            lenient_factors = [factor.point_factor for factor in readings.lenient.factors]
             # C000672: an EK-2/B operation above the packages bills the whole
-            # session hizmet başı under §2.2.2.A(5).
-            itemized_session = session.rule_id == "2.2.2.A.(5)"
-        for line, factor in zip(operations, factors, strict=True):
+            # session hizmet başı under §2.2.2.A(5); both readings rank alike.
+            itemized_session = readings.strict.rule_id == "2.2.2.A.(5)"
+        for line, strict, lenient in zip(operations, strict_factors, lenient_factors, strict=True):
             if id(line) in mandated and not itemized_session:
-                total += _package_price_try(line, starred_uplift=starred_uplift) * factor
+                price = _package_price_try(line, starred_uplift=starred_uplift)
                 priced_a_package = True
             else:
-                total += _hizmet_basi_price_try(line) * factor
+                price = _hizmet_basi_price_try(line)
+            strict_total += price * strict
+            lenient_total += price * lenient
         # A mandated line outside the session scope is its own package in full.
         operation_ids = {id(line) for line in operations}
         for line in session_lines:
             if id(line) in mandated and id(line) not in operation_ids:
-                total += _package_price_try(line, starred_uplift=starred_uplift)
+                price = _package_price_try(line, starred_uplift=starred_uplift)
+                strict_total += price
+                lenient_total += price
                 priced_a_package = True
-    return _money(total), priced_a_package
+    facts = tuple(fact for fact in (MISSING_INCISION, MISSING_BRANCH) if fact in missing)
+    return _money(strict_total), _money(lenient_total), priced_a_package, facts
 
 
 def mandated_package_scope(
@@ -267,11 +320,16 @@ def mandated_package_scope(
         and float(line.billed_amount_try) > 0
         and _on_or_before(line.procedure_date, window.end)
     )
-    package_total, priced_a_package = _package_side_try(claim, mandated, lines)
+    package_total, lenient_total, priced_a_package, missing = _package_side_try(
+        claim, mandated, lines,
+    )
     if not priced_a_package or package_total <= 0:
         return None
+    differs = lenient_total != package_total
     return MandatedPackageScope(
         mandated=mandated, window_end=window.end, lines=lines, package_total_try=package_total,
+        lenient_package_total_try=lenient_total if differs else None,
+        missing_facts=missing if differs else (),
     )
 
 
@@ -391,4 +449,6 @@ def mandated_package_gap(
         window_end=end,
         mandated_line_ids=frozenset(line.procedure_line_id for line in scope.mandated),
         replaced_line_ids=frozenset(line.procedure_line_id for line in scope.lines),
+        lenient_package_total_try=scope.lenient_package_total_try,
+        missing_facts=scope.missing_facts,
     )

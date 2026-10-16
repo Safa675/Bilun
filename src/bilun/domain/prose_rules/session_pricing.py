@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -21,7 +22,7 @@ from .session_scope import (
     line_billed_as_package,
     session_operation_lines,
 )
-from .session_specialty import detect_cross_specialty_session
+from .session_specialty import cross_specialty_readings
 from .types import ProseRuleTrace, SessionPricingResult, SessionProcedureFactor
 
 if TYPE_CHECKING:
@@ -435,6 +436,73 @@ def compute_session_point_factors(
     )
 
 
+# Facts a bill may not show (Safa, 2026-10-16, "2b"). No claim line carries the
+# incision (kesi) of two operations in one session, so it is always unknown on a
+# bill; a line without ``procedure_specialty_code`` leaves its branch (branş) unknown.
+MISSING_INCISION = "kesi"
+MISSING_BRANCH = "branş"
+
+
+@dataclass(frozen=True)
+class SessionReadings:
+    """One session's factors under the strictest and the most lenient legal reading.
+
+    ``strict``: one incision (§2.2.2.A(5)(a) 30 %, B(3)(a) 25 %, B(3)(c) 30 %) and the
+    25 points only across two known, different branches. ``lenient``: separate
+    incisions (A(5)(b), B(3)(b), B(3)(ç): 50 %) and the 25 points whenever a branch
+    is unknown (C000662, C000674). The two are one result when the bill shows both
+    facts (``missing_facts`` empty). Money is claimed only where every reading
+    agrees: over-billing above ``lenient``, under-billing below ``strict``; in
+    between a 0-TL review row names the missing fact.
+    """
+
+    strict: SessionPricingResult
+    lenient: SessionPricingResult
+    missing_facts: tuple[str, ...] = ()
+
+
+def compute_session_readings(
+    operations: Sequence[ProcedureClaimLine],
+    *,
+    same_incision: bool | None = None,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
+    as_of_date: date | str | None = None,
+    billed_as_package: Sequence[bool] | None = None,
+) -> SessionReadings:
+    """§2.2.2.A(5) / B(3) factors of one session's operations under both readings.
+
+    ``same_incision`` None: the incision is unknown. ``cross_specialty`` None: read
+    from the operations' branches (``cross_specialty_readings``). A known value
+    fixes that fact for both readings, which then keep the single-reading result.
+    """
+    missing: list[str] = []
+    if same_incision is None:
+        incisions = (True, False)
+        missing.append(MISSING_INCISION)
+    else:
+        incisions = (same_incision, same_incision)
+    if cross_specialty is None:
+        crosses = cross_specialty_readings(list(operations), claim)
+        if crosses[0] != crosses[1]:
+            missing.append(MISSING_BRANCH)
+    else:
+        crosses = (cross_specialty, cross_specialty)
+    codes = [line.procedure_code for line in operations]
+    flags = None if billed_as_package is None else list(billed_as_package)
+    strict = compute_session_point_factors(
+        codes, same_incision=incisions[0], cross_specialty=crosses[0],
+        as_of_date=as_of_date, billed_as_package=flags,
+    )
+    if not missing:
+        return SessionReadings(strict, strict)
+    lenient = compute_session_point_factors(
+        codes, same_incision=incisions[1], cross_specialty=crosses[1],
+        as_of_date=as_of_date, billed_as_package=flags,
+    )
+    return SessionReadings(strict, lenient, tuple(missing))
+
+
 
 def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float | None:
     """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math.
@@ -520,16 +588,20 @@ def _session_adjusted_line_payable(
 def compute_session_adjusted_itemized_total(
     lines: list[ProcedureClaimLine],
     *,
-    same_incision: bool = True,
+    same_incision: bool | None = True,
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
     apply_blood_fraction: bool = True,
+    lenient: bool = False,
 ) -> tuple[float, dict[str, Any]]:
     """Sum itemized payables with §2.2.2.B / §2.2.2.A(5) session point factors applied.
 
     Factors apply to the operations of each session only (``session_scope``).
     When ``cross_specialty`` is ``None``, each session auto-detects different
     specialties from the lines' ``procedure_specialty_code`` (branch codes).
+    A fact the bill does not show (``same_incision`` None, a line without a
+    branch) takes its strictest reading, or its most lenient one with
+    ``lenient`` (``SessionReadings``).
     """
     # Hypothetical itemized alternatives omit package rows and must retain
     # full itemized blood prices. Candidate flags/codes are not billed packages.
@@ -538,6 +610,7 @@ def compute_session_adjusted_itemized_total(
     sessions_with_adjustment = 0
     lines_in_scope = 0
     sessions_cross_specialty = 0
+    missing: set[str] = set()
 
     for session_date, session_lines in group_procedure_lines_by_session(lines).items():
         billable = [
@@ -556,16 +629,21 @@ def compute_session_adjusted_itemized_total(
         operations = session_operation_lines(billable)
         factors: Iterator[SessionProcedureFactor] | None = None
         if len(operations) >= 2:
-            session_cross = (
-                detect_cross_specialty_session(operations, claim)
+            crosses = (
+                cross_specialty_readings(operations, claim)
                 if cross_specialty is None
-                else cross_specialty
+                else (cross_specialty, cross_specialty)
             )
+            session_cross = crosses[1 if lenient else 0]
+            if same_incision is None:
+                missing.add(MISSING_INCISION)
+            if crosses[0] != crosses[1]:
+                missing.add(MISSING_BRANCH)
             if session_cross:
                 sessions_cross_specialty += 1
             session = compute_session_point_factors(
                 [line.procedure_code for line in operations],
-                same_incision=same_incision,
+                same_incision=(not lenient) if same_incision is None else same_incision,
                 cross_specialty=session_cross,
                 as_of_date=session_date,
                 billed_as_package=[line_billed_as_package(line) for line in operations],
@@ -605,6 +683,8 @@ def compute_session_adjusted_itemized_total(
         "same_incision": same_incision,
         "cross_specialty": cross_specialty,
         "cross_specialty_mode": "auto" if cross_specialty is None else "fixed",
+        "reading": "lenient" if lenient else "strict",
+        "missing_facts": [fact for fact in (MISSING_INCISION, MISSING_BRANCH) if fact in missing],
     }
 
 

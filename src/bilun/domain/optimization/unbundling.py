@@ -61,11 +61,11 @@ def detect_drg_unbundling(
         if not claim_procs or claim_package_window(claim, claim_procs) is None:
             continue
 
-        # Same-incision (kesi) is not on claim lines yet; assume same session until wired.
+        # No claim line carries the incision (kesi): session money is taken above
+        # the most lenient reading (``detect_session_point_violations``).
         finding = analyze_claim_unbundling(
             claim,
             claim_procs,
-            same_incision=True,
             drug_lines=claim_context.drug_lines,
             material_lines=claim_context.material_lines,
         )

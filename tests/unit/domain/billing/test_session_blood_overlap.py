@@ -268,7 +268,7 @@ def test_direct_detectors_share_nondefault_session_options(
 
 
 def test_claim_context_reaches_both_detectors(monkeypatch):
-    from src.bilun.domain.prose_rules import session_uplift
+    from src.bilun.domain.prose_rules import session_specialty
 
     seen = []
 
@@ -276,7 +276,8 @@ def test_claim_context_reaches_both_detectors(monkeypatch):
         seen.append(claim.claim_id if claim else None)
         return claim is not None and claim.department == "cross-specialty"
 
-    monkeypatch.setattr(session_uplift, "detect_cross_specialty_session", cross_specialty)
+    # Both readings of a session read the branches here (cross_specialty_readings).
+    monkeypatch.setattr(session_specialty, "detect_cross_specialty_session", cross_specialty)
     # #261: a session needs two operations; the blood line keeps its own gap.
     session, blood = _blocks(
         [_primary(billed_amount_try=Decimal("1000")), _operation(), _blood()],
