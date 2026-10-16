@@ -368,6 +368,30 @@ class TestSessionScope261:
         ] == [("603830", "603840", 0.30, 1148.48)]
 
 
+class TestRepeatedCodes:
+    """MEDULA sends one line per occurrence; factors pair with lines, not codes."""
+
+    @pytest.mark.parametrize(
+        "code, risk",
+        [
+            ("P603840", 5377.20),  # Was 0: the repeated code lost its primary.
+            ("P621510", 3589.97),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
+        ],
+    )
+    def test_a_repeated_package_pays_the_second_occurrence_at_25_percent(self, code, risk) -> None:
+        day = _d("2026-07-14")
+        bill = _Bill("C-REP", "yatis", day, day, package_candidate=True)
+        bill.proc(code, day, specialty=GENCER)
+        bill.proc(code, day, specialty=GENCER)
+        ctx = bill.ctx()
+        rows = _finding(ctx).session_violations
+        assert [
+            (r["procedure_line_id"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
+            for r in rows
+        ] == [("C-REP-P02", "2.2.2.B.a", 0.25, risk)]
+        assert compute_audit_exposure_from_claims(ctx) == risk
+
+
 class TestCrossSpecialty264:
     def test_clean_s8_without_branch_codes_has_no_uplift_or_exposure(self) -> None:
         # Was +1,792.40 TL session_underbilling: groups B and C read as two specialties.

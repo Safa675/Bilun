@@ -6,18 +6,15 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from .catalog_membership import normalize_procedure_code
-from .claim_utils import group_procedure_lines_by_session, infer_care_setting
+from .claim_utils import infer_care_setting
 from ..money import money_round_half_up as _money
 from .payment_method import check_payment_method_compliance, resolve_payment_method
 from .session_pricing import (
     billed_package_scopes,
     blood_component_billable_fraction,
-    compute_session_point_factors,
     expected_session_billed_try,
 )
-from .session_scope import line_billed_as_package, session_operation_lines
-from .session_specialty import detect_cross_specialty_session
+from .session_uplift import iter_session_secondary_assessments
 from .types import CareSetting
 
 if TYPE_CHECKING:
@@ -112,83 +109,43 @@ def detect_session_point_violations(
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
+    """Secondaries billed above their §2.2.2.A(5) / B(3) session factor.
+
+    Sessions and factors come from ``iter_session_secondary_assessments``, the
+    uplift side's, which pairs factors with lines by occurrence: MEDULA sends one
+    line per occurrence, so a repeated code keeps its primary.
+    """
     violations: list[dict[str, Any]] = []
 
-    for session_date, session_lines in group_procedure_lines_by_session(lines).items():
-        billable = [
-            line
-            for line in session_operation_lines(session_lines)
-            if not line.is_package_included and _line_billed(line) > 0
-        ]
-        if len(billable) < 2:
+    for assessment in iter_session_secondary_assessments(
+        lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
+    ):
+        line, factor, session = assessment.line, assessment.factor, assessment.session
+        expected_billed = expected_session_billed_try(line, point_factor=factor.point_factor)
+        actual_billed = _line_billed(line)
+        if actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
             continue
 
-        codes = [line.procedure_code for line in billable]
-        session_cross = (
-            detect_cross_specialty_session(billable, claim)
-            if cross_specialty is None
-            else cross_specialty
+        overbill = actual_billed - expected_billed
+        violations.append(
+            {
+                "procedure_line_id": line.procedure_line_id,
+                "procedure_code": line.procedure_code,
+                "procedure_name": line.procedure_name,
+                "session_date": str(assessment.session_date),
+                "expected_point_factor": factor.point_factor,
+                "primary_procedure_code": assessment.primary_line.procedure_code,
+                "expected_billed_try": _money(expected_billed),
+                "actual_billed_try": _money(actual_billed),
+                "risk_amount_try": _money(max(0.0, overbill)),
+                "sut_section": session.sut_section,
+                "rule_id": session.rule_id,
+                "detail": (
+                    f"Secondary procedure billed at full rate; SUT §{session.sut_section} "
+                    f"requires {factor.point_factor:.0%} point factor in same session."
+                ),
+            }
         )
-        session = compute_session_point_factors(
-            codes,
-            same_incision=same_incision,
-            cross_specialty=session_cross,
-            as_of_date=session_date,
-            billed_as_package=[line_billed_as_package(line) for line in billable],
-        )
-        if session.rule_id == "single_procedure":
-            continue
-
-        factors = {
-            normalize_procedure_code(f.procedure_code): f for f in session.factors
-        }
-        primary_line = None
-        primary_factor = 1.0
-        for line in billable:
-            factor = factors.get(normalize_procedure_code(line.procedure_code))
-            if factor is not None and factor.is_primary:
-                primary_line = line
-                primary_factor = factor.point_factor
-                break
-
-        if primary_line is None or _line_billed(primary_line) <= 0:
-            continue
-
-        for line in billable:
-            if line.procedure_line_id == primary_line.procedure_line_id:
-                continue
-            factor = factors.get(normalize_procedure_code(line.procedure_code))
-            if factor is None or factor.point_factor >= primary_factor:
-                continue
-
-            expected_billed = expected_session_billed_try(
-                line,
-                point_factor=factor.point_factor,
-            )
-            actual_billed = _line_billed(line)
-            if actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
-                continue
-
-            overbill = actual_billed - expected_billed
-            violations.append(
-                {
-                    "procedure_line_id": line.procedure_line_id,
-                    "procedure_code": line.procedure_code,
-                    "procedure_name": line.procedure_name,
-                    "session_date": str(session_date),
-                    "expected_point_factor": factor.point_factor,
-                    "primary_procedure_code": primary_line.procedure_code,
-                    "expected_billed_try": _money(expected_billed),
-                    "actual_billed_try": _money(actual_billed),
-                    "risk_amount_try": _money(max(0.0, overbill)),
-                    "sut_section": session.sut_section,
-                    "rule_id": session.rule_id,
-                    "detail": (
-                        f"Secondary procedure billed at full rate; SUT §{session.sut_section} "
-                        f"requires {factor.point_factor:.0%} point factor in same session."
-                    ),
-                }
-            )
 
     return violations
 
