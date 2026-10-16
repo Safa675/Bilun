@@ -6,6 +6,7 @@ Provides:
   - Column filtering (_data_cols)
   - Raw parquet discovery (_find_raw_parquet, _read_raw)
   - Manifest-driven loading (_load_manifest, _add_validity_ranges)
+  - Amendment markers in list cells (amendment_markers, strip_amendment_marker)
 """
 
 from __future__ import annotations
@@ -158,14 +159,65 @@ def _load_manifest(parquet_root: Path) -> pd.DataFrame:
     return manifest
 
 
+# SGK writes each later amendment into the list it changes, in the row's code cell:
+# "603331 (Ek: RG-29/08/2026- 33355/ 14-a md. Yürürlük: 05/09/2026)". "Ek" adds the row,
+# "Değişik" amends it (the list keeps the older clean row of the same code next to it)
+# and "Mülga" repeals it, each from the marker's Yürürlük date.
+MARKER_FROM = "_marker_from"  # latest Yürürlük date of the cell's Ek/Değişik markers
+MARKER_ADDED = "_marker_added"  # that latest marker adds the row ("Ek")
+MARKER_REPEALED = "_marker_repealed"  # earliest Yürürlük date of the cell's Mülga markers
+MARKER_UNDATED = "_marker_undated"  # the cell has a marker whose Yürürlük date cannot be read
+MARKER_COLUMNS = (MARKER_FROM, MARKER_ADDED, MARKER_REPEALED, MARKER_UNDATED)
+
+_MARKER = re.compile(
+    r"\(\s*(?:(?P<kind>[^\W\d_]+)\s*:)?[^()]*?Y[üu]r[üu]rl[üu]k\s*:?\s*"
+    r"(?P<day>\d{1,2})\s*[./]\s*(?P<month>\d{1,2})\s*[./]\s*(?P<year>\d{4})",
+    re.IGNORECASE,
+)
+_ANY_MARKER = re.compile(r"\([^()]*(?:\bRG\s*-|Y[üu]r[üu]rl[üu]k)", re.IGNORECASE)
+_REPEAL_KINDS = ("mülga", "mulga")
+
+
+def strip_amendment_marker(cells: pd.Series) -> pd.Series:
+    """The value before a cell's marker: "603331  (Ek: RG-…)" -> "603331"."""
+    return cells.fillna("").astype(str).str.replace(r"\s*\(.*$", "", regex=True).str.strip()
+
+
+def amendment_markers(cells: pd.Series) -> pd.DataFrame:
+    """MARKER_COLUMNS for each cell, on the cells' index (NaT / False without a marker)."""
+    text = cells.fillna("").astype(str).reset_index(drop=True)
+    found = text.str.extractall(_MARKER)
+    kind = found["kind"].fillna("").str.casefold()
+    dates = pd.to_datetime(found[["year", "month", "day"]].astype(int), errors="coerce")
+    repeal = kind.isin(_REPEAL_KINDS)
+    starts = pd.DataFrame({"date": dates.where(~repeal), "added": kind.eq("ek")})
+    latest = starts[starts["date"].notna()].sort_values("date", kind="stable")
+    latest = latest.groupby(level=0).tail(1).droplevel(1)
+    out = pd.DataFrame(index=text.index)
+    out[MARKER_FROM] = latest["date"].reindex(text.index)
+    out[MARKER_ADDED] = latest["added"].reindex(text.index, fill_value=False).astype(bool)
+    out[MARKER_REPEALED] = dates.where(repeal).groupby(level=0).min().reindex(text.index)
+    out[MARKER_UNDATED] = (
+        text.str.contains(_ANY_MARKER) & out[MARKER_FROM].isna() & out[MARKER_REPEALED].isna()
+    )
+    out.index = cells.index
+    return out
+
+
 def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
-    """Attach valid_from / valid_to columns based on consecutive effective_dates."""
+    """Attach valid_from / valid_to columns based on consecutive effective_dates.
+
+    Of two rows of one key in one list, the amended one (MARKER_FROM set, see
+    amendment_markers) is kept over the older clean row; otherwise the later one.
+    """
     work = df.copy()
     work["effective_date_parsed"] = pd.to_datetime(
         work["effective_date"], errors="coerce"
     )
+    work["_amended"] = work[MARKER_FROM].notna() if MARKER_FROM in work.columns else False
+    work["_position"] = range(len(work))
     work = (
-        work.sort_values([key_col, "effective_date_parsed"])
+        work.sort_values([key_col, "effective_date_parsed", "_amended", "_position"])
         .drop_duplicates(subset=[key_col, "effective_date_parsed"], keep="last")
         .reset_index(drop=True)
     )
@@ -181,7 +233,8 @@ def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
         "string"
     )
     work.loc[next_eff.isna(), "valid_to"] = pd.NA
-    return work.drop(columns=["effective_date_parsed"])
+    helpers = ["effective_date_parsed", "_amended", "_position"]
+    return work.drop(columns=helpers + [c for c in MARKER_COLUMNS if c in work.columns])
 
 
 _CONSOLIDATED_SUT_DIR_SUFFIX = "Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"

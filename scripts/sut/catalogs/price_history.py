@@ -13,6 +13,8 @@ import unicodedata
 
 import pandas as pd
 
+from scripts.sut._common import MARKER_COLUMNS, amendment_markers, strip_amendment_marker
+
 RE_EK2B_CODE = re.compile(r"^(L\d{6}|R\d{6}|G\d{6}|[5-9]\d{5})$")
 RE_EK2C_CODE = re.compile(r"^P\d{6}$")
 # EK-2Ç (dental) codes: 6-digit numeric (40xxxx) or P40xxxx package codes
@@ -83,21 +85,23 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     pos = _build_pos_map(header)
     body = df.iloc[h_idx + 1 :]
 
+    code_cells = body.iloc[:, pos["ISLEM KODU"]]
     out = pd.DataFrame()
-    out["code"] = body.iloc[:, pos["ISLEM KODU"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
+    # SGK writes amendments into the code cell ("603331 (Ek: RG-… Yürürlük: 05/09/2026)"):
+    # keep the code before the marker, like extract_ek2c, and the marker for the history.
+    out["code"] = strip_amendment_marker(code_cells)
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
     out["puan"] = pd.to_numeric(
         body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
     )
+    out = out.join(amendment_markers(code_cells))
 
     out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
     out = out.reset_index(drop=True)
-    return out[["code", "name", "puan", "price_try"]]
+    return out[["code", "name", "puan", "price_try", *MARKER_COLUMNS]]
 
 
 def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
