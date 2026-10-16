@@ -1,3 +1,53 @@
+## Task: Catalog dates (#226, #227), package-gap double count and capture-gap rounding, independent review of #283 (2026-10-16)
+
+### Goal
+- Bilun's EK-2B/EK-2C/EK-1A/EK-3O catalogs keep every row, from its own start date.
+- A package-mandated bill shows the package gap once.
+- Money totals keep their kuruş.
+- An independent check confirms or refutes the 17 review findings on the merged session-rule code (#283).
+
+### Subtasks
+- [ ] 1. PR A (#226 + #227), one branch because both change `scripts/sut/catalogs/price_history.py`:
+  - [ ] EK-2B: strip the amendment marker from the code cell (as `extract_ek2c` does), and keep the amended row over the older one.
+  - [ ] Every curated row gets `valid_from` = its own Yürürlük marker date when later than the file date (`ek4a_history.py` is the model). The readers use it: `gazette.py:138-146`, `catalog_membership.py:103-119`.
+  - [ ] EK-1A and EK-3O get a date column.
+  - [ ] Rebuild the curated files inside the reviewed CI image (runbook "Local SUT package ingest"). Run the CI gate in the image.
+  - [ ] Tests:
+    - a marker row is kept;
+    - 609541 exists from 2026-10-10;
+    - P609541 does not match before 2026-10-10;
+    - a row marked 2026-09-05 does not apply on 2026-07-07;
+    - the showcase bills are unchanged.
+- [x] 2. PR B (defects 1 + 2), branch `claude/fix-package-gap-double-count-and-rounding`:
+  - [x] On a claim where the package is mandated but the bill is itemized, components the package includes (SUT §2.2.2.B-1(1): bed, companion, anaesthesia, exams, labs) add no itemized uplift inside the package window; days after the window still do (§2.2.2.B-1(4)). Faulty S1: SGK uplift 4,085.87, not 4,234.07. S4's companion uplift (no package) stays 370.50.
+    - Measured: faulty S1 4,234.07 → 4,085.87 (companion row 148.20 → 0); S2 bed 667.08, S3 anaesthesia 928.09, S4 companion 370.50 unchanged; clean bills 0 TL. A 12-day mandated stay still expects 4 bed days (889.44) and 3 companion nights (222.30) after the window.
+    - The mandate comes from the codes, not `package_candidate`: an EK-2/B line flagged "must use package billing" at the claim's tier, no package line for its code, an EK-2/C price and group on the day.
+    - Exams and labs have no itemized uplift detector. Their capture-gap rows (separate headline) are not windowed yet: open question.
+    - Cohort: SGK uplift 88,920.95 → 61,310.65 TL on 11 of 50 patients (mandated EK-2/C surgery billed itemized). The #269 gate still reads `package_candidate`, so these claims show no package gap until it is fixed.
+  - [x] `capture_gap_try` keeps two decimals: S7 shows 1,138.22, not 1,138. Also `package_adequacy_review_try` (cohort 12,717 → 12,717.97).
+  - [x] This PR also carries this block and the wave 2 record below.
+- [ ] 3. Independent review of #283 on `main`. Three read-only reviewers:
+  - SUT correctness;
+  - each of the 17 findings fixed or not, with probes, plus the cohort effect;
+  - tests, and whether any gate relies on synthetic-only fields such as `package_candidate`.
+
+  Confirmed bugs get their own fix PR.
+- [ ] 4. Per PR: targeted tests, the full suite, compile check, parity and ruff, run in sequence; showcase proofs before and after; CI on `main` green before each push.
+
+### Decisions (Safa, 2026-10-16)
+- #259: days before the operation on the same inpatient takip stay inside the package. SUT §2.2.2.B-1(1) (C000685): "takip alındıktan sonraki … yatak bedeli … dahil".
+- Defect 3 (0-TL review rows on every bill) waits for Safa's choice of what the demo shows.
+
+### Wave 2 record (restored; the original block was lost uncommitted on 2026-10-15)
+- **Workflow `wf_f4b4dd73-12f`, materials (#262 → PR #284):** implement → 3 reviewers → fix-up (12 findings applied, 3 partly rejected with reasons) → independent verify. Every criterion passed at f480cb68, which is the merged commit.
+- **Workflow, session rules (#261/#264/#269 → PR #283):** implement → 3 reviewers (17 findings, 7 must-fix). Fix-up and verify died on the usage limit.
+- **#283 follow-up:** b06cfbf3 says it addressed all 17. Argon merged #283 and #284 on 2026-10-15. Item 3 above checks b06cfbf3 independently.
+
+### Out of Scope
+- Defect 3 (waits for Safa).
+- Synthetic v3 P2–P7 (waits for Safa's review of stories, lab table and ICD/drug notes).
+- The strict release lane.
+
 ## Task: Step 3 engine and lab fixes — #280, #281, #255, #256, #259 (2026-10-15)
 
 ### Goal
