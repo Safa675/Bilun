@@ -15,16 +15,26 @@ Approved by Safa on 2026-10-16 ("okey do it"). Plan: `plans/data/2026-10-14-synt
 - Golden clean bills: `tests/fixtures/pathways/golden/S1.json`…`S8.json`, exported from the clean variant of each story in `stories.py` by `reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py` (line identities only, no prices). A different agent writes the golden and the pathway, so the golden cannot be fitted to the YAML.
 
 ### Subtasks
-- [ ] 1. Branch `claude/synthetic-v3-p2-pathways` from main f5d2973d and this plan block.
-- [ ] 2. Golden export: script with a `--check` mode, 8 JSON files, a light well-formedness test (agent F).
-- [ ] 3. Schema, loader, deterministic expander, catalog-validity checks with a mutation test for each, pathway S1 as the reference (agent A).
-- [ ] 4. I review the schema and S1 (they are the contract for P3/P4/P5) and adjust before the fan-out.
-- [ ] 5. Pathways S2–S8, one agent each; each passes the validity checks and the round trip for its own story.
-- [ ] 6. Two independent reviews: (a) fidelity to the stories, the review report and the SUT sources; (b) test strength and fit with P3/P4/P5.
-- [ ] 7. Fix-up of the review findings.
-- [ ] 8. Gates: ruff, new tests, full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image backend gate.
-- [ ] 9. Update the plan's P2 status and this block's Review section.
+- [x] 1. Branch `claude/synthetic-v3-p2-pathways` from main f5d2973d and this plan block.
+- [x] 2. Golden export: `export_clean_lines.py` with a `--check` mode, 8 JSON files, a well-formedness test (agent F; 89 tests; I re-checked the files and the counts).
+- [x] 3. Schema, loader, deterministic expander, catalog-validity checks with a mutation test for each, pathways S1 and S2 (agent A).
+- [x] 4. I reviewed the schema and S1/S2 and ran A's throwaway drafts of S3-S8: all six load and expand to their goldens, so the format fits.
+- [x] 5. Pathways S3-S8, one agent each (all six passed the checks and the round trip on the first run).
+- [x] 6. Two independent reviews: (a) fidelity to the stories, the review report and the SUT sources, 10 dimensions over all 8 pathways; (b) strength of the checks and tests: 105 hand mutations, 3,598 single-leaf mutants, 89 mutants of the toolkit code, fit with P3/P4/P5.
+- [x] 7. Fix-up of the findings (agent X: toolkit, tests, README, S2, proofs harness; agent Y: source texts of S3-S8). I re-ran nine of the reviewers' mutations by hand against the fixed toolkit: all caught.
+- [x] 8. Gates: ruff; the pathway tests; full suite under the shared lock; `compile_rules.py --check`; manifest parity (sequentially, not at the same time); the CI-image backend gate on a clone.
+- [x] 9. Plan status (P2 first step) and this block's Results.
 - [ ] 10. PR, CI green, review comments read and classified; Safa merges.
+
+### Results (2026-10-17, branch `claude/synthetic-v3-p2-pathways`)
+- **8 pathways** (S1-S8) in `data/synthetic/pathways/`. With its own pins each one expands to the golden clean bill of its story (codes, dates, quantities, specialties, links, flags). The goldens come from `stories.py` through `export_clean_lines.py`; a test runs its `--check`, so a pathway and its golden cannot be changed together.
+- **Toolkit** `scripts/synthetic/pathways/`: a pydantic schema that forbids unknown fields, a loader, a pure 152-line expander and 55 check ids (catalog identity on every window day, SKRS leaf ICD codes, EK-4A barcodes, lab table, package mode and window, anaesthesia band, sessions, stay coverage, pins, hygiene), each with a mutation case.
+- **Tests:** 352 pathway tests (1 skipped: S7 has no stay). Full suite: 9,260 passed, 2 skipped, 0 failed (8,908 before). `compile_rules.py --check` OK (119 artifacts), manifest parity 0 issues.
+- **A real defect was found by the review and fixed.** EK-4A `valid_until` is exclusive (the catalog's own docstring and `ek4a_as_of.py:152` agree); the pathway checks, the proofs harness and `cat.py` read it as inclusive. S2's window ended 2026-08-29, one day after KLACID 500 MG IV left EK-4A; now 2026-08-28, and a narrowed window must give its reason (`Window.source`).
+- **Guard strength.** Before the fixes the toolkit guarded the pinned bill well but little else: 53 of 105 hand mutations survived and 37 of 89 code mutants. Fixed or documented: golden sync (`--check` in a test), bed/companion scaling with the nights (`stay.coverage`), an optional indication diagnosis, a pinned course past discharge, ANON/price/ID text, `.yml` files. Re-run after the fixes: 108 code mutants, 0 survive. What is guarded by review only (required/optional toggles, widened ranges, probabilities, notes, source edits) is listed in the README under known limits.
+- **Source texts:** where the pathways said "certain" and the review says "güçlü çıkarım" (discharge day on the bed line, R07.1 as principal) they now carry the label; one clause that did not fit (C000603) was removed.
+- **For the clinician reviewer (Q3):** `reports/synthetic-data/2026-10-17-pathways-judgment-list.md` lists the 77 `judgment` items and the observations the pathway writers raised (S4's whole-box paracetamol and 5-day antibiotic course, S6's PK-Merz/levodopa overlap, ...). The stories were not changed.
+- CI-image backend gate (`bilun-laptop-ci:20261008-runtime-complete`, clone of 5f9aae31, CI's pinned pandas 3.0.6 / polars 2.0.0): ruff clean, 9,260 passed, 2 skipped, 0 failed, `compile_rules.py --check` OK, parity 0 issues. The commit after it changes `tasks/todo.md` only.
 
 ### Definition of done
 1. `data/synthetic/pathways/` has 8 pathways (S1–S8); each loads through the loader.
