@@ -100,15 +100,18 @@ def _eligible_history_rows(
     if "effective_date" not in work.columns:
         return work.drop_duplicates(subset=[code_column], keep="last")
 
-    work["effective_date_parsed"] = pd.to_datetime(work["effective_date"], errors="coerce")
+    # A row applies from valid_from: its list's date, or the later Yürürlük date of its
+    # own amendment marker (P609541 sits in the 2026-07-07 list but applies from 2026-10-10).
+    start = work["valid_from"] if "valid_from" in work.columns else work["effective_date"]
+    work["valid_from_parsed"] = pd.to_datetime(start, errors="coerce")
     if "valid_to" in work.columns:
         work["valid_to_parsed"] = pd.to_datetime(work["valid_to"], errors="coerce")
     else:
         work["valid_to_parsed"] = pd.NaT
     cutoff = pd.to_datetime(asof_key)
-    work = work[work["effective_date_parsed"].notna()]
+    work = work[work["valid_from_parsed"].notna()]
     eligible = work[
-        (work["effective_date_parsed"] <= cutoff)
+        (work["valid_from_parsed"] <= cutoff)
         & (work["valid_to_parsed"].isna() | (work["valid_to_parsed"] >= cutoff))
     ]
     if eligible.empty:
@@ -122,7 +125,7 @@ def _eligible_history_rows(
         # price as of this date".
         return eligible.reset_index(drop=True)
     eligible = eligible.sort_values(
-        [code_column, "effective_date_parsed"]
+        [code_column, "valid_from_parsed"]
     ).drop_duplicates(subset=[code_column], keep="last")
     return eligible.reset_index(drop=True)
 

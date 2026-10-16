@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
@@ -15,12 +16,12 @@ from ..constants import (
     EK3H_PARQUET_PATH,
     EK3I_PARQUET_PATH,
 )
+from ..loaders.validity import as_of_iso
 from ..utils import turkish_lower
 
 logger = logging.getLogger("bilun.domain.materials.catalog_lookup")
 
 _EK3C_CODE_SET: frozenset[str] | None = None
-_EK3_ALL_CODE_SET: frozenset[str] | None = None
 
 _SEPARATE_BILLING_ALLOW_MARKERS = (
     "ayrica faturalandirilabilir",
@@ -144,9 +145,22 @@ _EK3C_PARQUET_NAMES = (
 )
 
 
-def _read_sut_codes_from_parquet(path: Path) -> set[str]:
+def _in_force(df: pl.DataFrame, day: str) -> pl.DataFrame:
+    """Rows of a dated EK-3 list (valid_from / valid_to, null = open) in force on ``day``.
+
+    Lists without the columns are returned whole. EK-3O dates the rows SGK added or
+    amended after the list's own date (HO1034 from 2026-09-05).
+    """
+    if "valid_from" in df.columns:
+        df = df.filter(pl.col("valid_from").is_null() | (pl.col("valid_from") <= day))
+    if "valid_to" in df.columns:
+        df = df.filter(pl.col("valid_to").is_null() | (pl.col("valid_to") >= day))
+    return df
+
+
+def _read_sut_codes_from_parquet(path: Path, day: str | None = None) -> set[str]:
     try:
-        df = pl.read_parquet(path)
+        df = _in_force(pl.read_parquet(path), day or as_of_iso(None))
     except Exception as exc:
         logger.warning("Failed to read material catalog %s: %s", path, exc)
         return set()
@@ -159,9 +173,9 @@ def _read_sut_codes_from_parquet(path: Path) -> set[str]:
     }
 
 
-def _read_material_rows_from_parquet(path: Path) -> list[dict[str, object]]:
+def _read_material_rows_from_parquet(path: Path, day: str | None = None) -> list[dict[str, object]]:
     try:
-        df = pl.read_parquet(path)
+        df = _in_force(pl.read_parquet(path), day or as_of_iso(None))
     except Exception as exc:
         logger.warning("Failed to read material catalog %s: %s", path, exc)
         return []
@@ -187,11 +201,11 @@ def _all_ek3_catalog_paths() -> tuple[Path, ...]:
     return tuple(paths)
 
 
-@lru_cache(maxsize=1)
-def _build_ek3_price_index() -> dict[str, float]:
+@lru_cache(maxsize=16)
+def _build_ek3_price_index(day: str) -> dict[str, float]:
     index: dict[str, float] = {}
     for path in _all_ek3_catalog_paths():
-        for row in _read_material_rows_from_parquet(path):
+        for row in _read_material_rows_from_parquet(path, day):
             code = str(row.get("sut_code") or "").strip().upper()
             price = row.get("price_try")
             if not code or price is None:
@@ -205,8 +219,7 @@ def _build_ek3_price_index() -> dict[str, float]:
     return index
 
 
-@lru_cache(maxsize=1)
-def ek3_separate_billing_allowed_codes() -> frozenset[str]:
+def ek3_separate_billing_allowed_codes(as_of: date | str | None = None) -> frozenset[str]:
     """EK-3 rows explicitly marked as separately billable (§3.1.4 / C001823).
 
     Two detection paths:
@@ -215,10 +228,16 @@ def ek3_separate_billing_allowed_codes() -> frozenset[str]:
        parenthetical list (e.g. EK-3/O note (3): "(HO1003, HO1008, ...) ile
        birlikte faturalandırılabilir"). Without parsing these, codes mentioned
        only in a group note are wrongly flagged as not-separately-billable.
+    Rows are read as in force on ``as_of`` (default today).
     """
+    return _separate_billing_codes(as_of_iso(as_of))
+
+
+@lru_cache(maxsize=16)
+def _separate_billing_codes(day: str) -> frozenset[str]:
     allowed: set[str] = set()
     for path in _all_ek3_catalog_paths():
-        for row in _read_material_rows_from_parquet(path):
+        for row in _read_material_rows_from_parquet(path, day):
             code = str(row.get("sut_code") or "").strip().upper()
             desc = row.get("description")
             name = row.get("material_name")
@@ -231,18 +250,19 @@ def ek3_separate_billing_allowed_codes() -> frozenset[str]:
     return frozenset(allowed)
 
 
-def lookup_ek3_list_price_try(material_code: str) -> float | None:
+def lookup_ek3_list_price_try(material_code: str, as_of: date | str | None = None) -> float | None:
+    """EK-3 list price (TRY, ex-VAT) of a material on ``as_of`` (default today)."""
     code = str(material_code or "").strip().upper()
     if not code:
         return None
-    return _build_ek3_price_index().get(code)
+    return _build_ek3_price_index(as_of_iso(as_of)).get(code)
 
 
-def is_separate_billing_allowed(material_code: str) -> bool:
+def is_separate_billing_allowed(material_code: str, as_of: date | str | None = None) -> bool:
     code = str(material_code or "").strip().upper()
     if not code:
         return False
-    return code in ek3_separate_billing_allowed_codes()
+    return code in ek3_separate_billing_allowed_codes(as_of)
 
 
 def _normalized_code(material_code: object) -> str:
@@ -251,7 +271,7 @@ def _normalized_code(material_code: object) -> str:
 
 @lru_cache(maxsize=1)
 def _ek3_definition_frame() -> pl.DataFrame:
-    """Every EK-3 row as (annex, sut_code, text, definition).
+    """Every EK-3 row in force today as (annex, sut_code, text, definition).
 
     ``text`` is the row's name and description; ``definition`` is the same text
     with the "(1) ..." payment notes cut, i.e. what the material is.
@@ -267,7 +287,7 @@ def _ek3_definition_frame() -> pl.DataFrame:
         if not path.exists():
             continue
         try:
-            df = pl.read_parquet(path)
+            df = _in_force(pl.read_parquet(path), as_of_iso(None))
         except Exception as exc:
             logger.warning("Failed to read material catalog %s: %s", path, exc)
             continue
@@ -457,22 +477,25 @@ def ek3c_material_code_set() -> frozenset[str]:
     return _EK3C_CODE_SET
 
 
-@lru_cache(maxsize=1)
-def ek3_all_material_code_set() -> frozenset[str]:
-    """Union of EK-3/C + specialty annex material codes (EK-3A–T parquets)."""
-    global _EK3_ALL_CODE_SET
-    if _EK3_ALL_CODE_SET is not None:
-        return _EK3_ALL_CODE_SET
+def ek3_all_material_code_set(as_of: date | str | None = None) -> frozenset[str]:
+    """Union of EK-3/C + specialty annex material codes (EK-3A–T parquets) on ``as_of``.
+
+    ``as_of`` defaults to today; only dated lists (EK-3O) depend on it.
+    """
+    return _ek3_all_codes(as_of_iso(as_of))
+
+
+@lru_cache(maxsize=16)
+def _ek3_all_codes(day: str) -> frozenset[str]:
     codes = set(ek3c_material_code_set())
     for extra in (EK3H_PARQUET_PATH, EK3I_PARQUET_PATH):
         if extra.exists():
-            codes |= _read_sut_codes_from_parquet(extra)
+            codes |= _read_sut_codes_from_parquet(extra, day)
     for filename, _desc in _EK3_SPECIALTY_CATALOGS.values():
         path = _GAZETTE_CURATED_DIR / filename
         if path.exists():
-            codes |= _read_sut_codes_from_parquet(path)
-    _EK3_ALL_CODE_SET = frozenset(codes)
-    return _EK3_ALL_CODE_SET
+            codes |= _read_sut_codes_from_parquet(path, day)
+    return frozenset(codes)
 
 
 def is_material_in_ek3c_catalog(material_code: str) -> bool:
@@ -482,11 +505,11 @@ def is_material_in_ek3c_catalog(material_code: str) -> bool:
     return code in ek3c_material_code_set()
 
 
-def is_material_in_ek3_catalog(material_code: str) -> bool:
+def is_material_in_ek3_catalog(material_code: str, as_of: date | str | None = None) -> bool:
     code = str(material_code or "").strip().upper()
     if not code:
         return False
-    return code in ek3_all_material_code_set()
+    return code in ek3_all_material_code_set(as_of)
 
 
 def _material_parquet_paths() -> list[Path]:

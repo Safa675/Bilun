@@ -13,7 +13,7 @@ import re
 
 import pandas as pd
 
-from scripts.sut._common import _data_cols, _safe_str
+from scripts.sut._common import _add_list_validity, _data_cols, _safe_str, amendment_markers
 
 _EK1A_BLANK_CODE_FIX = {"Kronik Tubulo-Interstisyel Nefrit": "N11"}
 
@@ -74,10 +74,15 @@ def curate_ek1a(df: pd.DataFrame) -> pd.DataFrame:
                 "icd10_start": icd10_start,
                 "icd10_end": icd10_end,
                 "disease_name_tr": disease,
+                "_code_cell": raw_code,
             }
         )
 
     result = pd.DataFrame(rows)
+    # "G11.3 (EK:RG- 04/02/2018- 30322/ 20 md. Yürürlük: 15/02/2018)": the range is
+    # exempt from its Yürürlük date (valid_from / valid_to, null = every date).
+    result = result.join(amendment_markers(result.pop("_code_cell")))
+    result = _add_list_validity(result, ["icd10_start", "icd10_end"])
     print(f"  EK-1A: {len(result)} chronic disease exemption ranges curated")
     return result
 

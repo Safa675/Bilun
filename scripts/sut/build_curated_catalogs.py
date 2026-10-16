@@ -27,6 +27,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.sut._common import (  # noqa: E402
+    MARKER_UNDATED,
     _add_validity_ranges,
     _is_mulga_parquet,
     _load_manifest,
@@ -121,6 +122,10 @@ def _build_history(
         return pd.DataFrame()
 
     merged = pd.concat(outputs, ignore_index=True).reset_index(drop=True)
+    if MARKER_UNDATED in merged.columns and merged[MARKER_UNDATED].any():
+        undated = merged.loc[merged[MARKER_UNDATED], [history_key, "effective_date"]]
+        print(f"    {annex_code}: {len(undated)} row(s) dropped, marker date unreadable: "
+              f"{undated.to_dict('records')}")
     return _add_validity_ranges(merged, history_key)
 
 

@@ -5,12 +5,14 @@ Fallback/legacy annex loaders used by optimization features.
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any
 
 import pandas as pd
 
 from ..constants import EK1A_CURATED_PATH, EK2C1_CURATED_PATH, EK2G_CURATED_PATH
 from ..labels import normalize_sut_display_text
+from .validity import rows_in_force
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -19,8 +21,17 @@ _ek2g_cache: dict[str, str] | None = None
 _ek2c1_cache: dict[str, dict[str, Any]] | None = None
 
 
-def _load_ek1a_exemptions() -> pd.DataFrame:
-    """Load EK-1A chronic disease ICD-10 exemption ranges."""
+def _load_ek1a_exemptions(as_of: date | str | None = None) -> pd.DataFrame:
+    """EK-1A chronic disease ICD-10 exemption ranges in force on ``as_of`` (default today).
+
+    A range SGK added later carries valid_from (e.g. G11.3 from 2018-02-15); others are
+    in force on every date.
+    """
+    return rows_in_force(_load_ek1a_list(), as_of)
+
+
+def _load_ek1a_list() -> pd.DataFrame:
+    """The whole curated EK-1A list (cached)."""
     global _ek1a_cache
     if _ek1a_cache is not None:
         return _ek1a_cache

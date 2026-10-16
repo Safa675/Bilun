@@ -81,7 +81,7 @@ The hosted SUT Monitor cannot ingest (the workflow is disabled and hosted runner
 7. Write the report (`reports/sut-ingest/`) before the last step, and copy `component_receipts` from `data/gazette/ingest_state.json` into it: completion removes them.
 8. The same `sut_ingest_state.py` call without `--prepare-corpus` completes the ingest (`completion_scope: complete`). Then run the CI commands and commit the raw package files and the generated data separately.
 
-Limits of the reports: `sut_delta.py` slices the current curated files by date, so an amendment inside a list version whose file-level date did not change shows as 0 changes; the raw-level comparison in step 3 is the review delta. `scripts/sut/catalogs/price_history.py::extract_ek2b` drops rows whose code cell carries an amendment marker (EK-2C strips it), so check new EK-2B procedures against the raw partition.
+Limits of the reports: `sut_delta.py` slices the current curated files by date, so an amendment inside a list version whose file-level date did not change shows as 0 changes; the raw-level comparison in step 3 is the review delta. `scripts/sut/catalogs/price_history.py::extract_ek2b` no longer drops rows whose code cell carries an amendment marker: since #226 it strips the marker as EK-2C does.
 
 ## Release lanes and pin traps
 
