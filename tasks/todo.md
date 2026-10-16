@@ -7,7 +7,17 @@
 - An independent check confirms or refutes the 17 review findings on the merged session-rule code (#283).
 
 ### Subtasks
-- [ ] 1. PR A (#226 + #227), one branch because both change `scripts/sut/catalogs/price_history.py`:
+- [x] 1. PR A (#226 + #227), one branch because both change `scripts/sut/catalogs/price_history.py`:
+  - Result: PR Safa675/Bilun#287 (3 commits; curated files rebuilt in the CI image, and a second rebuild gives the same bytes).
+  - EK-2B: 69,546 → 70,932 rows (30 procedures back; 1,118 rows start after their list's date).
+  - EK-2C: 24,063 → 24,164 rows; 140 rows start later.
+  - EK-1A and EK-3O are dated.
+  - Local suite and the in-image CI gate: 8,797 passed, 0 failed.
+  - Showcase results and the 50-patient cohort are byte-identical.
+  - Follow-ups:
+    - EK-3O/EK-1A callers without a service date;
+    - marker parsing in the other lists (EK-2Ç, EK-3x, EK-2G, EK-2C-1);
+    - stale dental catalog.
   - [ ] EK-2B: strip the amendment marker from the code cell (as `extract_ek2c` does), and keep the amended row over the older one.
   - [ ] Every curated row gets `valid_from` = its own Yürürlük marker date when later than the file date (`ek4a_history.py` is the model). The readers use it: `gazette.py:138-146`, `catalog_membership.py:103-119`.
   - [ ] EK-1A and EK-3O get a date column.
@@ -18,7 +28,7 @@
     - P609541 does not match before 2026-10-10;
     - a row marked 2026-09-05 does not apply on 2026-07-07;
     - the showcase bills are unchanged.
-- [x] 2. PR B (defects 1 + 2), branch `claude/fix-package-gap-double-count-and-rounding`:
+- [x] 2. PR B (defects 1 + 2), PR Safa675/Bilun#286, branch `claude/fix-package-gap-double-count-and-rounding`:
   - [x] On a claim where the package is mandated but the bill is itemized, components the package includes (SUT §2.2.2.B-1(1): bed, companion, anaesthesia, exams, labs) add no itemized uplift inside the package window; days after the window still do (§2.2.2.B-1(4)). Faulty S1: SGK uplift 4,085.87, not 4,234.07. S4's companion uplift (no package) stays 370.50.
     - Measured: faulty S1 4,234.07 → 4,085.87 (companion row 148.20 → 0); S2 bed 667.08, S3 anaesthesia 928.09, S4 companion 370.50 unchanged; clean bills 0 TL. A 12-day mandated stay still expects 4 bed days (889.44) and 3 companion nights (222.30) after the window.
     - The mandate comes from the codes, not `package_candidate`: an EK-2/B line flagged "must use package billing" at the claim's tier, no package line for its code, an EK-2/C price and group on the day.
@@ -26,13 +36,13 @@
     - Cohort: SGK uplift 88,920.95 → 61,310.65 TL on 11 of 50 patients (mandated EK-2/C surgery billed itemized). The #269 gate still reads `package_candidate`, so these claims show no package gap until it is fixed.
   - [x] `capture_gap_try` keeps two decimals: S7 shows 1,138.22, not 1,138. Also `package_adequacy_review_try` (cohort 12,717 → 12,717.97).
   - [x] This PR also carries this block and the wave 2 record below.
-- [ ] 3. Independent review of #283 on `main`. Three read-only reviewers:
+- [x] 3. Independent review of #283 on `main`. Three read-only reviewers:
   - SUT correctness;
   - each of the 17 findings fixed or not, with probes, plus the cohort effect;
   - tests, and whether any gate relies on synthetic-only fields such as `package_candidate`.
 
   Confirmed bugs get their own fix PR.
-- [ ] 4. Per PR: targeted tests, the full suite, compile check, parity and ruff, run in sequence; showcase proofs before and after; CI on `main` green before each push.
+- [x] 4. Per PR: targeted tests, the full suite, compile check, parity and ruff, run in sequence; showcase proofs before and after; CI on `main` green before each push.
 - [x] 3a. Review results (2026-10-16): 15 of the 17 findings are fixed and 2 are partial. Must-fix problems still on `main`:
   - IONM P703365 and neuronavigation P614981 get the session cut despite C001389/C001413;
   - a mixed session prices every package at 100 % (C000670 says 25 %);
@@ -40,7 +50,13 @@
   - "billed as package" has two definitions (category vs `P` code);
   - the package gap is stacked on itemized uplifts (= defect 1, PR B);
   - the exposure map keyed by code loses the primary on repeated codes.
-- [ ] 5. PR C (#283 follow-up), built on PR B's branch, because both need the code-derived "package mandated" predicate:
+- [x] 5. PR C (#283 follow-up), built on PR B's branch, because both need the code-derived "package mandated" predicate:
+  - Result: PR Safa675/Bilun#288. It contains #286's commits, and main is merged in (c883b0df, #287).
+  - All 14 items are done, plus 2 more the agent's own review found (C000672 session switch; IONM/neuronavigation priced next to the package).
+  - "2 b" is applied. S8's money is 3,584.80, the excess over the lenient separate-incision 50 %; the strict-reading part (1,792.40) is a 0-TL review.
+  - Outpatient mandate follows EK-2/A-2: new curated `ek2a2_outpatient_additional_procedures.parquet`, 1,035 rows, built in the CI image. 22 codes qualify; day cases stay mandated (C003484).
+  - Cohort SGK uplift: main 88,920.95 → #286 61,310.65 → PR C before the EK-2/A-2 rule 564,058.45 → final 88,015.34.
+  - Full suite 8,890 passed, 0 failed. The CI-image gate is green.
   - fix the must-fix list above (except defect 1, which PR B owns);
   - plus the confirmed smaller items:
     - `is_bundled` decided by the §3.1.4/#284 classifier, not the input flag;
@@ -59,6 +75,19 @@
 
 ### Decisions (Safa, 2026-10-16)
 - #259: days before the operation on the same inpatient takip stay inside the package. SUT §2.2.2.B-1(1) (C000685): "takip alındıktan sonraki … yatak bedeli … dahil".
+- **Unknown incision or branch (Safa: "2 b"):** when the bill cannot show the incision type or the branch, Bilun claims money only above the most lenient legal factor (separate incision; +25 across specialties). Between the strict and the lenient factor it shows a 0-TL "kontrol et" review row.
+- **Outpatient package gap (follows the SUT text; was an open question):**
+  - Rule: §2.2.2(1) (C000646) mandates packages for yatarak services only. For outpatients, §2.2.1.B-1(10)(a) (C000581/C000582) applies the package method only to EK-2/A-2 procedures that are also in EK-2/C.
+  - Data: the current EK-2/A-2 list is in the repo. `data/gazette/raw/annex=EK-2A-2/effective_date=2021-06-01` comes from the 2026.10.02 package, 517 rows, 17 marker-dated amendments up to 2026-04-16. It is not curated and the engine does not read it.
+  - Fix in PR C: curate EK-2/A-2 with marker dates; an outpatient line is package-mandated only when it is on EK-2/A-2 on its date.
+- **+25 points per session or per line (C000662/C000674):** Safa asks Ahmet Almalı. Until then, keep today's behaviour (whole session).
+- **Follow-up issues filed 2026-10-16 (Safa's yes):**
+  - #289 newborn-bed "çocuk/pediatri" substring;
+  - #290 capture gaps inside the package window;
+  - #291 markers in 13 other lists;
+  - #292 EK-3O/EK-1A callers without a date;
+  - #293 stale dental history and its reader ignoring `valid_to`;
+  - #294 remaining `package_candidate` reads and the crosswalk under `synthetic/`.
 - Defect 3 (0-TL review rows on every bill) waits for Safa's choice of what the demo shows.
 
 ### Wave 2 record (restored; the original block was lost uncommitted on 2026-10-15)

@@ -2,6 +2,16 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-16 — A status report Safa cannot follow is a failed report: Turkish, plain first
+
+**Pattern:** While five agents ran (catalog dates, money fixes, three reviewers), I sent short English status messages packed with PR numbers, clause ids, code lists and follow-up inventories. Safa replied that he could not understand anything from the latest one, asked to switch to Turkish, and asked why one job had been running for an hour, which none of my messages had explained.
+
+**Rule:** For Bilun engine/SUT work, report in Turkish:
+- Lead with what is happening in plain words, what it means for Safa, and whether he needs to do anything.
+- Then, only if needed, the details: which PR, which numbers.
+- For every running job, say how long it has run, why, and when it should end.
+- One decision per question, in everyday words, with my recommendation.
+
 ## 2026-10-15 — Run the artifact checks and the test suite one after the other, never at the same time
 
 **Pattern:** For the ILAY Phase 1 branch I started the full pytest suite in the background and, at the same moment, ran `scripts/sut/compile_rules.py --check` and `scripts/sut/audit_manifest_parity.py --drug-only`. Four tests failed: manifest hash mismatches, a coverage count of 758 vs 732, and bucket ids "not in clause_traces". All four passed on unchanged `main`, on the branch when run alone, and in a second full run on its own (8,354 passed). The failures came from the concurrent scripts touching the same manifest artifacts, not from the change.
