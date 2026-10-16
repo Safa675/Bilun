@@ -81,6 +81,13 @@ def test_other_lines_are_never_session_lines(code) -> None:
     assert is_session_operation_code(code) is False
 
 
+@pytest.mark.parametrize("code", ["P703365", "703365", "P614981", "614981"])
+def test_neuromonitoring_and_neuronavigation_are_never_session_lines(code) -> None:
+    # C001389 (SUT 2.4.4.M(1)) and C001413 (2.4.4.Ö(1)): billed "2.2.2.B (3) ...
+    # kurallar uygulanmaksızın" next to their EK-2/D-4 / D-5 operation.
+    assert is_session_operation_code(code) is False
+
+
 @pytest.mark.parametrize("code", ["530650", "530670", "530060", "530270"])
 def test_incisional_section_3_codes_await_the_include_list(code) -> None:
     # Port, tunnelled catheter, surgical biopsy, lymph-node excision: the clauses
@@ -94,7 +101,10 @@ def test_scope_by_ek2b_group_matches_the_chapter_map() -> None:
         group: [is_session_operation_code(code) for code in frame.get_column("code")]
         for (group,), frame in codes.group_by("group_id")
     }
-    assert all(in_scope["6"])  # Every §6 operation.
+    # Every §6 operation but neuronavigation 614981, billed without the
+    # §2.2.2.B(3) rules (C001413).
+    six = codes.filter(pl.col("group_id") == "6").get_column("code").to_list()
+    assert [code for code in six if not is_session_operation_code(code)] == ["614981"]
     for group in ("1", "2", "3", "4", "9", "10"):  # Beds, visits, ER/general, OR, labs.
         assert not any(in_scope[group]), group
 

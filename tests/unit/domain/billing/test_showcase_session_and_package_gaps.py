@@ -305,6 +305,33 @@ class TestSessionScope261:
             for r in finding.session_violations
         ] == [(codes[1], rule_id, factor, risk)]
 
+    @pytest.mark.parametrize(
+        "codes, branch",
+        [
+            (("P603170", "P703365"), GENCER),  # Parotidectomy + IONM: was 8,746.37.
+            (("P614010", "P703365"), BEYIN),  # C1-C2 instrumentation + IONM: was 8,746.37.
+            (("P615350", "P614981"), BEYIN),  # Tumour + neuronavigation: was 31,565.47.
+            (("P615410", "P614981"), BEYIN),  # The operation itself was flagged: 24,544.69.
+        ],
+    )
+    def test_neuromonitoring_and_neuronavigation_keep_full_price(self, codes, branch) -> None:
+        # C001389 / C001413: billed without the §2.2.2.B(3) rules next to their
+        # EK-2/D-4 / D-5 operation; the EK-2/D gate finds each pair payable.
+        from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
+            detect_conditional_addon_ek2d_opportunities,
+        )
+
+        day = _d("2026-07-14")
+        bill = _Bill("C-NM", "yatis", day, day, package_candidate=True)
+        for code in codes:
+            bill.proc(code, day, specialty=branch)
+        ctx = bill.ctx()
+        assert detect_conditional_addon_ek2d_opportunities(
+            list(ctx.claims), list(ctx.procedure_lines),
+        ) == []
+        assert _finding(ctx).session_violations == []
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
     def test_itemized_total_reads_the_branches_of_operations_only(self) -> None:
         # Anaesthesia (3100) and neurology (1300) lines do not make S3 cross-specialty.
         ctx = s3(second_operation=True).ctx()

@@ -19,7 +19,11 @@ A session holds the procedures these clauses price (Safa675/Bilun#261):
 Not procedures in this sense, so never session lines: beds and companion (§1),
 visits (§2), anaesthesia (§5), labs and pathology (§9), and the per-day EK-2/C
 care packages that have no işlem grubu (ICU days, palliative care, dialysis,
-FTR, hyperbaric and psychiatric day care, home care). Other interventional
+FTR, hyperbaric and psychiatric day care, home care). Intraoperative
+neuromonitoring (P703365, SUT 2.4.4.M(1), C001389) and neuronavigation (P614981,
+2.4.4.Ö(1), C001413) are billed "2.2.2.B (3) ... kurallar uygulanmaksızın", so they
+are never session lines either; whether they are payable next to their EK-2/D-4 /
+D-5 procedure is the EK-2/D gate's (``conditional_addon_ek2d``). Other interventional
 EK-2/B codes outside §6 (e.g. the incisional §3 port, tunnelled or PD catheter,
 surgical biopsy and excision codes) and the remaining §7/§8 interventions are
 not in scope yet: the clauses do not exclude them, and the include list is
@@ -59,6 +63,10 @@ _SGK_GUIDE_SESSION_CODES = frozenset({
     "802780", "802830", "803050", "803120", "803150", "803240", "803250", "803270",
 })
 
+# Billed without the §2.2.2.B(3) rules next to the operation they accompany:
+# neuromonitoring (C001389) and neuronavigation (C001413).
+_BILLED_WITHOUT_SESSION_RULES = frozenset({"703365", "614981"})
+
 
 @lru_cache(maxsize=1)
 def _procedure_package_codes() -> frozenset[str]:
@@ -80,7 +88,7 @@ def _procedure_package_codes() -> frozenset[str]:
 def is_session_operation_code(procedure_code: str) -> bool:
     """True for a procedure that §2.2.2.A(5) / §2.2.2.B(3) prices by session."""
     code = normalize_procedure_code(procedure_code)
-    if not code:
+    if not code or code in _BILLED_WITHOUT_SESSION_RULES:
         return False
     if len(code) == 6 and code.isdigit() and _SURGERY_CODE_MIN <= int(code) <= _SURGERY_CODE_MAX:
         return True
