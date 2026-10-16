@@ -1,0 +1,225 @@
+# COPD exacerbation with pneumonia, ward stay, billed itemized (hizmet başı).
+# Showcase story S2 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+schema_version: 1
+id: copd_exacerbation_pneumonia_ward
+title: "COPD exacerbation with pneumonia, ward stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Gogus Hastaliklari"
+  specialty: "1171"                  # EK-2A: Göğüs Hastalıkları
+window:                              # narrowed: KLACID 500 MG IV is in EK-4A only until 2026-08-29
+  start: "2026-02-01"
+  end: "2026-08-29"
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "COPD and pneumonia occur in both sexes and J44.0 has no sex gate; story S2 is a man. Clinician to confirm."
+  age:
+    min: 55
+    max: 90
+    basis: judgment
+    source: "Story S2 patient is 81. Both bounds are the author's judgment of who is admitted with this picture."
+
+nights:
+  min: 4
+  max: 9
+  basis: judgment
+  source: "Story S2 has 6 nights. Min 4 because the day-5 chest X-ray is fixed (admit+4); max is the author's judgment."
+
+diagnoses:
+  - icd10: J44.0
+    name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALT SOLUNUM YOLU ENFEKSİYON İLE"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); exacerbation per GOLD, as story S2 cites. WHO ICD-10 Vol. 2 coding."
+  - icd10: J18.9
+    name: "PNÖMONİ, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); pneumonia treated per ATS/IDSA 2019, as story S2 cites."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    optional:
+      probability: 0.6
+      basis: judgment
+      source: "Story S2 patient has hypertension. How often it comes with this picture is the author's judgment. Clinician to confirm."
+    basis: judgment
+    source: "Story S2 lists I10 as a comorbidity; the story gives no source."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 7 lines for 6 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz v3.1.1 p.62, p.168; C000648. Review 2026-10-16 Q1: one line per calendar day, discharge day included."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 6 lines for 6 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): doctor's order and refakatçi belgesi; Kılavuz p.264 counts the days as entered."
+
+  # --- laboratory
+  - id: chemistry_admission
+    kind: lab
+    items:
+      - {code: "L102890", name: "Glukoz (Serum/Plazma)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+      - {code: "L107420", name: "Üre (Serum/Plazma)"}
+      - {code: "L100300", name: "Alanin aminotransferaz (ALT) (Serum/Plazma)"}
+      - {code: "L101280", name: "Aspartat aminotransferaz (AST) (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panel admission_routine (judgment) without Na/K, which the blood gas L103900 excludes."
+  - id: cbc_crp
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L101850", name: "C reaktif protein (CRP)"}
+    days: [admit, admit+3]             # story S2: day 1 and day 4
+    basis: judgment
+    source: "lab_reference_notes.md panels admission_routine and respiratory (judgment); story S2 bills both on day 1 and day 4."
+  - id: blood_gas
+    kind: lab
+    code: "L103900"
+    name: "Kan gazları"
+    days: [admit, admit+3]
+    pending: "#297 Q4"                 # scope of "birlikte faturalandırılmaz": same date only, or the whole takip
+    basis: ek2b_aciklama
+    source: "L103900 açıklama: not billed with serum Na/K (L106150, L106910); all parameters included. No Na/K is billed here."
+  - id: procalcitonin
+    kind: lab
+    code: "L106240"
+    name: "Prokalsitonin (Serum/Plazma)"
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panels infection and respiratory (judgment); story S2 bills it on day 1 only."
+  - id: blood_culture
+    kind: lab
+    code: "906020"
+    name: "Kan kültürü (Aerob-anaerob) otomatik sistem"
+    days: admit
+    qty: 2                             # two sets
+    basis: judgment
+    source: "Review 2026-10-16 (S2): two blood-culture sets; no guideline named. Clinician to confirm."
+  - id: sputum_culture
+    kind: lab
+    code: "905675"
+    name: "Balgam Kültürü"
+    days: admit
+    basis: judgment
+    source: "Story S2 orders a sputum culture on day 1; no guideline named."
+
+  # --- imaging and treatment procedures
+  - id: chest_xray
+    kind: imaging
+    code: "801720"
+    name: "Akciğer grafisi P.A. (Tek yön)"
+    days: [admit, admit+4]
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: judgment
+    source: "Story S2: an admission film and a control film on day 5; no guideline named."
+  - id: nebulizer
+    kind: procedure
+    code: "530350"
+    name: "Nebülizatör ile ilaç uygulaması"
+    days: admit..discharge-1
+    basis: ek2b_aciklama
+    source: "530350 açıklama: 'Günde bir adet faturalandırılır' - one line a day, 6 for 6 nights. Review 2026-10-16 (S2)."
+  - id: oxygen
+    kind: procedure
+    code: "530360"
+    name: "Oksijen inhalasyon tedavisi, saatlik"
+    days: admit..admit+1
+    qty: 16                            # hours a day
+    basis: ek2b_aciklama
+    source: "530360 açıklama: 'Günlük en fazla 16 saat ödenir', duration in the epikriz. 16 h on each of the first two days."
+
+drugs:
+  - id: ceftriaxone
+    barcode: "8699508270224"
+    name: "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU"
+    inn: "seftriakson"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_day: 1
+    course_days:
+      min: 5
+      max: 7
+      basis: judgment
+      source: "Story S2 gives 1 g a day for 7 days (ATS/IDSA 2019 regimen). The range is the author's judgment."
+    basis: guideline
+    source: "ATS/IDSA 2019, as story S2 cites: ceftriaxone plus clarithromycin."
+  - id: clarithromycin
+    barcode: "8699548270482"
+    name: "KLACID 500 MG IV 1 FLK"
+    inn: "clarithromycin"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_day: 2
+    course_days:
+      min: 5
+      max: 5
+      basis: guideline
+      source: "ATS/IDSA 2019, as story S2 cites: 500 mg twice a day for 5 days."
+    basis: guideline
+    source: "ATS/IDSA 2019, as story S2 cites; added to the story by the review of 2026-10-16."
+  - id: methylprednisolone
+    barcode: "8699541791007"
+    name: "PREDNOL-L 40 MG 1 AMP"
+    inn: "metilprednizolon"
+    unit: ampoule
+    per_box: 1
+    day: admit
+    per_day: 1
+    course_days:
+      min: 5
+      max: 5
+      basis: guideline
+      source: "GOLD, as story S2 cites: 40 mg a day for 5 days."
+    basis: guideline
+    source: "GOLD, as story S2 cites; added to the story by the review of 2026-10-16."
+  - id: ipratropium_salbutamol
+    barcode: "8680741521174"
+    name: "IPRAVENT 0.5MG/2.5ML + 2.5MG/2.5ML NEBULIZAYON ICIN INHALASYON COZELITISI (20 FLAKON)"
+    inn: "ipratropium bromür+salbutamol sülfat"
+    unit: box
+    per_box: 1
+    day: admit
+    qty: 1                             # one box of 20 nebules for the stay
+    basis: judgment
+    source: "Story S2: the nebulizer drug, one box for the stay; no guideline named."
+  - id: enoxaparin
+    barcode: "8699809950696"
+    name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"
+    inn: "enoksaparin sodyum"
+    unit: syringe
+    per_box: 10
+    day: admit
+    per_night: 1                       # 40 mg a day, one syringe per night of stay
+    basis: judgment
+    source: "Review 2026-10-16 (S2): thromboprophylaxis where guidelines expect it, 40 mg a day; guideline not named."
+
+showcase:
+  story: S2
+  sex: M
+  age: 81
+  admit: "2026-03-09"
+  nights: 6
+  include: [I10]
+  course_days: {ceftriaxone: 7, clarithromycin: 5, methylprednisolone: 5}
