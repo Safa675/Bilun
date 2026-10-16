@@ -37,7 +37,7 @@ _ADDED_2026 = (
 ).split()
 
 
-def _ek2b_list(*rows: tuple[str | None, str, float | None]) -> pd.DataFrame:
+def _ek2b_list(*rows: tuple[str | None, str, float | str | None]) -> pd.DataFrame:
     """A raw EK-2B partition: a title column, the header row, then (code cell, name, puan)."""
     header = ("İŞLEM KODU", "İŞLEM ADI", "AÇIKLAMA", "İŞLEM PUANI")
     body = [header, *((code, name, None, puan) for code, name, puan in rows)]
@@ -247,3 +247,21 @@ def test_curated_ek1a_and_ek3o_carry_the_dates_of_their_markers() -> None:
         ("HO1034", "2026-09-05", None),
     ]
     assert not ek3o.filter(pl.col("sut_code").str.contains(r"\(")).height
+
+
+def test_puan_typed_in_turkish_format_is_read() -> None:
+    out = extract_ek2b(_ek2b_list(
+        ("702882", "Çoklu Uyku Latansı Testi (ÇULT-MSLT)", "\xa01.291,70"),
+        ("701362", "Kolanjioskopi eşliğinde biyopsi", "869,19\xa0"),
+        (f"801561 {_AMENDED}", "Kemik yaşı tayini", "\xa0\xa0\xa0 60,54"),
+        ("510010", "Standart yatak tarifesi", "374.97"),
+    ))
+    assert out["puan"].tolist() == [1291.70, 869.19, 60.54, 374.97]
+
+
+def test_curated_rows_with_a_turkish_formatted_puan_are_priced() -> None:
+    ek2b = pl.read_parquet(_EK2B_HISTORY).filter(pl.col("code").is_in(["701362", "702882", "801561"]))
+    ek2c = pl.read_parquet(_CURATED / "ek2c_catalog_history.parquet").filter(pl.col("package_code") == "P609231")
+    assert ek2b["puan"].null_count() == 0 and ek2c["puan"].null_count() == 0
+    priced = ek2b.filter(pl.col("valid_from") == "2025-03-15").select("code", "puan", "valid_to").rows()
+    assert priced == [("801561", 60.54, "2025-12-31")]

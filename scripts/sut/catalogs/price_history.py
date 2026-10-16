@@ -77,6 +77,19 @@ def _star_flag(series: pd.Series) -> pd.Series:
     return series.apply(lambda x: "*" in str(x) if pd.notna(x) and str(x).strip() else False)
 
 
+# A puan SGK typed as text in Turkish format ("\xa01.291,70", "869,19\xa0"): dots group
+# thousands, the comma is the decimal separator.
+_TURKISH_NUMBER = r"\d{1,3}(?:\.\d{3})*,\d+|\d+,\d+"
+
+
+def _puan(series: pd.Series) -> pd.Series:
+    """Numeric puan of each cell; numbers typed in Turkish format are read too."""
+    text = series.astype("string").str.replace("\xa0", " ", regex=False).str.strip()
+    turkish = text.str.fullmatch(_TURKISH_NUMBER).fillna(False).astype(bool)
+    read = text.str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+    return pd.to_numeric(text.where(~turkish, read), errors="coerce").astype("float64")
+
+
 def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     required = {"ISLEM KODU", "ISLEM ADI", "ISLEM PUANI"}
 
@@ -96,9 +109,7 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
-    out["puan"] = pd.to_numeric(
-        body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
-    )
+    out["puan"] = _puan(body.iloc[:, pos["ISLEM PUANI"]])
     out = out.join(amendment_markers(code_cells))
 
     out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
@@ -134,9 +145,7 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
         out["has_star"] = _star_flag(body.iloc[:, pos["STAR"]])
     else:
         out["has_star"] = False
-    out["puan"] = pd.to_numeric(
-        body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
-    )
+    out["puan"] = _puan(body.iloc[:, pos["ISLEM PUANI"]])
     out = out.join(amendment_markers(code_cells))
 
     out = out[out["package_code"].str.match(RE_EK2C_CODE, na=False)]
