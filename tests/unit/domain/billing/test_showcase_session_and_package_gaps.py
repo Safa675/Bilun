@@ -1000,7 +1000,6 @@ class TestPackageSide:
             ("egitim_arastirma", True, "603840", 9320.48),  # Starred, named tier: 7,169.60 + 30 %.
             ("universite_vakif", True, "603840", 9320.48),
             ("2_3_basamak_ozel", True, "603840", 7169.60),  # Starred, private hospital.
-            ("egitim_arastirma", False, "603830", 7909.81),  # No star (outpatient mandate).
         ],
     )
     def test_the_starred_package_uplift_applies_at_the_tiers_c000678_names(
@@ -1072,6 +1071,53 @@ class TestPackageSide:
         gap = mandated_package_gap(ctx.claims[0], list(ctx.procedure_lines))
         assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), 8636.51)
         assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)).end == _d("2026-07-21")
+
+
+class TestOutpatientPackageMandateEk2a2:
+    """Safa 2026-10-16: outpatients bill an EK-2/C procedure as its package only when it
+    is on EK-2/A-2 on its date (§2.2.1.B-1(10)(a), C000581 / C000582); §2.2.2(1)
+    (C000646) mandates the package for yatarak services."""
+
+    @staticmethod
+    def _bill(code: str, claim_type: str, *, tier: str = "egitim_arastirma") -> PatientClaimContext:
+        day = _d("2026-07-14")
+        bill = _Bill("C-OUT", claim_type, day, day, inpatient=claim_type == "yatis", tier=tier)
+        bill.proc(code, day, specialty=GENCER)
+        return bill.ctx()
+
+    def test_an_outpatient_ek2c_procedure_off_ek2a2_is_not_mandated(self) -> None:
+        # 603830 is in EK-2/C, not on EK-2/A-2: no package gap, no payment-method
+        # risk (was a must-package row and a 6,269.13 package gap).
+        ctx = self._bill("603830", "ayaktan")
+        assert _claim_rows(ctx) == []
+        assert _finding(ctx).payment_method_violations == []
+        assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)) is None
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert recommend_billing_strategy_from_claims(ctx).uplift_savings_try == 0.0
+
+    def test_an_outpatient_procedure_on_ek2a2_is_mandated(self) -> None:
+        # 608310 (bronchoscopy) is on EK-2/A-2 and in EK-2/C: package P608310
+        # (3,235.82) against the 636.69 billed hizmet başı.
+        ctx = self._bill("608310", "poliklinik")
+        row = _claim_row(ctx)
+        assert (row["payment_method_kind"], row["sut_section_id"]) == ("DRG_MANDATORY", "2.2.1.B-1.a")
+        assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
+            3235.82, 636.69, 2599.13,
+        )
+        assert row["savings_category"] == "sgk_uplift"
+        assert _payment_risk(ctx) == [("608310", 0.0)]
+
+    def test_a_day_case_keeps_the_yatarak_mandate(self) -> None:
+        # Günübirlik tedavi is yatarak tedavi (C003484): §2.2.2(1) still applies.
+        row = _claim_row(self._bill("603830", "gunubirlik"))
+        assert (row["payment_method_kind"], row["package_total_try"], row["savings_try"]) == (
+            "DRG_MANDATORY", 7909.81, 6269.13,
+        )
+
+    def test_inpatient_mandate_is_unchanged(self) -> None:
+        row = _claim_row(self._bill("603830", "yatis", tier="2_3_basamak_ozel"))
+        assert (row["payment_method_kind"], row["sut_section_id"]) == ("DRG_MANDATORY", "2.2.2.(1)")
+        assert (row["package_total_try"], row["savings_try"]) == (7909.81, 6269.13)
 
 
 class TestC000672:

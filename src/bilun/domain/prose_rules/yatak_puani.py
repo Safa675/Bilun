@@ -35,6 +35,7 @@ from src.bilun.domain.prose_rules.catalog_membership import (
     normalize_procedure_code,
 )
 from src.bilun.domain.prose_rules.claim_utils import (
+    claim_is_day_case,
     group_procedure_lines_by_session,
     infer_care_setting,
 )
@@ -153,6 +154,7 @@ def must_be_billed_as_package(claim: ClaimHeader, line: ProcedureClaimLine) -> b
         facility_tier=claim.facility_tier,
         provider_type=claim.provider_type,
         as_of_date=line.procedure_date or claim.admission_date or claim.claim_start_date,
+        day_case=claim_is_day_case(claim),
     )
     return not compliance.is_compliant and compliance.mandated_method == "package"
 

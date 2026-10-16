@@ -1,8 +1,10 @@
 """A hizmet başı bill whose EK-2/C package is mandated, compared with that package (#269).
 
-SUT §2.2.2(1) and §2.2.1.B-1(a) (C000582): a procedure in EK-2/C is billed as its
-package ("tanıya dayalı işlem"). When such a line was billed hizmet başı, the
-correct bill replaces the part of the bill the package covers with the package.
+SUT §2.2.2(1) (C000646): a yatarak procedure in EK-2/C is billed as its package
+("tanıya dayalı işlem"); §2.2.1.B-1(10)(a) (C000582): an outpatient one only when it
+is also on EK-2/A-2 on its date (``payment_method``). When such a line was billed
+hizmet başı, the correct bill replaces the part of the bill the package covers with
+the package.
 One comparison serves three surfaces: the billing strategy shows the gap, audit
 exposure claws back only what the bill overstates, and the session uplift claims
 nothing inside it a second time.
@@ -65,7 +67,7 @@ from .catalog_membership import (
     normalize_procedure_code,
     procedure_has_star,
 )
-from .claim_utils import group_procedure_lines_by_session, infer_care_setting
+from .claim_utils import claim_is_day_case, group_procedure_lines_by_session, infer_care_setting
 from .facility_tier import normalize_facility_tier
 from .material_bundling import material_paid_next_to_package
 from .payment_method import check_payment_method_compliance
@@ -199,6 +201,7 @@ def line_payment_method_compliance(
         facility_tier=claim.facility_tier,
         provider_type=claim.provider_type,
         as_of_date=line.procedure_date or claim.admission_date or claim.claim_start_date,
+        day_case=claim_is_day_case(claim),
     )
 
 

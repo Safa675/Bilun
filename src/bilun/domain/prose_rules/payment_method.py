@@ -3,8 +3,9 @@
 TRACEABILITY-ONLY JSON: ``payment_method_2_2.json`` (42 rules) is loaded for
 the rule-database inventory and manifest accounting, but the decision logic
 is hardcoded in ``_classify_payment_method_kind`` (annex membership + tier +
-star + prose-locked codes). The JSON documents WHEN each payment method
-applies; the code implements HOW. See wiredness-epic plan W4.1.
+star + prose-locked codes; for outpatients, EK-2/A-2 on the service date). The
+JSON documents WHEN each payment method applies; the code implements HOW. See
+wiredness-epic plan W4.1.
 
 The 42 JSON rules additionally carry no-pay / mandatory-billing / day-bed /
 caps nuances. ``check_payment_method_traceability_for_context`` runs them as a
@@ -26,6 +27,7 @@ from functools import lru_cache, cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
+from ..loaders.ek2a2 import ek2a2_codes_as_of
 from .catalog_membership import (
     normalize_procedure_code,
     procedure_annex_membership,
@@ -112,16 +114,25 @@ def _classify_payment_method_kind(
     prose_drg_locked: bool,
     care_setting: CareSetting,
     tier: TierContext,
+    on_ek2a2: bool = False,
+    day_case: bool = False,
 ) -> PaymentMethodKind:
     if not in_ek2b and not in_ek2c:
         return "NOT_IN_SUT"
     if not in_ek2c:
         return "ITEMIZED"
+    if care_setting == "outpatient" and not day_case:
+        # §2.2.1.B-1(10)(a) (C000581, C000582): outpatients bill an EK-2/C procedure
+        # as its package only when it is on EK-2/A-2. §2.2.2(1) (C000646), with its
+        # star and prose locks, mandates the package for "yatarak" services only.
+        return "DRG_MANDATORY" if on_ek2a2 else "OUTPATIENT_UNLISTED"
     if prose_drg_locked:
         return "DRG_MANDATORY"
     if has_star:
         return "DRG_MANDATORY"
     if care_setting == "outpatient":
+        # A day case read as outpatient (claim_is_day_case) is yatarak tedavi
+        # (C003484): §2.2.2(1) mandates the package, as before.
         return "DRG_MANDATORY"
     if not tier.is_third_tier:
         return "DRG_MANDATORY"
@@ -174,14 +185,18 @@ def resolve_payment_method(
     facility_tier: str | None = None,
     provider_type: str | None = None,
     as_of_date: date | None = None,
+    day_case: bool = False,
 ) -> PaymentMethodResult:
     """Determine mandated payment method for one procedure (SUT §2.2).
 
     Uses EK-2B/EK-2C catalog membership as of ``as_of_date`` (defaults to today)
     plus facility tier and EK-2C star markers for §2.2.2(2) third-tier override.
+    An outpatient EK-2/C procedure is a package only when it is on EK-2/A-2 on that
+    date (§2.2.1.B-1(10)(a)); ``day_case`` (``claim_is_day_case``) keeps a günübirlik
+    claim read as outpatient under §2.2.2(1), as yatarak tedavi.
 
     Memoized via the inner cached function — the same ``(procedure_code,
-    care_setting, facility_tier, provider_type, as_of_date)`` tuple returns the
+    care_setting, facility_tier, provider_type, as_of_date, day_case)`` tuple returns the
     same ``PaymentMethodResult`` across a report run (5N–9N redundant calls per
     claim collapse to N). ``as_of_date=None`` is resolved to ``date.today()``
     here so the cache key is always a concrete date.
@@ -194,6 +209,7 @@ def resolve_payment_method(
         facility_tier,
         provider_type,
         as_of_date,
+        day_case,
     )
 
 
@@ -204,6 +220,7 @@ def _resolve_payment_method_cached(
     facility_tier: str | None,
     provider_type: str | None,
     as_of_date: date,
+    day_case: bool = False,
 ) -> PaymentMethodResult:
     normalized = normalize_procedure_code(procedure_code)
     in_ek2b, in_ek2c = procedure_annex_membership(normalized, as_of_date=as_of_date)
@@ -214,6 +231,12 @@ def _resolve_payment_method_cached(
         procedure_prose_drg_locked(normalized, as_of_date=as_of_date) if in_ek2c else False
     )
     tier = normalize_facility_tier(facility_tier, provider_type=provider_type)
+    on_ek2a2 = (
+        care_setting == "outpatient"
+        and not day_case
+        and in_ek2c
+        and normalized in ek2a2_codes_as_of(as_of_date)
+    )
     if _classification_requires_resolved_tier(
         in_ek2b=in_ek2b,
         in_ek2c=in_ek2c,
@@ -235,7 +258,34 @@ def _resolve_payment_method_cached(
         prose_drg_locked=prose_locked,
         care_setting=care_setting,
         tier=tier,
+        on_ek2a2=on_ek2a2,
+        day_case=day_case,
     )
+
+    if kind == "OUTPATIENT_UNLISTED":
+        return PaymentMethodResult(
+            procedure_code=normalized,
+            payment_method="unknown",
+            kind=kind,
+            in_ek2b=in_ek2b,
+            in_ek2c=True,
+            has_star=has_star,
+            bill_materials_separately=False,
+            bill_drugs_separately=False,
+            visit_fee_annex=None,
+            payment_method_tr="",
+            trace=ProseRuleTrace(
+                rule_id="2.2.1.B-1.(10).not_on_ek2a2",
+                sut_section="2.2.1.B-1.(10)",
+                rule_set_id=_RULE_SET_ID,
+                detail=(
+                    f"Procedure {normalized} is in EK-2/C but not on EK-2/A-2 on "
+                    f"{as_of_date}; outpatients bill an EK-2/C procedure as its package "
+                    "only when it is on EK-2/A-2 (§2.2.1.B-1(10)(a)), so no package is "
+                    "mandated."
+                ),
+            ),
+        )
 
     if kind == "NOT_IN_SUT":
         return PaymentMethodResult(
@@ -314,7 +364,11 @@ def _resolve_payment_method_cached(
         f"Procedure {normalized} is in EK-2/C; bill via package "
         "(tanıya dayalı işlem)."
     ]
-    if prose_locked:
+    if on_ek2a2:
+        detail_parts.append(
+            "On EK-2/A-2: outpatient package billing per §2.2.1.B-1(10)(a)."
+        )
+    elif prose_locked:
         detail_parts.append("Prose-mandated EK-2/C code — §2.2.2(2) override not permitted.")
     elif has_star:
         detail_parts.append("Starred (*) EK-2/C code — override not permitted.")
@@ -345,6 +399,7 @@ def check_payment_method_compliance(
     facility_tier: str | None = None,
     provider_type: str | None = None,
     as_of_date: date | None = None,
+    day_case: bool = False,
 ) -> PaymentMethodCompliance:
     """Check whether a billed line matches the SUT-mandated payment method."""
     mandated = resolve_payment_method(
@@ -353,11 +408,12 @@ def check_payment_method_compliance(
         facility_tier=facility_tier,
         provider_type=provider_type,
         as_of_date=as_of_date,
+        day_case=day_case,
     )
     method: PaymentMethod = mandated.payment_method
     kind = mandated.kind
 
-    if kind == "NOT_IN_SUT":
+    if kind in ("NOT_IN_SUT", "OUTPATIENT_UNLISTED"):
         is_compliant = True
         detail = mandated.trace.detail
     elif kind == "MISSING_INPUTS":

@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from .claim_utils import infer_care_setting
+from .claim_utils import claim_is_day_case, infer_care_setting
 from ..money import money_round_half_up as _money
 from .mandated_package_gap import line_payment_method_compliance, mandated_package_gap
 from .payment_method import resolve_payment_method
@@ -431,6 +431,7 @@ def analyze_claim_unbundling(
             care_setting=infer_care_setting(claim),  # type: ignore[arg-type]
             facility_tier=claim.facility_tier,
             provider_type=claim.provider_type,
+            day_case=claim_is_day_case(claim),
         ).payment_method
         for line in lines
         if _line_billed(line) > 0 or _line_payable(line) > 0
