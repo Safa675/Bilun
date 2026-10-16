@@ -452,6 +452,34 @@ class TestMissingUnitPrice:
         assert [(r["procedure_code"], r["risk_amount_try"]) for r in rows] == [(code, risk)]
 
 
+def _blank_categories(ctx: PatientClaimContext) -> PatientClaimContext:
+    """MEDULA has no "paket" service type: the P code alone marks a package."""
+    return replace(ctx, procedure_lines=tuple(
+        replace(line, procedure_category="") for line in ctx.procedure_lines
+    ))
+
+
+class TestBilledAsPackage:
+    """One predicate, ``line_billed_as_package``: the paket category or a P code."""
+
+    @pytest.mark.parametrize(
+        "build",
+        [lambda: s8("clean"), lambda: s1("clean", package_candidate=False)],
+        ids=["S8-clean", "S1-clean"],
+    )
+    def test_correct_packages_without_a_category_have_no_exposure(self, build) -> None:
+        # Review item 4: S8 13,858.13 and P610131 alone 8,636.51 read as
+        # must-package lines billed hizmet başı.
+        ctx = _blank_categories(build().ctx())
+        assert _finding(ctx).payment_method_violations == []
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert [row["current_billing"] for row in _claim_rows(ctx)] in ([], ["package"])
+
+    def test_a_second_package_without_a_category_is_still_flagged(self) -> None:
+        ctx = _blank_categories(s8("faulty").ctx())
+        assert compute_audit_exposure_from_claims(ctx) == 5377.20  # Was 19,235.33.
+
+
 class TestRepeatedCodes:
     """MEDULA sends one line per occurrence; factors pair with lines, not codes."""
 

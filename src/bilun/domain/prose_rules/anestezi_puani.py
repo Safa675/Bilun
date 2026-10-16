@@ -35,6 +35,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
 from src.bilun.domain.prose_rules.yatak_puani import mandated_package_lines
 
 if TYPE_CHECKING:
@@ -253,7 +254,7 @@ def detect_anestezi_puani_opportunities(
     # Sum already-billed anesthesia (550130-550346) per claim.
     remaining_billed_by_claim: dict[str, float] = {}
     for line in procedure_lines:
-        if line.procedure_category == "paket":
+        if line_billed_as_package(line):
             continue
         if _is_anestezi_group_code(line.procedure_code):
             remaining_billed_by_claim[line.claim_id] = _money(
@@ -275,7 +276,7 @@ def detect_anestezi_puani_opportunities(
             and line.claim_id not in claim_ids_with_procs
         ):
             continue
-        if line.procedure_category == "paket":
+        if line_billed_as_package(line):
             continue
 
         visit_date = line.procedure_date or claim.admission_date or claim.claim_start_date

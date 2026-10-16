@@ -92,22 +92,6 @@ def _is_icu_code(normalized: str) -> bool:
     return stripped in _ICU_PACKAGE_PREFIXES
 
 
-def _find_package_surgery_day(
-    procedure_lines: list[ProcedureClaimLine],
-) -> date | None:
-    """Return the surgery date if the claim has an EK-2C package procedure.
-
-    Duplicates ``yatak_puani._find_package_surgery_day`` (El Kitabı Tablo 23:
-    surgery-day bed fee is bundled into the EK-2C package). The reconcile
-    uses it to avoid double-subtracting a day already excluded by
-    ``yatak_puani``'s package-bundling logic.
-    """
-    for line in procedure_lines:
-        if (line.procedure_category or "").strip().lower() == "paket":
-            return line.procedure_date
-    return None
-
-
 def _collect_icu_discharge_claims(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],

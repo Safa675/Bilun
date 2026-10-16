@@ -14,6 +14,7 @@ from .session_pricing import (
     blood_component_billable_fraction,
     expected_session_billed_try,
 )
+from .session_scope import line_billed_as_package
 from .session_uplift import iter_session_secondary_assessments
 from .types import CareSetting
 
@@ -71,7 +72,7 @@ def detect_payment_method_violations(
     for line in lines:
         if _line_billed(line) <= 0:
             continue
-        billed_as_package = line.procedure_category == "paket"
+        billed_as_package = line_billed_as_package(line)
         compliance = check_payment_method_compliance(
             line.procedure_code,
             billed_as_package=billed_as_package,
@@ -303,11 +304,11 @@ def analyze_claim_unbundling(
         sum(
             _line_payable(line)
             for line in lines
-            if line.procedure_category != "paket" and not line.is_package_included
+            if not line_billed_as_package(line) and not line.is_package_included
         )
     )
     finding.package_total_try = _money(
-        sum(_line_payable(line) for line in lines if line.procedure_category == "paket")
+        sum(_line_payable(line) for line in lines if line_billed_as_package(line))
     )
 
     sourced = 0.0

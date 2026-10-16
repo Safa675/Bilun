@@ -33,6 +33,7 @@ from src.bilun.domain.prose_rules.session_pricing import (
     compute_session_adjusted_itemized_total,
 )
 from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
+from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_COMPLIANCE,
@@ -99,7 +100,7 @@ def resolve_package_total_try(
 ) -> tuple[float, str]:
     """Resolve package total using claim-line payables, then EK-2C code lookup."""
     package_lines = [
-        line for line in claim_procs if line.procedure_category == "paket"
+        line for line in claim_procs if line_billed_as_package(line)
     ]
     package_total = sum(float(line.expected_payable_try) for line in package_lines)
     package_price_methodology = "claim_lines"
@@ -152,7 +153,7 @@ def recommended_package_code_for_claim(
 ) -> str | None:
     """Resolve EK-2/C package code from claim procedure lines and catalog."""
     for line in claim_procs:
-        if line.procedure_category == "paket" and str(line.procedure_code or "").strip():
+        if line_billed_as_package(line) and str(line.procedure_code or "").strip():
             return str(line.procedure_code).strip()
 
     package_codes = sorted(
@@ -306,17 +307,16 @@ def lines_for_legal_itemized_alternative(
     eligible: list[ProcedureClaimLine] = []
 
     for line in lines:
-        if line.procedure_category == "paket":
+        if line_billed_as_package(line):
             continue
         if line.is_package_included:
             continue
         if _line_itemized_payable(line) <= 0:
             continue
 
-        billed_as_package = line.procedure_category == "paket"
         compliance = check_payment_method_compliance(
             line.procedure_code,
-            billed_as_package=billed_as_package,
+            billed_as_package=False,
             care_setting=care_setting,  # type: ignore[arg-type]
             facility_tier=claim.facility_tier,
             provider_type=claim.provider_type,
@@ -337,7 +337,7 @@ def _itemized_procedure_lines(
         line
         for line in claim_procs
         if line.claim_id == claim.claim_id
-        and line.procedure_category != "paket"
+        and not line_billed_as_package(line)
         and not line.is_package_included
         and float(line.billed_amount_try) > 0
     ]
@@ -475,7 +475,7 @@ def _itemized_exclusion_metadata(
             line.procedure_code
             for line in lines
             if line.procedure_line_id not in eligible_ids
-            and line.procedure_category != "paket"
+            and not line_billed_as_package(line)
             and not line.is_package_included
             and _line_itemized_payable(line) > 0
         }
@@ -485,7 +485,7 @@ def _itemized_exclusion_metadata(
 
 def _infer_current_billing(claim_procs: list[ProcedureClaimLine]) -> str:
     billed_package = any(
-        line.procedure_category == "paket" and float(line.billed_amount_try) > 0
+        line_billed_as_package(line) and float(line.billed_amount_try) > 0
         for line in claim_procs
     )
     return "package" if billed_package else "itemized"
@@ -672,7 +672,7 @@ def recommend_billing_strategy_from_claims(
     for line in ctx.procedure_lines:
         claim = _claim_for_line(line, ctx.claims)
         care_setting = infer_care_setting(claim) if claim is not None else "inpatient"
-        billed_as_package = line.procedure_category == "paket"
+        billed_as_package = line_billed_as_package(line)
 
         as_of = _line_as_of_date(line, claim)
         compliance = check_payment_method_compliance(

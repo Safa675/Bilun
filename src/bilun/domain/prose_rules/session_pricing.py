@@ -543,7 +543,7 @@ def compute_session_adjusted_itemized_total(
         billable = [
             line
             for line in session_lines
-            if line.procedure_category != "paket"
+            if not line_billed_as_package(line)
             and not line.is_package_included
             and _line_itemized_payable(line) > 0
         ]
@@ -641,7 +641,7 @@ def billed_package_scopes(
     """
     return frozenset(
         (line.patient_id, line.claim_id, line.episode_id) for line in lines
-        if line.procedure_category == "paket" and float(line.billed_amount_try) > 0
+        if line_billed_as_package(line) and float(line.billed_amount_try) > 0
     )
 
 

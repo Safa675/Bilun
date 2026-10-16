@@ -114,9 +114,11 @@ class TestSessionAdjustedItemizedTotal:
         )
 
         # #261: sessions hold EK-2/B §6 operations only (was endoscopy 701450).
+        # "61.0070", not "P610070": a P code is billed as a package and stays out
+        # of an itemized total (line_billed_as_package, review item 4).
         primary = _proc(
             procedure_line_id="PL_A",
-            procedure_code="P610070",
+            procedure_code="61.0070",
             expected_payable_try=Decimal("1000"),
         )
         secondary = _proc(
@@ -125,12 +127,12 @@ class TestSessionAdjustedItemizedTotal:
             expected_payable_try=Decimal(secondary_amount),
         )
 
-        assert normalize_procedure_code("P610070") == normalize_procedure_code(
+        assert normalize_procedure_code("61.0070") == normalize_procedure_code(
             "61-0070"
         ), "fixture must produce a collision"
 
         session = compute_session_point_factors(
-            ["P610070", "61-0070"], same_incision=True
+            ["61.0070", "61-0070"], same_incision=True
         )
         assert len(session.factors) == 2
 
@@ -186,30 +188,42 @@ class TestSessionAdjustedItemizedTotal:
             total, _ = compute_session_adjusted_itemized_total(lines, cross_specialty=False)
             assert total == 400.0
 
-    @pytest.mark.parametrize("same_incision, expected", [(True, 1105.0), (False, 1200.0)])
+    @pytest.mark.parametrize(
+        "same_incision, factors", [(True, [1.0, 0.25, 0.30]), (False, [1.0, 0.50, 0.50])],
+    )
     def test_mixed_membership_prices_the_other_package_by_b3(
-        self, catalog, same_incision, expected,
+        self, catalog, same_incision, factors,
     ) -> None:
-        # Lines billed as packages (P codes) next to a hizmet başı line: the
-        # hizmet başı line takes §2.2.2.B(3)(c)/(ç) 30 % / 50 %; the packages among
-        # themselves keep B(3)(a)/(b) 25 % / 50 % (C000670 / C000671; review item
-        # 2: every package line stayed at 100 %, 1,330 / 1,350).
-        lines = [
-            _priced("primary", "P611111", "1000"),
-            _priced("other-package", "P622222", "300"),
-            _priced("itemized", "623333", "100"),
-        ]
-        total, _ = compute_session_adjusted_itemized_total(
-            lines, same_incision=same_incision, cross_specialty=False,
+        # Packages next to a hizmet başı line: the hizmet başı line takes
+        # §2.2.2.B(3)(c)/(ç) 30 % / 50 %; the packages among themselves keep
+        # B(3)(a)/(b) 25 % / 50 % (C000670 / C000671; review item 2: every package
+        # line stayed at 100 %). Packages never enter an itemized total (review
+        # item 4), so the factors are read directly.
+        session = session_pricing.compute_session_point_factors(
+            ["611111", "622222", "623333"], same_incision=same_incision,
+            billed_as_package=[True, True, False],
         )
-        assert total == expected
+        assert [f.point_factor for f in session.factors] == factors
+        assert [f.trace.rule_id for f in session.factors][1] == (
+            "2.2.2.B.a" if same_incision else "2.2.2.B.b"
+        )
 
     def test_mixed_membership_itemized_primary_uses_itemized_fallback(self, catalog) -> None:
-        total, _ = compute_session_adjusted_itemized_total(
-            [_priced("primary", "611111", "1000"), _priced("secondary", "P622222", "100")],
+        # C000672: an EK-2/B line above the package puts the session under A(5).
+        session = session_pricing.compute_session_point_factors(
+            ["611111", "622222"], same_incision=True, billed_as_package=[False, True],
+        )
+        assert (session.rule_id, [f.point_factor for f in session.factors]) == (
+            "2.2.2.A.(5)", [1.0, 0.30],
+        )
+
+    def test_a_p_code_line_is_a_package_and_stays_out_of_the_total(self, catalog) -> None:
+        # Review item 4: MEDULA has no "paket" category; the P code marks the package.
+        total, meta = compute_session_adjusted_itemized_total(
+            [_priced("primary", "611111", "1000"), _priced("package", "P622222", "100")],
             cross_specialty=False,
         )
-        assert total == 1030.0
+        assert (total, meta["itemized_lines"]) == (1000.0, 1)
 
     @pytest.mark.parametrize("unpriced", ["0", "-1"])
     def test_billed_fallback_and_quantity_are_whole_line_amounts(self, catalog, unpriced) -> None:

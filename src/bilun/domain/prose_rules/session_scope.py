@@ -106,5 +106,10 @@ def line_billed_as_package(line: ProcedureClaimLine) -> bool:
     """A line billed as an EK-2/C package (tanıya dayalı işlem), not hizmet başı.
 
     The package category or a MEDULA package code (``P`` prefix) marks it.
+    MEDULA has no "paket" service type, so every consumer reads this predicate,
+    never the category alone. A bare "P" is no code at all.
     """
-    return line.procedure_category == "paket" or str(line.procedure_code or "").strip()[:1] in ("P", "p")
+    if line.procedure_category == "paket":
+        return True
+    code = str(line.procedure_code or "").strip()
+    return code[:1] in ("P", "p") and bool(normalize_procedure_code(code))
