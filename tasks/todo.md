@@ -4,21 +4,30 @@
 Answer the open review questions with evidence and correct the drafts, so the v3 generator (P3/P4) has an approved recipe. Safa then confirms only the answers that need field knowledge.
 
 ### Subtasks
-- [ ] 1. Answer the SUT/MEDULA questions with clause ids, docs/medula and public sources, each with a confidence label:
+- [x] 1. Answer the SUT/MEDULA questions with clause ids, docs/medula and public sources, each with a confidence label:
   - stories: Q1 bed days, Q3 S1 realism, Q4 session amounts, Q6 KDV, Q7 drug boxes, Q9 companion, Q10 rounding, Q11 ICU takip;
   - lab: Q1 LDL billing, Q2 "birlikte faturalandırılmaz".
-- [ ] 2. Clinical plausibility review of S1–S8 and the lab panels and ranges:
+  - Done: `reports/synthetic-data/2026-10-16-v3-drafts-review.md` (answer tables with evidence and confidence).
+- [x] 2. Clinical plausibility review of S1–S8 and the lab panels and ranges:
   - stories: Q5 S8 incision, Q6 cemented stem + cement code, Q8 R-codes;
   - lab: Q1 LDL, Q3 analyzers.
-- [ ] 3. Data validity on current `main` (257d1e89):
+  - Done: same report ("Story corrections", "Lab table corrections").
+- [x] 3. Data validity on current `main` (257d1e89):
   - every story code against the catalogs on its date, ICD against SKRS, drugs against EK-4A and the crosswalk;
   - re-run the proofs;
   - ICD/drug Q1–Q6; lab Q4.
+  - Done: same report; found the EK-3/F-1 cement gap (fixed below).
 - [ ] 4. Consolidate:
-  - one review report with each answer, its evidence and confidence;
-  - apply the corrections to the drafts and `stories.py`;
-  - one docs PR.
+  - [x] one review report with each answer, its evidence and confidence;
+  - [x] apply the corrections to the drafts and `stories.py` (branch `claude/v3-drafts-review-corrections`, results below);
+  - [ ] one docs PR (the main session opens it).
 - [ ] 5. Safa confirms the short list of field-knowledge answers.
+
+### Results (2026-10-16, branch `claude/v3-drafts-review-corrections`)
+- Stories S1–S8 corrected as the review lists. Proofs on 257d1e89 (`src/` unchanged): every target fires (S1 4.122,06; S2 667,08; S3 928,09; S4 370,50; S5 6.465,27 at risk; S6 indication mismatch; S7 1.138,22; S8 5.377,20, report 3.584,80) and every clean bill is 0 TL. N7 is the only open noise item.
+- EK-3/F-1 cements AP3180–AP3250: the orthopedic extractor skipped coded rows with a blank first cell (their "KALÇA/DİZ" site was repealed 30.04.2024, not the rows). Fixed, rebuilt in the CI image (337 → 345 rows, deterministic). A full rebuild differs from main only in this file.
+- Lab table corrections 1–6 applied; item 7 noted as pending Safa. ICD table: `kind` and `is_leaf` added (regenerated from the committed table; the source workbooks were not on disk).
+- Checks: full suite 8,908 passed, 1 skipped; `compile_rules.py --check` and manifest parity OK; the same CI backend gate in the reviewed image on a clone: ruff, 8,908 passed, compile and parity OK.
 
 ### Already answered
 - Stories:
