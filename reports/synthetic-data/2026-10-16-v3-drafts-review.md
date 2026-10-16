@@ -99,7 +99,7 @@ Safa, inceleme işini bana devretti. Üç bağımsız incelemeci `main` 257d1e89
    - lactate or Na/K with blood gas (infection, icu_daily, respiratory, dka_hhs);
    - creatinine with urine ACR (diabetes, ckd).
 
-   Proposed: the generator follows the SUT (one billed line; the other value under the blood-gas line or on another day) — a decision for Safa.
+   **Decided by Safa, 2026-10-16: the demo data follows the SUT.** The generator emits one billed line; the other value goes under the blood-gas line or on another day.
 
 ## Engine defects found (to file)
 1. **KDV on implants:** `material_kdv.py:7` uses 20 %. It should be the line's declared rate, defaulting to 10 % from 10.07.2023 and 8 % from 01.04.2022.

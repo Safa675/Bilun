@@ -144,7 +144,7 @@ Status: **reviewed 2026-10-16, corrections applied** (review: [`reports/syntheti
   - Six panels clash with these exclusions:
     - lactate or Na/K with the blood gas: infection, icu_daily, respiratory, dka_hhs (icu_daily also has total calcium L103860);
     - creatinine with urine ACR: diabetes, ckd.
-  - The panels stay as they are. The generator follows the SUT: one billed line; the other value goes under the blood-gas line or on another day. **Pending Safa's decision** ([review, Lab table corrections, item 7](../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md#lab-table-corrections)).
+  - The panels stay as they are. **Decided by Safa, 2026-10-16: the demo data follows the SUT.** The generator emits one billed line; the other value goes under the blood-gas line or on another day, so a clean bill never carries a pair the EK-2B açıklama excludes ([review, Lab table corrections, item 7](../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md#lab-table-corrections)).
   - "Same date" is the default scope and should be a switch (answer 2 below).
 - **Frequency limits:**
   - HbA1c at most once every 90 days.

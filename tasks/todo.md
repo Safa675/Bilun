@@ -26,7 +26,7 @@ Answer the open review questions with evidence and correct the drafts, so the v3
 ### Results (2026-10-16, branch `claude/v3-drafts-review-corrections`)
 - Stories S1–S8 corrected as the review lists. Proofs on 257d1e89 (`src/` unchanged): every target fires (S1 4.122,06; S2 667,08; S3 928,09; S4 370,50; S5 6.465,27 at risk; S6 indication mismatch; S7 1.138,22; S8 5.377,20, report 3.584,80) and every clean bill is 0 TL. N7 is the only open noise item.
 - EK-3/F-1 cements AP3180–AP3250: the orthopedic extractor skipped coded rows with a blank first cell (their "KALÇA/DİZ" site was repealed 30.04.2024, not the rows). Fixed, rebuilt in the CI image (337 → 345 rows, deterministic). A full rebuild differs from main only in this file.
-- Lab table corrections 1–6 applied; item 7 noted as pending Safa. ICD table: `kind` and `is_leaf` added (regenerated from the committed table; the source workbooks were not on disk).
+- Lab table corrections 1–6 applied; item 7 decided by Safa on 2026-10-16: the demo data follows the SUT's same-day exclusions. ICD table: `kind` and `is_leaf` added (regenerated from the committed table; the source workbooks were not on disk).
 - Checks: full suite 8,908 passed, 1 skipped; `compile_rules.py --check` and manifest parity OK; the same CI backend gate in the reviewed image on a clone: ruff, 8,908 passed, compile and parity OK.
 
 ### Already answered
