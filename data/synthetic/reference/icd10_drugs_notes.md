@@ -1,11 +1,11 @@
 # ICD-10 table and EK-4A drug crosswalk (synthetic demo v3, P1)
 
-Status: **draft for Safa's review** (2026-10-15).
+Status: **reviewed 2026-10-16** ([review][review]); drafted 2026-10-15. The six questions are answered at the end.
 
 - **Build:** `scripts/synthetic/reference/build_icd10_and_drugs.py --downloads DIR`.
 - **Inputs:** the public files in `sources.yaml`. They stay outside the repo; the builder checks each file's size and sha256.
 - **Tests:** `tests/unit/synthetic/test_reference_icd10_drugs.py`. They read the committed tables. The rebuild test runs only when `BILUN_REFERENCE_DOWNLOADS` points at the downloads.
-- **Facts vs choices:** every value comes from a source file; only whitespace is trimmed and blanks become null. The choices are which source wins, the old-barcode fallback and the ambiguity rule; they are listed below and in the questions.
+- **Facts vs choices:** every value comes from a source file, except the ICD `kind` and `is_leaf`, which the builder derives from the code and the tree. Only whitespace is trimmed and blanks become null. The choices are which source wins, the old-barcode fallback and the ambiguity rule; they are listed below and in the answers.
 
 ## `icd10_tr.parquet`: 15,804 SKRS codes
 
@@ -19,19 +19,42 @@ Status: **draft for Safa's review** (2026-10-15).
 | `high_risk_pregnancy` | `Yüksek Riskli Gebelik` = Var: 29 codes (D56, D57, E03, E05, E66, F32, G40, I34–I37, I42, I50, J10, J45, L93, O10, O14, O15, O22.3, O22.5, O24, O30, O44, O45, O99.0, Z35.4–Z35.6). |
 | `created_on`, `updated_on`, `passive_on` | SKRS row dates. The newest is 2026-07-22. |
 | `sex` | `F`/`M` from the active SKRS ICD10-MSVS rows with Cinsiyet Kodu 2/1; null elsewhere. |
+| `kind` | Derived from the code's shape (below). |
+| `is_leaf` | Derived: true when no row has the code as its `parent_code`. |
 
-**No `kind` column.** `Seviye` is tree depth, not the ICD-10 kind. One level holds several kinds:
+**`kind` and `is_leaf`** (added 2026-10-16). The builder derives both in `with_kind_and_leaf`, the last step of `build_icd10`; `ICD10_KINDS` holds the shapes. A code fits at most one shape, and the builder refuses a code that fits two.
 
-| Level | Rows | Main content |
+| `kind` | Shape | Codes | Leaves |
+|---|---|---|---|
+| `range` | chapters and blocks: `A00-B99`, `A00-A09` | 293 | 0 |
+| `category` | `A00` | 2,020 | 540 |
+| `subcategory` | 4th character `A00.0` (9,360), 5th character `M48.06` (3,347) | 12,707 | 12,280 |
+| `morphology_range` | `M800-M998` (the morphology chapter) and its ranges | 32 | 3 |
+| `morphology_group` | `M800` | 32 | 13 |
+| `morphology` | `M8000/0` | 717 | 717 |
+| `other` | none fits: CM-AL, M86.4.9, ZX01 | 3 | 2 |
+| All | | 15,804 | 13,555 |
+
+- `is_leaf` describes the tree only. 16 morphology groups and ranges (M959 to M994, lymphomas and leukaemias) have nothing under them, so they are leaves.
+- Diagnosis codes are `category` and `subcategory`. 14,723 of them are active, and 12,817 of those are leaves (answer 5). With the two active `other` codes, both leaves, it is 12,819 of 14,725: the set of the WHO cross-check below.
+
+`level` (SKRS `Seviye`) is tree depth, not the kind. One level holds several kinds:
+
+| Level | Rows | Kinds |
 |---|---|---|
-| 0 | 23 | chapters, including M800-M998 (morphology) |
-| 1 | 258 | 210 blocks, 47 morphology groups and ranges, CM-AL |
-| 2 | 2,329 | 1,566 three-character codes, 717 morphology codes (M8000/0…), 46 others |
-| 3 | 8,091 | 7,903 four-character codes, 145 three-character codes, 36 sub-blocks, 7 others |
-| 4 | 1,493 | 968 four-character, 309 three-character, 216 five-character codes |
-| 5 | 3,610 | 3,121 five-character codes, 488 four-character codes, M86.4.9 |
+| 0 | 23 | 22 `range` (chapters), `morphology_range` M800-M998 |
+| 1 | 258 | 210 `range` (blocks), 28 `morphology_range`, 19 `morphology_group`, CM-AL |
+| 2 | 2,329 | 1,566 `category`, 717 `morphology`, 25 `range`, 13 `morphology_group`, 5 `subcategory`, 3 `morphology_range` |
+| 3 | 8,091 | 7,909 `subcategory`, 145 `category`, 36 `range` (sub-blocks), ZX01 |
+| 4 | 1,493 | 1,184 `subcategory`, 309 `category` |
+| 5 | 3,610 | 3,609 `subcategory`, M86.4.9 |
 
-The code's shape gives the kind; the test lists the regexes.
+**Regenerated 2026-10-16 without the downloads.** The six source workbooks were not on disk. So `with_kind_and_leaf` was applied to the committed table, and the result was written as `write_outputs` writes it (`frame.write_parquet(path)`, polars 1.41.2).
+
+- Write path: reading the old file and writing it again gave its exact bytes (sha256 `5d84a85229e0…`).
+- Old columns: all ten equal the old file, value for value, in the same row order.
+- Deterministic: two runs gave the same bytes (sha256 `feb1ae80818a…`). Rows fed in shuffled order gave them too.
+- `test_committed_tables_match_a_fresh_build` is skipped without `BILUN_REFERENCE_DOWNLOADS`. Once the downloads exist again, it checks this file against a real fresh build.
 
 **Sex:** 97 codes. All are in MSVS 44 "KANSER" and active, and no code gets both sexes.
 
@@ -44,7 +67,7 @@ Nothing else carries a sex: C50 (breast), N40 (BPH) and the O chapter are all nu
 
 **Source oddities**, kept as published:
 
-- Three codes fit no ICD-10 shape:
+- Three codes fit no ICD-10 shape (`kind` = `other`):
   - `CM-AL` ALERJİ KÖKENLİ HASTALIKLAR (passive group);
   - `ZX01` ASE İZLEM İŞLEMI;
   - `M86.4.9`.
@@ -160,7 +183,7 @@ Inference, not checked: these are the 2023–2024 WHO ATC revisions. The WHO ATC
 | Independent stdlib parse (`downloads_parsed` CSVs): rows per sheet | identical (15,805; 3,840; 22,711; 23,096; 7,891; 9,931; 7,979; 10,166) |
 | The same sheets cell by cell. ICD: code, name, parent, level, status, high-risk flag, dates. MSVS: code, MSVS code, sex code and name, status. Licence: row number, barcode, product name, ingredient, ATC. e-reçete: name, barcode, ATC code and name, status. | 0 differences |
 | Outputs rebuilt from the CSV text | ICD codes and names identical. ATC code and name identical on all 7,264 e-reçete rows. Ingredient identical on all 7,679 single-row licence matches. `in_ruhsat_*` identical. |
-| Builder run twice | byte-identical parquet files |
+| Builder run twice (2026-10-15) | byte-identical parquet files |
 
 ## WHO ICD-10 2019 cross-check (local only; nothing from WHO is committed)
 
@@ -182,11 +205,18 @@ Inference, not checked: these are the 2023–2024 WHO ATC revisions. The WHO ATC
 - **Drug prices.** The TİTCK price list (https://titck.gov.tr/dinamikmodul/88) redirects to a login, so the crosswalk has no price column.
 - **Sex and age edits beyond the 97 SKRS cancer codes.** None of these files has age limits or other sex limits, and the WHO metadata file has none either. The pathway table (D2) carries sex and age per pathway.
 
-## Questions for Safa
+## Questions for Safa: answered 2026-10-16
 
-1. **ATC source.** Keep the e-reçete ATC first? It is the current WHO version and has a name. It differs from the licence list's code on 182 September barcodes.
-2. **Ambiguous barcodes.** For the 10 rows, leave the ingredient blank? The alternative is letting the EK-4A name pick the licence row, which is a name rule, not an exact join.
-3. **Old barcodes.** Keep the 12 fallback rows? Validation agreed on ATC in 167 of 168 pairs.
-4. **Drug pool.** Should the generator draw only drugs Aktif in both e-reçete lists and licensed in September (5,959)? Should it drop the 48 suspended ones?
-5. **ICD codes.** Use SKRS codes throughout (COVID-19 = U07.3; five-character M/S/T codes)? Should diagnoses come from leaf codes only?
-6. **`kind` column.** Add one derived from the code shape, or leave that to the generator?
+1. **ATC source.** Answered 2026-10-16 ([review][answers]). Keep the e-reçete ATC first. The engine now reads `atc_code` from this crosswalk for the C000690 blood-product carve-out (#288, `src/bilun/domain/prose_rules/mandated_package_gap.py:377`), so this choice changes engine output.
+2. **Ambiguous barcodes.** Answered 2026-10-16 ([review][answers]). Leave the 10 rows blank. The generator must require an ingredient; that removes SULJEL, DIDERAL, ZENALB, DELSTRIGO and KREON from the 5,959 pool (5,954 remain).
+3. **Old barcodes.** Answered 2026-10-16 ([review][answers]). Keep the 12 rows.
+4. **Drug pool.** Answered 2026-10-16 ([review][answers]).
+   - Outpatient prescriptions: the 5,959 pool.
+   - Inpatient and ER lines: barcodes licensed in September with an ingredient (7,638) and an EK-4A row in force on the line date. All 12 drugs of the corrected showcase stories are in the 7,638 and in force on their line dates (the proof harness checks the EK-4A row and the ingredient).
+   - The strict pool keeps 5,954 of the 7,638. It drops 190 of the 806 perfusion solutions (B05), 175 of the 616 antibacterials (J01) and 38 of the 85 contrast media (V08); two of them are story drugs (NEOFLEKS metronidazole on faulty S1, KLACID IV on S2: no e-reçete Aktif status).
+   - Dropping the 48 suspended products needs a new builder column.
+5. **ICD codes.** Answered 2026-10-16 ([review][answers]). SKRS codes only, and leaf codes only for diagnoses: 12,817 of the 14,723 active codes are leaves (`category` or `subcategory`; see the ICD section). Whether MEDULA rejects a parent code is unverified.
+6. **`kind` column.** Answered 2026-10-16 ([review][answers]). `kind` and `is_leaf` are added in the builder (see the ICD section).
+
+[review]: ../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md
+[answers]: ../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md#answers-icddrug-questions-datasyntheticreferenceicd10_drugs_notesmd

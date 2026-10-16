@@ -15,12 +15,14 @@ from polars.testing import assert_frame_equal
 from scripts.synthetic.reference.build_icd10_and_drugs import (
     CROSSWALK_PATH,
     EK4A_PATH,
+    ICD10_KINDS,
     ICD10_PATH,
     MATCH_SOURCES,
     SOURCES_PATH,
     USED,
     build,
     verified_inputs,
+    with_kind_and_leaf,
     write_outputs,
 )
 
@@ -31,7 +33,7 @@ _DOWNLOADS = os.environ.get("BILUN_REFERENCE_DOWNLOADS")
 _ICD10_SCHEMA = {
     "code": pl.String, "name_tr": pl.String, "parent_code": pl.String, "level": pl.Int8,
     "is_active": pl.Boolean, "high_risk_pregnancy": pl.Boolean, "created_on": pl.Date,
-    "updated_on": pl.Date, "passive_on": pl.Date, "sex": pl.String,
+    "updated_on": pl.Date, "passive_on": pl.Date, "sex": pl.String, "kind": pl.String, "is_leaf": pl.Boolean,
 }
 _CROSSWALK_SCHEMA = {
     "barcode": pl.String, "kamu_no": pl.String, "ek4a_name": pl.String, "equivalence_group": pl.String,
@@ -39,11 +41,16 @@ _CROSSWALK_SCHEMA = {
     "atc_name": pl.String, "in_ruhsat_2026_02": pl.Boolean, "in_ruhsat_2026_09": pl.Boolean,
     "erecete_status_2026_02": pl.String, "erecete_status_2026_09": pl.String, "match_source": pl.String,
 }
-# SKRS code shapes: chapter/block ranges, categories, subcategories (4th and 5th character),
-# ICD-O morphology codes and their groups. Three SKRS codes fit none of them.
-_CODE_SHAPES = (r"^[A-Z]\d{2}-[A-Z]\d{2}$", r"^M\d{3}-M\d{3}$", r"^[A-Z]\d{2}$", r"^[A-Z]\d{2}\.\d{1,2}$",
-                r"^M\d{4}/\d$", r"^M\d{3}$")
+# SKRS code shapes by kind: chapter/block ranges, morphology ranges, categories, subcategories (4th
+# and 5th character), ICD-O morphology codes and their groups. Three SKRS codes fit none of them
+# (kind "other"). Restated, not imported, so the tests recompute `kind` on their own.
+_CODE_SHAPES = {
+    "range": r"^[A-Z]\d{2}-[A-Z]\d{2}$", "morphology_range": r"^M\d{3}-M\d{3}$", "category": r"^[A-Z]\d{2}$",
+    "subcategory": r"^[A-Z]\d{2}\.\d{1,2}$", "morphology": r"^M\d{4}/\d$", "morphology_group": r"^M\d{3}$",
+}
 _ODD_CODES = {"CM-AL", "M86.4.9", "ZX01"}
+_KIND_COUNTS = {"subcategory": 12_707, "category": 2_020, "morphology": 717, "range": 293,
+                "morphology_group": 32, "morphology_range": 32, "other": 3}
 
 
 @pytest.fixture(scope="module")
@@ -78,7 +85,7 @@ def test_icd10_schema_and_counts(icd10) -> None:
 
 def test_icd10_codes_are_unique_and_well_formed(icd10) -> None:
     assert icd10["code"].is_unique().all()
-    shaped = pl.any_horizontal(pl.col("code").str.contains(p) for p in _CODE_SHAPES)
+    shaped = pl.any_horizontal(pl.col("code").str.contains(p) for p in _CODE_SHAPES.values())
     assert set(icd10.filter(~shaped)["code"]) == _ODD_CODES
 
 
@@ -88,6 +95,51 @@ def test_icd10_parents_exist_and_only_top_rows_have_none(icd10) -> None:
     top = icd10.filter(pl.col("parent_code").is_null())
     assert set(top["code"]) == set(icd10.filter(pl.col("level") == 0)["code"]) | {"CM-AL"}
     assert top.filter(pl.col("level") == 0).height == 23
+
+
+def test_kind_is_the_code_shape_and_is_leaf_the_tree(icd10) -> None:
+    for kind, shape in _CODE_SHAPES.items():  # `kind` names a shape exactly where the code fits it
+        assert (icd10["code"].str.contains(shape) == (icd10["kind"] == kind)).all(), kind
+    assert set(icd10.filter(pl.col("kind") == "other")["code"]) == _ODD_CODES
+    parents = icd10.select(pl.col("parent_code").alias("code")).drop_nulls().unique()
+    assert set(icd10.join(parents, on="code", how="anti")["code"]) == set(icd10.filter("is_leaf")["code"])
+
+
+def test_kind_and_leaf_counts(icd10) -> None:
+    assert dict(icd10["kind"].value_counts().rows()) == _KIND_COUNTS
+    assert dict(icd10["is_leaf"].value_counts().rows()) == {True: 13_555, False: 2_249}
+    # Review 2026-10-16, ICD/drug Q5: 12,817 of the 14,723 active diagnosis codes are leaves.
+    diagnoses = icd10.filter(pl.col("kind").is_in(["category", "subcategory"]) & pl.col("is_active"))
+    assert (diagnoses.height, diagnoses["is_leaf"].sum()) == (14_723, 12_817)
+
+
+@pytest.mark.parametrize(
+    ("code", "kind", "is_leaf"),
+    [
+        # The review's story diagnoses (2026-10-16, Q12) are leaves; M48.0 is the parent of M48.06.
+        ("K35.9", "subcategory", True),
+        ("M48.06", "subcategory", True),
+        ("S72.00", "subcategory", True),
+        ("M81.09", "subcategory", True),
+        ("M48.0", "subcategory", False),
+        ("A00", "category", False),
+        ("A00-B99", "range", False),
+        ("M800-M998", "morphology_range", False),
+        ("M800", "morphology_group", False),
+        ("M8000/0", "morphology", True),
+        ("ZX01", "other", True),
+    ],
+)
+def test_known_codes_have_their_kind_and_leaf_flag(icd10, code: str, kind: str, is_leaf: bool) -> None:
+    row = _row(icd10, "code", code)
+    assert (row["kind"], row["is_leaf"]) == (kind, is_leaf)
+
+
+def test_builder_refuses_a_code_that_fits_two_kinds(monkeypatch) -> None:
+    monkeypatch.setitem(ICD10_KINDS, "overlapping", r"^[A-Z]\d{2}")  # also fits A00 and A00-B99
+    table = pl.DataFrame({"code": ["A00", "A00-B99"], "parent_code": ["A00-B99", None]})
+    with pytest.raises(ValueError, match=r"fitting two kinds: \['A00', 'A00-B99'\]"):
+        with_kind_and_leaf(table)
 
 
 def test_sex_comes_only_from_the_skrs_cancer_codes(icd10) -> None:
