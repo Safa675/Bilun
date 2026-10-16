@@ -17,6 +17,7 @@ from .session_pricing import (
 )
 from .session_scope import line_billed_as_package
 from .session_uplift import iter_session_secondary_assessments
+from .yatak_puani import c000672_hizmet_basi_lines
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
@@ -67,9 +68,11 @@ def detect_payment_method_violations(
     lines: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
+    # C000672: a session an EK-2/B operation leads is billed hizmet başı in full.
+    hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, lines)}
 
     for line in lines:
-        if _line_billed(line) <= 0:
+        if _line_billed(line) <= 0 or id(line) in hizmet_basi:
             continue
         billed_as_package = line_billed_as_package(line)
         # On the line's procedure date, as the #269 gate reads it.
@@ -205,10 +208,10 @@ def _apply_mandated_package_gap(
     them is what the bill overstates (``MandatedPackageGap.excess_try``): 0 when
     the package pays at least as much, never the full lines. The rows stay as
     findings (SUT §2.2.2(1)) and share the excess: the must-package rows first,
-    then the session rows of the covered lines, in line order, each up to the
-    risk it showed alone. The replaced lines without a row (tests, stay, drugs)
-    leave their part on the first must-package row. The billing strategy row
-    reports the same comparison.
+    then the session rows of the covered lines, each in its detector's order and
+    up to the risk it showed alone. The replaced lines without a row (tests,
+    stay, drugs) leave their part on the first must-package row. The billing
+    strategy row reports the same comparison.
     """
     gap = mandated_package_gap(
         claim, lines, drug_lines=drug_lines, material_lines=material_lines,

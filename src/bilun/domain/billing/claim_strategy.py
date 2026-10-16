@@ -31,6 +31,7 @@ from src.bilun.domain.prose_rules.session_pricing import (
 from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
 from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
 from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
+from src.bilun.domain.prose_rules.yatak_puani import c000672_hizmet_basi_lines
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_COMPLIANCE,
@@ -542,8 +543,17 @@ def recommend_billing_strategy_from_claims(
 
     recommendations: list[dict] = []
     tier_inputs_missing = False
+    # C000672: a session an EK-2/B operation leads is billed hizmet başı in full,
+    # so its must-package lines are no violation and set no claim kind.
+    hizmet_basi = {
+        id(line)
+        for claim in ctx.claims
+        for line in c000672_hizmet_basi_lines(claim, list(ctx.procedure_lines))
+    }
 
     for line in ctx.procedure_lines:
+        if id(line) in hizmet_basi:
+            continue
         claim = _claim_for_line(line, ctx.claims)
         care_setting = infer_care_setting(claim) if claim is not None else "inpatient"
         billed_as_package = line_billed_as_package(line)
@@ -630,6 +640,7 @@ def recommend_billing_strategy_from_claims(
         line_results = [
             _resolve_line_payment_method(line, claim, care_setting=care_setting)
             for line in claim_procs
+            if id(line) not in hizmet_basi
         ]
         # A mandated line makes the claim DRG_MANDATORY whatever the others say.
         claim_kind = "DRG_MANDATORY" if gap is not None else _aggregate_claim_kind(line_results)

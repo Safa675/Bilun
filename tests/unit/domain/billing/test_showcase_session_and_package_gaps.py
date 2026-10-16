@@ -33,6 +33,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import (
 )
 from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.session_uplift import iter_session_secondary_assessments
+from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
 
 pytestmark = pytest.mark.unit
 
@@ -866,6 +867,101 @@ class TestPackageSide:
         ctx = bill.ctx()
         assert mandated_package_gap(ctx.claims[0], list(ctx.procedure_lines)) is None
         assert _claim_rows(ctx) == []
+
+
+    def test_neuromonitoring_alone_is_its_own_package(self) -> None:
+        # At a training hospital 615350 and 614981 have no star and may be billed
+        # hizmet başı; 703365 (starred) must be P703365, +30 % (C000678). The IONM
+        # package covers itself only, not the stay (C001389).
+        day = _d("2026-07-14")
+        bill = _Bill("C-NM", "yatis", day, day + timedelta(days=2), tier="egitim_arastirma")
+        for code in ("615350", "703365", "614981"):
+            bill.proc(code, day, specialty=BEYIN)
+        bill.stay(BEYIN)
+        ctx = bill.ctx()
+        row = _claim_row(ctx)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (15160.38, 7423.98)
+        assert (row["savings_try"], row["savings_category"]) == (7736.40, "sgk_uplift")
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    def test_neuromonitoring_and_neuronavigation_sit_next_to_the_package(self) -> None:
+        # Private hospital: all three must be packages. P703365 and P614981 are
+        # paid in full next to P615350 (C001389, C001413), never inside it.
+        day = _d("2026-07-14")
+        bill = _Bill("C-NM", "yatis", day, day)
+        for code in ("615350", "703365", "614981"):
+            bill.proc(code, day, specialty=BEYIN)
+        row = _claim_row(bill.ctx())
+        assert row["package_total_try"] == round(154376.12 + 11661.83 + 42087.29, 2)
+
+    def test_a_zero_billed_mandated_line_opens_no_package(self) -> None:
+        # Review: an unbilled 609235 (group B) stretched the 610131 window (group
+        # C, through 21 July) to 23 July.
+        from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
+
+        a = _d("2026-07-14")
+        bill = _Bill("C-ZERO", "yatis", a, _d("2026-07-25"))
+        bill.proc("610131", a, specialty=GENCER)
+        bill.stay(GENCER, companion=False)
+        zero = bill.proc("609235", a, specialty=GENCER)
+        bill.procs[-1] = replace(zero, billed_amount_try=Decimal("0"),
+                                 expected_payable_try=Decimal("0"))
+        ctx = bill.ctx()
+        gap = mandated_package_gap(ctx.claims[0], list(ctx.procedure_lines))
+        assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), 8636.51)
+        assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)).end == _d("2026-07-21")
+
+
+class TestC000672:
+    """An operation billed hizmet başı that outranks the packages of its session.
+
+    C000672: "ancak SUT eki EK-2/B Listesinde yer alan işlemin puanının diğer
+    işlemlerden yüksek olması durumunda tüm işlemler 2.2.2.A(5) fıkrası göz önünde
+    bulundurularak hizmet başına ödeme yöntemiyle" faturalandırılır. 615931 (EK-2/B
+    puan 6,471) outranks P612070 (EK-2/C puan 714), so 612070 is billed hizmet
+    başı at 30 % and is no must-package line.
+    """
+
+    @staticmethod
+    def _bill(factor: str, *, package_candidate: bool = False) -> _Bill:
+        day = _d("2026-07-14")
+        bill = _Bill("C-EXC", "yatis", day, day, package_candidate=package_candidate)
+        bill.proc("615931", day, specialty=BEYIN)
+        bill.proc("612070", day, specialty=BEYIN, factor=factor)
+        return bill
+
+    @pytest.mark.parametrize(
+        "factor, exposure, uplift",
+        [("1", 125.84, []), ("0.3", 0.0, []), ("0.1", 0.0, [("612070", 35.95)])],
+    )
+    def test_the_session_is_billed_hizmet_basi_under_a5(self, factor, exposure, uplift) -> None:
+        # Review: the payment-method row kept 612070 at risk in full and the
+        # uplift side dropped its A(5) gap.
+        ctx = self._bill(factor).ctx()
+        assert _finding(ctx).payment_method_violations == []
+        assert compute_audit_exposure_from_claims(ctx) == exposure
+        assert [
+            (r["procedure_code"], r["recoverable_uplift_try"])
+            for r in recommend_session_uplift_from_claims(ctx).opportunities
+        ] == uplift
+
+    def test_the_strategy_recommends_no_package(self) -> None:
+        # Review: a package_candidate claim fell back to a 3,413.70 compliance row.
+        rows = recommend_billing_strategy_from_claims(
+            self._bill("0.3", package_candidate=True).ctx(),
+        ).recommendations
+        assert [row for row in rows if row.get("type") == "compliance_violation"] == []
+        claim_row = _only_claim_row(rows)
+        assert (claim_row["payment_method_kind"], claim_row["recommendation"]) == (
+            "ITEMIZED", "itemized",
+        )
+        assert claim_row["savings_try"] == 0.0
+
+
+def _only_claim_row(rows: list[dict]) -> dict:
+    claim_rows = [row for row in rows if row.get("recommendation_kind")]
+    assert len(claim_rows) == 1, claim_rows
+    return claim_rows[0]
 
 
 class TestNoUpliftOnPackageLines:

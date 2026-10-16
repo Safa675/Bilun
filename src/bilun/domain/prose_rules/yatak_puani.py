@@ -34,9 +34,17 @@ from src.bilun.domain.prose_rules.catalog_membership import (
     get_ek2c_entry,
     normalize_procedure_code,
 )
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    group_procedure_lines_by_session,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
-from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
+from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+from src.bilun.domain.prose_rules.session_scope import (
+    billed_without_session_rules,
+    line_billed_as_package,
+    session_operation_lines,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -130,6 +138,69 @@ def _package_window_end(
     return window_end
 
 
+def must_be_billed_as_package(claim: ClaimHeader, line: ProcedureClaimLine) -> bool:
+    """Billed hizmet başı though SUT mandates its EK-2/C package on its procedure date.
+
+    ``check_payment_method_compliance`` at the claim's care setting and facility
+    tier (§2.2.2(1), §2.2.1.B-1(a)), the test of the payment-method row.
+    """
+    if line_billed_as_package(line) or float(line.billed_amount_try) <= 0:
+        return False
+    compliance = check_payment_method_compliance(
+        normalize_procedure_code(line.procedure_code),
+        billed_as_package=False,
+        care_setting=infer_care_setting(claim),  # type: ignore[arg-type]
+        facility_tier=claim.facility_tier,
+        provider_type=claim.provider_type,
+        as_of_date=line.procedure_date or claim.admission_date or claim.claim_start_date,
+    )
+    return not compliance.is_compliant and compliance.mandated_method == "package"
+
+
+def c000672_hizmet_basi_lines(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> list[ProcedureClaimLine]:
+    """Must-package lines that §2.2.2.B(3)(c)/(ç) lets the hospital bill hizmet başı.
+
+    C000672 / C000673: "ancak SUT eki EK-2/B Listesinde yer alan işlemin puanının
+    diğer işlemlerden yüksek olması durumunda tüm işlemler 2.2.2.A(5) fıkrası göz
+    önünde bulundurularak hizmet başına ödeme yöntemiyle". When an operation billed
+    hizmet başı outranks every package of its session, the session's
+    must-package operations are billed hizmet başı too.
+    """
+    billed = [
+        line for line in claim_procs
+        if line.claim_id == claim.claim_id
+        and not line.is_package_included
+        and float(line.billed_amount_try) > 0
+    ]
+    exempt: list[ProcedureClaimLine] = []
+    for session_date, session_lines in group_procedure_lines_by_session(billed).items():
+        operations = [
+            line for line in session_operation_lines(session_lines)
+            if normalize_procedure_code(line.procedure_code)
+        ]
+        packages = [
+            line_billed_as_package(line) or must_be_billed_as_package(claim, line)
+            for line in operations
+        ]
+        if len(operations) < 2 or all(packages) or not any(packages):
+            continue
+        session = compute_session_point_factors(
+            [line.procedure_code for line in operations],
+            same_incision=True,
+            as_of_date=session_date,
+            billed_as_package=packages,
+        )
+        if session.rule_id == "2.2.2.A.(5)":
+            exempt.extend(
+                line for line, package in zip(operations, packages, strict=True)
+                if package and not line_billed_as_package(line)
+            )
+    return exempt
+
+
 def mandated_package_lines(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],
@@ -139,10 +210,14 @@ def mandated_package_lines(
     Read from the codes, never from the ``package_candidate`` header flag,
     which only the synthetic generator sets. A line qualifies when:
 
-    - it is not billed as a package (``line_billed_as_package``: the ``paket``
-      category or a ``P`` code) and no package line for its code is on the claim;
-    - ``check_payment_method_compliance`` flags it "must use package billing"
-      at the claim's facility tier on its procedure date;
+    - it is billed (> 0) and not as a package (``line_billed_as_package``: the
+      ``paket`` category or a ``P`` code), and no package line for its code is on
+      the claim;
+    - ``must_be_billed_as_package``: "must use package billing" at the claim's
+      facility tier on its procedure date, and C000672 does not bill its
+      session hizmet başı (``c000672_hizmet_basi_lines``);
+    - it is no neuromonitoring or neuronavigation line, which is billed next to
+      its operation and carries no stay (C001389, C001413);
     - its EK-2/C package has a price and an işlem grubu (A1–E) that day.
     """
     package_codes = {
@@ -152,27 +227,17 @@ def mandated_package_lines(
         for code in (line.procedure_code, line.package_code)
         if code
     }
-    care_setting = infer_care_setting(claim)
+    exempt = {id(line) for line in c000672_hizmet_basi_lines(claim, claim_procs)}
     mandated: list[ProcedureClaimLine] = []
     for line in claim_procs:
-        if line.claim_id != claim.claim_id or line.is_package_included:
-            continue
-        if line_billed_as_package(line):
+        if line.claim_id != claim.claim_id or line.is_package_included or id(line) in exempt:
             continue
         code = normalize_procedure_code(line.procedure_code)
-        if not code or code in package_codes:
+        if not code or code in package_codes or billed_without_session_rules(code):
+            continue
+        if not must_be_billed_as_package(claim, line):
             continue
         as_of = line.procedure_date or claim.admission_date or claim.claim_start_date
-        compliance = check_payment_method_compliance(
-            code,
-            billed_as_package=False,
-            care_setting=care_setting,  # type: ignore[arg-type]
-            facility_tier=claim.facility_tier,
-            provider_type=claim.provider_type,
-            as_of_date=as_of,
-        )
-        if compliance.is_compliant or compliance.mandated_method != "package":
-            continue
         entry = get_ek2c_entry(code, as_of_date=as_of) or {}
         group = str(entry.get("group") or "").strip().upper()
         if float(entry.get("price_try") or 0.0) <= 0 or group not in PACKAGE_WINDOW_DAYS:

@@ -12,21 +12,26 @@ flag: no line is billed as a package (``line_billed_as_package``) and
 ``mandated_package_lines`` (#286) finds a line that must be one, with a package
 price and an işlem grubu on its date.
 
-Package side, what the correct bill pays for the replaced part:
+Package side, what the correct bill pays for the replaced part. The incision is
+not on the claim lines, so one incision is assumed, as in the other session
+detectors:
 
 - a mandated line at its EK-2/C package price on its procedure date, +30 % for a
   starred package at the tiers C000678 names (training and research hospitals,
   university hospitals with a medical faculty);
-- several mandated operations in one session by §2.2.2.B(3)(a)/(b) (C000670 /
-  C000671): the highest in full, the others at 25 % / 50 %;
-- a hizmet başı operation in the same session at 30 % / 50 % of its EK-2/B price
-  (C000672 / C000673), all of the session hizmet başı under §2.2.2.A(5) when that
-  operation outranks the packages;
+- several mandated operations in one session by §2.2.2.B(3)(a) (C000670): the
+  highest in full, the others at 25 %;
+- a hizmet başı operation in the same session at 30 % of its EK-2/B price
+  (C000672); when such an operation outranks the packages, C000672 bills the
+  whole session hizmet başı under §2.2.2.A(5) (``c000672_hizmet_basi_lines``);
+- neuromonitoring and neuronavigation in full next to their operation
+  (C001389, C001413);
 - +25 points across specialties (C000674), read per session as elsewhere.
 
-Replaced side, what the hizmet başı bill billed for that part: every line from
-admission through the package window's last day (C000701–C000706) at its billed
-amount. What the SUT pays next to the package either way is on neither side:
+Replaced side, what the hizmet başı bill billed for that part: every line of the
+claim dated through the package window's last day (C000701–C000706) at its
+billed amount. What the SUT pays next to the package either way is on neither
+side:
 
 - materials §3.1.4 bills on top of the package (C000582, C002857–C002875), read by
   the §3.1.4 classifier (``material_paid_next_to_package``), never the
@@ -64,10 +69,19 @@ from .session_pricing import (
     compute_session_point_factors,
     line_gazette_list_billed_try,
 )
-from .session_scope import line_billed_as_package, session_operation_lines
+from .session_scope import (
+    billed_without_session_rules,
+    line_billed_as_package,
+    session_operation_lines,
+)
 from .session_specialty import detect_cross_specialty_session
 from .types import PaymentMethodCompliance
-from .yatak_puani import claim_package_window, mandated_package_lines
+from .yatak_puani import (
+    c000672_hizmet_basi_lines,
+    claim_package_window,
+    mandated_package_lines,
+    must_be_billed_as_package,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
@@ -102,12 +116,15 @@ class MandatedPackageScope:
     """A claim billed hizmet başı whose package is mandated, and the lines it covers.
 
     ``package_total_try`` is what the correct bill pays for those lines.
+    ``covers_the_stay`` is False when only neuromonitoring or neuronavigation
+    must be packages: each is its own package and nothing else is inside it.
     """
 
     mandated: tuple[ProcedureClaimLine, ...]
     window_end: date
     lines: tuple[ProcedureClaimLine, ...]
     package_total_try: float
+    covers_the_stay: bool = True
 
 
 @dataclass(frozen=True)
@@ -142,12 +159,6 @@ def line_payment_method_compliance(
     )
 
 
-def must_be_billed_as_package(claim: ClaimHeader, line: ProcedureClaimLine) -> bool:
-    """A line billed hizmet başı whose EK-2/C package is mandated (the payment-method row's test)."""
-    compliance = line_payment_method_compliance(claim, line)
-    return not compliance.is_compliant and compliance.mandated_method == "package"
-
-
 def _on_or_before(day: date | None, end: date) -> bool:
     return day is None or day <= end
 
@@ -172,17 +183,28 @@ def _package_side_try(
 ) -> tuple[float, bool]:
     """What the correct bill pays for ``lines`` and whether any package is in it.
 
-    Only the sessions with a mandated line are priced; every other covered line
-    is inside the package (operations, tests and stay; C000685–C000699).
+    The sessions with a mandated line price their operations (module
+    docstring), and so do the sessions C000672 bills hizmet başı. Neuromonitoring
+    and neuronavigation are billed next to their operation wherever they are
+    (C001389, C001413). Every other covered line is inside the package
+    (operations, tests and stay; C000685–C000699).
     """
     starred_uplift = normalize_facility_tier(
         claim.facility_tier, provider_type=claim.provider_type,
     ).is_university_eah
     mandated = {id(line) for line in mandated_lines}
+    hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, list(lines))}
     total = 0.0
     priced_a_package = False
     for session_date, session_lines in group_procedure_lines_by_session(lines).items():
-        if not any(id(line) in mandated for line in session_lines):
+        for line in session_lines:
+            if billed_without_session_rules(line.procedure_code):
+                total += (
+                    _package_price_try(line, starred_uplift=starred_uplift)
+                    if must_be_billed_as_package(claim, line)
+                    else _hizmet_basi_price_try(line)
+                )
+        if not any(id(line) in mandated or id(line) in hizmet_basi for line in session_lines):
             continue
         operations = [
             line for line in session_operation_lines(session_lines)
@@ -208,8 +230,7 @@ def _package_side_try(
                 priced_a_package = True
             else:
                 total += _hizmet_basi_price_try(line) * factor
-        # A mandated line outside the session scope (e.g. neuromonitoring,
-        # C001389) is its own package at full price.
+        # A mandated line outside the session scope is its own package in full.
         operation_ids = {id(line) for line in operations}
         for line in session_lines:
             if id(line) in mandated and id(line) not in operation_ids:
@@ -224,19 +245,19 @@ def mandated_package_scope(
 ) -> MandatedPackageScope | None:
     """The #269 gate, read from the codes, and the procedure lines the package covers.
 
-    ``None`` unless no line is billed as a package, at least one line billed
-    hizmet başı must be one (``mandated_package_lines``), and the correct bill
-    holds a package: when C000672 bills every session of the mandated lines
-    hizmet başı there is none to compare with. The covered lines are the
-    hizmet başı lines dated through the last day of the package window.
+    ``None`` unless no line is billed as a package and at least one line billed
+    hizmet başı must be one. With a mandated package (``mandated_package_lines``)
+    the covered lines are the hizmet başı lines dated through the last day of
+    its window; when only neuromonitoring or neuronavigation must be packages,
+    they are the only covered lines (``_add_on_scope``).
     """
     procs = [line for line in claim_procs if line.claim_id == claim.claim_id]
     if any(line_billed_as_package(line) and float(line.billed_amount_try) > 0 for line in procs):
         return None
-    mandated = tuple(
-        line for line in mandated_package_lines(claim, procs) if float(line.billed_amount_try) > 0
-    )
-    window = claim_package_window(claim, procs) if mandated else None
+    mandated = tuple(mandated_package_lines(claim, procs))
+    if not mandated:
+        return _add_on_scope(claim, procs)
+    window = claim_package_window(claim, procs)
     if window is None:
         return None
     lines = tuple(
@@ -251,6 +272,40 @@ def mandated_package_scope(
         return None
     return MandatedPackageScope(
         mandated=mandated, window_end=window.end, lines=lines, package_total_try=package_total,
+    )
+
+
+def _add_on_scope(
+    claim: ClaimHeader,
+    procs: Sequence[ProcedureClaimLine],
+) -> MandatedPackageScope | None:
+    """Neuromonitoring or neuronavigation that must be a package, next to an operation
+    billed hizmet başı legally (e.g. without a star at a third-tier hospital).
+
+    Each line is its own package (C001389, C001413) and compares only with itself.
+    """
+    add_ons = tuple(
+        line for line in procs
+        if billed_without_session_rules(line.procedure_code)
+        and not line.is_package_included
+        and must_be_billed_as_package(claim, line)
+    )
+    if not add_ons:
+        return None
+    starred_uplift = normalize_facility_tier(
+        claim.facility_tier, provider_type=claim.provider_type,
+    ).is_university_eah
+    package_total = _money(sum(
+        _package_price_try(line, starred_uplift=starred_uplift) for line in add_ons
+    ))
+    if package_total <= 0:
+        return None
+    return MandatedPackageScope(
+        mandated=add_ons,
+        window_end=max(line.procedure_date for line in add_ons),
+        lines=add_ons,
+        package_total_try=package_total,
+        covers_the_stay=False,
     )
 
 
@@ -296,14 +351,15 @@ def mandated_package_gap(
         fraction = blood_component_billable_fraction(line.procedure_code)
         replaced += billed * (1.0 - fraction) if fraction is not None else billed
     drugs = [line for line in drug_lines if line.claim_id == claim.claim_id]
-    replaced += sum(
-        float(line.billed_amount_try) for line in drugs
-        if float(line.billed_amount_try) > 0
-        and _on_or_before(line.drug_claim_date, end)
-        and not drug_billed_next_to_package(line)
-    )
     materials = [line for line in material_lines if line.claim_id == claim.claim_id]
-    if materials:
+    if scope.covers_the_stay:
+        replaced += sum(
+            float(line.billed_amount_try) for line in drugs
+            if float(line.billed_amount_try) > 0
+            and _on_or_before(line.drug_claim_date, end)
+            and not drug_billed_next_to_package(line)
+        )
+    if materials and scope.covers_the_stay:
         packages = tuple(
             get_ek2c_description(line.procedure_code, as_of_date=line.procedure_date)
             for line in scope.mandated

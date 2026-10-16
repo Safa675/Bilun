@@ -85,6 +85,15 @@ def _procedure_package_codes() -> frozenset[str]:
     return frozenset(code for code in codes if code)
 
 
+def billed_without_session_rules(procedure_code: str) -> bool:
+    """Neuromonitoring or neuronavigation, billed in full next to its operation.
+
+    C001389 / C001413: "2.2.2.B (3) ... kurallar uygulanmaksızın". Such a line is
+    no session line and never part of another procedure's package.
+    """
+    return normalize_procedure_code(procedure_code) in _BILLED_WITHOUT_SESSION_RULES
+
+
 def is_session_operation_code(procedure_code: str) -> bool:
     """True for a procedure that §2.2.2.A(5) / §2.2.2.B(3) prices by session."""
     code = normalize_procedure_code(procedure_code)

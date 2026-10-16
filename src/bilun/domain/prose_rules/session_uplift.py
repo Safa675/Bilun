@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session
 from ..money import money_round_half_up as _money
-from .mandated_package_gap import mandated_package_scope, must_be_billed_as_package
+from .mandated_package_gap import mandated_package_scope
 from .session_pricing import (
     billed_package_scopes,
     blood_component_max_billable_try,
@@ -21,6 +21,7 @@ from .session_pricing import (
 from .session_scope import line_billed_as_package, session_operation_lines
 from .session_specialty import detect_cross_specialty_session
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
+from .yatak_puani import c000672_hizmet_basi_lines, must_be_billed_as_package
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -140,14 +141,19 @@ def _lines_priced_by_the_package(
 
     A line billed hizmet başı though its package is mandated is rebilled as that
     package, as its payment-method row says, so it has no hizmet başı uplift
-    (review item 9). On a claim the mandated-package comparison covers (#269),
+    (review item 9); a session C000672 bills hizmet başı keeps its uplift. On a
+    claim the mandated-package comparison covers (#269),
     every line inside the package window is priced on the package side and the
     strategy row reports the gap, so an uplift there would count it twice.
     """
     if claim is None:
         return set()
     claim_lines = [line for line in lines if line.claim_id == claim.claim_id]
-    priced = {id(line) for line in claim_lines if must_be_billed_as_package(claim, line)}
+    hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, claim_lines)}
+    priced = {
+        id(line) for line in claim_lines
+        if id(line) not in hizmet_basi and must_be_billed_as_package(claim, line)
+    }
     scope = mandated_package_scope(claim, claim_lines)
     if scope is not None:
         priced |= {id(line) for line in scope.lines}
