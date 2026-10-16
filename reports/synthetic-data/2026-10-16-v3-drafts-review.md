@@ -101,7 +101,23 @@ Safa, inceleme işini bana devretti. Üç bağımsız incelemeci `main` 257d1e89
 
    **Decided by Safa, 2026-10-16: the demo data follows the SUT.** The generator emits one billed line; the other value goes under the blood-gas line or on another day.
 
-## Engine defects found (to file)
+## Engine defects found (filed 2026-10-16)
+Filed as issues, with two changes: items 6 and 7 are one issue, and the EK-3/F-1 item (10) is fixed in this PR. Numbers below are the review's item numbers.
+
+| Review item | Issue |
+|---|---|
+| 1 KDV | #298 |
+| 2 Rounding | #299 |
+| 3 Session list price | #300 |
+| 4 Companion | #301 |
+| 5 Drug quantity | #302 |
+| 6 + 7 EK-2B açıklama limits | #303 |
+| 8 R-code principal (N7) | #304 |
+| 9 Parent/leaf matcher | #305 |
+| 11 Docs contradiction | #306 |
+| new: 27 ICD-10-CM codes missing from SKRS in the drug rules | #307 |
+
+The field-expert questions are #297 and #295.
 1. **KDV on implants:** `material_kdv.py:7` uses 20 %. It should be the line's declared rate, defaulting to 10 % from 10.07.2023 and 8 % from 01.04.2022.
 2. **Rounding:** the catalog `price_try` is rounded half-up (`scripts/sut/catalogs/price_history.py:117,153,235`); SUT §2.2(15) truncates.
 3. **Session list price:** it is taken from the bill's unit price (`session_pricing.py:507-519`); it should come from the catalog, because MEDULA computes the reduction. The claim model lacks MEDULA's `ayniFarkliKesi`; adding it makes the incision known.
