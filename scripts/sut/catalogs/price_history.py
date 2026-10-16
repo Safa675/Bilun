@@ -4,6 +4,9 @@ EK-2B / EK-2C: service-based and package-based procedure prices.
 These are the only catalogs built with source='raw_all_versions' — each gazette
 version contributes one slice of the price-history timeline, which the
 orchestrator concatenates and decorates with valid_from / valid_to ranges.
+EK-2B and EK-2C rows also carry the amendment marker of their code cell, so a
+row SGK added or amended inside a version applies from its own Yürürlük date
+(scripts/sut/_common.py::_add_validity_ranges).
 """
 
 from __future__ import annotations
@@ -12,6 +15,8 @@ import re
 import unicodedata
 
 import pandas as pd
+
+from scripts.sut._common import MARKER_COLUMNS, amendment_markers, strip_amendment_marker
 
 RE_EK2B_CODE = re.compile(r"^(L\d{6}|R\d{6}|G\d{6}|[5-9]\d{5})$")
 RE_EK2C_CODE = re.compile(r"^P\d{6}$")
@@ -72,6 +77,19 @@ def _star_flag(series: pd.Series) -> pd.Series:
     return series.apply(lambda x: "*" in str(x) if pd.notna(x) and str(x).strip() else False)
 
 
+# A puan SGK typed as text in Turkish format ("\xa01.291,70", "869,19\xa0"): dots group
+# thousands, the comma is the decimal separator.
+_TURKISH_NUMBER = r"\d{1,3}(?:\.\d{3})*,\d+|\d+,\d+"
+
+
+def _puan(series: pd.Series) -> pd.Series:
+    """Numeric puan of each cell; numbers typed in Turkish format are read too."""
+    text = series.astype("string").str.replace("\xa0", " ", regex=False).str.strip()
+    turkish = text.str.fullmatch(_TURKISH_NUMBER).fillna(False).astype(bool)
+    read = text.str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+    return pd.to_numeric(text.where(~turkish, read), errors="coerce").astype("float64")
+
+
 def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     required = {"ISLEM KODU", "ISLEM ADI", "ISLEM PUANI"}
 
@@ -83,21 +101,21 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     pos = _build_pos_map(header)
     body = df.iloc[h_idx + 1 :]
 
+    code_cells = body.iloc[:, pos["ISLEM KODU"]]
     out = pd.DataFrame()
-    out["code"] = body.iloc[:, pos["ISLEM KODU"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
+    # SGK writes amendments into the code cell ("603331 (Ek: RG-… Yürürlük: 05/09/2026)"):
+    # keep the code before the marker, like extract_ek2c, and the marker for the history.
+    out["code"] = strip_amendment_marker(code_cells)
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
-    out["puan"] = pd.to_numeric(
-        body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
-    )
+    out["puan"] = _puan(body.iloc[:, pos["ISLEM PUANI"]])
+    out = out.join(amendment_markers(code_cells))
 
     out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
     out = out.reset_index(drop=True)
-    return out[["code", "name", "puan", "price_try"]]
+    return out[["code", "name", "puan", "price_try", *MARKER_COLUMNS]]
 
 
 def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
@@ -111,10 +129,9 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     pos = _build_pos_map(header)
     body = df.iloc[h_idx + 1 :]
 
+    code_cells = body.iloc[:, pos["ISLEM KODU"]]
     out = pd.DataFrame()
-    out["package_code"] = _cell_text(body.iloc[:, pos["ISLEM KODU"]]).str.replace(
-        r"\s*\(.*$", "", regex=True
-    ).str.strip()
+    out["package_code"] = strip_amendment_marker(code_cells)
     out["name"] = _cell_text(body.iloc[:, pos["ISLEM ADI"]])
     if "GRUP" in pos:
         out["group"] = _cell_text(body.iloc[:, pos["GRUP"]])
@@ -128,9 +145,8 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
         out["has_star"] = _star_flag(body.iloc[:, pos["STAR"]])
     else:
         out["has_star"] = False
-    out["puan"] = pd.to_numeric(
-        body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
-    )
+    out["puan"] = _puan(body.iloc[:, pos["ISLEM PUANI"]])
+    out = out.join(amendment_markers(code_cells))
 
     out = out[out["package_code"].str.match(RE_EK2C_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
@@ -169,6 +185,7 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
             "prose_drg_locked",
             "puan",
             "price_try",
+            *MARKER_COLUMNS,
         ]
     ]
 

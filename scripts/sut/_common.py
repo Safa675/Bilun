@@ -6,6 +6,7 @@ Provides:
   - Column filtering (_data_cols)
   - Raw parquet discovery (_find_raw_parquet, _read_raw)
   - Manifest-driven loading (_load_manifest, _add_validity_ranges)
+  - Amendment markers in list cells (amendment_markers, strip_amendment_marker)
 """
 
 from __future__ import annotations
@@ -158,30 +159,157 @@ def _load_manifest(parquet_root: Path) -> pd.DataFrame:
     return manifest
 
 
-def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
-    """Attach valid_from / valid_to columns based on consecutive effective_dates."""
-    work = df.copy()
-    work["effective_date_parsed"] = pd.to_datetime(
-        work["effective_date"], errors="coerce"
+# SGK writes each later amendment into the list it changes, in the row's code cell:
+# "603331 (Ek: RG-29/08/2026- 33355/ 14-a md. Yürürlük: 05/09/2026)". "Ek" adds the row,
+# "Değişik" amends it (the list keeps the older clean row of the same code next to it)
+# and "Mülga" repeals it, each from the marker's Yürürlük date.
+MARKER_FROM = "_marker_from"  # latest Yürürlük date of the cell's Ek/Değişik markers
+MARKER_ADDED = "_marker_added"  # that latest marker adds the row ("Ek")
+MARKER_REPEALED = "_marker_repealed"  # earliest Yürürlük date of the cell's Mülga markers
+MARKER_UNDATED = "_marker_undated"  # the cell has a marker whose Yürürlük date cannot be read
+MARKER_COLUMNS = (MARKER_FROM, MARKER_ADDED, MARKER_REPEALED, MARKER_UNDATED)
+
+_MARKER = re.compile(
+    r"\(\s*(?:(?P<kind>[^\W\d_]+)\s*:)?[^()]*?Y[üu]r[üu]rl[üu]k\s*:?\s*"
+    r"(?P<day>\d{1,2})\s*[./]\s*(?P<month>\d{1,2})\s*[./]\s*(?P<year>\d{4})",
+    re.IGNORECASE,
+)
+_ANY_MARKER = re.compile(r"\([^()]*(?:\bRG\s*-|Y[üu]r[üu]rl[üu]k)", re.IGNORECASE)
+_REPEAL_KINDS = ("mülga", "mulga")
+
+
+def strip_amendment_marker(cells: pd.Series) -> pd.Series:
+    """The value before a cell's marker: "603331  (Ek: RG-…)" -> "603331"."""
+    return cells.fillna("").astype(str).str.replace(r"\s*\(.*$", "", regex=True).str.strip()
+
+
+def count_amendment_markers(cells: pd.Series) -> pd.Series:
+    """How many amendment markers, dated or not, each cell carries."""
+    return cells.fillna("").astype(str).str.count(_ANY_MARKER)
+
+
+def amendment_markers(cells: pd.Series) -> pd.DataFrame:
+    """MARKER_COLUMNS for each cell, on the cells' index (NaT / False without a marker)."""
+    text = cells.fillna("").astype(str).reset_index(drop=True)
+    found = text.str.extractall(_MARKER)
+    kind = found["kind"].fillna("").str.casefold()
+    dates = pd.to_datetime(found[["year", "month", "day"]].astype(int), errors="coerce")
+    repeal = kind.isin(_REPEAL_KINDS)
+    starts = pd.DataFrame({"date": dates.where(~repeal), "added": kind.eq("ek")})
+    latest = starts[starts["date"].notna()].sort_values("date", kind="stable")
+    latest = latest.groupby(level=0).tail(1).droplevel(1)
+    out = pd.DataFrame(index=text.index)
+    out[MARKER_FROM] = latest["date"].reindex(text.index)
+    out[MARKER_ADDED] = latest["added"].reindex(text.index, fill_value=False).astype(bool)
+    out[MARKER_REPEALED] = dates.where(repeal).groupby(level=0).min().reindex(text.index)
+    out[MARKER_UNDATED] = (
+        text.str.contains(_ANY_MARKER) & out[MARKER_FROM].isna() & out[MARKER_REPEALED].isna()
     )
+    out.index = cells.index
+    return out
+
+
+def _marker_values(work: pd.DataFrame) -> tuple[pd.Series, pd.Series, pd.Series, pd.Series]:
+    """(MARKER_FROM, MARKER_ADDED, MARKER_REPEALED, MARKER_UNDATED) of a frame; no marker if absent."""
+    no_date = pd.Series(pd.NaT, index=work.index, dtype="datetime64[ns]")
+    no = pd.Series(False, index=work.index)
+    return (
+        pd.to_datetime(work[MARKER_FROM]) if MARKER_FROM in work.columns else no_date,
+        work[MARKER_ADDED].astype(bool) if MARKER_ADDED in work.columns else no,
+        pd.to_datetime(work[MARKER_REPEALED]) if MARKER_REPEALED in work.columns else no_date,
+        work[MARKER_UNDATED].astype(bool) if MARKER_UNDATED in work.columns else no,
+    )
+
+
+def _last_day_before(ends: pd.Series) -> pd.Series:
+    """valid_to for exclusive end dates: the day before, as YYYY-MM-DD; <NA> when open."""
+    days = (ends - pd.to_timedelta(1, unit="D")).dt.date.astype("string")
+    days[ends.isna()] = pd.NA
+    return days
+
+
+def _earlier(ends: pd.Series, other: pd.Series) -> pd.Series:
+    """The earlier of two exclusive end dates, NaT meaning none."""
+    return ends.where(other.isna() | (ends <= other), other)
+
+
+def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
+    """Attach valid_from / valid_to to a history built from every version of a list.
+
+    A row applies from its list's effective_date or, when later, from the Yürürlük
+    date of its own Ek/Değişik marker (MARKER_FROM, see amendment_markers), until the
+    day before the next row of its key starts; a key missing from the next list ends
+    the day before that list. A Mülga marker ends the row the day before its date.
+    Until a marked row starts, the older row of its key goes on: the clean row SGK
+    keeps beside it, or the previous list's row; an added key is absent. A row that
+    cannot apply within its list (a marker date on or after the next list's date, a
+    repeal on or before its start, a marker date that cannot be read) is dropped. Of
+    two rows of one key that start on the same day, the amended one is kept.
+    """
+    work = df.copy()
+    marker_from, _added, repealed, undated = _marker_values(work)
+    version = pd.to_datetime(work["effective_date"], errors="coerce")
+    dates = sorted(version.dropna().unique())
+    next_version = pd.to_datetime(version.map(dict(zip(dates, dates[1:]))))
+    start = marker_from.where(marker_from > version, version)
+    in_list = (next_version.isna() | (start < next_version)) & (repealed.isna() | (repealed > start))
+    work = work.assign(
+        _start=start,
+        _repealed=repealed,
+        _next_version=next_version,
+        _amended=marker_from.notna(),
+        _position=range(len(work)),
+    )[~undated & in_list]
     work = (
-        work.sort_values([key_col, "effective_date_parsed"])
-        .drop_duplicates(subset=[key_col, "effective_date_parsed"], keep="last")
+        work.sort_values([key_col, "_start", "_amended", "_position"])
+        .drop_duplicates(subset=[key_col, "_start"], keep="last")
         .reset_index(drop=True)
     )
-    work["valid_from"] = work["effective_date"]
-    next_code_eff = work.groupby(key_col)["effective_date_parsed"].shift(-1)
-    all_dates = sorted(work["effective_date_parsed"].dropna().unique())
-    next_global_map = {
-        all_dates[i]: all_dates[i + 1] for i in range(len(all_dates) - 1)
-    }
-    next_global_eff = work["effective_date_parsed"].map(next_global_map)
-    next_eff = next_code_eff.fillna(next_global_eff)
-    work["valid_to"] = (next_eff - pd.to_timedelta(1, unit="D")).dt.date.astype(
-        "string"
-    )
-    work.loc[next_eff.isna(), "valid_to"] = pd.NA
-    return work.drop(columns=["effective_date_parsed"])
+    ends = work.groupby(key_col)["_start"].shift(-1).fillna(work["_next_version"])
+    ends = _earlier(ends, work["_repealed"])
+    moved = work["_start"] != pd.to_datetime(work["effective_date"], errors="coerce")
+    work["valid_from"] = work["effective_date"].where(~moved, work["_start"].dt.strftime("%Y-%m-%d"))
+    work["valid_to"] = _last_day_before(ends)
+    helpers = ["_start", "_repealed", "_next_version", "_amended", "_position"]
+    return work.drop(columns=helpers + [c for c in MARKER_COLUMNS if c in work.columns])
+
+
+def _add_list_validity(df: pd.DataFrame, key_cols: list[str]) -> pd.DataFrame:
+    """Attach valid_from / valid_to to the rows of one list kept without older versions.
+
+    An added row (Ek) applies from its marker's Yürürlük date. An amended row
+    (Değişik) applies from its date when the list keeps an older row of its key,
+    which then ends the day before; without one it has no start, because its key was
+    in force before with values the list no longer shows. A Mülga marker ends the row
+    the day before its date. Other rows keep null dates, in force on every date as
+    before. Of two marked rows of one key with the same date the later one is kept.
+    The list's row order is kept.
+    """
+    work = df.copy()
+    marker_from, added, repealed, undated = _marker_values(work)
+    if undated.any():
+        rows = work.loc[undated, key_cols].to_dict("records")
+        raise ValueError(f"amendment marker without a readable Yürürlük date: {rows}")
+    work = work.assign(
+        _start=marker_from,
+        _added=added,
+        _repealed=repealed,
+        _amended=marker_from.notna(),
+        _position=range(len(work)),
+    ).sort_values([*key_cols, "_start", "_amended", "_position"], na_position="first")
+    tied = work["_start"].notna() & work.duplicated(subset=[*key_cols, "_start"], keep="last")
+    work = work[~tied]
+    first = ~work.duplicated(subset=key_cols, keep="first")
+    work.loc[first & ~work["_added"], "_start"] = pd.NaT
+    ends = work.groupby(key_cols, dropna=False)["_start"].shift(-1)
+    ends = ends.groupby([work[c] for c in key_cols], dropna=False).bfill()
+    ends = _earlier(ends, work["_repealed"])
+    work["valid_from"] = work["_start"].dt.date.astype("string")
+    work.loc[work["_start"].isna(), "valid_from"] = pd.NA
+    work["valid_to"] = _last_day_before(ends)
+    helpers = ["_start", "_added", "_repealed", "_amended", "_position"]
+    work = work.sort_values("_position").reset_index(drop=True)
+    return work.drop(columns=helpers + [c for c in MARKER_COLUMNS if c in work.columns])
 
 
 _CONSOLIDATED_SUT_DIR_SUFFIX = "Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
