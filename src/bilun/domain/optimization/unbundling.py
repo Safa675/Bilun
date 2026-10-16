@@ -8,6 +8,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import (
     analyze_claim_unbundling,
     finding_to_dict,
 )
+from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
 
 from .exactness import (
     DRG_UNBUNDLING_UNAVAILABLE_REASON,
@@ -52,13 +53,12 @@ def detect_drg_unbundling(
     bundled_violations = 0
 
     for claim in claim_context.claims:
-        if not claim.package_candidate:
-            continue
-
         claim_procs = [
             line for line in claim_context.procedure_lines if line.claim_id == claim.claim_id
         ]
-        if not claim_procs:
+        # Package claims by their codes: a line billed as an EK-2/C package, or
+        # one that must be (#286); never the synthetic-only package_candidate flag.
+        if not claim_procs or claim_package_window(claim, claim_procs) is None:
             continue
 
         # Same-incision (kesi) is not on claim lines yet; assume same session until wired.

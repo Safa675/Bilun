@@ -84,7 +84,15 @@ class TestBillingActionsBreakdown:
         ]
         assert len(doc_rows) == 3
         assert any("muayene" in (row.get("detail") or "").lower() for row in doc_rows)
-        assert report.action_count == len(copay_rows) + len(violations) + len(doc_rows)
+        # Review item 3: the mandated-package comparison (#269) no longer needs the
+        # synthetic package_candidate flag, so the claim gets its package gap row.
+        gap_rows = [
+            row for row in report.recommended_actions if row["kind"] == "mandatory_compliance"
+        ]
+        assert len(gap_rows) == 1
+        assert report.action_count == (
+            len(copay_rows) + len(violations) + len(doc_rows) + len(gap_rows)
+        )
 
         checklist_docs = [
             item

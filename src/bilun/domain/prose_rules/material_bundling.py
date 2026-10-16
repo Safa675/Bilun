@@ -199,6 +199,37 @@ def _separate_billing_permitted(code: str, mat: dict[str, Any]) -> bool:
     return bool(mat[_PACKAGES_KEY]) and sut_3_1_4_item(code) is not None
 
 
+def material_paid_next_to_package(
+    *,
+    code: str,
+    name: str,
+    package_descriptions: tuple[str, ...],
+    procedure_codes: frozenset[str],
+) -> bool:
+    """SUT §3.1.4 (C000582, C002857–C002875): the material is paid on top of its package.
+
+    A coded material by ``_separate_billing_permitted``: its EK-3 row marker, an
+    EK-3/F-2 set paid with a procedure on the bill, the package açıklamas
+    (``package_descriptions``, "" for a package without one), a §3.1.4(2) item.
+    An uncoded one by the §3.1.4(2) name rules ("plak", "vida", "stent", ...).
+    Everything else, consumables included (C000695 "Sarf malzemesi"), is inside
+    the package; the ``is_bundled`` input flag is never read.
+    """
+    normalized = str(code or "").strip().upper()
+    mat = _with_package_context(
+        {_PACKAGES_KEY: package_descriptions, _PROCEDURES_KEY: procedure_codes},
+        normalized,
+        ((), frozenset()),
+    )
+    if normalized:
+        return _separate_billing_permitted(normalized, mat)
+    return any(
+        _is_sut_3_1_4_item_rule(rule)
+        and _material_name_matches(name, rule["condition"]["material_name_any"])
+        for rule in load_material_bundling_rules().get("rules", [])
+    )
+
+
 def _billed_package(code: object, as_of_date: Any = None) -> str | None:
     """Normalized EK-2/C package code a billed "P..." code stands for, else None.
 

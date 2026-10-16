@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Any
 
 from .claim_utils import infer_care_setting
 from ..money import money_round_half_up as _money
-from .payment_method import check_payment_method_compliance, resolve_payment_method
+from .mandated_package_gap import line_payment_method_compliance, mandated_package_gap
+from .payment_method import resolve_payment_method
 from .session_pricing import (
     billed_package_scopes,
     blood_component_billable_fraction,
@@ -16,7 +17,6 @@ from .session_pricing import (
 )
 from .session_scope import line_billed_as_package
 from .session_uplift import iter_session_secondary_assessments
-from .types import CareSetting
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
@@ -66,20 +66,14 @@ def detect_payment_method_violations(
     claim: ClaimHeader,
     lines: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
-    care_setting: CareSetting = infer_care_setting(claim)  # type: ignore[assignment]
     violations: list[dict[str, Any]] = []
 
     for line in lines:
         if _line_billed(line) <= 0:
             continue
         billed_as_package = line_billed_as_package(line)
-        compliance = check_payment_method_compliance(
-            line.procedure_code,
-            billed_as_package=billed_as_package,
-            care_setting=care_setting,
-            facility_tier=claim.facility_tier,
-            provider_type=claim.provider_type,
-        )
+        # On the line's procedure date, as the #269 gate reads it.
+        compliance = line_payment_method_compliance(claim, line)
         if compliance.is_compliant or compliance.mandated_method == "unknown":
             continue
 
@@ -197,7 +191,7 @@ def detect_blood_component_violations(
     return violations
 
 
-def _clear_risk_when_mandated_package_pays_more(
+def _apply_mandated_package_gap(
     finding: ClaimUnbundlingFinding,
     claim: ClaimHeader,
     lines: list[ProcedureClaimLine],
@@ -205,31 +199,41 @@ def _clear_risk_when_mandated_package_pays_more(
     drug_lines: Sequence[DrugClaimLine],
     material_lines: Sequence[MaterialClaimLine],
 ) -> None:
-    """A hizmet başı bill that the mandated package pays more for carries no over-billing risk.
+    """A hizmet başı bill whose package is mandated is re-priced as that package (#269).
 
-    The package replaces the bill, so neither the must-package lines nor the
-    session factors among them can be clawed back. The rows stay as findings
-    (SUT §2.2.2(1)); the billing strategy reports the gap as package-billing
-    uplift, and it uses the same gate, so the money never leaves both (#269).
+    The package replaces the lines inside its window, so the money at risk on
+    them is what the bill overstates (``MandatedPackageGap.excess_try``): 0 when
+    the package pays at least as much, never the full lines. The rows stay as
+    findings (SUT §2.2.2(1)) and share the excess: the must-package rows first,
+    then the session rows of the covered lines, in line order, each up to the
+    risk it showed alone. The replaced lines without a row (tests, stay, drugs)
+    leave their part on the first must-package row. The billing strategy row
+    reports the same comparison.
     """
+    gap = mandated_package_gap(
+        claim, lines, drug_lines=drug_lines, material_lines=material_lines,
+    )
+    if gap is None:
+        return
+    covered = gap.replaced_line_ids
     package_rows = [
         row for row in finding.payment_method_violations
         if row["mandated_method"] == "package" and not row["billed_as_package"]
+        and row["procedure_line_id"] in covered
     ]
-    if not package_rows:
-        return
-    from src.bilun.domain.billing.claim_strategy import mandated_package_gap_try
-
-    gap = mandated_package_gap_try(
-        claim, lines, drug_lines=drug_lines, material_lines=material_lines,
-    )
-    if gap is None or gap[0] < gap[1]:
-        return
-    package_total, replaced_total = gap
-    for row in (*package_rows, *finding.session_violations):
-        row["risk_amount_try"] = 0.0
-        row["package_total_try"] = package_total
-        row["billed_itemized_total_try"] = replaced_total
+    session_rows = [
+        row for row in finding.session_violations if row["procedure_line_id"] in covered
+    ]
+    rows = [*package_rows, *session_rows]
+    left = gap.excess_try
+    for row in rows:
+        share = min(left, float(row["risk_amount_try"]))
+        row["risk_amount_try"] = _money(share)
+        left = _money(left - share)
+        row["package_total_try"] = gap.package_total_try
+        row["billed_itemized_total_try"] = gap.replaced_total_try
+    if left > 0 and package_rows:
+        package_rows[0]["risk_amount_try"] = _money(package_rows[0]["risk_amount_try"] + left)
 
 
 def _net_session_risk_of_payment_method_risk(finding: ClaimUnbundlingFinding) -> None:
@@ -290,14 +294,15 @@ def analyze_claim_unbundling(
             same_incision=same_incision,
             claim=claim,
         )
-    _clear_risk_when_mandated_package_pays_more(
+    # Net first: the gap shares its excess by the risk each row shows alone.
+    _net_session_risk_of_payment_method_risk(finding)
+    _apply_mandated_package_gap(
         finding,
         claim,
         lines,
         drug_lines=drug_lines,
         material_lines=material_lines,
     )
-    _net_session_risk_of_payment_method_risk(finding)
     finding.blood_component_violations = detect_blood_component_violations(lines)
 
     finding.itemized_total_try = _money(

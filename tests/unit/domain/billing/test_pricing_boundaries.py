@@ -55,6 +55,31 @@ def test_historical_primary_is_preserved_at_audit_uplift_and_strategy_boundaries
     assert (total, meta["itemized_lines"]) == (0.0, 0)
 
 
+@pytest.mark.parametrize(
+    "day, package_total",
+    [
+        (_DAY, round(9663.36 + 0.25 * 8006.39, 2)),  # 610070 leads by its 2024 puan.
+        (date(2026, 10, 1), round(16028.79 + 0.25 * 12562.36, 2)),  # 609830 after the change.
+    ],
+)
+def test_the_mandated_package_side_ranks_packages_on_the_procedure_date(day, package_total):
+    # The #269 package side prices 610070 + 609830 billed hizmet başı at a
+    # second-tier hospital as packages by §2.2.2.B(3)(a), ranked by their EK-2/C
+    # puan in force that day (the strategy boundary of the test above).
+    from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
+
+    claim = _claim(admission_date=day, discharge_date=day, claim_start_date=day, claim_end_date=day)
+    lines = [
+        _proc(procedure_line_id="a", procedure_code="610070", procedure_date=day,
+              procedure_specialty_code="general_surgery", billed_amount_try=Decimal("100")),
+        _proc(procedure_line_id="b", procedure_code="609830", procedure_date=day,
+              procedure_specialty_code="general_surgery", billed_amount_try=Decimal("100")),
+    ]
+    gap = mandated_package_gap(claim, lines)
+    assert gap is not None
+    assert gap.package_total_try == package_total
+
+
 def test_real_catalog_ranking_reverses_only_after_tariff_change():
     codes = ["P610070", "P609830"]
     old = compute_session_point_factors(codes, same_incision=True, as_of_date=_DAY)

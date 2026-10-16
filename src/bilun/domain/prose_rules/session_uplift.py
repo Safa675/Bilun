@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session
 from ..money import money_round_half_up as _money
+from .mandated_package_gap import mandated_package_scope, must_be_billed_as_package
 from .session_pricing import (
     billed_package_scopes,
     blood_component_max_billable_try,
@@ -131,6 +132,28 @@ def iter_session_secondary_assessments(
                 yield SessionSecondaryAssessment(line, primary_line, factor, session_date, session)
 
 
+def _lines_priced_by_the_package(
+    claim: ClaimHeader | None,
+    lines: list[ProcedureClaimLine],
+) -> set[int]:
+    """Lines whose under-billing belongs to the package, not to a session uplift.
+
+    A line billed hizmet başı though its package is mandated is rebilled as that
+    package, as its payment-method row says, so it has no hizmet başı uplift
+    (review item 9). On a claim the mandated-package comparison covers (#269),
+    every line inside the package window is priced on the package side and the
+    strategy row reports the gap, so an uplift there would count it twice.
+    """
+    if claim is None:
+        return set()
+    claim_lines = [line for line in lines if line.claim_id == claim.claim_id]
+    priced = {id(line) for line in claim_lines if must_be_billed_as_package(claim, line)}
+    scope = mandated_package_scope(claim, claim_lines)
+    if scope is not None:
+        priced |= {id(line) for line in scope.lines}
+    return priced
+
+
 def detect_session_underbilling_opportunities(
     lines: list[ProcedureClaimLine],
     *,
@@ -139,13 +162,19 @@ def detect_session_underbilling_opportunities(
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
-    """Flag one composed underbilling gap for each applicable secondary line."""
+    """Flag one composed underbilling gap for each applicable secondary line.
+
+    Never on a line the package comparison owns (``_lines_priced_by_the_package``).
+    """
     opportunities: list[dict[str, Any]] = []
     package_scopes = billed_package_scopes(lines)
+    priced_by_the_package = _lines_priced_by_the_package(claim, lines)
     for assessment in iter_session_secondary_assessments(
         lines, same_incision=same_incision, cross_specialty=cross_specialty, claim=claim,
     ):
         line = assessment.line
+        if id(line) in priced_by_the_package:
+            continue
         primary_line = assessment.primary_line
         factor = assessment.factor
         session_expected = expected_session_billed_try(line, point_factor=factor.point_factor)

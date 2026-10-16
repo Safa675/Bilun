@@ -133,12 +133,15 @@ class TestProseDrgUnbundling:
 
     def test_detect_drg_payload_keeps_heuristic_audit_separate(self) -> None:
         claim = _claim()
+        # A package claim by its codes (P610070 billed as the package): the
+        # synthetic package_candidate flag is no longer read (review item 3).
         lines = [
+            _proc(procedure_line_id="PKG", procedure_code="P610070", procedure_category="paket"),
             _proc(
                 is_package_included=True,
                 billed_amount_try=Decimal("200"),
                 expected_payable_try=Decimal("0"),
-            )
+            ),
         ]
         ctx = PatientClaimContext(
             patient_id="P1",
@@ -256,6 +259,10 @@ class TestProseDrgUnbundling:
 
     def test_detect_drg_unbundling_integration(self) -> None:
         claim = _claim()
+        # A package claim by its codes: P609270 billed as the package, 610070
+        # hizmet başı next to it (§2.2.2.B(3)(c), 30 %). Two hizmet başı lines a
+        # third-tier hospital may bill that way are no package claim (review
+        # item 3: the package_candidate flag is no longer read).
         lines = [
             _proc(
                 procedure_line_id="PL1",
@@ -265,7 +272,8 @@ class TestProseDrgUnbundling:
             ),
             _proc(
                 procedure_line_id="PL2",
-                procedure_code="609270",
+                procedure_code="P609270",
+                procedure_category="paket",
                 procedure_date=date(2026, 1, 10),
                 billed_amount_try=Decimal("1000"),
             ),
