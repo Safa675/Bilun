@@ -78,7 +78,9 @@ def _normalize_required_asof_date(procedure_date: date | datetime | str) -> str:
 
 
 def _is_effective_on_or_before(entry: dict[str, object], asof_date: str) -> bool:
-    effective_date = str(entry.get("effective_date") or "").strip()
+    # valid_from is the row's own start: its list's date, or the later Yürürlük date
+    # of its amendment marker. Older entries carry only effective_date.
+    effective_date = str(entry.get("valid_from") or entry.get("effective_date") or "").strip()
     if not effective_date or effective_date > asof_date:
         return False
     valid_to = str(entry.get("valid_to") or "").strip()
@@ -186,13 +188,13 @@ def get_price_history(
         catalog: Which catalog to query ("ek2b" or "ek2c")
 
     Returns:
-        DataFrame with price history sorted by effective_date
+        DataFrame with price history sorted by valid_from (the date each row applies from)
     """
     if catalog == "ek2b":
         df = _load_ek2b_history()
-        result = df.filter(pl.col("code") == code).sort("effective_date")
+        result = df.filter(pl.col("code") == code)
     else:
         df = _load_ek2c_history()
-        result = df.filter(pl.col("package_code") == code).sort("effective_date")
+        result = df.filter(pl.col("package_code") == code)
 
-    return result
+    return result.sort("valid_from" if "valid_from" in result.columns else "effective_date")

@@ -169,7 +169,11 @@ def get_price_history(code: str):
     name_col = "name" if "name" in matched.columns else "sut_adi" if "sut_adi" in matched.columns else None
     name = matched[name_col][0] if name_col and matched.height > 0 else code
 
-    date_col = "effective_date" if "effective_date" in matched.columns else "tarih"
+    # valid_from: the date each price applies from (a row amended inside a list starts
+    # at its own Yürürlük date, after the list's effective_date).
+    date_col = next(
+        (col for col in ("valid_from", "effective_date") if col in matched.columns), "tarih"
+    )
     price_col = "price_try" if "price_try" in matched.columns else "tl"
     puan_col = "puan" if "puan" in matched.columns else None
 

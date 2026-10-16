@@ -3,24 +3,28 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any
 
 from ...catalog import get_ek1a_exemptions
 from ...labels import normalize_sut_display_text
+from ...loaders.validity import as_of_iso
 from ..shared import _icd10_in_range
 
 logger = logging.getLogger("bilun.domain.optimization")
 
-_ek1a_by_letter: dict[str, list[tuple[str, str, str]]] | None = None
+# EK-1A index per service date (YYYY-MM-DD): a range applies from its valid_from.
+_ek1a_by_letter: dict[str, dict[str, list[tuple[str, str, str]]]] = {}
 
 
-def _get_ek1a_by_letter() -> dict[str, list[tuple[str, str, str]]]:
-    """Build EK-1A index grouped by ICD-10 chapter letter for O(1) access."""
-    global _ek1a_by_letter
-    if _ek1a_by_letter is not None:
-        return _ek1a_by_letter
+def _get_ek1a_by_letter(as_of: date | str | None = None) -> dict[str, list[tuple[str, str, str]]]:
+    """EK-1A ranges in force on ``as_of`` (default today), grouped by ICD-10 chapter letter."""
+    day = as_of_iso(as_of)
+    cached = _ek1a_by_letter.get(day)
+    if cached is not None:
+        return cached
 
-    ek1a = get_ek1a_exemptions()
+    ek1a = get_ek1a_exemptions(day)
     index: dict[str, list[tuple[str, str, str]]] = {}
     if not ek1a.empty:
         for _, row in ek1a.iterrows():
@@ -30,17 +34,18 @@ def _get_ek1a_by_letter() -> dict[str, list[tuple[str, str, str]]]:
             if start and start[0].isalpha():
                 letter = start[0]
                 index.setdefault(letter, []).append((start, end, disease))
-    _ek1a_by_letter = index
-    return _ek1a_by_letter
+    _ek1a_by_letter[day] = index
+    return index
 
 
 def evaluate_ek1a_exemption(
     diagnoses: list[str],
     *,
     has_health_report: bool | None = None,
+    as_of: date | str | None = None,
 ) -> dict[str, Any] | None:
-    """Return an exemption source dict if any diagnosis matches EK-1/A."""
-    ek1a_idx = _get_ek1a_by_letter()
+    """Return an exemption source dict if any diagnosis matches EK-1/A on ``as_of`` (default today)."""
+    ek1a_idx = _get_ek1a_by_letter(as_of)
     if not ek1a_idx or not diagnoses:
         return None
 

@@ -23,32 +23,37 @@ def _gazette(name: str, path: Path) -> pd.DataFrame:
     return df
 
 
+def _latest(df: pd.DataFrame, key: str) -> pd.DataFrame:
+    """One row per key: the row that starts last (valid_from, else effective_date).
+
+    A list can hold a code twice, its clean row and the row an amendment replaces it
+    with from the amendment's own date; the later start wins.
+    """
+    work = df.copy()
+    start = work["valid_from"] if "valid_from" in work.columns else work["effective_date"]
+    work["effective_date_dt"] = pd.to_datetime(start, errors="coerce")
+    return work.sort_values("effective_date_dt", kind="stable").drop_duplicates(
+        subset=[key], keep="last"
+    )
+
+
 def _ek2b() -> pd.DataFrame:
     """Load the latest EK-2B catalog snapshot from curated history.
 
-    Returns a DataFrame with one row per procedure code using the most recent
-    effective_date, with columns: code, name, puan, description, price_try.
+    Returns a DataFrame with one row per procedure code using the row that starts
+    last, with columns: code, name, puan, description, price_try.
     """
     df = _gazette("ek2b", CURATED_DIR / "ek2b_catalog_history.parquet")
     if df.empty:
         return df
-    work = df.copy()
-    work["effective_date_dt"] = pd.to_datetime(work["effective_date"], errors="coerce")
-    work = work.sort_values("effective_date_dt").drop_duplicates(
-        subset=["code"], keep="last"
-    )
-    return work
+    return _latest(df, "code")
 
 
 def _ek2c_latest() -> pd.DataFrame:
     df = _gazette("ek2c", CURATED_DIR / "ek2c_catalog_history.parquet")
     if df.empty:
         return df
-    work = df.copy()
-    work["effective_date_dt"] = pd.to_datetime(work["effective_date"], errors="coerce")
-    return work.sort_values("effective_date_dt").drop_duplicates(
-        subset=["package_code"], keep="last"
-    )
+    return _latest(df, "package_code")
 
 
 def _ek2c1() -> pd.DataFrame:

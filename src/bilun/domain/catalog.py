@@ -269,14 +269,15 @@ def lookup_ek2a_visit_price_try(
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def get_ek1a_exemptions() -> pd.DataFrame:
-    """Return EK-1A chronic disease ICD-10 exemption ranges.
+def get_ek1a_exemptions(as_of: Any | None = None) -> pd.DataFrame:
+    """Return EK-1A chronic disease ICD-10 exemption ranges in force on ``as_of`` (default today).
 
-    DataFrame columns: icd10_start, icd10_end, disease_name_tr
+    DataFrame columns: icd10_start, icd10_end, disease_name_tr, valid_from, valid_to
     (98 rows — 32 ranges + 66 single codes covering chronic diseases
-    that qualify for copayment exemption under SUT 1.8.1.)
+    that qualify for copayment exemption under SUT 1.8.1; a range SGK added
+    later applies from its valid_from.)
     """
-    return _load_ek1a_exemptions()
+    return _load_ek1a_exemptions(as_of)
 
 
 def get_ek2g_no_surcharge() -> dict[str, str]:

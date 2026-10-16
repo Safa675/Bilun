@@ -9,17 +9,31 @@ Three shared helpers:
 
 Covers 22 annexes: EK-3H, EK-3I, EK-3A, EK-3E-1, EK-3E-2, EK-3G, EK-3J, EK-3K,
 EK-3L, EK-3M, EK-3N-1, EK-3N-2, EK-3N-3, EK-3O, EK-3P, EK-3R, EK-3S, EK-3T,
-EK-3C-2, EK-3C-3, EK-3C-4, EK-3C-5.
+EK-3C-2, EK-3C-3, EK-3C-4, EK-3C-5. EK-3O is also dated by the amendment markers
+in its cells (valid_from / valid_to, see _date_material_list).
 """
 
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 import pandas as pd
 
-from scripts.sut._common import _data_cols, _safe_float, _safe_str
+from scripts.sut._common import (
+    MARKER_ADDED,
+    MARKER_FROM,
+    MARKER_REPEALED,
+    MARKER_UNDATED,
+    _add_list_validity,
+    _data_cols,
+    _safe_float,
+    _safe_str,
+    amendment_markers,
+    count_amendment_markers,
+    strip_amendment_marker,
+)
 
 
 def _extract_hierarchical_materials(
@@ -122,7 +136,43 @@ def extract_ek3n3(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def extract_ek3o(df: pd.DataFrame) -> pd.DataFrame:
-    return _extract_hierarchical_materials(df, "EK-3O")
+    return _date_material_list(_extract_hierarchical_materials(df, "EK-3O"))
+
+
+_TEXT_COLUMNS = ("material_name", "description")
+# From an "(Ek: … Yürürlük: …)" marker to the end of the text: the clause it adds.
+_ADDED_CLAUSE = re.compile(r"(?s)\s*\(\s*Ek\s*:[^()]*\).*$", re.IGNORECASE)
+
+
+def _date_material_list(out: pd.DataFrame) -> pd.DataFrame:
+    """Date a material list by the amendment markers SGK writes into its cells.
+
+    The code cell dates the row ("HO1034 (Ek: RG-29/08/2026-… Yürürlük: 05/09/2026)"),
+    see _add_list_validity. An "Ek" marker in the name or description dates the clause
+    written after it ("(2) … (Ek: RG-02/10/2026-33388/5 md. Yürürlük: 08/10/2026) (3) …"):
+    the row with the text before the marker ends the day before. Any other marker in a
+    text cell, or markers in more than one cell of a row, is not interpreted: the build
+    stops so the list is dated by hand.
+    """
+    code_cells = out["sut_code"]
+    out = out.assign(sut_code=strip_amendment_marker(code_cells)).join(amendment_markers(code_cells))
+    in_code = out[MARKER_FROM].notna() | out[MARKER_REPEALED].notna() | out[MARKER_UNDATED]
+    counts = pd.DataFrame({column: count_amendment_markers(out[column]) for column in _TEXT_COLUMNS})
+    in_texts = counts.gt(0).sum(axis=1)
+    before_rows = []
+    for column in _TEXT_COLUMNS:
+        markers = amendment_markers(out[column])
+        added = counts[column].eq(1) & markers[MARKER_FROM].notna() & markers[MARKER_ADDED]
+        unsupported = counts[column].gt(0) & (~added | in_code | in_texts.gt(1))
+        if unsupported.any():
+            codes = out.loc[unsupported, "sut_code"].tolist()
+            raise ValueError(f"EK-3 {column} amendment marker this builder cannot date: {codes}")
+        clause_cut = out.loc[added, column].str.replace(_ADDED_CLAUSE, "", regex=True)
+        before_rows.append(out[added].assign(**{column: clause_cut}))
+        out.loc[added, MARKER_FROM] = markers.loc[added, MARKER_FROM]
+    # The row as it was before the clause comes just before the row that adds it.
+    rows = pd.concat([*before_rows, out]).sort_index(kind="stable").reset_index(drop=True)
+    return _add_list_validity(rows, ["sut_code"])
 
 
 def extract_ek3p(df: pd.DataFrame) -> pd.DataFrame:

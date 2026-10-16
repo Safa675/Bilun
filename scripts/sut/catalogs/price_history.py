@@ -4,6 +4,9 @@ EK-2B / EK-2C: service-based and package-based procedure prices.
 These are the only catalogs built with source='raw_all_versions' — each gazette
 version contributes one slice of the price-history timeline, which the
 orchestrator concatenates and decorates with valid_from / valid_to ranges.
+EK-2B and EK-2C rows also carry the amendment marker of their code cell, so a
+row SGK added or amended inside a version applies from its own Yürürlük date
+(scripts/sut/_common.py::_add_validity_ranges).
 """
 
 from __future__ import annotations
@@ -115,10 +118,9 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     pos = _build_pos_map(header)
     body = df.iloc[h_idx + 1 :]
 
+    code_cells = body.iloc[:, pos["ISLEM KODU"]]
     out = pd.DataFrame()
-    out["package_code"] = _cell_text(body.iloc[:, pos["ISLEM KODU"]]).str.replace(
-        r"\s*\(.*$", "", regex=True
-    ).str.strip()
+    out["package_code"] = strip_amendment_marker(code_cells)
     out["name"] = _cell_text(body.iloc[:, pos["ISLEM ADI"]])
     if "GRUP" in pos:
         out["group"] = _cell_text(body.iloc[:, pos["GRUP"]])
@@ -135,6 +137,7 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     out["puan"] = pd.to_numeric(
         body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
     )
+    out = out.join(amendment_markers(code_cells))
 
     out = out[out["package_code"].str.match(RE_EK2C_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
@@ -173,6 +176,7 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
             "prose_drg_locked",
             "puan",
             "price_try",
+            *MARKER_COLUMNS,
         ]
     ]
 

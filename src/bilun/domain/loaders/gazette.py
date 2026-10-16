@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 import math
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,7 @@ from ..constants import (
     _OLD_TO_NEW_CODE,
 )
 from ..utils import _safe_float, _safe_str
+from .validity import rows_in_force
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -37,9 +39,41 @@ _ek2b_raw_cache: pd.DataFrame | None = None
 _ek2b_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
 _ek2c_raw_cache: pd.DataFrame | None = None
 _ek2c_by_asof_cache: dict[str, dict[str, Any]] = {}
-# EK-2Ç dental procedures. Temporal filtering mirrors EK-2B (effective_date).
+# EK-2Ç dental procedures, filtered by their list's effective_date (no marker dates).
 _ek2c_dental_raw_cache: pd.DataFrame | None = None
 _ek2c_dental_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
+
+
+def _parse_validity(df: pd.DataFrame) -> pd.DataFrame:
+    """The history with valid_from / valid_to parsed (valid_from falls back to effective_date)."""
+    if "valid_from_parsed" in df.columns:
+        return df
+    df = df.copy()
+    start = df["valid_from"] if "valid_from" in df.columns else df["effective_date"]
+    df["valid_from_parsed"] = pd.to_datetime(start, errors="coerce")
+    if "valid_to" in df.columns:
+        df["valid_to_parsed"] = pd.to_datetime(df["valid_to"], errors="coerce")
+    else:
+        df["valid_to_parsed"] = pd.NaT
+    return df
+
+
+def _history_rows_as_of(df: pd.DataFrame, key: str, asof_date: str) -> pd.DataFrame:
+    """One row per key in force on the date; before the whole history, each key's first row.
+
+    A row is in force from valid_from (its list's date, or the later Yürürlük date of its
+    own amendment marker) through valid_to.
+    """
+    cutoff = pd.to_datetime(asof_date)
+    parsed = df[df["valid_from_parsed"].notna()]
+    eligible = parsed[
+        (parsed["valid_from_parsed"] <= cutoff)
+        & (parsed["valid_to_parsed"].isna() | (parsed["valid_to_parsed"] >= cutoff))
+    ]
+    if eligible.empty and (parsed["valid_from_parsed"] > cutoff).all():
+        first = parsed.sort_values([key, "valid_from_parsed"])
+        return first.drop_duplicates(subset=[key], keep="first")
+    return eligible.sort_values([key, "valid_from_parsed"]).drop_duplicates(subset=[key], keep="last")
 
 
 def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
@@ -57,31 +91,11 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
     if df.empty:
         return {}
 
-    # Parse effective_date once on first load and stash on the cached frame so
-    # every date-variant reuses the parsed column instead of re-parsing.
-    if "effective_date_parsed" not in df.columns or "valid_to_parsed" not in df.columns:
-        df = df.copy()
-        df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
-        if "valid_to" in df.columns:
-            df["valid_to_parsed"] = pd.to_datetime(df["valid_to"], errors="coerce")
-        else:
-            df["valid_to_parsed"] = pd.NaT
-        _ek2b_raw_cache = df
-
-    cutoff = pd.to_datetime(asof_date)
-    parsed = df[df["effective_date_parsed"].notna()]
-    eligible = parsed[
-        (parsed["effective_date_parsed"] <= cutoff)
-        & (parsed["valid_to_parsed"].isna() | (parsed["valid_to_parsed"] >= cutoff))
-    ]
-    if eligible.empty and (parsed["effective_date_parsed"] > cutoff).all():
-        eligible = parsed.sort_values(["code", "effective_date_parsed"]).drop_duplicates(
-            subset=["code"], keep="first"
-        )
-    else:
-        eligible = eligible.sort_values(
-            ["code", "effective_date_parsed"]
-        ).drop_duplicates(subset=["code"], keep="last")
+    # Parse the validity dates once on first load and stash them on the cached frame
+    # so every date-variant reuses the parsed columns instead of re-parsing.
+    df = _parse_validity(df)
+    _ek2b_raw_cache = df
+    eligible = _history_rows_as_of(df, "code", asof_date)
 
     # Vectorized dict construction (to_dict) — ~6.5× faster than iterrows for
     # 62k rows, and avoids per-row Series allocation.
@@ -98,6 +112,7 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
             "puan": _safe_float(row.get("puan")),
             "price_try": _safe_float(row.get("price_try")),
             "effective_date": _safe_str(row.get("effective_date")),
+            "valid_from": _safe_str(row.get("valid_from")) or _safe_str(row.get("effective_date")),
             "valid_to": _safe_str(row.get("valid_to")) or None,
         }
         if entry["name"] and entry["price_try"] is not None:
@@ -137,29 +152,9 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "stats": {"total_packages": 0},
         }
 
-    if "effective_date_parsed" not in df.columns or "valid_to_parsed" not in df.columns:
-        df = df.copy()
-        df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
-        if "valid_to" in df.columns:
-            df["valid_to_parsed"] = pd.to_datetime(df["valid_to"], errors="coerce")
-        else:
-            df["valid_to_parsed"] = pd.NaT
-        _ek2c_raw_cache = df
-
-    cutoff = pd.to_datetime(asof_date)
-    parsed = df[df["effective_date_parsed"].notna()]
-    eligible = parsed[
-        (parsed["effective_date_parsed"] <= cutoff)
-        & (parsed["valid_to_parsed"].isna() | (parsed["valid_to_parsed"] >= cutoff))
-    ]
-    if eligible.empty and (parsed["effective_date_parsed"] > cutoff).all():
-        eligible = parsed.sort_values(
-            ["package_code", "effective_date_parsed"]
-        ).drop_duplicates(subset=["package_code"], keep="first")
-    else:
-        eligible = eligible.sort_values(
-            ["package_code", "effective_date_parsed"]
-        ).drop_duplicates(subset=["package_code"], keep="last")
+    df = _parse_validity(df)
+    _ek2c_raw_cache = df
+    eligible = _history_rows_as_of(df, "package_code", asof_date)
 
     records = eligible.to_dict(orient="records")
     packages: list[dict[str, Any]] = []
@@ -178,6 +173,7 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "puan": _safe_float(row.get("puan")),
             "price_try": round(float(price), 2),
             "effective_date": _safe_str(row.get("effective_date")),
+            "valid_from": _safe_str(row.get("valid_from")) or _safe_str(row.get("effective_date")),
             "valid_to": _safe_str(row.get("valid_to")) or None,
         }
         packages.append(entry)
@@ -390,13 +386,18 @@ def _load_ek2a() -> dict[str, Any]:
         return {}
 
 
-def _load_ek3_materials_parquet(path: Path, label: str) -> list[dict[str, Any]]:
-    """Load EK-3H/3I medical material pricing from curated parquet."""
+def _load_ek3_materials_parquet(
+    path: Path, label: str, as_of: date | str | None = None
+) -> list[dict[str, Any]]:
+    """Load an EK-3 material list from curated parquet: its rows in force on ``as_of``.
+
+    Only dated lists (valid_from / valid_to, e.g. EK-3O) depend on the date, today by default.
+    """
     if not path.exists():
         logger.warning("%s curated parquet not found: %s", label, path)
         return []
     try:
-        df = pd.read_parquet(path)
+        df = rows_in_force(pd.read_parquet(path), as_of)
         materials: list[dict[str, Any]] = []
         for _, row in df.iterrows():
             code = str(row.get("sut_code", "")).strip()
