@@ -9,9 +9,10 @@ billing_mode: itemized
 department:
   name: "Gogus Hastaliklari"
   specialty: "1171"                  # EK-2A: Göğüs Hastalıkları
-window:                              # narrowed: KLACID 500 MG IV is in EK-4A only until 2026-08-29
+window:                              # narrowed; the source says why
   start: "2026-02-01"
-  end: "2026-08-29"
+  end: "2026-08-28"
+  source: "KLACID 500 MG IV leaves EK-4A on 2026-08-29 (valid_until is exclusive), so its last day is 2026-08-28."
 
 patient:
   sex:
@@ -36,13 +37,13 @@ diagnoses:
     role: primary
     day: admit
     basis: guideline
-    source: "SKRS leaf code (review 2026-10-16 Q12); exacerbation per GOLD, as story S2 cites. WHO ICD-10 Vol. 2 coding."
+    source: "SKRS leaf code (checked against icd10_tr.parquet); exacerbation per GOLD, as story S2 cites. WHO ICD-10 Vol. 2 coding."
   - icd10: J18.9
     name: "PNÖMONİ, TANIMLANMAMIŞ"
     role: secondary
     day: admit
     basis: guideline
-    source: "SKRS leaf code (review 2026-10-16 Q12); pneumonia treated per ATS/IDSA 2019, as story S2 cites."
+    source: "SKRS leaf code (checked against icd10_tr.parquet); pneumonia treated per ATS/IDSA 2019, as story S2 cites."
   - icd10: I10
     name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
     role: secondary
@@ -62,7 +63,7 @@ procedures:
     name: "Standart yatak tarifesi"
     days: admit..discharge             # 7 lines for 6 nights: the discharge day is billed too
     basis: medula_kilavuz
-    source: "Kılavuz v3.1.1 p.62, p.168; C000648. Review 2026-10-16 Q1: one line per calendar day, discharge day included."
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
   - id: companion
     kind: companion
     code: "510121"
@@ -161,7 +162,7 @@ drugs:
       min: 5
       max: 7
       basis: judgment
-      source: "Story S2 gives 1 g a day for 7 days (ATS/IDSA 2019 regimen). The range is the author's judgment."
+      source: "Story S2 bills 7 vials of 1 g, read as 1 g a day for 7 days (ATS/IDSA 2019 regimen). The range is the author's judgment."
     basis: guideline
     source: "ATS/IDSA 2019, as story S2 cites: ceftriaxone plus clarithromycin."
   - id: clarithromycin
@@ -191,7 +192,7 @@ drugs:
       min: 5
       max: 5
       basis: guideline
-      source: "GOLD, as story S2 cites: 40 mg a day for 5 days."
+      source: "GOLD, as story S2 cites: 40 mg for 5 days; the story bills 5 ampoules."
     basis: guideline
     source: "GOLD, as story S2 cites; added to the story by the review of 2026-10-16."
   - id: ipratropium_salbutamol
@@ -203,7 +204,7 @@ drugs:
     day: admit
     qty: 1                             # one box of 20 nebules for the stay
     basis: judgment
-    source: "Story S2: the nebulizer drug, one box for the stay; no guideline named."
+    source: "Story S2 bills one whole box (20 nebules) for the stay, so unit box; no guideline named."
   - id: enoxaparin
     barcode: "8699809950696"
     name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"

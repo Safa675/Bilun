@@ -23,7 +23,7 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 Open `copd_exacerbation_pneumonia_ward.yaml` next to this text.
 
 1. **Identity and setting.** `id`, `title`, `claim_type` (`yatis` or `acil`), `billing_mode` (`package` = EK-2C, `itemized` = EK-2B hizmet başı), `department` (the header name and the default EK-2A branch of every line).
-2. **`window`** (optional). The service window of the pathway. Default: the `window` of `code_sets.yaml`, 2026-02-01 to 2026-09-30. A pathway may narrow it, never widen it. **Every code must be in force on every day of the window.** S2 ends on 2026-08-29 because KLACID 500 MG IV is in EK-4A only until then.
+2. **`window`** (optional). The service window of the pathway. Default: the `window` of `code_sets.yaml`, 2026-02-01 to 2026-09-30. A pathway may narrow it, never widen it, and a narrowed window carries `start`, `end` and a `source`: one sentence, 160 characters at most, that says why. **Every code must be in force on every day of the window.** S2 ends on 2026-08-28: KLACID 500 MG IV leaves EK-4A on 2026-08-29. EK-4A rows are half-open, `[valid_from, valid_until)`, so `valid_until` is the first day a drug is not in force and the checks use the day before it (as the engine does).
 3. **`patient`**: the sexes and the age range the pathway allows. **`nights`**: the length-of-stay range (stays only). **`op_day`**: the operation day as a day expression, if the pathway has one.
 4. **`diagnoses`**: one primary, the others secondary, each with the day it is coded.
 5. **`procedures`**, **`materials`**, **`drugs`**, **`performed`**: the lines of the bill.
@@ -45,17 +45,17 @@ A day is an **anchor** with optional whole days: `admit`, `op` (the operation da
 | `admit..admit+1` | 9 and 10 March | 2 |
 | `[admit, admit+3]` | 9 and 12 March | 2 |
 
-Every expression must land inside the stay for the shortest, the longest and the pinned stay (`days.in_stay`), so pick `nights.min` with the fixed offsets in mind.
+Every expression must land inside the stay for the shortest, the longest and the pinned stay (`days.in_stay`), so pick `nights.min` with the fixed offsets in mind. A `bed` line must cover exactly `admit..discharge` and a `companion` line exactly `admit..discharge-1` at those three stays (`stay.coverage`), so the lines grow with the nights.
 
 ### Quantities
 
-- A procedure, material or performed line has `qty` (default 1) **per bill line**. `qty: 16` with `days: admit..admit+1` is 16 hours on each of two days. "Per calendar day" and "per night" are day ranges, one line each.
+- A procedure or material line has `qty` (default 1) **per bill line**. `qty: 16` with `days: admit..admit+1` is 16 hours on each of two days. "Per calendar day" and "per night" are day ranges, one line each. A performed line has no quantity: it is one log entry.
 - A **drug** is one line on the first day of its course with the whole quantity. Exactly one form:
   - `qty: 7`: a fixed number of units;
   - `per_night: 1`: units times the nights of the stay (must start on `admit`);
   - `per_day: 2` with `course_days: {min, max, basis, source}`: units a day times the course days chosen by the pins. `min == max` is a fixed duration.
-- `unit` and `per_box` follow the EK-4A pack. The count is units actually used, never boxes.
-- A course must end on or before the discharge day (`drug.course`). The composer draws the nights first and then the course days from `min` to the days left.
+- `unit` and `per_box` follow the EK-4A pack. The count is the units used (the review, Q7: drugs are billed by units used, fractions allowed), with two exceptions where the story bills a whole box with `unit: box`: the ipratropium/salbutamol nebules of S2 (one box of 20) and the paracetamol of S4. Their `source` says so; they are the stories' choice, not a rule.
+- A course must end on or before the discharge day (`drug.course`): the shortest course must fit the shortest stay, and `expand` refuses pins whose course outlasts the pinned stay. The composer draws the nights first and then the course days from `min` to the days left.
 
 ### Line kinds (`procedures[].kind`)
 
@@ -68,7 +68,7 @@ Every expression must land inside the stay for the shortest, the longest and the
 | `exam` | EK-2B chapter 2 | |
 | `lab` | EK-2B chapters 9 and 10 | `items:` lists a panel (several codes, same days, quantity and branch); every `L` code must be in `lab_reference.csv` |
 | `imaging` | EK-2B chapter 8 | |
-| `procedure` | EK-2B chapters 3, 4, 7 | |
+| `procedure` | EK-2B chapters 3, 4, 5 and 7 | |
 
 `specialty` is an EK-2A branch code; a line without one gets the department's. Name a branch only where it differs (anaesthesia 3100, radiology 3300, neurology 1300). A **package pathway has package lines and linked materials only**: bed, companion, exams, labs, imaging, anaesthesia and drugs are inside the package (SUT 2.2.2.B-1(1), C000685 to C000699). The longest stay must end inside the package window of its group (A 15 days, B 10, C 8, D 5, E 3, counted from the package day; C000702 to C000706).
 
@@ -86,7 +86,7 @@ Operations of one session carry `session_role` on a single-day line: `primary` (
 
 ### Diagnoses, drugs and indications
 
-`icd10` must be an active SKRS **leaf** code and `name` its `name_tr`. A drug may name `indication: G20`; that diagnosis must be in the pathway (and in the pinned bill).
+`icd10` must be an active SKRS **leaf** code and `name` its `name_tr`. A drug may name `indication: G20`; that diagnosis must be in the pathway and must not be optional, so the drug can never be billed without it (`drug.indication`).
 
 ### Optional items and the pins
 
@@ -94,9 +94,9 @@ An item with `optional: {probability, basis, source}` is in the bill only when i
 
 ### Provenance: `basis` and `source`
 
-Every diagnosis, line, range and probability carries both. `source` is one short sentence (160 characters at most) that names the document, clause or guideline.
+Every diagnosis, line, range and probability carries both. A narrowed `window` carries a `source` only, no `basis`: its reason is a catalog fact. `source` is one short sentence (160 characters at most) that names the document, clause or guideline.
 
-| basis | Use when | `source` must |
+| basis | Use when | `source` should |
 |---|---|---|
 | `sut` | an SUT clause decides it | give a clause id (`C000685`) or an annex (`EK-2B`); every `C…` id must be an in-force clause of `data/gazette/sut_clauses.parquet` |
 | `ek2b_aciklama` | the EK-2B açıklama column of the code decides it | name the code and quote the limit |
@@ -104,7 +104,7 @@ Every diagnosis, line, range and probability carries both. `source` is one short
 | `guideline` | a named clinical guideline decides it | name it |
 | `judgment` | nothing citable | say what the choice is anchored on; a clinician checks these |
 
-Do not invent a clause id: look it up with Polars in `data/gazette/sut_clauses.parquet`.
+The checks enforce two things about a `source`, and only these. `source.clause_exists`: every `C…` id in any `source` (of any basis, and the window's) must be an in-force clause of `sut_clauses.parquet`. `source.sut_cites`: a `sut` source must give a clause id or an `EK-` annex. What the other bases ask (a quoted limit, a page, a guideline name, what a judgment is anchored on) is checked by review only, and so is whether a cited clause says what the source claims. Do not invent a clause id: look it up with Polars in `data/gazette/sut_clauses.parquet`.
 
 ### `pending`
 
@@ -116,23 +116,23 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 
 | Check | What it finds |
 |---|---|
-| `yaml.invalid`, `hygiene.forbidden_key`, `hygiene.anon_text`, `schema.id_mismatch` | bad YAML or a repeated key; a key named price, amount, total or package_candidate; `ANON_` text; a file name that is not `<id>.yaml` |
-| `schema.*` | an unknown or missing field (including `basis`, `source`), a bad enum or value, a bad day expression, min above max, a probability outside [0, 1], a duplicate id, a dangling reference, an undefined anchor, a malformed line, a wrong drug quantity form, not exactly one primary diagnosis, a stay without nights |
+| `yaml.invalid`, `hygiene.forbidden_key`, `hygiene.anon_text`, `hygiene.price_text`, `hygiene.id_like_number`, `schema.id_mismatch` | bad YAML or a repeated key; a key containing price, amount, total or package_candidate (any case); in any key, string or comment, text that looks like an ANON identifier (`ANON_7`, `anon-7`, `ANON 7`, any case), a non-zero currency amount (`12 TL`, `12 TRY`, `12 ₺`, `₺12`; "0 TL" passes) or an isolated 11-digit number (barcodes have 13); a file name that is not `<id>.yaml` |
+| `schema.*` | an unknown or missing field (including `basis`, `source`, and the `source` of a window), a bad enum or value, a bad day expression, min above max, a probability outside [0, 1], a duplicate id, a dangling reference, an undefined anchor, a malformed line, a wrong drug quantity form, not exactly one primary diagnosis, a stay without nights |
 | `procedure.in_force`, `procedure.name`, `procedure.kind` | an EK-2B/EK-2C code missing on some day of the window; a name that is not the catalog's (whitespace-normalized); a kind that does not fit the code's chapter |
 | `material.*`, `drug.in_force`, `drug.name`, `drug.inn` | the same for EK-3/F-1 and EK-4A; `inn` must be the crosswalk's `active_ingredient` |
-| `drug.indication`, `drug.course` | an indication that is not a diagnosis of the bill; a course that outlasts the stay |
+| `drug.indication`, `drug.course` | an indication that is not a diagnosis of the pathway or is optional; a `per_night` drug that does not start on admit; a course that outlasts the stay (the shortest course at the shortest stay, and a pinned course at the pinned stay) |
 | `icd.exists`, `icd.active`, `icd.leaf`, `icd.name`, `icd.sex_gate` | the SKRS table; a sex-gated code with a sex list that allows the other sex |
 | `lab.in_table`, `lab.name`, `specialty.exists` | an `L` code absent from `lab_reference.csv` or named differently; an unknown EK-2A branch |
 | `package.mode`, `package.window` | a package pathway with a line the package includes (or the reverse); a stay past the package window |
 | `anaesthesia.group`, `anaesthesia.code`, `session.primary`, `session.order` | the puan band; the group's code; the primary operation of a session |
-| `pins.*`, `days.in_stay`, `days.duplicate` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day |
+| `pins.*`, `days.in_stay`, `days.duplicate`, `stay.coverage` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day; a bed line off `admit..discharge` or a companion line off `admit..discharge-1` |
 | `source.clause_exists`, `source.sut_cites`, `window.valid` | a cited clause that does not exist or is not in force; `sut` without a citation; a window outside the default |
 
 ## Add a pathway
 
 1. Copy the closest pathway (`appendicitis_lap_appendectomy_package.yaml` for a package, `copd_exacerbation_pneumonia_ward.yaml` for an itemized stay) to `<id>.yaml`.
 2. Write the clean story only: no item the story does not have, none dropped. Generalize only the sexes, the age range, the nights, drug course days and items the story or the review treats as optional. Give every range and every item a `basis` and a `source`.
-3. Run the checks (command above) until they are silent. To find a catalog name, write the code with a placeholder name (`"??"`) and copy the real name from the `procedure.name`, `material.name`, `drug.name` or `icd.name` message. A `*.in_force` message names the first day a code is missing: narrow the `window` to the days it is in force and say why in a comment, as S2 does.
+3. Run the checks (command above) until they are silent. To find a catalog name, write the code with a placeholder name (`"??"`) and copy the real name from the `procedure.name`, `material.name`, `drug.name` or `icd.name` message. A `*.in_force` message names the first day a code is missing: narrow the `window` to the days it is in force and say why in its `source`, as S2 does.
 4. Write the `showcase` pins from the story and make the round trip pass: `expand(pathway)` must equal `tests/fixtures/pathways/golden/<story>.json`. Never edit the golden to fit the YAML.
 5. Update the status table below.
 
@@ -142,9 +142,9 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 .venv/bin/python -m pytest tests/unit/synthetic/test_pathways_schema.py tests/unit/synthetic/test_pathways_roundtrip.py tests/unit/synthetic/test_pathways_golden.py -q
 ```
 
-- `test_pathways_schema.py`: every real pathway loads and passes every check; every check id in `CHECKS` has a mutation case that takes a real pathway, proves it clean, applies one defect and asserts that exactly the expected ids fire.
-- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a changed pin changes the bill; pins outside the ranges are refused; every golden has a pathway and every pathway a golden. A broken file fails only its own cases.
-- `test_pathways_golden.py`: the golden files are well formed.
+- `test_pathways_schema.py`: every real pathway loads and passes every check; the folder holds only this README and top-level `*.yaml` files (a `.yml` file or a sub-folder would never load); every check id in `CHECKS` has a mutation case that takes a real pathway, proves it clean, applies one defect and asserts that exactly the expected ids fire; further tests pin the edges of the checks (the package window, the stays tested, the window and range edges, the EK-4A last day against the engine's reader).
+- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a flipped optional item or course changes the bill; the bed and companion lines gain one bill line per extra night; a later admission moves every date; pins outside the ranges, or a course that outlasts the pinned stay, are refused; every golden has a pathway and every pathway a golden. A broken file fails only its own cases.
+- `test_pathways_golden.py`: the golden files are well formed, and they equal a fresh export of `stories.py`: the test runs `reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py --check` in a subprocess (about a second), so a pathway and its golden cannot be changed together unnoticed.
 
 ## Not expressible yet
 
@@ -152,8 +152,13 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 - Itemized lines after the package window (long package stays) are not expressible; `package.window` refuses such a stay.
 - Materials are checked against EK-3/F-1 only.
 - Procedure lines have no flags (the stories set none).
-- `showcase` is required, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed.
+- `showcase` is required and `Pins.story` is limited to `S1`..`S8`, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed; P4 must relax both.
 - Newborn and ICU tiers (P55200x) are not modelled.
+- A drug course that runs to discharge from a later start (S6 levodopa, through the NG tube from day 3) has no "until discharge" form: `course_days` is drawn independently of the nights, so P4 must clamp it to the days left.
+- The clinical sex of a diagnosis is judgment, not data. S5's M81.09 is postmenopausal osteoporosis, so S5 says `sex: [F]`, but the ICD table's sex column covers only 97 neoplasm codes (C and D), so `icd.sex_gate` cannot see it.
+- `expand` returns line identities only (codes, dates, quantities, specialties, links, flags, `billed_ratio`): a row carries no line id, kind or indication, so the fault registry (P3) cannot tell which pathway line a row came from and needs an annotate option. A package pathway's fault sibling is P3 work too: S1's fault needs an itemized appendectomy pathway.
+- Guarded by review only: a required item made optional and pinned in, a range widened beyond the pins, a probability, a title, a note, the id of a line nothing refers to, an edit of a `source`, a `basis` or a `pending` marker, and whether a cited clause says what its source claims.
+- Stay scaling is checked for `bed` and `companion` lines only. A drug rewritten from `per_night` to a fixed `qty` that matches the showcase nights, or S2's nebulizer (`admit..discharge-1`) fixed to the showcase nights, passes every check; it is a plausibility question (P5), not a validity one.
 
 ## Status
 

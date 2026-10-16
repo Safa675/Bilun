@@ -1,7 +1,7 @@
 # Synthetic demo cohort v3: care pathways instead of random draws
 
 Date: 2026-10-14 (rev 2, after an independent review)
-Status: **approved 2026-10-15; P0 and P1 in progress** (branch `claude/synthetic-v3-p0-p1`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
+Status: **approved 2026-10-15; P0 and P1 landed (#258, #296); P2 first step landed 2026-10-17: the 8 showcase pathways, their format and checks** (`data/synthetic/pathways/README.md`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
 Inputs:
 - the audit `reports/synthetic-data/2026-10-14-demo-cohort-audit.md`;
 - its scripts in `reports/synthetic-data/2026-10-14-audit-scripts/`;
@@ -134,7 +134,7 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 
 ### D2. Care-pathway table (data, reviewed under Q3)
 
-- **Location:** `data/synthetic/pathways/*.yaml`, with a schema test.
+- **Location:** `data/synthetic/pathways/*.yaml`, with a schema test. The format as built (2026-10-17) is in `data/synthetic/pathways/README.md`: one file per pathway, keyed by its diagnoses, `claim_type` and `billing_mode` (not by an ICD range), with `basis` and `source` on every item and range; faults, prices and drug prices stay out.
 - **Key:** (ICD range, care setting). Care settings are poliklinik, acil, günübirlik, yatış and yoğun bakım.
 - **Each pathway defines:**
   - **Department and exam:** the department; the exam code for the setting; consultations.
@@ -218,7 +218,7 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 - [ ] Every table has a schema test and a provenance note.
 
 ### P2 — Pathways
-- [ ] The 8 showcase pathways, written and reviewed (Q3).
+- [x] The 8 showcase pathways, written (2026-10-17). Each expands with its own pins to the golden clean bill of its story; two independent reviews found and fixed the defects. The 77 `judgment` items wait for a clinician (Q3): `reports/synthetic-data/2026-10-17-pathways-judgment-list.md`.
 - [ ] The rest of the first 20.
 
 ### P3 — Fault registry and answer key

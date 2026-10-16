@@ -12,24 +12,34 @@ from __future__ import annotations
 import copy
 import dataclasses
 from collections.abc import Callable
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import polars as pl
 import pytest
 import yaml
 
-from scripts.synthetic.pathways import PathwayLoadError, load_all, load_pathway
+from scripts.synthetic.pathways import PathwayLoadError, load_all, load_pathway, load_text
 from scripts.synthetic.pathways.checks import (
     Catalogs,
+    _frame,
+    _stay_cases,
     _with_groups,
+    check_anaesthesia,
+    check_package_window,
+    identity_problems,
+    in_force,
     norm,
     probe_days,
     run_all,
 )
 from scripts.synthetic.pathways.expand import SESSION_RATIOS
+from scripts.synthetic.pathways.loader import hygiene
 from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags
 from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine
+from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
 
 pytestmark = pytest.mark.unit
 
@@ -38,6 +48,10 @@ _DIR = _REPO / "data/synthetic/pathways"
 _FILES = sorted(_DIR.glob("*.yaml"))
 S1 = "appendicitis_lap_appendectomy_package"
 S2 = "copd_exacerbation_pneumonia_ward"
+S3 = "lumbar_stenosis_decompression_itemized"
+S5 = "femoral_neck_fracture_cemented_hemiarthroplasty_package"
+S6 = "aspiration_pneumonia_parkinson_ward"
+S7 = "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out"
 
 
 @pytest.fixture(scope="module")
@@ -65,6 +79,24 @@ def _problems(raw, cat, tmp_path, text=None, filename=None):
 
 def test_the_pathway_folder_has_pathways() -> None:
     assert {S1, S2} <= {p.stem for p in _FILES}
+
+
+def _strays(directory: Path) -> list[str]:
+    """Entries load_all never reads: everything but README.md and top-level *.yaml files."""
+    kept = lambda p: p.is_file() and (p.suffix == ".yaml" or p.name == "README.md")  # noqa: E731
+    return sorted(p.name for p in directory.iterdir() if not kept(p))
+
+
+def test_the_pathway_folder_holds_only_the_readme_and_yaml_files() -> None:
+    assert _strays(_DIR) == []
+
+
+def test_a_yml_file_a_subfolder_or_another_file_is_a_stray(tmp_path: Path) -> None:
+    for name in ("README.md", "fine.yaml", "wrong.yml", "notes.txt", "fine.yaml.bak"):
+        (tmp_path / name).write_text("x", encoding="utf-8")
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "deep.yaml").write_text("x", encoding="utf-8")
+    assert _strays(tmp_path) == ["fine.yaml.bak", "notes.txt", "sub", "wrong.yml"]
 
 
 @pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
@@ -116,6 +148,33 @@ def test_names_are_compared_after_whitespace_normalization(catalogs: Catalogs, t
     assert norm("a \n b") == "a b"
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "an error row of 0 TL (never_principal_diagnosis_blocklist)",  # a zero amount is not a price
+        "0,00 TRY",
+        "barcode 8699508270224, code 510010, lab L103900, on 2026-03-09",
+        "500 mg twice a day for 5 days, 2 g once, 40 mg a day",
+        "a 1 TLC panel and 3 trying days",  # TL and TRY count only as whole words
+        "ANONYMOUS and anonymised data; a canon 5",
+        "a 12-digit number 123456789012 and a 10-digit one 1234567890",
+    ],
+)
+def test_hygiene_lets_ordinary_text_through(text: str) -> None:
+    assert hygiene({"notes": [text]}, text) == []
+
+
+def test_hygiene_names_the_key_or_value_it_found_not_only_the_file() -> None:
+    raw = {"notes": ["see ANON_77", "12 TL"], "ANON_1": 1, "unit_price": 3}
+    found = {(p.check, p.where) for p in hygiene(raw)}
+    assert found == {
+        ("hygiene.anon_text", "notes[0]"),
+        ("hygiene.price_text", "notes[1]"),
+        ("hygiene.anon_text", "ANON_1"),
+        ("hygiene.forbidden_key", "unit_price"),
+    }
+
+
 def test_catalogs_are_read_once(catalogs: Catalogs) -> None:
     assert catalogs.ek2b is catalogs.ek2b
     assert catalogs.window == ("2026-02-01", "2026-09-30")
@@ -157,19 +216,31 @@ def test_session_ratios_match_the_sut_text() -> None:
 def test_package_windows_match_the_sut_text() -> None:
     from scripts.synthetic.pathways.checks import PACKAGE_WINDOW_DAYS
 
-    clauses = pl.read_parquet(
-        _REPO / "data/gazette/sut_clauses.parquet", columns=["clause_id", "text_tr"]
+    clauses = {"A": "C000702", "B": "C000703", "C": "C000704", "D": "C000705", "E": "C000706"}
+    wanted = pl.DataFrame({"letter": list(clauses), "clause_id": list(clauses.values())})
+    days = (  # "...; 15 gün ..." in the clause text
+        pl.scan_parquet(_REPO / "data/gazette/sut_clauses.parquet")
+        .join(wanted.lazy(), on="clause_id")
+        .select(
+            "letter",
+            pl.col("text_tr")
+            .str.split(";")
+            .list.get(1)
+            .str.split("gün")
+            .list.get(0)
+            .str.strip_chars()
+            .cast(pl.Int64)
+            .alias("days"),
+        )
+        .sort("letter")
+        .collect()
     )
-    text = {r["clause_id"]: r["text_tr"] for r in clauses.iter_rows(named=True)}
-    found = {
-        letter: int(text[clause].split(";")[1].split("gün")[0])
-        for letter, clause in zip("ABCDE", ["C000702", "C000703", "C000704", "C000705", "C000706"])
-    }
-    assert found == PACKAGE_WINDOW_DAYS
+    assert days["letter"].to_list() == list(PACKAGE_WINDOW_DAYS)
+    assert days["days"].to_list() == list(PACKAGE_WINDOW_DAYS.values())
 
 
 def test_the_ek3f1_list_is_in_force_only_from_its_own_date(catalogs: Catalogs) -> None:
-    from scripts.synthetic.pathways.checks import EK3F1_FROM, _frame, identity_problems
+    from scripts.synthetic.pathways.checks import EK3F1_FROM
 
     name = "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOLU | ÇELİK | PARLATILMIŞ"
     occurrences = _frame([("AP2000", name, "materials[stem]")], "code", "name", "where")
@@ -190,6 +261,15 @@ def test_anaesthesia_group_follows_the_band_table_in_force_on_each_day() -> None
     bands = Catalogs().code_sets["surgical_group_bands"]
     groups = _with_groups(totals, bands)["group"].to_list()
     assert groups == ["A1", "B", "A2", "B", "E"]  # 33000 is A1 until 2026-04-16, A2 after
+
+
+def test_ek4a_valid_until_is_exclusive_as_the_engine_reads_it(catalogs: Catalogs) -> None:
+    """EK-4A rows are half-open [valid_from, valid_until): KLACID 500 MG IV ends on 2026-08-29."""
+    klacid = "8699548270482"
+    for day, listed in (("2026-08-27", True), ("2026-08-28", True), ("2026-08-29", False)):
+        ours = in_force(catalogs.ek4a, [klacid], [day]).item(0, "n") > 0
+        engine = bool(ek4a_as_of(date.fromisoformat(day)).by_barcode(klacid))
+        assert (ours, engine) == (listed, listed), day
 
 
 def test_probe_days_catch_every_catalog_boundary_inside_the_window() -> None:
@@ -243,6 +323,14 @@ def icd_name(cat: Catalogs, code: str) -> str:
 
 def ek2b_name(cat: Catalogs, code: str) -> str:
     return cat.ek2b.filter(pl.col("code") == code)["name"].unique().item()
+
+
+def ek2b_name_on(cat: Catalogs, code: str, day: str) -> str:
+    """The catalog name on a day (the multiple-operation anaesthesia codes rename with the band table)."""
+    current = (pl.col("valid_from") <= day) & (
+        pl.col("valid_to").is_null() | (pl.col("valid_to") >= day)
+    )
+    return cat.ek2b.filter((pl.col("code") == code) & current)["name"].item()
 
 
 FIXTURE = "Test fixture only: a construct the real files do not have yet."
@@ -321,6 +409,68 @@ def with_optional_indicated_drug(
     }
 
 
+def with_er_course(raw: dict, cat: Catalogs) -> None:  # on S7: a one-day course on an ER-only visit
+    raw["drugs"].append(
+        {
+            "id": "antibiotic",
+            "barcode": "8699508270224",
+            "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
+            "inn": "seftriakson",
+            "unit": "vial",
+            "per_box": 1,
+            "day": "admit",
+            "per_day": 1,
+            "course_days": {"min": 1, "max": 1, "basis": "judgment", "source": FIXTURE},
+            "basis": "judgment",
+            "source": FIXTURE,
+        }
+    )
+    set_pins(raw, course_days={"antibiotic": 1})
+
+
+def chance(probability: float = 0.5) -> dict:
+    return {"probability": probability, "basis": "judgment", "source": FIXTURE}
+
+
+def set_anaesthesia(raw: dict, cat: Catalogs, mode: str, group: str) -> None:
+    code = cat.code_sets["anaesthesia"][mode][group]
+    name = ek2b_name_on(cat, code, raw["showcase"]["admit"])
+    line(raw, "anaesthesia").update(group=group, code=code, name=name)
+
+
+def with_two_operations(raw: dict, cat: Catalogs) -> None:  # on S3: two operations, one anaesthesia
+    """615931 (6,471 puan) and 616020 (3,109) sum to group A3 under both band tables; alone, B or lower."""
+    line(raw, "decompression")["session_role"] = "primary"
+    raw["procedures"].append(
+        {
+            "id": "laminectomy",
+            "kind": "operation",
+            "code": "616020",
+            "name": ek2b_name(cat, "616020"),
+            "days": "op",
+            "session_role": "same_incision",
+            "basis": "judgment",
+            "source": FIXTURE,
+        }
+    )
+    line(raw, "anaesthesia")["operations"] = ["decompression", "laminectomy"]
+    set_anaesthesia(raw, cat, "multiple_operations", "A3")
+    # the multiple-operation codes carry the band table in their name, which changes on 2026-04-16
+    raw["window"] = {"start": "2026-04-16", "end": "2026-09-30", "source": FIXTURE}
+
+
+def with_optional_second_primary(raw: dict, cat: Catalogs) -> None:  # on S1: out of the bill
+    with_second_package(raw, cat)
+    line(raw, "hernia_package").update(session_role="primary", optional=chance())
+
+
+def per_night_instead_of_course(raw: dict) -> None:  # on with_er_course: a stay-only form
+    for key in ("per_day", "course_days"):
+        drug(raw, "antibiotic").pop(key)
+    drug(raw, "antibiotic")["per_night"] = 1
+    set_pins(raw, course_days={})
+
+
 def with_performed(raw: dict, cat: Catalogs) -> None:  # on S2: an EMR log line
     raw["performed"] = [
         {
@@ -344,13 +494,39 @@ def set_pins(raw: dict, **changes) -> None:
     raw["showcase"].update(changes)
 
 
+def optional_and_pinned_in(raw: dict, icd: str) -> None:
+    """Make a diagnosis optional and put it in the showcase bill."""
+    diagnosis(raw, icd)["optional"] = {"probability": 0.9, "basis": "judgment", "source": FIXTURE}
+    set_pins(raw, include=[*raw["showcase"]["include"], icd])
+
+
 CASES = [
     # --- the file and the raw document
     Case("yaml.invalid", S2, text=lambda t: t + "\nid: copd_exacerbation_pneumonia_ward\n", label="repeated key"),
     Case("yaml.invalid", S2, text=lambda t: "- a\n- list\n", label="not a mapping"),
     Case("hygiene.forbidden_key", S2, lambda r, c: line(r, "bed").update(price=12)),
+    Case("hygiene.forbidden_key", S2, lambda r, c: line(r, "bed").update(amount=12), label="amount"),
+    Case("hygiene.forbidden_key", S2, lambda r, c: line(r, "bed").update(total=12), label="total"),
+    Case("hygiene.forbidden_key", S2, lambda r, c: r.update(package_candidate=True), label="package_candidate"),
+    Case("hygiene.forbidden_key", S2, lambda r, c: line(r, "bed").update(Unit_Price=12), label="in any case"),
     Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["see ANON_77"]), label="value"),
+    Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["see anon_77"]), label="lowercase"),
+    Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["see ANON-77"]), label="hyphen"),
+    Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["see ANON 77"]), label="space"),
+    Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["see ANON77"]), label="no separator"),
+    Case("hygiene.anon_text", S2, lambda r, c: r.update(notes=["an anon_ prefix"]), label="prefix only"),
+    Case("hygiene.anon_text", S2, lambda r, c: line(r, "bed").update(ANON_7=1), label="key"),
     Case("hygiene.anon_text", S2, text=lambda t: "# ANON_77\n" + t, label="comment"),
+    Case("hygiene.anon_text", S2, text=lambda t: "# anon 77\n" + t, label="lowercase comment"),
+    Case("hygiene.price_text", S2, lambda r, c: r.update(notes=["the bed costs 222,36 TL"]), label="TL"),
+    Case("hygiene.price_text", S2, lambda r, c: r.update(notes=["a stay of 12.500 TRY"]), label="TRY"),
+    Case("hygiene.price_text", S2, lambda r, c: r.update(notes=["about \u20ba1.250"]), label="sign first"),
+    Case("hygiene.price_text", S2, lambda r, c: r.update(notes=["about 1250\u20ba"]), label="sign last"),
+    Case("hygiene.price_text", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62, C000648: 222 tl a day."), label="in a source"),
+    Case("hygiene.price_text", S2, text=lambda t: "# 40 TL\n" + t, label="comment"),
+    Case("hygiene.id_like_number", S2, lambda r, c: r.update(notes=["patient 12345678901 came in"]), label="in a note"),
+    Case("hygiene.id_like_number", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62 (12345678901)"), label="in a source"),
+    Case("hygiene.id_like_number", S2, text=lambda t: "# 12345678901\n" + t, label="comment"),
     Case("schema.id_mismatch", S2, filename="another_name"),
     # --- schema
     Case("schema.unknown_field", S2, lambda r, c: line(r, "bed").update(quantity=3)),
@@ -358,12 +534,15 @@ CASES = [
     Case("schema.missing_field", S2, lambda r, c: line(r, "bed").pop("basis"), label="basis"),
     Case("schema.missing_field", S2, lambda r, c: line(r, "bed").pop("source"), label="source"),
     Case("schema.missing_field", S2, lambda r, c: r["nights"].pop("source"), label="range source"),
+    Case("schema.missing_field", S2, lambda r, c: r["window"].pop("source", None), label="window source"),
     Case("schema.bad_enum", S2, lambda r, c: r.update(claim_type="yatiss"), label="claim_type"),
     Case("schema.bad_enum", S2, lambda r, c: line(r, "bed").update(basis="hearsay"), label="basis"),
     Case("schema.bad_value", S2, lambda r, c: drug(r, "enoxaparin").update(barcode="123")),
+    Case("schema.bad_value", S2, lambda r, c: set_pins(r, admit="20260309"), label="a compact date"),
     Case("schema.bad_value", S2, text=lambda t: t.replace("admit: '2026-03-09'", "admit: 2026-03-09"), label="an unquoted date"),
     Case("schema.bad_value", S2, text=lambda t: t.replace("code: '510010'", "code: 510010"), label="an unquoted code"),
     Case("schema.bad_value", S2, lambda r, c: line(r, "bed").update(source="x" * 161), label="a source over 160 characters"),
+    Case("schema.bad_value", S2, lambda r, c: r["window"].update(source="x" * 161), label="a window source over 160 characters"),
     Case("schema.day_expression", S2, lambda r, c: line(r, "bed").update(days="admit+x"), label="text"),
     Case("schema.day_expression", S2, lambda r, c: line(r, "bed").update(days="admit..discharge-"), label="range"),
     Case("schema.day_expression", S2, lambda r, c: diagnosis(r, "I10").update(day="admit..admit+1"), label="a range for a point"),
@@ -374,14 +553,23 @@ CASES = [
     Case("schema.duplicate_id", S2, lambda r, c: diagnosis(r, "J18.9").update(icd10="I10"), label="diagnosis"),
     Case("schema.unknown_reference", S1, lambda r, c: r["materials"][0].update(linked_to="nowhere"), prepare=with_material, label="material"),
     Case("schema.unknown_reference", S2, lambda r, c: line(r, "anaesthesia").update(operations=["bed"]), prepare=with_anaesthesia, label="anaesthesia"),
+    Case("schema.unknown_reference", S1, lambda r, c: line(r, "appendectomy_package").update(optional=chance()), prepare=with_material, label="a material on an optional package"),
+    Case("schema.unknown_reference", S3, lambda r, c: line(r, "laminectomy").update(optional=chance()), prepare=with_two_operations, label="an anaesthesia line on an optional operation"),
+    Case("schema.unknown_reference", S3, lambda r, c: line(r, "laminectomy").update(code="615931", name=ek2b_name(c, "615931")), prepare=with_two_operations, label="two operations with one code"),
     Case("schema.anchor_undefined", S2, lambda r, c: line(r, "bed").update(days="op"), label="op"),
+    Case("schema.anchor_undefined", S3, lambda r, c: r.update(op_day="op+1"), label="op_day defined from op"),
     Case("schema.anchor_undefined", S1, lambda r, c: (r.update(claim_type="acil"), r.pop("nights"), line(r, "appendectomy_package").update(days="discharge")), label="discharge on an ER-only pathway"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "chest_xray").update(session_role="primary"), label="role on imaging"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "bed").update(group="B"), label="group on a bed"),
+    Case("schema.line_shape", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="primary", days=["op", "op+1"]), label="a role on a two-day line"),
+    Case("schema.line_shape", S2, lambda r, c: line(r, "cbc_crp")["items"].append(dict(line(r, "cbc_crp")["items"][0])), label="a panel with a code twice"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "blood_gas").update(items=[{"code": "L106150", "name": "Potasyum (Serum/Plazma)"}, {"code": "L106910", "name": "Sodyum (Serum/Plazma)"}]), label="code and items"),
     Case("schema.quantity_form", S2, lambda r, c: drug(r, "ceftriaxone").update(qty=7)),
     Case("schema.diagnosis_primary", S2, lambda r, c: diagnosis(r, "J18.9").update(role="primary")),
+    Case("schema.diagnosis_primary", S2, lambda r, c: diagnosis(r, "J44.0").update(optional=chance()), label="an optional primary"),
     Case("schema.stay_shape", S2, lambda r, c: r.pop("nights")),
+    Case("schema.stay_shape", S7, lambda r, c: r.update(nights={"min": 1, "max": 2, "basis": "judgment", "source": FIXTURE}), label="nights on an ER-only pathway"),
+    Case("schema.stay_shape", S7, lambda r, c: per_night_instead_of_course(r), prepare=with_er_course, label="a per_night drug on an ER-only visit"),
     # --- catalog identity
     Case("procedure.in_force", S2, lambda r, c: line(r, "bed").update(code="510019"), label="no such code"),
     Case("procedure.in_force", S2, lambda r, c: swap_in(r, "nebulizer", "701068", c), label="listed from 2026-07-07"),
@@ -393,14 +581,18 @@ CASES = [
     Case("material.in_force", S1, lambda r, c: r["materials"][0].update(code="AP9999"), prepare=with_material),
     Case("material.name", S1, lambda r, c: r["materials"][0].update(name="KALÇA | FEMORAL STEM"), prepare=with_material),
     Case("drug.in_force", S2, lambda r, c: r.pop("window"), label="repealed on 2026-08-29"),
+    Case("drug.in_force", S2, lambda r, c: r["window"].update(end="2026-08-29"), label="valid_until is exclusive"),
     Case("drug.in_force", S2, lambda r, c: drug(r, "enoxaparin").update(barcode="8699999999999"), label="no such barcode", also=("drug.inn",)),
     Case("drug.name", S2, lambda r, c: drug(r, "enoxaparin").update(name="CLEXANE 40 MG")),
     Case("drug.inn", S2, lambda r, c: drug(r, "enoxaparin").update(inn="heparin sodyum")),
     Case("drug.indication", S2, lambda r, c: drug(r, "ceftriaxone").update(indication="G20"), prepare=with_indication, label="not a diagnosis"),
     Case("drug.indication", S2, lambda r, c: drug(r, "ceftriaxone").update(indication="G20"), prepare=with_optional_indicated_drug, label="not a diagnosis, drug out of the bill"),
     Case("drug.indication", S2, lambda r, c: (drug(r, "ceftriaxone").update(indication="I10"), r["showcase"].update(include=[])), prepare=with_indication, label="optional and out"),
+    Case("drug.indication", S6, lambda r, c: optional_and_pinned_in(r, "G20"), label="the indication is optional, pinned in"),
     Case("drug.course", S2, lambda r, c: set_pins(r, nights=4), label="course past discharge"),
     Case("drug.course", S2, lambda r, c: drug(r, "enoxaparin").update(day="admit+1"), label="per_night not from admit"),
+    Case("drug.course", S2, lambda r, c: drug(r, "ceftriaxone")["course_days"].update(min=6, max=7), label="shortest course past the shortest stay"),
+    Case("drug.course", S7, lambda r, c: (drug(r, "antibiotic")["course_days"].update(max=3), set_pins(r, course_days={"antibiotic": 2})), prepare=with_er_course, label="a 2-day course on an ER-only visit"),
     # --- ICD-10
     Case("icd.exists", S2, lambda r, c: diagnosis(r, "J18.9").update(icd10="Q99.99")),
     Case("icd.active", S2, lambda r, c: diagnosis(r, "J18.9").update(icd10="U06.9", name=icd_name(c, "U06.9"))),
@@ -419,8 +611,12 @@ CASES = [
     Case("package.window", S1, lambda r, c: line(r, "appendectomy_package").update(code="P552001", name=c.ek2c.filter(pl.col("code") == "P552001")["name"].unique().item()), label="a package without a group"),
     Case("anaesthesia.group", S2, lambda r, c: line(r, "anaesthesia").update(group="C", code="550170", name="Anestezi C grubu"), prepare=with_anaesthesia),
     Case("anaesthesia.code", S2, lambda r, c: line(r, "anaesthesia").update(code="550170", name="Anestezi C grubu"), prepare=with_anaesthesia),
+    Case("anaesthesia.code", S3, lambda r, c: set_anaesthesia(r, c, "single", "A3"), prepare=with_two_operations, label="the single-operation code for two operations"),
+    Case("anaesthesia.group", S3, lambda r, c: set_anaesthesia(r, c, "multiple_operations", "B"), prepare=with_two_operations, label="two operations, the group of the larger one"),
+    Case("procedure.in_force", S3, lambda r, c: swap_in(r, "laminectomy", "609231", c), prepare=with_two_operations, label="a second operation listed from 2026-07-07"),
     Case("session.primary", S1, lambda r, c: line(r, "hernia_package").update(session_role="primary"), prepare=with_second_package, label="two primaries"),
     Case("session.primary", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="same_incision"), prepare=with_second_package, label="none"),
+    Case("session.primary", S1, lambda r, c: set_pins(r, include=["hernia_package"]), prepare=with_optional_second_primary, label="an optional second primary that is in the bill"),
     Case("session.order", S1, lambda r, c: (line(r, "appendectomy_package").update(session_role="same_incision"), line(r, "hernia_package").update(session_role="primary")), prepare=with_second_package),
     # --- pins
     Case("pins.out_of_range", S2, lambda r, c: set_pins(r, age=120), label="age"),
@@ -430,12 +626,21 @@ CASES = [
     Case("pins.unknown_id", S2, lambda r, c: set_pins(r, include=["I10", "nowhere"])),
     Case("pins.not_optional", S2, lambda r, c: set_pins(r, include=["I10", "bed"])),
     Case("pins.missing", S2, lambda r, c: r["showcase"].pop("course_days")),
+    Case("pins.missing", S2, lambda r, c: r["showcase"].pop("nights"), label="nights: no course is tested against a missing stay"),
     Case("pins.window", S2, lambda r, c: set_pins(r, admit="2026-01-15")),
     # --- days, sources, window
-    Case("days.in_stay", S2, lambda r, c: line(r, "bed").update(days="admit..discharge+1")),
+    Case("days.in_stay", S2, lambda r, c: line(r, "nebulizer").update(days="admit..discharge+1"), label="past the discharge day"),
+    Case("days.in_stay", S2, lambda r, c: line(r, "chest_xray").update(days="admit+3..admit+1"), label="an empty range"),
+    Case("days.in_stay", S2, lambda r, c: line(r, "chest_xray").update(days=["admit", "admit+5"]), label="outside the shortest stay only"),
     Case("days.duplicate", S2, lambda r, c: line(r, "chest_xray").update(days=["admit", "admit..admit+4"])),
+    Case("days.duplicate", S2, lambda r, c: line(r, "chest_xray").update(days=["admit+1", "discharge-8"]), also=("days.in_stay",), label="a collision at the longest stay only"),
+    Case("stay.coverage", S3, lambda r, c: line(r, "bed").update(days="admit..admit+2"), label="a bed line fixed to the showcase nights"),
+    Case("stay.coverage", S2, lambda r, c: line(r, "companion").update(days="admit..admit+4"), label="a companion line fixed to 5 nights"),
+    Case("stay.coverage", S2, lambda r, c: line(r, "bed").update(days="admit..discharge-1"), label="a bed line that drops the discharge day"),
+    Case("stay.coverage", S2, lambda r, c: line(r, "companion").update(days="admit..discharge"), label="a companion line on the discharge day"),
     Case("source.clause_exists", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62; C999999 says so in some other place."), label="no such clause"),
     Case("source.clause_exists", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62; C000644 (repealed text of 2.2.2(1))."), label="not in force"),
+    Case("source.clause_exists", S2, lambda r, c: r["window"].update(source="KLACID 500 MG IV leaves EK-4A on 2026-08-29, as C999999 says."), label="a window source"),
     Case("source.sut_cites", S2, lambda r, c: line(r, "companion").update(source="Doctor's order and a refakatçi belgesi, as the story says."), label="sut without a clause"),
     Case("window.valid", S2, lambda r, c: r["window"].update(start="2026-01-15")),
 ]  # fmt: skip
@@ -462,10 +667,10 @@ def test_every_check_id_has_a_mutation_case() -> None:
     ("window", "admit", "group", "clean"),
     [
         pytest.param(
-            ("2026-02-01", "2026-08-29"), "2026-03-09", "A1", False, id="spans the switch, A1"
+            ("2026-02-01", "2026-08-28"), "2026-03-09", "A1", False, id="spans the switch, A1"
         ),
         pytest.param(
-            ("2026-02-01", "2026-08-29"), "2026-03-09", "A2", False, id="spans the switch, A2"
+            ("2026-02-01", "2026-08-28"), "2026-03-09", "A2", False, id="spans the switch, A2"
         ),
         pytest.param(
             ("2026-02-01", "2026-04-15"), "2026-03-09", "A1", True, id="before the switch, A1"
@@ -474,10 +679,10 @@ def test_every_check_id_has_a_mutation_case() -> None:
             ("2026-02-01", "2026-04-15"), "2026-03-09", "A2", False, id="before the switch, A2"
         ),
         pytest.param(
-            ("2026-04-16", "2026-08-29"), "2026-05-04", "A2", True, id="after the switch, A2"
+            ("2026-04-16", "2026-08-28"), "2026-05-04", "A2", True, id="after the switch, A2"
         ),
         pytest.param(
-            ("2026-04-16", "2026-08-29"), "2026-05-04", "A1", False, id="after the switch, A1"
+            ("2026-04-16", "2026-08-28"), "2026-05-04", "A1", False, id="after the switch, A1"
         ),
     ],
 )
@@ -490,7 +695,182 @@ def test_the_anaesthesia_group_must_hold_on_both_sides_of_the_band_switch(
     code = catalogs.code_sets["anaesthesia"]["single"][group]
     line(raw, "decompression").update(code="609440", name=ek2b_name(catalogs, "609440"))
     line(raw, "anaesthesia").update(group=group, code=code, name=ek2b_name(catalogs, code))
-    raw["window"] = {"start": window[0], "end": window[1]}
+    raw["window"] = {"start": window[0], "end": window[1], "source": FIXTURE}
     raw["showcase"]["admit"] = admit
     fired = {p.check for p in _problems(raw, catalogs, tmp_path)}
     assert fired == (set() if clean else {"anaesthesia.group"})
+
+
+# --- the edges of the checks -------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("base", "longest", "fires"),
+    [
+        pytest.param(S1, 7, False, id="C: 7 nights from the package day are 8 days"),
+        pytest.param(S1, 8, True, id="C: 8 nights are 9 days"),
+        pytest.param(S5, 10, False, id="B: 10 nights from day 1 are 10 days"),
+        pytest.param(S5, 11, True, id="B: 11 nights are 11 days"),
+    ],
+)
+def test_the_package_window_counts_from_the_package_day(
+    base, longest, fires, catalogs: Catalogs, tmp_path
+) -> None:
+    """Group C allows 8 days (C000704), group B 10 (C000703); the package day is day one."""
+    raw = _raw(base)
+    raw["nights"]["max"] = longest
+    found = {p.check for p in _problems(raw, catalogs, tmp_path)}
+    assert found == ({"package.window"} if fires else set())
+
+
+def test_a_package_whose_group_changes_inside_the_window_gets_the_shorter_allowance() -> None:
+    raw = _raw(S1)
+    raw["nights"]["max"] = 8  # 9 days from the package day: too long for C (8), fine for B (10)
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), "variant.yaml")
+    ek2c = pl.DataFrame(
+        {
+            "code": ["P610131", "P610131"],
+            "name": ["x", "x"],
+            "group": ["B", "C"],
+            "puan": [1.0, 1.0],
+            "valid_from": ["2026-01-01", "2026-06-01"],
+            "valid_to": ["2026-05-31", None],
+        }
+    )
+    found = check_package_window(
+        pathway, SimpleNamespace(ek2c=ek2c, window=("2026-02-01", "2026-09-30"))
+    )
+    assert [(p.check, "its window is 8 days" in p.message) for p in found] == [
+        ("package.window", True)
+    ]
+
+
+def test_the_stays_tested_are_the_shortest_the_longest_and_the_showcase() -> None:
+    assert _stay_cases(load_pathway(_DIR / f"{S2}.yaml")) == [4, 6, 9]
+    assert _stay_cases(load_pathway(_DIR / f"{S7}.yaml")) == [None]
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "fires"),
+    [
+        pytest.param("2026-03-09", "2026-03-15", False, id="the stay fills the window"),
+        pytest.param("2026-03-10", "2026-03-15", True, id="admitted a day before the window"),
+        pytest.param("2026-03-09", "2026-03-14", True, id="discharged a day after the window"),
+    ],
+)
+def test_the_stay_may_fill_the_window_but_not_leave_it(
+    start, end, fires, catalogs, tmp_path
+) -> None:
+    raw = _raw(S2)  # admitted 2026-03-09 for 6 nights
+    raw["window"] = {"start": start, "end": end, "source": FIXTURE}
+    found = {p.check for p in _problems(raw, catalogs, tmp_path)}
+    assert found == ({"pins.window"} if fires else set())
+
+
+def test_a_window_equal_to_the_default_is_not_wider_than_it(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S1)
+    raw["window"] = {"start": catalogs.window[0], "end": catalogs.window[1], "source": FIXTURE}
+    assert _problems(raw, catalogs, tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    "edit",
+    [
+        pytest.param(lambda r: set_pins(r, age=55), id="the youngest pinned age"),
+        pytest.param(lambda r: set_pins(r, age=90), id="the oldest pinned age"),
+        pytest.param(lambda r: set_pins(r, nights=9), id="the longest pinned stay"),
+        pytest.param(
+            lambda r: set_pins(
+                r,
+                nights=4,
+                course_days={"ceftriaxone": 5, "clarithromycin": 5, "methylprednisolone": 5},
+            ),
+            id="the shortest pinned stay with the shortest courses",
+        ),
+        pytest.param(
+            lambda r: diagnosis(r, "I10")["optional"].update(probability=0.0), id="probability 0"
+        ),
+        pytest.param(
+            lambda r: diagnosis(r, "I10")["optional"].update(probability=1.0), id="probability 1"
+        ),
+    ],
+)
+def test_a_value_on_the_edge_of_its_range_is_accepted(edit, catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S2)
+    edit(raw)
+    assert _problems(raw, catalogs, tmp_path) == []
+
+
+def test_an_sut_source_may_cite_an_annex_instead_of_a_clause(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S2)
+    line(raw, "companion").update(
+        source="EK-2B 510121 (Refakat): the doctor's order, as the story says."
+    )
+    assert _problems(raw, catalogs, tmp_path) == []
+
+
+def test_probe_days_include_the_day_after_a_row_ends_when_a_gap_follows() -> None:
+    rows = pl.DataFrame(
+        {"valid_from": ["2026-01-01", "2026-05-01"], "valid_to": ["2026-04-09", None]}
+    )
+    assert probe_days(rows, "2026-02-01", "2026-09-30") == [
+        "2026-02-01",
+        "2026-04-09",
+        "2026-04-10",
+        "2026-05-01",
+        "2026-09-30",
+    ]
+
+
+def _bed_rows(*rows: tuple[str, str | None, str]) -> tuple[pl.DataFrame, pl.DataFrame]:
+    catalog = _frame(
+        [("510010", name, start, end) for start, end, name in rows],
+        *"code name valid_from valid_to".split(),
+    )
+    named = _frame(
+        [("510010", "Standart yatak tarifesi", "procedures[bed]")], "code", "name", "where"
+    )
+    return catalog, named
+
+
+def test_a_gap_in_the_catalog_inside_the_window_is_a_missing_code() -> None:
+    catalog, named = _bed_rows(
+        ("2026-01-01", "2026-04-09", "Standart yatak tarifesi"),
+        ("2026-05-01", None, "Standart yatak tarifesi"),
+    )
+    found = identity_problems(named, catalog, ("2026-02-01", "2026-09-30"), "procedure")
+    assert [(p.check, "2026-04-10" in p.message) for p in found] == [("procedure.in_force", True)]
+
+
+def test_two_catalog_names_in_force_on_one_day_are_a_name_problem() -> None:
+    catalog, named = _bed_rows(
+        ("2026-01-01", None, "Standart yatak tarifesi"),
+        ("2026-01-01", None, "Standart yatak tarifesi ücreti"),
+    )
+    found = identity_problems(named, catalog, ("2026-02-01", "2026-09-30"), "procedure")
+    assert [p.check for p in found] == ["procedure.name"]
+
+
+def test_a_band_table_in_the_middle_of_the_window_is_probed(catalogs: Catalogs) -> None:
+    """The window's edges lie in the first and the last table; only the switch days reach the middle."""
+    sets = copy.deepcopy(catalogs.code_sets)
+    first, last = sets["surgical_group_bands"]
+    middle = {"effective_from": "2026-03-01", "lower_bounds": {**first["lower_bounds"], "B": 7000}}
+    sets["surgical_group_bands"] = [first, middle, {**last, "effective_from": "2026-06-01"}]
+    ek2b = (
+        pl.DataFrame(  # 6,471 puan: group B in the first and last table, group C in the middle one
+            {
+                "code": ["615931"],
+                "name": ["Dar spinal kanalda unilateral dekompresyon"],
+                "puan": [6471.03],
+                "valid_from": ["2020-01-01"],
+                "valid_to": [None],
+            },
+            schema_overrides={"valid_to": pl.String},
+        )
+    )
+    fake = SimpleNamespace(code_sets=sets, window=catalogs.window, ek2b=ek2b)
+    found = check_anaesthesia(load_pathway(_DIR / f"{S3}.yaml"), fake)
+    assert [(p.check, "on 2026-03-01 " in p.message) for p in found] == [
+        ("anaesthesia.group", True)
+    ]

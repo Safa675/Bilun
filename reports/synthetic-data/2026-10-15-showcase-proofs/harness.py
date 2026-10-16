@@ -97,8 +97,9 @@ def material_row(code: str, on: date) -> dict[str, Any]:
 def drug_row(barcode: str, on: date) -> dict[str, Any]:
     """Return the EK-4A row of ``barcode`` in force on ``on`` with its ingredient; fail loudly."""
     d = on.isoformat()
+    # EK-4A rows are half-open, [valid_from, valid_until): valid_until is the first day NOT in force.
     rows = EK4A.filter((pl.col("barcode") == barcode) & (pl.col("valid_from") <= d)
-                       & (pl.col("valid_until").is_null() | (pl.col("valid_until") >= d)))
+                       & (pl.col("valid_until").is_null() | (pl.col("valid_until") > d)))
     if rows.height != 1:
         raise ValueError(f"EK-4A {barcode} on {d}: {rows.height} rows")
     r = rows.row(0, named=True)

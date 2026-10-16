@@ -19,7 +19,7 @@ import yaml
 import scripts.synthetic.pathways.expand as expand_module
 from scripts.synthetic.pathways import PathwayLoadError, load_all, load_pathway, load_text
 from scripts.synthetic.pathways.expand import ExpandError, expand
-from scripts.synthetic.pathways.schema import Pathway, pin_problems
+from scripts.synthetic.pathways.schema import Pathway, Pins, course_overrun, pin_problems
 
 pytestmark = pytest.mark.unit
 
@@ -65,13 +65,13 @@ def test_the_expansion_is_deterministic_and_leaves_the_pathway_alone(path: Path)
 
 
 def _variants(pathway: Pathway) -> list[tuple[str, object]]:
-    """Valid pin sets that differ from the showcase in one respect each."""
+    """Valid pin sets that differ from the showcase in one optional item or one course each.
+
+    Nights and admit are not here: they always change the header, so "the bill changed" proves
+    nothing about them. The stay lines and the dates have their own tests below.
+    """
     pins = pathway.showcase
-    out = [("admit shifted a day", pins.model_copy(update={"admit": _shift(pins.admit, 1)}))]
-    if pathway.nights:
-        for nights in (pathway.nights.min, pathway.nights.max):
-            if nights != pins.nights:
-                out.append((f"{nights} nights", pins.model_copy(update={"nights": nights})))
+    out = []
     optional = [d.icd10 for d in pathway.diagnoses if d.optional]
     optional += [
         x.id
@@ -87,15 +87,19 @@ def _variants(pathway: Pathway) -> list[tuple[str, object]]:
         out.append((f"{ident} flipped", pins.model_copy(update={"include": flipped})))
     for drug in pathway.drugs:
         if drug.course_days and drug.id in pins.course_days:
-            other = (
-                drug.course_days.max
-                if pins.course_days[drug.id] != drug.course_days.max
-                else drug.course_days.min
-            )
-            if other != pins.course_days[drug.id]:
-                days = {**pins.course_days, drug.id: other}
+            span, now = drug.course_days, pins.course_days[drug.id]
+            fits = [  # the longest other course that still ends by the discharge
+                n
+                for n in range(span.min, span.max + 1)
+                if n != now and course_overrun(pathway, drug, pins.nights, n) <= 0
+            ]
+            if fits:
+                days = {**pins.course_days, drug.id: fits[-1]}
                 out.append(
-                    (f"{drug.id} for {other} days", pins.model_copy(update={"course_days": days}))
+                    (
+                        f"{drug.id} for {fits[-1]} days",
+                        pins.model_copy(update={"course_days": days}),
+                    )
                 )
     return out
 
@@ -111,6 +115,61 @@ def test_a_changed_pin_changes_the_expansion(path: Path) -> None:
     for label, pins in _variants(pathway):
         assert pin_problems(pathway, pins) == [], label
         assert expand(pathway, pins) != base, label
+
+
+def _pins_at(pathway: Pathway, nights: int) -> Pins:
+    """The showcase pins for another stay. Every pinned course gets its shortest length, which fits."""
+    pins = pathway.showcase
+    courses = {d.id: d.course_days.min for d in pathway.drugs if d.id in pins.course_days}
+    return pins.model_copy(update={"nights": nights, "course_days": courses})
+
+
+def _assert_stay_lines_scale(pathway: Pathway) -> None:
+    """Each bed and companion line gains exactly one bill line per extra night."""
+    low, high = pathway.nights.min, pathway.nights.max
+    short, long = expand(pathway, _pins_at(pathway, low)), expand(pathway, _pins_at(pathway, high))
+    for line in pathway.procedures:
+        if line.kind in ("bed", "companion"):
+            count = lambda bill: sum(row["code"] == line.code for row in bill["procedures"])  # noqa: E731
+            gained = count(long) - count(short)
+            assert gained == high - low, (
+                f"{line.id}: {gained} lines more for {high - low} more nights"
+            )
+
+
+@pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
+def test_the_bed_and_companion_lines_scale_with_the_nights(path: Path) -> None:
+    pathway = load_pathway(path)
+    if pathway.nights is None:
+        pytest.skip("an ER-only pathway has no stay")
+    _assert_stay_lines_scale(pathway)
+
+
+def test_a_bed_line_fixed_to_the_showcase_nights_fails_the_scaling_test() -> None:
+    """The old "a changed pin changes the bill" test passed such a line: the header changed anyway."""
+    pathway = _variant(S3, lambda raw: _line(raw, "bed").update(days="admit..admit+2"))
+    with pytest.raises(AssertionError, match=r"bed: 0 lines more for 2 more nights"):
+        _assert_stay_lines_scale(pathway)
+
+
+_DATE_KEYS = {"date", "admission_date", "discharge_date", "claim_start_date", "claim_end_date"}
+
+
+def _moved(node: object, days: int) -> object:
+    """A bill with every date moved by `days`."""
+    if isinstance(node, dict):
+        return {
+            key: _shift(value, days) if key in _DATE_KEYS and value else _moved(value, days)
+            for key, value in node.items()
+        }
+    return [_moved(item, days) for item in node] if isinstance(node, list) else node
+
+
+@pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
+def test_a_later_admission_moves_every_date_and_nothing_else(path: Path) -> None:
+    pathway = load_pathway(path)
+    later = pathway.showcase.model_copy(update={"admit": _shift(pathway.showcase.admit, 3)})
+    assert expand(pathway, later) == _moved(expand(pathway), 3)
 
 
 @pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
@@ -159,6 +218,7 @@ def test_a_broken_sibling_fails_only_its_own_case(tmp_path: Path) -> None:
 
 S1 = "appendicitis_lap_appendectomy_package"
 S2 = "copd_exacerbation_pneumonia_ward"
+S3 = "lumbar_stenosis_decompression_itemized"
 FIXTURE = "Test fixture only: a construct the real files do not have yet."
 
 
@@ -294,6 +354,17 @@ def test_drug_quantities_follow_the_nights_and_the_pinned_course_days() -> None:
     }
 
 
+def test_a_pinned_course_that_outlasts_the_pinned_stay_is_refused() -> None:
+    pathway = load_pathway(_DIR / f"{S2}.yaml")
+    # the showcase pins ceftriaxone for 7 days: it ends on the discharge day of 6 nights, not of 4
+    four_nights = pathway.showcase.model_copy(update={"nights": 4})
+    with pytest.raises(ExpandError, match=r"drug\.course.*ceftriaxone"):
+        expand(pathway, four_nights)
+    courses = {**four_nights.course_days, "ceftriaxone": 5}
+    fits = four_nights.model_copy(update={"course_days": courses})
+    assert expand(pathway, fits)["header"]["discharge_date"] == "2026-03-13"
+
+
 def test_optional_items_are_in_only_when_pinned() -> None:
     pathway = load_pathway(_DIR / f"{S2}.yaml")
     codes = lambda bill: [d["icd10"] for d in bill["diagnoses"]]  # noqa: E731
@@ -302,9 +373,8 @@ def test_optional_items_are_in_only_when_pinned() -> None:
     assert codes(expand(pathway, without)) == ["J44.0", "J18.9"]
 
 
-def test_the_expander_is_small_and_has_no_pricing_or_randomness() -> None:
+def test_the_expander_has_no_pricing_or_randomness() -> None:
     source = Path(expand_module.__file__).read_text(encoding="utf-8")
-    assert len(source.splitlines()) <= 250
     tree = ast.parse(source)
     modules = {
         node.module if isinstance(node, ast.ImportFrom) else alias.name

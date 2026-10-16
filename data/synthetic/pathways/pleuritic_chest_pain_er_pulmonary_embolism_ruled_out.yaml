@@ -29,7 +29,7 @@ diagnoses:
     role: primary
     day: admit
     basis: guideline
-    source: "WHO ICD-10 Vol. 2 (2019) §4.5 and TİG guide 2019: R07.1 is a correct principal diagnosis when no diagnosis is made (review 2026-10-16 Q8)."
+    source: "Principal when no diagnosis is made: WHO ICD-10 §4.5, TİG 2019 (review Q8, güçlü kanıt). R07.1 or Z03.5 on an acil takip, MEDULA acceptance: sahada sorulmalı."
   - icd10: R06.0
     name: "DİSPNE"
     role: secondary
@@ -45,7 +45,7 @@ procedures:
     name: "Acil poliklinik muayenesi"
     days: admit
     basis: sut
-    source: "C000603, C000604, C000607, C000617 (SUT 2.2.1.B-2(2) a): ER services of 2nd/3rd tier providers are billed hizmet başı on EK-2B points, not EK-2A."
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2) a): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
   - id: ecg
     kind: procedure
     code: "530100"
@@ -162,7 +162,7 @@ notes:
   - "Story S7: the CT is normal, pulmonary embolism is ruled out and the patient goes home from the ER. There is no admission, so the bill has no stay."
   - "D-dimer 920 ng/mL FEU, above the age-adjusted cut-off of 580 for the story patient (age 58), is why the CT was done."
   - "No contrast line: R101450 includes its contrast (EK-2B açıklama). The first story draft billed OMNIPAQUE beside it; the review of 2026-10-16 removed it (engine gap: issue #303)."
-  - "The engine flags an R-code principal diagnosis as an error row of 0 TL (never_principal_diagnosis_blocklist, issue #304); the review judges R07.1 correct as principal (Q8), so the diagnoses stay."
+  - "The engine flags an R-code principal diagnosis as an error row of 0 TL (never_principal_diagnosis_blocklist, issue #304); the review supports R07.1 as principal (Q8, güçlü kanıt), so the diagnoses stay, but R07.1 or Z03.5 on an acil takip, and whether MEDULA rejects either, is a field question (sahada sorulmalı, clinicians Q2)."
 
 showcase:
   story: S7

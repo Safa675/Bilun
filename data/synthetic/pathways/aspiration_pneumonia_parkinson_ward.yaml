@@ -67,7 +67,7 @@ procedures:
     name: "Standart yatak tarifesi"
     days: admit..discharge             # 7 lines for 6 nights: the discharge day is billed too
     basis: medula_kilavuz
-    source: "Kılavuz v3.1.1 p.62, p.168: review 2026-10-16 Q1, one line per calendar day, discharge day included. C000648: under 24 h the day bed 510120."
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
   - id: companion
     kind: companion
     code: "510121"
@@ -167,7 +167,7 @@ drugs:
       min: 5
       max: 7
       basis: judgment
-      source: "Story S6 gives 1 g a day for 7 days. ATS/IDSA 2019: at least 5 days, until clinically stable. The upper bound is the author's judgment."
+      source: "Story S6 bills 7 vials of 1 g, read as 1 g a day for 7 days. ATS/IDSA 2019: at least 5 days, until clinically stable. The upper bound is the author's judgment."
     basis: guideline
     source: "ATS/IDSA 2019, as story S6 cites: no routine anaerobic cover for aspiration pneumonia, so ceftriaxone without metronidazole."
   - id: enoxaparin
@@ -212,13 +212,14 @@ drugs:
       min: 3
       max: 8
       basis: judgment
-      source: "Story S6: days 3-7 (to discharge), 20 tablets, 4 a day. The range is the days from day 3 to discharge: 3 for 4 nights, 8 for 9 nights."
+      source: "Story S6: levodopa through the NG tube on days 3-7, 20 tablets (4 a day). The course length (3 to 8 days) is the author's judgment, bounded by the stay."
     basis: judgment
     source: "Review 2026-10-16 (S6): levodopa through the NG tube from day 3. Story S6 bills 20 tablets over days 3-7, 4 a day; no guideline named."
 
 notes:
   - "Story S6 patient: creatinine 1.1 mg/dL at 72 kg gives a Cockcroft-Gault CrCl of about 55 mL/min. The Turkish SmPC halves the amantadine dose only at CrCl 30-50, so there is no dose reduction: the clean dose is the full bottle a day."
   - "Lab values are not part of a pathway. A composer that draws creatinine for this pathway must keep CrCl above 50 mL/min, or the full bottle a day stops being the clean dose."
+  - "The levodopa course end is not tied to discharge: the format has no 'until discharge' course, so the composer must clamp the drawn course to the days left (day 3 to the discharge day)."
   - "PK-MERZ is a box of 2 x 500 ml. The bill counts the bottles used (3), not 1.5 boxes (review Q7, Kılavuz p.21-22; the integer quantity is issue #302)."
   - "Open question for a neurologist (review, clinicians Q4): an IV PK-MERZ bridge or NG levodopa alone. The story keeps the bridge: it is the drug that needs its indication diagnosis."
 

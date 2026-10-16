@@ -34,7 +34,9 @@ CHECKS: dict[str, str] = {
     # loader.py: the file and the raw document
     "yaml.invalid": "unreadable YAML, a repeated key, or a document that is not a mapping",
     "hygiene.forbidden_key": "a key named price, amount, total or package_candidate",
-    "hygiene.anon_text": "text containing ANON_",
+    "hygiene.anon_text": "text that looks like an ANON identifier (ANON_7, anon-7, ANON 7), in any case",
+    "hygiene.price_text": "a non-zero currency amount in any string (12 TL, 12 TRY, 12 or lira sign 12)",
+    "hygiene.id_like_number": "an 11-digit number in free text (a national id has 11 digits; a barcode 13)",
     "schema.id_mismatch": "the file name is not <id>.yaml",
     # schema.py: raised by pydantic while the file loads
     "schema.unknown_field": "a field the schema does not define",
@@ -83,6 +85,7 @@ CHECKS: dict[str, str] = {
     "pins.window": "pinned dates outside the service window",
     "days.in_stay": "a day that falls outside the stay for some nights in range",
     "days.duplicate": "a line that lands twice on the same day",
+    "stay.coverage": "a bed line off admit..discharge, or a companion line off admit..discharge-1",
     "source.clause_exists": "a cited SUT clause id that does not exist or is not in force",
     "source.sut_cites": "basis sut without a clause id or an annex in the source",
     "window.valid": "a window outside the default service window",
@@ -267,10 +270,14 @@ class Department(_Model):
 
 
 class Window(_Model):
-    """A narrowed service window; every code must be in force on every day of it."""
+    """A narrowed service window; every code must be in force on every day of it.
+
+    It carries a `source` (why it is narrowed) but no `basis`: the reason is a catalog fact.
+    """
 
     start: IsoDate
     end: IsoDate
+    source: Source
 
     @model_validator(mode="after")
     def _ordered(self) -> Self:
@@ -541,6 +548,12 @@ def anchors_for(pathway: Pathway, nights: int | None) -> dict[str, int]:
     return anchors
 
 
+def course_overrun(pathway: Pathway, drug: Drug, nights: int | None, days: int) -> int:
+    """Days by which a course of `days` days from the drug's first day outlasts the stay (<= 0: fits)."""
+    first = resolve_days(drug.day, anchors_for(pathway, nights))[0]
+    return first + days - 1 - (nights or 0)
+
+
 def included(item: object, pins: Pins) -> bool:
     """True when an item (line or diagnosis) is in the bill the pins describe."""
     optional = getattr(item, "optional", None)
@@ -549,7 +562,8 @@ def included(item: object, pins: Pins) -> bool:
 
 
 def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
-    """Rules a pin set must obey, independent of any catalog (the window is checked in checks.py)."""
+    """Rules a pin set must obey, independent of any catalog: ranges, ids, and a drug course that
+    ends by the discharge of the pinned stay. (The window is checked in checks.py.)"""
     out: list[Problem] = []
 
     def add(check: str, where: str, message: str) -> None:
@@ -585,16 +599,25 @@ def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
             add("pins.not_optional", "showcase.include", f"{ident!r} is not optional")
 
     drugs = {d.id: d for d in pathway.drugs}
+    stay_known = pathway.nights is None or pins.nights is not None  # else pins.missing says so
     for ident, days in pins.course_days.items():
         drug = drugs.get(ident)
         if drug is None or drug.course_days is None:
             add("pins.unknown_id", "showcase.course_days", f"{ident!r} has no course_days range")
-        elif not drug.course_days.min <= days <= drug.course_days.max:
+            continue
+        if not drug.course_days.min <= days <= drug.course_days.max:
             low, high = drug.course_days.min, drug.course_days.max
             add(
                 "pins.out_of_range",
                 f"showcase.course_days.{ident}",
                 f"{days} is outside {low}..{high}",
+            )
+        late = course_overrun(pathway, drug, pins.nights, days) if stay_known else 0
+        if late > 0 and included(drug, pins):
+            add(
+                "drug.course",
+                f"showcase.course_days.{ident}",
+                f"{days} days end {late} day(s) after the discharge (stay of {pins.nights or 0} nights)",
             )
     for drug in pathway.drugs:
         if drug.course_days and included(drug, pins) and drug.id not in pins.course_days:

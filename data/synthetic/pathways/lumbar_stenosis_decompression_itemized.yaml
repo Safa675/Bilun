@@ -75,7 +75,7 @@ procedures:
     name: "Standart yatak tarifesi"
     days: admit..discharge             # 3 lines for 2 nights: the discharge day is billed too
     basis: medula_kilavuz
-    source: "Kılavuz v3.1.1 p.62, p.168; C000648. Review 2026-10-16 Q1: one line per calendar day, discharge day included."
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
   - id: companion
     kind: companion
     code: "510121"

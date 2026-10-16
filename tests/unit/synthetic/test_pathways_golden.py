@@ -1,14 +1,17 @@
-"""Well-formedness of the golden clean bills, tests/fixtures/pathways/golden/S1..S8.json.
+"""The golden clean bills, tests/fixtures/pathways/golden/S1..S8.json.
 
-Light checks on the files only: no harness, no engine. That the files equal a fresh export of
-stories.py is `export_clean_lines.py --check`; that a pathway reproduces its bill is the
-pathway round-trip test.
+Well-formedness is checked on the files alone: no harness, no engine. That the files equal a fresh
+export of stories.py is `export_clean_lines.py --check`, run here in a subprocess (the harness
+changes the working directory and loads the engine, so it never runs in the test process); that a
+pathway reproduces its bill is the pathway round-trip test.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
@@ -17,7 +20,11 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-GOLDEN_DIR = Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "pathways" / "golden"
+REPO = Path(__file__).resolve().parents[3]
+GOLDEN_DIR = REPO / "tests" / "fixtures" / "pathways" / "golden"
+EXPORTER = (
+    REPO / "reports" / "synthetic-data" / "2026-10-15-showcase-proofs" / "export_clean_lines.py"
+)
 STORIES = [f"S{n}" for n in range(1, 9)]
 
 TOP_KEYS = {
@@ -96,6 +103,21 @@ def golden(request: pytest.FixtureRequest) -> tuple[str, str, dict]:
 
 def test_eight_golden_files_exist() -> None:
     assert [s for s in STORIES if not (GOLDEN_DIR / f"{s}.json").is_file()] == []
+
+
+def test_the_golden_files_equal_a_fresh_export_of_the_stories() -> None:
+    """A pathway and its golden cannot be changed together: the golden is exported from stories.py."""
+    run = subprocess.run(
+        [sys.executable, str(EXPORTER), "--check"],
+        cwd=REPO,
+        capture_output=True,
+        encoding="utf-8",
+        timeout=300,
+        check=False,
+    )
+    assert run.returncode == 0, (
+        f"export_clean_lines.py --check exited {run.returncode}:\n{run.stdout}{run.stderr}"
+    )
 
 
 def test_json_is_in_the_canonical_form(golden) -> None:

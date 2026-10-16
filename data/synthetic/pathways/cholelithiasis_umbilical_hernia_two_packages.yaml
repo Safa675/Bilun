@@ -39,13 +39,13 @@ diagnoses:
     role: primary
     day: admit
     basis: guideline
-    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S8: symptomatic gallstones without cholecystitis."
+    source: "SKRS leaf code (checked against icd10_tr.parquet); WHO ICD-10 Vol. 2 coding. Story S8: symptomatic gallstones without cholecystitis."
   - icd10: K42.9
     name: "UMBİLİKAL HERNİ, OBSTRÜKSİYONSUZ, GANGRENSİZ"
     role: secondary
     day: admit
     basis: guideline
-    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S8: defect 0,8 cm found at the pre-op exam; it is the reason for the second operation."
+    source: "SKRS leaf code (checked against icd10_tr.parquet); WHO ICD-10 Vol. 2 coding. Story S8: 0,8 cm defect found at the pre-op exam; reason for the second operation."
 
 procedures:
   - id: cholecystectomy_package

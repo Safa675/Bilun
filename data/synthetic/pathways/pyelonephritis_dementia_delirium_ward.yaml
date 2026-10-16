@@ -46,7 +46,7 @@ diagnoses:
     role: secondary
     day: admit
     basis: guideline
-    source: "SKRS leaf code; WHO ICD-10 F05.1: add a code for the type of dementia. Story S4: the patient has Alzheimer's disease (late onset)."
+    source: "SKRS leaf code; WHO ICD-10 F05.1: an additional code for the dementia type is optional ('if desired'). Story S4 codes it: Alzheimer's disease, late onset."
   - icd10: I10
     name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
     role: secondary
@@ -66,7 +66,7 @@ procedures:
     name: "Standart yatak tarifesi"
     days: admit..discharge             # a bed for every calendar day: 6 lines for 5 nights
     basis: medula_kilavuz
-    source: "Kılavuz v3.1.1 p.62, p.168: a bed record for every day of the stay, discharge day included. Review 2026-10-16 Q1."
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
   - id: companion
     kind: companion
     code: "510121"
@@ -160,7 +160,7 @@ drugs:
     day: admit
     qty: 1                             # one box of 12 vials for the stay
     basis: judgment
-    source: "Story S4 bills one box of 12 vials of IV paracetamol for the stay; the story gives no indication or guideline. Clinician to confirm."
+    source: "Story S4 bills a whole box of 12 vials (PARACEROL) for the stay, not vials used; the story gives no indication or guideline. Clinician to confirm."
   - id: enoxaparin
     barcode: "8699809950696"
     name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"

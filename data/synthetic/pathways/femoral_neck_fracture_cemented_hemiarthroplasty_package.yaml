@@ -44,7 +44,7 @@ diagnoses:
     role: secondary
     day: admit
     basis: guideline
-    source: "SKRS leaf code (review 2026-10-16 Q12). WHO ICD-10 Ch. XX: an external-cause code is used in addition to the injury code. The review added W19."
+    source: "SKRS leaf code (checked against icd10_tr.parquet). WHO ICD-10 Ch. XX: an external-cause code is used in addition to the injury code. The review added W19."
   - icd10: I10
     name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
     role: secondary
@@ -107,7 +107,7 @@ materials:
     linked_to: hemiarthroplasty_package
     flags: {titubb_registered: true, uts_registered: true}
     basis: judgment
-    source: "Story S5 bills two 40 g packs; the count is a field question for an orthopaedist (review Q6a). Bone cement is billed apart, C002859 (SUT 3.1.4(2)(b))."
+    source: "Story S5 bills two 40 g packs; the review gives AP3220 x1-2 beside the stem options (Q6a): a field question. Billed apart, C002859 (SUT 3.1.4(2)(b))."
 
 notes:
   - "The patient reaches the ward from the ER after a fall at home. That ER visit is billed on its own acil takip and is not part of this bill (story S5)."

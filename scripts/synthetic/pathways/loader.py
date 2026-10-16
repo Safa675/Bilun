@@ -2,7 +2,8 @@
 
 `load_pathway(path)` reads one file, `load_all(directory)` every *.yaml in a folder. A defect raises
 PathwayLoadError whose problems each name the file, the field and a stable check id. Hygiene (no
-prices, no ANON_ text) is checked on the raw document before the schema sees it.
+price keys, no ANON identifiers, no currency amounts, no 11-digit numbers) is checked on the raw
+document before the schema sees it.
 """
 
 from __future__ import annotations
@@ -20,6 +21,24 @@ REPO = Path(__file__).resolve().parents[3]
 PATHWAYS_DIR = REPO / "data" / "synthetic" / "pathways"
 
 _FORBIDDEN_KEY = re.compile(r"price|amount|total|package_candidate", re.IGNORECASE)
+# Text rules (check id, pattern, what it finds), applied to every key, every string and the whole
+# file (comments). A currency amount is a number with a non-zero digit next to TL, TRY or the lira
+# sign: "0 TL" (an engine row without money) is not a price. Barcodes have 13 digits, so an isolated
+# run of 11 is not one.
+_NUMBER = r"(?=[0-9.,]*[1-9])[0-9][0-9.,]*"
+_TEXT_RULES = (
+    (
+        "hygiene.anon_text",
+        re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE),
+        "an ANON identifier",
+    ),
+    (
+        "hygiene.price_text",
+        re.compile(rf"{_NUMBER}\s*(?:TL|TRY|\u20ba)(?![A-Za-z])|\u20ba\s*{_NUMBER}", re.IGNORECASE),
+        "a currency amount",
+    ),
+    ("hygiene.id_like_number", re.compile(r"(?<![0-9])[0-9]{11}(?![0-9])"), "an 11-digit number"),
+)
 _PYDANTIC_IDS = {
     "extra_forbidden": "schema.unknown_field",
     "missing": "schema.missing_field",
@@ -49,8 +68,15 @@ class _StrictLoader(yaml.SafeLoader):
 
 
 def hygiene(raw: Any, text: str = "") -> list[Problem]:
-    """No key that names a price, amount, total or package_candidate; no ANON_ text anywhere."""
+    """No key that names a price, amount, total or package_candidate; no ANON, currency or id-like text."""
     out: list[Problem] = []
+
+    def scan(string: str, where: str, label: str) -> None:
+        out.extend(
+            Problem(check, where, f"{what} in {label}")
+            for check, pattern, what in _TEXT_RULES
+            if pattern.search(string)
+        )
 
     def walk(node: Any, where: str) -> None:
         if isinstance(node, dict):
@@ -59,18 +85,19 @@ def hygiene(raw: Any, text: str = "") -> list[Problem]:
                 if _FORBIDDEN_KEY.search(str(key)):
                     message = "prices, amounts and totals are not part of a pathway"
                     out.append(Problem("hygiene.forbidden_key", here, message))
-                if "ANON_" in str(key):
-                    out.append(Problem("hygiene.anon_text", here, "ANON_ in a key"))
+                scan(str(key), here, "a key")
                 walk(value, here)
         elif isinstance(node, list):
             for index, value in enumerate(node):
                 walk(value, f"{where}[{index}]")
-        elif isinstance(node, str) and "ANON_" in node:
-            out.append(Problem("hygiene.anon_text", where, "ANON_ identifiers do not belong here"))
+        elif isinstance(node, str):
+            scan(node, where, "a value")
 
     walk(raw, "")
-    if "ANON_" in text and not any(p.check == "hygiene.anon_text" for p in out):
-        out.append(Problem("hygiene.anon_text", "file", "ANON_ text (possibly in a comment)"))
+    # The same rules over the whole file, which also holds the comments.
+    for check, pattern, what in _TEXT_RULES:
+        if pattern.search(text) and not any(p.check == check for p in out):
+            out.append(Problem(check, "file", f"{what} (possibly in a comment)"))
     return out
 
 

@@ -26,6 +26,7 @@ from .schema import (
     Pathway,
     Problem,
     anchors_for,
+    course_overrun,
     day_expressions,
     included,
     pin_problems,
@@ -112,11 +113,18 @@ class Catalogs:
         )
 
     @cached_property
-    def ek4a(self) -> pl.DataFrame:  # code (the barcode), name, valid_from, valid_to
+    def ek4a(self) -> pl.DataFrame:  # code (the barcode), name, valid_from, valid_to (last day)
         columns = ["barcode", "drug_name", "valid_from", "valid_until"]
         frame = self._parquet("data/gazette/curated/ek4a_history.parquet", columns)
-        renamed = {"barcode": "code", "drug_name": "name", "valid_until": "valid_to"}
-        return frame.rename(renamed).with_columns(_norm(pl.col("name")))
+        # EK-4A rows are half-open, [valid_from, valid_until): the last day in force is the day before.
+        last_day = pl.col("valid_until").str.to_date().dt.offset_by("-1d").cast(pl.String)
+        renamed = {"barcode": "code", "drug_name": "name"}
+        return (
+            frame.with_columns(last_day.alias("valid_to"))
+            .drop("valid_until")
+            .rename(renamed)
+            .with_columns(_norm(pl.col("name")))
+        )
 
     @cached_property
     def crosswalk(self) -> pl.DataFrame:  # barcode, active_ingredient
@@ -568,56 +576,71 @@ def check_days(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     ]
 
 
+# A stay line covers admit..discharge + offset: a bed every calendar day, a companion every night.
+STAY_LINE_END = {"bed": 0, "companion": -1}
+
+
+def check_stay_coverage(pathway: Pathway, cat: Catalogs) -> list[Problem]:
+    """stay.coverage: a bed line covers admit..discharge, a companion admit..discharge-1, at every stay."""
+    out = []
+    for line in pathway.procedures:
+        if line.kind not in STAY_LINE_END:
+            continue
+        faults = []
+        for nights in _stay_cases(pathway):
+            if nights is None:
+                continue
+            anchors = anchors_for(pathway, nights)
+            got = {d for expr in line.days for d in resolve_days(expr, anchors)}
+            want = set(range(nights + 1 + STAY_LINE_END[line.kind]))
+            if got != want:
+                faults.append(f"{nights} nights: days {sorted(got)}, expected {sorted(want)}")
+        if faults:
+            end = "discharge" + ("-1" if line.kind == "companion" else "")
+            message = f"a {line.kind} line must cover admit..{end}; {'; '.join(faults)}"
+            out.append(Problem("stay.coverage", f"procedures[{line.id}]", message))
+    return out
+
+
 def check_drug_courses(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """drug.course: a course ends by the discharge day, in the showcase and at the shortest stay."""
-    pins = pathway.showcase
-    stays = []  # (label, nights, course days by drug id)
-    if pathway.claim_type == "acil" or pins.nights:
-        stays.append(("showcase", pins.nights or 0, pins.course_days))
-    if pathway.nights:
-        shortest = {d.id: d.course_days.min for d in pathway.drugs if d.course_days}
-        stays.append(("shortest stay", pathway.nights.min, shortest))
+    """drug.course: a per_night drug starts on admit; the shortest course fits the shortest stay.
+
+    A pinned course that outlasts the pinned stay is pin_problems' business (check_pins).
+    """
     out = []
     for drug in pathway.drugs:
-        for label, nights, courses in stays:
-            first = resolve_days(drug.day, anchors_for(pathway, nights or None))[0]
-            if drug.per_night and first != 0:
-                out.append(
-                    Problem("drug.course", f"drugs[{drug.id}]", "a per_night drug starts on admit")
-                )
-                break
-            days = courses.get(drug.id) if drug.per_day else None
-            if days and first + days - 1 > nights:
+        where = f"drugs[{drug.id}]"
+        starts = (resolve_days(drug.day, anchors_for(pathway, n))[0] for n in _stay_cases(pathway))
+        if drug.per_night and any(starts):
+            out.append(Problem("drug.course", where, "a per_night drug starts on admit"))
+        if drug.per_day:
+            shortest = pathway.nights.min if pathway.nights else None  # an ER visit is one day
+            days = drug.course_days.min
+            late = course_overrun(pathway, drug, shortest, days)
+            if late > 0:
+                last = shortest or 0
                 message = (
-                    f"{label}: {days} days from day {first} end after the discharge (day {nights})"
+                    f"shortest stay: {days} days end {late} day(s) after the discharge (day {last})"
                 )
-                out.append(Problem("drug.course", f"drugs[{drug.id}]", message))
+                out.append(Problem("drug.course", where, message))
     return out
 
 
 def check_drug_indications(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """drug.indication: the diagnosis a drug names is in the pathway, and in the showcase bill."""
-    listed = {d.icd10 for d in pathway.diagnoses}
-    shown = {d.icd10 for d in pathway.diagnoses if included(d, pathway.showcase)}
+    """drug.indication: the diagnosis a drug names is in the pathway and is never optional."""
+    diagnoses = {d.icd10: d for d in pathway.diagnoses}
     out = []
     for drug in pathway.drugs:
-        where = f"drugs[{drug.id}]"
-        if drug.indication and drug.indication not in listed:
-            out.append(
-                Problem(
-                    "drug.indication",
-                    where,
-                    f"{drug.indication} is not a diagnosis of this pathway",
-                )
+        found = diagnoses.get(drug.indication) if drug.indication else None
+        if drug.indication and found is None:
+            problem = f"{drug.indication} is not a diagnosis of this pathway"
+        elif found is not None and found.optional:
+            problem = (
+                f"{drug.indication} is optional: the drug could be billed without its indication"
             )
-        elif drug.indication and included(drug, pathway.showcase) and drug.indication not in shown:
-            out.append(
-                Problem(
-                    "drug.indication",
-                    where,
-                    f"{drug.indication} is optional and not in the showcase bill",
-                )
-            )
+        else:
+            continue
+        out.append(Problem("drug.indication", f"drugs[{drug.id}]", problem))
     return out
 
 
@@ -653,12 +676,12 @@ def check_window(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     return []
 
 
-def _sources(node: object, where: str = "") -> list[tuple[str, str, str]]:
-    """(where, basis, source) for every item of a dumped pathway that carries both."""
+def _sources(node: object, where: str = "") -> list[tuple[str, str | None, str]]:
+    """(where, basis, source) for every item of a dumped pathway that has a source (a window: no basis)."""
     found = []
     if isinstance(node, dict):
-        if "basis" in node and "source" in node:
-            found.append((where, node["basis"], node["source"]))
+        if "source" in node:
+            found.append((where, node.get("basis"), node["source"]))
         for key, value in node.items():
             found += _sources(value, f"{where}.{key}" if where else key)
     elif isinstance(node, list):
@@ -706,6 +729,7 @@ CHECK_FUNCTIONS: tuple[Callable[[Pathway, Catalogs], list[Problem]], ...] = (
     check_anaesthesia,
     check_sessions,
     check_days,
+    check_stay_coverage,
     check_drug_courses,
     check_drug_indications,
     check_pins,
