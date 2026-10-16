@@ -33,6 +33,29 @@
 
   Confirmed bugs get their own fix PR.
 - [ ] 4. Per PR: targeted tests, the full suite, compile check, parity and ruff, run in sequence; showcase proofs before and after; CI on `main` green before each push.
+- [x] 3a. Review results (2026-10-16): 15 of the 17 findings are fixed and 2 are partial. Must-fix problems still on `main`:
+  - IONM P703365 and neuronavigation P614981 get the session cut despite C001389/C001413;
+  - a mixed session prices every package at 100 % (C000670 says 25 %);
+  - the #269 gate depends on the generator-only `package_candidate`;
+  - "billed as package" has two definitions (category vs `P` code);
+  - the package gap is stacked on itemized uplifts (= defect 1, PR B);
+  - the exposure map keyed by code loses the primary on repeated codes.
+- [ ] 5. PR C (#283 follow-up), built on PR B's branch, because both need the code-derived "package mandated" predicate:
+  - fix the must-fix list above (except defect 1, which PR B owns);
+  - plus the confirmed smaller items:
+    - `is_bundled` decided by the §3.1.4/#284 classifier, not the input flag;
+    - risk = billed − package, not all-or-nothing;
+    - catalog price when the unit price is missing;
+    - no session uplift on a must-package line;
+    - only operation branches in the uplift's cross-specialty check;
+    - the package side priced with the B(3) rules for several operations;
+    - C000690 drugs and C000707 post-window lines not counted as replaced;
+    - Turkish ı in branch keys;
+    - a test pinning the EK-2B puan ranking.
+  - Domain questions wait for Safa:
+    - +25 points per session or per line (C000662);
+    - money vs a 0-TL review row when the incision or branch is unknown;
+    - §3 incisional and endoscopy scope.
 
 ### Decisions (Safa, 2026-10-16)
 - #259: days before the operation on the same inpatient takip stay inside the package. SUT §2.2.2.B-1(1) (C000685): "takip alındıktan sonraki … yatak bedeli … dahil".
