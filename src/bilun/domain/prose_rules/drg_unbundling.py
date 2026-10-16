@@ -126,7 +126,7 @@ def detect_session_point_violations(
         rule = factor.trace
         expected_billed = expected_session_billed_try(line, point_factor=factor.point_factor)
         actual_billed = _line_billed(line)
-        if actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
+        if expected_billed is None or actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
             continue
 
         overbill = actual_billed - expected_billed

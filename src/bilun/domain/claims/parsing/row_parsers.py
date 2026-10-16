@@ -259,8 +259,10 @@ def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine 
     try:
         line_id = parse_text(row, "procedure_line_id")
         billed_amount_try = parse_money(row, "billed_amount_try", line_id, errors)
+        # A missing unit price stays 0 (unknown): §2.2.2 session pricing then
+        # reads the catalog list price, never the billed amount it checks.
         unit_price_try = (
-            billed_amount_try
+            Decimal("0")
             if is_missing(row.get("unit_price_try"))
             else parse_money(row, "unit_price_try", line_id, errors)
         )

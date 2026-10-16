@@ -149,6 +149,8 @@ def detect_session_underbilling_opportunities(
         primary_line = assessment.primary_line
         factor = assessment.factor
         session_expected = expected_session_billed_try(line, point_factor=factor.point_factor)
+        if session_expected is None:  # No list price: the gap cannot be measured.
+            continue
         blood_ceiling = blood_component_max_billable_try(
             line, package_context=(line.patient_id, line.claim_id, line.episode_id) in package_scopes,
         )

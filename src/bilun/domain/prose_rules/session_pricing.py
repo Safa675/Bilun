@@ -436,20 +436,28 @@ def compute_session_point_factors(
 
 
 
-def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
-    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math."""
+def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float | None:
+    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math.
+
+    The bill's unit price when it states one; otherwise the catalog list price
+    on the procedure date: EK-2/C for a line billed as a package, EK-2/B for the
+    rest. Never the billed amount, which is what the factor checks: a secondary
+    correctly billed at 30 % would read as its own 100 %. ``None`` when neither
+    is known, so the line cannot be assessed.
+    """
     qty = max(int(line.quantity), 1)
     unit = float(line.unit_price_try)
     if unit > 0:
         return _money(unit * qty)
 
-    billed = float(line.billed_amount_try)
-    if billed > 0:
-        return billed
-
     normalized = normalize_procedure_code(line.procedure_code)
     if not normalized:
-        return 0.0
+        return None
+
+    if line_billed_as_package(line):
+        entry = get_ek2c_entry(line.procedure_code, as_of_date=line.procedure_date) or {}
+        price = float(entry.get("price_try") or 0)
+        return _money(price * qty) if price > 0 else None
 
     try:
         from ..catalog import lookup_procedure_code
@@ -468,16 +476,20 @@ def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
     except Exception:
         pass
 
-    return 0.0
+    return None
 
 
 def expected_session_billed_try(
     line: ProcedureClaimLine,
     *,
     point_factor: float,
-) -> float:
-    """Expected billed TRY for a line at its §2.2.2 session point factor (list × factor)."""
-    return _money(line_gazette_list_billed_try(line) * point_factor)
+) -> float | None:
+    """Expected billed TRY at the line's §2.2.2 session point factor (list × factor).
+
+    ``None`` when the line's list price is unknown.
+    """
+    listed = line_gazette_list_billed_try(line)
+    return None if listed is None else _money(listed * point_factor)
 
 
 def _line_itemized_payable(line: ProcedureClaimLine) -> float:

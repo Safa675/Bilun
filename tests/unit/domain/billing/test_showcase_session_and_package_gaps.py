@@ -407,6 +407,51 @@ class TestMixedSessions:
         assert recommend_session_uplift_from_claims(ctx).opportunities == []
 
 
+def _without_unit_price(bill: _Bill) -> PatientClaimContext:
+    """The bill as parsed from an export without the unit_price_try column."""
+    from src.bilun.domain.claims.parsing.row_parsers import parse_procedure_line
+
+    errors: list[str] = []
+    rows = [
+        {
+            "procedure_line_id": line.procedure_line_id, "claim_id": line.claim_id,
+            "patient_id": line.patient_id, "episode_id": line.episode_id,
+            "procedure_date": line.procedure_date, "procedure_code": line.procedure_code,
+            "procedure_name": line.procedure_name, "procedure_category": line.procedure_category,
+            "quantity": line.quantity, "billed_amount_try": float(line.billed_amount_try),
+            "procedure_specialty_code": line.procedure_specialty_code,
+        }
+        for line in bill.procs
+    ]
+    bill.procs = [parse_procedure_line(row, errors) for row in rows]
+    assert not errors
+    assert all(line.unit_price_try == 0 for line in bill.procs)
+    return bill.ctx()
+
+
+class TestMissingUnitPrice:
+    """Without a unit price the list price comes from the catalog, never the bill."""
+
+    def test_a_correct_30_percent_secondary_is_not_exposure(self) -> None:
+        # Review item 8: the parser set unit = billed, so the 30 % line read as its
+        # own 100 % and 70 % of it was flagged (636.72).
+        ctx = _without_unit_price(s3(second_operation=True, second_factor="0.3"))
+        assert _finding(ctx).session_violations == []
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    @pytest.mark.parametrize(
+        "build, code, risk",
+        [
+            (lambda: s3(second_operation=True), "615995", 2122.41),  # EK-2/B list 3,032.01.
+            (lambda: s8("faulty"), "P603840", 5377.20),  # EK-2/C list 7,169.60.
+        ],
+        ids=["hizmet-basi", "package"],
+    )
+    def test_a_full_price_secondary_is_still_flagged(self, build, code, risk) -> None:
+        rows = _finding(_without_unit_price(build())).session_violations
+        assert [(r["procedure_code"], r["risk_amount_try"]) for r in rows] == [(code, risk)]
+
+
 class TestRepeatedCodes:
     """MEDULA sends one line per occurrence; factors pair with lines, not codes."""
 
