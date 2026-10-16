@@ -164,12 +164,12 @@ def s2() -> _Bill:
     return bill
 
 
-def s3(*, second_operation: bool = False) -> _Bill:
+def s3(*, second_operation: bool = False, second_factor: str = "1") -> _Bill:
     op = _d("2026-08-18")
     bill = _Bill("C-SH03", "yatis", op, _d("2026-08-20"))
     bill.proc("615931", op, specialty=BEYIN)
     if second_operation:
-        bill.proc("615995", op, specialty=BEYIN)
+        bill.proc("615995", op, specialty=BEYIN, factor=second_factor)
     bill.proc("550160", op, specialty=ANEST)
     bill.stay(BEYIN)
     bill.labs(op, ("L107020",), BEYIN)
@@ -342,6 +342,30 @@ class TestSessionScope261:
         assert (meta["sessions_cross_specialty"], meta["sessions_with_adjustment"]) == (0, 1)
         raw = sum(float(line.billed_amount_try) for line in lines)
         assert total == pytest.approx(raw - 0.70 * float(lines[1].billed_amount_try), abs=0.01)
+
+    def test_session_uplift_reads_the_branches_of_operations_only(self) -> None:
+        # Review mutant M37: reading the anaesthesia (3100) and neurology (1300)
+        # lines' branches made the correct 30 % secondary owe +25 points (758.01).
+        ctx = s3(second_operation=True, second_factor="0.3").ctx()
+        assert recommend_session_uplift_from_claims(ctx).opportunities == []
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    def test_hizmet_basi_operations_rank_by_their_ek2b_puan(self) -> None:
+        # Review mutant M06: by EK-2/B puan 603840 leads 603830; by EK-2/C puan
+        # (their packages) the order flips and the wrong line is flagged.
+        day = _d("2026-07-14")
+        bill = _Bill("C-RANK", "yatis", day, day, tier="egitim_arastirma")
+        bill.proc("603840", day, specialty=GENCER)
+        bill.proc("603830", day, specialty=GENCER)
+        ctx = bill.ctx()
+        rows = detect_session_point_violations(
+            list(ctx.procedure_lines), same_incision=True, claim=ctx.claims[0],
+        )
+        assert [
+            (r["procedure_code"], r["primary_procedure_code"], r["expected_point_factor"],
+             r["risk_amount_try"])
+            for r in rows
+        ] == [("603830", "603840", 0.30, 1148.48)]
 
 
 class TestCrossSpecialty264:

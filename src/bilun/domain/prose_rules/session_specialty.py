@@ -10,8 +10,12 @@ if TYPE_CHECKING:
 
 
 def normalize_specialty_key(raw: str) -> str:
-    """Stable key for comparing procedure specialties (branch codes or names)."""
-    text = str(raw or "").strip().casefold()
+    """Stable key for comparing procedure specialties (branch codes or names).
+
+    The Turkish dotless "ı" folds to "i" as "İ" and "I" do, so "KARDİYOLOJİ",
+    "KARDIYOLOJI" and "kardıyolojı" are one branch.
+    """
+    text = str(raw or "").strip().casefold().replace("ı", "i")
     if not text:
         return ""
     folded = unicodedata.normalize("NFKD", text)
