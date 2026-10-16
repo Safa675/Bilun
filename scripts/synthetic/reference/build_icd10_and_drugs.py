@@ -8,6 +8,10 @@ data-only mode and external links are never loaded. Outputs:
 - ``icd10_tr.parquet``: one row per SKRS ICD-10 code (the root row "0" is dropped) with its
   Turkish name, parent, SKRS level (tree depth), status, high-risk-pregnancy flag, row dates
   and the sex that the active SKRS ICD10-MSVS rows give it (``F``/``M``, null elsewhere).
+  Two columns are derived, not read: ``kind`` is the one shape in ``ICD10_KINDS`` the code
+  fits (``range`` A00-B99, ``morphology_range`` M800-M998, ``category`` A00, ``subcategory``
+  A00.0 or M48.06, ``morphology`` M8000/0, ``morphology_group`` M800; ``other`` for CM-AL,
+  M86.4.9 and ZX01, which fit none), and ``is_leaf`` is true when no row has the code as parent.
 - ``drug_crosswalk.parquet``: one row per curated EK-4A barcode. Barcodes join exactly.
   Product name and active ingredient come from the TİTCK licensed-product lists; the ATC code
   comes from the SKRS e-prescription list with its name, else from the licence list (name
@@ -44,7 +48,16 @@ USED = ("icd10_skrs", "icd10msvs_skrs", *LICENCE.values(), *ERECETE.values())
 ICD10_SCHEMA = {
     "code": pl.String, "name_tr": pl.String, "parent_code": pl.String, "level": pl.Int8,
     "is_active": pl.Boolean, "high_risk_pregnancy": pl.Boolean, "created_on": pl.Date,
-    "updated_on": pl.Date, "passive_on": pl.Date, "sex": pl.String,
+    "updated_on": pl.Date, "passive_on": pl.Date, "sex": pl.String, "kind": pl.String, "is_leaf": pl.Boolean,
+}
+# ``kind`` by code shape. A code fits at most one (checked); a code that fits none is "other".
+ICD10_KINDS = {
+    "range": r"^[A-Z]\d{2}-[A-Z]\d{2}$",  # chapters and blocks: A00-B99, A00-A09
+    "morphology_range": r"^M\d{3}-M\d{3}$",  # the ICD-O morphology chapter M800-M998 and its ranges
+    "category": r"^[A-Z]\d{2}$",  # A00
+    "subcategory": r"^[A-Z]\d{2}\.\d{1,2}$",  # 4th or 5th character: A00.0, M48.06
+    "morphology": r"^M\d{4}/\d$",  # ICD-O morphology code: M8000/0
+    "morphology_group": r"^M\d{3}$",  # M800
 }
 CROSSWALK_SCHEMA = {
     "barcode": pl.String, "kamu_no": pl.String, "ek4a_name": pl.String, "equivalence_group": pl.String,
@@ -127,6 +140,19 @@ def _sex_by_code(msvs_path: Path) -> pl.DataFrame:
     return per_code.select("code", pl.col("sex").list.first())
 
 
+def with_kind_and_leaf(table: pl.DataFrame) -> pl.DataFrame:
+    """Add ``kind`` (code shape) and ``is_leaf`` (no row's parent); return ICD10_SCHEMA sorted by code."""
+    fits = [pl.col("code").str.contains(shape) for shape in ICD10_KINDS.values()]
+    twice = table.filter(pl.sum_horizontal(fits) > 1)
+    if twice.height:
+        raise ValueError(f"ICD-10: codes fitting two kinds: {twice['code'].sort().to_list()}")
+    kind = pl.coalesce(*(pl.when(fit).then(pl.lit(name)) for fit, name in zip(fits, ICD10_KINDS, strict=True)),
+                       pl.lit("other"))
+    leaf = ~pl.col("code").is_in(table["parent_code"].drop_nulls().implode())
+    return table.with_columns(kind.alias("kind"), leaf.alias("is_leaf")).select(
+        pl.col(c).cast(t) for c, t in ICD10_SCHEMA.items()).sort("code")
+
+
 def build_icd10(icd_path: Path, msvs_path: Path) -> pl.DataFrame:
     """One row per SKRS ICD-10 code; chapters (and the CM-AL group) hang from the dropped root."""
     raw = read_sheet(icd_path, "Liste", 1)
@@ -155,7 +181,7 @@ def build_icd10(icd_path: Path, msvs_path: Path) -> pl.DataFrame:
     missing = table.filter(pl.col("parent_code").is_not_null() & ~pl.col("parent_code").is_in(table["code"].implode()))
     if missing.height:
         raise ValueError(f"ICD-10: parents not in the list: {missing['parent_code'].unique().sort().to_list()}")
-    return table.select(pl.col(c).cast(t) for c, t in ICD10_SCHEMA.items()).sort("code")
+    return with_kind_and_leaf(table)
 
 
 def licence_rows(path: Path) -> pl.DataFrame:
@@ -315,6 +341,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"wrote {path}")
     sexes = icd10["sex"].value_counts(sort=True).rows()
     print(f"ICD-10: {icd10.height} codes, {icd10['is_active'].sum()} active; sex {sexes}")
+    print(f"  kind {icd10['kind'].value_counts(sort=True).rows()}; {icd10['is_leaf'].sum()} leaves")
     sources = crosswalk["match_source"].value_counts(sort=True).rows()
     print(f"crosswalk: {crosswalk.height} EK-4A barcodes; match_source {sources}")
     filled = crosswalk.select(pl.col("active_ingredient", "atc_code", "atc_name").is_not_null().sum())

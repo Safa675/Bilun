@@ -1,7 +1,7 @@
 {
  "story": "S4",
  "clean": {
-  "total_billed": "1941.97",
+  "total_billed": "2108.52",
   "rows": [
    {
     "date": "2026-05-11",
@@ -205,9 +205,18 @@
     "date": "2026-05-11",
     "code": "906020",
     "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
-    "qty": 1,
+    "qty": 2,
     "unit": "65.82",
-    "billed": "65.82",
+    "billed": "131.64",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "803580",
+    "name": "Üriner sistem US",
+    "qty": 1,
+    "unit": "100.73",
+    "billed": "100.73",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -241,10 +250,12 @@
     "date": "2026-05-11",
     "code": "8699508270224",
     "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
-    "qty": 5,
+    "qty": 10,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
    },
    {
     "date": "2026-05-11",
@@ -253,7 +264,20 @@
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A14359 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "box"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    }
   ],
   "diagnoses": [
@@ -288,14 +312,14 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 425.46,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
   }
  },
  "faulty": {
-  "total_billed": "1571.47",
+  "total_billed": "1738.02",
   "rows": [
    {
     "date": "2026-05-11",
@@ -454,9 +478,18 @@
     "date": "2026-05-11",
     "code": "906020",
     "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
-    "qty": 1,
+    "qty": 2,
     "unit": "65.82",
-    "billed": "65.82",
+    "billed": "131.64",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "803580",
+    "name": "Üriner sistem US",
+    "qty": 1,
+    "unit": "100.73",
+    "billed": "100.73",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -490,10 +523,12 @@
     "date": "2026-05-11",
     "code": "8699508270224",
     "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
-    "qty": 5,
+    "qty": 10,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
    },
    {
     "date": "2026-05-11",
@@ -502,7 +537,20 @@
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A14359 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "box"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    }
   ],
   "diagnoses": [
@@ -537,7 +585,7 @@
   ],
   "report": {
    "sgk_uplift_try": 370.5,
-   "audit_exposure_try": 166.11,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
@@ -550,31 +598,9 @@
    "refakatci_510121",
    "",
    370.5
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   166.11
   ]
  ],
- "only_in_clean": [
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   425.46
-  ],
-  [
-   "validate",
-   null,
-   "los_procedure_density_anomaly",
-   "",
-   0.0
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
   [
    "action",
@@ -589,13 +615,6 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   425.46
   ],
   [
    "wavea",
@@ -741,13 +760,6 @@
    "validate",
    "treatment_pricing_2_4",
    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
-   "",
-   0.0
-  ],
-  [
-   "validate",
-   null,
-   "los_procedure_density_anomaly",
    "",
    0.0
   ]

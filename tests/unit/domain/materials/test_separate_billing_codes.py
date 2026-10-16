@@ -108,6 +108,7 @@ class TestSut314Items:
     def test_items_by_ek3_row(self) -> None:
         expected = {
             "102295": "b",  # VERTEBROPLASTİ ÇİMENTOSU
+            "AP3220": "b",  # EK-3/F-1 KEMİK ÇİMENTOSU - NORMAL, not an implant (ç)
             "TV3111": "c",  # EKSTERNAL FİKSATÖR SETİ
             "KR1014": "e",  # KALP PİLİ, DDDR
             "KR1193": None,  # KALP PİLİ ELEKTRODU ÇIKARILMASI İÇİN ... CİHAZLAR
@@ -134,10 +135,11 @@ class TestSut314Items:
         counts: dict[str, int] = {}
         for item in sut_3_1_4_item_codes().values():
             counts[item] = counts.get(item, 0) + 1
-        # 337 EK-3/F-1 rows minus 10 instruments, plus the 185 EK-3/F-3 rows.
+        # 345 EK-3/F-1 rows minus 10 instruments and the 8 bone cements (item b),
+        # plus the 185 EK-3/F-3 rows.
         assert counts.pop("ç") == 327 + 185
         assert counts == {
-            "b": 3, "c": 12, "e": 17, "f": 15, "g": 3, "ğ": 15, "h": 9,
+            "b": 11, "c": 12, "e": 17, "f": 15, "g": 3, "ğ": 15, "h": 9,
             "ı": 5, "k": 31, "l": 2, "m": 10, "o": 10,
         }
 

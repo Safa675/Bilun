@@ -1,7 +1,7 @@
 {
  "story": "S2",
  "clean": {
-  "total_billed": "4149.89",
+  "total_billed": "3263.43",
   "rows": [
    {
     "date": "2026-03-09",
@@ -167,24 +167,6 @@
    },
    {
     "date": "2026-03-09",
-    "code": "L106910",
-    "name": "Sodyum (Serum/Plazma)",
-    "qty": 1,
-    "unit": "7.20",
-    "billed": "7.20",
-    "source": "EK-2B valid_from 2026-01-31"
-   },
-   {
-    "date": "2026-03-09",
-    "code": "L106150",
-    "name": "Potasyum (Serum/Plazma)",
-    "qty": 1,
-    "unit": "7.20",
-    "billed": "7.20",
-    "source": "EK-2B valid_from 2026-01-31"
-   },
-   {
-    "date": "2026-03-09",
     "code": "L100300",
     "name": "Alanin aminotransferaz (ALT) (Serum/Plazma)",
     "qty": 1,
@@ -223,9 +205,9 @@
     "date": "2026-03-09",
     "code": "906020",
     "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
-    "qty": 1,
+    "qty": 2,
     "unit": "65.82",
-    "billed": "65.82",
+    "billed": "131.64",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -250,18 +232,72 @@
     "date": "2026-03-09",
     "code": "530350",
     "name": "Nebülizatör ile ilaç uygulaması",
-    "qty": 18,
+    "qty": 1,
     "unit": "66.29",
-    "billed": "1193.22",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-10",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-11",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-12",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-13",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-14",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
     "date": "2026-03-09",
     "code": "530360",
     "name": "Oksijen inhalasyon tedavisi, saatlik",
-    "qty": 48,
+    "qty": 16,
     "unit": "8.90",
-    "billed": "427.20",
+    "billed": "142.40",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-10",
+    "code": "530360",
+    "name": "Oksijen inhalasyon tedavisi, saatlik",
+    "qty": 16,
+    "unit": "8.90",
+    "billed": "142.40",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -307,7 +343,31 @@
     "qty": 7,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699548270482",
+    "name": "KLACID 500 MG IV 1 FLK",
+    "qty": 10,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A04309 from 2025-04-26",
+    "ingredient": "clarithromycin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699541791007",
+    "name": "PREDNOL-L 40 MG 1 AMP",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A06313 from 2025-04-26",
+    "ingredient": "metilprednizolon",
+    "qty_unit": "ampoule"
    },
    {
     "date": "2026-03-09",
@@ -316,7 +376,20 @@
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A17700 from 2025-04-26",
+    "ingredient": "ipratropium bromür+salbutamol sülfat",
+    "qty_unit": "box"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    }
   ],
   "diagnoses": [
@@ -348,14 +421,14 @@
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 1258.57,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
   }
  },
  "faulty": {
-  "total_billed": "3482.81",
+  "total_billed": "2596.35",
   "rows": [
    {
     "date": "2026-03-09",
@@ -494,24 +567,6 @@
    },
    {
     "date": "2026-03-09",
-    "code": "L106910",
-    "name": "Sodyum (Serum/Plazma)",
-    "qty": 1,
-    "unit": "7.20",
-    "billed": "7.20",
-    "source": "EK-2B valid_from 2026-01-31"
-   },
-   {
-    "date": "2026-03-09",
-    "code": "L106150",
-    "name": "Potasyum (Serum/Plazma)",
-    "qty": 1,
-    "unit": "7.20",
-    "billed": "7.20",
-    "source": "EK-2B valid_from 2026-01-31"
-   },
-   {
-    "date": "2026-03-09",
     "code": "L100300",
     "name": "Alanin aminotransferaz (ALT) (Serum/Plazma)",
     "qty": 1,
@@ -550,9 +605,9 @@
     "date": "2026-03-09",
     "code": "906020",
     "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
-    "qty": 1,
+    "qty": 2,
     "unit": "65.82",
-    "billed": "65.82",
+    "billed": "131.64",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -577,18 +632,72 @@
     "date": "2026-03-09",
     "code": "530350",
     "name": "Nebülizatör ile ilaç uygulaması",
-    "qty": 18,
+    "qty": 1,
     "unit": "66.29",
-    "billed": "1193.22",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-10",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-11",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-12",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-13",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-14",
+    "code": "530350",
+    "name": "Nebülizatör ile ilaç uygulaması",
+    "qty": 1,
+    "unit": "66.29",
+    "billed": "66.29",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
     "date": "2026-03-09",
     "code": "530360",
     "name": "Oksijen inhalasyon tedavisi, saatlik",
-    "qty": 48,
+    "qty": 16,
     "unit": "8.90",
-    "billed": "427.20",
+    "billed": "142.40",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-03-10",
+    "code": "530360",
+    "name": "Oksijen inhalasyon tedavisi, saatlik",
+    "qty": 16,
+    "unit": "8.90",
+    "billed": "142.40",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -634,7 +743,31 @@
     "qty": 7,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699548270482",
+    "name": "KLACID 500 MG IV 1 FLK",
+    "qty": 10,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A04309 from 2025-04-26",
+    "ingredient": "clarithromycin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699541791007",
+    "name": "PREDNOL-L 40 MG 1 AMP",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A06313 from 2025-04-26",
+    "ingredient": "metilprednizolon",
+    "qty_unit": "ampoule"
    },
    {
     "date": "2026-03-09",
@@ -643,7 +776,20 @@
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A17700 from 2025-04-26",
+    "ingredient": "ipratropium bromür+salbutamol sülfat",
+    "qty_unit": "box"
+   },
+   {
+    "date": "2026-03-09",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    }
   ],
   "diagnoses": [
@@ -675,7 +821,7 @@
   ],
   "report": {
    "sgk_uplift_try": 667.08,
-   "audit_exposure_try": 1173.36,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 2
@@ -688,13 +834,6 @@
    "yatak_puani_standard_bed",
    "",
    667.08
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   1173.36
   ]
  ],
  "only_in_clean": [
@@ -702,20 +841,6 @@
    "action",
    "claim_checklist",
    "documentation_requirement",
-   "",
-   0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   1258.57
-  ],
-  [
-   "validate",
-   null,
-   "los_procedure_density_anomaly",
    "",
    0.0
   ]
@@ -734,13 +859,6 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   1258.57
   ],
   [
    "wavea",
@@ -886,13 +1004,6 @@
    "validate",
    "treatment_pricing_2_4",
    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
-   "",
-   0.0
-  ],
-  [
-   "validate",
-   null,
-   "los_procedure_density_anomaly",
    "",
    0.0
   ]

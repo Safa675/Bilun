@@ -1,4 +1,4 @@
-### S6 clean — total 2.311,13 TL (drugs excluded)
+### S6 clean — total 2.416,40 TL (drugs excluded)
 
 | Date (2026) | Code | Name (catalog) | Qty | Unit TL | Billed TL | Source (row in force) |
 |---|---|---|---|---|---|---|
@@ -15,12 +15,16 @@
 | 06-08 | L101280 | Aspartat aminotransferaz (AST) (Serum/Plazma) | 1 | 6,57 | 6,57 | EK-2B from 2026-01-31 |
 | 06-08 | 906020 | Kan kültürü (Aerob-anaerob) otomatik sistem | 1 | 65,82 | 65,82 | EK-2B from 2026-01-31 |
 | 06-08, 06-12 | 801720 | Akciğer grafisi P.A. (Tek yön) | 2 (2 lines) | 44,75 | 89,50 | EK-2B from 2026-01-31 |
+| 06-08 | 530100 | Elektrokardiyogram | 1 | 16,66 | 16,66 | EK-2B from 2026-01-31 |
 | 06-08 | 520010 | Konsültasyon (Her bir branş için) | 1 | 33,17 | 33,17 | EK-2B from 2026-01-31 |
-| 06-08 | 8699508270224 | IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU | 7 | TBD (Q4) | TBD (Q4) | EK-4A A03721 from 2025-04-26 |
-| 06-08 | 8697637691743 | NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI) | 21 | TBD (Q4) | TBD (Q4) | EK-4A A15078 from 2025-04-26 |
-| 06-09 | 8699708690525 | PK-MERZ IV INF. COZ. 2x500 ML | 2 | TBD (Q4) | TBD (Q4) | EK-4A A12140 from 2025-04-26 |
+| 06-10 | 530340 | Nazogastrik sonda uygulaması | 1 | 88,61 | 88,61 | EK-2B from 2026-01-31 |
+| 06-08 | 8699508270224 | IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU | 7 vial | TBD (Q4) | TBD (Q4) | EK-4A A03721 from 2025-04-26 |
+| 06-08 | 8697637690128 | NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI COZELTISI PP-TORBA 1000 ML(SETLI) | 3 bag | TBD (Q4) | TBD (Q4) | EK-4A A09604 from 2025-04-26 |
+| 06-08 | 8699809950696 | CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ | 6 syringe (box of 10) | TBD (Q4) | TBD (Q4) | EK-4A A10398 from 2025-04-26 |
+| 06-09 | 8699708690525 | PK-MERZ IV INF. COZ. 2x500 ML | 3 bottle (box of 2) | TBD (Q4) | TBD (Q4) | EK-4A A12140 from 2025-04-26 |
+| 06-10 | 8699525094841 | MADOPAR 125 MG 30 TB | 20 tablet (box of 30) | TBD (Q4) | TBD (Q4) | EK-4A A04817 from 2025-04-26 |
 
-### S6 faulty — total 2.311,13 TL (drugs excluded)
+### S6 faulty — total 2.416,40 TL (drugs excluded)
 
 | Date (2026) | Code | Name (catalog) | Qty | Unit TL | Billed TL | Source (row in force) |
 |---|---|---|---|---|---|---|
@@ -37,8 +41,12 @@
 | 06-08 | L101280 | Aspartat aminotransferaz (AST) (Serum/Plazma) | 1 | 6,57 | 6,57 | EK-2B from 2026-01-31 |
 | 06-08 | 906020 | Kan kültürü (Aerob-anaerob) otomatik sistem | 1 | 65,82 | 65,82 | EK-2B from 2026-01-31 |
 | 06-08, 06-12 | 801720 | Akciğer grafisi P.A. (Tek yön) | 2 (2 lines) | 44,75 | 89,50 | EK-2B from 2026-01-31 |
+| 06-08 | 530100 | Elektrokardiyogram | 1 | 16,66 | 16,66 | EK-2B from 2026-01-31 |
 | 06-08 | 520010 | Konsültasyon (Her bir branş için) | 1 | 33,17 | 33,17 | EK-2B from 2026-01-31 |
-| 06-08 | 8699508270224 | IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU | 7 | TBD (Q4) | TBD (Q4) | EK-4A A03721 from 2025-04-26 |
-| 06-08 | 8697637691743 | NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI) | 21 | TBD (Q4) | TBD (Q4) | EK-4A A15078 from 2025-04-26 |
-| 06-09 | 8699708690525 | PK-MERZ IV INF. COZ. 2x500 ML | 2 | TBD (Q4) | TBD (Q4) | EK-4A A12140 from 2025-04-26 |
+| 06-10 | 530340 | Nazogastrik sonda uygulaması | 1 | 88,61 | 88,61 | EK-2B from 2026-01-31 |
+| 06-08 | 8699508270224 | IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU | 7 vial | TBD (Q4) | TBD (Q4) | EK-4A A03721 from 2025-04-26 |
+| 06-08 | 8697637690128 | NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI COZELTISI PP-TORBA 1000 ML(SETLI) | 3 bag | TBD (Q4) | TBD (Q4) | EK-4A A09604 from 2025-04-26 |
+| 06-08 | 8699809950696 | CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ | 6 syringe (box of 10) | TBD (Q4) | TBD (Q4) | EK-4A A10398 from 2025-04-26 |
+| 06-09 | 8699708690525 | PK-MERZ IV INF. COZ. 2x500 ML | 3 bottle (box of 2) | TBD (Q4) | TBD (Q4) | EK-4A A12140 from 2025-04-26 |
+| 06-10 | 8699525094841 | MADOPAR 125 MG 30 TB | 20 tablet (box of 30) | TBD (Q4) | TBD (Q4) | EK-4A A04817 from 2025-04-26 |
 

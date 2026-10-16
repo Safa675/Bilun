@@ -1091,36 +1091,28 @@ def test_all_materials_included_package_drops_the_paid_separately_info_row() -> 
     assert rules["102295"] == [_SEPARATE_BILLING]
 
 
-def test_bone_cement_rule_matches_real_cement_rows_and_no_ek3f1_row() -> None:
-    """#262: the bare keyword "çimento" also matched ÇİMENTOSUZ/ÇİMENTOLU stems."""
+def test_bone_cement_rule_matches_real_cement_rows_and_no_other_ek3f1_row() -> None:
+    """#262: the bare keyword "çimento" also matched ÇİMENTOSUZ/ÇİMENTOLU stems.
+
+    The EK-3/F-1 bone cements AP3180-AP3250 are in force: RG 21/04/2024-32524
+    (Yürürlük 30/04/2024) repealed only their "KALÇA/DİZ" site cell.
+    """
     import polars as pl
 
     from src.bilun.domain.constants import _GAZETTE_CURATED_DIR
 
-    cement_rows = [
-        # EK-3/F-1 bone cements (repealed 30/04/2024, so absent from the curated list).
-        ("AP3180", "KALÇA/DİZ | PRİMER/REVİZYON | KEMİK ÇİMENTOSU - ANTİBİYOTİKLİ | STANDART - 40 gr | PMMA"),
-        ("AP3220", "KALÇA/DİZ | PRİMER/REVİZYON | KEMİK ÇİMENTOSU - NORMAL | STANDART - 40 gr | PMMA"),
-    ]
-    spine = pl.read_parquet(_GAZETTE_CURATED_DIR / "ek3e1_spine_surgery_materials.parquet")
-    cement_rows += spine.filter(pl.col("sut_code").is_in(["102295", "102296", "102465"])).select(
-        "sut_code", "material_name"
-    ).rows()
-    assert len(cement_rows) == 5
-    hits = check_material_bundling_prose(
-        [{"name": name, "code": code, "unit_price": 100.0} for code, name in cement_rows]
-    )
-    assert sorted(h["material_code"] for h in hits if h["rule_id"] == _BONE_CEMENT) == sorted(
-        code for code, _ in cement_rows
-    )
-
     ek3f1 = pl.read_parquet(_GAZETTE_CURATED_DIR / "ek3f1_arthroplasty_materials.parquet")
-    names = ek3f1.select(
+    rows = ek3f1.select(
         "sut_code", pl.concat_str(["material_name", "description"], separator=" | ")
     ).rows()
-    assert len(names) == 337
+    assert len(rows) == 345
+    spine = pl.read_parquet(_GAZETTE_CURATED_DIR / "ek3e1_spine_surgery_materials.parquet")
+    rows += spine.filter(pl.col("sut_code").is_in(["102295", "102296", "102465"])).select(
+        "sut_code", "material_name"
+    ).rows()
     hits = check_material_bundling_prose(
-        [{"name": name, "code": code, "unit_price": 100.0} for code, name in names]
+        [{"name": name, "code": code, "unit_price": 100.0} for code, name in rows]
     )
-    assert not [h["material_code"] for h in hits if h["rule_id"] == _BONE_CEMENT]
+    cements = [f"AP3{n}" for n in range(180, 260, 10)] + ["102295", "102296", "102465"]
+    assert sorted(h["material_code"] for h in hits if h["rule_id"] == _BONE_CEMENT) == sorted(cements)
 

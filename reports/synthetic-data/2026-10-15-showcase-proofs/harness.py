@@ -2,7 +2,9 @@
 
 Nothing here writes to the repo. Claims are built from the dataclasses in
 src/bilun/domain/claims/models.py the way the unit tests do, priced from the
-curated catalogs in force on each line date, then run through:
+curated catalogs in force on each line date (EK-2B/EK-2C history, the EK-3/F-1
+list; drug names from the EK-4A history row in force, which must have an active
+ingredient in the drug crosswalk), then run through:
   * the specific detector(s) for the injected fault (direct call), and
   * the full single-patient report (compute_patient_billing_report) plus the
     validation core (analyze_claim), so any other rule that fires is visible.
@@ -24,7 +26,7 @@ os.chdir(ROOT)
 
 import polars as pl  # noqa: E402
 
-from cat import EK2B, EK2C  # noqa: E402
+from cat import EK2B, EK2C, EK3F1, EK4A, XWALK  # noqa: E402
 from src.bilun.domain.billing.engine import analyze_claim  # noqa: E402
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report  # noqa: E402
 from src.bilun.domain.claims.dataset_builder import _enrich_material_regulatory_flags  # noqa: E402
@@ -72,6 +74,40 @@ def catalog_row(code: str, on: date) -> dict[str, Any]:
     r = rows.row(0, named=True)
     return {"code": code, "name": r["name"], "puan": r["puan"], "price_try": r["price_try"],
             "valid_from": r["valid_from"], "annex": "EK-2B", "group": None}
+
+
+# The curated EK-3/F-1 file is the list in force from 13.12.2025 (raw partition
+# annex=EK-3F-1/effective_date=2025-12-13, as consolidated in the 2026-10-02 SUT).
+EK3F1_FROM = date(2025, 12, 13)
+
+
+def material_row(code: str, on: date) -> dict[str, Any]:
+    """Return the EK-3/F-1 row of ``code`` (name = site | description); fail loudly."""
+    if on < EK3F1_FROM:
+        raise ValueError(f"EK-3F-1 {code} on {on}: the curated list starts {EK3F1_FROM}")
+    rows = EK3F1.filter(pl.col("sut_code") == code)
+    if rows.height != 1:
+        raise ValueError(f"EK-3F-1 {code}: {rows.height} rows")
+    r = rows.row(0, named=True)
+    name = " | ".join(part for part in (r["material_name"], r["description"]) if part)
+    return {"code": code, "name": name, "price_try": r["price_try"],
+            "source": f"EK-3F-1 from {EK3F1_FROM} (curated ek3f1_arthroplasty_materials)"}
+
+
+def drug_row(barcode: str, on: date) -> dict[str, Any]:
+    """Return the EK-4A row of ``barcode`` in force on ``on`` with its ingredient; fail loudly."""
+    d = on.isoformat()
+    rows = EK4A.filter((pl.col("barcode") == barcode) & (pl.col("valid_from") <= d)
+                       & (pl.col("valid_until").is_null() | (pl.col("valid_until") >= d)))
+    if rows.height != 1:
+        raise ValueError(f"EK-4A {barcode} on {d}: {rows.height} rows")
+    r = rows.row(0, named=True)
+    xw = XWALK.filter(pl.col("barcode") == barcode)
+    ingredient = xw["active_ingredient"].item() if xw.height == 1 else None
+    if not ingredient:
+        raise ValueError(f"EK-4A {barcode}: no active ingredient in drug_crosswalk.parquet")
+    return {"barcode": barcode, "name": r["drug_name"], "kamu_no": r["kamu_no"],
+            "valid_from": r["valid_from"], "ingredient": ingredient}
 
 
 def _category_for(code: str) -> str:
@@ -142,36 +178,47 @@ class Bill:
         self.sources[lid] = row
         return lid
 
-    def mat(self, code: str, name: str, on: date, unit_price: float, *, qty: int = 1,
-            proc_line_id: str = "", material_type: str = "implant", specialty_category: str = "",
-            line_id: str | None = None, source: str = "", **flags: Any) -> str:
+    def mat(self, code: str, on: date, *, qty: int = 1, proc_line_id: str = "",
+            material_type: str = "implant", specialty_category: str = "EK-3F-1",
+            line_id: str | None = None, **flags: Any) -> str:
+        """An EK-3/F-1 line at its list price (KDV hariç; the claim model has no KDV field)."""
+        row = material_row(code, on)
         lid = line_id or f"{self.cid}-M{len(self.mats) + 1:02d}"
-        unit = money(unit_price)
+        unit = money(row["price_try"])
         billed = money(unit * qty)
         self.mats.append(MaterialClaimLine(
             material_line_id=lid, claim_id=self.cid, procedure_line_id=proc_line_id,
-            patient_id=self.pid, material_date=on, material_code=code, material_name=name,
+            patient_id=self.pid, material_date=on, material_code=code, material_name=row["name"],
             material_type=material_type, specialty_category=specialty_category, quantity=qty,
             unit_price_try=unit, billed_amount_try=billed, expected_payable_try=billed,
             is_bundled=False, requires_pre_auth=False, denial_reason_expected="",
             rule_trace_expected="", **flags,
         ))
-        self.sources[lid] = {"code": code, "name": name, "price_try": unit_price, "source": source}
+        self.sources[lid] = row
         return lid
 
-    def drug(self, name: str, on: date, *, barkod: str, drug_code: str = "", qty: int = 1,
-             unit_price: float = 0.0, equivalence_group: str = "", line_id: str | None = None,
-             **clinical: Any) -> str:
+    def drug(self, barkod: str, on: date, *, qty: int = 1, unit: str = "box", per_box: int = 1,
+             drug_code: str = "", unit_price: float = 0.0, equivalence_group: str = "",
+             line_id: str | None = None, **clinical: Any) -> str:
+        """An EK-4A line; the name comes from the EK-4A row in force on ``on``.
+
+        ``qty`` counts what was used. ``DrugClaimLine.quantity`` is an int
+        (models.py), so a part box is billed as whole units (``unit``, ``per_box``
+        to a box) at box price / ``per_box``; MEDULA itself records the decimal box
+        fraction (Kılavuz v3.1.1 p.21-22). Prices are TBD (Q4) and enter at 0 TL.
+        """
+        row = drug_row(barkod, on)
         lid = line_id or f"{self.cid}-D{len(self.drugs) + 1:02d}"
-        unit = money(unit_price)
-        billed = money(unit * qty)
+        price = money(unit_price)
+        billed = money(price * qty)
         self.drugs.append(DrugClaimLine(
             drug_claim_line_id=lid, prescription_id=f"{self.cid}-RX1", claim_id=self.cid,
-            patient_id=self.pid, episode_id=self.episode, drug_claim_date=on, drug_name=name,
+            patient_id=self.pid, episode_id=self.episode, drug_claim_date=on, drug_name=row["name"],
             drug_code=drug_code, barkod=barkod, equivalence_group=equivalence_group, quantity=qty,
-            unit_price_try=unit, billed_amount_try=billed, expected_payable_try=billed,
+            unit_price_try=price, billed_amount_try=billed, expected_payable_try=billed,
             discount_tier_expected=Z, denial_reason_expected="", rule_trace_expected="", **clinical,
         ))
+        self.sources[lid] = {**row, "unit": unit, "per_box": per_box}
         return lid
 
     def perf(self, code: str, on: date, name: str | None = None, source: str = "emr") -> str:
@@ -335,7 +382,12 @@ def bill_rows(b: Bill) -> list[dict[str, Any]]:
                      "qty": m.quantity, "unit": str(m.unit_price_try), "billed": str(m.billed_amount_try),
                      "source": src.get("source", "")})
     for d in b.drugs:
+        src = b.sources.get(d.drug_claim_line_id, {})
+        per_box = src.get("per_box", 1)
         rows.append({"date": d.drug_claim_date.isoformat() if d.drug_claim_date else "", "code": d.barkod,
                      "name": d.drug_name, "qty": d.quantity, "unit": str(d.unit_price_try),
-                     "billed": str(d.billed_amount_try), "source": "EK-4A"})
+                     "billed": str(d.billed_amount_try),
+                     "source": f"EK-4A {src.get('kamu_no', '')} from {src.get('valid_from', '')}",
+                     "ingredient": src.get("ingredient", ""),
+                     "qty_unit": src.get("unit", "box") + (f" (box of {per_box})" if per_box > 1 else "")})
     return rows

@@ -153,7 +153,45 @@ def _print(out: dict) -> None:
             print("     ", x)
 
 
+_MONEY = ("sgk_uplift_try", "audit_exposure_try", "capture_gap_try", "compliance_adjustment_try")
+
+
+def target_amount(story: str, rows: list[dict]) -> float | None:
+    """The injected fault's amount from the direct rows (0.0 when it has none), None if silent."""
+    def total(key: str) -> float | None:
+        amount = sum(float(r.get(key) or 0.0) for r in rows)
+        return round(amount, 2) if amount > 0 else None
+    if story == "S1":
+        if not any(r.get("compliant") is False for r in rows):
+            return None
+        return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
+    if story in ("S2", "S3", "S4"):
+        return total("recoverable_uplift_try")
+    if story == "S5":
+        return total("risk_amount")
+    if story == "S6":
+        return 0.0 if any(r.get("violation_kind") == "indication_mismatch" for r in rows) else None
+    return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
+
+
+def summary(results: list[dict]) -> bool:
+    """Every target fires on the faulty bill only, and every clean bill carries 0 TL."""
+    ok = True
+    print("\nstory | target on faulty | target on clean | clean money (report) | faulty money (report)")
+    for out in results:
+        s = out["story"]
+        fault, clean = (target_amount(s, out[v]["direct"]) for v in ("faulty", "clean"))
+        clean_money = {k: out["clean"]["report"][k] for k in _MONEY if out["clean"]["report"][k]}
+        faulty_money = {k: out["faulty"]["report"][k] for k in _MONEY if out["faulty"]["report"][k]}
+        good = fault is not None and clean is None and not clean_money
+        ok &= good
+        print(f"{s} | {fault} | {clean} | {clean_money or 0} | {faulty_money or 0} | {'OK' if good else 'FAIL'}")
+    return ok
+
+
 if __name__ == "__main__":
     which = sys.argv[1:] or list(STORIES)
-    for s in which:
-        _print(prove(s))
+    results = [prove(s) for s in which]
+    for out in results:
+        _print(out)
+    sys.exit(0 if summary(results) else 1)

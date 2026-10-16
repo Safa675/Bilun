@@ -15,7 +15,7 @@
   ],
   "diagnoses": [
    [
-    "K35.8",
+    "K35.9",
     true
    ]
   ],
@@ -43,15 +43,15 @@
    }
   ],
   "report": {
-   "sgk_uplift_try": 592.92,
+   "sgk_uplift_try": 0.0,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 4
+   "action_count": 3
   }
  },
  "faulty": {
-  "total_billed": "4550.64",
+  "total_billed": "4514.45",
   "rows": [
    {
     "date": "2026-07-14",
@@ -99,24 +99,6 @@
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
-    "date": "2026-07-14",
-    "code": "L107020",
-    "name": "Tam Kan Sayımı (Hemogram)",
-    "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
-    "source": "EK-2B valid_from 2026-07-07"
-   },
-   {
-    "date": "2026-07-14",
-    "code": "L101850",
-    "name": "C reaktif protein (CRP)",
-    "qty": 1,
-    "unit": "16.46",
-    "billed": "16.46",
-    "source": "EK-2B valid_from 2026-07-07"
-   },
-   {
     "date": "2026-07-15",
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
@@ -147,33 +129,39 @@
     "date": "2026-07-14",
     "code": "8699508270224",
     "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU",
-    "qty": 3,
+    "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A03721 from 2025-04-26",
+    "ingredient": "seftriakson",
+    "qty_unit": "vial"
    },
    {
     "date": "2026-07-14",
     "code": "8697637691743",
     "name": "NEOFLEKS %0,5 METRONIDAZOL I.V. ENJ COZ 100 ML (SETLI)",
-    "qty": 6,
-    "unit": "0.00",
-    "billed": "0.00",
-    "source": "EK-4A"
-   },
-   {
-    "date": "2026-07-14",
-    "code": "8699606694649",
-    "name": "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK",
     "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
-    "source": "EK-4A"
+    "source": "EK-4A A15078 from 2025-04-26",
+    "ingredient": "metronidazol",
+    "qty_unit": "bottle"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
+    "qty": 5,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
    }
   ],
   "diagnoses": [
    [
-    "K35.8",
+    "K35.9",
     true
    ]
   ],
@@ -202,15 +190,15 @@
     "payment_method_kind": "DRG_MANDATORY",
     "current_billing": "itemized",
     "package_total_try": 8636.51,
-    "itemized_total_try": 1231.0,
-    "savings_try": 0.0,
+    "itemized_total_try": 4514.45,
+    "savings_try": 4122.06,
     "sut_section_id": "2.2.2.(1)",
-    "detail": "SUT §2.2 mandates package billing for claim C-SH01 (EK-2/C procedure present). Package total 8636.51 TRY vs itemized 1231.00 TRY."
+    "detail": "SUT §2.2 mandates package billing for claim C-SH01 (EK-2/C procedure present). Package total 8636.51 TRY vs itemized 4514.45 TRY."
    }
   ],
   "report": {
-   "sgk_uplift_try": 148.2,
-   "audit_exposure_try": 3558.29,
+   "sgk_uplift_try": 4122.06,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 6
@@ -229,7 +217,7 @@
    "billing_strategy",
    "mandatory_compliance",
    "P610131",
-   0.0
+   4122.06
   ],
   [
    "action",
@@ -237,48 +225,12 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   3558.29
   ]
  ],
- "only_in_clean": [
-  [
-   "action",
-   "yatak_puani",
-   "yatak_puani_standard_bed",
-   "",
-   444.72
-  ],
-  [
-   "compliance",
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "error",
-   "P610131",
-   0.0
-  ],
-  [
-   "validate",
-   null,
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "P610131",
-   0.0
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
   [
    "action",
-   "yatak_puani",
-   "yatak_puani_standard_bed",
-   "",
-   444.72
-  ],
-  [
-   "action",
    "claim_checklist",
    "documentation_requirement",
    "",
@@ -296,20 +248,6 @@
    "claim_checklist",
    "documentation_requirement",
    "",
-   0.0
-  ],
-  [
-   "block",
-   "refakatci",
-   "refakatci_510121",
-   "",
-   148.2
-  ],
-  [
-   "compliance",
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "error",
-   "P610131",
    0.0
   ],
   [
@@ -429,13 +367,6 @@
    "treatment_pricing_2_4",
    "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
    "",
-   0.0
-  ],
-  [
-   "validate",
-   null,
-   "tablo15_4_normal_poliklinik_wrong_method",
-   "P610131",
    0.0
   ]
  ]
