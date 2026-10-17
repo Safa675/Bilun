@@ -1,17 +1,21 @@
 """Apply a declarative FaultSpec to a clean pathway expansion to produce a faulty bill.
 
 `apply_fault(fault, pathway, pins=None, *, siblings=None, annotate=False)` expands `pathway` with
-`annotate=True`, applies each mutation operation in `fault.mutations` in order on a deep copy, and
-strips the annotation keys (`entry_id`, `kind`, `day_index`, `indication`) unless `annotate=True`.
-Any failed precondition or no-op mutation raises `FaultApplyError`.
+`annotate=True`, verifies the stay is inside the pathway's (and any sibling's) service window,
+applies each mutation operation in `fault.mutations` in order on a deep copy, and strips the
+annotation keys (`entry_id`, `kind`, `day_index`, `indication`) unless `annotate=True`. Any failed
+precondition, out-of-window stay, dangling material link or no-op mutation raises `FaultApplyError`.
 """
 
 from __future__ import annotations
 
 import copy
 from collections.abc import Mapping
+from datetime import date, timedelta
+from functools import lru_cache
 from typing import Any
 
+from scripts.synthetic.pathways.checks import Catalogs
 from scripts.synthetic.pathways.expand import expand
 from scripts.synthetic.pathways.schema import Pathway, Pins
 
@@ -36,6 +40,64 @@ _ANNOTATION_KEYS: dict[str, frozenset[str]] = {
 
 class FaultApplyError(ValueError):
     """Raised when a fault cannot be applied to a pathway bill or changes nothing."""
+
+
+@lru_cache(maxsize=1)
+def _default_window() -> tuple[str, str]:
+    return Catalogs().window
+
+
+def _pathway_window(pathway: Pathway) -> tuple[str, str]:
+    w = pathway.window
+    return (w.start, w.end) if w is not None else _default_window()
+
+
+def _check_stay_in_window(fault_id: str, pathway: Pathway, pins: Pins) -> None:
+    start, end = _pathway_window(pathway)
+    last = (date.fromisoformat(pins.admit) + timedelta(days=pins.nights or 0)).isoformat()
+    if pins.admit < start or last > end:
+        raise FaultApplyError(
+            f"{fault_id}: stay {pins.admit}..{last} is outside the window "
+            f"{start}..{end} of {pathway.id}"
+        )
+
+
+def _check_dangling_material_links(bill: dict[str, Any], *, fault_id: str, op_name: str) -> None:
+    proc_keys = {(r["code"], r["date"]) for r in bill["procedures"]}
+    for mat in bill["materials"]:
+        link = mat["linked_procedure"]
+        if (link["code"], link["date"]) not in proc_keys:
+            raise FaultApplyError(
+                f"{fault_id} ({op_name}): material {mat['code']!r} on {mat['date']} has a "
+                f"dangling link to procedure {link['code']!r} on {link['date']}"
+            )
+
+
+def fault_window(
+    fault: FaultSpec,
+    pathway: Pathway,
+    siblings: Mapping[str, Pathway] | None = None,
+) -> tuple[str, str]:
+    """Return the intersection of the target pathway's and any sibling pathway's service windows."""
+    if fault.target_pathway != pathway.id:
+        raise FaultApplyError(
+            f"{fault.fault_id}: target_pathway {fault.target_pathway!r} does not match "
+            f"pathway.id {pathway.id!r}"
+        )
+    start, end = _pathway_window(pathway)
+    for op in fault.mutations:
+        if isinstance(op, UseSiblingPathway):
+            sid = op.sibling_pathway_id
+            if siblings is None or sid not in siblings:
+                raise FaultApplyError(
+                    f"{fault.fault_id} ({op.op}): sibling pathway {sid!r} is missing from siblings"
+                )
+            sib_start, sib_end = _pathway_window(siblings[sid])
+            start = max(start, sib_start)
+            end = min(end, sib_end)
+    if start > end:
+        raise FaultApplyError(f"{fault.fault_id}: empty fault window {start}..{end}")
+    return start, end
 
 
 def _strip_annotations(bill: dict[str, Any]) -> dict[str, Any]:
@@ -63,7 +125,9 @@ def _apply_op(
             raise FaultApplyError(
                 f"{fid} ({op.op}): sibling pathway {sid!r} is missing from siblings"
             )
-        sibling_bill = copy.deepcopy(expand(siblings[sid], pins, annotate=True))
+        sibling = siblings[sid]
+        sibling_bill = copy.deepcopy(expand(sibling, pins, annotate=True))
+        _check_stay_in_window(fid, sibling, pins)
         if _strip_annotations(sibling_bill) == _strip_annotations(bill):
             raise FaultApplyError(
                 f"{fid} ({op.op}): sibling pathway {sid!r} produced no change to the bill"
@@ -171,6 +235,9 @@ def apply_fault(
         )
     effective_pins = copy.deepcopy(pins if pins is not None else pathway.showcase)
     bill = copy.deepcopy(expand(pathway, effective_pins, annotate=True))
+    _check_stay_in_window(fault.fault_id, pathway, effective_pins)
     for op in fault.mutations:
         bill = _apply_op(bill, op, fault=fault, pins=effective_pins, siblings=siblings)
+        if isinstance(op, (TruncateLineDays, DropEntry)) and op.section == "procedures":
+            _check_dangling_material_links(bill, fault_id=fault.fault_id, op_name=op.op)
     return bill if annotate else _strip_annotations(bill)

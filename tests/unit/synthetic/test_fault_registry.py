@@ -59,12 +59,178 @@ def _problems(
 
 # --- real registry & coverage tests ------------------------------------------------------------
 
+_SHOWCASE_RESULTS_DIR = (
+    Path(__file__).resolve().parents[3]
+    / "reports/synthetic-data/2026-10-15-showcase-proofs/results"
+)
+
+PINNED_FINDINGS: dict[
+    str,
+    tuple[
+        str,
+        str,
+        str | None,
+        str,
+        str,
+        list[str],
+        str,
+        list[str],
+        list[str],
+        list[str],
+    ],
+] = {
+    "S1": (
+        "billing_strategy",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000646"],
+        "2.2.2(1)",
+        [
+            "src/bilun/domain/prose_rules/payment_method.py:check_payment_method_compliance",
+            "src/bilun/domain/billing/claim_strategy.py:recommend_billing_strategy_from_claims",
+        ],
+        [],
+        [],
+    ),
+    "S2": (
+        "yatak_puani",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000652"],
+        "2.2.2.A(1)",
+        ["src/bilun/domain/prose_rules/yatak_puani.py:detect_yatak_puani_opportunities"],
+        [],
+        [],
+    ),
+    "S3": (
+        "anestezi_puani",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000652"],
+        "2.2.2.A(1)",
+        ["src/bilun/domain/prose_rules/anestezi_puani.py:detect_anestezi_puani_opportunities"],
+        [],
+        [],
+    ),
+    "S4": (
+        "refakatci",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C001628", "C000654"],
+        "2.6.3(2)",
+        ["src/bilun/domain/prose_rules/refakatci.py:detect_refakatci_opportunities"],
+        [],
+        [],
+    ),
+    "S5": (
+        "material_bundling",
+        "malzeme",
+        "femoral_stem",
+        "kismi_red",
+        "deduction_risk",
+        ["C002740"],
+        "3.1.1(2)",
+        ["src/bilun/domain/prose_rules/material_bundling.py:check_material_bundling_for_context"],
+        [],
+        ["3.1.1.(2).titubb_uts_incomplete"],
+    ),
+    "S6": (
+        "drug_indication",
+        "ilac",
+        "pk_merz",
+        "kismi_red",
+        "compliance_error",
+        ["C006824"],
+        "4.2.36(3)",
+        ["src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"],
+        [],
+        ["indication_mismatch", "4.2.36.amantadine_sulfate_report"],
+    ),
+    "S7": (
+        "procedure_capture_gap",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000604", "C000607", "C000617"],
+        "2.2.1.B-2(2)",
+        ["src/bilun/domain/prose_rules/procedure_capture_gap.py:detect_procedure_capture_gaps"],
+        ["ct_angiography_pacs"],
+        [],
+    ),
+    "S8": (
+        "drg_unbundling",
+        "islem",
+        "hernia_package",
+        "kismi_red",
+        "deduction_risk",
+        ["C000670"],
+        "2.2.2.B(3)(a)",
+        ["src/bilun/domain/prose_rules/drg_unbundling.py:analyze_claim_unbundling"],
+        [],
+        ["2.2.2.B.a"],
+    ),
+}
+
 
 def test_real_registry_loads_and_passes_every_check(catalogs: Catalogs) -> None:
     registry = load_registry(REGISTRY_PATH)
     assert registry.schema_version == 1
     assert len(registry.faults) == 8
     assert run_all(registry, catalogs) == []
+
+
+def test_registry_equals_the_reviewed_table() -> None:
+    by_story = {f.story: f for f in load_registry().faults}
+    assert set(by_story) == set(PINNED_FINDINGS)
+    for story, expected in PINNED_FINDINGS.items():
+        (
+            rule,
+            line_type,
+            target,
+            status,
+            effect,
+            clauses,
+            section,
+            detectors,
+            evidence_ids,
+            finding_ids,
+        ) = expected
+        e = by_story[story].expected_finding
+        assert (
+            e.engine_rule,
+            e.line_type,
+            e.target_entry_id,
+            e.expected_status,
+            e.effect_kind,
+        ) == (rule, line_type, target, status, effect), story
+        assert list(e.sut_clauses) == clauses, story
+        assert e.sut_section == section, story
+        assert list(e.detectors) == detectors, story
+        assert list(e.evidence_entry_ids) == evidence_ids, story
+        assert list(e.finding_ids) == finding_ids, story
+
+
+def test_finding_ids_occur_in_showcase_proof_results() -> None:
+    registry = load_registry()
+    stories_with_findings: list[str] = []
+    for fault in registry.faults:
+        if not fault.expected_finding.finding_ids:
+            continue
+        assert fault.story is not None
+        stories_with_findings.append(fault.story)
+        result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
+        for finding_id in fault.expected_finding.finding_ids:
+            assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
+    assert stories_with_findings == ["S5", "S6", "S8"]
 
 
 def test_coverage_eight_stories_six_ops_unique_ids() -> None:
@@ -232,6 +398,17 @@ CASES: list[Case] = [
     Case(
         "schema.missing_field",
         lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").pop("title"),
+        label="missing_title",
+    ),
+    Case(
+        "schema.missing_field",
+        lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED")["mutations"][0].pop("op"),
+        label="missing_mutation_op",
+    ),
+    Case(
+        "schema.bad_enum",
+        lambda r: r.update(schema_version=2),
+        label="bad_schema_version",
     ),
     Case(
         "schema.bad_enum",
@@ -251,6 +428,18 @@ CASES: list[Case] = [
             billed_ratio="1.0"
         ),
         label="bad_billed_ratio_pattern",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S4_COMPANION_NOT_BILLED")["expected_finding"].update(
+            sut_clauses=["C12345"]
+        ),
+        label="bad_clause_pattern",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"][0].update(value=1),
+        label="strict_bool_rejects_int",
     ),
     Case(
         "schema.bad_value",
@@ -336,9 +525,7 @@ CASES: list[Case] = [
     ),
     Case(
         "fault.flag",
-        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"][0].update(
-            value="not_a_boolean"
-        ),
+        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"][0].update(value="true"),
         label="wrong_flag_value_type",
     ),
     Case(
@@ -376,6 +563,42 @@ CASES: list[Case] = [
         lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["expected_finding"].update(
             target_entry_id="nonexistent_material"
         ),
+        label="unknown_target_entry",
+    ),
+    Case(
+        "fault.target_entry_id",
+        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"].append(
+            {"op": "drop_entry", "section": "materials", "entry_id": "femoral_stem"}
+        ),
+        label="dropped_target_entry",
+    ),
+    Case(
+        "fault.evidence_entry_ids",
+        lambda r: _fault(r, "F_S7_ER_CT_ANGIO_UNBILLED")["expected_finding"].update(
+            evidence_entry_ids=["nonexistent_evidence"]
+        ),
+        label="unknown_evidence_entry",
+    ),
+    Case(
+        "fault.evidence_entry_ids",
+        lambda r: _fault(r, "F_S7_ER_CT_ANGIO_UNBILLED")["expected_finding"].update(
+            evidence_entry_ids=["ct_angiography"]
+        ),
+        label="dropped_evidence_entry",
+    ),
+    Case(
+        "fault.applies",
+        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"].append(
+            {"op": "drop_entry", "section": "procedures", "entry_id": "hemiarthroplasty_package"}
+        ),
+        label="dangling_material_link",
+    ),
+    Case(
+        "fault.applies",
+        lambda r: _fault(r, "F_S8_SECOND_PACKAGE_FULL_RATE")["mutations"][0].update(
+            billed_ratio="0.2500"
+        ),
+        label="noop_billed_ratio",
     ),
     Case(
         "fault.sut_clauses",
@@ -407,9 +630,9 @@ CASES: list[Case] = [
     Case(
         "fault.detectors",
         lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED")["expected_finding"].update(
-            detectors=["src/bilun/domain/prose_rules/yatak_puani.py:nonexistent_detector_fn"]
+            detectors=["src/bilun/domain/prose_rules/yatak_puani.py:detect_yatak"]
         ),
-        label="missing_function",
+        label="prefix_function_name",
     ),
     Case(
         "fault.duplicate_id",

@@ -108,6 +108,7 @@ faults:
       line_type: malzeme
       target_entry_id: femoral_stem
       expected_status: kismi_red
+      finding_ids: ["3.1.1.(2).titubb_uts_incomplete"]
     basis: sut
     source: "C002740 (SUT 3.1.1(2)): medical materials without completed TİTUBB/ÜTS registration and usage notification are not reimbursed; AP2000 lacks ÜTS notification."
 
@@ -129,6 +130,7 @@ faults:
       line_type: ilac
       target_entry_id: pk_merz
       expected_status: kismi_red
+      finding_ids: ["indication_mismatch", "4.2.36.amantadine_sulfate_report"]
     basis: sut
     source: "C006824 (SUT 4.2.36(3)): amantadine sulfate (PK-MERZ IV) requires Parkinson's disease or drug-induced extrapyramidal diagnosis; G20 was not coded (story S6)."
 
@@ -150,6 +152,7 @@ faults:
       line_type: fatura
       target_entry_id: null
       expected_status: eksik_faturalama
+      evidence_entry_ids: ["ct_angiography_pacs"]
     basis: sut
     source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): tier 2-3 ER services are billed itemized; PACS logged R101450 CT pulmonary angiography, omitted from the bill."
 
@@ -171,5 +174,6 @@ faults:
       line_type: islem
       target_entry_id: hernia_package
       expected_status: kismi_red
+      finding_ids: ["2.2.2.B.a"]
     basis: sut
     source: "C000670 (SUT 2.2.2.B(3)(a)): in the same session and incision, a secondary EK-2C package (P603840) is billed at 25% of its puan, not 100% (story S8)."

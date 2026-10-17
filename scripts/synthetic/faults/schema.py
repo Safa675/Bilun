@@ -69,6 +69,8 @@ CHECKS: tuple[str, ...] = (
     "fault.breaks_indication",
     "fault.billed_ratio_target",
     "fault.target_entry_id",
+    "fault.evidence_entry_ids",
+    "fault.applies",
     "fault.sut_clauses",
     "fault.source_cites",
     "fault.detectors",
@@ -98,6 +100,9 @@ DetectorRef = Annotated[
 EngineRule = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{1,63}$")]
 SutSection = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
 FlagName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+FindingId = Annotated[
+    StrictStr, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)
+]
 
 
 class UseSiblingPathway(_Model):
@@ -176,6 +181,8 @@ class ExpectedFinding(_Model):
     line_type: Literal["fatura", "islem", "malzeme", "ilac"]
     target_entry_id: Slug | None = None
     expected_status: Literal["eksik_faturalama", "kismi_red"]
+    evidence_entry_ids: list[Slug] = Field(default_factory=list)
+    finding_ids: list[FindingId] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _target_shape(self) -> Self:

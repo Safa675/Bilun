@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import dataclasses
+import json
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -29,19 +31,49 @@ from src.bilun.domain.claims.validation.expected_outputs import validate_expecte
 
 pytestmark = pytest.mark.unit
 
-# Amounts (`amount_try`, `billed_clean_try`, `billed_faulty_try`) come from
-# `reports/synthetic-data/2026-10-15-showcase-proofs/results/S1.json`..`S8.json`.
-_SHOWCASE_CASE_SPECS: tuple[tuple[str, str, str, str, str, str, str], ...] = (
-    # (story, patient_id, claim_id, line_id, amount_try, billed_clean_try, billed_faulty_try)
-    ("S1", "P-SH01", "C-SH01", "", "4122.06", "8636.51", "4514.45"),
-    ("S2", "P-SH02", "C-SH02", "", "667.08", "2425.73", "1758.65"),
-    ("S3", "P-SH03", "C-SH03", "", "928.09", "8366.85", "7438.76"),
-    ("S4", "P-SH04", "C-SH04", "", "370.50", "2565.65", "2195.15"),
-    ("S5", "P-SH05", "C-SH05", "M-SH05-02", "6465.27", "36236.22", "36236.22"),
-    ("S6", "P-SH06", "C-SH06", "D-SH06-04", "0.00", "2512.01", "2512.01"),
-    ("S7", "P-SH07", "C-SH07", "", "1138.22", "1875.59", "737.37"),
-    ("S8", "P-SH08", "C-SH08", "L-SH08-02", "5377.20", "13858.13", "19235.33"),
+_RESULTS_DIR = (
+    Path(__file__).resolve().parents[3]
+    / "reports/synthetic-data/2026-10-15-showcase-proofs/results"
 )
+
+# `billed_clean_try` and `billed_faulty_try` are read at test time from
+# `reports/synthetic-data/2026-10-15-showcase-proofs/results/S1.json`..`S8.json`
+# (`clean.total_billed` and `faulty.total_billed`).
+# For the 5 `revenue_uplift` stories (S1, S2, S3, S4, S7), `amount_try` is `clean - faulty`:
+_EXPECTED_UPLIFT_DIFFS: dict[str, str] = {
+    "S1": "4122.06",
+    "S2": "667.08",
+    "S3": "928.09",
+    "S4": "370.50",
+    "S7": "1138.22",
+}
+# For the 3 line-level deduction/compliance stories, `amount_try` is the line's risk/billed amount
+# from the corresponding `results/S*.json` file:
+# - S5: "6465.27" (AP2000 billed amount and `faulty.direct[0].risk_amount` in `results/S5.json`)
+# - S6: "0.00" (PK-MERZ 8699708690525 billed amount in `results/S6.json`; EK-4A price pending)
+# - S8: "5377.20" (P603840 `faulty.direct[0].risk_amount_try` in `results/S8.json`)
+_LINE_FAULT_AMOUNTS: dict[str, str] = {
+    "S5": "6465.27",
+    "S6": "0.00",
+    "S8": "5377.20",
+}
+
+_SHOWCASE_IDS: tuple[tuple[str, str, str, str], ...] = (
+    # (story, patient_id, claim_id, line_id)
+    ("S1", "P-SH01", "C-SH01", ""),
+    ("S2", "P-SH02", "C-SH02", ""),
+    ("S3", "P-SH03", "C-SH03", ""),
+    ("S4", "P-SH04", "C-SH04", ""),
+    ("S5", "P-SH05", "C-SH05", "M-SH05-02"),
+    ("S6", "P-SH06", "C-SH06", "D-SH06-04"),
+    ("S7", "P-SH07", "C-SH07", ""),
+    ("S8", "P-SH08", "C-SH08", "L-SH08-02"),
+)
+
+
+def _read_story_totals(story: str) -> tuple[str, str]:
+    payload = json.loads((_RESULTS_DIR / f"{story}.json").read_text(encoding="utf-8"))
+    return payload["clean"]["total_billed"], payload["faulty"]["total_billed"]
 
 
 @pytest.fixture(scope="module")
@@ -51,18 +83,26 @@ def faults_by_story() -> dict[str, FaultSpec]:
 
 @pytest.fixture(scope="module")
 def eight_records(faults_by_story: dict[str, FaultSpec]) -> list[FaultInjectionRecord]:
-    return [
-        make_record(
-            faults_by_story[story],
-            patient_id=patient_id,
-            claim_id=claim_id,
-            line_id=line_id,
-            amount_try=amount_try,
-            billed_clean_try=clean_try,
-            billed_faulty_try=faulty_try,
+    records: list[FaultInjectionRecord] = []
+    for story, patient_id, claim_id, line_id in _SHOWCASE_IDS:
+        clean_try, faulty_try = _read_story_totals(story)
+        if story in _EXPECTED_UPLIFT_DIFFS:
+            amount_try = format(Decimal(clean_try) - Decimal(faulty_try), ".2f")
+            assert amount_try == _EXPECTED_UPLIFT_DIFFS[story], story
+        else:
+            amount_try = _LINE_FAULT_AMOUNTS[story]
+        records.append(
+            make_record(
+                faults_by_story[story],
+                patient_id=patient_id,
+                claim_id=claim_id,
+                line_id=line_id,
+                amount_try=amount_try,
+                billed_clean_try=clean_try,
+                billed_faulty_try=faulty_try,
+            )
         )
-        for story, patient_id, claim_id, line_id, amount_try, clean_try, faulty_try in _SHOWCASE_CASE_SPECS
-    ]
+    return records
 
 
 def _make_procedure_line(
@@ -235,11 +275,11 @@ def test_eight_rows_have_exact_13_columns_and_parse_cleanly(
         assert row["expected_status"] == rec.expected_status
         assert row["expected_payable_try"] is None
         assert row["expected_savings_try"] == Decimal(rec.amount_try)
-        assert rec.effect_kind in row["expected_denial_reason"]
-        assert rec.fault_id in row["expected_denial_reason"]
+        assert row["expected_denial_reason"] == f"{rec.effect_kind}:{rec.fault_id}"
         assert row["expected_rule_trace"] == f"{rec.sut_section}|{rec.engine_rule}"
-        assert rec.billed_clean_try in row["assertion_notes"]
-        assert rec.billed_faulty_try in row["assertion_notes"]
+        assert (
+            row["assertion_notes"] == f"clean={rec.billed_clean_try} faulty={rec.billed_faulty_try}"
+        )
 
         if rec.line_type == "fatura":
             assert row["line_id"] == ""
@@ -252,6 +292,34 @@ def test_eight_rows_have_exact_13_columns_and_parse_cleanly(
         assert parsed is not None
         assert parsed.expected_payable_try is None
         assert parsed.expected_savings_try == Decimal(rec.amount_try)
+
+
+def test_answer_rows_exact_format_and_claim_fault_ordering(
+    faults_by_story: dict[str, FaultSpec],
+) -> None:
+    s1, s2 = faults_by_story["S1"], faults_by_story["S2"]
+    rec_a = make_record(
+        s1,
+        patient_id="P-2",
+        claim_id="C-02",
+        line_id="",
+        amount_try="4122.06",
+        billed_clean_try="8636.51",
+        billed_faulty_try="4514.45",
+    )
+    rec_b = make_record(
+        s2,
+        patient_id="P-1",
+        claim_id="C-01",
+        line_id="",
+        amount_try="667.08",
+        billed_clean_try="3263.43",
+        billed_faulty_try="2596.35",
+    )
+    rows = build_expected_rule_outputs([rec_a, rec_b])
+    assert [r["claim_id"] for r in rows] == ["C-01", "C-02"]
+    assert rows[1]["assertion_notes"] == "clean=8636.51 faulty=4514.45"
+    assert rows[1]["expected_denial_reason"] == "revenue_uplift:F_S1_PACKAGE_BILLED_ITEMIZED"
 
 
 # --- real validator (`validate_expected_outputs`) & mutation cases -----------------------------
@@ -337,6 +405,48 @@ def test_zero_records_returns_empty_list_and_duplicate_id_raises(
         build_expected_rule_outputs([eight_records[0], eight_records[0]])
 
 
+def test_make_record_copies_finding_fields_and_populates_line_ids_tuple(
+    faults_by_story: dict[str, FaultSpec],
+) -> None:
+    for story, fault in faults_by_story.items():
+        finding = fault.expected_finding
+        rec = make_record(
+            fault,
+            patient_id="P-1",
+            claim_id="C-1",
+            line_id=finding.target_entry_id or "",
+            amount_try="1.00",
+            billed_clean_try="2.00",
+            billed_faulty_try="1.00",
+        )
+        assert (rec.story, rec.pathway_id, rec.engine_rule, rec.sut_section) == (
+            fault.story,
+            fault.target_pathway,
+            finding.engine_rule,
+            finding.sut_section,
+        ), story
+        assert (rec.effect_kind, rec.expected_status, rec.line_type) == (
+            finding.effect_kind,
+            finding.expected_status,
+            finding.line_type,
+        ), story
+        assert isinstance(rec.line_ids, tuple)
+        assert rec.line_ids == tuple(finding.evidence_entry_ids)
+
+    s7 = faults_by_story["S7"]
+    s7_rec = make_record(
+        s7,
+        patient_id="P-7",
+        claim_id="C-7",
+        line_id="",
+        evidence_line_ids=["PERF-C-7-04"],
+        amount_try="1138.22",
+        billed_clean_try="1633.02",
+        billed_faulty_try="494.80",
+    )
+    assert s7_rec.line_ids == ("PERF-C-7-04",)
+
+
 def test_make_record_and_model_validation(
     faults_by_story: dict[str, FaultSpec],
 ) -> None:
@@ -355,7 +465,7 @@ def test_make_record_and_model_validation(
             billed_faulty_try="4514.45",
         )
 
-    # Line-level fault (`line_type != "fatura"`) with empty `line_id` must fail.
+    # Line-level fault (`line_type != "fatura"`) with empty or whitespace `line_id` must fail.
     with pytest.raises(ValidationError, match="line_id must be non-empty"):
         make_record(
             s5,
@@ -363,11 +473,21 @@ def test_make_record_and_model_validation(
             claim_id="C-05",
             line_id="",
             amount_try="6465.27",
-            billed_clean_try="36236.22",
-            billed_faulty_try="36236.22",
+            billed_clean_try="31233.66",
+            billed_faulty_try="31233.66",
+        )
+    with pytest.raises(ValidationError, match="line_id must be non-empty"):
+        make_record(
+            s5,
+            patient_id="P-05",
+            claim_id="C-05",
+            line_id="  ",
+            amount_try="6465.27",
+            billed_clean_try="31233.66",
+            billed_faulty_try="31233.66",
         )
 
-    # Amounts must have exactly two decimals.
+    # Amounts must have exactly two decimals (neither 1 nor 3).
     with pytest.raises(ValidationError):
         make_record(
             s1,
@@ -375,6 +495,28 @@ def test_make_record_and_model_validation(
             claim_id="C-01",
             line_id="",
             amount_try="4122.1",
+            billed_clean_try="8636.51",
+            billed_faulty_try="4514.45",
+        )
+    with pytest.raises(ValidationError):
+        make_record(
+            s5,
+            patient_id="P-05",
+            claim_id="C-05",
+            line_id="M-1",
+            amount_try="1.001",
+            billed_clean_try="2.00",
+            billed_faulty_try="1.00",
+        )
+
+    # For `revenue_uplift`, `amount_try` must equal `billed_clean_try - billed_faulty_try`.
+    with pytest.raises(ValidationError, match="revenue_uplift amount_try"):
+        make_record(
+            s1,
+            patient_id="P-01",
+            claim_id="C-01",
+            line_id="",
+            amount_try="4000.00",
             billed_clean_try="8636.51",
             billed_faulty_try="4514.45",
         )
@@ -390,7 +532,7 @@ def test_make_record_and_model_validation(
         billed_clean_try="8636.51",
         billed_faulty_try="4514.45",
     )
-    assert rec.line_ids == ["EV-01"]
+    assert rec.line_ids == ("EV-01",)
     with pytest.raises(ValidationError, match="injection_id"):
         FaultInjectionRecord(**{**rec.model_dump(), "injection_id": "INJ-WRONG"})
     with pytest.raises(ValidationError):

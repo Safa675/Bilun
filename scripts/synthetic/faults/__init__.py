@@ -9,7 +9,7 @@ expanded pathway bill into a faulty bill. `load_registry` reads and validates th
 
 from .answer_key import EXPECTED_OUTPUT_COLUMNS, build_expected_rule_outputs
 from .loader import FaultRegistryLoadError, load_registry, load_registry_text, load_siblings
-from .mutate import FaultApplyError, apply_fault
+from .mutate import FaultApplyError, apply_fault, fault_window
 from .records import FaultInjectionRecord, make_record
 from .schema import (
     CHECKS,
@@ -51,6 +51,7 @@ __all__ = [
     "UseSiblingPathway",
     "apply_fault",
     "build_expected_rule_outputs",
+    "fault_window",
     "load_registry",
     "load_registry_text",
     "load_siblings",

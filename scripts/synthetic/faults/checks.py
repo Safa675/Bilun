@@ -22,6 +22,7 @@ from scripts.synthetic.pathways.loader import PATHWAYS_DIR
 from scripts.synthetic.pathways.schema import DrugFlags, MaterialFlags
 
 from .loader import REGISTRY_PATH, SIBLINGS_DIR, FaultRegistryLoadError, load_registry
+from .mutate import FaultApplyError, apply_fault
 from .schema import (
     MUTATION_OPS,
     SHOWCASE_STORIES,
@@ -292,6 +293,74 @@ def check_target_entry_ids(registry: FaultRegistry, cat: Catalogs) -> list[Probl
     return out
 
 
+def check_evidence_entry_ids(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
+    """fault.evidence_entry_ids: every evidence_entry_id exists in the pathway or sibling."""
+    targets, siblings, _ = _load_known_pathways(registry)
+    out: list[Problem] = []
+
+    for fault in registry.faults:
+        finding = fault.expected_finding
+        if not finding.evidence_entry_ids:
+            continue
+        first_op = fault.mutations[0]
+        if isinstance(first_op, UseSiblingPathway):
+            pathway = siblings.get(first_op.sibling_pathway_id)
+        else:
+            pathway = targets.get(fault.target_pathway)
+        if pathway is None:
+            continue
+
+        dropped_procs = {
+            op.entry_id
+            for op in fault.mutations
+            if isinstance(op, DropEntry) and op.section == "procedures"
+        }
+        dropped_perf = {
+            op.entry_id
+            for op in fault.mutations
+            if isinstance(op, DropEntry) and op.section == "performed"
+        }
+        valid_ids = ({p.id for p in pathway.procedures} - dropped_procs) | (
+            {p.id for p in pathway.performed} - dropped_perf
+        )
+        where = f"faults[{fault.fault_id}].expected_finding.evidence_entry_ids"
+        for entry_id in finding.evidence_entry_ids:
+            if entry_id not in valid_ids:
+                out.append(
+                    Problem(
+                        "fault.evidence_entry_ids",
+                        where,
+                        f"{entry_id!r} is not a kept procedures or performed entry of {pathway.id}",
+                    )
+                )
+    return out
+
+
+def check_fault_applies(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
+    """fault.applies: apply_fault succeeds on the target pathway with its showcase pins."""
+    targets, siblings, _ = _load_known_pathways(registry)
+    invalid_mutations = {p.where.split("].", 1)[0] + "]" for p in check_mutations(registry, cat)}
+    out: list[Problem] = []
+
+    for fault in registry.faults:
+        where = f"faults[{fault.fault_id}]"
+        if where in invalid_mutations:
+            continue
+        pathway = targets.get(fault.target_pathway)
+        if pathway is None:
+            continue
+        if any(
+            isinstance(op, UseSiblingPathway) and op.sibling_pathway_id not in siblings
+            for op in fault.mutations
+        ):
+            continue
+        try:
+            apply_fault(fault, pathway, siblings=siblings)
+        except FaultApplyError as exc:
+            out.append(Problem("fault.applies", where, str(exc)))
+    return out
+
+
 def check_clauses_and_sources(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
     """fault.sut_clauses, fault.source_cites: SUT clause ids exist and are in force."""
     out: list[Problem] = []
@@ -409,6 +478,8 @@ CHECK_FUNCTIONS: tuple[Callable[[FaultRegistry, Catalogs], list[Problem]], ...] 
     check_target_pathways,
     check_mutations,
     check_target_entry_ids,
+    check_evidence_entry_ids,
+    check_fault_applies,
     check_clauses_and_sources,
     check_detectors,
     check_registry_coverage,

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.synthetic.faults.mutate as mutate_mod
 from scripts.synthetic.faults import (
     DropDiagnosis,
     DropEntry,
@@ -17,6 +18,7 @@ from scripts.synthetic.faults import (
     SetFlag,
     TruncateLineDays,
     apply_fault,
+    fault_window,
     load_registry,
     load_siblings,
 )
@@ -162,43 +164,178 @@ def test_apply_fault_is_pure_and_deterministic(
     pathway = pathways[fault.target_pathway]
     pins = copy.deepcopy(pathway.showcase)
     siblings_copy = dict(siblings)
-    fault_before = fault.model_dump()
-    pins_before = pins.model_dump()
-    pathway_before = pathway.model_dump()
-    siblings_before = {k: v.model_dump() for k, v in siblings_copy.items()}
+    fault_snapshot = copy.deepcopy(fault)
+    pins_snapshot = copy.deepcopy(pins)
+    pathway_snapshot = copy.deepcopy(pathway)
+    siblings_snapshot = copy.deepcopy(siblings_copy)
     clean_before = expand(pathway)
 
     first = apply_fault(fault, pathway, pins, siblings=siblings_copy)
     second = apply_fault(fault, pathway, pins, siblings=siblings_copy)
 
     assert first == second
-    assert fault.model_dump() == fault_before
-    assert pins.model_dump() == pins_before
-    assert pathway.model_dump() == pathway_before
-    assert {k: v.model_dump() for k, v in siblings_copy.items()} == siblings_before
+    assert fault == fault_snapshot
+    assert pins == pins_snapshot
+    assert pathway == pathway_snapshot
+    assert siblings_copy == siblings_snapshot
     assert expand(pathway) == clean_before
 
 
-def test_in_memory_demo_forgetting_to_strip_annotations_or_mutating_input_is_caught(
+def test_strip_annotations_monkeypatched_to_identity_fails_golden_equality(
+    monkeypatch: pytest.MonkeyPatch,
     faults: tuple[FaultSpec, ...],
     pathways: dict[str, Pathway],
     siblings: dict[str, Pathway],
 ) -> None:
+    monkeypatch.setattr(mutate_mod, "_strip_annotations", lambda bill: bill)
     s2_fault = _fault_by_story(faults, "S2")
     s2_pathway = pathways[s2_fault.target_pathway]
 
-    # 1. If apply_fault forgot to strip annotations (returning annotate=True output), golden equality
-    # and the disjoint-annotation-keys check both fail.
-    unstripped = apply_fault(s2_fault, s2_pathway, siblings=siblings, annotate=True)
+    unstripped = apply_fault(s2_fault, s2_pathway, siblings=siblings)
     assert unstripped != _golden(_GOLDEN_FAULTY, "S2")
     assert not set(unstripped["procedures"][0]).isdisjoint(_ANNOTATION_KEYS["procedures"])
 
-    # 2. If a buggy apply_fault mutated its input (e.g. pins.include or fault.mutations), the
-    # pre/post snapshot check in test_apply_fault_is_pure_and_deterministic catches it.
-    pins = copy.deepcopy(s2_pathway.showcase)
-    pins_before = pins.model_dump()
-    pins.include.append("mutated_in_place")
-    assert pins.model_dump() != pins_before
+
+# --- custom pins, op ordering, drop_entry across sections & windows ---------------------------
+
+
+def test_pins_override_is_honoured_by_truncate_line_days(
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+) -> None:
+    fault = _fault_by_story(faults, "S2")
+    pathway = pathways[fault.target_pathway]
+    pins = pathway.showcase.model_copy(update={"nights": 8})
+    bill = expand(pathway, pins, annotate=True)
+    bill["procedures"] = [
+        r for r in bill["procedures"] if r["entry_id"] != "bed" or r["day_index"] < 4
+    ]
+    assert apply_fault(fault, pathway, pins) == _strip_annotations(bill)
+
+
+def test_pins_override_is_honoured_by_use_sibling_pathway(
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+    siblings: dict[str, Pathway],
+) -> None:
+    fault = _fault_by_story(faults, "S1")
+    pathway = pathways[fault.target_pathway]
+    pins = pathway.showcase.model_copy(update={"admit": "2026-06-01"})
+    sibling = siblings["appendicitis_lap_appendectomy_itemized"]
+    assert apply_fault(fault, pathway, pins, siblings=siblings) == expand(sibling, pins)
+
+
+def test_mutations_execute_in_declared_order(
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+) -> None:
+    fault = _fault_by_story(faults, "S2")
+    pathway = pathways[fault.target_pathway]
+    drop_then_truncate = fault.model_copy(
+        update={
+            "mutations": [
+                DropEntry(op="drop_entry", section="procedures", entry_id="bed"),
+                TruncateLineDays(
+                    op="truncate_line_days",
+                    section="procedures",
+                    entry_id="bed",
+                    keep_day_indices=[0, 1, 2, 3],
+                ),
+            ]
+        }
+    )
+    with pytest.raises(FaultApplyError, match="truncate_line_days.*bed"):
+        apply_fault(drop_then_truncate, pathway)
+
+
+@pytest.mark.parametrize(
+    ("story", "section", "entry", "key", "gone"),
+    [
+        ("S5", "materials", "femoral_stem", "code", "AP2000"),
+        ("S6", "drugs", "pk_merz", "barcode", "8699708690525"),
+        ("S7", "performed", "ct_angiography_pacs", "code", "R101450"),
+    ],
+)
+def test_drop_entry_removes_target_in_every_section(
+    story: str,
+    section: str,
+    entry: str,
+    key: str,
+    gone: str,
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+) -> None:
+    fault = _fault_by_story(faults, story)
+    pathway = pathways[fault.target_pathway]
+    altered = fault.model_copy(
+        update={"mutations": [DropEntry(op="drop_entry", section=section, entry_id=entry)]}
+    )
+    bill = apply_fault(altered, pathway)
+    assert gone not in {r[key] for r in bill[section]}
+    assert gone in {r[key] for r in expand(pathway)[section]}
+
+
+def test_fault_window_and_stay_bounds_enforcement(
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+    siblings: dict[str, Pathway],
+) -> None:
+    s1_fault = _fault_by_story(faults, "S1")
+    s1_pathway = pathways[s1_fault.target_pathway]
+    s2_fault = _fault_by_story(faults, "S2")
+    s2_pathway = pathways[s2_fault.target_pathway]
+
+    assert fault_window(s1_fault, s1_pathway, siblings=siblings) == ("2026-04-16", "2026-09-30")
+    assert s2_pathway.window is not None
+    assert fault_window(s2_fault, s2_pathway) == (s2_pathway.window.start, s2_pathway.window.end)
+
+    # S1: 2026-03-02 is before the sibling window start (2026-04-16) and must raise.
+    with pytest.raises(FaultApplyError, match="outside the window"):
+        apply_fault(
+            s1_fault,
+            s1_pathway,
+            s1_pathway.showcase.model_copy(update={"admit": "2026-03-02"}),
+            siblings=siblings,
+        )
+
+    # S1: first valid admit day (2026-04-16) works.
+    first_ok = apply_fault(
+        s1_fault,
+        s1_pathway,
+        s1_pathway.showcase.model_copy(update={"admit": "2026-04-16"}),
+        siblings=siblings,
+    )
+    assert first_ok["header"]["admission_date"] == "2026-04-16"
+
+    # S1: showcase nights=2, window ends 2026-09-30 -> last valid admit is 2026-09-28; 2026-09-29 raises.
+    last_ok = apply_fault(
+        s1_fault,
+        s1_pathway,
+        s1_pathway.showcase.model_copy(update={"admit": "2026-09-28"}),
+        siblings=siblings,
+    )
+    assert last_ok["header"]["discharge_date"] == "2026-09-30"
+    with pytest.raises(FaultApplyError, match="outside the window"):
+        apply_fault(
+            s1_fault,
+            s1_pathway,
+            s1_pathway.showcase.model_copy(update={"admit": "2026-09-29"}),
+            siblings=siblings,
+        )
+
+    # S2: showcase nights=6, window ends 2026-08-28 -> last valid admit is 2026-08-22; 2026-08-23 raises.
+    s2_last_ok = apply_fault(
+        s2_fault,
+        s2_pathway,
+        s2_pathway.showcase.model_copy(update={"admit": "2026-08-22"}),
+    )
+    assert s2_last_ok["header"]["discharge_date"] == "2026-08-28"
+    with pytest.raises(FaultApplyError, match="outside the window"):
+        apply_fault(
+            s2_fault,
+            s2_pathway,
+            s2_pathway.showcase.model_copy(update={"admit": "2026-08-23"}),
+        )
 
 
 # --- in-memory mutation tests (changing a fault parameter breaks golden equality) --------------
@@ -349,6 +486,27 @@ def test_error_drop_entry_unknown_entry(
         FaultApplyError, match="F_S3_ANAESTHESIA_LINE_MISSING.*drop_entry.*missing_proc"
     ):
         apply_fault(unknown, pathway)
+
+
+def test_error_drop_entry_dangling_material_link_on_s5(
+    faults: tuple[FaultSpec, ...],
+    pathways: dict[str, Pathway],
+) -> None:
+    s5_fault = _fault_by_story(faults, "S5")
+    pathway = pathways[s5_fault.target_pathway]
+    dangling = s5_fault.model_copy(
+        update={
+            "mutations": [
+                DropEntry(
+                    op="drop_entry",
+                    section="procedures",
+                    entry_id="hemiarthroplasty_package",
+                )
+            ]
+        }
+    )
+    with pytest.raises(FaultApplyError, match="dangling link"):
+        apply_fault(dangling, pathway)
 
 
 def test_error_set_flag_unknown_entry_and_existing_value(
