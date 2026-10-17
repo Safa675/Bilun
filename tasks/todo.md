@@ -1,3 +1,29 @@
+## Task: Synthetic v3 P4 — the cohort generator, showcase patients first (2026-10-17)
+
+### Goal
+`python -m scripts.synthetic.cohort.build` turns the 8 showcase recipes (pathway + pins + fault) into the files the app loads: the 9 claims tables, the 3 clean tables and `cohort_registry.json`. Every line is priced from the catalogs on its own date, the bytes are deterministic, and the answer rows come from the injection records. The app's loader accepts the files, the engine finds each injected fault with the proven amount, and a clean bill shows nothing.
+
+Started by Safa on 2026-10-17: "the legacy dataset is going to get trashed", so there is no coexistence design; the legacy 50-patient files are replaced in P7. Until then the builder writes to `data/synthetic/showcase/`. Plan: `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md` (D3, D4, P4, P5). Working rule: Claude orchestrates and verifies, Antigravity with Gemini 4 Argon implements (`agy -p`, one run per slice, tests as the judge; briefs in the session scratchpad; see memory `reference-argon-agy-runner`).
+
+### Facts and decisions (judgment where marked)
+- The target files, from the legacy cohort: `data/synthetic/sut/claims/` (claim_headers, claim_diagnoses, procedure_claim_lines, material_claim_lines, drug_claim_lines, expected_rule_outputs, patient_copay_profiles, performed_procedure_lines, medula_rejection_events) and `data/synthetic/sut/clean/` (anadata_clean, lab_clean, recete_clean); the app reads the first set through `load_sut_claim_dataset` and the second through `src/bilun/cache/`. Even the legacy narrative columns (YAKINMA, OYKU, Muayene Notu, Tedavi Notu) are placeholder text.
+- New package `scripts/synthetic/cohort/` (Polars; the legacy `scripts/synthetic/gen/` stays untouched until P7). Ids follow the legacy formats (patient `SENTETIK-HASTA-NNNN`, claim `F-<patient>-NNN`, episode `B-...`, lines `ISL-`, `MLZ-`, `ILC-<claim>-NNN`, diagnoses `TANI-<patient>-NNN-NNN`, performed `EMR-<claim>-N`, answer rows `BEK-<claim>-<fault_id>`).
+- Every line has `expected_payable_try == billed_amount_try` (no answer in a payable); drugs stay at 0 TL until the price list (Q4); EK-2B/EK-2C prices as-of the line date; EK-3/F-1 list price; rounding as the proofs (`ROUND_HALF_UP`, issue #299 stays open).
+- Narrative texts are short Turkish sentences built only from structured fields (diagnosis names, procedures, dates); no invented clinical history. Lab results come from `data/synthetic/reference/lab_reference.csv`, one set per billed lab line.
+- The golden for pricing is the proofs' priced bills `reports/synthetic-data/2026-10-15-showcase-proofs/results/S1.json … S8.json` (rows and totals, clean and faulty).
+
+### Subtasks
+- [ ] 1. Slice A, compose: pathway bill (after `apply_fault`) plus an encounter context becomes priced claim objects (the dataclasses of `src/bilun/domain/claims/models.py`); equal to the proofs' priced rows for all 8 stories, clean and faulty.
+- [ ] 2. Slice B, claims tables and registry: recipes for the 8 showcase encounters, the 9 tables written from the claim objects with explicit schemas, injection records with real amounts, answer rows, `cohort_registry.json`; the real loader accepts the files; two runs give identical bytes.
+- [ ] 3. Slice C, clean tables: anadata, lab, recete from the claims and the lab reference; the cache builder accepts them.
+- [ ] 4. Slice D, engine proof: the engine over the generated dataset finds each of the 8 faults with the proven amount, and the clean twins show nothing (P7-lite for the showcase set).
+- [ ] 5. Slice E, plausibility tests (P5) for the generated bills, and the list of pins and docs that P6 and P7 must change.
+- [ ] 6. After every slice: I run the gates (ruff, pathway/fault/cohort tests, full suite under the shared lock, `compile_rules.py --check`, parity, the CI-image gate at the end) and an independent read-only review before the PR.
+- [ ] 7. PR(s), CI green, Safa merges.
+
+### Out of Scope
+The other pathways of the first 20 and their clinical review (#309), the 42 non-showcase patients and the sampling from the public-statistics anchors (another session, branch `claude/synthetic-v3-population-anchors`), drug prices (Q4), the test-pin migration and the swap of the legacy files (P6, P7), staging, engine defects #298–#307.
+
 ## Task: Synthetic v3 P3 — fault registry, injection log and answer key (2026-10-17)
 
 ### Goal
