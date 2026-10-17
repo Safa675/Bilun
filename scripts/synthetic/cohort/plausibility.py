@@ -1,38 +1,63 @@
-"""Plausibility checks for the generated showcase bills (plan D5, slice E1: patient to anaesthesia).
+"""Plausibility checks for the generated showcase bills (plan D5, slices E1 and E2).
 
 The checks read the nine claims tables and the clean `anadata_clean` table of one dataset and report
 what an auditor would call implausible: a diagnosis that cannot exist on its day or for this patient,
 codes that do not belong to the claim's care pathway, a stay without a bed for every day, a
 performed procedure that was never billed, a package claim that carries a bed, an operation without
-its anaesthesia.
+its anaesthesia (slice E1); a material that hangs on no operation or carries a stray compliance
+flag, a unit price that is not the price in force on the day, a bill that does not add up, answer
+rows and fault records that contradict the bill (slice E2).
 
 `check_plausibility(tables, clean_tables)` is a pure function of the tables it is given: it knows no
-fault and calls no engine. It has one small function per check id (`CHECK_FUNCTIONS`) and runs all
-of them, or only the ids of `only`. `CHECKS` is the stable registry of ids; a test requires a
-mutation case for each id. Slices E2 (materials, prices, money, labels) and E3 (clinical content of
-the clean tables) add ids to the same registry: put the id and its meaning in `CHECKS`, write
-`check_<name>(bill) -> list[Problem]`, list it in `CHECK_FUNCTIONS`, and add a mutation `Case` (and,
-for a defect that shows on a committed faulty bill, the pinned row) to the test file.
+fault. It has one small function per check id (`CHECK_FUNCTIONS`) and runs all of them, or only
+the ids of `only`. `CHECKS` is the stable registry of ids; a test requires a mutation case for each
+id. Slice E3 (clinical content of the clean tables) adds ids to the same registry: put the id and
+its meaning in `CHECKS`, write `check_<name>(bill) -> list[Problem]`, list it in `CHECK_FUNCTIONS`,
+and add a mutation `Case` (and, for a defect that shows on a committed faulty bill, the pinned row)
+to the test file.
 
-`Problem.where` starts with the claim id (then `table[line id]` or a detail, after a space).
+The two `labels.*` ids compare the bill with the fault records of the dataset's registry
+(`cohort_registry.json`, parsed): they run only when `check_plausibility` is given `registry=`.
+
+`Problem.where` starts with the claim id (then `table[line id]` or a detail, after a space). The
+only findings that belong to no claim are two of `labels.answer_rows`, about the registry as a whole
+and the columns of the answer table: they start with `(registry)` or `(expected_rule_outputs)`.
 
 The reference data (EK-2B/EK-2C history, chapters, ICD-10, code sets, the care pathways and their
-fault siblings) are read once, lazily, by a `PlausibilityContext`.
+fault siblings, the EK-3/F-1 and EK-4A lists) are read once, lazily, by a `PlausibilityContext`.
 
-Everything is vectorised Polars. A `Problem` is built only from the finished findings.
+INDEPENDENCE: the price checks know nothing of the generator. They never use `CohortCatalogs` or a
+helper the generator uses: EK-2B and EK-2C prices come from the engine's as-of lookups
+(`src/bilun/domain/pricing/temporal.py`), EK-3/F-1 and EK-4A from direct Polars reads of the curated
+files.
+
+Everything is vectorised Polars. A `Problem` is built only from the finished findings. Python
+loops walk small lists, never the rows of a table: the distinct (code, day) pairs of the procedure
+lines (the engine's lookup is scalar, so it is asked once for each pair and the answer is joined
+back), and the entries of the registry's list of fault records.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
+from datetime import date
 from functools import cached_property, lru_cache
 from pathlib import Path
 import re
+from typing import Any
 
 import polars as pl
+from pydantic import ValidationError
 
-from scripts.synthetic.faults import FaultRegistry, load_registry, load_siblings
+from scripts.synthetic.faults import (
+    EXPECTED_OUTPUT_COLUMNS,
+    FaultInjectionRecord,
+    FaultRegistry,
+    build_expected_rule_outputs,
+    load_registry,
+    load_siblings,
+)
 from scripts.synthetic.faults.schema import UseSiblingPathway
 from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.checks import Catalogs, _group_expr
@@ -48,6 +73,7 @@ TABLE_MATERIALS = "material_claim_lines.parquet"
 TABLE_DRUGS = "drug_claim_lines.parquet"
 TABLE_PERFORMED = "performed_procedure_lines.parquet"
 TABLE_COPAY = "patient_copay_profiles.parquet"
+TABLE_ANSWERS = "expected_rule_outputs.parquet"
 TABLE_ANADATA = "anadata_clean.parquet"
 
 # Every check id a plausibility Problem may carry, with a one-line meaning (at most 120 characters).
@@ -74,7 +100,24 @@ CHECKS: dict[str, str] = {
     # anaesthesia: one per operation date, in the right group
     "anaesthesia.operation_pairing": "an operation date without exactly one anaesthesia line, or an anaesthesia line without an operation",
     "anaesthesia.group": "an anaesthesia code that is not the code of the puan band of the day's operations",
+    # material: the material lines against their operation and the compliance flags
+    "material.operation_link": "a material line not linked to an operation of its own claim, or not dated on that operation's day",
+    "material.stray_flag": "a material compliance flag off its healthy value (registration flags true, every other flag false)",
+    # price: unit prices against the lists in force on the day of the line
+    "price.procedure_in_force": "a procedure line whose unit price is not the engine's EK-2B or EK-2C price in force on its day",
+    "price.material_in_force": "a material line that is not in the EK-3/F-1 list, is dated before the list, or is not at its price",
+    "price.drug_in_force": "a drug line whose barcode has no EK-4A row in force on its day (drug prices are not checked)",
+    # money: the arithmetic of the bill
+    "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5 or 0.25, to the cent",
+    "money.payable_equals_billed": "a line whose expected payable differs from its billed amount (the answers live elsewhere)",
+    "money.totals": "a claim header whose billed or payable total is not the sum of its procedure, material and drug lines",
+    # labels: the answer key and the fault records against the bill (they need the registry)
+    "labels.answer_rows": "answer rows that differ from the ones the registry's fault records produce (needs the registry)",
+    "labels.amounts": "a fault record whose totals, target line or amount contradict the bill (needs the registry)",
 }
+
+# The ids that compare the bill with the registry's fault records: skipped when there is no registry.
+REGISTRY_CHECKS: frozenset[str] = frozenset({"labels.answer_rows", "labels.amounts"})
 
 # --- judgment tables -------------------------------------------------------------------------
 # These are decisions of the author, not facts of the SUT. They are a starting point: a word that
@@ -176,6 +219,37 @@ VISIT_KEYS: dict[str, str] = {"acil": "acil", "poliklinik": "poliklinik", "yatis
 
 # Chapter 6 of EK-2B holds the operations.
 OPERATION_GROUP_ID = "6"
+
+# material.operation_link: the categories a procedure line that carries materials may have (an
+# operation is billed as an `islem`, or as a `paket` when it is an EK-2C package).
+OPERATION_CATEGORIES: tuple[str, ...] = ("islem", "paket")
+
+# material.stray_flag: the flags are the Boolean columns of material_claim_lines except the two
+# structural ones. A flag is healthy when it is false (or missing), except the registration flags,
+# which are healthy when true (or missing). Decisions of the author, from the data audit.
+STRUCTURAL_FLAGS: tuple[str, ...] = ("is_bundled", "requires_pre_auth")
+REGISTRATION_FLAGS: tuple[str, ...] = ("titubb_registered", "uts_registered")
+
+# price.material_in_force: the curated EK-3/F-1 list is one list, in force from its Yürürlük date
+# 13.12.2025 (raw folder annex=EK-3F-1/effective_date=2025-12-13). It carries no end date.
+EK3F1_FROM = date(2025, 12, 13)
+
+# money.line_arithmetic: the multiple-surgery ladder bills the full price, half of it or a quarter of
+# it; a ratio is written as quarters of the full price so that the test stays in whole numbers.
+LADDER_QUARTERS: tuple[int, ...] = (4, 2, 1)
+
+# labels.*: the text columns the fault entries of the registry are read into, and the table of each
+# line type of a fault record.
+FAULT_COLUMNS: tuple[str, ...] = (
+    "fault_id", "claim_id", "line_type", "line_id", "effect_kind",
+    "amount_try", "billed_clean_try", "billed_faulty_try",
+)  # fmt: skip
+LINE_TABLES: dict[str, str] = {
+    "islem": "procedure_claim_lines",
+    "malzeme": "material_claim_lines",
+    "ilac": "drug_claim_lines",
+}
+ANSWER_MONEY_COLUMNS: tuple[str, ...] = ("expected_payable_try", "expected_savings_try")
 
 _DATE_FORMAT = "%Y-%m-%d"
 
@@ -406,6 +480,25 @@ class PlausibilityContext:
         )
         return frame.unique()
 
+    @cached_property
+    def ek3f1(self) -> pl.DataFrame:
+        """sut_code, price_try: the EK-3/F-1 arthroplasty materials list (read directly)."""
+        path = self.root / "data/gazette/curated/ek3f1_arthroplasty_materials.parquet"
+        return pl.read_parquet(path, columns=["sut_code", "price_try"])
+
+    @cached_property
+    def ek4a(self) -> pl.DataFrame:
+        """barcode, valid_from, valid_until (Dates) of the EK-4A history (read directly).
+
+        `valid_until` is exclusive and null means the row is still open. The dates of a reference
+        list must parse: a malformed one raises instead of silently opening a row.
+        """
+        path = self.root / "data/gazette/curated/ek4a_history.parquet"
+        return pl.read_parquet(path, columns=["barcode", "valid_from", "valid_until"]).with_columns(
+            pl.col("valid_from").str.to_date(_DATE_FORMAT),
+            pl.col("valid_until").str.to_date(_DATE_FORMAT),
+        )
+
 
 @lru_cache(maxsize=1)
 def default_context() -> PlausibilityContext:
@@ -439,6 +532,55 @@ def _other_than(sex: str | pl.Expr) -> pl.Expr:
 def _days_text(column: str = "day") -> pl.Expr:
     """In an aggregation: the Dates of the group as one sorted text, `2026-03-13, 2026-03-14`."""
     return pl.col(column).sort().cast(pl.String).str.join(", ")
+
+
+def _cents(amount: pl.Expr) -> pl.Expr:
+    """An amount in lira (a number or the text of one) as whole cents: Int64, null when it is no number."""
+    return (amount.cast(pl.Float64, strict=False) * 100).round(0).cast(pl.Int64, strict=False)
+
+
+def _tl(cents: pl.Expr) -> pl.Expr:
+    """Whole cents as text with two decimals (null stays null): 539189 -> 5391.89."""
+    sign = pl.when(cents < 0).then(pl.lit("-")).otherwise(pl.lit(""))
+    absolute = cents.abs()
+    return pl.concat_str(
+        sign,
+        (absolute // 100).cast(pl.String),
+        pl.lit("."),
+        (absolute % 100).cast(pl.String).str.pad_start(2, "0"),
+    )
+
+
+def _is_cent_price_of(price: pl.Expr, billed: pl.Expr) -> pl.Expr:
+    """`billed` is `price` to the cent: the nearest cent, and for a tie either neighbour.
+
+    The test is in millionths of a lira, so it is exact in whole numbers: billed cents u fit a price
+    of m millionths when 10000u - 5000 <= m <= 10000u + 5000. The half-up cent always fits. A price
+    within a millionth of a half cent is a tie, and both neighbours fit, because the lists are
+    floats with binary noise: the EK-3/F-1 price 15076.214999999998 is meant as 15076.215 and is
+    billed as 15076.21 by `Decimal(str(price))` half up and as 15076.22 by an exact half up. No
+    price a cent away from the list price fits.
+    """
+    micro = (price * 1_000_000).round(0).cast(pl.Int64, strict=False)
+    offset = micro - _cents(billed) * 10_000
+    return (offset >= -5_000) & (offset <= 5_000)
+
+
+def _differs(left: pl.Expr, right: pl.Expr) -> pl.Expr:
+    """`left` and `right` are not equal; a missing value on either side counts as different."""
+    return ~(left == right).fill_null(False)
+
+
+def _engine_price(code: str, day: date) -> float | None:
+    """The engine's price of an EK-2B code, or of an EK-2C package (a P-code), in force on `day`.
+
+    The engine module is imported on first use: it loads pandas, which nothing else here needs. A
+    `date` (not text) is handed over, so the engine never parses a string.
+    """
+    from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date, get_ek2c_price_for_date
+
+    lookup = get_ek2c_price_for_date if code.strip().startswith("P") else get_ek2b_price_for_date
+    return lookup(code, day)
 
 
 def _problems(check: str, found: pl.DataFrame) -> list[Problem]:
@@ -487,10 +629,12 @@ class _Bill:
         tables: Mapping[str, pl.DataFrame],
         clean_tables: Mapping[str, pl.DataFrame],
         ctx: PlausibilityContext,
+        registry: Mapping[str, Any] | None = None,
     ) -> None:
         self.tables = tables
         self.clean_tables = clean_tables
         self.ctx = ctx
+        self.registry = registry
 
     def table(self, name: str) -> pl.DataFrame:
         """A claims table, or (the `*_clean.parquet` files) a clean table, by file name."""
@@ -616,6 +760,80 @@ class _Bill:
         return self.lines.join(
             self.patients, on=["patient_id", "episode_id"], how="left"
         ).with_columns(_without_exceptions(_fold(pl.col("procedure_name"))).alias("folded_name"))
+
+    @cached_property
+    def priced(self) -> pl.DataFrame:
+        """The procedure, material and drug lines in one frame: the columns the money checks read."""
+        sources = (
+            (TABLE_PROCEDURES, "islem", "procedure_line_id"),
+            (TABLE_MATERIALS, "malzeme", "material_line_id"),
+            (TABLE_DRUGS, "ilac", "drug_claim_line_id"),
+        )
+        return pl.concat(
+            [
+                self.table(table).select(
+                    "claim_id",
+                    pl.lit(line_type).alias("line_type"),
+                    pl.lit(table.removesuffix(".parquet")).alias("table"),
+                    pl.col(key).alias("line_id"),
+                    "quantity",
+                    "unit_price_try",
+                    "billed_amount_try",
+                    "expected_payable_try",
+                )
+                for table, line_type, key in sources
+            ]
+        )
+
+    @cached_property
+    def fault_entries(self) -> list[Mapping[str, Any]]:
+        """The entries of `registry["faults"]` that are mappings (none when it is no list)."""
+        faults = (self.registry or {}).get("faults")
+        if not isinstance(faults, list):
+            return []
+        return [entry for entry in faults if isinstance(entry, Mapping)]
+
+    @cached_property
+    def fault_records(
+        self,
+    ) -> tuple[list[FaultInjectionRecord], list[tuple[str, str | None, str]]]:
+        """The fault records re-created from the registry, and each entry that is none: (where, claim, message)."""
+        faults = (self.registry or {}).get("faults")
+        if not isinstance(faults, list):
+            return [], [("(registry)", None, "the registry has no list of faults")]
+        records: list[FaultInjectionRecord] = []
+        invalid: list[tuple[str, str | None, str]] = []
+        for index, entry in enumerate(faults):
+            try:
+                records.append(FaultInjectionRecord.model_validate(entry))
+            except ValidationError as error:
+                claim = entry.get("claim_id") if isinstance(entry, Mapping) else None
+                claim = claim if isinstance(claim, str) and claim else None
+                why = "; ".join(
+                    (f"{'.'.join(map(str, found['loc']))}: " if found["loc"] else "")
+                    + found["msg"].removeprefix("Value error, ")
+                    for found in error.errors()
+                )
+                invalid.append(
+                    (
+                        f"{claim or '(no-claim-id)'} registry faults[{index}]",
+                        claim,
+                        f"the entry is no valid fault record: {why}",
+                    )
+                )
+        return records, invalid
+
+    @cached_property
+    def faults(self) -> pl.DataFrame:
+        """The fault entries of the registry as text columns (FAULT_COLUMNS); a missing value is null."""
+        columns = {
+            name: [
+                None if entry.get(name) is None else str(entry[name])
+                for entry in self.fault_entries
+            ]
+            for name in FAULT_COLUMNS
+        }
+        return pl.DataFrame(columns, schema={name: pl.String for name in FAULT_COLUMNS})
 
 
 # --- patient -----------------------------------------------------------------------------------
@@ -1226,6 +1444,612 @@ def check_anaesthesia_group(bill: _Bill) -> list[Problem]:
     return _problems("anaesthesia.group", found)
 
 
+# --- material ----------------------------------------------------------------------------------
+
+
+def check_operation_link(bill: _Bill) -> list[Problem]:
+    """material.operation_link: a material hangs on an operation of its own claim, on its day."""
+    operations = bill.lines.select(
+        "claim_id",
+        "procedure_line_id",
+        pl.col("procedure_code").alias("link_code"),
+        pl.col("procedure_name").alias("link_name"),
+        pl.col("procedure_category").alias("link_category"),
+        pl.col("procedure_date").alias("link_date"),
+        (pl.col("is_operation") & pl.col("procedure_category").is_in(OPERATION_CATEGORIES))
+        .fill_null(False)
+        .alias("link_is_operation"),
+        pl.lit(True).alias("link_found"),
+    ).unique(subset=["claim_id", "procedure_line_id"], keep="first", maintain_order=True)
+    joined = (
+        bill.table(TABLE_MATERIALS)
+        .select(
+            "claim_id", "material_line_id", "procedure_line_id", "material_code", "material_date"
+        )
+        .join(operations, on=["claim_id", "procedure_line_id"], how="left")
+        .with_columns(pl.col("link_found", "link_is_operation").fill_null(False))
+    )
+    other_day = (_date("material_date") != _date("link_date")).fill_null(False)
+    reasons = pl.concat_str(
+        pl.when(pl.col("procedure_line_id").is_null()).then(pl.lit("it has no procedure_line_id")),
+        pl.when(pl.col("procedure_line_id").is_not_null() & ~pl.col("link_found")).then(
+            _format(
+                "its procedure_line_id {} is no procedure line of this claim",
+                pl.col("procedure_line_id"),
+            )
+        ),
+        pl.when(pl.col("link_found") & ~pl.col("link_is_operation")).then(
+            _format(
+                "the line {} ({}, category {}) it hangs on is not an operation",
+                pl.col("link_code"),
+                pl.col("link_name"),
+                pl.col("link_category"),
+            )
+        ),
+        pl.when(pl.col("link_found") & other_day).then(
+            _format(
+                "it is dated {} but the operation {} it hangs on is dated {}",
+                pl.col("material_date"),
+                pl.col("link_code"),
+                pl.col("link_date"),
+            )
+        ),
+        separator="; ",
+        ignore_nulls=True,
+    )
+    found = (
+        joined.with_columns(reasons.alias("why"))
+        .filter(pl.col("why") != "")
+        .select(
+            _where("claim_id", "material_claim_lines", "material_line_id").alias("where"),
+            _format("material {}: {}", pl.col("material_code"), pl.col("why")).alias("message"),
+        )
+    )
+    return _problems("material.operation_link", found)
+
+
+def check_stray_flag(bill: _Bill) -> list[Problem]:
+    """material.stray_flag: each compliance flag of a material line has its healthy value or none."""
+    materials = bill.table(TABLE_MATERIALS)
+    stray = [
+        pl.when(~pl.col(flag) if flag in REGISTRATION_FLAGS else pl.col(flag)).then(
+            pl.lit(f"{flag} is {'false' if flag in REGISTRATION_FLAGS else 'true'}")
+        )
+        for flag, dtype in materials.schema.items()
+        if dtype == pl.Boolean and flag not in STRUCTURAL_FLAGS
+    ]
+    if not stray:
+        return []
+    found = (
+        materials.with_columns(pl.concat_str(stray, separator=", ", ignore_nulls=True).alias("why"))
+        .filter(pl.col("why") != "")
+        .select(
+            _where("claim_id", "material_claim_lines", "material_line_id").alias("where"),
+            _format(
+                "material {} has flag(s) off the healthy value: {}",
+                pl.col("material_code"),
+                pl.col("why"),
+            ).alias("message"),
+        )
+    )
+    return _problems("material.stray_flag", found)
+
+
+# --- price -------------------------------------------------------------------------------------
+
+
+def check_procedure_price(bill: _Bill) -> list[Problem]:
+    """price.procedure_in_force: a procedure line bills the engine's price of its day, to the cent."""
+    lines = bill.table(TABLE_PROCEDURES).select(
+        "claim_id",
+        "procedure_line_id",
+        "procedure_code",
+        "procedure_date",
+        "unit_price_try",
+        _date("procedure_date").alias("day"),
+    )
+    asked = (
+        lines.filter(pl.col("day").is_not_null() & pl.col("procedure_code").is_not_null())
+        .select("procedure_code", "day")
+        .unique(maintain_order=True)
+    )
+    # the engine's lookup is scalar: ask it once for each distinct (code, day), then join back
+    in_force = pl.Series(
+        "in_force",
+        [
+            _engine_price(code, day)
+            for code, day in zip(asked["procedure_code"], asked["day"], strict=True)
+        ],
+        dtype=pl.Float64,
+    )
+    priced = lines.join(asked.with_columns(in_force), on=["procedure_code", "day"], how="left")
+    unit = _tl(_cents(pl.col("unit_price_try")))
+    found = priced.filter(
+        pl.col("day").is_not_null()
+        & ~_is_cent_price_of(pl.col("in_force"), pl.col("unit_price_try")).fill_null(False)
+    ).select(
+        _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
+        pl.when(pl.col("in_force").is_null())
+        .then(
+            _format(
+                "procedure {} dated {} has no price in force on that day (unit price {})",
+                pl.col("procedure_code"),
+                pl.col("procedure_date"),
+                unit,
+            )
+        )
+        .otherwise(
+            _format(
+                "procedure {} dated {}: unit price {} but the price in force is {}",
+                pl.col("procedure_code"),
+                pl.col("procedure_date"),
+                unit,
+                _tl(_cents(pl.col("in_force"))),
+            )
+        )
+        .alias("message"),
+    )
+    return _problems("price.procedure_in_force", found)
+
+
+def check_material_price(bill: _Bill) -> list[Problem]:
+    """price.material_in_force: a material is in the EK-3/F-1 list, dated from its start, at its price."""
+    priced = (
+        bill.table(TABLE_MATERIALS)
+        .select("claim_id", "material_line_id", "material_code", "material_date", "unit_price_try")
+        .join(bill.ctx.ek3f1, left_on="material_code", right_on="sut_code", how="left")
+    )
+    listed = pl.col("price_try").is_not_null()
+    reasons = pl.concat_str(
+        pl.when(~listed).then(pl.lit("is not in the EK-3/F-1 list")),
+        pl.when(_date("material_date") < EK3F1_FROM).then(
+            _format("is before the list is in force (from {})", pl.lit(EK3F1_FROM.isoformat()))
+        ),
+        pl.when(
+            listed
+            & ~_is_cent_price_of(pl.col("price_try"), pl.col("unit_price_try")).fill_null(False)
+        ).then(
+            _format(
+                "has the unit price {} but the list price is {}",
+                _tl(_cents(pl.col("unit_price_try"))),
+                _tl(_cents(pl.col("price_try"))),
+            )
+        ),
+        separator="; ",
+        ignore_nulls=True,
+    )
+    found = (
+        priced.with_columns(reasons.alias("why"))
+        .filter(pl.col("why") != "")
+        .select(
+            _where("claim_id", "material_claim_lines", "material_line_id").alias("where"),
+            _format(
+                "material {} dated {} {}",
+                pl.col("material_code"),
+                pl.col("material_date"),
+                pl.col("why"),
+            ).alias("message"),
+        )
+    )
+    return _problems("price.material_in_force", found)
+
+
+def check_drug_price(bill: _Bill) -> list[Problem]:
+    """price.drug_in_force: a drug line's barcode has an EK-4A row in force on the line's day."""
+    drugs = bill.table(TABLE_DRUGS).select(
+        "claim_id",
+        "drug_claim_line_id",
+        "drug_name",
+        "barkod",
+        "drug_claim_date",
+        _date("drug_claim_date").alias("day"),
+    )
+    history = bill.ctx.ek4a
+    in_force = (
+        drugs.join(history, left_on="barkod", right_on="barcode")
+        .filter(
+            (pl.col("valid_from") <= pl.col("day"))
+            & (pl.col("valid_until").is_null() | (pl.col("day") < pl.col("valid_until")))
+        )
+        .select("drug_claim_line_id", pl.lit(True).alias("in_force"))
+        .unique()
+    )
+    known = history.select(pl.col("barcode").unique(), pl.lit(True).alias("known"))
+    found = (
+        drugs.filter(pl.col("day").is_not_null())
+        .join(in_force, on="drug_claim_line_id", how="left")
+        .join(known, left_on="barkod", right_on="barcode", how="left")
+        .filter(~pl.col("in_force").fill_null(False))
+        .select(
+            _where("claim_id", "drug_claim_lines", "drug_claim_line_id").alias("where"),
+            pl.when(pl.col("known").fill_null(False))
+            .then(
+                _format(
+                    "drug {} (barcode {}) dated {} has no EK-4A row in force on that day",
+                    pl.col("drug_name"),
+                    pl.col("barkod"),
+                    pl.col("drug_claim_date"),
+                )
+            )
+            .otherwise(
+                _format(
+                    "drug {} (barcode {}) is not in the EK-4A history",
+                    pl.col("drug_name"),
+                    pl.col("barkod"),
+                )
+            )
+            .alias("message"),
+        )
+    )
+    return _problems("price.drug_in_force", found)
+
+
+# --- money -------------------------------------------------------------------------------------
+
+
+def _priced_where() -> pl.Expr:
+    """`where` of a finding about a line of the `priced` frame: the claim id, then `table[line id]`."""
+    return _format("{} {}[{}]", pl.col("claim_id"), pl.col("table"), pl.col("line_id"))
+
+
+def check_line_arithmetic(bill: _Bill) -> list[Problem]:
+    """money.line_arithmetic: billed = unit price x quantity x (1, 0.5 or 0.25), to the cent."""
+    unit, billed = _cents(pl.col("unit_price_try")), _cents(pl.col("billed_amount_try"))
+    full = unit * pl.col("quantity")
+    # in quarter-cents: the billed amount is within half a cent of one rung (a tie fits either way)
+    fits = pl.any_horizontal(
+        *[(billed * 4 - full * quarters).abs() <= 2 for quarters in LADDER_QUARTERS]
+    )
+    found = bill.priced.filter(~fits.fill_null(False)).select(
+        _priced_where().alias("where"),
+        _format(
+            "billed {} is not the unit price {} x quantity {} x 1, 0.5 or 0.25 ({}, {} or {})",
+            _tl(billed),
+            _tl(unit),
+            pl.col("quantity"),
+            _tl((full * 4 + 2) // 4),
+            _tl((full * 2 + 2) // 4),
+            _tl((full + 2) // 4),
+        ).alias("message"),
+    )
+    return _problems("money.line_arithmetic", found)
+
+
+def check_payable_equals_billed(bill: _Bill) -> list[Problem]:
+    """money.payable_equals_billed: the payable of every line is its billed amount."""
+    payable, billed = _cents(pl.col("expected_payable_try")), _cents(pl.col("billed_amount_try"))
+    found = bill.priced.filter(_differs(payable, billed)).select(
+        _priced_where().alias("where"),
+        _format(
+            "expected_payable_try is {} but billed_amount_try is {}; a line pays what it bills",
+            _tl(payable),
+            _tl(billed),
+        ).alias("message"),
+    )
+    return _problems("money.payable_equals_billed", found)
+
+
+def check_totals(bill: _Bill) -> list[Problem]:
+    """money.totals: the header totals are the sums of the procedure, material and drug lines."""
+    sums = bill.priced.group_by("claim_id").agg(
+        _cents(pl.col("billed_amount_try")).sum().alias("lines_billed"),
+        _cents(pl.col("expected_payable_try")).sum().alias("lines_payable"),
+    )
+    headers = (
+        bill.table(TABLE_CLAIM_HEADERS)
+        .select(
+            "claim_id",
+            _cents(pl.col("expected_total_billed_try")).alias("total_billed"),
+            _cents(pl.col("expected_total_payable_try")).alias("total_payable"),
+        )
+        .join(sums, on="claim_id", how="left")
+        .with_columns(pl.col("lines_billed", "lines_payable").fill_null(0))
+    )
+    found = [
+        headers.filter(_differs(pl.col(total), pl.col(lines))).select(
+            pl.col("claim_id").alias("where"),
+            _format(
+                "{} is {} but the {} amounts of the claim's lines add up to {}",
+                pl.lit(column),
+                _tl(pl.col(total)),
+                pl.lit(kind),
+                _tl(pl.col(lines)),
+            ).alias("message"),
+        )
+        for column, total, lines, kind in (
+            ("expected_total_billed_try", "total_billed", "lines_billed", "billed"),
+            ("expected_total_payable_try", "total_payable", "lines_payable", "payable"),
+        )
+    ]
+    return _problems("money.totals", pl.concat(found))
+
+
+# --- labels ------------------------------------------------------------------------------------
+
+
+def _finding(where: str, message: str) -> pl.DataFrame:
+    """One finding as a frame, for a finding that is not about the rows of a table."""
+    schema = {"where": pl.String, "message": pl.String}
+    return pl.DataFrame({"where": [where], "message": [message]}, schema=schema)
+
+
+def _answer_where(claim: pl.Expr) -> pl.Expr:
+    """`where` of a finding about an answer row: the claim id, then `expected_rule_outputs[id]`."""
+    return _format("{} expected_rule_outputs[{}]", claim, pl.col("expected_output_id"))
+
+
+def check_answer_rows(bill: _Bill) -> list[Problem]:
+    """labels.answer_rows: expected_rule_outputs is what the registry's fault records produce."""
+    records, invalid = bill.fault_records
+    answers = bill.table(TABLE_ANSWERS)
+    texts = {"where": pl.String, "message": pl.String}
+    found = [
+        pl.DataFrame(
+            {
+                "where": [where for where, _, _ in invalid],
+                "message": [message for _, _, message in invalid],
+            },
+            schema=texts,
+        )
+    ]
+    headerless = (
+        pl.DataFrame(
+            {
+                "claim_id": [record.claim_id for record in records],
+                "fault_id": [record.fault_id for record in records],
+            },
+            schema={"claim_id": pl.String, "fault_id": pl.String},
+        )
+        .join(bill.table(TABLE_CLAIM_HEADERS).select("claim_id"), on="claim_id", how="anti")
+        .select(
+            _format("{} registry faults[{}]", pl.col("claim_id"), pl.col("fault_id")).alias(
+                "where"
+            ),
+            pl.lit("the fault record names a claim that has no header").alias("message"),
+        )
+    )
+    found.append(headerless)
+    if list(answers.columns) != list(EXPECTED_OUTPUT_COLUMNS):
+        found.append(
+            _finding(
+                "(expected_rule_outputs)",
+                f"the columns are {list(answers.columns)}, the answer key has {list(EXPECTED_OUTPUT_COLUMNS)}",
+            )
+        )
+    try:
+        produced = build_expected_rule_outputs(records)
+    except ValueError as error:
+        found.append(_finding("(registry)", f"the fault records produce no answer key: {error}"))
+        produced = None
+    if produced is None or not set(EXPECTED_OUTPUT_COLUMNS) <= set(answers.columns):
+        return _problems("labels.answer_rows", pl.concat(found))
+
+    expected = pl.DataFrame(
+        {
+            name: [None if row[name] is None else str(row[name]) for row in produced]
+            for name in EXPECTED_OUTPUT_COLUMNS
+        },
+        schema={name: pl.String for name in EXPECTED_OUTPUT_COLUMNS},
+    )
+    shown = [
+        (
+            pl.col(name)
+            if name in ANSWER_MONEY_COLUMNS
+            else pl.col(name).cast(pl.String, strict=False)
+        ).alias(name)
+        for name in EXPECTED_OUTPUT_COLUMNS
+    ]
+    actual = answers.select(shown)
+    repeated = (
+        actual.group_by("expected_output_id")
+        .agg(pl.col("claim_id").first(), pl.len().alias("n"))
+        .filter(pl.col("n") > 1)
+        .select(
+            _answer_where(pl.col("claim_id")).alias("where"),
+            _format(
+                "{} rows share this answer id; there is one row per fault record", pl.col("n")
+            ).alias("message"),
+        )
+    )
+    found.append(repeated)
+    actual = actual.unique(subset="expected_output_id", keep="first", maintain_order=True)
+
+    names = [name for name in EXPECTED_OUTPUT_COLUMNS if name != "expected_output_id"]
+    both = expected.with_columns(pl.lit(True).alias("in_records")).join(
+        actual.with_columns(pl.lit(True).alias("in_table")),
+        on="expected_output_id",
+        how="full",
+        coalesce=True,
+        suffix="_table",
+    )
+    in_records, in_table = (
+        pl.col("in_records").fill_null(False),
+        pl.col("in_table").fill_null(False),
+    )
+    where = _answer_where(pl.coalesce("claim_id", "claim_id_table"))
+
+    def differs(name: str) -> pl.Expr:
+        mine, theirs = pl.col(name), pl.col(f"{name}_table")
+        if name in ANSWER_MONEY_COLUMNS:
+            return ~_cents(mine).eq_missing(_cents(theirs))
+        return ~mine.eq_missing(theirs)
+
+    why = pl.concat_str(
+        [
+            pl.when(differs(name)).then(
+                _format(
+                    "{} is {} but the fault record gives {}",
+                    pl.lit(name),
+                    pl.col(f"{name}_table"),
+                    pl.col(name),
+                )
+            )
+            for name in names
+        ],
+        separator="; ",
+        ignore_nulls=True,
+    )
+    record_claims = sorted({record.claim_id for record in records})
+    invalid_claims = sorted({claim for _, claim, _ in invalid if claim})
+    found += [
+        both.filter(in_records & ~in_table).select(
+            where.alias("where"),
+            _format("the fault record {} has no answer row", pl.col("scenario_tag")).alias(
+                "message"
+            ),
+        ),
+        both.filter(in_table & ~in_records).select(
+            where.alias("where"),
+            pl.when(pl.col("claim_id_table").is_in(record_claims))
+            .then(pl.lit("no fault record of the claim produces this answer row"))
+            .when(pl.col("claim_id_table").is_in(invalid_claims))
+            .then(
+                pl.lit(
+                    "the claim's fault entry is no valid record, so nothing explains this answer row"
+                )
+            )
+            .otherwise(pl.lit("the claim has no fault record, so nothing explains this answer row"))
+            .alias("message"),
+        ),
+        both.filter(in_records & in_table)
+        .with_columns(why.alias("why"))
+        .filter(pl.col("why") != "")
+        .select(
+            where.alias("where"),
+            _format("the row differs from the fault record: {}", pl.col("why")).alias("message"),
+        ),
+    ]
+    order = (
+        expected.select("expected_output_id", "claim_id")
+        .with_row_index("record_at")
+        .join(
+            actual.select("expected_output_id").with_row_index("table_at"),
+            on="expected_output_id",
+        )
+        .sort("record_at")  # a join does not promise the order of its left side
+    )
+    found.append(
+        order.filter(pl.col("table_at") < pl.col("table_at").cum_max().shift(1)).select(
+            _answer_where(pl.col("claim_id")).alias("where"),
+            pl.lit(
+                "the row is out of order; the answer rows follow the records (claim id, fault id)"
+            ).alias("message"),
+        )
+    )
+    return _problems("labels.answer_rows", pl.concat(found))
+
+
+def _line_table(line_type: pl.Expr) -> pl.Expr:
+    """The table name of a fault record's line type (null for `fatura` and unknown types)."""
+    table = pl.lit(None, dtype=pl.String)
+    for kind, name in LINE_TABLES.items():
+        table = pl.when(line_type == kind).then(pl.lit(name)).otherwise(table)
+    return table
+
+
+def check_label_amounts(bill: _Bill) -> list[Problem]:
+    """labels.amounts: each fault record agrees with the bill: faulty total, target line, amount."""
+    faults = bill.faults.with_columns(
+        _cents(pl.col("amount_try")).alias("amount"),
+        _cents(pl.col("billed_clean_try")).alias("clean"),
+        _cents(pl.col("billed_faulty_try")).alias("faulty"),
+    )
+    headers = (
+        bill.table(TABLE_CLAIM_HEADERS)
+        .select("claim_id", _cents(pl.col("expected_total_billed_try")).alias("header_total"))
+        .unique(subset="claim_id", keep="first")
+    )
+    sums = bill.priced.group_by("claim_id").agg(
+        _cents(pl.col("billed_amount_try")).sum().alias("lines_total")
+    )
+    lines = bill.priced.select(
+        "claim_id", "line_type", "line_id", _cents(pl.col("billed_amount_try")).alias("line_billed")
+    ).unique(subset=["claim_id", "line_type", "line_id"], keep="first")
+    joined = (
+        faults.join(headers, on="claim_id", how="left")
+        .join(sums, on="claim_id", how="left")
+        .join(lines, on=["claim_id", "line_type", "line_id"], how="left")
+    )
+    where = _format("{} registry faults[{}]", pl.col("claim_id"), pl.col("fault_id"))
+    has_header = pl.col("header_total").is_not_null()
+    faulty, clean, amount = pl.col("faulty"), pl.col("clean"), pl.col("amount")
+    kind, line_type = pl.col("effect_kind"), pl.col("line_type")
+    line_id = pl.col("line_id").fill_null("")
+
+    def finding(condition: pl.Expr, message: pl.Expr) -> pl.DataFrame:
+        return joined.filter(condition.fill_null(False)).select(
+            where.alias("where"), message.alias("message")
+        )
+
+    deduction = pl.when(faulty > clean).then(faulty - clean).otherwise(pl.col("line_billed"))
+    expected_amount = (
+        pl.when(kind == "revenue_uplift")
+        .then(clean - faulty)
+        .when(kind == "deduction_risk")
+        .then(deduction)
+        .when(kind == "compliance_error")
+        .then(pl.lit(0, dtype=pl.Int64))
+    )
+    rule = (
+        pl.when(kind == "revenue_uplift")
+        .then(pl.lit("billed_clean_try - billed_faulty_try"))
+        .when(kind == "deduction_risk")
+        .then(pl.lit("the growth of the bill, or else the billed amount of the target line"))
+        .otherwise(pl.lit("zero"))
+    )
+    kinds = ["revenue_uplift", "deduction_risk", "compliance_error"]
+    typed_line = line_type.is_in(list(LINE_TABLES))
+    found = [
+        finding(
+            has_header & _differs(faulty, pl.col("header_total")),
+            _format(
+                "billed_faulty_try is {} but expected_total_billed_try of the claim is {}",
+                _tl(faulty),
+                _tl(pl.col("header_total")),
+            ),
+        ),
+        finding(
+            has_header & _differs(faulty, pl.col("lines_total").fill_null(0)),
+            _format(
+                "billed_faulty_try is {} but the billed amounts of the claim's lines add up to {}",
+                _tl(faulty),
+                _tl(pl.col("lines_total").fill_null(0)),
+            ),
+        ),
+        finding(
+            ~line_type.is_in(["fatura", *LINE_TABLES]).fill_null(False),
+            _format("line_type {} is none of fatura, islem, malzeme, ilac", line_type),
+        ),
+        finding(
+            (line_type == "fatura") & (line_id != ""),
+            _format("line_id {} must be empty for line_type fatura", line_id),
+        ),
+        finding(
+            typed_line & (line_id == ""),
+            _format("line_type {} needs the line_id of its target line", line_type),
+        ),
+        finding(
+            typed_line & (line_id != "") & pl.col("line_billed").is_null(),
+            _format("line_id {} is no line of {} of this claim", line_id, _line_table(line_type)),
+        ),
+        finding(
+            ~kind.is_in(kinds).fill_null(False),
+            _format("effect_kind {} is none of {}", kind, pl.lit(", ".join(kinds))),
+        ),
+        finding(
+            expected_amount.is_not_null() & _differs(amount, expected_amount),
+            _format(
+                "{} amount_try is {} but must be {} ({})",
+                kind,
+                _tl(amount),
+                _tl(expected_amount),
+                rule,
+            ),
+        ),
+    ]
+    return _problems("labels.amounts", pl.concat(found))
+
+
 # --- the registry and the entry point ------------------------------------------------------------
 
 CHECK_FUNCTIONS: dict[str, Callable[[_Bill], list[Problem]]] = {
@@ -1244,6 +2068,16 @@ CHECK_FUNCTIONS: dict[str, Callable[[_Bill], list[Problem]]] = {
     "package.mode": check_package_mode,
     "anaesthesia.operation_pairing": check_operation_pairing,
     "anaesthesia.group": check_anaesthesia_group,
+    "material.operation_link": check_operation_link,
+    "material.stray_flag": check_stray_flag,
+    "price.procedure_in_force": check_procedure_price,
+    "price.material_in_force": check_material_price,
+    "price.drug_in_force": check_drug_price,
+    "money.line_arithmetic": check_line_arithmetic,
+    "money.payable_equals_billed": check_payable_equals_billed,
+    "money.totals": check_totals,
+    "labels.answer_rows": check_answer_rows,
+    "labels.amounts": check_label_amounts,
 }
 
 
@@ -1253,11 +2087,14 @@ def check_plausibility(
     *,
     context: PlausibilityContext | None = None,
     only: Iterable[str] | str | None = None,
+    registry: Mapping[str, Any] | None = None,
 ) -> list[Problem]:
     """Every plausibility problem of the claims `tables` (and `anadata_clean` of `clean_tables`).
 
-    `only` restricts the run to some check ids. The problems come in the order of `CHECKS`, then
-    by `where`.
+    `only` restricts the run to some check ids. `registry` is the parsed `cohort_registry.json`
+    of the dataset: the ids in `REGISTRY_CHECKS` (the `labels.*` ones) compare the bill with its
+    fault records and are skipped when it is None. The problems come in the order of `CHECKS`,
+    then by `where`.
     """
     if only is None:
         selected = list(CHECKS)
@@ -1267,7 +2104,11 @@ def check_plausibility(
         if unknown:
             raise KeyError(f"unregistered check id(s) {unknown}")
         selected = [check for check in CHECKS if check in wanted]
-    bill = _Bill(tables, clean_tables, context if context is not None else default_context())
+    if registry is None:
+        selected = [check for check in selected if check not in REGISTRY_CHECKS]
+    bill = _Bill(
+        tables, clean_tables, context if context is not None else default_context(), registry
+    )
     return [problem for check in selected for problem in CHECK_FUNCTIONS[check](bill)]
 
 
