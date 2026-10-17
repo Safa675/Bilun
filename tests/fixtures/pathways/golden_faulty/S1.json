@@ -1,0 +1,114 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-07-14",
+      "icd10": "K35.9",
+      "role": "primary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8697637691743",
+      "date": "2026-07-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "bottle"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-07-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699844770716",
+      "date": "2026-07-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 5,
+      "unit": "vial"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-07-14",
+    "claim_end_date": "2026-07-16",
+    "claim_start_date": "2026-07-14",
+    "claim_type": "yatis",
+    "department": "Genel Cerrahi",
+    "discharge_date": "2026-07-16",
+    "primary_icd10": "K35.9"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-07-14",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "550170",
+      "date": "2026-07-14",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3100"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "610131",
+      "date": "2026-07-14",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-07-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "910230",
+      "date": "2026-07-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L101850",
+      "date": "2026-07-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-07-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-07-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    }
+  ],
+  "story": "S1"
+}

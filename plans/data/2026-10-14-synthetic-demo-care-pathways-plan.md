@@ -1,7 +1,7 @@
 # Synthetic demo cohort v3: care pathways instead of random draws
 
 Date: 2026-10-14 (rev 2, after an independent review)
-Status: **approved 2026-10-15; P0 and P1 landed (#258, #296); P2 first step landed 2026-10-17: the 8 showcase pathways, their format and checks** (`data/synthetic/pathways/README.md`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
+Status: **approved 2026-10-15; P0 and P1 landed (#258, #296); P2 first step landed 2026-10-17 (#308); P3 (fault registry, apply_fault, injection record, answer rows) built 2026-10-17 on Gemini 4 Argon** (`data/synthetic/pathways/README.md`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
 Inputs:
 - the audit `reports/synthetic-data/2026-10-14-demo-cohort-audit.md`;
 - its scripts in `reports/synthetic-data/2026-10-14-audit-scripts/`;
@@ -222,9 +222,10 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 - [ ] The rest of the first 20.
 
 ### P3 — Fault registry and answer key
-- [ ] Fault registry, injection log and derived answer rows.
-- [ ] The loader change with tests.
-- This comes **before** the showcase bills, because they carry injected faults and the loader rejects bills without answer rows.
+- [x] Fault registry (`data/synthetic/faults/fault_registry.yaml`, 8 faults, 26+ check ids), `apply_fault`, the injection record (`FaultInjectionRecord`, `make_record`) and the answer rows (`build_expected_rule_outputs`), 2026-10-17. Design: `plans/data/2026-10-17-p3-fault-registry-design.md`. Each mutation is proven against the faulty bills of `stories.py` (`tests/fixtures/pathways/golden_faulty/`). The file `data/synthetic/cohort_registry.json` that carries the records is written by the generator (P4).
+- [x] The loader change: not needed. PR #246 (issue #240) already makes the answer rows optional and checks only the rows present.
+- Open for P6: three readers depend on the v2 shape of `expected_rule_outputs` (see `data/synthetic/faults/README.md`, "What P6 must change").
+- This comes **before** the showcase bills, because they carry injected faults.
 
 ### P4 — Generator v3 (Polars)
 - [ ] Facility and patient state, bill composer and pickers.

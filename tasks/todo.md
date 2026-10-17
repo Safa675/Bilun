@@ -1,3 +1,38 @@
+## Task: Synthetic v3 P3 — fault registry, injection log and answer key (2026-10-17)
+
+### Goal
+Every injected fault of the demo cohort is declared once in a registry (SUT clause, the engine rule that must fire, the mutation applied to the clean bill, the expected detection and TL effect), every injection is written to a log in the same generator run, and the answer rows the app reads come from that log instead of the generator's own sums.
+
+Approved by Safa on 2026-10-17 ("yeah go on"). Plan: `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md` (D4, P3). New working rule (Safa, 2026-10-17): Claude orchestrates only; implementation runs on Antigravity with Gemini 4 Argon (`agy -p`, Cloud-project ADC), one run per slice, in an isolated worktree with its own permission file; Claude plans, briefs, verifies and reports.
+
+### State found before starting
+- PR #308 (pathways S1–S8, `expand`, golden bills) is merged; `main` at 98861219.
+- Issue #240 (the loader demanded exhaustive answer rows) is closed by PR #246 (75b82fa4): `validate_expected_outputs` now checks only the rows that are present. So the loader work the plan expected for P3 is probably done; the design confirms it from the code.
+- Open input: Safa675/Bilun#311 (format limits; items 4 to 6 matter here: expanded rows carry no line reference, S1's fault needs an itemized sibling pathway, `ayniFarkliKesi` has no field).
+
+### Subtasks
+- [x] 1. Design (phase 1, Argon): `plans/data/2026-10-17-p3-fault-registry-design.md`. Run 1 (11 min) ended with an empty answer because the final write was refused (a path under `.claude/` is not auto-allowed; a refused call ends the run silently); its document was recovered from the conversation log and turned out to contain invented pathway ids, rule names, files and line anchors (10 missing files, 7 bad anchors, 46 unknown identifiers). Run 2 (26 min) corrected it from a ground-truth table with a mechanical gate (every path exists, anchors inside the file, every identifier found in the repository or declared under "Proposed new names").
+- [x] 2. I checked the design against the code (columns of `ExpectedRuleOutput`, `validate_expected_outputs`, the non-empty rule in `synthetic_demo`, `_line_itemized_payable`, zero readers of `expected_outputs` in `src/`, nine detector functions at their lines, prices of both walkthroughs against `results/`, SUT clause texts). One error found (S8 cited C000674, the +25 points rule) and fixed. The three open questions were engineering choices and are decided: Option A each. Slice 3 amended: mutations are proven against golden *faulty* bills exported from `stories.py`, not by importing the proofs harness into a test.
+- [x] 3. Implementation slices (phase 2), one Argon run each, brief and permission file per run, I commit after verifying:
+  - [x] Slice 1: `expand(..., annotate=True)`, golden faulty bills (`tests/fixtures/pathways/golden_faulty/`), S1 itemized sibling pathway `data/synthetic/faults/siblings/` (13 min, 481 pathway tests).
+  - [x] Slice 2: registry schema, loader, 26 check ids and `data/synthetic/faults/fault_registry.yaml` for the 8 faults (21 min, 533 tests).
+  - [x] Slice 3: `apply_fault`, `FaultInjectionRecord`/`make_record`, `build_expected_rule_outputs`; every fault equals its faulty golden, the rows pass the real `parse_expected_output` and `validate_expected_outputs` (29 min, 564 tests).
+  - [x] Slice 4: fixes from the independent review (20 min, 585 tests): see Results.
+- [x] 4. Independent read-only review (Claude, 35 code and 20 data mutants, loader readers, fit with P4/P7): found 5 defects, 14/35 and 12/20 mutants caught; its 12 probe tests are now tests.
+- [x] 5. Gates: ruff (CI scope), full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate (clone and venv deleted afterwards).
+- [ ] 6. PR, CI green, review comments read, Safa merges.
+
+### Results (2026-10-17, branch `claude/synthetic-v3-p3-design`)
+- **Built:** the fault registry (8 faults, 6 operations, 28 check ids with mutation cases), `apply_fault` (a fault that changes nothing, a dangling link or a stay outside the window is an error; `fault_window` for P4), the injection record, the answer rows, the S1 sibling pathway and the golden faulty bills. No `src/` change; the loader needs none (PR #246).
+- **Tests:** 9,493 passed, 2 skipped, 0 failed (9,260 before); 233 new tests. `compile_rules.py --check` OK, parity 0 issues.
+- **How it was built (new working rule):** the implementation ran on Antigravity with Gemini 4 Argon (`agy -p`, Cloud-project ADC); Claude wrote the plan and the briefs, ran every gate and reviewed. Six Argon runs (two for the design), about 2 hours of Argon time and about 3.5 million tokens in all, roughly 20 TL of Cloud credit (an estimate from the earlier price per million tokens).
+- **What went wrong and what it taught:** run 1 of the design ended with an empty answer because its last write was refused (a path under `.claude/` is not auto-allowed and a refused call ends the run silently); its document, recovered from the conversation log, contained invented pathway ids, rule names, files and line anchors (10 missing files, 7 bad anchors, 46 unknown identifiers). Run 2 corrected it from a ground-truth table with a mechanical checker as its exit gate, and I re-checked the claims that carry weight; one wrong SUT clause (C000674) remained and was fixed. Code runs were safer because the tests decide.
+- **Review findings fixed:** the expected findings were only shape-checked (now pinned); `apply_fault` ignored a narrower window of the S1 sibling (a stay before 2026-04-16 produced band-C anaesthesia); a test comment and its totals did not match `results/`; the README promised `FaultApplyError` for failures that raise `ExpandError`; a dropped procedure left materials linked to nothing.
+- **Open for later phases:** `FaultId` forces the `S<n>` form while `story` may be null (Tier-B faults, P4); `detectable` and `tier` belong to the cohort registry (P4); three readers depend on the v2 shape of `expected_rule_outputs` (P6).
+
+### Out of Scope
+The generator (P4), regenerating the cohort (P7), pathways beyond S1–S8, the engine defects #298–#307, staging.
+
 ## Task: Public-statistics anchors for the synthetic v3 cohort (2026-10-17)
 
 ### Goal

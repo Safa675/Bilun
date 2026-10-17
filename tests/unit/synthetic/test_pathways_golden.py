@@ -1,4 +1,4 @@
-"""The golden clean bills, tests/fixtures/pathways/golden/S1..S8.json.
+"""The golden clean and faulty bills, tests/fixtures/pathways/{golden,golden_faulty}/S1..S8.json.
 
 Well-formedness is checked on the files alone: no harness, no engine. That the files equal a fresh
 export of stories.py is `export_clean_lines.py --check`, run here in a subprocess (the harness
@@ -22,6 +22,8 @@ pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).resolve().parents[3]
 GOLDEN_DIR = REPO / "tests" / "fixtures" / "pathways" / "golden"
+GOLDEN_FAULTY_DIR = REPO / "tests" / "fixtures" / "pathways" / "golden_faulty"
+GOLDEN_DIRS = {"clean": GOLDEN_DIR, "faulty": GOLDEN_FAULTY_DIR}
 EXPORTER = (
     REPO / "reports" / "synthetic-data" / "2026-10-15-showcase-proofs" / "export_clean_lines.py"
 )
@@ -93,16 +95,31 @@ def _keys(node: object) -> Iterator[str]:
             yield from _keys(item)
 
 
-@pytest.fixture(params=STORIES)
+@pytest.fixture(
+    params=[(variant, sid) for variant in GOLDEN_DIRS for sid in STORIES],
+    ids=lambda item: f"{item[0]}-{item[1]}",
+)
 def golden(request: pytest.FixtureRequest) -> tuple[str, str, dict]:
     """(story, file text, parsed document); a missing or invalid file errors here."""
-    path = GOLDEN_DIR / f"{request.param}.json"
+    variant, sid = request.param
+    path = GOLDEN_DIRS[variant] / f"{sid}.json"
     text = path.read_text(encoding="utf-8")
-    return request.param, text, json.loads(text)
+    return sid, text, json.loads(text)
 
 
-def test_eight_golden_files_exist() -> None:
-    assert [s for s in STORIES if not (GOLDEN_DIR / f"{s}.json").is_file()] == []
+@pytest.mark.parametrize("directory", GOLDEN_DIRS.values(), ids=GOLDEN_DIRS.keys())
+def test_eight_golden_files_exist(directory: Path) -> None:
+    assert [s for s in STORIES if not (directory / f"{s}.json").is_file()] == []
+
+
+@pytest.mark.parametrize("story", STORIES)
+def test_each_faulty_golden_differs_from_its_clean_golden_and_names_its_story(story: str) -> None:
+    clean_path = GOLDEN_DIR / f"{story}.json"
+    faulty_path = GOLDEN_FAULTY_DIR / f"{story}.json"
+    clean = json.loads(clean_path.read_text(encoding="utf-8"))
+    faulty = json.loads(faulty_path.read_text(encoding="utf-8"))
+    assert faulty["story"] == faulty_path.stem == story
+    assert faulty != clean
 
 
 def test_the_golden_files_equal_a_fresh_export_of_the_stories() -> None:

@@ -1,13 +1,15 @@
-"""Export the clean bill of each showcase story as a golden file: line identities, no prices.
+"""Export the clean and faulty bills of each showcase story as golden files: line identities, no prices.
 
-`STORIES[sid]("clean")` (stories.py) builds the reviewed clean bill. This writes it to
-tests/fixtures/pathways/golden/<sid>.json (format_version 1) so the P2 care pathways can be
-proven to reproduce it line for line. It only builds bills; it does not run the engine.
+`STORIES[sid]("clean")` and `STORIES[sid]("faulty")` (stories.py) build the reviewed bills. This
+writes the clean bills to tests/fixtures/pathways/golden/<sid>.json and the faulty bills to
+tests/fixtures/pathways/golden_faulty/<sid>.json (format_version 1) so the P2 care pathways and P3
+fault mutations can be proven to reproduce them line for line. It only builds bills; it does not
+run the engine.
 
 Run from the repo root, like prove.py (--write is the default):
     .venv/bin/python reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py
     ... --check   export in memory, list the stories whose committed file differs or is
-                  missing, exit 1 if there are any (0 otherwise)
+                  missing in either directory, exit 1 if there are any (0 otherwise)
 
 Not written: ids, names, prices, amounts, the synthetic-only package_candidate header flag.
 `billed_ratio` (procedures, materials) is billed amount / (unit price x quantity), rounded half
@@ -42,6 +44,8 @@ from harness import ROOT
 from stories import STORIES
 
 GOLDEN = Path(ROOT) / "tests" / "fixtures" / "pathways" / "golden"
+GOLDEN_FAULTY = Path(ROOT) / "tests" / "fixtures" / "pathways" / "golden_faulty"
+DIRS = {"clean": GOLDEN, "faulty": GOLDEN_FAULTY}
 LISTS = ("diagnoses", "procedures", "materials", "drugs", "performed")
 NOT_FLAGS = {
     "procedure_specialty_code",
@@ -74,9 +78,9 @@ def flags(line: Any) -> dict[str, Any]:
     return out
 
 
-def export(sid: str) -> dict[str, Any]:
-    """The golden document of story ``sid`` (format_version 1)."""
-    bill = STORIES[sid]("clean")
+def export(sid: str, variant: str = "clean") -> dict[str, Any]:
+    """The golden document of story ``sid`` for ``variant`` ("clean" or "faulty", format_version 1)."""
+    bill = STORIES[sid](variant)
     head = bill.header()
     procs_by_id = {p.procedure_line_id: p for p in bill.procs}
 
@@ -153,24 +157,28 @@ def dump(doc: dict[str, Any]) -> bytes:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Export the golden clean bill of each story.")
+    parser = argparse.ArgumentParser(
+        description="Export the golden clean and faulty bills of each story."
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--write", action="store_true", help="write the golden files (default)")
     mode.add_argument("--check", action="store_true", help="exit 1 if a file differs or is missing")
     check = parser.parse_args().check
     bad = 0
-    for sid in STORIES:
-        doc = export(sid)
-        data, path = dump(doc), GOLDEN / f"{sid}.json"
-        if not check:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(data)
-            print(f"{sid}: " + ", ".join(f"{len(doc[k])} {k}" for k in LISTS))
-        elif not path.exists() or path.read_bytes() != data:
-            print(f"{sid}: {'differs' if path.exists() else 'missing'}")
-            bad += 1
+    for variant, directory in DIRS.items():
+        for sid in STORIES:
+            doc = export(sid, variant)
+            data, path = dump(doc), directory / f"{sid}.json"
+            label = f"{variant}/{sid}"
+            if not check:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+                print(f"{label}: " + ", ".join(f"{len(doc[k])} {k}" for k in LISTS))
+            elif not path.exists() or path.read_bytes() != data:
+                print(f"{label}: {'differs' if path.exists() else 'missing'}")
+                bad += 1
     if check and not bad:
-        print(f"all {len(STORIES)} golden files match a fresh export")
+        print(f"all {len(DIRS) * len(STORIES)} golden files match a fresh export")
     return 1 if bad else 0
 
 

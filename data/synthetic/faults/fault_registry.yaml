@@ -1,0 +1,179 @@
+# Fault registry for the synthetic demo (v3, P3): the 8 showcase billing faults (S1..S8).
+# Grammar and checks: data/synthetic/faults/README.md and scripts/synthetic/faults/.
+# No prices or currency figures are stored here; expected findings are derived at injection time.
+schema_version: 1
+faults:
+  - fault_id: F_S1_PACKAGE_BILLED_ITEMIZED
+    story: S1
+    title: "Package billed as itemized (laparoscopic appendectomy)"
+    target_pathway: appendicitis_lap_appendectomy_package
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: appendicitis_lap_appendectomy_itemized
+    expected_finding:
+      engine_rule: billing_strategy
+      detectors:
+        - "src/bilun/domain/prose_rules/payment_method.py:check_payment_method_compliance"
+        - "src/bilun/domain/billing/claim_strategy.py:recommend_billing_strategy_from_claims"
+      sut_section: "2.2.2(1)"
+      sut_clauses: ["C000646"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code (P610131) must be billed by package; the coder keyed EK-2B 610131 itemized (story S1)."
+
+  - fault_id: F_S2_BED_DAYS_UNDERBILLED
+    story: S2
+    title: "Bed days under-billed (COPD exacerbation with pneumonia)"
+    target_pathway: copd_exacerbation_pneumonia_ward
+    mutations:
+      - op: truncate_line_days
+        section: procedures
+        entry_id: bed
+        keep_day_indices: [0, 1, 2, 3]
+    expected_finding:
+      engine_rule: yatak_puani
+      detectors:
+        - "src/bilun/domain/prose_rules/yatak_puani.py:detect_yatak_puani_opportunities"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C000652 (SUT 2.2.2.A(1)) and Kılavuz p.62, p.168: every calendar day of the stay (7 days for 6 nights) gets a 510010 bed line; only 4 were billed (story S2)."
+
+  - fault_id: F_S3_ANAESTHESIA_LINE_MISSING
+    story: S3
+    title: "Anaesthesia missing on an itemized operation (lumbar decompression)"
+    target_pathway: lumbar_stenosis_decompression_itemized
+    mutations:
+      - op: drop_entry
+        section: procedures
+        entry_id: anaesthesia
+    expected_finding:
+      engine_rule: anestezi_puani
+      detectors:
+        - "src/bilun/domain/prose_rules/anestezi_puani.py:detect_anestezi_puani_opportunities"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C000652 (SUT 2.2.2.A(1)) and EK-2B section 4: itemized operation 615931 (band B) requires a separate 550160 anaesthesia line, which was omitted (story S3)."
+
+  - fault_id: F_S4_COMPANION_NOT_BILLED
+    story: S4
+    title: "Companion bed not billed (dementia, pyelonephritis)"
+    target_pathway: pyelonephritis_dementia_delirium_ward
+    mutations:
+      - op: drop_entry
+        section: procedures
+        entry_id: companion
+    expected_finding:
+      engine_rule: refakatci
+      detectors:
+        - "src/bilun/domain/prose_rules/refakatci.py:detect_refakatci_opportunities"
+      sut_section: "2.6.3(2)"
+      sut_clauses: ["C001628", "C000654"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)) and C000654 (2.2.2.A(3)): companion nights ordered by the doctor with a refakatçi belgesi are billed as 510121; none was entered (S4)."
+
+  - fault_id: F_S5_IMPLANT_UTS_INCOMPLETE
+    story: S5
+    title: "Implant billed without ÜTS notification (cemented hip hemiarthroplasty)"
+    target_pathway: femoral_neck_fracture_cemented_hemiarthroplasty_package
+    mutations:
+      - op: set_flag
+        section: materials
+        entry_id: femoral_stem
+        flag: uts_registered
+        value: false
+    expected_finding:
+      engine_rule: material_bundling
+      detectors:
+        - "src/bilun/domain/prose_rules/material_bundling.py:check_material_bundling_for_context"
+      sut_section: "3.1.1(2)"
+      sut_clauses: ["C002740"]
+      effect_kind: deduction_risk
+      line_type: malzeme
+      target_entry_id: femoral_stem
+      expected_status: kismi_red
+      finding_ids: ["3.1.1.(2).titubb_uts_incomplete"]
+    basis: sut
+    source: "C002740 (SUT 3.1.1(2)): medical materials without completed TİTUBB/ÜTS registration and usage notification are not reimbursed; AP2000 lacks ÜTS notification."
+
+  - fault_id: F_S6_DRUG_INDICATION_NOT_CODED
+    story: S6
+    title: "Drug billed without its indication diagnosis (IV amantadine)"
+    target_pathway: aspiration_pneumonia_parkinson_ward
+    mutations:
+      - op: drop_diagnosis
+        icd10: G20
+        breaks_indication: true
+    expected_finding:
+      engine_rule: drug_indication
+      detectors:
+        - "src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"
+      sut_section: "4.2.36(3)"
+      sut_clauses: ["C006824"]
+      effect_kind: compliance_error
+      line_type: ilac
+      target_entry_id: pk_merz
+      expected_status: kismi_red
+      finding_ids: ["indication_mismatch", "4.2.36.amantadine_sulfate_report"]
+    basis: sut
+    source: "C006824 (SUT 4.2.36(3)): amantadine sulfate (PK-MERZ IV) requires Parkinson's disease or drug-induced extrapyramidal diagnosis; G20 was not coded (story S6)."
+
+  - fault_id: F_S7_ER_CT_ANGIO_UNBILLED
+    story: S7
+    title: "ER: CT angiography done but not billed"
+    target_pathway: pleuritic_chest_pain_er_pulmonary_embolism_ruled_out
+    mutations:
+      - op: drop_entry
+        section: procedures
+        entry_id: ct_angiography
+    expected_finding:
+      engine_rule: procedure_capture_gap
+      detectors:
+        - "src/bilun/domain/prose_rules/procedure_capture_gap.py:detect_procedure_capture_gaps"
+      sut_section: "2.2.1.B-2(2)"
+      sut_clauses: ["C000604", "C000607", "C000617"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+      evidence_entry_ids: ["ct_angiography_pacs"]
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): tier 2-3 ER services are billed itemized; PACS logged R101450 CT pulmonary angiography, omitted from the bill."
+
+  - fault_id: F_S8_SECOND_PACKAGE_FULL_RATE
+    story: S8
+    title: "Second operation in the same session billed at full points"
+    target_pathway: cholelithiasis_umbilical_hernia_two_packages
+    mutations:
+      - op: set_billed_ratio
+        entry_id: hernia_package
+        billed_ratio: "1.0000"
+    expected_finding:
+      engine_rule: drg_unbundling
+      detectors:
+        - "src/bilun/domain/prose_rules/drg_unbundling.py:analyze_claim_unbundling"
+      sut_section: "2.2.2.B(3)(a)"
+      sut_clauses: ["C000670"]
+      effect_kind: deduction_risk
+      line_type: islem
+      target_entry_id: hernia_package
+      expected_status: kismi_red
+      finding_ids: ["2.2.2.B.a"]
+    basis: sut
+    source: "C000670 (SUT 2.2.2.B(3)(a)): in the same session and incision, a secondary EK-2C package (P603840) is billed at 25% of its puan, not 100% (story S8)."

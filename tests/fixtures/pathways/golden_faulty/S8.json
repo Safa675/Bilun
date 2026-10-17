@@ -1,0 +1,46 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-15",
+      "icd10": "K80.2",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-15",
+      "icd10": "K42.9",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-09-15",
+    "claim_end_date": "2026-09-16",
+    "claim_start_date": "2026-09-15",
+    "claim_type": "yatis",
+    "department": "Genel Cerrahi",
+    "discharge_date": "2026-09-16",
+    "primary_icd10": "K80.2"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P603840",
+      "date": "2026-09-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P609235",
+      "date": "2026-09-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    }
+  ],
+  "story": "S8"
+}
