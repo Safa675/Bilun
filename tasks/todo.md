@@ -13,13 +13,22 @@ Approved by Safa on 2026-10-17 ("yeah go on"). Plan: `plans/data/2026-10-14-synt
 ### Subtasks
 - [x] 1. Design (phase 1, Argon): `plans/data/2026-10-17-p3-fault-registry-design.md`. Run 1 (11 min) ended with an empty answer because the final write was refused (a path under `.claude/` is not auto-allowed; a refused call ends the run silently); its document was recovered from the conversation log and turned out to contain invented pathway ids, rule names, files and line anchors (10 missing files, 7 bad anchors, 46 unknown identifiers). Run 2 (26 min) corrected it from a ground-truth table with a mechanical gate (every path exists, anchors inside the file, every identifier found in the repository or declared under "Proposed new names").
 - [x] 2. I checked the design against the code (columns of `ExpectedRuleOutput`, `validate_expected_outputs`, the non-empty rule in `synthetic_demo`, `_line_itemized_payable`, zero readers of `expected_outputs` in `src/`, nine detector functions at their lines, prices of both walkthroughs against `results/`, SUT clause texts). One error found (S8 cited C000674, the +25 points rule) and fixed. The three open questions were engineering choices and are decided: Option A each. Slice 3 amended: mutations are proven against golden *faulty* bills exported from `stories.py`, not by importing the proofs harness into a test.
-- [ ] 3. Implementation slices (phase 2), one Argon run each, brief and permission file per run, I commit after verifying:
-  - [ ] Slice 1: `expand(..., annotate=True)`, golden faulty bills (`tests/fixtures/pathways/golden_faulty/`), S1 itemized sibling pathway `data/synthetic/faults/siblings/`. Running (label `p3-slice1`).
-  - [ ] Slice 2: registry schema, loader, checks and `data/synthetic/faults/fault_registry.yaml` for the 8 faults.
-  - [ ] Slice 3: `apply_fault` and the answer-key builder, proven against the faulty goldens.
-- [ ] 4. Independent read-only review of each slice (fidelity to the design; mutation strength).
-- [ ] 5. Gates per slice: ruff, new tests, full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate (delete the clone and the venv afterwards: the scratch disk filled up once).
-- [ ] 6. PR(s), CI green, review comments read, Safa merges.
+- [x] 3. Implementation slices (phase 2), one Argon run each, brief and permission file per run, I commit after verifying:
+  - [x] Slice 1: `expand(..., annotate=True)`, golden faulty bills (`tests/fixtures/pathways/golden_faulty/`), S1 itemized sibling pathway `data/synthetic/faults/siblings/` (13 min, 481 pathway tests).
+  - [x] Slice 2: registry schema, loader, 26 check ids and `data/synthetic/faults/fault_registry.yaml` for the 8 faults (21 min, 533 tests).
+  - [x] Slice 3: `apply_fault`, `FaultInjectionRecord`/`make_record`, `build_expected_rule_outputs`; every fault equals its faulty golden, the rows pass the real `parse_expected_output` and `validate_expected_outputs` (29 min, 564 tests).
+  - [x] Slice 4: fixes from the independent review (20 min, 585 tests): see Results.
+- [x] 4. Independent read-only review (Claude, 35 code and 20 data mutants, loader readers, fit with P4/P7): found 5 defects, 14/35 and 12/20 mutants caught; its 12 probe tests are now tests.
+- [x] 5. Gates: ruff (CI scope), full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate (clone and venv deleted afterwards).
+- [ ] 6. PR, CI green, review comments read, Safa merges.
+
+### Results (2026-10-17, branch `claude/synthetic-v3-p3-design`)
+- **Built:** the fault registry (8 faults, 6 operations, 28 check ids with mutation cases), `apply_fault` (a fault that changes nothing, a dangling link or a stay outside the window is an error; `fault_window` for P4), the injection record, the answer rows, the S1 sibling pathway and the golden faulty bills. No `src/` change; the loader needs none (PR #246).
+- **Tests:** 9,493 passed, 2 skipped, 0 failed (9,260 before); 232 new tests. `compile_rules.py --check` OK, parity 0 issues.
+- **How it was built (new working rule):** the implementation ran on Antigravity with Gemini 4 Argon (`agy -p`, Cloud-project ADC); Claude wrote the plan and the briefs, ran every gate and reviewed. Five Argon runs, about 1.8 hours of Argon time in all.
+- **What went wrong and what it taught:** run 1 of the design ended with an empty answer because its last write was refused (a path under `.claude/` is not auto-allowed and a refused call ends the run silently); its document, recovered from the conversation log, contained invented pathway ids, rule names, files and line anchors (10 missing files, 7 bad anchors, 46 unknown identifiers). Run 2 corrected it from a ground-truth table with a mechanical checker as its exit gate, and I re-checked the claims that carry weight; one wrong SUT clause (C000674) remained and was fixed. Code runs were safer because the tests decide.
+- **Review findings fixed:** the expected findings were only shape-checked (now pinned); `apply_fault` ignored a narrower window of the S1 sibling (a stay before 2026-04-16 produced band-C anaesthesia); a test comment and its totals did not match `results/`; the README promised `FaultApplyError` for failures that raise `ExpandError`; a dropped procedure left materials linked to nothing.
+- **Open for later phases:** `FaultId` forces the `S<n>` form while `story` may be null (Tier-B faults, P4); `detectable` and `tier` belong to the cohort registry (P4); three readers depend on the v2 shape of `expected_rule_outputs` (P6).
 
 ### Out of Scope
 The generator (P4), regenerating the cohort (P7), pathways beyond S1–S8, the engine defects #298–#307, staging.
