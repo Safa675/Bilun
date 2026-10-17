@@ -1,3 +1,42 @@
+## Task: Public-statistics anchors for the synthetic v3 cohort (2026-10-17)
+
+### Goal
+`data/synthetic/reference/population_anchors.yaml` holds the public statistics found on 2026-10-16 (stay length, utilisation, operations, ICU, diagnoses, age, sex, money), each with source, year, scope and confidence, and a test refuses any row that lacks them.
+
+### Subtasks
+- [x] 1. Merge the four research files (`anchors_moh_yearbook` 37, `anchors_moh` 33, `anchors_sgk` 29, `anchors_oecd` 20 rows, 119 in all) into one deduplicated `population_anchors.yaml`:
+  - values, units, years, scopes, sources, caveats and confidence are copied unchanged, never retyped (a script does the merge);
+  - `merged_from` lists every origin row, and each input row is used once;
+  - the same fact in two files becomes one row; rows that disagree are kept side by side (`conflicts_with`); a derived row says what it derives from, and is marked superseded when a source publishes the number.
+- [x] 2. `scripts/synthetic/reference/population_anchors.py`: loader and validator (`validate_population_anchors` returns error strings).
+- [x] 3. `tests/unit/synthetic/test_reference_population_anchors.py`:
+  - the committed file validates;
+  - one mutation test per validator rule (a seeded defect must be reported);
+  - arithmetic checks on the key rows (sector sums, derived average stay, operation groups, ICU types);
+  - Türkiye's average stay is 4.2 days, never 4.7 (4.7 is Mexico's value in the OECD data).
+- [x] 4. `data/synthetic/reference/population_anchors_notes.md`: what was found, what was not found, caveats, the merge log, and the downloaded files (name, URL, size, sha256, deleted after reading).
+- [x] 5. Independent provenance check, written by someone other than the implementer: every output value equals an input value, and every input row is used once.
+- [ ] 6. `ruff`, the new tests, `tests/unit/synthetic`, then the full suite under the shared lock; CI green before merge; PR review check.
+
+### Out of Scope
+- Engine code (`src/`), the generator, the pathways, and choosing target distributions (age mix, stay length of the cohort). They use this file later.
+- New research or downloads.
+- Real data. Everything here is published aggregate statistics.
+
+### Who does what
+Implementation: Antigravity running Gemini 4 Argon, as Safa asked on 2026-10-17. Verification, commit, push and PR: Claude.
+
+### Results
+- **Counts:** 119 input rows (`anchors_moh_yearbook.yaml`: 37, `anchors_moh.yaml`: 33, `anchors_sgk.yaml`: 29, `anchors_oecd.yaml`: 20) -> 117 output rows (73 `primary`, 40 `supporting`, 4 `superseded`), 2 merged rows, 4 superseded rows, 40 supporting rows (across 22 primaries), 20 distinct symmetric `conflicts_with` pairs, and 8 `derived: true` flags added (on top of the 9 already present in `anchors_moh_yearbook.yaml`).
+- **Tests (`tests/unit/synthetic/test_reference_population_anchors.py`):** 25 passed in 0.41s (schema validation, mutation tests for all 7 rules including the 12-case parametrized Rule 2 sub-check test, 4 arithmetic checks, and the 4.7-day Mexico vs 4.2-day Türkiye check).
+- **Lint (`/home/safa/miniforge3/bin/ruff check scripts/synthetic/reference tests/unit/synthetic`):** All checks passed!
+- **Independent check (Claude, 2026-10-17):** a script written apart from the implementer (kept outside the repo) compares every output row with its origin row. Result on the committed file: OK, 0 problems. Each of the 119 input rows is used once, every copied field equals its origin, no reference is broken, 4.7 is never given to Türkiye, and 11 figures read in the yearbook text are present. The script was first tried on a faithful file (passes) and on four seeded defects (changed number, dropped row, Türkiye = 4.7, changed unit; all four fail).
+- **Local gates (2026-10-17, on the final tree):** `ruff check src/ scripts/` clean; full suite `python -m pytest -q -n auto` under the shared lock: 9,285 passed, 2 skipped, 0 failed; `compile_rules.py --check` 119 artifacts byte-identical; `audit_manifest_parity.py --drug-only` 0 issues. CI on the PR and the PR review check are still to do (box 6).
+- **Run notes:** Argon (`gemini-4-argon-high` through the `agy` CLI) ran twice. Both runs ended on a Vertex AI 429 quota error: the first before the notes file existed, the second after all the work was on disk. What is on disk was verified by the checks above, not taken from Argon's report.
+- **Corrections made in review:** (1) the notes said "36 OECD/Eurostat procedure counts", a number typed into the generator script; the anchor holds 17 procedure types for 2019 and 2024, so the text now says that. (2) Caveat 5 claimed that average stay in days runs about one more than nights; no source read says so (the instruction that asked for it was an unverified assumption), so it now says the sources do not state how same-day stays or the discharge day are counted.
+- **For the generator (P4):** `conflicts_with` mixes real disagreements (same fact, different values) with different counting bases (e.g. institutions active during 2024 vs on 31.12.2024). The merge log classifies each of the 20 pairs. The flag does not mean "pick one".
+
+
 ## Task: Synthetic v3 P2 — care pathways for the 8 showcase stories (2026-10-16)
 
 ### Goal
