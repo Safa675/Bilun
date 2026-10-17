@@ -1,3 +1,31 @@
+## Task: Public-statistics anchors for the synthetic v3 cohort (2026-10-17)
+
+### Goal
+`data/synthetic/reference/population_anchors.yaml` holds the public statistics found on 2026-10-16 (stay length, utilisation, operations, ICU, diagnoses, age, sex, money), each with source, year, scope and confidence, and a test refuses any row that lacks them.
+
+### Subtasks
+- [ ] 1. Merge the four research files (`anchors_moh_yearbook` 37, `anchors_moh` 33, `anchors_sgk` 29, `anchors_oecd` 20 rows, 119 in all) into one deduplicated `population_anchors.yaml`:
+  - values, units, years, scopes, sources, caveats and confidence are copied unchanged, never retyped (a script does the merge);
+  - `merged_from` lists every origin row, and each input row is used once;
+  - the same fact in two files becomes one row; rows that disagree are kept side by side (`conflicts_with`); a derived row says what it derives from, and is marked superseded when a source publishes the number.
+- [ ] 2. `scripts/synthetic/reference/population_anchors.py`: loader and validator (`validate_population_anchors` returns error strings).
+- [ ] 3. `tests/unit/synthetic/test_reference_population_anchors.py`:
+  - the committed file validates;
+  - one mutation test per validator rule (a seeded defect must be reported);
+  - arithmetic checks on the key rows (sector sums, derived average stay, operation groups, ICU types);
+  - Türkiye's average stay is 4.2 days, never 4.7 (4.7 is Mexico's value in the OECD data).
+- [ ] 4. `data/synthetic/reference/population_anchors_notes.md`: what was found, what was not found, caveats, the merge log, and the downloaded files (name, URL, size, sha256, deleted after reading).
+- [ ] 5. Independent provenance check, written by someone other than the implementer: every output value equals an input value, and every input row is used once.
+- [ ] 6. `ruff`, the new tests, `tests/unit/synthetic`, then the full suite under the shared lock; CI green before merge; PR review check.
+
+### Out of Scope
+- Engine code (`src/`), the generator, the pathways, and choosing target distributions (age mix, stay length of the cohort). They use this file later.
+- New research or downloads.
+- Real data. Everything here is published aggregate statistics.
+
+### Who does what
+Implementation: Antigravity running Gemini 4 Argon, as Safa asked on 2026-10-17. Verification, commit, push and PR: Claude.
+
 ## Task: Synthetic v3 P2 — care pathways for the 8 showcase stories (2026-10-16)
 
 ### Goal
