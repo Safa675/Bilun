@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-17 — Interval ends differ per catalog: read the builder's convention and test the boundary day
+
+**Pattern:** The pathway checks compared EK-4A `valid_until` with `>=`, the way they compare EK-2B/EK-2C `valid_to`. EK-4A spans are half-open, `[valid_from, valid_until)`: 272 rows end on 2026-08-29 and 295 start that day. So S2's window ended one day after KLACID 500 MG IV left the list, and no test noticed, because every mutation I wrote used a date far from the edge. An independent reviewer found it by querying the catalog. The builder's docstring (`scripts/sut/catalogs/ek4a_history.py`) and the engine's reader (`ek4a_as_of.py:152`, `valid_until > day`) both said so.
+
+**Rule:** Before writing a validity check against a dated catalog, read how its builder and the engine's reader define the end, and write a test on the boundary day itself (the day a row ends and the day its successor starts). Do not assume one end convention for all catalogs: EK-2B/EK-2C `valid_to` is inclusive (the next row starts the day after), EK-4A `valid_until` is exclusive (the next row starts on it).
+
 ## 2026-10-16 — A status report Safa cannot follow is a failed report: Turkish, plain first
 
 **Pattern:** While five agents ran (catalog dates, money fixes, three reviewers), I sent short English status messages packed with PR numbers, clause ids, code lists and follow-up inventories. Safa replied that he could not understand anything from the latest one, asked to switch to Turkish, and asked why one job had been running for an hour, which none of my messages had explained.

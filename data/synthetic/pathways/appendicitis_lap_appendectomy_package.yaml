@@ -1,0 +1,60 @@
+# Acute appendicitis, laparoscopic appendectomy, ward stay billed as the EK-2C package.
+# Showcase story S1 (plans/data/2026-10-15-showcase-stories-draft.md). Grammar: README.md next to this file.
+# A package bill carries one line: bed, anaesthesia, labs, pathology, drugs and companion are inside it.
+schema_version: 1
+id: appendicitis_lap_appendectomy_package
+title: "Acute appendicitis, laparoscopic appendectomy, ward stay billed as the EK-2C package"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Appendicitis occurs in both sexes and K35.9 has no sex gate; story S1 is a man. Clinician to confirm."
+  age:
+    min: 18
+    max: 70
+    basis: judgment
+    source: "Story S1 patient is 34. Adults only: children go to paediatric surgery. The upper bound is the author's judgment."
+
+nights:
+  min: 1
+  max: 4
+  basis: judgment
+  source: "Story S1 has 2 nights. Group C package window is 8 days (C000704), so up to 7 nights stay inside the package."
+
+op_day: admit                        # admitted in the evening, operated the same night
+
+diagnoses:
+  - icd10: K35.9
+    name: "AKUT APANDİSİT, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12; SKRS has no K35.8); WHO ICD-10 Vol. 2. Story S1: no chronic disease."
+
+procedures:
+  - id: appendectomy_package
+    kind: package
+    code: "P610131"
+    name: "Appendektomi, laparoskopik"
+    days: op
+    qty: 1
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; C000685, C000699 list what is inside."
+
+notes:
+  - "The patient reaches the ward from the ER. That ER visit (exam, CBC/CRP, ultrasound) is billed on its own acil takip and is not part of this bill (story S1)."
+  - "Uncomplicated appendicitis gets one pre-operative antibiotic dose and none after (WSES 2020, story S1). The dose is inside the package, so it is not listed."
+
+showcase:
+  story: S1
+  sex: M
+  age: 34
+  admit: "2026-07-14"
+  nights: 2

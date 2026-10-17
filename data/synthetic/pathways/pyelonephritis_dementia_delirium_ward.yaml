@@ -1,0 +1,186 @@
+# Acute pyelonephritis in a patient with dementia and delirium, ward stay, billed itemized (hizmet başı).
+# Showcase story S4 (plans/data/2026-10-15-showcase-stories-draft.md), corrected by the review of 2026-10-16.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+schema_version: 1
+id: pyelonephritis_dementia_delirium_ward
+title: "Acute pyelonephritis with dementia and delirium, ward stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Ic Hastaliklari"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Pyelonephritis, dementia and delirium occur in both sexes; N10, F05.1, G30.1 and I10 have no sex gate. Story S4 is a woman. Clinician to confirm."
+  age:
+    min: 65
+    max: 95
+    basis: judgment
+    source: "Story S4 patient is 86. WHO ICD-10 notes G30.1 (late onset) as 'usually after the age of 65', so 65 is the floor; the upper bound is the author's judgment."
+
+nights:
+  min: 4
+  max: 7
+  basis: judgment
+  source: "Story S4 has 5 nights. Min 4: the fixed 5-day ceftriaxone course (admit..admit+4) must end by discharge. Max 7: two nights past it, author's judgment."
+
+diagnoses:
+  - icd10: N10
+    name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: N10 includes pyelonephritis. Acute pyelonephritis treated per EAU, as story S4 cites."
+  - icd10: F05.1
+    name: "DELİRYUM, DEMANS ÜZERİNE EKLENEN"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: delirium superimposed on dementia. Story S4: delirium and fall risk are the ward doctor's reasons for the companion."
+  - icd10: G30.1
+    name: "ALZHEİMER HASTALIĞI, GEÇ BAŞLANGIÇLI"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 F05.1: an additional code for the dementia type is optional ('if desired'). Story S4 codes it: Alzheimer's disease, late onset."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    optional:
+      probability: 0.7
+      basis: judgment
+      source: "Story S4 patient has hypertension. How often it comes with this picture is the author's judgment (common over 80). Clinician to confirm."
+    basis: judgment
+    source: "Story S4 lists I10 as a comorbidity; the story gives no source."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # a bed for every calendar day: 6 lines for 5 nights
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 5 lines for 5 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the daughter stayed; the ward doctor ordered a companion (delirium, fall risk); refakatçi belgesi on file. Itemized: C000654."
+
+  # --- laboratory
+  - id: admission_labs
+    kind: lab
+    items:                             # lab_reference_notes.md panel admission_routine, 9 tests
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L101850", name: "C reaktif protein (CRP)"}
+      - {code: "L102890", name: "Glukoz (Serum/Plazma)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+      - {code: "L107420", name: "Üre (Serum/Plazma)"}
+      - {code: "L106910", name: "Sodyum (Serum/Plazma)"}      # no blood gas L103900 in this story, so Na/K are billed
+      - {code: "L106150", name: "Potasyum (Serum/Plazma)"}
+      - {code: "L100300", name: "Alanin aminotransferaz (ALT) (Serum/Plazma)"}
+      - {code: "L101280", name: "Aspartat aminotransferaz (AST) (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panel admission_routine (judgment); story S4 bills it on day 1. No blood gas, so the Na/K exclusion does not apply."
+  - id: urinalysis
+    kind: lab
+    code: "L107010"
+    name: "Tam idrar analizi (Strip+Mikroskopi)"
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panel infection (judgment) includes urinalysis; story S4 bills it on day 1 with the urine culture."
+  - id: urine_culture
+    kind: lab
+    code: "905671"
+    name: "İdrar Kültürü"
+    days: admit
+    basis: judgment
+    source: "Story S4 clean bill: a urine culture on day 1; no guideline named."
+  - id: blood_culture
+    kind: lab
+    code: "906020"
+    name: "Kan kültürü (Aerob-anaerob) otomatik sistem"
+    days: admit
+    qty: 2                             # two sets; açıklama: not billed with 906010, which this story does not use
+    basis: judgment
+    source: "Review 2026-10-16 (S4): two blood-culture sets; no guideline named. Clinician to confirm."
+  - id: control_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L101850", name: "C reaktif protein (CRP)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+    days: admit+2                      # story S4: the second set, day 3
+    basis: judgment
+    source: "Story S4 repeats hemogram, CRP and creatinine on day 3 (admit+2); a subset of panel admission_routine (judgment); no guideline named."
+
+  # --- imaging
+  - id: urinary_ultrasound
+    kind: imaging
+    code: "803580"
+    name: "Üriner sistem US"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    # 803580 açıklama: not billed with other abdominal ultrasounds; this story has none.
+    basis: judgment
+    source: "Review 2026-10-16 (S4) added the urinary-tract ultrasound on day 1; no guideline named."
+
+drugs:
+  - id: ceftriaxone
+    barcode: "8699508270224"
+    name: "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU"
+    inn: "seftriakson"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_day: 2                         # 2 g a day = two 1 g vials
+    course_days:
+      min: 5
+      max: 5
+      basis: guideline
+      source: "Story S4 bills 5 days of IV ceftriaxone. EAU gives 7-10 days in all (IV, then oral); an oral step-down is not part of this bill."
+    basis: guideline
+    source: "EAU urological infections guideline, as story S4 and the review of 2026-10-16 cite: ceftriaxone 2 g IV once a day (standard dose)."
+  - id: paracetamol
+    barcode: "8699606694649"
+    name: "PARACEROL 10 MG/ML IV INF ICIN COZ ICEREN 100 ML 12 FLK"
+    inn: "parasetamol"
+    unit: box
+    per_box: 1
+    day: admit
+    qty: 1                             # one box of 12 vials for the stay
+    basis: judgment
+    source: "Story S4 bills a whole box of 12 vials (PARACEROL) for the stay, not vials used; the story gives no indication or guideline. Clinician to confirm."
+  - id: enoxaparin
+    barcode: "8699809950696"
+    name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"
+    inn: "enoksaparin sodyum"
+    unit: syringe
+    per_box: 10
+    day: admit
+    per_night: 1                       # 40 mg a day, one syringe per night of stay
+    basis: judgment
+    source: "Story S4: enoxaparin 40 mg a day; review 2026-10-16: x5 for 5 nights. Guideline not named. Clinician to confirm."
+
+notes:
+  - "The 510121 lines rest on two documents: the ward doctor's order (delirium, fall risk) and the hospital's refakatçi belgesi (C001628). The story's patient has both; her daughter stayed every night."
+  - "No exam line: ward visits are inside 510010 (EK-2B açıklama: 'Yemek, yatak, hasta vizit hizmetlerini kapsar'; story draft, common setup)."
+
+showcase:
+  story: S4
+  sex: F
+  age: 86
+  admit: "2026-05-11"
+  nights: 5
+  include: [I10]
+  course_days: {ceftriaxone: 5}

@@ -1,0 +1,94 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-03",
+      "icd10": "S72.00",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-03",
+      "icd10": "I10",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-09-03",
+      "icd10": "M81.09",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-09-03",
+      "icd10": "W19",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-09-03",
+    "claim_end_date": "2026-09-08",
+    "claim_start_date": "2026-09-03",
+    "claim_type": "yatis",
+    "department": "Ortopedi ve Travmatoloji",
+    "discharge_date": "2026-09-08",
+    "primary_icd10": "S72.00"
+  },
+  "materials": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "AP1880",
+      "date": "2026-09-04",
+      "flags": {
+        "titubb_registered": true,
+        "uts_registered": true
+      },
+      "linked_procedure": {
+        "code": "P612320",
+        "date": "2026-09-04"
+      },
+      "material_type": "implant",
+      "qty": 1
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "AP2000",
+      "date": "2026-09-04",
+      "flags": {
+        "titubb_registered": true,
+        "uts_registered": true
+      },
+      "linked_procedure": {
+        "code": "P612320",
+        "date": "2026-09-04"
+      },
+      "material_type": "implant",
+      "qty": 1
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "AP3220",
+      "date": "2026-09-04",
+      "flags": {
+        "titubb_registered": true,
+        "uts_registered": true
+      },
+      "linked_procedure": {
+        "code": "P612320",
+        "date": "2026-09-04"
+      },
+      "material_type": "consumable",
+      "qty": 2
+    }
+  ],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P612320",
+      "date": "2026-09-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2600"
+    }
+  ],
+  "story": "S5"
+}
