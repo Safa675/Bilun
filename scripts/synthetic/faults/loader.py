@@ -14,7 +14,13 @@ from typing import Any
 import yaml
 from pydantic import ValidationError
 
-from scripts.synthetic.pathways.loader import PathwayLoadError, _StrictLoader, hygiene
+from scripts.synthetic.pathways.loader import (
+    PathwayLoadError,
+    _StrictLoader,
+    hygiene,
+    load_pathway,
+)
+from scripts.synthetic.pathways.schema import Pathway
 
 from .schema import CHECKS, FaultRegistry, Problem
 
@@ -99,3 +105,12 @@ def load_registry(path: Path | str = REGISTRY_PATH) -> FaultRegistry:
             [Problem("yaml.invalid", "(file)", str(exc), path.name)]
         ) from None
     return load_registry_text(text, path.name)
+
+
+def load_siblings(directory: Path | str = SIBLINGS_DIR) -> dict[str, Pathway]:
+    """Load every `*.yaml` sibling pathway in `directory` with `load_pathway`, keyed by id."""
+    out: dict[str, Pathway] = {}
+    for path in sorted(Path(directory).glob("*.yaml")):
+        pathway = load_pathway(path)
+        out[pathway.id] = pathway
+    return out

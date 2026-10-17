@@ -9,9 +9,14 @@ Prices, currency amounts and totals are **not** stored in the fault registry (`h
 | `data/synthetic/faults/fault_registry.yaml` | the declarative catalog of billing faults (`schema_version: 1`, `faults:` list) |
 | `data/synthetic/faults/siblings/<id>.yaml` | itemized sibling pathways used by `use_sibling_pathway` |
 | `scripts/synthetic/faults/schema.py` | frozen Pydantic v2 models (`FaultRegistry`, `FaultSpec`, `MutationOp`, `ExpectedFinding`) and `CHECKS` |
-| `scripts/synthetic/faults/loader.py` | `load_registry(path)` and `load_registry_text(text, name)` with strict YAML and hygiene checks |
+| `scripts/synthetic/faults/loader.py` | `load_registry(path)`, `load_registry_text(text, name)` and `load_siblings(directory)` |
 | `scripts/synthetic/faults/checks.py` | `run_all(registry, catalogs)` and CLI checker |
+| `scripts/synthetic/faults/mutate.py` | `FaultApplyError` and `apply_fault(fault, pathway, pins=None, *, siblings=None, annotate=False)` |
+| `scripts/synthetic/faults/records.py` | `FaultInjectionRecord` and `make_record(...)` |
+| `scripts/synthetic/faults/answer_key.py` | `build_expected_rule_outputs(records)` producing the 13-column `ExpectedRuleOutput` rows |
 | `tests/unit/synthetic/test_fault_registry.py` | unit and mutation tests covering every check id in `CHECKS` |
+| `tests/unit/synthetic/test_fault_mutations.py` | unit and mutation tests for `apply_fault` against `tests/fixtures/pathways/golden_faulty/` |
+| `tests/unit/synthetic/test_fault_answer_key.py` | unit tests for `FaultInjectionRecord`, `make_record`, `build_expected_rule_outputs` and `validate_expected_outputs` |
 
 ## Format (`FaultRegistry` and `FaultSpec`)
 
@@ -64,6 +69,47 @@ Every operation is a mapping discriminated on `op` with `extra="forbid"`, operat
    - Constraint: `entry_id` must be a procedure line with a `session_role` (`fault.billed_ratio_target`).
    - Showcase use: `F_S8_SECOND_PACKAGE_FULL_RATE` sets `billed_ratio: "1.0000"` on `hernia_package`.
 
+## Applying a fault (`apply_fault`), the injection record and the answer rows
+
+### `apply_fault` (`scripts/synthetic/faults/mutate.py`)
+
+`apply_fault(fault, pathway, pins=None, *, siblings=None, annotate=False) -> dict` expands `pathway` with `annotate=True` (`pins` default to `pathway.showcase`), applies `fault.mutations` in order on a deep copy without modifying any input, and strips the annotation keys (`entry_id`, `kind`, `day_index`, `indication`) unless `annotate=True`. `fault.target_pathway` must equal `pathway.id`.
+
+Whenever a precondition fails or an operation would change nothing, `apply_fault` raises `FaultApplyError` naming the fault and the operation:
+
+1. **`use_sibling_pathway`**: replaces the bill with `expand(siblings[sibling_pathway_id], same pins, annotate=True)`; raises `FaultApplyError` if `siblings` lacks `sibling_pathway_id` or the sibling produces an identical bill.
+2. **`truncate_line_days`** (section `procedures`): among rows with `entry_id`, keeps those whose `day_index` is in `keep_day_indices`; raises `FaultApplyError` if the line has no rows, if any listed index does not occur, or if all rows are kept.
+3. **`drop_entry`**: removes every row of `section` with `entry_id`; raises `FaultApplyError` if there is none.
+4. **`set_flag`**: sets `row["flags"][flag] = value` on every row of `section` with `entry_id`; raises `FaultApplyError` if there is none or if every such row already has that value.
+5. **`drop_diagnosis`**: removes the diagnosis row with `icd10`; raises `FaultApplyError` if it is absent or is the primary diagnosis.
+6. **`set_billed_ratio`**: sets `billed_ratio` on every `procedures` row with `entry_id`; raises `FaultApplyError` if there is none or if all rows already equal that ratio.
+
+### Injection record (`scripts/synthetic/faults/records.py`)
+
+`FaultInjectionRecord` is a frozen Pydantic v2 model (`extra="forbid"`) recording one injected fault on a claim:
+- `injection_id` (`f"INJ-{claim_id}-{fault_id}"`), `fault_id`, `story` (`S1`..`S8` or `null`), `pathway_id`, `patient_id`, `claim_id`;
+- `line_type` (`fatura` / `islem` / `malzeme` / `ilac`), `line_id` (empty string `""` if and only if `line_type == "fatura"`), `line_ids` (list of other affected or evidence line ids, may be empty);
+- `engine_rule`, `sut_section`, `effect_kind`, `expected_status`;
+- `amount_try`, `billed_clean_try`, `billed_faulty_try` as decimal strings with two decimal places (`^\d+\.\d{2}$`).
+
+`make_record(fault, *, patient_id, claim_id, line_id, line_ids=(), amount_try, billed_clean_try, billed_faulty_try)` populates `engine_rule`, `sut_section`, `effect_kind`, `expected_status`, `line_type`, `story` and `pathway_id` from `fault` and validates that `line_id` is empty exactly when `line_type == "fatura"`.
+
+### Answer-key rows (`scripts/synthetic/faults/answer_key.py`)
+
+`build_expected_rule_outputs(records) -> list[dict]` produces one row per `FaultInjectionRecord`, sorted by `(claim_id, fault_id)`, with the 13 columns of `ExpectedRuleOutput`:
+- `expected_output_id`: `f"BEK-{claim_id}-{fault_id}"` (duplicate ids raise `ValueError`)
+- `scenario_tag`: `fault_id`
+- `patient_id`, `claim_id`, `line_id`, `line_type`
+- `rule_family`: `engine_rule`
+- `expected_status`: `expected_status` (`eksik_faturalama` or `kismi_red`)
+- `expected_payable_try`: always `None` (no answer is stored in a payable)
+- `expected_savings_try`: `Decimal(amount_try)`
+- `expected_denial_reason`: `f"{effect_kind}:{fault_id}"`
+- `expected_rule_trace`: `f"{sut_section}|{engine_rule}"`
+- `assertion_notes`: `f"clean={billed_clean_try} faulty={billed_faulty_try}"`
+
+A clean claim has no `FaultInjectionRecord` and therefore zero rows in `expected_rule_outputs.parquet`. On every submitted claim line (procedure, material and drug), `expected_payable_try` equals `billed_amount_try` (and on the claim header `expected_total_payable_try` equals `expected_total_billed_try`), so no runtime rule can read the answer from a pre-computed payable amount.
+
 ## Checks (`scripts/synthetic/faults/checks.py`)
 
 Run the checks from the repository root:
@@ -85,3 +131,4 @@ Run the checks from the repository root:
 1. Verify the target pathway in `data/synthetic/pathways/<target_pathway>.yaml` and inspect its annotated expansion (`expand(load_pathway(path), annotate=True)`) to confirm `entry_id`, `day_index`, `session_role` and `indication` values.
 2. Add a `FaultSpec` entry to `data/synthetic/faults/fault_registry.yaml` using one or more of the six `MutationOp` operations, citing the in-force SUT clause ids in `expected_finding.sut_clauses` and `source` (at most 160 characters, no currency amounts).
 3. Run `.venv/bin/python -m scripts.synthetic.faults.checks` and `.venv/bin/python -m pytest tests/unit/synthetic/test_fault_registry.py -q` until green.
+
