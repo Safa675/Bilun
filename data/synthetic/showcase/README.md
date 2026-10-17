@@ -1,8 +1,8 @@
 # Synthetic showcase cohort dataset (v3, P4)
 
-This directory contains the generated synthetic v3 showcase dataset produced from the 8 showcase recipes in `data/synthetic/cohort/showcase_recipes.yaml`, the care pathways in `data/synthetic/pathways/*.yaml` (and `data/synthetic/faults/siblings/*.yaml`), and the fault registry in `data/synthetic/faults/fault_registry.yaml`.
+This directory contains the generated synthetic v3 showcase dataset produced from the 8 showcase recipes in `data/synthetic/cohort/showcase_recipes.yaml`, the clinical presentation context in `data/synthetic/cohort/showcase_clinical.yaml`, the care pathways in `data/synthetic/pathways/*.yaml` (and `data/synthetic/faults/siblings/*.yaml`), and the fault registry in `data/synthetic/faults/fault_registry.yaml`.
 
-> **Generated files — do not edit by hand.** Every Parquet table under `sut/claims/` and `cohort_registry.json` is built deterministically by `scripts/synthetic/cohort/build.py`.
+> **Generated files — do not edit by hand.** Every Parquet table under `sut/claims/`, `sut/clean/`, and `cohort_registry.json` is built deterministically by `scripts/synthetic/cohort/build.py`.
 
 ## Layout
 
@@ -17,7 +17,10 @@ This directory contains the generated synthetic v3 showcase dataset produced fro
 | `sut/claims/patient_copay_profiles.parquet` | 8 patient copay profiles |
 | `sut/claims/performed_procedure_lines.parquet` | EMR/PACS performed procedure log lines |
 | `sut/claims/medula_rejection_events.parquet` | Empty schema-validated rejection events table |
-| `cohort_registry.json` | Table digests, row counts, named roles (`default_landing`, `showcase_S1`..`showcase_S8`), encounter provenance, and fault injection records |
+| `sut/clean/anadata_clean.parquet` | 8 episode clinical records (vitals, diagnoses, comorbidity flags, structured Turkish narratives) |
+| `sut/clean/recete_clean.parquet` | 19 prescription records aligned 1-to-1 with billed drug lines |
+| `sut/clean/lab_clean.parquet` | Empty schema-validated lab results table (populated in the next slice, P4 Slice C2) |
+| `cohort_registry.json` | Claim and clean table digests (`tables_digest`, `clean_tables_digest`), row counts (`counts`, `clean_counts`), named roles (`default_landing`, `showcase_S1`..`showcase_S8`), encounter provenance, and fault injection records |
 
 ## The 8 showcase patients
 
@@ -58,5 +61,5 @@ This compares the loaded dataset and the in-memory clean twin against the earlie
 
 ## Phase notes
 
-- **Clinical clean tables (`sut/clean/`):** `anadata_clean.parquet`, `lab_clean.parquet`, and `recete_clean.parquet` arrive in the next slice (P4 Slice C).
+- **Clinical clean tables (`sut/clean/`):** `anadata_clean.parquet` (8 rows) and `recete_clean.parquet` (19 rows) are populated in Slice C1; `lab_clean.parquet` is an empty schema-validated table with the `parametre` column until the next slice (P4 Slice C2).
 - **Legacy cohort replacement (P7):** The legacy 50-patient dataset under `data/synthetic/sut/` remains in place until phase P7 swaps the generated v3 cohort into `data/synthetic/sut/`.

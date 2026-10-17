@@ -1,0 +1,92 @@
+# Showcase patient clinical presentation (vitals) for the synthetic demo cohort (v3, P4).
+# Each entry maps patient_no (1..8, story S1..S8) to plausible admission/visit vitals for its
+# clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
+schema_version: 1
+patients:
+  - patient_no: 1
+    vitals:
+      sbp: 128
+      dbp: 78
+      pulse: 96
+      spo2: 98
+      height_cm: 178
+      weight_kg: 82.0
+    basis: judgment
+    source: "Story S1 acute appendicitis presentation (mild tachycardia, normotensive, normal oxygen saturation); clinician confirms in issue #309."
+
+  - patient_no: 2
+    vitals:
+      sbp: 142
+      dbp: 84
+      pulse: 108
+      spo2: 88
+      height_cm: 170
+      weight_kg: 68.0
+    basis: judgment
+    source: "Story S2 COPD exacerbation with pneumonia presentation (hypoxaemia SpO2 88%, tachycardia, elevated SBP); clinician confirms in issue #309."
+
+  - patient_no: 3
+    vitals:
+      sbp: 138
+      dbp: 80
+      pulse: 76
+      spo2: 96
+      height_cm: 158
+      weight_kg: 74.0
+    basis: judgment
+    source: "Story S3 elective lumbar spinal stenosis decompression presentation (stable vitals, mild systolic elevation); clinician confirms in issue #309."
+
+  - patient_no: 4
+    vitals:
+      sbp: 108
+      dbp: 62
+      pulse: 104
+      spo2: 94
+      height_cm: 155
+      weight_kg: 58.0
+    basis: judgment
+    source: "Story S4 acute pyelonephritis with delirium in dementia presentation (tachycardia, low-normal blood pressure); clinician confirms in issue #309."
+
+  - patient_no: 5
+    vitals:
+      sbp: 146
+      dbp: 82
+      pulse: 88
+      spo2: 95
+      height_cm: 156
+      weight_kg: 62.0
+    basis: judgment
+    source: "Story S5 displaced femoral neck fracture presentation (pain-related systolic elevation in known hypertension); clinician confirms in issue #309."
+
+  - patient_no: 6
+    vitals:
+      sbp: 118
+      dbp: 70
+      pulse: 102
+      spo2: 90
+      height_cm: 172
+      weight_kg: 63.0
+    basis: judgment
+    source: "Story S6 aspiration pneumonia in Parkinson disease presentation (hypoxaemia SpO2 90%, tachycardia); clinician confirms in issue #309."
+
+  - patient_no: 7
+    vitals:
+      sbp: 134
+      dbp: 82
+      pulse: 92
+      spo2: 97
+      height_cm: 162
+      weight_kg: 71.0
+    basis: judgment
+    source: "Story S7 emergency pleuritic chest pain presentation (preserved oxygen saturation, borderline tachycardia); clinician confirms in issue #309."
+
+  - patient_no: 8
+    vitals:
+      sbp: 124
+      dbp: 76
+      pulse: 74
+      spo2: 98
+      height_cm: 163
+      weight_kg: 79.0
+    basis: judgment
+    source: "Story S8 elective cholecystectomy and umbilical hernia repair presentation (normal preoperative vitals); clinician confirms in issue #309."

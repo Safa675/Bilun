@@ -27,6 +27,21 @@ from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.expand import expand
 
 from .catalogs import CohortCatalogs
+from .clean import (
+    CLEAN_TABLE_FILES,
+    CleanTableError,
+    build_clean_tables,
+    clean_tables_digest,
+    validate_clean_tables,
+    write_clean_tables,
+)
+from .clinical import (
+    CLINICAL_PATH,
+    ClinicalLoadError,
+    ShowcaseClinical,
+    check_clinical,
+    load_clinical,
+)
 from .compose import ComposedClaim, EncounterContext, compose_claim, money
 from .ids import claim_id, episode_id, patient_id
 from .recipes import (
@@ -58,9 +73,10 @@ class BuildError(ValueError):
 
 @dataclass(frozen=True)
 class BuildResult:
-    """In-memory result of `build_showcase()`: the 9 Polars tables, registry dict/JSON, and claims."""
+    """In-memory result of `build_showcase()`: 9 claim tables, 3 clean tables, registry, and claims."""
 
     tables: dict[str, pl.DataFrame]
+    clean_tables: dict[str, pl.DataFrame]
     registry: dict[str, Any]
     registry_json: str
     claims: tuple[ComposedClaim, ...]
@@ -68,6 +84,12 @@ class BuildResult:
     records: tuple[FaultInjectionRecord, ...]
     answer_rows: tuple[dict[str, Any], ...]
     copay_profiles: tuple[dict[str, Any], ...]
+    clinical: ShowcaseClinical
+
+    @property
+    def clean(self) -> dict[str, pl.DataFrame]:
+        """Alias for `clean_tables`."""
+        return self.clean_tables
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BuildResult):
@@ -78,6 +100,12 @@ class BuildResult:
             other_df = other.tables[name]
             if dict(df.schema) != dict(other_df.schema) or not df.equals(other_df, null_equal=True):
                 return False
+        if set(self.clean_tables) != set(other.clean_tables):
+            return False
+        for name, df in self.clean_tables.items():
+            other_df = other.clean_tables[name]
+            if dict(df.schema) != dict(other_df.schema) or not df.equals(other_df, null_equal=True):
+                return False
         return (
             self.registry == other.registry
             and self.registry_json == other.registry_json
@@ -86,6 +114,7 @@ class BuildResult:
             and self.records == other.records
             and self.answer_rows == other.answer_rows
             and self.copay_profiles == other.copay_profiles
+            and self.clinical == other.clinical
         )
 
 
@@ -212,8 +241,9 @@ def _make_injection_record(
 def validate_cohort_registry(
     registry: Mapping[str, Any],
     tables: Mapping[str, pl.DataFrame],
+    clean_tables: Mapping[str, pl.DataFrame] | None = None,
 ) -> None:
-    """Verify consistency between `cohort_registry.json` and the 9 Polars claim tables."""
+    """Verify consistency between `cohort_registry.json`, the 9 claim tables, and the 3 clean tables."""
     validate_tables(tables)
 
     if registry.get("schema_version") != SCHEMA_VERSION:
@@ -243,6 +273,45 @@ def validate_cohort_registry(
         raise BuildError(
             f"cohort_registry counts mismatch: expected {expected_counts}, got {reg_counts}"
         )
+
+    expected_clean_counts = {
+        "anadata_clean.parquet": tables["claim_headers.parquet"].height,
+        "lab_clean.parquet": 0,
+        "recete_clean.parquet": tables["drug_claim_lines.parquet"].height,
+    }
+    reg_clean_counts = registry.get("clean_counts")
+    if reg_clean_counts != expected_clean_counts:
+        raise BuildError(
+            f"cohort_registry clean_counts mismatch: expected {expected_clean_counts}, "
+            f"got {reg_clean_counts}"
+        )
+
+    reg_clean_digest = registry.get("clean_tables_digest")
+    if not isinstance(reg_clean_digest, Mapping) or set(reg_clean_digest.keys()) != set(
+        CLEAN_TABLE_FILES
+    ):
+        raise BuildError(
+            f"cohort_registry clean_tables_digest must map {list(CLEAN_TABLE_FILES)}, "
+            f"got {reg_clean_digest!r}"
+        )
+    for k, val in reg_clean_digest.items():
+        if not isinstance(val, str) or len(val) != 64:
+            raise BuildError(
+                f"cohort_registry clean_tables_digest[{k!r}] must be a 64-char sha256 hex digest, "
+                f"got {val!r}"
+            )
+
+    if clean_tables is not None:
+        try:
+            validate_clean_tables(clean_tables, tables)
+        except CleanTableError as exc:
+            raise BuildError(str(exc)) from exc
+        fresh_clean_digest = clean_tables_digest(clean_tables)
+        if reg_clean_digest != fresh_clean_digest:
+            mismatched_clean = [
+                k for k in CLEAN_TABLE_FILES if reg_clean_digest.get(k) != fresh_clean_digest[k]
+            ]
+            raise BuildError(f"cohort_registry clean_tables_digest mismatch on: {mismatched_clean}")
 
     headers_df = tables["claim_headers.parquet"]
     claim_to_patient = dict(
@@ -379,6 +448,8 @@ def build_showcase(
     recipes_path: Path | str | None = None,
     *,
     recipes: ShowcaseRecipes | None = None,
+    clinical_path: Path | str | None = None,
+    clinical: ShowcaseClinical | None = None,
     catalogs: CohortCatalogs | None = None,
     pathways: Mapping[str, Pathway] | None = None,
     siblings: Mapping[str, Pathway] | None = None,
@@ -390,6 +461,13 @@ def build_showcase(
     problems = check_recipes(loaded_recipes, fault_registry=loaded_fault_reg)
     if problems:
         raise RecipeLoadError(problems)
+
+    loaded_clinical = (
+        clinical if clinical is not None else load_clinical(clinical_path or CLINICAL_PATH)
+    )
+    clinical_problems = check_clinical(loaded_clinical, recipes=loaded_recipes)
+    if clinical_problems:
+        raise ClinicalLoadError(clinical_problems)
 
     cats = catalogs if catalogs is not None else CohortCatalogs()
     pathways_map = pathways if pathways is not None else load_all()
@@ -468,8 +546,19 @@ def build_showcase(
     )
     validate_tables(tables)
 
+    clean_tables = build_clean_tables(
+        faulty_claims,
+        clinical=loaded_clinical,
+        pathways=pathways_map,
+        siblings=siblings_map,
+        catalogs=cats,
+    )
+    validate_clean_tables(clean_tables, tables)
+
     digest = tables_digest(tables)
     counts = {name: tables[name].height for name in TABLE_FILES}
+    clean_digest = clean_tables_digest(clean_tables)
+    clean_counts = {name: clean_tables[name].height for name in CLEAN_TABLE_FILES}
 
     registry: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -477,15 +566,18 @@ def build_showcase(
         "seed": None,
         "tables_digest": digest,
         "counts": counts,
+        "clean_tables_digest": clean_digest,
+        "clean_counts": clean_counts,
         "roles": roles,
         "encounters": encounters,
         "faults": [rec.model_dump(mode="json") for rec in ordered_records],
     }
-    validate_cohort_registry(registry, tables)
+    validate_cohort_registry(registry, tables, clean_tables)
     registry_json = format_registry_json(registry)
 
     return BuildResult(
         tables=tables,
+        clean_tables=clean_tables,
         registry=registry,
         registry_json=registry_json,
         claims=tuple(faulty_claims),
@@ -493,6 +585,7 @@ def build_showcase(
         records=ordered_records,
         answer_rows=answer_rows,
         copay_profiles=tuple(profiles),
+        clinical=loaded_clinical,
     )
 
 
@@ -500,11 +593,14 @@ def write_showcase(
     result: BuildResult,
     out_dir: Path | str = DEFAULT_OUT_DIR,
 ) -> dict[str, Path]:
-    """Write the 9 Parquet tables to `<out>/sut/claims/` and `<out>/cohort_registry.json`."""
-    validate_cohort_registry(result.registry, result.tables)
+    """Write the 9 claim tables, 3 clean tables, and `<out>/cohort_registry.json`."""
+    validate_cohort_registry(result.registry, result.tables, result.clean_tables)
     out = Path(out_dir)
     claims_dir = out / "sut" / "claims"
+    clean_dir = out / "sut" / "clean"
     written = write_tables(result.tables, claims_dir)
+    written_clean = write_clean_tables(result.clean_tables, clean_dir, claims_tables=result.tables)
+    written.update(written_clean)
     registry_path = out / "cohort_registry.json"
     registry_path.write_text(result.registry_json, encoding="utf-8")
     written["cohort_registry.json"] = registry_path
@@ -520,6 +616,7 @@ def check_showcase(
     expected = result if result is not None else build_showcase()
     out = Path(out_dir)
     claims_dir = out / "sut" / "claims"
+    clean_dir = out / "sut" / "clean"
     registry_path = out / "cohort_registry.json"
     diffs: list[str] = []
 
@@ -555,6 +652,25 @@ def check_showcase(
             )
         elif not actual_df.equals(expected_df, null_equal=True):
             diffs.append(f"table content mismatch in {table_path}")
+
+    for name in CLEAN_TABLE_FILES:
+        clean_path = clean_dir / name
+        if not clean_path.is_file():
+            diffs.append(f"missing {clean_path}")
+            continue
+        try:
+            actual_df = pl.read_parquet(clean_path)
+        except Exception as exc:
+            diffs.append(f"unreadable {clean_path}: {exc}")
+            continue
+        expected_df = expected.clean_tables[name]
+        if dict(actual_df.schema) != dict(expected_df.schema):
+            diffs.append(
+                f"schema mismatch in {clean_path}: expected {dict(expected_df.schema)}, "
+                f"got {dict(actual_df.schema)}"
+            )
+        elif not actual_df.equals(expected_df, null_equal=True):
+            diffs.append(f"table content mismatch in {clean_path}")
 
     return diffs
 

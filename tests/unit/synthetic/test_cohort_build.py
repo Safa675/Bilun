@@ -17,6 +17,7 @@ from pydantic import ValidationError
 
 from scripts.synthetic.cohort import (
     CLAIM_ID_RE,
+    CLEAN_TABLE_FILES,
     DIAGNOSIS_ID_RE,
     DRUG_CLAIM_LINE_ID_RE,
     EPISODE_ID_RE,
@@ -35,6 +36,7 @@ from scripts.synthetic.cohort import (
     build_showcase,
     build_tables,
     check_recipes,
+    clean_tables_digest,
     load_recipes,
     tables_digest,
     validate_cohort_registry,
@@ -59,6 +61,7 @@ pytestmark = pytest.mark.unit
 _REPO = Path(__file__).resolve().parents[3]
 _SHOWCASE_DIR = DEFAULT_OUT_DIR
 _CLAIMS_DIR = _SHOWCASE_DIR / "sut" / "claims"
+_CLEAN_DIR = _SHOWCASE_DIR / "sut" / "clean"
 _REGISTRY_JSON_PATH = _SHOWCASE_DIR / "cohort_registry.json"
 _RESULTS_DIR = _REPO / "reports/synthetic-data/2026-10-15-showcase-proofs/results"
 
@@ -113,6 +116,16 @@ def test_build_showcase_equals_committed_files(built_showcase: BuildResult) -> N
         assert committed_path.is_file(), f"Missing committed table {committed_path}"
         committed_df = pl.read_parquet(committed_path)
         built_df = built_showcase.tables[name]
+        assert dict(committed_df.schema) == dict(built_df.schema), name
+        assert committed_df.equals(built_df, null_equal=True), name
+
+    for name in CLEAN_TABLE_FILES:
+        committed_clean_path = _CLEAN_DIR / name
+        assert committed_clean_path.is_file(), (
+            f"Missing committed clean table {committed_clean_path}"
+        )
+        committed_df = pl.read_parquet(committed_clean_path)
+        built_df = built_showcase.clean_tables[name]
         assert dict(committed_df.schema) == dict(built_df.schema), name
         assert committed_df.equals(built_df, null_equal=True), name
 
@@ -179,6 +192,8 @@ def test_determinism_in_memory_and_byte_identical_writes(tmp_path: Path) -> None
     assert first.registry_json == second.registry_json
     for name in TABLE_FILES:
         assert first.tables[name].equals(second.tables[name], null_equal=True), name
+    for name in CLEAN_TABLE_FILES:
+        assert first.clean_tables[name].equals(second.clean_tables[name], null_equal=True), name
 
     dir_a = tmp_path / "run_a"
     dir_b = tmp_path / "run_b"
@@ -192,6 +207,10 @@ def test_determinism_in_memory_and_byte_identical_writes(tmp_path: Path) -> None
         bytes_a = (dir_a / "sut" / "claims" / name).read_bytes()
         bytes_b = (dir_b / "sut" / "claims" / name).read_bytes()
         assert bytes_a == bytes_b, f"Parquet bytes differed across two writes for {name}"
+    for name in CLEAN_TABLE_FILES:
+        bytes_a = (dir_a / "sut" / "clean" / name).read_bytes()
+        bytes_b = (dir_b / "sut" / "clean" / name).read_bytes()
+        assert bytes_a == bytes_b, f"Clean Parquet bytes differed across two writes for {name}"
 
 
 # --- 4. Loader acceptance ----------------------------------------------------------------------
@@ -296,8 +315,9 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
 def test_registry_consistency_against_committed_tables(built_showcase: BuildResult) -> None:
     committed_reg = json.loads(_REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
     committed_tables = {name: pl.read_parquet(_CLAIMS_DIR / name) for name in TABLE_FILES}
+    committed_clean = {name: pl.read_parquet(_CLEAN_DIR / name) for name in CLEAN_TABLE_FILES}
 
-    validate_cohort_registry(committed_reg, committed_tables)
+    validate_cohort_registry(committed_reg, committed_tables, committed_clean)
 
     assert committed_reg["schema_version"] == 1
     assert committed_reg["dataset_id"] == "showcase-v3"
@@ -305,9 +325,13 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
 
     # counts equal the table heights.
     assert committed_reg["counts"] == {name: df.height for name, df in committed_tables.items()}
+    assert committed_reg["clean_counts"] == {
+        name: df.height for name, df in committed_clean.items()
+    }
 
-    # tables_digest equals a fresh digest of the committed tables.
+    # tables_digest and clean_tables_digest equal fresh digests of the committed tables.
     assert committed_reg["tables_digest"] == tables_digest(committed_tables)
+    assert committed_reg["clean_tables_digest"] == clean_tables_digest(committed_clean)
 
     # every role resolves to an existing claim and patient.
     headers_df = committed_tables["claim_headers.parquet"]

@@ -81,6 +81,32 @@ class CohortCatalogs:
             ["kamu_no", "barcode", "drug_name", "valid_from", "valid_until"],
         )
 
+    @cached_property
+    def icd10_tr(self) -> pl.DataFrame:
+        return self._read_parquet(
+            "data/synthetic/reference/icd10_tr.parquet",
+            ["code", "name_tr"],
+        )
+
+    @cached_property
+    def icd_names_map(self) -> dict[str, str]:
+        df = self.icd10_tr
+        return dict(zip(df["code"].to_list(), df["name_tr"].to_list(), strict=True))
+
+    @cached_property
+    def drug_crosswalk(self) -> pl.DataFrame:
+        return self._read_parquet(
+            "data/synthetic/reference/drug_crosswalk.parquet",
+            ["barcode", "titck_product_name"],
+        )
+
+    @cached_property
+    def titck_names_map(self) -> dict[str, str]:
+        valid = self.drug_crosswalk.filter(pl.col("titck_product_name").is_not_null())
+        return dict(
+            zip(valid["barcode"].to_list(), valid["titck_product_name"].to_list(), strict=True)
+        )
+
     def procedure_row(self, code: str, on: date | str) -> CatalogRow:
         """Return the EK-2C (for P-codes) or EK-2B row in force on ``on`` (inclusive ``valid_to``)."""
         is_pkg = code.startswith("P")
