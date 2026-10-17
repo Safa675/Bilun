@@ -46,6 +46,16 @@ Verify that the committed files match an in-memory build by content (table frame
 .venv/bin/python -m scripts.synthetic.cohort.build --check
 ```
 
+## Engine proof
+
+Run the billing and prose-rules engine proof over the committed showcase dataset:
+
+```bash
+.venv/bin/python -m scripts.synthetic.cohort.engine_proof
+```
+
+This compares the loaded dataset and the in-memory clean twin against the earlier proofs (`reports/synthetic-data/2026-10-15-showcase-proofs/results/S1.json`..`S8.json`) across totals, user-facing signal multisets, report scalars, and direct detector rows. For `S8`, the full report shows `audit_exposure_try` `3584.80` while the fault record and direct detector call carry `5377.20`, because no claim line carries the incision (`Safa675/Bilun#311` item 6) so the report uses the lenient 50% second-package reading whereas the record carries the same-incision 25% reading.
+
 ## Phase notes
 
 - **Clinical clean tables (`sut/clean/`):** `anadata_clean.parquet`, `lab_clean.parquet`, and `recete_clean.parquet` arrive in the next slice (P4 Slice C).

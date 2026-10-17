@@ -550,6 +550,16 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
     with pytest.raises(FaultApplyError, match="target_pathway"):
         apply_fault(s1_fault, pathways["copd_exacerbation_pneumonia_ward"])
 
+    # (e) A dangling evidence line_id in a record's line_ids:
+    bad_ev_reg = copy.deepcopy(built_showcase.registry)
+    s7_entry = next(f for f in bad_ev_reg["faults"] if f["story"] == "S7")
+    s7_entry["line_ids"] = ["EMR-F-SENTETIK-HASTA-0007-001-999"]
+    with pytest.raises(
+        BuildError,
+        match="evidence line_id 'EMR-F-SENTETIK-HASTA-0007-001-999' does not exist in performed_procedure_lines.parquet",
+    ):
+        validate_cohort_registry(bad_ev_reg, built_showcase.tables)
+
 
 def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult) -> None:
     from dataclasses import replace

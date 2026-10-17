@@ -291,16 +291,38 @@ def validate_cohort_registry(
     if [r.claim_id for r in records] != sorted(r.claim_id for r in records):
         raise BuildError("cohort_registry faults must be ordered by claim_id")
 
-    procs_df = tables["procedure_claim_lines.parquet"]
-    mats_df = tables["material_claim_lines.parquet"]
-    drugs_df = tables["drug_claim_lines.parquet"]
-    line_amounts: dict[tuple[str, str], Decimal] = {}
-    for row in procs_df.select(["procedure_line_id", "billed_amount_try"]).iter_rows():
-        line_amounts[("islem", row[0])] = money(row[1])
-    for row in mats_df.select(["material_line_id", "billed_amount_try"]).iter_rows():
-        line_amounts[("malzeme", row[0])] = money(row[1])
-    for row in drugs_df.select(["drug_claim_line_id", "billed_amount_try"]).iter_rows():
-        line_amounts[("ilac", row[0])] = money(row[1])
+    lines_df = pl.concat(
+        [
+            tables["procedure_claim_lines.parquet"].select(
+                pl.lit("islem").alias("line_type"),
+                pl.col("procedure_line_id").alias("line_id"),
+                pl.col("billed_amount_try"),
+            ),
+            tables["material_claim_lines.parquet"].select(
+                pl.lit("malzeme").alias("line_type"),
+                pl.col("material_line_id").alias("line_id"),
+                pl.col("billed_amount_try"),
+            ),
+            tables["drug_claim_lines.parquet"].select(
+                pl.lit("ilac").alias("line_type"),
+                pl.col("drug_claim_line_id").alias("line_id"),
+                pl.col("billed_amount_try"),
+            ),
+        ]
+    )
+    line_keys = zip(
+        lines_df["line_type"].to_list(),
+        lines_df["line_id"].to_list(),
+        strict=True,
+    )
+    line_amounts: dict[tuple[str, str], Decimal] = dict(
+        zip(
+            line_keys,
+            map(money, lines_df["billed_amount_try"].to_list()),
+            strict=True,
+        )
+    )
+    performed_ids = set(tables["performed_procedure_lines.parquet"]["performed_line_id"].to_list())
 
     for rec in records:
         if rec.line_type != "fatura":
@@ -308,6 +330,12 @@ def validate_cohort_registry(
             if key not in line_amounts:
                 raise BuildError(
                     f"record {rec.injection_id}: target line {key} does not exist in tables"
+                )
+        for ev_id in rec.line_ids:
+            if ev_id not in performed_ids:
+                raise BuildError(
+                    f"record {rec.injection_id}: evidence line_id {ev_id!r} does not exist in "
+                    f"performed_procedure_lines.parquet"
                 )
         clean_dec = Decimal(rec.billed_clean_try)
         faulty_dec = Decimal(rec.billed_faulty_try)

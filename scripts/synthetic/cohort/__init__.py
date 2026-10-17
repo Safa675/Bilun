@@ -16,6 +16,28 @@ if TYPE_CHECKING:
         validate_cohort_registry,
         write_showcase,
     )
+    from .engine_proof import (
+        KNOWN_REPORT_DIVERGENCES,
+        PROOFS_RESULTS_DIR,
+        REPORT_SCALAR_KEYS,
+        ReportDivergence,
+        StoryProof,
+        canonicalize_signal_tuple,
+        canonicalize_text,
+        context_from_composed,
+        context_total_billed,
+        direct_rows,
+        load_proof_json,
+        load_showcase_dataset,
+        normalize,
+        prove_showcase,
+        prove_story,
+        report_scalars,
+        run_engine,
+        signal_counter,
+        target_signal_found,
+        ui_signals,
+    )
 
 from .catalogs import EK3F1_FROM, CatalogError, CatalogRow, CohortCatalogs
 from .compose import ComposedClaim, ComposeError, EncounterContext, compose_claim, money
@@ -79,12 +101,41 @@ _BUILD_EXPORTS = frozenset(
     }
 )
 
+_ENGINE_PROOF_EXPORTS = frozenset(
+    {
+        "KNOWN_REPORT_DIVERGENCES",
+        "PROOFS_RESULTS_DIR",
+        "REPORT_SCALAR_KEYS",
+        "ReportDivergence",
+        "StoryProof",
+        "canonicalize_signal_tuple",
+        "canonicalize_text",
+        "context_from_composed",
+        "context_total_billed",
+        "direct_rows",
+        "load_proof_json",
+        "load_showcase_dataset",
+        "normalize",
+        "prove_showcase",
+        "prove_story",
+        "report_scalars",
+        "run_engine",
+        "signal_counter",
+        "target_signal_found",
+        "ui_signals",
+    }
+)
+
 
 def __getattr__(name: str) -> Any:
     if name in _BUILD_EXPORTS:
         from . import build as _build
 
         return getattr(_build, name)
+    if name in _ENGINE_PROOF_EXPORTS:
+        from . import engine_proof as _engine_proof
+
+        return getattr(_engine_proof, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -104,44 +155,64 @@ __all__ = [
     "EK3F1_FROM",
     "EPISODE_ID_RE",
     "EncounterContext",
+    "KNOWN_REPORT_DIVERGENCES",
     "MATERIAL_LINE_ID_RE",
     "PATIENT_ID_RE",
     "PERFORMED_LINE_ID_RE",
     "PRESCRIPTION_ID_RE",
     "PROCEDURE_LINE_ID_RE",
+    "PROOFS_RESULTS_DIR",
     "RECIPES_DIR",
     "RECIPES_PATH",
     "RECIPE_CHECKS",
+    "REPORT_SCALAR_KEYS",
     "Recipe",
     "RecipeLoadError",
     "RecipeProblem",
     "RecipeRegistry",
+    "ReportDivergence",
     "ShowcaseRecipe",
     "ShowcaseRecipes",
+    "StoryProof",
     "TABLE_FILES",
     "TableSchemaError",
     "build_showcase",
     "build_tables",
+    "canonicalize_signal_tuple",
+    "canonicalize_text",
     "check_recipes",
     "check_showcase",
     "claim_id",
     "compose_claim",
+    "context_from_composed",
+    "context_total_billed",
     "copay_profile",
     "diagnosis_id",
+    "direct_rows",
     "drug_claim_line_id",
     "drug_line_id",
     "episode_id",
     "format_registry_json",
+    "load_proof_json",
     "load_recipes",
     "load_recipes_text",
+    "load_showcase_dataset",
     "material_line_id",
     "money",
+    "normalize",
     "patient_id",
     "performed_line_id",
     "prescription_id",
     "procedure_line_id",
+    "prove_showcase",
+    "prove_story",
+    "report_scalars",
+    "run_engine",
+    "signal_counter",
     "table_schemas",
     "tables_digest",
+    "target_signal_found",
+    "ui_signals",
     "validate_cohort_registry",
     "validate_tables",
     "write_showcase",
