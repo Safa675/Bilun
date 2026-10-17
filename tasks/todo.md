@@ -1,3 +1,26 @@
+## Task: Synthetic v3 P3 — fault registry, injection log and answer key (2026-10-17)
+
+### Goal
+Every injected fault of the demo cohort is declared once in a registry (SUT clause, the engine rule that must fire, the mutation applied to the clean bill, the expected detection and TL effect), every injection is written to a log in the same generator run, and the answer rows the app reads come from that log instead of the generator's own sums.
+
+Approved by Safa on 2026-10-17 ("yeah go on"). Plan: `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md` (D4, P3). New working rule (Safa, 2026-10-17): Claude orchestrates only; implementation runs on Antigravity with Gemini 4 Argon (`agy -p`, Cloud-project ADC), one run per slice, in an isolated worktree with its own permission file; Claude plans, briefs, verifies and reports.
+
+### State found before starting
+- PR #308 (pathways S1–S8, `expand`, golden bills) is merged; `main` at 98861219.
+- Issue #240 (the loader demanded exhaustive answer rows) is closed by PR #246 (75b82fa4): `validate_expected_outputs` now checks only the rows that are present. So the loader work the plan expected for P3 is probably done; the design confirms it from the code.
+- Open input: Safa675/Bilun#311 (format limits; items 4 to 6 matter here: expanded rows carry no line reference, S1's fault needs an itemized sibling pathway, `ayniFarkliKesi` has no field).
+
+### Subtasks
+- [ ] 1. Design (phase 1, Argon, read-only except one file): `plans/data/2026-10-17-p3-fault-registry-design.md` with the registry data model, the mutation language over `expand()` output, the injection log, the answer-row derivation, loader changes still needed, the fate of `demo_vignettes.json` / `scenario_tag` / `vignettes.py`, test impact, 2–4 PR slices, risks, at most 5 open questions.
+- [ ] 2. I check the design against the code (spot checks) and the plan; open questions go to Safa one at a time.
+- [ ] 3. Implementation slices (phase 2): one Argon run per slice, each with its brief and permission file; I commit after verification.
+- [ ] 4. Independent read-only review of each slice (fidelity to the design; mutation strength).
+- [ ] 5. Gates per slice: ruff, new tests, full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate.
+- [ ] 6. PR(s), CI green, review comments read, Safa merges.
+
+### Out of Scope
+The generator (P4), regenerating the cohort (P7), pathways beyond S1–S8, the engine defects #298–#307, staging.
+
 ## Task: Synthetic v3 P2 — care pathways for the 8 showcase stories (2026-10-16)
 
 ### Goal
