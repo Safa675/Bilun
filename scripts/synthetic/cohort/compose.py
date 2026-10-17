@@ -185,7 +185,11 @@ def compose_claim(
         unit = money(cat.price)
         ratio = Decimal(str(mat_row.get("billed_ratio", "1.0000")))
         billed = money(unit * qty * ratio)
-        flags = dict(mat_row.get("flags") or {})
+        flags = {
+            "is_ek3b1_bundled": False,
+            "is_excluded": False,
+            **(mat_row.get("flags") or {}),
+        }
         lid = material_line_id(ctx.claim_id, idx)
         materials.append(
             MaterialClaimLine(
@@ -295,6 +299,7 @@ def compose_claim(
         expected_denial_reason="",
         scenario_tag=ctx.scenario_tag,
         occupational_context=ctx.occupational_context,
+        primary_icd10_available=isinstance(hdr["primary_icd10"], str),
     )
 
     return ComposedClaim(

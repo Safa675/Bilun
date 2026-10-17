@@ -1,4 +1,4 @@
-"""Synthetic cohort composer (v3, P4): legacy-format ID builders, catalog lookups and claim composition."""
+"""Synthetic cohort composer (v3, P4): legacy-format ID builders, catalog lookups, claim composition and Parquet tables."""
 
 from .catalogs import EK3F1_FROM, CatalogError, CatalogRow, CohortCatalogs
 from .compose import ComposedClaim, ComposeError, EncounterContext, compose_claim, money
@@ -23,6 +23,16 @@ from .ids import (
     prescription_id,
     procedure_line_id,
 )
+from .tables import (
+    TABLE_FILES,
+    TableSchemaError,
+    build_tables,
+    copay_profile,
+    table_schemas,
+    tables_digest,
+    validate_tables,
+    write_tables,
+)
 
 __all__ = [
     "CLAIM_ID_RE",
@@ -41,8 +51,12 @@ __all__ = [
     "PERFORMED_LINE_ID_RE",
     "PRESCRIPTION_ID_RE",
     "PROCEDURE_LINE_ID_RE",
+    "TABLE_FILES",
+    "TableSchemaError",
+    "build_tables",
     "claim_id",
     "compose_claim",
+    "copay_profile",
     "diagnosis_id",
     "drug_claim_line_id",
     "drug_line_id",
@@ -53,4 +67,8 @@ __all__ = [
     "performed_line_id",
     "prescription_id",
     "procedure_line_id",
+    "table_schemas",
+    "tables_digest",
+    "validate_tables",
+    "write_tables",
 ]
