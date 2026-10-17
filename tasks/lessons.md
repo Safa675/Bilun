@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-17 — Session scratchpads are tmpfs: a reboot wipes the briefs, runners and scripts kept there
+
+**Pattern:** The briefs, the Argon runner, my mutation script and the takeover snapshots of the P4 work lived only in the sessions' scratchpads under `/tmp/claude-1000/...`. `/tmp` is a 16 GB tmpfs. Safa rebooted at 20:05 and all of it vanished while four background agents were stopped half way. The saved JSONL transcripts under `~/.claude/projects/-home-safa-Documents-Bilun/` let me rebuild the three briefs byte-identical (Write tool inputs, sizes equal to what I had read), and stopped agents can be resumed with SendMessage because their transcripts are on disk. Without that the reviews and the E2 slice would have started from nothing.
+
+**Rule:** Anything a later step or another agent needs again (briefs, runner scripts, verification and mutation scripts, takeover snapshots) goes to a persistent place: `~/.cache/bilun-p4-scratch/` or a tracked file in `tasks/` or `plans/`, never only into the scratchpad. Give every background agent a persistent scratch folder and tell it to save intermediate results there. After a restart, check `uptime -s` and `ls` the scratch paths before trusting them, and tell resumed agents which files are gone.
+
 ## 2026-10-17 — Interval ends differ per catalog: read the builder's convention and test the boundary day
 
 **Pattern:** The pathway checks compared EK-4A `valid_until` with `>=`, the way they compare EK-2B/EK-2C `valid_to`. EK-4A spans are half-open, `[valid_from, valid_until)`: 272 rows end on 2026-08-29 and 295 start that day. So S2's window ended one day after KLACID 500 MG IV left the list, and no test noticed, because every mutation I wrote used a date far from the edge. An independent reviewer found it by querying the catalog. The builder's docstring (`scripts/sut/catalogs/ek4a_history.py`) and the engine's reader (`ek4a_as_of.py:152`, `valid_until > day`) both said so.
