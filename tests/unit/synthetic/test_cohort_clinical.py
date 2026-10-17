@@ -76,6 +76,12 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     recipes = load_recipes()
     assert [p.patient_no for p in clinical.patients] == [r.patient_no for r in recipes.recipes]
 
+    routes = clinical.drug_routes
+    assert routes is not None
+    assert routes.basis == "judgment"
+    assert "#309" in routes.source
+    assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz"}
+
     by_no = clinical.by_patient_no()
     assert set(by_no) == set(range(1, 9))
 
@@ -88,6 +94,40 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
+        if pno in {5, 8}:
+            assert pat.labs is None
+        else:
+            assert pat.labs is not None
+            assert pat.labs.basis == "judgment"
+            assert "#309" in pat.labs.source
+            if pno == 2:
+                assert pat.labs.blood_gas == "arterial"
+            else:
+                assert pat.labs.blood_gas is None
+
+
+def test_a_document_without_drug_routes_has_no_route_problem() -> None:
+    raw = _raw_clinical()
+    del raw["drug_routes"]
+    clinical = load_clinical_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False))
+    assert clinical.drug_routes is None
+    assert check_clinical(clinical) == []
+
+
+def test_a_pathway_line_group_with_a_blood_gas_counts_as_having_one() -> None:
+    from types import SimpleNamespace
+
+    from scripts.synthetic.cohort.clinical import _pathway_has_l103900
+
+    def pathway(*procedures: SimpleNamespace) -> SimpleNamespace:
+        return SimpleNamespace(procedures=list(procedures))
+
+    gas = SimpleNamespace(code="L103900", items=None)
+    panel = SimpleNamespace(code="PANEL", items=[SimpleNamespace(code="L103900")])
+    other = SimpleNamespace(code="L100300", items=[SimpleNamespace(code="L100301")])
+    assert _pathway_has_l103900(pathway(gas))
+    assert _pathway_has_l103900(pathway(other, panel))
+    assert not _pathway_has_l103900(pathway(other))
 
 
 def test_unregistered_problem_check_id_raises_key_error() -> None:
@@ -176,13 +216,33 @@ CASES: list[Case] = [
     ),
     Case(
         "schema.unknown_field",
+        lambda r: _patient(r, 1)["labs"].update(unexpected_lab_field=True),
+        label="unknown_labs_field",
+    ),
+    Case(
+        "schema.unknown_field",
         lambda r: r.update(unexpected_top=True),
         label="unknown_top_field",
+    ),
+    Case(
+        "schema.unknown_field",
+        lambda r: r["drug_routes"].update(unexpected_route_field=True),
+        label="unknown_drug_routes_field",
     ),
     Case(
         "schema.missing_field",
         lambda r: _patient(r, 2).pop("basis"),
         label="missing_basis",
+    ),
+    Case(
+        "schema.missing_field",
+        lambda r: r["drug_routes"].pop("source"),
+        label="missing_drug_routes_source",
+    ),
+    Case(
+        "schema.missing_field",
+        lambda r: r["drug_routes"].pop("by_barcode"),
+        label="missing_drug_routes_by_barcode",
     ),
     Case(
         "schema.missing_field",
@@ -195,6 +255,11 @@ CASES: list[Case] = [
         label="missing_sbp",
     ),
     Case(
+        "schema.missing_field",
+        lambda r: _patient(r, 1)["labs"].pop("source"),
+        label="missing_labs_source",
+    ),
+    Case(
         "schema.bad_enum",
         lambda r: r.update(schema_version=2),
         label="bad_schema_version",
@@ -203,6 +268,21 @@ CASES: list[Case] = [
         "schema.bad_enum",
         lambda r: _patient(r, 1).update(basis="sut"),
         label="bad_basis_enum",
+    ),
+    Case(
+        "schema.bad_enum",
+        lambda r: _patient(r, 2)["labs"].update(blood_gas="venous"),
+        label="bad_blood_gas_enum",
+    ),
+    Case(
+        "schema.bad_enum",
+        lambda r: r["drug_routes"]["by_barcode"].update({"8699809950696": "Rektal"}),
+        label="route_outside_the_vocabulary",
+    ),
+    Case(
+        "schema.bad_enum",
+        lambda r: r["drug_routes"].update(basis="sut"),
+        label="drug_routes_basis_not_judgment",
     ),
     Case(
         "schema.bad_value",
@@ -223,6 +303,21 @@ CASES: list[Case] = [
         "schema.bad_value",
         lambda r: r.update(patients=[]),
         label="empty_patients_list",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update({"L101850|CRP (kantitatif)": []}),
+        label="empty_state_list",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: r["drug_routes"]["by_barcode"].update({"12345": "Subkütan"}),
+        label="malformed_barcode",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: r["drug_routes"].update(by_barcode={}),
+        label="empty_by_barcode",
     ),
     # --- Plausible vital ranges and blood-pressure ordering
     Case(
@@ -295,7 +390,7 @@ CASES: list[Case] = [
         lambda r: _patient(r, 1)["vitals"].update(weight_kg=200.1),
         label="weight_too_high",
     ),
-    # --- Cross-reference against showcase_recipes.yaml
+    # --- Cross-reference against showcase_recipes.yaml & lab_reference.csv
     Case(
         "clinical.patient_numbers",
         lambda r: _patient(r, 2).update(patient_no=1),
@@ -315,6 +410,62 @@ CASES: list[Case] = [
         "clinical.patient_numbers",
         lambda r: r["patients"].reverse(),
         label="out_of_order_patient_numbers",
+    ),
+    Case(
+        "labs.unknown_key",
+        lambda r: _patient(r, 1)["labs"]["states"].update({"L999999|Unknown": "normal"}),
+        label="unknown_lab_parameter_key",
+    ),
+    Case(
+        "labs.unknown_state",
+        lambda r: _patient(r, 1)["labs"]["states"].update(
+            {"L101850|CRP (kantitatif)": "nonexistent_state"}
+        ),
+        label="unknown_lab_state",
+    ),
+    Case(
+        "labs.unknown_state",
+        lambda r: _patient(r, 4)["labs"]["states"].update(
+            {"L101850|CRP (kantitatif)": ["bacterial_infection", "nonexistent_state"]}
+        ),
+        label="unknown_lab_state_in_list",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update({"": "normal"}),
+        label="empty_state_key",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update({"L101850|CRP (kantitatif)": " "}),
+        label="empty_state_value",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update(
+            {"L101850|CRP (kantitatif)": ["bacterial_infection", ""]}
+        ),
+        label="empty_state_in_a_list",
+    ),
+    Case(
+        "drug_routes.unknown_barcode",
+        lambda r: r["drug_routes"]["by_barcode"].update({"0000000000000": "Subkütan"}),
+        label="barcode_not_in_the_drug_crosswalk",
+    ),
+    Case(
+        "labs.blood_gas",
+        lambda r: _patient(r, 2)["labs"].pop("blood_gas", None),
+        label="missing_blood_gas_field",
+    ),
+    Case(
+        "labs.blood_gas",
+        lambda r: _patient(r, 1)["labs"].update(blood_gas="arterial"),
+        label="blood_gas_without_an_l103900_line",
+    ),
+    Case(
+        "labs.blood_gas",
+        lambda r: _patient(r, 2).pop("labs", None),
+        label="missing_labs_block_for_l103900_patient",
     ),
 ]
 

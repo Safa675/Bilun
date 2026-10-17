@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+from typing import get_args
 
 import polars as pl
 import pytest
@@ -26,6 +27,8 @@ from scripts.synthetic.cohort import (
     BuildResult,
     CleanTableError,
     ClinicalLoadError,
+    DrugRoute,
+    DrugRoutes,
     PatientClinical,
     ShowcaseClinical,
     build_clean_tables,
@@ -35,15 +38,18 @@ from scripts.synthetic.cohort import (
     clean_tables_digest,
     derive_comorbidity_flags,
     load_clinical,
+    resolve_drug_route,
     sentence_case_tr,
     validate_clean_tables,
     validate_cohort_registry,
     write_clean_tables,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
+from scripts.synthetic.cohort.clean import _UNIT_TR
 from scripts.synthetic.faults import load_siblings
 from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
+from scripts.synthetic.pathways.schema import Unit
 from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
@@ -157,7 +163,7 @@ def test_clean_row_counts_and_anadata_field_rules_for_all_8_patients(
 
     assert ana_df.height == 8
     assert rec_df.height == 19
-    assert lab_df.height == 0
+    assert lab_df.height == 207
 
     headers_df = built_showcase.tables["claim_headers.parquet"]
     diagnoses_df = built_showcase.tables["claim_diagnoses.parquet"]
@@ -304,7 +310,18 @@ def test_recete_clean_content_rules_for_all_19_billed_drug_lines(
     pathways = load_all()
     siblings = load_siblings()
     claims_by_id = {c.header.claim_id: c for c in built_showcase.claims}
-    unit_tr_map = {"vial": "flakon", "box": "kutu", "syringe": "enjektör", "tablet": "tablet"}
+    unit_tr_map = {
+        "vial": "flakon",
+        "box": "kutu",
+        "syringe": "enjektör",
+        "tablet": "tablet",
+        "capsule": "kapsül",
+        "bottle": "şişe",
+        "ampoule": "ampul",
+        "bag": "torba",
+    }
+
+    assert rec_df["verilis_yolu"].null_count() == 0
 
     for idx in range(rec_df.height):
         rec = rec_df.row(idx, named=True)
@@ -330,8 +347,11 @@ def test_recete_clean_content_rules_for_all_19_billed_drug_lines(
         exp_titck = cw_map.get(dl["barkod"], dl["drug_name"])
         assert rec["ilac_adi_ham"] == exp_titck
 
-        exp_unit = unit_tr_map.get(entry.unit, entry.unit)
+        exp_unit = unit_tr_map[entry.unit]
         assert rec["dozaj_ham"] == f"{dl['quantity']} {exp_unit}"
+        for raw_eng in ("bottle", "ampoule", "bag"):
+            assert raw_eng not in rec["dozaj_ham"].lower()
+        assert rec["verilis_yolu"] is not None
 
         assert rec["doz_mg"] is None
         assert rec["doz_birimi"] is None
@@ -346,6 +366,214 @@ def test_recete_clean_content_rules_for_all_19_billed_drug_lines(
             assert rec["gun"] == pw.showcase.nights
         else:
             assert rec["gun"] is None
+
+
+def test_slice_c1_fixups_dozaj_ham_and_route_from_titck(built_showcase: BuildResult) -> None:
+    from scripts.synthetic.cohort import derive_route_from_titck, format_dozaj_ham
+
+    expected_units = {
+        "vial": "flakon",
+        "box": "kutu",
+        "syringe": "enjektör",
+        "tablet": "tablet",
+        "capsule": "kapsül",
+        "bottle": "şişe",
+        "ampoule": "ampul",
+        "bag": "torba",
+    }
+    for eng, tr in expected_units.items():
+        assert format_dozaj_ham(2, eng) == f"2 {tr}"
+
+    rec_df = built_showcase.clean_tables["recete_clean.parquet"]
+    assert rec_df["verilis_yolu"].null_count() == 0
+    for doz in rec_df["dozaj_ham"].to_list():
+        for raw_eng in ("bottle", "ampoule", "bag", "vial", "box", "syringe", "capsule"):
+            assert f" {raw_eng}" not in doz
+
+    rows_by_ham = {r["ilac_adi_ham"]: r["verilis_yolu"] for r in rec_df.to_dicts()}
+    for substr in ("NEOFLEKS", "KLACID", "PARTEMOL"):
+        matched = [v for k, v in rows_by_ham.items() if substr in k]
+        assert matched and all(v == "Intravenöz" for v in matched), substr
+    for substr in ("PREDNOL-L", "EQIZOLIN"):
+        matched = [v for k, v in rows_by_ham.items() if substr in k]
+        assert matched and all(v == "İntramusküler/İntravenöz" for v in matched), substr
+
+    assert (
+        derive_route_from_titck("PARTEMOL 1 G/100 ML INFUZYON ICIN COZELTI ICEREN FLAKON")
+        == "Intravenöz"
+    )
+    assert derive_route_from_titck("KLACID I.V. 500 MG ENJEKTABL FLAKON") == "Intravenöz"
+    assert derive_route_from_titck("PREDNOL-L 40 MG 1 AMPUL IM/IV") == "İntramusküler/İntravenöz"
+
+
+@pytest.mark.parametrize(
+    ("name", "route"),
+    [
+        ("PREDNOL-L 40 MG IM/IV ENJEKSİYONLUK LİYOFİLİZE TOZ", "İntramusküler/İntravenöz"),
+        ("PARTEMOL 1 G/100 ML INFUZYON ICIN COZELTI ICEREN FLAKON", "Intravenöz"),
+        ("PARACEROL 10 MG/ML IV İNFÜZYON İÇİN ÇÖZELTİ İÇEREN FLAKON", "Intravenöz"),
+        ("IESEF 1 G IV ENJEKSİYONLUK ÇÖZELTİ HAZIRLAMAK İÇİN TOZ", "Intravenöz"),
+        ("KLACID 500 MG I.V. LİYOFİLİZE TOZ İÇEREN FLAKON", "Intravenöz"),
+        ("MADOPAR 125 MG TABLET, 30 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 20 MG KAPSÜL, 28 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 500 MG FİLM KAPLI, 14 ADET", "Ağızdan (Oral)"),
+        ("İPRAVENT NEBÜLİZASYON İÇİN İNHALASYON ÇÖZELTİSİ", "İnhalasyon"),
+        ("ORNEK 40 MG SUBKÜTAN ENJEKSİYON", "Subkütan"),
+        (
+            "CLEXANE 4000 ANTI-XA IU/0,4 ML ENJEKSİYONLUK ÇÖZELTİ İÇEREN KULLANIMA HAZIR ENJEKTÖR",
+            None,
+        ),
+        ("NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI ÇÖZELTİSİ PP-TORBA1000 ML(SETLI)", None),
+    ],
+)
+def test_derive_route_from_titck_reads_only_what_the_name_states(
+    name: str, route: str | None
+) -> None:
+    from scripts.synthetic.cohort import derive_route_from_titck
+
+    assert derive_route_from_titck(name) == route
+
+
+def test_dozaj_ham_without_a_unit_is_the_bare_quantity() -> None:
+    from scripts.synthetic.cohort import format_dozaj_ham
+
+    assert format_dozaj_ham(3, None) == "3"
+    assert format_dozaj_ham(3, "") == "3"
+    assert format_dozaj_ham(3, "capsule") == "3 kapsül"
+
+
+def test_every_schema_unit_has_a_turkish_word() -> None:
+    """A unit added to the pathway schema forces a Turkish word here (`capsule` was missing once)."""
+    assert set(_UNIT_TR) == set(get_args(Unit))
+
+
+def _string_constants_returned(path: Path, function_name: str) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=path.name)
+    function = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == function_name
+    )
+    return {
+        node.value.value
+        for node in ast.walk(function)
+        if isinstance(node, ast.Return)
+        and isinstance(node.value, ast.Constant)
+        and isinstance(node.value.value, str)
+    }
+
+
+def test_declared_route_vocabulary_is_what_derive_route_from_titck_returns() -> None:
+    returned = _string_constants_returned(
+        _REPO / "scripts/synthetic/cohort/clean.py", "derive_route_from_titck"
+    )
+    assert returned == set(get_args(DrugRoute)), "the YAML vocabulary and the derivation differ"
+    assert "Subkütan" in returned
+
+
+def test_product_routes_come_from_the_titck_name_or_from_drug_routes(
+    built_showcase: BuildResult,
+) -> None:
+    from scripts.synthetic.cohort import derive_route_from_titck
+
+    rec_df = built_showcase.clean_tables["recete_clean.parquet"]
+    assert rec_df["verilis_yolu"].null_count() == 0
+
+    clexane = rec_df.filter(pl.col("ilac_adi_ham").str.contains("CLEXANE"))
+    assert clexane["verilis_yolu"].to_list() == ["Subkütan"] * 3
+    neofleks_saline = rec_df.filter(pl.col("ilac_adi_ham").str.contains("NEOFLEKS %0,9"))
+    assert neofleks_saline["verilis_yolu"].to_list() == ["Intravenöz"]
+
+    # The declared routes serve exactly the four rows whose TITCK name states no route.
+    names = rec_df["ilac_adi_ham"].to_list()
+    without_route_in_name = [name for name in names if derive_route_from_titck(name) is None]
+    assert len(without_route_in_name) == 4
+    assert all(("CLEXANE" in name) or ("NEOFLEKS %0,9" in name) for name in without_route_in_name)
+
+    declared = load_clinical().drug_routes
+    assert declared is not None
+    assert declared.basis == "judgment"
+    assert declared.by_barcode == {
+        "8699809950696": "Subkütan",
+        "8697637690128": "Intravenöz",
+    }
+    billed_barcodes = set(built_showcase.tables["drug_claim_lines.parquet"]["barkod"].to_list())
+    assert set(declared.by_barcode) <= billed_barcodes
+
+
+def test_resolve_drug_route_cases() -> None:
+    clexane = "CLEXANE 4000 ANTI-XA IU/0,4 ML ENJEKSİYONLUK ÇÖZELTİ İÇEREN KULLANIMA HAZIR ENJEKTÖR"
+    klacid = "KLACID 500 MG I.V. LİYOFİLİZE TOZ İÇEREN FLAKON, 1 ADET"
+    # declared only
+    assert resolve_drug_route(clexane, "8699809950696", {"8699809950696": "Subkütan"}) == "Subkütan"
+    # derived only (the declarations are for other products)
+    assert (
+        resolve_drug_route(klacid, "8699548270482", {"8699809950696": "Subkütan"}) == "Intravenöz"
+    )
+    # derived and declared agree
+    assert (
+        resolve_drug_route(klacid, "8699548270482", {"8699548270482": "Intravenöz"}) == "Intravenöz"
+    )
+    # derived and declared disagree: the error names the product, the barcode and both routes
+    with pytest.raises(
+        CleanTableError,
+        match=r"declares 'Subkütan' for 'KLACID 500 MG .*8699548270482.*'Intravenöz'",
+    ):
+        resolve_drug_route(klacid, "8699548270482", {"8699548270482": "Subkütan"})
+    # neither: the error names the product and the barcode and says where to declare it
+    with pytest.raises(
+        CleanTableError,
+        match=r"'CLEXANE 4000.*\(barcode 8699809950696\).*declare it in drug_routes",
+    ):
+        resolve_drug_route(clexane, "8699809950696", {})
+
+
+def _clinical_with_routes(by_barcode: dict[str, DrugRoute]) -> ShowcaseClinical:
+    base = load_clinical()
+    assert base.drug_routes is not None
+    return ShowcaseClinical(
+        schema_version=1,
+        drug_routes=DrugRoutes(
+            by_barcode=by_barcode, basis="judgment", source=base.drug_routes.source
+        ),
+        patients=base.patients,
+    )
+
+
+@pytest.mark.parametrize(
+    ("barcode", "product"),
+    [("8699809950696", "CLEXANE"), ("8697637690128", "NEOFLEKS %0,9")],
+)
+def test_removing_a_declared_route_makes_the_build_raise(
+    built_showcase: BuildResult, barcode: str, product: str
+) -> None:
+    declared = load_clinical().drug_routes
+    assert declared is not None
+    kept = {k: v for k, v in declared.by_barcode.items() if k != barcode}
+    assert len(kept) == 1
+    with pytest.raises(CleanTableError, match=rf"{product}.*{barcode}.*declare it in drug_routes"):
+        build_clean_tables(built_showcase.claims, clinical=_clinical_with_routes(kept))
+
+
+def test_only_a_clinical_document_can_carry_routes(built_showcase: BuildResult) -> None:
+    """A bare list of patients has no `drug_routes`, so the four products without a route name fail."""
+    patients = list(load_clinical().patients)
+    with pytest.raises(CleanTableError, match=r"CLEXANE.*8699809950696.*declare it in drug_routes"):
+        build_clean_tables(built_showcase.claims, clinical=patients)
+
+
+def test_a_declared_route_that_contradicts_the_titck_name_makes_the_build_raise(
+    built_showcase: BuildResult,
+) -> None:
+    declared = load_clinical().drug_routes
+    assert declared is not None
+    drug_lines = built_showcase.tables["drug_claim_lines.parquet"]
+    klacid_barcode = drug_lines.filter(pl.col("drug_name").str.contains("KLACID"))["barkod"][0]
+    wrong = {**declared.by_barcode, klacid_barcode: "Subkütan"}
+    with pytest.raises(
+        CleanTableError, match=rf"declares 'Subkütan' for 'KLACID.*{klacid_barcode}"
+    ):
+        build_clean_tables(built_showcase.claims, clinical=_clinical_with_routes(wrong))
 
 
 # --- 3. Turkish sentence-case helper and four comorbidity boolean derivations ------------------
@@ -403,7 +631,7 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
     rec_raw = load_recete(_CLEAN_DIR / "recete_clean.parquet")
 
     assert ana_raw.height == 8
-    assert lab_raw.height == 0
+    assert lab_raw.height == 207
     assert rec_raw.height == 19
 
     ana_df, lab_df, rec_df = load_normalized_raw_data(
@@ -422,7 +650,7 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
     assert "SQ_EPISODE" not in ana_df.columns
     assert len(ana_df.columns) == 32
 
-    assert lab_df.height == 0
+    assert lab_df.height == 207
     assert list(lab_df.columns) == [
         "patient_id",
         "visit_id",
@@ -466,7 +694,7 @@ def test_build_equals_committed_clean_tables_and_registry(
     assert built_showcase.registry == committed_reg
     assert committed_reg["clean_counts"] == {
         "anadata_clean.parquet": 8,
-        "lab_clean.parquet": 0,
+        "lab_clean.parquet": 207,
         "recete_clean.parquet": 19,
     }
     assert committed_reg["clean_tables_digest"] == clean_tables_digest(built_showcase.clean_tables)
@@ -646,6 +874,7 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
     base_clinical = load_clinical()
     extra_patient_clinical = ShowcaseClinical(
         schema_version=1,
+        drug_routes=base_clinical.drug_routes,
         patients=[
             *base_clinical.patients[:7],
             PatientClinical(
@@ -666,9 +895,27 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
         build_clean_tables(built_showcase.claims, clinical=extra_patient_clinical)
 
 
-def test_clean_import_hygiene_and_no_dataframe_row_loops() -> None:
-    source = (_REPO / "scripts/synthetic/cohort/clean.py").read_text(encoding="utf-8")
-    tree = ast.parse(source, filename="clean.py")
+# AGENTS.md section 9: no Python loop over DataFrame rows. These are the ways to get one.
+_ROW_ITERATION_ATTRIBUTES = frozenset(
+    {
+        "iter_rows",
+        "rows",
+        "row",
+        "to_dicts",
+        "to_dict",
+        "iterrows",
+        "itertuples",
+        "map_elements",
+        "map_rows",
+        "apply",
+    }
+)
+
+
+@pytest.mark.parametrize("filename", ["clean.py", "labs.py"])
+def test_clean_and_labs_import_hygiene_and_no_dataframe_row_loops(filename: str) -> None:
+    source = (_REPO / "scripts/synthetic/cohort" / filename).read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=filename)
     imported_modules: list[str] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -677,12 +924,12 @@ def test_clean_import_hygiene_and_no_dataframe_row_loops() -> None:
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported_modules.append(node.module)
         elif isinstance(node, ast.Attribute):
-            assert node.attr not in {"iter_rows", "rows", "row"}, (
-                f"clean.py uses DataFrame row iteration/indexing method {node.attr!r}"
+            assert node.attr not in _ROW_ITERATION_ATTRIBUTES, (
+                f"{filename} line {node.lineno} uses the row-wise DataFrame method {node.attr!r}"
             )
 
     for mod in imported_modules:
-        assert not mod.startswith("pandas"), f"clean.py imports pandas: {mod}"
-        assert not mod.startswith("reports"), f"clean.py imports from reports: {mod}"
-        assert "billing" not in mod, f"clean.py imports from billing engine: {mod}"
-        assert "prose_rules" not in mod, f"clean.py imports from prose_rules engine: {mod}"
+        assert not mod.startswith("pandas"), f"{filename} imports pandas: {mod}"
+        assert not mod.startswith("reports"), f"{filename} imports from reports: {mod}"
+        assert "billing" not in mod, f"{filename} imports from billing engine: {mod}"
+        assert "prose_rules" not in mod, f"{filename} imports from prose_rules engine: {mod}"

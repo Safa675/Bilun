@@ -18,8 +18,8 @@ This directory contains the generated synthetic v3 showcase dataset produced fro
 | `sut/claims/performed_procedure_lines.parquet` | EMR/PACS performed procedure log lines |
 | `sut/claims/medula_rejection_events.parquet` | Empty schema-validated rejection events table |
 | `sut/clean/anadata_clean.parquet` | 8 episode clinical records (vitals, diagnoses, comorbidity flags, structured Turkish narratives) |
-| `sut/clean/recete_clean.parquet` | 19 prescription records aligned 1-to-1 with billed drug lines |
-| `sut/clean/lab_clean.parquet` | Empty schema-validated lab results table (populated in the next slice, P4 Slice C2) |
+| `sut/clean/recete_clean.parquet` | 19 prescription records aligned 1-to-1 with billed drug lines; the route of administration (`verilis_yolu`) is read from the TİTCK product name, otherwise from `drug_routes` in `data/synthetic/cohort/showcase_clinical.yaml` |
+| `sut/clean/lab_clean.parquet` | 207 lab result rows expanded from billed EK-2B lab procedure lines via `data/synthetic/reference/lab_reference.csv` and `data/synthetic/cohort/showcase_clinical.yaml` |
 | `cohort_registry.json` | Claim and clean table digests (`tables_digest`, `clean_tables_digest`), row counts (`counts`, `clean_counts`), named roles (`default_landing`, `showcase_S1`..`showcase_S8`), encounter provenance, and fault injection records |
 
 ## The 8 showcase patients
@@ -61,5 +61,11 @@ This compares the loaded dataset and the in-memory clean twin against the earlie
 
 ## Phase notes
 
-- **Clinical clean tables (`sut/clean/`):** `anadata_clean.parquet` (8 rows) and `recete_clean.parquet` (19 rows) are populated in Slice C1; `lab_clean.parquet` is an empty schema-validated table with the `parametre` column until the next slice (P4 Slice C2).
+- **Clinical clean tables (`sut/clean/`):** `anadata_clean.parquet` (8 rows), `recete_clean.parquet` (19 rows), and `lab_clean.parquet` (207 rows) are populated deterministically from the showcase claims and clinical registry.
+- **Lab results (`sut/clean/lab_clean.parquet`):**
+  - One result set per billed EK-2B lab line (14 codes, `parametre` names the result parameter): 207 rows. Patients 5 and 8 have none because their bills are packages; cultures and serology are not L-codes and have no rows.
+  - Values come from `data/synthetic/reference/lab_reference.csv` by a deterministic SHA-256 draw of `patient|code|parameter|occurrence|salt` (no random seed, no clock): the central 30 to 70 percent of the sex-specific limits, or 20 to 80 percent of the range of a state.
+  - The per-patient states in `data/synthetic/cohort/showcase_clinical.yaml` are judgment (clinician review in issue #309). Repeat samples inside a state are independent draws: there is no automatic trend.
+  - Coherence rules: the five differential counts sum to WBC (R1); RBC = HGB·10/MCH, HCT = MCV·RBC/10, MCHC = HGB/HCT·100 (R2); creatinine is inverted from a target eGFR and eGFR is recomputed with CKD-EPI 2021 (R3); HCO3 = 0.0307·pCO2·10^(pH−6.1), BE = 0.93·(HCO3−24.4+14.8·(pH−7.4)) and SaO2 by Severinghaus from pO2 (R4).
+  - `anormal_mi` is true outside the sex-specific limits of the CSV (troponin I: M 34.2, F 15.6 ng/L) and for a strip grade other than `Negatif` (R5).
 - **Legacy cohort replacement (P7):** The legacy 50-patient dataset under `data/synthetic/sut/` remains in place until phase P7 swaps the generated v3 cohort into `data/synthetic/sut/`.

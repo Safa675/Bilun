@@ -328,6 +328,7 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
     assert committed_reg["clean_counts"] == {
         name: df.height for name, df in committed_clean.items()
     }
+    assert committed_reg["clean_counts"]["lab_clean.parquet"] == 207
 
     # tables_digest and clean_tables_digest equal fresh digests of the committed tables.
     assert committed_reg["tables_digest"] == tables_digest(committed_tables)
@@ -583,6 +584,33 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
         match="evidence line_id 'EMR-F-SENTETIK-HASTA-0007-001-999' does not exist in performed_procedure_lines.parquet",
     ):
         validate_cohort_registry(bad_ev_reg, built_showcase.tables)
+
+
+def test_a_wrong_lab_count_in_the_registry_is_rejected(built_showcase: BuildResult) -> None:
+    lab_name = "lab_clean.parquet"
+    assert built_showcase.registry["clean_counts"][lab_name] == 207
+
+    # The count is the number of result rows the reference gives for the billed lab lines, so it
+    # is checked with the clean tables and also without them (from the billed codes alone).
+    validate_cohort_registry(built_showcase.registry, built_showcase.tables)
+    validate_cohort_registry(
+        built_showcase.registry, built_showcase.tables, built_showcase.clean_tables
+    )
+    for wrong in (0, 206, 208):
+        bad_registry = copy.deepcopy(built_showcase.registry)
+        bad_registry["clean_counts"][lab_name] = wrong
+        with pytest.raises(BuildError, match=r"clean_counts mismatch"):
+            validate_cohort_registry(bad_registry, built_showcase.tables)
+        with pytest.raises(BuildError, match=r"clean_counts mismatch"):
+            validate_cohort_registry(
+                bad_registry, built_showcase.tables, built_showcase.clean_tables
+            )
+
+    # A lab table that lost a row no longer matches the registry's count (nor its digest).
+    short_lab = built_showcase.clean_tables[lab_name].head(206)
+    short_clean = {**built_showcase.clean_tables, lab_name: short_lab}
+    with pytest.raises(BuildError, match=r"clean_counts mismatch"):
+        validate_cohort_registry(built_showcase.registry, built_showcase.tables, short_clean)
 
 
 def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult) -> None:

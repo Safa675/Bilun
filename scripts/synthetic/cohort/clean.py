@@ -16,9 +16,10 @@ from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.schema import Drug, Pins
 
 from .catalogs import CohortCatalogs
-from .clinical import PatientClinical, ShowcaseClinical, Vitals, load_clinical
+from .clinical import DrugRoute, PatientClinical, ShowcaseClinical, Vitals, load_clinical
 from .compose import ComposedClaim
 from .ids import PATIENT_ID_RE
+from .labs import LabReferenceError, build_lab_clean, check_lab_coherence, expected_lab_keys
 from .tables import TableSchemaError, _canonical_table_text
 
 CLEAN_TABLE_FILES: tuple[str, ...] = (
@@ -136,6 +137,10 @@ _UNIT_TR: dict[str, str] = {
     "box": "kutu",
     "syringe": "enjektör",
     "tablet": "tablet",
+    "capsule": "kapsül",
+    "bottle": "şişe",
+    "ampoule": "ampul",
+    "bag": "torba",
 }
 
 
@@ -203,10 +208,19 @@ def format_dozaj_ham(quantity: int, unit: str | None) -> str:
     return f"{quantity} {unit_tr}"
 
 
-def derive_route_from_titck(titck_product_name: str) -> str | None:
+def derive_route_from_titck(titck_product_name: str) -> DrugRoute | None:
     """Conservative route read from the TITCK product name words (None when none match)."""
     low = titck_product_name.replace("İ", "i").replace("I", "ı").lower()
-    if "intravenöz" in low or " IV " in f" {titck_product_name} ":
+    low_fold = low.replace("ı", "i")
+    if "im/iv" in low_fold:
+        return "İntramusküler/İntravenöz"
+    if (
+        "intravenöz" in low_fold
+        or "infüzyon" in low_fold
+        or "infuzyon" in low_fold
+        or "i.v." in low_fold
+        or " IV " in f" {titck_product_name} "
+    ):
         return "Intravenöz"
     if any(word in low for word in ("tablet", "kapsül", "film kaplı")):
         return "Ağızdan (Oral)"
@@ -217,6 +231,29 @@ def derive_route_from_titck(titck_product_name: str) -> str | None:
     return None
 
 
+def resolve_drug_route(product_name: str, barcode: str, declared: Mapping[str, str]) -> str:
+    """Route of a billed product: read from its TITCK name, else the one declared for its barcode.
+
+    `declared` is `drug_routes.by_barcode` of the clinical YAML. A name that states a route and a
+    declaration that disagrees with it is an error, and so is a product with neither.
+    """
+    derived = derive_route_from_titck(product_name)
+    declared_route = declared.get(barcode)
+    if derived is None:
+        if declared_route is None:
+            raise CleanTableError(
+                f"recete_clean.parquet: the TITCK name {product_name!r} (barcode {barcode}) "
+                f"states no route of administration; declare it in drug_routes"
+            )
+        return declared_route
+    if declared_route is not None and declared_route != derived:
+        raise CleanTableError(
+            f"recete_clean.parquet: drug_routes declares {declared_route!r} for {product_name!r} "
+            f"(barcode {barcode}) but its TITCK name states {derived!r}"
+        )
+    return derived
+
+
 def _patient_no_from_id(pid: str) -> int:
     match = PATIENT_ID_RE.fullmatch(pid)
     if match is None:
@@ -225,14 +262,8 @@ def _patient_no_from_id(pid: str) -> int:
 
 
 def _resolve_vitals_map(
-    clinical: ShowcaseClinical
-    | Sequence[PatientClinical]
-    | Mapping[int, PatientClinical | Vitals]
-    | None,
+    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[int, PatientClinical | Vitals],
 ) -> dict[int, Vitals]:
-    if clinical is None:
-        loaded = load_clinical()
-        return {p.patient_no: p.vitals for p in loaded.patients}
     if isinstance(clinical, ShowcaseClinical):
         return {p.patient_no: p.vitals for p in clinical.patients}
     if isinstance(clinical, Mapping):
@@ -240,6 +271,15 @@ def _resolve_vitals_map(
             int(k): (v.vitals if isinstance(v, PatientClinical) else v) for k, v in clinical.items()
         }
     return {p.patient_no: p.vitals for p in clinical}
+
+
+def _resolve_drug_routes(
+    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[int, PatientClinical | Vitals],
+) -> dict[str, str]:
+    """Routes declared per barcode; only a `ShowcaseClinical` document can carry them."""
+    if isinstance(clinical, ShowcaseClinical) and clinical.drug_routes is not None:
+        return dict(clinical.drug_routes.by_barcode)
+    return {}
 
 
 def _find_drug_entry_and_pins(
@@ -355,7 +395,9 @@ def build_clean_tables(
     titck_map = drug_crosswalk if drug_crosswalk is not None else cats.titck_names_map
     pathways_map = pathways if pathways is not None else load_all()
     siblings_map = siblings if siblings is not None else load_siblings()
-    vitals_by_no = _resolve_vitals_map(clinical)
+    document = load_clinical() if clinical is None else clinical
+    vitals_by_no = _resolve_vitals_map(document)
+    routes_by_barcode = _resolve_drug_routes(document)
 
     siblings_by_story: dict[str, list[Pathway]] = {}
     for sib in siblings_map.values():
@@ -460,7 +502,7 @@ def build_clean_tables(
             )
             unit = entry.unit if entry is not None else None
             dozaj_ham = format_dozaj_ham(drug_line.quantity, unit)
-            verilis_yolu = derive_route_from_titck(ilac_adi_ham)
+            verilis_yolu = resolve_drug_route(ilac_adi_ham, drug_line.barkod, routes_by_barcode)
 
             gun: int | None = None
             siklik: int | None = None
@@ -490,20 +532,83 @@ def build_clean_tables(
                 }
             )
 
+    try:
+        lab_df = build_lab_clean(
+            claims,
+            clinical=document,
+            pathways=pathways_map,
+            schema=LAB_CLEAN_SCHEMA,
+        )
+    except TableSchemaError as exc:
+        raise CleanTableError(str(exc)) from exc
+
     return {
         "anadata_clean.parquet": pl.DataFrame(
             anadata_rows, schema=ANADATA_CLEAN_SCHEMA, strict=True
         ),
-        "lab_clean.parquet": pl.DataFrame([], schema=LAB_CLEAN_SCHEMA, strict=True),
+        "lab_clean.parquet": lab_df,
         "recete_clean.parquet": pl.DataFrame(recete_rows, schema=RECETE_CLEAN_SCHEMA, strict=True),
     }
+
+
+def _describe_first(frame: pl.DataFrame) -> str:
+    """The first key row of `frame` as one line (patient, episode, day, code and parameter)."""
+    return (
+        frame.head(1)
+        .select(
+            pl.concat_str(
+                "HASTA_ID",
+                "basvuru_id",
+                "day",
+                pl.concat_str("SUB_CODE", "parametre", separator="|"),
+                separator=" ",
+            )
+        )
+        .item()
+    )
+
+
+def _check_lab_rows_match_billed_lines(lab_df: pl.DataFrame, procs_df: pl.DataFrame) -> None:
+    """`lab_clean` holds the result rows of the billed lab lines and nothing else, in the same order."""
+    try:
+        expected = expected_lab_keys(procs_df)
+    except LabReferenceError as exc:
+        raise CleanTableError(str(exc)) from exc
+    actual = lab_df.select(
+        "HASTA_ID",
+        "basvuru_id",
+        pl.col("tarih").dt.strftime("%Y-%m-%d").alias("day"),
+        "SUB_CODE",
+        "parametre",
+    )
+    if actual.equals(expected):
+        return
+    # Number the copies of one key (two troponin result sets share their keys) before comparing.
+    keys = actual.columns
+    numbered = [
+        frame.with_columns(pl.int_range(pl.len()).over(keys).alias("copy"))
+        for frame in (actual, expected)
+    ]
+    missing = numbered[1].join(numbered[0], on=[*keys, "copy"], how="anti")
+    unexpected = numbered[0].join(numbered[1], on=[*keys, "copy"], how="anti")
+    detail = f"{actual.height} rows for {expected.height} expected"
+    if missing.is_empty() and unexpected.is_empty():
+        detail += "; the rows are in a different order"
+    if not missing.is_empty():
+        detail += f"; {missing.height} missing, first {_describe_first(missing)}"
+    if not unexpected.is_empty():
+        detail += f"; {unexpected.height} unexpected, first {_describe_first(unexpected)}"
+    raise CleanTableError(
+        "lab_clean.parquet rows do not match the billed lab lines in "
+        f"procedure_claim_lines.parquet ({detail})"
+    )
 
 
 def validate_clean_tables(
     clean: Mapping[str, pl.DataFrame],
     claims_tables: Mapping[str, pl.DataFrame] | None = None,
 ) -> None:
-    """Validate clean clinical table schemas, empty `lab_clean`, and cross-checks with `claims_tables`."""
+    """Validate clean clinical table schemas, `lab_clean` coherence, and cross-checks with `claims_tables`."""
     missing_tables = [t for t in CLEAN_TABLE_FILES if t not in clean]
     extra_tables = [t for t in clean if t not in CLEAN_TABLE_FILES]
     if missing_tables or extra_tables:
@@ -542,19 +647,21 @@ def validate_clean_tables(
         if dtype_mismatches:
             raise CleanTableError(f"{name} dtype mismatch: {'; '.join(dtype_mismatches)}")
 
+    ana_df = clean["anadata_clean.parquet"]
     lab_df = clean["lab_clean.parquet"]
-    if lab_df.height != 0:
-        raise CleanTableError(
-            f"lab_clean.parquet must be empty (0 rows) in slice C1, got {lab_df.height} rows"
-        )
+    rec_df = clean["recete_clean.parquet"]
+
+    try:
+        check_lab_coherence(lab_df, ana_df=ana_df)
+    except TableSchemaError as exc:
+        raise CleanTableError(str(exc)) from exc
 
     if claims_tables is None:
         return
 
-    ana_df = clean["anadata_clean.parquet"]
-    rec_df = clean["recete_clean.parquet"]
     headers_df = claims_tables["claim_headers.parquet"]
     diagnoses_df = claims_tables["claim_diagnoses.parquet"]
+    procs_df = claims_tables["procedure_claim_lines.parquet"]
     drugs_df = claims_tables["drug_claim_lines.parquet"]
 
     if ana_df.height != headers_df.height:
@@ -621,6 +728,8 @@ def validate_clean_tables(
                 f"anadata_clean.parquet.TUM_EPS_TANILAR for {pid} ({ep_id}): "
                 f"expected {exp_tanilar!r} from claim_diagnoses.parquet, got {got_tanilar!r}"
             )
+
+    _check_lab_rows_match_billed_lines(lab_df, procs_df)
 
     rec_projected = rec_df.select(
         pl.col("HASTA_ID").alias("patient_id"),

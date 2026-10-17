@@ -1,13 +1,13 @@
 {
   "clean_counts": {
     "anadata_clean.parquet": 8,
-    "lab_clean.parquet": 0,
+    "lab_clean.parquet": 207,
     "recete_clean.parquet": 19
   },
   "clean_tables_digest": {
     "anadata_clean.parquet": "5513aa4c2c280c96c30ea1d5cc249fae7619cf8d054f870c2e230aa8c3df1dc1",
-    "lab_clean.parquet": "1d7d834424ceb014d40f981d7be5aa014b7293b8246a434458245df9ef6fc3a3",
-    "recete_clean.parquet": "0401100a8aade18f2f9f2cbaf0ca323abe7417a5d91349545ee31871d7b7a5ee"
+    "lab_clean.parquet": "d744128cc07aad287bf78704065a908cd3edc5b8a0dc305980d03a2b32827391",
+    "recete_clean.parquet": "3996874e6334291e43d6ef8b94e3052cca799ef2baa7e7388d187ed9e2605c24"
   },
   "counts": {
     "claim_diagnoses.parquet": 21,

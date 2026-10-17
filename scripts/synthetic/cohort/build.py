@@ -44,6 +44,7 @@ from .clinical import (
 )
 from .compose import ComposedClaim, EncounterContext, compose_claim, money
 from .ids import claim_id, episode_id, patient_id
+from .labs import expected_lab_row_count
 from .recipes import (
     RECIPES_PATH,
     RecipeLoadError,
@@ -274,9 +275,19 @@ def validate_cohort_registry(
             f"cohort_registry counts mismatch: expected {expected_counts}, got {reg_counts}"
         )
 
+    lab_proc_codes = (
+        tables["procedure_claim_lines.parquet"]
+        .filter(pl.col("procedure_category") == "laboratuvar")["procedure_code"]
+        .to_list()
+    )
+    expected_lab_count = (
+        clean_tables["lab_clean.parquet"].height
+        if clean_tables is not None
+        else expected_lab_row_count(lab_proc_codes)
+    )
     expected_clean_counts = {
         "anadata_clean.parquet": tables["claim_headers.parquet"].height,
-        "lab_clean.parquet": 0,
+        "lab_clean.parquet": expected_lab_count,
         "recete_clean.parquet": tables["drug_claim_lines.parquet"].height,
     }
     reg_clean_counts = registry.get("clean_counts")
@@ -462,14 +473,14 @@ def build_showcase(
     if problems:
         raise RecipeLoadError(problems)
 
+    cats = catalogs if catalogs is not None else CohortCatalogs()
     loaded_clinical = (
         clinical if clinical is not None else load_clinical(clinical_path or CLINICAL_PATH)
     )
-    clinical_problems = check_clinical(loaded_clinical, recipes=loaded_recipes)
+    clinical_problems = check_clinical(loaded_clinical, recipes=loaded_recipes, catalogs=cats)
     if clinical_problems:
         raise ClinicalLoadError(clinical_problems)
 
-    cats = catalogs if catalogs is not None else CohortCatalogs()
     pathways_map = pathways if pathways is not None else load_all()
     siblings_map = siblings if siblings is not None else load_siblings()
     faults_by_id: dict[str, FaultSpec] = {f.fault_id: f for f in loaded_fault_reg.faults}
