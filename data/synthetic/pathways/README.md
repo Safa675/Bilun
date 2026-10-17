@@ -12,11 +12,12 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | Path | What |
 |---|---|
 | `data/synthetic/pathways/<id>.yaml` | one pathway per file; the file name is the `id` |
+| `data/synthetic/faults/siblings/<id>.yaml` | fault-sibling pathways (a sibling is a pathway without a golden in `golden/`; its own test checks it against `golden_faulty/`) |
 | `scripts/synthetic/pathways/schema.py` | the pydantic models (every one forbids unknown fields), the day grammar, the pin rules, and `CHECKS`, the registry of check ids |
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
-| `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None)`: pins in, clean bill out (golden format); pure, no catalog, no price, no randomness |
+| `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S8.json` | the clean bills of the showcase stories, exported from `stories.py` by another script |
+| `tests/fixtures/pathways/golden/S1.json` … `S8.json` | the clean bills of the showcase stories, exported from `stories.py` by another script (`golden_faulty/` holds the faulty bills) |
 
 ## Read a pathway top to bottom
 
@@ -136,15 +137,22 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 4. Write the `showcase` pins from the story and make the round trip pass: `expand(pathway)` must equal `tests/fixtures/pathways/golden/<story>.json`. Never edit the golden to fit the YAML.
 5. Update the status table below.
 
+## Expander annotations and fault siblings (P3)
+
+- **`expand(pathway, pins=None, *, annotate=False)`**: the default (`annotate=False`) returns the golden format unchanged. With `annotate=True`, rows carry pathway line references so the fault registry can target lines by id: every procedure row adds `entry_id` (the pathway line id), `kind` (the line's kind) and `day_index` (0-based position of that row's date among the dates the line resolves to, in date order; for a lab panel with several codes every code on the same date has the same index); every material and every performed row adds `entry_id`; every drug row adds `entry_id` and `indication` (the drug's indication ICD-10 code or `null`).
+- **`data/synthetic/faults/siblings/`**: a sibling is a pathway without a golden in `tests/fixtures/pathways/golden/` (so `data/synthetic/pathways/` keeps its 1-to-1 bijection with the 8 clean goldens). It obeys the same schema, hygiene and catalog checks (`run_all`), and its own test (`tests/unit/synthetic/test_fault_siblings.py`) checks that expanding it with its `showcase` pins equals `tests/fixtures/pathways/golden_faulty/<story>.json`. `appendicitis_lap_appendectomy_itemized.yaml` is S1's itemized sibling.
+
 ## Tests
 
 ```
-.venv/bin/python -m pytest tests/unit/synthetic/test_pathways_schema.py tests/unit/synthetic/test_pathways_roundtrip.py tests/unit/synthetic/test_pathways_golden.py -q
+.venv/bin/python -m pytest tests/unit/synthetic/test_pathways_schema.py tests/unit/synthetic/test_pathways_roundtrip.py tests/unit/synthetic/test_pathways_golden.py tests/unit/synthetic/test_pathways_annotate.py tests/unit/synthetic/test_fault_siblings.py -q
 ```
 
 - `test_pathways_schema.py`: every real pathway loads and passes every check; the folder holds only this README and top-level `*.yaml` files (a `.yml` file or a sub-folder would never load); every check id in `CHECKS` has a mutation case that takes a real pathway, proves it clean, applies one defect and asserts that exactly the expected ids fire; further tests pin the edges of the checks (the package window, the stays tested, the window and range edges, the EK-4A last day against the engine's reader).
 - `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a flipped optional item or course changes the bill; the bed and companion lines gain one bill line per extra night; a later admission moves every date; pins outside the ranges, or a course that outlasts the pinned stay, are refused; every golden has a pathway and every pathway a golden. A broken file fails only its own cases.
-- `test_pathways_golden.py`: the golden files are well formed, and they equal a fresh export of `stories.py`: the test runs `reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py --check` in a subprocess (about a second), so a pathway and its golden cannot be changed together unnoticed.
+- `test_pathways_golden.py`: the clean and faulty golden files are well formed, each faulty golden differs from its clean golden, and both directories equal a fresh export of `stories.py`: the test runs `reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py --check` in a subprocess (about a second), so a pathway and its golden cannot be changed together unnoticed.
+- `test_pathways_annotate.py`: `expand(p) == expand(p, annotate=False)` for all 8 pathways; stripping the annotation keys from `expand(p, annotate=True)` reproduces the default expansion; every `entry_id` is a pathway line id, every included line appears, `day_index` is `0..n-1` in date order per `entry_id`, and drug rows carry `indication`.
+- `test_fault_siblings.py`: every `*.yaml` in `data/synthetic/faults/siblings/` loads, passes `run_all`, and expands to `tests/fixtures/pathways/golden_faulty/<story>.json` (with in-memory mutation guards).
 
 ## Not expressible yet
 
@@ -156,7 +164,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 - Newborn and ICU tiers (P55200x) are not modelled.
 - A drug course that runs to discharge from a later start (S6 levodopa, through the NG tube from day 3) has no "until discharge" form: `course_days` is drawn independently of the nights, so P4 must clamp it to the days left.
 - The clinical sex of a diagnosis is judgment, not data. S5's M81.09 is postmenopausal osteoporosis, so S5 says `sex: [F]`, but the ICD table's sex column covers only 97 neoplasm codes (C and D), so `icd.sex_gate` cannot see it.
-- `expand` returns line identities only (codes, dates, quantities, specialties, links, flags, `billed_ratio`): a row carries no line id, kind or indication, so the fault registry (P3) cannot tell which pathway line a row came from and needs an annotate option. A package pathway's fault sibling is P3 work too: S1's fault needs an itemized appendectomy pathway.
+- *(Resolved in P3 slice 1 — #311 items 4 & 5.)* `expand(..., annotate=True)` now attaches `entry_id`, `kind`, `day_index` and `indication` so the fault registry (P3) can tell which pathway line a row came from, and S1's itemized fault sibling lives in `data/synthetic/faults/siblings/appendicitis_lap_appendectomy_itemized.yaml`.
 - Guarded by review only: a required item made optional and pinned in, a range widened beyond the pins, a probability, a title, a note, the id of a line nothing refers to, an edit of a `source`, a `basis` or a `pending` marker, and whether a cited clause says what its source claims.
 - Stay scaling is checked for `bed` and `companion` lines only. A drug rewritten from `per_night` to a fixed `qty` that matches the showcase nights, or S2's nebulizer (`admit..discharge-1`) fixed to the showcase nights, passes every check; it is a plausibility question (P5), not a validity one.
 

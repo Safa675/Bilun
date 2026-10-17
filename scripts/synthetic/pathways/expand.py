@@ -1,8 +1,9 @@
 """Expand a pathway with its pins into one clean bill, in the golden format (format_version 1).
 
 Pure and deterministic: no catalog, no price, no randomness, no I/O. The result lists line
-identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio); the
-golden files in tests/fixtures/pathways/golden/ are the contract this must reproduce.
+identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio), plus
+pathway line annotations when `annotate=True`; the golden files in tests/fixtures/pathways/golden/
+are the contract the default (`annotate=False`) expansion must reproduce.
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ def _drug_qty(drug: Drug, pins: Pins) -> int:
     return drug.per_day * pins.course_days[drug.id]
 
 
-def expand(pathway: Pathway, pins: Pins | None = None) -> dict:
+def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False) -> dict:
     """The clean bill for `pins` (default: the pathway's own showcase block)."""
     pins = pins or pathway.showcase
     problems = pin_problems(pathway, pins)
@@ -92,11 +93,14 @@ def expand(pathway: Pathway, pins: Pins | None = None) -> dict:
             "specialty": spec(line),
             "billed_ratio": _ratio(pathway, line.session_role),
             "flags": {},
+            **(
+                {"entry_id": line.id, "kind": line.kind, "day_index": day_index} if annotate else {}
+            ),
         }
         for line in pathway.procedures
         if included(line, pins)
         for code in ([line.code] if line.code else [i.code for i in line.items])
-        for when in [w for expr in line.days for w in dates(expr)]
+        for day_index, when in enumerate(sorted(w for expr in line.days for w in dates(expr)))
     ]
 
     by_id = {p.id: p for p in pathway.procedures}
@@ -116,6 +120,7 @@ def expand(pathway: Pathway, pins: Pins | None = None) -> dict:
                 "linked_procedure": {"code": target.code, "date": day(target.days[0])},
                 "billed_ratio": "1.0000",
                 "flags": m.flags.model_dump(exclude_none=True),
+                **({"entry_id": m.id} if annotate else {}),
             }
         )
 
@@ -127,13 +132,19 @@ def expand(pathway: Pathway, pins: Pins | None = None) -> dict:
             "unit": d.unit,
             "per_box": d.per_box,
             "flags": d.flags.model_dump(exclude_none=True),
+            **({"entry_id": d.id, "indication": d.indication} if annotate else {}),
         }
         for d in pathway.drugs
         if included(d, pins)
     ]
 
     performed = [
-        {"code": p.code, "date": day(p.day), "source": p.system}
+        {
+            "code": p.code,
+            "date": day(p.day),
+            "source": p.system,
+            **({"entry_id": p.id} if annotate else {}),
+        }
         for p in pathway.performed
         if included(p, pins)
     ]

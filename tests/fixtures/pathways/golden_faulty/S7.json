@@ -1,0 +1,156 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-02-19",
+      "icd10": "R07.1",
+      "role": "primary"
+    },
+    {
+      "date": "2026-02-19",
+      "icd10": "R06.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699844770716",
+      "date": "2026-02-19",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-02-19",
+    "claim_start_date": "2026-02-19",
+    "claim_type": "acil",
+    "department": "Acil Tip",
+    "discharge_date": null,
+    "primary_icd10": "R07.1"
+  },
+  "materials": [],
+  "performed": [
+    {
+      "code": "530080",
+      "date": "2026-02-19",
+      "source": "emr"
+    },
+    {
+      "code": "530100",
+      "date": "2026-02-19",
+      "source": "emr"
+    },
+    {
+      "code": "801720",
+      "date": "2026-02-19",
+      "source": "emr"
+    },
+    {
+      "code": "R101450",
+      "date": "2026-02-19",
+      "source": "pacs"
+    }
+  ],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520020",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "530080",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "530100",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "801720",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3300"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L102090",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L102890",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L104780",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L106150",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L106910",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107360",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107360",
+      "date": "2026-02-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    }
+  ],
+  "story": "S7"
+}

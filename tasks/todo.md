@@ -11,11 +11,14 @@ Approved by Safa on 2026-10-17 ("yeah go on"). Plan: `plans/data/2026-10-14-synt
 - Open input: Safa675/Bilun#311 (format limits; items 4 to 6 matter here: expanded rows carry no line reference, S1's fault needs an itemized sibling pathway, `ayniFarkliKesi` has no field).
 
 ### Subtasks
-- [ ] 1. Design (phase 1, Argon, read-only except one file): `plans/data/2026-10-17-p3-fault-registry-design.md` with the registry data model, the mutation language over `expand()` output, the injection log, the answer-row derivation, loader changes still needed, the fate of `demo_vignettes.json` / `scenario_tag` / `vignettes.py`, test impact, 2–4 PR slices, risks, at most 5 open questions.
-- [ ] 2. I check the design against the code (spot checks) and the plan; open questions go to Safa one at a time.
-- [ ] 3. Implementation slices (phase 2): one Argon run per slice, each with its brief and permission file; I commit after verification.
+- [x] 1. Design (phase 1, Argon): `plans/data/2026-10-17-p3-fault-registry-design.md`. Run 1 (11 min) ended with an empty answer because the final write was refused (a path under `.claude/` is not auto-allowed; a refused call ends the run silently); its document was recovered from the conversation log and turned out to contain invented pathway ids, rule names, files and line anchors (10 missing files, 7 bad anchors, 46 unknown identifiers). Run 2 (26 min) corrected it from a ground-truth table with a mechanical gate (every path exists, anchors inside the file, every identifier found in the repository or declared under "Proposed new names").
+- [x] 2. I checked the design against the code (columns of `ExpectedRuleOutput`, `validate_expected_outputs`, the non-empty rule in `synthetic_demo`, `_line_itemized_payable`, zero readers of `expected_outputs` in `src/`, nine detector functions at their lines, prices of both walkthroughs against `results/`, SUT clause texts). One error found (S8 cited C000674, the +25 points rule) and fixed. The three open questions were engineering choices and are decided: Option A each. Slice 3 amended: mutations are proven against golden *faulty* bills exported from `stories.py`, not by importing the proofs harness into a test.
+- [ ] 3. Implementation slices (phase 2), one Argon run each, brief and permission file per run, I commit after verifying:
+  - [ ] Slice 1: `expand(..., annotate=True)`, golden faulty bills (`tests/fixtures/pathways/golden_faulty/`), S1 itemized sibling pathway `data/synthetic/faults/siblings/`. Running (label `p3-slice1`).
+  - [ ] Slice 2: registry schema, loader, checks and `data/synthetic/faults/fault_registry.yaml` for the 8 faults.
+  - [ ] Slice 3: `apply_fault` and the answer-key builder, proven against the faulty goldens.
 - [ ] 4. Independent read-only review of each slice (fidelity to the design; mutation strength).
-- [ ] 5. Gates per slice: ruff, new tests, full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate.
+- [ ] 5. Gates per slice: ruff, new tests, full suite under the shared lock, `compile_rules.py --check`, manifest parity, the CI-image gate (delete the clone and the venv afterwards: the scratch disk filled up once).
 - [ ] 6. PR(s), CI green, review comments read, Safa merges.
 
 ### Out of Scope
