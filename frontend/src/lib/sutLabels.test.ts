@@ -38,4 +38,17 @@ describe("sutLabels", () => {
     setModuleLocale("tr");
     expect(getSutDomainLabel("surcharge")).toBe("İlave ücret");
   });
+
+  // The cohort table's "Top action" column renders top_action_type through getSutDomainLabel; a value
+  // without a label would be title-cased ("Anestezi Puani") instead of named.
+  it.each([
+    ["anestezi_puani", "Anesthesia score", "Anestezi puanı"],
+    ["refakatci", "Companion allowance", "Refakatçi ücreti"],
+    ["icu_puani", "Intensive care score", "Yoğun bakım puanı"],
+    ["yenidogan_yatak", "Newborn bed-day score", "Yenidoğan yatak günü puanı"],
+  ])("labels the cohort top action %s in English and Turkish", (value, english, turkish) => {
+    expect(getSutDomainLabel(value)).toBe(english);
+    setModuleLocale("tr");
+    expect(getSutDomainLabel(value)).toBe(turkish);
+  });
 });
