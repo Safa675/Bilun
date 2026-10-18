@@ -2,19 +2,27 @@
 
 from __future__ import annotations
 
+import dataclasses
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import date
 from decimal import Decimal
 
 import pytest
 
+from src.bilun.domain.catalog import get_ek2c1_copay_rates
+from src.bilun.domain.claims import load_sut_claim_dataset
 from src.bilun.domain.claims.models import ProcedureClaimLine
-from src.bilun.domain.optimization.catalog_join import copay_rate_matches_catalog
+from src.bilun.domain.optimization.catalog_join import (
+    copay_rate_matches_catalog,
+    get_ek2c1_mandated_copay_rate_pct,
+)
 from src.bilun.domain.optimization.claim_context import (
     build_copay_rate_claim_context,
     procedure_implied_copay_rate_pct,
     procedure_sgk_share_pct,
 )
 from src.bilun.domain.optimization.exactness import build_exact_copay_rate_exposure
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -82,30 +90,124 @@ def test_exact_exposure_flags_rate_mismatch_only() -> None:
 
 
 def test_synthetic_claim_lines_never_exceed_one_hundred_sgk_share() -> None:
-    from src.bilun.domain.claims import load_sut_claim_dataset
+    """No cohort line pays more than it bills.
 
+    Checked on the raw amounts: `procedure_sgk_share_pct` caps the share at 100 itself, so a
+    check on its result could not fail.
+    """
     dataset = load_sut_claim_dataset()
-    for line in dataset.procedure_lines.values():
-        share = float(procedure_sgk_share_pct(line))
-        assert share <= 100.0, f"{line.procedure_line_id} SGK share {share}% > 100%"
+
+    over_paid = [
+        line.procedure_line_id
+        for line in dataset.procedure_lines.values()
+        if line.expected_payable_try > line.billed_amount_try
+    ]
+
+    assert over_paid == []
 
 
-def test_synthetic_ek2c1_violations_are_demo_scoped() -> None:
-    from src.bilun.domain.claims import load_sut_claim_dataset
-    from src.bilun.domain.optimization.claim_context import build_copay_rate_claim_context
-    from src.bilun.domain.optimization.exactness import build_exact_copay_rate_exposure
+def _evaluable(line: ProcedureClaimLine) -> bool:
+    """The lines the EK-2C-1 checks look at: billed, and not inside a package."""
+    return not line.is_package_included and line.billed_amount_try > 0
 
-    dataset = load_sut_claim_dataset("data/synthetic/sut/claims")
-    rate_mismatches = 0
-    flag_mismatches = 0
-    for pid in dataset.claims_by_patient:
-        lines = list(dataset.procedure_lines_by_patient.get(pid, ()))
-        ctx = build_copay_rate_claim_context(pid, lines)
+
+def _exposure_totals(
+    lines_by_patient: Mapping[str, Sequence[ProcedureClaimLine]],
+) -> dict[str, int]:
+    """Listed lines and mismatches, summed over the patients with the exposure builder."""
+    totals = {"applicable": 0, "flag_mismatches": 0, "rate_mismatches": 0}
+    for patient_id, lines in lines_by_patient.items():
+        ctx = build_copay_rate_claim_context(patient_id, lines)
         if ctx is None:
             continue
         exposure = build_exact_copay_rate_exposure(ctx)
-        rate_mismatches += int(exposure.get("n_rate_catalog_mismatches") or 0)
-        flag_mismatches += int(exposure.get("n_flag_catalog_mismatches") or 0)
+        totals["applicable"] += exposure["n_applicable_procedures"]
+        totals["flag_mismatches"] += exposure["n_flag_catalog_mismatches"]
+        totals["rate_mismatches"] += exposure["n_rate_catalog_mismatches"]
+    return totals
 
-    assert rate_mismatches <= 2, f"expected ≤2 demo rate mismatches, got {rate_mismatches}"
-    assert flag_mismatches <= 1, f"expected ≤1 demo flag mismatch, got {flag_mismatches}"
+
+def _catalog_totals(lines: Iterable[ProcedureClaimLine]) -> dict[str, int]:
+    """The same totals line by line from the EK-2C-1 catalog (rate tolerance 0.5 points)."""
+    listed = [
+        (line, Decimal(str(mandated)))
+        for line in lines
+        if _evaluable(line)
+        and (mandated := get_ek2c1_mandated_copay_rate_pct(line.procedure_code)) is not None
+    ]
+    return {
+        "applicable": len(listed),
+        "flag_mismatches": sum(not line.copay_rate_applicable for line, _ in listed),
+        "rate_mismatches": sum(
+            abs(procedure_implied_copay_rate_pct(line) - mandated) > Decimal("0.5")
+            for line, mandated in listed
+        ),
+    }
+
+
+def test_synthetic_ek2c1_violations_are_demo_scoped() -> None:
+    """The cohort's EK-2C-1 totals equal the catalog's, and the only planned ones are none.
+
+    The planned inconsistencies of the cohort are its injected faults; none of the registry's
+    fault rules is a copay-rate rule, so the cohort carries no flag or rate mismatch.
+    """
+    dataset = load_sut_claim_dataset()
+    assert all("copay" not in fault["engine_rule"] for fault in cohort.load_registry()["faults"])
+
+    totals = _exposure_totals(dataset.procedure_lines_by_patient)
+
+    assert totals == _catalog_totals(dataset.procedure_lines.values())
+    assert totals["flag_mismatches"] == totals["rate_mismatches"] == 0
+
+
+# (inside a package, claim flag on, share of the billed amount that SGK pays) of a control line.
+_CONTROL_SHAPES = (
+    (False, False, Decimal("0.60")),  # listed, flag off, paid at the mandated 40%: a flag mismatch
+    (False, False, Decimal("0.60")),
+    (False, True, Decimal("1.00")),  # listed, flag on, paid in full: a rate mismatch
+    (False, False, Decimal("1.00")),  # both
+    (False, True, Decimal("0.597")),  # copay 40.3%: inside the 0.5 point tolerance, no mismatch
+    (True, False, Decimal("1.00")),  # inside a package: not looked at
+)
+
+
+def test_ek2c1_totals_count_cohort_lines_that_are_listed_and_wrong() -> None:
+    """Control for the test above, on the cohort's own lines.
+
+    The cohort has no line on the EK-2C-1 list, so its totals are zero whether or not the check
+    works. Here every line is re-coded to a listed code (mandated 40%) and given, round robin, one
+    of the shapes of `_CONTROL_SHAPES`; each total is then known from the shapes alone.
+    """
+    dataset = load_sut_claim_dataset()
+    code = next(
+        code for code, row in sorted(get_ek2c1_copay_rates().items()) if row["copay_rate_pct"] == 40
+    )
+    shapes = []  # the shape given to each line, in order
+    relisted: dict[str, list[ProcedureClaimLine]] = {}
+    for patient_id, lines in sorted(dataset.procedure_lines_by_patient.items()):
+        relisted[patient_id] = []
+        for line in lines:
+            shapes.append(_CONTROL_SHAPES[len(shapes) % len(_CONTROL_SHAPES)])
+            package, flag, share = shapes[-1]
+            relisted[patient_id].append(
+                dataclasses.replace(
+                    line,
+                    procedure_code=code,
+                    is_package_included=package,
+                    copay_rate_applicable=flag,
+                    unit_price_try=Decimal("100.00"),
+                    billed_amount_try=Decimal("100.00"),
+                    expected_payable_try=Decimal("100.00") * share,
+                )
+            )
+    expected = {
+        "applicable": sum(not package for package, _, _ in shapes),
+        "flag_mismatches": sum(not package and not flag for package, flag, _ in shapes),
+        # Paid in full means a copay of 0% against the mandated 40%.
+        "rate_mismatches": sum(not package and share == 1 for package, _, share in shapes),
+    }
+    # Distinct, non-zero totals: a check that swapped two of them, or counted none, would show.
+    assert len(set(expected.values())) == 3 and 0 not in expected.values()
+
+    assert _exposure_totals(relisted) == expected
+    assert _catalog_totals(line for lines in relisted.values() for line in lines) == expected
