@@ -17,6 +17,32 @@ Asked by Safa on 2026-10-18 ("delete the agents.md and agents folder from the re
 ### Out of Scope
 The older plans that mention the folder (`plans/tooling/mem0-integration-design.md`), the comments that cite `AGENTS.md`, the OpenHands container setup outside the repo, `tasks/lessons.md`.
 
+## Task: The copay key of the cohort table's top action counts the exemption gap on every path (2026-10-18)
+
+### Goal
+`_get_top_action_type` (live path) and `patient_recovery_summary_from_payload` (cached path) name the same top action for the `copay` key, and both weigh the figure the table's exemption-gap column shows.
+
+Found by the independent review of the puan-motor work (follow-up of PR #319, where the strict xfail `TestKnownDivergence` pinned it), explained to Safa in plain words on 2026-10-18; Safa: "okay make the fix". Recommendation accepted: bind the live path to the exemption gate.
+
+### Facts measured
+- Live path: `waived if waived is not None else total_copay_savings + rx_copay_savings`, no `is_exempt` and no exactness gate. Cached path and the column: `exemption_gap_try` / `_exemption_gap_from_copay_payload`, 0 for a patient who is not exempt, nothing for a block that is not exact.
+- `waiver_inpatient_drug` waives every drug of an inpatient claim: a patient who is not exempt has a waived total (5,870 TL on a 20,000 TL drug). Before: live `copay`, cache `none`, api `none` (printed by the xfail test with `--runxfail`).
+- The existing exempt + exact tests (the full 16-key report, 71 TL) are untouched by the change.
+
+### Subtasks
+- [x] 1. `_get_top_action_type` weighs `exemption_gap_try(report) or 0.0` (`recovery_summary.py`).
+- [x] 2. The xfail becomes `TestCopayKeyParity` (6 tests): not exempt, not exact, exempt and exact, the fallback sum, the next motor wins over a not-exempt waived total, a spy that the key reads the column's function.
+- [x] 3. CI-image gate on the committed tip.
+- [ ] 4. Push and PR (merge is Safa's call).
+
+### Results
+- **Behaviour:** a patient who is not exempt, or whose copay block is not exact, no longer names `copay` on the live path; exempt and exact patients are unchanged (waived total, else the procedure plus prescription gaps). No amount changes. The 16 showcase reports are unchanged (the full-report test and the showcase tests pass; none has an inpatient drug waiver on a patient who is not exempt).
+- **Gates (tip cff4f469):** CI-image gate on a clone (`bilun-laptop-ci:20261008-runtime-complete`, Python 3.13.15, pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1, 270 s): `ruff check src/ scripts/` clean; **11,916 passed, 2 skipped, 0 failed** (the newborn-bed tip had 11,910 passed and 1 xfailed: +6 new tests, the xfail is gone); `compile_rules.py --check` 119 artifacts byte-identical; manifest parity 0 issues; no tracked file changed by the run. Locally `-W error`: 62 passed in `test_top_action_type.py`.
+- **Not done:** the file `test_top_action_type.py` was not format-clean before (ruff format wants changes in code this task did not touch); left as it was.
+
+### Out of Scope
+The newborn-bed follow-ups (who counts as a newborn, short stays, the 510010 detector), the staging deploy (Safa's call), the cache rebuild.
+
 ## Task: Newborn bed motor (`yenidogan_yatak`) — netting, double count with the standard bed, ICU gate, action rows (2026-10-18)
 
 ### Goal
