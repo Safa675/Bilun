@@ -1,6 +1,20 @@
 import { chromium } from "playwright";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { amountPattern, faultForRole, formatTryTr, role } from "./lib/cohort-registry.mjs";
+
+// Patients and amounts come from the cohort registry (data/synthetic/cohort_registry.json), never from this file:
+//  - the landing bill and the fault injected into it (its amount, its claim) drive the workspace checks;
+//  - the clause drawer needs a row with a clause_ref, and showcase_S7 (copay exemption review, SUT 1.8.5) is the only bill that
+//    has one (engine billing reports of the 8 showcase patients, 2026-10-18), so that part runs on its page.
+const landing = role("default_landing");
+const fault = faultForRole("default_landing");
+const clausePatient = role("showcase_S7").patient_id;
+if (fault.effect_kind !== "revenue_uplift") {
+  throw new Error(`The landing bill's fault (${fault.story}, ${fault.effect_kind}) is not a revenue uplift: the revenue KPI check below needs one. Adapt this script to that story.`);
+}
+const faultAmount = formatTryTr(fault.amount_try);
+const faultAmountPattern = amountPattern(fault.amount_try);
 
 // ── Mint a valid bilun session token (same format as src/bilun/api/auth.py) ──
 const envFile = fs.readFileSync(".env.local", "utf8");
@@ -48,7 +62,7 @@ try {
   // Dev-mode recompiles can keep the network busy long enough that
   // `networkidle` times out; land on DOMContentLoaded and wait for the
   // workspace tabs instead.
-  await page.goto("http://localhost:3000/patient/SENTETIK-HASTA-0001", {
+  await page.goto(`http://localhost:3000/patient/${landing.patient_id}`, {
     waitUntil: "domcontentloaded",
     timeout: 120000,
   });
@@ -65,29 +79,49 @@ try {
   for (let i = 0; i < tabCount; i++) tabTexts.push(await tabs.nth(i).innerText());
   console.log("tab labels:", JSON.stringify(tabTexts));
 
-  const tabBody = await page.locator('[role="tablist"]').innerText();
-  check("compliance badge = 18", /18/.test(tabBody), tabBody.replace(/\s+/g, " "));
-  // Live dataset for 0001: 2 copay exemption rows + 2 yatak puanı rows.
-  check("revenue badge = 4", /\b4\b/.test(tabBody));
-  check("audit badge = 4", /\b4\b/.test(tabBody));
+  // Each trigger ends with its count badge ("Compliance 2"): read it per tab, not as a loose digit anywhere in the tab list.
+  const badgeOf = (text) => {
+    const match = /(\d+)\s*$/.exec(text.trim());
+    return match ? Number(match[1]) : null;
+  };
+  const [complianceBadge, revenueBadge, auditBadge] = tabTexts.map(badgeOf);
+  check(
+    "every workspace tab ends with a count badge",
+    [complianceBadge, revenueBadge, auditBadge].every(Number.isInteger),
+    JSON.stringify(tabTexts),
+  );
+  // The compliance badge and the "At-risk findings" KPI are the same number (PatientWorkspaceViews.tsx, ComplianceViewSection.tsx).
+  const findingsKpi = Number(
+    (await page.locator('[data-compliance-metric="findings"] dd').first().innerText()).replace(/\D/g, ""),
+  );
+  check(
+    "compliance badge equals the At-risk findings KPI",
+    Number.isInteger(complianceBadge) && complianceBadge === findingsKpi,
+    `badge ${complianceBadge}, KPI ${findingsKpi}`,
+  );
 
-  // Exactly one visible actions table: the per-view list. The legacy
-  // master list inside BillingSummary was removed (user request).
+  // At most one visible actions table: the per-view list. The legacy master list inside BillingSummary was removed
+  // (user request). The per-view list renders only when the view has actions, and the landing bill's compliance view
+  // lists none ("Recommended actions — itemized" shows in the Documents view; checked live 2026-10-18), so the check is
+  // "not duplicated", not "present".
   const bodyText = await page.locator("body").innerText();
   // Eyebrow styling uppercases the heading — match case-insensitively.
   const actionsTableCount = (bodyText.match(/Recommended actions — itemized/gi) ?? []).length;
   check(
-    "single actions table (per-view only, overview master list removed)",
-    actionsTableCount === 1,
+    "at most one actions table (per-view list only, overview master list removed)",
+    actionsTableCount <= 1,
     `found ${actionsTableCount}`,
   );
 
-  // Compliance view default: KPI cards with live TRY values
+  // Compliance view default: the table row of the injected bill shows its claim and the amount the registry recorded
+  // (the strategy row of the landing bill carries the fault's uplift as its amount).
   const kpiAll = await page.locator('[role="tabpanel"]:visible').first().innerText();
+  const tableRows = await page.locator('[role="tabpanel"]:visible table tbody tr').allInnerTexts();
+  const faultRows = tableRows.filter((text) => faultAmountPattern.test(text) && text.includes(fault.claim_id));
   check(
-    "compliance KPI risk = 121.714,71",
-    /121[.,]714[.,]71/.test(kpiAll),
-    kpiAll.replace(/\s+/g, " ").slice(0, 220),
+    `compliance table lists ${fault.claim_id} (${fault.story}) with the injected amount ${faultAmount}`,
+    faultRows.length > 0,
+    `${tableRows.length} rows; ${kpiAll.replace(/\s+/g, " ").slice(0, 220)}`,
   );
 
   // Tab-snapback regression: selecting an action sets ?section=, then a
@@ -98,7 +132,7 @@ try {
   await page.waitForTimeout(300);
   check("action selection sets ?section=", page.url().includes("section="), page.url());
 
-  // Revenue view: click tab, KPI 23.192,18
+  // Revenue view: click tab, KPI = the registry amount
   await tabs.filter({ hasText: /Gelir|Revenue/ }).click();
   await page.waitForTimeout(700);
   const revenueTriggerActive =
@@ -110,8 +144,8 @@ try {
     revenueKpi.replace(/\s+/g, " ").slice(0, 120),
   );
   check(
-    "revenue KPI = 23.192,18 (or EN format)",
-    /23[.,]192[.,]18/.test(revenueKpi),
+    `revenue KPI shows the injected amount ${faultAmount} (or EN format)`,
+    faultAmountPattern.test(revenueKpi),
     revenueKpi.replace(/\s+/g, " ").slice(0, 220),
   );
 
@@ -132,16 +166,22 @@ try {
     const persisted = await firstAgain.isChecked();
     check("ready state persists across reload (localStorage)", persisted);
     const auditText = await page.locator('[role="tabpanel"]:visible').first().innerText();
+    // One box is checked, so the sub-line reads "1 / <number of boxes on the page>" (AuditViewSection.tsx: checked / items).
     check(
-      "ready KPI shows checked / total denominator",
-      /Files ready[\s\S]{0,40}1 \/ 4/.test(auditText),
+      `ready KPI shows 1 / ${checkboxCount} (checked / total denominator)`,
+      new RegExp(`Files ready[\\s\\S]{0,40}\\b1 / ${checkboxCount}\\b`).test(auditText),
       auditText.replace(/\s+/g, " ").slice(0, 140),
     );
     await firstAgain.uncheck().catch(() => {});
   }
 
-  // Clause drawer: clause_refs currently exist on copay rows (revenue view),
-  // per #73's wiring scope. Click a clause-inspect button there.
+  // Clause drawer: clause_refs exist on copay rows (revenue view), per #73's wiring scope. The landing bill has none, so this part
+  // runs on the clause-linked bill (see the top of the file). Click a clause-inspect button there.
+  await page.goto(`http://localhost:3000/patient/${clausePatient}`, {
+    waitUntil: "domcontentloaded",
+    timeout: 120000,
+  });
+  await page.waitForSelector('[role="tab"]', { timeout: 120000 });
   await tabs.filter({ hasText: /Gelir|Revenue/ }).click();
   await page.waitForTimeout(500);
   const clauseButtons = await page
@@ -156,12 +196,14 @@ try {
     const clauseButton = page
       .locator('button[aria-label*="Fıkrayı incele"], button[aria-label*="Inspect clause"]')
       .first();
+    // The button's aria-label ends with the clause it opens ("Inspect clause: 1.8.5" / "Fıkrayı incele: 1.8.5").
+    const clauseRef = ((await clauseButton.getAttribute("aria-label")) ?? "").split(":").pop().trim();
     await clauseButton.click();
     await page.waitForSelector('[role="dialog"]', { timeout: 10000 });
     const dialogText = await page.locator('[role="dialog"]').innerText();
     check(
-      "clause drawer opens",
-      /Mevzuat|Regulatory|fıkra|clause/i.test(dialogText),
+      `clause drawer opens on the clause the button named (${clauseRef})`,
+      clauseRef !== "" && dialogText.includes(clauseRef) && /Mevzuat|Legislation/i.test(dialogText),
       dialogText.replace(/\s+/g, " ").slice(0, 120),
     );
     // Give the fetch a moment, then verify it left loading state

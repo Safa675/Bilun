@@ -46,6 +46,6 @@ from src.bilun.domain.claims import load_sut_claim_dataset
 package_price = get_ek2c_price_for_date("P613380", date(2025, 1, 15))
 
 dataset = load_sut_claim_dataset()
-totals = dataset.patient_totals["SENTETIK-HASTA-001"]
+totals = dataset.patient_totals["SENTETIK-HASTA-0001"]
 print(totals.total_billed_try, totals.exactness_status)
 ```

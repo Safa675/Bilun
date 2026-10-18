@@ -48,3 +48,16 @@ export function detectPagers(text) {
 export function pageUrl(url, page) {
   return `${url}${url.includes("?") ? "&" : "?"}p=${page}`;
 }
+
+/**
+ * The id the ?finding= deep link can select on a patient page: a canonical claim-compliance finding, else the finding_id of a
+ * compliance-classified recommended action. UnifiedComplianceFindingsTable marks the row whose canonicalFindingId (the finding_id
+ * of its action, or of its claim-compliance finding) equals the param, and puts the id on the row as data-finding-id.
+ * Null when the report has neither.
+ */
+export function complianceFindingId(report) {
+  const ids = (rows) => (rows ?? []).map((row) => row?.finding_id).filter((id) => typeof id === "string" && id.length > 0).sort();
+  const canonical = ids(report?.claim_compliance?.findings);
+  const fromActions = ids((report?.recommended_actions ?? []).filter((action) => action?.finding_type === "compliance"));
+  return canonical[0] ?? fromActions[0] ?? null;
+}

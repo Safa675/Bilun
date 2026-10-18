@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — Measure a branch against `origin/main`, and keep dev-run leftovers out of CI-parity checks
+
+**Pattern:** In the worktree the local `main` ref was three PRs behind `origin/main` (98861219 against 3abe33a3), so `git diff main...HEAD` showed 144 files and +43,773 lines: P3 and P4 content that is already merged. I nearly took it for the branch's size. Separately, a local `next dev` run left `frontend/.next/dev/types`, and `tsc --noEmit` failed on those generated files although CI, on a clean checkout, has none.
+
+**Rule:** compare a branch with `origin/main` after `git fetch` (or with the PR's base), never with the local `main`. Before a CI-parity check, delete what a local run leaves behind (`frontend/.next`, `frontend/.env.local`, `.cache/`) or run the check on a clean clone, as the CI-image gate does.
+
 ## 2026-10-18 — Background agents do not restart by themselves after a usage-limit stop: cap the parallel agents and checkpoint
 
 **Pattern:** I ran four to five implementation and review agents at once, each with several mutation workers. The usage window ran out after about three hours (HTTP 429, "resets 1:50am"); the three agents then working ended as `failed`, my own turn was cut by the same limit, and nothing restarted them when the limit reset: a failed agent continues only when the orchestrator sends it a message. Safa came back hours later to find the work idle and asked why it had not resumed. Nothing was lost only because each agent saved its edits at step boundaries.

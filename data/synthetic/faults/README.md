@@ -114,13 +114,9 @@ Pins outside the pathway's declared ranges (age, sex, nights, optional ids or dr
 
 A clean claim has no `FaultInjectionRecord` and therefore zero rows in `expected_rule_outputs.parquet`. That `expected_payable_try` equals `billed_amount_try` on every submitted claim line (and `expected_total_payable_try` equals `expected_total_billed_try` on the claim header, so no runtime rule can read the answer from a pre-computed payable amount) is a rule for the cohort generator of phase P4; nothing in P3 constructs or checks submitted claim lines.
 
-## What P6 must change
+## What changed with the v3 cohort
 
-In v2, `expected_status = "kismi_red"` meant `expected_payable_try < billed_amount_try` with a non-null payable amount on every claim and line row. In v3, `expected_rule_outputs.parquet` reuses `"kismi_red"` for line-level deductions/compliance errors with `expected_payable_try = None`, adds `"eksik_faturalama"` for claim-level missing/under-billed uplift rows (`expected_payable_try = None`), and emits zero rows for clean claims. Three existing readers depend on the v2 shape and will break in P6 when the v3 cohort replaces the v2 Parquet files:
-
-1. `tests/unit/domain/claims/test_loader.py` (line 35): asserts `soft_floor(len(dataset.expected_outputs), 300, label="expected_outputs")`.
-2. `scripts/synthetic/validate_sut_synthetic_data.py` (lines 1004–1039, `_validate_expected_outputs`): requires a claim-level row for every claim in `fatura_basliklari` and a line-level row for every bundled procedure, bundled/pre-auth material, and drug line.
-3. `scripts/synthetic/assert_tier_a_post_regen.py` (lines 140–161, `_assert_expected_rule_output_sync`): requires a claim-level row per showcase claim and reads `float(row.get("expected_payable_try") or 0)`, turning `None` into `0.0` and failing reconciliation against `header_payable`.
+In v2, `expected_status = "kismi_red"` meant `expected_payable_try < billed_amount_try` with a non-null payable amount on every claim and line row. In v3, `expected_rule_outputs.parquet` reuses `"kismi_red"` for line-level deductions/compliance errors with `expected_payable_try = None`, adds `"eksik_faturalama"` for claim-level missing/under-billed uplift rows (`expected_payable_try = None`), and emits zero rows for clean claims. The v3 cohort replaced the v2 Parquet files in `data/synthetic/sut/` (P7-lite). Two readers of the v2 shape, `scripts/synthetic/validate_sut_synthetic_data.py` and `scripts/synthetic/assert_tier_a_post_regen.py`, were deleted with the v2 generator. The third, `tests/unit/domain/claims/test_loader.py`, had row-count floors sized for 50 patients; it moves to the registry counts (P6/P7 pin inventory `plans/data/2026-10-17-p6-p7-legacy-pins.md`, row 11).
 
 ## Checks (`scripts/synthetic/faults/checks.py`)
 

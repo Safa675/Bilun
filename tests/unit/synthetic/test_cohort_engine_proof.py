@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from decimal import Decimal
 from typing import Any
@@ -37,7 +38,6 @@ from scripts.synthetic.cohort import (
 import scripts.synthetic.cohort.engine_proof as engine_proof_mod
 from scripts.synthetic.cohort.engine_proof import _f, main
 from scripts.synthetic.faults import FaultInjectionRecord
-import src.bilun.domain.claims.config as claims_config
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
@@ -47,8 +47,8 @@ from src.bilun.domain.claims.patient_context import (
 
 pytestmark = pytest.mark.unit
 
-_SHOWCASE_DIR = DEFAULT_OUT_DIR
-_CLAIMS_DIR = _SHOWCASE_DIR / "sut" / "claims"
+_OUT_DIR = DEFAULT_OUT_DIR
+_CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
 _STORIES: tuple[str, ...] = ("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8")
 
 
@@ -71,12 +71,8 @@ class _StoryBundle:
 
 
 @pytest.fixture(autouse=True)
-def _allow_showcase_synthetic_claims_dir(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Allow `load_sut_claim_dataset(..., mode='synthetic_demo')` to read `data/synthetic/showcase/sut/claims`."""
-    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", _SHOWCASE_DIR / "sut")
-    monkeypatch.setattr(
-        claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", _SHOWCASE_DIR / "sut" / "clean"
-    )
+def _fresh_claims_cache() -> Iterator[None]:
+    """`load_sut_claim_dataset` caches by arguments: every test starts and ends with an empty cache."""
     load_sut_claim_dataset.cache_clear()
     yield
     load_sut_claim_dataset.cache_clear()

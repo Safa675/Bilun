@@ -13,14 +13,13 @@ limit or make the Nth try the first good one, and exact pins of the generator's 
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from datetime import datetime
 import dataclasses
 import hashlib
 import json
 from pathlib import Path
 import re
-import shutil
 from typing import Any
 
 import polars as pl
@@ -55,6 +54,7 @@ from scripts.synthetic.cohort import (
     parse_abnormal_states,
     prove_showcase,
     validate_clean_tables,
+    write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
 from scripts.synthetic.cohort import labs as labs_module
@@ -87,18 +87,17 @@ from scripts.synthetic.pathways.loader import hygiene
 from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import _normalize_lab, load_normalized_raw_data
-import src.bilun.domain.claims.config as claims_config
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.prose_rules.lab_capture_gap import detect_lab_capture_gaps
 
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
-_SHOWCASE_DIR = DEFAULT_OUT_DIR
-_CLAIMS_DIR = _SHOWCASE_DIR / "sut" / "claims"
-_CLEAN_DIR = _SHOWCASE_DIR / "sut" / "clean"
+_OUT_DIR = DEFAULT_OUT_DIR
+_CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
+_CLEAN_DIR = _OUT_DIR / "sut" / "clean"
 _LAB_PARQUET = _CLEAN_DIR / "lab_clean.parquet"
-_REGISTRY_JSON_PATH = _SHOWCASE_DIR / "cohort_registry.json"
+_REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
 _LAB_CSV = _REPO / "data" / "synthetic" / "reference" / "lab_reference.csv"
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
@@ -211,12 +210,8 @@ _LIMIT_COLUMNS = ("ref_low_male", "ref_high_male", "ref_low_female", "ref_high_f
 
 
 @pytest.fixture(autouse=True)
-def _allow_showcase_synthetic_claims_dir(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Allow `load_sut_claim_dataset` and `load_sut_build_context` in `synthetic_demo` mode to read showcase."""
-    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", _SHOWCASE_DIR / "sut")
-    monkeypatch.setattr(
-        claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", _SHOWCASE_DIR / "sut" / "clean"
-    )
+def _fresh_claims_cache() -> Iterator[None]:
+    """`load_sut_claim_dataset` caches by arguments: every test starts and ends with an empty cache."""
     load_sut_claim_dataset.cache_clear()
     yield
     load_sut_claim_dataset.cache_clear()
@@ -2260,10 +2255,13 @@ def test_two_cli_builds_write_the_same_lab_bytes_and_the_committed_file_the_same
 
 
 def test_mutation_check_exits_1_when_a_lab_value_or_the_lab_count_changes(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str], lab: pl.DataFrame
+    built_showcase: BuildResult,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    lab: pl.DataFrame,
 ) -> None:
-    copy_dir = tmp_path / "showcase_copy"
-    shutil.copytree(_SHOWCASE_DIR, copy_dir)
+    copy_dir = tmp_path / "dataset_copy"
+    write_showcase(built_showcase, copy_dir)
     assert main(["--out", str(copy_dir), "--check"]) == 0
     capsys.readouterr()
 
@@ -2683,7 +2681,7 @@ def test_mutation_two_copies_of_one_key_are_counted_not_merged(built_showcase: B
 
 
 def test_the_readme_describes_the_rules_the_code_implements() -> None:
-    readme = (_SHOWCASE_DIR / "README.md").read_text(encoding="utf-8")
+    readme = (_OUT_DIR / "README.md").read_text(encoding="utf-8")
     # The killed run wrote the HCT, the base excess and the saturation wrongly.
     for wrong in ("HGB × 3", "Van Slyke", "sO2"):
         assert wrong not in readme, wrong

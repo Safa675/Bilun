@@ -29,7 +29,7 @@ from scripts.synthetic.cohort import (
 )
 from scripts.synthetic.cohort import plausibility_all
 
-_SHOWCASE = Path(__file__).resolve().parents[3] / "data" / "synthetic" / "showcase"
+_OUT_DIR = cohort.DEFAULT_OUT_DIR
 _CLAIMS_MODULE = "scripts.synthetic.cohort.plausibility"
 _CLEAN_MODULE = "scripts.synthetic.cohort.plausibility_clean"
 
@@ -57,11 +57,9 @@ FORBIDDEN_ATTRIBUTES = {
 
 @pytest.fixture(scope="module")
 def committed() -> tuple[dict[str, pl.DataFrame], dict[str, pl.DataFrame], dict]:
-    claims = {name: pl.read_parquet(_SHOWCASE / "sut" / "claims" / name) for name in TABLE_FILES}
-    clean = {
-        name: pl.read_parquet(_SHOWCASE / "sut" / "clean" / name) for name in CLEAN_TABLE_FILES
-    }
-    registry = json.loads((_SHOWCASE / "cohort_registry.json").read_text(encoding="utf-8"))
+    claims = {name: pl.read_parquet(_OUT_DIR / "sut" / "claims" / name) for name in TABLE_FILES}
+    clean = {name: pl.read_parquet(_OUT_DIR / "sut" / "clean" / name) for name in CLEAN_TABLE_FILES}
+    registry = json.loads((_OUT_DIR / "cohort_registry.json").read_text(encoding="utf-8"))
     return claims, clean, registry
 
 

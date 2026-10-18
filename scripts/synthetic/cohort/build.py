@@ -1,4 +1,8 @@
-"""Build the synthetic v3 showcase dataset (9 claim Parquet tables and cohort_registry.json)."""
+"""Build the synthetic v3 showcase dataset (9 claim and 3 clean Parquet tables, cohort_registry.json).
+
+The default output directory is `data/synthetic`: the tables land in `sut/claims` and `sut/clean`,
+where the app's loaders read them, and the registry in `cohort_registry.json` next to `sut/`.
+"""
 
 from __future__ import annotations
 
@@ -62,7 +66,7 @@ from .tables import (
 )
 
 REPO = Path(__file__).resolve().parents[3]
-DEFAULT_OUT_DIR = REPO / "data" / "synthetic" / "showcase"
+DEFAULT_OUT_DIR = REPO / "data" / "synthetic"
 SCHEMA_VERSION = 1
 DATASET_ID = "showcase-v3"
 _ZERO = Decimal("0.00")
@@ -696,7 +700,7 @@ def main(argv: list[str] | None = None) -> int:
         "--out",
         type=Path,
         default=DEFAULT_OUT_DIR,
-        help="Target output directory (default: data/synthetic/showcase).",
+        help="Target output directory (default: data/synthetic).",
     )
     parser.add_argument(
         "--check",

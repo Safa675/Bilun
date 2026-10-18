@@ -52,7 +52,7 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
                 "properties": {
                     "patient_id": {
                         "type": "string",
-                        "description": "The patient ID (e.g., SENTETIK-HASTA-0039)",
+                        "description": "The patient ID (e.g., SENTETIK-HASTA-0001)",
                     },
                 },
                 "required": ["patient_id"],
@@ -79,7 +79,7 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
                     },
                     "claim_id": {
                         "type": "string",
-                        "description": "The bill / claim ID (e.g. F-SENTETIK-HASTA-0023-048)",
+                        "description": "The bill / claim ID (e.g. F-SENTETIK-HASTA-0001-001)",
                     },
                 },
                 "required": ["patient_id", "claim_id"],

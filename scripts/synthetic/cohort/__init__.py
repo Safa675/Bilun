@@ -1,4 +1,4 @@
-"""Synthetic cohort composer (v3, P4): legacy-format ID builders, catalog lookups, claim composition and Parquet tables."""
+"""Synthetic cohort composer (v3): ID builders, catalog lookups, claim composition, Parquet tables and the builder."""
 
 from __future__ import annotations
 

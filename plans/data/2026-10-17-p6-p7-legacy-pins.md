@@ -8,6 +8,25 @@ Basis for "after the swap": the v3 showcase has 8 patients `SENTETIK-HASTA-0001.
 
 Nothing here breaks today: `data/synthetic/sut/` is untouched until P7. The inventory says what P6 must migrate before P7 can merge.
 
+## Status 2026-10-18: what P7-lite migrates (this PR)
+
+Branch `claude/synthetic-v3-p7-lite-swap` (this PR) puts the 8 showcase patients in `data/synthetic/sut/` in place of the legacy 50, deletes the legacy generator and its checks, and keeps the registry at `data/synthetic/cohort_registry.json` (the `data/synthetic/showcase/` paths below are the inventory-time paths). The other 42 patients wait (plan Q6). Decisions and slices: the P7-lite block at the top of `tasks/todo.md`; the outcome per row is recorded in that block's Results. Slices: S the swap, T the Python tests, F the frontend scripts, the chatbot text, the docs and the plan status.
+
+| Rows | What P7-lite does with them | Slice |
+|---|---|---|
+| 1-19, 24, 26 | Python tests. A test that protects engine logic is rewritten on the registry roles (`tests/fixtures/synthetic_cohort.py`) or on a self-made fixture. A test that only pinned legacy ids, tags or amounts is deleted, with a one-line reason. | T |
+| 20-23, 25 | The v3 cohort tests are re-pointed to the new location; the tests of the legacy modules are deleted with those modules. | S |
+| 27-32 | The legacy generator, validator, Tier A assert, workbook builder, tier and vignette modules, the two xlsx workbooks and the tier manifests are deleted. `data/synthetic/demo_vignettes.json` stays byte-identical: the paused strict lane pins it (row 40). | S |
+| 33-35, 49 | The builder writes `sut/claims`, `sut/clean` and `cohort_registry.json` under `data/synthetic`; `showcase/` disappears; the path guard (row 34) needs no change because the data now sits under `data/synthetic/sut`; the clean tables (row 35) come with the move; `data/synthetic/README.md` describes the v3 cohort. | S |
+| 36 | The chatbot tool examples are `SENTETIK-HASTA-0001` and `F-SENTETIK-HASTA-0001-001`. | F |
+| 43-45 | The three live-app scripts take their patients and amounts from the registry, through `frontend/scripts/lib/cohort-registry.mjs`. They need a running backend and frontend, so they are checked against the live UI in the P7-lite UI step. | F |
+| 46, 48 | Checked and left as they are: mock-based frontend fixtures and column and directory names that did not change. | F |
+| 47, 50 | The four READMEs and the care-pathways plan (status, Q6, phases) are updated; this file supersedes the 2026-10-15 inventory. | F |
+
+Not migrated, on purpose: row 37 (the column contract is unchanged); row 38 (the CI workflow file is not edited; the tests it runs are migrated by the rows above); rows 39-42 (the paused strict lane: `scripts/deploy/**`, `docs/operations/**` and `tests/*/deploy/**` are not touched).
+
+Result (2026-10-18, end of the P7-lite branch): every migrated row above is done in this PR. Rows 1-19 and 26: one test file deleted, 20 rewritten on the registry roles or on self-made fixtures, the per-file table is in `tasks/todo.md` (Results of the P7-lite task); row 24 was deleted with the legacy generator; rows 20-23 and 25 were handled in slice S; rows 36 and 43-50 in slice F. The whole `tests` tree and the CI-image backend gate are green (see `tasks/todo.md` for the counts).
+
 ## Pins
 
 | # | file:line | kind | what it pins | after the swap | action |

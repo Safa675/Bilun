@@ -36,7 +36,7 @@ import re
 import polars as pl
 import pytest
 
-from scripts.synthetic.cohort import build_showcase, plausibility_clean
+from scripts.synthetic.cohort import DEFAULT_OUT_DIR, build_showcase, plausibility_clean
 from scripts.synthetic.cohort.ids import episode_id, patient_id
 from scripts.synthetic.cohort.plausibility_clean import (
     BLOOD_GAS_CODE,
@@ -83,8 +83,8 @@ pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
 _MODULE = _REPO / "scripts/synthetic/cohort/plausibility_clean.py"
-_CLAIMS_DIR = _REPO / "data/synthetic/showcase/sut/claims"
-_CLEAN_DIR = _REPO / "data/synthetic/showcase/sut/clean"
+_CLAIMS_DIR = DEFAULT_OUT_DIR / "sut/claims"
+_CLEAN_DIR = DEFAULT_OUT_DIR / "sut/clean"
 _CLEAN_FILES = (TABLE_ANADATA, TABLE_LAB, TABLE_RECETE)
 
 # The ids a mutation case may name; written out so a typo in a case fails at collection time.

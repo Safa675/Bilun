@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import ast
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from datetime import datetime, time
 from decimal import ROUND_HALF_UP, Decimal
 import json
 from pathlib import Path
 import re
-import shutil
 from typing import get_args
 
 import polars as pl
@@ -45,6 +44,7 @@ from scripts.synthetic.cohort import (
     validate_clean_tables,
     validate_cohort_registry,
     write_clean_tables,
+    write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
 from scripts.synthetic.cohort.clean import _UNIT_TR
@@ -55,17 +55,93 @@ from scripts.synthetic.pathways.schema import Unit
 from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
-import src.bilun.domain.claims.config as claims_config
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
-_SHOWCASE_DIR = DEFAULT_OUT_DIR
-_CLAIMS_DIR = _SHOWCASE_DIR / "sut" / "claims"
-_CLEAN_DIR = _SHOWCASE_DIR / "sut" / "clean"
-_LEGACY_CLEAN_DIR = _REPO / "data" / "synthetic" / "sut" / "clean"
-_REGISTRY_JSON_PATH = _SHOWCASE_DIR / "cohort_registry.json"
+_OUT_DIR = DEFAULT_OUT_DIR
+_CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
+_CLEAN_DIR = _OUT_DIR / "sut" / "clean"
+_REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
+
+# Column names and dtypes of the three clean tables of the former 50-patient set, which the cache
+# loaders (`src/bilun/cache/data_loader.py`) were written against. The files are in git history only;
+# the schemas are pinned here so that the v3 tables keep the contract.
+_FORMER_CLEAN_SCHEMAS: dict[str, pl.Schema] = {
+    "anadata_clean.parquet": pl.Schema(
+        {
+            "HASTA_ID": pl.String(),
+            "SQ_EPISODE": pl.String(),
+            "EPISODE_TARIH": pl.Datetime("ns"),
+            "TANI_YASI": pl.Int64(),
+            "CINSIYET": pl.String(),
+            "KB-S": pl.Int64(),
+            "KB-D": pl.Int64(),
+            "Nabiz": pl.Int64(),
+            "SPO2": pl.Int64(),
+            "Boy": pl.Int64(),
+            "Kilo": pl.Float64(),
+            "BMI": pl.Float64(),
+            "ILK_TANI_SON_TANI_GUN_FARKI": pl.Int64(),
+            "TOPLAM_GELIS_SAYISI": pl.Int64(),
+            "GELIS_SAYISI": pl.Int64(),
+            "GELIS_TIPI": pl.String(),
+            "SERVISADI": pl.String(),
+            "TANIKODU": pl.String(),
+            "TUM_EPS_TANILAR": pl.String(),
+            "TANI_TIPI": pl.String(),
+            "TANITARIH": pl.Datetime("ns"),
+            "MIN_TANI_TARIH": pl.Datetime("ns"),
+            "MAX_TANI_TARIH": pl.Datetime("ns"),
+            "Hipertansiyon Hastada": pl.Boolean(),
+            "Kalp Damar Hastada": pl.Boolean(),
+            "Diyabet Hastada": pl.Boolean(),
+            "Kan Hastaliklari Hastada": pl.Boolean(),
+            "YAKINMA": pl.String(),
+            "OYKU": pl.String(),
+            "Muayene Notu": pl.String(),
+            "Tedavi Notu": pl.String(),
+            "kohort": pl.String(),
+            "donem": pl.String(),
+        }
+    ),
+    "recete_clean.parquet": pl.Schema(
+        {
+            "HASTA_ID": pl.String(),
+            "RECETE_TARIH": pl.Datetime("ns"),
+            "RF_EPISODE": pl.String(),
+            "ilac_adi": pl.String(),
+            "ilac_adi_ham": pl.String(),
+            "dozaj_ham": pl.String(),
+            "verilis_yolu": pl.String(),
+            "gun": pl.Int64(),
+            "doz_mg": pl.Int64(),
+            "doz_birimi": pl.String(),
+            "siklik": pl.Int64(),
+            "miktar": pl.Int64(),
+            "kohort": pl.String(),
+            "donem": pl.String(),
+        }
+    ),
+    "lab_clean.parquet": pl.Schema(
+        {
+            "HASTA_ID": pl.String(),
+            "basvuru_id": pl.String(),
+            "SUB_CODE": pl.String(),
+            "sonuc_sayisal": pl.Float64(),
+            "sonuc_nitel": pl.String(),
+            "birim": pl.String(),
+            "ref_alt": pl.Float64(),
+            "ref_ust": pl.Float64(),
+            "anormal_mi": pl.Boolean(),
+            "organ_sistemi": pl.String(),
+            "kohort": pl.String(),
+            "donem": pl.String(),
+            "tarih": pl.Datetime("ns"),
+        }
+    ),
+}
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
 _CURRENCY_RE = re.compile(
@@ -113,12 +189,8 @@ _PATIENT_7_NARRATIVES: dict[str, str] = {
 
 
 @pytest.fixture(autouse=True)
-def _allow_showcase_synthetic_claims_dir(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Allow `load_sut_claim_dataset` and `load_sut_build_context` in `synthetic_demo` mode to read showcase."""
-    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", _SHOWCASE_DIR / "sut")
-    monkeypatch.setattr(
-        claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", _SHOWCASE_DIR / "sut" / "clean"
-    )
+def _fresh_claims_cache() -> Iterator[None]:
+    """`load_sut_claim_dataset` caches by arguments: every test starts and ends with an empty cache."""
     load_sut_claim_dataset.cache_clear()
     yield
     load_sut_claim_dataset.cache_clear()
@@ -132,10 +204,10 @@ def built_showcase() -> BuildResult:
 # --- 2. Clean table schemas & content rules -----------------------------------------------------
 
 
-def test_clean_schemas_match_legacy_parquet_schemas(built_showcase: BuildResult) -> None:
-    legacy_ana = pl.read_parquet_schema(_LEGACY_CLEAN_DIR / "anadata_clean.parquet")
-    legacy_rec = pl.read_parquet_schema(_LEGACY_CLEAN_DIR / "recete_clean.parquet")
-    legacy_lab = pl.read_parquet_schema(_LEGACY_CLEAN_DIR / "lab_clean.parquet")
+def test_clean_schemas_match_the_former_parquet_schemas(built_showcase: BuildResult) -> None:
+    legacy_ana = _FORMER_CLEAN_SCHEMAS["anadata_clean.parquet"]
+    legacy_rec = _FORMER_CLEAN_SCHEMAS["recete_clean.parquet"]
+    legacy_lab = _FORMER_CLEAN_SCHEMAS["lab_clean.parquet"]
 
     expected_lab_items: list[tuple[str, pl.DataType]] = []
     for col, dtype in legacy_lab.items():
@@ -761,14 +833,15 @@ def test_build_equals_committed_clean_tables_and_registry(
 
 
 def test_cli_check_fails_when_clean_table_or_clean_counts_is_changed(
+    built_showcase: BuildResult,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     assert main(["--check"]) == 0
     capsys.readouterr()
 
-    copy_dir = tmp_path / "showcase_copy"
-    shutil.copytree(_SHOWCASE_DIR, copy_dir)
+    copy_dir = tmp_path / "dataset_copy"
+    write_showcase(built_showcase, copy_dir)
     assert main(["--out", str(copy_dir), "--check"]) == 0
     capsys.readouterr()
 

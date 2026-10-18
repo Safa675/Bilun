@@ -18,7 +18,15 @@ from src.bilun.domain.claims import (
     read_claim_tables,
 )
 from src.bilun.domain.claims.config import DEFAULT_SYNTHETIC_CLAIMS_DIR
-from tests.unit._helpers.brittle_guards import soft_floor
+from tests.fixtures.synthetic_cohort import (
+    claim_count,
+    claim_ids,
+    counts,
+    fault,
+    patient_count,
+    patient_ids,
+    role,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -26,51 +34,131 @@ pytestmark = pytest.mark.unit
 def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
     dataset = load_sut_claim_dataset()
 
-    # Soft floors: synthetic cohort grows; catch regressions without census locks.
-    soft_floor(len(dataset.claims), 80, label="claims")
-    soft_floor(len(dataset.diagnoses), 80, label="diagnoses")
-    soft_floor(len(dataset.procedure_lines), 400, label="procedure_lines")
-    soft_floor(len(dataset.material_lines), 80, label="material_lines")
-    soft_floor(len(dataset.drug_lines), 200, label="drug_lines")
-    soft_floor(len(dataset.expected_outputs), 300, label="expected_outputs")
-    soft_floor(len(dataset.performed_procedure_lines), 1, label="performed_procedure_lines")
-    soft_floor(len(dataset.medula_rejection_events), 5, label="medula_rejection_events")
+    # Every table holds the rows the cohort registry records for it (the builder writes both).
+    rows = counts()
+    assert len(dataset.claims) == rows["claim_headers.parquet"]
+    assert len(dataset.diagnoses) == rows["claim_diagnoses.parquet"]
+    assert len(dataset.procedure_lines) == rows["procedure_claim_lines.parquet"]
+    assert len(dataset.material_lines) == rows["material_claim_lines.parquet"]
+    assert len(dataset.drug_lines) == rows["drug_claim_lines.parquet"]
+    assert len(dataset.expected_outputs) == rows["expected_rule_outputs.parquet"]
+    assert len(dataset.performed_procedure_lines) == rows["performed_procedure_lines.parquet"]
+    assert len(dataset.medula_rejection_events) == rows["medula_rejection_events.parquet"]
+    assert len(dataset.copay_profiles_by_patient) == rows["patient_copay_profiles.parquet"]
+    # The MEDULA table is present (with or without rows), so ingest counts as available.
     assert dataset.medula_rejection_ingest_available is True
-    soft_floor(len(dataset.patient_totals), 40, label="patient_totals")
+    # The indexes hold exactly the registry's patients and claims.
+    assert sorted(dataset.claims) == claim_ids()
+    assert sorted(dataset.claims_by_patient) == patient_ids()
+    assert len(dataset.patient_totals) == patient_count()
 
-    ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
+    landing = role("default_landing")
+    ctx = build_patient_claim_context(landing.patient_id, dataset)
     assert ctx is not None
-    assert ctx.patient_id == "SENTETIK-HASTA-0001"
-    assert len(ctx.claims) >= 1
+    assert ctx.patient_id == landing.patient_id
+    assert landing.claim_id in {claim.claim_id for claim in ctx.claims}
     assert len(ctx.procedure_lines) >= 1
     assert len(ctx.drug_lines) >= 1
 
-    patient_totals = dataset.patient_totals["SENTETIK-HASTA-0001"]
+    patient_totals = dataset.patient_totals[landing.patient_id]
     assert patient_totals.total_billed_try > Decimal("0")
-    assert patient_totals.claim_count >= 1
+    assert patient_totals.claim_count == len(ctx.claims)
     assert patient_totals.exactness_status == "exact"
     assert patient_totals.source == "claim_lines"
 
-    assert any(
-        line.copay_rate is not None or line.surcharge_rate is not None
-        for line in dataset.procedure_lines.values()
-    )
     assert all(
         line.copay_rate is None or line.copay_rate >= Decimal("0")
         for line in dataset.drug_lines.values()
     )
 
 
+def test_loader_carries_copay_and_surcharge_rates_into_lines() -> None:
+    """Rates in the claim tables reach the loaded lines as cent-quantized decimals.
+
+    The cohort tables leave `copay_rate` and `surcharge_rate` empty, so one procedure row and one
+    drug row get rates here.
+    """
+    tables = read_claim_tables()
+    procedures = [dict(row) for row in tables.procedures]
+    drugs = [dict(row) for row in tables.drugs]
+    procedures[0].update(copay_rate=0.4, surcharge_rate=0.2)
+    drugs[0].update(copay_rate=0.1)
+
+    dataset = SUTClaimDataset.from_rows(
+        claim_headers=tables.headers,
+        diagnoses=tables.diagnoses,
+        procedure_lines=procedures,
+        material_lines=tables.materials,
+        drug_lines=drugs,
+        expected_outputs=tables.expected_outputs,
+    )
+
+    rated = dataset.procedure_lines[procedures[0]["procedure_line_id"]]
+    assert rated.copay_rate == Decimal("0.40")
+    assert rated.surcharge_rate == Decimal("0.20")
+    assert dataset.drug_lines[drugs[0]["drug_claim_line_id"]].copay_rate == Decimal("0.10")
+    # Every other line keeps the empty rate of its parquet row.
+    assert (
+        sum(
+            line.copay_rate is not None or line.surcharge_rate is not None
+            for line in dataset.procedure_lines.values()
+        )
+        == 1
+    )
+    assert sum(line.copay_rate is not None for line in dataset.drug_lines.values()) == 1
+
+
 def test_loaded_synthetic_materials_carry_prose_flags() -> None:
+    """S5 bills an implant whose UTS record is incomplete: the parquet flag reaches the line."""
     dataset = load_sut_claim_dataset()
-    flagged = [
-        line
-        for line in dataset.material_lines.values()
-        if line.foreign_facility
-        or line.procurement_record_incomplete
-        or line.titubb_registered is False
+    story = fault("S5")
+    assert story["line_type"] == "malzeme"
+
+    faulty = dataset.material_lines[story["line_id"]]
+    assert faulty.uts_registered is False
+    same_claim = [
+        line for line in dataset.material_lines.values() if line.claim_id == faulty.claim_id
     ]
-    assert flagged, "expected at least one material line with a prose demo flag"
+    assert len(same_claim) > 1, "S5 needs sibling material lines to compare the flag against"
+    assert all(
+        line.uts_registered is True
+        for line in same_claim
+        if line.material_line_id != faulty.material_line_id
+    )
+
+
+def test_loader_parses_prose_flags_of_material_rows() -> None:
+    """The prose flags of a material row survive the row parser.
+
+    The cohort has no foreign-facility, incomplete-procurement or unregistered-TITUBB line, so one
+    row gets those flags here.
+    """
+    tables = read_claim_tables()
+    materials = [dict(row) for row in tables.materials]
+    materials[0].update(
+        foreign_facility=True, procurement_record_incomplete=True, titubb_registered=False
+    )
+
+    dataset = SUTClaimDataset.from_rows(
+        claim_headers=tables.headers,
+        diagnoses=tables.diagnoses,
+        procedure_lines=tables.procedures,
+        material_lines=materials,
+        drug_lines=tables.drugs,
+        expected_outputs=tables.expected_outputs,
+    )
+
+    flagged = dataset.material_lines[materials[0]["material_line_id"]]
+    assert flagged.foreign_facility is True
+    assert flagged.procurement_record_incomplete is True
+    assert flagged.titubb_registered is False
+    untouched = [
+        line for key, line in dataset.material_lines.items() if key != flagged.material_line_id
+    ]
+    assert untouched
+    assert not any(
+        line.foreign_facility or line.procurement_record_incomplete for line in untouched
+    )
 
 
 def test_loader_rejects_missing_drug_prescription_id():
@@ -119,7 +207,7 @@ def test_loader_cache_key_includes_mode(tmp_path: Path) -> None:
     clear_sut_claim_dataset_cache()
     first = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
     second = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
-    soft_floor(len(first.claims), 80, label="cached claims")
+    assert len(first.claims) == claim_count()
     assert first is second
     clear_sut_claim_dataset_cache()
 
@@ -130,7 +218,7 @@ def test_loader_normalizes_unset_mode_to_synthetic_demo() -> None:
     default_dataset = load_sut_claim_dataset()
     explicit_dataset = load_sut_claim_dataset(mode="synthetic_demo")
     assert len(default_dataset.claims) == len(explicit_dataset.claims)
-    soft_floor(len(default_dataset.claims), 80, label="synthetic_demo claims")
+    assert len(default_dataset.claims) == claim_count()
     clear_sut_claim_dataset_cache()
 
 
@@ -141,7 +229,7 @@ def test_loader_real_claims_dir_not_blocked_by_synthetic_cache_warm(tmp_path: Pa
 
     load_sut_claim_dataset(mode="synthetic_demo")
     dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
-    soft_floor(len(dataset.claims), 80, label="real_claims after synthetic warm")
+    assert len(dataset.claims) == claim_count()
     clear_sut_claim_dataset_cache()
 
 
@@ -165,11 +253,23 @@ def test_load_sut_claim_dataset_exposes_cache_clear_alias() -> None:
     load_sut_claim_dataset.cache_clear()
     second = load_sut_claim_dataset()
     assert len(first.claims) == len(second.claims)
-    soft_floor(len(first.claims), 80, label="claims after cache_clear")
+    assert len(first.claims) == claim_count()
     assert first is not second
 
 
-@pytest.mark.parametrize("prefix", ["BILUN", "SUT"])
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "BILUN",
+        # The deprecated alias is the point of this case: its warning is expected.
+        pytest.param(
+            "SUT",
+            marks=pytest.mark.filterwarnings(
+                r"ignore:SUT_\* env vars are deprecated:DeprecationWarning"
+            ),
+        ),
+    ],
+)
 def test_loader_uses_environment_mode_and_shares_resolved_cache(tmp_path, monkeypatch, prefix):
     """Environment and explicit configuration must resolve to the same cache key."""
     claims_dir = tmp_path / "claim_export"
@@ -228,7 +328,7 @@ def test_real_claims_mode_loads_without_expected_outputs_or_payable_columns(
 
     clear_sut_claim_dataset_cache()
     dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
-    soft_floor(len(dataset.claims), 80, label="real_claims without expected outputs")
+    assert len(dataset.claims) == claim_count()
     assert dataset.expected_outputs == {}
     for claim_id, claim in dataset.claims.items():
         totals = dataset.claim_totals[claim_id]
@@ -283,7 +383,7 @@ def test_real_claims_mode_accepts_empty_expected_outputs_and_null_payable_values
 
     clear_sut_claim_dataset_cache()
     dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
-    soft_floor(len(dataset.claims), 80, label="real_claims with null payables")
+    assert len(dataset.claims) == claim_count()
     assert dataset.expected_outputs == {}
     clear_sut_claim_dataset_cache()
 

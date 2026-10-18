@@ -1,7 +1,7 @@
 # Synthetic demo cohort v3: care pathways instead of random draws
 
 Date: 2026-10-14 (rev 2, after an independent review)
-Status: **approved 2026-10-15; P0 and P1 landed (#258, #296); P2 first step landed 2026-10-17 (#308); P3 (fault registry, apply_fault, injection record, answer rows) built 2026-10-17 on Gemini 4 Argon** (`data/synthetic/pathways/README.md`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). Task block in `tasks/todo.md`.
+Status (2026-10-18): **approved 2026-10-15; P0 and P1 landed (#258, #296); P2 first step landed 2026-10-17 (#308); P3 merged (#313: fault registry, `apply_fault`, injection record, answer rows); P4 merged (#314: the showcase generator, the clean clinical tables and the plausibility checks, which are the first version of P5); P6 (the pins the swap needs) and P7-lite are done on branch `claude/synthetic-v3-p7-lite-swap` (this PR, not merged yet)** (the 8 showcase patients replace the legacy 50 in `data/synthetic/sut/`; inventory of the pins: `plans/data/2026-10-17-p6-p7-legacy-pins.md`). Safa accepted the recommended answers to Q1, Q2, Q4, Q5 and Q6 and will review the 8 showcase stories himself (Q3). **Q6 is narrowed: 8 patients now, the other 42 later.** Pathway format: `data/synthetic/pathways/README.md`. Task block in `tasks/todo.md`.
 Inputs:
 - the audit `reports/synthetic-data/2026-10-14-demo-cohort-audit.md`;
 - its scripts in `reports/synthetic-data/2026-10-14-audit-scripts/`;
@@ -89,7 +89,7 @@ The earlier credibility plan ruled a care-pathway simulator out of scope (`plans
 - `tests/unit/synthetic/test_vignette_golden.py` (23);
 - `claims/test_loader.py` (22).
 
-No test renders the UI with the 50 patients. The screenshot script pins 0003, 0017 and 0029 (`frontend/scripts/capture-screens.mjs:110,520-523`).
+No test renders the UI with the 50 patients. The screenshot script pinned 0003, 0017 and 0029 (`frontend/scripts/capture-screens.mjs:110,520-523`). P7-lite replaced those pins by cohort roles read from `data/synthetic/cohort_registry.json`.
 
 **9. The current generator:** 6,422 lines, of which 4,201 are in pandas files.
 - **Reusable as-is:** the exporters' writers, the ID scheme, `get_ek2b_price_for_date` and `get_ek2c_price_for_date` (`src/bilun/domain/pricing/temporal.py:89-165`, after the `valid_to` fix), `claims/schema.py`, and the totals part of `gen/reconcile.py:12-43`.
@@ -104,7 +104,7 @@ No test renders the UI with the 50 patients. The screenshot script pins 0003, 00
 | Q3 Reviewer of the 8 showcase stories | Safa |
 | Q4 Drug prices and INN | Public TİTCK price list; each download named (file, source, size) and approved first |
 | Q5 ICD-10 list | Public list (WHO ICD-10 or the Turkish MoH list); download approved first |
-| Q6 Size | 50 patients, 100–150 bills, 8 showcase |
+| Q6 Size | 50 patients, 100–150 bills, 8 showcase. **Revised 2026-10-18 (P7-lite): 8 patients now (the showcase), the other 42 later** |
 
 Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 zero-length rows, 0 duplicate windows; `_is_effective_on_or_before` now honours `valid_to`, `src/bilun/domain/pricing/temporal.py:80-92`).
 
@@ -123,6 +123,7 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
   - Until then, keep drug amounts out of the showcase bills.
 - **Q5. ICD-10 list** for names and sex/age edits: a public source (WHO ICD-10 or the Turkish MoH list).
 - **Q6. Size.** Recommendation: keep 50 patients (the demo, the docs and the screenshot script assume it) with 100–150 bills, of which 8 are showcase.
+  - **Revised 2026-10-18 (P7-lite):** the app runs on the 8 showcase patients now. The other 42 patients and the remaining bills come later, with their pathways. The docs and the screenshot script no longer assume 50: the docs name the 8 showcase patients, and the screenshot script reads its roles from `data/synthetic/cohort_registry.json` and checks the backend against it.
 
 ## Design
 
@@ -222,28 +223,31 @@ Already done elsewhere: the price-history cleanup in fact 7 landed with #248 (0 
 - [ ] The rest of the first 20.
 
 ### P3 — Fault registry and answer key
-- [x] Fault registry (`data/synthetic/faults/fault_registry.yaml`, 8 faults, 26+ check ids), `apply_fault`, the injection record (`FaultInjectionRecord`, `make_record`) and the answer rows (`build_expected_rule_outputs`), 2026-10-17. Design: `plans/data/2026-10-17-p3-fault-registry-design.md`. Each mutation is proven against the faulty bills of `stories.py` (`tests/fixtures/pathways/golden_faulty/`). The file `data/synthetic/cohort_registry.json` that carries the records is written by the generator (P4).
+- [x] Fault registry (`data/synthetic/faults/fault_registry.yaml`, 8 faults, 26+ check ids), `apply_fault`, the injection record (`FaultInjectionRecord`, `make_record`) and the answer rows (`build_expected_rule_outputs`), 2026-10-17; merged in #313. Design: `plans/data/2026-10-17-p3-fault-registry-design.md`. Each mutation is proven against the faulty bills of `stories.py` (`tests/fixtures/pathways/golden_faulty/`). The file `data/synthetic/cohort_registry.json` that carries the records is written by the generator (P4, #314).
 - [x] The loader change: not needed. PR #246 (issue #240) already makes the answer rows optional and checks only the rows present.
 - Open for P6: three readers depend on the v2 shape of `expected_rule_outputs` (see `data/synthetic/faults/README.md`, "What P6 must change").
 - This comes **before** the showcase bills, because they carry injected faults.
 
 ### P4 — Generator v3 (Polars)
-- [ ] Facility and patient state, bill composer and pickers.
-- [ ] Showcase bills built from recipes through the same composer, not as hard-coded bills.
-- [ ] Remove the per-patient branches (`gen/patients.py:211-298`) and `gen/specs.py`.
-- [ ] Seed every random source; `sag_sol` currently uses Python's unseeded `random` (`gen/claim_lines.py:5,40`).
+Merged in #314 for the 8 showcase encounters (`scripts/synthetic/cohort/`).
+- [ ] Facility and patient state, bill composer and pickers. (The composer exists for the 8 showcase encounters; facility and patient state and the pickers wait for the other 42 patients.)
+- [x] Showcase bills built from recipes through the same composer, not as hard-coded bills. (`data/synthetic/cohort/showcase_recipes.yaml`; `python -m scripts.synthetic.cohort.build` writes the 9 claims tables, the 3 clean tables and `cohort_registry.json`; two builds are byte-identical.)
+- [x] Remove the per-patient branches (`gen/patients.py:211-298`) and `gen/specs.py`. (P7-lite deleted the whole legacy generator `scripts/synthetic/gen/` with its exporters.)
+- [x] Seed every random source. (The v3 builder has no unseeded source: lab values come from a deterministic SHA-256 draw and rebuilds are byte-identical. The unseeded `sag_sol` code (`gen/claim_lines.py:5,40`) goes with the legacy generator in P7-lite.)
 
 ### P5 — Plausibility tests in CI
-- [ ] The D5 tests with mutation tests.
+- [x] The D5 tests with mutation tests, first version (#314): `plausibility.py` (25 claims-table ids), `plausibility_clean.py` (12 clean-table ids) and `plausibility_all.py` (one entry point). The 8 clean twins trip nothing; the faulty bills trip a pinned set.
+- [ ] Open: hardening of the E2 checks (materials, prices, money, labels; the reviewer's 57-case proposal kills 48 of the 58 surviving mutants), and the lab and prescription realism items (they wait for the clinical review, #309).
 
 ### P6 — Tests
-- [ ] Re-point or replace the pins classified in P0, in the same PR as the regeneration, so CI never sits red between them.
+- [x] Re-point or replace the pins classified in P0, in the same PR as the regeneration, so CI never sits red between them. (Done on the P7-lite branch: the pins of `plans/data/2026-10-17-p6-p7-legacy-pins.md` are migrated, 21 Python test files (1 deleted, 20 rewritten on the registry roles or on self-made fixtures) and the three live-app scripts; the per-file table is in `tasks/todo.md`. It supersedes the 2026-10-15 inventory.)
 
 ### P7 — Regenerate and verify (after the D6 engine fixes)
-- [ ] Regenerate the cohort and rebuild the cache.
-- [ ] Run the engine and compare its findings with the injection log. Report precision and recall per fault.
+P7-lite (done on branch `claude/synthetic-v3-p7-lite-swap`, this PR): the 8 showcase patients replace the legacy 50 in `data/synthetic/sut/`, the legacy generator, validator and workbooks are deleted, and the registry is `data/synthetic/cohort_registry.json`. The other 42 patients wait.
+- [ ] Regenerate the cohort and rebuild the cache. (The 8 showcase patients: done in P7-lite. The other 42: later.)
+- [x] Run the engine and compare its findings with the injection log, for the 8 showcase stories (#314, `scripts/synthetic/cohort/engine_proof.py`: every fault is found with its proven amount and the clean twins show nothing; S8 is the one documented divergence, issue #311 item 6). Precision and recall over the full cohort wait for the other 42.
 - [ ] Re-run the audit scripts: every FATAL row reads 0.
-- [ ] A human reviews the 8 showcase bills in the UI.
+- [ ] A human reviews the 8 showcase bills in the UI. (A first pass is done: S1 and S7 by hand and the engine's output for all 8 stories in-process, listed in `tasks/todo.md` (S3, S4 and S8 have no row that explains their money). Safa's review is still open.)
 - [ ] Update staging through the wrapper after merge (Safa's call).
 
 ## Milestone order (judgment)

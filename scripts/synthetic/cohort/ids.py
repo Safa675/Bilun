@@ -1,4 +1,4 @@
-"""Pure ID builders matching the legacy synthetic SUT claim dataset formats."""
+"""Pure ID builders for the synthetic SUT claim dataset: patient, claim, episode, line and diagnosis ids."""
 
 from __future__ import annotations
 

@@ -49,6 +49,8 @@
  *
  * Routes: the 8 plan routes, plus (unless --no-extras) the split pane, the ?section=&finding=
  * deep link and every other Compliance and Reference Tools sub-view (lib/capture-routes.mjs).
+ * The three patient pages are cohort roles read from data/synthetic/cohort_registry.json (see primaryPatients below);
+ * the preflight refuses a backend whose patients or bills differ from that registry.
  * States (extended ones only at the first --sizes entry, 1440x900 by default):
  *   default                          every route
  *   page-2 .. page-N                 Patients tab: every page of the table (?p=N); the route fails when the
@@ -96,7 +98,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { CLAUSE_VIEWS, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes } from "./lib/capture-routes.mjs";
+import { CLAUSE_VIEWS, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes } from "./lib/capture-routes.mjs";
+import { claimIds, faults, patientIds, role } from "./lib/cohort-registry.mjs";
 import { compareRuns, describeItem, normaliseLines, SCHEMA, tokenise, verdict } from "./lib/numbers-parity.mjs";
 import { installPageProbes } from "./lib/page-probes.mjs";
 import { runProbeSelfTest } from "./lib/probe-selftest.mjs";
@@ -107,8 +110,28 @@ import { registerSecret, safeMessage } from "./lib/safe-message.mjs";
 // The page, the second pane of the split view and an open modal (the Source drawer renders outside
 // #main-content). A match inside another match is counted once (window.__bilunCapture.scopesOf).
 const SCOPE_SELECTOR = '#main-content, [data-workspace-pane="b"], [role="dialog"][aria-modal="true"]';
-const PRIMARY_PATIENTS = ["SENTETIK-HASTA-0003", "SENTETIK-HASTA-0017", "SENTETIK-HASTA-0029"];
 const HOME_ROUTES = ["patients", "compliance", "revenue", "operations", "reference-tools"];
+
+// The patient pages are cohort ROLES, not ids: lib/cohort-registry.mjs reads data/synthetic/cohort_registry.json, so a rebuilt
+// cohort needs no edit here. Why these three (read from the engine's billing reports of the 8 showcase patients, 2026-10-18):
+//   default_landing   the page the app opens on (today the S1 bill): the landing page and the first pane of the split view.
+//   the compliance    the bill whose fault has effect_kind "compliance_error" (today S6, drug indication). No patient has a
+//   story             claim_compliance finding, but this bill's compliance row carries a canonical finding_id, which the
+//                     ?section=claim-compliance&finding= deep link selects. It is the deep-link patient (the legacy script used
+//                     the patient that had a claim-compliance finding) and the second pane of the split view.
+//   showcase_S7       the only bill with a clause_ref on an action (copay exemption review, SUT 1.8.5), so the only page that can
+//                     show the two Source-drawer states; a state is skipped, and listed in run-meta.json, where no button exists.
+// Route ids keep their old shape (patient-<last 4 digits>, patient-<a>+<b>-split, patient-<n>-finding).
+const last4 = (patient) => patient.slice(-4);
+
+/** The patient ids of the capture and the deep-link patient, from the registry. The compliance story is found by its fault, not by its number. */
+function primaryPatients() {
+  const fault = faults.find((item) => item.effect_kind === "compliance_error");
+  if (!fault) throw usage("The cohort registry has no fault with effect_kind compliance_error, so the claim-compliance deep link has no patient.");
+  const compliance = role(`showcase_${fault.story}`).patient_id;
+  return { primary: [...new Set([role("default_landing").patient_id, compliance, role("showcase_S7").patient_id])], compliance };
+}
+
 const TIMEZONE = "Europe/Istanbul";
 // /api/frontend-config has no backend route at c44aa78c (404 on every page load): known, pre-existing.
 const KNOWN_API_NOISE = [{ method: "GET", path: "/api/frontend-config", status: 404 }];
@@ -510,53 +533,60 @@ async function preflight(browser, cfg, token) {
     if (list.data_source?.is_synthetic !== true || !ids.every((id) => id.startsWith("SENTETIK-HASTA-"))) {
       throw usage("Refusing to capture: the cohort is not the synthetic demo cohort.");
     }
-    for (const id of PRIMARY_PATIENTS) if (!ids.includes(id)) throw usage(`Patient ${id} is not in the cohort.`);
-    // Dynamic inputs: bills per patient and one claim-compliance finding for the deep-link route.
+    // The backend must serve the cohort the registry describes: a cache built from older data would pass every id test below.
+    const unknown = ids.filter((id) => !patientIds.includes(id));
+    const missing = patientIds.filter((id) => !ids.includes(id));
+    if (unknown.length || missing.length) {
+      throw usage(`The backend serves a cohort that differs from the registry (${missing.length} registry patients missing, ${unknown.length} others). Rebuild the cache (scripts/bilun/build_cache.py --activate) and restart the backend.`);
+    }
+    const { primary, compliance: compliancePatient } = primaryPatients();
+    // Dynamic inputs: bills per patient (they must be the registry's bills) and one compliance finding for the deep-link route.
     const claims = {};
-    for (const id of PRIMARY_PATIENTS) {
+    for (const id of primary) {
       const body = await fetchJson(context, cfg, `/api/patients/${id}/claims`);
       claims[id] = (body.claims ?? []).map((c) => c.claim_id).sort();
+      const expected = claimIds.filter((claim) => claim.startsWith(`F-${id}-`));
+      if (JSON.stringify(claims[id]) !== JSON.stringify(expected)) {
+        throw usage(`The bills of ${id} are [${claims[id].join(", ")}] but the registry says [${expected.join(", ")}]: the backend is not serving this cohort.`);
+      }
     }
-    const report = await fetchJson(context, cfg, "/api/billing-report/SENTETIK-HASTA-0029");
-    const findings = (report.claim_compliance?.findings ?? []).map((f) => f.finding_id).sort();
-    if (cfg.extras && !findings.length) {
-      throw usage("SENTETIK-HASTA-0029 has no claim-compliance finding, so the deep-link route cannot be captured. Use --no-extras to skip it on purpose.");
+    const report = await fetchJson(context, cfg, `/api/billing-report/${compliancePatient}`);
+    const findingId = complianceFindingId(report);
+    if (cfg.extras && !findingId) {
+      throw usage(`${compliancePatient} has no compliance finding with an id, so the deep-link route cannot be captured. Use --no-extras to skip it on purpose.`);
     }
     // Wave A evidence (human review, advisories) is served only with a signed release receipt, which a local
     // synthetic run cannot have. Record what the backend says so the limit is data, not memory.
     let waveA = { available: null, reason: "probe failed" };
     try {
-      const wave = await fetchJson(context, cfg, `/api/wavea-evidence/${PRIMARY_PATIENTS[0]}?kind=reviews&offset=0&limit=1`);
+      const wave = await fetchJson(context, cfg, `/api/wavea-evidence/${primary[0]}?kind=reviews&offset=0&limit=1`);
       waveA = { available: wave.available === true, reason: wave.unavailable_reason ?? null };
     } catch (error) {
       waveA.reason = safeMessage(error);
     }
-    return { cohortSize: ids.length, claims, findingId: findings[0] ?? null, waveA };
+    return { cohortSize: ids.length, primary, compliancePatient, claims, findingId, waveA };
   } finally {
     await context.close();
   }
 }
 
 function buildRoutes(cfg, facts) {
-  // The Patients table shows 10 of 50 patients per page and keeps its page in ?p=: the tool walks every page.
+  // The Patients table shows 10 patients per page (PAGE_SIZE in PatientInvoiceTable.tsx) and keeps its page in ?p=: the tool walks
+  // every page. A cohort that fits one page (the 8 showcase patients) has a single page and no pager with more to see.
   const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}`, ...(id === "patients" ? { pageWalk: true } : {}) }));
-  for (const patient of PRIMARY_PATIENTS) {
-    routes.push({ id: `patient-${patient.slice(-4)}`, kind: "patient", url: `/patient/${patient}`, patient });
+  for (const patient of facts.primary) {
+    routes.push({ id: `patient-${last4(patient)}`, kind: "patient", url: `/patient/${patient}`, patient });
   }
   if (cfg.extras) {
     // Beyond the eight plan routes: split pane (every patient-page change is tested in both), the
     // ?section=&finding= deep link that Phase 2 must keep working, and the sub-views below.
-    routes.push({
-      id: "patient-0003+0017-split",
-      kind: "split",
-      url: "/patient/SENTETIK-HASTA-0003",
-      split: { a: "SENTETIK-HASTA-0003", b: "SENTETIK-HASTA-0017" },
-    });
+    const [a, b] = facts.primary;
+    routes.push({ id: `patient-${last4(a)}+${last4(b)}-split`, kind: "split", url: `/patient/${a}`, split: { a, b } });
     if (facts.findingId) {
       routes.push({
-        id: "patient-0029-finding",
+        id: `patient-${last4(facts.compliancePatient)}-finding`,
         kind: "deeplink",
-        url: `/patient/SENTETIK-HASTA-0029?section=claim-compliance&finding=${encodeURIComponent(facts.findingId)}`,
+        url: `/patient/${facts.compliancePatient}?section=claim-compliance&finding=${encodeURIComponent(facts.findingId)}`,
         findingId: facts.findingId,
       });
     }
@@ -693,9 +723,12 @@ async function captureRoute(browser, cfg, route, locale, size, primary, facts, t
         result.metrics.pagers = detectPagers(expandedText);
         const pager = result.metrics.pagers.find((candidate) => candidate.kind === "page");
         if (route.pageWalk && primary) {
-          if (!pager) throw new Error("the Patients tab shows no pager, so its pages cannot be walked");
-          for (let number = 2; number <= pager.total; number += 1) queue.push({ state: `page-${number}`, url: pageUrl(route.url, number), page: number });
-          result.metrics.pagesWalked = pager.total;
+          // detectPagers lists only pagers with more to see, so a cohort that fits one page (the 8 showcase patients) has none:
+          // the default state is then the whole table. A pager the tool failed to read is still caught below, because the walk
+          // must have seen every patient of the cohort.
+          const pages = pager ? pager.total : 1;
+          for (let number = 2; number <= pages; number += 1) queue.push({ state: `page-${number}`, url: pageUrl(route.url, number), page: number });
+          result.metrics.pagesWalked = pages;
         }
       }
     }
@@ -841,7 +874,7 @@ async function selfTest(cfg) {
 
 const toolHashes = () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const files = ["capture-screens.mjs", "lib/numbers-parity.mjs", "lib/page-probes.mjs", "lib/probe-selftest.mjs", "lib/capture-routes.mjs", "lib/safe-message.mjs"];
+  const files = ["capture-screens.mjs", "lib/numbers-parity.mjs", "lib/page-probes.mjs", "lib/probe-selftest.mjs", "lib/capture-routes.mjs", "lib/cohort-registry.mjs", "lib/safe-message.mjs"];
   return Object.fromEntries(files.map((f) => [f, crypto.createHash("sha256").update(fs.readFileSync(path.join(here, f))).digest("hex")]));
 };
 
@@ -872,6 +905,7 @@ async function main() {
     const routes = buildRoutes(cfg, facts);
     if (!routes.length) throw usage("No routes selected.");
     meta.cohortSize = facts.cohortSize;
+    meta.patients = { primary: facts.primary, compliance: facts.compliancePatient };
     for (const locale of cfg.locales) {
       for (const [index, size] of cfg.sizes.entries()) {
         for (const route of routes) {

@@ -195,7 +195,10 @@ def test_preauth_note_distinguishes_real_catalog_member_and_input_flag(
     monkeypatch.setattr(cm, "check_specialty_materials_for_context", lambda _ctx: [])
     member = _material_line(code="100000", line_id="MEMBER", claim_id="C-MEMBER")
     flag_only = _material_line(
-        code="NF1040", line_id="FLAG", claim_id="C-FLAG", requires_pre_auth=True,
+        code="NF1040",
+        line_id="FLAG",
+        claim_id="C-FLAG",
+        requires_pre_auth=True,
     )
     result = cm.precheck_materials_from_claims(_ctx(member, flag_only))
     by_code = {row["sut_code"]: row for row in result.pre_auth_required}
@@ -213,9 +216,12 @@ def test_preauth_note_distinguishes_real_catalog_member_and_input_flag(
     assert flagged["sut_section_id"] == "3.1.2"
     assert flagged["clause_ref"] is None
     assert flagged["sgk_uplift_try"] is None
-    assert cm.precheck_materials_from_claims(
-        _ctx(_material_line(code="NF1040", requires_pre_auth=False)),
-    ).pre_auth_required == []
+    assert (
+        cm.precheck_materials_from_claims(
+            _ctx(_material_line(code="NF1040", requires_pre_auth=False)),
+        ).pre_auth_required
+        == []
+    )
 
 
 def test_none_material_date_does_not_crash_latest_line_selection(
@@ -347,10 +353,7 @@ def test_duplicate_material_code_preserves_preauth_and_bundled_per_line(
     result = cm.precheck_materials_from_claims(_ctx(line_003, line_004))
 
     assert len(result.pre_auth_required) == 1
-    assert (
-        result.pre_auth_required[0]["material_line_id"]
-        == "MLZ-F-SENTETIK-HASTA-0038-053-003"
-    )
+    assert result.pre_auth_required[0]["material_line_id"] == "MLZ-F-SENTETIK-HASTA-0038-053-003"
     assert result.pre_auth_required[0]["claim_id"] == "F-SENTETIK-HASTA-0038-053"
 
     assert len(result.bundled_separate_billing) == 1
@@ -441,36 +444,36 @@ def test_multi_claim_prose_violations_preserve_claim_id_and_material_line_id(
     assert by_line["MLZ-2"]["price_try"] == pytest.approx(200.0)
 
 
-def test_synthetic_cohort_0038_053_duplicate_ghc1220_preserves_preauth_and_prose() -> None:
-    """#238 acceptance criteria: on F-SENTETIK-HASTA-0038-053, MLZ-...-003
-    (requires_pre_auth=True) emits its pre_auth_required finding even when
-    MLZ-...-004 shares code GHC1220, and both lines emit prose findings with
-    their own material_line_id and claim_id."""
+def test_showcase_duplicate_material_code_preserves_preauth_and_prose() -> None:
+    """#238 acceptance criteria on a showcase bill: the flagged implant line of S5 (the registry names
+    it) is billed twice under the same code. The first line (requires_pre_auth) emits its
+    pre_auth_required finding even though the second line (bundled) shares its code, and both lines
+    emit prose findings with their own material_line_id and claim_id."""
+    from dataclasses import replace
+
     from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
     from src.bilun.domain.claims.loader import load_sut_claim_dataset
     from src.bilun.domain.claims.patient_context import build_bill_claim_context
+    from tests.fixtures import synthetic_cohort as cohort
 
-    ds = load_sut_claim_dataset()
-    ctx = build_bill_claim_context(
-        "SENTETIK-HASTA-0038", "F-SENTETIK-HASTA-0038-053", ds
-    )
+    role = cohort.role("showcase_S5")
+    flagged_id = cohort.fault("S5")["line_id"]
+    ctx = build_bill_claim_context(role.patient_id, role.claim_id, load_sut_claim_dataset())
     assert ctx is not None
-    result = precheck_materials_from_claims(ctx)
+    flagged = next(line for line in ctx.material_lines if line.material_line_id == flagged_id)
+    first = replace(flagged, requires_pre_auth=True, is_bundled=False)
+    twin_id = f"{flagged_id}-B"
+    twin = replace(flagged, material_line_id=twin_id, requires_pre_auth=False, is_bundled=True)
+    rest = tuple(line for line in ctx.material_lines if line.material_line_id != flagged_id)
+    result = precheck_materials_from_claims(replace(ctx, material_lines=(first, twin, *rest)))
 
-    preauth_line_ids = {row["material_line_id"] for row in result.pre_auth_required}
-    assert "MLZ-F-SENTETIK-HASTA-0038-053-003" in preauth_line_ids
+    assert {row["material_line_id"] for row in result.pre_auth_required} == {flagged_id}
+    assert {row["material_line_id"] for row in result.bundled_separate_billing} == {twin_id}
 
-    ghc1220_prose = [
+    same_code_prose = [
         row
         for row in result.prose_bundling_violations
-        if row.get("sut_code") == "GHC1220"
+        if row.get("sut_code") == flagged.material_code
     ]
-    assert [row["material_line_id"] for row in ghc1220_prose] == [
-        "MLZ-F-SENTETIK-HASTA-0038-053-003",
-        "MLZ-F-SENTETIK-HASTA-0038-053-004",
-    ]
-    assert all(
-        row["claim_id"] == "F-SENTETIK-HASTA-0038-053" for row in ghc1220_prose
-    )
-
-
+    assert [row["material_line_id"] for row in same_code_prose] == [flagged_id, twin_id]
+    assert all(row["claim_id"] == role.claim_id for row in same_code_prose)
