@@ -227,10 +227,14 @@ def _claim_icu_package_code(
     return None
 
 
-def _claim_has_icu_code(
+def claim_has_icu_code(
     procedure_lines: list[ProcedureClaimLine],
 ) -> bool:
-    """True when any procedure line on the claim is an ICU indicator code."""
+    """True when any procedure line on the claim is an ICU indicator code.
+
+    The ICU motor's claim gate; the newborn bed motor uses the same test to
+    leave a newborn ICU stay to this motor.
+    """
     return any(_is_icu_code(line.procedure_code) for line in procedure_lines)
 
 
@@ -305,7 +309,7 @@ def detect_icu_puani_opportunities(
 
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
 
-        if not _claim_has_icu_code(claim_procs):
+        if not claim_has_icu_code(claim_procs):
             continue
 
         if claim.admission_date is None or claim.discharge_date is None:

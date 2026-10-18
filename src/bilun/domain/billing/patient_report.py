@@ -11,6 +11,9 @@ from src.bilun.domain.billing.claim_yatak_puani import recommend_yatak_puani_fro
 from src.bilun.domain.billing.claim_yatak_icu_overlap import (
     reconcile_yatak_icu_overlap,
 )
+from src.bilun.domain.billing.claim_yatak_newborn_overlap import (
+    reconcile_yatak_newborn_overlap,
+)
 from src.bilun.domain.billing.claim_icu_puani import recommend_icu_puani_from_claims
 from src.bilun.domain.billing.claim_yenidogan_yatak import (
     recommend_yenidogan_yatak_from_claims,
@@ -186,6 +189,13 @@ def compute_patient_billing_report(
             claim_context, report.yatak_puani
         )
         report.yenidogan_yatak = recommend_yenidogan_yatak_from_claims(claim_context)
+        # Yenidoğan yatağı ↔ standart yatak (post-processing): EK-2B gives 510010,
+        # 510070 and 510081 the same "Yemek, yatak, hasta vizit hizmetlerini
+        # kapsar" — a day the newborn bed motor covers is not also expected as
+        # standard bed, or the same days enter the SGK headline twice.
+        report.yatak_puani = reconcile_yatak_newborn_overlap(
+            report.yatak_puani, report.yenidogan_yatak
+        )
         report.refakatci = recommend_refakatci_from_claims(claim_context)
         report.anestezi_puani = recommend_anestezi_puani_from_claims(claim_context)
         report.material_uplift = recommend_material_uplift_from_claims(claim_context)

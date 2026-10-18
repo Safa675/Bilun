@@ -10,17 +10,17 @@ The broad materializer reaches **7** groups with **496** authored IDs. It record
 
 Only **7** focused IDs are candidates for confirmed, unpriced claim compliance after source and input gates. They enter the in-memory generic projection, but the current patient, bill, and cohort APIs hide them until the complete-25-v1 activation gate. Focused review and financial-review evidence is a draft persisted capability and remains hidden by the same gate. It contributes no confirmed TRY amount or existing report total. This checkpoint does not certify a complete 25-family release.
 
-Relative to the 2026-09-18 baseline, the runtime row count changes from **73** to **83**: ownership, focused and broad materialization, batch, validation, and projection stages were added. The seven broad detectors remain in the static runtime inventory through their wrapper. The distinct ID/kind count changes from **1,924** to **1,933** because twelve specific radiation identities replace one generic radiation kind, while the corrected admission-window and exam-date detectors no longer claim to emit findings. Those two historical identities remain in the 32-ID unavailable evaluation roster.
+Relative to the 2026-09-18 baseline, the runtime row count changes from **73** to **84**: ownership, focused and broad materialization, batch, validation, and projection stages were added. The seven broad detectors remain in the static runtime inventory through their wrapper. The distinct ID/kind count changes from **1,924** to **1,933** because twelve specific radiation identities replace one generic radiation kind, while the corrected admission-window and exam-date detectors no longer claim to emit findings. Those two historical identities remain in the 32-ID unavailable evaluation roster.
 
 ## Exact counts
 
 1. Registry rule families: **46**
-2. Runtime detectors/adapters: **83**
+2. Runtime detectors/adapters: **84**
 3. Distinct emitted rule IDs/kinds: **1942**
-4. Patient-visible findings: **1405**
+4. Patient-visible findings: **1406**
 5. Cohort-visible findings: **1304**
 6. Hidden runtime findings: **535**
-7. Aggregate-only findings: **2**
+7. Aggregate-only findings: **1**
 8. Duplicate-surfaced findings: **1398**
 9. Financial findings: **362**
 10. Nonfinancial findings: **1580**
@@ -115,8 +115,9 @@ Registry coverage breakdown: `{'implemented': 36, 'non_algorithmic': 6, 'partial
 | `compute_patient_billing_report:recommend_refakatci_from_claims` | refakatci_510121 | RecommendedActionsPanel | — | priced_opportunity | patient_visible | none | no registry family |
 | `compute_patient_billing_report:recommend_session_uplift_from_claims` | 4 id(s) | RevenueViewSection:SessionUpliftSection | — | priced_opportunity | patient_visible | intentional_cross_view | no registry family |
 | `compute_patient_billing_report:recommend_yatak_puani_from_claims` | yatak_puani_510010 | RecommendedActionsPanel | — | priced_opportunity | patient_visible | none | no registry family |
-| `compute_patient_billing_report:recommend_yenidogan_yatak_from_claims` | kind:yenidogan_yatak | — | — | priced_opportunity | aggregate_only | none | Contributes to SGK/cohort totals but has no recommended-action row or patient section. |
+| `compute_patient_billing_report:recommend_yenidogan_yatak_from_claims` | kind:yenidogan_yatak | RecommendedActionsPanel | — | priced_opportunity | patient_visible | none | no registry family |
 | `compute_patient_billing_report:reconcile_yatak_icu_overlap` | — | — | — | informational | not_applicable | none | Money reconciliation post-processor; it does not originate findings. |
+| `compute_patient_billing_report:reconcile_yatak_newborn_overlap` | — | — | — | informational | not_applicable | none | Money reconciliation post-processor; it does not originate findings. |
 | `compute_patient_billing_report:set_missing_inputs_report` | — | — | — | informational | not_applicable | none | Missing-input state writer; it does not originate findings. |
 | `compute_patient_billing_report:validate_drug_indication_from_claims` | 974 id(s) | ComplianceViewSection:DrugIndicationReviewSection | SUTComplianceDashboard:drug_indication | unpriced_compliance | patient_and_cohort_visible | intentional_cross_view | registry=drug_indication_prose |
 | `compute_patient_billing_report:validate_focused_context_ownership` | — | — | — | informational | not_applicable | none | Validates patient and source-line ownership before focused projection; it emits no finding. |
@@ -260,6 +261,7 @@ Artifact-only top-level prose rule sets: `definitions_2_6 (63 rules)`
 - `compute_patient_billing_report:recommend_session_uplift_from_claims` — mapping=runtime_without_registry_family; emitted=`2.2.2.B.a`, `2.2.2.B.b`, `2.2.2.B.c`, `2.2.2.B.ç`. No registry mapping is forced.
 - `compute_patient_billing_report:recommend_yatak_puani_from_claims` — mapping=runtime_without_registry_family; emitted=`yatak_puani_510010`. No registry mapping is forced.
 - `compute_patient_billing_report:recommend_yenidogan_yatak_from_claims` — mapping=runtime_without_registry_family; emitted=`kind:yenidogan_yatak`. No registry mapping is forced.
+- `compute_patient_billing_report:reconcile_yatak_newborn_overlap` — mapping=runtime_without_registry_family; emitted=—. No registry mapping is forced.
 - `compute_patient_billing_report:set_missing_inputs_report` — mapping=runtime_without_registry_family; emitted=—. No registry mapping is forced.
 - `compute_patient_billing_report:validate_focused_context_ownership` — mapping=runtime_without_registry_family; emitted=—. No registry mapping is forced.
 - `compute_patient_billing_report:validate_full_wavea_evidence_detail` — mapping=runtime_without_registry_family; emitted=—. No registry mapping is forced.

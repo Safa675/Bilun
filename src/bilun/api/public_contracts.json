@@ -1854,6 +1854,7 @@
           "icu_overlap_dates": {
             "$list": true
           },
+          "newborn_overlap_days": true,
           "same_day_stay": true,
           "surgery_day_bundled": true
         }
@@ -1916,6 +1917,7 @@
           "sut_section_id": true,
           "recoverable_uplift_try": true,
           "expected_try": true,
+          "actual_billed_try": true,
           "bed_code": true,
           "days": true,
           "puan": true,

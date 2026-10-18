@@ -1,30 +1,39 @@
-"""Action rows for the ICU motor, and why the newborn bed motor still has none.
+"""Action rows for the ICU motor and the newborn bed motor.
 
 `icu_puani` feeds `sgk_uplift_try` through `confirmed_icu_try` (the expected 510090 + P55200x charge minus
-the ICU lines already billed). Its rows must add up to that component: a row exists only for money the
-headline counts. `yenidogan_yatak` feeds the headline too but its amount is not netted against the billed
-newborn bed lines, so surfacing it would tell a billing officer to recover what was already billed: it stays
-on the named aggregate-only list until the engine is fixed. No showcase story exercises either motor, so
-the bills are built in memory (amounts are read from the engine's own opportunity, never typed here).
+the ICU lines already billed). `yenidogan_yatak` feeds it through `confirmed_yenidogan_yatak_try` (the expected
+Kuvöz / Kot charge minus the newborn bed lines already billed; it stands down on an ICU stay and shares no day
+with the standard-bed motor, tasks/todo.md, "Newborn bed motor"). Rows of both must add up to their component:
+a row exists only for money the headline counts. No showcase story exercises either motor, so the bills are
+built in memory (amounts are read from the engine's own opportunity, never typed here).
 """
 
 from __future__ import annotations
 
-from datetime import date
+import json
+from datetime import date, timedelta
 from decimal import Decimal
 from itertools import product
 from typing import Any
 
 import pytest
 
+from src.bilun.api.routes.billing import _serialize_billing_report
+from src.bilun.cache.build_streaming import json_ready
 from src.bilun.domain.billing.billing_actions import collect_billing_actions
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report
+from src.bilun.domain.billing.recovery_summary import (
+    patient_recovery_summary_entry,
+    patient_recovery_summary_from_payload,
+)
 from src.bilun.domain.billing.types import (
     AnesteziPuaniReview,
     BillingActionReport,
     IcuPuaniReview,
     RefakatciReview,
+    YenidoganYatakReview,
 )
+from src.bilun.domain.claims.models import ClaimDiagnosis
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
 from tests.unit.domain.billing.test_blood_uplift_wiring import _claim, _proc
@@ -198,6 +207,7 @@ _COUNTED_BLOCKS = {
     "icu_puani": (IcuPuaniReview, "total_try", "expected_try", "confirmed_icu_try"),
     "anestezi_puani": (AnesteziPuaniReview, "expected_try", "total_try", "confirmed_anestezi_try"),
     "refakatci": (RefakatciReview, "expected_try", "total_try", "confirmed_refakat_try"),
+    "yenidogan_yatak": (YenidoganYatakReview, "expected_try", "total_try", "confirmed_yenidogan_yatak_try"),
 }
 
 
@@ -239,45 +249,173 @@ def test_rows_add_up_to_the_blocks_component_for_every_field_combination(surface
     assert _sum_try([r["sgk_uplift_try"] for r in rows]) == _try(getattr(getattr(report, surface), component))
 
 
-def _newborn_report(*, bed_billed: str | None) -> BillingActionReport:
+def _newborn_context(
+    *,
+    bed_billed: str | None = None,
+    bed_code: str = "510070",
+    quantity: int = 3,
+    days: int = 3,
+    department: str = "yenidoğan",
+    icd10: str = "Z38.0",
+    icu_codes: tuple[str, ...] = (),
+    icu_billed: str = "0",
+) -> PatientClaimContext:
+    start = date(2026, 7, 10)
+    end = start + timedelta(days=days - 1)
     claim = _claim(
-        claim_id="CLM-NB", department="yenidoğan", primary_icd10="Z38.0",
-        admission_date=date(2026, 7, 10), discharge_date=date(2026, 7, 12),
-        claim_start_date=date(2026, 7, 10), claim_end_date=date(2026, 7, 12),
+        claim_id="CLM-NB", department=department, primary_icd10=icd10,
+        admission_date=start, discharge_date=end, claim_start_date=start, claim_end_date=end,
     )
     lines = [_proc(procedure_line_id="NB-EXAM", claim_id="CLM-NB", procedure_code="520010",
-                   procedure_name="Muayene", billed_amount_try=Decimal("10"),
-                   procedure_date=date(2026, 7, 10))]
+                   procedure_name="Muayene", billed_amount_try=Decimal("10"), procedure_date=start)]
     if bed_billed is not None:
-        lines.append(_proc(procedure_line_id="NB-BED", claim_id="CLM-NB", procedure_code="510070",
-                           procedure_name="Kuvöz", quantity=3, billed_amount_try=Decimal(bed_billed),
-                           procedure_date=date(2026, 7, 10)))
-    ctx = PatientClaimContext(
-        patient_id="P1", claims=(claim,), procedure_lines=tuple(lines), material_lines=(),
-        drug_lines=(), diagnoses=(),
+        lines.append(_proc(procedure_line_id="NB-BED", claim_id="CLM-NB", procedure_code=bed_code,
+                           procedure_name="bed", quantity=quantity, billed_amount_try=Decimal(bed_billed),
+                           procedure_date=start))
+    for index, code in enumerate(icu_codes):
+        lines.append(_proc(procedure_line_id=f"NB-ICU{index}", claim_id="CLM-NB", procedure_code=code,
+                           procedure_name="Yoğun bakım", billed_amount_try=Decimal(icu_billed),
+                           procedure_date=start + timedelta(days=min(index, days - 1))))
+    diagnosis = ClaimDiagnosis(
+        diagnosis_id="DX1", claim_id="CLM-NB", patient_id="P1", episode_id="E1", icd10_code=icd10,
+        is_primary=True, diagnosis_role="primary", diagnosis_date=start, exemption_eligible=False,
     )
-    return compute_patient_billing_report("P1", claim_context=ctx, copay_exemption=_NOT_EXEMPT)
+    return PatientClaimContext(
+        patient_id="P1", claims=(claim,), procedure_lines=tuple(lines), material_lines=(),
+        drug_lines=(), diagnoses=(diagnosis,),
+    )
 
 
-class TestNewbornBedStaysAggregateOnly:
-    def test_an_unbilled_newborn_stay_is_counted_in_the_headline_but_has_no_row(self) -> None:
-        """The control of the defect below: the motor works on an unbilled stay, and surfaces no row."""
-        report = _newborn_report(bed_billed=None)
+def _newborn_report(**kwargs: Any) -> BillingActionReport:
+    return compute_patient_billing_report(
+        "P1", claim_context=_newborn_context(**kwargs), copay_exemption=_NOT_EXEMPT
+    )
+
+
+def _newborn_icu_report(*, icu_billed: str = "0") -> BillingActionReport:
+    """The reviewer's bill: yenidoğan yoğun bakım, P22.0, 510090 + P552006, 4 inclusive days."""
+    return _newborn_report(
+        days=4, department="Yenidoğan Yoğun Bakım", icd10="P22.0", icu_codes=("510090", "P552006"),
+        icu_billed=icu_billed,
+    )
+
+
+def _counted(report: BillingActionReport) -> Decimal:
+    return _sum_try([a["sgk_uplift_try"] for a in report.recommended_actions if a["sgk_uplift_try"] is not None])
+
+
+class TestNewbornBedRows:
+    def test_an_unbilled_newborn_stay_gets_one_revenue_row_with_the_full_charge(self) -> None:
+        report = _newborn_report()
+
         [opportunity] = report.yenidogan_yatak.opportunities
+        [row] = _rows(report, "yenidogan_yatak")
         assert opportunity["days"] == 3
+        assert opportunity["actual_billed_try"] == 0
         assert _try(report.yenidogan_yatak.confirmed_yenidogan_yatak_try) == _try(opportunity["expected_try"]) > 0
+
+        assert row["finding_type"] == "opportunity"
+        assert row["kind"] == opportunity["type"] == "yenidogan_yatak"
+        assert row["claim_id"] == opportunity["claim_id"] == "CLM-NB"
+        assert row["sut_section_id"] == opportunity["sut_section_id"] == "2.2.2"
+        assert _try(row["sgk_uplift_try"]) == _try(opportunity["recoverable_uplift_try"]) == _try(opportunity["expected_try"])
+        # Revenue money only; the row names no single procedure line (the bed line is what is missing).
+        assert row["audit_risk_try"] is None
+        assert row["compliance_savings_try"] is None
+        assert row["billed_try"] is None
+        assert row["procedure_code"] is None
+        # Nothing is billed, so the row says what it assumes instead of the billed sentence.
+        assert row["detail"] == opportunity["detail"]
+        assert "Kuvöz (510070) is assumed" in row["detail"]
+
+    def test_a_partly_billed_stay_gets_a_row_with_the_unbilled_remainder(self) -> None:
+        report = _newborn_report(bed_billed="440.98", quantity=1)
+
+        [opportunity] = report.yenidogan_yatak.opportunities
+        [row] = _rows(report, "yenidogan_yatak")
+        remainder = _try(opportunity["expected_try"]) - Decimal("440.98")
+        assert _try(opportunity["actual_billed_try"]) == Decimal("440.98")
+        assert remainder > 0
+        assert _try(row["sgk_uplift_try"]) == _try(opportunity["recoverable_uplift_try"]) == remainder
+        assert _try(report.yenidogan_yatak.confirmed_yenidogan_yatak_try) == remainder
+        # The detail states the full expected charge; the row says what the billed lines leave of it.
+        assert row["detail"].startswith(opportunity["detail"])
+        assert "Already billed on newborn bed lines (510070 / 510081): 440.98 TRY" in row["detail"]
+        assert "unbilled remainder" in row["detail"]
+        assert "is assumed" not in row["detail"]
+
+    def test_a_newborn_bed_billed_in_full_leaves_nothing_recoverable(self) -> None:
+        """Was the strict xfail of the puan-motor work: the motor now nets the billed 510070 / 510081 lines."""
+        expected = _newborn_report().yenidogan_yatak.opportunities[0]["expected_try"]
+        report = _newborn_report(bed_billed=str(Decimal(str(expected))))
+
+        [opportunity] = report.yenidogan_yatak.opportunities
+        assert opportunity["recoverable_uplift_try"] == 0.0
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
         assert _rows(report, "yenidogan_yatak") == []
 
-    @pytest.mark.xfail(
-        strict=True,
-        raises=AssertionError,
-        reason=(
-            "The newborn bed motor sets recoverable_uplift_try = expected_try and never nets the billed "
-            "510070/510081 lines (the ICU and standard-bed motors do, #13). Fix the amount, then remove this "
-            "marker, give the block rows in collect_billing_actions and take it off _AGGREGATE_ONLY_BLOCKS."
-        ),
-    )
-    def test_a_newborn_bed_billed_in_full_leaves_nothing_recoverable(self) -> None:
-        expected = _newborn_report(bed_billed=None).yenidogan_yatak.opportunities[0]["expected_try"]
-        report = _newborn_report(bed_billed=str(Decimal(str(expected))))
+    def test_a_billed_kot_is_not_a_row_for_the_kuvoz_difference(self) -> None:
+        report = _newborn_report(bed_billed="933.90", bed_code="510081")
+
+        [opportunity] = report.yenidogan_yatak.opportunities
+        assert opportunity["bed_code"] == "510081"
         assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
+        assert _rows(report, "yenidogan_yatak") == []
+
+    @pytest.mark.parametrize("billed", [None, "440.98", "1322.94"])
+    def test_the_rows_explain_the_whole_headline_of_a_newborn_bill(self, billed: str | None) -> None:
+        """Before the fix the headline held the newborn block with no row (aggregate-only) and, on the same
+        days, the standard-bed money too (2,138.22 against rows of 815.28)."""
+        report = _newborn_report(bed_billed=billed, quantity=1 if billed == "440.98" else 3)
+
+        assert _counted(report) == _try(report.sgk_uplift_try)
+
+    def test_a_newborn_icu_stay_is_the_icu_motors_not_a_kuvoz_ward_stay(self) -> None:
+        report = _newborn_icu_report(icu_billed="250")
+
+        assert report.yenidogan_yatak.opportunities == []
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
+        assert _rows(report, "yenidogan_yatak") == []
+        assert report.icu_puani.confirmed_icu_try > 0
+        # The review's bill: 1,763.92 TL of Kuvöz on top of the ICU charge and a standard-bed day left the
+        # rows 1,763.92 short of the headline. Now the rows are the headline.
+        assert _counted(report) == _try(report.sgk_uplift_try)
+
+    def test_the_top_action_of_a_newborn_bill_has_a_row_behind_it_on_every_path(self) -> None:
+        report = _newborn_report()
+        payloads = {
+            "live": patient_recovery_summary_entry(report),
+            "cache": patient_recovery_summary_from_payload(json.loads(json.dumps(json_ready(report), default=str))),
+            "api": patient_recovery_summary_from_payload(
+                json.loads(json.dumps(_serialize_billing_report(report), default=str))
+            ),
+        }
+
+        assert {path: entry["top_action_type"] for path, entry in payloads.items()} == {
+            "live": "yenidogan_yatak", "cache": "yenidogan_yatak", "api": "yenidogan_yatak",
+        }
+        [row] = _rows(report, "yenidogan_yatak")
+        assert _try(row["sgk_uplift_try"]) == _try(report.yenidogan_yatak.confirmed_yenidogan_yatak_try)
+
+    @pytest.mark.parametrize("days", [1, 2, 4])
+    @pytest.mark.parametrize("bed_code", ["510070", "510081"])
+    @pytest.mark.parametrize("share", [None, "0", "half", "full", "over"])
+    def test_every_bill_of_the_grid_keeps_rows_equal_to_the_headline_and_the_top_action_backed(
+        self, days: int, bed_code: str, share: str | None
+    ) -> None:
+        rate = {"510070": Decimal("440.98"), "510081": Decimal("311.30")}[bed_code]
+        full = rate * days
+        billed = {
+            None: None, "0": "0", "half": str((full / 2).quantize(_CENT)), "full": str(full), "over": str(full + 50),
+        }[share]
+        report = _newborn_report(bed_billed=billed, bed_code=bed_code, quantity=days, days=days)
+
+        assert _counted(report) == _try(report.sgk_uplift_try)
+        top = patient_recovery_summary_entry(report)["top_action_type"]
+        if top == "yenidogan_yatak":
+            assert _rows(report, "yenidogan_yatak"), "the top action names a motor with no row behind it"
+        rows = _rows(report, "yenidogan_yatak")
+        component = _try(report.yenidogan_yatak.confirmed_yenidogan_yatak_try)
+        assert _sum_try([r["sgk_uplift_try"] for r in rows]) == component
+        if share in ("full", "over"):
+            assert component == Decimal("0.00") and not rows

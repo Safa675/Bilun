@@ -106,6 +106,7 @@ EXPECTED_REPORT_CALLS = frozenset(
         "recommend_icu_puani_from_claims",
         "reconcile_yatak_icu_overlap",
         "recommend_yenidogan_yatak_from_claims",
+        "reconcile_yatak_newborn_overlap",
         "recommend_refakatci_from_claims",
         "recommend_anestezi_puani_from_claims",
         "recommend_audit_exposure_from_claims",
@@ -238,6 +239,7 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
     "set_missing_inputs_report": (),
     "dedupe_addon_against_capture": (),
     "reconcile_yatak_icu_overlap": (),
+    "reconcile_yatak_newborn_overlap": (),
 }
 
 
@@ -428,12 +430,13 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
         "visibility": "patient_visible",
     },
     "recommend_yenidogan_yatak_from_claims": {
+        "surface": "yenidogan_yatak",
         "finding_type": "opportunity",
+        "patient_ui": "RecommendedActionsPanel",
         "money": "priced_opportunity",
         "money_fields": ["sgk_uplift_try"],
         "included": True,
-        "visibility": "aggregate_only",
-        "hidden_reason": "Contributes to SGK/cohort totals but has no recommended-action row or patient section.",
+        "visibility": "patient_visible",
     },
     "recommend_refakatci_from_claims": {
         "surface": "refakatci",
@@ -602,6 +605,14 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
         "visibility": "not_applicable",
         "hidden_reason": "Money reconciliation post-processor; it does not originate findings.",
     },
+    "reconcile_yatak_newborn_overlap": {
+        "finding_type": "internal",
+        "money": "informational",
+        "money_fields": [],
+        "included": True,
+        "visibility": "not_applicable",
+        "hidden_reason": "Money reconciliation post-processor; it does not originate findings.",
+    },
 }
 
 
@@ -611,4 +622,5 @@ REPORT_FIELD_OVERRIDES = {
     "set_missing_inputs_report": "missing-input states",
     "dedupe_addon_against_capture": "procedure_addon_uplift",
     "reconcile_yatak_icu_overlap": "yatak_puani",
+    "reconcile_yatak_newborn_overlap": "yatak_puani",
 }

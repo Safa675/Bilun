@@ -57,6 +57,7 @@ def recommend_yenidogan_yatak_from_claims(
     opportunities = detect_yenidogan_yatak_opportunities(
         list(ctx.claims),
         list(ctx.diagnoses),
+        procedure_lines=list(ctx.procedure_lines),
         claim_ids_with_procs=claim_ids_with_procs,
     )
 

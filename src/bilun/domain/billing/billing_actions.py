@@ -33,6 +33,7 @@ _OPPORTUNITY_SURFACES: frozenset[str] = frozenset(
         "blood_uplift",
         "yatak_puani",
         "icu_puani",
+        "yenidogan_yatak",
         "anestezi_puani",
         "refakatci",
         "material_uplift",
@@ -196,14 +197,19 @@ def _action_row(
 
 
 # Puan motors whose rows must add up to the block's component of ``sgk_uplift_try``
-# (``confirmed_anestezi_try`` / ``confirmed_refakat_try`` / ``confirmed_icu_try``), with the field that
-# component reads when an opportunity has no ``recoverable_uplift_try``. The newborn bed motor is not
-# here: its amount is not netted against the billed bed lines yet, so a row would offer money that is
-# already billed (tasks/todo.md, "Finish the wiring of the four puan motors").
+# (``confirmed_anestezi_try`` / ``confirmed_refakat_try`` / ``confirmed_icu_try`` /
+# ``confirmed_yenidogan_yatak_try``), with the field that component reads when an opportunity has no
+# ``recoverable_uplift_try``.
 _SGK_COUNTED_FALLBACK_FIELD: dict[str, str] = {
     "anestezi_puani": "expected_try",
     "refakatci": "expected_try",
     "icu_puani": "total_try",
+    "yenidogan_yatak": "expected_try",
+}
+# Motors whose amount is netted against billed lines: the row is the unbilled remainder, the detail the full charge.
+_NETTED_LINES_LABEL: dict[str, str] = {
+    "icu_puani": "ICU lines (510090 / P55200x)",
+    "yenidogan_yatak": "newborn bed lines (510070 / 510081)",
 }
 
 
@@ -229,14 +235,14 @@ def _detail_with_notes(row: dict[str, Any]) -> str | None:
     return " ".join([str(detail), *notes]) if detail and notes else detail
 
 
-def _icu_detail(row: dict[str, Any]) -> str | None:
-    """The ICU detail states the full expected charge; the row is what the billed ICU lines leave."""
+def _netted_detail(row: dict[str, Any], lines_label: str) -> str | None:
+    """The detail states the full expected charge; the row is what the billed lines leave of it."""
     detail = row.get("detail")
     billed = float(row.get("actual_billed_try") or 0.0)
     if not detail or billed <= 0:
         return detail
     return (
-        f"{detail} Already billed on ICU lines (510090 / P55200x): {billed:.2f} TRY; "
+        f"{detail} Already billed on {lines_label}: {billed:.2f} TRY; "
         "this row is the unbilled remainder."
     )
 
@@ -373,6 +379,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),
         ("yatak_puani", report.yatak_puani, "recoverable_uplift_try"),
         ("icu_puani", report.icu_puani, "recoverable_uplift_try"),
+        ("yenidogan_yatak", report.yenidogan_yatak, "recoverable_uplift_try"),
         ("anestezi_puani", report.anestezi_puani, "recoverable_uplift_try"),
         ("refakatci", report.refakatci, "recoverable_uplift_try"),
         ("material_uplift", report.material_uplift, "recoverable_uplift_try"),
@@ -396,7 +403,11 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 sgk_uplift = _sgk_counted_uplift(row, _SGK_COUNTED_FALLBACK_FIELD[surface_name])
                 if sgk_uplift is None:
                     continue
-                detail = _icu_detail(row) if surface_name == "icu_puani" else _detail_with_notes(row)
+                detail = (
+                    _netted_detail(row, _NETTED_LINES_LABEL[surface_name])
+                    if surface_name in _NETTED_LINES_LABEL
+                    else _detail_with_notes(row)
+                )
             else:
                 sgk_uplift = row.get(uplift_field) or row.get("recoverable_uplift_try")
             actions.append(
