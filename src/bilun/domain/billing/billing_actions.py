@@ -217,8 +217,8 @@ def _sgk_counted_uplift(row: dict[str, Any], fallback_field: str) -> float | Non
     """The uplift an opportunity adds to the SGK headline, or None when it adds nothing.
 
     Mirrors the block's ``confirmed_*_try``: a row flagged out of the SGK total makes no action
-    row, and neither does one without a positive amount (companion days or ICU lines already
-    billed; day-case, ICU and package-window suppressions).
+    row, and neither does one without a positive amount (companion days, ICU lines or newborn
+    bed lines already billed; day-case, ICU and package-window suppressions).
     """
     if not row.get("included_in_sgk_total", True):
         return None

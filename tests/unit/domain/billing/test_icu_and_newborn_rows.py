@@ -354,6 +354,16 @@ class TestNewbornBedRows:
         assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
         assert _rows(report, "yenidogan_yatak") == []
 
+    def test_a_credit_line_makes_a_row_of_the_charge_at_most(self) -> None:
+        """Review F3: -100 TL billed on a 440.98 TL day used to make a row of 540.98."""
+        report = _newborn_report(days=1, quantity=1, bed_billed="-100.00")
+
+        [opportunity] = report.yenidogan_yatak.opportunities
+        [row] = _rows(report, "yenidogan_yatak")
+        assert _try(opportunity["recoverable_uplift_try"]) == _try(opportunity["expected_try"])
+        assert _try(row["sgk_uplift_try"]) == _try(opportunity["expected_try"])
+        assert _counted(report) == _try(report.sgk_uplift_try)
+
     def test_a_billed_kot_is_not_a_row_for_the_kuvoz_difference(self) -> None:
         report = _newborn_report(bed_billed="933.90", bed_code="510081")
 
@@ -397,9 +407,28 @@ class TestNewbornBedRows:
         [row] = _rows(report, "yenidogan_yatak")
         assert _try(row["sgk_uplift_try"]) == _try(report.yenidogan_yatak.confirmed_yenidogan_yatak_try)
 
+    def test_the_public_projection_keeps_the_new_row_keys(self) -> None:
+        """`actual_billed_try`, `bundled_days` and `newborn_overlap_days` exist only on newborn rows, which no
+        showcase bill has: without this test a missing entry in public_contracts.json would fail nothing."""
+        from src.bilun.api.public_responses import project_public_response
+
+        report = _newborn_report(bed_billed="440.98", quantity=1)
+        payload = json.loads(json.dumps(_serialize_billing_report(report), default=str))
+
+        public = project_public_response(payload, "/api/billing-report/{patient_id}")
+
+        [newborn] = public["yenidogan_yatak"]["opportunities"]
+        assert newborn["actual_billed_try"] == pytest.approx(440.98, abs=0.005)
+        assert newborn["bundled_days"] == 0
+        assert newborn["days"] == 3
+        [standard] = public["yatak_puani"]["opportunities"]
+        assert standard["newborn_overlap_days"] == 3
+        [row] = [a for a in public["recommended_actions"] if a["surface"] == "yenidogan_yatak"]
+        assert row["sgk_uplift_try"] == pytest.approx(881.96, abs=0.005)
+
     @pytest.mark.parametrize("days", [1, 2, 4])
     @pytest.mark.parametrize("bed_code", ["510070", "510081"])
-    @pytest.mark.parametrize("share", [None, "0", "half", "full", "over"])
+    @pytest.mark.parametrize("share", [None, "0", "half", "full", "over", "credit"])
     def test_every_bill_of_the_grid_keeps_rows_equal_to_the_headline_and_the_top_action_backed(
         self, days: int, bed_code: str, share: str | None
     ) -> None:
@@ -407,6 +436,7 @@ class TestNewbornBedRows:
         full = rate * days
         billed = {
             None: None, "0": "0", "half": str((full / 2).quantize(_CENT)), "full": str(full), "over": str(full + 50),
+            "credit": "-25.00",
         }[share]
         report = _newborn_report(bed_billed=billed, bed_code=bed_code, quantity=days, days=days)
 
@@ -419,3 +449,5 @@ class TestNewbornBedRows:
         assert _sum_try([r["sgk_uplift_try"] for r in rows]) == component
         if share in ("full", "over"):
             assert component == Decimal("0.00") and not rows
+        for opportunity in report.yenidogan_yatak.opportunities:
+            assert opportunity["recoverable_uplift_try"] <= opportunity["expected_try"]

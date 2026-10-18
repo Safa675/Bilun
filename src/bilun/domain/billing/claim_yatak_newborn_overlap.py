@@ -68,7 +68,8 @@ def reconcile_yatak_newborn_overlap(
         reconciled = dict(opportunity)
         reconciled["bed_days"] = bed_days - overlap
         reconciled["expected_yatak_try"] = expected
-        reconciled["recoverable_uplift_try"] = _money(max(0.0, expected - actual_billed_try))
+        # Never more than the expected charge: a credit line must not recover money on removed days.
+        reconciled["recoverable_uplift_try"] = _money(min(expected, max(0.0, expected - actual_billed_try)))
         reconciled["newborn_overlap_days"] = overlap
         reconciled["detail"] = (
             f"{opportunity.get('detail', '')} {overlap} day(s) are newborn bed days "

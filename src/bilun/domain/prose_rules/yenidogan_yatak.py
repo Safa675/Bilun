@@ -15,12 +15,18 @@ handled by the ICU motor — not here: a claim that carries an ICU indicator cod
 intensive care unit is skipped.
 
 Billed lines are netted: ``actual_billed_try`` is the sum of the claim's 510070
-and 510081 lines and ``recoverable_uplift_try = max(0, expected_try - actual)``
-(the ICU and standard-bed motors do the same since #13). The billed bed is the
-only evidence of the bed type: a Kot line with no Kuvöz line prices the stay at
-the Kot rate (never "upgraded" to Kuvöz); with no bed line billed the default
-below applies. The same days are not expected as standard bed by the
-standard-bed motor (``claim_yatak_newborn_overlap``).
+and 510081 lines and ``recoverable_uplift_try = min(expected, max(0, expected -
+actual))`` (the ICU and standard-bed motors net the same way since #13; the cap
+keeps a credit line from recovering more than the charge). The same days are
+not expected as standard bed by the standard-bed motor
+(``claim_yatak_newborn_overlap``).
+
+The billed bed is the only evidence of the bed type (nothing in the claim says
+whether the baby lay in an incubator): each billed Kot day (sum of the quantity
+of the 510081 lines, at most the stay) is priced at the Kot rate, never
+"upgraded" to Kuvöz; every other day at the Kuvöz default below. A claim that
+bills the standard bed (510010) and no newborn bed line has stated its bed: this
+motor stands down and the standard-bed motor keeps the stay.
 
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
@@ -34,15 +40,16 @@ when the claim ``department`` names a newborn/pediatric ward. With no
 detection signal the claim is honestly skipped.
 
 Bed selection: Kuvöz (510070) is the default higher-tier bed for an
-identified newborn inpatient stay. Kot (510081) is emitted only when the
-caller explicitly marks the baby as rooming-in via ``rooming_in_claim_ids``;
-for rooming-in babies Kot is suppressed (not billable) and Kuvöz is offered
-only when ``emit_kuvoz_for_rooming_in`` is set — default False, per the SUT
-prohibition on billing rooming-in bassinet stays.
+identified newborn inpatient stay, for every day no Kot line covers. Kot (510081)
+is priced only for the days a billed Kot line covers; with the caller marking the
+baby as rooming-in via ``rooming_in_claim_ids`` Kot is suppressed (not
+billable) and Kuvöz is offered only when ``emit_kuvoz_for_rooming_in`` is set —
+default False, per the SUT prohibition on billing rooming-in bassinet stays.
 """
 
 from __future__ import annotations
 
+import re
 import unicodedata
 from datetime import date
 from typing import TYPE_CHECKING, Any
@@ -80,6 +87,10 @@ _PERINATAL_RANGE = ("P00", "P96")  # P00–P96 — perinatal conditions
 _NEWBORN_DEPT_TOKENS = ("yenidoğan", "yenedogan", "çocuk", "cocuk", "neonatal", "newborn", "pediatri")
 # The two codes this motor recommends and nets (EK-2/B: never billed together, one per day).
 _NEWBORN_BED_CODES = frozenset({_BED_KUVOZ, _BED_KOT})
+# The standard bed: a claim that bills it (and no newborn bed) has stated its bed; the standard-bed motor owns it.
+_STANDARD_BED_CODE = "510010"
+# Whole words that name an intensive care unit (YB, YYBÜ = yenidoğan yoğun bakım ünitesi, NICU, ICU).
+_ICU_DEPT_WORDS = frozenset({"yb", "yybu", "nicu", "icu"})
 
 
 def _daily_rate(bed_code: str, visit_date: date | str | None = None) -> float:
@@ -120,10 +131,15 @@ def _department_is_newborn(department: str) -> bool:
 
 
 def _department_names_icu(department: str) -> bool:
-    """True for a department that names an intensive care unit ("Yenidoğan Yoğun Bakım", "YOĞUN BAKIM", ASCII spellings)."""
+    """True for a department that names an intensive care unit.
+
+    Turkish-folded ("YOĞUN BAKIM", ASCII spellings), spaces ignored ("Yoğunbakım", double space) and the whole
+    words YB / YYBÜ / NICU / ICU. A ward named by what it is not ("Yoğun Bakım Dışı ...") also reads as ICU.
+    """
     folded = unicodedata.normalize("NFKD", (department or "").casefold().replace("ı", "i"))
     folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
-    return "yogun bakim" in folded
+    words = re.findall(r"[a-z0-9]+", folded)
+    return "yogunbakim" in "".join(words) or any(word in _ICU_DEPT_WORDS for word in words)
 
 
 def detect_yenidogan_yatak_opportunities(
@@ -160,10 +176,13 @@ def detect_yenidogan_yatak_opportunities(
             for rooming-in claims instead of suppressing all bed charges.
 
     Returns:
-        Opportunity dicts with: type, claim_id, bed_code (510070 or 510081),
-        days, puan, expected_try (the full charge), actual_billed_try (billed
-        510070 / 510081 lines), recoverable_uplift_try (what they leave),
-        sut_section_id, rule_id, detail.
+        Opportunity dicts with: type, claim_id, bed_code (510070, or 510081 when
+        every day is a billed Kot day), days (billable: after any package
+        window), bundled_days, puan, expected_try (the full charge),
+        actual_billed_try (billed 510070 / 510081 lines), recoverable_uplift_try
+        (what they leave, at most the full charge), same_day_stay, rooming_in,
+        included_in_sgk_total, savings_category, savings_basis, sut_section_id,
+        rule_id, detail.
     """
     rooming_in = rooming_in_claim_ids or set()
     opportunities: list[dict[str, Any]] = []
@@ -200,6 +219,21 @@ def detect_yenidogan_yatak_opportunities(
         ):
             continue
 
+        # The newborn bed lines already billed on this claim: they net the charge
+        # and, as the only evidence of the bed type, price the Kot days below.
+        bed_lines = [
+            line
+            for line in claim_procs
+            if normalize_procedure_code(line.procedure_code) in _NEWBORN_BED_CODES
+        ]
+        # A claim that bills the standard bed and no newborn bed has stated its
+        # bed: the standard-bed motor owns the stay and nets its own lines.
+        if not bed_lines and any(
+            normalize_procedure_code(line.procedure_code) == _STANDARD_BED_CODE
+            for line in claim_procs
+        ):
+            continue
+
         # Inclusive LOS: discharge day IS billed (+1), matching yatak puani.
         gross_days = (claim.discharge_date - claim.admission_date).days + 1
         if gross_days <= 0:
@@ -221,50 +255,48 @@ def detect_yenidogan_yatak_opportunities(
         if kuvoz_rate <= 0 and kot_rate <= 0:
             continue
 
-        # The newborn bed lines already billed on this claim: they net the charge
-        # and, as the only evidence of the bed type, decide Kuvöz or Kot below.
-        bed_lines = [
-            line
-            for line in claim_procs
-            if normalize_procedure_code(line.procedure_code) in _NEWBORN_BED_CODES
-        ]
-        billed_codes = {normalize_procedure_code(line.procedure_code) for line in bed_lines}
+        # Net out the billed newborn bed lines (510070 + 510081), like the ICU and
+        # standard-bed motors; lines inside a mandated package window belong to the package.
+        counted_lines = [line for line in bed_lines if counts_against_expected_days(line, window)]
 
         # Mutually exclusive bed selection.
         # Default = Kuvöz (510070, higher tier). Kot (510081) is NEVER billed
-        # for rooming-in babies per SUT; Kuvöz for rooming-in is opt-in.
+        # for rooming-in babies per SUT; Kuvöz for rooming-in is opt-in. A billed
+        # Kot day is priced as a Kot day, every other day as Kuvöz.
         is_rooming_in = claim.claim_id in rooming_in
         if is_rooming_in:
-            if emit_kuvoz_for_rooming_in and kuvoz_rate > 0:
-                bed_code, rate = _BED_KUVOZ, kuvoz_rate
-            else:
+            if not (emit_kuvoz_for_rooming_in and kuvoz_rate > 0):
                 # Rooming-in: Kot suppressed, Kuvöz not opted in → skip.
                 continue
-        elif billed_codes == {_BED_KOT} and kot_rate > 0:
-            # The hospital billed the cot: the bed type is its own statement, and
-            # nothing in the claim says the baby lay in an incubator.
-            bed_code, rate = _BED_KOT, kot_rate
+            kot_days = 0
         else:
-            bed_code, rate = _BED_KUVOZ, kuvoz_rate
-
-        if rate <= 0:
-            continue
-
-        expected = _money(days * rate)
-        # Net out the billed newborn bed lines (510070 + 510081), like the ICU and
-        # standard-bed motors, so the recoverable amount is only the unbilled part.
-        actual_billed_try = _money(
-            sum(
-                float(line.billed_amount_try)
-                for line in bed_lines
-                if counts_against_expected_days(line, window)
+            kot_units = sum(
+                max(int(getattr(line, "quantity", 1) or 1), 1)
+                for line in counted_lines
+                if normalize_procedure_code(line.procedure_code) == _BED_KOT
             )
-        )
-        recoverable_try = _money(max(0.0, expected - actual_billed_try))
+            kot_days = min(kot_units, days) if kot_rate > 0 else 0
+        kuvoz_days = days - kot_days
+        if kuvoz_days > 0 and kuvoz_rate <= 0:
+            continue
+        bed_code = _BED_KOT if days > 0 and kuvoz_days == 0 else _BED_KUVOZ
+        rate = kot_rate if bed_code == _BED_KOT else kuvoz_rate
+
+        expected = _money(kot_days * kot_rate + kuvoz_days * kuvoz_rate)
+        actual_billed_try = _money(sum(float(line.billed_amount_try) for line in counted_lines))
+        # Never more than the charge, whatever credit lines the bill carries.
+        recoverable_try = _money(min(expected, max(0.0, expected - actual_billed_try)))
         same_day = days == 1 and claim.admission_date == claim.discharge_date
 
+        if 0 < kot_days < days:
+            charge = (
+                f"{days} bed-day(s) = {kuvoz_days} at {kuvoz_rate:.2f} + "
+                f"{kot_days} billed Kot day(s) at {kot_rate:.2f} TRY/day"
+            )
+        else:
+            charge = f"{days} bed-day(s) at {rate:.2f} TRY/day"
         detail_parts = [
-            f"Yenidoğan yatağı ({bed_code}): {days} bed-day(s) at {rate:.2f} TRY/day",
+            f"Yenidoğan yatağı ({bed_code}): {charge}",
             f"= {expected:.2f} TRY (inclusive LOS, discharge day billed).",
         ]
         if window is not None:

@@ -1,10 +1,11 @@
 """Yenidoğan (newborn) bed billing from exact inpatient claim dates.
 
 Wraps :func:`detect_yenidogan_yatak_opportunities` in the same exactness-gated
-review shape used across the billing layer. ``YenidoganYatakReview`` is
-defined HERE for now — the orchestrator will relocate it to
-``billing/types.py`` (alongside ``YatakPuaniReview``) once it is wired into
-``BillingActionReport`` / ``CohortRecoverySummary``.
+review shape used across the billing layer; ``YenidoganYatakReview`` lives in
+``billing/types.py`` next to ``YatakPuaniReview``. The motor sees the claim's
+procedure lines (netting of the billed bed lines, ICU and package gates), and
+``claim_yatak_newborn_overlap`` takes its days out of the standard-bed
+expectation.
 """
 
 from __future__ import annotations
