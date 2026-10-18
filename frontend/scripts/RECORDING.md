@@ -24,20 +24,34 @@ durations. It performs no resizing, cropping or padding. Temporary raw frames
 are removed after encoding. Videos contain real browser output with no overlays,
 amount edits or source/playbook substitutes. Meaningful steps settle and hold.
 
-The three workflows are Patients → authored patient 0003 → actual highest ranked
-action's shared Source drawer; patient 0017 → actual materials pre-check → linked
-Source if available; Rejection Queue → an actual matched authored rejection →
-its patient/claim-scoped playbook. API patient, action, claim, clause, rejection
-and corrective-step identities are checked against rendered content.
-The playbook table is also scrolled horizontally to expose its corrective steps.
+The three workflows are Patients → the `default_landing` patient → actual highest ranked
+action's shared Source drawer; the `showcase_S5` patient → actual materials pre-check →
+linked Source if available; Rejection Queue → an actual matched authored rejection →
+its patient/claim-scoped playbook. The two patients are cohort roles read from
+`data/synthetic/cohort_registry.json` (`scripts/lib/cohort-registry.mjs`), never ids.
+API patient, action, claim, clause, rejection and corrective-step identities are
+checked against rendered content. The playbook table is also scrolled horizontally to
+expose its corrective steps.
 
-On the reviewed UI6/UI7 input, patient 0017 has a real NF1040 pre-check but its
-action's `clause_ref` is null and Source is disabled. The second video therefore
-ends at the actual pre-check; the command reports `partial` and exits **3** after
-producing all three videos. It never invents a linked clause. Exit **0** means all
-three requested paths completed; **1** means a safety/ownership/browser/tool
-failure. Failed runs can leave unfinished videos for diagnosis; use a new output
-directory after fixing an actual failure, and remove your failed output yourself.
+**Known limit on the 8-patient showcase cohort** (engine billing reports and the
+registry, checked 2026-10-18): none of the three paths can complete there, because the
+workflows were written for the retired 50-patient cohort. (1) The landing patient's top
+ranked action has no `clause_ref` (only the S7 copay-exemption row has one, and it is not
+its patient's top action), so there is no Source drawer to record. (2) No patient has a
+`material_pre_auth` action: `materials.pre_auth_required` is empty for all 8, and S5's
+materials findings are prose-bundling ones. (3) The cohort has no MEDULA rejection event
+(`medula_rejection_events` holds 0 rows), so the rejection queue is empty and the
+preflight refuses ("Authored rejection queue unavailable"). The command therefore stops
+before it records anything. Making the workflows follow the showcase data (or adding a
+pre-authorised material and a rejection event to a story) is a separate decision.
+
+On the reviewed legacy UI6/UI7 input, the second patient had a real NF1040 pre-check but
+its action's `clause_ref` was null and Source was disabled. That video ended at the
+actual pre-check; the command reported `partial` and exited **3** after producing all
+three videos. It never invents a linked clause. Exit **0** means all three requested
+paths completed; **1** means a safety/ownership/browser/tool failure. Failed runs can
+leave unfinished videos for diagnosis; use a new output directory after fixing an actual
+failure, and remove your failed output yourself.
 
 Output must be a new directory outside every Git checkout, with no symlink
 ancestors. Loopback HTTP origins only; no credentials or developer cookies.

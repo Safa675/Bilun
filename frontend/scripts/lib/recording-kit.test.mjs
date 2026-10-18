@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { role } from "./cohort-registry.mjs";
 import { assertAction, assertClause, isKnownFontPreloadHint, assertPlaybook, assertReport, assertSynthetic, parseRecordingArgs, PATIENTS, prepareRecordingOutput, rankedActions, selectRejection } from "./recording-kit.mjs";
 
 const temporary = [];
@@ -39,6 +40,14 @@ describe("actual API ownership gates (unit fixtures only)", () => {
       expect(() => assertSynthetic({ patients: PATIENTS, data_source })).toThrow();
     }
     expect(() => assertSynthetic({ patients: [...PATIENTS, "PRIVATE-IDENTIFIER"], data_source: source })).toThrow();
+  });
+  it("takes the recorded patients from cohort roles and refuses a cohort list that lacks one", () => {
+    expect(PATIENTS).toEqual([role("default_landing").patient_id, role("showcase_S5").patient_id]);
+    expect(new Set(PATIENTS).size).toBe(PATIENTS.length);
+    for (const missing of PATIENTS) {
+      const patients = PATIENTS.filter(id => id !== missing);
+      expect(() => assertSynthetic({ patients, data_source: source })).toThrow(/Required authored patients are unavailable/);
+    }
   });
   it("rejects swapped patient/claim ownership", () => {
     const report = { patient_id: PATIENTS[0], data_source: source, scope: "bill", claim_id: "unit-claim-a" };

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { COMPLIANCE_SUBTABS, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes, TOOL_SUBTABS } from "./capture-routes.mjs";
+import { COMPLIANCE_SUBTABS, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes, TOOL_SUBTABS } from "./capture-routes.mjs";
 
 const srcDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../src");
 const source = fs.readFileSync(path.join(srcDir, "lib/workspaceSubtabs.ts"), "utf8");
@@ -64,5 +64,33 @@ describe("clause button and pager recognition mirror the app's strings", () => {
   it("looks for the page param under the key the table writes", () => {
     const table = fs.readFileSync(path.join(srcDir, "components/tables/PatientInvoiceTable.tsx"), "utf8");
     expect(table).toMatch(/searchParams\.get\("p"\)/);
+  });
+});
+
+describe("the compliance finding a deep link can select", () => {
+  it("prefers a canonical claim-compliance finding, in sorted order", () => {
+    const report = {
+      claim_compliance: { findings: [{ finding_id: "rule:b" }, { finding_id: "rule:a" }] },
+      recommended_actions: [{ finding_type: "compliance", finding_id: "action:0" }],
+    };
+    expect(complianceFindingId(report)).toBe("rule:a");
+  });
+
+  it("falls back to the finding_id of a compliance action (the claim-compliance list is empty in the showcase cohort)", () => {
+    const report = {
+      claim_compliance: { findings: [] },
+      recommended_actions: [
+        { finding_type: "informational", finding_id: "checklist:1" },
+        { finding_type: "compliance" },
+        { finding_type: "compliance", finding_id: "drug_indication:unit:1" },
+      ],
+    };
+    expect(complianceFindingId(report)).toBe("drug_indication:unit:1");
+  });
+
+  it("returns null when the page has nothing to select", () => {
+    expect(complianceFindingId({})).toBeNull();
+    expect(complianceFindingId(null)).toBeNull();
+    expect(complianceFindingId({ claim_compliance: { findings: [{ finding_id: "" }, {}] }, recommended_actions: [{ finding_type: "opportunity", finding_id: "x" }, { finding_type: "compliance", action_id: "only-an-action-id" }] })).toBeNull();
   });
 });

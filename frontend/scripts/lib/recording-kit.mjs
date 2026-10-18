@@ -1,7 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
+import { role } from "./cohort-registry.mjs";
 
-export const PATIENTS = ["SENTETIK-HASTA-0003", "SENTETIK-HASTA-0017"];
+/**
+ * The two patients of the recordings, as cohort ROLES (data/synthetic/cohort_registry.json), not ids.
+ * PATIENTS[0] opens the Patients tab and its top action's Source drawer: the landing patient, where the app opens.
+ * PATIENTS[1] is the materials workflow: the only bill with materials findings (the S5 implant bill).
+ * The roles keep the workflows' intent; on the 8-patient cohort their preconditions are not met yet (RECORDING.md, "Known limit").
+ */
+export const PATIENTS = [role("default_landing").patient_id, role("showcase_S5").patient_id];
 export const DPR = 2;
 export const HELP = "Usage: node scripts/record-workflows.mjs --out <new-directory-outside-git> [--base-url http://127.0.0.1:13000] [--locale tr|en] [--size 1440x900]";
 

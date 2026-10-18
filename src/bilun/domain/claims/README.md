@@ -2,7 +2,9 @@
 
 `src.bilun.domain.claims` loads billing-native claim Parquets and exposes exact
 line-derived aggregates. In demo mode, those files are the committed synthetic
-claim Parquets under `data/synthetic/sut/claims/`.
+claim Parquets under `data/synthetic/sut/claims/`: the 8 patients of the v3
+showcase cohort, built by `python -m scripts.synthetic.cohort.build` (layout and
+registry: `data/synthetic/README.md`).
 
 ## Module map
 
@@ -44,9 +46,9 @@ reconciliation. Optional lab-result linkage columns are validated when present;
 lab aggregates are derived from explicit procedure lines with
 `procedure_category="laboratuvar"`.
 
-Synthetic Parquet validation in `scripts/synthetic/validate_sut_synthetic_data.py`
-imports `build_synthetic_claim_validation_columns()` from `schema.py` so loader
-required columns and exporter checks stay aligned.
+The cohort tests (`tests/unit/synthetic/test_cohort_tables.py`) check the generated
+tables against `build_synthetic_claim_validation_columns()` from `schema.py`, so
+the loader's required columns and the generated tables stay aligned.
 
 ## Public entry point
 
