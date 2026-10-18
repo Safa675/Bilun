@@ -1,31 +1,42 @@
 """Plausibility checks for the clean clinical tables (plan D5, slice E3: labs, prescriptions, vitals).
 
-The checks read `lab_clean`, `recete_clean` and `anadata_clean` of one dataset and, where a check
-compares a clean table with the bill, the claims tables `claim_headers`, `procedure_claim_lines` and
-`drug_claim_lines`. They report what a clinician or an auditor would call implausible: a lab value no
-patient can have, a hemogram or a blood gas that contradicts its own arithmetic, a flag or a unit
-that is not the reference's, result sets that do not match the billed lab lines, a route that
+The checks read `lab_clean`, `recete_clean` and `anadata_clean` of one dataset. Only two ids read the
+bills (the claims tables `claim_headers`, `procedure_claim_lines` and `drug_claim_lines`):
+`lab.result_sets_match_bill` and `rx.matches_billed_line`; the other ten never read a claims table.
+They report what a clinician or an auditor would call implausible: a lab value no patient can have,
+a hemogram or a blood gas that contradicts its own arithmetic, a flag or a unit that is not the
+reference's, result sets that do not match the billed lab lines, a route or a dose unit that
 contradicts the product, a dose that is not a count and a Turkish unit, a vital sign out of range.
 
 `check_clean_plausibility(tables, clean_tables)` is a pure function of the tables it is given: it
-knows no fault and calls no engine. It has one small function per check id (`CHECK_FUNCTIONS`) and
-runs all of them, or only the ids of `only`. `CHECKS` is the stable registry of ids; a test requires
-a mutation case for each id.
+knows no fault and calls no engine, and it does not depend on the order of the rows (every table
+may be reversed or shuffled: the same problems come in the same order). It has one small function
+per check id (`CHECK_FUNCTIONS`) and runs all of them, or only the ids of `only`. `CHECKS` is the
+stable registry of ids; a test requires a mutation case for each id.
 
 INDEPENDENCE. The checks do not import or reuse the generator they test (`cohort.labs`,
 `cohort.clean`, `cohort.clinical`) nor the claims checks of `cohort.plausibility`. The reference
-limits and units are read from `data/synthetic/reference/lab_reference.csv` with Polars; every
-judgment (hard bounds, tolerances, word lists, vocabularies) is a named constant below with its
-source. A test scans the imports of this module.
+limits and units are read from `data/synthetic/reference/lab_reference.csv` and the ATC codes of the
+low-molecular-weight heparins from `data/synthetic/reference/drug_crosswalk.parquet`, both with
+Polars; every judgment (hard bounds, tolerances, word lists, vocabularies) is a named constant below
+with its source. A test scans the imports of this module.
 
 OWNERSHIP. Each defect has one home. A check that needs a value another check owns skips what it
 cannot evaluate (a null, a NaN or an unknown sex) and leaves the report to the owner: NaN and
 missing results belong to `lab.value_bounds`, an incomplete result set to
-`lab.result_sets_match_bill`, a sex that is neither E nor K to `ana.vitals_bounds`.
+`lab.result_sets_match_bill`, a sex that is neither E nor K to `ana.vitals_bounds`, a lab result set
+whose episode has no `anadata_clean` row (so that no age and possibly no sex can be read) to
+`lab.egfr_relation`.
+
+TYPES. A table may arrive in another representation of the same data (ids as categories, dates as
+text or as dates, numbers as text, a year as a number): the columns the checks read are cast when the
+table is taken, so a re-representation neither crashes nor raises a finding. A type that cannot be
+read at all is a `CleanPlausibilityError` that names the table, the column and the type.
 
 `Problem.where` starts with the patient id (then `table[key]`, after a space). The reference data
-(the lab reference CSV) is read once, lazily, by a `CleanPlausibilityContext`. Everything is
-vectorised Polars; a `Problem` is built only from the finished findings.
+(the lab reference CSV, the LMWH products of the drug crosswalk) is read once, lazily, by a
+`CleanPlausibilityContext`. Everything is vectorised Polars; a `Problem` is built only from the
+finished findings (the one comprehension over data, in `_problems`).
 """
 
 from __future__ import annotations
@@ -50,8 +61,10 @@ TABLE_PROCEDURES = "procedure_claim_lines.parquet"
 TABLE_DRUGS = "drug_claim_lines.parquet"
 
 LAB_REFERENCE_PATH = "data/synthetic/reference/lab_reference.csv"
+DRUG_CROSSWALK_PATH = "data/synthetic/reference/drug_crosswalk.parquet"
 
 # The columns each table must have; a table without one is reported by name, not by a Polars error.
+# Every column a check reads is listed (a test drops each column of the committed files in turn).
 REQUIRED_COLUMNS: dict[str, tuple[str, ...]] = {
     TABLE_LAB: (
         "HASTA_ID", "basvuru_id", "SUB_CODE", "parametre", "sonuc_sayisal", "sonuc_nitel", "birim",
@@ -62,8 +75,8 @@ REQUIRED_COLUMNS: dict[str, tuple[str, ...]] = {
         "verilis_yolu", "miktar", "kohort", "donem",
     ),
     TABLE_ANADATA: (
-        "HASTA_ID", "SQ_EPISODE", "TANI_YASI", "CINSIYET", "KB-S", "KB-D", "Nabiz", "SPO2", "Boy",
-        "Kilo", "BMI",
+        "HASTA_ID", "SQ_EPISODE", "EPISODE_TARIH", "TANI_YASI", "CINSIYET", "KB-S", "KB-D", "Nabiz",
+        "SPO2", "Boy", "Kilo", "BMI", "kohort", "donem",
     ),
     TABLE_HEADERS: ("claim_id", "patient_id", "episode_id"),
     TABLE_PROCEDURES: (
@@ -76,6 +89,24 @@ REQUIRED_COLUMNS: dict[str, tuple[str, ...]] = {
     ),
 }  # fmt: skip
 
+# How a table is read. A column of another type is cast when the table is taken (see TYPES in the
+# module docstring). Every required column is text (an id, a code, a label: a category or a number
+# becomes a string) unless it is listed here as a date, a number or a flag.
+DATE_COLUMNS: dict[str, tuple[str, ...]] = {
+    TABLE_LAB: ("tarih",),
+    TABLE_RECETE: ("RECETE_TARIH",),
+    TABLE_ANADATA: ("EPISODE_TARIH",),
+    TABLE_PROCEDURES: ("procedure_date",),
+    TABLE_DRUGS: ("drug_claim_date",),
+}
+NUMBER_COLUMNS: dict[str, tuple[str, ...]] = {
+    TABLE_LAB: ("sonuc_sayisal", "ref_alt", "ref_ust"),
+    TABLE_RECETE: ("miktar",),
+    TABLE_ANADATA: ("TANI_YASI", "KB-S", "KB-D", "Nabiz", "SPO2", "Boy", "Kilo", "BMI"),
+    TABLE_DRUGS: ("quantity",),
+}
+FLAG_COLUMNS: dict[str, tuple[str, ...]] = {TABLE_LAB: ("anormal_mi",)}
+
 # Every check id a plausibility Problem may carry, with a one-line meaning (at most 120 characters).
 # A meta-test requires an implementation and an in-memory mutation case for each id.
 CHECKS: dict[str, str] = {
@@ -86,14 +117,14 @@ CHECKS: dict[str, str] = {
     "lab.unit_matches_reference": "a lab unit that is not the unit the reference lists for the parameter (a strip row has none)",
     "lab.result_sets_match_bill": "lab result sets that do not match the billed lab lines one to one, or sets with missing or extra rows",
     "lab.blood_gas_relations": "a blood gas whose HCO3, base excess or SaO2 contradicts its pH, pCO2 and pO2",
-    "lab.egfr_relation": "an eGFR that is not the CKD-EPI 2021 value of the creatinine, age and sex of its result set",
+    "lab.egfr_relation": "an eGFR off CKD-EPI 2021 for the set's creatinine, age and sex, or a lab set whose episode has no anadata row",
     # rx: the prescription rows against the bill, the product and the dose format
     "rx.matches_billed_line": "prescription rows that do not match the billed drug lines one to one (patient, date, name, quantity)",
     "rx.route_vs_product": "a missing or unknown route, or a route that contradicts the product name (injection, tablet, nebule, LMWH)",
-    "rx.dose_unit": "a dozaj_ham that is not a positive count and one Turkish unit word, or whose count differs from miktar",
-    "rx.required_fields": "a null or blank in a required prescription column (patient, date, episode, names, dose, route, miktar, kohort, donem)",
+    "rx.dose_unit": "a dozaj_ham that is not a count and a Turkish unit that fits the product, or whose count differs from miktar",
+    "rx.required_fields": "a null or blank required prescription column, a kohort that is not the cohort's, or a donem off the date's year",
     # ana: the vital signs
-    "ana.vitals_bounds": "a vital sign, age or sex out of bounds, a diastolic not below the systolic, or a BMI that is not Kilo/Boy^2",
+    "ana.vitals_bounds": "a vital sign, age or sex out of bounds, a diastolic not below the systolic, a BMI off Kilo/Boy^2, a bad kohort or donem",
 }
 
 # --- judgment tables -------------------------------------------------------------------------
@@ -243,23 +274,43 @@ PARENTERAL_ROUTES: tuple[str, ...] = (ROUTE_INTRAVENOUS, ROUTE_IM_IV, ROUTE_SUBC
 ROUTES: tuple[str, ...] = (*PARENTERAL_ROUTES, ROUTE_ORAL, ROUTE_INHALATION)
 
 # rx.route_vs_product: words of a product name (`ilac_adi` and the raw TITCK name `ilac_adi_ham`),
-# folded to lower case without Turkish letters. Judgment, from the names in recete_clean. The strong
-# injection words always count; the container words (vial, ampoule, bag, and the abbreviations of the
-# billed names) count only when no inhalation or oral word is present, because a nebule is sold in
-# a vial and a tablet in a bottle. "inside" matches inside a word, "whole" only as a whole word.
+# folded to lower case without Turkish letters. Judgment, from the names in recete_clean and from a
+# run over the 8,078 names of the drug crosswalk and the 10,561 names of the EK-4A history (a test
+# pins the class counts over the crosswalk). "inside" matches inside a word, "whole" only as a whole
+# word. The strong injection words always count. The container words (vial, ampoule, bag, cartridge,
+# pen, syringe and the abbreviations of the billed names) count only when no inhalation, oral or
+# cancelling word is present, because a nebule is sold in a vial, a tablet in a bottle, an oral
+# solution in a vial with a dosing syringe, an eye drop in a single-dose vial, a surfactant
+# (intratracheal) in a vial. "oral" is the word of an oral solution or suspension: unlike a solid
+# form it can stand next to an injection word (vancomycin for infusion AND oral solution, an oral
+# solution packed with a dosing syringe), so such a name allows both routes. The same holds for an
+# injection word and an inhalation word (colistimethate IM/IV and for inhalation).
 ROUTE_WORDS: dict[str, tuple[str, ...]] = {
     "injection_inside": ("enjeksiyon", "enjektor", "infuzyon", "pp-torba", "i.v.", "im/iv"),
     "injection_whole": ("iv",),
-    "container_whole": ("flakon", "flk", "ampul", "amp", "enj", "inf", "torba"),
+    "container_whole": (
+        "flakon", "flk", "ampul", "amp", "enj", "inf", "torba", "kartus", "kalem", "siringa",
+    ),
+    "container_cancel_inside": ("oftalmik", "oral cozelti", "intratrakeal"),
+    "container_cancel_whole": ("goz",),
     "oral_inside": ("tablet", "kapsul", "film kapli"),
-    "oral_whole": ("tb",),
-    "inhalation_inside": ("nebul", "inhalasyon"),
+    "oral_whole": ("tb", "ftb", "kap", "drj", "tab", "sase"),
+    "oral_solution_whole": ("oral",),
+    "inhalation_inside": ("nebul", "inhalasyon", "inhaler", "aerosol"),
+    "inhalation_whole": ("inh",),
     # low-molecular-weight heparins (brand and generic names on the Turkish market): subcutaneous only
     "lmwh_inside": (
         "clexane", "enoksaparin", "enoxaparin", "fraxiparine", "fraksiparin", "nadroparin",
         "fragmin", "dalteparin",
     ),
 }  # fmt: skip
+
+# rx.route_vs_product: the products of the drug crosswalk with one of these ATC codes are low-
+# molecular-weight heparins whatever their name says (ENOX, OKSAPAR, HIBOR ...). The range is the
+# one of the brief, B01AB04..B01AB12 (04 dalteparin, 05 enoxaparin, 06 nadroparin, 07 certoparin,
+# 08 reviparin, 09 danaparoid, 10 tinzaparin, 11 sulodexide, 12 bemiparin); the crosswalk has only
+# B01AB05 and B01AB12 in it. Narrow the range if a product of 09 or 11 ever appears there.
+LMWH_ATC_RANGE = ("B01AB04", "B01AB12")
 
 # rx.dose_unit: `dozaj_ham` is "<positive integer> <unit>"; the unit is one Turkish word of the closed
 # list (with and without Turkish letters, as the committed rows spell them); the English words that
@@ -271,6 +322,27 @@ DOSE_UNITS: tuple[str, ...] = (
 ENGLISH_UNITS: tuple[str, ...] = (
     "bottle", "vial", "bag", "box", "capsule", "ampoule", "syringe",
 )  # fmt: skip
+
+# rx.dose_unit: the product classes (see `product_class`) and the units that do not fit them. A box
+# and a bottle fit every class. A dual product (injection and inhalation, injection and oral
+# solution) misfits only what misfits both of its classes; a product with no class word, or one
+# that contradicts itself (the route check reports that), is not judged.
+CLASS_INJECTED = "injected"
+CLASS_SWALLOWED = "swallowed"
+CLASS_INHALED = "inhaled"
+CLASS_INJECTED_INHALED = "injected+inhaled"
+CLASS_INJECTED_ORAL = "injected+oral"
+CLASS_CONTRADICTION = "injected+tablet"
+PRODUCT_CLASSES: tuple[str, ...] = (
+    CLASS_INJECTED, CLASS_SWALLOWED, CLASS_INHALED, CLASS_INJECTED_INHALED, CLASS_INJECTED_ORAL,
+    CLASS_CONTRADICTION,
+)  # fmt: skip
+DOSE_UNIT_MISFITS: dict[str, tuple[str, ...]] = {
+    CLASS_INJECTED: ("tablet", "kapsül", "kapsul"),
+    CLASS_SWALLOWED: ("flakon", "ampul", "torba", "enjektör", "enjektor"),
+    CLASS_INHALED: ("tablet", "torba", "enjektör", "enjektor"),
+    CLASS_INJECTED_INHALED: ("tablet",),
+}  # fmt: skip
 
 # rx.required_fields: the columns of `recete_clean` that may never be null or blank. (doz_mg,
 # doz_birimi, siklik and gun are null in some committed rows and are not required.)
@@ -348,11 +420,19 @@ _INJECTION_PATTERN = (
     f"|{_words_pattern(ROUTE_WORDS['injection_whole'], whole=True)}"
 )
 _CONTAINER_PATTERN = _words_pattern(ROUTE_WORDS["container_whole"], whole=True)
-_ORAL_PATTERN = (
+_CANCEL_PATTERN = (
+    f"{_words_pattern(ROUTE_WORDS['container_cancel_inside'])}"
+    f"|{_words_pattern(ROUTE_WORDS['container_cancel_whole'], whole=True)}"
+)
+_SOLID_PATTERN = (
     f"{_words_pattern(ROUTE_WORDS['oral_inside'])}"
     f"|{_words_pattern(ROUTE_WORDS['oral_whole'], whole=True)}"
 )
-_INHALATION_PATTERN = _words_pattern(ROUTE_WORDS["inhalation_inside"])
+_ORAL_SOLUTION_PATTERN = _words_pattern(ROUTE_WORDS["oral_solution_whole"], whole=True)
+_INHALATION_PATTERN = (
+    f"{_words_pattern(ROUTE_WORDS['inhalation_inside'])}"
+    f"|{_words_pattern(ROUTE_WORDS['inhalation_whole'], whole=True)}"
+)
 _LMWH_PATTERN = _words_pattern(ROUTE_WORDS["lmwh_inside"])
 
 
@@ -369,10 +449,12 @@ class CleanPlausibilityContext:
         root: Path = REPO,
         *,
         lab_reference: pl.DataFrame | None = None,
+        drug_crosswalk: pl.DataFrame | None = None,
         kohort: str = KOHORT,
     ) -> None:
         self.root = Path(root)
         self._lab_reference = lab_reference
+        self._drug_crosswalk = drug_crosswalk
         self.kohort = kohort
 
     @cached_property
@@ -412,6 +494,28 @@ class CleanPlausibilityContext:
         """code, variant, size: how many rows one result set of each variant has."""
         return self.lab_reference.group_by("code", "variant").agg(pl.len().alias("size"))
 
+    @cached_property
+    def lmwh_products(self) -> pl.DataFrame:
+        """name_key, is_lmwh: the crosswalk products (EK-4A names, folded) whose ATC code is an LMWH.
+
+        One row per name; `is_lmwh` is true for every row (it is the marker of a join). A name that
+        the crosswalk lists under several barcodes is an LMWH when any of them has such an ATC code.
+        """
+        if self._drug_crosswalk is not None:
+            crosswalk = self._drug_crosswalk
+        else:
+            crosswalk = pl.read_parquet(
+                self.root / DRUG_CROSSWALK_PATH, columns=["ek4a_name", "atc_code"]
+            )
+        first, last = LMWH_ATC_RANGE
+        return (
+            crosswalk.filter(pl.col("atc_code").is_between(pl.lit(first), pl.lit(last)))
+            .select(_name_key(pl.col("ek4a_name")).alias("name_key"))
+            .unique()
+            .filter(pl.col("name_key").is_not_null())
+            .with_columns(pl.lit(True).alias("is_lmwh"))
+        )
+
 
 @lru_cache(maxsize=1)
 def default_context() -> CleanPlausibilityContext:
@@ -449,7 +553,11 @@ def _same(left: pl.Expr, right: pl.Expr) -> pl.Expr:
 
 
 def _problems(check: str, found: pl.DataFrame) -> list[Problem]:
-    """Problems for findings with the columns `where` and `message`, in a stable order."""
+    """Problems for findings with the columns `where` and `message`, in a stable order.
+
+    This is the one place that loops over data: a `Problem` is a Python object, so it is built from
+    the finished findings (one per defect, sorted), never from the rows that were checked.
+    """
     ordered = found.select(pl.col("where").fill_null("(none)"), "message").sort("where", "message")
     return [
         Problem(check, where, message)
@@ -457,8 +565,55 @@ def _problems(check: str, found: pl.DataFrame) -> list[Problem]:
     ]
 
 
+def _day(expr: pl.Expr) -> pl.Expr:
+    """The calendar day of a date or a timestamp column (see `_read_as`)."""
+    return expr.cast(pl.Date)
+
+
+def _read_as(table: str, column: str, dtype: pl.DataType) -> pl.Expr | None:
+    """The cast that makes `column` of `table` the type the checks read, or None when it is that.
+
+    Dates are dates or timestamps (text such as 2026-03-09 is parsed; what does not parse is null),
+    numbers are numbers (text is parsed the same way), flags are left alone, every other column is
+    text (a category or a number becomes a string). A type that cannot be read is an error that
+    names it.
+    """
+    col = pl.col(column)
+    if column in FLAG_COLUMNS.get(table, ()):
+        return None
+    if column in DATE_COLUMNS.get(table, ()):
+        if dtype == pl.Date or dtype == pl.Datetime:
+            return None
+        if dtype == pl.String:
+            return col.str.to_date("%Y-%m-%d", strict=False)
+        if dtype == pl.Null:
+            return col.cast(pl.Date)
+        raise CleanPlausibilityError(f"{table}: column {column} has the type {dtype}, not a date")
+    if column in NUMBER_COLUMNS.get(table, ()):
+        if dtype.is_numeric():
+            return None
+        if dtype == pl.String:
+            return col.cast(pl.Float64, strict=False)
+        if dtype == pl.Null:
+            return col.cast(pl.Float64)
+        raise CleanPlausibilityError(f"{table}: column {column} has the type {dtype}, not a number")
+    return None if dtype == pl.String else col.cast(pl.String)
+
+
+def _canonical(frame: pl.DataFrame, *first: str) -> pl.DataFrame:
+    """`frame` in a canonical row order: by the columns `first`, then by every other column.
+
+    The copy number of a repeated row (below) is its place in this order, so that no result depends
+    on the order in which a table happens to be stored.
+    """
+    rest = sorted(column for column in frame.columns if column not in first)
+    return frame.sort([*first, *rest])
+
+
 # A lab result set is the rows of one billed lab line: (patient, episode, day, code), and, when a
-# code is billed twice on a day (hs-troponin I), the n-th row of every parameter forms the n-th set.
+# code is billed twice on a day (hs-troponin I), the n-th row of every parameter forms the n-th set
+# (rows in the order of their time of day, then of their value). A billed line is the n-th of its key
+# in the order of its own line id.
 SET_KEY = ("HASTA_ID", "basvuru_id", "day", "SUB_CODE")
 SET_ID = (*SET_KEY, "copy")
 
@@ -499,26 +654,38 @@ class _Clean:
         self.tables = tables
         self.clean_tables = clean_tables
         self.ctx = ctx
+        self._read: dict[str, pl.DataFrame] = {}
 
     def table(self, name: str) -> pl.DataFrame:
-        """A claims table, or (the `*_clean.parquet` files) a clean table, by file name."""
-        source = self.clean_tables if name.endswith("_clean.parquet") else self.tables
-        if name not in source:
-            raise CleanPlausibilityError(f"table {name} is missing; the checks read it")
-        frame = source[name]
-        lacking = [column for column in REQUIRED_COLUMNS[name] if column not in frame.columns]
-        if lacking:
-            raise CleanPlausibilityError(f"table {name} lacks the column(s) {lacking}")
-        return frame
+        """A claims table, or (the `*_clean.parquet` files) a clean table, by file name.
+
+        The columns the checks read are cast to the type they are read as (`_read_as`).
+        """
+        if name not in self._read:
+            source = self.clean_tables if name.endswith("_clean.parquet") else self.tables
+            if name not in source:
+                raise CleanPlausibilityError(f"table {name} is missing; the checks read it")
+            frame = source[name]
+            lacking = [column for column in REQUIRED_COLUMNS[name] if column not in frame.columns]
+            if lacking:
+                raise CleanPlausibilityError(f"table {name} lacks the column(s) {lacking}")
+            casts = [
+                _read_as(name, column, frame.schema[column]) for column in REQUIRED_COLUMNS[name]
+            ]
+            self._read[name] = frame.with_columns([cast for cast in casts if cast is not None])
+        return self._read[name]
 
     @cached_property
     def lab(self) -> pl.DataFrame:
-        """lab_clean with the `day`, the `copy` of its set and the set's `wbc`.
+        """lab_clean in a canonical row order, with the `day`, the `copy` of its set and the set's `wbc`.
 
+        `copy` numbers the rows of one (set key, parameter) in the order of their time of day, then of
+        their value: the n-th row of every parameter is the n-th set of that key.
         `wbc` is the WBC of the set when it lies inside its own hard interval, else null: a WBC that is
         itself a defect (and is reported as one) must not make every count "above the WBC".
         """
-        frame = self.table(TABLE_LAB).with_columns(pl.col("tarih").dt.date().alias("day"))
+        frame = self.table(TABLE_LAB).with_columns(_day(pl.col("tarih")).alias("day"))
+        frame = _canonical(frame, *SET_KEY, "parametre", "tarih", "sonuc_sayisal", "sonuc_nitel")
         frame = frame.with_columns(pl.int_range(pl.len()).over(*SET_KEY, "parametre").alias("copy"))
         value = pl.col("sonuc_sayisal")
         low, high = LAB_HARD_BOUNDS[(HEMOGRAM_CODE, WBC)]
@@ -588,11 +755,15 @@ class _Clean:
 
     @cached_property
     def ages(self) -> pl.DataFrame:
-        """HASTA_ID, SQ_EPISODE and `age` (TANI_YASI), one row per patient episode."""
+        """HASTA_ID, SQ_EPISODE and `age` (TANI_YASI), one row per patient episode.
+
+        An episode with several rows (a copy of the row is no defect) has the smallest of their ages,
+        so that the age does not depend on the order of the rows.
+        """
         return (
             self.table(TABLE_ANADATA)
-            .select("HASTA_ID", "SQ_EPISODE", pl.col("TANI_YASI").alias("age"))
-            .unique(subset=["HASTA_ID", "SQ_EPISODE"], keep="first", maintain_order=True)
+            .group_by("HASTA_ID", "SQ_EPISODE")
+            .agg(pl.col("TANI_YASI").min().alias("age"))
         )
 
     def wide(self, code: str, parameters: Mapping[str, str]) -> pl.DataFrame:
@@ -851,21 +1022,23 @@ def check_result_sets_match_bill(bill: _Clean) -> list[Problem]:
         pl.col("patient_id").alias("header_patient"),
         pl.col("episode_id").alias("header_episode"),
     )
-    billed = (
-        procedures.join(headers, on="claim_id", how="left")
-        .select(
-            "procedure_line_id",
-            pl.coalesce("header_patient", "patient_id").alias("HASTA_ID"),
-            pl.coalesce("header_episode", "episode_id").alias("basvuru_id"),
-            pl.col("procedure_date").str.to_date("%Y-%m-%d", strict=False).alias("day"),
-            pl.col("procedure_code").alias("SUB_CODE"),
-        )
-        .with_columns(pl.int_range(pl.len()).over(*SET_KEY).alias("copy"))
+    billed = procedures.join(headers, on="claim_id", how="left").select(
+        "procedure_line_id",
+        pl.coalesce("header_patient", "patient_id").alias("HASTA_ID"),
+        pl.coalesce("header_episode", "episode_id").alias("basvuru_id"),
+        _day(pl.col("procedure_date")).alias("day"),
+        pl.col("procedure_code").alias("SUB_CODE"),
+        pl.lit(True).alias("is_billed"),
     )
-    sets = bill.sets
+    billed = _canonical(billed, "procedure_line_id", "day").with_columns(
+        pl.int_range(pl.len()).over(*SET_KEY).alias("copy")
+    )
+    # a join miss is read from a literal marker of each side, never from a payload column: a billed
+    # line whose id is null is billed, a result set is a set whatever its rows hold
+    sets = bill.sets.with_columns(pl.lit(True).alias("has_set"))
     joined = billed.join(sets, on=list(SET_ID), how="full", coalesce=True)
 
-    no_set = joined.filter(pl.col("rows").is_null()).select(
+    no_set = joined.filter(pl.col("has_set").is_null()).select(
         _format(
             "{} procedure_claim_lines[{}]", pl.col("HASTA_ID"), pl.col("procedure_line_id")
         ).alias("where"),
@@ -876,7 +1049,7 @@ def check_result_sets_match_bill(bill: _Clean) -> list[Problem]:
             pl.col("basvuru_id"),
         ).alias("message"),
     )
-    no_bill = joined.filter(pl.col("procedure_line_id").is_null()).select(
+    no_bill = joined.filter(pl.col("is_billed").is_null()).select(
         _set_where().alias("where"),
         _format(
             "result set of {} on {} (episode {}) has {} row(s) and no billed lab line",
@@ -904,7 +1077,7 @@ def check_result_sets_match_bill(bill: _Clean) -> list[Problem]:
         .agg(pl.col("parametre").sort().str.join(", ").alias("unexpected"))
     )
     incomplete = (
-        joined.filter(pl.col("rows").is_not_null() & pl.col("procedure_line_id").is_not_null())
+        joined.filter(pl.col("has_set").is_not_null() & pl.col("is_billed").is_not_null())
         .join(missing, on=list(SET_ID), how="left")
         .join(unexpected, on=list(SET_ID), how="left")
         .filter(
@@ -1012,7 +1185,12 @@ def check_blood_gas_relations(bill: _Clean) -> list[Problem]:
 
 
 def check_egfr_relation(bill: _Clean) -> list[Problem]:
-    """lab.egfr_relation: eGFR is CKD-EPI 2021 of the set's creatinine, the patient's age and sex."""
+    """lab.egfr_relation: eGFR is CKD-EPI 2021 of the set's creatinine, the patient's age and sex.
+
+    It also owns the result sets (of any code) whose episode has no `anadata_clean` row: for them
+    neither the age nor, perhaps, the sex can be read, so this check and the sex-dependent limits of
+    `lab.flag_and_limits` could not be evaluated and would otherwise skip them without a word.
+    """
     wide = (
         bill.wide(CREATININE_CODE, {"scr": CREATININE, "egfr": EGFR})
         .join(bill.ages, left_on=["HASTA_ID", "basvuru_id"], right_on=["HASTA_ID", "SQ_EPISODE"])
@@ -1049,7 +1227,24 @@ def check_egfr_relation(bill: _Clean) -> list[Problem]:
             pl.lit(EGFR_TOLERANCE),
         ).alias("message"),
     )
-    return _problems("lab.egfr_relation", found)
+    episodes = bill.ages.select(
+        "HASTA_ID", pl.col("SQ_EPISODE").alias("basvuru_id"), pl.lit(True).alias("has_anadata")
+    )
+    no_anadata = (
+        bill.lab.select(*SET_ID)
+        .unique()
+        .join(episodes, on=["HASTA_ID", "basvuru_id"], how="left")
+        .filter(pl.col("has_anadata").is_null())
+        .select(
+            _set_where().alias("where"),
+            _format(
+                "the episode {} has no anadata_clean row: age and sex of this result set cannot "
+                "be read",
+                pl.col("basvuru_id"),
+            ).alias("message"),
+        )
+    )
+    return _problems("lab.egfr_relation", pl.concat([found, no_anadata]))
 
 
 # --- rx ----------------------------------------------------------------------------------------
@@ -1063,33 +1258,38 @@ def _name_key(name: pl.Expr) -> pl.Expr:
 def check_matches_billed_line(bill: _Clean) -> list[Problem]:
     """rx.matches_billed_line: the prescription rows and the billed drug lines pair off one to one."""
     key = ("patient", "episode", "day", "name", "quantity")
-    prescribed = (
-        bill.table(TABLE_RECETE)
-        .select(
-            pl.col("HASTA_ID").alias("patient"),
-            pl.col("RF_EPISODE").alias("episode"),
-            pl.col("RECETE_TARIH").dt.date().alias("day"),
-            _name_key(pl.col("ilac_adi")).alias("name"),
-            pl.col("miktar").alias("quantity"),
-            pl.col("ilac_adi").alias("prescribed_name"),
-        )
-        .with_columns(pl.int_range(pl.len()).over(*key).alias("copy"))
+    # a quantity is compared as a float (an integer, a float or a text count are the same count) and
+    # shown as the table has it; a join miss is read from a literal marker of each side
+    prescribed = bill.table(TABLE_RECETE).select(
+        pl.col("HASTA_ID").alias("patient"),
+        pl.col("RF_EPISODE").alias("episode"),
+        _day(pl.col("RECETE_TARIH")).alias("day"),
+        _name_key(pl.col("ilac_adi")).alias("name"),
+        pl.col("miktar").cast(pl.Float64).alias("quantity"),
+        pl.col("ilac_adi").alias("prescribed_name"),
+        pl.col("miktar").alias("prescribed_quantity"),
+        pl.lit(True).alias("is_prescribed"),
     )
-    billed = (
-        bill.table(TABLE_DRUGS)
-        .select(
-            pl.col("patient_id").alias("patient"),
-            pl.col("episode_id").alias("episode"),
-            pl.col("drug_claim_date").str.to_date("%Y-%m-%d", strict=False).alias("day"),
-            _name_key(pl.col("drug_name")).alias("name"),
-            pl.col("quantity"),
-            pl.col("drug_claim_line_id"),
-            pl.col("drug_name").alias("billed_name"),
-        )
-        .with_columns(pl.int_range(pl.len()).over(*key).alias("copy"))
+    prescribed = _canonical(prescribed, *key, "prescribed_name").with_columns(
+        pl.int_range(pl.len()).over(*key).alias("copy")
+    )
+    billed = bill.table(TABLE_DRUGS).select(
+        pl.col("patient_id").alias("patient"),
+        pl.col("episode_id").alias("episode"),
+        _day(pl.col("drug_claim_date")).alias("day"),
+        _name_key(pl.col("drug_name")).alias("name"),
+        pl.col("quantity").cast(pl.Float64),
+        pl.col("drug_claim_line_id"),
+        pl.col("drug_name").alias("billed_name"),
+        pl.col("quantity").alias("billed_quantity"),
+        pl.lit(True).alias("is_billed"),
+    )
+    # the n-th billed line of a key is the n-th in the order of its own line id
+    billed = _canonical(billed, *key, "drug_claim_line_id").with_columns(
+        pl.int_range(pl.len()).over(*key).alias("copy")
     )
     joined = prescribed.join(billed, on=[*key, "copy"], how="full", coalesce=True)
-    unbilled = joined.filter(pl.col("drug_claim_line_id").is_null()).select(
+    unbilled = joined.filter(pl.col("is_billed").is_null()).select(
         _format(
             "{} recete_clean[{}|{}|{}]",
             pl.col("patient"),
@@ -1102,10 +1302,10 @@ def check_matches_billed_line(bill: _Clean) -> list[Problem]:
             "episode, date, name and quantity",
             pl.col("prescribed_name"),
             pl.col("day"),
-            pl.col("quantity"),
+            pl.col("prescribed_quantity"),
         ).alias("message"),
     )
-    unprescribed = joined.filter(pl.col("prescribed_name").is_null()).select(
+    unprescribed = joined.filter(pl.col("is_prescribed").is_null()).select(
         _format("{} drug_claim_lines[{}]", pl.col("patient"), pl.col("drug_claim_line_id")).alias(
             "where"
         ),
@@ -1113,7 +1313,7 @@ def check_matches_billed_line(bill: _Clean) -> list[Problem]:
             "billed drug line {} on {} (quantity {}) has no prescription row in recete_clean",
             pl.col("billed_name"),
             pl.col("day"),
-            pl.col("quantity"),
+            pl.col("billed_quantity"),
         ).alias("message"),
     )
     return _problems("rx.matches_billed_line", pl.concat([unbilled, unprescribed]))
@@ -1125,26 +1325,59 @@ def _recete_where() -> pl.Expr:
         "{} recete_clean[{}|{}|{}]",
         pl.col("HASTA_ID"),
         pl.col("RF_EPISODE"),
-        pl.col("RECETE_TARIH").dt.date(),
+        _day(pl.col("RECETE_TARIH")),
         pl.col("ilac_adi"),
     )
 
 
+def _product_text() -> pl.Expr:
+    """The folded name of a prescription row: the billed name and the raw TITCK name together."""
+    return _fold(pl.concat_str("ilac_adi", "ilac_adi_ham", separator=" ", ignore_nulls=True))
+
+
+def product_class(text: pl.Expr) -> pl.Expr:
+    """The class a folded product text puts the product in: one of PRODUCT_CLASSES, or null.
+
+    A nebule or an inhalation solution wins over the vial it is sold in, and an oral word over the
+    bottle of a tablet; a container word makes an injection only when the name says no inhalation,
+    no oral form and no cancelling word (eye drop, oral solution, intratracheal). An injection word
+    next to an inhalation word, or next to the word of an oral solution, is a product with both
+    uses; next to a solid form (tablet, capsule ...) it is a contradiction. No class word: null.
+    """
+    inhalation = text.str.contains(_INHALATION_PATTERN)
+    injection = text.str.contains(_INJECTION_PATTERN)
+    solid = text.str.contains(_SOLID_PATTERN)
+    oral = solid | text.str.contains(_ORAL_SOLUTION_PATTERN)
+    container = text.str.contains(_CONTAINER_PATTERN) & ~text.str.contains(_CANCEL_PATTERN)
+    return (
+        pl.when(inhalation & injection)
+        .then(pl.lit(CLASS_INJECTED_INHALED))
+        .when(inhalation)
+        .then(pl.lit(CLASS_INHALED))
+        .when(solid & injection)
+        .then(pl.lit(CLASS_CONTRADICTION))
+        .when(oral & injection)
+        .then(pl.lit(CLASS_INJECTED_ORAL))
+        .when(oral)
+        .then(pl.lit(CLASS_SWALLOWED))
+        .when(injection | container)
+        .then(pl.lit(CLASS_INJECTED))
+    )
+
+
+def product_class_of(*names: pl.Expr) -> pl.Expr:
+    """`product_class` of the names of a product as a table spells them (joined and folded here)."""
+    return product_class(_fold(pl.concat_str(*names, separator=" ", ignore_nulls=True)))
+
+
 def check_route_vs_product(bill: _Clean) -> list[Problem]:
     """rx.route_vs_product: the route is in the vocabulary and fits what the product name says."""
-    text = _fold(pl.concat_str("ilac_adi", "ilac_adi_ham", separator=" ", ignore_nulls=True))
+    text = _product_text()
     route = pl.col("verilis_yolu")
-    inhalation = text.str.contains(_INHALATION_PATTERN)
-    oral = text.str.contains(_ORAL_PATTERN)
-    injection = text.str.contains(_INJECTION_PATTERN)
-    container = text.str.contains(_CONTAINER_PATTERN)
-    # a nebule or an inhalation solution wins over the vial it is sold in; a container word counts
-    # as a parenteral product only when the name says no tablet and no inhalation
-    inhaled = inhalation
-    swallowed = oral & ~injection & ~inhalation
-    injected = (injection | (container & ~oral)) & ~inhalation
-    both = injection & oral & ~inhalation
+    cls = product_class(text)
     known = route.is_in(list(ROUTES))
+    # the products of the crosswalk whose ATC code is an LMWH are LMWHs whatever their name says
+    lmwh = text.str.contains(_LMWH_PATTERN) | pl.col("is_lmwh").fill_null(False)
     why = _reasons(
         pl.when(route.is_null()).then(pl.lit("the route is missing")),
         pl.when(route.is_not_null() & ~known).then(
@@ -1154,25 +1387,47 @@ def check_route_vs_product(bill: _Clean) -> list[Problem]:
                 pl.lit(", ".join(ROUTES)),
             )
         ),
-        pl.when(both).then(pl.lit("the name states both an injection and a tablet or capsule")),
-        pl.when(known & inhaled & (route != ROUTE_INHALATION)).then(
+        pl.when(cls == CLASS_CONTRADICTION).then(
+            pl.lit("the name states both an injection and a tablet or capsule")
+        ),
+        pl.when(known & (cls == CLASS_INHALED) & (route != ROUTE_INHALATION)).then(
             _format("a nebule or inhalation product has the route {}", pl.lit(ROUTE_INHALATION))
         ),
-        pl.when(known & injected & ~route.is_in(list(PARENTERAL_ROUTES))).then(
+        pl.when(known & (cls == CLASS_INJECTED) & ~route.is_in(list(PARENTERAL_ROUTES))).then(
             _format(
                 "an injection, infusion, vial or bag product has a parenteral route ({})",
                 pl.lit(", ".join(PARENTERAL_ROUTES)),
             )
         ),
-        pl.when(known & swallowed & (route != ROUTE_ORAL)).then(
+        pl.when(known & (cls == CLASS_SWALLOWED) & (route != ROUTE_ORAL)).then(
             _format("a tablet or capsule product has the route {}", pl.lit(ROUTE_ORAL))
         ),
-        pl.when(known & text.str.contains(_LMWH_PATTERN) & (route != ROUTE_SUBCUTANEOUS)).then(
+        pl.when(
+            known
+            & (cls == CLASS_INJECTED_INHALED)
+            & ~route.is_in([*PARENTERAL_ROUTES, ROUTE_INHALATION])
+        ).then(
+            _format(
+                "an injection and inhalation product has a parenteral or inhalation route ({})",
+                pl.lit(", ".join([*PARENTERAL_ROUTES, ROUTE_INHALATION])),
+            )
+        ),
+        pl.when(
+            known & (cls == CLASS_INJECTED_ORAL) & ~route.is_in([*PARENTERAL_ROUTES, ROUTE_ORAL])
+        ).then(
+            _format(
+                "an injection and oral solution product has a parenteral or oral route ({})",
+                pl.lit(", ".join([*PARENTERAL_ROUTES, ROUTE_ORAL])),
+            )
+        ),
+        pl.when(known & lmwh & (route != ROUTE_SUBCUTANEOUS)).then(
             _format("a low-molecular-weight heparin has the route {}", pl.lit(ROUTE_SUBCUTANEOUS))
         ),
     )
     found = (
         bill.table(TABLE_RECETE)
+        .with_columns(_name_key(pl.col("ilac_adi")).alias("name_key"))
+        .join(bill.ctx.lmwh_products, on="name_key", how="left")
         .with_columns(why.alias("why"))
         .filter(pl.col("why") != "")
         .select(
@@ -1186,13 +1441,21 @@ def check_route_vs_product(bill: _Clean) -> list[Problem]:
 
 
 def check_dose_unit(bill: _Clean) -> list[Problem]:
-    """rx.dose_unit: `dozaj_ham` is '<positive count> <Turkish unit>' and the count is `miktar`."""
+    """rx.dose_unit: `dozaj_ham` is '<positive count> <Turkish unit>' that fits the product; count is `miktar`."""
     dose = pl.col("dozaj_ham")
     shape = r"^([1-9][0-9]*) ([^ ]+)$"
     well_formed = dose.str.contains(shape)
     count = dose.str.extract(shape, 1)
     unit = dose.str.extract(shape, 2)
     english = unit.is_in(list(ENGLISH_UNITS))
+    cls = product_class(_product_text())
+    # a unit of the closed list that the class of the product does not take (null: nothing to judge)
+    misfit = pl.coalesce(
+        [
+            pl.when(cls == name).then(unit.is_in(list(units)))
+            for name, units in DOSE_UNIT_MISFITS.items()
+        ]
+    ).fill_null(False)
     why = _reasons(
         pl.when(dose.is_null()).then(pl.lit("dozaj_ham is missing")),
         pl.when(dose.is_not_null() & ~well_formed).then(
@@ -1201,6 +1464,9 @@ def check_dose_unit(bill: _Clean) -> list[Problem]:
         pl.when(well_formed & english).then(_format("uses the English unit word {}", unit)),
         pl.when(well_formed & ~english & ~unit.is_in(list(DOSE_UNITS))).then(
             _format("uses the unit word {}, which is not in the closed list of Turkish units", unit)
+        ),
+        pl.when(well_formed & unit.is_in(list(DOSE_UNITS)) & misfit).then(
+            _format("uses the unit word {}, which does not fit this product (class {})", unit, cls)
         ),
         pl.when(
             well_formed & (count.cast(pl.Int64, strict=False) != pl.col("miktar")).fill_null(True)
@@ -1219,7 +1485,7 @@ def check_dose_unit(bill: _Clean) -> list[Problem]:
 
 
 def check_required_fields(bill: _Clean) -> list[Problem]:
-    """rx.required_fields: no null (and no blank text) in the required prescription columns."""
+    """rx.required_fields: no null or blank in the required columns; kohort and donem are right."""
     frame = bill.table(TABLE_RECETE)
     absent = []
     for column in REQUIRED_RECETE_COLUMNS:
@@ -1227,13 +1493,23 @@ def check_required_fields(bill: _Clean) -> list[Problem]:
         if frame.schema[column] == pl.String:
             missing = missing | (pl.col(column).str.strip_chars() == "").fill_null(False)
         absent.append(pl.when(missing).then(pl.lit(column)))
+    absent_text = pl.concat_str(*absent, separator=", ", ignore_nulls=True)
+    # a present kohort is the cohort's; a present donem is the year of the (present) date
+    kohort, donem = pl.col("kohort"), pl.col("donem")
+    year = pl.col("RECETE_TARIH").dt.year().cast(pl.String)
+    kohort_off = kohort.str.strip_chars().ne("").fill_null(False) & (kohort != bill.ctx.kohort)
+    donem_off = (
+        donem.str.strip_chars().ne("").fill_null(False) & year.is_not_null() & (donem != year)
+    )
+    why = _reasons(
+        pl.when(absent_text != "").then(_format("missing required column(s): {}", absent_text)),
+        pl.when(kohort_off).then(_format("kohort is {}, not {}", kohort, pl.lit(bill.ctx.kohort))),
+        pl.when(donem_off).then(_format("donem is {} but RECETE_TARIH is in {}", donem, year)),
+    )
     found = (
-        frame.with_columns(pl.concat_str(*absent, separator=", ", ignore_nulls=True).alias("why"))
+        frame.with_columns(why.alias("why"))
         .filter(pl.col("why") != "")
-        .select(
-            _recete_where().alias("where"),
-            _format("missing required column(s): {}", pl.col("why")).alias("message"),
-        )
+        .select(_recete_where().alias("where"), pl.col("why").alias("message"))
     )
     return _problems("rx.required_fields", found)
 
@@ -1275,6 +1551,22 @@ def check_vitals_bounds(bill: _Clean) -> list[Problem]:
     parts.append(
         pl.when(sex.n_unique().over("HASTA_ID") > 1).then(
             pl.lit("CINSIYET differs between the episodes of the patient")
+        )
+    )
+    # the labels of the row: the cohort, and the period that is the year of the episode date
+    date, kohort, donem = pl.col("EPISODE_TARIH"), pl.col("kohort"), pl.col("donem")
+    year = date.dt.year().cast(pl.String)
+    parts.append(pl.when(date.is_null()).then(pl.lit("EPISODE_TARIH is missing")))
+    parts.append(pl.when(kohort.is_null()).then(pl.lit("kohort is missing")))
+    parts.append(
+        pl.when(kohort.is_not_null() & (kohort != bill.ctx.kohort)).then(
+            _format("kohort is {}, not {}", _shown(kohort), pl.lit(bill.ctx.kohort))
+        )
+    )
+    parts.append(pl.when(donem.is_null()).then(pl.lit("donem is missing")))
+    parts.append(
+        pl.when(donem.is_not_null() & year.is_not_null() & (donem != year)).then(
+            _format("donem is {} but EPISODE_TARIH is in {}", _shown(donem), year)
         )
     )
     found = (
