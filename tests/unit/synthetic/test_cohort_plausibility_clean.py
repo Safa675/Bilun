@@ -1758,6 +1758,68 @@ def test_the_sets_of_a_day_pair_by_their_time_of_day_not_by_their_values(context
         assert problem.message.startswith("RBC 4.0 x MCV 99.0 / 10 = 39.6 but HCT is 45.0")
 
 
+# --- 4b'. the size: 300 copies of the showcase give the findings of one ----------------------------------
+
+SCALE_COPIES = 300
+# one defect of each id, on rows of the original patients only (the copies have other ids)
+SCALE_CASES = (
+    "lab.value_bounds-negative_glucose",
+    "lab.hemogram_relations-one_differential_count_changed",
+    "lab.flag_and_limits-strip_flag_false_on_a_trace",
+    "lab.unit_matches_reference-wrong_unit",
+    "lab.result_sets_match_bill-dropped_row",
+    "lab.blood_gas_relations-hco3_changed",
+    "lab.egfr_relation-creatinine_changed_alone",
+    "rx.matches_billed_line-quantity_changed",
+    "rx.route_vs_product-clexane_as_oral",
+    "rx.dose_unit-tablet_on_an_injection",
+    "rx.required_fields-wrong_kohort",
+    "ana.vitals_bounds-spo2_120",
+)
+
+
+def renamed_copies(tables: dict[str, pl.DataFrame], copies: int) -> dict[str, pl.DataFrame]:
+    """The tables `copies` times: copy k has the patient numbers 000N turned into kkkN, in every id."""
+
+    def renamed(frame: pl.DataFrame, k: int) -> pl.DataFrame:
+        texts = [name for name, dtype in frame.schema.items() if dtype == pl.String]
+        return frame.with_columns(
+            pl.col(name).str.replace_all(
+                "SENTETIK-HASTA-000", f"SENTETIK-HASTA-{k:03d}", literal=True
+            )
+            for name in texts
+        )
+
+    return {
+        name: pl.concat([frame, *[renamed(frame, k) for k in range(1, copies)]])
+        for name, frame in tables.items()
+    }
+
+
+def test_300_copies_of_the_showcase_give_the_findings_of_one(built, clean, context) -> None:
+    """A table of 62,100 lab rows and 35,100 billed lines: no Polars panic, the findings of the small table.
+
+    The joins, the window functions and the message texts run here on tables that are cut down from
+    thousands of rows to a few findings, as they never are on the eight patients of the showcase.
+    """
+    read = (TABLE_HEADERS, TABLE_PROCEDURES, TABLE_DRUGS)
+    big = Data(
+        renamed_copies({name: built.tables[name] for name in read}, SCALE_COPIES),
+        renamed_copies(clean, SCALE_COPIES),
+    )
+    assert big.clean[TABLE_LAB].height == 300 * clean[TABLE_LAB].height == 62100
+    assert findings(big, context) == [], "the copies of a clean dataset are clean"
+    small = fresh(built, clean)
+    chosen = [case for case in CASES if case.name in SCALE_CASES]
+    assert len(chosen) == len(SCALE_CASES) and {case.check for case in chosen} == set(CHECKS)
+    for case in chosen:
+        case.mutate(small)
+        case.mutate(big)
+    expected = findings(small, context)
+    assert {check for check, _, _ in expected} == set(CHECKS), "the defects trip every id"
+    assert findings(big, context) == expected
+
+
 # --- 4c. the types: another representation of the same data is the same data ---------------------------
 
 _C = pl.col
@@ -1899,6 +1961,18 @@ def test_a_column_of_no_type_at_all_is_read_as_missing(built, clean, context) ->
         <= set(p.message.split("; "))
         for p in found
     )
+    # a number column of no type is a number column of nothing: the results, and an age that the
+    # eGFR relation would raise to a power, are missing and are named, not a Polars error
+    data = fresh(built, clean)
+    data.clean[TABLE_LAB] = data.clean[TABLE_LAB].with_columns(pl.lit(None).alias("sonuc_sayisal"))
+    data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].with_columns(
+        pl.lit(None).alias("TANI_YASI")
+    )
+    bounds = data.problems(context, only=VALUE_BOUNDS)
+    assert len(bounds) == 201 and all(p.message.endswith("has no numeric result") for p in bounds)
+    assert data.problems(context, only=EGFR_RELATION) == []
+    ages = data.problems(context, only=VITALS)
+    assert len(ages) == 8 and all("TANI_YASI is missing" in p.message for p in ages)
 
 
 # --- 4d. the columns: REQUIRED_COLUMNS against the files that are committed ---------------------------
@@ -3013,13 +3087,13 @@ def test_a_billed_line_with_no_line_id_is_still_billed(built, clean, context) ->
 def test_a_billed_line_with_no_line_id_still_has_its_set_judged(built, clean, context) -> None:
     """The line is billed (it has a marker, not an id): a set of it that lacks a row is reported."""
     data = fresh(built, clean)
-    edit(
-        data,
-        TABLE_PROCEDURES,
-        pl.col("procedure_line_id") == "ISL-F-SENTETIK-HASTA-0002-001-011",
-        procedure_line_id=None,
+    hemogram_line = (
+        (pl.col("patient_id") == PATIENT[2])
+        & (pl.col("procedure_date") == DAY_2)
+        & (pl.col("procedure_code") == HEMOGRAM_CODE)
     )
-    # the hemogram of 2026-03-09 is the set of that line (see the case `dropped_row`)
+    edit(data, TABLE_PROCEDURES, hemogram_line, procedure_line_id=None)
+    assert data.problems(context, only=SETS) == [], "billed, complete: nothing to report"
     drop(data, TABLE_LAB, lab(2, DAY_2, HEMOGRAM_CODE, "MPV"))
     (problem,) = data.problems(context, only=SETS)
     assert problem.where == HEMOGRAM_2 and "missing MPV" in problem.message
