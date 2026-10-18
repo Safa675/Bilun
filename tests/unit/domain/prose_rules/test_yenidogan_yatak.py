@@ -1037,3 +1037,62 @@ def test_an_icu_named_department_that_bills_the_standard_bed_stays_with_the_stan
     )
 
     assert _detect([_line("510010", "667.08", quantity=3)], header=header) == []
+
+
+# --- Pins for the survivors of the confirmation round (BU1, N13, N17, N19) --------------------------------
+
+
+def test_a_zero_priced_standard_bed_line_still_covers_its_day() -> None:
+    """A 0 TL line is a non-credit line: it covers its day (its money is the standard-bed motor's to net)."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    [opp] = _detect(
+        [_line("510070", "440.98", line_id="K"), _line("510010", "0", quantity=2, line_id="S", procedure_date=date(2026, 7, 11))],
+        header=header,
+    )
+
+    assert (opp["days"], opp["standard_bed_days"]) == (2, 2)
+
+
+def test_the_icu_code_gate_stays_absolute_even_when_a_newborn_bed_is_billed() -> None:
+    """Only the department gate and the standard-bed stand-down give way to a billed newborn bed; an ICU code never."""
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 12), primary_icd10="P22.0", department="yenidoğan"
+    )
+
+    assert _detect([_line("510090", "0", line_id="I"), _line("510070", "1322.94", quantity=3, line_id="K")], header=header) == []
+
+
+def test_billed_cot_days_cover_days_first_beside_standard_bed_lines() -> None:
+    """Kot x4 billed in full beside two 0 TL standard-bed lines on a 4-day stay: the cot lines cover all 4 days, the
+    510010 lines own none (the newborn priority counts Kot units as well as Kuvöz units)."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    [opp] = _detect(
+        [_line("510081", "1245.20", quantity=4, line_id="T"), _line("510010", "0", quantity=2, line_id="S")], header=header
+    )
+
+    assert opp["days"] == 4 and "standard_bed_days" not in opp
+    assert opp["bed_code"] == "510081" and opp["recoverable_uplift_try"] == 0.0
+
+
+def test_newborn_lines_inside_a_mandated_window_do_not_take_days_from_the_standard_bed_lines() -> None:
+    """12 days, mandated 610131 (window through 21 July): Kuvöz x8 dated 14 July pay the package, so they cover none
+    of the 4 days after it, and three 510010 lines dated after the window keep their 3 days."""
+    import dataclasses
+
+    from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
+    from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
+
+    start = _d("2026-07-14")
+    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+    bill.proc("610131", start, specialty=GENCER)
+    bill.proc("510070", start, qty=8, specialty=GENCER)
+    for offset in range(3):
+        bill.proc("510010", _d("2026-07-22") + (_d("2026-07-23") - _d("2026-07-22")) * offset, qty=1, specialty=GENCER)
+    ctx = bill.ctx()
+    claim = dataclasses.replace(ctx.claims[0], department="yenidoğan")
+
+    [opp] = detect_yenidogan_yatak_opportunities(
+        [claim], [], procedure_lines=list(ctx.procedure_lines), claim_ids_with_procs={claim.claim_id}
+    )
+
+    assert (opp["days"], opp["bundled_days"], opp["standard_bed_days"]) == (1, 8, 3)
