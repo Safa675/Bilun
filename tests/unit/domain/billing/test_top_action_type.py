@@ -391,26 +391,75 @@ class TestTheFourPuanMotors:
         assert patient_recovery_summary_from_payload(rowless)["top_action_type"] == "none"
 
 
-class TestKnownDivergence:
-    @pytest.mark.xfail(
-        strict=True,
-        raises=AssertionError,
-        reason=(
-            "Pre-existing, found by the independent review: the live path weighs `patient_copay_waived_total_try` "
-            "with no is_exempt gate, the payload path weighs `exemption_gap_try` (0 when the patient is not "
-            "exempt). The engine reaches it: `waiver_inpatient_drug` (copay_line_waivers.py) waives every drug "
-            "of an inpatient claim, so a patient who is not exempt has a waived total (5,870 TL on a 20,000 TL "
-            "drug) while the table's exemption-gap column says 0. Decide which side is right, align the "
-            "other, remove this marker."
-        ),
-    )
-    def test_a_not_exempt_patient_with_a_waived_copay_names_the_same_top_action_on_both_paths(self) -> None:
-        copay = CopayOptimization(
-            exactness_status="exact",
-            required_inputs_missing=[],
-            is_exempt=False,
-            patient_copay_waived_total_try=5870.0,
-            rx_copay_savings_try=5870.0,
+class TestCopayKeyParity:
+    """The copay key counts only the exemption gap: an exempt patient whose copay block is exact.
+
+    The table's own exemption-gap column and the cached-payload path always did; the live path used to weigh
+    `patient_copay_waived_total_try` with no is_exempt and no exactness gate. The engine reaches the difference:
+    `waiver_inpatient_drug` (copay_line_waivers.py) waives every drug of an inpatient claim, so a patient who is
+    not exempt has a waived total (5,870 TL on a 20,000 TL drug) that is the rule, not an opportunity.
+    """
+
+    @staticmethod
+    def _copay(**fields: Any) -> CopayOptimization:
+        return CopayOptimization(
+            **({"exactness_status": "exact", "required_inputs_missing": [], "is_exempt": True} | fields)
         )
-        tops = _both_paths(_report(copay=copay))
-        assert tops["live"] == tops["cache"] == tops["api"], tops
+
+    @staticmethod
+    def _all(top: str) -> dict[str, str]:
+        return {"live": top, "cache": top, "api": top}
+
+    def test_a_not_exempt_patient_with_a_waived_copay_names_no_copay_on_any_path(self) -> None:
+        copay = self._copay(
+            is_exempt=False, patient_copay_waived_total_try=5870.0, rx_copay_savings_try=5870.0
+        )
+        assert _both_paths(_report(copay=copay)) == self._all("none")
+
+    def test_a_not_exempt_patient_loses_to_the_next_motor_not_to_none(self) -> None:
+        """The waived total no longer outweighs a real opportunity: the strategy motor wins on every path."""
+        strategy = BillingStrategyRecommendation(
+            recommendations=[
+                {
+                    "type": "optional_override",
+                    "recommendation_kind": "optional_override",
+                    "savings_try": 37.0,
+                    "included_in_sgk_total": True,
+                }
+            ]
+        )
+        copay = self._copay(is_exempt=False, patient_copay_waived_total_try=5870.0)
+        assert _both_paths(_report(copay=copay, billing_strategy=strategy)) == self._all("strategy")
+
+    def test_a_copay_block_that_is_not_exact_names_no_copay_on_any_path(self) -> None:
+        copay = self._copay(
+            exactness_status="partial_exact",
+            required_inputs_missing=["katilimPayindanMuaf"],
+            patient_copay_waived_total_try=900.0,
+        )
+        assert _both_paths(_report(copay=copay)) == self._all("none")
+
+    def test_an_exempt_patient_with_an_exact_waived_total_names_copay_on_every_path(self) -> None:
+        copay = self._copay(patient_copay_waived_total_try=640.0)
+        assert _both_paths(_report(copay=copay)) == self._all("copay")
+
+    def test_without_a_waived_total_the_procedure_and_prescription_gaps_add_up(self) -> None:
+        copay = self._copay(total_copay_savings_try=300.0, rx_copay_savings_try=120.0)
+        report = _report(copay=copay)
+        assert _both_paths(report) == self._all("copay")
+        assert patient_recovery_summary_entry(report)["exemption_gap_try"] == 420.0
+        assert recovery_summary._get_top_action_type(report) == "copay"
+
+    def test_the_copay_key_weighs_the_exemption_gap_column(self, monkeypatch) -> None:
+        """One figure on both sides: whatever the column shows is what the key weighs (here a stand-in value)."""
+        seen: list[float] = []
+        real = recovery_summary._top_action_type_from_savings
+
+        def spy(savings: dict[str, float]) -> str:
+            seen.append(savings["copay"])
+            return real(savings)
+
+        monkeypatch.setattr(recovery_summary, "_top_action_type_from_savings", spy)
+        monkeypatch.setattr(recovery_summary, "exemption_gap_try", lambda _report: 123.45)
+        assert recovery_summary._get_top_action_type(_report()) == "copay"
+        assert seen == [123.45]

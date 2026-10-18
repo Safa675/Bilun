@@ -59,7 +59,6 @@ def _top_action_type_from_savings(savings: dict[str, float]) -> str:
 
 def _get_top_action_type(report: BillingActionReport) -> str:
     """Determine the primary action type for a patient report."""
-    waived = getattr(report.copay, "patient_copay_waived_total_try", None)
     return _top_action_type_from_savings(
         {
             "session_uplift": report.session_uplift.total_uplift_try,
@@ -73,14 +72,10 @@ def _get_top_action_type(report: BillingActionReport) -> str:
             "package_adequacy_review": report.package_adequacy_review_try or 0.0,
             "medula_playbook": float(report.medula_playbook_entry_count),
             "lab": report.compliance_adjustment_try or 0.0,
-            "copay": (
-                waived
-                if waived is not None
-                else _complete_sum(
-                    report.copay.total_copay_savings_try,
-                    report.copay.rx_copay_savings_try,
-                )
-            ) or 0.0,
+            # The table's own exemption-gap column and the cached-payload path weigh the same figure: copay money
+            # counts only for an exempt patient whose copay block is exact. A patient who is not exempt can still
+            # carry a waived total (the inpatient-drug waiver), which is the rule and not an opportunity.
+            "copay": exemption_gap_try(report) or 0.0,
             # The puan motors that were missing here come last, in BILLING_BLOCK_SPECS order:
             # `max` keeps the first of equal amounts, so a tie still goes to the key it went to before.
             "icu_puani": report.icu_puani.confirmed_icu_try,
