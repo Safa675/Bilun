@@ -19,9 +19,11 @@ to the test file.
 The two `labels.*` ids compare the bill with the fault records of the dataset's registry
 (`cohort_registry.json`, parsed): they run only when `check_plausibility` is given `registry=`.
 
-`Problem.where` starts with the claim id (then `table[line id]` or a detail, after a space). The
-only findings that belong to no claim are two of `labels.answer_rows`, about the registry as a whole
-and the columns of the answer table: they start with `(registry)` or `(expected_rule_outputs)`.
+`Problem.where` starts with the claim id (then `table[line id]` or a detail, after a space): a
+finding about one line names the line, and a row with no claim id starts with `(no-claim-id)`, in
+every check. The only findings that belong to no claim are two of `labels.answer_rows`, about the
+registry as a whole and the columns of the answer table: they start with `(registry)` or
+`(expected_rule_outputs)`. The findings of one check come sorted by `where`, then `message`.
 
 The reference data (EK-2B/EK-2C history, chapters, ICD-10, code sets, the care pathways and their
 fault siblings, the EK-3/F-1 and EK-4A lists) are read once, lazily, by a `PlausibilityContext`.
@@ -90,7 +92,7 @@ CHECKS: dict[str, str] = {
     "fit.operation_setting": "a major operation (group A1, A2, A3 or B) on a poliklinik or acil claim",
     "fit.visit_code": "an examination line whose code does not fit the claim type (acil, poliklinik, yatis)",
     # stay: beds, companions and dates
-    "stay.bed_coverage": "an itemised stay without exactly one bed line of quantity 1 on each day from admission to discharge",
+    "stay.bed_coverage": "an itemised stay without one bed line of quantity 1 on each day admission..discharge, or a day bed on a longer stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
     "stay.dates_in_window": "a header whose dates contradict the claim type, or a line date outside the claim window",
     # bill: performed against billed
@@ -124,36 +126,81 @@ REGISTRY_CHECKS: frozenset[str] = frozenset({"labels.answer_rows", "labels.amoun
 # trips a line of a clean twin must be narrowed or removed (and the change reported).
 
 # patient.sex_gate: words of a procedure name that limit it to one sex. A word matches inside a word
-# (prostat -> prostatektomi), written lower case or upper case, with or without Turkish letters.
+# (prostat -> prostatektomi), written lower case or upper case, with or without Turkish letters, and
+# several words may be one phrase (`tüp ligasyonu`). "orşi" alone is no word: it is inside torsiyon
+# and dorsi. The review of 7,706 EK-2B and EK-2C names found no name that these lists get wrong,
+# once the NAME_EXCEPTIONS below are blanked out. Four words match no catalog name today (the
+# catalog spells it orşiyektomi; no name has rahim or salpenjektomi): they stay as a defence for a
+# name outside the catalog, and the tests pin that list of four, so a catalog change cannot hide.
 MALE_ONLY_WORDS: tuple[str, ...] = (
     "prostat", "penil", "penis", "penektomi", "testis", "orşiektomi", "orsiektomi", "skrotum",
     "hidrosel", "varikosel", "vazektomi", "sünnet", "sunnet", "epididim",
+    "orşiyektomi", "orşiyopeksi", "fimoz", "hipospad", "epispad", "peyronie", "testik", "seminal",
+    "sperm", "vazovazo", "ejakül",
 )  # fmt: skip
 FEMALE_ONLY_WORDS: tuple[str, ...] = (
     "uterus", "rahim", "histerektomi", "histeroskopi", "vajin", "vulva", "serviks", "ooferektomi",
     "salpenjektomi", "jinekolojik", "gebelik", "doğum", "sezaryen", "inseminasyon", "kürtaj",
+    "histerosalping", "kolposkop", "bartholin", "obstetrik", "amniyo", "abortus", "endometri",
+    "miyom", "myom", "plasenta", "tüp ligasyonu",
 )  # fmt: skip
 FEMALE_ONLY_WHOLE_WORDS: tuple[str, ...] = ("over",)  # not "overdoz", "recover"
 
+# patient.sex_gate: ICD-10 blocks that only one sex can have, in addition to the `sex` column of
+# icd10_tr (which gates 83 leaf codes, all in chapters C and D, and none in chapters E, I, N, Q, Z).
+# A block is `first-last`, or one category or subcategory; a code is in it when its first characters
+# (as many as the block's ends have) lie between the ends: `N41.0` is in `N40-N53`, `D07.5` in
+# `D07.4-D07.6`. Source: the block structure of ICD-10 (WHO), which icd10_tr follows.
+ICD_SEX_GATES: dict[str, tuple[str, ...]] = {
+    "M": (
+        "C60-C63",  # malignant neoplasms of male genital organs: penis, prostate, testis, other
+        "D07.4-D07.6",  # carcinoma in situ of penis, prostate, other male genital organs
+        "N40-N53",  # diseases of male genital organs: prostate, hydrocele, orchitis, phimosis, ...
+        "E29",  # testicular dysfunction
+        "Q53-Q56",  # congenital malformations of male genital organs: undescended testis, hypospadias, ...
+        "I86.1",  # scrotal varices (varicocele)
+    ),
+    "F": (
+        "C51-C58",  # malignant neoplasms of female genital organs: vulva, cervix, ovary, ...
+        "D06",  # carcinoma in situ of cervix uteri
+        "D07.0-D07.3",  # carcinoma in situ of endometrium, vulva, vagina, other female genital organs
+        "N70-N98",  # inflammatory diseases and noninflammatory disorders of female genital organs
+        "E28",  # ovarian dysfunction (polycystic ovary syndrome, ...)
+        "Q50-Q52",  # congenital malformations of ovaries, tubes, uterus, vagina, vulva
+        "Z32-Z37",  # pregnancy test, supervision of pregnancy, antenatal screening, outcome of delivery
+        "Z39",  # postpartum care and examination
+    ),
+}
+
 # Phrases that contain one of the sex or age words without the meaning (checked against the EK-2B and
 # EK-2C names): they are blanked out of a name before its words are looked for. A test requires every
-# phrase to occur in a catalog name.
+# phrase to occur in a catalog name and to change the verdict on at least one.
 NAME_EXCEPTIONS: tuple[str, ...] = (
     "Yenidoğan/Çocuk/Erişkin",  # one code for every age
     "Yenidoğan/Çocuk",  # one code for newborn and child
+    "Yeni doğan/geriatrik",  # the anaesthesia add-on for a newborn or an elderly patient
     "Çocuk-büyük",  # EEG for child and adult
+    "Çocuk ve Genç",  # ÇÖZGEM, the child and youth mental-health centre: its patients may be 18
     "sağlam çocuk doğmasına",  # IVF and preimplantation tests: the patients are the parents
     "cross-over",  # a venous graft, not the ovary
     "Meme/Over Kanseri",  # BRCA analysis, also done for men
     "penisil",  # penicillin (Penisilin G IgE antikoru), penisilyum
     "doğumsal",  # congenital (heart disease), not birth
     "invajinasyon",  # intussusception of the bowel, not the vagina
+    "hipospadias-epispadias dışı",  # a urethroplasty for any other cause, in either sex
+    "Antisperm",  # the antibody test is also done on a woman's serum
+    "Sperm yıkama",  # IUI/IVF steps are billed on either partner's file (judgment) ...
+    "Sperm- oosit",  # ... as is the preparation of sperm and oocyte together
+    "Özel sperm",  # ... and the special sperm technique
 )
 
 
 @dataclass(frozen=True)
 class AgeGate:
-    """One age rule: `words` are ICD code prefixes (source icd) or name words (source name)."""
+    """One age rule: `words` are ICD code prefixes (source icd) or name words (source name).
+
+    `whole` makes a name word match as a whole word only (`2 yaş altı` is not inside `12 yaş altı`).
+    """
 
     source: str
     words: tuple[str, ...]
@@ -161,6 +208,7 @@ class AgeGate:
     max_age: int | None
     sex: str | None
     why: str
+    whole: bool = False
 
     @property
     def limits(self) -> str:
@@ -174,12 +222,19 @@ class AgeGate:
         return f"sex {self.sex}, {age}" if self.sex else age
 
 
-# patient.age_gate: the age is `anadata_clean` TANI_YASI; both limits are inclusive.
+# patient.age_gate: the age is `anadata_clean` TANI_YASI; both limits are inclusive. No catalog name
+# has the word `erişkin` today (the adult gate is kept for a name outside the catalog, and a test
+# pins that it matches none).
 AGE_GATES: tuple[AgeGate, ...] = (
     AgeGate("icd", ("P",), None, 1, None, "a perinatal condition (ICD chapter P)"),
     AgeGate("icd", ("O",), 10, 55, "F", "a pregnancy condition (ICD chapter O)"),
     AgeGate("icd", ("Z38",), None, 1, None, "a liveborn infant code (Z38)"),
-    AgeGate("name", ("yenidoğan", "neonatal", "prematüre"), None, 1, None, "a newborn procedure"),
+    AgeGate(
+        "name", ("yenidoğan", "yeni doğan", "neonatal", "prematüre", "bebek"), None, 1, None,
+        "a newborn or infant procedure",
+    ),
+    AgeGate("name", ("2 yaş altı",), None, 1, None, "a procedure for a child under 2", whole=True),
+    AgeGate("name", ("10 yaş altı",), None, 9, None, "a procedure for a child under 10", whole=True),
     AgeGate("name", ("pediatrik", "çocuk"), None, 17, None, "a paediatric procedure"),
     AgeGate("name", ("erişkin",), 18, None, None, "an adult procedure"),
 )  # fmt: skip
@@ -253,6 +308,10 @@ ANSWER_MONEY_COLUMNS: tuple[str, ...] = ("expected_payable_try", "expected_savin
 
 _DATE_FORMAT = "%Y-%m-%d"
 
+# Written in `where` for a row that has no claim id (in every check), and in a message for any other
+# missing value the text is `(none)`.
+NO_CLAIM = "(no-claim-id)"
+
 
 # --- the Problem ------------------------------------------------------------------------------
 
@@ -294,16 +353,18 @@ def _fold(expr: pl.Expr) -> pl.Expr:
     return folded
 
 
-def _without_exceptions(folded: pl.Expr) -> pl.Expr:
-    """A folded name with the NAME_EXCEPTIONS phrases blanked out (longest phrase first)."""
-    for phrase in sorted((fold_text(p) for p in NAME_EXCEPTIONS), key=len, reverse=True):
+def _without_exceptions(folded: pl.Expr, phrases: Iterable[str] = NAME_EXCEPTIONS) -> pl.Expr:
+    """A folded name with the exception `phrases` blanked out (longest phrase first)."""
+    for phrase in sorted((fold_text(p) for p in phrases), key=len, reverse=True):
         folded = folded.str.replace_all(phrase, " ", literal=True)
     return folded
 
 
 def _words_pattern(words: Iterable[str], *, whole: bool = False) -> str:
     """A regex that finds any of `words` (folded), inside words or, with `whole`, as whole words."""
-    alternatives = "|".join(sorted({re.escape(fold_text(w)) for w in words}))
+    # re.escape writes a space as `\ `; a phrase (`tüp ligasyonu`) keeps its plain spaces
+    escaped = {re.escape(fold_text(w)).replace("\\ ", " ") for w in words}
+    alternatives = "|".join(sorted(escaped))
     return rf"\b(?:{alternatives})\b" if whole else f"(?:{alternatives})"
 
 
@@ -372,6 +433,11 @@ class PlausibilityContext:
             beds["icu_day_fee_for_service"]["code"],
         ]
         return [*fee, *self.icu_codes]
+
+    @cached_property
+    def day_bed_code(self) -> str:
+        """The day bed (510120): a bed day only on a stay of less than 24 hours."""
+        return self.code_sets["beds"]["day_bed"]["code"]
 
     @cached_property
     def companion_code(self) -> str:
@@ -515,18 +581,52 @@ def _date(name: str) -> pl.Expr:
 
 
 def _format(template: str, *args: pl.Expr) -> pl.Expr:
-    """`pl.format`, writing `(none)` for a missing value: `pl.format` makes the whole text null."""
-    return pl.format(template, *[arg.cast(pl.String).fill_null("(none)") for arg in args])
+    """`pl.format`, writing `(none)` for a missing value: `pl.format` makes the whole text null.
+
+    The text is joined with `+` and not with `pl.format`: in polars 2.0.0 a `pl.format` of two
+    columns panics (`assertion failed: i < self.len()`) on a table of a few thousand rows that a
+    filter has cut down to a few findings. The result is the same text.
+    """
+    pieces = template.split("{}")
+    if len(pieces) != len(args) + 1:
+        raise ValueError(f"{template!r} has {len(pieces) - 1} placeholders for {len(args)} values")
+    text = pl.lit(pieces[0])
+    for arg, piece in zip(args, pieces[1:], strict=True):
+        text = text + arg.cast(pl.String).fill_null("(none)") + pl.lit(piece)
+    return text
 
 
-def _where(claim: str, kind: str, key: str) -> pl.Expr:
-    """`where` of a finding about one line: the claim id, then `kind[key]`."""
-    return _format("{} {}[{}]", pl.col(claim), pl.lit(kind), pl.col(key))
+def _claim_text(claim: str | pl.Expr = "claim_id") -> pl.Expr:
+    """A claim id as the text a `where` starts with: `(no-claim-id)` when the row has none."""
+    expr = pl.col(claim) if isinstance(claim, str) else claim
+    return expr.cast(pl.String).fill_null(NO_CLAIM)
+
+
+def _where(claim: str, kind: str | pl.Expr, key: str) -> pl.Expr:
+    """`where` of a finding about one line: the claim id, then `kind[key]` (`kind` may be a column)."""
+    return _format(
+        "{} {}[{}]",
+        _claim_text(claim),
+        pl.lit(kind) if isinstance(kind, str) else kind,
+        pl.col(key),
+    )
 
 
 def _other_than(sex: str | pl.Expr) -> pl.Expr:
     """The patient's sex (column `sex`) is not `sex`; a patient of unknown sex is not either."""
     return (pl.col("sex") != sex).fill_null(True)
+
+
+def _in_blocks(code: pl.Expr, blocks: Iterable[str]) -> pl.Expr:
+    """`code` lies in one of the ICD-10 `blocks` (`N40-N53`, `D07.4-D07.6`, `E29`); no code: False.
+
+    The first characters of the code, as many as the ends of the block have, lie between the ends.
+    """
+    tests = []
+    for block in blocks:
+        low, _, high = block.partition("-")
+        tests.append(code.str.slice(0, len(low)).is_between(pl.lit(low), pl.lit(high or low)))
+    return pl.any_horizontal(tests).fill_null(False)
 
 
 def _days_text(column: str = "day") -> pl.Expr:
@@ -585,9 +685,7 @@ def _engine_price(code: str, day: date) -> float | None:
 
 def _problems(check: str, found: pl.DataFrame) -> list[Problem]:
     """Problems for findings with the columns `where` and `message`, in a stable order."""
-    ordered = found.select(pl.col("where").fill_null("(no-claim-id)"), "message").sort(
-        "where", "message"
-    )
+    ordered = found.select(pl.col("where").fill_null(NO_CLAIM), "message").sort("where", "message")
     return [
         Problem(check, where, message)
         for where, message in zip(ordered["where"], ordered["message"], strict=True)
@@ -671,6 +769,7 @@ class _Bill:
                     "is_icu": code.is_in(ctx.icu_codes),
                     "is_paket": pl.col("procedure_category") == "paket",
                     "is_bed_day": code.is_in(ctx.bed_day_codes),
+                    "is_day_bed": code == ctx.day_bed_code,
                     "is_companion": code == ctx.companion_code,
                     "is_anaesthesia": code.is_in(ctx.anaesthesia_codes),
                     "is_chapter6": code.is_in(ctx.operation_codes),
@@ -816,7 +915,7 @@ class _Bill:
                 )
                 invalid.append(
                     (
-                        f"{claim or '(no-claim-id)'} registry faults[{index}]",
+                        f"{claim or NO_CLAIM} registry faults[{index}]",
                         claim,
                         f"the entry is no valid fault record: {why}",
                     )
@@ -874,7 +973,14 @@ def check_icd_valid(bill: _Bill) -> list[Problem]:
 
 
 def check_sex_gate(bill: _Bill) -> list[Problem]:
-    """patient.sex_gate: an ICD sex gate, or a sex word in a procedure name, against the sex."""
+    """patient.sex_gate: an ICD sex gate (column or block), or a sex word in a name, vs the sex."""
+    code = pl.col("icd10_code")
+    block_sex = (
+        pl.when(_in_blocks(code, ICD_SEX_GATES["M"]))
+        .then(pl.lit("M"))
+        .when(_in_blocks(code, ICD_SEX_GATES["F"]))
+        .then(pl.lit("F"))
+    )
     gated = (
         bill.diagnoses.join(bill.patients, on=["patient_id", "episode_id"], how="left")
         .join(
@@ -883,13 +989,14 @@ def check_sex_gate(bill: _Bill) -> list[Problem]:
             right_on="code",
             how="left",
         )
-        .filter(pl.col("icd_sex").is_not_null() & _other_than(pl.col("icd_sex")))
+        .with_columns(pl.coalesce(pl.col("icd_sex"), block_sex).alias("gate_sex"))
+        .filter(pl.col("gate_sex").is_not_null() & _other_than(pl.col("gate_sex")))
         .select(
             _where("claim_id", "claim_diagnoses", "diagnosis_id").alias("where"),
             _format(
                 "diagnosis {} is limited to sex {} but the patient is {}",
                 pl.col("icd10_code"),
-                pl.col("icd_sex"),
+                pl.col("gate_sex"),
                 pl.col("sex").fill_null("of unknown sex"),
             ).alias("message"),
         )
@@ -937,7 +1044,7 @@ def check_age_gate(bill: _Bill) -> list[Problem]:
             where = _where("claim_id", "claim_diagnoses", "diagnosis_id")
         else:
             source = lines
-            pattern = _words_pattern(gate.words)
+            pattern = _words_pattern(gate.words, whole=gate.whole)
             hit, subject = pl.col("folded_name").str.contains(pattern), pl.col("procedure_name")
             where = _where("claim_id", "procedure_claim_lines", "procedure_line_id")
         too_young = pl.col("age") < gate.min_age if gate.min_age is not None else pl.lit(False)
@@ -970,7 +1077,7 @@ def check_age_arithmetic(bill: _Bill) -> list[Problem]:
         .with_columns((pl.col("start").dt.year() - pl.col("birth_year")).alias("expected_age"))
     )
     found = joined.filter(~(pl.col("age") == pl.col("expected_age")).fill_null(False)).select(
-        pl.col("claim_id").alias("where"),
+        _claim_text().alias("where"),
         _format(
             "TANI_YASI is {}; the claim year is {} and the birth year {}, which makes the age {}",
             pl.col("age").cast(pl.String).fill_null("missing"),
@@ -990,10 +1097,22 @@ def check_pathway_membership(bill: _Bill) -> list[Problem]:
     ctx = bill.ctx
     tags = bill.headers.select("claim_id", "scenario_tag")
     sources = [
-        (bill.table(TABLE_PROCEDURES), "procedure", "procedure_code", "procedure_claim_lines"),
-        (bill.table(TABLE_MATERIALS), "material", "material_code", "material_claim_lines"),
-        (bill.table(TABLE_DRUGS), "drug", "barkod", "drug_claim_lines"),
-        (bill.diagnoses, "diagnosis", "icd10_code", "claim_diagnoses"),
+        (
+            bill.table(TABLE_PROCEDURES),
+            "procedure",
+            "procedure_code",
+            "procedure_line_id",
+            "procedure_claim_lines",
+        ),
+        (
+            bill.table(TABLE_MATERIALS),
+            "material",
+            "material_code",
+            "material_line_id",
+            "material_claim_lines",
+        ),
+        (bill.table(TABLE_DRUGS), "drug", "barkod", "drug_claim_line_id", "drug_claim_lines"),
+        (bill.diagnoses, "diagnosis", "icd10_code", "diagnosis_id", "claim_diagnoses"),
     ]
     held = pl.concat(
         [
@@ -1001,14 +1120,15 @@ def check_pathway_membership(bill: _Bill) -> list[Problem]:
                 "claim_id",
                 pl.lit(family).alias("family"),
                 pl.lit(table).alias("table"),
+                pl.col(key).alias("line_id"),
                 pl.col(column).alias("code"),
             )
-            for frame, family, column, table in sources
+            for frame, family, column, key, table in sources
         ]
     ).join(tags, on="claim_id", how="left")
     pathway_ids = list(ctx.pathways)
     unknown = tags.filter(~pl.col("scenario_tag").is_in(pathway_ids).fill_null(False)).select(
-        pl.col("claim_id").alias("where"),
+        _claim_text().alias("where"),
         _format(
             "scenario_tag {} is not a care pathway of data/synthetic/pathways",
             pl.col("scenario_tag").fill_null("(missing)"),
@@ -1017,14 +1137,12 @@ def check_pathway_membership(bill: _Bill) -> list[Problem]:
     extra = (
         held.filter(pl.col("scenario_tag").is_in(pathway_ids).fill_null(False))
         .join(ctx.vocabulary, on=["scenario_tag", "family", "code"], how="anti")
-        .group_by("claim_id", "scenario_tag", "family", "table")
-        .agg(pl.col("code").unique().sort().str.join(", ").alias("codes"))
         .select(
-            _format("{} {}", pl.col("claim_id"), pl.col("table")).alias("where"),
+            _where("claim_id", pl.col("table"), "line_id").alias("where"),
             _format(
-                "{} code(s) {} are not in the expansion of {} or of a sibling that a fault swaps in",
+                "{} code {} is not in the expansion of {} or of a sibling that a fault swaps in",
                 pl.col("family"),
-                pl.col("codes"),
+                pl.col("code"),
                 pl.col("scenario_tag"),
             ).alias("message"),
         )
@@ -1096,7 +1214,11 @@ def check_visit_code(bill: _Bill) -> list[Problem]:
 
 
 def check_bed_coverage(bill: _Bill) -> list[Problem]:
-    """stay.bed_coverage: one bed line of quantity 1 on every day admission..discharge, none else."""
+    """stay.bed_coverage: one bed line of quantity 1 on every day admission..discharge, none else.
+
+    A day bed (510120) takes its day like any bed line, but it is for a day case: on a stay whose
+    discharge date is not its admission date it is a defect of its own.
+    """
     stays = bill.headers.filter(
         (pl.col("claim_type") == "yatis")
         & ~pl.col("is_package_claim")
@@ -1123,7 +1245,7 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
         .agg(_days_text().alias("days"), pl.len().alias("count"))
         .join(stay_days, on="claim_id")
         .select(
-            pl.col("claim_id").alias("where"),
+            _claim_text().alias("where"),
             _format(
                 "no bed line on {} of {} day(s): {}",
                 pl.col("count"),
@@ -1137,11 +1259,11 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
         .group_by("claim_id")
         .agg(_days_text().alias("days"))
         .select(
-            pl.col("claim_id").alias("where"),
+            _claim_text().alias("where"),
             _format("more than one bed line on: {}", pl.col("days")).alias("message"),
         )
     )
-    quantity = beds.filter(pl.col("quantity") != 1).select(
+    quantity = beds.filter(pl.col("quantity").fill_null(0) != 1).select(
         _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
         _format(
             "bed line {} has the quantity {}; a bed line is one day",
@@ -1149,18 +1271,33 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
             pl.col("quantity"),
         ).alias("message"),
     )
+    day_bed = (
+        beds.filter(pl.col("is_day_bed"))
+        .join(stays, on="claim_id")
+        .filter(pl.col("adm") != pl.col("dis"))
+        .select(
+            _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
+            _format(
+                "day bed line {} on the stay {}..{}; the day bed is for a day case, "
+                "admitted and discharged on the same date",
+                pl.col("procedure_code"),
+                pl.col("adm"),
+                pl.col("dis"),
+            ).alias("message"),
+        )
+    )
     outside = (
         beds.join(days, on=["claim_id", "day"], how="anti")
         .group_by("claim_id")
         .agg(pl.col("procedure_date").sort().str.join(", ").alias("dates"))
         .select(
-            pl.col("claim_id").alias("where"),
+            _claim_text().alias("where"),
             _format("bed line(s) outside admission..discharge: {}", pl.col("dates")).alias(
                 "message"
             ),
         )
     )
-    return _problems("stay.bed_coverage", pl.concat([missing, twice, quantity, outside]))
+    return _problems("stay.bed_coverage", pl.concat([missing, twice, quantity, day_bed, outside]))
 
 
 def check_companion_coverage(bill: _Bill) -> list[Problem]:
@@ -1171,7 +1308,7 @@ def check_companion_coverage(bill: _Bill) -> list[Problem]:
         .with_columns(_date("procedure_date").alias("day"))
     )
     per_day = companions.group_by("claim_id", "day").agg(pl.len().alias("n"))
-    quantity = companions.filter(pl.col("quantity") != 1).select(
+    quantity = companions.filter(pl.col("quantity").fill_null(0) != 1).select(
         _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
         _format("companion line has the quantity {}", pl.col("quantity")).alias("message"),
     )
@@ -1180,7 +1317,7 @@ def check_companion_coverage(bill: _Bill) -> list[Problem]:
         .group_by("claim_id")
         .agg(_days_text().alias("days"))
         .select(
-            pl.col("claim_id").alias("where"),
+            _claim_text().alias("where"),
             _format("more than one companion line on: {}", pl.col("days")).alias("message"),
         )
     )
@@ -1220,7 +1357,7 @@ def check_dates_in_window(bill: _Bill) -> list[Problem]:
         (yatis & ~ward_window)
         | (pl.col("claim_type").is_in(["acil", "poliklinik"]) & ~visit_window)
     ).select(
-        pl.col("claim_id").alias("where"),
+        _claim_text().alias("where"),
         _format(
             "claim of type {} {}: admission {}, discharge {}, start {}, end {}",
             pl.col("claim_type"),
@@ -1270,25 +1407,14 @@ def check_dates_in_window(bill: _Bill) -> list[Problem]:
         & (pl.col("day") >= pl.col("start"))
         & (pl.col("day") <= pl.col("end"))
     )
-    lines = (
-        dated.filter(~inside)
-        .group_by("claim_id", "table")
-        .agg(
-            pl.len().alias("count"),
-            pl.col("raw_day").fill_null("(missing)").unique().sort().str.join(", ").alias("dates"),
-            pl.col("start").first(),
-            pl.col("end").first(),
-        )
-        .select(
-            _format("{} {}", pl.col("claim_id"), pl.col("table")).alias("where"),
-            _format(
-                "{} line(s) dated outside the claim window {}..{}: {}",
-                pl.col("count"),
-                pl.col("start").cast(pl.String).fill_null("(no header)"),
-                pl.col("end").cast(pl.String).fill_null("(no header)"),
-                pl.col("dates"),
-            ).alias("message"),
-        )
+    lines = dated.filter(~inside).select(
+        _where("claim_id", pl.col("table"), "key").alias("where"),
+        _format(
+            "dated {} outside the claim window {}..{}",
+            pl.col("raw_day").fill_null("(missing)"),
+            pl.col("start").cast(pl.String).fill_null("(no header)"),
+            pl.col("end").cast(pl.String).fill_null("(no header)"),
+        ).alias("message"),
     )
     return _problems("stay.dates_in_window", pl.concat([header, lines]))
 
@@ -1322,7 +1448,7 @@ def check_package_mode(bill: _Bill) -> list[Problem]:
     mismatch = bill.headers.filter(
         (pl.col("package_candidate") != pl.col("is_package_claim")).fill_null(True)
     ).select(
-        pl.col("claim_id").alias("where"),
+        _claim_text().alias("where"),
         _format(
             "package_candidate is {} but the claim has {} package line(s)",
             pl.col("package_candidate").cast(pl.String).fill_null("missing"),
@@ -1373,7 +1499,7 @@ def check_operation_pairing(bill: _Bill) -> list[Problem]:
         ((pl.col("operations") > 0) & (pl.col("anaesthesia") != 1))
         | ((pl.col("operations") == 0) & (pl.col("anaesthesia") > 0))
     ).select(
-        _format("{} day[{}]", pl.col("claim_id"), pl.col("procedure_date")).alias("where"),
+        _format("{} day[{}]", _claim_text(), pl.col("procedure_date")).alias("where"),
         _format(
             "{} operation line(s) and {} anaesthesia line(s); one anaesthesia line per operation day, none else",
             pl.col("operations"),
@@ -1689,7 +1815,7 @@ def check_drug_price(bill: _Bill) -> list[Problem]:
 
 def _priced_where() -> pl.Expr:
     """`where` of a finding about a line of the `priced` frame: the claim id, then `table[line id]`."""
-    return _format("{} {}[{}]", pl.col("claim_id"), pl.col("table"), pl.col("line_id"))
+    return _format("{} {}[{}]", _claim_text(), pl.col("table"), pl.col("line_id"))
 
 
 def check_line_arithmetic(bill: _Bill) -> list[Problem]:
@@ -1747,7 +1873,7 @@ def check_totals(bill: _Bill) -> list[Problem]:
     )
     found = [
         headers.filter(_differs(pl.col(total), pl.col(lines))).select(
-            pl.col("claim_id").alias("where"),
+            _claim_text().alias("where"),
             _format(
                 "{} is {} but the {} amounts of the claim's lines add up to {}",
                 pl.lit(column),
@@ -1775,7 +1901,7 @@ def _finding(where: str, message: str) -> pl.DataFrame:
 
 def _answer_where(claim: pl.Expr) -> pl.Expr:
     """`where` of a finding about an answer row: the claim id, then `expected_rule_outputs[id]`."""
-    return _format("{} expected_rule_outputs[{}]", claim, pl.col("expected_output_id"))
+    return _format("{} expected_rule_outputs[{}]", _claim_text(claim), pl.col("expected_output_id"))
 
 
 def check_answer_rows(bill: _Bill) -> list[Problem]:
@@ -1802,9 +1928,7 @@ def check_answer_rows(bill: _Bill) -> list[Problem]:
         )
         .join(bill.table(TABLE_CLAIM_HEADERS).select("claim_id"), on="claim_id", how="anti")
         .select(
-            _format("{} registry faults[{}]", pl.col("claim_id"), pl.col("fault_id")).alias(
-                "where"
-            ),
+            _format("{} registry faults[{}]", _claim_text(), pl.col("fault_id")).alias("where"),
             pl.lit("the fault record names a claim that has no header").alias("message"),
         )
     )
@@ -1970,7 +2094,7 @@ def check_label_amounts(bill: _Bill) -> list[Problem]:
         .join(sums, on="claim_id", how="left")
         .join(lines, on=["claim_id", "line_type", "line_id"], how="left")
     )
-    where = _format("{} registry faults[{}]", pl.col("claim_id"), pl.col("fault_id"))
+    where = _format("{} registry faults[{}]", _claim_text(), pl.col("fault_id"))
     has_header = pl.col("header_total").is_not_null()
     faulty, clean, amount = pl.col("faulty"), pl.col("clean"), pl.col("amount")
     kind, line_type = pl.col("effect_kind"), pl.col("line_type")

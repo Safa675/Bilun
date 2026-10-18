@@ -11,6 +11,15 @@ writes a file.
 A mutation edits the lines of a bill the way a generator would: when a priced line changes, the
 header totals follow (`sync_totals`), so a case trips `money.totals` only when it means to.
 
+A case proves more than the ids: the NUMBER of findings of the target id and of the others, that one
+finding of the target id has the right `where` (the claim, the table and the line id) and the right
+`message`, that the findings come in the order of the registry and then by `where` and `message`,
+and that a `where` about a line names a line that is there. The table of boundary pairs (`PAIRS`,
+section 3b) holds, for each limit of a rule, the input just inside (it must not trip), the input
+just outside (it trips, with this many findings) and the neighbours that must stay quiet. The
+findings must not depend on the order of the rows (section 3c), and the helpers every check uses are
+tested on their own (section 3d).
+
 The contract:
 1. the eight clean twins raise no problem;
 2. the committed faulty bills trip exactly the pinned ids (`EXPECTED_FAULT_TRIPS`);
@@ -53,10 +62,13 @@ from scripts.synthetic.cohort.plausibility import (
     CHECK_FUNCTIONS,
     CHECKS,
     EK3F1_FROM,
+    FEMALE_ONLY_WHOLE_WORDS,
     FEMALE_ONLY_WORDS,
+    ICD_SEX_GATES,
     LADDER_QUARTERS,
     MALE_ONLY_WORDS,
     NAME_EXCEPTIONS,
+    NO_CLAIM,
     REGISTRATION_FLAGS,
     REGISTRY_CHECKS,
     STRUCTURAL_FLAGS,
@@ -74,9 +86,18 @@ from scripts.synthetic.cohort.plausibility import (
     PlausibilityError,
     Problem,
     _cents,
+    _as_of,
+    _claim_text,
+    _days_text,
     _fold,
+    _format,
+    _in_blocks,
     _is_cent_price_of,
+    _problems,
     _tl,
+    _where,
+    _words_pattern,
+    _without_exceptions,
     check_drug_price,
     check_material_price,
     check_plausibility,
@@ -97,10 +118,21 @@ _CLEAN_DIR = _SHOWCASE_DIR / "sut/clean"
 _REGISTRY_FILE = _SHOWCASE_DIR / "cohort_registry.json"
 
 # The ids a mutation case may name; written out so a typo in a case fails at collection time.
+ICD = "patient.icd_valid"
+SEX = "patient.sex_gate"
+AGE = "patient.age_gate"
+ARITH = "patient.age_arithmetic"
 PATHWAY = "fit.pathway_membership"
+DEPT = "fit.operation_department"
+SETTING = "fit.operation_setting"
+VISIT = "fit.visit_code"
+BED = "stay.bed_coverage"
+COMP = "stay.companion_coverage"
 DATES = "stay.dates_in_window"
-PAIRING = "anaesthesia.operation_pairing"
+PERF = "bill.performed_billed"
 PACKAGE = "package.mode"
+PAIRING = "anaesthesia.operation_pairing"
+GROUP = "anaesthesia.group"
 OPLINK = "material.operation_link"
 ANSWER_ROWS = "labels.answer_rows"
 AMOUNTS = "labels.amounts"
@@ -370,9 +402,11 @@ def clone_procedure(data: Data, story: int, where: pl.Expr, **changes: object) -
     add_row(data, TABLE_PROCEDURES, of(story) & where, procedure_line_id=new_id, **changes)
 
 
-def add_diagnosis(data: Data, story: int, icd10: str) -> None:
+def add_diagnosis(data: Data, story: int, icd10: str, day: str | None = None) -> None:
+    """A secondary diagnosis on the story's claim (dated like the first one, or on `day`)."""
     frame = data.tables[TABLE_DIAGNOSES]
     new_id = diagnosis_id(CLAIM[story], _next_seq(frame, story, "diagnosis_id"))
+    when = {"diagnosis_date": day} if day else {}
     add_row(
         data,
         TABLE_DIAGNOSES,
@@ -381,18 +415,23 @@ def add_diagnosis(data: Data, story: int, icd10: str) -> None:
         icd10_code=icd10,
         is_primary=False,
         diagnosis_role="secondary",
+        **when,
     )
 
 
-def set_code(data: Data, story: int, old: str, new: str) -> None:
-    """Bill another code on a line: the line takes the catalog price of the new code on its day."""
-    day = data.tables[TABLE_PROCEDURES].filter(line(story, old))["procedure_date"].item()
+def set_code(data: Data, story: int, old: str, new: str, on: str | None = None) -> None:
+    """Bill another code on a line: the line takes the catalog price of the new code on its day.
+
+    The story must have one line of the code `old` (on the day `on`, when it has several).
+    """
+    selected = line(story, old, on)
+    day = data.tables[TABLE_PROCEDURES].filter(selected)["procedure_date"].item()
     price = float(CATALOGS.procedure_row(new, day).price)
     amount = (pl.lit(price) * pl.col("quantity")).round(2)
     edit(
         data,
         TABLE_PROCEDURES,
-        line(story, old),
+        selected,
         procedure_code=new,
         unit_price_try=price,
         billed_amount_try=amount,
@@ -402,6 +441,110 @@ def set_code(data: Data, story: int, old: str, new: str) -> None:
 
 def rename(data: Data, story: int, code: str, name: str) -> None:
     edit(data, TABLE_PROCEDURES, line(story, code), procedure_name=name)
+
+
+def replace_op(data: Data, story: int, old: str, new: str, day: str) -> None:
+    """The billed line `old` becomes the line `new` of the catalog: its name, its price on `day`."""
+    priced = CATALOGS.procedure_row(new, day)
+    price = float(priced.price)
+    edit(
+        data,
+        TABLE_PROCEDURES,
+        line(story, old),
+        procedure_code=new,
+        procedure_name=priced.name,
+        unit_price_try=price,
+        billed_amount_try=price,
+        expected_payable_try=price,
+    )
+
+
+def set_age(data: Data, story: int, age: int, *, sex: str | None = None, year: int = 2026) -> None:
+    """The story's patient is `age` in `year` (and of `sex`): TANI_YASI and the birth year agree."""
+    changes: dict[str, object] = {"TANI_YASI": age}
+    if sex:
+        changes["CINSIYET"] = sex
+    edit_patient(data, story, birth_year=year - age, **changes)
+
+
+_DATE_COLUMNS = {
+    TABLE_CLAIM_HEADERS: ["admission_date", "discharge_date", "claim_start_date", "claim_end_date"],
+    TABLE_PROCEDURES: ["procedure_date"],
+    TABLE_MATERIALS: ["material_date"],
+    TABLE_DRUGS: ["drug_claim_date"],
+    TABLE_DIAGNOSES: ["diagnosis_date"],
+    TABLE_PERFORMED: ["service_date"],
+}
+
+
+def shift_claim(data: Data, story: int, days: int) -> None:
+    """Move every date of the story's claim by `days`, in all the tables that carry a date."""
+    for table, columns in _DATE_COLUMNS.items():
+        moved = [
+            pl.when(of(story))
+            .then(pl.col(c).str.to_date("%Y-%m-%d").dt.offset_by(f"{days}d").cast(pl.String))
+            .otherwise(pl.col(c))
+            .alias(c)
+            for c in columns
+        ]
+        data.tables[table] = data.tables[table].with_columns(moved)
+
+
+# the key column of each table a finding can name a row of
+ROW_KEYS = {
+    "claim_diagnoses": "diagnosis_id",
+    "procedure_claim_lines": "procedure_line_id",
+    "material_claim_lines": "material_line_id",
+    "drug_claim_lines": "drug_claim_line_id",
+    "performed_procedure_lines": "performed_line_id",
+    "expected_rule_outputs": "expected_output_id",
+}
+
+
+def row_at(story: int, table: str, selector: pl.Expr) -> Callable[[Data], str]:
+    """The `where` of a finding about the first row `selector` selects, read before the defect."""
+
+    def find(base: Data) -> str:
+        name = table.removesuffix(".parquet")
+        ids = base.tables[table].filter(selector)[ROW_KEYS[name]].sort()
+        assert len(ids) > 0, f"no row of {name} selected"
+        return f"{CLAIM[story]} {name}[{ids[0]}]"
+
+    return find
+
+
+def new_row_at(story: int, table: str) -> Callable[[Data], str]:
+    """The `where` of a finding about the row a defect appends: the next id of the story's claim."""
+    makers = {
+        TABLE_PROCEDURES: procedure_line_id,
+        TABLE_DIAGNOSES: diagnosis_id,
+        TABLE_MATERIALS: material_line_id,
+    }
+
+    def find(base: Data) -> str:
+        name = table.removesuffix(".parquet")
+        frame = base.tables[table]
+        return f"{CLAIM[story]} {name}[{makers[table](CLAIM[story], _next_seq(frame, story, ROW_KEYS[name]))}]"
+
+    return find
+
+
+_ROW_WHERE = re.compile(r"^(?P<claim>\S+) (?P<table>[a-z_]+)\[(?P<key>[^\]]*)\]$")
+
+
+def names_a_real_row(problem: Problem, tables: dict[str, pl.DataFrame]) -> bool:
+    """A finding about `claim table[key]` names a row of that table that belongs to that claim."""
+    found = _ROW_WHERE.match(problem.where)
+    if found is None or found["table"] not in ROW_KEYS:
+        return True  # a finding about a claim, a day, a header or the registry: no row to look up
+    frame = tables[found["table"] + ".parquet"]
+    claim = (
+        pl.col("claim_id").is_null()
+        if found["claim"] == NO_CLAIM
+        else pl.col("claim_id") == found["claim"]
+    )
+    key = pl.col(ROW_KEYS[found["table"]]) == found["key"]
+    return frame.filter(claim & key).height > 0
 
 
 def only_ids(found: list[Problem]) -> set[str]:
@@ -416,18 +559,24 @@ class Case:
     """One seeded defect.
 
     `at` and `says` are fragments that one finding of the target id must carry in its `where` and its
-    `message`: the case proves the right line and the right reason, not only the id (every slice E2
-    case sets both). `on_faulty` starts from the committed faulty bills and their registry (the
-    `labels.*` cases); the findings that already exist there are not counted.
+    `message`: the case proves the right line and the right reason, not only the id (every case sets
+    both). `at` may be a function of the data before the defect, for a line whose id is read there
+    (`row_at`, `new_row_at`). `n` is the number of findings the defect adds to the target id, and
+    `also_n` the number it adds to the `also` ids together (one for each id when it is None): a
+    check that reports too much or too little is caught by the count. `on_faulty` starts from the
+    committed faulty bills and their registry (the `labels.*` cases); the findings that already
+    exist there are not counted.
     """
 
     check: str
     mutate: Callable[[Data], None]
     also: tuple[str, ...] = ()
     label: str = ""
-    at: str = ""
+    at: str | Callable[[Data], str] = ""
     says: str = ""
     on_faulty: bool = False
+    n: int = 1
+    also_n: int | None = None
 
     @property
     def name(self) -> str:
@@ -441,6 +590,13 @@ def _second_operation(d: Data) -> None:
 
 def _move_last_bed_after_discharge(d: Data) -> None:
     edit(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-15"), procedure_date="2026-03-16")
+
+
+def _bill_every_bed_day_as_a_day_bed(d: Data) -> None:
+    # S2's seven ward-bed days (03-09 .. 03-15), each billed as the day bed at its catalog price
+    days = d.tables[TABLE_PROCEDURES].filter(line(2, "510010"))["procedure_date"].to_list()
+    for day in days:
+        set_code(d, 2, "510010", "510120", day)
 
 
 def _adult_name_on_a_child(d: Data) -> None:
@@ -558,271 +714,602 @@ def _swap_two_answer_rows(d: Data) -> None:
     d.tables[TABLE_ANSWERS] = rows[[0, 2, 1, *range(3, rows.height)]]  # S2's and S3's rows swap
 
 
+I10_OF_2 = of(2) & (pl.col("icd10_code") == "I10")  # S2's primary diagnosis
+
+
+def performed(story: int, code: str) -> pl.Expr:
+    """The performed lines of the story's claim with this code."""
+    return of(story) & (pl.col("procedure_code") == code)
+
+
 CASES: list[Case] = [
     # --- patient.icd_valid. A code that is not in the pathway is also outside its expansion.
     Case(
-        "patient.icd_valid",
-        lambda d: edit(
-            d, TABLE_DIAGNOSES, of(2) & (pl.col("icd10_code") == "I10"), icd10_code="J99.99"
-        ),
+        ICD,
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="J99.99"),
         also=(PATHWAY,),
         label="unknown_code",
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="diagnosis J99.99 dated 2026-03-09: the code is not in icd10_tr",
     ),
     Case(
-        "patient.icd_valid",
+        ICD,
         # Z22.5: inactive, and passive since 2026-02-16, before S2's diagnosis date
-        lambda d: edit(
-            d, TABLE_DIAGNOSES, of(2) & (pl.col("icd10_code") == "I10"), icd10_code="Z22.5"
-        ),
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="Z22.5"),
         also=(PATHWAY,),
         label="inactive_and_passive_code",
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="diagnosis Z22.5 dated 2026-03-09: the code is inactive, has been passive since 2026-02-16",
     ),
     Case(
-        "patient.icd_valid",
+        ICD,
         # K35 is the category of K35.9 (acute appendicitis): not a leaf
         lambda d: edit(d, TABLE_DIAGNOSES, of(1), icd10_code="K35"),
         also=(PATHWAY,),
         label="not_a_leaf",
+        at=row_at(1, TABLE_DIAGNOSES, of(1)),
+        says="diagnosis K35 dated 2026-07-14: the code is not a leaf code",
     ),
     Case(
-        "patient.icd_valid",
+        ICD,
         # F99 exists since 2026-07-22; S2's diagnosis is dated 2026-03-09
-        lambda d: edit(
-            d, TABLE_DIAGNOSES, of(2) & (pl.col("icd10_code") == "I10"), icd10_code="F99"
-        ),
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="F99"),
         also=(PATHWAY,),
         label="created_after_the_diagnosis_date",
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="diagnosis F99 dated 2026-03-09: the code was created on 2026-07-22, after the diagnosis date",
     ),
     # --- patient.sex_gate. The name cases rename a billed line: the check reads the name only.
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: add_diagnosis(d, 1, "C53.9"),  # cervix carcinoma on S1, a man
         also=(PATHWAY,),
         label="icd_gate_female_code_on_a_man",
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="diagnosis C53.9 is limited to sex F but the patient is M",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: add_diagnosis(d, 3, "C61"),  # prostate carcinoma on S3, a woman
         also=(PATHWAY,),
         label="icd_gate_male_code_on_a_woman",
+        at=new_row_at(3, TABLE_DIAGNOSES),
+        says="diagnosis C61 is limited to sex M but the patient is F",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
+        # the icd10_tr `sex` column gates no code outside chapters C and D: the ICD-10 blocks do
+        lambda d: add_diagnosis(d, 3, "N41.0"),  # acute prostatitis on S3, a woman
+        also=(PATHWAY,),
+        label="icd_block_male_code_on_a_woman",
+        at=new_row_at(3, TABLE_DIAGNOSES),
+        says="diagnosis N41.0 is limited to sex M but the patient is F",
+    ),
+    Case(
+        SEX,
+        lambda d: add_diagnosis(d, 1, "N80.0"),  # endometriosis of the uterus on S1, a man
+        also=(PATHWAY,),
+        label="icd_block_female_code_on_a_man",
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="diagnosis N80.0 is limited to sex F but the patient is M",
+    ),
+    Case(
+        SEX,
+        lambda d: add_diagnosis(d, 2, "E28.2"),  # polycystic ovary syndrome on S2, a man
+        also=(PATHWAY,),
+        label="icd_block_ovarian_dysfunction_on_a_man",
+        at=new_row_at(2, TABLE_DIAGNOSES),
+        says="diagnosis E28.2 is limited to sex F but the patient is M",
+    ),
+    Case(
+        SEX,
+        lambda d: add_diagnosis(d, 8, "N43.3"),  # hydrocele on S8, a woman
+        also=(PATHWAY,),
+        label="icd_block_hydrocele_on_a_woman",
+        at=new_row_at(8, TABLE_DIAGNOSES),
+        says="diagnosis N43.3 is limited to sex M but the patient is F",
+    ),
+    Case(
+        SEX,
+        lambda d: add_diagnosis(d, 1, "Z34.0"),  # supervision of a normal pregnancy, a man
+        also=(PATHWAY,),
+        label="icd_block_pregnancy_contact_on_a_man",
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="diagnosis Z34.0 is limited to sex F but the patient is M",
+    ),
+    Case(
+        SEX,
         lambda d: rename(d, 1, "P610131", "Vajinal histerektomi"),
         label="name_female_word_on_a_man",
+        at=row_at(1, TABLE_PROCEDURES, line(1, "P610131")),
+        says="procedure P610131 (Vajinal histerektomi) is a female-only word (vajin) but the patient is M",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: rename(d, 3, "L104780", "Prostat spesifik antijen (PSA), total"),
         label="name_male_word_on_a_woman",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "L104780")),
+        says="procedure L104780 (Prostat spesifik antijen (PSA), total) is a male-only word (prostat) but the patient is F",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: rename(d, 1, "P610131", "Over detorsiyonu"),
         label="name_whole_word_over_on_a_man",
+        at=row_at(1, TABLE_PROCEDURES, line(1, "P610131")),
+        says="(Over detorsiyonu) is a female-only word (over) but the patient is M",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: rename(d, 3, "L104780", "SÜNNET DERİSİ"),  # upper-case Turkish letters
         label="name_upper_case_turkish_word_on_a_woman",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "L104780")),
+        says="(SÜNNET DERİSİ) is a male-only word (sunnet) but the patient is F",
     ),
     Case(
-        "patient.sex_gate",
+        SEX,
         lambda d: (edit_patient(d, 2, CINSIYET="?"), rename(d, 2, "L101850", "Testis biyopsisi")),
         label="name_word_for_a_patient_of_unknown_sex",
+        n=2,  # S2 bills the code L101850 on two lines
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="(Testis biyopsisi) is a male-only word (testis) but the patient is of unknown sex",
+    ),
+    Case(
+        SEX,
+        lambda d: (
+            edit_patient(d, 2, CINSIYET="?"),
+            rename(d, 2, "L101850", "Vajinal histerektomi"),
+        ),
+        label="name_female_word_for_a_patient_of_unknown_sex",
+        n=2,  # S2 bills the code L101850 on two lines
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="(Vajinal histerektomi) is a female-only word (vajin) but the patient is of unknown sex",
+    ),
+    Case(
+        SEX,
+        lambda d: rename(d, 3, "L104780", "İnguinal orşiyektomi, tek taraf"),  # a catalog name
+        label="name_catalog_word_orsiyektomi_on_a_woman",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "L104780")),
+        says="(İnguinal orşiyektomi, tek taraf) is a male-only word (orsiyektomi) but the patient is F",
+    ),
+    Case(
+        SEX,
+        lambda d: rename(d, 8, "P603840", "Hipospadias onarımı, distal"),  # a catalog name
+        label="name_catalog_word_hipospadias_on_a_woman",
+        at=row_at(8, TABLE_PROCEDURES, line(8, "P603840")),
+        says="(Hipospadias onarımı, distal) is a male-only word (hipospad) but the patient is F",
+    ),
+    Case(
+        SEX,
+        lambda d: rename(d, 6, "L101850", "Kolposkopi"),  # a catalog name, S6 is a man
+        label="name_catalog_word_kolposkopi_on_a_man",
+        n=2,  # S6 bills the code L101850 on two lines
+        at=row_at(6, TABLE_PROCEDURES, line(6, "L101850")),
+        says="(Kolposkopi) is a female-only word (kolposkop) but the patient is M",
     ),
     # --- patient.age_gate
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: add_diagnosis(d, 2, "P07.3"),  # a perinatal code on an 81-year-old
         also=(PATHWAY,),
         label="perinatal_code_on_an_adult",
+        at=new_row_at(2, TABLE_DIAGNOSES),
+        says="P07.3 is a perinatal condition (ICD chapter P) and needs age at most 1; the patient is M aged 81",
     ),
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: add_diagnosis(d, 1, "O80.9"),  # a pregnancy code on a man aged 34
         also=(PATHWAY,),
         label="pregnancy_code_on_a_man",
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="O80.9 is a pregnancy condition (ICD chapter O) and needs sex F, age 10..55; the patient is M aged 34",
     ),
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: add_diagnosis(d, 7, "O80.9"),  # a pregnancy code on a woman aged 58
         also=(PATHWAY,),
         label="pregnancy_code_on_a_woman_past_55",
+        at=new_row_at(7, TABLE_DIAGNOSES),
+        says="needs sex F, age 10..55; the patient is F aged 58",
     ),
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: add_diagnosis(d, 3, "Z38.0"),  # a liveborn code on a 77-year-old
         also=(PATHWAY,),
         label="liveborn_code_on_an_adult",
+        at=new_row_at(3, TABLE_DIAGNOSES),
+        says="Z38.0 is a liveborn infant code (Z38) and needs age at most 1; the patient is F aged 77",
     ),
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: rename(d, 2, "L101850", "Yenidoğan monitörizasyonu"),
         label="newborn_name_on_an_adult",
+        n=2,  # S2 bills the code L101850 on two lines
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="Yenidoğan monitörizasyonu is a newborn or infant procedure and needs age at most 1; the patient is M aged 81",
     ),
     Case(
-        "patient.age_gate",
+        AGE,
         lambda d: rename(d, 2, "L101850", "Çocuk odyometresi (Komple)"),
         label="child_name_on_an_adult",
+        n=2,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="Çocuk odyometresi (Komple) is a paediatric procedure and needs age at most 17; the patient is M aged 81",
     ),
-    Case("patient.age_gate", _adult_name_on_a_child, label="adult_name_on_a_child"),
+    Case(
+        AGE,
+        _adult_name_on_a_child,
+        label="adult_name_on_a_child",
+        at=row_at(1, TABLE_PROCEDURES, line(1, "P610131")),
+        says="Erişkin tedavisel soğutma is an adult procedure and needs age at least 18; the patient is M aged 12",
+    ),
+    Case(
+        AGE,
+        lambda d: rename(d, 2, "L101850", "Yeni doğan fundoskopik inceleme"),  # a catalog name
+        label="newborn_name_in_two_words_on_an_adult",
+        n=2,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="Yeni doğan fundoskopik inceleme is a newborn or infant procedure and needs age at most 1",
+    ),
+    Case(
+        AGE,
+        lambda d: rename(d, 2, "L101850", "Göz içi basıncı ölçümü, bebek için"),  # a catalog name
+        label="infant_name_on_an_adult",
+        n=2,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="Göz içi basıncı ölçümü, bebek için is a newborn or infant procedure and needs age at most 1",
+    ),
+    Case(
+        AGE,
+        lambda d: rename(d, 2, "L101850", "Pelvipedal alçı (10 yaş altı)"),  # a catalog name
+        label="under_ten_name_on_an_adult",
+        n=2,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="Pelvipedal alçı (10 yaş altı) is a procedure for a child under 10 and needs age at most 9",
+    ),
+    Case(
+        AGE,
+        lambda d: rename(
+            d, 2, "L101850", "2 yaş altı doğumsal kalp hastalıklarında tanısal kalp kateterizasyonu"
+        ),
+        label="under_two_name_on_an_adult",
+        n=2,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "L101850")),
+        says="is a procedure for a child under 2 and needs age at most 1",
+    ),
     # --- patient.age_arithmetic
     Case(
-        "patient.age_arithmetic",
+        ARITH,
         lambda d: edit_patient(d, 2, TANI_YASI=82),
         label="tani_yasi_one_year_off",
+        at=CLAIM[2],
+        says="TANI_YASI is 82; the claim year is 2026 and the birth year 1945, which makes the age 81",
     ),
     Case(
-        "patient.age_arithmetic",
+        ARITH,
         lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[3], birth_year=1950),
         label="birth_year_one_year_off",
+        at=CLAIM[3],
+        says="TANI_YASI is 77; the claim year is 2026 and the birth year 1950, which makes the age 76",
     ),
     Case(
-        "patient.age_arithmetic",
+        ARITH,
         lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[5], birth_year=None),
         label="no_birth_year",
+        at=CLAIM[5],
+        says="TANI_YASI is 84; the claim year is 2026 and the birth year missing, which makes the age unknown",
     ),
     Case(
-        "patient.age_arithmetic",
+        ARITH,
         lambda d: setattr(d, "anadata", d.anadata.filter(pl.col("HASTA_ID") != PATIENT[4])),
         label="no_anadata_row",
+        at=CLAIM[4],
+        says="TANI_YASI is missing; the claim year is 2026 and the birth year 1940, which makes the age 86",
+    ),
+    Case(
+        ARITH,
+        lambda d: drop(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[4]),
+        label="no_copay_profile_row",
+        at=CLAIM[4],
+        says="the birth year missing, which makes the age unknown",
     ),
     # --- fit.pathway_membership. The extra lines are valid in themselves.
     Case(
         PATHWAY,
         lambda d: add_procedure(d, 7, "530350", "2026-02-19"),  # a nebuliser from the COPD ward
         label="extra_procedure",
+        at=new_row_at(7, TABLE_PROCEDURES),
+        says="procedure code 530350 is not in the expansion of pleuritic_chest_pain_er_pulmonary_embolism_ruled_out",
     ),
-    Case(PATHWAY, _extra_material, label="extra_material"),
-    Case(PATHWAY, _extra_drug, label="extra_drug"),
-    Case(PATHWAY, lambda d: add_diagnosis(d, 4, "E11.9"), label="extra_diagnosis"),
+    Case(
+        PATHWAY,
+        _extra_material,
+        label="extra_material",
+        at=f"{CLAIM[3]} material_claim_lines[{material_line_id(CLAIM[3], 1)}]",
+        says="material code AP1880 is not in the expansion of lumbar_stenosis_decompression_itemized",
+    ),
+    Case(
+        PATHWAY,
+        _extra_drug,
+        label="extra_drug",
+        at=f"{CLAIM[6]} drug_claim_lines[{drug_claim_line_id(CLAIM[6], 99)}]",
+        says="drug code 8699606694649 is not in the expansion of aspiration_pneumonia_parkinson_ward",
+    ),
+    Case(
+        PATHWAY,
+        lambda d: add_diagnosis(d, 4, "E11.9"),
+        label="extra_diagnosis",
+        at=new_row_at(4, TABLE_DIAGNOSES),
+        says="diagnosis code E11.9 is not in the expansion of pyelonephritis_dementia_delirium_ward",
+    ),
     Case(
         PATHWAY,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), scenario_tag="no_such_pathway"),
         label="scenario_tag_is_no_pathway",
+        at=CLAIM[2],  # one finding about the claim, not one for each of its codes
+        says="scenario_tag no_such_pathway is not a care pathway of data/synthetic/pathways",
+    ),
+    Case(
+        PATHWAY,
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), scenario_tag=None),
+        label="scenario_tag_is_missing",
+        at=CLAIM[4],
+        says="scenario_tag (missing) is not a care pathway of data/synthetic/pathways",
     ),
     # --- fit.operation_department
     Case(
-        "fit.operation_department",
+        DEPT,
         lambda d: edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_specialty_code="1000"),
         label="operation_in_internal_medicine",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "615931")),
+        says="operation 615931 (Dar spinal kanalda unilateral dekompresyon) has the specialty 1000, which is not a surgical EK-2A branch",
     ),
     Case(
-        "fit.operation_department",
+        DEPT,
         lambda d: edit(d, TABLE_PROCEDURES, line(5, "P612320"), procedure_specialty_code="1000"),
         label="package_operation_in_internal_medicine",
+        at=row_at(5, TABLE_PROCEDURES, line(5, "P612320")),
+        says="operation P612320 (Büyük eklem parsiyel protezleri, primer) has the specialty 1000",
     ),
     Case(
-        "fit.operation_department",
+        DEPT,
         lambda d: edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_specialty_code="9999"),
         label="operation_in_an_unknown_branch",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "615931")),
+        says="has the specialty 9999, which is not a surgical EK-2A branch",
     ),
     Case(
-        "fit.operation_department",
+        DEPT,
         lambda d: edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_specialty_code=None),
         label="operation_without_a_branch",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "615931")),
+        says="has the specialty (none), which is not a surgical EK-2A branch",
     ),
     # --- fit.operation_setting. A visit claim has no stay: start equals end, no admission date.
     Case(
-        "fit.operation_setting",
+        SETTING,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(3), claim_type="poliklinik"),
         also=(DATES,),  # the decompression claim still has its three-day stay
         label="band_b_operation_on_a_poliklinik_claim",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "615931")),
+        says="major operation 615931 (Dar spinal kanalda unilateral dekompresyon, group B) on a claim of type poliklinik",
     ),
     Case(
-        "fit.operation_setting",
+        SETTING,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(5), claim_type="acil"),
         also=(DATES,),  # the hemiarthroplasty claim still has its six-day stay
         label="band_b_package_on_an_acil_claim",
+        at=row_at(5, TABLE_PROCEDURES, line(5, "P612320")),
+        says="major operation P612320 (Büyük eklem parsiyel protezleri, primer, group B) on a claim of type acil",
     ),
     # --- fit.visit_code
     Case(
-        "fit.visit_code",
+        VISIT,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), claim_type="poliklinik"),
         label="acil_visit_on_a_poliklinik_claim",
+        at=row_at(7, TABLE_PROCEDURES, line(7, "520020")),
+        says="examination 520020 on a claim of type poliklinik; 520030 is the examination of that type",
     ),
     Case(
-        "fit.visit_code",
+        VISIT,
         lambda d: set_code(d, 7, "520020", "520030"),
         also=(PATHWAY,),  # 520030 is not a line of the ER pathway
         label="poliklinik_visit_on_an_acil_claim",
+        at=row_at(7, TABLE_PROCEDURES, line(7, "520020")),
+        says="examination 520030 on a claim of type acil; 520020 is the examination of that type",
     ),
     Case(
-        "fit.visit_code",
+        VISIT,
         lambda d: set_code(d, 6, "520010", "520030"),
         also=(PATHWAY,),  # 520030 is not a line of the ward pathway
         label="poliklinik_visit_on_a_yatis_claim",
+        at=row_at(6, TABLE_PROCEDURES, line(6, "520010")),
+        says="examination 520030 on a claim of type yatis; 520010 is the examination of that type",
     ),
     # --- stay.bed_coverage (S2: 6 nights, 7 bed lines)
     Case(
-        "stay.bed_coverage",
+        BED,
         lambda d: drop(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-12")),
         label="missing_day",
+        at=CLAIM[2],
+        says="no bed line on 1 of 7 day(s): 2026-03-12",
     ),
     Case(
-        "stay.bed_coverage",
+        BED,
         lambda d: clone_procedure(d, 2, line(2, "510010", "2026-03-10")),
         label="duplicate_day",
+        at=CLAIM[2],
+        says="more than one bed line on: 2026-03-10",
     ),
     Case(
-        "stay.bed_coverage",
+        BED,
         _move_last_bed_after_discharge,
         also=(DATES,),  # a bed line after discharge also lies outside the claim window
         label="day_after_discharge",
+        n=2,  # the line is outside the stay, and the discharge day has no bed
+        at=CLAIM[2],
+        says="bed line(s) outside admission..discharge: 2026-03-16",
     ),
     Case(
-        "stay.bed_coverage",
+        BED,
+        # no day is removed: a bed line after discharge is the only defect
+        lambda d: add_procedure(d, 2, "510010", "2026-03-16"),
+        also=(DATES,),  # the line also lies outside the claim window
+        label="extra_bed_line_the_day_after_discharge",
+        at=CLAIM[2],
+        says="bed line(s) outside admission..discharge: 2026-03-16",
+    ),
+    Case(
+        BED,
+        lambda d: add_procedure(d, 2, "510010", "2026-03-08"),
+        also=(DATES,),
+        label="extra_bed_line_the_day_before_admission",
+        at=CLAIM[2],
+        says="bed line(s) outside admission..discharge: 2026-03-08",
+    ),
+    Case(
+        BED,
         lambda d: edit(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), quantity=2),
         label="quantity_two",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-11")),
+        says="bed line 510010 has the quantity 2; a bed line is one day",
+    ),
+    Case(
+        BED,
+        lambda d: edit(
+            d,
+            TABLE_PROCEDURES,
+            line(2, "510010", "2026-03-11"),
+            quantity=0,
+            billed_amount_try=0.0,
+            expected_payable_try=0.0,
+        ),
+        label="quantity_zero",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-11")),
+        says="bed line 510010 has the quantity 0; a bed line is one day",
+    ),
+    Case(
+        BED,
+        lambda d: edit(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), quantity=None),
+        also=(
+            "money.line_arithmetic",
+        ),  # no quantity: the billed amount is no unit price x quantity
+        label="quantity_missing",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-11")),
+        says="bed line 510010 has the quantity (none); a bed line is one day",
+    ),
+    Case(
+        BED,
+        # the day bed is for a day case: S2 stays six nights
+        lambda d: set_code(d, 2, "510010", "510120", "2026-03-11"),
+        also=(PATHWAY,),  # 510120 is not a line of the ward pathway
+        label="day_bed_on_a_longer_stay",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-11")),
+        says="day bed line 510120 on the stay 2026-03-09..2026-03-15; the day bed is for a day case",
+    ),
+    Case(
+        BED,
+        _bill_every_bed_day_as_a_day_bed,
+        also=(PATHWAY,),
+        label="whole_stay_billed_as_day_beds",
+        n=7,  # a finding for each of the seven bed lines; every day still has its line
+        also_n=7,  # and the pathway has no day bed on any of them
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-09")),
+        says="day bed line 510120 on the stay 2026-03-09..2026-03-15; the day bed is for a day case",
     ),
     # --- stay.companion_coverage (S2: companions on the six nights 03-09 .. 03-14)
     Case(
-        "stay.companion_coverage",
+        COMP,
         lambda d: edit(d, TABLE_PROCEDURES, line(2, "510121", "2026-03-11"), quantity=2),
         label="quantity_two",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510121", "2026-03-11")),
+        says="companion line has the quantity 2",
     ),
     Case(
-        "stay.companion_coverage",
+        COMP,
+        lambda d: edit(
+            d,
+            TABLE_PROCEDURES,
+            line(2, "510121", "2026-03-11"),
+            quantity=0,
+            billed_amount_try=0.0,
+            expected_payable_try=0.0,
+        ),
+        label="quantity_zero",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510121", "2026-03-11")),
+        says="companion line has the quantity 0",
+    ),
+    Case(
+        COMP,
+        lambda d: edit(d, TABLE_PROCEDURES, line(2, "510121", "2026-03-11"), quantity=None),
+        also=(
+            "money.line_arithmetic",
+        ),  # no quantity: the billed amount is no unit price x quantity
+        label="quantity_missing",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510121", "2026-03-11")),
+        says="companion line has the quantity (none)",
+    ),
+    Case(
+        COMP,
         lambda d: clone_procedure(d, 2, line(2, "510121", "2026-03-10")),
         label="two_on_one_day",
+        at=CLAIM[2],
+        says="more than one companion line on: 2026-03-10",
     ),
     Case(
-        "stay.companion_coverage",
+        COMP,
         lambda d: edit(
             d, TABLE_PROCEDURES, line(2, "510121", "2026-03-14"), procedure_date="2026-03-15"
         ),
         label="on_the_discharge_day",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510121", "2026-03-14")),
+        says="companion line dated 2026-03-15 is outside the nights 2026-03-09..2026-03-14 of the stay",
     ),
     Case(
-        "stay.companion_coverage",
+        COMP,
         lambda d: edit(
             d, TABLE_PROCEDURES, line(2, "510121", "2026-03-09"), procedure_date="2026-03-08"
         ),
         also=(DATES,),  # a companion before admission also lies outside the claim window
         label="before_admission",
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510121", "2026-03-09")),
+        says="companion line dated 2026-03-08 is outside the nights 2026-03-09..2026-03-14 of the stay",
     ),
     Case(
-        "stay.companion_coverage",
+        COMP,
         lambda d: add_procedure(d, 7, "510121", "2026-02-19"),
         also=(PATHWAY,),  # the ER pathway has no companion line
         label="on_a_claim_without_a_stay",
+        at=new_row_at(7, TABLE_PROCEDURES),
+        says="companion line dated 2026-02-19 is outside the nights (no admission)..(no discharge) of the stay",
     ),
     # --- stay.dates_in_window
     Case(
         DATES,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), claim_end_date="2026-03-16"),
         label="yatis_claim_ends_after_discharge",
+        at=CLAIM[2],
+        says="claim of type yatis starts on admission and ends on discharge: admission 2026-03-09, discharge 2026-03-15, start 2026-03-09, end 2026-03-16",
     ),
     Case(
         DATES,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), admission_date="2026-02-19"),
         label="acil_claim_with_an_admission_date",
+        at=CLAIM[7],
+        says="claim of type acil is one day, with no admission and no discharge: admission 2026-02-19, discharge none",
     ),
     Case(
         DATES,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), claim_end_date="2026-02-20"),
         label="acil_claim_over_two_days",
+        at=CLAIM[7],
+        says="claim of type acil is one day, with no admission and no discharge: admission none, discharge none, start 2026-02-19, end 2026-02-20",
+    ),
+    Case(
+        DATES,
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), discharge_date="2026-02-19"),
+        label="acil_claim_with_a_discharge_date_only",
+        at=CLAIM[7],
+        says="claim of type acil is one day, with no admission and no discharge: admission none, discharge 2026-02-19",
     ),
     Case(
         DATES,
@@ -830,6 +1317,8 @@ CASES: list[Case] = [
             d, TABLE_PROCEDURES, line(4, "L101850", "2026-05-13"), procedure_date="2026-05-20"
         ),
         label="procedure_line_after_the_claim",
+        at=row_at(4, TABLE_PROCEDURES, line(4, "L101850", "2026-05-13")),
+        says="dated 2026-05-20 outside the claim window 2026-05-11..2026-05-16",
     ),
     Case(
         DATES,
@@ -837,61 +1326,99 @@ CASES: list[Case] = [
             d, TABLE_PROCEDURES, line(4, "L101850", "2026-05-13"), procedure_date="13.05.2026"
         ),
         label="procedure_date_is_not_an_iso_date",
+        at=row_at(4, TABLE_PROCEDURES, line(4, "L101850", "2026-05-13")),
+        says="dated 13.05.2026 outside the claim window 2026-05-11..2026-05-16",
     ),
     Case(
         DATES,
         lambda d: edit(d, TABLE_MATERIALS, of(5), material_date="2026-09-20"),
         also=(OPLINK,),  # a material on another day than the operation it hangs on
         label="material_line_after_the_claim",
+        n=3,  # S5 has three material lines
+        also_n=3,
+        at=f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], 1)}]",
+        says="dated 2026-09-20 outside the claim window 2026-09-03..2026-09-08",
     ),
     Case(
         DATES,
         lambda d: edit(d, TABLE_DRUGS, of(2), drug_claim_date="2026-03-20"),
         label="drug_line_after_the_claim",
+        n=5,  # S2 has five drug lines
+        at=f"{CLAIM[2]} drug_claim_lines[{drug_claim_line_id(CLAIM[2], 1)}]",
+        says="dated 2026-03-20 outside the claim window 2026-03-09..2026-03-15",
     ),
     Case(
         DATES,
         lambda d: edit(d, TABLE_DIAGNOSES, of(2), diagnosis_date="2026-03-20"),
         label="diagnosis_after_the_claim",
+        n=3,  # S2 has three diagnoses
+        at=f"{CLAIM[2]} claim_diagnoses[{diagnosis_id(CLAIM[2], 1)}]",
+        says="dated 2026-03-20 outside the claim window 2026-03-09..2026-03-15",
     ),
     Case(
         DATES,
         _performed_line_a_day_late,
-        also=("bill.performed_billed",),  # the billed 530100 line is on the 19th
+        also=(PERF,),  # the billed 530100 line is on the 19th
         label="performed_line_after_the_claim",
+        at=row_at(7, TABLE_PERFORMED, performed(7, "530100")),
+        says="dated 2026-02-20 outside the claim window 2026-02-19..2026-02-19",
     ),
     # --- bill.performed_billed
     Case(
-        "bill.performed_billed",
+        PERF,
         lambda d: drop(d, TABLE_PROCEDURES, line(7, "R101450")),  # the CT angiography of story S7
         label="billed_line_deleted",
+        at=row_at(7, TABLE_PERFORMED, performed(7, "R101450")),
+        says="performed R101450 (BT anjiografi, pulmoner arter) on 2026-02-19 has no billed procedure line",
     ),
     Case(
-        "bill.performed_billed",
+        PERF,
         lambda d: edit(
             d,
             TABLE_PERFORMED,
-            (pl.col("claim_id") == CLAIM[7]) & (pl.col("procedure_code") == "530080"),
+            performed(7, "530080"),
             procedure_code="530350",
         ),
         label="performed_code_is_not_billed",
+        at=row_at(7, TABLE_PERFORMED, performed(7, "530080")),
+        says="performed 530350 (Damar yolu açılması) on 2026-02-19 has no billed procedure line",
     ),
     # --- package.mode
     Case(
         PACKAGE,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(1), package_candidate=False),
         label="candidate_false_on_a_package_claim",
+        at=CLAIM[1],
+        says="package_candidate is false but the claim has 1 package line(s)",
+    ),
+    Case(
+        PACKAGE,
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(8), package_candidate=False),
+        label="candidate_false_on_a_claim_with_two_packages",
+        at=CLAIM[8],
+        says="package_candidate is false but the claim has 2 package line(s)",
     ),
     Case(
         PACKAGE,
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), package_candidate=True),
         label="candidate_true_on_an_itemised_claim",
+        at=CLAIM[2],
+        says="package_candidate is true but the claim has 0 package line(s)",
+    ),
+    Case(
+        PACKAGE,
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), package_candidate=None),
+        label="candidate_missing",
+        at=CLAIM[2],
+        says="package_candidate is missing but the claim has 0 package line(s)",
     ),
     Case(
         PACKAGE,
         lambda d: add_procedure(d, 5, "510010", "2026-09-04"),
         also=(PATHWAY,),  # a ward bed is not a line of the hemiarthroplasty package
         label="bed_line_on_a_package_claim",
+        at=new_row_at(5, TABLE_PROCEDURES),
+        says="bed line 510010 on a package claim; the beds are inside the package",
     ),
     Case(
         PACKAGE,
@@ -900,22 +1427,30 @@ CASES: list[Case] = [
         # of the hemiarthroplasty package
         also=(PAIRING, PATHWAY),
         label="anaesthesia_line_on_a_package_claim",
+        at=new_row_at(5, TABLE_PROCEDURES),
+        says="anaesthesia line 550160 on a package claim; the anaesthesia is inside the package",
     ),
     # --- anaesthesia.operation_pairing (S3: decompression 615931 and anaesthesia 550160 on 08-18)
     Case(
         PAIRING,
         lambda d: drop(d, TABLE_PROCEDURES, line(3, "550160")),
         label="anaesthesia_line_deleted",
+        at=f"{CLAIM[3]} day[2026-08-18]",
+        says="1 operation line(s) and 0 anaesthesia line(s); one anaesthesia line per operation day, none else",
     ),
     Case(
         PAIRING,
         lambda d: clone_procedure(d, 3, line(3, "550160"), procedure_date="2026-08-19"),
         label="anaesthesia_without_an_operation",
+        at=f"{CLAIM[3]} day[2026-08-19]",
+        says="0 operation line(s) and 1 anaesthesia line(s); one anaesthesia line per operation day, none else",
     ),
     Case(
         PAIRING,
         lambda d: clone_procedure(d, 3, line(3, "550160")),
         label="two_anaesthesia_lines_on_an_operation_day",
+        at=f"{CLAIM[3]} day[2026-08-18]",
+        says="1 operation line(s) and 2 anaesthesia line(s); one anaesthesia line per operation day, none else",
     ),
     Case(
         PAIRING,
@@ -923,25 +1458,33 @@ CASES: list[Case] = [
         # package.mode says the same; 550160 is no line of the two-package pathway
         also=(PACKAGE, PATHWAY),
         label="anaesthesia_line_on_a_package_claim",
+        at=new_row_at(8, TABLE_PROCEDURES),
+        says="anaesthesia line 550160 on a package claim; a package has none",
     ),
     # --- anaesthesia.group
     Case(
-        "anaesthesia.group",
+        GROUP,
         lambda d: set_code(d, 3, "550160", "550170"),  # the code of group C, the puan is group B
         also=(PATHWAY,),
         label="single_code_of_another_group",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "550160")),
+        says="anaesthesia 550170 on 2026-08-18: 1 operation(s) with puan 6471.03 are group B, which is 550160",
     ),
     Case(
-        "anaesthesia.group",
+        GROUP,
         lambda d: set_code(d, 3, "550160", "550230"),  # B, but the "several operations" code
         also=(PATHWAY,),
         label="several_operations_code_for_one_operation",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "550160")),
+        says="anaesthesia 550230 on 2026-08-18: 1 operation(s) with puan 6471.03 are group B, which is 550160",
     ),
     Case(
-        "anaesthesia.group",
+        GROUP,
         _second_operation,
         also=(PATHWAY,),  # two operations need the "several operations" code; 603030 is no line
         label="single_code_for_two_operations",
+        at=row_at(3, TABLE_PROCEDURES, line(3, "550160")),
+        says="anaesthesia 550160 on 2026-08-18: 2 operation(s) with puan 8089.42 are group B, which is 550230",
     ),
     # --- material.operation_link (S5's three materials hang on its package P612320, dated 09-04)
     Case(
@@ -1238,6 +1781,7 @@ CASES: list[Case] = [
         # revenue_uplift S2: the amount follows the wrong total, so only the total is wrong
         lambda d: edit_fault(d, 2, billed_faulty_try="2596.36", amount_try="667.07"),
         label="wrong_faulty_total",
+        n=2,  # the wrong total differs from the header total and from the sum of the lines
         on_faulty=True,
         at=f"{CLAIM[2]} registry faults[F_S2_BED_DAYS_UNDERBILLED]",
         says="billed_faulty_try is 2596.36 but expected_total_billed_try of the claim is 2596.35",
@@ -1265,6 +1809,7 @@ CASES: list[Case] = [
         # the record no longer validates (revenue_uplift = clean - faulty), so no record explains S3's row
         also=(ANSWER_ROWS,),
         label="revenue_uplift_amount",
+        also_n=2,  # the answer table: the entry that no longer validates, and the row it leaves unexplained
         on_faulty=True,
         at=f"{CLAIM[3]} registry faults[F_S3_ANAESTHESIA_LINE_MISSING]",
         says="revenue_uplift amount_try is 928.10 but must be 928.09 (billed_clean_try - billed_faulty_try)",
@@ -1299,6 +1844,7 @@ CASES: list[Case] = [
         lambda d: edit_fault(d, 1, relabel=False, line_id=procedure_line_id(CLAIM[1], 1)),
         also=(ANSWER_ROWS,),  # a fatura record with a line id does not validate
         label="fatura_with_a_line_id",
+        also_n=2,  # the answer table: the entry that no longer validates, and the row it leaves unexplained
         on_faulty=True,
         at=f"{CLAIM[1]} registry faults[F_S1_PACKAGE_BILLED_ITEMIZED]",
         says=f"line_id {procedure_line_id(CLAIM[1], 1)} must be empty for line_type fatura",
@@ -1308,6 +1854,7 @@ CASES: list[Case] = [
         lambda d: edit_fault(d, 5, relabel=False, line_id=""),
         also=(ANSWER_ROWS,),  # a malzeme record without a line id does not validate
         label="line_type_without_a_line_id",
+        also_n=2,  # the answer table: the entry that no longer validates, and the row it leaves unexplained
         on_faulty=True,
         at=f"{CLAIM[5]} registry faults[F_S5_IMPLANT_UTS_INCOMPLETE]",
         says="line_type malzeme needs the line_id of its target line",
@@ -1317,6 +1864,7 @@ CASES: list[Case] = [
         lambda d: edit_fault(d, 4, relabel=False, effect_kind="refund"),
         also=(ANSWER_ROWS,),  # an effect kind outside the three does not validate
         label="unknown_effect_kind",
+        also_n=2,  # the answer table: the entry that no longer validates, and the row it leaves unexplained
         on_faulty=True,
         at=f"{CLAIM[4]} registry faults[F_S4_COMPANION_NOT_BILLED]",
         says="effect_kind refund is none of revenue_uplift, deduction_risk, compliance_error",
@@ -1338,12 +1886,14 @@ def test_every_check_id_has_a_function_a_short_meaning_and_a_mutation_case() -> 
     assert all(re.fullmatch(r"[a-z]+\.[a-z_]+", check) for check in CHECKS)
 
 
-def test_the_registry_ids_are_the_labels_ids_and_every_slice_e2_case_names_its_finding() -> None:
+def test_the_registry_ids_are_the_labels_ids_and_every_case_names_its_finding() -> None:
     assert REGISTRY_CHECKS == {"labels.answer_rows", "labels.amounts"}
     assert REGISTRY_CHECKS <= E2_CHECKS
     for case in CASES:
+        assert case.at and case.says, f"{case.name} must say where and what it expects"
+        assert case.n >= 1, case.name
+        assert (case.also_n is None) or (case.also and case.also_n >= len(case.also)), case.name
         if case.check in E2_CHECKS:
-            assert case.at and case.says, f"{case.name} must say where and what it expects"
             assert (case.check in REGISTRY_CHECKS) == case.on_faulty, case.name
         else:
             assert not case.on_faulty, case.name
@@ -1522,6 +2072,7 @@ def test_a_defect_trips_its_own_check_and_what_it_must(
     else:
         assert before == [], "the base (the eight clean twins) must be clean"
     broken = fresh(case, built, twins, anadata)
+    at = case.at(broken) if callable(case.at) else case.at  # read before the defect is seeded
     case.mutate(broken)
     found = [p for p in broken.problems(context) if p not in before]
     assert only_ids(found) == {case.check, *case.also}, [str(p) for p in found]
@@ -1530,9 +2081,1667 @@ def test_a_defect_trips_its_own_check_and_what_it_must(
     # every finding says where and what, whatever value the defect left empty
     assert all(isinstance(p.where, str) and p.where.startswith("F-") for p in found)
     assert all(isinstance(p.message, str) and p.message for p in found), [str(p) for p in found]
-    # and the finding of the target id is the right one: the right place, the right reason
+    # the number of findings: a check that says too much or too little is wrong
     mine = [p for p in found if p.check == case.check]
-    assert any(case.at in p.where and case.says in p.message for p in mine), [str(p) for p in mine]
+    others = len(found) - len(mine)
+    assert len(mine) == case.n, [str(p) for p in mine]
+    assert others == (len(case.also) if case.also_n is None else case.also_n), [
+        str(p) for p in found
+    ]
+    # the finding of the target id is the right one: the right place, the right reason. An `at`
+    # that is only a claim id is a finding about the claim itself; a longer one is a fragment
+    assert any(
+        (p.where == at if " " not in at else at in p.where) and case.says in p.message for p in mine
+    ), [str(p) for p in mine]
+    # the findings come in the order of the registry, then by where and message
+    order = {check: index for index, check in enumerate(CHECKS)}
+    keys = [(order[p.check], p.where, p.message) for p in found]
+    assert keys == sorted(keys), [str(p) for p in found]
+    # and a finding about a line names a line that is there
+    assert all(
+        names_a_real_row(p, broken.tables) for p in found if p.check not in REGISTRY_CHECKS
+    ), [str(p) for p in found]
+
+
+# --- 3b. the boundary pairs ------------------------------------------------------------------------
+#
+# One table of inputs ported from the independent review of slice E1: for each rule the input just
+# inside (valid), the input just outside (it trips) and the variants that must not trip. A pair
+# names the E1 ids its input trips (exactly those, among the E1 ids, or among `only` when it is set,
+# because its neighbours do not matter there) and the number of findings they report. The base is
+# the eight clean twins.
+
+
+@dataclasses.dataclass(frozen=True)
+class Pair:
+    """One boundary input: the data change, the ids it trips (none: a valid input) and how many findings."""
+
+    name: str
+    mutate: Callable[[Data], None]
+    trips: tuple[str, ...] = ()
+    n: int = 0
+    only: str | None = None
+    at: str | Callable[[Data], str] = ""  # a fragment of the `where` of a finding (see `_names`)
+    says: str = ""  # a fragment of the `message` of that finding
+
+    def __post_init__(self) -> None:
+        assert bool(self.trips) == bool(self.n), f"{self.name}: trips and n go together"
+        assert bool(self.at) <= bool(self.says), f"{self.name}: `at` needs `says`"
+
+
+def _aged(story, age, *, icd=None, name=None, code="L101850", sex=None):
+    """The story's patient is `age` (and of `sex`), with a diagnosis or a renamed line."""
+
+    def mutate(d: Data) -> None:
+        set_age(d, story, age, sex=sex)
+        if icd:
+            add_diagnosis(d, story, icd)
+        if name:
+            rename(d, story, code, name)
+
+    return mutate
+
+
+def _setting(story, claim_type, new_code, day="2026-08-18"):
+    """The story's operation becomes `new_code` on a claim of `claim_type`."""
+
+    def mutate(d: Data) -> None:
+        edit(d, TABLE_CLAIM_HEADERS, of(story), claim_type=claim_type)
+        replace_op(d, story, "615931", new_code, day)
+
+    return mutate
+
+
+def _shifted_setting(shift, claim_type, new_code, day):
+    def mutate(d: Data) -> None:
+        shift_claim(d, 3, shift)
+        _setting(3, claim_type, new_code, day)(d)
+
+    return mutate
+
+
+def _drop_anadata_row(d: Data, story: int) -> None:
+    d.anadata = d.anadata.filter(pl.col("HASTA_ID") != PATIENT[story])
+
+
+def _every_table_empty(d: Data) -> None:
+    for name in list(d.tables):
+        d.tables[name] = d.tables[name].clear()
+    d.anadata = d.anadata.clear()
+
+
+def _several_defects_on_four_claims(d: Data) -> None:
+    drop(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"))
+    drop(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-13"))
+    drop(d, TABLE_PROCEDURES, line(3, "550160"))
+    drop(d, TABLE_PROCEDURES, line(7, "R101450"))
+    edit(d, TABLE_CLAIM_HEADERS, of(1), package_candidate=False)
+
+
+def _tag_of(story: int, other: int) -> Callable[[Data], None]:
+    """The story's scenario tag becomes the tag of another story."""
+
+    def mutate(d: Data) -> None:
+        tag = d.tables[TABLE_CLAIM_HEADERS].filter(of(other))["scenario_tag"][0]
+        edit(d, TABLE_CLAIM_HEADERS, of(story), scenario_tag=tag)
+
+    return mutate
+
+
+def _one_day_stay(d: Data) -> None:
+    # S2 shrinks to the one date 03-09: a stay of no night, with its one bed line
+    edit(d, TABLE_CLAIM_HEADERS, of(2), discharge_date="2026-03-09", claim_end_date="2026-03-09")
+    drop(d, TABLE_PROCEDURES, of(2) & (pl.col("procedure_date") > "2026-03-09"))
+
+
+def _one_night_stay(d: Data) -> None:
+    # S2 shrinks to the two dates 03-09 and 03-10: a stay of one night
+    edit(d, TABLE_CLAIM_HEADERS, of(2), discharge_date="2026-03-10", claim_end_date="2026-03-10")
+    drop(d, TABLE_PROCEDURES, of(2) & (pl.col("procedure_date") > "2026-03-10"))
+
+
+def _day_case_with_a_day_bed(d: Data) -> None:
+    _one_day_stay(d)
+    set_code(d, 2, "510010", "510120")
+
+
+PAIRS: list[Pair] = [
+    # --- patient.icd_valid
+    Pair(
+        "icd: a code created on the diagnosis day is valid (F99, created 2026-07-22)",
+        lambda d: add_diagnosis(d, 1, "F99", "2026-07-22"),
+        only=ICD,
+    ),
+    Pair(
+        "icd: a code created the day after the diagnosis (F99 on 2026-07-21)",
+        lambda d: add_diagnosis(d, 1, "F99", "2026-07-21"),
+        (ICD,),
+        1,
+        only=ICD,
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="diagnosis F99 dated 2026-07-21: the code was created on 2026-07-22, after the diagnosis date",
+    ),
+    Pair(
+        "icd: a range heading is no leaf (A00-A09)",
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="A00-A09"),
+        (ICD, PATHWAY),
+        2,
+    ),
+    Pair(
+        "icd: a lower-case code is not the code (i10)",
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="i10"),
+        (ICD, PATHWAY),
+        2,
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="diagnosis i10 dated 2026-03-09: the code is not in icd10_tr",
+    ),
+    Pair(
+        "icd: a code with a trailing space",
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code="I10 "),
+        (ICD, PATHWAY),
+        2,
+    ),
+    Pair(
+        "icd: a missing code",
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, icd10_code=None),
+        (ICD, PATHWAY),
+        2,
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="diagnosis (none) dated 2026-03-09: the code is not in icd10_tr",
+    ),
+    Pair(
+        "icd: a code passive on the diagnosis day (U06.9, passive since 2025-07-02)",
+        lambda d: add_diagnosis(d, 2, "U06.9"),
+        (ICD,),
+        1,
+        only=ICD,
+    ),
+    # --- patient.sex_gate: a code of the icd10_tr column, and a code of the ICD-10 blocks only
+    Pair(
+        "sex: a woman with cervix carcinoma in situ D06.9 is valid",
+        lambda d: add_diagnosis(d, 3, "D06.9"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a man with cervix carcinoma in situ D06.9 (a code of the icd10_tr column)",
+        lambda d: add_diagnosis(d, 1, "D06.9"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a woman with acute prostatitis N41.0",
+        lambda d: add_diagnosis(d, 3, "N41.0"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with acute prostatitis N41.0 is valid",
+        lambda d: add_diagnosis(d, 1, "N41.0"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a man with endometriosis N80.0",
+        lambda d: add_diagnosis(d, 1, "N80.0"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a woman with endometriosis N80.0 is valid",
+        lambda d: add_diagnosis(d, 3, "N80.0"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a man with polycystic ovary syndrome E28.2",
+        lambda d: add_diagnosis(d, 2, "E28.2"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a woman with polycystic ovary syndrome E28.2 is valid",
+        lambda d: add_diagnosis(d, 8, "E28.2"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a woman with hydrocele N43.3",
+        lambda d: add_diagnosis(d, 8, "N43.3"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with hydrocele N43.3 is valid",
+        lambda d: add_diagnosis(d, 6, "N43.3"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a woman with scrotal varices I86.1",
+        lambda d: add_diagnosis(d, 3, "I86.1"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with scrotal varices I86.1 is valid",
+        lambda d: add_diagnosis(d, 1, "I86.1"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a woman with other varicose veins I86.0 is no sex gate (only I86.1 is)",
+        lambda d: add_diagnosis(d, 3, "I86.0"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a woman with an undescended testis Q53.1",
+        lambda d: add_diagnosis(d, 4, "Q53.1"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with a congenital malformation of the uterus Q51.0",
+        lambda d: add_diagnosis(d, 1, "Q51.0"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a code of a male block that icd10_tr does not know (N41.77) on a woman",
+        lambda d: add_diagnosis(d, 3, "N41.77"),
+        (ICD, SEX, PATHWAY),
+        3,
+        at=new_row_at(3, TABLE_DIAGNOSES),
+        says="diagnosis N41.77 is limited to sex M but the patient is F",
+    ),
+    Pair(
+        "sex: a man with a delivery outcome Z37.0",
+        lambda d: add_diagnosis(d, 1, "Z37.0"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with a postpartum examination Z39.0",
+        lambda d: add_diagnosis(d, 1, "Z39.0"),
+        (SEX, PATHWAY),
+        2,
+    ),
+    Pair(
+        "sex: a man with a liveborn infant code Z38.0 is no sex gate",
+        lambda d: add_diagnosis(d, 1, "Z38.0"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a man with a urinary infection N39.0 is no sex gate (N39 lies between the blocks)",
+        lambda d: add_diagnosis(d, 1, "N39.0"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a man with a breast disease N63 is no sex gate (N60-N64 lie between the blocks)",
+        lambda d: add_diagnosis(d, 1, "N63"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a patient of unknown sex with N41.0 trips (the gate cannot be met)",
+        lambda d: (edit_patient(d, 1, CINSIYET="?"), add_diagnosis(d, 1, "N41.0")),
+        (SEX, PATHWAY),
+        2,
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="diagnosis N41.0 is limited to sex M but the patient is of unknown sex",
+    ),
+    Pair(
+        "sex: a duplicated anadata row of the patient does not duplicate a finding",
+        lambda d: (
+            setattr(
+                d,
+                "anadata",
+                pl.concat([d.anadata, d.anadata.filter(pl.col("HASTA_ID") == PATIENT[3])]),
+            ),
+            rename(d, 3, "L104780", "Prostat iğne biyopsisi"),
+        ),
+        (SEX,),
+        1,
+    ),
+    Pair(
+        "sex: a patient missing from anadata with a male-gated C61",
+        lambda d: (_drop_anadata_row(d, 3), add_diagnosis(d, 3, "C61")),
+        (SEX, ARITH, PATHWAY),
+        3,
+    ),
+    Pair(
+        "sex: a patient missing from anadata with a male-only name",
+        lambda d: (_drop_anadata_row(d, 3), rename(d, 3, "L104780", "Prostat iğne biyopsisi")),
+        (SEX, ARITH),
+        2,
+    ),
+    # --- patient.sex_gate: the names of the catalog that the word lists must catch
+    Pair(
+        "sex: a woman with the catalog name 'Fimozis açılması'",
+        lambda d: rename(d, 7, "L102890", "Fimozis açılması"),
+        (SEX,),
+        1,
+    ),
+    Pair(
+        "sex: a woman with the catalog name 'Testiküler fiksasyon, iki taraf'",
+        lambda d: rename(d, 7, "L102890", "Testiküler fiksasyon, iki taraf"),
+        (SEX,),
+        1,
+    ),
+    Pair(
+        "sex: a woman with the catalog name 'Prostat spesifik antijen (PSA), total'",
+        lambda d: rename(d, 7, "L102890", "Prostat spesifik antijen (PSA), total"),
+        (SEX,),
+        1,
+    ),
+    Pair(
+        "sex: a man with the catalog name 'Histerosalpingografi (HSG)'",
+        lambda d: rename(d, 2, "L101850", "Histerosalpingografi (HSG)"),
+        (SEX,),
+        2,
+    ),
+    Pair(
+        "sex: a man with the catalog name 'Obstetrik US'",
+        lambda d: rename(d, 6, "L101850", "Obstetrik US"),
+        (SEX,),
+        2,
+    ),
+    Pair(
+        "sex: a man with the catalog name 'Epidural anestezi ile vajinal doğum'",
+        lambda d: rename(d, 6, "801720", "Epidural anestezi ile vajinal doğum"),
+        (SEX,),
+        2,
+    ),
+    Pair(
+        "sex: a man with the catalog name 'Transvajinal US'",
+        lambda d: rename(d, 6, "801720", "Transvajinal US"),
+        (SEX,),
+        2,
+    ),
+    Pair(
+        "sex: a man with the catalog name 'Ultrason eşliğinde çoğul gebeliklerde fetal redüksiyon'",
+        lambda d: rename(d, 2, "L101850", "Ultrason eşliğinde çoğul gebeliklerde fetal redüksiyon"),
+        (SEX,),
+        2,
+    ),
+    Pair(
+        "sex: a man with the name 'Hepatik recover testi' is valid ('over' is a whole word only)",
+        lambda d: rename(d, 1, "P610131", "Hepatik recover testi"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a woman with a name of the catalog that has a sex word only in an exception",
+        lambda d: rename(d, 3, "L104780", "Sperm yıkama"),
+        only=SEX,
+    ),
+    Pair(
+        "sex: a code CINSIYET 'M' (neither E nor K) without any sex content is valid",
+        lambda d: edit_patient(d, 1, CINSIYET="M"),
+        only=SEX,
+    ),
+    # --- patient.age_gate: both sides of every limit
+    *[
+        Pair(
+            f"age: O80.9 on a woman aged {age}" + ("" if ok else " (outside 10..55)"),
+            _aged(8, age, icd="O80.9"),
+            () if ok else (AGE,),
+            0 if ok else 1,
+            only=AGE,
+        )
+        for age, ok in ((9, False), (10, True), (55, True), (56, False))
+    ],
+    *[
+        Pair(
+            f"age: perinatal P07.3 on a patient aged {age}" + ("" if ok else " (over 1)"),
+            _aged(1, age, icd="P07.3"),
+            () if ok else (AGE,),
+            0 if ok else 1,
+            only=AGE,
+        )
+        for age, ok in ((0, True), (1, True), (2, False))
+    ],
+    *[
+        Pair(
+            f"age: liveborn Z38.0 on a patient aged {age}" + ("" if ok else " (over 1)"),
+            _aged(1, age, icd="Z38.0"),
+            () if ok else (AGE,),
+            0 if ok else 1,
+            only=AGE,
+        )
+        for age, ok in ((1, True), (2, False))
+    ],
+    *[
+        Pair(
+            f"age: 'Çocuk odyometresi (Komple)' on a patient aged {age}"
+            + ("" if ok else " (over 17)"),
+            _aged(2, age, name="Çocuk odyometresi (Komple)"),
+            () if ok else (AGE,),
+            0 if ok else 2,  # S2 bills the code L101850 on two lines
+            only=AGE,
+        )
+        for age, ok in ((17, True), (18, False))
+    ],
+    *[
+        Pair(
+            f"age: 'Erişkin tedavisel soğutma' on a patient aged {age}"
+            + ("" if ok else " (under 18)"),
+            _aged(2, age, name="Erişkin tedavisel soğutma"),
+            () if ok else (AGE,),
+            0 if ok else 2,
+            only=AGE,
+        )
+        for age, ok in ((17, False), (18, True))
+    ],
+    *[
+        Pair(
+            f"age: 'Yenidoğan monitörizasyonu' on a patient aged {age}"
+            + ("" if ok else " (over 1)"),
+            _aged(2, age, name="Yenidoğan monitörizasyonu"),
+            () if ok else (AGE,),
+            0 if ok else 2,
+            only=AGE,
+        )
+        for age, ok in ((0, True), (1, True), (2, False))
+    ],
+    *[
+        Pair(
+            f"age: 'Pelvipedal alçı (10 yaş altı)' on a patient aged {age}"
+            + ("" if ok else " (over 9)"),
+            _aged(2, age, name="Pelvipedal alçı (10 yaş altı)"),
+            () if ok else (AGE,),
+            0 if ok else 2,
+            only=AGE,
+        )
+        for age, ok in ((9, True), (10, False))
+    ],
+    *[
+        Pair(
+            f"age: '2 yaş altı doğumsal kalp hastalıklarında ...' on a patient aged {age}"
+            + ("" if ok else " (over 1)"),
+            _aged(
+                2, age, name="2 yaş altı doğumsal kalp hastalıklarında tanısal kalp kateterizasyonu"
+            ),
+            () if ok else (AGE,),
+            0 if ok else 2,
+            only=AGE,
+        )
+        for age, ok in ((1, True), (2, False))
+    ],
+    Pair(
+        "age: a name '12 yaş altı' is not the name '2 yaş altı' (a whole word)",
+        _aged(2, 5, name="Pelvipedal alçı (12 yaş altı)"),
+        only=AGE,
+    ),
+    Pair(
+        "age: 'Göz muayenesi, bebek için, genel anestezi altında' on a patient aged 2",
+        _aged(2, 2, name="Göz muayenesi, bebek için, genel anestezi altında"),
+        (AGE,),
+        2,
+        only=AGE,
+    ),
+    Pair(
+        "age: 'Göz muayenesi, bebek için, genel anestezi altında' on a patient aged 1 is valid",
+        _aged(2, 1, name="Göz muayenesi, bebek için, genel anestezi altında"),
+        only=AGE,
+    ),
+    Pair(
+        "age: 'Çocuklarda görme muayeneleri' on an 81-year-old (the word inside a word)",
+        lambda d: rename(d, 2, "L101850", "Çocuklarda görme muayeneleri"),
+        (AGE,),
+        2,
+    ),
+    Pair(
+        "age: 'Yeni doğan fundoskopik inceleme' on an 81-year-old (two words)",
+        lambda d: rename(d, 2, "L101850", "Yeni doğan fundoskopik inceleme"),
+        (AGE,),
+        2,
+    ),
+    Pair(
+        "age: P702682, the ÇÖZGEM child and youth centre (Çocuk ve Genç), on a patient aged 18 is valid",
+        lambda d: (
+            set_age(d, 2, 18),
+            rename(
+                d,
+                2,
+                "L101850",
+                "Çok Disiplinli Çocuk ve Genç Ruh Sağlığı Merkezleri (ÇÖZGEM) hizmetleri",
+            ),
+        ),
+        only=AGE,
+    ),
+    Pair(
+        "age: the newborn add-on 'Yeni doğan/geriatrik (75 yaş üstü ...)' on an 81-year-old is valid",
+        lambda d: rename(
+            d, 2, "L101850", "Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) anestezi puanı B grubu"
+        ),
+        only=AGE,
+    ),
+    Pair(
+        "age: a patient of 12 with 'Yenidoğan/Çocuk/Erişkin tedavisel soğutma' is valid (the longer exception first)",
+        lambda d: (
+            set_age(d, 2, 12),
+            rename(d, 2, "L101850", "Yenidoğan/Çocuk/Erişkin tedavisel soğutma"),
+        ),
+        only=AGE,
+    ),
+    Pair(
+        "age: O80.9 on a patient of unknown sex (CINSIYET '?') aged 30",
+        _aged(8, 30, icd="O80.9", sex="?"),
+        (AGE,),
+        1,
+        only=AGE,
+        at=new_row_at(8, TABLE_DIAGNOSES),
+        says="needs sex F, age 10..55; the patient is of unknown sex aged 30",
+    ),
+    Pair(
+        "age: O80.9 on a man whose age is missing (the sex alone trips the gate)",
+        lambda d: (add_diagnosis(d, 1, "O80.9"), edit_patient(d, 1, TANI_YASI=None)),
+        (AGE,),
+        1,
+        only=AGE,
+        at=new_row_at(1, TABLE_DIAGNOSES),
+        says="needs sex F, age 10..55; the patient is M aged unknown",
+    ),
+    Pair(
+        "age: O80.9 on a patient missing from anadata (no sex, no age)",
+        lambda d: (_drop_anadata_row(d, 8), add_diagnosis(d, 8, "O80.9")),
+        (AGE, ARITH, PATHWAY),
+        3,
+        at=new_row_at(8, TABLE_DIAGNOSES),
+        says="needs sex F, age 10..55; the patient is of unknown sex aged unknown",
+    ),
+    Pair(
+        "age: a code 'XO80.9' with an O inside it is no pregnancy code",
+        lambda d: add_diagnosis(d, 1, "XO80.9"),
+        only=AGE,
+    ),
+    Pair(
+        "age: a perinatal code on a patient missing from anadata cannot be judged",
+        lambda d: (add_diagnosis(d, 4, "P07.3"), _drop_anadata_row(d, 4)),
+        (ARITH, PATHWAY),
+        2,
+    ),
+    Pair(
+        "age: an adult name on a patient missing from anadata cannot be judged",
+        lambda d: (_drop_anadata_row(d, 2), rename(d, 2, "L101850", "Erişkin tedavisel soğutma")),
+        only=AGE,
+    ),
+    # --- patient.age_arithmetic: the year of claim_start_date, not of claim_end_date
+    Pair(
+        "arith: a claim crossing New Year, the age by the START year is valid",
+        lambda d: (shift_claim(d, 2, -70), set_age(d, 2, 80, year=2025)),
+        only=ARITH,
+    ),
+    Pair(
+        "arith: a claim crossing New Year, the age by the END year",
+        lambda d: (shift_claim(d, 2, -70), set_age(d, 2, 81, year=2026)),
+        (ARITH,),
+        1,
+        only=ARITH,
+        at=CLAIM[2],
+        says="TANI_YASI is 81; the claim year is 2025 and the birth year 1945, which makes the age 80",
+    ),
+    Pair(
+        "arith: a missing TANI_YASI",
+        lambda d: edit_patient(d, 4, TANI_YASI=None),
+        (ARITH,),
+        1,
+        only=ARITH,
+    ),
+    Pair(
+        "arith: a missing copay profile row",
+        lambda d: drop(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[4]),
+        (ARITH,),
+        1,
+        only=ARITH,
+    ),
+    # --- fit.pathway_membership
+    Pair(
+        "path: a missing scenario tag is one finding about the claim",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), scenario_tag=None),
+        (PATHWAY,),
+        1,
+        only=PATHWAY,
+        at=CLAIM[4],
+        says="scenario_tag (missing) is not a care pathway",
+    ),
+    Pair(
+        "path: a scenario tag that is no pathway is one finding about the claim",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), scenario_tag="no_such_pathway"),
+        (PATHWAY,),
+        1,
+        only=PATHWAY,
+    ),
+    Pair(
+        "path: the scenario tag of another story (every code that is not in its pathway)",
+        _tag_of(6, 2),
+        (PATHWAY,),
+        11,
+        only=PATHWAY,
+    ),
+    Pair(
+        "path: a material code equal to a procedure code of the pathway (the family counts)",
+        lambda d: edit(d, TABLE_MATERIALS, mat(1), material_code="P612320"),
+        (PATHWAY,),
+        1,
+        only=PATHWAY,
+        at=f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], 1)}]",
+        says="material code P612320 is not in the expansion of",
+    ),
+    Pair(
+        "path: a procedure line of a claim that has no header is named by the dates check",
+        lambda d: add_row(
+            d,
+            TABLE_PROCEDURES,
+            of(2),
+            claim_id="F-SENTETIK-HASTA-0099-001",
+            procedure_line_id="ISL-F-SENTETIK-HASTA-0099-001-001",
+        ),
+        (DATES,),
+        1,
+        at="F-SENTETIK-HASTA-0099-001 procedure_claim_lines[ISL-F-SENTETIK-HASTA-0099-001-001]",
+        says="dated 2026-03-09 outside the claim window (no header)..(no header)",
+    ),
+    # --- fit.operation_department
+    Pair(
+        "dept: a package operation in anaesthesiology (P609235 by 3100)",
+        lambda d: edit(d, TABLE_PROCEDURES, line(8, "P609235"), procedure_specialty_code="3100"),
+        (DEPT,),
+        1,
+        only=DEPT,
+    ),
+    Pair(
+        "dept: an appendectomy package by urology is valid (2700 is a surgical branch)",
+        lambda d: edit(d, TABLE_PROCEDURES, line(1, "P610131"), procedure_specialty_code="2700"),
+        only=DEPT,
+    ),
+    Pair(
+        "dept: the hemodialysis package P704230 in internal medicine is no operation",
+        lambda d: add_procedure(d, 8, "P704230", "2026-09-15", specialty="1000"),
+        only=DEPT,
+    ),
+    Pair(
+        "dept: the palliative care package P560000 in internal medicine is no operation",
+        lambda d: add_procedure(d, 8, "P560000", "2026-09-15", specialty="1000"),
+        only=DEPT,
+    ),
+    Pair(
+        "dept: an operation branch with a trailing space ('2400 ')",
+        lambda d: edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_specialty_code="2400 "),
+        (DEPT,),
+        1,
+        only=DEPT,
+    ),
+    Pair(
+        "dept: an operation in internal medicine on a poliklinik claim trips the setting too",
+        lambda d: (
+            edit(d, TABLE_CLAIM_HEADERS, of(3), claim_type="poliklinik"),
+            edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_specialty_code="1000"),
+        ),
+        (DEPT, SETTING, DATES),
+        3,
+    ),
+    # --- fit.operation_setting: every major group, the minor ones, and the day a price row or the bands change
+    Pair(
+        "setting: an A1 operation (608540) on an acil claim",
+        _setting(3, "acil", "608540"),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: an A2 operation (612490) on an acil claim",
+        _setting(3, "acil", "612490"),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: an A3 operation (606290) on a poliklinik claim",
+        _setting(3, "poliklinik", "606290"),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: a B operation (609810) on an acil claim",
+        _setting(3, "acil", "609810"),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: a C operation (618480) on an acil claim is minor",
+        _setting(3, "acil", "618480"),
+        only=SETTING,
+    ),
+    Pair(
+        "setting: a D operation (608390) on a poliklinik claim is minor",
+        _setting(3, "poliklinik", "608390"),
+        only=SETTING,
+    ),
+    Pair(
+        "setting: a B operation on a yatis claim is valid",
+        lambda d: replace_op(d, 3, "615931", "609810", "2026-08-18"),
+        only=SETTING,
+    ),
+    Pair(
+        "setting: 610131 on a poliklinik claim on 2026-04-15 is group B before the bands change",
+        _shifted_setting(-125, "poliklinik", "610131", "2026-04-15"),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: 610131 on a poliklinik claim on 2026-04-16 is group C after the bands change",
+        _shifted_setting(-124, "poliklinik", "610131", "2026-04-16"),
+        only=SETTING,
+    ),
+    Pair(
+        "setting: 615931 on the first day of the last price row (2026-07-07)",
+        lambda d: (
+            shift_claim(d, 3, -42),
+            edit(d, TABLE_CLAIM_HEADERS, of(3), claim_type="poliklinik"),
+        ),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: 615931 on the last day of the middle price row (2026-07-06)",
+        lambda d: (
+            shift_claim(d, 3, -43),
+            edit(d, TABLE_CLAIM_HEADERS, of(3), claim_type="poliklinik"),
+        ),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    Pair(
+        "setting: 615931 on the first day of the middle price row (2026-01-31)",
+        lambda d: (
+            shift_claim(d, 3, -199),
+            edit(d, TABLE_CLAIM_HEADERS, of(3), claim_type="poliklinik"),
+        ),
+        (SETTING,),
+        1,
+        only=SETTING,
+    ),
+    *[
+        Pair(
+            f"setting: the EK-2C package P612320 on an acil claim dated {day} ({why})",
+            lambda d, day=day: (
+                shift_claim(d, 5, (date.fromisoformat(day) - date(2026, 9, 4)).days),
+                edit(d, TABLE_CLAIM_HEADERS, of(5), claim_type="acil"),
+            ),
+            (SETTING,),
+            1,
+            only=SETTING,
+        )
+        for day, why in (
+            ("2026-01-30", "the last day of the row before"),
+            ("2026-01-31", "the first day of the middle row"),
+            ("2026-07-06", "the last day of the middle row"),
+            ("2026-07-07", "the first day of the last row"),
+        )
+    ],
+    # --- fit.visit_code
+    Pair(
+        "visit: the acil visit 520020 on a yatis claim",
+        lambda d: set_code(d, 6, "520010", "520020"),
+        (VISIT, PATHWAY),
+        2,
+    ),
+    Pair(
+        "visit: the consultation 520010 on an acil claim",
+        lambda d: set_code(d, 7, "520020", "520010"),
+        (VISIT, PATHWAY),
+        2,
+    ),
+    Pair(
+        "visit: the green-area visit 520021 on an acil claim",
+        lambda d: set_code(d, 7, "520020", "520021"),
+        (VISIT, PATHWAY),
+        2,
+    ),
+    Pair(
+        "visit: a health board report 520050 as an examination on a yatis claim",
+        lambda d: set_code(d, 6, "520010", "520050"),
+        (VISIT, PATHWAY),
+        2,
+    ),
+    Pair(
+        "visit: a second acil visit on the same day is valid",
+        lambda d: add_procedure(d, 7, "520020", "2026-02-19", specialty="4400"),
+        only=VISIT,
+    ),
+    # --- stay.bed_coverage
+    Pair(
+        "bed: an extra bed line the day after discharge",
+        lambda d: add_procedure(d, 2, "510010", "2026-03-16"),
+        (BED, DATES),
+        2,
+    ),
+    Pair(
+        "bed: an extra bed line the day before admission",
+        lambda d: add_procedure(d, 2, "510010", "2026-03-08"),
+        (BED, DATES),
+        2,
+    ),
+    Pair(
+        "bed: two bed lines outside the stay are listed in date order",
+        lambda d: (
+            add_procedure(d, 2, "510010", "2026-03-16"),
+            add_procedure(d, 2, "510010", "2026-03-08"),
+        ),
+        (BED, DATES),
+        3,
+        at=CLAIM[2],
+        says="bed line(s) outside admission..discharge: 2026-03-08, 2026-03-16",
+    ),
+    Pair(
+        "bed: the admission-day bed line missing",
+        lambda d: drop(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-09")),
+        (BED,),
+        1,
+    ),
+    Pair(
+        "bed: the discharge-day bed line missing",
+        lambda d: drop(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-15")),
+        (BED,),
+        1,
+    ),
+    Pair(
+        "bed: every ward bed line removed (the companions remain)",
+        lambda d: drop(d, TABLE_PROCEDURES, of(2) & (pl.col("procedure_code") == "510010")),
+        (BED,),
+        1,
+    ),
+    Pair(
+        "bed: a quantity of 3",
+        lambda d: edit(d, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), quantity=3),
+        (BED,),
+        1,
+    ),
+    Pair(
+        "bed: a ward bed and a day bed on the same day",
+        lambda d: add_procedure(d, 2, "510120", "2026-03-11"),
+        (BED, PATHWAY),
+        3,
+    ),
+    Pair(
+        "bed: a ward bed and an ICU day fee on the same day",
+        lambda d: add_procedure(d, 2, "510090", "2026-03-11"),
+        (BED, PATHWAY),
+        2,
+    ),
+    Pair(
+        "bed: a bed line with a date that is not a date",
+        lambda d: edit(
+            d, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), procedure_date="11.03.2026"
+        ),
+        (BED, DATES),
+        3,
+    ),
+    # an ICU package is a bed day, and it does not make a package claim: only the pathway objects
+    Pair(
+        "bed: the newborn ICU package P552006 on a ward day is a bed day, not a package",
+        lambda d: edit(
+            d,
+            TABLE_PROCEDURES,
+            line(2, "510010", "2026-03-11"),
+            procedure_code="P552006",
+            procedure_category="paket",
+        ),
+        (PATHWAY,),
+        1,
+    ),
+    Pair(
+        "bed: the adult ICU package P552003 on a ward day is a bed day, not a package",
+        lambda d: edit(
+            d,
+            TABLE_PROCEDURES,
+            line(2, "510010", "2026-03-11"),
+            procedure_code="P552003",
+            procedure_category="paket",
+        ),
+        (PATHWAY,),
+        1,
+    ),
+    Pair(
+        "bed: a stay of one date with its one bed line is valid",
+        _one_day_stay,
+        only=BED,
+    ),
+    Pair(
+        "bed: a day bed on a day case (admission and discharge on the same date) is valid",
+        _day_case_with_a_day_bed,
+        only=BED,
+    ),
+    Pair(
+        "bed: a ward bed on a day case is valid too",
+        lambda d: (_one_day_stay(d), set_code(d, 2, "510010", "510010")),
+        only=BED,
+    ),
+    Pair(
+        "bed: a stay of one night with ward beds on both dates is valid",
+        _one_night_stay,
+        only=BED,
+    ),
+    Pair(
+        "bed: a day bed on the first date of a stay of one night is a defect of the line",
+        lambda d: (_one_night_stay(d), set_code(d, 2, "510010", "510120", "2026-03-09")),
+        (BED,),
+        1,
+        only=BED,
+        at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-09")),
+        says="day bed line 510120 on the stay 2026-03-09..2026-03-10; the day bed is for a day case",
+    ),
+    Pair(
+        "bed: a day bed on a day case with the quantity 2",
+        lambda d: (
+            _day_case_with_a_day_bed(d),
+            edit(d, TABLE_PROCEDURES, line(2, "510120"), quantity=2),
+        ),
+        (BED,),
+        1,
+        only=BED,
+    ),
+    Pair(
+        "bed: discharge before admission (the dates reversed on the header)",
+        lambda d: edit(
+            d,
+            TABLE_CLAIM_HEADERS,
+            of(2),
+            admission_date="2026-03-15",
+            discharge_date="2026-03-09",
+            claim_start_date="2026-03-15",
+            claim_end_date="2026-03-09",
+        ),
+        (BED, COMP, DATES),
+        52,
+    ),
+    Pair(
+        "bed: a stay without an admission date has no days to cover (the beds are not outside it)",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), admission_date=None),
+        (COMP, DATES),
+        7,
+    ),
+    Pair(
+        "bed: two days without a bed line are listed in order",
+        lambda d: drop(
+            d,
+            TABLE_PROCEDURES,
+            of(2)
+            & pl.col("procedure_date").is_in(["2026-03-13", "2026-03-10"])
+            & (pl.col("procedure_code") == "510010"),
+        ),
+        (BED,),
+        1,
+        at=CLAIM[2],
+        says="no bed line on 2 of 7 day(s): 2026-03-10, 2026-03-13",
+    ),
+    # --- stay.companion_coverage
+    Pair(
+        "companion: a date that is not a date",
+        lambda d: edit(
+            d, TABLE_PROCEDURES, line(2, "510121", "2026-03-11"), procedure_date="11.03.2026"
+        ),
+        (COMP, DATES),
+        2,
+    ),
+    Pair(
+        "companion: a stay without a discharge date",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), discharge_date=None),
+        (COMP, DATES),
+        7,
+    ),
+    Pair(
+        "companion: an extra companion on a package claim night is no companion defect",
+        lambda d: add_procedure(d, 5, "510121", "2026-09-05"),
+        only=COMP,
+    ),
+    # --- stay.dates_in_window
+    Pair(
+        "dates: a stay without a discharge date",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), discharge_date=None),
+        (COMP, DATES),
+        7,
+    ),
+    Pair(
+        "dates: a stay that ends one day before discharge",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), claim_end_date="2026-03-14"),
+        (DATES,),
+        2,
+    ),
+    Pair(
+        "dates: a stay that starts one day after admission",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), claim_start_date="2026-03-10"),
+        (DATES,),
+        25,
+    ),
+    Pair(
+        "dates: an acil claim with an empty text as its admission date (an empty text is no missing date)",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), admission_date=""),
+        (DATES,),
+        1,
+    ),
+    Pair(
+        "dates: a drug line the day before the claim starts",
+        lambda d: edit(
+            d,
+            TABLE_DRUGS,
+            of(2) & (pl.col("barkod") == "8699508270224"),
+            drug_claim_date="2026-03-08",
+        ),
+        (DATES,),
+        1,
+    ),
+    Pair(
+        "dates: the material lines on the end date are valid",
+        lambda d: edit(d, TABLE_MATERIALS, of(5), material_date="2026-09-08"),
+        only=DATES,
+    ),
+    Pair(
+        "dates: the material lines the day after the end date",
+        lambda d: edit(d, TABLE_MATERIALS, of(5), material_date="2026-09-09"),
+        (DATES,),
+        3,
+    ),
+    Pair(
+        "dates: the material lines the day before the start date",
+        lambda d: edit(d, TABLE_MATERIALS, of(5), material_date="2026-09-02"),
+        (DATES,),
+        3,
+    ),
+    Pair(
+        "dates: a diagnosis without a date",
+        lambda d: edit(d, TABLE_DIAGNOSES, I10_OF_2, diagnosis_date=None),
+        (DATES,),
+        1,
+        at=row_at(2, TABLE_DIAGNOSES, I10_OF_2),
+        says="dated (missing) outside the claim window",
+    ),
+    Pair(
+        "dates: a claim start date that is not a date",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_start_date="garbage"),
+        (DATES, ARITH),
+        36,
+    ),
+    Pair(
+        "dates: a start date that is not a date is named in the finding about the claim",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_start_date="garbage"),
+        (DATES,),
+        35,  # the claim, and the 34 lines and diagnoses that are outside a window with no start
+        only=DATES,
+        at=CLAIM[4],
+        says="admission 2026-05-11, discharge 2026-05-16, start none, end 2026-05-16",
+    ),
+    Pair(
+        "dates: an end date that is not a date is named in the finding about the claim",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_end_date="garbage"),
+        (DATES,),
+        35,  # the claim, and the same 34 lines and diagnoses outside a window with no end
+        only=DATES,
+        at=CLAIM[4],
+        says="admission 2026-05-11, discharge 2026-05-16, start 2026-05-11, end none",
+    ),
+    Pair(
+        "arith: a start date that is not a date leaves the claim year unknown",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_start_date="garbage"),
+        (ARITH,),
+        1,
+        only=ARITH,
+        at=CLAIM[4],
+        says="TANI_YASI is 86; the claim year is unknown and the birth year 1940, which makes the age unknown",
+    ),
+    Pair(
+        "dates: an acil claim whose start date is not a date",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), claim_start_date="garbage"),
+        (DATES, ARITH),
+        22,
+    ),
+    Pair(
+        "dates: a performed line the day after the claim",
+        lambda d: edit(
+            d, TABLE_PERFORMED, pl.col("procedure_code") == "530080", service_date="2026-02-20"
+        ),
+        (DATES, PERF),
+        2,
+    ),
+    Pair(
+        "dates: a claim of type poliklinik shaped like the acil claim is valid for the window rule",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), claim_type="poliklinik"),
+        (VISIT,),
+        1,
+    ),
+    Pair(
+        "dates: a claim of another type has no window rule",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(7), claim_type="ayaktan"),
+    ),
+    # --- bill.performed_billed
+    Pair(
+        "perf: a performed line filed under another claim",
+        lambda d: edit(d, TABLE_PERFORMED, pl.col("procedure_code") == "530080", claim_id=CLAIM[6]),
+        (PERF, DATES),
+        2,
+    ),
+    Pair(
+        "perf: a performed line without a service date",
+        lambda d: edit(d, TABLE_PERFORMED, pl.col("procedure_code") == "530100", service_date=None),
+        (PERF, DATES),
+        2,
+    ),
+    Pair(
+        "perf: a duplicated performed row is valid",
+        lambda d: add_row(
+            d,
+            TABLE_PERFORMED,
+            pl.col("procedure_code") == "530080",
+            performed_line_id="EMR-F-SENTETIK-HASTA-0007-001-099",
+        ),
+        only=PERF,
+    ),
+    Pair(
+        "perf: a billed line of quantity 0 still bills the performed line",
+        lambda d: edit(d, TABLE_PROCEDURES, line(7, "530080"), quantity=0),
+        only=PERF,
+    ),
+    Pair(
+        "perf: a performed code in lower case is another code",
+        lambda d: edit(
+            d, TABLE_PERFORMED, pl.col("procedure_code") == "R101450", procedure_code="r101450"
+        ),
+        (PERF,),
+        1,
+    ),
+    # --- package.mode
+    Pair(
+        "pkg: a package line filed as an islem",
+        lambda d: edit(d, TABLE_PROCEDURES, line(1, "P610131"), procedure_category="islem"),
+        (PACKAGE, BED, PAIRING),
+        3,
+    ),
+    Pair(
+        "pkg: a second package line is valid",
+        lambda d: add_procedure(d, 5, "P609235", "2026-09-04", specialty="1900"),
+        only=PACKAGE,
+    ),
+    Pair(
+        "pkg: a companion line on a package claim",
+        lambda d: add_procedure(d, 8, "510121", "2026-09-15"),
+        (PACKAGE, PATHWAY),
+        2,
+    ),
+    Pair(
+        "pkg: an ICU day fee on a package claim",
+        lambda d: add_procedure(d, 5, "510090", "2026-09-04"),
+        (PACKAGE, PATHWAY),
+        2,
+    ),
+    Pair(
+        "pkg: the several-operations anaesthesia code on a package claim",
+        lambda d: add_procedure(d, 5, "550230", "2026-09-04", specialty="3100"),
+        (PACKAGE, PAIRING, PATHWAY),
+        3,
+    ),
+    # --- anaesthesia.operation_pairing
+    Pair(
+        "pair: a second anaesthesia line of another group on the operation day",
+        lambda d: add_procedure(d, 3, "550170", "2026-08-18", specialty="3100"),
+        (PAIRING, GROUP, PATHWAY),
+        3,
+    ),
+    Pair(
+        "pair: an anaesthesia line on the discharge day, without an operation",
+        lambda d: add_procedure(d, 3, "550160", "2026-08-20", specialty="3100"),
+        (PAIRING,),
+        1,
+    ),
+    Pair(
+        "pair: the anaesthesia a day late leaves two days wrong",
+        lambda d: edit(d, TABLE_PROCEDURES, line(3, "550160"), procedure_date="2026-08-19"),
+        (PAIRING,),
+        2,
+    ),
+    Pair(
+        "pair: a code that is no anaesthesia code (550165) leaves the operation day without one",
+        lambda d: edit(d, TABLE_PROCEDURES, line(3, "550160"), procedure_code="550165"),
+        (PAIRING, PATHWAY),
+        2,
+    ),
+    Pair(
+        "pair: a second operation on another day with its own anaesthesia is valid",
+        lambda d: (
+            add_procedure(d, 3, "609810", "2026-08-19", specialty="1900"),
+            add_procedure(d, 3, "550160", "2026-08-19", specialty="3100"),
+        ),
+        only=PAIRING,
+    ),
+    # --- anaesthesia.group: the total puan of the day decides, by the bands in force that day
+    Pair(
+        "group: two operations (615931 + 609810, puan 12477.99, group A3) with the A3 code of several operations are valid",
+        lambda d: (
+            add_procedure(d, 3, "609810", "2026-08-18", specialty="1900"),
+            set_code(d, 3, "550160", "550220"),
+        ),
+        only=GROUP,
+    ),
+    Pair(
+        "group: the same two operations with the code of several operations of the larger group B",
+        lambda d: (
+            add_procedure(d, 3, "609810", "2026-08-18", specialty="1900"),
+            set_code(d, 3, "550160", "550230"),
+        ),
+        (GROUP,),
+        1,
+        only=GROUP,
+        says="2 operation(s) with puan 12477.99 are group A3, which is 550220",
+    ),
+    Pair(
+        "group: 610131 on 2026-04-16 with the C code is valid (the new bands)",
+        lambda d: (
+            shift_claim(d, 3, -124),
+            replace_op(d, 3, "615931", "610131", "2026-04-16"),
+            set_code(d, 3, "550160", "550170"),
+        ),
+        only=GROUP,
+    ),
+    Pair(
+        "group: 610131 on 2026-04-15 with the C code (the old bands say B)",
+        lambda d: (
+            shift_claim(d, 3, -125),
+            replace_op(d, 3, "615931", "610131", "2026-04-15"),
+            set_code(d, 3, "550160", "550170"),
+        ),
+        (GROUP,),
+        1,
+        only=GROUP,
+    ),
+    Pair(
+        "group: 610131 on 2026-04-15 with the B code is valid (the old bands)",
+        lambda d: (shift_claim(d, 3, -125), replace_op(d, 3, "615931", "610131", "2026-04-15")),
+        only=GROUP,
+    ),
+    Pair(
+        "group: 610131 on 2026-04-16 with the B code (the new bands say C)",
+        lambda d: (shift_claim(d, 3, -124), replace_op(d, 3, "615931", "610131", "2026-04-16")),
+        (GROUP,),
+        1,
+        only=GROUP,
+    ),
+    Pair(
+        "group: an A1 operation (608540) with the A1 code is valid",
+        lambda d: (
+            replace_op(d, 3, "615931", "608540", "2026-08-18"),
+            set_code(d, 3, "550160", "550130"),
+        ),
+        only=GROUP,
+    ),
+    Pair(
+        "group: an A1 operation (608540) with the B code",
+        lambda d: replace_op(d, 3, "615931", "608540", "2026-08-18"),
+        (GROUP,),
+        1,
+        only=GROUP,
+    ),
+    Pair(
+        "group: an E operation (621350) with the E code is valid",
+        lambda d: (
+            replace_op(d, 3, "615931", "621350", "2026-08-18"),
+            set_code(d, 3, "550160", "550190"),
+        ),
+        only=GROUP,
+    ),
+    Pair(
+        "group: an operation dated 2020-03-01, before EK-2B has a price, cannot be judged",
+        lambda d: shift_claim(d, 3, -(date(2026, 8, 18) - date(2020, 3, 1)).days),
+        only=GROUP,
+    ),
+    Pair(
+        "group: an operation with no price in force (617710, repealed 2026-01-30) cannot be judged",
+        lambda d: edit(d, TABLE_PROCEDURES, line(3, "615931"), procedure_code="617710"),
+        only=GROUP,
+    ),
+    # --- the checks do not break on rows they cannot place
+    Pair("robust: every table empty (no rows, the same columns)", _every_table_empty),
+    Pair(
+        "robust: a procedure line with no claim id is named by the placeholder",
+        lambda d: add_row(d, TABLE_PROCEDURES, of(2), claim_id=None),
+        (DATES,),
+        1,
+        at=f"{NO_CLAIM} procedure_claim_lines[",
+        says="dated 2026-03-09 outside the claim window (no header)..(no header)",
+    ),
+    Pair(
+        "robust: a header with no claim id is named by the placeholder",
+        lambda d: (
+            edit(d, TABLE_CLAIM_HEADERS, of(4), claim_id=None),
+            edit_patient(d, 4, TANI_YASI=1),
+        ),
+        (ARITH, COMP, DATES),
+        40,
+    ),
+    Pair(
+        "robust: a procedure line with no code",
+        lambda d: add_row(
+            d,
+            TABLE_PROCEDURES,
+            of(2),
+            procedure_code=None,
+            procedure_line_id="ISL-F-SENTETIK-HASTA-0002-001-099",
+        ),
+        (PATHWAY,),
+        1,
+        at=f"{CLAIM[2]} procedure_claim_lines[ISL-F-SENTETIK-HASTA-0002-001-099]",
+        says="procedure code (none) is not in the expansion of",
+    ),
+    Pair(
+        "robust: a claim without any procedure line leaves its performed lines unbilled",
+        lambda d: drop(d, TABLE_PROCEDURES, of(7)),
+        (PERF,),
+        4,
+    ),
+]
+
+
+def _at_of(at: str | Callable[[Data], str], base: Data) -> str:
+    """A `where` fragment: the text itself, or the one a function reads from the data before the defect."""
+    return at(base) if callable(at) else at
+
+
+def _names(problem: Problem, at: str, says: str) -> bool:
+    """The finding is about `at` and says `says`. An `at` that is only a claim id (it has no space) is a
+    finding about the claim itself; a longer one is a fragment of the `where`."""
+    where_fits = problem.where == at if " " not in at else at in problem.where
+    return where_fits and says in problem.message
+
+
+@pytest.mark.parametrize("pair", PAIRS, ids=lambda p: p.name)
+def test_a_boundary_input_trips_exactly_its_ids(pair: Pair, twins, anadata, context) -> None:
+    data = Data(dict(twins), anadata)
+    at = _at_of(pair.at, data)
+    pair.mutate(data)
+    examined = [pair.only] if pair.only else sorted(E1_CHECKS)
+    found = data.problems(context, only=examined)
+    assert only_ids(found) == set(pair.trips), [str(p) for p in found]
+    assert len(found) == pair.n, [str(p) for p in found]
+    if pair.at:
+        assert any(_names(p, at, pair.says) for p in found), [str(p) for p in found]
+    order = {check: index for index, check in enumerate(CHECKS)}
+    keys = [(order[p.check], p.where, p.message) for p in found]
+    assert keys == sorted(keys), [str(p) for p in found]
+    assert all(names_a_real_row(p, data.tables) for p in found), [str(p) for p in found]
+
+
+def test_the_boundary_pairs_cover_both_sides_of_every_limit_and_have_unique_names() -> None:
+    assert len({pair.name for pair in PAIRS}) == len(PAIRS), "two pairs share a name"
+    valid = [pair for pair in PAIRS if not pair.trips]
+    invalid = [pair for pair in PAIRS if pair.trips]
+    assert len(valid) >= 50 and len(invalid) >= 100, (len(valid), len(invalid))
+    # every E1 id is tripped by at least one pair
+    for check in sorted(E1_CHECKS):
+        assert any(check in pair.trips for pair in PAIRS), check
+
+
+# --- 3c. the order of the findings does not depend on the order of the rows ---------------------------
+
+
+def _messy(twins, anadata) -> Data:
+    """Defects that give several findings to one check, on several claims and in several tables."""
+    data = Data(dict(twins), anadata)
+    # a missing bed day, an anaesthesia, a billed line, a flag
+    _several_defects_on_four_claims(data)
+    _tag_of(6, 2)(data)  # eleven codes outside the pathway of S6
+    # three diagnoses outside the window
+    edit(data, TABLE_DIAGNOSES, of(2), diagnosis_date="2026-03-20")
+    edit(data, TABLE_MATERIALS, of(5), material_date="2026-09-20")  # three materials, three dates
+    add_diagnosis(data, 1, "C53.9")  # a sex gate and a code outside the pathway
+    add_diagnosis(data, 3, "N41.0")  # a second one, from the ICD-10 blocks
+    add_diagnosis(data, 2, "P07.3")  # an age gate
+    add_diagnosis(data, 1, "O80.9")  # a second one
+    clone_procedure(data, 2, line(2, "510121", "2026-03-10"))  # two companions on a night
+    clone_procedure(data, 2, line(2, "510121", "2026-03-12"))  # and on another
+    edit(data, TABLE_PROCEDURES, line(2, "510121", "2026-03-13"), quantity=0)
+    clone_procedure(data, 2, line(2, "510010", "2026-03-10"))  # two beds on a day
+    edit(data, TABLE_PROCEDURES, line(2, "510010", "2026-03-14"), quantity=2)
+    add_procedure(data, 3, "550160", "2026-08-19", specialty="3100")  # an orphan anaesthesia
+    return data
+
+
+def _row_order(frame: pl.DataFrame, how: str) -> pl.DataFrame:
+    if how == "reversed":
+        return frame.reverse()
+    return frame.sample(fraction=1.0, shuffle=True, seed=int(how))
+
+
+@pytest.mark.parametrize("how", ["reversed", "1", "2", "3"])
+def test_the_findings_do_not_depend_on_the_order_of_the_rows(how, twins, anadata, context) -> None:
+    data = _messy(twins, anadata)
+    expected = data.problems(context)
+    per_check: dict[str, int] = {}
+    for problem in expected:
+        per_check[problem.check] = per_check.get(problem.check, 0) + 1
+    assert len(expected) >= 35, len(expected)
+    assert sum(1 for count in per_check.values() if count >= 2) >= 6, per_check
+    shuffled = Data(
+        {name: _row_order(frame, how) for name, frame in data.tables.items()},
+        _row_order(data.anadata, how),
+    )
+    assert shuffled.problems(context) == expected
+
+
+def test_the_findings_of_the_faulty_bills_and_their_registry_do_not_depend_on_the_row_order(
+    built, anadata, context
+) -> None:
+    data = faulty_data(built, anadata)
+    expected = data.problems(context)
+    assert expected
+    for how in ("reversed", "5"):
+        # the answer rows follow the fault records in order: that order is the contract, not noise
+        shuffled = Data(
+            {
+                name: frame if name == TABLE_ANSWERS else _row_order(frame, how)
+                for name, frame in data.tables.items()
+            },
+            _row_order(data.anadata, how),
+            copy.deepcopy(data.registry),
+        )
+        assert shuffled.problems(context) == expected, how
+
+
+# --- 3d. the helpers every check uses ----------------------------------------------------------------
+
+
+def test_format_joins_the_pieces_names_a_missing_value_and_counts_its_placeholders() -> None:
+    frame = pl.DataFrame({"a": ["x", None, "z"], "b": [1, 2, None]})
+    got = frame.select(
+        _format("{}-{}", pl.col("a"), pl.col("b")).alias("two"),
+        _format("start {} end", pl.col("a")).alias("one"),
+        _format("{}", pl.col("b")).alias("only"),
+        _format("{}{}", pl.col("a"), pl.col("a")).alias("touching"),
+        _format("no placeholder").alias("none"),
+    )
+    assert got["two"].to_list() == ["x-1", "(none)-2", "z-(none)"]
+    assert got["one"].to_list() == ["start x end", "start (none) end", "start z end"]
+    assert got["only"].to_list() == ["1", "2", "(none)"]
+    assert got["touching"].to_list() == ["xx", "(none)(none)", "zz"]
+    assert got["none"].to_list() == ["no placeholder"] * 3
+    with pytest.raises(ValueError, match="1 placeholders for 2 values"):
+        _format("{}", pl.col("a"), pl.col("b"))
+    with pytest.raises(ValueError, match="2 placeholders for 1 values"):
+        _format("{} {}", pl.col("a"))
+
+
+def test_format_survives_the_whole_icd_table_cut_down_to_a_few_rows(context) -> None:
+    """`pl.format` of two columns panicked in polars 2.0.0 on exactly this: 15,000 rows, 63 left."""
+    icd = context.icd.select("code", "sex")
+    codes = icd.select(pl.col("code").alias("icd10_code"), pl.lit("M").alias("patient_sex"))
+    joined = codes.join(icd, left_on="icd10_code", right_on="code", how="left")
+    few = joined.filter(pl.col("sex").is_not_null() & (pl.col("sex") != pl.col("patient_sex")))
+    assert joined.height > 15000 and 10 < few.height < 500
+    got = few.select(
+        _format("{} is limited to {}", pl.col("icd10_code"), pl.col("sex")).alias("text")
+    )
+    assert got["text"].to_list() == [
+        f"{code} is limited to {sex}"
+        for code, sex in zip(few["icd10_code"], few["sex"], strict=True)
+    ]
+
+
+def _copies(frame: pl.DataFrame, copy: int) -> pl.DataFrame:
+    """The frame with every id column renamed for copy number `copy`: a patient and a claim of its own."""
+    ids = [
+        column
+        for column, dtype in frame.schema.items()
+        if dtype == pl.String and (column.endswith("_id") or column in {"HASTA_ID", "SQ_EPISODE"})
+    ]
+    return frame.with_columns([(pl.col(c) + pl.lit(f"-c{copy}")).alias(c) for c in ids])
+
+
+def test_three_hundred_copies_of_the_bills_give_the_findings_of_the_small_table(
+    twins, anadata, context
+) -> None:
+    """The same defects in one claim of a table of 36,000 procedure lines: the same findings.
+
+    The copies are clean claims of their own; the defects sit in the first copy, which keeps the
+    original ids. A check that breaks on a larger table (polars 2.0.0 panicked in the sex gate on
+    thousands of diagnoses with a few findings) fails here, and so does one that lets the other
+    claims change a finding.
+    """
+    copies = 300
+    big = {
+        name: pl.concat([frame, *[_copies(frame, k) for k in range(1, copies)]])
+        for name, frame in twins.items()
+    }
+    big_anadata = pl.concat([anadata, *[_copies(anadata, k) for k in range(1, copies)]])
+    assert big[TABLE_PROCEDURES].height > 30000 and big[TABLE_DIAGNOSES].height > 6000
+    e1 = sorted(E1_CHECKS)
+    assert Data(dict(big), big_anadata).problems(context, only=e1) == []
+    expected = _messy(twins, anadata).problems(context, only=e1)
+    assert len(expected) >= 30
+    assert _messy(big, big_anadata).problems(context, only=e1) == expected
+
+
+def test_the_findings_of_a_check_are_sorted_and_a_missing_where_is_named() -> None:
+    found = pl.DataFrame(
+        {"where": ["F-2", None, "F-1 b", "F-1 a", "F-1 a"], "message": ["m", "n", "z", "y", "x"]}
+    )
+    got = _problems("package.mode", found)
+    assert [(p.where, p.message) for p in got] == [
+        (NO_CLAIM, "n"),
+        ("F-1 a", "x"),
+        ("F-1 a", "y"),
+        ("F-1 b", "z"),
+        ("F-2", "m"),
+    ]
+    assert all(p.check == "package.mode" for p in got)
+
+
+def test_a_where_names_the_claim_the_table_and_the_line_and_a_missing_claim_is_the_same_text_everywhere() -> (
+    None
+):
+    frame = pl.DataFrame(
+        {"claim_id": ["F-1", None], "table": ["t_one", "t_two"], "line": ["L-1", None]}
+    )
+    got = frame.select(
+        _where("claim_id", "procedure_claim_lines", "line").alias("fixed"),
+        _where("claim_id", pl.col("table"), "line").alias("column"),
+        _claim_text().alias("claim"),
+    )
+    assert got["fixed"].to_list() == [
+        "F-1 procedure_claim_lines[L-1]",
+        f"{NO_CLAIM} procedure_claim_lines[(none)]",
+    ]
+    assert got["column"].to_list() == ["F-1 t_one[L-1]", f"{NO_CLAIM} t_two[(none)]"]
+    assert got["claim"].to_list() == ["F-1", NO_CLAIM]
+    assert NO_CLAIM == "(no-claim-id)"
+
+
+def test_the_days_of_a_finding_are_listed_in_date_order() -> None:
+    frame = pl.DataFrame(
+        {
+            "group": [1, 1, 1, 2],
+            "day": [date(2026, 3, 12), date(2026, 3, 9), date(2026, 3, 10), date(2026, 1, 1)],
+        }
+    )
+    got = frame.group_by("group", maintain_order=True).agg(_days_text())
+    assert got["day"].to_list() == ["2026-03-09, 2026-03-10, 2026-03-12", "2026-01-01"]
+
+
+def test_a_block_holds_the_codes_between_its_ends_judged_on_as_many_characters_as_the_ends_have() -> (
+    None
+):
+    codes = [
+        "N40", "N40.1", "N53", "N54", "N39.0", "D07.3", "D07.4", "D07.6", "D07.7", "D07",
+        "E29.0", "E2", "I86.1", "I86.0", "n41.0", "", None,
+    ]  # fmt: skip
+    blocks = ("N40-N53", "D07.4-D07.6", "E29", "I86.1")
+    got = pl.DataFrame({"code": codes}).select(_in_blocks(pl.col("code"), blocks).alias("in"))
+    assert got["in"].to_list() == [
+        True, True, True, False, False, False, True, True, False, False,
+        True, False, True, False, False, False, False,
+    ]  # fmt: skip
+
+
+def test_a_phrase_keeps_its_spaces_in_a_word_pattern_and_a_whole_word_has_both_edges() -> None:
+    assert _words_pattern(["Tüp ligasyonu", "tup ligasyonu"]) == "(?:tup ligasyonu)"
+    assert _words_pattern(["over"], whole=True) == r"\b(?:over)\b"
+    names = pl.DataFrame(
+        {"f": ["tup ligasyonu", "tup  ligasyonu", "recover", "over", "cross over", "overdoz"]}
+    )
+    phrase = names.filter(pl.col("f").str.contains(_words_pattern(["tüp ligasyonu"])))
+    assert phrase["f"].to_list() == ["tup ligasyonu"]
+    whole = names.filter(pl.col("f").str.contains(_words_pattern(["over"], whole=True)))
+    assert whole["f"].to_list() == ["over", "cross over"]  # not inside recover, not before doz
+
+
+def test_as_of_takes_one_row_of_the_history_in_force_on_the_day_and_none_outside() -> None:
+    """Rows are in force from `valid_from` to `valid_to` inclusive (no `valid_to`: still open)."""
+    frame = pl.DataFrame(
+        {
+            "code": ["A", "A", "A", "A", "B", "B", "C"],
+            "day": [
+                "2026-01-10",  # two rows of A are in force: one is taken
+                "2026-02-01",  # A: the closed row ended on 01-31, the open ones are in force
+                "2025-12-31",  # A: before every row
+                "2026-01-31",  # A: the last day of the closed row
+                "2026-01-09",  # B: the last day of its only row
+                "2026-01-10",  # B: the day after its only row
+                "2026-01-10",  # C: not in the history
+            ],
+        }
+    ).with_row_index("_n")
+    history = pl.DataFrame(
+        {
+            "code": ["A", "A", "A", "B"],
+            "valid_from": ["2026-01-01", "2026-01-01", "2026-02-01", "2026-01-01"],
+            "valid_to": ["2026-01-31", None, None, "2026-01-09"],
+            "puan": [1.0, 2.0, 3.0, 4.0],
+        }
+    )
+    got = _as_of(frame, history, {"puan": "points"}, code="code", day="day")
+    assert got.height == frame.height  # one row for each row of the frame, never two
+    assert got["_n"].to_list() == list(range(7))
+    points = got["points"].to_list()
+    assert points[0] in (1.0, 2.0)
+    assert points[1] in (2.0, 3.0)
+    assert points[2] is None
+    assert points[3] in (1.0, 2.0)
+    assert points[4] == 4.0
+    assert points[5] is None
+    assert points[6] is None
+
+
+def test_an_exception_phrase_is_blanked_as_written_not_as_a_pattern() -> None:
+    names = pl.DataFrame({"n": ["abc", "a.c", "a.c b"]})
+    got = names.select(_without_exceptions(pl.col("n"), ["a.c"]).alias("f"))["f"].to_list()
+    assert got == ["abc", " ", "  b"]
+
+
+def test_the_longest_exception_is_blanked_first_and_a_subset_of_phrases_can_be_given() -> None:
+    name = pl.DataFrame({"n": ["Yenidoğan/Çocuk/Erişkin tedavisel soğutma"]})
+    both = name.select(_without_exceptions(_fold(pl.col("n"))).alias("f"))["f"][0]
+    assert "eriskin" not in both and "cocuk" not in both and "yenidogan" not in both
+    shorter_only = name.select(
+        _without_exceptions(_fold(pl.col("n")), ["Yenidoğan/Çocuk"]).alias("f")
+    )["f"][0]
+    assert "eriskin" in shorter_only  # the shorter phrase alone leaves the adult word
+    none = name.select(_without_exceptions(_fold(pl.col("n")), []).alias("f"))["f"][0]
+    assert none == "yenidogan/cocuk/eriskin tedavisel sogutma"
 
 
 def test_a_missing_value_is_named_in_the_message_not_dropped(twins, anadata, context) -> None:
@@ -1613,10 +3822,20 @@ def test_icu_days_count_as_bed_days_and_an_icu_package_does_not_make_a_package_c
         assert run_only(data, context, check) == [], check
 
 
-def test_a_day_bed_line_counts_as_a_bed_day(twins, anadata, context) -> None:
-    data = Data(dict(twins), anadata)
-    edit(data, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), procedure_code="510120")
-    assert run_only(data, context, "stay.bed_coverage") == []
+def test_the_day_bed_is_the_code_set_day_bed_and_a_bed_day_code(context) -> None:
+    """510120 is for a day case; on a longer stay it is a defect of its own (see the pairs)."""
+    assert context.day_bed_code == "510120"
+    assert context.day_bed_code in context.bed_day_codes
+    assert context.code_sets["beds"]["day_bed"]["name"] == "Gündüz yatak tarifesi"
+    assert context.code_sets["beds"]["ward_day"]["code"] == "510010"
+    assert context.code_sets["beds"]["ward_day"]["code"] != context.day_bed_code
+
+
+def test_no_committed_bill_uses_the_day_bed_so_the_rule_changes_no_pinned_trip(
+    built, twins
+) -> None:
+    for tables in (twins, built.tables):
+        assert tables[TABLE_PROCEDURES].filter(pl.col("procedure_code") == "510120").height == 0
 
 
 def test_a_minor_operation_on_an_acil_claim_is_not_a_major_one(twins, anadata, context) -> None:
@@ -2155,6 +4374,108 @@ def test_every_answer_row_names_the_fault_of_its_record_and_none_is_payable(buil
 # --- 5. the judgment tables --------------------------------------------------------------------------
 
 
+BRIEF_ICD_BLOCKS = {
+    "M": {"C60-C63", "D07.4-D07.6", "N40-N53", "E29", "Q53-Q56", "I86.1"},
+    "F": {"C51-C58", "D06", "D07.0-D07.3", "N70-N98", "E28", "Q50-Q52", "Z32-Z37", "Z39"},
+}
+
+
+def test_the_icd_sex_blocks_hold_the_blocks_of_the_brief() -> None:
+    assert set(ICD_SEX_GATES) == {"M", "F"}
+    for sex, blocks in BRIEF_ICD_BLOCKS.items():
+        assert blocks <= set(ICD_SEX_GATES[sex]), sex
+
+
+def test_every_icd_sex_block_holds_a_leaf_code_of_icd10_tr(context) -> None:
+    leaves = context.icd.filter(pl.col("is_leaf"))
+    assert leaves.height > 13000
+    for sex, blocks in ICD_SEX_GATES.items():
+        for block in blocks:
+            held = leaves.filter(_in_blocks(pl.col("code"), [block]))
+            assert held.height > 0, f"no leaf code of icd10_tr is in the block {block} ({sex})"
+
+
+def test_the_icd_sex_blocks_agree_with_the_sex_column_and_add_to_it(context) -> None:
+    icd = context.icd
+    male = icd.filter(_in_blocks(pl.col("code"), ICD_SEX_GATES["M"]))
+    female = icd.filter(_in_blocks(pl.col("code"), ICD_SEX_GATES["F"]))
+    assert male.join(female, on="code").height == 0  # no code is in a block of each sex
+    # where a block and the column both gate a code, they gate it for the same sex
+    assert set(male["sex"].drop_nulls()) <= {"M"}
+    assert set(female["sex"].drop_nulls()) <= {"F"}
+    leaf_column = icd.filter(pl.col("is_leaf") & pl.col("sex").is_not_null())
+    assert leaf_column.height == 83  # the column gates 83 leaf codes, all in chapters C and D
+    only_by_a_block = pl.concat([male, female]).filter(pl.col("is_leaf") & pl.col("sex").is_null())
+    assert only_by_a_block.height > 300  # the blocks gate more than three times as many again
+    # the column gates codes that no block holds (the benign neoplasms D25-D29, D39, D40)
+    in_a_block = _in_blocks(pl.col("code"), [*ICD_SEX_GATES["M"], *ICD_SEX_GATES["F"]])
+    assert icd.filter(pl.col("sex").is_not_null() & ~in_a_block).height > 0
+
+
+def test_no_diagnosis_of_the_bills_is_in_a_sex_block(built, twins) -> None:
+    for tables in (twins, built.tables):
+        for blocks in ICD_SEX_GATES.values():
+            held = tables[TABLE_DIAGNOSES].filter(_in_blocks(pl.col("icd10_code"), blocks))
+            assert held.height == 0
+
+
+# The blocks of the brief written the other way: one prefix for each category (or subcategory), with
+# no range to read. The sex gate is compared with it on every code of icd10_tr.
+ORACLE_ICD_PREFIXES = {
+    "M": [
+        *(f"C{n}" for n in range(60, 64)),
+        "D07.4", "D07.5", "D07.6",
+        *(f"N{n}" for n in range(40, 54)),
+        "E29",
+        *(f"Q{n}" for n in range(53, 57)),
+        "I86.1",
+    ],
+    "F": [
+        *(f"C{n}" for n in range(51, 59)),
+        "D06", "D07.0", "D07.1", "D07.2", "D07.3",
+        *(f"N{n}" for n in range(70, 99)),
+        "E28",
+        *(f"Q{n}" for n in range(50, 53)),
+        *(f"Z{n}" for n in range(32, 38)),
+        "Z39",
+    ],
+}  # fmt: skip
+
+
+@pytest.mark.parametrize(("story", "patient_sex", "other"), [(1, "M", "F"), (3, "F", "M")])
+def test_the_sex_gate_flags_every_code_of_icd10_tr_that_the_prefixes_and_the_column_gate(
+    story, patient_sex, other, twins, anadata, context
+) -> None:
+    """Every code of the table on a patient of one sex: the flagged codes are the oracle's, no more."""
+    icd = context.icd.select("code", "sex")
+    prefix_sex = pl.coalesce(
+        *[
+            pl.when(pl.any_horizontal([pl.col("code").str.starts_with(p) for p in prefixes])).then(
+                pl.lit(sex)
+            )
+            for sex, prefixes in ORACLE_ICD_PREFIXES.items()
+        ]
+    )
+    oracle = icd.with_columns(pl.coalesce(pl.col("sex"), prefix_sex).alias("gate"))
+    expected = set(oracle.filter(pl.col("gate") == other)["code"])
+    assert len(expected) > 100  # the prefixes and the column gate a good part of the table
+
+    data = Data(dict(twins), anadata)
+    template = data.tables[TABLE_DIAGNOSES].filter(of(story)).head(1).drop("icd10_code")
+    every_code = template.join(icd.select(pl.col("code").alias("icd10_code")), how="cross")
+    data.tables[TABLE_DIAGNOSES] = pl.concat(
+        [
+            data.tables[TABLE_DIAGNOSES].filter(~of(story)),
+            every_code.select(data.tables[TABLE_DIAGNOSES].columns),
+        ]
+    )
+    found = data.problems(context, only=SEX)
+    flagged = {re.match(r"diagnosis (\S+) is limited to sex", p.message)[1] for p in found}
+    assert flagged == expected
+    assert len(found) == len(flagged)  # one finding for each code
+    assert {p.message.rsplit(" ", 1)[-1] for p in found} == {patient_sex}
+
+
 def test_the_surgical_branches_exist_in_ek2a_under_their_names(context) -> None:
     names = {
         "1900": "Genel Cerrahi",
@@ -2191,29 +4512,59 @@ def test_the_surgical_branches_exist_in_ek2a_under_their_names(context) -> None:
     assert not {"1000", "1171", "3100", "3300", "4400"} & set(SURGICAL_SPECIALTY_CODES)
 
 
-def test_the_age_gates_are_the_table_of_the_brief() -> None:
-    table = [(g.source, g.words, g.min_age, g.max_age, g.sex) for g in AGE_GATES]
-    assert table == [
-        ("icd", ("P",), None, 1, None),
-        ("icd", ("O",), 10, 55, "F"),
-        ("icd", ("Z38",), None, 1, None),
-        ("name", ("yenidoğan", "neonatal", "prematüre"), None, 1, None),
-        ("name", ("pediatrik", "çocuk"), None, 17, None),
-        ("name", ("erişkin",), 18, None, None),
-    ]
+# The words and gates of the brief of slice E1, and the ones the independent review of the catalog
+# added: the lists hold them all, and may hold more.
+BRIEF_MALE_WORDS = {
+    "prostat", "penil", "penis", "penektomi", "testis", "orşiektomi", "orsiektomi", "skrotum",
+    "hidrosel", "varikosel", "vazektomi", "sünnet", "sunnet", "epididim",
+}  # fmt: skip
+BRIEF_FEMALE_WORDS = {
+    "uterus", "rahim", "histerektomi", "histeroskopi", "vajin", "vulva", "serviks", "ooferektomi",
+    "salpenjektomi", "jinekolojik", "gebelik", "doğum", "sezaryen", "inseminasyon", "kürtaj",
+}  # fmt: skip
+REVIEW_MALE_WORDS = {
+    "orşiyektomi", "orşiyopeksi", "fimoz", "hipospad", "epispad", "peyronie", "testik", "seminal",
+    "sperm", "vazovazo", "ejakül",
+}  # fmt: skip
+REVIEW_FEMALE_WORDS = {
+    "histerosalping", "kolposkop", "bartholin", "obstetrik", "amniyo", "abortus", "endometri",
+    "miyom", "myom", "plasenta", "tüp ligasyonu",
+}  # fmt: skip
+BRIEF_AGE_GATES = [
+    ("icd", ("P",), None, 1, None),
+    ("icd", ("O",), 10, 55, "F"),
+    ("icd", ("Z38",), None, 1, None),
+    ("name", ("yenidoğan", "neonatal", "prematüre"), None, 1, None),
+    ("name", ("pediatrik", "çocuk"), None, 17, None),
+    ("name", ("erişkin",), 18, None, None),
+]
+
+
+def test_the_age_gates_hold_the_brief_and_the_review_gates() -> None:
+    for source, words, low, high, sex in BRIEF_AGE_GATES:
+        assert any(
+            (g.source, g.min_age, g.max_age, g.sex) == (source, low, high, sex)
+            and set(words) <= set(g.words)
+            for g in AGE_GATES
+        ), words
+    newborn = next(g for g in AGE_GATES if "yenidoğan" in g.words)
+    assert {"yeni doğan", "bebek"} <= set(newborn.words)
+    assert newborn.max_age == 1 and not newborn.whole
+    under = {g.words: (g.max_age, g.whole) for g in AGE_GATES if g.words[0].endswith("yaş altı")}
+    assert under == {("2 yaş altı",): (1, True), ("10 yaş altı",): (9, True)}
     assert [g.limits for g in AGE_GATES][:2] == ["age at most 1", "sex F, age 10..55"]
+    assert all(g.source in {"icd", "name"} for g in AGE_GATES)
 
 
-def test_the_sex_word_lists_are_the_judgment_of_the_brief() -> None:
-    assert set(MALE_ONLY_WORDS) == {
-        "prostat", "penil", "penis", "penektomi", "testis", "orşiektomi", "orsiektomi",
-        "skrotum", "hidrosel", "varikosel", "vazektomi", "sünnet", "sunnet", "epididim",
-    }  # fmt: skip
-    assert set(FEMALE_ONLY_WORDS) == {
-        "uterus", "rahim", "histerektomi", "histeroskopi", "vajin", "vulva", "serviks",
-        "ooferektomi", "salpenjektomi", "jinekolojik", "gebelik", "doğum", "sezaryen",
-        "inseminasyon", "kürtaj",
-    }  # fmt: skip
+def test_the_sex_word_lists_hold_the_brief_and_the_review_words() -> None:
+    assert BRIEF_MALE_WORDS | REVIEW_MALE_WORDS <= set(MALE_ONLY_WORDS)
+    assert BRIEF_FEMALE_WORDS | REVIEW_FEMALE_WORDS <= set(FEMALE_ONLY_WORDS)
+    assert FEMALE_ONLY_WHOLE_WORDS == ("over",)
+    # no word is on both sides, and none is a bare stem that sits inside another word (orşi: torsiyon)
+    male = {fold_text(w) for w in MALE_ONLY_WORDS}
+    female = {fold_text(w) for w in (*FEMALE_ONLY_WORDS, *FEMALE_ONLY_WHOLE_WORDS)}
+    assert not male & female
+    assert "orsi" not in male and "orsiyektomi" in male
 
 
 @pytest.mark.parametrize(
@@ -2237,6 +4588,44 @@ def test_the_sex_word_lists_are_the_judgment_of_the_brief() -> None:
         ("Sünnet", 3, True),
         ("Orşiektomi", 3, True),
         ("Appendektomi, laparoskopik", 3, False),
+        # the names of the catalog that the review found uncaught, and the traps next to them
+        ("Skrotal orşiyektomi, tek taraf", 3, True),
+        ("Laparoskopik orşiyopeksi", 3, True),
+        ("Apendiks epiploika torsiyonu", 3, False),  # orşi- alone would sit inside torsiyon
+        ("Kolonda detorsiyon ve peksi operasyonları", 3, False),
+        ("Meme rekonstrüksiyonu,Latissimus dorsi kas deri flebi ve implant ile", 3, False),
+        ("Fimozis açılması", 3, True),
+        ("Parafimozis redüksiyonu", 3, True),
+        ("Hipospadias onarımı, perineal", 3, True),
+        ("Epispadias onarımı", 3, True),
+        ("Üretroplastiler, hipospadias-epispadias dışı", 3, False),  # in either sex
+        ("Peyronie plak eksizyonu, greft ile", 3, True),
+        ("Testiküler fiksasyon, tek taraf", 3, True),
+        ("Testiküler sperm ekstraksiyonu (TESE)", 3, True),
+        ("Seminal vezikülektomi", 3, True),
+        ("Spermiogram (tam otomatize)", 3, True),
+        ("Sperm mar testi", 3, True),
+        ("Antisperm antibody (ASA)", 3, False),  # also done on a woman's serum
+        ("Sperm yıkama", 3, False),  # IUI and IVF steps are billed on either partner's file
+        ("Sperm- oosit hazırlanması ve inkübasyonu", 3, False),
+        ("Özel sperm tektiki", 3, False),
+        ("Vazovazostomi", 3, True),
+        ("Ejakülatör kanal rezeksiyonu", 3, True),
+        ("Histerosalpingografi (HSG)", 1, True),
+        ("Kolposkopi", 1, True),
+        ("Bartholin kisti çıkarılması", 1, True),
+        ("Obstetrik renkli Doppler US", 1, True),
+        ("Amniyosentez", 1, True),
+        ("Alfa-Fetoprotein (AFP) (Amniyotik sıvı)", 1, True),
+        ("Abortus", 1, True),
+        ("Endometriyal biyopsi", 1, True),
+        ("Polip, servikal/endometrial", 1, True),
+        ("Mikrocerrahi ile miyomektomi, her biri", 1, True),
+        ("Myomektomi", 1, True),
+        ("Plasenta", 1, True),
+        ("Postpartum tüp ligasyonu", 1, True),
+        ("Tüp ligasyonu", 1, True),
+        ("Hepatik recover testi", 1, False),
     ],
 )
 def test_sex_words_in_names(name, story, trips, twins, anadata, context) -> None:
@@ -2260,6 +4649,18 @@ def test_sex_words_in_names(name, story, trips, twins, anadata, context) -> None
         ("Rutin EEG (Çocuk-büyük)", False),
         ("Sağlam çocuk doğmasına yönelik invitro fertilizasyon (IVF)", False),
         ("Tam Kan Sayımı (Hemogram)", False),
+        # the names of the catalog that the review found uncaught, and the traps next to them
+        ("Yeni doğan fundoskopik inceleme", True),
+        ("Bebek fadiatop IgE antikoru", True),
+        ("Gonyoskopi ve kornea çapı ölçümü, bebek için", True),
+        ("Pelvipedal alçı (10 yaş altı)", True),
+        ("2 yaş altı doğumsal kalp hastalıklarında tanısal kalp kateterizasyonu", True),
+        ("Pelvipedal alçı (10 yaş üstü )", False),  # a limit from below, not a child gate
+        ("Elektrokardiyogram, < 4 yaş çocuk", True),
+        ("Yeni doğan/geriatrik (75 yaş üstü ve ASA 3-4) anestezi puanı A1 grubu", False),
+        ("Geriatrik rehabilitasyon", False),
+        ("Çok Disiplinli Çocuk ve Genç Ruh Sağlığı Merkezleri (ÇÖZGEM) hizmetleri", False),
+        ("Çocuklarda görme muayeneleri", True),
     ],
 )
 def test_age_words_in_names_on_an_adult(name, trips, twins, anadata, context) -> None:
@@ -2274,6 +4675,119 @@ def test_the_name_exceptions_occur_in_the_catalogs(context) -> None:
     folded = [fold_text(n) for n in names["name"].to_list()]
     for phrase in NAME_EXCEPTIONS:
         assert any(fold_text(phrase) in name for name in folded), phrase
+
+
+# Four words match no EK-2B or EK-2C name today: the catalog spells orşiyektomi, and no name has rahim
+# or salpenjektomi. They stay in the lists as a defence for a name outside the catalog. The adult
+# gate (erişkin) matches none either. This set is exact: a word that comes alive, or dies, fails.
+DEAD_WORDS = frozenset({"orşiektomi", "orsiektomi", "rahim", "salpenjektomi", "erişkin"})
+
+
+def _catalog_names(context: PlausibilityContext) -> pl.DataFrame:
+    """The distinct names of EK-2B and EK-2C (history included), as the checks fold them."""
+    catalogs = context.catalogs
+    names = pl.concat([catalogs.ek2b.select("name"), catalogs.ek2c.select("name")]).unique()
+    return names.with_columns(_fold(pl.col("name")).alias("folded"))
+
+
+def _word_patterns() -> dict[str, str]:
+    """word -> regex, for every sex word and every age name word of the module."""
+    patterns = {word: _words_pattern([word]) for word in (*MALE_ONLY_WORDS, *FEMALE_ONLY_WORDS)}
+    patterns.update({w: _words_pattern([w], whole=True) for w in FEMALE_ONLY_WHOLE_WORDS})
+    for gate in AGE_GATES:
+        if gate.source == "name":
+            patterns.update({w: _words_pattern([w], whole=gate.whole) for w in gate.words})
+    return patterns
+
+
+def _any_of(words: list[str]) -> str:
+    patterns = _word_patterns()
+    return "|".join(patterns[word] for word in words)
+
+
+def test_every_word_matches_a_catalog_name_but_the_documented_dead_ones(context) -> None:
+    names = _catalog_names(context).with_columns(
+        _without_exceptions(pl.col("folded")).alias("blanked")
+    )
+    assert names.height > 7000
+    dead = {
+        word
+        for word, pattern in _word_patterns().items()
+        if names.filter(pl.col("blanked").str.contains(pattern)).height == 0
+    }
+    assert dead == DEAD_WORDS
+
+
+def test_every_name_exception_changes_the_verdict_of_a_catalog_name(context) -> None:
+    """Each phrase blanks a sex or age word out of a name that would trip without it."""
+    names = _catalog_names(context)
+    everything = "|".join(_word_patterns().values())
+    with_all = names.with_columns(
+        _without_exceptions(pl.col("folded")).str.contains(everything).alias("trips")
+    )
+    assert with_all["trips"].sum() > 200  # the words do mark the catalog
+    for phrase in NAME_EXCEPTIONS:
+        others = [other for other in NAME_EXCEPTIONS if other != phrase]
+        without_phrase = names.with_columns(
+            _without_exceptions(pl.col("folded"), others).str.contains(everything).alias("trips")
+        )
+        needed = (without_phrase["trips"] & ~with_all["trips"]).sum()
+        assert needed > 0, f"the exception {phrase!r} changes the verdict of no name"
+
+
+def test_no_catalog_name_trips_two_words_that_contradict(context) -> None:
+    names = _catalog_names(context).with_columns(
+        _without_exceptions(pl.col("folded")).alias("blanked")
+    )
+    male = _any_of(list(MALE_ONLY_WORDS))
+    female = _any_of([*FEMALE_ONLY_WORDS, *FEMALE_ONLY_WHOLE_WORDS])
+    adult_words = [
+        w for g in AGE_GATES if g.source == "name" and g.min_age is not None for w in g.words
+    ]
+    child_words = [
+        w for g in AGE_GATES if g.source == "name" and g.max_age is not None for w in g.words
+    ]
+    adult, child = _any_of(adult_words), _any_of(child_words)
+    assert adult_words == ["erişkin"] and "çocuk" in child_words
+    has = lambda pattern: pl.col("blanked").str.contains(pattern)  # noqa: E731
+    assert names.filter(has(male) & has(female)).height == 0
+    assert names.filter(has(adult) & has(child)).height == 0
+    assert names.filter(has(adult)).height == 0  # no catalog name has an adult word today
+
+
+def test_the_catalog_names_that_hold_a_sex_word_are_many_and_the_sexes_are_apart(context) -> None:
+    names = _catalog_names(context).with_columns(
+        _without_exceptions(pl.col("folded")).alias("blanked")
+    )
+    male = names.filter(pl.col("blanked").str.contains(_any_of(list(MALE_ONLY_WORDS))))
+    female = names.filter(
+        pl.col("blanked").str.contains(_any_of([*FEMALE_ONLY_WORDS, *FEMALE_ONLY_WHOLE_WORDS]))
+    )
+    assert male.height > 100 and female.height > 90
+    assert male.join(female, on="name").height == 0
+
+
+def test_the_age_words_hold_the_catalog_names_the_review_found(context) -> None:
+    """The seven age names that the first lists missed, each caught by its own gate."""
+    names = _catalog_names(context).with_columns(
+        _without_exceptions(pl.col("folded")).alias("blanked")
+    )
+    expected = {
+        "yeni doğan": {"Yeni doğan fundoskopik inceleme"},
+        "bebek": {
+            "Bebek fadiatop IgE antikoru",
+            "Gonyoskopi ve kornea çapı ölçümü, bebek için",
+            "Göz içi basıncı ölçümü, bebek için",
+            "Göz muayenesi, bebek için, genel anestezi altında",
+        },
+        "2 yaş altı": {"2 yaş altı doğumsal kalp hastalıklarında tanısal kalp kateterizasyonu"},
+        "10 yaş altı": {"Pelvipedal alçı (10 yaş altı)"},
+    }
+    for word, found in expected.items():
+        gate = next(g for g in AGE_GATES if g.source == "name" and word in g.words)
+        pattern = _words_pattern([word], whole=gate.whole)
+        held = names.filter(pl.col("blanked").str.contains(pattern))
+        assert set(held["name"]) == found, word
 
 
 def test_folding_makes_turkish_capitals_comparable() -> None:
