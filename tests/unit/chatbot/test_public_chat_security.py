@@ -1,6 +1,7 @@
 """Public tool/context boundaries exercised with synthetic data and model mocks."""
 
 import asyncio
+import contextlib
 import json
 import sqlite3
 
@@ -169,6 +170,21 @@ def test_public_deadline_closes_model_and_completes_backpressured_sse(monkeypatc
 
     monkeypatch.setattr(chat, "stream_chat_response_with_tools", model)
 
+    def ledger_active():
+        with contextlib.closing(sqlite3.connect(ledger)) as connection:
+            return connection.execute("SELECT active FROM requests").fetchone()
+
+    async def settled(condition, what):
+        # How long the event loop needs to reach a 30 ms deadline, close the model and release the
+        # ledger lease depends on the machine: a CI runner under parallel load took longer than the
+        # fixed 80 ms slice this test used to sleep (assert [] == [True], 2026-10-18). Wait for the
+        # outcome with a generous bound instead; a deadline that is not enforced still fails here.
+        loop = asyncio.get_running_loop()
+        give_up = loop.time() + 5.0
+        while not condition():
+            assert loop.time() < give_up, f"the deadline did not {what} while the consumer was suspended"
+            await asyncio.sleep(0.005)
+
     async def run():
         response = await chat.bilun_chat(
             chat.BilunChatRequest(messages=[{"role": "user", "content": "question"}]),
@@ -178,15 +194,15 @@ def test_public_deadline_closes_model_and_completes_backpressured_sse(monkeypatc
         assert await anext(stream) == ": stream-start\n\n"
         # Leave the consumer suspended until the producer fills its queue and
         # hits the deadline while waiting on queue.put, outside the model.
-        await asyncio.sleep(0.08)
+        await settled(lambda: closed == [True], "close the model")
         assert closed == [True]
-        with sqlite3.connect(ledger) as connection:
-            assert connection.execute("SELECT active FROM requests").fetchone() == (0,)
+        await settled(lambda: ledger_active() == (0,), "release the ledger lease")
+        assert ledger_active() == (0,)
 
         async def drain():
             return "".join([item async for item in stream])
 
-        body = await asyncio.wait_for(drain(), 0.5)
+        body = await asyncio.wait_for(drain(), 5.0)
         assert "Chat timed out" in body and "[DONE]" in body
         assert "synthetic token" not in body
 
