@@ -8,23 +8,20 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from src.bilun.domain.claims.loader import load_sut_claim_dataset
+
 pytestmark = pytest.mark.unit
 
-try:
-    from src.bilun.domain.claims.loader import load_sut_claim_dataset
 
-    _DATASET = load_sut_claim_dataset()
-except Exception:  # pragma: no cover
-    _DATASET = None
-
-_needs_dataset = pytest.mark.skipif(
-    _DATASET is None, reason="synthetic SUT claim dataset not available"
-)
+@pytest.fixture(scope="module")
+def dataset():
+    """The committed claim dataset. A load error fails the tests that use it; it never skips them."""
+    return load_sut_claim_dataset()
 
 
-def _pick_patient_with_claims() -> tuple[str, str]:
-    pid = next(p for p, claims in _DATASET.claims_by_patient.items() if claims)
-    return pid, _DATASET.claims_by_patient[pid][0].claim_id
+def _pick_patient_with_claims(dataset) -> tuple[str, str]:
+    pid = next(p for p, claims in dataset.claims_by_patient.items() if claims)
+    return pid, dataset.claims_by_patient[pid][0].claim_id
 
 
 def _seed_diagnoses_cache(db_path: Path, patient_id: str) -> str:
@@ -57,9 +54,7 @@ def _seed_diagnoses_cache(db_path: Path, patient_id: str) -> str:
             con,
             "patient_diagnoses",
             build_id,
-            pl.DataFrame(
-                [{"patient_id": patient_id, "diagnoses_json": json.dumps(["E11.9"])}]
-            ),
+            pl.DataFrame([{"patient_id": patient_id, "diagnoses_json": json.dumps(["E11.9"])}]),
         )
         complete_build(
             con,
@@ -74,11 +69,11 @@ def _seed_diagnoses_cache(db_path: Path, patient_id: str) -> str:
 
 
 @pytest.fixture
-def bill_opt_cache(monkeypatch, tmp_path):
+def bill_opt_cache(monkeypatch, tmp_path, dataset):
     import src.bilun.api.routes.optimization as opt_mod
     from src.bilun.shared.runtime import get_api_runtime
 
-    patient_id, claim_id = _pick_patient_with_claims()
+    patient_id, claim_id = _pick_patient_with_claims(dataset)
     db_path = tmp_path / "bill-opt.duckdb"
     build_id = _seed_diagnoses_cache(db_path, patient_id)
 
@@ -104,7 +99,6 @@ def bill_opt_cache(monkeypatch, tmp_path):
     runtime.cache_con = None
 
 
-@_needs_dataset
 def test_bill_optimization_returns_scoped_payload(bill_opt_cache):
     import src.bilun.api.routes.optimization as opt_mod
 
@@ -121,7 +115,6 @@ def test_bill_optimization_returns_scoped_payload(bill_opt_cache):
     assert "drg_unbundling" in result
 
 
-@_needs_dataset
 def test_bill_optimization_unknown_bill_raises(bill_opt_cache):
     import src.bilun.api.routes.optimization as opt_mod
     from src.bilun.shared.exceptions import PatientNotFound
