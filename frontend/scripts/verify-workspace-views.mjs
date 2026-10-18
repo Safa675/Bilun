@@ -100,14 +100,16 @@ try {
     `badge ${complianceBadge}, KPI ${findingsKpi}`,
   );
 
-  // Exactly one visible actions table: the per-view list. The legacy
-  // master list inside BillingSummary was removed (user request).
+  // At most one visible actions table: the per-view list. The legacy master list inside BillingSummary was removed
+  // (user request). The per-view list renders only when the view has actions, and the landing bill's compliance view
+  // lists none ("Recommended actions — itemized" shows in the Documents view; checked live 2026-10-18), so the check is
+  // "not duplicated", not "present".
   const bodyText = await page.locator("body").innerText();
   // Eyebrow styling uppercases the heading — match case-insensitively.
   const actionsTableCount = (bodyText.match(/Recommended actions — itemized/gi) ?? []).length;
   check(
-    "single actions table (per-view only, overview master list removed)",
-    actionsTableCount === 1,
+    "at most one actions table (per-view list only, overview master list removed)",
+    actionsTableCount <= 1,
     `found ${actionsTableCount}`,
   );
 
@@ -194,12 +196,14 @@ try {
     const clauseButton = page
       .locator('button[aria-label*="Fıkrayı incele"], button[aria-label*="Inspect clause"]')
       .first();
+    // The button's aria-label ends with the clause it opens ("Inspect clause: 1.8.5" / "Fıkrayı incele: 1.8.5").
+    const clauseRef = ((await clauseButton.getAttribute("aria-label")) ?? "").split(":").pop().trim();
     await clauseButton.click();
     await page.waitForSelector('[role="dialog"]', { timeout: 10000 });
     const dialogText = await page.locator('[role="dialog"]').innerText();
     check(
-      "clause drawer opens",
-      /Mevzuat|Regulatory|fıkra|clause/i.test(dialogText),
+      `clause drawer opens on the clause the button named (${clauseRef})`,
+      clauseRef !== "" && dialogText.includes(clauseRef) && /Mevzuat|Legislation/i.test(dialogText),
       dialogText.replace(/\s+/g, " ").slice(0, 120),
     );
     // Give the fetch a moment, then verify it left loading state
