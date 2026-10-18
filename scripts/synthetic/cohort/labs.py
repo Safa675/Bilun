@@ -1438,11 +1438,20 @@ R4_TOLERANCE = 0.05  # HCO3, BE and SaO2 have one decimal
 
 
 def _fmt(template: str, *args: str | pl.Expr) -> pl.Expr:
-    """`pl.format` that prints a missing value as `null` (plain `pl.format` turns the message into null)."""
-    parts = [
-        (pl.col(a) if isinstance(a, str) else a).cast(pl.String).fill_null("null") for a in args
-    ]
-    return pl.format(template, *parts)
+    """`pl.format` that prints a missing value as `null` (plain `pl.format` turns the message into null).
+
+    The text is joined with `+`, not with `pl.format`: in polars 2.0.0 (the CI lock) a `pl.format` of two
+    columns panicked in the plausibility checks on a joined table cut down to a few findings
+    (`assertion failed: i < self.len()`). The text is the same.
+    """
+    pieces = template.split("{}")
+    if len(pieces) != len(args) + 1:
+        raise ValueError(f"{template!r} has {len(pieces) - 1} placeholders for {len(args)} values")
+    text = pl.lit(pieces[0])
+    for arg, piece in zip(args, pieces[1:], strict=True):
+        part = (pl.col(arg) if isinstance(arg, str) else arg).cast(pl.String).fill_null("null")
+        text = text + part + pl.lit(piece)
+    return text
 
 
 def _flag(

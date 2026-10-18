@@ -990,6 +990,12 @@ def _ana_set(
             id="another_patient_id",
         ),
         pytest.param(
+            lambda ana, claims: (_ana_set(ana, 5, "HASTA_ID", None), claims),
+            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            r"got \(null, B-SENTETIK-HASTA-0005-001\)",
+            id="no_patient_id",
+        ),
+        pytest.param(
             lambda ana, claims: (
                 _ana_set(ana, 5, "SQ_EPISODE", "B-SENTETIK-HASTA-0099-001"),
                 claims,
