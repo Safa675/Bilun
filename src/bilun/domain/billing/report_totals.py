@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
+from src.bilun.domain.billing.claim_audit_exposure import (
+    AuditExposureReview,
+    recommend_audit_exposure_from_claims,
+)
 
 from .block_registry import BILLING_BLOCK_SPECS
 from .report_exactness import block_exactness_status
@@ -65,12 +68,16 @@ def finalize_report_totals(
     report: BillingActionReport,
     *,
     claim_context: PatientClaimContext | None = None,
+    audit_exposure: AuditExposureReview | None = None,
 ) -> None:
     report.compliance_adjustment_try = sum_compliance_adjustment_try(report)
     report.sgk_uplift_try = sum_sgk_uplift_try(report)
     report.total_recoverable_try = report.sgk_uplift_try
     if claim_context is not None and claim_context.procedure_lines:
-        report.audit_exposure_try = compute_audit_exposure_from_claims(claim_context)
+        # The report assembly passes the review it already made for the rows.
+        if audit_exposure is None:
+            audit_exposure = recommend_audit_exposure_from_claims(claim_context)
+        report.audit_exposure_try = audit_exposure.total_try
     else:
         report.audit_exposure_try = 0.0
 

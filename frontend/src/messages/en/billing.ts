@@ -74,7 +74,10 @@ const billing = {
       "drugIndication": "Drug indication",
       "materials": "Materials pre-check",
       "claimCompliance": "Claim compliance",
-      "yatakPuani": "Bed-day (yatak puanı)"
+      "yatakPuani": "Bed-day (yatak puanı)",
+      "anesteziPuani": "Anesthesia (anestezi puanı)",
+      "refakatci": "Companion bed (refakatçi)",
+      "auditExposure": "Audit exposure"
     },
     "kinds": {
       "complianceViolation": "Payment method violation",
@@ -90,7 +93,12 @@ const billing = {
       "materialProseBundling": "§3.1 prose bundling",
       "materialSpecialtyProse": "§3.3 specialty prose",
       "yatakPuani": "Bed-day charge",
-      "yatakPuaniStandardBed": "Standard bed-day charge"
+      "yatakPuaniStandardBed": "Standard bed-day charge",
+      "anesteziPuaniGroup": "Anesthesia group charge",
+      "refakatciCompanionBed": "Companion bed charge (510121)",
+      "sessionPointViolation": "Session factor exceeded",
+      "bloodComponentPartialBill": "Blood component billed above its share",
+      "bundledLineFlag": "Package-included line billed (heuristic)"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",

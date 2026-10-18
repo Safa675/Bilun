@@ -213,6 +213,9 @@ const SURFACE_LABEL_KEYS: Record<string, string> = {
   materials: "billing.recommendedActions.surfaces.materials",
   claim_compliance: "billing.recommendedActions.surfaces.claimCompliance",
   yatak_puani: "billing.recommendedActions.surfaces.yatakPuani",
+  anestezi_puani: "billing.recommendedActions.surfaces.anesteziPuani",
+  refakatci: "billing.recommendedActions.surfaces.refakatci",
+  audit_exposure: "billing.recommendedActions.surfaces.auditExposure",
 };
 
 const KIND_LABEL_KEYS: Record<string, string> = {
@@ -230,6 +233,11 @@ const KIND_LABEL_KEYS: Record<string, string> = {
   material_specialty_prose: "billing.recommendedActions.kinds.materialSpecialtyProse",
   yatak_puani: "billing.recommendedActions.kinds.yatakPuani",
   yatak_puani_standard_bed: "billing.recommendedActions.kinds.yatakPuaniStandardBed",
+  anestezi_puani_group: "billing.recommendedActions.kinds.anesteziPuaniGroup",
+  refakatci_companion_bed: "billing.recommendedActions.kinds.refakatciCompanionBed",
+  session_point_violation: "billing.recommendedActions.kinds.sessionPointViolation",
+  blood_component_partial_bill: "billing.recommendedActions.kinds.bloodComponentPartialBill",
+  bundled_line_flag: "billing.recommendedActions.kinds.bundledLineFlag",
 };
 
 /** Prefer i18n map; otherwise humanize snake_case so new backend kinds aren't "Unknown". */
@@ -299,9 +307,10 @@ export function recommendedActionPrimaryCode(action: RecommendedActionItem): str
  * - `materials` / `material_uplift` → materials (material_code; procedure_code is
  *   the package parent and is also surfaced against the procedures section)
  * - `drug_indication` → drugs (drug_code)
- * - everything else (copay, billing_strategy, *_uplift, care_setting_review,
- *   procedure_addon_uplift, procedure_capture_gap, drg_package_adequacy,
- *   medula_playbook, claim_checklist) → procedures
+ * - everything else (copay, billing_strategy, *_uplift, yatak_puani, anestezi_puani,
+ *   refakatci, audit_exposure, care_setting_review, procedure_addon_uplift,
+ *   procedure_capture_gap, drg_package_adequacy, medula_playbook, claim_checklist)
+ *   → procedures
  *
  * Surfaces whose action row carries no code (e.g. medula_playbook, copay) yield
  * empty arrays — a graceful no-op, not a highlight.

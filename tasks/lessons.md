@@ -8,6 +8,18 @@ Persistent lessons captured from corrections during work. Reviewed at the start 
 
 **Rule:** compare a branch with `origin/main` after `git fetch` (or with the PR's base), never with the local `main`. Before a CI-parity check, delete what a local run leaves behind (`frontend/.next`, `frontend/.env.local`, `.cache/`) or run the check on a clean clone, as the CI-image gate does.
 
+## 2026-10-18 — A new billing-report field or step has seven touchpoints; the fail-closed tests found them one by one
+
+**Pattern:** To explain the S3, S4 and S8 KPIs I added rows to `recommended_actions`. The S3/S4 half was a short collector change. The S8 half needed row data the report did not keep, so I added a report field and a step. The public-projection test (`test_public_projection_preserves_cohort_business_results_and_cached_nulls`) failed because `src/bilun/api/public_contracts.json` did not list the field; the rule-surfacing audit failed closed because the new call had no metadata, and its committed outputs and its count of 5 aggregate-only findings went stale; the engine proof failed on three JSON files because it counts every action row and `action_count`. My first design built the rows inside `finalize_report_totals`, which would have made a totals function originate findings.
+
+**Rule:** Before adding data or a step to the billing report, list the touchpoints and do them in one pass: (1) the field in `types.py`; (2) the step in `compute_patient_billing_report` as its own named call, never inside a totals function; (3) `public_contracts.json`, section `BillingActionReport`; (4) `collect_billing_actions` and the `_finding_type` sets; (5) the surfacing-audit metadata (`EXPECTED_REPORT_CALLS`, `PATIENT_REPORT_META`, `EMISSION_OVERRIDES`) and then `python scripts/audits/build_rule_surfacing_inventory.py --write`; (6) the showcase proof JSON, regenerated with `reports/synthetic-data/2026-10-15-showcase-proofs/prove.py <stories>`, never by hand; (7) the frontend label maps (`recommendedActions.ts`, `RecommendedActionsPanel.tsx`, `messages/{en,tr}/billing.ts`). Save a baseline of all 16 showcase reports (8 stories, copay exempt and not) before the change and diff it after: only the intended `action_count` may move.
+
+## 2026-10-18 — Do not `cat` a scratch env file to see what is in it
+
+**Pattern:** To find out how an earlier session had run the UI, I printed `~/.cache/bilun-p4-scratch/ui_env.sh`. It holds the throwaway local test account's password hash and session secret, which then sat in this transcript. Nothing was sent anywhere, but the print was avoidable: all I needed was whether the file exists and which variables it sets.
+
+**Rule:** For files named `*env*`, `*secret*`, `*.key`, `.env*` and for any scratch file of another session, check existence with `ls` and names with `grep -o '^export [A-Z_]*'`; load values with `set -a; . file; set +a` in a subshell and never echo them.
+
 ## 2026-10-18 — Background agents do not restart by themselves after a usage-limit stop: cap the parallel agents and checkpoint
 
 **Pattern:** I ran four to five implementation and review agents at once, each with several mutation workers. The usage window ran out after about three hours (HTTP 429, "resets 1:50am"); the three agents then working ended as `failed`, my own turn was cut by the same limit, and nothing restarted them when the limit reset: a failed agent continues only when the orchestrator sends it a message. Safa came back hours later to find the work idle and asked why it had not resumed. Nothing was lost only because each agent saved its edits at step boundaries.

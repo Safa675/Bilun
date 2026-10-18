@@ -45,6 +45,12 @@ export function RecommendedActionsPanel({
   }
 
   if (compact) {
+    // The yatak and the other puan blocks are in the report payload but not in the TS report type.
+    const puanBlocks = billingReport as BillingActionReport & {
+      yatak_puani?: ExactnessLike;
+      anestezi_puani?: ExactnessLike;
+      refakatci?: ExactnessLike;
+    };
     const sourceBlocks: Record<string, ExactnessLike | null | undefined> = {
       lab: billingReport.lab,
       copay: billingReport.copay,
@@ -62,7 +68,11 @@ export function RecommendedActionsPanel({
       drg_package_adequacy: billingReport.drg_package_adequacy,
       drg_uplift: billingReport.drg_uplift,
       care_setting_review: billingReport.care_setting_review,
-      yatak_puani: (billingReport as BillingActionReport & { yatak_puani?: ExactnessLike }).yatak_puani,
+      yatak_puani: puanBlocks.yatak_puani,
+      anestezi_puani: puanBlocks.anestezi_puani,
+      refakatci: puanBlocks.refakatci,
+      // Over-billing exposure has no block of its own: it is exact when the report is.
+      audit_exposure: billingReport,
     };
     return (
       <Surface variant="base" padding="md" className="@container space-y-3" data-next-actions>

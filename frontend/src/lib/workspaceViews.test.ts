@@ -88,6 +88,49 @@ describe("workspaceViews", () => {
     expect(audit.map((a) => a.action_id)).toEqual(["a5", "a6"]);
   });
 
+  it("puts the fault rows of S3, S4 and S8 in the view that fits their money", () => {
+    const faultRows = {
+      patient_id: "P-FAULTS",
+      sgk_uplift_try: 1298.59,
+      audit_exposure_try: 3584.8,
+      recommended_actions: [
+        {
+          action_id: "f1",
+          surface: "anestezi_puani",
+          kind: "anestezi_puani_group",
+          finding_type: "opportunity",
+          sgk_uplift_try: 928.09,
+        },
+        {
+          action_id: "f2",
+          surface: "refakatci",
+          kind: "refakatci_companion_bed",
+          finding_type: "opportunity",
+          sgk_uplift_try: 370.5,
+        },
+        {
+          action_id: "f3",
+          surface: "audit_exposure",
+          kind: "session_point_violation",
+          finding_type: "compliance",
+          audit_risk_try: 3584.8,
+          billed_try: 3584.8,
+        },
+      ],
+    } as unknown as BillingActionReport;
+
+    expect(viewActions(faultRows, "revenue").map((a) => a.action_id)).toEqual(["f1", "f2"]);
+    expect(viewActions(faultRows, "compliance").map((a) => a.action_id)).toEqual(["f3"]);
+    expect(viewActions(faultRows, "audit")).toEqual([]);
+    // The exposure row is counted as billed money at risk; the revenue KPI is the sum of the revenue rows.
+    expect(complianceBilledAtRiskSummary(faultRows)).toEqual({ total: 3584.8, known: 1, count: 1 });
+    const revenueRows = viewActions(faultRows, "revenue");
+    expect(sumKnownAmounts(revenueRows.map((a) => a.sgk_uplift_try)).total).toBeCloseTo(
+      recoverableUplift(faultRows) ?? NaN,
+      2,
+    );
+  });
+
   it("sums billed-at-risk amounts for the compliance view", () => {
     expect(complianceBilledAtRisk(report)).toBe(100);
     expect(complianceBilledAtRiskSummary(report)).toEqual({ total: 100, known: 1, count: 1 });

@@ -1420,3 +1420,107 @@ describe("BillingSummary open metric ownership", () => {
     }
   });
 });
+
+describe("RecommendedActionsPanel fault rows of the anaesthesia, companion-bed and audit-exposure surfaces", () => {
+  const faultReport = {
+    patient_id: "P-FAULTS",
+    exactness_status: "partial_exact",
+    priority: "medium",
+    total_recoverable_try: 1298.59,
+    action_count: 3,
+    anestezi_puani: { exactness_status: "exact" },
+    refakatci: { exactness_status: "exact" },
+    recommended_actions: [
+      {
+        action_id: "anestezi_puani:F-3:0",
+        surface: "anestezi_puani",
+        kind: "anestezi_puani_group",
+        finding_type: "opportunity",
+        procedure_code: "615931",
+        sgk_uplift_try: 928.09,
+        sut_section_id: "2.2.2.A",
+        detail: "ANESTHESIA-DETAIL",
+      },
+      {
+        action_id: "refakatci:F-4:0",
+        surface: "refakatci",
+        kind: "refakatci_companion_bed",
+        finding_type: "opportunity",
+        sgk_uplift_try: 370.5,
+        sut_section_id: "2.6.3",
+        detail: "COMPANION-DETAIL",
+      },
+      {
+        action_id: "audit_exposure:F-8:session_point_violation:ISL-1",
+        surface: "audit_exposure",
+        kind: "session_point_violation",
+        finding_type: "compliance",
+        procedure_code: "P603840",
+        audit_risk_try: 3584.8,
+        billed_try: 3584.8,
+        sut_section_id: "2.2.2.B.b",
+        detail: "SESSION-DETAIL",
+      },
+    ],
+  } as unknown as BillingActionReport;
+
+  it.each(["en", "tr"] as const)("lists the revenue rows with their amounts and details in %s", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={faultReport} findingFilter="opportunity" />,
+      locale,
+    );
+
+    expect(html).toContain(locale === "en" ? "Anesthesia (anestezi puanı)" : "Anestezi puanı");
+    expect(html).toContain(locale === "en" ? "Companion bed (refakatçi)" : "Refakatçi");
+    expect(html).toContain("928.09 TRY");
+    expect(html).toContain("370.50 TRY");
+    expect(html).toContain("ANESTHESIA-DETAIL");
+    expect(html).toContain("COMPANION-DETAIL");
+    expect(html).toContain("615931");
+    // Revenue view only: the exposure row is a compliance finding.
+    expect(html).not.toContain("SESSION-DETAIL");
+  });
+
+  it.each(["en", "tr"] as const)("lists the exposure row as audit risk in the compliance filter in %s", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={faultReport} findingFilter="compliance" />,
+      locale,
+    );
+
+    expect(html).toContain("SESSION-DETAIL");
+    expect(html).toContain("3584.80 TRY");
+    expect(html).toContain(locale === "en" ? "Audit risk" : "Denetim riski");
+    expect(html).toContain("P603840");
+    expect(html).not.toContain("ANESTHESIA-DETAIL");
+  });
+
+  it.each(["en", "tr"] as const)("gives each fault row its own source exactness in the compact %s panel", (locale) => {
+    // Different statuses per block, so that a row reading the wrong source is visible: the anaesthesia
+    // block is exact, the companion block is not, and the report itself is partial.
+    const report = {
+      ...faultReport,
+      exactness_status: "partial_exact",
+      anestezi_puani: { exactness_status: "exact" },
+      refakatci: { exactness_status: "partial_exact" },
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    const rowOf = (actionId: string) =>
+      html.split('data-action-id="').find((chunk) => chunk.startsWith(`${actionId}"`)) ?? "";
+    const exact = locale === "en" ? ">Exact<" : ">Kesin<";
+    const partial = locale === "en" ? ">Partial exact<" : ">Kısmi kesin<";
+
+    expect(rowOf("anestezi_puani:F-3:0")).toContain(exact);
+    expect(rowOf("anestezi_puani:F-3:0")).not.toContain(partial);
+    expect(rowOf("refakatci:F-4:0")).toContain(partial);
+    expect(rowOf("refakatci:F-4:0")).not.toContain(exact);
+    // The exposure row has no block of its own: it reads the report's status, and is never "Unavailable".
+    expect(rowOf("audit_exposure:F-8:session_point_violation:ISL-1")).toContain(partial);
+    expect(html).not.toContain(locale === "en" ? "Unavailable" : "Kullanılamıyor");
+    expect(html).toContain("3584.80 TRY");
+    expect(html).toContain("928.09 TRY");
+    expect(html).toContain("370.50 TRY");
+  });
+});

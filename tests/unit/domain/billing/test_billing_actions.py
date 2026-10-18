@@ -84,18 +84,22 @@ def _try(value: object) -> Decimal:
 
 
 class TestBillingActionsBreakdown:
-    def test_quiet_bill_gets_only_the_copay_review_and_the_documentation_checklist(
+    def test_companion_bill_gets_its_fault_row_the_copay_review_and_the_documentation_checklist(
         self, dataset
     ) -> None:
-        """S4 (companion not billed) has no strategy, material or drug row of its own, so the exemption
-        input and the documentation checklist are all that reaches `recommended_actions`."""
+        """S4 (companion not billed) has no strategy, material or drug row: its fault row (the companion
+        bed it did not bill), the exemption input and the documentation checklist are what reaches
+        `recommended_actions`."""
+        fault = cohort.fault("S4")
         ctx = _showcase_context(dataset, "showcase_S4")
         report = _report(ctx, _EXEMPT)
 
         assert report.action_count == len(report.recommended_actions)
 
         surfaces = {row["surface"] for row in report.recommended_actions}
-        assert surfaces == {"copay", "claim_checklist"}
+        assert surfaces == {"copay", "refakatci", "claim_checklist"}
+        [companion_row] = [row for row in report.recommended_actions if row["surface"] == "refakatci"]
+        assert _try(companion_row["sgk_uplift_try"]) == Decimal(fault["amount_try"])
 
         # The procedures of this bill carry no mandated package: no compliance violation and no
         # package gap row (the S1 bill below is the one that has them).
@@ -126,7 +130,7 @@ class TestBillingActionsBreakdown:
         checklist_docs = _documentation_items(report)
         assert doc_rows
         assert len(doc_rows) == len(checklist_docs)
-        assert report.action_count == len(copay_rows) + len(doc_rows)
+        assert report.action_count == len(copay_rows) + 1 + len(doc_rows)
         refs = {item.get("fatura_inceleme_ref") for item in checklist_docs}
         # An inpatient stay: the detailed discharge summary (ORTAK-27), not the visit rule (ORTAK-5).
         assert "ORTAK-27" in refs

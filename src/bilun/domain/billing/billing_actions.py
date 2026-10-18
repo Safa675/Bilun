@@ -23,13 +23,17 @@ _MATERIAL_KIND_SUT_SECTION: dict[str, str] = {
 # Mirror of frontend/src/lib/recommendedActions.ts getFindingType (UI badge
 # taxonomy) so the backend can serve finding_type directly; billing_strategy
 # keeps its kind-based special case.
-_COMPLIANCE_SURFACES: frozenset[str] = frozenset({"materials", "drug_indication", "lab"})
+_COMPLIANCE_SURFACES: frozenset[str] = frozenset(
+    {"materials", "drug_indication", "lab", "audit_exposure"}
+)
 _OPPORTUNITY_SURFACES: frozenset[str] = frozenset(
     {
         "session_uplift",
         "drg_uplift",
         "blood_uplift",
         "yatak_puani",
+        "anestezi_puani",
+        "refakatci",
         "material_uplift",
         "procedure_addon_uplift",
         "procedure_capture_gap",
@@ -190,6 +194,33 @@ def _action_row(
     }
 
 
+# Puan motors whose rows must add up to the block's component of ``sgk_uplift_try``
+# (``confirmed_anestezi_try`` / ``confirmed_refakat_try``).
+_SGK_COUNTED_ONLY_SURFACES: frozenset[str] = frozenset({"anestezi_puani", "refakatci"})
+
+
+def _sgk_counted_uplift(row: dict[str, Any]) -> float | None:
+    """The uplift an opportunity adds to the SGK headline, or None when it adds nothing.
+
+    Mirrors ``confirmed_anestezi_try`` / ``confirmed_refakat_try``: a row flagged out of the
+    SGK total makes no action row, and neither does one without a positive amount (companion
+    days already billed; day-case, ICU and package-window suppressions).
+    """
+    if not row.get("included_in_sgk_total", True):
+        return None
+    amount = row.get("recoverable_uplift_try")
+    if amount is None:
+        amount = row.get("expected_try") or 0.0
+    return float(amount) if float(amount) > 0 else None
+
+
+def _detail_with_notes(row: dict[str, Any]) -> str | None:
+    """The row's detail followed by its verification notes (SUT §2.6.3.(2): the stay certificate)."""
+    detail = row.get("detail")
+    notes = [str(note) for note in row.get("suppression_notes") or [] if note]
+    return " ".join([str(detail), *notes]) if detail and notes else detail
+
+
 def _copay_exemption_rows(copay: CopayOptimization) -> list[dict[str, Any]]:
     """Reason-specific copay exemption-review rows (EK-1/A, EK-4/D, acil, ...).
 
@@ -321,6 +352,8 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("drg_uplift", report.drg_uplift, "recoverable_uplift_try"),
         ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),
         ("yatak_puani", report.yatak_puani, "recoverable_uplift_try"),
+        ("anestezi_puani", report.anestezi_puani, "recoverable_uplift_try"),
+        ("refakatci", report.refakatci, "recoverable_uplift_try"),
         ("material_uplift", report.material_uplift, "recoverable_uplift_try"),
         ("care_setting_review", report.care_setting_review, "recoverable_uplift_try"),
         ("procedure_addon_uplift", report.procedure_addon_uplift, "recoverable_uplift_try"),
@@ -328,6 +361,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
     ):
         opportunities = getattr(block, "opportunities", [])
         for index, row in enumerate(opportunities):
+            detail = row.get("detail")
             if surface_name == "yatak_puani":
                 raw_uplift = (
                     row.get("recoverable_uplift_try")
@@ -337,6 +371,11 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 if raw_uplift is not None and float(raw_uplift) <= 0:
                     continue
                 sgk_uplift = raw_uplift
+            elif surface_name in _SGK_COUNTED_ONLY_SURFACES:
+                sgk_uplift = _sgk_counted_uplift(row)
+                if sgk_uplift is None:
+                    continue
+                detail = _detail_with_notes(row)
             else:
                 sgk_uplift = row.get(uplift_field) or row.get("recoverable_uplift_try")
             actions.append(
@@ -351,11 +390,35 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     material_code=row.get("material_code"),
                     material_name=row.get("material_name"),
                     sgk_uplift_try=sgk_uplift,
-                    detail=row.get("detail"),
+                    detail=detail,
                     sut_section_id=row.get("sut_section_id") or row.get("sut_section"),
                     finding_type=_finding_type(surface_name),
                 )
             )
+
+    for row in report.audit_exposure_rows:
+        # The risk is the billed money SGK would deduct: the part over the allowed amount, as a
+        # materials row's billed amount is the line it would reject. It is also what the
+        # billed-at-risk KPI and the next-actions order read (`billed_try`).
+        risk = row.get("risk_amount_try")
+        actions.append(
+            _action_row(
+                action_id=(
+                    f"audit_exposure:{row.get('claim_id')}:{row.get('kind')}:"
+                    f"{row.get('procedure_line_id')}"
+                ),
+                surface="audit_exposure",
+                kind=str(row.get("kind") or "audit_exposure"),
+                claim_id=row.get("claim_id"),
+                procedure_code=row.get("procedure_code"),
+                procedure_name=row.get("procedure_name"),
+                audit_risk_try=risk,
+                billed_try=risk,
+                detail=row.get("detail"),
+                sut_section_id=row.get("sut_section"),
+                finding_type=_finding_type("audit_exposure"),
+            )
+        )
 
     for index, row in enumerate(report.procedure_capture_gap.opportunities):
         actions.append(

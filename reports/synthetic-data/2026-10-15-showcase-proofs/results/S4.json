@@ -588,10 +588,17 @@
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 2
+   "action_count": 3
   }
  },
  "only_in_faulty": [
+  [
+   "action",
+   "refakatci",
+   "refakatci_companion_bed",
+   "",
+   370.5
+  ],
   [
    "block",
    "refakatci",

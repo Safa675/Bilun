@@ -93,10 +93,17 @@
    "audit_exposure_try": 3584.8,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 3
+   "action_count": 4
   }
  },
  "only_in_faulty": [
+  [
+   "action",
+   "audit_exposure",
+   "session_point_violation",
+   "P603840",
+   3584.8
+  ],
   [
    "scalar",
    "audit_exposure_try",

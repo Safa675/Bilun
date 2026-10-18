@@ -8,9 +8,9 @@ Basis for "after the swap": the v3 showcase has 8 patients `SENTETIK-HASTA-0001.
 
 Nothing here breaks today: `data/synthetic/sut/` is untouched until P7. The inventory says what P6 must migrate before P7 can merge.
 
-## Status 2026-10-18: what P7-lite migrates (this PR)
+## Status 2026-10-18: what P7-lite migrates (#316)
 
-Branch `claude/synthetic-v3-p7-lite-swap` (this PR) puts the 8 showcase patients in `data/synthetic/sut/` in place of the legacy 50, deletes the legacy generator and its checks, and keeps the registry at `data/synthetic/cohort_registry.json` (the `data/synthetic/showcase/` paths below are the inventory-time paths). The other 42 patients wait (plan Q6). Decisions and slices: the P7-lite block at the top of `tasks/todo.md`; the outcome per row is recorded in that block's Results. Slices: S the swap, T the Python tests, F the frontend scripts, the chatbot text, the docs and the plan status.
+Branch `claude/synthetic-v3-p7-lite-swap` (#316) puts the 8 showcase patients in `data/synthetic/sut/` in place of the legacy 50, deletes the legacy generator and its checks, and keeps the registry at `data/synthetic/cohort_registry.json` (the `data/synthetic/showcase/` paths below are the inventory-time paths). The other 42 patients wait (plan Q6). Decisions and slices: the P7-lite block at the top of `tasks/todo.md`; the outcome per row is recorded in that block's Results. Slices: S the swap, T the Python tests, F the frontend scripts, the chatbot text, the docs and the plan status.
 
 | Rows | What P7-lite does with them | Slice |
 |---|---|---|
@@ -25,7 +25,7 @@ Branch `claude/synthetic-v3-p7-lite-swap` (this PR) puts the 8 showcase patients
 
 Not migrated, on purpose: row 37 (the column contract is unchanged); row 38 (the CI workflow file is not edited; the tests it runs are migrated by the rows above); rows 39-42 (the paused strict lane: `scripts/deploy/**`, `docs/operations/**` and `tests/*/deploy/**` are not touched).
 
-Result (2026-10-18, end of the P7-lite branch): every migrated row above is done in this PR. Rows 1-19 and 26: one test file deleted, 20 rewritten on the registry roles or on self-made fixtures, the per-file table is in `tasks/todo.md` (Results of the P7-lite task); row 24 was deleted with the legacy generator; rows 20-23 and 25 were handled in slice S; rows 36 and 43-50 in slice F. The whole `tests` tree and the CI-image backend gate are green (see `tasks/todo.md` for the counts).
+Result (2026-10-18, end of the P7-lite branch): every migrated row above is done in #316. Rows 1-19 and 26: one test file deleted, 20 rewritten on the registry roles or on self-made fixtures, the per-file table is in `tasks/todo.md` (Results of the P7-lite task); row 24 was deleted with the legacy generator; rows 20-23 and 25 were handled in slice S; rows 36 and 43-50 in slice F. The whole `tests` tree and the CI-image backend gate are green (see `tasks/todo.md` for the counts).
 
 ## Pins
 

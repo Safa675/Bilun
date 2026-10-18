@@ -1784,6 +1784,19 @@
     "sgk_uplift_try": true,
     "compliance_adjustment_try": true,
     "audit_exposure_try": true,
+    "audit_exposure_rows": {
+      "$list": {
+        "kind": true,
+        "claim_id": true,
+        "procedure_line_id": true,
+        "procedure_code": true,
+        "procedure_name": true,
+        "risk_amount_try": true,
+        "sut_section": true,
+        "rule_id": true,
+        "detail": true
+      }
+    },
     "capture_gap_try": true,
     "package_adequacy_review_try": true,
     "medula_playbook_entry_count": true,
