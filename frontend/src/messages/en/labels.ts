@@ -38,6 +38,10 @@ const labels = {
       "session_uplift": "Session uplift",
       "drg_uplift": "DRG uplift",
       "yatak_puani": "Bed-day score",
+      "anestezi_puani": "Anesthesia score",
+      "refakatci": "Companion allowance",
+      "icu_puani": "Intensive care score",
+      "yenidogan_yatak": "Newborn bed-day score",
       "materials": "Materials pre-check",
       "billing_strategy": "Billing strategy"
     },

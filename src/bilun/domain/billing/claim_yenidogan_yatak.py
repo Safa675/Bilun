@@ -1,10 +1,11 @@
 """Yenidoğan (newborn) bed billing from exact inpatient claim dates.
 
 Wraps :func:`detect_yenidogan_yatak_opportunities` in the same exactness-gated
-review shape used across the billing layer. ``YenidoganYatakReview`` is
-defined HERE for now — the orchestrator will relocate it to
-``billing/types.py`` (alongside ``YatakPuaniReview``) once it is wired into
-``BillingActionReport`` / ``CohortRecoverySummary``.
+review shape used across the billing layer; ``YenidoganYatakReview`` lives in
+``billing/types.py`` next to ``YatakPuaniReview``. The motor sees the claim's
+procedure lines (netting of the billed bed lines, ICU and package gates), and
+``claim_yatak_newborn_overlap`` takes its days out of the standard-bed
+expectation.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from src.bilun.domain.billing.types import (
     YenidoganYatakReview,
 )
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules.yatak_icu_overlap import collect_icu_last_days
 from src.bilun.domain.prose_rules.yenidogan_yatak import (
     detect_yenidogan_yatak_opportunities,
 )
@@ -54,9 +56,14 @@ def recommend_yenidogan_yatak_from_claims(
         )
 
     claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
+    # Known history confirms the ICU last days of the patient's other claims (as for the standard bed);
+    # it adds no opportunity and no billed money.
+    history = ctx.history
     opportunities = detect_yenidogan_yatak_opportunities(
         list(ctx.claims),
         list(ctx.diagnoses),
+        procedure_lines=list(ctx.procedure_lines),
+        icu_last_days=collect_icu_last_days(list(history.claims), list(history.procedure_lines)),
         claim_ids_with_procs=claim_ids_with_procs,
     )
 

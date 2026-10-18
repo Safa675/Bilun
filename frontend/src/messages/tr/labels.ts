@@ -38,6 +38,10 @@ const labels = {
       "session_uplift": "Seans artışı",
       "drg_uplift": "DRG artışı",
       "yatak_puani": "Yatak puanı",
+      "anestezi_puani": "Anestezi puanı",
+      "refakatci": "Refakatçi ücreti",
+      "icu_puani": "Yoğun bakım puanı",
+      "yenidogan_yatak": "Yenidoğan yatak günü puanı",
       "materials": "Malzeme ön kontrol",
       "billing_strategy": "Fatura stratejisi"
     },

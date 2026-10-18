@@ -124,11 +124,16 @@ def _collect_icu_discharge_claims(
     return icu_discharge_claims
 
 
-def _collect_icu_last_days(
+def collect_icu_last_days(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],
 ) -> set[date]:
-    """Preserve the ICU discharge-day set used by bed-day reconciliation."""
+    """The ICU discharge/transfer days of the claims (the project's claim-span ICU model).
+
+    The ICU span is the claim span, so the last ICU day is the claim's ``discharge_date``, which the model
+    treats as a 510090 day (EK-2B: it covers yemek + yatak + vizit) even when no 510090 line carries that date.
+    Used by the standard-bed reconciliation and, as ``icu_last_days``, by the newborn bed motor.
+    """
     return set(_collect_icu_discharge_claims(claims, procedure_lines))
 
 
@@ -248,7 +253,7 @@ def reconcile_yatak_bed_days(
     if not yatak_opportunities or not procedure_lines:
         return yatak_opportunities
 
-    icu_last_days = _collect_icu_last_days(claims, procedure_lines)
+    icu_last_days = collect_icu_last_days(claims, procedure_lines)
     if not icu_last_days:
         return yatak_opportunities
 
@@ -296,7 +301,7 @@ def reconcile_yatak_bed_days(
 
         expected = _money(new_days * daily_rate)
         actual_billed_try = float(opp.get("actual_billed_try") or 0.0)
-        recoverable = _money(max(0.0, expected - actual_billed_try))
+        recoverable = _money(min(expected, max(0.0, expected - actual_billed_try)))
 
         new_opp = dict(opp)
         new_opp["bed_days"] = new_days

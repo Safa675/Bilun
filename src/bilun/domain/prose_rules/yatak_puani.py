@@ -366,7 +366,8 @@ def detect_yatak_puani_opportunities(
                 and counts_against_expected_days(p, window)
             )
         )
-        recoverable_try = _money(max(0.0, expected - actual_billed_try))
+        # Never more than the expected charge: a credit line (negative amount) must not recover extra.
+        recoverable_try = _money(min(expected, max(0.0, expected - actual_billed_try)))
 
         detail_parts = [
             f"Standart yatak (510010): {days} billable bed-day(s) "
