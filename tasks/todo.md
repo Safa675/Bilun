@@ -55,12 +55,12 @@ Controls (not same-day, must not move): N14 newborn 2 days nothing billed 881.96
 - [x] 1. Ask Safa the yes/no first; change nothing until he answered ("Evet").
 - [x] 2. Read AGENTS.md, the two newest lessons, both motors, both reconciliations, the tests, the consumers (contract, frontend, engine proof, surfacing audit map, pins: none of the files to change is pinned).
 - [x] 3. Write this plan (before any code).
-- [ ] 4. Tests first, red: standard-bed motor on a single date (nothing billed → 44.45; 510120 in full → 0; 510120 in part; 510010 or 510070 billed → 0; 510120 on a 2-day stay is not counted; package window; credit line; a day-bed price on the date of the stay; `same_day_stay` and the sentence); newborn motor (nothing billed → 44.45 with `bed_code` 510120; 510070 / 510081 billed → 0; 510070 in part; 510120 billed → stands down; 510120 beside a newborn line; package, ICU transfer day; Kuvöz/Kot sentences absent; a 2-day stay unchanged); pipeline in `test_yatak_newborn_overlap.py` (N1–N13 and A1–A8 of the table, headline = rows, the day counted once, ICU motor untouched); the existing `test_same_day_stay_flags_gunduz` and the same-day newborn tests updated to the new rule.
-- [ ] 5. `yatak_puani.py`.
-- [ ] 6. `yenidogan_yatak.py`.
-- [ ] 7. `claim_yatak_newborn_overlap.py`.
+- [x] 4. Tests first, red (48 failed / 165 passed before the code): standard-bed motor on a single date (nothing billed → 44.45; 510120 in full → 0; 510120 in part; 510010 or 510070 billed → 0; 510120 on a 2-day stay is not counted; package window; credit line; a day-bed price on the date of the stay; `same_day_stay` and the sentence); newborn motor (nothing billed → 44.45 with `bed_code` 510120; 510070 / 510081 billed → 0; 510070 in part; 510120 billed → stands down; 510120 beside a newborn line; package, ICU transfer day; Kuvöz/Kot sentences absent; a 2-day stay unchanged); pipeline in `test_yatak_newborn_overlap.py` (N1–N13 and A1–A8 of the table, headline = rows, the day counted once, ICU motor untouched); the existing `test_same_day_stay_flags_gunduz` and the same-day newborn tests updated to the new rule.
+- [x] 5. `yatak_puani.py`.
+- [x] 6. `yenidogan_yatak.py`.
+- [x] 7. `claim_yatak_newborn_overlap.py`.
 - [ ] 8. Consumers: public contract test, surfacing audit (`build_rule_surfacing_inventory.py --check`), engine-proof JSON, frontend tests unaffected (no frontend file changes).
-- [ ] 9. Dump the 16 reports again: byte-identical to `before.json`; probe table after, against the targets.
+- [x] 9. Dump the 16 reports again: byte-identical to `before.json` (sha256 f09e8a1b…); probe table after equals the targets.
 - [ ] 10. Independent review (fresh agent, code only, own clone).
 - [ ] 11. Gates one after the other: ruff on `src/ scripts/`, targeted tests, full pytest, `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, CI-image gate on a clone of the committed tip.
 - [ ] 12. One commit on the branch (no push); results in this block; Turkish report.

@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — "Is the work in this tree" is a tree comparison, never a search for commit subjects: a squash-merge keeps the content and drops the commits
+
+**Pattern:** The brief's Step 0 said the worktree must show a commit named "review round 3" and, if it did not, merge the unpushed branch `claude/funny-tereshkova-662936`. That branch had been squash-merged as #319 while the brief was written, and the worktree was cut from `origin/main` (7ea9457a): `git log | grep -i "review round 3"` found nothing, although the test file the same step names existed. Followed literally, the step would have merged an already-merged branch (15 commits of duplicate history and a merge commit with an empty diff) into the new branch. `git diff claude/funny-tereshkova-662936 HEAD` was empty: the two trees were identical.
+
+**Rule:** Check that work is present by content: `git diff --stat <branch> HEAD` empty (or `git merge-base --is-ancestor` for an unsquashed branch) and `gh pr view <n> --json state,mergeCommit`. When the brief's Step 0 and the repository disagree, verify the content, say so in the report, and do not merge by reflex. Squash-merged work keeps its files and loses its commit subjects.
+
 ## 2026-10-18 — A mutation loop restores from a byte-identical backup, never with `git checkout --` while the file has uncommitted edits
 
 **Pattern:** To prove a new test bites, I removed one contract key at a time from `public_contracts.json` and restored the file with `git checkout -- <file>` after each mutant. The file also held my own uncommitted additions (two new keys), so the first restore silently threw them away: the second "mutant" then failed for a reason that had nothing to do with the mutation, and I read it as a kill. I noticed only because the mutation script's own assertion failed on a key that should have been there.
