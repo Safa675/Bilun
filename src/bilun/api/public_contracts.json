@@ -1925,6 +1925,7 @@
           "icu_overlap_dates": {
             "$list": true
           },
+          "standard_bed_days": true,
           "puan": true,
           "same_day_stay": true,
           "rooming_in": true

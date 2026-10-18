@@ -24,9 +24,12 @@ not expected as standard bed by the standard-bed motor
 The billed bed is the only evidence of the bed type (nothing in the claim says
 whether the baby lay in an incubator): each billed Kot day (sum of the quantity
 of the 510081 lines, at most the stay) is priced at the Kot rate, never
-"upgraded" to Kuvöz; every other day at the Kuvöz default below. A claim that
-bills the standard bed (510010) and no newborn bed line has stated its bed: this
-motor stands down and the standard-bed motor keeps the stay.
+"upgraded" to Kuvöz; every other unbilled day at the Kuvöz default below. A claim
+that bills the standard bed (510010) and no newborn bed line has stated its bed:
+this motor stands down and the standard-bed motor keeps the stay. A claim that
+bills both (incubator, then a standard bed) keeps this motor for the days the
+standard-bed lines do not cover (``standard_bed_days`` are the standard-bed
+motor's, which nets its own 510010 lines).
 
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
@@ -92,8 +95,9 @@ _NEWBORN_DEPT_TOKENS = ("yenidoğan", "yenedogan", "çocuk", "cocuk", "neonatal"
 _NEWBORN_BED_CODES = frozenset({_BED_KUVOZ, _BED_KOT})
 # The standard bed: a claim that bills it (and no newborn bed) has stated its bed; the standard-bed motor owns it.
 _STANDARD_BED_CODE = "510010"
-# Whole words that name an intensive care unit (YB, YYBÜ = yenidoğan yoğun bakım ünitesi, NICU, ICU).
-_ICU_DEPT_WORDS = frozenset({"yb", "yybu", "nicu", "icu"})
+# Whole words that name an intensive care unit: YB, YBÜ (yoğun bakım ünitesi), YYBÜ (yenidoğan ...), ÇYBÜ
+# (çocuk ...), NICU, PICU, ICU.
+_ICU_DEPT_WORDS = frozenset({"yb", "ybu", "yybu", "cybu", "nicu", "picu", "icu"})
 
 
 def _daily_rate(bed_code: str, visit_date: date | str | None = None) -> float:
@@ -128,6 +132,13 @@ def _claim_diagnoses(claim: ClaimHeader, diagnoses: list[ClaimDiagnosis]) -> lis
     return codes
 
 
+def _billed_units(line: ProcedureClaimLine) -> int:
+    """Days a bed line covers: its quantity (at least 1), none for a credit line (negative amount)."""
+    if float(line.billed_amount_try) < 0:
+        return 0
+    return max(int(getattr(line, "quantity", 1) or 1), 1)
+
+
 def _department_is_newborn(department: str) -> bool:
     dept = (department or "").casefold()
     return any(token in dept for token in _NEWBORN_DEPT_TOKENS)
@@ -137,7 +148,7 @@ def _department_names_icu(department: str) -> bool:
     """True for a department that names an intensive care unit.
 
     Turkish-folded ("YOĞUN BAKIM", ASCII spellings), spaces ignored ("Yoğunbakım", double space) and the whole
-    words YB / YYBÜ / NICU / ICU. A ward named by what it is not ("Yoğun Bakım Dışı ...") also reads as ICU.
+    words YB / YBÜ / YYBÜ / ÇYBÜ / NICU / PICU / ICU. A ward named by what it is not ("Yoğun Bakım Dışı ...") also reads as ICU.
     """
     folded = unicodedata.normalize("NFKD", (department or "").casefold().replace("ı", "i"))
     folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
@@ -187,7 +198,7 @@ def detect_yenidogan_yatak_opportunities(
     Returns:
         Opportunity dicts with: type, claim_id, bed_code (510070, or 510081 when
         every day is a billed Kot day), days (billable: after any package
-        window), bundled_days, puan, expected_try (the full charge),
+        window and billed standard-bed days), bundled_days, puan, expected_try (the full charge),
         actual_billed_try (billed 510070 / 510081 lines), recoverable_uplift_try
         (what they leave, at most the full charge), same_day_stay, rooming_in,
         included_in_sgk_total, savings_category, savings_basis, sut_section_id,
@@ -268,6 +279,23 @@ def detect_yenidogan_yatak_opportunities(
         )
         days = max(days - len(icu_overlap_dates), 0)
 
+        # Standard-bed lines beside a newborn bed line: their days are the standard-bed
+        # motor's (it nets its own 510010 lines); this motor owns the other days.
+        standard_bed_days = (
+            min(
+                sum(
+                    _billed_units(line)
+                    for line in claim_procs
+                    if normalize_procedure_code(line.procedure_code) == _STANDARD_BED_CODE
+                    and counts_against_expected_days(line, window)
+                ),
+                days,
+            )
+            if bed_lines
+            else 0
+        )
+        days -= standard_bed_days
+
         visit_date = claim.admission_date or claim.claim_start_date
         kuvoz_rate = _daily_rate(_BED_KUVOZ, visit_date)
         kot_rate = _daily_rate(_BED_KOT, visit_date)
@@ -290,7 +318,7 @@ def detect_yenidogan_yatak_opportunities(
             kot_days = 0
         else:
             kot_units = sum(
-                max(int(getattr(line, "quantity", 1) or 1), 1)
+                _billed_units(line)
                 for line in counted_lines
                 if normalize_procedure_code(line.procedure_code) == _BED_KOT
             )
@@ -325,6 +353,11 @@ def detect_yenidogan_yatak_opportunities(
                 f"(package {window.start}, window through {window.end}); only the "
                 "days after it are newborn bed days."
             )
+        if standard_bed_days:
+            detail_parts.append(
+                f"{standard_bed_days} day(s) are billed on the standard bed (510010) beside the "
+                "newborn bed and stay the standard-bed motor's."
+            )
         if icu_overlap_dates:
             detail_parts.append(
                 f"{len(icu_overlap_dates)} ICU discharge/transfer day(s) "
@@ -357,14 +390,12 @@ def detect_yenidogan_yatak_opportunities(
                 "criteria are documented."
             )
 
-        overlap_keys = (
-            {
-                "icu_overlap_days": len(icu_overlap_dates),
-                "icu_overlap_dates": [day.isoformat() for day in icu_overlap_dates],
-            }
-            if icu_overlap_dates
-            else {}
-        )
+        overlap_keys: dict[str, Any] = {}
+        if icu_overlap_dates:
+            overlap_keys["icu_overlap_days"] = len(icu_overlap_dates)
+            overlap_keys["icu_overlap_dates"] = [day.isoformat() for day in icu_overlap_dates]
+        if standard_bed_days:
+            overlap_keys["standard_bed_days"] = standard_bed_days
         opportunities.append(
             {
                 "type": _OPPORTUNITY_TYPE,

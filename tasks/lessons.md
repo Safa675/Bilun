@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — A mutation loop restores from a byte-identical backup, never with `git checkout --` while the file has uncommitted edits
+
+**Pattern:** To prove a new test bites, I removed one contract key at a time from `public_contracts.json` and restored the file with `git checkout -- <file>` after each mutant. The file also held my own uncommitted additions (two new keys), so the first restore silently threw them away: the second "mutant" then failed for a reason that had nothing to do with the mutation, and I read it as a kill. I noticed only because the mutation script's own assertion failed on a key that should have been there.
+
+**Rule:** In a mutation loop, copy the file to a backup first and restore with `cp backup file` followed by a `cmp` (or work in a scratch clone, as the independent reviewer did). `git checkout --` is for committed state only. After the loop, check `git diff --stat` shows exactly your own change, and re-run the unmutated test once to see it green.
+
 ## 2026-10-18 — A motor's amount is right only against every condition its sibling motor honours: probe the sibling, don't just fix the named defects
 
 **Pattern:** The brief for the newborn bed motor named two defects (no netting of billed lines, no ICU gate) and a double count with the standard-bed motor. Fixing those three would have shipped rows on an amount that was still wrong: while writing the plan I ran the motor on the same in-memory bills as its sibling for each condition the sibling honours, and found a third overcount nobody had listed. The standard-bed motor bundles the bed into an EK-2/C package window (10-day stay, group-B package: 0 TL); the newborn motor counted 4,409.80 TL on the same bill. The same probe showed that the department tokens flag every pediatric ward stay as a newborn Kuvöz stay (3 x 440.98 on a pneumonia claim), a detection question that rows would have made visible. None of it shows in tests of the named defects.

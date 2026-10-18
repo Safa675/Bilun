@@ -44,6 +44,8 @@ def _stay_context(
     bed_billed: str = "0",
     standard_bed_billed: str | None = None,
     standard_bed_units: int | None = None,
+    standard_bed_start_day: int = 0,
+    bed_units: int | None = None,
     department: str | None = None,
     icd10: str | None = None,
 ) -> PatientClaimContext:
@@ -64,12 +66,13 @@ def _stay_context(
     ]
     if bed_code is not None:
         lines.append(_proc(procedure_line_id="NB-BED", claim_id="CLM-STAY", procedure_code=bed_code,
-                           procedure_name="bed", quantity=days, billed_amount_try=Decimal(bed_billed),
+                           procedure_name="bed", quantity=bed_units or days, billed_amount_try=Decimal(bed_billed),
                            procedure_date=_START))
     if standard_bed_billed is not None:
         lines.append(_proc(procedure_line_id="STD-BED", claim_id="CLM-STAY", procedure_code="510010",
                            procedure_name="Standart yatak", quantity=standard_bed_units or days,
-                           billed_amount_try=Decimal(standard_bed_billed), procedure_date=_START))
+                           billed_amount_try=Decimal(standard_bed_billed),
+                           procedure_date=_START + timedelta(days=standard_bed_start_day)))
     diagnosis = ClaimDiagnosis(
         diagnosis_id="DX1", claim_id="CLM-STAY", patient_id="P1", episode_id="E1",
         icd10_code=claim.primary_icd10, is_primary=True, diagnosis_role="primary",
@@ -152,6 +155,43 @@ class TestPipeline:
 
         assert report.yenidogan_yatak.opportunities == []
         assert report.yatak_puani.confirmed_yatak_try == pytest.approx(2 * 222.36, abs=0.005)
+
+    def test_a_stay_billed_incubator_then_standard_bed_exactly_leaves_nothing_on_both_motors(self) -> None:
+        """The reviewer's cliff: 2 Kuvöz days then 8 standard-bed days, billed exactly. The newborn motor owns the
+        2 Kuvöz days, the standard-bed motor the 8 days it was billed for; neither recovers anything (the first
+        version of the stand-down expected 8 x 440.98 = 3,527.84 Kuvöz beside the billed 510010)."""
+        report = _report(
+            newborn=True, days=10, bed_code="510070", bed_billed="881.96", bed_units=2,
+            standard_bed_billed="1778.88", standard_bed_units=8, standard_bed_start_day=2,
+        )
+
+        [newborn] = report.yenidogan_yatak.opportunities
+        [standard] = report.yatak_puani.opportunities
+        assert (newborn["days"], newborn["standard_bed_days"]) == (2, 8)
+        assert newborn["recoverable_uplift_try"] == 0.0
+        # The standard bed keeps the 8 days it was billed for and nets them: nothing left.
+        assert (standard["gross_bed_days"], standard["bed_days"], standard["newborn_overlap_days"]) == (10, 8, 2)
+        assert standard["actual_billed_try"] == pytest.approx(1778.88, abs=0.005)
+        assert standard["recoverable_uplift_try"] == 0.0
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
+        assert report.yatak_puani.confirmed_yatak_try == 0.0
+        assert not [a for a in report.recommended_actions if a["surface"] in ("yenidogan_yatak", "yatak_puani")]
+
+    def test_the_days_beside_a_part_billed_standard_bed_are_counted_once(self) -> None:
+        """Kuvöz for 1 day and standard bed for 3 of 10 days: 6 days are unbilled and expected once, as Kuvöz."""
+        report = _report(
+            newborn=True, days=10, bed_code="510070", bed_billed="440.98", bed_units=1,
+            standard_bed_billed="667.08", standard_bed_units=3, standard_bed_start_day=1,
+        )
+
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == pytest.approx(6 * 440.98, abs=0.01)
+        assert report.yatak_puani.confirmed_yatak_try == 0.0  # the 3 standard days are billed in full
+        [standard] = report.yatak_puani.opportunities
+        assert standard["bed_days"] == 3
+        counted = [a["sgk_uplift_try"] for a in report.recommended_actions if a["sgk_uplift_try"] is not None]
+        assert sum(Decimal(str(v)) for v in counted).quantize(Decimal("0.01")) == Decimal(
+            str(report.sgk_uplift_try)
+        ).quantize(Decimal("0.01"))
 
     @pytest.mark.parametrize("department", ["Pediatri", "Çocuk Sağlığı ve Hastalıkları"])
     def test_a_correctly_billed_pediatric_admission_gets_no_kuvoz_row(self, department: str) -> None:
