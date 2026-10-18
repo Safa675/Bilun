@@ -11,6 +11,11 @@ standard-bed expectation, so the same days are not in ``sgk_uplift_try`` twice
 bed). Days billed on the standard bed beside a newborn bed (``standard_bed_days``
 on the newborn row) stay with the standard-bed motor.
 
+A stay of one date (under 24 hours, SUT §2.2.2.(3)) is priced at the day bed 510120 by
+both motors: its newborn row carries ``bed_code`` 510120 and the standard-bed row its
+day-bed rate, so the days are recomputed at the rate each row carries; only the sentence
+differs (the day is not a Kuvöz or Kot day).
+
 The audit-exposure counterpart (510010 actually billed beside Kuvöz) is a
 separate detector and not part of this step.
 """
@@ -21,6 +26,7 @@ from dataclasses import replace
 from typing import Any
 
 from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.prose_rules.yatak_puani import DAY_BED_CODE
 
 from .types import YatakPuaniReview, YenidoganYatakReview
 
@@ -49,11 +55,14 @@ def reconcile_yatak_newborn_overlap(
         return yatak_review
 
     newborn_days: dict[str, int] = {}
+    day_bed_stays: set[str] = set()
     for opportunity in newborn_review.opportunities:
         claim_id = opportunity.get("claim_id")
         days = int(opportunity.get("days") or 0)
         if claim_id and days > 0:
             newborn_days[claim_id] = max(newborn_days.get(claim_id, 0), days)
+            if opportunity.get("bed_code") == DAY_BED_CODE:
+                day_bed_stays.add(claim_id)
 
     adjusted: list[dict[str, Any]] = []
     changed = False
@@ -73,11 +82,19 @@ def reconcile_yatak_newborn_overlap(
         # Never more than the expected charge: a credit line must not recover money on removed days.
         reconciled["recoverable_uplift_try"] = _money(min(expected, max(0.0, expected - actual_billed_try)))
         reconciled["newborn_overlap_days"] = overlap
-        reconciled["detail"] = (
-            f"{opportunity.get('detail', '')} {overlap} day(s) are newborn bed days "
-            "(510070 / 510081 cover yemek + yatak + vizit, EK-2/B) and are not "
-            "expected as standard bed."
-        ).strip()
+        if opportunity.get("claim_id") in day_bed_stays:
+            why = (
+                f"{overlap} day(s) are priced at the day bed ({DAY_BED_CODE}) on the newborn bed "
+                "row (SUT §2.2.2.(3), stay under 24 hours) and are not expected again as "
+                "standard bed."
+            )
+        else:
+            why = (
+                f"{overlap} day(s) are newborn bed days "
+                "(510070 / 510081 cover yemek + yatak + vizit, EK-2/B) and are not "
+                "expected as standard bed."
+            )
+        reconciled["detail"] = f"{opportunity.get('detail', '')} {why}".strip()
         adjusted.append(reconciled)
 
     if not changed:

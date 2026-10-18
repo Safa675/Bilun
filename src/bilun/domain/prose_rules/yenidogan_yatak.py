@@ -44,6 +44,16 @@ the netting of a mandated package window): a line with quantity 1 that carries
 several days' amount is outside the per-day convention of the claim data and is
 read as one day there.
 
+Stays under 24 hours (SUT §2.2.2.(3), EK-2/B 510120): "24 saatten kısa süreli yatışlarda
+yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır." The claim has dates, no
+times, so a stay whose admission date equals its discharge date (always under 24 hours)
+has the day bed 510120 (Gündüz yatak tarifesi) as its bed, whoever the patient is: the one
+day this motor owns is priced at the day bed, with no Kuvöz/Kot choice (``bed_code`` /
+``puan`` are the day bed's). The counted lines stay the newborn bed lines (a billed
+incubator or cot is above the day-bed price and leaves nothing to recover); a claim that
+bills 510120 (or 510010) and no newborn bed line has stated its bed, so this motor stands
+down and the standard-bed motor, which nets 510120 lines on such a stay, owns the day.
+
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
 EK-2/C package window (SUT §2.2.2.B-1(1), (3)-(4): the package includes the bed
@@ -83,6 +93,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
 from src.bilun.domain.prose_rules.yatak_puani import (
+    DAY_BED_CODE,
     claim_package_window,
     counts_against_expected_days,
 )
@@ -215,7 +226,8 @@ def detect_yenidogan_yatak_opportunities(
 
     Returns:
         Opportunity dicts with: type, claim_id, bed_code (510070, or 510081 when
-        every owned day is a Kot day; the Kuvöz default names a mixed stay),
+        every owned day is a Kot day; the Kuvöz default names a mixed stay; 510120
+        for a stay of one date, under 24 hours),
         days (the owned days: after any package window, ICU transfer day and
         billed standard-bed days), bundled_days, puan, expected_try (the full charge),
         actual_billed_try (billed 510070 / 510081 lines), recoverable_uplift_try
@@ -257,6 +269,10 @@ def detect_yenidogan_yatak_opportunities(
         if claim_has_icu_code(claim_procs):
             continue
 
+        # A stay whose admission date equals its discharge date is under 24 hours: its bed is the
+        # day bed (SUT §2.2.2.(3)), priced below.
+        single_date = claim.admission_date == claim.discharge_date
+
         # The newborn bed lines already billed on this claim: they net the charge
         # and, as the only evidence of the bed type, price the Kot days below. Any
         # line states the bed type, a credit line (a reversal, negative amount)
@@ -270,10 +286,13 @@ def detect_yenidogan_yatak_opportunities(
         if not stated_codes:
             # No newborn bed is billed. A unit named as an intensive care unit is no Kuvöz
             # ward (with a newborn bed billed, the bill speaks and is netted below); a claim
-            # that bills the standard bed has stated its bed: the standard-bed motor owns the
-            # stay and nets its own lines.
+            # that bills the standard bed (on a stay under 24 hours also the day bed) has
+            # stated its bed: the standard-bed motor owns the stay and nets its own lines.
+            stated_beds = (
+                {_STANDARD_BED_CODE, DAY_BED_CODE} if single_date else {_STANDARD_BED_CODE}
+            )
             if _department_names_icu(getattr(claim, "department", "") or "") or any(
-                normalize_procedure_code(line.procedure_code) == _STANDARD_BED_CODE
+                normalize_procedure_code(line.procedure_code) in stated_beds
                 for line in claim_procs
             ):
                 continue
@@ -329,43 +348,56 @@ def detect_yenidogan_yatak_opportunities(
         visit_date = claim.admission_date or claim.claim_start_date
         kuvoz_rate = _daily_rate(_BED_KUVOZ, visit_date)
         kot_rate = _daily_rate(_BED_KOT, visit_date)
-        if kuvoz_rate <= 0 and kot_rate <= 0:
+        day_bed_rate = _daily_rate(DAY_BED_CODE, visit_date) if single_date else 0.0
+        if (single_date and day_bed_rate <= 0) or (
+            not single_date and kuvoz_rate <= 0 and kot_rate <= 0
+        ):
             continue
 
-        # Mutually exclusive bed selection.
-        # Default = Kuvöz (510070, higher tier). Kot (510081) is NEVER billed
-        # for rooming-in babies per SUT; Kuvöz for rooming-in is opt-in. A claim
-        # that bills only Kot is priced Kot on every day this motor owns; one that
-        # bills both prices each billed Kot day as Kot and the rest as Kuvöz.
         is_rooming_in = claim.claim_id in rooming_in
-        if is_rooming_in:
-            if not (emit_kuvoz_for_rooming_in and kuvoz_rate > 0):
-                # Rooming-in: Kot suppressed, Kuvöz not opted in → skip.
+        if single_date:
+            # SUT §2.2.2.(3): under 24 hours the bed is the day bed (510120), whoever the patient is:
+            # no Kuvöz/Kot choice, the one owned day (or none) at the day-bed price. The rooming-in
+            # opt-in is read as for any stay.
+            if is_rooming_in and not emit_kuvoz_for_rooming_in:
                 continue
-            kot_days = 0
-        elif _BED_KOT in stated_codes and kot_rate > 0:
-            if _BED_KUVOZ not in stated_codes:
-                # Only a cot is billed: the hospital's stated bed, on every day this motor owns.
-                kot_days = days
-            else:
-                # Both are billed (incubator, then a cot): each billed Kot day is a Kot day, the rest Kuvöz.
-                kot_days = min(
-                    sum(
-                        _billed_units(line)
-                        for line in counted_lines
-                        if normalize_procedure_code(line.procedure_code) == _BED_KOT
-                    ),
-                    days,
-                )
+            kot_days = kuvoz_days = 0
+            bed_code, rate = DAY_BED_CODE, day_bed_rate
+            expected = _money(days * day_bed_rate)
         else:
-            kot_days = 0
-        kuvoz_days = days - kot_days
-        if kuvoz_days > 0 and kuvoz_rate <= 0:
-            continue
-        bed_code = _BED_KOT if days > 0 and kuvoz_days == 0 else _BED_KUVOZ
-        rate = kot_rate if bed_code == _BED_KOT else kuvoz_rate
+            # Mutually exclusive bed selection.
+            # Default = Kuvöz (510070, higher tier). Kot (510081) is NEVER billed
+            # for rooming-in babies per SUT; Kuvöz for rooming-in is opt-in. A claim
+            # that bills only Kot is priced Kot on every day this motor owns; one that
+            # bills both prices each billed Kot day as Kot and the rest as Kuvöz.
+            if is_rooming_in:
+                if not (emit_kuvoz_for_rooming_in and kuvoz_rate > 0):
+                    # Rooming-in: Kot suppressed, Kuvöz not opted in → skip.
+                    continue
+                kot_days = 0
+            elif _BED_KOT in stated_codes and kot_rate > 0:
+                if _BED_KUVOZ not in stated_codes:
+                    # Only a cot is billed: the hospital's stated bed, on every day this motor owns.
+                    kot_days = days
+                else:
+                    # Both are billed (incubator, then a cot): each billed Kot day is a Kot day, the rest Kuvöz.
+                    kot_days = min(
+                        sum(
+                            _billed_units(line)
+                            for line in counted_lines
+                            if normalize_procedure_code(line.procedure_code) == _BED_KOT
+                        ),
+                        days,
+                    )
+            else:
+                kot_days = 0
+            kuvoz_days = days - kot_days
+            if kuvoz_days > 0 and kuvoz_rate <= 0:
+                continue
+            bed_code = _BED_KOT if days > 0 and kuvoz_days == 0 else _BED_KUVOZ
+            rate = kot_rate if bed_code == _BED_KOT else kuvoz_rate
 
-        expected = _money(kot_days * kot_rate + kuvoz_days * kuvoz_rate)
+            expected = _money(kot_days * kot_rate + kuvoz_days * kuvoz_rate)
         actual_billed_try = _money(sum(float(line.billed_amount_try) for line in counted_lines))
         # Never more than the charge, whatever credit lines the bill carries.
         recoverable_try = _money(min(expected, max(0.0, expected - actual_billed_try)))
@@ -379,7 +411,7 @@ def detect_yenidogan_yatak_opportunities(
         else:
             charge = f"{days} bed-day(s) at {rate:.2f} TRY/day"
         detail_parts = [
-            f"Yenidoğan yatağı ({bed_code}): {charge}",
+            f"{'Gündüz yatak' if single_date else 'Yenidoğan yatağı'} ({bed_code}): {charge}",
             f"= {expected:.2f} TRY (inclusive LOS, discharge day billed).",
         ]
         if window is not None:
@@ -402,28 +434,36 @@ def detect_yenidogan_yatak_opportunities(
                 "not newborn bed days."
             )
         if is_rooming_in:
+            offered = f"the day bed ({DAY_BED_CODE})" if single_date else f"Kuvöz ({_BED_KUVOZ})"
             detail_parts.append(
                 "Rooming-in ('anne yanında') episode — Kot (510081) is not "
-                "billable per SUT; Kuvöz (510070) billed per opt-in."
+                f"billable per SUT; {offered} billed per opt-in."
             )
-        detail_parts.append(
-            "Kuvöz (510070) and Kot (510081) are mutually exclusive; only "
-            "one newborn bed may be billed per day."
-        )
+        if not single_date:
+            detail_parts.append(
+                "Kuvöz (510070) and Kot (510081) are mutually exclusive; only "
+                "one newborn bed may be billed per day."
+            )
         if bed_code == _BED_KOT:
             detail_parts.append(
                 "A Kot (510081) line is billed on this claim: priced at the Kot "
                 "rate, not upgraded to Kuvöz."
             )
-        if procedure_lines is not None and not stated_codes and not is_rooming_in:
+        if (
+            procedure_lines is not None
+            and not stated_codes
+            and not is_rooming_in
+            and not single_date
+        ):
             detail_parts.append(
                 "No newborn bed line (510070 / 510081) is billed on this claim: "
                 "Kuvöz (510070) is assumed — confirm the bed type in the stay record."
             )
         if same_day:
             detail_parts.append(
-                "Same-day admission/discharge — confirm newborn ward admission "
-                "criteria are documented."
+                "Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed "
+                f"at the day bed ({DAY_BED_CODE}, Gündüz yatak tarifesi), not as a Kuvöz "
+                f"({_BED_KUVOZ}) or Kot ({_BED_KOT}) day."
             )
 
         overlap_keys: dict[str, Any] = {}
