@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — A "mirror" of a live path on a cached path needs a parity test on the real cache shape, not a hand-made payload
+
+**Pattern:** `patient_recovery_summary_from_payload` carried a comment ("mirror the keys of `_get_top_action_type`", audit finding #12) and one unit test with a hand-made payload. Seven of its twelve keys read `@property` amounts (`confirmed_yatak_try`, `uplift_savings_try`, `total_uplift_try`, ...) that the cache never stores: `json_ready` keeps dataclass fields only. On a payload as `cache/builder.py` writes it, S1 gave `none` (live: `strategy`) and S2 gave `none` (live: `yatak_puani`); the fix of #12 only matched the key names. A fresh cache hid it (the cohort summary is built live), so nothing failed in three months. I found it only because the task asked for a parity test and I fed it the production serializer's output instead of copying the neighbouring key pattern; the new four keys would have been dead too.
+
+**Rule:** Before adding a key to a function that must agree with its twin, build the twin's input with the production serializer from real reports (`json.loads(json.dumps(json_ready(report)))` for the cache, the endpoint's serializer for the API; the 8 showcase bills, copay exempt and not) and assert equality of the whole result and of the intermediate values, not of one key. A hand-made payload only proves the mapping you imagined. Where the shapes differ, derive from data every shape has (the rows), not from a property only one of them carries. This repeats the 2026-09-20 lesson (live/cache contract parity): the check must run on the real round trip.
+
 ## 2026-10-18 — Measure a branch against `origin/main`, and keep dev-run leftovers out of CI-parity checks
 
 **Pattern:** In the worktree the local `main` ref was three PRs behind `origin/main` (98861219 against 3abe33a3), so `git diff main...HEAD` showed 144 files and +43,773 lines: P3 and P4 content that is already merged. I nearly took it for the branch's size. Separately, a local `next dev` run left `frontend/.next/dev/types`, and `tsc --noEmit` failed on those generated files although CI, on a clean checkout, has none.
