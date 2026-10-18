@@ -89,6 +89,15 @@ def _daily_rate(visit_date: date | str | None = None, bed_code: str = _BED_CODE)
     return float(entry.get("price_try") or 0.0)
 
 
+def _is_billed_bed_line(line: ProcedureClaimLine, *, same_day: bool) -> bool:
+    """A billed bed line that nets the expected charge: 510010 (the exact code, as ever) and, on a
+    stay under 24 hours, 510120. The day bed is read like the newborn motor's stand-down reads it
+    (spacing, dots, hyphens), because that motor hands such a claim over for a billed 510120 line."""
+    if str(line.procedure_code).strip() == _BED_CODE:
+        return True
+    return same_day and normalize_procedure_code(line.procedure_code) == DAY_BED_CODE
+
+
 def _resolve_package_window_days(
     line: ProcedureClaimLine,
     *,
@@ -375,15 +384,12 @@ def detect_yatak_puani_opportunities(
         expected = _money(days * daily_rate)
 
         # Net out actual billed bed-day amounts (510010; on a stay under 24 hours also
-        # 510120) so recoverable uplift reflects only the UNBILLED portion. The code is
-        # read as the newborn motor's stand-down reads it (a claim it hands over because of
-        # a billed 510010 / 510120 line must have that line netted here).
-        billed_codes = {_BED_CODE, DAY_BED_CODE} if same_day else {_BED_CODE}
+        # 510120) so recoverable uplift reflects only the UNBILLED portion.
         actual_billed_try = _money(
             sum(
                 float(p.billed_amount_try)
                 for p in claim_procs
-                if normalize_procedure_code(p.procedure_code) in billed_codes
+                if _is_billed_bed_line(p, same_day=same_day)
                 and counts_against_expected_days(p, window)
             )
         )

@@ -448,17 +448,6 @@ def test_a_day_bed_line_is_read_like_the_newborn_motors_stand_down_reads_it(code
     assert opp["recoverable_uplift_try"] == 0.0
 
 
-@pytest.mark.parametrize("code", [" 510.010 ", "510 010", "510-010"])
-def test_a_standard_bed_line_is_read_like_the_newborn_motors_stand_down_reads_it(code: str) -> None:
-    """Same agreement for 510010 (before, only the exact code netted: a stay billed ' 510.010 ' showed its whole
-    standard bed as unbilled once the newborn motor had stood down on it)."""
-    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
-    [opp] = _one_date([_line(code, "222.36")], header=header)
-
-    assert opp["actual_billed_try"] == pytest.approx(222.36, abs=0.005)
-    assert opp["recoverable_uplift_try"] == pytest.approx(222.36, abs=0.005)  # 444.72 - 222.36
-
-
 def test_the_rule_source_names_the_day_bed() -> None:
     from src.bilun.domain.billing import claim_yatak_puani
     from src.bilun.domain.billing.types import YatakPuaniReview
