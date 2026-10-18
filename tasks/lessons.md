@@ -2,6 +2,18 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — Background agents do not restart by themselves after a usage-limit stop: cap the parallel agents and checkpoint
+
+**Pattern:** I ran four to five implementation and review agents at once, each with several mutation workers. The usage window ran out after about three hours (HTTP 429, "resets 1:50am"); the three agents then working ended as `failed`, my own turn was cut by the same limit, and nothing restarted them when the limit reset: a failed agent continues only when the orchestrator sends it a message. Safa came back hours later to find the work idle and asked why it had not resumed. Nothing was lost only because each agent saved its edits at step boundaries.
+
+**Rule:** keep at most three agents running at once and say so before launching more; give each agent a persistent notes folder and tell it to write its progress after every step; when a usage-limit or API failure ends agents, first check the worktree (tests, ruff, `build --check`), commit what is consistent as a WIP checkpoint, then resume each agent with `SendMessage`. Tell Safa at launch that a limit stop needs a manual restart, and what it costs.
+
+## 2026-10-18 — Test new data code on CI's polars 2.0.0 and on a 300-copy table, not only on the 8-patient showcase
+
+**Pattern:** The cohort checks passed 10,600 tests locally on polars 1.41.2, but CI locks polars 2.0.0, and the first gate in the CI image failed one test: it compared fresh Parquet bytes with the committed file, and 2.0.0's writer stamps its own version into the footer (the data was identical). A mutation reviewer then found a second 2.0.0-only problem that no test reached: `pl.format` of two columns panics (`assertion failed: i < self.len()`) on a joined table of 15,000 rows cut down to a few findings, in the plausibility module since its first commit. Only a test on a table larger than the 8-patient showcase shows it. Three smaller notes from the agents: Polars prints a Rust-side deprecation notice for `is_in(pl.Series)` that `-W error` does not catch (pass lists); a join does not keep the order of its left side, so sort explicitly; `tests/conftest.py` rewrites `data/gazette/prose_manifests` at session start, so run containers on a clone, not on the worktree.
+
+**Rule:** compare tables by content (schema and sorted values), never raw Parquet bytes against a committed file; build message text with `+` or `concat_str`, not `pl.format`; give every new check a scale test (the showcase copied 300 times with renamed ids must give the findings of the small table); run each slice in the CI image (`~/.cache/bilun-p4-scratch/ci_gate.sh <label>`) as soon as it is committed, not only at the end.
+
 ## 2026-10-17 — Session scratchpads are tmpfs: a reboot wipes the briefs, runners and scripts kept there
 
 **Pattern:** The briefs, the Argon runner, my mutation script and the takeover snapshots of the P4 work lived only in the sessions' scratchpads under `/tmp/claude-1000/...`. `/tmp` is a 16 GB tmpfs. Safa rebooted at 20:05 and all of it vanished while four background agents were stopped half way. The saved JSONL transcripts under `~/.claude/projects/-home-safa-Documents-Bilun/` let me rebuild the three briefs byte-identical (Write tool inputs, sizes equal to what I had read), and stopped agents can be resumed with SendMessage because their transcripts are on disk. Without that the reviews and the E2 slice would have started from nothing.
