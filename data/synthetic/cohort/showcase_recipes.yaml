@@ -1,0 +1,36 @@
+# Showcase encounter recipes for the synthetic demo cohort (v3, P4).
+# Each recipe maps patient_no (1..8) to its clinical care pathway and injected billing fault (S1..S8).
+# Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
+schema_version: 1
+recipes:
+  - patient_no: 1
+    pathway: appendicitis_lap_appendectomy_package
+    fault: F_S1_PACKAGE_BILLED_ITEMIZED
+
+  - patient_no: 2
+    pathway: copd_exacerbation_pneumonia_ward
+    fault: F_S2_BED_DAYS_UNDERBILLED
+
+  - patient_no: 3
+    pathway: lumbar_stenosis_decompression_itemized
+    fault: F_S3_ANAESTHESIA_LINE_MISSING
+
+  - patient_no: 4
+    pathway: pyelonephritis_dementia_delirium_ward
+    fault: F_S4_COMPANION_NOT_BILLED
+
+  - patient_no: 5
+    pathway: femoral_neck_fracture_cemented_hemiarthroplasty_package
+    fault: F_S5_IMPLANT_UTS_INCOMPLETE
+
+  - patient_no: 6
+    pathway: aspiration_pneumonia_parkinson_ward
+    fault: F_S6_DRUG_INDICATION_NOT_CODED
+
+  - patient_no: 7
+    pathway: pleuritic_chest_pain_er_pulmonary_embolism_ruled_out
+    fault: F_S7_ER_CT_ANGIO_UNBILLED
+
+  - patient_no: 8
+    pathway: cholelithiasis_umbilical_hernia_two_packages
+    fault: F_S8_SECOND_PACKAGE_FULL_RATE

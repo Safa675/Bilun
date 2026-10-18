@@ -1,0 +1,297 @@
+{
+  "clean_counts": {
+    "anadata_clean.parquet": 8,
+    "lab_clean.parquet": 207,
+    "recete_clean.parquet": 19
+  },
+  "clean_tables_digest": {
+    "anadata_clean.parquet": "5513aa4c2c280c96c30ea1d5cc249fae7619cf8d054f870c2e230aa8c3df1dc1",
+    "lab_clean.parquet": "d744128cc07aad287bf78704065a908cd3edc5b8a0dc305980d03a2b32827391",
+    "recete_clean.parquet": "3996874e6334291e43d6ef8b94e3052cca799ef2baa7e7388d187ed9e2605c24"
+  },
+  "counts": {
+    "claim_diagnoses.parquet": 21,
+    "claim_headers.parquet": 8,
+    "drug_claim_lines.parquet": 19,
+    "expected_rule_outputs.parquet": 8,
+    "material_claim_lines.parquet": 3,
+    "medula_rejection_events.parquet": 0,
+    "patient_copay_profiles.parquet": 8,
+    "performed_procedure_lines.parquet": 4,
+    "procedure_claim_lines.parquet": 117
+  },
+  "dataset_id": "showcase-v3",
+  "encounters": [
+    {
+      "claim_id": "F-SENTETIK-HASTA-0001-001",
+      "fault_id": "F_S1_PACKAGE_BILLED_ITEMIZED",
+      "is_clean": false,
+      "pathway_id": "appendicitis_lap_appendectomy_package",
+      "patient_id": "SENTETIK-HASTA-0001",
+      "story": "S1",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0002-001",
+      "fault_id": "F_S2_BED_DAYS_UNDERBILLED",
+      "is_clean": false,
+      "pathway_id": "copd_exacerbation_pneumonia_ward",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S2",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0003-001",
+      "fault_id": "F_S3_ANAESTHESIA_LINE_MISSING",
+      "is_clean": false,
+      "pathway_id": "lumbar_stenosis_decompression_itemized",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S3",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0004-001",
+      "fault_id": "F_S4_COMPANION_NOT_BILLED",
+      "is_clean": false,
+      "pathway_id": "pyelonephritis_dementia_delirium_ward",
+      "patient_id": "SENTETIK-HASTA-0004",
+      "story": "S4",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0005-001",
+      "fault_id": "F_S5_IMPLANT_UTS_INCOMPLETE",
+      "is_clean": false,
+      "pathway_id": "femoral_neck_fracture_cemented_hemiarthroplasty_package",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S5",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0006-001",
+      "fault_id": "F_S6_DRUG_INDICATION_NOT_CODED",
+      "is_clean": false,
+      "pathway_id": "aspiration_pneumonia_parkinson_ward",
+      "patient_id": "SENTETIK-HASTA-0006",
+      "story": "S6",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0007-001",
+      "fault_id": "F_S7_ER_CT_ANGIO_UNBILLED",
+      "is_clean": false,
+      "pathway_id": "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out",
+      "patient_id": "SENTETIK-HASTA-0007",
+      "story": "S7",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0008-001",
+      "fault_id": "F_S8_SECOND_PACKAGE_FULL_RATE",
+      "is_clean": false,
+      "pathway_id": "cholelithiasis_umbilical_hernia_two_packages",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S8",
+      "tier": "showcase"
+    }
+  ],
+  "faults": [
+    {
+      "amount_try": "4122.06",
+      "billed_clean_try": "8636.51",
+      "billed_faulty_try": "4514.45",
+      "claim_id": "F-SENTETIK-HASTA-0001-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "billing_strategy",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S1_PACKAGE_BILLED_ITEMIZED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0001-001-F_S1_PACKAGE_BILLED_ITEMIZED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "appendicitis_lap_appendectomy_package",
+      "patient_id": "SENTETIK-HASTA-0001",
+      "story": "S1",
+      "sut_section": "2.2.2(1)"
+    },
+    {
+      "amount_try": "667.08",
+      "billed_clean_try": "3263.43",
+      "billed_faulty_try": "2596.35",
+      "claim_id": "F-SENTETIK-HASTA-0002-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "yatak_puani",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S2_BED_DAYS_UNDERBILLED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0002-001-F_S2_BED_DAYS_UNDERBILLED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "copd_exacerbation_pneumonia_ward",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S2",
+      "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "928.09",
+      "billed_clean_try": "5607.62",
+      "billed_faulty_try": "4679.53",
+      "claim_id": "F-SENTETIK-HASTA-0003-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "anestezi_puani",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S3_ANAESTHESIA_LINE_MISSING",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0003-001-F_S3_ANAESTHESIA_LINE_MISSING",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "lumbar_stenosis_decompression_itemized",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S3",
+      "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "370.50",
+      "billed_clean_try": "2108.52",
+      "billed_faulty_try": "1738.02",
+      "claim_id": "F-SENTETIK-HASTA-0004-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "refakatci",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S4_COMPANION_NOT_BILLED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0004-001-F_S4_COMPANION_NOT_BILLED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "pyelonephritis_dementia_delirium_ward",
+      "patient_id": "SENTETIK-HASTA-0004",
+      "story": "S4",
+      "sut_section": "2.6.3(2)"
+    },
+    {
+      "amount_try": "6465.27",
+      "billed_clean_try": "31233.66",
+      "billed_faulty_try": "31233.66",
+      "claim_id": "F-SENTETIK-HASTA-0005-001",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "material_bundling",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S5_IMPLANT_UTS_INCOMPLETE",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0005-001-F_S5_IMPLANT_UTS_INCOMPLETE",
+      "line_id": "MLZ-F-SENTETIK-HASTA-0005-001-002",
+      "line_ids": [],
+      "line_type": "malzeme",
+      "pathway_id": "femoral_neck_fracture_cemented_hemiarthroplasty_package",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S5",
+      "sut_section": "3.1.1(2)"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "2416.40",
+      "billed_faulty_try": "2416.40",
+      "claim_id": "F-SENTETIK-HASTA-0006-001",
+      "effect_kind": "compliance_error",
+      "engine_rule": "drug_indication",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S6_DRUG_INDICATION_NOT_CODED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0006-001-F_S6_DRUG_INDICATION_NOT_CODED",
+      "line_id": "ILC-F-SENTETIK-HASTA-0006-001-004",
+      "line_ids": [],
+      "line_type": "ilac",
+      "pathway_id": "aspiration_pneumonia_parkinson_ward",
+      "patient_id": "SENTETIK-HASTA-0006",
+      "story": "S6",
+      "sut_section": "4.2.36(3)"
+    },
+    {
+      "amount_try": "1138.22",
+      "billed_clean_try": "1633.02",
+      "billed_faulty_try": "494.80",
+      "claim_id": "F-SENTETIK-HASTA-0007-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "procedure_capture_gap",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S7_ER_CT_ANGIO_UNBILLED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0007-001-F_S7_ER_CT_ANGIO_UNBILLED",
+      "line_id": "",
+      "line_ids": [
+        "EMR-F-SENTETIK-HASTA-0007-001-004"
+      ],
+      "line_type": "fatura",
+      "pathway_id": "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out",
+      "patient_id": "SENTETIK-HASTA-0007",
+      "story": "S7",
+      "sut_section": "2.2.1.B-2(2)"
+    },
+    {
+      "amount_try": "5377.20",
+      "billed_clean_try": "13858.13",
+      "billed_faulty_try": "19235.33",
+      "claim_id": "F-SENTETIK-HASTA-0008-001",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "drg_unbundling",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S8_SECOND_PACKAGE_FULL_RATE",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0008-001-F_S8_SECOND_PACKAGE_FULL_RATE",
+      "line_id": "ISL-F-SENTETIK-HASTA-0008-001-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "cholelithiasis_umbilical_hernia_two_packages",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S8",
+      "sut_section": "2.2.2.B(3)(a)"
+    }
+  ],
+  "roles": {
+    "default_landing": {
+      "claim_id": "F-SENTETIK-HASTA-0001-001",
+      "patient_id": "SENTETIK-HASTA-0001"
+    },
+    "showcase_S1": {
+      "claim_id": "F-SENTETIK-HASTA-0001-001",
+      "patient_id": "SENTETIK-HASTA-0001"
+    },
+    "showcase_S2": {
+      "claim_id": "F-SENTETIK-HASTA-0002-001",
+      "patient_id": "SENTETIK-HASTA-0002"
+    },
+    "showcase_S3": {
+      "claim_id": "F-SENTETIK-HASTA-0003-001",
+      "patient_id": "SENTETIK-HASTA-0003"
+    },
+    "showcase_S4": {
+      "claim_id": "F-SENTETIK-HASTA-0004-001",
+      "patient_id": "SENTETIK-HASTA-0004"
+    },
+    "showcase_S5": {
+      "claim_id": "F-SENTETIK-HASTA-0005-001",
+      "patient_id": "SENTETIK-HASTA-0005"
+    },
+    "showcase_S6": {
+      "claim_id": "F-SENTETIK-HASTA-0006-001",
+      "patient_id": "SENTETIK-HASTA-0006"
+    },
+    "showcase_S7": {
+      "claim_id": "F-SENTETIK-HASTA-0007-001",
+      "patient_id": "SENTETIK-HASTA-0007"
+    },
+    "showcase_S8": {
+      "claim_id": "F-SENTETIK-HASTA-0008-001",
+      "patient_id": "SENTETIK-HASTA-0008"
+    }
+  },
+  "schema_version": 1,
+  "seed": null,
+  "tables_digest": {
+    "claim_diagnoses.parquet": "36b44f26d35d5744b14d7337b6ed32e7e789da78257896b33aaf60896ab377ff",
+    "claim_headers.parquet": "815a4ad43b5e945bc606eede07b207d3418d61594fd4a72a1feecd7227eff4e9",
+    "drug_claim_lines.parquet": "61696c8a20091c94876d8eb66b293c037e91ed43109c09c77f6ef0d613905c12",
+    "expected_rule_outputs.parquet": "e401c368bf68bfcc0ee45ce68e43e832710b55a31a1f385ab25f6126907b5f0f",
+    "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
+    "medula_rejection_events.parquet": "58ff0947311e1f13e09a205e328244b3db87480e67bff2117522fd1dc819c444",
+    "patient_copay_profiles.parquet": "58ecaee1583f785828c7f6f2d37d3c07be39cdd0e44f73afed63ff2c2bad975c",
+    "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
+    "procedure_claim_lines.parquet": "06578b9eb7ba54e9dd66fa0d61d3c0b4bc9d07ab31c78003dad6b0d1ddec1b9e"
+  }
+}

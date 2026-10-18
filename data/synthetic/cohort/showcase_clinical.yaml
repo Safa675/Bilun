@@ -1,0 +1,163 @@
+# Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
+# Each entry maps patient_no (1..8, story S1..S8) to plausible admission/visit vitals and optional lab
+# state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
+# `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
+schema_version: 1
+drug_routes:
+  by_barcode:
+    "8699809950696": "Subkütan" # CLEXANE 4000 ANTI-XA IU/0,4 ML kullanıma hazır enjektör
+    "8697637690128": "Intravenöz" # NEOFLEKS %0,9 izotonik sodyum klorür PP-torba 1000 ML
+  basis: judgment
+  source: "Route of administration of the billed product (a pharmacological property, not patient history); clinician confirms in issue #309."
+patients:
+  - patient_no: 1
+    vitals:
+      sbp: 128
+      dbp: 78
+      pulse: 96
+      spo2: 98
+      height_cm: 178
+      weight_kg: 82.0
+    labs:
+      states:
+        "L107020|WBC (Lökosit)": bacterial_infection
+        "L101850|CRP (kantitatif)": bacterial_infection
+      basis: judgment
+      source: "Story S1 acute appendicitis lab presentation (leukocytosis and elevated quantitative CRP); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S1 acute appendicitis presentation (mild tachycardia, normotensive, normal oxygen saturation); clinician confirms in issue #309."
+
+  - patient_no: 2
+    vitals:
+      sbp: 142
+      dbp: 84
+      pulse: 108
+      spo2: 88
+      height_cm: 170
+      weight_kg: 68.0
+    labs:
+      blood_gas: arterial
+      states:
+        "L107020|WBC (Lökosit)":
+          - bacterial_infection
+          - steroid_use
+        "L101850|CRP (kantitatif)":
+          - bacterial_infection
+          - viral_or_mild_inflammation
+        "L106240|Prokalsitonin": bacterial_pneumonia_or_pyelonephritis
+        "L103900|pH":
+          - copd_exacerbation
+          - normal
+        "L103900|pCO2":
+          - copd_hypercapnia
+          - normal
+        "L103900|pO2":
+          - hypoxemia
+          - chronic_copd_room_air
+      basis: judgment
+      source: "Story S2 COPD exacerbation with pneumonia admission and day-4 follow-up labs (methylprednisolone course from admission); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S2 COPD exacerbation with pneumonia presentation (hypoxaemia SpO2 88%, tachycardia, elevated SBP); clinician confirms in issue #309."
+
+  - patient_no: 3
+    vitals:
+      sbp: 138
+      dbp: 80
+      pulse: 76
+      spo2: 96
+      height_cm: 158
+      weight_kg: 74.0
+    labs:
+      states:
+        "L107020|HGB (Hemoglobin)": postop
+      basis: judgment
+      source: "Story S3 elective lumbar spinal stenosis decompression postoperative hemogram; clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S3 elective lumbar spinal stenosis decompression presentation (stable vitals, mild systolic elevation); clinician confirms in issue #309."
+
+  - patient_no: 4
+    vitals:
+      sbp: 108
+      dbp: 62
+      pulse: 104
+      spo2: 94
+      height_cm: 155
+      weight_kg: 58.0
+    labs:
+      states:
+        "L107020|WBC (Lökosit)":
+          - bacterial_infection
+          - normal
+        "L101850|CRP (kantitatif)":
+          - bacterial_infection
+          - viral_or_mild_inflammation
+        "L104780|Kreatinin": ckd_g3a
+        "L107420|Üre": prerenal/dehydration/hf
+        "L106910|Sodyum": hyponatremia
+        "L107010|Protein (strip)": fever_or_uti
+        "L107010|Lökosit esteraz (strip)": uti_or_pyelonephritis
+        "L107010|Nitrit (strip)": uti_enterobacterales
+        "L107010|Mikroskopi: lökosit": pyelonephritis
+      basis: judgment
+      source: "Story S4 acute pyelonephritis with dehydration and baseline CKD G3a admission and follow-up labs; clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S4 acute pyelonephritis with delirium in dementia presentation (tachycardia, low-normal blood pressure); clinician confirms in issue #309."
+
+  - patient_no: 5
+    vitals:
+      sbp: 146
+      dbp: 82
+      pulse: 88
+      spo2: 95
+      height_cm: 156
+      weight_kg: 62.0
+    basis: judgment
+    source: "Story S5 displaced femoral neck fracture presentation (pain-related systolic elevation in known hypertension); clinician confirms in issue #309."
+
+  - patient_no: 6
+    vitals:
+      sbp: 118
+      dbp: 70
+      pulse: 102
+      spo2: 90
+      height_cm: 172
+      weight_kg: 63.0
+    labs:
+      states:
+        "L107020|WBC (Lökosit)":
+          - bacterial_infection
+          - normal
+        "L101850|CRP (kantitatif)":
+          - bacterial_infection
+          - viral_or_mild_inflammation
+      basis: judgment
+      source: "Story S6 aspiration pneumonia in Parkinson disease admission and follow-up inflammatory markers; clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S6 aspiration pneumonia in Parkinson disease presentation (hypoxaemia SpO2 90%, tachycardia); clinician confirms in issue #309."
+
+  - patient_no: 7
+    vitals:
+      sbp: 134
+      dbp: 82
+      pulse: 92
+      spo2: 97
+      height_cm: 162
+      weight_kg: 71.0
+    labs:
+      states:
+        "L102090|D-dimer": elderly_without_vte
+      basis: judgment
+      source: "Story S7 emergency pleuritic chest pain evaluation with age-related D-dimer elevation and normal serial troponin I; clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S7 emergency pleuritic chest pain presentation (preserved oxygen saturation, borderline tachycardia); clinician confirms in issue #309."
+
+  - patient_no: 8
+    vitals:
+      sbp: 124
+      dbp: 76
+      pulse: 74
+      spo2: 98
+      height_cm: 163
+      weight_kg: 79.0
+    basis: judgment
+    source: "Story S8 elective cholecystectomy and umbilical hernia repair presentation (normal preoperative vitals); clinician confirms in issue #309."
