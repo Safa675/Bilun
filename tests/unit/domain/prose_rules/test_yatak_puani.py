@@ -370,8 +370,10 @@ def test_the_detail_of_a_stay_of_one_date_says_what_was_priced_and_why() -> None
     assert opp["detail"].startswith(
         "Gündüz yatak (510120): 1 billable bed-day(s) (gross LOS 1 day(s) at 44.45 TRY/day) = 44.45 TRY"
     )
-    assert "Same-day admission/discharge (under 24 hours)" in opp["detail"]
-    assert "SUT §2.2.2.(3)" in opp["detail"]
+    assert (
+        "Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed at the day bed "
+        "(510120, Gündüz yatak tarifesi), not as a full 510010 day."
+    ) in opp["detail"]
     assert "consider 510120" not in opp["detail"]  # the advice is now the price
     assert "Standart yatak" not in opp["detail"]
 
@@ -454,3 +456,40 @@ def test_the_rule_source_names_the_day_bed() -> None:
 
     assert "510120" in claim_yatak_puani._PROSE_RULE_SOURCE
     assert YatakPuaniReview().rule_source == claim_yatak_puani._PROSE_RULE_SOURCE
+
+
+def test_a_day_bed_line_inside_a_mandated_package_window_belongs_to_the_package() -> None:
+    """A one-date stay whose operation must be billed as EK-2/C package P610131 (billed hizmet başı): the package
+    includes the bed (§2.2.2.B-1), so no day bed is expected and a 510120 line dated in the window pays the package,
+    not the day bed (`counts_against_expected_days`, as for a 510010 line)."""
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+    from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
+
+    day = _d("2026-07-14")
+    bill = _Bill("C-SH01", "yatis", day, day, package_candidate=True)
+    bill.proc("610131", day, specialty=GENCER)
+    bill.proc("510120", day, specialty=GENCER)
+    ctx = bill.ctx()
+
+    [opp] = detect_yatak_puani_opportunities(
+        list(ctx.claims), list(ctx.procedure_lines), claim_ids_with_procs={"C-SH01"}
+    )
+
+    assert (opp["gross_bed_days"], opp["bundled_days"], opp["bed_days"]) == (1, 1, 0)
+    assert opp["expected_yatak_try"] == 0.0
+    assert opp["actual_billed_try"] == 0.0  # the line belongs to the package
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_an_inherited_gap_is_pinned_a_spelled_510010_line_is_not_netted_by_this_motor() -> None:
+    """Characterisation of INHERITED behaviour, pinned on purpose (found, not fixed; tasks/todo.md): this motor nets
+    the exact code 510010 only, while the newborn motor's stand-down reads spacing, dots and hyphens. The day-bed change
+    must not move a stay of two dates, spelled lines included; whoever closes the gap flips this test as a decision."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
+    [exact] = _one_date([_line("510010", "222.36")], header=header)
+    assert exact["recoverable_uplift_try"] == pytest.approx(222.36, abs=0.005)  # 444.72 - 222.36
+
+    for code in (" 510.010 ", "510 010", "510-010"):
+        [spelled] = _one_date([_line(code, "222.36")], header=header)
+        assert spelled["actual_billed_try"] == 0.0
+        assert spelled["recoverable_uplift_try"] == pytest.approx(444.72, abs=0.005)

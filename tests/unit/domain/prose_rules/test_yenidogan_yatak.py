@@ -644,8 +644,13 @@ def test_a_genuine_same_day_stay_is_priced_at_the_day_bed() -> None:
     assert opp["puan"] == pytest.approx(74.96, abs=0.005)
     assert opp["expected_try"] == pytest.approx(44.45, abs=0.005)
     assert opp["recoverable_uplift_try"] == pytest.approx(44.45, abs=0.005)
-    assert "Same-day admission/discharge (under 24 hours)" in opp["detail"]
-    assert "SUT §2.2.2.(3)" in opp["detail"]
+    assert opp["detail"].startswith(
+        "Gündüz yatak (510120): 1 bed-day(s) at 44.45 TRY/day = 44.45 TRY (inclusive LOS, discharge day billed)."
+    )
+    assert (
+        "Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed at the day bed "
+        "(510120, Gündüz yatak tarifesi), not as a Kuvöz (510070) or Kot (510081) day."
+    ) in opp["detail"]
     for gone in ("is assumed", "mutually exclusive", "confirm newborn ward admission", "Kot rate"):
         assert gone not in opp["detail"]
 

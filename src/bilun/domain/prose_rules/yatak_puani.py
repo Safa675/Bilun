@@ -21,8 +21,8 @@ so the package's components add no itemized uplift inside the window.
 **Stays under 24 hours (SUT §2.2.2.(3), EK-2/B 510120):** "24 saatten kısa süreli
 yatışlarda yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır." The claim
 has dates, no times, so a stay whose admission date equals its discharge date (always
-under 24 hours) is priced at the day bed 510120 (Gündüz yatak tarifesi, a fifth of
-510010) instead of a full 510010 day, and a billed 510120 line nets it like a 510010
+under 24 hours) is priced at the day bed 510120 (Gündüz yatak tarifesi, 74.96 puan
+against 374.97 for 510010) instead of a full 510010 day, and a billed 510120 line nets it like a 510010
 line (on such a stay only: a 510120 line pays no standard-bed day of a longer stay).
 An overnight stay under 24 hours spans two dates and cannot be seen.
 
