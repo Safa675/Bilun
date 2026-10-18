@@ -64,6 +64,12 @@ ORGAN_SISTEMI_BY_TEST_KEY: dict[str, str] = {
     "urea": "Biyokimya",
 }
 
+
+def organ_system_of(test_key: str) -> str:
+    """`organ_sistemi` of a lab test: the map above, and `Biyokimya` for a test it does not list."""
+    return ORGAN_SISTEMI_BY_TEST_KEY.get(test_key, "Biyokimya")
+
+
 DIFF_PARAMETER_NAMES: tuple[str, ...] = (
     "NEU# (Nötrofil)",
     "LYM# (Lenfosit)",
@@ -96,21 +102,18 @@ DIFF_PROFILES: dict[str, dict[str, tuple[float, float]]] = {
     },
 }
 
-RED_CELL_DERIVED_PARAMS: frozenset[str] = frozenset(
-    {
-        "RBC (Eritrosit)",
-        "HCT (Hematokrit)",
-        "MCHC",
-    }
-)
+# Tuples, not sets: when two derived states are asked for, the first one in this order is the one the
+# error names, whatever the hash seed.
+RED_CELL_DERIVED_PARAMS: tuple[str, ...] = ("RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC")
 
-BLOOD_GAS_DERIVED_PARAMS: frozenset[str] = frozenset(
-    {
-        "HCO3",
-        "BE (baz fazlası)",
-        "SaO2",
-    }
-)
+BLOOD_GAS_DERIVED_PARAMS: tuple[str, ...] = ("HCO3", "BE (baz fazlası)", "SaO2")
+
+# Printed decimals that rules R1 and R4 fix whatever the CSV limits say: the five absolute counts and
+# the three derived blood-gas values. Every other parameter prints `LabParameterSpec.decimals`.
+DIFF_COUNT_DECIMALS = 2
+BLOOD_GAS_DERIVED_DECIMALS = 1
+
+COHORT = "showcase"
 
 EGFR_PARAM_NAME = "eGFR (CKD-EPI 2021, hesaplanan)"
 CREATININE_PARAM_NAME = "Kreatinin"
@@ -219,6 +222,15 @@ class LabParameterSpec:
     def key(self) -> str:
         return f"{self.ek2b_code}|{self.result_parameter}"
 
+    @property
+    def printed_decimals(self) -> int:
+        """Decimals the generator prints: the fixed ones of rules R1 and R4, else `decimals`."""
+        if self.ek2b_code == "L107020" and self.result_parameter in DIFF_PARAMETER_NAMES:
+            return DIFF_COUNT_DECIMALS
+        if self.ek2b_code == "L103900" and self.result_parameter in BLOOD_GAS_DERIVED_PARAMS:
+            return BLOOD_GAS_DERIVED_DECIMALS
+        return self.decimals
+
     def ref_limits(self, sex: str) -> tuple[float | None, float | None]:
         if sex == "M":
             return self.ref_low_male, self.ref_high_male
@@ -275,7 +287,9 @@ class LabReference:
 
         `SUB_CODE` and `parametre` are the keys of `lab_clean`; `position` counts from 0 inside the
         code and `n_params` is the number of parameters of the code, so a result set of the
-        code is `n_params` consecutive rows with `position` 0, 1, 2, and so on.
+        code is `n_params` consecutive rows with `position` 0, 1, 2, and so on. `organ` is the
+        `organ_sistemi` and `decimals` the number of printed decimals the generator gives the
+        parameter.
         """
         specs = [spec for group in self.by_code.values() for spec in group]
         return pl.DataFrame(
@@ -288,6 +302,8 @@ class LabReference:
                 "ref_high_male": [s.ref_high_male for s in specs],
                 "ref_low_female": [s.ref_low_female for s in specs],
                 "ref_high_female": [s.ref_high_female for s in specs],
+                "organ": [organ_system_of(s.test_key) for s in specs],
+                "decimals": [s.printed_decimals for s in specs],
             },
             schema={
                 "SUB_CODE": pl.String,
@@ -298,6 +314,8 @@ class LabReference:
                 "ref_high_male": pl.Float64,
                 "ref_low_female": pl.Float64,
                 "ref_high_female": pl.Float64,
+                "organ": pl.String,
+                "decimals": pl.Int64,
             },
         ).with_columns(
             pl.int_range(pl.len()).over("SUB_CODE").alias("position"),
@@ -418,14 +436,11 @@ def parse_abnormal_state_item(
                 raise LabReferenceError(f"{context}: duplicate sex key {sex_key!r} in {text!r}")
             sex_ranges[sex_key] = (lo, hi)
             tokens.extend((s_lo, s_hi))
-        first_lo, first_hi = next(iter(sex_ranges.values()))
         return ParsedState(
             name=short_name,
             full_name=full_name,
             raw_text=text,
             kind="sex_range",
-            low=first_lo,
-            high=first_hi,
             sex_ranges=sex_ranges,
             number_tokens=tuple(tokens),
         )
@@ -827,17 +842,17 @@ def _sao2(po2: Any) -> Any:
 
 def henderson_hasselbalch_hco3(ph: float, pco2: float) -> float:
     """Compute arterial `HCO3 = 0.0307 * pCO2 * 10^(pH - 6.1)` rounded to 1 decimal (R4)."""
-    return round(_hco3(ph, pco2), 1)
+    return round(_hco3(ph, pco2), BLOOD_GAS_DERIVED_DECIMALS)
 
 
 def base_excess_from_ph_hco3(ph: float, hco3: float) -> float:
     """Compute arterial `BE = 0.93 * (HCO3 - 24.4 + 14.8 * (pH - 7.4))` rounded to 1 decimal (R4)."""
-    return round(_base_excess(ph, hco3), 1)
+    return round(_base_excess(ph, hco3), BLOOD_GAS_DERIVED_DECIMALS)
 
 
 def severinghaus_sao2(po2: float) -> float:
     """Compute arterial `SaO2 = 100 / (1 + 23400 / (pO2^3 + 150 * pO2))` rounded to 1 decimal (R4)."""
-    return round(_sao2(po2), 1)
+    return round(_sao2(po2), BLOOD_GAS_DERIVED_DECIMALS)
 
 
 def _state_for_occurrence(
@@ -913,9 +928,9 @@ def _generate_hemogram_values(
     diff_counts: dict[str, float] = {}
     for diff_p in DIFF_PARAMETER_NAMES:
         scaled_pct = raw_pcts[diff_p] * 100.0 / pct_sum
-        diff_counts[diff_p] = round(wbc_val * scaled_pct / 100.0, 2)
+        diff_counts[diff_p] = round(wbc_val * scaled_pct / 100.0, DIFF_COUNT_DECIMALS)
     other_sum = sum(v for p, v in diff_counts.items() if p != "NEU# (Nötrofil)")
-    diff_counts["NEU# (Nötrofil)"] = round(wbc_val - other_sum, 2)
+    diff_counts["NEU# (Nötrofil)"] = round(wbc_val - other_sum, DIFF_COUNT_DECIMALS)
 
     hgb_spec = spec_by_param["HGB (Hemoglobin)"]
     mcv_spec = spec_by_param["MCV"]
@@ -1345,7 +1360,7 @@ def build_lab_clean(
                 )
 
             for spec in specs:
-                organ = ORGAN_SISTEMI_BY_TEST_KEY.get(spec.test_key, "Biyokimya")
+                organ = organ_system_of(spec.test_key)
                 if spec.is_qualitative_strip:
                     st_id = _state_for_occurrence(states_map, spec.key, k)
                     grade = draw_strip_grade(
@@ -1368,7 +1383,7 @@ def build_lab_clean(
                             "ref_ust": None,
                             "anormal_mi": is_abnormal_strip(grade),
                             "organ_sistemi": organ,
-                            "kohort": "showcase",
+                            "kohort": COHORT,
                             "donem": donem,
                             "tarih": line_dt,
                         }
@@ -1400,7 +1415,7 @@ def build_lab_clean(
                             "ref_ust": ref_ust,
                             "anormal_mi": is_abnormal_numeric(val, ref_alt, ref_ust),
                             "organ_sistemi": organ,
-                            "kohort": "showcase",
+                            "kohort": COHORT,
                             "donem": donem,
                             "tarih": line_dt,
                         }
@@ -1410,10 +1425,11 @@ def build_lab_clean(
 
 
 # Tolerances of the derived values: half a unit of the last printed decimal, which is the rounding
-# error of a value derived from the (already rounded) values stored next to it. R1 is the 0.05
-# of the design.
+# error of a value derived from the (already rounded) values stored next to it. R1 is tighter than
+# the others need: the generator lets NEU absorb the rounding, so the five counts sum to the WBC up to
+# float noise (about 1e-15) and a drift of one printed step (0.01) is already a defect.
 _EPS = 1e-9
-R1_TOLERANCE = 0.05
+R1_TOLERANCE = 0.005  # the counts have two decimals
 R2_RBC_TOLERANCE = 0.05  # RBC has one decimal
 R2_HCT_TOLERANCE = 0.5  # HCT is a whole number
 R2_MCHC_TOLERANCE = 0.05  # MCHC has one decimal
@@ -1476,15 +1492,24 @@ def _raise_first(found: list[pl.DataFrame], rows: pl.DataFrame) -> None:
 
 
 def _annotate(lab_df: pl.DataFrame, ref: LabReference, ana_df: pl.DataFrame | None) -> pl.DataFrame:
-    """`lab_df` with its row number, the reference columns of its parameter and age and sex of the episode."""
+    """`lab_df` with its row number, the reference columns of its parameter and the anadata of its episode.
+
+    The anadata columns are `ana_patient` (HASTA_ID), `age`, `sex_code` (CINSIYET), `female` (null unless
+    the code is E or K, so a bad code is reported and not read as male) and `has_ana`, which is null
+    for an episode without an anadata row.
+    """
     rows = lab_df.with_row_index("row").join(
         ref.parameter_table, on=["SUB_CODE", "parametre"], how="left"
     )
     if ana_df is not None:
+        sex_code = pl.col("CINSIYET")
         people = ana_df.select(
             pl.col("SQ_EPISODE").alias("basvuru_id"),
+            pl.col("HASTA_ID").alias("ana_patient"),
             pl.col("TANI_YASI").alias("age"),
-            (pl.col("CINSIYET") == "K").alias("female"),
+            sex_code.alias("sex_code"),
+            pl.when(sex_code == "K").then(True).when(sex_code == "E").then(False).alias("female"),
+            pl.lit(True).alias("has_ana"),
         ).unique(subset="basvuru_id", keep="first", maintain_order=True)
         rows = rows.join(people, on="basvuru_id", how="left")
     return rows.sort("row")
@@ -1531,14 +1556,16 @@ def _result_set_violations(rows: pl.DataFrame) -> list[pl.DataFrame]:
     return [_flag(rows, "result set", 1, reason.is_not_null(), reason)]
 
 
-def _row_violations(rows: pl.DataFrame, *, with_people: bool) -> list[pl.DataFrame]:
-    """Row shape and unit (R6), finite values, the limits and the `anormal_mi` flag (R5)."""
+# One check of a row: the rule it belongs to, the mask of the rows where it fails and its message.
+Check = tuple[str, pl.Expr, pl.Expr]
+
+
+def _shape_checks() -> list[Check]:
+    """R6: what a strip row and a number row look like, and the unit of both."""
     value, grade = pl.col("sonuc_sayisal"), pl.col("sonuc_nitel")
     low, high = pl.col("ref_alt"), pl.col("ref_ust")
-    strip, flag, unit = pl.col("is_strip"), pl.col("anormal_mi"), pl.col("birim")
-    finite = value.is_finite().fill_null(False)
-    outside = (value < low).fill_null(False) | (value > high).fill_null(False)
-    checks: list[tuple[str, pl.Expr, pl.Expr]] = [
+    strip, unit = pl.col("is_strip"), pl.col("birim")
+    return [
         ("R6", strip & value.is_not_null(), _fmt("a strip has no number, got {}", value)),
         (
             "R6",
@@ -1553,20 +1580,72 @@ def _row_violations(rows: pl.DataFrame, *, with_people: bool) -> list[pl.DataFra
         ("R6", ~strip & grade.is_not_null(), _fmt("a number has no grade, got {}", grade)),
         (
             "R6",
-            unit != pl.col("csv_unit"),
+            unit.ne_missing(pl.col("csv_unit")),
             _fmt("unit {} differs from the CSV unit {}", unit, pl.col("csv_unit")),
         ),
+    ]
+
+
+def _column_checks() -> list[Check]:
+    """The descriptive columns are the generator's: tarih at midnight, donem its year, kohort, organ."""
+    tarih = pl.col("tarih")
+    shown = tarih.dt.strftime("%Y-%m-%d %H:%M:%S")
+    return [
         (
-            "finite",
-            ~strip & ~finite,
-            _fmt("sonuc_sayisal must be a finite number, got {}", value),
+            "columns",
+            tarih.is_null() | tarih.ne_missing(tarih.dt.truncate("1d")),
+            _fmt("tarih {} is not a date at midnight", shown),
         ),
+        (
+            "columns",
+            pl.col("donem").ne_missing(tarih.dt.year().cast(pl.String)),
+            _fmt("donem {} is not the year of tarih {}", pl.col("donem"), shown),
+        ),
+        (
+            "columns",
+            pl.col("kohort").ne_missing(pl.lit(COHORT)),
+            _fmt("kohort {} is not {}", pl.col("kohort"), pl.lit(COHORT)),
+        ),
+        (
+            "columns",
+            pl.col("organ_sistemi").ne_missing(pl.col("organ")),
+            _fmt("organ_sistemi {} is not {}", pl.col("organ_sistemi"), pl.col("organ")),
+        ),
+    ]
+
+
+def _value_checks() -> list[Check]:
+    """Finite values and limits, and the printed decimals of the parameter."""
+    value = pl.col("sonuc_sayisal")
+    low, high = pl.col("ref_alt"), pl.col("ref_ust")
+    strip = pl.col("is_strip")
+    finite = value.is_finite().fill_null(False)
+    # A value has at most `decimals` decimals when scaling it by 10^decimals leaves a whole number
+    # (up to float noise, which is far below the 1e-6 allowed here).
+    scaled = value * pl.lit(10.0).pow(pl.col("decimals"))
+    return [
+        ("finite", ~strip & ~finite, _fmt("sonuc_sayisal must be a finite number, got {}", value)),
         (
             "finite",
             ~strip
             & ((low.is_not_null() & ~low.is_finite()) | (high.is_not_null() & ~high.is_finite())),
             pl.lit("the reference limits must be finite"),
         ),
+        (
+            "decimals",
+            ~strip & finite & ((scaled - scaled.round(0)).abs() > 1e-6),
+            _fmt("sonuc_sayisal {} has more than {} decimals", value, pl.col("decimals")),
+        ),
+    ]
+
+
+def _flag_checks() -> list[Check]:
+    """R5: `anormal_mi` is set and is true exactly outside the limits (for a strip: not Negatif)."""
+    value, grade = pl.col("sonuc_sayisal"), pl.col("sonuc_nitel")
+    low, high = pl.col("ref_alt"), pl.col("ref_ust")
+    strip, flag = pl.col("is_strip"), pl.col("anormal_mi")
+    outside = (value < low).fill_null(False) | (value > high).fill_null(False)
+    return [
         ("R5", flag.is_null(), pl.lit("anormal_mi must not be null")),
         (
             "R5",
@@ -1585,32 +1664,69 @@ def _row_violations(rows: pl.DataFrame, *, with_people: bool) -> list[pl.DataFra
             ),
         ),
     ]
-    if with_people:
-        female = pl.col("female")
-        sex_low = pl.when(female).then(pl.col("ref_low_female")).otherwise(pl.col("ref_low_male"))
-        sex_high = (
-            pl.when(female).then(pl.col("ref_high_female")).otherwise(pl.col("ref_high_male"))
-        )
-        checks += [
-            (
-                "R5",
-                female.is_null(),
-                pl.lit("no anadata row for the episode: the sex-specific limits cannot be checked"),
+
+
+def _people_checks() -> list[Check]:
+    """The link to anadata: a row for the episode, of this patient, with a sex code and, for eGFR, an age.
+
+    With a valid sex the limits of the row must be the sex-specific ones of the CSV (R5).
+    """
+    low, high = pl.col("ref_alt"), pl.col("ref_ust")
+    strip, female = pl.col("is_strip"), pl.col("female")
+    has_row = pl.col("has_ana").is_not_null()
+    sex_low = pl.when(female).then(pl.col("ref_low_female")).otherwise(pl.col("ref_low_male"))
+    sex_high = pl.when(female).then(pl.col("ref_high_female")).otherwise(pl.col("ref_high_male"))
+    return [
+        (
+            "R5",
+            ~has_row,
+            pl.lit("no anadata row for the episode: the sex-specific limits cannot be checked"),
+        ),
+        (
+            "R5",
+            has_row & ~pl.col("sex_code").is_in(["E", "K"]).fill_null(False),
+            _fmt(
+                "CINSIYET {} of the episode is neither E nor K: the sex-specific limits cannot be read",
+                pl.col("sex_code"),
             ),
-            (
-                "R5",
-                ~strip
-                & female.is_not_null()
-                & (low.ne_missing(sex_low) | high.ne_missing(sex_high)),
-                _fmt(
-                    "the limits [{}, {}] are not the sex-specific limits [{}, {}] of the CSV",
-                    low,
-                    high,
-                    sex_low,
-                    sex_high,
-                ),
+        ),
+        (
+            "R3",
+            has_row & (pl.col("SUB_CODE") == "L104780") & pl.col("age").is_null(),
+            pl.lit("no age (TANI_YASI) for the episode: eGFR cannot be recomputed"),
+        ),
+        (
+            "anadata",
+            has_row & pl.col("HASTA_ID").ne_missing(pl.col("ana_patient")),
+            _fmt(
+                "the row is for patient {} but anadata_clean has patient {} for the episode",
+                pl.col("HASTA_ID"),
+                pl.col("ana_patient"),
             ),
-        ]
+        ),
+        (
+            "R5",
+            ~strip & female.is_not_null() & (low.ne_missing(sex_low) | high.ne_missing(sex_high)),
+            _fmt(
+                "the limits [{}, {}] are not the sex-specific limits [{}, {}] of the CSV",
+                low,
+                high,
+                sex_low,
+                sex_high,
+            ),
+        ),
+    ]
+
+
+def _row_violations(rows: pl.DataFrame, *, with_people: bool) -> list[pl.DataFrame]:
+    """All the checks of one row, in this order: shape, columns, values, flags, anadata."""
+    checks = [
+        *_shape_checks(),
+        *_column_checks(),
+        *_value_checks(),
+        *_flag_checks(),
+        *(_people_checks() if with_people else []),
+    ]
     return [
         _flag(rows, rule, 10 + order, mask, detail)
         for order, (rule, mask, detail) in enumerate(checks)
@@ -1766,14 +1882,24 @@ def check_lab_coherence(
 
     Four stages, each reporting its lowest row: (1) every `SUB_CODE`/`parametre` is a parameter of the
     reference; (2) the rows form result sets, each one billed line with all CSV parameters of its code in
-    order; (3) every row: shape and unit (R6), finite values, `anormal_mi` against the limits (R5);
-    (4) derived values: the differential sums to the WBC (R1), RBC, HCT and MCHC follow HGB, MCV and MCH
-    (R2), eGFR is CKD-EPI 2021 (R3), HCO3, base excess and SaO2 follow the blood gas (R4).
-    `ana_df` gives the age and sex of each episode; without it R3 and the check that the limits are
-    the sex-specific ones of the CSV do not run.
+    order; (3) every row: shape and unit (R6), the descriptive columns (tarih at midnight, donem, kohort,
+    organ_sistemi), finite values, the printed decimals of the parameter, `anormal_mi` against the limits
+    (R5); (4) derived values: the differential sums to the WBC (R1), RBC, HCT and MCHC follow HGB, MCV and
+    MCH (R2), eGFR is CKD-EPI 2021 (R3), HCO3, base excess and SaO2 follow the blood gas (R4). The rule
+    names in a message are `unknown parameter`, `result set`, `R6`, `columns`, `finite`, `decimals`,
+    `R5`, `R3`, `anadata`, and `R1` to `R4` for the derived values; each message gives the row, the
+    patient, `code|parameter` and what is wrong, and for a derived value it is the row of that value.
+
+    `ana_df` gives the patient, age and sex of each episode. Without it the check cannot read the sex, so
+    R3 and the check that the limits are the sex-specific ones of the CSV do not run, and neither does the
+    check that each row belongs to the patient of its episode. With it, a missing anadata row, a sex code
+    that is not E or K, a missing age for a creatinine set and a row of another patient are errors.
+
+    What it cannot see, because it never looks at the claims: a result set that is complete and coherent
+    but belongs to nobody's bill. A set moved to another day or to another patient and episode, an extra
+    or a missing set, a duplicated set, or sets in another order all pass. Only the cross-check against
+    the billed lab lines in `clean.validate_clean_tables(clean, claims_tables)` finds those.
     """
-    if lab_df.is_empty():
-        return
     ref = reference if reference is not None else load_lab_reference()
     rows = _annotate(lab_df, ref, ana_df)
     unknown = _flag(

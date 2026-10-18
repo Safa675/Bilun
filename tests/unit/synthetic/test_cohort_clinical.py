@@ -53,6 +53,13 @@ def _patient(raw: dict, patient_no: int) -> dict:
     return next(p for p in raw["patients"] if p["patient_no"] == patient_no)
 
 
+def _without_gas_keys(patient: dict) -> None:
+    """Drop every `L103900|...` key from the lab states of a patient."""
+    states = patient["labs"]["states"]
+    for key in [key for key in states if key.startswith("L103900|")]:
+        del states[key]
+
+
 def _problems(
     raw: dict,
     text: Callable[[str], str] | None = None,
@@ -431,6 +438,33 @@ CASES: list[Case] = [
         label="unknown_lab_state_in_list",
     ),
     Case(
+        "labs.unknown_state",
+        lambda r: _patient(r, 4)["labs"]["states"].update({"L104780|Kreatinin": "aki"}),
+        label="prose_state_without_a_range",
+    ),
+    Case(
+        "labs.blood_gas",
+        lambda r: (_patient(r, 2)["labs"].pop("blood_gas"), _without_gas_keys(_patient(r, 2))),
+        label="blood_gas_line_but_no_blood_gas_and_no_gas_key",
+    ),
+    Case(
+        "labs.blood_gas",
+        lambda r: _patient(r, 1)["labs"]["states"].update({"L103900|pH": "copd_exacerbation"}),
+        label="gas_key_but_no_blood_gas_and_no_gas_line",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update({" ": "normal"}),
+        label="whitespace_state_key",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 1)["labs"]["states"].update(
+            {"L101850|CRP (kantitatif)": ["bacterial_infection", "  "]}
+        ),
+        label="whitespace_state_in_a_list",
+    ),
+    Case(
         "schema.bad_value",
         lambda r: _patient(r, 1)["labs"]["states"].update({"": "normal"}),
         label="empty_state_key",
@@ -479,6 +513,48 @@ def test_a_defect_trips_its_own_check_and_nothing_else(case: Case) -> None:
         case.mutate(broken)
     found = _problems(broken, case.text)
     assert {p.check for p in found} == {case.check, *case.also}, [str(p) for p in found]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        pytest.param(
+            lambda r: _without_gas_keys(_patient(r, 2)), id="gas_line_and_blood_gas_without_a_key"
+        ),
+        pytest.param(
+            lambda r: (
+                _patient(r, 1)["labs"].update(blood_gas="arterial"),
+                _patient(r, 1)["labs"]["states"].update({"L103900|pH": "copd_exacerbation"}),
+            ),
+            id="a_gas_key_with_blood_gas_is_not_refused_by_this_check",
+        ),
+    ],
+)
+def test_blood_gas_variants_that_this_check_accepts(mutate: Edit) -> None:
+    """`blood_gas` is needed when the patient has a gas line OR a gas key, and allowed with either."""
+    raw = _raw_clinical()
+    mutate(raw)
+    assert _problems(raw) == []
+
+
+def test_a_problem_is_located_by_patient_number_unless_the_numbers_repeat() -> None:
+    raw = _raw_clinical()
+    _patient(raw, 3)["labs"]["states"].update({"L999999|X": "normal"})
+    assert [(p.check, p.where) for p in _problems(raw)] == [
+        ("labs.unknown_key", "patients[3].labs.states['L999999|X']")
+    ]
+    _patient(raw, 2)["labs"].pop("blood_gas")
+    assert sorted((p.check, p.where) for p in _problems(raw)) == [
+        ("labs.blood_gas", "patients[2].labs.blood_gas"),
+        ("labs.unknown_key", "patients[3].labs.states['L999999|X']"),
+    ]
+    # With a number twice (patient 3 is renumbered 1) the number says nothing: the position is used.
+    _patient(raw, 3)["patient_no"] = 1
+    assert sorted((p.check, p.where) for p in _problems(raw)) == [
+        ("clinical.patient_numbers", "patients"),
+        ("labs.blood_gas", "patients[1].labs.blood_gas"),
+        ("labs.unknown_key", "patients[2].labs.states['L999999|X']"),
+    ]
 
 
 def test_every_check_id_has_a_mutation_case() -> None:

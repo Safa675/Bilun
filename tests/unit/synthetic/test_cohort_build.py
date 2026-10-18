@@ -613,6 +613,38 @@ def test_a_wrong_lab_count_in_the_registry_is_rejected(built_showcase: BuildResu
         validate_cohort_registry(built_showcase.registry, built_showcase.tables, short_clean)
 
 
+def test_the_registry_check_validates_the_clean_tables_against_the_claims(
+    built_showcase: BuildResult,
+) -> None:
+    """A coherent lab table that no billed line asks for is refused by the registry check itself.
+
+    `clean_tables_digest` validates without the claims, so a digest alone would not notice: the check
+    that sees it is `validate_clean_tables(clean, claims)`, which `validate_cohort_registry` runs. Patient
+    1's CRP result set is moved one day: the row count and the schema are unchanged.
+    """
+    lab_name = "lab_clean.parquet"
+    lab = built_showcase.clean_tables[lab_name]
+    crp = lab.with_row_index("i").filter(
+        (pl.col("HASTA_ID") == "SENTETIK-HASTA-0001") & (pl.col("SUB_CODE") == "L101850")
+    )["i"][0]
+    moved = lab.with_columns(
+        pl.when(pl.int_range(pl.len()) == crp)
+        .then(pl.col("tarih").dt.offset_by("1d"))
+        .otherwise(pl.col("tarih"))
+        .alias("tarih")
+    )
+    assert moved.height == lab.height and not moved.equals(lab)
+    tampered = {**built_showcase.clean_tables, lab_name: moved}
+    assert (
+        clean_tables_digest(tampered)[lab_name]
+        != built_showcase.registry["clean_tables_digest"][lab_name]
+    )  # the digest alone would notice a change, but not say what is wrong
+    with pytest.raises(
+        BuildError, match=r"lab_clean\.parquet rows do not match the billed lab lines"
+    ):
+        validate_cohort_registry(built_showcase.registry, built_showcase.tables, tampered)
+
+
 def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult) -> None:
     from dataclasses import replace
     from scripts.synthetic.cohort.build import _resolve_evidence_line_ids, _resolve_target_line_id

@@ -19,7 +19,7 @@ from .catalogs import CohortCatalogs
 from .clinical import DrugRoute, PatientClinical, ShowcaseClinical, Vitals, load_clinical
 from .compose import ComposedClaim
 from .ids import PATIENT_ID_RE
-from .labs import LabReferenceError, build_lab_clean, check_lab_coherence, expected_lab_keys
+from .labs import LabReferenceError, _fmt, build_lab_clean, check_lab_coherence, expected_lab_keys
 from .tables import TableSchemaError, _canonical_table_text
 
 CLEAN_TABLE_FILES: tuple[str, ...] = (
@@ -204,29 +204,39 @@ def format_dozaj_ham(quantity: int, unit: str | None) -> str:
     """Format `dozaj_ham` as `{quantity} {unit_tr}` (or `{quantity}` if unit is unknown)."""
     if not unit:
         return str(quantity)
+    # A unit with no Turkish word stays as written; no pathway unit is such a unit (a test pins that).
     unit_tr = _UNIT_TR.get(unit, unit)
     return f"{quantity} {unit_tr}"
 
 
+_TR_TO_ASCII = str.maketrans("ıüöşçğ", "iuoscg")
+
+
+def _fold_tr(text: str) -> str:
+    """Lower-case ASCII spelling of a Turkish text: `İ` and `I` become `i`, and `ı ü ö ş ç ğ` their plain letters.
+
+    TITCK product names are written with and without the Turkish letters, so every word list below is
+    ASCII and matched against this one spelling. (`str.lower` turns an ASCII `I` into `i`; the dotted
+    `İ` it would turn into an `i` plus a combining dot, so that one is replaced first.)
+    """
+    return text.replace("İ", "i").lower().translate(_TR_TO_ASCII)
+
+
 def derive_route_from_titck(titck_product_name: str) -> DrugRoute | None:
-    """Conservative route read from the TITCK product name words (None when none match)."""
-    low = titck_product_name.replace("İ", "i").replace("I", "ı").lower()
-    low_fold = low.replace("ı", "i")
-    if "im/iv" in low_fold:
+    """Conservative route read from the TITCK product name words (None when none match).
+
+    The name is folded to lower-case ASCII first, so `KAPSÜL`, `kapsül` and `KAPSUL` are one word.
+    """
+    padded = f" {_fold_tr(titck_product_name)} "
+    if "im/iv" in padded:
         return "İntramusküler/İntravenöz"
-    if (
-        "intravenöz" in low_fold
-        or "infüzyon" in low_fold
-        or "infuzyon" in low_fold
-        or "i.v." in low_fold
-        or " IV " in f" {titck_product_name} "
-    ):
+    if any(word in padded for word in ("intravenoz", "infuzyon", "i.v.", " iv ")):
         return "Intravenöz"
-    if any(word in low for word in ("tablet", "kapsül", "film kaplı")):
+    if any(word in padded for word in ("tablet", "kapsul", "film kapli")):
         return "Ağızdan (Oral)"
-    if any(word in low for word in ("nebül", "inhalasyon")):
+    if any(word in padded for word in ("nebul", "inhalasyon")):
         return "İnhalasyon"
-    if "subkütan" in low:
+    if "subkutan" in padded:
         return "Subkütan"
     return None
 
@@ -604,11 +614,115 @@ def _check_lab_rows_match_billed_lines(lab_df: pl.DataFrame, procs_df: pl.DataFr
     )
 
 
+def _quoted(column: str) -> pl.Expr:
+    """`column` as Python's `repr` prints a string: in single quotes, and `None` for a missing value."""
+    return (
+        pl.when(pl.col(column).is_null())
+        .then(pl.lit("None"))
+        .otherwise(pl.concat_str(pl.lit("'"), pl.col(column), pl.lit("'")))
+    )
+
+
+def _first_message(frame: pl.DataFrame, bad: pl.Expr, message: pl.Expr) -> str | None:
+    """`message` for the first row of `frame` where `bad` holds, or None when there is no such row."""
+    found = frame.filter(bad.fill_null(False)).head(1)
+    return None if found.is_empty() else found.select(message).item()
+
+
+def _check_anadata_against_claims(
+    ana_df: pl.DataFrame, headers_df: pl.DataFrame, diagnoses_df: pl.DataFrame
+) -> None:
+    """`anadata_clean` is one row per claim header, in the order of `claim_headers`, with its classification and diagnoses.
+
+    Row i of `anadata_clean` is put next to row i of `claim_headers` and compared by expressions; the
+    first mismatch (patient and episode, then GELIS_TIPI, SERVISADI, TANIKODU, then TUM_EPS_TANILAR
+    against the diagnoses of the claim) is the error.
+    """
+    if ana_df.height != headers_df.height:
+        raise CleanTableError(
+            f"anadata_clean.parquet row count ({ana_df.height}) does not equal "
+            f"claim_headers.parquet row count ({headers_df.height})"
+        )
+    pairs = pl.concat(
+        [
+            ana_df.select(
+                "HASTA_ID", "SQ_EPISODE", "GELIS_TIPI", "SERVISADI", "TANIKODU", "TUM_EPS_TANILAR"
+            ),
+            headers_df.select(
+                "patient_id", "episode_id", "claim_type", "department", "primary_icd10"
+            ),
+        ],
+        how="horizontal",
+    ).with_row_index("row")
+    message = _first_message(
+        pairs,
+        pl.col("HASTA_ID").ne_missing(pl.col("patient_id"))
+        | pl.col("SQ_EPISODE").ne_missing(pl.col("episode_id")),
+        _fmt(
+            "anadata_clean.parquet (HASTA_ID, SQ_EPISODE) mismatch against claim_headers.parquet "
+            "at row {}: expected ({}, {}), got ({}, {})",
+            "row",
+            "patient_id",
+            "episode_id",
+            "HASTA_ID",
+            "SQ_EPISODE",
+        ),
+    )
+    for ana_col, hdr_col in (
+        ("GELIS_TIPI", "claim_type"),
+        ("SERVISADI", "department"),
+        ("TANIKODU", "primary_icd10"),
+    ):
+        message = message or _first_message(
+            pairs,
+            pl.col(ana_col).ne_missing(pl.col(hdr_col)),
+            _fmt(
+                f"anadata_clean.parquet.{ana_col} for {{}}: expected {{}}, got {{}}",
+                "HASTA_ID",
+                _quoted(hdr_col),
+                _quoted(ana_col),
+            ),
+        )
+    expected_diagnoses = (
+        diagnoses_df.group_by("episode_id", maintain_order=True)
+        .agg(pl.col("icd10_code").str.join(",").alias("expected"))
+        .rename({"episode_id": "SQ_EPISODE"})
+    )
+    with_expected = (
+        pairs.join(expected_diagnoses, on="SQ_EPISODE", how="left")
+        .sort("row")
+        .with_columns(pl.col("expected").fill_null(""))
+    )
+    message = message or _first_message(
+        with_expected,
+        pl.col("TUM_EPS_TANILAR").ne_missing(pl.col("expected")),
+        _fmt(
+            "anadata_clean.parquet.TUM_EPS_TANILAR for {} ({}): expected {} from "
+            "claim_diagnoses.parquet, got {}",
+            "HASTA_ID",
+            "SQ_EPISODE",
+            _quoted("expected"),
+            _quoted("TUM_EPS_TANILAR"),
+        ),
+    )
+    if message is not None:
+        raise CleanTableError(message)
+
+
 def validate_clean_tables(
     clean: Mapping[str, pl.DataFrame],
     claims_tables: Mapping[str, pl.DataFrame] | None = None,
 ) -> None:
-    """Validate clean clinical table schemas, `lab_clean` coherence, and cross-checks with `claims_tables`."""
+    """Validate the clean clinical tables: schemas, `lab_clean` coherence, and cross-checks with `claims_tables`.
+
+    Without `claims_tables` only the schemas and `labs.check_lab_coherence(lab_clean, ana_df=anadata_clean)`
+    run. That check never looks at the claims, so it cannot see a result set that is coherent but not
+    billed: a set on another day or under another patient and episode, an extra, missing or duplicated
+    set, or sets in another order. Only the call WITH `claims_tables` finds those: it compares the lab
+    rows with the billed lab lines of `procedure_claim_lines` (`_check_lab_rows_match_billed_lines`),
+    checks `anadata_clean` against `claim_headers` and `claim_diagnoses`, and `recete_clean` against
+    `drug_claim_lines`. `clean_tables_digest` calls this function without claims.
+    """
     missing_tables = [t for t in CLEAN_TABLE_FILES if t not in clean]
     extra_tables = [t for t in clean if t not in CLEAN_TABLE_FILES]
     if missing_tables or extra_tables:
@@ -664,71 +778,7 @@ def validate_clean_tables(
     procs_df = claims_tables["procedure_claim_lines.parquet"]
     drugs_df = claims_tables["drug_claim_lines.parquet"]
 
-    if ana_df.height != headers_df.height:
-        raise CleanTableError(
-            f"anadata_clean.parquet row count ({ana_df.height}) does not equal "
-            f"claim_headers.parquet row count ({headers_df.height})"
-        )
-
-    ana_episodes = list(
-        zip(
-            ana_df["HASTA_ID"].to_list(),
-            ana_df["SQ_EPISODE"].to_list(),
-            strict=True,
-        )
-    )
-    expected_episodes = list(
-        zip(
-            headers_df["patient_id"].to_list(),
-            headers_df["episode_id"].to_list(),
-            strict=True,
-        )
-    )
-    if ana_episodes != expected_episodes:
-        raise CleanTableError(
-            f"anadata_clean.parquet (HASTA_ID, SQ_EPISODE) mismatch against claim_headers.parquet: "
-            f"expected {expected_episodes}, got {ana_episodes}"
-        )
-
-    for ana_col, hdr_col in (
-        ("GELIS_TIPI", "claim_type"),
-        ("SERVISADI", "department"),
-        ("TANIKODU", "primary_icd10"),
-    ):
-        ana_vals = ana_df[ana_col].to_list()
-        hdr_vals = headers_df[hdr_col].to_list()
-        if ana_vals != hdr_vals:
-            for pid, got_v, exp_v in zip(
-                ana_df["HASTA_ID"].to_list(), ana_vals, hdr_vals, strict=True
-            ):
-                if got_v != exp_v:
-                    raise CleanTableError(
-                        f"anadata_clean.parquet.{ana_col} for {pid}: expected {exp_v!r}, got {got_v!r}"
-                    )
-
-    dx_grouped = diagnoses_df.group_by("episode_id", maintain_order=True).agg(
-        pl.col("icd10_code").str.join(",").alias("expected_tum_eps_tanilar")
-    )
-    expected_tanilar_by_ep = dict(
-        zip(
-            dx_grouped["episode_id"].to_list(),
-            dx_grouped["expected_tum_eps_tanilar"].to_list(),
-            strict=True,
-        )
-    )
-    for pid, ep_id, got_tanilar in zip(
-        ana_df["HASTA_ID"].to_list(),
-        ana_df["SQ_EPISODE"].to_list(),
-        ana_df["TUM_EPS_TANILAR"].to_list(),
-        strict=True,
-    ):
-        exp_tanilar = expected_tanilar_by_ep.get(ep_id, "")
-        if got_tanilar != exp_tanilar:
-            raise CleanTableError(
-                f"anadata_clean.parquet.TUM_EPS_TANILAR for {pid} ({ep_id}): "
-                f"expected {exp_tanilar!r} from claim_diagnoses.parquet, got {got_tanilar!r}"
-            )
-
+    _check_anadata_against_claims(ana_df, headers_df, diagnoses_df)
     _check_lab_rows_match_billed_lines(lab_df, procs_df)
 
     rec_projected = rec_df.select(
@@ -793,7 +843,12 @@ def write_clean_tables(
 
 
 def clean_tables_digest(tables: Mapping[str, pl.DataFrame]) -> dict[str, str]:
-    """Return a SHA-256 hex digest per clean table over its canonical text serialization."""
+    """Return a SHA-256 hex digest per clean table over its canonical text serialization.
+
+    The tables are validated WITHOUT the claims (the signature has no claims argument), so the digest
+    of a lab table with a coherent but unbilled result set is computed all the same; see
+    `validate_clean_tables`. Call that with the claims tables to catch those.
+    """
     validate_clean_tables(tables)
     return {
         name: hashlib.sha256(

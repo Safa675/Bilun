@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import ast
+from collections import Counter
+from collections.abc import Callable
 from datetime import datetime, time
 from decimal import ROUND_HALF_UP, Decimal
 import json
@@ -424,6 +426,39 @@ def test_slice_c1_fixups_dozaj_ham_and_route_from_titck(built_showcase: BuildRes
             None,
         ),
         ("NEOFLEKS %0,9 IZOTONIK SODYUM KLORUR SUDAKI ÇÖZELTİSİ PP-TORBA1000 ML(SETLI)", None),
+        # The same words in their ASCII spelling (the TITCK names come both ways), upper and lower case.
+        ("PREDNOL-L 40 MG IM/IV ENJEKSIYONLUK TOZ", "İntramusküler/İntravenöz"),
+        ("prednol-l 40 mg im/iv enjeksiyonluk toz", "İntramusküler/İntravenöz"),
+        ("ORNEK 500 MG INTRAVENOZ ENJEKSIYON", "Intravenöz"),
+        ("ORNEK 500 MG İNTRAVENÖZ ENJEKSİYON", "Intravenöz"),
+        ("ORNEK 1 G INFUZYON ICIN COZELTI", "Intravenöz"),
+        ("ORNEK 1 G İNFÜZYON İÇİN ÇÖZELTİ", "Intravenöz"),
+        ("ORNEK 1 G infüzyon için çözelti", "Intravenöz"),
+        ("ORNEK 500 MG I.V. ENJEKSIYON", "Intravenöz"),
+        (
+            "PLAPANT 40 MG İV ENJEKSİYONLUK ÇÖZELTİ HAZIRLAMAK İÇİN LİYOFİLİZE TOZ, 1 ADET",
+            "Intravenöz",
+        ),
+        ("ORNEK 40 MG IV ENJEKSIYON", "Intravenöz"),
+        ("ORNEK 40 MG iv enjeksiyon", "Intravenöz"),
+        ("ORNEK 20 MG TABLET, 28 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 20 MG KAPSUL, 28 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 20 MG kapsül, 28 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 500 MG FILM KAPLI TABLET, 14 ADET", "Ağızdan (Oral)"),
+        ("ORNEK 500 MG film kaplı, 14 ADET", "Ağızdan (Oral)"),
+        ("VENTOLIN INHALASYON COZELTISI", "İnhalasyon"),
+        ("VENTOLIN İNHALASYON ÇÖZELTİSİ", "İnhalasyon"),
+        ("ORNEK NEBUL ICIN COZELTI", "İnhalasyon"),
+        ("ORNEK NEBÜL İÇİN ÇÖZELTİ", "İnhalasyon"),
+        ("ornek nebül", "İnhalasyon"),
+        ("ORNEK 40 MG SUBKUTAN ENJEKSIYON", "Subkütan"),
+        ("ORNEK 40 MG subkütan enjeksiyon", "Subkütan"),
+        # Only whole words count for IV (also at the start and at the end), and no word at all: no route.
+        ("ORNEK 40 MG IV", "Intravenöz"),
+        ("IV ORNEK 40 MG", "Intravenöz"),
+        ("ORNEK DIV 5 MG", None),
+        ("TRIV 5 MG", None),
+        ("ORNEK 5 MG ENJEKTABL", None),
     ],
 )
 def test_derive_route_from_titck_reads_only_what_the_name_states(
@@ -440,6 +475,13 @@ def test_dozaj_ham_without_a_unit_is_the_bare_quantity() -> None:
     assert format_dozaj_ham(3, None) == "3"
     assert format_dozaj_ham(3, "") == "3"
     assert format_dozaj_ham(3, "capsule") == "3 kapsül"
+
+
+def test_dozaj_ham_keeps_a_unit_without_a_turkish_word_as_written() -> None:
+    """No pathway unit is such a unit (the next test), but the function is not tied to the pathways."""
+    from scripts.synthetic.cohort import format_dozaj_ham
+
+    assert format_dozaj_ham(2, "sachet") == "2 sachet"
 
 
 def test_every_schema_unit_has_a_turkish_word() -> None:
@@ -560,6 +602,16 @@ def test_only_a_clinical_document_can_carry_routes(built_showcase: BuildResult) 
     patients = list(load_clinical().patients)
     with pytest.raises(CleanTableError, match=r"CLEXANE.*8699809950696.*declare it in drug_routes"):
         build_clean_tables(built_showcase.claims, clinical=patients)
+
+
+def test_a_document_without_a_drug_routes_block_makes_the_build_raise_a_clean_table_error(
+    built_showcase: BuildResult,
+) -> None:
+    """The four products whose TITCK name states no route need the block: no block is a CleanTableError."""
+    base = load_clinical()
+    without = ShowcaseClinical(schema_version=1, drug_routes=None, patients=base.patients)
+    with pytest.raises(CleanTableError, match=r"CLEXANE.*8699809950696.*declare it in drug_routes"):
+        build_clean_tables(built_showcase.claims, clinical=without)
 
 
 def test_a_declared_route_that_contradicts_the_titck_name_makes_the_build_raise(
@@ -895,7 +947,163 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
         build_clean_tables(built_showcase.claims, clinical=extra_patient_clinical)
 
 
-# AGENTS.md section 9: no Python loop over DataFrame rows. These are the ways to get one.
+# --- 9. anadata_clean against the claims, checked with expressions (no loop over the rows) -----------
+
+
+Tables = dict[str, pl.DataFrame]
+
+
+def _ana_set(
+    ana: pl.DataFrame, patient_no: int, column: str, value: str | int | None
+) -> pl.DataFrame:
+    """Copy of the anadata table with one cell of one patient's row replaced."""
+    return ana.with_columns(
+        pl.when(pl.col("HASTA_ID") == f"SENTETIK-HASTA-{patient_no:04d}")
+        .then(pl.lit(value, dtype=ana.schema[column]))
+        .otherwise(pl.col(column))
+        .alias(column)
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        pytest.param(
+            lambda ana, claims: (ana.head(7), claims),
+            r"anadata_clean\.parquet row count \(7\) does not equal claim_headers\.parquet row count \(8\)",
+            id="a_row_is_missing",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                pl.concat([ana.slice(1, 1), ana.slice(0, 1), ana.slice(2)]),
+                claims,
+            ),
+            r"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row 0: "
+            r"expected \(SENTETIK-HASTA-0001, B-SENTETIK-HASTA-0001-001\), "
+            r"got \(SENTETIK-HASTA-0002, B-SENTETIK-HASTA-0002-001\)",
+            id="two_rows_in_the_other_order",
+        ),
+        pytest.param(
+            lambda ana, claims: (_ana_set(ana, 5, "HASTA_ID", "SENTETIK-HASTA-0099"), claims),
+            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            r"got \(SENTETIK-HASTA-0099, B-SENTETIK-HASTA-0005-001\)",
+            id="another_patient_id",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                _ana_set(ana, 5, "SQ_EPISODE", "B-SENTETIK-HASTA-0099-001"),
+                claims,
+            ),
+            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            r"got \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0099-001\)",
+            id="another_episode",
+        ),
+        pytest.param(
+            lambda ana, claims: (_ana_set(ana, 5, "SQ_EPISODE", None), claims),
+            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            r"got \(SENTETIK-HASTA-0005, null\)",
+            id="no_episode",
+        ),
+        pytest.param(
+            lambda ana, claims: (_ana_set(ana, 5, "GELIS_TIPI", "acil"), claims),
+            r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0005: expected 'yatis', got 'acil'",
+            id="another_claim_type",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                _ana_set(_ana_set(ana, 5, "GELIS_TIPI", "acil"), 3, "GELIS_TIPI", "acil"),
+                claims,
+            ),
+            # Two rows are wrong in the same column: the first one is the one named.
+            r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0003: expected 'yatis', got 'acil'",
+            id="the_first_of_two_wrong_rows_is_named",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                _ana_set(_ana_set(ana, 2, "SERVISADI", "X"), 1, "TANIKODU", "Z99"),
+                claims,
+            ),
+            # The columns are checked one after the other: the department of patient 2 comes before the
+            # diagnosis code of patient 1, although patient 1 is the earlier row.
+            r"anadata_clean\.parquet\.SERVISADI for SENTETIK-HASTA-0002: "
+            r"expected 'Gogus Hastaliklari', got 'X'",
+            id="department_before_primary_diagnosis",
+        ),
+        pytest.param(
+            lambda ana, claims: (_ana_set(ana, 4, "TANIKODU", None), claims),
+            r"anadata_clean\.parquet\.TANIKODU for SENTETIK-HASTA-0004: expected 'N10', got None",
+            id="no_primary_diagnosis",
+        ),
+        pytest.param(
+            lambda ana, claims: (_ana_set(ana, 6, "TUM_EPS_TANILAR", ""), claims),
+            r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0006 "
+            r"\(B-SENTETIK-HASTA-0006-001\): expected 'J69\.0,I10,R13' from claim_diagnoses\.parquet, got ''",
+            id="no_diagnoses",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                ana,
+                {
+                    **claims,
+                    "claim_diagnoses.parquet": claims["claim_diagnoses.parquet"].filter(
+                        pl.col("episode_id") != "B-SENTETIK-HASTA-0003-001"
+                    ),
+                },
+            ),
+            r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0003 "
+            r"\(B-SENTETIK-HASTA-0003-001\): expected '' from claim_diagnoses\.parquet, "
+            r"got 'M48\.06,I10'",
+            id="claim_without_diagnoses",
+        ),
+        pytest.param(
+            lambda ana, claims: (
+                _ana_set(
+                    pl.concat([ana.slice(1, 1), ana.slice(0, 1), ana.slice(2)]),
+                    5,
+                    "GELIS_TIPI",
+                    "acil",
+                ),
+                claims,
+            ),
+            r"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row 0",
+            id="the_pair_is_checked_before_the_columns",
+        ),
+    ],
+)
+def test_the_anadata_table_is_checked_against_claim_headers_and_diagnoses(
+    built_showcase: BuildResult,
+    mutate: Callable[[pl.DataFrame, Tables], tuple[pl.DataFrame, Tables]],
+    message: str,
+) -> None:
+    clean = built_showcase.clean_tables
+    validate_clean_tables(clean, built_showcase.tables)  # the untouched tables are valid
+    ana, claims = mutate(clean["anadata_clean.parquet"], built_showcase.tables)
+    with pytest.raises(CleanTableError, match=message):
+        validate_clean_tables({**clean, "anadata_clean.parquet": ana}, claims)
+
+
+def test_a_changed_age_or_sex_in_anadata_is_found_by_the_registry_digest_not_by_validate_clean_tables(
+    built_showcase: BuildResult,
+) -> None:
+    """Only the pathways say how old a patient is; the tables hold no age or sex to compare with.
+
+    Patient 5 (a woman with no lab rows) becoming a man, and patient 1 (no creatinine) a year older, pass
+    `validate_clean_tables`: nothing in the claims or in the lab rows contradicts them. The digest in
+    `cohort_registry.json` does, and so does `build --check`.
+    """
+    clean = built_showcase.clean_tables
+    ana = clean["anadata_clean.parquet"]
+    for column, patient_no, value in (("CINSIYET", 5, "E"), ("TANI_YASI", 1, 35)):
+        changed = _ana_set(ana, patient_no, column, value)
+        assert not changed.equals(ana)
+        tampered = {**clean, "anadata_clean.parquet": changed}
+        validate_clean_tables(tampered, built_showcase.tables)
+        with pytest.raises(BuildError, match=r"clean_tables_digest mismatch on: \['anadata_clean"):
+            validate_cohort_registry(built_showcase.registry, built_showcase.tables, tampered)
+
+
+# AGENTS.md section 9: no Python loop over the rows, columns, slices or partitions of a DataFrame, and
+# none over a Series. These are the ways to get one that the source of `labs.py` and `clean.py` must not use.
 _ROW_ITERATION_ATTRIBUTES = frozenset(
     {
         "iter_rows",
@@ -908,8 +1116,170 @@ _ROW_ITERATION_ATTRIBUTES = frozenset(
         "map_elements",
         "map_rows",
         "apply",
+        "iter_columns",
+        "iter_slices",
+        "partition_by",
+        "to_numpy",
     }
 )
+# Builtins that walk their argument: handing them a `.to_list()` or a Series is a loop over its rows.
+_ITERATING_BUILTINS = frozenset(
+    {
+        "zip",
+        "enumerate",
+        "map",
+        "filter",
+        "sorted",
+        "reversed",
+        "list",
+        "tuple",
+        "set",
+        "frozenset",
+        "dict",
+        "any",
+        "all",
+        "sum",
+        "min",
+        "max",
+        "next",
+        "iter",
+    }
+)
+_SERIES_GETTERS = frozenset({"get_column", "to_series"})
+
+# The one place where a DataFrame is read column by column: the 96-line reference CSV becomes one frozen
+# spec object per line (each holds a parsed `abnormal_states` grammar), and a spec is a Python object that
+# no expression can build. (file, function, what) -> why.
+_ALLOWED_DATAFRAME_LOOPS = {
+    ("labs.py", "load_lab_reference_df", "attribute iter_columns"): (
+        "builds the 96 parameter spec objects of lab_reference.csv, once, from the typed columns"
+    ),
+}
+
+
+def _has_call(node: ast.AST, attribute: str) -> bool:
+    return any(
+        isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == attribute
+        for n in ast.walk(node)
+    )
+
+
+def _is_series(node: ast.AST) -> bool:
+    """`frame["column"]`, `frame.get_column(...)` or `.to_series()`: a Series, which no `for` may walk."""
+    if isinstance(node, ast.Subscript):
+        return isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, str)
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in _SERIES_GETTERS
+    )
+
+
+class _LoopFinder(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.scope: list[str] = ["<module>"]
+        self.findings: list[tuple[int, str, str]] = []
+
+    def _add(self, node: ast.AST, what: str) -> None:
+        self.findings.append((getattr(node, "lineno", 0), self.scope[-1], what))
+
+    def _walks(self, node: ast.AST, owner: ast.AST) -> None:
+        """`node` is walked by `owner` (a `for`, a comprehension, or a call to an iterating builtin)."""
+        if _has_call(node, "to_list"):
+            self._add(owner, "to_list iterated")
+        elif _is_series(node):
+            self._add(owner, "Series iterated")
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self.scope.append(node.name)
+        self.generic_visit(node)
+        self.scope.pop()
+
+    visit_AsyncFunctionDef = visit_FunctionDef  # type: ignore[assignment]
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        if node.attr in _ROW_ITERATION_ATTRIBUTES:
+            self._add(node, f"attribute {node.attr}")
+        self.generic_visit(node)
+
+    def visit_For(self, node: ast.For) -> None:
+        self._walks(node.iter, node)
+        self.generic_visit(node)
+
+    def visit_comprehension(self, node: ast.comprehension) -> None:
+        self._walks(node.iter, node.iter)
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        if isinstance(node.func, ast.Name) and node.func.id in _ITERATING_BUILTINS:
+            for argument in node.args:
+                self._walks(argument.value if isinstance(argument, ast.Starred) else argument, node)
+        self.generic_visit(node)
+
+
+def dataframe_loop_findings(source: str) -> list[tuple[int, str, str]]:
+    """(line, enclosing function, what) for every loop over DataFrame rows, columns or a Series in `source`.
+
+    It reads the syntax only, so it cannot follow a list that was made by `.to_list()` into a variable and
+    walked later; the two ways in that it does see are a `.to_list()` (or a Series) that is walked on the
+    spot by a `for`, a comprehension or a builtin that iterates, and the attributes above.
+    """
+    finder = _LoopFinder()
+    finder.visit(ast.parse(source))
+    return finder.findings
+
+
+@pytest.mark.parametrize(
+    "snippet",
+    [
+        pytest.param("for x in df['a'].to_list():\n    pass", id="for_over_to_list"),
+        pytest.param("y = [x for x in df['a'].to_list()]", id="comprehension_over_to_list"),
+        pytest.param("y = list(zip(df['a'].to_list(), df['b'].to_list()))", id="zip_of_to_lists"),
+        pytest.param("y = dict(zip(a['k'].to_list(), a['v'].to_list()))", id="dict_of_zip"),
+        pytest.param("y = sorted(df['a'].to_list())", id="sorted_to_list"),
+        pytest.param("y = zip(*df['a'].to_list())", id="starred_to_list"),
+        pytest.param("for x in df['a']:\n    pass", id="for_over_a_series"),
+        pytest.param("for x in df.get_column('a'):\n    pass", id="for_over_get_column"),
+        pytest.param("y = [x for x in df['a']]", id="comprehension_over_a_series"),
+        pytest.param("y = sum(df['a'])", id="sum_of_a_series"),
+        pytest.param("y = list(df.to_series())", id="list_of_to_series"),
+        pytest.param("df.iter_rows()", id="iter_rows"),
+        pytest.param("df.iter_columns()", id="iter_columns"),
+        pytest.param("df.iter_slices(10)", id="iter_slices"),
+        pytest.param("df.partition_by('a')", id="partition_by"),
+        pytest.param("df['a'].to_numpy()", id="to_numpy"),
+        pytest.param("df.to_dicts()", id="to_dicts"),
+        pytest.param("df.row(0, named=True)", id="row"),
+        pytest.param("df.rows()", id="rows"),
+        pytest.param("df['a'].map_elements(f)", id="map_elements"),
+    ],
+)
+def test_the_loop_finder_flags_each_way_to_loop_over_dataframe_data(snippet: str) -> None:
+    assert dataframe_loop_findings(snippet), snippet
+
+
+@pytest.mark.parametrize(
+    "snippet",
+    [
+        pytest.param("for line in claim.procedures:\n    pass", id="objects"),
+        pytest.param("y = [s.key for s in specs]", id="spec_objects"),
+        pytest.param("y = dict(zip(names, cells, strict=True))", id="zip_of_names"),
+        pytest.param("for a, b in (('x', 'y'), ('z', 'w')):\n    pass", id="tuple_literal"),
+        pytest.param("y = max((line['limit_decimals'], *map(f, tokens)))", id="mapping_value"),
+        pytest.param("y = df['a'][0]", id="indexing_a_series"),
+        pytest.param("y = df['a'].to_list()", id="to_list_not_iterated"),
+        pytest.param("y = df.select(pl.col('a')).item()", id="item"),
+        pytest.param("for name in df.columns:\n    pass", id="column_names"),
+    ],
+)
+def test_the_loop_finder_leaves_loops_over_python_objects_alone(snippet: str) -> None:
+    assert dataframe_loop_findings(snippet) == [], snippet
+
+
+def test_the_loop_finder_names_the_function_it_finds_a_loop_in() -> None:
+    source = "def outer():\n    def inner():\n        return df.partition_by('a')\n    return 1\n"
+    assert dataframe_loop_findings(source) == [(3, "inner", "attribute partition_by")]
+    assert dataframe_loop_findings("df.rows()") == [(1, "<module>", "attribute rows")]
 
 
 @pytest.mark.parametrize("filename", ["clean.py", "labs.py"])
@@ -923,13 +1293,29 @@ def test_clean_and_labs_import_hygiene_and_no_dataframe_row_loops(filename: str)
                 imported_modules.append(alias.name)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported_modules.append(node.module)
-        elif isinstance(node, ast.Attribute):
-            assert node.attr not in _ROW_ITERATION_ATTRIBUTES, (
-                f"{filename} line {node.lineno} uses the row-wise DataFrame method {node.attr!r}"
-            )
+
+    found = Counter((function, what) for _, function, what in dataframe_loop_findings(source))
+    allowed = {
+        (function, what): why
+        for (name, function, what), why in _ALLOWED_DATAFRAME_LOOPS.items()
+        if name == filename
+    }
+    unexpected = {key: count for key, count in found.items() if key not in allowed}
+    assert not unexpected, (
+        f"{filename} loops over DataFrame data (AGENTS.md section 9): {unexpected}"
+    )
+    # An allowlist entry must be used exactly once, so that a loop cannot be added next to it and a
+    # stale entry cannot stay behind.
+    assert {key: found.get(key, 0) for key in allowed} == dict.fromkeys(allowed, 1)
 
     for mod in imported_modules:
         assert not mod.startswith("pandas"), f"{filename} imports pandas: {mod}"
         assert not mod.startswith("reports"), f"{filename} imports from reports: {mod}"
         assert "billing" not in mod, f"{filename} imports from billing engine: {mod}"
         assert "prose_rules" not in mod, f"{filename} imports from prose_rules engine: {mod}"
+
+
+def test_there_is_one_allowed_dataframe_loop_and_it_is_the_reference_reader() -> None:
+    assert list(_ALLOWED_DATAFRAME_LOOPS) == [
+        ("labs.py", "load_lab_reference_df", "attribute iter_columns")
+    ]

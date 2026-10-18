@@ -4,6 +4,11 @@ The reference reader, the feed coverage per episode (with the real `detect_lab_c
 value bands, the coherence rules R1 to R5, the table structure, the generator errors, determinism and
 the loaders. Each rule has an in-memory mutation that makes its check fail: the tests copy frames
 and never touch a tracked file.
+
+After the independent mutation review (sections 3.13 to 3.19): the validator's gaps (unit, descriptive
+columns, decimals, the anadata link), one printed step of drift per rule with the exact row named,
+the formulas pinned to numbers computed apart from the code, scripted draws that put a value on a
+limit or make the Nth try the first good one, and exact pins of the generator's draws.
 """
 
 from __future__ import annotations
@@ -52,12 +57,16 @@ from scripts.synthetic.cohort import (
     validate_clean_tables,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
+from scripts.synthetic.cohort import labs as labs_module
 from scripts.synthetic.cohort.clinical import PatientLabs
 from scripts.synthetic.cohort.engine_proof import load_showcase_dataset
 from scripts.synthetic.cohort.labs import (
     BILLED_LAB_CODES,
+    _base_excess,
     _egfr_normal_band_for_age,
+    _generate_blood_gas_values,
     _generate_creatinine_and_egfr,
+    _generate_hemogram_values,
     _hco3,
     _patient_no,
     _sao2,
@@ -1422,41 +1431,112 @@ def test_the_committed_table_passes_check_lab_coherence(
     check_lab_coherence(lab.clear(), ana_df=ana)  # an empty table is coherent
 
 
-# (id, patient, date, code, parameter, change, message). The changed value keeps its `anormal_mi`
-# flag right, so only the derivation rule can notice.
-_DERIVATION_MUTATIONS = [
-    pytest.param(
-        2, "2026-03-09", "L107020", "NEU# (Nötrofil)", 1.0, r"R1", id="R1_neutrophil_count"
-    ),
-    pytest.param(2, "2026-03-09", "L107020", "RBC (Eritrosit)", 0.5, r"R2.*RBC", id="R2_rbc"),
-    pytest.param(2, "2026-03-09", "L107020", "HCT (Hematokrit)", 5.0, r"R2.*HCT", id="R2_hct"),
-    pytest.param(2, "2026-03-09", "L107020", "MCHC", 2.0, r"R2.*MCHC", id="R2_mchc"),
-    pytest.param(7, "2026-02-19", "L104780", _EGFR, 10.0, r"R3.*eGFR", id="R3_egfr"),
-    pytest.param(2, "2026-03-09", "L103900", "HCO3", 3.0, r"R4.*HCO3", id="R4_hco3"),
-    pytest.param(
-        2, "2026-03-09", "L103900", "BE (baz fazlası)", 2.0, r"R4.*BE", id="R4_base_excess"
-    ),
-    pytest.param(2, "2026-03-09", "L103900", "SaO2", 3.0, r"R4.*SaO2", id="R4_sao2"),
-]
+def _with_value(lab: pl.DataFrame, index: int, value: float) -> pl.DataFrame:
+    """Copy of `lab` with one value changed and the `anormal_mi` of that row recomputed from its own limits.
+
+    The flag stays right, so only a derivation rule can notice the change.
+    """
+    low, high = lab["ref_alt"][index], lab["ref_ust"][index]
+    flag = (low is not None and value < low) or (high is not None and value > high)
+    return _set_cell(_set_cell(lab, index, "sonuc_sayisal", value), index, "anormal_mi", bool(flag))
 
 
-@pytest.mark.parametrize(
-    ("patient_no", "date", "code", "parameter", "change", "message"), _DERIVATION_MUTATIONS
-)
-def test_mutation_a_changed_derived_value_breaks_its_rule(
+def _set_rows(lab: pl.DataFrame, code: str, parameter: str) -> list[int]:
+    """Row index of `parameter` in every result set of `code`, in table order."""
+    rows = lab.with_row_index("i").filter(
+        (pl.col("SUB_CODE") == code) & (pl.col("parametre") == parameter)
+    )
+    return rows["i"].to_list()
+
+
+def _assert_names_the_row(
+    error: pytest.ExceptionInfo[LabCoherenceError],
     lab: pl.DataFrame,
-    ana: pl.DataFrame,
-    patient_no: int,
-    date: str,
+    *,
+    rule: str,
+    row: int,
     code: str,
     parameter: str,
-    change: float,
-    message: str,
 ) -> None:
-    index = _index_of(lab, patient_no, code, parameter, date=date)
-    mutated = _set_cell(lab, index, "sonuc_sayisal", lab["sonuc_sayisal"][index] + change)
-    with pytest.raises(LabCoherenceError, match=message):
-        check_lab_coherence(mutated, ana_df=ana)
+    """The message starts with the rule, the row number, the patient of that row, the code and the parameter."""
+    expected = f"lab_clean {rule} at row {row} ({lab['HASTA_ID'][row]} {code}|{parameter}): "
+    assert str(error.value).startswith(expected), str(error.value)
+
+
+# A derived value moved by one printed step (R1: 0.01, and also 0.04) in each direction, a driver value
+# moved, and a few big moves. (code, changed parameter, change, rule, parameter the message names.) The
+# rule names the derived value's own row, not the first row of its set.
+_WBC, _RBC, _HCT, _MCHC, _BE = (
+    "WBC (Lökosit)",
+    "RBC (Eritrosit)",
+    "HCT (Hematokrit)",
+    "MCHC",
+    "BE (baz fazlası)",
+)
+_NEU = "NEU# (Nötrofil)"
+_DRIFT_CASES = [
+    pytest.param("L107020", _NEU, 0.01, "R1", _WBC, id="R1_neutrophils_+0.01"),
+    pytest.param("L107020", _NEU, -0.01, "R1", _WBC, id="R1_neutrophils_-0.01"),
+    pytest.param("L107020", _NEU, 0.04, "R1", _WBC, id="R1_neutrophils_+0.04"),
+    pytest.param("L107020", _NEU, -0.04, "R1", _WBC, id="R1_neutrophils_-0.04"),
+    pytest.param("L107020", _NEU, 1.0, "R1", _WBC, id="R1_neutrophils_+1"),
+    pytest.param("L107020", "LYM# (Lenfosit)", 0.01, "R1", _WBC, id="R1_lymphocytes_+0.01"),
+    pytest.param("L107020", "BASO# (Bazofil)", -0.01, "R1", _WBC, id="R1_basophils_-0.01"),
+    pytest.param("L107020", _RBC, 0.1, "R2", _RBC, id="R2_rbc_+1_step"),
+    pytest.param("L107020", _RBC, -0.1, "R2", _RBC, id="R2_rbc_-1_step"),
+    pytest.param("L107020", _RBC, 0.5, "R2", _RBC, id="R2_rbc_+5_steps"),
+    pytest.param("L107020", _HCT, 1.0, "R2", _HCT, id="R2_hct_+1_step"),
+    pytest.param("L107020", _HCT, -1.0, "R2", _HCT, id="R2_hct_-1_step"),
+    pytest.param("L107020", _HCT, 5.0, "R2", _HCT, id="R2_hct_+5_steps"),
+    pytest.param("L107020", _MCHC, 0.1, "R2", _MCHC, id="R2_mchc_+1_step"),
+    pytest.param("L107020", _MCHC, -0.1, "R2", _MCHC, id="R2_mchc_-1_step"),
+    pytest.param("L107020", _MCHC, 2.0, "R2", _MCHC, id="R2_mchc_+20_steps"),
+    pytest.param("L104780", _EGFR, 1.0, "R3", _EGFR, id="R3_egfr_+1_step"),
+    pytest.param("L104780", _EGFR, -1.0, "R3", _EGFR, id="R3_egfr_-1_step"),
+    pytest.param("L104780", _EGFR, 10.0, "R3", _EGFR, id="R3_egfr_+10_steps"),
+    pytest.param("L103900", "HCO3", 0.1, "R4", "HCO3", id="R4_hco3_+1_step"),
+    pytest.param("L103900", "HCO3", -0.1, "R4", "HCO3", id="R4_hco3_-1_step"),
+    pytest.param("L103900", "HCO3", 3.0, "R4", "HCO3", id="R4_hco3_+30_steps"),
+    pytest.param("L103900", _BE, 0.1, "R4", _BE, id="R4_be_+1_step"),
+    pytest.param("L103900", _BE, -0.1, "R4", _BE, id="R4_be_-1_step"),
+    pytest.param("L103900", _BE, 2.0, "R4", _BE, id="R4_be_+20_steps"),
+    pytest.param("L103900", "SaO2", 0.1, "R4", "SaO2", id="R4_sao2_+1_step"),
+    pytest.param("L103900", "SaO2", -0.1, "R4", "SaO2", id="R4_sao2_-1_step"),
+    pytest.param("L103900", "SaO2", 3.0, "R4", "SaO2", id="R4_sao2_+30_steps"),
+    # A driver value moved: the derived value that follows from it is the one that is named.
+    pytest.param("L107020", "HGB (Hemoglobin)", 1.0, "R2", _RBC, id="driver_hgb_names_rbc"),
+    pytest.param("L107020", "MCH", 2.0, "R2", _RBC, id="driver_mch_names_rbc"),
+    pytest.param("L107020", "MCV", 5.0, "R2", _HCT, id="driver_mcv_names_hct"),
+    pytest.param("L103900", "pH", 0.05, "R4", "HCO3", id="driver_ph_names_hco3"),
+    pytest.param("L103900", "pCO2", 3.0, "R4", "HCO3", id="driver_pco2_names_hco3"),
+    pytest.param("L103900", "pO2", 5.0, "R4", "SaO2", id="driver_po2_names_sao2"),
+    pytest.param("L104780", "Kreatinin", 0.2, "R3", _EGFR, id="driver_creatinine_names_egfr"),
+]
+_SETS_PER_CODE = {"L107020": 9, "L104780": 6, "L103900": 2}
+
+
+@pytest.mark.parametrize(("code", "changed", "change", "rule", "reported"), _DRIFT_CASES)
+def test_mutation_a_drift_of_a_derived_value_names_the_rule_and_its_row_in_every_result_set(
+    lab: pl.DataFrame,
+    ana: pl.DataFrame,
+    code: str,
+    changed: str,
+    change: float,
+    rule: str,
+    reported: str,
+) -> None:
+    reference = load_lab_reference()
+    shift = reference.position_of(code, reported) - reference.position_of(code, changed)
+    decimals = {**_DECIMALS, **_FIXED_DECIMALS}[f"{code}|{changed}"]
+    indexes = _set_rows(lab, code, changed)
+    assert len(indexes) == _SETS_PER_CODE[code]
+    for index in indexes:
+        mutated = _with_value(lab, index, round(lab["sonuc_sayisal"][index] + change, decimals))
+        with pytest.raises(LabCoherenceError) as caught:
+            check_lab_coherence(mutated, ana_df=ana)
+        _assert_names_the_row(
+            caught, lab, rule=rule, row=index + shift, code=code, parameter=reported
+        )
 
 
 # --- 3.5 anormal_mi (R5) --------------------------------------------------------------------------
@@ -1469,10 +1549,10 @@ def test_r5_anormal_mi_is_below_ref_alt_or_above_ref_ust_or_a_strip_other_than_n
     below = pl.col("sonuc_sayisal") < pl.col("ref_alt")
     above = pl.col("sonuc_sayisal") > pl.col("ref_ust")
     expected = below.fill_null(False) | above.fill_null(False)
-    assert numeric.filter(pl.col("anormal_mi") != expected).is_empty()
+    assert numeric.filter(pl.col("anormal_mi").ne_missing(expected)).is_empty()
     strips = lab.filter(pl.col("sonuc_nitel").is_not_null())
     not_negative = pl.col("sonuc_nitel") != "Negatif"
-    assert strips.filter(pl.col("anormal_mi") != not_negative).is_empty()
+    assert strips.filter(pl.col("anormal_mi").ne_missing(not_negative)).is_empty()
     # Both outcomes occur, so the test is not vacuous: 40 numeric rows and 3 strips are abnormal.
     abnormal_numeric = numeric.select(expected.sum()).item()
     abnormal_strips = strips.filter(not_negative).height
@@ -1682,8 +1762,9 @@ def test_mutation_a_row_that_breaks_the_flag_or_strip_rules_is_rejected(
 ) -> None:
     index = _index_of(lab, patient_no, code, parameter, date=date)
     mutated = _set_cell(lab, index, column, value)
-    with pytest.raises(LabCoherenceError, match=message):
-        check_lab_coherence(mutated, ana_df=ana)
+    caught = _rejected(mutated, ana)
+    # `message` is the name of the rule; the row is the changed one.
+    _assert_names_the_row(caught, lab, rule=message, row=index, code=code, parameter=parameter)
 
 
 # --- 3.6 Structure --------------------------------------------------------------------------------
@@ -1702,24 +1783,26 @@ def test_row_attributes_follow_the_claim_and_the_csv(
 ) -> None:
     assert all(PATIENT_ID_RE.fullmatch(v) for v in annotated["HASTA_ID"].unique().to_list())
     assert annotated["kohort"].unique().to_list() == ["showcase"]
-    assert annotated.filter(pl.col("donem") != pl.col("tarih").dt.year().cast(pl.String)).is_empty()
-    assert annotated.filter(pl.col("tarih") != pl.col("tarih").dt.truncate("1d")).is_empty()
+    year = pl.col("tarih").dt.year().cast(pl.String)
+    assert annotated.filter(pl.col("donem").ne_missing(year)).is_empty()
+    midnight = pl.col("tarih").dt.truncate("1d")
+    assert annotated.filter(pl.col("tarih").ne_missing(midnight)).is_empty()
     # The episode is the claim's episode.
     headers = built_showcase.tables["claim_headers.parquet"].select(
         pl.col("patient_id").alias("HASTA_ID"), pl.col("episode_id").alias("episode")
     )
     joined = annotated.join(headers, on="HASTA_ID", how="left")
-    assert joined.filter(pl.col("basvuru_id") != pl.col("episode")).is_empty()
+    assert joined.filter(pl.col("basvuru_id").ne_missing(pl.col("episode"))).is_empty()
     # The body system: hemogram and D-dimer are haematology, everything else biochemistry.
     expected_system = (
         pl.when(pl.col("SUB_CODE").is_in(["L107020", "L102090"]))
         .then(pl.lit("Hematoloji"))
         .otherwise(pl.lit("Biyokimya"))
     )
-    assert annotated.filter(pl.col("organ_sistemi") != expected_system).is_empty()
+    assert annotated.filter(pl.col("organ_sistemi").ne_missing(expected_system)).is_empty()
     assert set(annotated["organ_sistemi"]) == {"Hematoloji", "Biyokimya"}
     # The unit is the CSV unit (empty where it is empty).
-    assert annotated.filter(pl.col("birim") != pl.col("csv_unit")).is_empty()
+    assert annotated.filter(pl.col("birim").ne_missing(pl.col("csv_unit"))).is_empty()
     # Numeric rows carry the sex-specific CSV limits; qualitative rows carry none.
     numeric = annotated.filter(pl.col("sonuc_nitel").is_null())
     strips = annotated.filter(pl.col("sonuc_nitel").is_not_null())
@@ -1728,7 +1811,7 @@ def test_row_attributes_follow_the_claim_and_the_csv(
     ).is_empty()
     assert strips.filter(
         pl.col("sonuc_sayisal").is_not_null()
-        | (pl.col("birim") != "")
+        | pl.col("birim").ne_missing(pl.lit(""))
         | pl.col("ref_alt").is_not_null()
         | pl.col("ref_ust").is_not_null()
     ).is_empty()
@@ -1766,29 +1849,97 @@ def _move_a_row_to_another_code(lab: pl.DataFrame) -> pl.DataFrame:
     return _set_cell(lab, _index_of(lab, 1, "L101850", "CRP (kantitatif)"), "SUB_CODE", "L100300")
 
 
-@pytest.mark.parametrize(
-    ("mutate", "message"),
-    [
-        pytest.param(_swap_two_hemogram_rows, r"result set", id="swap_two_rows"),
-        pytest.param(_drop_a_middle_row, r"result set", id="drop_a_row_inside_a_set"),
-        pytest.param(_drop_the_last_row_of_a_set, r"result set", id="drop_the_last_row_of_a_set"),
-        pytest.param(_repeat_a_row, r"result set", id="repeat_a_row"),
-        pytest.param(
-            _add_an_unknown_parameter, r"unknown parameter", id="add_an_unknown_parameter"
-        ),
-        pytest.param(
-            _move_a_row_to_another_code, r"unknown parameter", id="parameter_under_the_wrong_code"
-        ),
-    ],
-)
-def test_mutation_a_broken_result_set_is_rejected(
+def _add_a_hemogram_row_to_the_crp_set(lab: pl.DataFrame) -> pl.DataFrame:
+    """Patient 1's neutrophil count, copied in right after the CRP row: the CRP result set now holds two codes."""
+    crp = _index_of(lab, 1, "L101850", "CRP (kantitatif)")
+    neutrophils = _index_of(lab, 1, "L107020", "NEU# (Nötrofil)")
+    return pl.concat([lab.slice(0, crp + 1), lab.slice(neutrophils, 1), lab.slice(crp + 1)])
+
+
+# (mutation, rule, row it is reported at, code and parameter written in that row, end of the message).
+# The row is the lowest one that breaks the rule, and the message names what the row holds.
+
+
+def _wbc_row_of_patient_1(lab: pl.DataFrame) -> int:
+    return _index_of(lab, 1, "L107020", "WBC (Lökosit)")
+
+
+_STRUCTURE_CASES = [
+    pytest.param(
+        _swap_two_hemogram_rows,
+        "result set",
+        lambda lab: _index_of(lab, 1, "L107020", "RBC (Eritrosit)"),
+        ("L107020", "HGB (Hemoglobin)"),
+        "the parameter is number 6 of its result set but is number 7 in the CSV",
+        id="swap_two_rows",
+    ),
+    pytest.param(
+        _drop_a_middle_row,
+        "result set",
+        _wbc_row_of_patient_1,
+        ("L107020", "WBC (Lökosit)"),
+        "the result set has 14 rows but the CSV has 15 parameters for L107020",
+        id="drop_a_row_inside_a_set",
+    ),
+    pytest.param(
+        _drop_the_last_row_of_a_set,
+        "result set",
+        _wbc_row_of_patient_1,
+        ("L107020", "WBC (Lökosit)"),
+        "the result set has 14 rows but the CSV has 15 parameters for L107020",
+        id="drop_the_last_row_of_a_set",
+    ),
+    pytest.param(
+        _repeat_a_row,
+        "result set",
+        _wbc_row_of_patient_1,
+        ("L107020", "WBC (Lökosit)"),
+        "the result set has 16 rows but the CSV has 15 parameters for L107020",
+        id="repeat_a_row",
+    ),
+    pytest.param(
+        _add_a_hemogram_row_to_the_crp_set,
+        "result set",
+        lambda lab: _index_of(lab, 1, "L101850", "CRP (kantitatif)"),
+        ("L101850", "CRP (kantitatif)"),
+        "the result set mixes lab codes",
+        id="two_codes_in_one_set",
+    ),
+    pytest.param(
+        _add_an_unknown_parameter,
+        "unknown parameter",
+        lambda lab: lab.height,
+        (None, "Bilinmeyen parametre"),
+        "the parameter is not in lab_reference.csv",
+        id="add_an_unknown_parameter",
+    ),
+    pytest.param(
+        _move_a_row_to_another_code,
+        "unknown parameter",
+        lambda lab: _index_of(lab, 1, "L101850", "CRP (kantitatif)"),
+        ("L100300", "CRP (kantitatif)"),
+        "the parameter is not in lab_reference.csv",
+        id="parameter_under_the_wrong_code",
+    ),
+]
+
+
+@pytest.mark.parametrize(("mutate", "rule", "row_of", "written", "message"), _STRUCTURE_CASES)
+def test_mutation_a_broken_result_set_names_the_rule_the_row_and_what_is_wrong(
     lab: pl.DataFrame,
     ana: pl.DataFrame,
     mutate: Callable[[pl.DataFrame], pl.DataFrame],
+    rule: str,
+    row_of: Callable[[pl.DataFrame], int],
+    written: tuple[str | None, str],
     message: str,
 ) -> None:
-    with pytest.raises(LabCoherenceError, match=message):
-        check_lab_coherence(mutate(lab), ana_df=ana)
+    mutated = mutate(lab)
+    row = row_of(lab)
+    code = written[0] or lab["SUB_CODE"][-1]  # an added row copies the last one
+    caught = _rejected(mutated, ana)
+    _assert_names_the_row(caught, mutated, rule=rule, row=row, code=code, parameter=written[1])
+    assert str(caught.value).endswith(message)
 
 
 def _glucose_for_the_package_patient(lab: pl.DataFrame) -> pl.DataFrame:
@@ -1812,6 +1963,14 @@ def _move_a_result_set_one_day(lab: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def _move_a_result_set_to_another_patient(lab: pl.DataFrame) -> pl.DataFrame:
+    """Patient 1's CRP set under patient 2 and patient 2's episode (both men, so the limits agree)."""
+    index = _index_of(lab, 1, "L101850", "CRP (kantitatif)")
+    return _set_cell(
+        _set_cell(lab, index, "HASTA_ID", _pid(2)), index, "basvuru_id", "B-SENTETIK-HASTA-0002-001"
+    )
+
+
 def _move_a_result_set_to_another_episode(lab: pl.DataFrame) -> pl.DataFrame:
     return _set_cell(
         lab,
@@ -1832,6 +1991,7 @@ def _move_a_result_set_to_another_episode(lab: pl.DataFrame) -> pl.DataFrame:
         pytest.param(_drop_a_middle_row, id="missing_row_inside_a_result_set"),
         pytest.param(_move_a_result_set_one_day, id="wrong_date"),
         pytest.param(_move_a_result_set_to_another_episode, id="wrong_episode"),
+        pytest.param(_move_a_result_set_to_another_patient, id="wrong_patient_and_episode"),
     ],
 )
 def test_mutation_validate_clean_tables_rejects_rows_that_do_not_match_the_billed_lines(
@@ -2084,12 +2244,19 @@ def test_the_committed_lab_parquet_equals_a_fresh_build(lab: pl.DataFrame) -> No
     )
 
 
-def test_two_cli_builds_write_the_same_lab_bytes(tmp_path: Path) -> None:
+def test_two_cli_builds_write_the_same_lab_bytes_and_the_committed_file_the_same_content(
+    tmp_path: Path,
+) -> None:
     assert main(["--out", str(tmp_path / "a")]) == 0
     assert main(["--out", str(tmp_path / "b")]) == 0
-    a = (tmp_path / "a" / "sut" / "clean" / "lab_clean.parquet").read_bytes()
-    b = (tmp_path / "b" / "sut" / "clean" / "lab_clean.parquet").read_bytes()
-    assert a == b == _LAB_PARQUET.read_bytes()
+    a_path = tmp_path / "a" / "sut" / "clean" / "lab_clean.parquet"
+    b_path = tmp_path / "b" / "sut" / "clean" / "lab_clean.parquet"
+    # Two fresh builds in one environment write the same bytes. The committed file was written by another
+    # Polars version, whose writer may lay the same table out in other bytes, so it is compared by content.
+    assert a_path.read_bytes() == b_path.read_bytes()
+    fresh, committed = pl.read_parquet(a_path), pl.read_parquet(_LAB_PARQUET)
+    assert dict(fresh.schema) == dict(committed.schema)
+    assert fresh.sort(fresh.columns).equals(committed.sort(committed.columns), null_equal=True)
 
 
 def test_mutation_check_exits_1_when_a_lab_value_or_the_lab_count_changes(
@@ -2268,119 +2435,71 @@ def test_a_structure_error_is_reported_before_a_row_error(
         check_lab_coherence(flipped, ana_df=ana)
 
 
-# A change far too small for the old tolerances (1.0 for HCO3, 0.5 for MCHC, 1.0 for eGFR), and bigger
-# than the rounding of the printed decimals. The flag of the changed row stays right.
-@pytest.mark.parametrize(
-    ("patient_no", "date", "code", "parameter", "change", "message"),
-    [
-        pytest.param(2, "2026-03-09", "L107020", "NEU# (Nötrofil)", 0.1, r"R1", id="R1_0.1"),
-        pytest.param(
-            2, "2026-03-09", "L107020", "RBC (Eritrosit)", 0.2, r"R2.*RBC", id="R2_rbc_0.2"
-        ),
-        pytest.param(
-            2, "2026-03-09", "L107020", "HCT (Hematokrit)", 1.5, r"R2.*HCT", id="R2_hct_1.5"
-        ),
-        pytest.param(2, "2026-03-09", "L107020", "MCHC", 0.2, r"R2.*MCHC", id="R2_mchc_0.2"),
-        pytest.param(7, "2026-02-19", "L104780", _EGFR, 2.0, r"R3.*eGFR", id="R3_egfr_2"),
-        pytest.param(2, "2026-03-09", "L103900", "HCO3", 0.2, r"R4.*HCO3", id="R4_hco3_0.2"),
-        pytest.param(
-            2, "2026-03-09", "L103900", "BE (baz fazlası)", 0.2, r"R4.*BE", id="R4_be_0.2"
-        ),
-        pytest.param(2, "2026-03-09", "L103900", "SaO2", 0.2, r"R4.*SaO2", id="R4_sao2_0.2"),
-    ],
-)
-def test_mutation_a_small_change_of_a_derived_value_is_caught(
-    lab: pl.DataFrame,
-    ana: pl.DataFrame,
-    patient_no: int,
-    date: str,
-    code: str,
-    parameter: str,
-    change: float,
-    message: str,
-) -> None:
-    index = _index_of(lab, patient_no, code, parameter, date=date)
-    mutated = _set_cell(lab, index, "sonuc_sayisal", lab["sonuc_sayisal"][index] + change)
-    with pytest.raises(LabCoherenceError, match=message):
-        check_lab_coherence(mutated, ana_df=ana)
-
-
-def test_mutation_a_change_of_a_driver_value_is_caught_at_the_derived_value(
-    lab: pl.DataFrame, ana: pl.DataFrame
-) -> None:
-    """HGB, MCV, MCH, pH, pCO2, pO2 and the creatinine are the inputs: moving one breaks its output."""
-    cases = [
-        (2, "L107020", "HGB (Hemoglobin)", 1.0, r"R2.*RBC"),
-        (2, "L107020", "MCH", 2.0, r"R2.*RBC"),
-        (2, "L107020", "MCV", 5.0, r"R2.*HCT"),
-        (2, "L103900", "pCO2", 3.0, r"R4.*HCO3"),
-        (2, "L103900", "pO2", 5.0, r"R4.*SaO2"),
-        (7, "L104780", "Kreatinin", 0.2, r"R3.*eGFR"),
-    ]
-    for patient_no, code, parameter, change, message in cases:
-        index = _index_of(lab, patient_no, code, parameter, nth=0)
-        value = lab["sonuc_sayisal"][index] + change
-        mutated = _set_cell(lab, index, "sonuc_sayisal", value)
-        # Keep the flag of the changed row right, so that only the derivation can notice.
-        low, high = lab["ref_alt"][index], lab["ref_ust"][index]
-        flag = (low is not None and value < low) or (high is not None and value > high)
-        mutated = _set_cell(mutated, index, "anormal_mi", bool(flag))
-        with pytest.raises(LabCoherenceError, match=message):
-            check_lab_coherence(mutated, ana_df=ana)
-
-
 def test_mutation_the_limits_must_be_the_sex_specific_ones_of_the_csv(
     lab: pl.DataFrame, ana: pl.DataFrame
 ) -> None:
     index = _index_of(lab, 7, "L107360", "hs-Troponin I", nth=0)
     male_limit = _set_cell(lab, index, "ref_ust", 34.2)  # the value 4.9 stays normal either way
-    with pytest.raises(
-        LabCoherenceError,
-        match=r"R5 at row .*the limits \[0.0, 34.2\] are not the sex-specific limits \[0.0, 15.6\]",
-    ):
-        check_lab_coherence(male_limit, ana_df=ana)
+    caught = _rejected(male_limit, ana)
+    _assert_names_the_row(
+        caught, lab, rule="R5", row=index, code="L107360", parameter="hs-Troponin I"
+    )
+    assert str(caught.value).endswith(
+        "the limits [0.0, 34.2] are not the sex-specific limits [0.0, 15.6] of the CSV"
+    )
     check_lab_coherence(male_limit)  # without the age and sex of the episode this cannot be seen
-    low_limit = _set_cell(lab, _index_of(lab, 7, "L106150", "Potasyum"), "ref_alt", 3.4)
-    with pytest.raises(LabCoherenceError, match=r"R5 at row .*sex-specific limits"):
-        check_lab_coherence(low_limit, ana_df=ana)
+    potassium = _index_of(lab, 7, "L106150", "Potasyum")
+    caught = _rejected(_set_cell(lab, potassium, "ref_alt", 3.4), ana)
+    _assert_names_the_row(
+        caught, lab, rule="R5", row=potassium, code="L106150", parameter="Potasyum"
+    )
+    assert str(caught.value).endswith(
+        "the limits [3.4, 5.1] are not the sex-specific limits [3.5, 5.1] of the CSV"
+    )
     # An episode without an anadata row has no sex: its limits cannot be checked, so it is an error.
     other_episodes = ana.filter(pl.col("SQ_EPISODE") != "B-SENTETIK-HASTA-0001-001")
-    with pytest.raises(LabCoherenceError, match=r"R5 at row .*no anadata row"):
-        check_lab_coherence(lab, ana_df=other_episodes)
+    first = _first_row_of(lab, 1)
+    caught = _rejected(lab, other_episodes)
+    _assert_names_the_row(
+        caught,
+        lab,
+        rule="R5",
+        row=first,
+        code=lab["SUB_CODE"][first],
+        parameter=lab["parametre"][first],
+    )
+    assert str(caught.value).endswith(
+        "no anadata row for the episode: the sex-specific limits cannot be checked"
+    )
 
 
 def test_mutation_the_unit_must_be_the_csv_unit(lab: pl.DataFrame, ana: pl.DataFrame) -> None:
     index = _index_of(lab, 2, "L102890", "Glukoz")
-    with pytest.raises(
-        LabCoherenceError, match=r"R6 at row .*unit mmol/L differs from the CSV unit mg/dL"
-    ):
-        check_lab_coherence(_set_cell(lab, index, "birim", "mmol/L"), ana_df=ana)
+    caught = _rejected(_set_cell(lab, index, "birim", "mmol/L"), ana)
+    _assert_names_the_row(caught, lab, rule="R6", row=index, code="L102890", parameter="Glukoz")
+    assert str(caught.value).endswith("unit mmol/L differs from the CSV unit mg/dL")
     ph = _index_of(lab, 2, "L103900", "pH", date="2026-03-09")  # the blood-gas pH has no unit
-    with pytest.raises(
-        LabCoherenceError, match=r"R6 at row .*unit mmHg differs from the CSV unit $"
-    ):
-        check_lab_coherence(_set_cell(lab, ph, "birim", "mmHg"), ana_df=ana)
+    caught = _rejected(_set_cell(lab, ph, "birim", "mmHg"), ana)
+    _assert_names_the_row(caught, lab, rule="R6", row=ph, code="L103900", parameter="pH")
+    assert str(caught.value).endswith("unit mmHg differs from the CSV unit ")
 
 
 def test_mutation_one_result_set_cannot_mix_patients_episodes_or_dates(
     lab: pl.DataFrame, ana: pl.DataFrame
 ) -> None:
+    """The set is reported at its first row, the WBC; the changed row is inside it."""
     index = _index_of(lab, 2, "L107020", "MCV", date="2026-03-09")
-    moved_day = _set_cell(lab, index, "tarih", datetime(2026, 3, 10))
-    with pytest.raises(
-        LabCoherenceError, match=r"result set at row .*mixes patients, episodes or dates"
+    first = _index_of(lab, 2, "L107020", "WBC (Lökosit)", date="2026-03-09")
+    for column, value in (
+        ("tarih", datetime(2026, 3, 10)),
+        ("basvuru_id", "B-SENTETIK-HASTA-0007-001"),
+        ("HASTA_ID", _pid(7)),
     ):
-        check_lab_coherence(moved_day, ana_df=ana)
-    other_episode = _set_cell(lab, index, "basvuru_id", "B-SENTETIK-HASTA-0007-001")
-    with pytest.raises(
-        LabCoherenceError, match=r"result set at row .*mixes patients, episodes or dates"
-    ):
-        check_lab_coherence(other_episode, ana_df=ana)
-    other_patient = _set_cell(lab, index, "HASTA_ID", _pid(7))
-    with pytest.raises(
-        LabCoherenceError, match=r"result set at row .*mixes patients, episodes or dates"
-    ):
-        check_lab_coherence(other_patient, ana_df=ana)
+        caught = _rejected(_set_cell(lab, index, column, value), ana)
+        _assert_names_the_row(
+            caught, lab, rule="result set", row=first, code="L107020", parameter="WBC (Lökosit)"
+        )
+        assert str(caught.value).endswith("the result set mixes patients, episodes or dates")
 
 
 def test_the_scalar_formulas_and_their_polars_expressions_agree() -> None:
@@ -2444,10 +2563,25 @@ def test_the_parameter_table_is_the_reference_as_a_frame() -> None:
         "ref_high_male",
         "ref_low_female",
         "ref_high_female",
+        "organ",
+        "decimals",
         "position",
         "n_params",
     ]
     assert table.height == 86  # 96 CSV rows minus the 10 of the venous blood gas
+    # The organ system of the generator: haematology for the hemogram and the D-dimer, biochemistry for
+    # every other test of the reference, the 35 codes that are not billed here included.
+    organs = table.group_by("organ").agg(pl.col("SUB_CODE").unique().sort()).sort("organ")
+    assert organs["organ"].to_list() == ["Biyokimya", "Hematoloji"]
+    assert organs.filter(pl.col("organ") == "Hematoloji")["SUB_CODE"][0].to_list() == [
+        "L102090",
+        "L107020",
+    ]
+    assert organs.filter(pl.col("organ") == "Biyokimya")["SUB_CODE"][0].len() == 47
+    # The printed decimals: the ones of the CSV, except the eight values that rules R1 and R4 fix.
+    keys = table.select(pl.concat_str("SUB_CODE", "parametre", separator="|").alias("key"))["key"]
+    printed = dict(zip(keys, table["decimals"], strict=True))
+    assert {key: printed[key] for key in _DECIMALS} == {**_DECIMALS, **_FIXED_DECIMALS}
     assert table.filter(pl.col("SUB_CODE") == "L107020")["position"].to_list() == list(range(15))
     sizes = table.group_by("SUB_CODE").agg(pl.col("n_params").unique()).sort("SUB_CODE")
     assert all(len(v) == 1 for v in sizes["n_params"])
@@ -2509,9 +2643,9 @@ def _put_the_crp_set_after_the_hemogram(lab: pl.DataFrame) -> pl.DataFrame:
             id="wrong_date",
         ),
         pytest.param(
-            _move_a_result_set_to_another_episode,
-            r"1 missing, first SENTETIK-HASTA-0001 B-SENTETIK-HASTA-0001-001 .*1 unexpected, first SENTETIK-HASTA-0001 B-SENTETIK-HASTA-0007-001",
-            id="wrong_episode",
+            _move_a_result_set_to_another_patient,
+            r"1 missing, first SENTETIK-HASTA-0001 B-SENTETIK-HASTA-0001-001 .*1 unexpected, first SENTETIK-HASTA-0002 B-SENTETIK-HASTA-0002-001",
+            id="wrong_patient_and_episode",
         ),
         pytest.param(
             _put_the_crp_set_after_the_hemogram,
@@ -2812,3 +2946,1272 @@ def test_validate_clean_tables_reports_an_unknown_lab_code_of_the_claims(
     tables = {**built_showcase.tables, "procedure_claim_lines.parquet": unknown}
     with pytest.raises(CleanTableError, match="unknown lab code 'L999999'"):
         validate_clean_tables(built_showcase.clean_tables, tables)
+
+
+# --- 3.13 Gaps the independent review found in the validator --------------------------------------
+
+
+def _ana_with(ana: pl.DataFrame, patient_no: int, column: str, value: Any) -> pl.DataFrame:
+    """Copy of the anadata table with one cell of one patient's row replaced."""
+    return ana.with_columns(
+        pl.when(pl.col("HASTA_ID") == _pid(patient_no))
+        .then(pl.lit(value, dtype=ana.schema[column]))
+        .otherwise(pl.col(column))
+        .alias(column)
+    )
+
+
+def _first_row_of(lab: pl.DataFrame, patient_no: int) -> int:
+    """Row index of the first lab row of a patient."""
+    return lab.with_row_index("i").filter(pl.col("HASTA_ID") == _pid(patient_no))["i"][0]
+
+
+def _rejected(
+    lab: pl.DataFrame, ana: pl.DataFrame | None
+) -> pytest.ExceptionInfo[LabCoherenceError]:
+    """The error `check_lab_coherence` raises for `lab`; the test fails when there is none."""
+    with pytest.raises(LabCoherenceError) as caught:
+        check_lab_coherence(lab, ana_df=ana)
+    return caught
+
+
+@pytest.mark.parametrize("with_anadata", [True, False], ids=["with_anadata", "alone"])
+@pytest.mark.parametrize(
+    ("patient_no", "code", "parameter", "csv_unit"),
+    [
+        pytest.param(2, "L102890", "Glukoz", "mg/dL", id="number"),
+        pytest.param(4, "L107010", "Nitrit (strip)", "", id="strip"),
+    ],
+)
+def test_mutation_a_missing_unit_is_rejected_on_a_number_and_on_a_strip(
+    lab: pl.DataFrame,
+    ana: pl.DataFrame,
+    patient_no: int,
+    code: str,
+    parameter: str,
+    csv_unit: str,
+    with_anadata: bool,
+) -> None:
+    index = _index_of(lab, patient_no, code, parameter)
+    caught = _rejected(_set_cell(lab, index, "birim", None), ana if with_anadata else None)
+    _assert_names_the_row(caught, lab, rule="R6", row=index, code=code, parameter=parameter)
+    assert str(caught.value).endswith(f"unit null differs from the CSV unit {csv_unit}")
+
+
+@pytest.mark.parametrize("with_anadata", [True, False], ids=["with_anadata", "alone"])
+@pytest.mark.parametrize(
+    ("parameter", "code", "column", "value", "detail"),
+    [
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "organ_sistemi",
+            None,
+            "organ_sistemi null is not Biyokimya",
+            id="organ_null",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "organ_sistemi",
+            "Hematoloji",
+            "organ_sistemi Hematoloji is not Biyokimya",
+            id="organ_haematology_on_a_biochemistry_row",
+        ),
+        pytest.param(
+            "MCV",
+            "L107020",
+            "organ_sistemi",
+            "Biyokimya",
+            "organ_sistemi Biyokimya is not Hematoloji",
+            id="organ_biochemistry_on_a_hemogram_row",
+        ),
+        pytest.param(
+            "Glukoz", "L102890", "kohort", None, "kohort null is not showcase", id="kohort_null"
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "kohort",
+            "other",
+            "kohort other is not showcase",
+            id="kohort_other",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "donem",
+            None,
+            "donem null is not the year of tarih 2026-03-09 00:00:00",
+            id="donem_null",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "donem",
+            "2025",
+            "donem 2025 is not the year of tarih 2026-03-09 00:00:00",
+            id="donem_of_another_year",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "tarih",
+            datetime(2026, 3, 9, 13, 0),
+            "tarih 2026-03-09 13:00:00 is not a date at midnight",
+            id="tarih_at_13_hours",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "tarih",
+            datetime(2026, 3, 9, 0, 0, 1),
+            "tarih 2026-03-09 00:00:01 is not a date at midnight",
+            id="tarih_one_second_after_midnight",
+        ),
+        pytest.param(
+            "Glukoz",
+            "L102890",
+            "tarih",
+            None,
+            "tarih null is not a date at midnight",
+            id="tarih_null",
+        ),
+    ],
+)
+def test_mutation_the_descriptive_columns_must_be_the_ones_the_generator_writes(
+    lab: pl.DataFrame,
+    ana: pl.DataFrame,
+    parameter: str,
+    code: str,
+    column: str,
+    value: Any,
+    detail: str,
+    with_anadata: bool,
+) -> None:
+    index = _index_of(lab, 2, code, parameter, date="2026-03-09")
+    caught = _rejected(_set_cell(lab, index, column, value), ana if with_anadata else None)
+    _assert_names_the_row(caught, lab, rule="columns", row=index, code=code, parameter=parameter)
+    assert str(caught.value).endswith(detail)
+
+
+@pytest.mark.parametrize(
+    ("patient_no", "date", "code", "parameter", "value", "decimals"),
+    [
+        pytest.param(2, "2026-03-09", "L100300", "ALT", 17.3, 0, id="ALT_17.3"),
+        pytest.param(
+            2, "2026-03-09", "L100300", "ALT", 17.0001, 0, id="ALT_a_tenth_of_a_thousandth"
+        ),
+        pytest.param(2, "2026-03-09", "L103900", "pH", 7.3001, 2, id="pH_a_hundredth_of_a_step"),
+        pytest.param(
+            4, "2026-05-11", "L107010", "Mikroskopi: lökosit", 31.5, 0, id="microscopy_31.5"
+        ),
+        pytest.param(2, "2026-03-09", "L103900", "pH", 7.305, 2, id="pH_three_decimals"),
+        pytest.param(2, "2026-03-09", "L107020", "WBC (Lökosit)", 16.05, 1, id="WBC_two_decimals"),
+        pytest.param(2, "2026-03-09", "L107020", _NEU, 12.945, 2, id="count_three_decimals"),
+        pytest.param(2, "2026-03-09", "L107020", _HCT, 45.5, 0, id="HCT_one_decimal"),
+        pytest.param(7, "2026-02-19", "L104780", _EGFR, 94.5, 0, id="eGFR_one_decimal"),
+        pytest.param(2, "2026-03-09", "L103900", "HCO3", 28.25, 1, id="HCO3_two_decimals"),
+        pytest.param(2, "2026-03-09", "L103900", "SaO2", 88.75, 1, id="SaO2_two_decimals"),
+        pytest.param(
+            7, "2026-02-19", "L107360", "hs-Troponin I", 4.95, 1, id="troponin_two_decimals"
+        ),
+    ],
+)
+def test_mutation_a_value_printed_with_more_decimals_than_its_parameter_is_rejected(
+    lab: pl.DataFrame,
+    ana: pl.DataFrame,
+    patient_no: int,
+    date: str,
+    code: str,
+    parameter: str,
+    value: float,
+    decimals: int,
+) -> None:
+    index = _index_of(lab, patient_no, code, parameter, date=date)
+    caught = _rejected(_with_value(lab, index, value), ana)
+    _assert_names_the_row(caught, lab, rule="decimals", row=index, code=code, parameter=parameter)
+    assert str(caught.value).endswith(f"sonuc_sayisal {value} has more than {decimals} decimals")
+
+
+def test_float_noise_is_not_a_decimal(lab: pl.DataFrame, ana: pl.DataFrame) -> None:
+    """0.1 + 0.2 is 0.30000000000000004: the digits float arithmetic adds far out do not count."""
+    alt = _index_of(lab, 2, "L100300", "ALT")
+    noisy = _with_value(lab, alt, float(lab["sonuc_sayisal"][alt]) + 1e-12)
+    assert noisy["sonuc_sayisal"][alt] != lab["sonuc_sayisal"][alt]
+    check_lab_coherence(noisy, ana_df=ana)
+    ph = _index_of(lab, 2, "L103900", "pH", date="2026-03-09")
+    check_lab_coherence(_with_value(lab, ph, 7.3 + (0.1 + 0.2 - 0.3)), ana_df=ana)
+
+
+def test_values_with_fewer_decimals_than_their_parameter_are_fine(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    """The pH of the blood gas has two decimals; 7.3 is 7.30. A number is not judged by its text."""
+    check_lab_coherence(
+        _with_value(lab, _index_of(lab, 2, "L103900", "pH", date="2026-03-09"), 7.3), ana_df=ana
+    )
+    glucose = _index_of(lab, 2, "L102890", "Glukoz")
+    check_lab_coherence(
+        _with_value(lab, glucose, float(lab["sonuc_sayisal"][glucose]) + 3.0), ana_df=ana
+    )
+
+
+@pytest.mark.parametrize("code", ["x", "e", "", None, "k", "M", "KADIN"])
+def test_mutation_a_sex_code_that_is_not_e_or_k_is_rejected(
+    lab: pl.DataFrame, ana: pl.DataFrame, code: str | None
+) -> None:
+    """Patient 1 has no creatinine, so before this rule a bad code was read as male without a word."""
+    row = _first_row_of(lab, 1)
+    caught = _rejected(lab, _ana_with(ana, 1, "CINSIYET", code))
+    _assert_names_the_row(
+        caught, lab, rule="R5", row=row, code=lab["SUB_CODE"][row], parameter=lab["parametre"][row]
+    )
+    assert str(caught.value).endswith(
+        f"CINSIYET {'null' if code is None else code} of the episode is neither E nor K: "
+        "the sex-specific limits cannot be read"
+    )
+
+
+def test_mutation_a_missing_age_is_an_error_where_the_egfr_needs_it(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    no_age = _ana_with(ana, 4, "TANI_YASI", None)
+    first = _index_of(lab, 4, "L104780", "Kreatinin", nth=0)
+    caught = _rejected(lab, no_age)
+    _assert_names_the_row(caught, lab, rule="R3", row=first, code="L104780", parameter="Kreatinin")
+    assert str(caught.value).endswith(
+        "no age (TANI_YASI) for the episode: eGFR cannot be recomputed"
+    )
+    # Patient 1 has no creatinine line: the age is not used, so a missing one is not this check's business.
+    check_lab_coherence(lab, ana_df=_ana_with(ana, 1, "TANI_YASI", None))
+
+
+def test_mutation_a_row_of_another_patient_than_the_episode_is_rejected(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    crp = _index_of(lab, 1, "L101850", "CRP (kantitatif)")
+    for other in (_pid(2), None):
+        caught = _rejected(_set_cell(lab, crp, "HASTA_ID", other), ana)
+        # The message names the patient written in the row, the one that is wrong.
+        expected = f"lab_clean anadata at row {crp} ({other or 'null'} L101850|CRP (kantitatif)): "
+        assert str(caught.value).startswith(expected), str(caught.value)
+        assert str(caught.value).endswith(
+            f"the row is for patient {other or 'null'} but anadata_clean has patient "
+            f"{_pid(1)} for the episode"
+        )
+    # Two patients exchanging all their lab rows (their episodes stay) is the same error, at the first row.
+    swapped = lab.with_columns(
+        pl.when(pl.col("HASTA_ID") == _pid(2))
+        .then(pl.lit(_pid(6)))
+        .when(pl.col("HASTA_ID") == _pid(6))
+        .then(pl.lit(_pid(2)))
+        .otherwise(pl.col("HASTA_ID"))
+        .alias("HASTA_ID")
+    )
+    caught = _rejected(swapped, ana)
+    first = _first_row_of(lab, 2)
+    assert str(caught.value).startswith(f"lab_clean anadata at row {first} ({_pid(6)} ")
+
+
+def test_mutation_the_limits_must_be_the_sex_specific_ones_even_where_the_csv_has_none(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    """A limit that is present where the CSV has none (eGFR has no upper one) or absent where it has one."""
+    egfr = _index_of(lab, 4, "L104780", _EGFR, date="2026-05-11")
+    caught = _rejected(_set_cell(lab, egfr, "ref_ust", 100.0), ana)
+    _assert_names_the_row(caught, lab, rule="R5", row=egfr, code="L104780", parameter=_EGFR)
+    assert str(caught.value).endswith(
+        "the limits [60.0, 100.0] are not the sex-specific limits [60.0, null] of the CSV"
+    )
+    troponin = _index_of(lab, 7, "L107360", "hs-Troponin I", nth=0)
+    caught = _rejected(_set_cell(lab, troponin, "ref_alt", None), ana)
+    _assert_names_the_row(
+        caught, lab, rule="R5", row=troponin, code="L107360", parameter="hs-Troponin I"
+    )
+    assert str(caught.value).endswith(
+        "the limits [null, 15.6] are not the sex-specific limits [0.0, 15.6] of the CSV"
+    )
+
+
+@pytest.mark.parametrize(
+    "bad", [float("nan"), float("inf"), float("-inf")], ids=["nan", "inf", "-inf"]
+)
+@pytest.mark.parametrize("column", ["ref_alt", "ref_ust"])
+@pytest.mark.parametrize("with_anadata", [True, False], ids=["with_anadata", "alone"])
+def test_mutation_a_limit_that_is_not_finite_is_rejected_first(
+    lab: pl.DataFrame, ana: pl.DataFrame, bad: float, column: str, with_anadata: bool
+) -> None:
+    index = _index_of(lab, 7, "L107360", "hs-Troponin I", nth=0)
+    caught = _rejected(_set_cell(lab, index, column, bad), ana if with_anadata else None)
+    _assert_names_the_row(
+        caught, lab, rule="finite", row=index, code="L107360", parameter="hs-Troponin I"
+    )
+    assert str(caught.value).endswith("the reference limits must be finite")
+
+
+@pytest.mark.parametrize("column", ["ref_alt", "ref_ust"])
+def test_mutation_a_strip_has_no_limit_of_either_side(
+    lab: pl.DataFrame, ana: pl.DataFrame, column: str
+) -> None:
+    index = _index_of(lab, 4, "L107010", "Protein (strip)")
+    caught = _rejected(_set_cell(lab, index, column, 0.0), ana)
+    _assert_names_the_row(
+        caught, lab, rule="R6", row=index, code="L107010", parameter="Protein (strip)"
+    )
+    assert str(caught.value).endswith("a strip has no reference limits")
+
+
+def _egfr_ten_higher(clean: dict[str, pl.DataFrame]) -> dict[str, pl.DataFrame]:
+    lab = clean["lab_clean.parquet"]
+    egfr = _index_of(lab, 7, "L104780", _EGFR)
+    higher = _with_value(lab, egfr, float(lab["sonuc_sayisal"][egfr]) + 10.0)
+    return {**clean, "lab_clean.parquet": higher}
+
+
+def _anadata_changed(
+    clean: dict[str, pl.DataFrame], patient_no: int, column: str, value: Any
+) -> dict[str, pl.DataFrame]:
+    ana = _ana_with(clean["anadata_clean.parquet"], patient_no, column, value)
+    return {**clean, "anadata_clean.parquet": ana}
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        pytest.param(_egfr_ten_higher, r"lab_clean R3 at row .*eGFR", id="a_wrong_eGFR"),
+        pytest.param(
+            lambda clean: _anadata_changed(clean, 1, "CINSIYET", "K"),
+            r"lab_clean R5 at row .*sex-specific limits",
+            id="a_flipped_sex",
+        ),
+        pytest.param(
+            lambda clean: _anadata_changed(clean, 4, "CINSIYET", "X"),
+            r"lab_clean R5 at row .*neither E nor K",
+            id="a_sex_code_X",
+        ),
+        pytest.param(
+            lambda clean: _anadata_changed(clean, 4, "TANI_YASI", None),
+            r"lab_clean R3 at row .*no age",
+            id="no_age",
+        ),
+    ],
+)
+def test_validate_clean_tables_runs_the_coherence_check_with_the_anadata(
+    built_showcase: BuildResult,
+    mutate: Callable[[dict[str, pl.DataFrame]], dict[str, pl.DataFrame]],
+    message: str,
+) -> None:
+    """With and without the claims: the coherence check sees the anadata either way."""
+    clean = built_showcase.clean_tables
+    validate_clean_tables(clean)
+    validate_clean_tables(clean, built_showcase.tables)
+    tampered = mutate(clean)
+    with pytest.raises(CleanTableError, match=message):
+        validate_clean_tables(tampered)
+    with pytest.raises(CleanTableError, match=message):
+        validate_clean_tables(tampered, built_showcase.tables)
+
+
+# --- 3.14 The formulas pinned to numbers computed apart from the code --------------------------------
+#
+# The reference numbers below come from exact rational arithmetic (SaO2) and 60-digit Decimal arithmetic
+# (the powers), not from floats. The printed values hide constants (one decimal for the blood gas, whole
+# numbers for the eGFR), so the unrounded results are compared, to 1e-9.
+
+
+def _close(actual: float, expected: float) -> bool:
+    return abs(actual - expected) < 1e-9
+
+
+@pytest.mark.parametrize(
+    ("po2", "expected"),
+    [
+        (27.0, 50.35325568073324),
+        (40.0, 74.94646680942184),
+        (56.0, 88.71832452655534),
+        (60.0, 90.57971014492753),
+        (100.0, 97.74653312788907),
+        (150.0, 99.31596948171534),
+    ],
+)
+def test_the_severinghaus_saturation_equals_the_exact_value(po2: float, expected: float) -> None:
+    assert _close(_sao2(po2), expected)
+    assert _close(
+        pl.DataFrame({"p": [po2]}).select(_sao2(pl.col("p")).alias("v"))["v"][0], expected
+    )
+    assert severinghaus_sao2(po2) == round(expected, 1)
+
+
+@pytest.mark.parametrize(
+    ("ph", "pco2", "expected"),
+    [
+        (7.30, 58.0, 28.220608184962586),
+        (7.41, 40.0, 25.07254196054182),
+        (7.10, 20.0, 6.14),
+        (7.50, 25.0, 19.278728361836027),
+        (6.95, 80.0, 17.38714846447443),
+    ],
+)
+def test_the_henderson_hasselbalch_bicarbonate_equals_the_exact_value(
+    ph: float, pco2: float, expected: float
+) -> None:
+    assert _close(_hco3(ph, pco2), expected)
+    frame = pl.DataFrame({"ph": [ph], "pco2": [pco2]})
+    assert _close(frame.select(_hco3(pl.col("ph"), pl.col("pco2")).alias("v"))["v"][0], expected)
+    assert henderson_hasselbalch_hco3(ph, pco2) == round(expected, 1)
+
+
+@pytest.mark.parametrize(
+    ("ph", "hco3", "expected"),
+    [
+        (7.30, 28.2, 2.1576),
+        (7.41, 25.1, 0.78864),
+        (7.00, 10.0, -18.8976),
+        (7.50, 30.0, 6.5844),
+    ],
+)
+def test_the_base_excess_equals_the_exact_value(ph: float, hco3: float, expected: float) -> None:
+    assert _close(_base_excess(ph, hco3), expected)
+    frame = pl.DataFrame({"ph": [ph], "hco3": [hco3]})
+    assert _close(
+        frame.select(_base_excess(pl.col("ph"), pl.col("hco3")).alias("v"))["v"][0], expected
+    )
+    assert base_excess_from_ph_hco3(ph, hco3) == round(expected, 1)
+
+
+@pytest.mark.parametrize(
+    ("scr", "age", "sex", "expected"),
+    [
+        (0.6, 40, "F", 116.29545162194957),
+        (0.74, 58, "F", 93.72382425083177),
+        (0.95, 60, "F", 68.58951360663686),
+        (1.0, 60, "M", 86.16262077966904),
+        (1.2, 77, "M", 62.28511576608984),
+        (0.45, 25, "F", 136.83212731612383),
+        (2.4, 70, "M", 28.317527720588547),
+        (0.5, 30, "M", 140.7182460142157),
+        (0.7, 50, "F", 105.29760114914392),
+        (0.9, 50, "M", 104.04901299322522),
+    ],
+)
+def test_ckd_epi_2021_equals_the_exact_value_for_both_sexes_and_both_branches(
+    scr: float, age: int, sex: str, expected: float
+) -> None:
+    """The creatinine below and above kappa (0.7 for women, 0.9 for men) use two different exponents."""
+    assert _close(ckd_epi_2021(scr, age, sex), expected)
+    frame = pl.DataFrame({"scr": [scr], "age": [age], "female": [sex == "F"]})
+    expression = ckd_epi_2021_expr(pl.col("scr"), pl.col("age"), pl.col("female"))
+    assert _close(frame.select(expression.alias("v"))["v"][0], expected)
+
+
+@pytest.mark.parametrize(
+    ("egfr", "age", "sex", "expected"),
+    [
+        (60.0, 60, "M", 1.3519886371748253),
+        (125.0, 30, "F", 0.5756447373561503),
+        (45.0, 86, "F", 1.1796127244355594),
+        (90.0, 40, "M", 1.069663357634239),
+        (130.0, 25, "M", 0.7204757010914428),
+        (20.0, 70, "F", 2.519058857893674),
+    ],
+)
+def test_the_inverse_of_ckd_epi_2021_equals_the_exact_value_in_both_branches(
+    egfr: float, age: int, sex: str, expected: float
+) -> None:
+    """An eGFR above A = 142·0.9938^age (·1.012 for women) is inverted with alpha, below it with -1.2."""
+    assert _close(invert_ckd_epi_2021(egfr, age, sex), expected)
+
+
+# --- 3.15 Guards for the mutants the independent review left alive (reader, ranges, age bands) --------
+
+
+@pytest.mark.parametrize(
+    ("item", "strip", "message"),
+    [
+        pytest.param("x: 5–5", False, "numeric range low >= high", id="numeric"),
+        pytest.param("x: eGFR 5–5", False, "eGFR band low >= high", id="egfr_band"),
+        pytest.param("x: M 3–3", False, "sex-specific range low >= high", id="sex_range"),
+        pytest.param("x: M 3–4, F 5–5", False, "sex-specific range low >= high", id="second_sex"),
+        pytest.param(
+            "x: 5–5 or 6–7", False, "alternative range low >= high", id="first_alternative"
+        ),
+        pytest.param(
+            "x: 5–6 or 7–7", False, "alternative range low >= high", id="second_alternative"
+        ),
+        pytest.param("x: 3 to 3", False, "'to' range low >= high", id="to_range"),
+        pytest.param("x: -3 to -3", False, "'to' range low >= high", id="signed_to_range"),
+        pytest.param("x: + to +", True, "strip grade range out of order", id="same_grade"),
+        pytest.param("x: ++ to +", True, "strip grade range out of order", id="reversed_grades"),
+    ],
+)
+def test_a_range_whose_two_ends_are_equal_is_rejected_in_every_grammar_form(
+    item: str, strip: bool, message: str
+) -> None:
+    with pytest.raises(LabReferenceError, match=re.escape(message)):
+        parse_abnormal_state_item(item, is_qualitative_strip=strip, context="equal ends")
+
+
+def test_abnormal_states_are_separated_by_a_semicolon_and_a_space() -> None:
+    parsed, unsupported = parse_abnormal_states("a: 1–2; b: 3–4")
+    assert [state.name for state in parsed] == ["a", "b"] and unsupported == ()
+    # A semicolon with no space after it is no separator: it is one item, and that item is malformed.
+    with pytest.raises(LabReferenceError):
+        parse_abnormal_states("a: 1–2;b: 3–4", context="no space")
+    # A semicolon inside a parenthesis is not a separator either (the item loses its remark).
+    parsed, _ = parse_abnormal_states("a: 1–2 (x;y); b: 3–4")
+    assert [state.name for state in parsed] == ["a", "b"]
+
+
+def test_a_missing_low_limit_means_zero_in_a_normal_draw() -> None:
+    raw = _edit_cell(_raw_csv(), "L100300|ALT", "ref_low_male", "")
+    spec = load_lab_reference_df(raw).by_key["L100300|ALT"]
+    assert spec.ref_low_male is None and spec.ref_high_male == 41.0
+    assert spec.normal_draw_limits("M") == (0.0, 41.0)
+    u = draw_u(_pid(3), "L100300", "ALT", 1, 0)
+    assert draw_numeric_value(spec, patient_id=_pid(3), sex="M", k=1) == round(
+        41.0 * (0.30 + 0.40 * u)
+    )
+
+
+def test_a_row_is_a_strip_only_when_it_has_no_limit_at_all_and_is_negatif() -> None:
+    raw = _raw_csv()
+    limits = ("ref_low_male", "ref_high_male", "ref_low_female", "ref_high_female")
+    # A number with no limit at all is no strip: it has to say Negatif as well.
+    without_limits = raw
+    for column in limits:
+        without_limits = _edit_cell(without_limits, "L100300|ALT", column, "")
+    assert not load_lab_reference_df(without_limits).by_key["L100300|ALT"].is_qualitative_strip
+    # And a row that says Negatif but has limits is no strip: it has to have no limit as well.
+    negatif = _edit_cell(raw, "L100300|ALT", "normal_value_range", "Negatif")
+    assert not load_lab_reference_df(negatif).by_key["L100300|ALT"].is_qualitative_strip
+    strips = [
+        spec.result_parameter
+        for spec in load_lab_reference_df(raw).by_code["L107010"]
+        if spec.is_qualitative_strip
+    ]
+    assert len(strips) == 6
+
+
+@pytest.mark.parametrize(
+    ("key", "ranges"),
+    [
+        ("L107020|RBC (Eritrosit)", 5),
+        ("L107020|HCT (Hematokrit)", 4),
+        ("L107020|MCHC", 2),
+        ("L107020|HGB (Hemoglobin)", 9),
+    ],
+)
+def test_the_end_points_of_every_state_range_belong_to_the_state(key: str, ranges: int) -> None:
+    """`ranges` is the number of (state, sex) ranges of the parameter: a state with one sex counts once."""
+    spec = load_lab_reference().by_key[key]
+    checked = 0
+    for state in spec.parsed_states:
+        for sex in ("M", "F"):
+            if state.kind == "sex_range" and sex not in state.sex_ranges:
+                continue
+            low, high = state.range_for_sex(sex)
+            assert _value_in_own_state_ranges(spec, low, sex), (state.name, sex, low)
+            assert _value_in_own_state_ranges(spec, high, sex), (state.name, sex, high)
+            checked += 1
+    assert checked == ranges
+
+
+def test_a_value_just_outside_the_state_ranges_is_not_in_them() -> None:
+    rbc = load_lab_reference().by_key["L107020|RBC (Eritrosit)"]
+    # anemia F 2.8-3.9, M 3.0-4.4; thalassemia_trait 5.0-6.5; polycythemia M 6.0-6.8
+    for sex, value in (
+        ("F", 2.79),
+        ("F", 3.91),
+        ("F", 4.99),
+        ("F", 6.51),
+        ("M", 2.99),
+        ("M", 6.81),
+    ):
+        assert not _value_in_own_state_ranges(rbc, value, sex), (sex, value)
+    for sex, value in (("F", 2.8), ("F", 3.9), ("F", 5.0), ("F", 6.5), ("M", 3.0), ("M", 6.8)):
+        assert _value_in_own_state_ranges(rbc, value, sex), (sex, value)
+
+
+@pytest.mark.parametrize(
+    ("age", "band"),
+    [
+        (18, (95.0, 120.0)),
+        (39, (95.0, 120.0)),
+        (40, (85.0, 105.0)),
+        (59, (85.0, 105.0)),
+        (60, (75.0, 95.0)),
+        (69, (75.0, 95.0)),
+        (70, (70.0, 85.0)),
+        (200, (70.0, 85.0)),
+    ],
+)
+def test_the_egfr_age_bands_include_both_of_their_edges(
+    age: int, band: tuple[float, float]
+) -> None:
+    assert _egfr_normal_band_for_age(age, load_lab_reference().egfr_age_bands) == band
+
+
+@pytest.mark.parametrize("age", [0, 17, 201])
+def test_an_age_outside_every_egfr_band_is_an_error(age: int) -> None:
+    with pytest.raises(LabCoherenceError, match=f"No normal eGFR age band for age {age}"):
+        _egfr_normal_band_for_age(age, load_lab_reference().egfr_age_bands)
+
+
+# --- 3.16 Scripted draws: the retry loops, the limits they accept and the states that drive them -------
+#
+# `labs.draw_numeric_value` and `labs.draw_u` are replaced by functions that return chosen numbers, so
+# that a test can put a derived value exactly on a limit or make the Nth try the first good one. Every
+# other draw stays real. The numbers of the scripted triples were found by trying the formulas of the
+# rules R2 and R3; each test asserts what it relies on.
+
+_RBC_P, _HCT_P, _MCHC_P = "RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"
+
+
+def _script_red_cells(
+    monkeypatch: pytest.MonkeyPatch, by_salt: Callable[[int], tuple[float, float, float]]
+) -> list[int]:
+    """HGB, MCV and MCH of the hemogram come from `by_salt(salt)`; returns the list of salts asked for HGB."""
+    asked: list[int] = []
+    drivers = {"L107020|HGB (Hemoglobin)": 0, "L107020|MCV": 1, "L107020|MCH": 2}
+
+    def scripted(
+        spec: Any, *, patient_id: str, sex: str, k: int, state_id: str = "normal", salt: int = 0
+    ) -> float:
+        index = drivers.get(spec.key)
+        if index is None:
+            return draw_numeric_value(
+                spec, patient_id=patient_id, sex=sex, k=k, state_id=state_id, salt=salt
+            )
+        if index == 0:
+            asked.append(salt)
+        return by_salt(salt)[index]
+
+    monkeypatch.setattr(labs_module, "draw_numeric_value", scripted)
+    return asked
+
+
+def _script_u(monkeypatch: pytest.MonkeyPatch, by_salt: Callable[[int], float]) -> list[int]:
+    """Every `draw_u` returns `by_salt(salt)`; returns the list of salts asked for."""
+    asked: list[int] = []
+
+    def scripted(patient_id: str, code: str, parameter: str, k: int, salt: int = 0) -> float:
+        asked.append(salt)
+        return by_salt(salt)
+
+    monkeypatch.setattr(labs_module, "draw_u", scripted)
+    return asked
+
+
+def _hemogram(
+    states_map: dict[str, Any] | None = None, sex: str = "M", patient_no: int = 1
+) -> dict[str, float]:
+    return _generate_hemogram_values(
+        load_lab_reference().by_code["L107020"],
+        patient_id=_pid(patient_no),
+        sex=sex,
+        k=1,
+        states_map=states_map or {},
+    )
+
+
+_RED_GOOD = (14.7, 91.0, 30.0)  # RBC 4.9, HCT 45, MCHC 32.7: inside the male limits
+_RED_BAD = (20.0, 90.0, 20.0)  # RBC 10.0: outside them
+
+
+def test_the_red_cell_draw_tries_exactly_50_salts(monkeypatch: pytest.MonkeyPatch) -> None:
+    asked = _script_red_cells(monkeypatch, lambda salt: _RED_GOOD if salt >= 49 else _RED_BAD)
+    values = _hemogram()
+    assert asked == list(range(50))  # salts 0 to 49: the 50th try is the first good one
+    assert (values[_RBC_P], values[_HCT_P], values[_MCHC_P]) == (4.9, 45.0, 32.7)
+    asked = _script_red_cells(monkeypatch, lambda salt: _RED_GOOD if salt >= 50 else _RED_BAD)
+    with pytest.raises(LabCoherenceError, match=r"red-cell indices failed to converge in 50 tries"):
+        _hemogram()
+    assert asked == list(range(50))  # and there is no 51st
+
+
+# The male limits are RBC 4.5 to 5.9, HCT 40 to 52 and MCHC 32.0 to 36.0. Each scripted (HGB, MCV, MCH)
+# gives the printed (RBC, HCT, MCHC) next to it: one value exactly on a limit, or one printed step beyond.
+_ON_A_LIMIT = [
+    pytest.param((13.4, 91.0, 30.0), (4.5, 41.0, 32.7), id="RBC_on_the_lower_limit"),
+    pytest.param((13.5, 70.0, 23.0), (5.9, 41.0, 32.9), id="RBC_on_the_upper_limit"),
+    pytest.param((12.9, 71.0, 23.0), (5.6, 40.0, 32.2), id="HCT_on_the_lower_limit"),
+    pytest.param((16.7, 92.0, 30.0), (5.6, 52.0, 32.1), id="HCT_on_the_upper_limit"),
+    pytest.param((13.1, 72.0, 23.0), (5.7, 41.0, 32.0), id="MCHC_on_the_lower_limit"),
+    pytest.param((15.1, 72.0, 26.0), (5.8, 42.0, 36.0), id="MCHC_on_the_upper_limit"),
+]
+_ONE_STEP_BEYOND = [
+    pytest.param((13.2, 93.0, 30.0), (4.4, 41.0, 32.2), id="RBC_below"),
+    pytest.param((13.7, 70.0, 23.0), (6.0, 42.0, 32.6), id="RBC_above"),
+    pytest.param((12.5, 72.0, 23.0), (5.4, 39.0, 32.1), id="HCT_below"),
+    pytest.param((17.0, 93.0, 30.0), (5.7, 53.0, 32.1), id="HCT_above"),
+    pytest.param((13.4, 72.0, 23.0), (5.8, 42.0, 31.9), id="MCHC_below"),
+    pytest.param((14.8, 72.0, 26.0), (5.7, 41.0, 36.1), id="MCHC_above"),
+]
+
+
+@pytest.mark.parametrize(("triple", "derived"), _ON_A_LIMIT)
+def test_a_derived_red_cell_value_exactly_on_a_limit_is_accepted_at_the_first_try(
+    monkeypatch: pytest.MonkeyPatch, triple: tuple[float, float, float], derived: tuple[float, ...]
+) -> None:
+    asked = _script_red_cells(monkeypatch, lambda salt: triple)
+    values = _hemogram()
+    assert asked == [0]
+    assert (values[_RBC_P], values[_HCT_P], values[_MCHC_P]) == derived
+
+
+@pytest.mark.parametrize(("triple", "derived"), _ONE_STEP_BEYOND)
+def test_a_derived_red_cell_value_one_printed_step_beyond_a_limit_is_never_accepted(
+    monkeypatch: pytest.MonkeyPatch, triple: tuple[float, float, float], derived: tuple[float, ...]
+) -> None:
+    asked = _script_red_cells(monkeypatch, lambda salt: triple)
+    with pytest.raises(LabCoherenceError, match=r"red-cell indices failed to converge in 50 tries"):
+        _hemogram()
+    assert asked == list(range(50))
+    # What the scripted draws give is what the table says: the same formulas, read off the rule R2.
+    hgb, mcv, mch = triple
+    rbc = round(hgb * 10.0 / mch, 1)
+    hct = float(round(mcv * rbc / 10.0))
+    assert (rbc, hct, round(hgb / hct * 100.0, 1)) == derived
+
+
+# A state on ONE of HGB, MCV and MCH lets a derived value sit in one of its own state ranges; the same
+# draws with no state at all are refused. (HGB, MCV, MCH) and the (RBC, HCT, MCHC) they give.
+@pytest.mark.parametrize(
+    ("key", "state", "triple", "derived"),
+    [
+        pytest.param(
+            "L107020|HGB (Hemoglobin)",
+            "iron_deficiency_anemia",
+            (8.0, 80.0, 27.0),
+            (3.0, 24.0, 33.3),
+            id="hgb",
+        ),
+        pytest.param(
+            "L107020|MCV",
+            "b12_or_folate_deficiency",
+            (13.0, 101.0, 28.0),
+            (4.6, 46.0, 28.3),
+            id="mcv",
+        ),
+        pytest.param(
+            "L107020|MCH", "iron_deficiency", (13.0, 80.0, 24.0), (5.4, 43.0, 30.2), id="mch"
+        ),
+    ],
+)
+def test_a_state_on_any_one_driver_lets_the_derived_values_sit_in_their_own_state_ranges(
+    monkeypatch: pytest.MonkeyPatch,
+    key: str,
+    state: str,
+    triple: tuple[float, float, float],
+    derived: tuple[float, ...],
+) -> None:
+    asked = _script_red_cells(monkeypatch, lambda salt: triple)
+    values = _hemogram({key: state})
+    assert asked == [0]
+    assert (values[_RBC_P], values[_HCT_P], values[_MCHC_P]) == derived
+    asked.clear()
+    with pytest.raises(LabCoherenceError, match=r"red-cell indices failed to converge in 50 tries"):
+        _hemogram()  # no state on a driver: the same values are outside the normal limits
+    assert asked == list(range(50))
+
+
+# --- creatinine ---
+
+_CREATININE_BAND = ((18, 200, 40.0, 100.0),)  # a target eGFR of 58 (u = 0) to 82 (u = 1)
+
+
+def _creatinine(
+    *,
+    sex: str,
+    age: int,
+    bands: tuple[tuple[int, int, float, float], ...],
+    states_map: dict[str, Any] | None = None,
+    patient_no: int = 3,
+) -> dict[str, float]:
+    return _generate_creatinine_and_egfr(
+        load_lab_reference().by_code["L104780"],
+        patient_id=_pid(patient_no),
+        age=age,
+        sex=sex,
+        k=1,
+        states_map=states_map or {},
+        egfr_age_bands=bands,
+    )
+
+
+def test_the_normal_creatinine_draw_tries_exactly_50_salts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A woman of 77: a target eGFR of 58 gives a creatinine of 1.00 (above her limit 0.95), 82 gives 0.75."""
+    assert round(invert_ckd_epi_2021(58.0, 77, "F"), 2) == 1.0
+    good = round(invert_ckd_epi_2021(82.0, 77, "F"), 2)
+    assert 0.51 <= good <= 0.95
+    asked = _script_u(monkeypatch, lambda salt: 1.0 if salt >= 49 else 0.0)
+    values = _creatinine(sex="F", age=77, bands=_CREATININE_BAND)
+    assert asked == list(range(50))
+    assert values == {"Kreatinin": good, _EGFR: float(round(ckd_epi_2021(good, 77, "F")))}
+    asked = _script_u(monkeypatch, lambda salt: 1.0 if salt >= 50 else 0.0)
+    with pytest.raises(
+        LabCoherenceError, match="normal draw outside sex-specific limits after 50 tries"
+    ):
+        _creatinine(sex="F", age=77, bands=_CREATININE_BAND)
+    assert asked == list(range(50))
+
+
+@pytest.mark.parametrize(
+    ("sex", "age", "limit"),
+    [
+        pytest.param("F", 77, 0.95, id="woman_upper"),
+        pytest.param("F", 77, 0.51, id="woman_lower"),
+        pytest.param("M", 60, 1.17, id="man_upper"),
+        pytest.param("M", 60, 0.67, id="man_lower"),
+    ],
+)
+def test_a_normal_creatinine_may_sit_exactly_on_a_limit_of_its_sex(
+    sex: str, age: int, limit: float
+) -> None:
+    egfr = ckd_epi_2021(limit, age, sex)
+    values = _creatinine(sex=sex, age=age, bands=((18, 200, egfr, egfr),))
+    assert values["Kreatinin"] == limit
+    assert values[_EGFR] == float(round(egfr))
+
+
+def _sha_u(patient_no: int, code: str, parameter: str, k: int = 1, salt: int = 0) -> float:
+    """The draw of the design, written again here: first 8 bytes of SHA-256 of the pipe-joined payload."""
+    payload = f"{_pid(patient_no)}|{code}|{parameter}|{k}|{salt}".encode()
+    return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big") / 2**64
+
+
+@pytest.mark.parametrize(
+    ("sex", "age", "egfr_band"), [("F", 60, (75.0, 95.0)), ("M", 60, (75.0, 95.0))]
+)
+def test_a_normal_creatinine_inverts_the_central_band_of_the_age_band_of_the_egfr(
+    sex: str, age: int, egfr_band: tuple[float, float]
+) -> None:
+    """Target eGFR = low + (high - low)(0.30 + 0.40 u); creatinine = its inverse to 2 decimals; eGFR from that."""
+    limits = (0.51, 0.95) if sex == "F" else (0.67, 1.17)
+    for patient_no in range(1, 81):
+        values = _creatinine(
+            sex=sex, age=age, bands=load_lab_reference().egfr_age_bands, patient_no=patient_no
+        )
+        u = _sha_u(patient_no, "L104780", "Kreatinin")
+        target = egfr_band[0] + (egfr_band[1] - egfr_band[0]) * (0.30 + 0.40 * u)
+        expected = round(invert_ckd_epi_2021(target, age, sex), 2)
+        assert limits[0] <= expected <= limits[1], patient_no  # no retry needed for this band
+        assert values["Kreatinin"] == expected, patient_no
+        assert values[_EGFR] == float(round(ckd_epi_2021(expected, age, sex))), patient_no
+
+
+def test_a_creatinine_state_given_as_an_egfr_band_is_inverted_from_the_state_band() -> None:
+    """`ckd_g3a` is eGFR 45 to 59: target = 45 + 14 (0.20 + 0.60 u), drawn from the first salt."""
+    for patient_no in range(1, 81):
+        values = _creatinine(
+            sex="F",
+            age=86,
+            bands=load_lab_reference().egfr_age_bands,
+            states_map={"L104780|Kreatinin": "ckd_g3a"},
+            patient_no=patient_no,
+        )
+        u = _sha_u(patient_no, "L104780", "Kreatinin")
+        expected = round(invert_ckd_epi_2021(45.0 + 14.0 * (0.20 + 0.60 * u), 86, "F"), 2)
+        assert values["Kreatinin"] == expected, patient_no
+        assert values[_EGFR] == float(round(ckd_epi_2021(expected, 86, "F"))), patient_no
+
+
+def test_a_creatinine_state_given_in_mg_dl_is_drawn_inside_the_band_with_two_decimals() -> None:
+    """`sarcopenic_elderly` is 0.40 to 0.60 mg/dL: the creatinine is that draw to 2 decimals."""
+    for patient_no in range(1, 81):
+        values = _creatinine(
+            sex="F",
+            age=70,
+            bands=load_lab_reference().egfr_age_bands,
+            states_map={"L104780|Kreatinin": "sarcopenic_elderly"},
+            patient_no=patient_no,
+        )
+        u = _sha_u(patient_no, "L104780", "Kreatinin")
+        assert values["Kreatinin"] == round(0.40 + 0.20 * (0.20 + 0.60 * u), 2), patient_no
+
+
+# --- strips ---
+
+
+@pytest.mark.parametrize(
+    ("key", "state", "grades"),
+    [
+        pytest.param(
+            "L107010|Kan / hemoglobin (strip)",
+            "glomerulonephritis",  # + to +++
+            {0.0: "+", 0.4: "++", 0.99: "+++"},
+            id="plus_to_three_plus",
+        ),
+        pytest.param(
+            "L107010|Protein (strip)",
+            "diabetic_or_hypertensive_nephropathy",  # Eser to +
+            {0.0: "Eser", 0.4: "Eser", 0.9: "+"},
+            id="eser_to_plus",
+        ),
+        pytest.param(
+            "L107010|Glukoz (strip)",
+            "dka",  # +++ to ++++
+            {0.0: "+++", 0.4: "+++", 0.9: "++++"},
+            id="three_plus_to_four_plus",
+        ),
+    ],
+)
+def test_a_strip_grade_is_the_rounded_point_of_the_state_range_at_the_draw(
+    monkeypatch: pytest.MonkeyPatch, key: str, state: str, grades: dict[float, str]
+) -> None:
+    """index = round(low + (high - low) (0.20 + 0.60 u)) on the scale Negatif, Eser, +, ++, +++, ++++."""
+    spec = load_lab_reference().by_key[key]
+    for u, grade in grades.items():
+        _script_u(monkeypatch, lambda salt, u=u: u)
+        assert draw_strip_grade(spec, patient_id=_pid(4), k=1, state_id=state) == grade, (state, u)
+
+
+def test_strip_grades_follow_the_state_range_for_every_strip_state_and_many_patients() -> None:
+    checked = 0
+    for spec in load_lab_reference().by_code["L107010"]:
+        for state in spec.parsed_states:
+            if state.kind not in ("grade_range", "grade_single"):
+                continue
+            for patient_no in range(1, 41):
+                got = draw_strip_grade(spec, patient_id=_pid(patient_no), k=1, state_id=state.name)
+                if state.kind == "grade_single":
+                    expected = state.grade_low
+                else:
+                    low = _ORDINAL.index(state.grade_low)
+                    high = _ORDINAL.index(state.grade_high)
+                    u = _sha_u(patient_no, "L107010", spec.result_parameter)
+                    expected = _ORDINAL[round(low + (high - low) * (0.20 + 0.60 * u))]
+                assert got == expected, (spec.result_parameter, state.name, patient_no)
+                checked += 1
+    assert checked == 40 * 16  # 16 grade states in the six strips: 4 + 3 + 3 + 4 + 1 + 1
+
+
+# --- 3.17 Exact pins of the generator: the differential, the independent draws, the line order --------
+
+_WBC_STATE_BAND = {  # the CSV ranges of the three WBC states used below (sepsis: the first alternative)
+    "bacterial_infection": (11.0, 20.0),
+    "steroid_use": (10.5, 15.0),
+    "sepsis": (12.0, 30.0),
+}
+# The differential profile each WBC state reads from: a state with no profile of its own reads as normal.
+_PROFILE_OF_STATE = {
+    "normal": "normal",
+    "bacterial_infection": "bacterial_infection",
+    "steroid_use": "steroid_use",
+    "sepsis": "normal",
+}
+
+
+def _expected_differential(patient_no: int, wbc_state: str) -> tuple[float, dict[str, float]]:
+    """WBC and the five counts of rule R1, from the SHA-256 draws and the profile bounds of the design."""
+    u = _sha_u(patient_no, "L107020", "WBC (Lökosit)")
+    if wbc_state == "normal":
+        wbc = round(4.0 + 6.0 * (0.30 + 0.40 * u), 1)
+    else:
+        low, high = _WBC_STATE_BAND[wbc_state]
+        wbc = round(low + (high - low) * (0.20 + 0.60 * u), 1)
+    profile = _PROFILES[_PROFILE_OF_STATE[wbc_state]]
+    raw = {
+        name: profile[name][0]
+        + (profile[name][1] - profile[name][0]) * _sha_u(patient_no, "L107020", name)
+        for name in _DIFFERENTIAL
+    }
+    total = sum(raw.values())
+    counts = {name: round(wbc * (raw[name] * 100.0 / total) / 100.0, 2) for name in _DIFFERENTIAL}
+    others = sum(value for name, value in counts.items() if name != _NEU)
+    counts[_NEU] = round(wbc - others, 2)
+    return wbc, counts
+
+
+@pytest.mark.parametrize("wbc_state", ["normal", "bacterial_infection", "steroid_use", "sepsis"])
+def test_the_differential_is_the_documented_function_of_the_wbc_its_state_and_the_draws(
+    wbc_state: str,
+) -> None:
+    """Every bound of every profile counts: moving one changes the counts of some patient."""
+    states = {} if wbc_state == "normal" else {"L107020|WBC (Lökosit)": wbc_state}
+    for patient_no in range(1, 81):
+        values = _hemogram(states, patient_no=patient_no)
+        wbc, counts = _expected_differential(patient_no, wbc_state)
+        assert values["WBC (Lökosit)"] == wbc, patient_no
+        assert {name: values[name] for name in _DIFFERENTIAL} == counts, patient_no
+        # R1: the neutrophils take up the rounding, so the five counts sum to the WBC up to float noise.
+        assert abs(sum(values[name] for name in _DIFFERENTIAL) - wbc) < 1e-9, patient_no
+
+
+def test_the_independent_values_are_drawn_from_the_first_salt() -> None:
+    """RDW-CV, platelets, MPV and the independent blood-gas values: `lo + (hi - lo)(0.30 + 0.40 u)`, salt 0."""
+    reference = load_lab_reference()
+    hemogram = (
+        ("RDW-CV", 11.5, 14.5, 1),
+        ("PLT (Trombosit)", 150.0, 400.0, 0),
+        ("MPV", 7.5, 11.5, 1),
+    )
+    gas = (
+        ("pH", 7.35, 7.45, 2),
+        ("pCO2", 35.0, 45.0, 0),
+        ("pO2", 80.0, 100.0, 0),
+        ("Laktat (kan gazı)", 0.5, 1.6, 1),
+        ("Sodyum (kan gazı)", 136.0, 145.0, 0),
+        ("Potasyum (kan gazı)", 3.4, 4.5, 1),
+        ("İyonize kalsiyum (kan gazı)", 1.12, 1.32, 2),
+    )
+
+    def central(
+        patient_no: int, code: str, name: str, low: float, high: float, decimals: int
+    ) -> float:
+        value = low + (high - low) * (0.30 + 0.40 * _sha_u(patient_no, code, name))
+        return float(round(value)) if decimals == 0 else round(value, decimals)
+
+    for patient_no in range(1, 41):
+        values = _hemogram(patient_no=patient_no)
+        for name, low, high, decimals in hemogram:
+            assert values[name] == central(patient_no, "L107020", name, low, high, decimals), (
+                patient_no,
+                name,
+            )
+        drawn = _generate_blood_gas_values(
+            reference.by_code["L103900"],
+            patient_id=_pid(patient_no),
+            sex="M",
+            k=1,
+            blood_gas_type="arterial",
+            states_map={},
+        )
+        for name, low, high, decimals in gas:
+            assert drawn[name] == central(patient_no, "L103900", name, low, high, decimals), (
+                patient_no,
+                name,
+            )
+        # and the three derived values follow pH, pCO2 and pO2
+        assert drawn["HCO3"] == round(_hco3(drawn["pH"], drawn["pCO2"]), 1)
+        assert drawn["BE (baz fazlası)"] == round(_base_excess(drawn["pH"], drawn["HCO3"]), 1)
+        assert drawn["SaO2"] == round(_sao2(drawn["pO2"]), 1)
+
+
+def test_occurrences_follow_the_date_even_when_the_line_ids_say_otherwise(
+    built_showcase: BuildResult, lab: pl.DataFrame
+) -> None:
+    """Patient 2 bills the CRP on two days: if the later line has the smaller id, the first sample is still the first day's."""
+    claims = list(built_showcase.claims)
+    position = next(i for i, claim in enumerate(claims) if claim.header.patient_id == _pid(2))
+    claim = claims[position]
+    crp = [i for i, line in enumerate(claim.procedures) if line.procedure_code == "L101850"]
+    assert len(crp) == 2
+    first, second = (claim.procedures[i] for i in crp)
+    assert first.procedure_date < second.procedure_date
+    assert first.procedure_line_id < second.procedure_line_id
+    procedures = list(claim.procedures)
+    procedures[crp[0]] = dataclasses.replace(first, procedure_line_id=second.procedure_line_id)
+    procedures[crp[1]] = dataclasses.replace(second, procedure_line_id=first.procedure_line_id)
+    claims[position] = dataclasses.replace(claim, procedures=tuple(procedures))
+    rebuilt = build_lab_clean(claims, clinical=load_clinical(), schema=LAB_CLEAN_SCHEMA)
+    # The rows of one day follow the line ids, so the two tables list the day's results in another order
+    # (that is what makes this a real change); the rows themselves are the same, and so are the CRP values
+    # of the two days: the first sample of a code is the one of the first day.
+    assert not rebuilt.equals(lab)
+    assert rebuilt.sort(lab.columns).equals(lab.sort(lab.columns))
+
+    def crp_values(table: pl.DataFrame) -> list[float]:
+        crp = table.filter((pl.col("HASTA_ID") == _pid(2)) & (pl.col("SUB_CODE") == "L101850"))
+        return crp.sort("tarih")["sonuc_sayisal"].to_list()
+
+    assert crp_values(rebuilt) == crp_values(lab)
+
+
+def test_two_derived_states_name_the_first_in_csv_order_whatever_the_hash_seed(
+    built_showcase: BuildResult,
+) -> None:
+    """The derived parameters are tuples (a set's order depends on the hash seed): the first asked is named."""
+    assert isinstance(labs_module.RED_CELL_DERIVED_PARAMS, tuple)
+    assert isinstance(labs_module.BLOOD_GAS_DERIVED_PARAMS, tuple)
+    cases = [
+        (1, "L107020", ["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"], "RBC (Eritrosit)"),
+        (1, "L107020", ["MCHC", "HCT (Hematokrit)"], "HCT (Hematokrit)"),
+        (2, "L103900", ["SaO2", "BE (baz fazlası)", "HCO3"], "HCO3"),
+        (2, "L103900", ["SaO2", "BE (baz fazlası)"], "BE (baz fazlası)"),
+    ]
+    for patient_no, code, asked, named in cases:
+        states = {f"{code}|{name}": "anemia" for name in asked}
+        with pytest.raises(DerivedLabParameterError) as caught:
+            _build(built_showcase, _with_states(patient_no, states))
+        assert f"{code}|{named}: state" in str(caught.value), (asked, str(caught.value))
+
+
+# --- 3.18 Exactly on a tolerance, and what the coherence check alone cannot see ---------------------
+
+
+def _set_values(
+    lab: pl.DataFrame, patient_no: int, code: str, values: dict[str, float]
+) -> pl.DataFrame:
+    """Copy of `lab` with several values of patient `patient_no`'s first set of `code` changed, flags kept right."""
+    changed = lab
+    for parameter, value in values.items():
+        changed = _with_value(changed, _index_of(lab, patient_no, code, parameter), value)
+    return changed
+
+
+def test_a_derived_value_exactly_half_a_printed_step_away_is_accepted(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    """HGB 9.1, MCH 20, MCV 90: RBC = 4.55, HCT = 40.5 (with RBC 4.5), MCHC = 22.75 (with HCT 40).
+
+    Each of these formula values is exactly half a printed step from two printed numbers, so both are
+    right (that is where a rounding rule is ambiguous). One more step is wrong, see the drift cases.
+    """
+    drivers = {"HGB (Hemoglobin)": 9.1, "MCH": 20.0, "MCV": 90.0}
+    # (RBC, HCT, MCHC): three ties; the RBC tie alone, with the HCT of RBC 4.6; the RBC and HCT ties.
+    for rbc, hct, mchc in ((4.5, 40.0, 22.8), (4.6, 41.0, 22.2), (4.5, 41.0, 22.2)):
+        tied = _set_values(
+            lab,
+            1,
+            "L107020",
+            {**drivers, "RBC (Eritrosit)": rbc, "HCT (Hematokrit)": hct, "MCHC": mchc},
+        )
+        check_lab_coherence(tied, ana_df=ana)
+    # RBC 4.7 is 0.15 away (three half-steps): rejected, at the RBC row.
+    far = _set_values(
+        lab,
+        1,
+        "L107020",
+        {**drivers, "RBC (Eritrosit)": 4.7, "HCT (Hematokrit)": 42.0, "MCHC": 21.7},
+    )
+    caught = _rejected(far, ana)
+    row = _index_of(lab, 1, "L107020", "RBC (Eritrosit)")
+    _assert_names_the_row(
+        caught, lab, rule="R2", row=row, code="L107020", parameter="RBC (Eritrosit)"
+    )
+
+
+def _two_men_exchange_a_crp_set(lab: pl.DataFrame) -> pl.DataFrame:
+    """Patient 1's CRP set and patient 2's first one change owners (patient and episode): two men, so the limits agree."""
+    one = _index_of(lab, 1, "L101850", "CRP (kantitatif)")
+    two = _index_of(lab, 2, "L101850", "CRP (kantitatif)", date="2026-03-09")
+    moved = _set_cell(
+        _set_cell(lab, one, "HASTA_ID", _pid(2)), one, "basvuru_id", "B-SENTETIK-HASTA-0002-001"
+    )
+    return _set_cell(
+        _set_cell(moved, two, "HASTA_ID", _pid(1)), two, "basvuru_id", "B-SENTETIK-HASTA-0001-001"
+    )
+
+
+def _a_second_crp_set_for_patient_1(lab: pl.DataFrame) -> pl.DataFrame:
+    return pl.concat([lab, lab.slice(_index_of(lab, 1, "L101850", "CRP (kantitatif)"), 1)])
+
+
+def _sets_sorted_by_code(lab: pl.DataFrame) -> pl.DataFrame:
+    return lab.sort("SUB_CODE", maintain_order=True)  # the sets stay whole, their order changes
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        pytest.param(_two_men_exchange_a_crp_set, id="two_sets_change_owners"),
+        pytest.param(_move_a_result_set_one_day, id="a_set_on_another_day"),
+        pytest.param(_glucose_for_the_package_patient, id="an_extra_set"),
+        pytest.param(_remove_a_whole_result_set, id="a_missing_set"),
+        pytest.param(_a_second_crp_set_for_patient_1, id="a_duplicated_set"),
+        pytest.param(_put_the_crp_set_after_the_hemogram, id="sets_in_another_order"),
+        pytest.param(_sets_sorted_by_code, id="all_sets_sorted_by_code"),
+    ],
+)
+def test_the_coherence_check_alone_cannot_see_a_coherent_set_that_nobody_billed(
+    built_showcase: BuildResult, mutate: Callable[[pl.DataFrame], pl.DataFrame]
+) -> None:
+    """Pinned limit, written in the docstrings: only the check against the billed lines finds these.
+
+    `check_lab_coherence`, `validate_clean_tables(clean)` and `clean_tables_digest` (which validates
+    without claims) all accept the table; `validate_clean_tables(clean, claims)` refuses it.
+    """
+    clean = built_showcase.clean_tables
+    mutated = {**clean, "lab_clean.parquet": mutate(clean["lab_clean.parquet"])}
+    assert not mutated["lab_clean.parquet"].equals(clean["lab_clean.parquet"])
+    check_lab_coherence(mutated["lab_clean.parquet"], ana_df=clean["anadata_clean.parquet"])
+    validate_clean_tables(mutated)
+    assert (
+        clean_tables_digest(mutated)["lab_clean.parquet"]
+        != (clean_tables_digest(clean)["lab_clean.parquet"])
+    )
+    with pytest.raises(
+        CleanTableError, match=r"lab_clean\.parquet rows do not match the billed lab lines"
+    ):
+        validate_clean_tables(mutated, built_showcase.tables)
+
+
+def test_a_result_set_under_the_episode_of_another_patient_is_an_anadata_error(
+    lab: pl.DataFrame, ana: pl.DataFrame
+) -> None:
+    """Moving only the episode of patient 1's CRP set to patient 7's: the episode belongs to patient 7."""
+    index = _index_of(lab, 1, "L101850", "CRP (kantitatif)")
+    caught = _rejected(_set_cell(lab, index, "basvuru_id", "B-SENTETIK-HASTA-0007-001"), ana)
+    _assert_names_the_row(
+        caught, lab, rule="anadata", row=index, code="L101850", parameter="CRP (kantitatif)"
+    )
+    assert str(caught.value).endswith(
+        f"the row is for patient {_pid(1)} but anadata_clean has patient {_pid(7)} for the episode"
+    )
+
+
+# --- 3.19 Every numeric state of every billed parameter, for both sexes, against a second reading ------
+
+
+def _band_from_the_text(abnormal_states: str, state: str, sex: str) -> tuple[float, float] | None:
+    """The range of `state` for `sex`, read from the raw CSV text with regular expressions (not the parser).
+
+    None when the state has a range for the other sex only (`copd_polycythemia: M 17.6–20.0` for a woman).
+    """
+    for item in abnormal_states.split("; "):
+        name, rest = item.split(": ", 1)
+        if state not in (name, name.split(" (")[0]):
+            continue
+        rest = re.sub(r"\s*\([^()]*\)\s*$", "", rest)
+        rest = re.sub(r"\s+with .*$", "", rest)
+        if re.search(r"\b[MF] \d", rest):
+            match = re.search(rf"\b{sex} {_NUMBER}–{_NUMBER}", rest)
+        else:
+            match = re.search(rf"{_NUMBER}\s*(?:–|to)\s*{_NUMBER}", rest)
+        return (float(match.group(1)), float(match.group(2))) if match else None
+    raise KeyError(state)
+
+
+def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formula() -> None:
+    """The normal draw (central band of the limits) and the state draw (band 0.20 to 0.80 of the range)."""
+    checked = refused = 0
+    for spec in load_lab_reference().billed_code_parameters:
+        if spec.test_key == "blood_gas_venous" or spec.is_qualitative_strip:
+            continue
+        for sex in ("M", "F"):
+            low, high = spec.ref_limits(sex)
+            for k in (1, 2, 3):
+                patient_no = (k * 37) % 9000 + 10
+                u = _sha_u(patient_no, spec.ek2b_code, spec.result_parameter, k)
+                if high is not None:  # the eGFR has no upper limit, so no normal draw
+                    raw = (low or 0.0) + (high - (low or 0.0)) * (0.30 + 0.40 * u)
+                    expected = round(raw, spec.decimals) if spec.decimals else float(round(raw))
+                    got = draw_numeric_value(spec, patient_id=_pid(patient_no), sex=sex, k=k)
+                    assert got == expected, (spec.key, sex, k)
+                    checked += 1
+            for state in spec.parsed_states:
+                if state.kind in ("egfr_band", "grade_range", "grade_single"):
+                    continue
+                band = _band_from_the_text(spec.abnormal_states_raw, state.name, sex)
+                for k in (1, 2, 3):
+                    patient_no = (k * 53) % 9000 + 10
+                    patient = _pid(patient_no)
+                    if band is None:  # a state with a range for the other sex only is refused
+                        with pytest.raises(LabCoherenceError, match="has no range for sex"):
+                            draw_numeric_value(
+                                spec, patient_id=patient, sex=sex, k=k, state_id=state.name
+                            )
+                        refused += 1
+                        continue
+                    u = _sha_u(patient_no, spec.ek2b_code, spec.result_parameter, k)
+                    raw = band[0] + (band[1] - band[0]) * (0.20 + 0.60 * u)
+                    expected = round(raw, spec.decimals) if spec.decimals else float(round(raw))
+                    got = draw_numeric_value(
+                        spec, patient_id=patient, sex=sex, k=k, state_id=state.name
+                    )
+                    assert got == expected, (spec.key, state.name, sex, k)
+                    assert band[0] - 1e-9 <= got <= band[1] + 1e-9, (spec.key, state.name, sex, k)
+                    checked += 1
+    assert (checked, refused) == (984, 12)
