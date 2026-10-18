@@ -25,6 +25,8 @@ Branch `claude/synthetic-v3-p7-lite-swap` (this PR) puts the 8 showcase patients
 
 Not migrated, on purpose: row 37 (the column contract is unchanged); row 38 (the CI workflow file is not edited; the tests it runs are migrated by the rows above); rows 39-42 (the paused strict lane: `scripts/deploy/**`, `docs/operations/**` and `tests/*/deploy/**` are not touched).
 
+Result (2026-10-18, end of the P7-lite branch): every migrated row above is done in this PR. Rows 1-19 and 26: one test file deleted, 20 rewritten on the registry roles or on self-made fixtures, the per-file table is in `tasks/todo.md` (Results of the P7-lite task); row 24 was deleted with the legacy generator; rows 20-23 and 25 were handled in slice S; rows 36 and 43-50 in slice F. The whole `tests` tree and the CI-image backend gate are green (see `tasks/todo.md` for the counts).
+
 ## Pins
 
 | # | file:line | kind | what it pins | after the swap | action |
