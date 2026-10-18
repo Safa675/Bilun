@@ -612,3 +612,57 @@ def test_a_ward_whose_name_only_resembles_an_icu_still_emits(department: str) ->
         admission=date(2026, 7, 10), discharge=date(2026, 7, 13), primary_icd10="Z38.0", department=department
     )
     assert len(_detect([_line("520010", "10")], header=header)) == 1
+
+
+# --- The ICU transfer day: 510090 on another claim pays that day's bed (review F4) --------------------------
+
+
+def test_an_icu_last_day_paid_on_another_claim_is_not_a_newborn_bed_day() -> None:
+    """The standard-bed motor drops the ICU last day of any claim of the patient (EK-2/B: 510090 covers yemek +
+    yatak + vizit); the newborn motor does the same. Stay 10-12 July, ICU claim discharged 10 July."""
+    [opp] = _detect([_line("520010", "10")], icu_last_days={date(2026, 7, 10)})
+
+    assert opp["days"] == 2
+    assert opp["expected_try"] == pytest.approx(2 * 440.98, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 440.98, abs=0.005)
+    assert opp["icu_overlap_days"] == 1
+    assert opp["icu_overlap_dates"] == ["2026-07-10"]
+    assert "2026-07-10" in opp["detail"] and "510090" in opp["detail"]
+
+
+def test_without_icu_last_days_the_row_has_no_overlap_keys() -> None:
+    for icu_last_days in (None, set(), {date(2026, 7, 9), date(2026, 7, 13)}):  # the last two lie outside the stay
+        [opp] = _detect([_line("520010", "10")], icu_last_days=icu_last_days)
+        assert opp["days"] == 3
+        assert "icu_overlap_days" not in opp and "icu_overlap_dates" not in opp
+
+
+def test_an_icu_last_day_inside_a_package_window_is_not_taken_out_twice() -> None:
+    """Group E from 10 July bundles 10-12 July; an ICU last day on 11 July is already bundled, 15 July is not."""
+    [opp] = _detect(
+        [_package("P600330", date(2026, 7, 10))],
+        header=_ten_day_header(),
+        icu_last_days={date(2026, 7, 11), date(2026, 7, 15)},
+    )
+
+    assert (opp["days"], opp["bundled_days"]) == (6, 3)  # 13-19 July is 7 days, minus 15 July
+    assert opp["icu_overlap_dates"] == ["2026-07-15"]
+
+
+def test_the_icu_days_taken_out_floor_the_stay_at_zero() -> None:
+    [opp] = _detect(
+        [_line("520010", "10")],
+        icu_last_days={date(2026, 7, 10), date(2026, 7, 11), date(2026, 7, 12)},
+    )
+
+    assert opp["days"] == 0
+    assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
+    assert opp["icu_overlap_days"] == 3
+
+
+def test_the_billed_lines_net_the_days_that_are_left_after_the_icu_day() -> None:
+    [opp] = _detect([_line("510070", "440.98")], icu_last_days={date(2026, 7, 10)})
+
+    assert opp["expected_try"] == pytest.approx(881.96, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(440.98, abs=0.005)

@@ -426,6 +426,16 @@ class TestNewbornBedRows:
         [row] = [a for a in public["recommended_actions"] if a["surface"] == "yenidogan_yatak"]
         assert row["sgk_uplift_try"] == pytest.approx(881.96, abs=0.005)
 
+        # The ICU transfer day: the two overlap keys of the newborn row.
+        from tests.unit.domain.billing.test_yatak_newborn_overlap import _transfer_context
+
+        transfer = compute_patient_billing_report("P1", claim_context=_transfer_context(), copay_exemption=_NOT_EXEMPT)
+        payload = json.loads(json.dumps(_serialize_billing_report(transfer), default=str))
+        public = project_public_response(payload, "/api/billing-report/{patient_id}")
+        [ward] = [o for o in public["yenidogan_yatak"]["opportunities"] if o["claim_id"] == "CLM-WARD"]
+        assert ward["icu_overlap_days"] == 1
+        assert ward["icu_overlap_dates"] == ["2026-07-10"]
+
     @pytest.mark.parametrize("days", [1, 2, 4])
     @pytest.mark.parametrize("bed_code", ["510070", "510081"])
     @pytest.mark.parametrize("share", [None, "0", "half", "full", "over", "credit"])

@@ -32,7 +32,9 @@ Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
 EK-2/C package window (SUT §2.2.2.B-1(1), (3)-(4): the package includes the bed
 from admission through its window) are not expected: ``claim_package_window`` of
-the standard-bed motor decides them, so both bed motors agree on the days.
+the standard-bed motor decides them, so both bed motors agree on the days. So
+are the ICU last days of the patient's other claims (``icu_last_days``): 510090
+pays that day's bed, as the standard-bed motor already holds.
 
 Detection: a claim is "newborn" when its diagnoses contain an ICD-10 code
 starting with ``Z38`` (liveborn) or in the ``P00–P96`` perinatal range, OR
@@ -51,6 +53,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Collection
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
@@ -147,6 +150,7 @@ def detect_yenidogan_yatak_opportunities(
     diagnoses: list[ClaimDiagnosis] = (),
     *,
     procedure_lines: list[ProcedureClaimLine] | None = None,
+    icu_last_days: Collection[date] | None = None,
     claim_ids_with_procs: set[str] | None = None,
     rooming_in_claim_ids: set[str] | None = None,
     emit_kuvoz_for_rooming_in: bool = False,
@@ -165,6 +169,11 @@ def detect_yenidogan_yatak_opportunities(
             net the billed 510070 / 510081 lines out of the charge and mark an
             ICU stay (510090 / P55200x), which this motor leaves to the ICU
             motor. Without them nothing is netted and no ICU code is seen.
+        icu_last_days: Discharge/transfer days of the patient's ICU claims
+            (``yatak_icu_overlap.collect_icu_last_days``). 510090 pays the bed
+            of such a day, so one that falls inside a stay (after any package
+            window) is not a newborn bed day; the standard-bed motor drops the
+            same days.
         claim_ids_with_procs: Optional filter — only emit opportunities for
             claims that also have procedure lines (matches the patient_report
             wiring gate ``if claim_context.procedure_lines``).
@@ -249,6 +258,16 @@ def detect_yenidogan_yatak_opportunities(
         )
         bundled_days = gross_days - days
 
+        # ICU transfer day: 510090 (EK-2B: yemek + yatak + vizit) pays the bed of
+        # an ICU claim's last day, also when the baby went on to this claim.
+        icu_overlap_dates = sorted(
+            day
+            for day in (icu_last_days or ())
+            if claim.admission_date <= day <= claim.discharge_date
+            and (window is None or day > window.end)
+        )
+        days = max(days - len(icu_overlap_dates), 0)
+
         visit_date = claim.admission_date or claim.claim_start_date
         kuvoz_rate = _daily_rate(_BED_KUVOZ, visit_date)
         kot_rate = _daily_rate(_BED_KOT, visit_date)
@@ -306,6 +325,13 @@ def detect_yenidogan_yatak_opportunities(
                 f"(package {window.start}, window through {window.end}); only the "
                 "days after it are newborn bed days."
             )
+        if icu_overlap_dates:
+            detail_parts.append(
+                f"{len(icu_overlap_dates)} ICU discharge/transfer day(s) "
+                f"({', '.join(day.isoformat() for day in icu_overlap_dates)}) are paid by "
+                "510090 on another claim (EK-2B: it covers yemek + yatak + vizit) and are "
+                "not newborn bed days."
+            )
         if is_rooming_in:
             detail_parts.append(
                 "Rooming-in ('anne yanında') episode — Kot (510081) is not "
@@ -331,6 +357,14 @@ def detect_yenidogan_yatak_opportunities(
                 "criteria are documented."
             )
 
+        overlap_keys = (
+            {
+                "icu_overlap_days": len(icu_overlap_dates),
+                "icu_overlap_dates": [day.isoformat() for day in icu_overlap_dates],
+            }
+            if icu_overlap_dates
+            else {}
+        )
         opportunities.append(
             {
                 "type": _OPPORTUNITY_TYPE,
@@ -350,6 +384,7 @@ def detect_yenidogan_yatak_opportunities(
                 "sut_section_id": _SUT_SECTION_ID,
                 "rule_id": f"yenidogan_yatak_{bed_code}",
                 "detail": " ".join(detail_parts),
+                **overlap_keys,
             }
         )
 

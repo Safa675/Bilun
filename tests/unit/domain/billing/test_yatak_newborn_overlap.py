@@ -290,3 +290,63 @@ class TestReconcile:
         assert result.required_inputs_missing == review.required_inputs_missing
         assert result.opportunities[0]["detail"].startswith(before["detail"])
         assert result.opportunities[0]["detail"] != before["detail"]
+
+
+def _transfer_context() -> PatientClaimContext:
+    """The reviewer's bill: a NICU claim 8-10 July (510090 on 8 and 10 July) and the ward claim of the same
+    baby 10-12 July with no bed line. The ICU last day, 10 July, is paid by 510090 on the first claim."""
+    icu = _claim(
+        claim_id="CLM-ICU", department="Yenidoğan Yoğun Bakım", primary_icd10="P22.0",
+        admission_date=date(2026, 7, 8), discharge_date=date(2026, 7, 10),
+        claim_start_date=date(2026, 7, 8), claim_end_date=date(2026, 7, 10),
+    )
+    ward = _claim(
+        claim_id="CLM-WARD", department="yenidoğan", primary_icd10="P22.0",
+        admission_date=date(2026, 7, 10), discharge_date=date(2026, 7, 12),
+        claim_start_date=date(2026, 7, 10), claim_end_date=date(2026, 7, 12),
+    )
+    lines = (
+        _proc(procedure_line_id="I1", claim_id="CLM-ICU", procedure_code="510090", procedure_name="Yoğun bakım",
+              billed_amount_try=Decimal("0"), procedure_date=date(2026, 7, 8)),
+        _proc(procedure_line_id="I2", claim_id="CLM-ICU", procedure_code="510090", procedure_name="Yoğun bakım",
+              billed_amount_try=Decimal("0"), procedure_date=date(2026, 7, 10)),
+        _proc(procedure_line_id="W1", claim_id="CLM-WARD", procedure_code="520010", procedure_name="Muayene",
+              billed_amount_try=Decimal("10"), procedure_date=date(2026, 7, 10)),
+    )
+    diagnoses = tuple(
+        ClaimDiagnosis(
+            diagnosis_id=f"DX-{claim_id}", claim_id=claim_id, patient_id="P1", episode_id="E1", icd10_code="P22.0",
+            is_primary=True, diagnosis_role="primary", diagnosis_date=date(2026, 7, 8), exemption_eligible=False,
+        )
+        for claim_id in ("CLM-ICU", "CLM-WARD")
+    )
+    return PatientClaimContext(
+        patient_id="P1", claims=(icu, ward), procedure_lines=lines, material_lines=(), drug_lines=(),
+        diagnoses=diagnoses,
+    )
+
+
+class TestIcuTransferDay:
+    @pytest.mark.parametrize("scope", ["patient", "bill"])
+    def test_the_icu_last_day_of_another_claim_is_neither_a_newborn_nor_a_standard_bed_day(self, scope: str) -> None:
+        ctx = _transfer_context()
+        if scope == "bill":
+            ctx = ctx.slice_for_claim("CLM-WARD")
+        report = compute_patient_billing_report("P1", claim_context=ctx, copay_exemption=_NOT_EXEMPT)
+
+        [newborn] = [o for o in report.yenidogan_yatak.opportunities if o["claim_id"] == "CLM-WARD"]
+        assert newborn["days"] == 2  # 11 and 12 July; 10 July is the ICU last day
+        assert newborn["expected_try"] == pytest.approx(2 * 440.98, abs=0.005)
+        assert newborn["icu_overlap_dates"] == ["2026-07-10"]
+        # The ICU claim itself is the ICU motor's.
+        assert not [o for o in report.yenidogan_yatak.opportunities if o["claim_id"] == "CLM-ICU"]
+
+        [standard] = [o for o in report.yatak_puani.opportunities if o["claim_id"] == "CLM-WARD"]
+        assert standard["icu_overlap_dates"] == ["2026-07-10"]  # the standard-bed motor drops the same day
+        assert standard["bed_days"] == 0 and standard["recoverable_uplift_try"] == 0.0
+        # Both bed motors dropped the same day, so no day is left over: the standard bed keeps nothing.
+        assert standard["newborn_overlap_days"] == 2
+        counted = [a["sgk_uplift_try"] for a in report.recommended_actions if a["sgk_uplift_try"] is not None]
+        assert sum(Decimal(str(v)) for v in counted).quantize(Decimal("0.01")) == Decimal(
+            str(report.sgk_uplift_try)
+        ).quantize(Decimal("0.01"))

@@ -124,11 +124,14 @@ def _collect_icu_discharge_claims(
     return icu_discharge_claims
 
 
-def _collect_icu_last_days(
+def collect_icu_last_days(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine],
 ) -> set[date]:
-    """Preserve the ICU discharge-day set used by bed-day reconciliation."""
+    """The ICU discharge/transfer days of the claims: a day 510090 pays the bed of.
+
+    Used by the standard-bed reconciliation and, as ``icu_last_days``, by the newborn bed motor.
+    """
     return set(_collect_icu_discharge_claims(claims, procedure_lines))
 
 
@@ -248,7 +251,7 @@ def reconcile_yatak_bed_days(
     if not yatak_opportunities or not procedure_lines:
         return yatak_opportunities
 
-    icu_last_days = _collect_icu_last_days(claims, procedure_lines)
+    icu_last_days = collect_icu_last_days(claims, procedure_lines)
     if not icu_last_days:
         return yatak_opportunities
 

@@ -17,6 +17,7 @@ from src.bilun.domain.billing.types import (
     YenidoganYatakReview,
 )
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules.yatak_icu_overlap import collect_icu_last_days
 from src.bilun.domain.prose_rules.yenidogan_yatak import (
     detect_yenidogan_yatak_opportunities,
 )
@@ -55,10 +56,14 @@ def recommend_yenidogan_yatak_from_claims(
         )
 
     claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
+    # Known history confirms the ICU last days of the patient's other claims (as for the standard bed);
+    # it adds no opportunity and no billed money.
+    history = ctx.history
     opportunities = detect_yenidogan_yatak_opportunities(
         list(ctx.claims),
         list(ctx.diagnoses),
         procedure_lines=list(ctx.procedure_lines),
+        icu_last_days=collect_icu_last_days(list(history.claims), list(history.procedure_lines)),
         claim_ids_with_procs=claim_ids_with_procs,
     )
 

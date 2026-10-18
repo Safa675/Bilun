@@ -1921,6 +1921,10 @@
           "bed_code": true,
           "days": true,
           "bundled_days": true,
+          "icu_overlap_days": true,
+          "icu_overlap_dates": {
+            "$list": true
+          },
           "puan": true,
           "same_day_stay": true,
           "rooming_in": true
