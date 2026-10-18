@@ -193,6 +193,28 @@ class TestPipeline:
             str(report.sgk_uplift_try)
         ).quantize(Decimal("0.01"))
 
+    def test_an_icu_named_unit_that_bills_kuvoz_in_full_leaves_nothing_on_both_motors(self) -> None:
+        """Review round 3, H4: a unit named YBÜ (no ICU code) whose 6-day stay is billed in full as Kuvöz: the
+        newborn motor nets it and owns the days, so the standard bed cannot call them missing (it showed 1,334.16)."""
+        report = _report(
+            newborn=True, days=6, department="Çocuk YBÜ", icd10="P22.0", bed_code="510070", bed_billed="2645.88",
+        )
+
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
+        assert report.yatak_puani.confirmed_yatak_try == 0.0
+        assert not [a for a in report.recommended_actions if a["surface"] in ("yenidogan_yatak", "yatak_puani")]
+
+    def test_double_covered_line_days_leave_no_standard_bed_shortfall(self) -> None:
+        """Review round 3, H2: Kuvöz x7 billed in full plus two 510010 lines billed 0 TL on a 7-day stay."""
+        report = _report(
+            newborn=True, days=7, bed_code="510070", bed_billed="3086.86", bed_units=7,
+            standard_bed_billed="0", standard_bed_units=2, standard_bed_start_day=1,
+        )
+
+        [standard] = report.yatak_puani.opportunities
+        assert standard["bed_days"] == 0 and standard["recoverable_uplift_try"] == 0.0
+        assert report.yatak_puani.confirmed_yatak_try == 0.0
+
     @pytest.mark.parametrize("department", ["Pediatri", "Çocuk Sağlığı ve Hastalıkları"])
     def test_a_correctly_billed_pediatric_admission_gets_no_kuvoz_row(self, department: str) -> None:
         """Review F1: with the broad department signal every pediatric ward stay is read as a newborn one; billed

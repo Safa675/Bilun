@@ -4,10 +4,12 @@ Post-processing over ``claim_yatak_puani`` and ``claim_yenidogan_yatak``: EK-2/B
 gives 510010 (standart yatak), 510070 (Kuvöz) and 510081 (Kot) the same text,
 "Yemek, yatak, hasta vizit hizmetlerini kapsar" — they are alternatives for one
 patient-day, as the project already holds for 510090 against 510010
-(``claim_yatak_icu_overlap``). A claim the newborn bed motor covers therefore has
-no standard-bed day to recover: this step drops those days from the standard-bed
-expectation, so the same days are not in ``sgk_uplift_try`` twice (before it a
-3-day newborn stay counted 1,322.94 TL Kuvöz and 667.08 TL standard bed).
+(``claim_yatak_icu_overlap``). The days the newborn bed motor owns are therefore
+no standard-bed days to recover: this step drops exactly those days from the
+standard-bed expectation, so the same days are not in ``sgk_uplift_try`` twice
+(before it a 3-day newborn stay counted 1,322.94 TL Kuvöz and 667.08 TL standard
+bed). Days billed on the standard bed beside a newborn bed (``standard_bed_days``
+on the newborn row) stay with the standard-bed motor.
 
 The audit-exposure counterpart (510010 actually billed beside Kuvöz) is a
 separate detector and not part of this step.

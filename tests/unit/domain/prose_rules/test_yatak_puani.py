@@ -275,3 +275,22 @@ def test_a_credit_line_never_makes_the_recoverable_exceed_the_expected_charge() 
     assert opp["actual_billed_try"] == pytest.approx(-222.36, abs=0.005)
     assert opp["expected_yatak_try"] == pytest.approx(889.44, abs=0.01)
     assert opp["recoverable_uplift_try"] == pytest.approx(889.44, abs=0.01)  # was 1,111.80
+
+
+def test_an_over_billed_standard_bed_recovers_nothing() -> None:
+    """The floor: 510010 billed above the expected charge leaves 0, never a negative amount."""
+    from src.bilun.domain.claims.models import ProcedureClaimLine
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 12))
+    line = ProcedureClaimLine(
+        procedure_line_id="L1", claim_id="C1", patient_id="P1", episode_id="E1", procedure_date=date(2026, 7, 10),
+        procedure_code="510010", procedure_name="Standart yatak", procedure_category="islem", quantity=3,
+        unit_price_try=Decimal("0"), billed_amount_try=Decimal("900.00"), expected_payable_try=Decimal("0"),
+        is_package_included=False, package_code="", surcharge_applicable=False, copay_rate_applicable=True,
+        denial_reason_expected="", rule_trace_expected="",
+    )
+
+    [opp] = detect_yatak_puani_opportunities([header], [line], claim_ids_with_procs={"C1"})
+
+    assert opp["recoverable_uplift_try"] == 0.0

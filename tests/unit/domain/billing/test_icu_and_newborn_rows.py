@@ -426,6 +426,18 @@ class TestNewbornBedRows:
         [row] = [a for a in public["recommended_actions"] if a["surface"] == "yenidogan_yatak"]
         assert row["sgk_uplift_try"] == pytest.approx(881.96, abs=0.005)
 
+        # Incubator, then a standard bed: `standard_bed_days` of the newborn row.
+        from tests.unit.domain.billing.test_yatak_newborn_overlap import _report as _stay_report
+
+        stay = _stay_report(
+            newborn=True, days=10, bed_code="510070", bed_billed="881.96", bed_units=2,
+            standard_bed_billed="1778.88", standard_bed_units=8, standard_bed_start_day=2,
+        )
+        payload = json.loads(json.dumps(_serialize_billing_report(stay), default=str))
+        public = project_public_response(payload, "/api/billing-report/{patient_id}")
+        [mixed] = public["yenidogan_yatak"]["opportunities"]
+        assert mixed["standard_bed_days"] == 8 and mixed["days"] == 2
+
         # The ICU transfer day: the two overlap keys of the newborn row.
         from tests.unit.domain.billing.test_yatak_newborn_overlap import _transfer_context
 
