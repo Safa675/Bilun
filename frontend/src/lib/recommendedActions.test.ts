@@ -126,6 +126,32 @@ describe("recommendedAction labels", () => {
     );
   });
 
+  it("labels the newborn-bed surface and kind in both locales instead of humanizing them", () => {
+    const inEnglish = (key: string, params?: Record<string, string | number>) =>
+      translate(enMessages, key, params);
+    const inTurkish = (key: string, params?: Record<string, string | number>) =>
+      translate(trMessages, key, params);
+
+    // The mapping exists: an unmapped surface or kind would humanize to "Yenidogan Yatak".
+    expect(recommendedActionSurfaceLabel(t, "yenidogan_yatak")).toBe(
+      "billing.recommendedActions.surfaces.yenidoganYatak",
+    );
+    expect(recommendedActionKindLabel(t, "yenidogan_yatak")).toBe(
+      "billing.recommendedActions.kinds.yenidoganYatak",
+    );
+    // Both message files carry the text behind it.
+    expect(recommendedActionSurfaceLabel(inEnglish, "yenidogan_yatak")).toBe(
+      "Newborn bed (yenidoğan yatağı)",
+    );
+    expect(recommendedActionSurfaceLabel(inTurkish, "yenidogan_yatak")).toBe("Yenidoğan yatağı");
+    expect(recommendedActionKindLabel(inEnglish, "yenidogan_yatak")).toBe(
+      "Newborn bed charge (510070 / 510081)",
+    );
+    expect(recommendedActionKindLabel(inTurkish, "yenidogan_yatak")).toBe(
+      "Yenidoğan yatak ücreti (510070 / 510081)",
+    );
+  });
+
   it("humanizes unmapped snake_case kinds instead of Unknown", () => {
     expect(recommendedActionKindLabel(t, "brand_new_detector")).toBe(
       "Brand New Detector",
@@ -338,6 +364,26 @@ describe("recommendedActions", () => {
       value: 2412.75,
     });
     expect(recommendedActionLineCodes(icu)).toEqual({ procedures: [], labs: [], materials: [], drugs: [] });
+  });
+
+  it("shows the newborn-bed row as an SGK uplift under its kind label", () => {
+    const newborn: RecommendedActionItem = {
+      action_id: "yenidogan_yatak:F-6:0",
+      surface: "yenidogan_yatak",
+      kind: "yenidogan_yatak",
+      procedure_code: null,
+      sgk_uplift_try: 1764.5,
+      sut_section_id: "2.2.2",
+      finding_type: "opportunity",
+    };
+    expect(getFindingType(newborn)).toBe("opportunity");
+    // The row carries no procedure code: the title is the kind label alone and no invoice line is highlighted.
+    expect(recommendedActionTitle(t, newborn)).toBe("billing.recommendedActions.kinds.yenidoganYatak");
+    expect(recommendedActionAmountParts(t, newborn)).toEqual({
+      label: "billing.recommendedActions.amountSgkUplift",
+      value: 1764.5,
+    });
+    expect(recommendedActionLineCodes(newborn)).toEqual({ procedures: [], labs: [], materials: [], drugs: [] });
   });
 
   it("maps recommended actions to per-section invoice-line codes for highlighting", () => {

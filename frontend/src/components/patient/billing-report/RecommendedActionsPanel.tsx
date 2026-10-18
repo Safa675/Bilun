@@ -51,6 +51,7 @@ export function RecommendedActionsPanel({
       anestezi_puani?: ExactnessLike;
       refakatci?: ExactnessLike;
       icu_puani?: ExactnessLike;
+      yenidogan_yatak?: ExactnessLike;
     };
     const sourceBlocks: Record<string, ExactnessLike | null | undefined> = {
       lab: billingReport.lab,
@@ -73,6 +74,7 @@ export function RecommendedActionsPanel({
       anestezi_puani: puanBlocks.anestezi_puani,
       refakatci: puanBlocks.refakatci,
       icu_puani: puanBlocks.icu_puani,
+      yenidogan_yatak: puanBlocks.yenidogan_yatak,
       // Over-billing exposure has no block of its own: it is exact when the report is.
       audit_exposure: billingReport,
     };

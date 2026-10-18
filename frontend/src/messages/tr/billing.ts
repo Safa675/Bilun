@@ -78,6 +78,7 @@ const billing = {
       "anesteziPuani": "Anestezi puanı",
       "refakatci": "Refakatçi",
       "icuPuani": "Yoğun bakım puanı",
+      "yenidoganYatak": "Yenidoğan yatağı",
       "auditExposure": "Denetim riski"
     },
     "kinds": {
@@ -98,6 +99,7 @@ const billing = {
       "anesteziPuaniGroup": "Anestezi grubu ücreti",
       "refakatciCompanionBed": "Refakatçi yatak ücreti (510121)",
       "icuPuaniYogunBakim": "Yoğun bakım ücreti (510090 / P55200x)",
+      "yenidoganYatak": "Yenidoğan yatak ücreti (510070 / 510081)",
       "sessionPointViolation": "Seans oranı aşıldı",
       "bloodComponentPartialBill": "Kan bileşeni payın üzerinde faturalandı",
       "bundledLineFlag": "Pakete dahil satır faturalandı (sezgisel)"

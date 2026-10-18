@@ -216,6 +216,7 @@ const SURFACE_LABEL_KEYS: Record<string, string> = {
   anestezi_puani: "billing.recommendedActions.surfaces.anesteziPuani",
   refakatci: "billing.recommendedActions.surfaces.refakatci",
   icu_puani: "billing.recommendedActions.surfaces.icuPuani",
+  yenidogan_yatak: "billing.recommendedActions.surfaces.yenidoganYatak",
   audit_exposure: "billing.recommendedActions.surfaces.auditExposure",
 };
 
@@ -237,6 +238,7 @@ const KIND_LABEL_KEYS: Record<string, string> = {
   anestezi_puani_group: "billing.recommendedActions.kinds.anesteziPuaniGroup",
   refakatci_companion_bed: "billing.recommendedActions.kinds.refakatciCompanionBed",
   icu_puani_yogun_bakim: "billing.recommendedActions.kinds.icuPuaniYogunBakim",
+  yenidogan_yatak: "billing.recommendedActions.kinds.yenidoganYatak",
   session_point_violation: "billing.recommendedActions.kinds.sessionPointViolation",
   blood_component_partial_bill: "billing.recommendedActions.kinds.bloodComponentPartialBill",
   bundled_line_flag: "billing.recommendedActions.kinds.bundledLineFlag",
@@ -310,8 +312,9 @@ export function recommendedActionPrimaryCode(action: RecommendedActionItem): str
  *   the package parent and is also surfaced against the procedures section)
  * - `drug_indication` → drugs (drug_code)
  * - everything else (copay, billing_strategy, *_uplift, yatak_puani, anestezi_puani,
- *   refakatci, icu_puani, audit_exposure, care_setting_review, procedure_addon_uplift,
- *   procedure_capture_gap, drg_package_adequacy, medula_playbook, claim_checklist)
+ *   refakatci, icu_puani, yenidogan_yatak, audit_exposure, care_setting_review,
+ *   procedure_addon_uplift, procedure_capture_gap, drg_package_adequacy,
+ *   medula_playbook, claim_checklist)
  *   → procedures
  *
  * Surfaces whose action row carries no code (e.g. medula_playbook, copay) yield

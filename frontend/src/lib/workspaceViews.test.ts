@@ -158,6 +158,34 @@ describe("workspaceViews", () => {
     );
   });
 
+  it("puts the newborn-bed row in the revenue view and in its uplift total", () => {
+    const withNewborn = {
+      patient_id: "P-NEWBORN",
+      sgk_uplift_try: 1764.5,
+      recommended_actions: [
+        {
+          action_id: "n1",
+          surface: "yenidogan_yatak",
+          kind: "yenidogan_yatak",
+          finding_type: "opportunity",
+          procedure_code: null,
+          sgk_uplift_try: 1764.5,
+          sut_section_id: "2.2.2",
+        },
+      ],
+    } as unknown as BillingActionReport;
+
+    expect(viewActions(withNewborn, "revenue").map((a) => a.action_id)).toEqual(["n1"]);
+    expect(viewActions(withNewborn, "compliance")).toEqual([]);
+    expect(viewActions(withNewborn, "audit")).toEqual([]);
+    // The revenue KPI is the sum of the revenue rows.
+    const revenueRows = viewActions(withNewborn, "revenue");
+    expect(sumKnownAmounts(revenueRows.map((a) => a.sgk_uplift_try)).total).toBeCloseTo(
+      recoverableUplift(withNewborn) ?? NaN,
+      2,
+    );
+  });
+
   it("sums billed-at-risk amounts for the compliance view", () => {
     expect(complianceBilledAtRisk(report)).toBe(100);
     expect(complianceBilledAtRiskSummary(report)).toEqual({ total: 100, known: 1, count: 1 });
