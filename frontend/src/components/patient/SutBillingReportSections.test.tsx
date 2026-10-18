@@ -1495,15 +1495,29 @@ describe("RecommendedActionsPanel fault rows of the anaesthesia, companion-bed a
   });
 
   it.each(["en", "tr"] as const)("gives each fault row its own source exactness in the compact %s panel", (locale) => {
+    // Different statuses per block, so that a row reading the wrong source is visible: the anaesthesia
+    // block is exact, the companion block is not, and the report itself is partial.
+    const report = {
+      ...faultReport,
+      exactness_status: "partial_exact",
+      anestezi_puani: { exactness_status: "exact" },
+      refakatci: { exactness_status: "partial_exact" },
+    } as unknown as BillingActionReport;
     const html = renderToStaticMarkupWithLocale(
-      <RecommendedActionsPanel billingReport={faultReport} compact onOpenClause={() => {}} />,
+      <RecommendedActionsPanel billingReport={report} compact onOpenClause={() => {}} />,
       locale,
     );
+    const rowOf = (actionId: string) =>
+      html.split('data-action-id="').find((chunk) => chunk.startsWith(`${actionId}"`)) ?? "";
+    const exact = locale === "en" ? ">Exact<" : ">Kesin<";
+    const partial = locale === "en" ? ">Partial exact<" : ">Kısmi kesin<";
 
-    // The anaesthesia and companion rows read their own block ("Exact"); the exposure row has no block,
-    // so it reads the report's status ("Partial exact") and never "Unavailable".
-    expect(html.match(locale === "en" ? />Exact</g : />Kesin</g)).toHaveLength(2);
-    expect(html.match(locale === "en" ? />Partial exact</g : />Kısmi kesin</g)).toHaveLength(1);
+    expect(rowOf("anestezi_puani:F-3:0")).toContain(exact);
+    expect(rowOf("anestezi_puani:F-3:0")).not.toContain(partial);
+    expect(rowOf("refakatci:F-4:0")).toContain(partial);
+    expect(rowOf("refakatci:F-4:0")).not.toContain(exact);
+    // The exposure row has no block of its own: it reads the report's status, and is never "Unavailable".
+    expect(rowOf("audit_exposure:F-8:session_point_violation:ISL-1")).toContain(partial);
     expect(html).not.toContain(locale === "en" ? "Unavailable" : "Kullanılamıyor");
     expect(html).toContain("3584.80 TRY");
     expect(html).toContain("928.09 TRY");

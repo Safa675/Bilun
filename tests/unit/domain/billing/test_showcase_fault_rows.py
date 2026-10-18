@@ -345,6 +345,42 @@ class TestPuanRowsAreOnlyForMoneyThatCounts:
         assert actions[0]["detail"] == "detail 300.0"
 
 
+    def test_an_opportunity_without_a_recoverable_amount_falls_back_to_its_expected_amount(self) -> None:
+        """`confirmed_*_try` reads `expected_try` when `recoverable_uplift_try` is absent; so does the row."""
+        report = BillingActionReport(
+            patient_id="PT-PUAN",
+            anestezi_puani=AnesteziPuaniReview(
+                opportunities=[
+                    {
+                        "type": "anestezi_puani_group",
+                        "claim_id": "CLM-PUAN",
+                        "expected_try": 40.0,
+                        "included_in_sgk_total": True,
+                    }
+                ]
+            ),
+            refakatci=RefakatciReview(
+                opportunities=[
+                    {
+                        "type": "refakatci_companion_bed",
+                        "claim_id": "CLM-PUAN",
+                        "recoverable_uplift_try": None,
+                        "expected_try": 25.5,
+                    }
+                ]
+            ),
+        )
+
+        actions = collect_billing_actions(report)
+
+        assert [(row["surface"], row["sgk_uplift_try"]) for row in actions] == [
+            ("anestezi_puani", 40.0),
+            ("refakatci", 25.5),
+        ]
+        assert _try(actions[0]["sgk_uplift_try"]) == _try(report.anestezi_puani.confirmed_anestezi_try)
+        assert _try(actions[1]["sgk_uplift_try"]) == _try(report.refakatci.confirmed_refakat_try)
+
+
 # Blocks that feed `sgk_uplift_try` through `uplift_field` but make no action row yet. A named, decided gap
 # (plan: tasks/todo.md, "Action rows for the three showcase faults"): ICU and newborn bed money keep their
 # own amount rules and have no showcase story. When one of them gets rows, remove it here; a new motor that
@@ -394,4 +430,7 @@ def test_every_block_that_feeds_the_sgk_headline_has_action_rows_or_is_on_the_na
             for row in collect_billing_actions(_block_with_one_positive_opportunity(attr))
         }
     }
-    assert without_rows == _AGGREGATE_ONLY_BLOCKS
+    assert without_rows == _AGGREGATE_ONLY_BLOCKS, (
+        f"blocks that feed sgk_uplift_try with no action row: {sorted(without_rows)}; give a new motor rows "
+        "in collect_billing_actions, or name it in _AGGREGATE_ONLY_BLOCKS together with the reason"
+    )

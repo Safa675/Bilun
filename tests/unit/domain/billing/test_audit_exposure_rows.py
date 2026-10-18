@@ -9,11 +9,13 @@ showcase bill of S8 is in `test_showcase_fault_rows.py`. The arithmetic of the t
 from __future__ import annotations
 
 from dataclasses import replace
+from decimal import Decimal
 
 import pytest
 
 from src.bilun.domain.billing.billing_actions import collect_billing_actions
 from src.bilun.domain.billing.claim_audit_exposure import (
+    AuditExposureReview,
     audit_exposure_rows,
     audit_exposure_total,
     compute_audit_exposure_from_claims,
@@ -179,6 +181,25 @@ class TestAuditExposureActions:
         assert actions[0]["claim_id"] == "CLM-EXP-1"
         assert actions[0]["detail"] == "Secondary procedure billed at full rate."
 
+    def test_two_entries_of_one_bucket_are_told_apart_by_their_line(self) -> None:
+        """Two over-billed secondaries of one session are two rows of one kind; the line id in the action
+        id is what keeps them apart (the list renders by it)."""
+        second = {
+            **_SESSION,
+            "procedure_line_id": "ISL-9",
+            "procedure_code": "P603841",
+            "risk_amount_try": 410.0,
+        }
+        rows = audit_exposure_rows([_finding(session_violations=[_SESSION, second])])
+
+        actions = collect_billing_actions(self._report(*rows))
+
+        assert [action["kind"] for action in actions] == ["session_point_violation"] * 2
+        assert [action["audit_risk_try"] for action in actions] == [3584.8, 410.0]
+        assert len({action["action_id"] for action in actions}) == 2
+        assert "ISL-1" in actions[0]["action_id"]
+        assert "ISL-9" in actions[1]["action_id"]
+
     def test_one_line_in_two_buckets_keeps_two_distinct_actions(self) -> None:
         rows = audit_exposure_rows(
             [
@@ -223,6 +244,15 @@ class TestReportAssembly:
         assert report.audit_exposure_try == compute_audit_exposure_from_claims(ctx)
         assert [row["surface"] for row in report.recommended_actions].count("audit_exposure") == 1
 
+    def test_finalize_uses_the_review_it_is_given(self) -> None:
+        """The report assembly does one unbundling pass: a total handed in is the total, not a second pass."""
+        ctx = self._s8_context()
+        report = BillingActionReport(patient_id=ctx.patient_id)
+
+        finalize_report_totals(report, claim_context=ctx, audit_exposure=AuditExposureReview(total_try=123.45))
+
+        assert report.audit_exposure_try == 123.45
+
     def test_finalize_takes_the_total_from_the_review_or_computes_it(self) -> None:
         ctx = self._s8_context()
         review = recommend_audit_exposure_from_claims(ctx)
@@ -250,3 +280,59 @@ class TestReportAssembly:
         assert bare.audit_exposure_try == 0.0
         assert recommend_audit_exposure_from_claims(no_lines).rows == []
         assert recommend_audit_exposure_from_claims(no_lines).total_try == 0.0
+
+
+class TestPaymentMethodBucket:
+    """The payment-method bucket counts in `audit_exposure_try` but makes no audit row, because the bill's
+    `billing_strategy` `compliance_violation` row is the finding (SUT 2.2.2.(1): the package is mandated).
+    That row carries no amount: the money of this bucket is in the KPI only. The premise is pinned on the
+    committed S1 bill (a package billed itemized) with one 20,000 TL drug line added in memory, so that the
+    itemized lines overstate the package."""
+
+    @staticmethod
+    def _overbilled_s1_context():
+        dataset = load_sut_claim_dataset()
+        role = cohort.role("showcase_S1")
+        ctx = build_bill_claim_context(role.patient_id, role.claim_id, dataset)
+        assert ctx is not None
+        template = ctx.drug_lines[0]
+        expensive = replace(
+            template,
+            drug_claim_line_id=f"{template.drug_claim_line_id}-EXTRA",
+            billed_amount_try=Decimal("20000.00"),
+            expected_payable_try=Decimal("20000.00"),
+        )
+        return replace(ctx, drug_lines=(*ctx.drug_lines, expensive))
+
+    def test_the_bucket_money_is_in_the_kpi_and_named_by_the_strategy_row_only(self) -> None:
+        ctx = self._overbilled_s1_context()
+
+        report = compute_patient_billing_report(ctx.patient_id, claim_context=ctx)
+
+        findings = unbundling_findings_from_claims(ctx)
+        entries = [
+            (finding.claim_id, entry)
+            for finding in findings
+            for entry in finding.payment_method_violations
+            if entry["risk_amount_try"] > 0
+        ]
+        assert entries, "the premise: the payment-method bucket carries money on this bill"
+        assert report.audit_exposure_try == pytest.approx(
+            sum(entry["risk_amount_try"] for _, entry in entries)
+        )
+        # No audit row for it ...
+        assert report.audit_exposure_rows == []
+        assert not [row for row in report.recommended_actions if row["surface"] == "audit_exposure"]
+        # ... because the strategy row names the finding: one per entry (same claim, same code), no money.
+        violations = [
+            row
+            for row in report.recommended_actions
+            if row["surface"] == "billing_strategy" and row["kind"] == "compliance_violation"
+        ]
+        for claim_id, entry in entries:
+            assert any(
+                row["claim_id"] == claim_id and row["procedure_code"] == entry["procedure_code"]
+                for row in violations
+            ), entry
+        assert {row["audit_risk_try"] for row in violations} == {None}
+        assert {row["sgk_uplift_try"] for row in violations} == {None}

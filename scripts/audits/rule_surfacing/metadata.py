@@ -224,7 +224,11 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
     "recommend_yenidogan_yatak_from_claims": ("kind:yenidogan_yatak",),
     "recommend_refakatci_from_claims": ("refakatci_510121",),
     "recommend_anestezi_puani_from_claims": ("anestezi_puani_group_lookup",),
-    "recommend_audit_exposure_from_claims": ("kind:audit_exposure",),
+    "recommend_audit_exposure_from_claims": (
+        "kind:session_point_violation",
+        "kind:blood_component_partial_bill",
+        "kind:bundled_line_flag",
+    ),
     "recommend_care_setting_review_from_claims": ("kind:care_setting_review",),
     "recommend_medula_rejection_playbook_from_claims": ("kind:medula_rejection_playbook",),
     "recommend_claim_submission_checklist_from_claims": ("kind:claim_submission_checklist",),
@@ -451,7 +455,7 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
     "recommend_audit_exposure_from_claims": {
         "surface": "audit_exposure",
         "finding_type": "compliance",
-        "patient_ui": "RecommendedActionsPanel",
+        "patient_ui": "ComplianceViewSection#claim-compliance",
         "money": "priced_exposure",
         "money_fields": ["audit_risk_try"],
         "included": True,

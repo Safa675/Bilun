@@ -397,6 +397,9 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
             )
 
     for row in report.audit_exposure_rows:
+        # The risk is the billed money SGK would deduct: the part over the allowed amount, as a
+        # materials row's billed amount is the line it would reject. It is also what the
+        # billed-at-risk KPI and the next-actions order read (`billed_try`).
         risk = row.get("risk_amount_try")
         actions.append(
             _action_row(

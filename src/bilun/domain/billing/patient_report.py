@@ -19,7 +19,10 @@ from src.bilun.domain.billing.claim_refakatci import recommend_refakatci_from_cl
 from src.bilun.domain.billing.claim_anestezi_puani import (
     recommend_anestezi_puani_from_claims,
 )
-from src.bilun.domain.billing.claim_audit_exposure import recommend_audit_exposure_from_claims
+from src.bilun.domain.billing.claim_audit_exposure import (
+    AuditExposureReview,
+    recommend_audit_exposure_from_claims,
+)
 from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
@@ -157,6 +160,7 @@ def compute_patient_billing_report(
     if claim_context.claims:
         report.billing_strategy = recommend_billing_strategy_from_claims(claim_context)
 
+    audit_exposure: AuditExposureReview | None = None
     if claim_context.procedure_lines:
         # Cross-detector dependency ordering: session_uplift and billing_strategy
         # MUST run before drg_uplift and procedure_addon_uplift — the latter two
@@ -198,6 +202,9 @@ def compute_patient_billing_report(
             ),
             report.procedure_capture_gap,
         )
+        # One unbundling pass: the rows go to the report, the total to the headline totals.
+        audit_exposure = recommend_audit_exposure_from_claims(claim_context)
+        report.audit_exposure_rows = audit_exposure.rows
 
     report.medula_rejection_playbook = (
         recommend_medula_rejection_playbook_from_claims(claim_context)
@@ -214,9 +221,6 @@ def compute_patient_billing_report(
     )
     report.materials = precheck_materials_from_claims(claim_context)
 
-    # One unbundling pass: the rows go to the report, the total to the headline totals.
-    audit_exposure = recommend_audit_exposure_from_claims(claim_context)
-    report.audit_exposure_rows = audit_exposure.rows
     finalize_report_totals(
         report, claim_context=claim_context, audit_exposure=audit_exposure
     )
