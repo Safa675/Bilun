@@ -270,8 +270,12 @@ def detect_yenidogan_yatak_opportunities(
             continue
 
         # A stay whose admission date equals its discharge date is under 24 hours: its bed is the
-        # day bed (SUT §2.2.2.(3)), priced below.
+        # day bed (SUT §2.2.2.(3)), priced below. On such a stay a billed day bed (510120) states
+        # the bed and covers days exactly as a billed standard bed (510010) does.
         single_date = claim.admission_date == claim.discharge_date
+        standard_codes = (
+            {_STANDARD_BED_CODE, DAY_BED_CODE} if single_date else {_STANDARD_BED_CODE}
+        )
 
         # The newborn bed lines already billed on this claim: they net the charge
         # and, as the only evidence of the bed type, price the Kot days below. Any
@@ -288,11 +292,8 @@ def detect_yenidogan_yatak_opportunities(
             # ward (with a newborn bed billed, the bill speaks and is netted below); a claim
             # that bills the standard bed (on a stay under 24 hours also the day bed) has
             # stated its bed: the standard-bed motor owns the stay and nets its own lines.
-            stated_beds = (
-                {_STANDARD_BED_CODE, DAY_BED_CODE} if single_date else {_STANDARD_BED_CODE}
-            )
             if _department_names_icu(getattr(claim, "department", "") or "") or any(
-                normalize_procedure_code(line.procedure_code) in stated_beds
+                normalize_procedure_code(line.procedure_code) in standard_codes
                 for line in claim_procs
             ):
                 continue
@@ -335,7 +336,7 @@ def detect_yenidogan_yatak_opportunities(
                 sum(
                     _billed_units(line)
                     for line in claim_procs
-                    if normalize_procedure_code(line.procedure_code) == _STANDARD_BED_CODE
+                    if normalize_procedure_code(line.procedure_code) in standard_codes
                     and counts_against_expected_days(line, window)
                 ),
                 days - min(sum(_billed_units(line) for line in counted_lines), days),
@@ -422,8 +423,13 @@ def detect_yenidogan_yatak_opportunities(
                 "days after it are newborn bed days."
             )
         if standard_bed_days:
+            billed_on = (
+                f"the standard or day bed ({_STANDARD_BED_CODE} / {DAY_BED_CODE})"
+                if single_date
+                else f"the standard bed ({_STANDARD_BED_CODE})"
+            )
             detail_parts.append(
-                f"{standard_bed_days} day(s) are billed on the standard bed (510010) beside the "
+                f"{standard_bed_days} day(s) are billed on {billed_on} beside the "
                 "newborn bed and stay the standard-bed motor's."
             )
         if icu_overlap_dates:

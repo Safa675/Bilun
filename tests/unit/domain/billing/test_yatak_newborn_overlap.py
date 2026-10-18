@@ -643,3 +643,18 @@ class TestReconcileDayBed:
 
         assert "510070 / 510081" in adjusted["detail"]
         assert "day bed (510120)" not in adjusted["detail"]
+
+
+class TestReversedNewbornBedLine:
+    def test_an_incubator_billed_reversed_and_rebilled_as_the_day_bed_leaves_nothing_on_both_motors(self) -> None:
+        report = _one_date_report((("510070", "-440.98"), ("510120", "44.45")))
+
+        [newborn] = report.yenidogan_yatak.opportunities
+        assert (newborn["days"], newborn["standard_bed_days"]) == (0, 1)
+        assert newborn["recoverable_uplift_try"] == 0.0
+        [standard] = report.yatak_puani.opportunities
+        assert standard["bed_days"] == 1 and "newborn_overlap_days" not in standard  # the standard-bed motor owns the day
+        assert standard["actual_billed_try"] == pytest.approx(44.45, abs=0.005)
+        assert standard["recoverable_uplift_try"] == 0.0
+        assert report.sgk_uplift_try == 0.0
+        assert _bed_rows(report) == []

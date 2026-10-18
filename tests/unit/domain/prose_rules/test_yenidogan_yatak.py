@@ -1262,3 +1262,29 @@ def test_the_kuvoz_and_cot_prices_are_not_needed_for_a_stay_of_one_date(monkeypa
 
     [opp] = _detect([_line("520010", "10")], header=_one_date_header())
     assert (opp["bed_code"], opp["expected_try"]) == ("510120", pytest.approx(44.45, abs=0.005))
+
+
+def test_a_day_bed_line_beside_a_reversed_newborn_bed_line_takes_the_day() -> None:
+    """An incubator billed, reversed (a credit line covers no day) and re-billed as the day bed: the 510120 line
+    covers the only day, which is the standard-bed motor's (it showed 44.45 beside the billed day bed)."""
+    header = _one_date_header()
+    for standard_line in (_line("510120", "44.45", line_id="D"), _line("510010", "222.36", line_id="S")):
+        [opp] = _detect([_line("510070", "-440.98", line_id="K"), standard_line], header=header)
+
+        assert (opp["days"], opp["standard_bed_days"]) == (0, 1)
+        assert (opp["expected_try"], opp["recoverable_uplift_try"]) == (0.0, 0.0)
+        assert "billed on the standard or day bed (510010 / 510120)" in opp["detail"]
+
+
+def test_a_day_bed_line_beside_a_reversed_newborn_bed_line_of_two_dates_covers_no_day() -> None:
+    """Control: on 10-11 July a 510120 line is no standard-bed line, so the days stay this motor's."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
+    [opp] = _detect([_line("510070", "-440.98", line_id="K"), _line("510120", "44.45", line_id="D")], header=header)
+
+    assert opp["days"] == 2 and "standard_bed_days" not in opp
+
+
+def test_the_rule_source_names_the_day_bed_for_the_newborn_block_too() -> None:
+    from src.bilun.domain.billing import claim_yenidogan_yatak
+
+    assert "510120" in claim_yenidogan_yatak._PROSE_RULE_SOURCE

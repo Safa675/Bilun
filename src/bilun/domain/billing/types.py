@@ -412,7 +412,7 @@ class YatakPuaniReview:
         default_factory=lambda: list(YATAK_PUANI_REQUIRED_INPUTS)
     )
     rule_source: str = (
-        "SUT §2.2.2 standard bed tariff (510010) — inclusive LOS × price_try"
+        "SUT §2.2.2 standard bed tariff (510010; day bed 510120 under 24 hours) — inclusive LOS × price_try"
     )
 
     @property

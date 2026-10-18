@@ -23,7 +23,7 @@ from src.bilun.domain.prose_rules.yenidogan_yatak import (
 )
 
 _PROSE_RULE_SOURCE = (
-    "SUT EK-2B newborn bed tariff (510070 Kuvöz / 510081 Kot) — inclusive LOS × price_try"
+    "SUT EK-2B newborn bed tariff (510070 Kuvöz / 510081 Kot; day bed 510120 under 24 hours) — inclusive LOS × price_try"
 )
 
 YENIDOGAN_YATAK_REQUIRED_INPUTS = (

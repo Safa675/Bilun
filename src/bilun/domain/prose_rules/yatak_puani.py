@@ -375,13 +375,15 @@ def detect_yatak_puani_opportunities(
         expected = _money(days * daily_rate)
 
         # Net out actual billed bed-day amounts (510010; on a stay under 24 hours also
-        # 510120) so recoverable uplift reflects only the UNBILLED portion.
+        # 510120) so recoverable uplift reflects only the UNBILLED portion. The code is
+        # read as the newborn motor's stand-down reads it (a claim it hands over because of
+        # a billed 510010 / 510120 line must have that line netted here).
         billed_codes = {_BED_CODE, DAY_BED_CODE} if same_day else {_BED_CODE}
         actual_billed_try = _money(
             sum(
                 float(p.billed_amount_try)
                 for p in claim_procs
-                if str(p.procedure_code).strip() in billed_codes
+                if normalize_procedure_code(p.procedure_code) in billed_codes
                 and counts_against_expected_days(p, window)
             )
         )
