@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 import copy
 from decimal import Decimal
 import json
 from pathlib import Path
 import re
-import shutil
 from typing import Any
 import warnings
 
@@ -40,6 +40,7 @@ from scripts.synthetic.cohort import (
     load_recipes,
     tables_digest,
     validate_cohort_registry,
+    write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
 from scripts.synthetic.faults import (
@@ -52,17 +53,16 @@ from scripts.synthetic.faults import (
 )
 from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
-import src.bilun.domain.claims.config as claims_config
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.models import ExpectedRuleOutput, PatientCopayProfile
 
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
-_SHOWCASE_DIR = DEFAULT_OUT_DIR
-_CLAIMS_DIR = _SHOWCASE_DIR / "sut" / "claims"
-_CLEAN_DIR = _SHOWCASE_DIR / "sut" / "clean"
-_REGISTRY_JSON_PATH = _SHOWCASE_DIR / "cohort_registry.json"
+_OUT_DIR = DEFAULT_OUT_DIR
+_CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
+_CLEAN_DIR = _OUT_DIR / "sut" / "clean"
+_REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
 _RESULTS_DIR = _REPO / "reports/synthetic-data/2026-10-15-showcase-proofs/results"
 
 _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
@@ -84,12 +84,8 @@ _CURRENCY_RE = re.compile(
 
 
 @pytest.fixture(autouse=True)
-def _allow_showcase_synthetic_claims_dir(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Allow `load_sut_claim_dataset(..., mode='synthetic_demo')` to read `data/synthetic/showcase/sut/claims`."""
-    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", _SHOWCASE_DIR / "sut")
-    monkeypatch.setattr(
-        claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", _SHOWCASE_DIR / "sut" / "clean"
-    )
+def _fresh_claims_cache() -> Iterator[None]:
+    """`load_sut_claim_dataset` caches by arguments: every test starts and ends with an empty cache."""
     load_sut_claim_dataset.cache_clear()
     yield
     load_sut_claim_dataset.cache_clear()
@@ -131,18 +127,20 @@ def test_build_showcase_equals_committed_files(built_showcase: BuildResult) -> N
 
 
 def test_cli_check_passes_on_committed_and_fails_on_table_or_json_change(
+    built_showcase: BuildResult,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     assert main(["--check"]) == 0
     assert "ok (8 claims, 9 tables)" in capsys.readouterr().out
 
-    assert main(["--out", str(_SHOWCASE_DIR), "--check"]) == 0
+    assert main(["--out", str(_OUT_DIR), "--check"]) == 0
     capsys.readouterr()
 
-    # Copy committed folder to tmp_path and verify --check passes on the untouched copy.
-    copy_dir = tmp_path / "showcase_copy"
-    shutil.copytree(_SHOWCASE_DIR, copy_dir)
+    # Write a fresh copy of the dataset to tmp_path (the builder's own files, nothing else of
+    # data/synthetic) and verify --check passes on the untouched copy.
+    copy_dir = tmp_path / "dataset_copy"
+    write_showcase(built_showcase, copy_dir)
     assert main(["--out", str(copy_dir), "--check"]) == 0
     capsys.readouterr()
 
@@ -392,7 +390,7 @@ def test_hygiene_and_id_formats_on_committed_files() -> None:
     recipes_raw = json.loads(json.dumps(load_recipes().model_dump()))
     assert hygiene(recipes_raw, recipes_text) == []
 
-    for text_path in (RECIPES_PATH, _REGISTRY_JSON_PATH, _SHOWCASE_DIR / "README.md"):
+    for text_path in (RECIPES_PATH, _REGISTRY_JSON_PATH, _OUT_DIR / "README.md"):
         content = text_path.read_text(encoding="utf-8")
         assert not _ANON_RE.search(content), f"ANON text found in {text_path}"
         assert not _CURRENCY_RE.search(content), f"Currency text found in {text_path}"

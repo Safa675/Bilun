@@ -1,12 +1,13 @@
-"""Unit tests for pure ID builders in scripts/synthetic/cohort/ids.py and legacy Parquet ID format verification."""
+"""Unit tests for pure ID builders in scripts/synthetic/cohort/ids.py and their agreement with the committed tables."""
 
 from __future__ import annotations
 
-from pathlib import Path
+from collections.abc import Callable
 
 import polars as pl
 import pytest
 
+from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR
 from scripts.synthetic.cohort.ids import (
     CLAIM_ID_RE,
     DIAGNOSIS_ID_RE,
@@ -31,8 +32,7 @@ from scripts.synthetic.cohort.ids import (
 
 pytestmark = pytest.mark.unit
 
-_REPO = Path(__file__).resolve().parents[3]
-_CLAIMS_DIR = _REPO / "data/synthetic/sut/claims"
+_CLAIMS_DIR = DEFAULT_OUT_DIR / "sut" / "claims"
 
 
 def test_id_builders_exact_formats() -> None:
@@ -107,63 +107,46 @@ def test_id_builders_reject_invalid_inputs(fn: object, args: tuple[object, ...])
         fn(*args)  # type: ignore[operator]
 
 
-def test_verify_builders_against_legacy_parquet_id_columns() -> None:
+def _trailing_int(identifier: str) -> int:
+    return int(identifier.rsplit("-", 1)[1])
+
+
+def _lines_per_claim(table: str, column: str) -> dict[str, list[str]]:
+    """The ids of one committed table, sorted, per claim."""
+    frame = pl.read_parquet(_CLAIMS_DIR / f"{table}.parquet", columns=["claim_id", column])
+    assert frame.height > 0, table
+    grouped = frame.group_by("claim_id").agg(pl.col(column).sort())
+    return dict(zip(grouped["claim_id"].to_list(), grouped[column].to_list(), strict=True))
+
+
+def test_builders_reproduce_the_id_columns_of_the_committed_tables() -> None:
     headers = pl.read_parquet(
         _CLAIMS_DIR / "claim_headers.parquet",
         columns=["patient_id", "claim_id", "episode_id"],
     )
     assert headers.height > 0
-    assert patient_id(1) in headers["patient_id"].to_list()
-    assert claim_id(patient_id(1), 1) in headers["claim_id"].to_list()
-    assert episode_id(patient_id(1), 1) in headers["episode_id"].to_list()
-    assert all(PATIENT_ID_RE.fullmatch(v) for v in headers["patient_id"].to_list())
-    assert all(CLAIM_ID_RE.fullmatch(v) for v in headers["claim_id"].to_list())
-    assert all(EPISODE_ID_RE.fullmatch(v) for v in headers["episode_id"].to_list())
+    # The patient number and the claim sequence are in the ids: rebuild each id from them.
+    for pid, cid, eid in headers.sort("claim_id").iter_rows():
+        number, seq = _trailing_int(pid), _trailing_int(cid)
+        assert PATIENT_ID_RE.fullmatch(pid) and pid == patient_id(number)
+        assert CLAIM_ID_RE.fullmatch(cid) and cid == claim_id(patient_id(number), seq)
+        assert EPISODE_ID_RE.fullmatch(eid) and eid == episode_id(patient_id(number), seq)
 
-    diagnoses = pl.read_parquet(
-        _CLAIMS_DIR / "claim_diagnoses.parquet",
-        columns=["diagnosis_id"],
+    # The lines of a claim are numbered 1..n by the builders, in every committed line table.
+    by_claim_builders: tuple[tuple[str, str, Callable[[str, int], str], object], ...] = (
+        ("procedure_claim_lines", "procedure_line_id", procedure_line_id, PROCEDURE_LINE_ID_RE),
+        ("material_claim_lines", "material_line_id", material_line_id, MATERIAL_LINE_ID_RE),
+        ("drug_claim_lines", "drug_claim_line_id", drug_claim_line_id, DRUG_CLAIM_LINE_ID_RE),
+        ("performed_procedure_lines", "performed_line_id", performed_line_id, PERFORMED_LINE_ID_RE),
     )
-    assert diagnoses.height > 0
-    assert diagnosis_id(patient_id(1), 1, 1) in diagnoses["diagnosis_id"].to_list()
-    assert all(DIAGNOSIS_ID_RE.fullmatch(v) for v in diagnoses["diagnosis_id"].to_list())
+    for table, column, builder, pattern in by_claim_builders:
+        for cid, ids in _lines_per_claim(table, column).items():
+            assert ids == [builder(cid, n) for n in range(1, len(ids) + 1)], (table, cid)
+            assert all(pattern.fullmatch(v) for v in ids), (table, cid)  # type: ignore[attr-defined]
 
-    procedures = pl.read_parquet(
-        _CLAIMS_DIR / "procedure_claim_lines.parquet",
-        columns=["procedure_line_id"],
-    )
-    assert procedures.height > 0
-    assert (
-        procedure_line_id(claim_id(patient_id(1), 1), 1)
-        in procedures["procedure_line_id"].to_list()
-    )
-    assert all(PROCEDURE_LINE_ID_RE.fullmatch(v) for v in procedures["procedure_line_id"].to_list())
-
-    materials = pl.read_parquet(
-        _CLAIMS_DIR / "material_claim_lines.parquet",
-        columns=["material_line_id"],
-    )
-    assert materials.height > 0
-    assert (
-        material_line_id(claim_id(patient_id(1), 1), 1) in materials["material_line_id"].to_list()
-    )
-
-    drugs = pl.read_parquet(
-        _CLAIMS_DIR / "drug_claim_lines.parquet",
-        columns=["drug_claim_line_id"],
-    )
-    assert drugs.height > 0
-    assert (
-        drug_claim_line_id(claim_id(patient_id(1), 1), 1) in drugs["drug_claim_line_id"].to_list()
-    )
-    assert all(DRUG_CLAIM_LINE_ID_RE.fullmatch(v) for v in drugs["drug_claim_line_id"].to_list())
-
-    performed = pl.read_parquet(
-        _CLAIMS_DIR / "performed_procedure_lines.parquet",
-        columns=["performed_line_id", "claim_id"],
-    )
-    assert performed.height > 0
-    assert performed["performed_line_id"].to_list() == [
-        performed_line_id(claim_id(patient_id(9), 23), 1)
-    ]
-    assert all(PERFORMED_LINE_ID_RE.fullmatch(v) for v in performed["performed_line_id"].to_list())
+    # A diagnosis id carries the patient, the claim sequence and the diagnosis sequence.
+    patient_of_claim = dict(zip(headers["claim_id"], headers["patient_id"], strict=True))
+    for cid, ids in _lines_per_claim("claim_diagnoses", "diagnosis_id").items():
+        pid, seq = patient_of_claim[cid], _trailing_int(cid)
+        assert ids == [diagnosis_id(pid, seq, n) for n in range(1, len(ids) + 1)], cid
+        assert all(DIAGNOSIS_ID_RE.fullmatch(v) for v in ids), cid

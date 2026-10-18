@@ -45,7 +45,7 @@ import sys
 import polars as pl
 import pytest
 
-from scripts.synthetic.cohort import build_showcase
+from scripts.synthetic.cohort import DEFAULT_OUT_DIR, build_showcase
 from scripts.synthetic.cohort.catalogs import CohortCatalogs
 from scripts.synthetic.cohort.ids import (
     claim_id,
@@ -112,10 +112,9 @@ pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
 _MODULE = _REPO / "scripts/synthetic/cohort/plausibility.py"
-_SHOWCASE_DIR = _REPO / "data/synthetic/showcase"
-_CLAIMS_DIR = _SHOWCASE_DIR / "sut/claims"
-_CLEAN_DIR = _SHOWCASE_DIR / "sut/clean"
-_REGISTRY_FILE = _SHOWCASE_DIR / "cohort_registry.json"
+_CLAIMS_DIR = DEFAULT_OUT_DIR / "sut/claims"
+_CLEAN_DIR = DEFAULT_OUT_DIR / "sut/clean"
+_REGISTRY_FILE = DEFAULT_OUT_DIR / "cohort_registry.json"
 
 # The ids a mutation case may name; written out so a typo in a case fails at collection time.
 ICD = "patient.icd_valid"
