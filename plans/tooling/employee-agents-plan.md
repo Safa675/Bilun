@@ -1,7 +1,7 @@
 # Plan: 3 Employee Agents + the Missing Health-Check "Moat"
 
 **Date:** 2026-07-20
-**Status:** Approved
+**Status:** Approved. Update 2026-10-18: the `agents/` folder this plan describes and the root `AGENTS.md` were removed from the repo at Safa's request.
 **Predecessor:** `plans/tooling/openhands-install-plan.md` (OpenHands runtime — DONE, app at
 http://localhost:3001, repo mounted read-only at `/workspace/bilun:ro`, LLM `openai/glm-5.2`
 via Z coding-plan proven end-to-end).
