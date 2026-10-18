@@ -369,14 +369,44 @@ def test_a_billed_kot_is_priced_at_the_kot_rate_and_billed_in_full_leaves_nothin
     assert opp["recoverable_uplift_try"] == 0.0
 
 
-def test_a_kot_billed_for_part_of_the_stay_leaves_only_the_unbilled_days_at_the_kuvoz_default() -> None:
-    """One Kot day billed of three: that day is a Kot day (311.30), the two unbilled days keep the default."""
+def test_a_cot_billed_for_part_of_the_stay_prices_every_owned_day_as_a_cot() -> None:
+    """Only Kot is billed (one day of three): the hospital stated a cot, nothing says Kuvöz, so the two unbilled
+    days are Kot days too (311.30 each), not the 129.68 TL dearer Kuvöz default."""
     [opp] = _detect([_line("510081", "311.30")])
 
-    assert opp["bed_code"] == "510070"  # not every day is Kot
-    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)
-    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 440.98, abs=0.005)
-    assert "1 billed Kot day(s) at 311.30" in opp["detail"]
+    assert opp["bed_code"] == "510081"
+    assert opp["expected_try"] == pytest.approx(3 * 311.30, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.30, abs=0.005)
+    assert "A Kot (510081) line is billed" in opp["detail"]
+
+
+@pytest.mark.parametrize("day_offset", [0, 2])
+def test_where_the_billed_cot_days_lie_does_not_matter(day_offset: int) -> None:
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    [opp] = _detect(
+        [_line("510081", "622.60", quantity=2, procedure_date=date(2026, 7, 10 + day_offset))], header=header
+    )
+
+    assert opp["expected_try"] == pytest.approx(4 * 311.30, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.30, abs=0.005)
+
+
+def test_a_single_cot_line_carrying_several_days_is_priced_as_a_cot_stay() -> None:
+    """Quantity 1 with a four-day amount (out of the per-day convention): no quantity is read for a cot-only
+    stay, the amount nets the cot charge, so an exactly billed stay leaves nothing (review round 2, G1)."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    [opp] = _detect([_line("510081", "1245.20", quantity=1)], header=header)
+
+    assert opp["expected_try"] == pytest.approx(1245.20, abs=0.005)
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_the_per_day_split_applies_when_kuvoz_is_billed_too() -> None:
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", line_id="T")])
+
+    assert opp["bed_code"] == "510070"
+    assert "3 bed-day(s) = 2 at 440.98 + 1 billed Kot day(s) at 311.30 TRY/day" in opp["detail"]
+    assert "A Kot (510081) line is billed on this claim" not in opp["detail"]  # only for an all-Kot stay
 
 
 def test_a_claim_billing_both_codes_prices_each_billed_day_as_billed_and_the_rest_at_kuvoz() -> None:
@@ -392,8 +422,9 @@ def test_a_claim_billing_both_codes_prices_each_billed_day_as_billed_and_the_res
     "days,kuvoz_days,kot_days", [(4, 2, 2), (10, 4, 6), (3, 0, 3), (2, 1, 1)]
 )
 def test_a_stay_billed_kuvoz_then_kot_exactly_leaves_nothing(days: int, kuvoz_days: int, kot_days: int) -> None:
-    """The normal path of a stabilising preterm baby: incubator, then cot. Every day billed, nothing to recover
-    (review F2: the Kuvöz-Kot difference of 129.68 TL a day used to stay behind)."""
+    """A baby billed an incubator first and a cot after (a plausible path; the repo has no data on its
+    frequency). Every day billed, nothing to recover (review F2: the Kuvöz-Kot difference of 129.68 TL a day
+    used to stay behind)."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 10 + days - 1))
     lines = []
     if kuvoz_days:
@@ -418,9 +449,9 @@ def test_billed_kot_days_never_exceed_the_stay() -> None:
 
 
 def test_a_kot_line_without_a_quantity_counts_one_day() -> None:
-    [opp] = _detect([_line("510081", "311.30", quantity=0)])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", quantity=0, line_id="T")])
 
-    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)  # one Kot day, two Kuvöz days
 
 
 def test_a_zero_priced_kot_line_is_still_the_hospitals_bed_statement() -> None:
@@ -785,3 +816,136 @@ def test_a_claim_billing_no_standard_bed_has_no_standard_bed_key() -> None:
 
     assert "standard_bed_days" not in opp
     assert "billed on the standard bed" not in opp["detail"]
+
+
+# --- Detail text and labels of the three stay shapes (review round 2 survivors K12, K14, K19, K20) ----------
+
+
+def test_a_single_rate_stay_names_one_rate_and_no_mix() -> None:
+    [kuvoz] = _detect([_line("520010", "10")])
+    assert "3 bed-day(s) at 440.98 TRY/day" in kuvoz["detail"]
+    assert "billed Kot day" not in kuvoz["detail"]
+    assert "A Kot (510081) line is billed" not in kuvoz["detail"]
+
+    [cot] = _detect([_line("510081", "933.90", quantity=3)])
+    assert "3 bed-day(s) at 311.30 TRY/day" in cot["detail"]
+    assert "billed Kot day" not in cot["detail"]
+    assert "A Kot (510081) line is billed" in cot["detail"]
+
+
+def test_a_mixed_stay_names_both_rates_and_not_the_cot_only_sentence() -> None:
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    [mixed] = _detect(
+        [_line("510070", "881.96", quantity=2, line_id="K"), _line("510081", "622.60", quantity=2, line_id="T")],
+        header=header,
+    )
+
+    assert "4 bed-day(s) = 2 at 440.98 + 2 billed Kot day(s) at 311.30 TRY/day" in mixed["detail"]
+    assert "A Kot (510081) line is billed" not in mixed["detail"]
+    assert mixed["bed_code"] == "510070" and mixed["rule_id"] == "yenidogan_yatak_510070"
+
+
+def test_a_fully_bundled_stay_is_labelled_kuvoz_even_when_only_a_cot_is_billed() -> None:
+    lines = [_package("P600040", date(2026, 7, 11)), _line("510081", "311.30", procedure_date=date(2026, 7, 10))]
+    [opp] = _detect(lines, header=_ten_day_header())
+
+    assert opp["days"] == 0
+    assert opp["bed_code"] == "510070" and opp["rule_id"] == "yenidogan_yatak_510070"
+
+
+def test_billed_cot_lines_inside_a_mandated_window_are_the_bed_statement_but_net_nothing() -> None:
+    """12 days, mandated 610131 (window 8 days from 14 July), Kot x8 dated 14 July (inside the window): they pay
+    the package, so they net nothing, but they still state a cot for the days after it."""
+    import dataclasses
+
+    from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
+
+    def newborn_ctx(bed_lines):
+        start = _d("2026-07-14")
+        bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+        bill.proc("610131", start, specialty=GENCER)
+        for code, day, quantity in bed_lines:
+            bill.proc(code, day, qty=quantity, specialty=GENCER)
+        ctx = bill.ctx()
+        return dataclasses.replace(ctx, claims=(dataclasses.replace(ctx.claims[0], department="yenidoğan"),))
+
+    from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
+
+    def detect(ctx):
+        return detect_yenidogan_yatak_opportunities(
+            list(ctx.claims), [], procedure_lines=list(ctx.procedure_lines),
+            claim_ids_with_procs={ctx.claims[0].claim_id},
+        )
+
+    [cot_only] = detect(newborn_ctx([("510081", _d("2026-07-14"), 8)]))
+    assert (cot_only["days"], cot_only["bundled_days"]) == (4, 8)
+    assert cot_only["bed_code"] == "510081"  # the cot statement carries to the days after the window
+    assert cot_only["actual_billed_try"] == 0.0
+    assert cot_only["recoverable_uplift_try"] == pytest.approx(4 * 311.30, abs=0.01)
+
+    # With a Kuvöz line after the window the Kot lines inside it count as no Kot day: all four days are Kuvöz.
+    [mixed] = detect(newborn_ctx([("510070", _d("2026-07-22"), 1), ("510081", _d("2026-07-14"), 8)]))
+    assert mixed["bed_code"] == "510070"
+    assert mixed["expected_try"] == pytest.approx(4 * 440.98, abs=0.01)
+
+
+# --- Zero rates in the catalog (guards) --------------------------------------------------------------------
+
+
+def test_a_missing_cot_rate_falls_back_to_the_kuvoz_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    from src.bilun.domain.prose_rules import yenidogan_yatak
+
+    real = yenidogan_yatak._daily_rate
+    monkeypatch.setattr(yenidogan_yatak, "_daily_rate", lambda code, visit_date=None: 0.0 if code == "510081" else real(code, visit_date))
+
+    [opp] = _detect([_line("510081", "933.90", quantity=3)])
+
+    assert opp["bed_code"] == "510070"
+    assert opp["expected_try"] == pytest.approx(3 * 440.98, abs=0.005)
+
+
+def test_a_missing_kuvoz_rate_still_prices_an_all_cot_stay_and_skips_a_kuvoz_stay(monkeypatch: pytest.MonkeyPatch) -> None:
+    from src.bilun.domain.prose_rules import yenidogan_yatak
+
+    real = yenidogan_yatak._daily_rate
+    monkeypatch.setattr(yenidogan_yatak, "_daily_rate", lambda code, visit_date=None: 0.0 if code == "510070" else real(code, visit_date))
+
+    [cot] = _detect([_line("510081", "933.90", quantity=3)])
+    assert cot["bed_code"] == "510081" and cot["expected_try"] == pytest.approx(933.90, abs=0.005)
+    assert _detect([_line("520010", "10")]) == []  # nothing billed: the Kuvöz default cannot be priced
+
+
+# --- Standard-bed spelling, ICU dates order, window end, spellings (review round 2 survivors) ---------------
+
+
+@pytest.mark.parametrize("code", ["510010", " 510.010 ", "P510010", "510 010"])
+def test_the_standard_bed_stand_down_reads_the_code_like_the_rest_of_the_engine(code: str) -> None:
+    assert _detect([_line(code, "667.08", quantity=3)]) == []
+
+
+def test_icu_last_days_are_listed_in_date_order() -> None:
+    stay = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 19))
+    days = {date(2026, 7, 17), date(2026, 7, 11), date(2026, 7, 14), date(2026, 7, 12), date(2026, 7, 19)}
+    [opp] = _detect([_line("520010", "10")], header=stay, icu_last_days=days)
+
+    assert opp["icu_overlap_dates"] == sorted(day.isoformat() for day in days)
+    assert opp["icu_overlap_days"] == 5 and opp["days"] == 5
+
+
+def test_an_icu_last_day_on_the_window_end_is_already_bundled_not_dropped_again() -> None:
+    """Group E from 10 July bundles 10-12 July; an ICU last day on 12 July (the window end) is not dropped again."""
+    [opp] = _detect(
+        [_package("P600330", date(2026, 7, 10))], header=_ten_day_header(), icu_last_days={date(2026, 7, 12)}
+    )
+
+    assert (opp["days"], opp["bundled_days"]) == (7, 3)
+    assert "icu_overlap_dates" not in opp
+
+
+@pytest.mark.parametrize("department", ["Yoğun-Bakım", "YB.", "Yenidoğan YB1", "NICU2", "Yenidoğan  Yoğun   Bakım"])
+def test_hyphens_dots_digits_and_spacing_do_not_hide_an_icu_department(department: str) -> None:
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 13), primary_icd10="P22.0", department=department
+    )
+
+    assert _detect([_line("520010", "10")], header=header) == []

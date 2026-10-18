@@ -183,6 +183,33 @@ def test_reconcile_icu_discharge_day_equals_service_entry_day() -> None:
     assert icu_rec["icu_overlap_days"] == 1
 
 
+def test_reconcile_credit_line_never_makes_the_recoverable_exceed_the_expected_charge() -> None:
+    """A negative 510010 line (a reversal) on the service claim: after the ICU day is dropped the recoverable
+    amount is at most the 2 remaining days' charge (review round 2, G4: the formula had no cap)."""
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    icu = _make_claim_header(claim_id="ICU", department="Yogun Bakim")
+    srv = _make_claim_header(
+        claim_id="SRV", admission=date(2026, 7, 13), discharge=date(2026, 7, 15), department="genel_cerrahi"
+    )
+    procs = [
+        _make_proc_line(claim_id="ICU", procedure_line_id="ICU-1", procedure_code="510090"),
+        _make_proc_line(
+            claim_id="SRV", procedure_line_id="SRV-1", procedure_code="510010", procedure_name="Standart yatak",
+            procedure_date=date(2026, 7, 13), billed_amount_try="-100.00",
+        ),
+    ]
+    claims = [icu, srv]
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
+
+    srv_rec = _yatak_opp("SRV", reconcile_yatak_bed_days(opps, claims, procs))
+
+    assert srv_rec["bed_days"] == 2
+    assert srv_rec["expected_yatak_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert srv_rec["recoverable_uplift_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+
+
 def test_reconcile_different_days_behavior_unchanged() -> None:
     """(b) Servis claim'inin LOS'u YB son gününe denk gelmezse davranış değişmez.
 
