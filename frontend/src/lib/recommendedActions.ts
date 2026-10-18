@@ -242,6 +242,7 @@ const KIND_LABEL_KEYS: Record<string, string> = {
   session_point_violation: "billing.recommendedActions.kinds.sessionPointViolation",
   blood_component_partial_bill: "billing.recommendedActions.kinds.bloodComponentPartialBill",
   bundled_line_flag: "billing.recommendedActions.kinds.bundledLineFlag",
+  yatak_newborn_overlap_double_billing: "billing.recommendedActions.kinds.yatakNewbornOverlapDoubleBilling",
 };
 
 /** Prefer i18n map; otherwise humanize snake_case so new backend kinds aren't "Unknown". */

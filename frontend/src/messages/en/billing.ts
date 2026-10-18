@@ -102,7 +102,8 @@ const billing = {
       "yenidoganYatak": "Newborn bed charge (510070 / 510081)",
       "sessionPointViolation": "Session factor exceeded",
       "bloodComponentPartialBill": "Blood component billed above its share",
-      "bundledLineFlag": "Package-included line billed (heuristic)"
+      "bundledLineFlag": "Package-included line billed (heuristic)",
+      "yatakNewbornOverlapDoubleBilling": "Standard bed billed on a newborn bed day"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",

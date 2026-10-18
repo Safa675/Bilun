@@ -98,6 +98,9 @@ describe("recommendedAction labels", () => {
     expect(recommendedActionKindLabel(t, "bundled_line_flag")).toBe(
       "billing.recommendedActions.kinds.bundledLineFlag",
     );
+    expect(recommendedActionKindLabel(t, "yatak_newborn_overlap_double_billing")).toBe(
+      "billing.recommendedActions.kinds.yatakNewbornOverlapDoubleBilling",
+    );
   });
 
   it("labels the intensive-care surface and kind in both locales instead of humanizing them", () => {

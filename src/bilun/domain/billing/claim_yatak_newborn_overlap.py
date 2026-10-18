@@ -11,8 +11,10 @@ standard-bed expectation, so the same days are not in ``sgk_uplift_try`` twice
 bed). Days billed on the standard bed beside a newborn bed (``standard_bed_days``
 on the newborn row) stay with the standard-bed motor.
 
-The audit-exposure counterpart (510010 actually billed beside Kuvöz) is a
-separate detector and not part of this step.
+The audit-exposure counterpart (510010 actually billed on a day a Kuvöz / Kot line
+covers) is a separate detector and not part of this step:
+``prose_rules.yatak_newborn_overlap.detect_yatak_newborn_overlap``, called from
+``analyze_claim`` and re-run for the ``audit_exposure`` rows.
 """
 
 from __future__ import annotations

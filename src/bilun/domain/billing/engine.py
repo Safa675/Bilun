@@ -86,6 +86,7 @@ from src.bilun.domain.prose_rules.treatment_pricing import (
 from src.bilun.domain.prose_rules.traffic_accident_billing import (
     detect_traffic_accident_billing,
 )
+from src.bilun.domain.prose_rules.yatak_newborn_overlap import detect_yatak_newborn_overlap
 from src.bilun.domain.prose_rules.fatura_inceleme import (
     check_fatura_inceleme_for_context,
 )
@@ -274,6 +275,22 @@ def analyze_claim(
                 detect_icu_tier_overbilling(
                     list(ctx.claims),
                     list(ctx.procedure_lines),
+                )
+            )
+
+            # 14.6b. EK-2B — standard bed (510010) billed on a day a newborn bed
+            # (510070 Kuvöz / 510081 Kot) line of the patient covers: the same
+            # "Yemek, yatak, hasta vizit hizmetlerini kapsar" bundle asked for
+            # twice. Audit-exposure violation (an inference from the identical
+            # text, so severity warning). Patient history, emitted for the active
+            # claims only, like the ICU detector above. The recoverable-uplift
+            # counterpart runs in patient_report.reconcile_yatak_newborn_overlap;
+            # recommend_audit_exposure_from_claims re-runs this detector for the
+            # report's audit_exposure rows.
+            violations.extend(
+                detect_yatak_newborn_overlap(
+                    list(ctx.history.procedure_lines),
+                    claim_ids_with_procs={line.claim_id for line in ctx.procedure_lines},
                 )
             )
 
