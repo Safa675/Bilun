@@ -16,3 +16,5 @@ They read only the synthetic catalogs and the engine. Run them from the repo roo
 **Status on 2026-10-16.** Every target fault fires and every clean bill carries 0 TL.
 - The first run (2026-10-15, engine at `1c22ee9c`) recorded 13 kinds of noise on clean bills (N1–N13 in the draft). PRs #272–#278, #283–#285 and #288 closed all of them except N7.
 - N7 is still open: an R-code principal diagnosis is blocked as an error. It shows on S7 as one 0 TL row.
+
+**Update on 2026-10-18.** S3, S4 and S8 were run again (`prove.py S3 S4 S8`) after the report gained one action row for each of these faults: `anestezi_puani` (S3, 928.09 TL), `refakatci` (S4, 370.50 TL) and `audit_exposure` (S8, 3,584.80 TL). In each `results/S*.json` the only changes are one more `action` signal in `only_in_faulty` and `faulty.report.action_count` one higher (2 to 3, 2 to 3, 3 to 4); no amount, no clean-bill result and no other story moved. `tests/unit/synthetic/test_cohort_engine_proof.py` compares the engine with these files.

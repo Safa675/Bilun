@@ -74,7 +74,10 @@ const billing = {
       "drugIndication": "İlaç endikasyonu",
       "materials": "Malzeme ön kontrol",
       "claimCompliance": "Fatura uyumluluğu",
-      "yatakPuani": "Yatak puanı"
+      "yatakPuani": "Yatak puanı",
+      "anesteziPuani": "Anestezi puanı",
+      "refakatci": "Refakatçi",
+      "auditExposure": "Denetim riski"
     },
     "kinds": {
       "complianceViolation": "Ödeme yöntemi ihlali",
@@ -90,7 +93,12 @@ const billing = {
       "materialProseBundling": "§3.1 metin paketleme",
       "materialSpecialtyProse": "§3.3 uzmanlık metni",
       "yatakPuani": "Yatak puanı ücreti",
-      "yatakPuaniStandardBed": "Standart yatak puanı"
+      "yatakPuaniStandardBed": "Standart yatak puanı",
+      "anesteziPuaniGroup": "Anestezi grubu ücreti",
+      "refakatciCompanionBed": "Refakatçi yatak ücreti (510121)",
+      "sessionPointViolation": "Seans oranı aşıldı",
+      "bloodComponentPartialBill": "Kan bileşeni payın üzerinde faturalandı",
+      "bundledLineFlag": "Pakete dahil satır faturalandı (sezgisel)"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",

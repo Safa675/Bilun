@@ -1,3 +1,50 @@
+## Task: Action rows for the three showcase faults that had none — S3, S4, S8 (2026-10-18)
+
+### Goal
+The S3 (anaesthesia points), S4 (companion bed) and S8 (second package at full rate) bills each get an action row that carries the fault's money, in the workspace view that fits the money, and no existing amount changes.
+
+Started by the session that ran P7-lite (finding in its Results: "S3, S4 and S8 show their money in the KPIs but have no row that explains it"). Branch `claude/infallible-saha-4d427f`, cut from `origin/main` 3abe33a3 and merged with `claude/synthetic-v3-p7-lite-swap` e1aa315d (step 0: the registry and the 8-claim tables were missing on the base; the merge was a fast-forward).
+
+### Measured before (in-process, `compute_patient_billing_report`, not-exempt copay, one bill each)
+| Story | Money in the report | Where | Action rows today |
+|---|---|---|---|
+| S3 | `sgk_uplift_try` 928.09 | `anestezi_puani.confirmed_anestezi_try` (1 opportunity, `anestezi_puani_group`, code 615931) | 2, both `claim_checklist` |
+| S4 | `sgk_uplift_try` 370.50 | `refakatci.confirmed_refakat_try` (1 opportunity, 5 days x 74.10) | 2, both `claim_checklist` |
+| S8 | `audit_exposure_try` 3,584.80 (`sgk_uplift_try` 0) | `compute_audit_exposure_from_claims` = `ClaimUnbundlingFinding.session_violations` (P603840, billed 7,169.60, allowed 3,584.80 at 50%) | 3, all `claim_checklist` |
+
+### Decision (judgment, with the evidence)
+1. **S3 and S4 get rows, in the Revenue view** (`finding_type` `opportunity`, amount in `sgk_uplift_try`).
+   - The omission is a wiring gap, not a design choice. `BILLING_BLOCK_SPECS` (`block_registry.py`) feeds both blocks into `sgk_uplift_try` (`uplift_field` `confirmed_anestezi_try` / `confirmed_refakat_try`) and `test_claim_integration.py` pins them as components of the headline; every other uplift block that feeds the headline (strategy, session, DRG, blood, yatak, material, add-on) has rows in `collect_billing_actions`. History: commit 2fc03061 (2026-07-12) listed `billing_actions.py` as a touchpoint only for `yatak_puani`; its wiring list for the other puan motors (types, block_registry, patient_report, cohort_summary) leaves it out.
+   - The repo's own surfacing audit saw it and parked it: `scripts/audits/rule_surfacing/metadata.py:419-446` marks `recommend_icu_puani/yenidogan_yatak/refakatci/anestezi_puani` as `aggregate_only` with `hidden_reason` "Contributes to SGK/cohort totals but has no recommended-action row or patient section", and the audit plan (`plans/billing/2026-09-18-rule-engine-surfacing-audit-plan.md`, "Wave D") says "Decide explicitly whether aggregate-only outputs need row-level surfacing". This is that decision: yes for the two with a showcase story.
+   - SUT: both amounts are payable on the clause the rule cites. §2.2.2.A.(1) bills hizmet başı by EK-2/B (the anaesthesia groups 550130-550260 are EK-2/B §4 rows); §2.6.3.(2) pays the companion's bed and food at the EK-2/B "refakat" points when the provider bills it, on the physician's medical need and a stay certificate (§2.2.2.A.(3) sends the itemized bill to the same paragraph). That certificate is a precondition, so the S4 row keeps the detector's verification note in its `detail`.
+2. **S8 gets a row, in the Compliance view** (`finding_type` `compliance`, amount in `audit_risk_try`, never in `sgk_uplift_try`).
+   - The money is over-billing exposure, not a payable uplift: `claim_audit_exposure.py` ("over-billing risk — not SGK uplift"), the chatbot money rules (`sgk_uplift_try ≠ audit_exposure_try`), the registry (`effect_kind` `deduction_risk`). The Compliance view already shows `audit_exposure_try` as its first KPI above a findings table that stays empty for S8.
+   - The row schema and the UI were built for it: `_action_row` has had `audit_risk_try` since the first itemization commit (469959f9, 2026-06-19) and `recommendedActionAmountParts` renders it ("Audit risk"), but no producer ever set it.
+   - SUT §2.2.2.B.(3): in the same session the highest package pays in full and the others at 25% (a, same incision) or 50% (b, separate incision) of their own points. S8's second package is billed at 100%. The report takes the lenient 50% reading (3,584.80); the registry record takes the 25% reading (5,377.20) = 3,584.80 + 1,792.40, the "strict" part that the row's `detail` already states. This is the documented divergence `KNOWN_REPORT_DIVERGENCES["S8"]` (issue #311 item 6). The row carries what the report counts; no number changes.
+3. **Not by design, so not "stop".** No test, comment or doc says rows must not exist; the only record is the audit's `aggregate_only` parking above.
+
+### Design
+- `billing_actions.py`: `anestezi_puani` and `refakatci` join the uplift loop with the `yatak_puani` rule (rows with no positive SGK-counted uplift make no row: S2/S6 refakat rows of 0 TL and S1/S5/S8 package-window suppressions stay silent); their finding type is `opportunity`; the refakat note rides in `detail`. New surface `audit_exposure` (finding type `compliance`), one row per `risk_amount_try > 0` entry of the session, blood-component and bundled-line buckets of the unbundling finding.
+- The payment-method bucket makes no audit row: the same `mandated_package_gap` already produces the `billing_strategy` `compliance_violation` row for it, and a second row would double-list one finding. Its money stays in `audit_exposure_try` as today.
+- Row source: `recommend_audit_exposure_from_claims` (`claim_audit_exposure.py`), a new explicit step of `compute_patient_billing_report` (the surfacing audit models it as its own callable): one `analyze_claim_unbundling` pass gives the unchanged `audit_exposure_try` arithmetic and the rows, kept on `BillingActionReport.audit_exposure_rows` (the public response contract lists the field). The collector stays the single place that makes `recommended_actions`. A first version filled the rows inside `finalize_report_totals`; dropped, because a totals function would then originate findings.
+- Frontend: labels for the three surfaces and the new kinds (EN/TR), exactness source for the compact panel. Cohort compliance index (`COMPLIANCE_INDEX_SURFACES`) is not touched.
+- Derived pins that move by design: the engine proof JSON of S3, S4, S8 (one more `action` signal, `action_count` +1), the surfacing audit metadata and its committed outputs (`aggregate_only` 5 → 3: report totals, ICU and newborn bed money; the last two stay aggregate-only on purpose, no showcase story and a different amount rule); the public response contract (`public_contracts.json`, the new `audit_exposure_rows` section).
+
+### Subtasks
+- [x] 0. Worktree has the 8-patient data (merge of `claude/synthetic-v3-p7-lite-swap`, `cohort_registry.json` present, `claim_headers.parquet` 8 rows).
+- [x] 1. Read AGENTS.md and lessons; measure the report of each story; read the code, history, audit, SUT clauses; write this plan.
+- [ ] 2. Backend: collector rows for `anestezi_puani`, `refakatci`; `audit_exposure_rows` on the report and the `audit_exposure` rows; the unchanged `audit_exposure_try` value.
+- [ ] 3. Tests on the registry roles: S3, S4 rows with the registry amount; S8 row = the report's `audit_exposure_try` and the documented divergence; sum of the rows = the report's components for S1 to S4; no row for 0-TL refakat/anaesthesia opportunities; a guard that every block with an `uplift_field` has a surface or is on the named aggregate-only list.
+- [ ] 4. Surfacing audit: metadata for the changed callables, regenerate `reports/rule-engine-surfacing/*`, test counts.
+- [ ] 5. Engine proof: refresh S3/S4/S8 proof JSON (+1 `action` signal, `action_count` +1), README note; `test_cohort_engine_proof.py` green.
+- [ ] 6. Frontend: surface/kind labels (EN/TR), compact-panel exactness source, vitest, `tsc`, eslint.
+- [ ] 7. Gates one after the other: ruff on `src/ scripts/`, targeted tests, full pytest, `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, CI-image gate on a clone of the committed tip.
+- [ ] 8. Independent review of the diff (fresh agent, code only); fix what holds up.
+- [ ] 9. Commit on the branch; results in this file; Turkish report.
+
+### Out of Scope
+ICU and newborn bed rows (same fix shape, own amount rules, no showcase story); the payment-method bucket rows; the cohort compliance dashboard for the new surface; `clause_ref` links on the new rows; the S8 divergence itself (#311 item 6); prescription dose fields and drug prices; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`, `data/synthetic/demo_vignettes.json`; the staging update and the cache rebuild (Safa's call).
+
 ## Task: Synthetic v3 P7-lite — the 8 showcase patients replace the legacy 50 in `data/synthetic/sut/` (2026-10-18)
 
 ### Goal

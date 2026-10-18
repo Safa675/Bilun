@@ -70,6 +70,33 @@ describe("recommendedAction labels", () => {
     ).toBe("billing.recommendedActions.surfaces.yatakPuani");
   });
 
+  it("labels the fault rows of the anaesthesia, companion and audit-exposure surfaces", () => {
+    expect(recommendedActionSurfaceLabel(t, "anestezi_puani")).toBe(
+      "billing.recommendedActions.surfaces.anesteziPuani",
+    );
+    expect(recommendedActionSurfaceLabel(t, "refakatci")).toBe(
+      "billing.recommendedActions.surfaces.refakatci",
+    );
+    expect(recommendedActionSurfaceLabel(t, "audit_exposure")).toBe(
+      "billing.recommendedActions.surfaces.auditExposure",
+    );
+    expect(recommendedActionKindLabel(t, "anestezi_puani_group")).toBe(
+      "billing.recommendedActions.kinds.anesteziPuaniGroup",
+    );
+    expect(recommendedActionKindLabel(t, "refakatci_companion_bed")).toBe(
+      "billing.recommendedActions.kinds.refakatciCompanionBed",
+    );
+    expect(recommendedActionKindLabel(t, "session_point_violation")).toBe(
+      "billing.recommendedActions.kinds.sessionPointViolation",
+    );
+    expect(recommendedActionKindLabel(t, "blood_component_partial_bill")).toBe(
+      "billing.recommendedActions.kinds.bloodComponentPartialBill",
+    );
+    expect(recommendedActionKindLabel(t, "bundled_line_flag")).toBe(
+      "billing.recommendedActions.kinds.bundledLineFlag",
+    );
+  });
+
   it("humanizes unmapped snake_case kinds instead of Unknown", () => {
     expect(recommendedActionKindLabel(t, "brand_new_detector")).toBe(
       "Brand New Detector",
@@ -213,6 +240,56 @@ describe("recommendedActions", () => {
     expect(title).toContain("KR1152");
     expect(title).toContain("STENT, KORONER");
     expect(title).not.toContain("P700930");
+  });
+
+  it("shows the anaesthesia and companion rows as SGK uplift and the exposure row as audit risk", () => {
+    const anaesthesia: RecommendedActionItem = {
+      action_id: "anestezi_puani:F-3:0",
+      surface: "anestezi_puani",
+      kind: "anestezi_puani_group",
+      procedure_code: "615931",
+      sgk_uplift_try: 928.09,
+      finding_type: "opportunity",
+    };
+    expect(recommendedActionTitle(t, anaesthesia)).toBe(
+      'billing.recommendedActions.titleWithCode:{"kind":"billing.recommendedActions.kinds.anesteziPuaniGroup","code":"615931"}',
+    );
+    expect(recommendedActionAmountParts(t, anaesthesia)).toEqual({
+      label: "billing.recommendedActions.amountSgkUplift",
+      value: 928.09,
+    });
+    expect(recommendedActionLineCodes(anaesthesia).procedures).toEqual(["615931"]);
+
+    const companion: RecommendedActionItem = {
+      action_id: "refakatci:F-4:0",
+      surface: "refakatci",
+      kind: "refakatci_companion_bed",
+      sgk_uplift_try: 370.5,
+      finding_type: "opportunity",
+    };
+    expect(recommendedActionTitle(t, companion)).toBe(
+      "billing.recommendedActions.kinds.refakatciCompanionBed",
+    );
+    expect(recommendedActionAmountParts(t, companion)).toEqual({
+      label: "billing.recommendedActions.amountSgkUplift",
+      value: 370.5,
+    });
+
+    const exposure: RecommendedActionItem = {
+      action_id: "audit_exposure:F-8:session_point_violation:ISL-1",
+      surface: "audit_exposure",
+      kind: "session_point_violation",
+      procedure_code: "P603840",
+      procedure_name: "Greftsiz umblikal herni onarımı",
+      audit_risk_try: 3584.8,
+      billed_try: 3584.8,
+      finding_type: "compliance",
+    };
+    expect(recommendedActionAmountParts(t, exposure)).toEqual({
+      label: "billing.recommendedActions.amountAuditRisk",
+      value: 3584.8,
+    });
+    expect(recommendedActionLineCodes(exposure).procedures).toEqual(["P603840"]);
   });
 
   it("maps recommended actions to per-section invoice-line codes for highlighting", () => {

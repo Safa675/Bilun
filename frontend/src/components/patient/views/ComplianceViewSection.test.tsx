@@ -74,6 +74,51 @@ describe("ComplianceViewSection", () => {
     expect(html).toContain("Laboratuvar");
   });
 
+  it.each([
+    ["en", ["3,584.80 TRY", "Audit exposure", "Session factor exceeded", "P603840", "Audit risk", "2.2.2.B.b"]],
+    ["tr", ["₺3.584,80", "Denetim riski", "Seans oranı aşıldı", "P603840", "2.2.2.B.b"]],
+  ] as const)("explains the audit-exposure KPI of a second package billed at full rate with one row (%s)", (locale, expected) => {
+    const report = {
+      ...baseReport,
+      patient_id: "P-S8",
+      audit_exposure_try: 3584.8,
+      action_count: 1,
+      recommended_actions: [
+        {
+          action_id: "audit_exposure:F-8:session_point_violation:ISL-1",
+          surface: "audit_exposure",
+          kind: "session_point_violation",
+          finding_type: "compliance",
+          claim_id: "F-8",
+          procedure_code: "P603840",
+          procedure_name: "Greftsiz umblikal herni onarımı",
+          audit_risk_try: 3584.8,
+          billed_try: 3584.8,
+          sut_section_id: "2.2.2.B.b",
+          detail: "Secondary procedure billed at full rate; SUT §2.2.2.B.b requires 50% point factor in same session.",
+        },
+      ],
+    } as unknown as BillingActionReport;
+
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} />
+      </WorkspaceProvider>,
+      locale,
+    );
+    const beforeTable = html.slice(0, html.indexOf('id="claim-compliance"'));
+
+    // The risk KPI and the billed-at-risk KPI both show the row's amount; no partial-coverage note.
+    expect(beforeTable.split(locale === "en" ? "3,584.80 TRY" : "₺3.584,80")).toHaveLength(3);
+    expect(beforeTable).not.toContain(locale === "en" ? "Partial total" : "Kısmi toplam");
+    expect(beforeTable).not.toContain(locale === "en" ? "None of the" : "hiçbirinde");
+    // One finding, and the table under the KPIs lists it.
+    expect(html.match(/<table/g)?.length).toBe(1);
+    for (const text of expected) {
+      expect(html).toContain(text);
+    }
+  });
+
   it("matches KPI findings value with the unified rows count", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>

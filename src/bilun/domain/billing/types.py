@@ -792,6 +792,9 @@ class BillingActionReport:
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0
     total_recoverable_try: float | None = None
+    # The entries behind ``audit_exposure_try`` that carry risk (session factor, blood
+    # component, bundled lines); ``collect_billing_actions`` makes ``audit_exposure`` rows.
+    audit_exposure_rows: list[dict[str, Any]] = field(default_factory=list)
     recommended_actions: list[dict[str, Any]] = field(default_factory=list)
     action_count: int = 0
     priority: str = "low"

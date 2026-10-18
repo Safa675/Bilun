@@ -19,6 +19,7 @@ from src.bilun.domain.billing.claim_refakatci import recommend_refakatci_from_cl
 from src.bilun.domain.billing.claim_anestezi_puani import (
     recommend_anestezi_puani_from_claims,
 )
+from src.bilun.domain.billing.claim_audit_exposure import recommend_audit_exposure_from_claims
 from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
@@ -213,7 +214,12 @@ def compute_patient_billing_report(
     )
     report.materials = precheck_materials_from_claims(claim_context)
 
-    finalize_report_totals(report, claim_context=claim_context)
+    # One unbundling pass: the rows go to the report, the total to the headline totals.
+    audit_exposure = recommend_audit_exposure_from_claims(claim_context)
+    report.audit_exposure_rows = audit_exposure.rows
+    finalize_report_totals(
+        report, claim_context=claim_context, audit_exposure=audit_exposure
+    )
     report.recommended_actions = collect_billing_actions(report)
     report.action_count = len(report.recommended_actions)
     finalize_report_exactness(report)
