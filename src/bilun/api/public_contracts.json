@@ -1920,6 +1920,7 @@
           "actual_billed_try": true,
           "bed_code": true,
           "days": true,
+          "bundled_days": true,
           "puan": true,
           "same_day_stay": true,
           "rooming_in": true

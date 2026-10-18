@@ -215,6 +215,7 @@ def _line(
     quantity: int = 1,
     line_id: str | None = None,
     procedure_date: date = date(2026, 7, 10),
+    category: str = "islem",
 ):
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
@@ -226,7 +227,7 @@ def _line(
         procedure_date=procedure_date,
         procedure_code=code,
         procedure_name="bed",
-        procedure_category="islem",
+        procedure_category=category,
         quantity=quantity,
         unit_price_try=Decimal("0"),
         billed_amount_try=Decimal(billed),
@@ -416,3 +417,61 @@ def test_the_gate_is_the_icu_motors_own_predicate() -> None:
     assert claim_has_icu_code([_line("510090", "0")]) is True
     assert claim_has_icu_code([_line("510070", "0"), _line("520010", "0")]) is False
     assert claim_has_icu_code([]) is False
+
+
+# --- EK-2/C package window (SUT 2.2.2.B-1(1),(3)-(4)): the package includes the bed -----------------------
+# Group B = 10 calendar days, group E = 3, counted from the package's procedure date (PACKAGE_WINDOW_DAYS).
+
+
+def _package(code: str, procedure_date: date):
+    return _line(code, "5000", procedure_date=procedure_date, category="paket", line_id=f"PK-{code}")
+
+
+def _ten_day_header():
+    return _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 19))
+
+
+def test_a_group_b_package_bundles_the_whole_stay_and_the_newborn_bed_expects_nothing() -> None:
+    """The probe bill: 10 days, group-B package P600040 from day 2. The standard-bed motor already bundled
+    all 10 days; this motor counted 10 x 440.98 = 4,409.80 TL."""
+    [opp] = _detect([_package("P600040", date(2026, 7, 11))], header=_ten_day_header())
+
+    assert opp["days"] == 0
+    assert opp["bundled_days"] == 10
+    assert opp["expected_try"] == 0.0
+    assert opp["recoverable_uplift_try"] == 0.0
+    assert "10 of 10 day(s) are bundled into the EK-2/C package window" in opp["detail"]
+
+
+def test_a_short_package_window_leaves_the_days_after_it() -> None:
+    """Group E: 3 days from 10 July, window through 12 July; 13-19 July (7 days) are newborn bed days."""
+    [opp] = _detect([_package("P600330", date(2026, 7, 10))], header=_ten_day_header())
+
+    assert opp["days"] == 7
+    assert opp["bundled_days"] == 3
+    assert opp["expected_try"] == pytest.approx(7 * 440.98, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(7 * 440.98, abs=0.01)
+
+
+def test_the_window_and_the_netting_work_together() -> None:
+    lines = [_package("P600330", date(2026, 7, 10)), _line("510070", "440.98", procedure_date=date(2026, 7, 13))]
+    [opp] = _detect(lines, header=_ten_day_header())
+
+    assert (opp["days"], opp["bundled_days"]) == (7, 3)
+    assert opp["actual_billed_try"] == pytest.approx(440.98, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(6 * 440.98, abs=0.01)
+
+
+def test_a_package_dated_outside_the_stay_opens_no_window() -> None:
+    [opp] = _detect([_package("P600040", date(2026, 8, 1))], header=_ten_day_header())
+
+    assert (opp["days"], opp["bundled_days"]) == (10, 0)
+    assert opp["expected_try"] == pytest.approx(4409.8, abs=0.01)
+
+
+def test_without_a_package_nothing_is_bundled() -> None:
+    [opp] = _detect([_line("520010", "10")])
+
+    assert opp["bundled_days"] == 0
+    assert opp["days"] == 3
+    assert "bundled into" not in opp["detail"]

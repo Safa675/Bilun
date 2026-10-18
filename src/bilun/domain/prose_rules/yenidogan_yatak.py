@@ -23,7 +23,10 @@ below applies. The same days are not expected as standard bed by the
 standard-bed motor (``claim_yatak_newborn_overlap``).
 
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
-discharge day IS billed, matching the yatak puani convention.
+discharge day IS billed, matching the yatak puani convention. Days inside an
+EK-2/C package window (SUT §2.2.2.B-1(1), (3)-(4): the package includes the bed
+from admission through its window) are not expected: ``claim_package_window`` of
+the standard-bed motor decides them, so both bed motors agree on the days.
 
 Detection: a claim is "newborn" when its diagnoses contain an ICD-10 code
 starting with ``Z38`` (liveborn) or in the ``P00–P96`` perinatal range, OR
@@ -52,6 +55,10 @@ from src.bilun.domain.prose_rules.icu_puani import claim_has_icu_code
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
+)
+from src.bilun.domain.prose_rules.yatak_puani import (
+    claim_package_window,
+    counts_against_expected_days,
 )
 
 if TYPE_CHECKING:
@@ -194,9 +201,19 @@ def detect_yenidogan_yatak_opportunities(
             continue
 
         # Inclusive LOS: discharge day IS billed (+1), matching yatak puani.
-        days = (claim.discharge_date - claim.admission_date).days + 1
-        if days <= 0:
+        gross_days = (claim.discharge_date - claim.admission_date).days + 1
+        if gross_days <= 0:
             continue
+
+        # Package bundling (§2.2.2.B-1(1), (3)-(4)), read as the standard-bed motor
+        # reads it: only the days after the package window are newborn bed days.
+        window = claim_package_window(claim, claim_procs)
+        days = (
+            max((claim.discharge_date - window.end).days, 0)
+            if window is not None
+            else gross_days
+        )
+        bundled_days = gross_days - days
 
         visit_date = claim.admission_date or claim.claim_start_date
         kuvoz_rate = _daily_rate(_BED_KUVOZ, visit_date)
@@ -236,7 +253,13 @@ def detect_yenidogan_yatak_opportunities(
         expected = _money(days * rate)
         # Net out the billed newborn bed lines (510070 + 510081), like the ICU and
         # standard-bed motors, so the recoverable amount is only the unbilled part.
-        actual_billed_try = _money(sum(float(line.billed_amount_try) for line in bed_lines))
+        actual_billed_try = _money(
+            sum(
+                float(line.billed_amount_try)
+                for line in bed_lines
+                if counts_against_expected_days(line, window)
+            )
+        )
         recoverable_try = _money(max(0.0, expected - actual_billed_try))
         same_day = days == 1 and claim.admission_date == claim.discharge_date
 
@@ -244,6 +267,13 @@ def detect_yenidogan_yatak_opportunities(
             f"Yenidoğan yatağı ({bed_code}): {days} bed-day(s) at {rate:.2f} TRY/day",
             f"= {expected:.2f} TRY (inclusive LOS, discharge day billed).",
         ]
+        if window is not None:
+            detail_parts.append(
+                f"{bundled_days} of {gross_days} day(s) are bundled into the "
+                f"{'mandated ' if window.mandated else ''}EK-2/C package window "
+                f"(package {window.start}, window through {window.end}); only the "
+                "days after it are newborn bed days."
+            )
         if is_rooming_in:
             detail_parts.append(
                 "Rooming-in ('anne yanında') episode — Kot (510081) is not "
@@ -275,6 +305,7 @@ def detect_yenidogan_yatak_opportunities(
                 "claim_id": claim.claim_id,
                 "bed_code": bed_code,
                 "days": days,
+                "bundled_days": bundled_days,
                 "puan": _puan_for(bed_code, visit_date),
                 "expected_try": expected,
                 "actual_billed_try": actual_billed_try,
