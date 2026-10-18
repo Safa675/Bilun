@@ -1524,3 +1524,74 @@ describe("RecommendedActionsPanel fault rows of the anaesthesia, companion-bed a
     expect(html).toContain("370.50 TRY");
   });
 });
+
+describe("RecommendedActionsPanel intensive-care row", () => {
+  // Three different statuses (the report, the anaesthesia block, the ICU block): a row that reads the
+  // wrong source, or none, shows the wrong chip.
+  const icuReport = {
+    patient_id: "P-ICU",
+    exactness_status: "exact",
+    priority: "medium",
+    total_recoverable_try: 3340.84,
+    action_count: 2,
+    anestezi_puani: { exactness_status: "missing_exact_inputs" },
+    icu_puani: { exactness_status: "partial_exact" },
+    recommended_actions: [
+      {
+        action_id: "icu_puani:F-5:0",
+        surface: "icu_puani",
+        kind: "icu_puani_yogun_bakim",
+        finding_type: "opportunity",
+        sgk_uplift_try: 2412.75,
+        sut_section_id: "2.4.4.H",
+        detail: "ICU-DETAIL",
+      },
+      {
+        action_id: "anestezi_puani:F-3:0",
+        surface: "anestezi_puani",
+        kind: "anestezi_puani_group",
+        finding_type: "opportunity",
+        procedure_code: "615931",
+        sgk_uplift_try: 928.09,
+        sut_section_id: "2.2.2.A",
+        detail: "ANESTHESIA-DETAIL",
+      },
+    ],
+  } as unknown as BillingActionReport;
+
+  it.each(["en", "tr"] as const)("lists the intensive-care row in the revenue filter with its labels, amount and detail in %s", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={icuReport} findingFilter="opportunity" />,
+      locale,
+    );
+
+    expect(html).toContain(locale === "en" ? ">Intensive care (yoğun bakım puanı)<" : ">Yoğun bakım puanı<");
+    expect(html).toContain(locale === "en" ? ">Intensive care charge (510090 / P55200x)<" : ">Yoğun bakım ücreti (510090 / P55200x)<");
+    expect(html).toContain("2412.75 TRY");
+    expect(html).toContain("ICU-DETAIL");
+    expect(html).toContain("2.4.4.H");
+    // A humanized fallback would read "Icu Puani".
+    expect(html).not.toContain("Icu Puani");
+  });
+
+  it.each(["en", "tr"] as const)("takes the intensive-care source exactness from the icu_puani block in the compact %s panel", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={icuReport} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    const rowOf = (actionId: string) =>
+      html.split('data-action-id="').find((chunk) => chunk.startsWith(`${actionId}"`)) ?? "";
+    const exact = locale === "en" ? ">Exact<" : ">Kesin<";
+    const partial = locale === "en" ? ">Partial exact<" : ">Kısmi kesin<";
+    const missing = locale === "en" ? ">Missing exact inputs<" : ">Kesin girdiler eksik<";
+
+    expect(rowOf("icu_puani:F-5:0")).toContain(partial);
+    expect(rowOf("icu_puani:F-5:0")).not.toContain(exact);
+    expect(rowOf("icu_puani:F-5:0")).not.toContain(missing);
+    expect(rowOf("anestezi_puani:F-3:0")).toContain(missing);
+    expect(rowOf("anestezi_puani:F-3:0")).not.toContain(partial);
+    expect(html).not.toContain(locale === "en" ? "Unavailable" : "Kullanılamıyor");
+    expect(html).toContain("2412.75 TRY");
+    expect(html).toContain("928.09 TRY");
+  });
+});

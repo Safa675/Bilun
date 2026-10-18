@@ -267,9 +267,10 @@ def test_focused_checkpoint_keeps_draft_review_and_money_hidden() -> None:
         "review_and_financial_evidence_visibility": "draft_gate_hidden",
         "release_ready": False,
     }
-    # Report totals, ICU and newborn bed money. The anaesthesia and companion bed motors left this list when
-    # they got action rows (tasks/todo.md, "Action rows for the three showcase faults").
-    assert payload["counts"]["aggregate_only_findings"] == 3
+    # Report totals and newborn bed money. The anaesthesia and companion bed motors left this list when they
+    # got action rows (tasks/todo.md, "Action rows for the three showcase faults"), the ICU motor when it did
+    # ("Finish the wiring of the four puan motors"); the newborn amount is not netted against billed lines yet.
+    assert payload["counts"]["aggregate_only_findings"] == 2
     aggregate_only = {
         row["runtime_id"]
         for row in payload["rows"]
@@ -277,7 +278,6 @@ def test_focused_checkpoint_keeps_draft_review_and_money_hidden() -> None:
     }
     assert aggregate_only == {
         "compute_patient_billing_report:finalize_report_totals",
-        "compute_patient_billing_report:recommend_icu_puani_from_claims",
         "compute_patient_billing_report:recommend_yenidogan_yatak_from_claims",
     }
 

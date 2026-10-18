@@ -131,6 +131,33 @@ describe("workspaceViews", () => {
     );
   });
 
+  it("puts the intensive-care row in the revenue view and in its uplift total", () => {
+    const withIcu = {
+      patient_id: "P-ICU",
+      sgk_uplift_try: 2412.75,
+      recommended_actions: [
+        {
+          action_id: "i1",
+          surface: "icu_puani",
+          kind: "icu_puani_yogun_bakim",
+          finding_type: "opportunity",
+          sgk_uplift_try: 2412.75,
+          sut_section_id: "2.4.4.H",
+        },
+      ],
+    } as unknown as BillingActionReport;
+
+    expect(viewActions(withIcu, "revenue").map((a) => a.action_id)).toEqual(["i1"]);
+    expect(viewActions(withIcu, "compliance")).toEqual([]);
+    expect(viewActions(withIcu, "audit")).toEqual([]);
+    // The revenue KPI is the sum of the revenue rows.
+    const revenueRows = viewActions(withIcu, "revenue");
+    expect(sumKnownAmounts(revenueRows.map((a) => a.sgk_uplift_try)).total).toBeCloseTo(
+      recoverableUplift(withIcu) ?? NaN,
+      2,
+    );
+  });
+
   it("sums billed-at-risk amounts for the compliance view", () => {
     expect(complianceBilledAtRisk(report)).toBe(100);
     expect(complianceBilledAtRiskSummary(report)).toEqual({ total: 100, known: 1, count: 1 });

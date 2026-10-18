@@ -77,6 +77,7 @@ const billing = {
       "yatakPuani": "Bed-day (yatak puanı)",
       "anesteziPuani": "Anesthesia (anestezi puanı)",
       "refakatci": "Companion bed (refakatçi)",
+      "icuPuani": "Intensive care (yoğun bakım puanı)",
       "auditExposure": "Audit exposure"
     },
     "kinds": {
@@ -96,6 +97,7 @@ const billing = {
       "yatakPuaniStandardBed": "Standard bed-day charge",
       "anesteziPuaniGroup": "Anesthesia group charge",
       "refakatciCompanionBed": "Companion bed charge (510121)",
+      "icuPuaniYogunBakim": "Intensive care charge (510090 / P55200x)",
       "sessionPointViolation": "Session factor exceeded",
       "bloodComponentPartialBill": "Blood component billed above its share",
       "bundledLineFlag": "Package-included line billed (heuristic)"

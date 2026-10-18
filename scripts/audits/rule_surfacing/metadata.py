@@ -419,12 +419,13 @@ PATIENT_REPORT_META: dict[str, dict[str, Any]] = {
         "visibility": "patient_visible",
     },
     "recommend_icu_puani_from_claims": {
+        "surface": "icu_puani",
         "finding_type": "opportunity",
+        "patient_ui": "RecommendedActionsPanel",
         "money": "priced_opportunity",
         "money_fields": ["sgk_uplift_try"],
         "included": True,
-        "visibility": "aggregate_only",
-        "hidden_reason": "Contributes to SGK/cohort totals but has no recommended-action row or patient section.",
+        "visibility": "patient_visible",
     },
     "recommend_yenidogan_yatak_from_claims": {
         "finding_type": "opportunity",

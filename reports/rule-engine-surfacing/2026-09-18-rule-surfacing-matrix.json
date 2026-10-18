@@ -20,14 +20,14 @@
     "projection_contract": "serialized RuleFinding/RuleEvaluation rows are projected generically; no rule-ID allowlist controls patient or cohort projection"
   },
   "counts": {
-    "aggregate_only_findings": 3,
+    "aggregate_only_findings": 2,
     "cohort_visible_findings": 1304,
     "distinct_emitted_rule_ids_or_kinds": 1942,
     "duplicate_surfaced_findings": 1398,
     "financial_findings": 362,
     "hidden_runtime_findings": 535,
     "nonfinancial_findings": 1580,
-    "patient_visible_findings": 1404,
+    "patient_visible_findings": 1405,
     "registry_rule_families": 46,
     "runtime_detectors_adapters": 83
   },
@@ -8524,12 +8524,17 @@
       ],
       "entrypoint": "compute_patient_billing_report",
       "evidence_files": [
+        "frontend/src/components/patient/SutBillingReportSections.tsx",
+        "frontend/src/components/patient/billing-report/RecommendedActionsPanel.tsx",
+        "frontend/src/components/patient/views/AuditViewSection.tsx",
+        "frontend/src/components/patient/views/RevenueViewSection.tsx",
+        "src/bilun/domain/billing/billing_actions.py",
         "src/bilun/domain/billing/claim_icu_puani.py",
         "src/bilun/domain/billing/patient_report.py"
       ],
       "finding_type": "opportunity",
       "gating_condition": "claim_context is not None AND claim_context.procedure_lines",
-      "hidden_reason": "Contributes to SGK/cohort totals but has no recommended-action row or patient section.",
+      "hidden_reason": null,
       "included_in_totals": true,
       "inventory_level": "runtime_detector",
       "legacy_monetary_hint_unconfirmed": false,
@@ -8539,8 +8544,8 @@
       ],
       "money_semantics": "priced_opportunity",
       "patient_deep_link_sections": [],
-      "patient_ui_surface": null,
-      "recommended_action_surface": null,
+      "patient_ui_surface": "RecommendedActionsPanel",
+      "recommended_action_surface": "icu_puani",
       "registry_rule_id": [],
       "regulatory_source": [],
       "report_field": "icu_puani",
@@ -8553,7 +8558,7 @@
       "source_lines": [
         177
       ],
-      "visibility_status": "aggregate_only"
+      "visibility_status": "patient_visible"
     },
     {
       "callable": "src.bilun.domain.billing.claim_material_uplift.recommend_material_uplift_from_claims",

@@ -32,6 +32,7 @@ _OPPORTUNITY_SURFACES: frozenset[str] = frozenset(
         "drg_uplift",
         "blood_uplift",
         "yatak_puani",
+        "icu_puani",
         "anestezi_puani",
         "refakatci",
         "material_uplift",
@@ -195,22 +196,29 @@ def _action_row(
 
 
 # Puan motors whose rows must add up to the block's component of ``sgk_uplift_try``
-# (``confirmed_anestezi_try`` / ``confirmed_refakat_try``).
-_SGK_COUNTED_ONLY_SURFACES: frozenset[str] = frozenset({"anestezi_puani", "refakatci"})
+# (``confirmed_anestezi_try`` / ``confirmed_refakat_try`` / ``confirmed_icu_try``), with the field that
+# component reads when an opportunity has no ``recoverable_uplift_try``. The newborn bed motor is not
+# here: its amount is not netted against the billed bed lines yet, so a row would offer money that is
+# already billed (tasks/todo.md, "Finish the wiring of the four puan motors").
+_SGK_COUNTED_FALLBACK_FIELD: dict[str, str] = {
+    "anestezi_puani": "expected_try",
+    "refakatci": "expected_try",
+    "icu_puani": "total_try",
+}
 
 
-def _sgk_counted_uplift(row: dict[str, Any]) -> float | None:
+def _sgk_counted_uplift(row: dict[str, Any], fallback_field: str) -> float | None:
     """The uplift an opportunity adds to the SGK headline, or None when it adds nothing.
 
-    Mirrors ``confirmed_anestezi_try`` / ``confirmed_refakat_try``: a row flagged out of the
-    SGK total makes no action row, and neither does one without a positive amount (companion
-    days already billed; day-case, ICU and package-window suppressions).
+    Mirrors the block's ``confirmed_*_try``: a row flagged out of the SGK total makes no action
+    row, and neither does one without a positive amount (companion days or ICU lines already
+    billed; day-case, ICU and package-window suppressions).
     """
     if not row.get("included_in_sgk_total", True):
         return None
     amount = row.get("recoverable_uplift_try")
     if amount is None:
-        amount = row.get("expected_try") or 0.0
+        amount = row.get(fallback_field) or 0.0
     return float(amount) if float(amount) > 0 else None
 
 
@@ -219,6 +227,18 @@ def _detail_with_notes(row: dict[str, Any]) -> str | None:
     detail = row.get("detail")
     notes = [str(note) for note in row.get("suppression_notes") or [] if note]
     return " ".join([str(detail), *notes]) if detail and notes else detail
+
+
+def _icu_detail(row: dict[str, Any]) -> str | None:
+    """The ICU detail states the full expected charge; the row is what the billed ICU lines leave."""
+    detail = row.get("detail")
+    billed = float(row.get("actual_billed_try") or 0.0)
+    if not detail or billed <= 0:
+        return detail
+    return (
+        f"{detail} Already billed on ICU lines (510090 / P55200x): {billed:.2f} TRY; "
+        "this row is the unbilled remainder."
+    )
 
 
 def _copay_exemption_rows(copay: CopayOptimization) -> list[dict[str, Any]]:
@@ -352,6 +372,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("drg_uplift", report.drg_uplift, "recoverable_uplift_try"),
         ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),
         ("yatak_puani", report.yatak_puani, "recoverable_uplift_try"),
+        ("icu_puani", report.icu_puani, "recoverable_uplift_try"),
         ("anestezi_puani", report.anestezi_puani, "recoverable_uplift_try"),
         ("refakatci", report.refakatci, "recoverable_uplift_try"),
         ("material_uplift", report.material_uplift, "recoverable_uplift_try"),
@@ -371,11 +392,11 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 if raw_uplift is not None and float(raw_uplift) <= 0:
                     continue
                 sgk_uplift = raw_uplift
-            elif surface_name in _SGK_COUNTED_ONLY_SURFACES:
-                sgk_uplift = _sgk_counted_uplift(row)
+            elif surface_name in _SGK_COUNTED_FALLBACK_FIELD:
+                sgk_uplift = _sgk_counted_uplift(row, _SGK_COUNTED_FALLBACK_FIELD[surface_name])
                 if sgk_uplift is None:
                     continue
-                detail = _detail_with_notes(row)
+                detail = _icu_detail(row) if surface_name == "icu_puani" else _detail_with_notes(row)
             else:
                 sgk_uplift = row.get(uplift_field) or row.get("recoverable_uplift_try")
             actions.append(

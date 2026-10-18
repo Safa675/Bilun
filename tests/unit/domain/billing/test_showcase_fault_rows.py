@@ -382,10 +382,11 @@ class TestPuanRowsAreOnlyForMoneyThatCounts:
 
 
 # Blocks that feed `sgk_uplift_try` through `uplift_field` but make no action row yet. A named, decided gap
-# (plan: tasks/todo.md, "Action rows for the three showcase faults"): ICU and newborn bed money keep their
-# own amount rules and have no showcase story. When one of them gets rows, remove it here; a new motor that
-# is added to `BILLING_BLOCK_SPECS` without rows fails this guard.
-_AGGREGATE_ONLY_BLOCKS = frozenset({"icu_puani", "yenidogan_yatak"})
+# (plan: tasks/todo.md, "Finish the wiring of the four puan motors"): the newborn bed amount is not netted
+# against the billed 510070/510081 lines, so a row would tell an officer to recover what is already billed
+# (strict xfail in `test_icu_and_newborn_rows.py`). When it gets rows, remove it here; a new motor that is
+# added to `BILLING_BLOCK_SPECS` without rows fails this guard.
+_AGGREGATE_ONLY_BLOCKS = frozenset({"yenidogan_yatak"})
 
 
 def _block_with_one_positive_opportunity(attr: str) -> BillingActionReport:
