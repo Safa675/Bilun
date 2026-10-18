@@ -217,13 +217,46 @@ class TestPipeline:
 
     @pytest.mark.parametrize("department", ["Pediatri", "Çocuk Sağlığı ve Hastalıkları"])
     def test_a_correctly_billed_pediatric_admission_gets_no_kuvoz_row(self, department: str) -> None:
-        """Review F1: with the broad department signal every pediatric ward stay is read as a newborn one; billed
-        on the standard bed, as such a stay is, it must not show a Kuvöz row."""
+        """Review F1, kept: billed on the standard bed, as a pediatric stay is, it shows no Kuvöz row. (A pediatric
+        ward is no newborn signal since the detection was narrowed; the stand-down on a billed standard bed is
+        pinned for a real newborn signal by `test_a_stay_billed_on_the_standard_bed_is_the_standard_bed_motors_alone`.)"""
         report = _report(newborn=False, department=department, icd10="J18.9", standard_bed_billed="667.08")
 
         assert report.yenidogan_yatak.opportunities == []
         assert report.yatak_puani.confirmed_yatak_try == 0.0
         assert not [a for a in report.recommended_actions if a["surface"] in ("yenidogan_yatak", "yatak_puani")]
+
+    @pytest.mark.parametrize("department", ["Pediatri", "PEDİATRİ", "Çocuk Sağlığı ve Hastalıkları", "Çocuk Cerrahisi"])
+    def test_a_pediatric_admission_with_no_bed_billed_is_a_standard_bed_stay_not_a_kuvoz_one(
+        self, department: str
+    ) -> None:
+        """Newborn detection: a pediatric ward is no newborn signal (the claim has no age; SUT's newborn is 0-28
+        days). A 3-day pneumonia stay with no bed billed showed a 1,322.94 TL Kuvöz row; it is the standard-bed
+        motor's stay like any other inpatient claim, and the two bed motors still count each day once."""
+        report = _report(newborn=False, department=department, icd10="J18.9")
+
+        assert report.yenidogan_yatak.opportunities == []
+        [standard] = report.yatak_puani.opportunities
+        assert (standard["gross_bed_days"], standard["bed_days"]) == (3, 3)
+        assert "newborn_overlap_days" not in standard
+        assert standard["recoverable_uplift_try"] == pytest.approx(667.08, abs=0.005)
+        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(667.08, abs=0.005)
+        assert not [a for a in report.recommended_actions if a["surface"] == "yenidogan_yatak"]
+
+    @pytest.mark.parametrize("department", ["YENİDOĞAN", "YENIDOGAN", "Yenidogan", "Neonatoloji", "NEONATOLOJİ"])
+    def test_a_newborn_named_department_without_a_newborn_code_is_a_kuvoz_stay_in_any_spelling(
+        self, department: str
+    ) -> None:
+        """The Turkish capitals, the ASCII spelling and 'neonatoloji' used to read as no signal and left the stay to
+        the standard bed; they read like 'Yenidoğan' now, and the standard-bed motor gives the 3 days up."""
+        report = _report(newborn=False, department=department, icd10="J18.9")
+
+        [newborn] = report.yenidogan_yatak.opportunities
+        [standard] = report.yatak_puani.opportunities
+        assert newborn["days"] == 3 and newborn["expected_try"] == pytest.approx(1322.94, abs=0.005)
+        assert (standard["bed_days"], standard["newborn_overlap_days"]) == (0, 3)
+        assert report.yatak_puani.confirmed_yatak_try == 0.0
+        assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == pytest.approx(1322.94, abs=0.005)
 
     def test_a_negative_standard_bed_line_recovers_nothing_on_the_days_the_newborn_bed_took(self) -> None:
         """Review F3: a credit line of -44.47 used to leave 44.47 recoverable on a day with expected 0."""
