@@ -38,6 +38,20 @@ if TYPE_CHECKING:
         target_signal_found,
         ui_signals,
     )
+    from .plausibility import (
+        CHECKS as PLAUSIBILITY_CHECKS,
+        PlausibilityContext,
+        PlausibilityError,
+        Problem as PlausibilityProblem,
+        check_plausibility,
+    )
+    from .plausibility_all import ALL_CHECKS as ALL_PLAUSIBILITY_CHECKS, check_all_plausibility
+    from .plausibility_clean import (
+        CHECKS as CLEAN_PLAUSIBILITY_CHECKS,
+        CleanPlausibilityContext,
+        Problem as CleanPlausibilityProblem,
+        check_clean_plausibility,
+    )
 
 from .catalogs import EK3F1_FROM, CatalogError, CatalogRow, CohortCatalogs
 from .clean import (
@@ -188,6 +202,23 @@ _ENGINE_PROOF_EXPORTS = frozenset(
 )
 
 
+#: public name -> (module, attribute): the plausibility modules load the pathways and faults packages,
+#: so they are imported on first use (the two check families keep their own `CHECKS` and `Problem`).
+_PLAUSIBILITY_EXPORTS = {
+    "ALL_PLAUSIBILITY_CHECKS": ("plausibility_all", "ALL_CHECKS"),
+    "CLEAN_PLAUSIBILITY_CHECKS": ("plausibility_clean", "CHECKS"),
+    "CleanPlausibilityContext": ("plausibility_clean", "CleanPlausibilityContext"),
+    "CleanPlausibilityProblem": ("plausibility_clean", "Problem"),
+    "PLAUSIBILITY_CHECKS": ("plausibility", "CHECKS"),
+    "PlausibilityContext": ("plausibility", "PlausibilityContext"),
+    "PlausibilityError": ("plausibility", "PlausibilityError"),
+    "PlausibilityProblem": ("plausibility", "Problem"),
+    "check_all_plausibility": ("plausibility_all", "check_all_plausibility"),
+    "check_clean_plausibility": ("plausibility_clean", "check_clean_plausibility"),
+    "check_plausibility": ("plausibility", "check_plausibility"),
+}
+
+
 def __getattr__(name: str) -> Any:
     if name in _BUILD_EXPORTS:
         from . import build as _build
@@ -197,11 +228,27 @@ def __getattr__(name: str) -> Any:
         from . import engine_proof as _engine_proof
 
         return getattr(_engine_proof, name)
+    if name in _PLAUSIBILITY_EXPORTS:
+        from importlib import import_module
+
+        module, attribute = _PLAUSIBILITY_EXPORTS[name]
+        return getattr(import_module(f"{__name__}.{module}"), attribute)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 __all__ = [
+    "ALL_PLAUSIBILITY_CHECKS",
     "ANADATA_CLEAN_SCHEMA",
+    "CLEAN_PLAUSIBILITY_CHECKS",
+    "PLAUSIBILITY_CHECKS",
+    "CleanPlausibilityContext",
+    "CleanPlausibilityProblem",
+    "PlausibilityContext",
+    "PlausibilityError",
+    "PlausibilityProblem",
+    "check_all_plausibility",
+    "check_clean_plausibility",
+    "check_plausibility",
     "BuildError",
     "BuildResult",
     "CLAIM_ID_RE",
