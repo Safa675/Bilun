@@ -1,3 +1,22 @@
+## Task: Remove AGENTS.md and the agents/ folder (2026-10-18)
+
+### Goal
+The root `AGENTS.md` and the `agents/` folder (the July 2026 employee-agent scaffold: three role prompts, three `run_checks.sh`, the `agents.memory` helpers) are gone from the repository, and nothing that CI runs depends on them.
+
+Asked by Safa on 2026-10-18 ("delete the agents.md and agents folder from the repo"). Measured before deleting: 16 tracked files (`AGENTS.md` plus 15 under `agents/`, 920 lines in the folder); no Python, TOML, YAML, shell or workflow file outside `agents/` imports or calls it (`grep` for `agents.` imports, `agents/` paths, `-m agents`, and the packaging and CI entry points); `AGENTS.md` is named only in comments and one assertion message (`scripts/agent/stale_clause_refs.py:26,346`, `tests/unit/synthetic/test_cohort_clean.py:1184,1384`) and in the prompts of the deleted agents. Those comments cite its section 9 (the Polars-only rule); they are left as they are, because a comment edit changes a source hash that the coverage evidence may pin.
+
+### Subtasks
+- [x] 1. Measure what depends on the two (above).
+- [x] 2. `git rm` the 16 files; add a status line to `plans/tooling/employee-agents-plan.md`.
+- [ ] 3. CI-image gate on the committed tip (ruff, full pytest, `compile_rules.py --check`, manifest parity).
+- [ ] 4. Push and PR (merge is Safa's call).
+
+### What goes with them (for the record)
+`AGENTS.md` carried the working rules of the agent sessions in this repo: plan in `tasks/todo.md` first, subagents, verification, the zombie-process check, CI green before a push, the PR-merge ending on `main`, anti-hallucination, and a closing list that tells an agent to read `docs/operations/RELEASE-LANES.md` and `docs/operations/AI-RUNBOOK.md` before release, CI or staging work and to leave the paused strict lane, Caddy, UFW, Tailscale and the live pair alone. `docs/operations/RELEASE-LANES.md` and `AI-RUNBOOK.md` stay; nothing points an agent to them any more.
+
+### Out of Scope
+The older plans that mention the folder (`plans/tooling/mem0-integration-design.md`), the comments that cite `AGENTS.md`, the OpenHands container setup outside the repo, `tasks/lessons.md`.
+
 ## Task: Newborn bed motor (`yenidogan_yatak`) — netting, double count with the standard bed, ICU gate, action rows (2026-10-18)
 
 ### Goal
