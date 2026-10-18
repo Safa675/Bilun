@@ -130,6 +130,18 @@ class TestIcuRows:
         assert _try(row["sgk_uplift_try"]) == _try(opportunity["total_try"])
         assert row["detail"] == opportunity["detail"]
 
+    def test_an_opportunity_without_a_detail_gets_none_invented(self) -> None:
+        opportunity = {
+            "type": "icu_puani_yogun_bakim",
+            "claim_id": "CLM-X",
+            "recoverable_uplift_try": 50.0,
+            "actual_billed_try": 10.0,
+        }
+        report = BillingActionReport(patient_id="P1", icu_puani=IcuPuaniReview(opportunities=[opportunity]))
+        [row] = collect_billing_actions(report)
+        assert row["detail"] is None
+        assert _try(row["sgk_uplift_try"]) == _try(report.icu_puani.confirmed_icu_try)
+
     def test_a_stay_billed_in_full_makes_no_row(self) -> None:
         """The motor nets the billed ICU lines (#13); a stay that is billed in full has nothing to recover."""
         expected = _icu_report().icu_puani.opportunities[0]["total_try"]
@@ -201,8 +213,14 @@ def _opportunity(recoverable: object, fallback: object, included: object, fallba
 @pytest.mark.parametrize("surface", sorted(_COUNTED_BLOCKS))
 def test_rows_add_up_to_the_blocks_component_for_every_field_combination(surface: str) -> None:
     block_type, fallback_field, other_field, component = _COUNTED_BLOCKS[surface]
+    # `included_in_sgk_total` is read by truthiness in the components (`row.get(..., True)`): None and 0 leave
+    # the headline, 1 stays in; the rows must follow.
     combinations = list(
-        product([_MISSING, None, 0.0, 125.5], [_MISSING, 0.0, 300.0], [_MISSING, True, False])
+        product(
+            [_MISSING, None, 0.0, 125.5],
+            [_MISSING, 0.0, 300.0],
+            [_MISSING, True, False, None, 0, 1],
+        )
     )
     every_row = []
     for recoverable, fallback, included in combinations:

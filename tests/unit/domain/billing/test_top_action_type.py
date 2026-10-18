@@ -26,8 +26,15 @@ from src.bilun.domain.billing.types import (
     AnesteziPuaniReview,
     BillingActionReport,
     BillingStrategyRecommendation,
+    BloodComponentUplift,
+    CopayOptimization,
+    DrgUpliftRecommendation,
     IcuPuaniReview,
+    MaterialUplift,
+    MedulaRejectionPlaybook,
+    ProcedureAddonUplift,
     RefakatciReview,
+    SessionPricingUplift,
     YatakPuaniReview,
     YenidoganYatakReview,
 )
@@ -83,6 +90,27 @@ def reports() -> dict[tuple[str, bool], BillingActionReport]:
                 ctx.patient_id, claim_context=ctx, copay_exemption=_COPAY[exempt]
             )
     return out
+
+
+@pytest.fixture
+def weigh(monkeypatch):
+    """The amounts a path weighs, keyed by action type: the dict handed to `_top_action_type_from_savings`."""
+    seen: list[dict[str, float]] = []
+    real = recovery_summary._top_action_type_from_savings
+
+    def spy(savings: dict[str, float]) -> str:
+        seen.append(dict(savings))
+        return real(savings)
+
+    monkeypatch.setattr(recovery_summary, "_top_action_type_from_savings", spy)
+
+    def weighed(call, *args: Any) -> dict[str, float]:
+        seen.clear()
+        call(*args)
+        [savings] = seen
+        return savings
+
+    return weighed
 
 
 def _cache_payload(report: BillingActionReport) -> dict[str, Any]:
@@ -153,26 +181,15 @@ class TestShowcaseBills:
 
 
 class TestBothPathsWeighTheSameKeys:
-    def test_same_keys_in_the_same_order_with_the_same_amounts(self, reports, monkeypatch) -> None:
+    def test_same_keys_in_the_same_order_with_the_same_amounts(self, reports, weigh) -> None:
         """Ties in `max` go to the first key, so the order is part of the mirror; so is every amount."""
-        seen: list[dict[str, float]] = []
-        real = recovery_summary._top_action_type_from_savings
-
-        def spy(savings: dict[str, float]) -> str:
-            seen.append(dict(savings))
-            return real(savings)
-
-        monkeypatch.setattr(recovery_summary, "_top_action_type_from_savings", spy)
         for (story, exempt), report in reports.items():
-            seen.clear()
-            patient_recovery_summary_entry(report)
-            for shape, payload in _payloads(report).items():
-                patient_recovery_summary_from_payload(payload)
-            live, *cached = seen
+            live = weigh(patient_recovery_summary_entry, report)
             assert list(live) == _KEYS, (story, exempt)
-            for savings in cached:
-                assert list(savings) == _KEYS, (story, exempt)
-                assert savings == live, (story, exempt)
+            for shape, payload in _payloads(report).items():
+                cached = weigh(patient_recovery_summary_from_payload, payload)
+                assert list(cached) == _KEYS, (story, exempt, shape)
+                assert cached == live, (story, exempt, shape)
 
     def test_the_cache_payload_carries_no_block_amounts_so_the_rows_are_read(self, reports) -> None:
         """Why `_block_amount` rebuilds blocks: `json_ready` keeps fields, not the amount properties."""
@@ -200,6 +217,112 @@ class TestBothPathsWeighTheSameKeys:
         assert patient_recovery_summary_from_payload(payload)["top_action_type"] == "anestezi_puani"
         del payload["billing_strategy"]["uplift_savings_try"]
         assert patient_recovery_summary_from_payload(payload)["top_action_type"] == "anestezi_puani"
+
+    def test_a_carried_amount_wins_even_when_it_is_zero_or_a_numeric_string(self, weigh) -> None:
+        """Nothing that worked changes: the old code read `float(carried or 0)`; the rows only fill in a gap."""
+        payload = _cache_payload(_full_report())
+        rows_say = weigh(patient_recovery_summary_from_payload, payload)
+        assert rows_say["strategy"] == 37.0 and rows_say["icu_puani"] == 41.0
+
+        payload["billing_strategy"]["uplift_savings_try"] = 0.0  # a carried zero is a value, not a gap
+        payload["icu_puani"]["confirmed_icu_try"] = "41.5"  # old caches may hold numbers as text
+        carried = weigh(patient_recovery_summary_from_payload, payload)
+        assert carried["strategy"] == 0.0
+        assert carried["icu_puani"] == 41.5 and isinstance(carried["icu_puani"], float)
+
+    def test_every_key_carries_its_own_amount_on_both_paths(self, weigh) -> None:
+        """A report whose 16 sources all hold money, each a different amount: a key that is zeroed, swapped or
+        read from the wrong block on either path shows. The payload shapes are the cache's and the endpoint's."""
+        report = _full_report()
+        assert weigh(patient_recovery_summary_entry, report) == _FULL_AMOUNTS
+        assert list(_FULL_AMOUNTS) == _KEYS
+        for shape, payload in _payloads(report).items():
+            assert weigh(patient_recovery_summary_from_payload, payload) == _FULL_AMOUNTS, shape
+        assert patient_recovery_summary_entry(report)["top_action_type"] == "copay"  # the largest, 71
+        assert patient_recovery_summary_from_payload(_cache_payload(report))["top_action_type"] == "copay"
+
+
+# What `_full_report` weighs, key by key (BILLING_BLOCK_SPECS amounts; the playbook is a count, not TRY).
+_FULL_AMOUNTS = {
+    "session_uplift": 24.0,  # confirmed 11 + the review row 13: the session block counts both
+    "drg_uplift": 17.0,
+    "blood_uplift": 19.0,
+    "yatak_puani": 23.0,
+    "material_uplift": 29.0,
+    "procedure_addon_uplift": 31.0,
+    "strategy": 37.0,
+    "capture_gap": 59.0,
+    "package_adequacy_review": 61.0,
+    "medula_playbook": 7.0,
+    "lab": 67.0,
+    "copay": 71.0,
+    "icu_puani": 41.0,
+    "yenidogan_yatak": 43.0,
+    "refakatci": 47.0,
+    "anestezi_puani": 53.0,
+}
+
+
+def _kept_out(amount: float) -> dict[str, Any]:
+    return {"recoverable_uplift_try": amount, "included_in_sgk_total": False}
+
+
+def _full_report() -> BillingActionReport:
+    playbook = [{"playbook_id": f"p{index}"} for index in range(7)]
+    return BillingActionReport(
+        patient_id="PT-FULL",
+        session_uplift=SessionPricingUplift(
+            opportunities=[
+                {"recoverable_uplift_try": 11.0, "included_in_sgk_total": True},
+                {
+                    "recoverable_uplift_try": 0.0,
+                    "review_uplift_try": 13.0,
+                    "review_kind": "needs_clinical_review",
+                    "included_in_sgk_total": False,
+                },
+            ]
+        ),
+        # Each uplift block also holds a row kept out of the SGK total: `total_uplift_try` would count it,
+        # `confirmed_uplift_try` (what the cohort table weighs) does not.
+        drg_uplift=DrgUpliftRecommendation(
+            opportunities=[{"recoverable_uplift_try": 17.0}, _kept_out(5.0)]
+        ),
+        blood_uplift=BloodComponentUplift(
+            opportunities=[{"recoverable_uplift_try": 19.0}, _kept_out(5.0)]
+        ),
+        yatak_puani=YatakPuaniReview(opportunities=[{"recoverable_uplift_try": 23.0}]),
+        material_uplift=MaterialUplift(
+            opportunities=[{"recoverable_uplift_try": 29.0}, _kept_out(5.0)]
+        ),
+        procedure_addon_uplift=ProcedureAddonUplift(
+            opportunities=[{"recoverable_uplift_try": 31.0}, _kept_out(5.0)]
+        ),
+        billing_strategy=BillingStrategyRecommendation(
+            recommendations=[
+                {
+                    "type": "optional_override",
+                    "recommendation_kind": "optional_override",
+                    "savings_try": 37.0,
+                    "included_in_sgk_total": True,
+                }
+            ]
+        ),
+        capture_gap_try=59.0,
+        package_adequacy_review_try=61.0,
+        medula_rejection_playbook=MedulaRejectionPlaybook(entries=playbook),
+        medula_playbook_entry_count=len(playbook),
+        compliance_adjustment_try=67.0,
+        copay=CopayOptimization(
+            exactness_status="exact",
+            required_inputs_missing=[],
+            is_exempt=True,
+            patient_copay_waived_total_try=71.0,
+        ),
+        icu_puani=IcuPuaniReview(opportunities=[{"recoverable_uplift_try": 41.0}]),
+        yenidogan_yatak=YenidoganYatakReview(opportunities=[{"expected_try": 43.0}]),
+        refakatci=RefakatciReview(opportunities=[{"recoverable_uplift_try": 47.0}]),
+        anestezi_puani=AnesteziPuaniReview(opportunities=[{"recoverable_uplift_try": 53.0}]),
+    )
 
 
 def _report(**blocks: Any) -> BillingActionReport:
@@ -266,3 +389,28 @@ class TestTheFourPuanMotors:
         assert patient_recovery_summary_from_payload(nulls)["top_action_type"] == "none"
         rowless = {block: {"opportunities": None} for block in nulls}
         assert patient_recovery_summary_from_payload(rowless)["top_action_type"] == "none"
+
+
+class TestKnownDivergence:
+    @pytest.mark.xfail(
+        strict=True,
+        raises=AssertionError,
+        reason=(
+            "Pre-existing, found by the independent review: the live path weighs `patient_copay_waived_total_try` "
+            "with no is_exempt gate, the payload path weighs `exemption_gap_try` (0 when the patient is not "
+            "exempt). The engine reaches it: `waiver_inpatient_drug` (copay_line_waivers.py) waives every drug "
+            "of an inpatient claim, so a patient who is not exempt has a waived total (5,870 TL on a 20,000 TL "
+            "drug) while the table's exemption-gap column says 0. Decide which side is right, align the "
+            "other, remove this marker."
+        ),
+    )
+    def test_a_not_exempt_patient_with_a_waived_copay_names_the_same_top_action_on_both_paths(self) -> None:
+        copay = CopayOptimization(
+            exactness_status="exact",
+            required_inputs_missing=[],
+            is_exempt=False,
+            patient_copay_waived_total_try=5870.0,
+            rx_copay_savings_try=5870.0,
+        )
+        tops = _both_paths(_report(copay=copay))
+        assert tops["live"] == tops["cache"] == tops["api"], tops
