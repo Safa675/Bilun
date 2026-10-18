@@ -1,3 +1,28 @@
+## Task: Synthetic v3 P7-lite — the 8 showcase patients replace the legacy 50 in `data/synthetic/sut/` (2026-10-18)
+
+### Goal
+The app's synthetic demo data (`data/synthetic/sut/`) is the v3 showcase cohort (8 patients, 8 bills, 3 clean tables), written there by `python -m scripts.synthetic.cohort.build`; nothing in the repository still pins the legacy 50-patient set or can regenerate it; the engine and the UI run on the 8 patients; every pin of the inventory is migrated.
+
+Started by Safa on 2026-10-18 ("A: take the 8 showcase patients into the app now, with the part of P6 that is needed"). Plan: `plans/data/2026-10-14-synthetic-demo-care-pathways-plan.md` (P6, P7); inventory `plans/data/2026-10-17-p6-p7-legacy-pins.md` (50 rows). Out of scope: the other 42 patients and the remaining pathways, E2 hardening, the lab realism items (#309), drug prices (Q4), the staging update (Safa's call), the engine defects #289-#307.
+
+### Decisions (judgment)
+- **Layout:** the builder's default output directory becomes `data/synthetic`; it writes `sut/claims`, `sut/clean` and `cohort_registry.json` under it. `data/synthetic/showcase/` disappears (`git mv`), its `README.md` becomes `data/synthetic/README.md`. The registry lives at `data/synthetic/cohort_registry.json`.
+- **Tests and scripts read the registry,** through the new `tests/fixtures/synthetic_cohort.py` (roles `default_landing`, `showcase_S1` to `showcase_S8`, counts from the registry) and, for Node, by reading the JSON directly. No patient id, tag or amount is hard-coded. `pyproject.toml` does not change (its bytes are pinned by `data/gazette/sut_coverage_evidence.json`).
+- **Legacy machinery goes with the data,** once a grep shows nothing live imports it: `scripts/synthetic/gen/`, `exporters.py`, `specs.py`, `generate_sut_synthetic_data_v2.py`, `validate_sut_synthetic_data.py`, `assert_tier_a_post_regen.py`, `build_acibadem_mapping_workbook.py`, `cohort_tiers.py`, `demo_config.py`, `vignettes.py`, `fault_injection.py`, the two xlsx workbooks, `demo_manifest.json`, `demo_cohort_tiers.json`, `DEMO_COHORT.md`, and the tests of those modules. `data/synthetic/demo_vignettes.json` stays byte-identical: the paused strict lane pins it (`scripts/deploy/generate_candidate_source_roster.py:28`).
+- **A legacy-data test that protects engine logic** is rewritten on the registry roles or on a self-made fixture. A test that only pinned legacy ids or amounts is deleted, with a one-line reason in the Results. Engine behaviour on the 8 stories is already pinned by `test_cohort_engine_proof.py`.
+- **Not touched:** `scripts/deploy/**`, `docs/operations/**` and `tests/*/deploy/**` (the paused strict lane triggers on those paths), and `src/` unless a test proves a change necessary (the coverage evidence pins source hashes).
+
+### Subtasks
+- [ ] 1. Slice S, the swap: builder default and registry location, `git mv` of the data, deletion of the legacy data and machinery, cohort scripts, tests and docs re-pointed to the new location, `tests/fixtures/synthetic_cohort.py`, `data/synthetic/README.md`. Done when `build --check` passes at the new location, the loader's default directory loads the 8 patients, the cohort tests are green and nothing imports a deleted module.
+- [ ] 2. Slice T, the Python tests of the inventory (rows 1 to 19, 24 and 26): migrated or deleted as decided above.
+- [ ] 3. Slice F, the frontend scripts, the chatbot tool text, the docs and the plan status (rows 36 and 43 to 50).
+- [ ] 4. Gates: ruff, the full suite, `compile_rules.py --check`, manifest parity, the CI-image backend gate on a clone, vitest for the frontend.
+- [ ] 5. The UI: run the backend and the frontend on the new data and walk the default landing, the 8 patient workspaces and the cohort pages in the browser; list what is wrong (Safa reviews too).
+- [ ] 6. PR (Safa's yes first), CI green, Safa merges.
+
+### Out of Scope
+See the goal paragraph.
+
 ## Task: Synthetic v3 P4 — the cohort generator, showcase patients first (2026-10-17)
 
 ### Goal
