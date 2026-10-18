@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pytest
 
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -30,12 +29,14 @@ def test_billing_strategy_with_chapters_only_stays_unavailable() -> None:
 def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
     from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
+    # S1 bills a mandated package itemised: the SUT strategy has to say "package" for its claim.
+    role = cohort.role("showcase_S1")
     dataset = load_sut_claim_dataset()
-    ctx = build_patient_claim_context("SENTETIK-HASTA-0003", dataset)
+    ctx = build_patient_claim_context(role.patient_id, dataset)
     assert ctx is not None
 
     report = compute_patient_billing_report(
-        "SENTETIK-HASTA-0003",
+        role.patient_id,
         claim_context=ctx,
     )
 
@@ -43,12 +44,12 @@ def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
     claim_recs = [
         rec
         for rec in report.billing_strategy.recommendations
-        if rec.get("claim_id") == "F-SENTETIK-HASTA-0003-011"
-        and "recommendation_kind" in rec
+        if rec.get("claim_id") == role.claim_id and "recommendation_kind" in rec
     ]
     assert claim_recs
     assert claim_recs[0]["recommendation"] == "package"
-    assert claim_recs[0]["recommendation_kind"] == "optional_override"
+    assert claim_recs[0]["recommendation_kind"] == "mandatory_compliance"
+    assert claim_recs[0]["payment_method_kind"] == "DRG_MANDATORY"
     assert "lower than" not in claim_recs[0]["detail"]
 
 

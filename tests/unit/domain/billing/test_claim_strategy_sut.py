@@ -10,6 +10,7 @@ import pytest
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -80,7 +81,11 @@ class TestClaimStrategySut:
         [("1100", "package", 0.0), ("1000", "itemized", 30.0)],
     )
     def test_secondary_own_payable_controls_optional_strategy(
-        self, monkeypatch, package_amount, expected_recommendation, expected_savings,
+        self,
+        monkeypatch,
+        package_amount,
+        expected_recommendation,
+        expected_savings,
     ) -> None:
         from src.bilun.domain.billing import claim_strategy
         from src.bilun.domain.prose_rules import payment_method, session_pricing
@@ -99,19 +104,24 @@ class TestClaimStrategySut:
                 bill_drugs_separately=False,
                 visit_fee_annex=None,
                 trace=ProseRuleTrace(
-                    rule_id="test", sut_section="2.2.2.(2)",
-                    rule_set_id="test", detail="test optional itemized alternative",
+                    rule_id="test",
+                    sut_section="2.2.2.(2)",
+                    rule_set_id="test",
+                    detail="test optional itemized alternative",
                 ),
             )
 
         monkeypatch.setattr(claim_strategy, "resolve_payment_method", optional_payment_method)
         monkeypatch.setattr(payment_method, "resolve_payment_method", optional_payment_method)
         monkeypatch.setattr(
-            session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
+            session_pricing,
+            "procedure_annex_membership",
+            lambda code, **kwargs: (True, False),
         )
         # #261: placeholder codes sit in EK-2/B §6, the only lines that form a session.
         monkeypatch.setattr(
-            session_pricing, "_procedure_point_score",
+            session_pricing,
+            "_procedure_point_score",
             lambda code, **kwargs: {"611111": 20, "622222": 10}[code],
         )
         claim = _claim(facility_tier="egitim_arastirma", package_candidate=True)
@@ -227,12 +237,8 @@ class TestClaimStrategySut:
         higher = "package" if code == "claim_optional_package_higher" else "itemized"
         assert claim_rec["recommendation"] == higher
         params = claim_rec["message_params"]
-        higher_amount = params[
-            "package_total_try" if higher == "package" else "itemized_total_try"
-        ]
-        lower_amount = params[
-            "itemized_total_try" if higher == "package" else "package_total_try"
-        ]
+        higher_amount = params["package_total_try" if higher == "package" else "itemized_total_try"]
+        lower_amount = params["itemized_total_try" if higher == "package" else "package_total_try"]
         lower = "itemized" if higher == "package" else "package"
         assert claim_rec["detail"] == (
             f"Claim CLM1: optional §2.2.2(2) override — {higher} billing "
@@ -275,8 +281,7 @@ class TestClaimStrategySut:
         assert claim_rec["clause_ref"]["clause_coordinate"] == params["section"]
         # No informational duplicate should be present for this procedure.
         assert not any(
-            rec.get("type") == "informational"
-            and rec.get("procedure_code") == "550970"
+            rec.get("type") == "informational" and rec.get("procedure_code") == "550970"
             for rec in result.recommendations
         )
 
@@ -398,9 +403,7 @@ class TestClaimStrategySut:
         )
         # The same line also emits the procedure_must_itemized violation row.
         violation = next(
-            rec
-            for rec in result.recommendations
-            if rec.get("type") == "compliance_violation"
+            rec for rec in result.recommendations if rec.get("type") == "compliance_violation"
         )
         assert violation["message_code"] == "procedure_must_itemized"
         vparams = violation["message_params"]
@@ -508,35 +511,39 @@ class TestClaimStrategySut:
         assert claim_rec["itemized_excluded_violation_count"] == 0
         assert claim_rec["itemized_raw_try"] == 3000.0
 
-    def test_spot_check_sentetik_0045_078_no_price_comparison(self) -> None:
+    def test_spot_check_showcase_package_bill_has_no_price_comparison(self) -> None:
+        """Golden check on S5, the cemented hemiarthroplasty billed as its package: a mandated
+        package that is billed correctly is confirmed in plain words, with no price comparison."""
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
+        role = cohort.role("showcase_S5")
         dataset = load_sut_claim_dataset()
-        ctx = build_patient_claim_context("SENTETIK-HASTA-0045", dataset)
+        ctx = build_patient_claim_context(role.patient_id, dataset)
         assert ctx is not None
+        # The premise: one package line, so the package total is that line's billed amount.
+        package_lines = [line for line in ctx.procedure_lines if line.procedure_category == "paket"]
+        assert len(package_lines) == 1
+        amount = f"{package_lines[0].billed_amount_try:.2f}"
 
         result = recommend_billing_strategy_from_claims(ctx)
         claim_rec = next(
             rec
             for rec in result.recommendations
-            if rec.get("claim_id") == "F-SENTETIK-HASTA-0045-078"
+            if rec.get("claim_id") == role.claim_id
             and "recommendation" in rec
             and rec.get("payment_method_kind") == "DRG_MANDATORY"
         )
         assert claim_rec["recommendation"] == "package"
         assert "lower than" not in claim_rec["detail"]
         # Golden check: the structured contract does not alter the detail byte.
-        # Re-targeted 0001-001 -> 0045-078 after the 2026-07-01 SUT amendment and a
-        # generator RNG-path change flipped claim 0001-001 to itemized (package_candidate
-        # False), so it no longer yields a claim-level DRG package recommendation.
         assert claim_rec["message_code"] == "claim_package_ok"
         assert claim_rec["message_params"] == {
-            "claim_id": "F-SENTETIK-HASTA-0045-078",
-            "amount_try": "7218.58",
+            "claim_id": role.claim_id,
+            "amount_try": amount,
         }
         assert claim_rec["detail"] == (
-            "Claim F-SENTETIK-HASTA-0045-078 is billed correctly as package "
-            "per SUT §2.2.2(1). Package total 7218.58 TRY."
+            f"Claim {role.claim_id} is billed correctly as package "
+            f"per SUT §2.2.2(1). Package total {amount} TRY."
         )
 
     def test_package_only_submission_resolves_catalog_itemized_alternative(self) -> None:

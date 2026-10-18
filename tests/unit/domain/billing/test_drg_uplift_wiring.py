@@ -11,6 +11,8 @@ from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.t1_showcase_bills import clean_context
 
 pytestmark = pytest.mark.unit
 
@@ -111,21 +113,29 @@ def _patch_overridable_payment_methods(monkeypatch) -> None:
 class TestDrgUpliftWiring:
     @pytest.mark.parametrize("package_amount, expected_uplift", [("1100", 0.0), ("1000", 30.0)])
     def test_secondary_own_payable_controls_itemized_uplift(
-        self, monkeypatch, package_amount, expected_uplift,
+        self,
+        monkeypatch,
+        package_amount,
+        expected_uplift,
     ) -> None:
         from src.bilun.domain.billing import claim_strategy
         from src.bilun.domain.prose_rules import payment_method, session_pricing
 
         _patch_overridable_payment_methods(monkeypatch)
         monkeypatch.setattr(
-            payment_method, "resolve_payment_method", claim_strategy.resolve_payment_method,
+            payment_method,
+            "resolve_payment_method",
+            claim_strategy.resolve_payment_method,
         )
         monkeypatch.setattr(
-            session_pricing, "procedure_annex_membership", lambda code, **kwargs: (True, False),
+            session_pricing,
+            "procedure_annex_membership",
+            lambda code, **kwargs: (True, False),
         )
         # #261: placeholder codes sit in EK-2/B §6, the only lines that form a session.
         monkeypatch.setattr(
-            session_pricing, "_procedure_point_score",
+            session_pricing,
+            "_procedure_point_score",
             lambda code, **kwargs: {"611111": 20, "622222": 10}[code],
         )
         claim = _claim(package_candidate=False)
@@ -170,9 +180,7 @@ class TestDrgUpliftWiring:
             assert opportunity["recoverable_uplift_try"] == 30.0
             assert opportunity["itemized_price_methodology"] == "session_adjusted"
 
-    def test_non_package_candidate_uplift_counts_in_sgk_headline(
-        self, monkeypatch
-    ) -> None:
+    def test_non_package_candidate_uplift_counts_in_sgk_headline(self, monkeypatch) -> None:
         _patch_overridable_payment_methods(monkeypatch)
         claim = _claim(package_candidate=False)
         lines = [
@@ -288,14 +296,10 @@ class TestDrgUpliftWiring:
         )
         assert len(drg.opportunities) == 1
         gross = drg.opportunities[0]["gross_uplift_try"]
-        assert drg.opportunities[0]["deduped_session_try"] == pytest.approx(
-            min(500.0, gross)
-        )
+        assert drg.opportunities[0]["deduped_session_try"] == pytest.approx(min(500.0, gross))
         assert drg.confirmed_uplift_try == pytest.approx(max(0.0, gross - 500.0))
 
-    def test_package_total_uses_ek2c_when_claim_line_payable_zero(
-        self, monkeypatch
-    ) -> None:
+    def test_package_total_uses_ek2c_when_claim_line_payable_zero(self, monkeypatch) -> None:
         def _ek2c_entry(code, *, as_of_date=None):
             if str(code) == "609270":
                 return {"price_try": 1000.0}
@@ -328,17 +332,51 @@ class TestDrgUpliftWiring:
         assert drg.opportunities[0]["package_price_methodology"] == "ek2c_code"
         assert drg.opportunities[0]["package_total_try"] == pytest.approx(1000.0)
 
-    def test_sentetik_0001_mandatory_claim_not_in_drg_uplift(self) -> None:
+    def test_mandated_package_claim_is_not_in_drg_or_session_uplift(self) -> None:
+        """S1 is a mandated package (DRG_MANDATORY). Billed itemised (the committed bill) the gap belongs
+        to the billing strategy alone; billed as the package (the clean twin) nothing is left. Neither
+        bill puts anything into the DRG or the session uplift, so the headline is the strategy's amount.
+
+        The positive control of the DRG block is `test_non_package_candidate_uplift_counts_in_sgk_headline`
+        above (an overridable claim billed as a package), which goes through the same report."""
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
+        role = cohort.role("showcase_S1")
         dataset = load_sut_claim_dataset()
-        ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
+        ctx = build_patient_claim_context(role.patient_id, dataset)
         assert ctx is not None
 
         report = compute_patient_billing_report(
-            "SENTETIK-HASTA-0001",
+            role.patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
         )
+        gaps = [
+            rec
+            for rec in report.billing_strategy.recommendations
+            if rec.get("recommendation_kind") == "mandatory_compliance"
+        ]
+        # The premise: the claim is a mandated package billed itemised, so the strategy owns it.
+        assert len(gaps) == 1
+        assert (gaps[0]["payment_method_kind"], gaps[0]["current_billing"]) == (
+            "DRG_MANDATORY",
+            "itemized",
+        )
+        assert report.drg_uplift.opportunities == []
         assert report.drg_uplift.confirmed_uplift_try == 0.0
         assert report.session_uplift.confirmed_uplift_try == 0.0
+        assert report.sgk_uplift_try == pytest.approx(gaps[0]["savings_try"], abs=0.01)
+        assert Decimal(str(gaps[0]["savings_try"])).quantize(Decimal("0.01")) == Decimal(
+            cohort.fault("S1")["amount_try"]
+        )
+
+        clean = clean_context("showcase_S1")
+        clean_report = compute_patient_billing_report(
+            clean.patient_id,
+            claim_context=clean,
+            copay_exemption={"exempt": False},
+        )
+        assert clean_report.drg_uplift.opportunities == []
+        assert clean_report.drg_uplift.confirmed_uplift_try == 0.0
+        assert clean_report.session_uplift.confirmed_uplift_try == 0.0
+        assert clean_report.sgk_uplift_try == 0.0

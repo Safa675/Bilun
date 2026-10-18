@@ -1,6 +1,15 @@
-"""Unit tests for structured billing recommended actions."""
+"""Unit tests for structured billing recommended actions.
+
+The bill-level tests read the showcase bills of the demo cohort through the registry
+(`tests/fixtures/synthetic_cohort.py`): a role name and the registry's fault record, never an id or an
+amount typed here.
+"""
 
 from __future__ import annotations
+
+from dataclasses import replace
+from decimal import Decimal
+from typing import Any
 
 import pytest
 
@@ -11,15 +20,25 @@ from src.bilun.domain.billing.types import (
     BillingStrategyRecommendation,
     CopayOptimization,
     MaterialPreCheck,
+    MaterialUplift,
 )
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
+    PatientClaimContext,
     build_bill_claim_context,
     build_patient_claim_context,
 )
 from src.bilun.domain.sut.clause_reference import RULE_TYPE_COPAY_WAIVER
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
+
+_NOT_EXEMPT = {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []}
+_EXEMPT = {
+    "exempt": True,
+    "n_qualifying": 1,
+    "qualifying_diagnoses": [{"code": "E03.9", "disease": "Endokrin", "range": "E00-E90"}],
+}
 
 
 @pytest.fixture(scope="module")
@@ -27,39 +46,67 @@ def dataset():
     return load_sut_claim_dataset()
 
 
-class TestBillingActionsBreakdown:
-    def test_f015_includes_copay_review_and_documentation_checklist(self, dataset) -> None:
-        claim_id = "F-SENTETIK-HASTA-0003-015"
-        ctx = build_bill_claim_context("SENTETIK-HASTA-0003", claim_id, dataset)
-        assert ctx is not None
+def _showcase_context(dataset, role_name: str) -> PatientClaimContext:
+    """The claim context of the one showcase bill that `role_name` names in the registry."""
+    role = cohort.role(role_name)
+    ctx = build_bill_claim_context(role.patient_id, role.claim_id, dataset)
+    assert ctx is not None
+    assert [claim.claim_id for claim in ctx.claims] == [role.claim_id]
+    return ctx
 
-        copay = {
-            "exempt": True,
-            "n_qualifying": 1,
-            "qualifying_diagnoses": [
-                {"code": "E03.9", "disease": "Endokrin", "range": "E00-E90"},
-            ],
-        }
-        report = compute_patient_billing_report(
-            "SENTETIK-HASTA-0003",
-            claim_context=ctx,
-            copay_exemption=copay,
-        )
+
+def _report(ctx: PatientClaimContext, copay_exemption: dict[str, Any]) -> BillingActionReport:
+    return compute_patient_billing_report(
+        ctx.patient_id, claim_context=ctx, copay_exemption=copay_exemption
+    )
+
+
+def _documentation_actions(report: BillingActionReport) -> list[dict[str, Any]]:
+    return [
+        row
+        for row in report.recommended_actions
+        if row["surface"] == "claim_checklist" and row["kind"] == "documentation_requirement"
+    ]
+
+
+def _documentation_items(report: BillingActionReport) -> list[dict[str, Any]]:
+    return [
+        item
+        for item in report.claim_submission_checklist.items
+        if item.get("checklist_kind") == "documentation_requirement"
+    ]
+
+
+def _try(value: object) -> Decimal:
+    """A report amount as a two-decimal `Decimal`, comparable with the registry's decimal strings."""
+    assert value is not None, "the report carries no amount here"
+    return Decimal(str(value)).quantize(Decimal("0.01"))
+
+
+class TestBillingActionsBreakdown:
+    def test_quiet_bill_gets_only_the_copay_review_and_the_documentation_checklist(
+        self, dataset
+    ) -> None:
+        """S4 (companion not billed) has no strategy, material or drug row of its own, so the exemption
+        input and the documentation checklist are all that reaches `recommended_actions`."""
+        ctx = _showcase_context(dataset, "showcase_S4")
+        report = _report(ctx, _EXEMPT)
 
         assert report.action_count == len(report.recommended_actions)
 
         surfaces = {row["surface"] for row in report.recommended_actions}
         assert surfaces == {"copay", "claim_checklist"}
 
-        # 613080 on this outpatient (poliklinik) claim is in EK-2/C but not on
-        # EK-2/A-2, so §2.2.1.B-1(10)(a) mandates no package for it: no
-        # compliance violation (was one, from the old every-EK-2/C reading).
+        # The procedures of this bill carry no mandated package: no compliance violation and no
+        # package gap row (the S1 bill below is the one that has them).
         violations = [
-            row
-            for row in report.recommended_actions
-            if row["kind"] == "compliance_violation"
+            row for row in report.recommended_actions if row["kind"] == "compliance_violation"
         ]
         assert violations == []
+        gap_rows = [
+            row for row in report.recommended_actions if row["kind"] == "mandatory_compliance"
+        ]
+        assert gap_rows == []
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
@@ -75,46 +122,51 @@ class TestBillingActionsBreakdown:
         assert "(" not in coordinate or ".(" in coordinate
         assert copay_row["sut_section_id"] == coordinate
 
-        doc_rows = [
-            row
-            for row in report.recommended_actions
-            if row["surface"] == "claim_checklist"
-            and row["kind"] == "documentation_requirement"
-        ]
-        assert len(doc_rows) == 3
-        assert any("muayene" in (row.get("detail") or "").lower() for row in doc_rows)
-        # No package gap row either: 613080 needs no package on an outpatient bill
-        # (the #269 comparison gave one from the every-EK-2/C reading, 7,074.34).
-        gap_rows = [
-            row for row in report.recommended_actions if row["kind"] == "mandatory_compliance"
-        ]
-        assert gap_rows == []
+        doc_rows = _documentation_actions(report)
+        checklist_docs = _documentation_items(report)
+        assert doc_rows
+        assert len(doc_rows) == len(checklist_docs)
         assert report.action_count == len(copay_rows) + len(doc_rows)
-
-        checklist_docs = [
-            item
-            for item in report.claim_submission_checklist.items
-            if item.get("checklist_kind") == "documentation_requirement"
-        ]
-        assert len(checklist_docs) == 3
+        refs = {item.get("fatura_inceleme_ref") for item in checklist_docs}
+        # An inpatient stay: the detailed discharge summary (ORTAK-27), not the visit rule (ORTAK-5).
+        assert "ORTAK-27" in refs
+        assert "ORTAK-5" not in refs
         anchors = {item.get("sut_anchor") for item in checklist_docs}
-        assert "Fatura İnceleme ORTAK-5" in anchors
+        assert "Fatura İnceleme ORTAK-27" in anchors
 
-    def test_f011_doc_checklist_is_relevance_gated(self, dataset) -> None:
-        """Yatış + EK-2/C cerrahi claim should not spam ungated ORTAK/TPN rules."""
-        claim_id = "F-SENTETIK-HASTA-0003-011"
-        ctx = build_bill_claim_context("SENTETIK-HASTA-0003", claim_id, dataset)
-        assert ctx is not None
-        report = compute_patient_billing_report(
-            "SENTETIK-HASTA-0003",
-            claim_context=ctx,
-            copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-        )
-        docs = [
-            item
-            for item in report.claim_submission_checklist.items
-            if item.get("checklist_kind") == "documentation_requirement"
-        ]
+    def test_outpatient_variant_of_the_same_bill_gets_the_visit_documentation(
+        self, dataset
+    ) -> None:
+        """No bill of the cohort is an outpatient visit: the S4 bill is re-billed as `poliklinik` in
+        memory, which is all ORTAK-5 (`is_outpatient_polyclinic`) looks at."""
+        ctx = _showcase_context(dataset, "showcase_S4")
+        outpatient = replace(ctx, claims=(replace(ctx.claims[0], claim_type="poliklinik"),))
+        report = _report(outpatient, _EXEMPT)
+
+        assert report.action_count == len(report.recommended_actions)
+        assert {row["surface"] for row in report.recommended_actions} == {
+            "copay",
+            "claim_checklist",
+        }
+        checklist_docs = _documentation_items(report)
+        refs = {item.get("fatura_inceleme_ref") for item in checklist_docs}
+        assert "ORTAK-5" in refs
+        assert "ORTAK-27" not in refs
+        assert "Fatura İnceleme ORTAK-5" in {item.get("sut_anchor") for item in checklist_docs}
+        assert len(_documentation_actions(report)) == len(checklist_docs)
+
+    def test_documentation_checklist_is_relevance_gated(self, dataset) -> None:
+        """An inpatient EK-2/C orthopaedic bill (S5, the hemiarthroplasty package) should not spam
+        ungated ORTAK/TPN rules."""
+        ctx = _showcase_context(dataset, "showcase_S5")
+        claim = ctx.claims[0]
+        # The premise of the assertions below, so that a rebuilt cohort fails here and not silently.
+        assert claim.claim_type == "yatis"
+        assert "ortopedi" in claim.department.lower()
+        assert any(line.procedure_category == "paket" for line in ctx.procedure_lines)
+
+        report = _report(ctx, _NOT_EXEMPT)
+        docs = _documentation_items(report)
         refs = {item.get("fatura_inceleme_ref") for item in docs}
         assert "ORTAK-24" not in refs
         assert "ORTAK-5" not in refs
@@ -126,52 +178,118 @@ class TestBillingActionsBreakdown:
             assert anchor.startswith("Fatura İnceleme ")
             assert "F000" not in anchor and "C000" not in anchor
 
-    def test_f011_includes_override_and_material_uplift(self, dataset) -> None:
-        claim_id = "F-SENTETIK-HASTA-0003-011"
-        ctx = build_bill_claim_context("SENTETIK-HASTA-0003", claim_id, dataset)
-        assert ctx is not None
+    def test_package_gap_of_s1_reaches_the_actions_with_the_registry_amount(self, dataset) -> None:
+        """S1 bills a package itemised: one violation row (no money) and one package-gap row that
+        carries the amount the registry's injection record proved."""
+        fault = cohort.fault("S1")
+        ctx = _showcase_context(dataset, "showcase_S1")
+        report = _report(ctx, _NOT_EXEMPT)
 
-        report = compute_patient_billing_report(
-            "SENTETIK-HASTA-0003",
-            claim_context=ctx,
-            copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-        )
-
-        assert report.exactness_status == "exact"
         assert report.action_count == len(report.recommended_actions)
-
-        override = [
-            row
-            for row in report.recommended_actions
-            if row.get("kind") == "optional_override"
+        strategy_rows = [
+            row for row in report.recommended_actions if row["surface"] == "billing_strategy"
         ]
-        assert len(override) == 1
-        # Safa 2026-10-16: unknown incision → lenient reading. The package's gain
-        # is money only above the highest itemized total, A(5)(b) 50 % (was 4515.48).
-        assert override[0]["sgk_uplift_try"] == pytest.approx(4075.48)
-
-        strategy_override = report.billing_strategy.optional_override_opportunities[0]
-        # 600160 is primary by catalog points: 1800 + the hizmet başı §2.2.2.A(5)
-        # 50 % of 600150's own 2200 (30 % with one incision: 2460.0; the package
-        # 25 % before that: 2350.0, uplift 4625.48).
-        assert strategy_override["itemized_total_try"] == pytest.approx(2900.0)
-        assert strategy_override["package_total_try"] == pytest.approx(6975.48)
-        assert strategy_override.get("recommended_package_code") == "609300"
-
-        materials = [
-            row for row in report.recommended_actions if row["surface"] == "material_uplift"
+        assert sorted(row["kind"] for row in strategy_rows) == [
+            "compliance_violation",
+            "mandatory_compliance",
         ]
-        assert len(materials) == 2
-        assert all(row["material_code"] == "OR2640" for row in materials)
+        by_kind = {row["kind"]: row for row in strategy_rows}
+        assert by_kind["compliance_violation"]["sgk_uplift_try"] is None
+        gap_row = by_kind["mandatory_compliance"]
+        assert gap_row["finding_type"] == "compliance"
+        assert gap_row["claim_id"] == fault["claim_id"]
+        assert _try(gap_row["sgk_uplift_try"]) == Decimal(fault["amount_try"])
+
+        gap = next(
+            rec
+            for rec in report.billing_strategy.recommendations
+            if rec.get("recommendation_kind") == "mandatory_compliance"
+        )
+        assert gap["current_billing"] == "itemized"
+        assert gap["recommendation"] == "package"
+        assert gap_row["procedure_code"] == gap["recommended_package_code"]
+        # The package is what the clean bill carries, the itemised lines are what the faulty bill carries.
+        assert _try(gap["package_total_try"]) == Decimal(fault["billed_clean_try"])
+        assert _try(gap["itemized_total_try"]) == Decimal(fault["billed_faulty_try"])
+        assert _try(gap["savings_try"]) == Decimal(fault["amount_try"])
+        assert gap["included_in_sgk_total"] is True
+        assert _try(report.sgk_uplift_try) == Decimal(fault["amount_try"])
 
     def test_count_matches_collect(self, dataset) -> None:
-        ctx = build_patient_claim_context("SENTETIK-HASTA-0003", dataset)
-        report = compute_patient_billing_report(
-            "SENTETIK-HASTA-0003",
-            claim_context=ctx,
-            copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-        )
+        patient_id = cohort.role("default_landing").patient_id
+        ctx = build_patient_claim_context(patient_id, dataset)
+        assert ctx is not None
+        report = _report(ctx, _NOT_EXEMPT)
         assert count_billing_actions(report) == len(collect_billing_actions(report))
+        assert count_billing_actions(report) > 0
+
+
+class TestUpliftActionRows:
+    """Strategy and uplift rows that no showcase bill produces, from self-made reports."""
+
+    def test_optional_override_row_is_an_opportunity_that_carries_the_savings(self) -> None:
+        def report(*, included: bool) -> BillingActionReport:
+            return BillingActionReport(
+                patient_id="PT-OVERRIDE",
+                billing_strategy=BillingStrategyRecommendation(
+                    recommendations=[
+                        {
+                            "claim_id": "CLM-OVR-1",
+                            "recommendation": "package",
+                            "recommendation_kind": "optional_override",
+                            "payment_method_kind": "DRG_OVERRIDABLE",
+                            "recommended_package_code": "609300",
+                            "savings_try": 4075.48,
+                            "package_total_try": 6975.48,
+                            "itemized_total_try": 2900.0,
+                            "current_billing": "itemized",
+                            "included_in_sgk_total": included,
+                        }
+                    ]
+                ),
+            )
+
+        [row] = collect_billing_actions(report(included=True))
+        assert row["surface"] == "billing_strategy"
+        assert row["kind"] == "optional_override"
+        assert row["finding_type"] == "opportunity"
+        assert row["claim_id"] == "CLM-OVR-1"
+        assert row["procedure_code"] == "609300"
+        assert row["sgk_uplift_try"] == pytest.approx(4075.48)
+
+        # An override that the headline does not count carries no SGK uplift.
+        [uncounted] = collect_billing_actions(report(included=False))
+        assert uncounted["kind"] == "optional_override"
+        assert uncounted["sgk_uplift_try"] is None
+
+    def test_each_material_uplift_opportunity_is_one_opportunity_row(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-MAT-UPLIFT",
+            material_uplift=MaterialUplift(
+                opportunities=[
+                    {
+                        "claim_id": "CLM-MU-1",
+                        "material_code": "OR2640",
+                        "material_name": "Implant A",
+                        "recoverable_uplift_try": 1250.5,
+                    },
+                    {
+                        "claim_id": "CLM-MU-1",
+                        "material_code": "OR2640",
+                        "material_name": "Implant A",
+                        "recoverable_uplift_try": 800.0,
+                    },
+                ]
+            ),
+        )
+
+        actions = collect_billing_actions(report)
+        assert [row["surface"] for row in actions] == ["material_uplift", "material_uplift"]
+        assert all(row["material_code"] == "OR2640" for row in actions)
+        assert all(row["claim_id"] == "CLM-MU-1" for row in actions)
+        assert all(row["finding_type"] == "opportunity" for row in actions)
+        assert [row["sgk_uplift_try"] for row in actions] == [1250.5, 800.0]
+        assert len({row["action_id"] for row in actions}) == 2
 
 
 class TestMaterialRecommendedActions:
