@@ -24,7 +24,7 @@
 | · para etkileyen modalite (NO_PAY 41, MUST_BILL 19, MANDATORY 18, PROHIBITED 9, NO_COPAY 7, MUST_NOT_BILL 7) | 101 |
 | · COVERAGE / REGULATORY_ACTION / PERMISSION / diğer | 74 / 15 / 7 / 2 |
 | EMR yüzünden bilerek açık sayılmayan (`emr_blocked`) | 143 (kuyruğun dışında) |
-| Kuyruktaki `primary_rule_id` ailesi / partiler (≤12 madde) | 26 aile / 48 parti |
+| Kuyruktaki `primary_rule_id` ailesi / partiler (≤12 madde; 6'dan küçük aile kalıntıları birleşir) | 26 aile / 37 parti (yalnız para etkileyen 101 madde: 10 parti) |
 | Kuyruğun toplam metni | 141.707 karakter (~40 bin token; ortalama 360, en uzun 3.823) |
 
 Not: açık maddelerin hepsi yürürlükte; başlık ve değişiklik maddesi yok. Metnin kendisi ucuzdur; maliyet, ajanın kanıt aramasından (kod, ek listeleri) gelir ve akşam provasında ölçülür.
@@ -57,7 +57,7 @@ Başarısızlık da sonuçtur: KIRMIZI bir paket, rubriği düzeltmek için en u
 ## 2. Kuyruk
 
 - **Kaynak:** `data/gazette/sut_clause_coverage.parquet`, `has_algorithmic_gap == True` (tanım: `scripts/sut/prose/coverage.py:476-511`; EMR-blocked ve Tier-C çıkarımı yalnız ilaç kovası için: satır 104-106, 387-388, 497-498).
-- **Parti:** aynı `primary_rule_id` içinde, `section_id` sırasıyla ≤12 madde → 48 parti. `parti_id = sha256(sıralı clause_id listesi)[:10]`.
+- **Parti:** aynı `primary_rule_id` içinde, `section_id` sırasıyla ≤12 madde. Bir ailenin 6'dan az maddelik kalıntısı diğer ailelerin kalıntılarıyla `mixed` partide birleşir (ajanın rubriği ve kodu okuma maliyeti 1–3 maddeye yayılmasın) → 37 parti. `parti_id = sha256(sıralı clause_id listesi)[:10]`.
 - **Sıra:** önce para etkileyen modalite içeren partiler (101 madde), sonra COVERAGE / REGULATORY_ACTION / PERMISSION, en sonda modalitesizler. Gece yarıda kesilirse en değerli kısım bitmiştir.
 - **Ajana verilen alanlar:** `clause_id`, `section_id`, `section_path`, `clause_type`, `text_tr` (tam), `deontic_modality`, `annex_refs`, `procedure_codes`, `primary_rule_id`, `matched_rule_ids`, `domain_modules` (kapsam modelinin maddeyi hangi kod / veri dosyalarında karşılandığını düşündüğü; etiket sızdırmaz).
 - **Verilmeyen alanlar (etiket sızıntısı olmasın):** `coverage_status`, `has_rule_encoding`, `emr_blocked`, `coverage_notes`.
@@ -121,7 +121,7 @@ Karar sırası (ajan bu soruları sırayla yanıtlar):
 | **G4 Yasak yol** | Çıktıda `ilay_validation`, `golden/ilay`, `raw data` geçmez. Ayrıca fiziksel önlem: işçiler bu klasörlerin **bulunmadığı** bir okuma klonunda çalışır | Oy reddedilir; ihlal şüphesinde dur |
 | **G5 Yan etki** | Okuma klonunda `git status --porcelain` boş; parquet sha256 değişmedi; ana checkout `HEAD` ve `git status` aynı | **Anında dur (KIRMIZI)** |
 | **G6 Kalibrasyon** | §4: güçlü altın etiketler (E2, N; 30 madde) ≥ %80 | Dur (KIRMIZI) |
-| **G7 Uyuşma alarmı** | İlk 5 partide iki oyun üst-sınıf uyuşması < %60 ya da bir partide tek sınıf > %70 iken altın küme dağılımı bunu desteklemiyor | Dur (rubrik sorunu) |
+| **G7 Uyuşma alarmı** | (a) İlk 5 partide iki oyun üst-sınıf uyuşması < %60 → **dur** (rubrik sorunu). (b) ≥6 maddelik bir partide tek üst-sınıf > %70 → **uyarı, durdurmaz**: homojen bir aile (on iki NO_PAY istisnası) dürüstçe tek sınıfa düşebilir; orkestratör partiden iki satır okur, kararı `progress.log`'a yazar, rubrik yanlış görünüyorsa durur | (a) Dur; (b) uyarı |
 
 **Kapıların kendisi sınanır:** doğrulayıcı betikler mutant kayıtlarla test edilir; uydurma alıntı, olmayan dosya, doğru dosya ama yanlış satır, boş kanıt, geçersiz sınıf, yasak yol içeren kayıt, tek oy eksik kayıt — hepsi reddedilmelidir (kapı yalnızca mutant testleri kadar dürüsttür).
 
@@ -133,8 +133,8 @@ Karar sırası (ajan bu soruları sırayla yanıtlar):
 
 | Koşul | Eylem |
 |---|---|
-| 48 parti `done` ve S1–S6 tuttu | Paketi yaz, YEŞİL, dur |
-| G6 başarısız / G7 tetiklendi / G5 ihlali | Hemen dur, KIRMIZI paket (nedenle) |
+| Tüm partiler `done` (tüm kuyruk 37, `--scope money` 10) ve S1–S6 tuttu | Paketi yaz, YEŞİL, dur |
+| G6 başarısız / G7a (uyuşma < %60) tetiklendi / G5 ihlali | Hemen dur, KIRMIZI paket (nedenle) |
 | ≥3 parti `failed` | Dur, SARI paket (kalan partiler ve devam komutu başta) |
 | İlk kota ya da API-limit hatası | Yeniden **deneme yok**; durum dosyası kayıtlı; paket o ana kadarkiyle yazılır, devam komutu başta (dün ajanlar limit sonrası kendiliğinden dönmedi) |
 | Süre kutusu: 6 saat | Dur, SARI paket |
@@ -168,7 +168,7 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 - Aynı anda en fazla **2** ajan süreci (oy A ve oy B) ve **0** ağır iş: pytest, vitest, docker, CI kapısı yok. Hafif Python (polars okuma) serbest. Başka bir oturum ağır iş koşarken başlama (G0).
 - Her partiden sonra durum dosyası yazılır (checkpoint). Kota penceresi dolarsa devam komutu paketin başındadır.
 - Maliyet ölçüldü (§10.1): para etkileyen madde başına oy başına ~104 sn ve ~38 bin token, tanım / liste maddesi ~33 sn ve ~14 bin token. Tüm kuyruk × 2 oy süre kutusunu (6 saat) aşar; ilk gece kapsamı bu yüzden daraltıldı (D7).
-- **Çalıştırma yöntemi (D2 — provada çözüldü):** başsız CLI yolu **kapalı**: pakette gelen CLI (`~/.config/Claude/claude-code/2.1.299/*/claude`) bu makinede giriş yapmamış (`claude auth status`: `loggedIn: false`; her `-p` çağrısı "Not logged in" döner). Bunu ancak Safa tek seferlik `claude setup-token` / `/login` ile çözebilir; ben kimlik bilgisiyle uğraşmam. Bu yüzden oyları **oturum içi alt ajanlar** üretir (Agent aracı, `general-purpose`; oy A `sonnet`, oy B `opus`); kuyruk, kapılar, uzlaştırma ve paket Python araçlarıdır (`~/.cache/bilun-gap-classification/driver/`, 78 birim / mutant testi, `RUNBOOK.md`). Orkestratör bir Claude Code oturumudur: parti başına `prompt` → iki ajan (arka planda, aynı anda en çok iki) → `finish` (G1–G4 + araç-çağrı denetimi + uzlaştırma + durma koşulları). Orkestratör oturum kotaya ya da OOM'a takılırsa döngü durur; durum dosyasından kaldığı yerden sürer. Gece boyu çalışması için uygulamanın açık, makinenin uyanık kalması gerekir (`request_keep_awake`).
+- **Çalıştırma yöntemi (D2 — provada çözüldü):** başsız CLI yolu **kapalı**: pakette gelen CLI (`~/.config/Claude/claude-code/2.1.299/*/claude`) bu makinede giriş yapmamış (`claude auth status`: `loggedIn: false`; her `-p` çağrısı "Not logged in" döner). Bunu ancak Safa tek seferlik `claude setup-token` / `/login` ile çözebilir; ben kimlik bilgisiyle uğraşmam. Bu yüzden oyları **oturum içi alt ajanlar** üretir (Agent aracı, `general-purpose`; oy A `sonnet`, oy B `opus`); kuyruk, kapılar, uzlaştırma ve paket Python araçlarıdır (`~/.cache/bilun-gap-classification/driver/`, 80 birim / mutant testi, `RUNBOOK.md`). Orkestratör bir Claude Code oturumudur: parti başına `prompt` → iki ajan (arka planda, aynı anda en çok iki) → `finish` (G1–G4 + araç-çağrı denetimi + uzlaştırma + durma koşulları). Orkestratör oturum kotaya ya da OOM'a takılırsa döngü durur; durum dosyasından kaldığı yerden sürer. Gece boyu çalışması için uygulamanın açık, makinenin uyanık kalması gerekir (`request_keep_awake`).
 
 ---
 
@@ -178,7 +178,7 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 |---|---|
 | Ajan gerekçeyi uydurur | G2 (birebir alıntı) + G3 (doğrulanmış kanıt), ikinci bağımsız oy |
 | Rubrik partiler arasında kayar | Dondurulmuş rubrik + sha256; her partide aynı 8 örnek; G7 alarmı |
-| Sınıflandırıcı tembelleşir (hepsini N1 der) | Kalibrasyon (G6) + parti sınıf dağılımı alarmı |
+| Sınıflandırıcı tembelleşir (hepsini N1 der) | Kalibrasyon (G6, koşunun ilk adımı) + parti sınıf dağılımı uyarısı (G7b; durdurmaz, orkestratör örnek okur) |
 | İki oy aynı yanlışı yapar | B için farklı model / ifade; sabah 10+ satır spot kontrol; altın küme |
 | Yasak klasörler okunur | Fiziksel yokluk (okuma klonu) + G4 çıktı taraması |
 | OOM / kota | Seri çalışma, ≤2 süreç, checkpoint, ilk limit hatasında dur |
@@ -189,10 +189,10 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 
 ## 10. Yapılacaklar ve akşam provası
 
-Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-classification/driver/` (paket `gapclass`, `RUNBOOK.md`, 78 birim / mutant testi).
+Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-classification/driver/` (paket `gapclass`, `RUNBOOK.md`, 80 birim / mutant testi).
 
 - [x] Okuma klonu üretici (`git archive`, yasak klasörlerin yokluğu, salt-okunur) + yokluk testi
-- [x] Kuyruk üretici (394 → 48 parti, sha256'lar, `--scope money` = yalnız para etkileyen 101 madde) + durum dosyası
+- [x] Kuyruk üretici (394 → 37 parti, sha256'lar, `--scope money` = yalnız para etkileyen 101 madde → 10 parti) + durum dosyası
 - [x] Alan envanteri üretici (`models.py` → `claim_fields.md`)
 - [x] Rubrik + 7 çözülmüş örnek (örnekler kendi kapılarından geçer; sha256 manifestte)
 - [x] Altın küme üretici (45 madde, tohum 20261019; kapı yalnız 30 güçlü etiketle)
@@ -201,6 +201,7 @@ Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-class
 - [x] Uzlaştırıcı + paket üretici + prova raporu
 - [x] Orkestrasyon protokolü (`RUNBOOK.md`; `finish` komutu: ingest + denetim + uzlaştırma + durma koşulları)
 - [x] **Akşam provası** (2026-10-20 00:00–01:00): sonuçlar §10.1
+- [x] Prova sonrası iki değişiklik (aşağıda, §10.1 sonunda): küçük aile kalıntılarını birleştirme, G7b uyarısı
 - [ ] Gece koşusu — Safa'nın onayı ve kapsam kararı (D7) bekliyor
 
 ### 10.1 Prova sonuçları (gerçek ajanlar, gerçek maddeler)
@@ -227,7 +228,11 @@ Tahmin (kaba; parti içeriğine bağlı): tüm kuyruk × 2 oy **11–29 milyon t
 
 **Kapılar ve durma koşulları üzerinde bulgu:** G0 gerçekten çalıştı (laptop CI çalıştırıcısının `bilun-ci-*` konteyneri PR #326'nın kontrollerini koşarken koşuyu başlatmadı; konteyner bitince başladı).
 
-**Önerilen ilk gece (D7):** `prepare --scope money` (101 madde, ~12 parti) + 30 güçlü altın maddelik kalibrasyon; ardından paket. Paketi gördükten sonra: ya kalan 293 maddeyi tek oyla (A) koşmak, ya ikinci oyu yalnız A'nın düşük güvenli / E1 / K1 dediği satırlara uygulamak (maliyeti kabaca yarıya indirir), ya da tamamını ikinci gece. Karar paketten sonra.
+**Önerilen ilk gece (D7):** `prepare --scope money` (101 madde, 10 parti) + 30 güçlü altın maddelik kalibrasyon (3 parti); ardından paket. Paketi gördükten sonra: ya kalan 293 maddeyi tek oyla (A) koşmak, ya ikinci oyu yalnız A'nın düşük güvenli / E1 / K1 dediği satırlara uygulamak (maliyeti kabaca yarıya indirir), ya da tamamını ikinci gece. Karar paketten sonra.
+
+**Prova sonrası yapılan iki değişiklik (araçlar testli; gerçek ajanlarla henüz koşulmadı, ilk kez gece koşusunda çalışacaklar).**
+1. *Küçük aile kalıntıları birleşir.* Provadan önce para etkileyen kapsam 20 partiydi, bir kısmı 1–3 maddelikti; her parti iki ajanın rubriği ve kodu baştan okuma maliyetini öder. 6'dan az maddelik kalıntılar `mixed` partide toplanır: tüm kuyruk 48 → 37, para etkileyen kapsam 20 → 10 parti. Son parti hâlâ tek maddelik bir artık (kabul edildi; tahminen ~4 dk ek süre, ölçülmedi).
+2. *G7'nin ikinci yarısı uyarı olarak eklendi.* Planın ilk sürümü "bir partide tek sınıf > %70" alarmını vaat ediyordu, araçta yoktu (yalnız uyuşma < %60 durduruyordu). Şimdi ≥6 maddelik bir partide tek üst-sınıf > %70 ise `finish` çıktısında ve `progress.log`'da `skew` görünür; **durdurmaz** (homojen bir ailede meşru olabilir), orkestratör iki satır okuyup kararı yazar.
 
 ## 11. Kapsam dışı
 
