@@ -903,3 +903,101 @@ def test_patient_report_wires_reconcile() -> None:
     assert report.yatak_puani.confirmed_yatak_try == pytest.approx(
         5 * FIXTURE_BED_DAILY_TRY, abs=0.01
     )
+
+
+# --- The ER bed (530000) and hemodialysis also take days: an ICU transfer day they took is dropped once ----------
+# (tasks/todo.md, 2026-10-19; 530000 "Yatak, yemek, hasta vizit hizmetlerini kapsar", SUT §2.4.4.D-1.(11))
+
+
+def _transfer_bill(extra_lines, *, service_discharge: date = date(2026, 7, 15)):
+    """ICU claim 10-13 July (510090 on 10 July, ICU last day 13 July) and the service claim 13 July - discharge."""
+    icu = _make_claim_header(claim_id="ICU", department="Yogun Bakim")
+    srv = _make_claim_header(
+        claim_id="SRV", admission=date(2026, 7, 13), discharge=service_discharge, department="genel_cerrahi"
+    )
+    procs = [
+        _make_proc_line(claim_id="ICU", procedure_line_id="ICU-1", procedure_code="510090"),
+        _make_proc_line(
+            claim_id="SRV", procedure_line_id="SRV-1", procedure_code="510010", procedure_name="Standart yatak",
+            procedure_date=date(2026, 7, 13), billed_amount_try="0.00",
+        ),
+        *extra_lines,
+    ]
+    return [icu, srv], procs
+
+
+def _er_line(day: date, *, code: str = "530000", billed: str = "577.45"):
+    return _make_proc_line(
+        claim_id="SRV", procedure_line_id=f"X-{code}-{day.isoformat()}", procedure_code=code, procedure_date=day,
+        billed_amount_try=billed,
+    )
+
+
+def test_reconcile_an_icu_transfer_day_the_er_bed_also_pays_is_dropped_once() -> None:
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    claims, procs = _transfer_bill([_er_line(date(2026, 7, 13))])
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
+    assert _yatak_opp("SRV", opps)["bed_days"] == 2  # the detector took 13 July out: 530000 pays that day
+
+    reconciled = reconcile_yatak_bed_days(opps, claims, procs)
+
+    srv_rec = _yatak_opp("SRV", reconciled)
+    assert srv_rec["bed_days"] == 2  # not 1: the same day is not taken out a second time
+    assert "icu_overlap_days" not in srv_rec and "icu_overlap_dates" not in srv_rec
+    assert srv_rec["expected_yatak_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+
+
+def test_reconcile_an_er_day_and_a_different_icu_transfer_day_are_both_dropped() -> None:
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    claims, procs = _transfer_bill([_er_line(date(2026, 7, 14))])
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
+    assert _yatak_opp("SRV", opps)["bed_days"] == 2  # 13 and 15 July
+
+    reconciled = reconcile_yatak_bed_days(opps, claims, procs)
+
+    srv_rec = _yatak_opp("SRV", reconciled)
+    assert srv_rec["bed_days"] == 1  # 15 July
+    assert (srv_rec["icu_overlap_days"], srv_rec["icu_overlap_dates"]) == (1, ["2026-07-13"])
+    assert srv_rec["expected_yatak_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
+
+
+def test_reconcile_a_stay_of_one_date_the_dialysis_already_took_has_no_icu_overlap_to_record() -> None:
+    """The ICU last day is the only day of a one-date service claim that bills hemodialysis: the day bed is in the
+    dialysis price, so the detector expects nothing and the ICU reconciliation has nothing to take."""
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    claims, procs = _transfer_bill(
+        [_er_line(date(2026, 7, 13), code="704230", billed="4342.48")], service_discharge=date(2026, 7, 13)
+    )
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
+    assert _yatak_opp("SRV", opps)["bed_days"] == 0
+
+    srv_rec = _yatak_opp("SRV", reconcile_yatak_bed_days(opps, claims, procs))
+
+    assert srv_rec["bed_days"] == 0
+    assert "icu_overlap_days" not in srv_rec
+
+
+def test_reconcile_the_er_bed_inside_a_package_window_changes_nothing_for_the_icu_day() -> None:
+    """A mandated/billed package over the transfer day already bundles it (no double subtraction) and the ER line
+    inside the window is a bundled day too: the ICU reconciliation behaves as before."""
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    package = _make_proc_line(
+        claim_id="SRV", procedure_line_id="PKG", procedure_code="P600040", procedure_category="paket",
+        procedure_date=date(2026, 7, 13), billed_amount_try="5000.00",
+    )
+    claims, procs = _transfer_bill([package, _er_line(date(2026, 7, 14))], service_discharge=date(2026, 7, 25))
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"ICU", "SRV"})
+    srv = _yatak_opp("SRV", opps)
+    assert srv["bundled_days"] == 10  # 13-22 July (group B)
+
+    reconciled = reconcile_yatak_bed_days(opps, claims, procs)
+
+    assert _yatak_opp("SRV", reconciled)["bed_days"] == srv["bed_days"] == 3  # 23-25 July

@@ -54,6 +54,13 @@ incubator or cot is above the day-bed price and leaves nothing to recover); a cl
 bills 510120 (or 510010) and no newborn bed line has stated its bed, so this motor stands
 down and the standard-bed motor, which nets 510120 lines on such a stay, owns the day.
 
+Days whose bed is already paid (EK-2/B 530000, 510100, 510110: "Yatak, yemek, hasta vizit hizmetlerini kapsar"), the
+day bed of a stay of one date that the SUT forbids (530000 on the claim; hemodialysis 704210 / 704230, SUT
+§2.4.4.D-1.(11)) and every day of a day case that bills an EK-2/C procedure (§2.2.2.(4); a day case has no admission,
+§2.1.2.B.(1), so no other bed) are no newborn bed days either: the standard-bed motor's ``bed_days_not_expected``
+returns them, they are taken out after the ICU transfer days (never twice) and before the standard-bed days are
+counted, and the ``detail`` says why.
+
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
 EK-2/C package window (SUT §2.2.2.B-1(1), (3)-(4): the package includes the bed
@@ -101,6 +108,7 @@ from src.bilun.domain.prose_rules.types import (
 )
 from src.bilun.domain.prose_rules.yatak_puani import (
     DAY_BED_CODE,
+    bed_days_not_expected,
     claim_package_window,
     counts_against_expected_days,
 )
@@ -343,6 +351,12 @@ def detect_yenidogan_yatak_opportunities(
         )
         days = max(days - len(icu_overlap_dates), 0)
 
+        # Days whose bed is already paid (530000, 510100, 510110) or whose day bed the SUT forbids (530000, hemodialysis,
+        # a day case's EK-2/C procedures) are no newborn bed days either; they lie after the package window, and an ICU
+        # transfer day taken out above is not taken out a second time. The standard-bed motor takes the same days.
+        not_expected = bed_days_not_expected(claim, claim_procs, window)
+        days -= len(not_expected.dates - set(icu_overlap_dates))
+
         # Net out the billed newborn bed lines (510070 + 510081), like the ICU and
         # standard-bed motors; lines inside a mandated package window belong to the package.
         counted_lines = [line for line in bed_lines if counts_against_expected_days(line, window)]
@@ -491,6 +505,7 @@ def detect_yenidogan_yatak_opportunities(
                 f"at the day bed ({DAY_BED_CODE}, Gündüz yatak tarifesi), not as a Kuvöz "
                 f"({_BED_KUVOZ}) or Kot ({_BED_KOT}) day."
             )
+        detail_parts.extend(not_expected.reasons)
 
         overlap_keys: dict[str, Any] = {}
         if icu_overlap_dates:
