@@ -14,6 +14,18 @@ Persistent lessons captured from corrections during work. Reviewed at the start 
 
 **Rule:** Commit a WIP checkpoint before any loop that edits working files, so a leftover mutant shows at once in `git diff --stat` and can be undone safely. After any restart or kill run `git diff --stat` and compare the sha256 list before anything else. Run the loop as one process and alone: not beside a gate, vitest or another session's gate.
 
+## 2026-10-18 — "Is the work in this tree" is a tree comparison, never a search for commit subjects: a squash-merge keeps the content and drops the commits
+
+**Pattern:** The brief's Step 0 said the worktree must show a commit named "review round 3" and, if it did not, merge the unpushed branch `claude/funny-tereshkova-662936`. That branch had been squash-merged as #319 while the brief was written, and the worktree was cut from `origin/main` (7ea9457a): `git log | grep -i "review round 3"` found nothing, although the test file the same step names existed. Followed literally, the step would have merged an already-merged branch (15 commits of duplicate history and a merge commit with an empty diff) into the new branch. `git diff claude/funny-tereshkova-662936 HEAD` was empty: the two trees were identical.
+
+**Rule:** Check that work is present by content: `git diff --stat <branch> HEAD` empty (or `git merge-base --is-ancestor` for an unsquashed branch) and `gh pr view <n> --json state,mergeCommit`. When the brief's Step 0 and the repository disagree, verify the content, say so in the report, and do not merge by reflex. Squash-merged work keeps its files and loses its commit subjects.
+
+## 2026-10-18 — After a squash merge, `git log | grep <subject>` cannot find the branch's commits: decide "is the work in?" by content
+
+**Pattern:** The brief for the newborn-detection task opened with a Step 0: `git log --oneline | grep -i "review round 3"` must show a commit, else merge the newborn-bed branch. That branch had been squash-merged as #319 in the meantime: the grep found nothing although every line of the branch was already in `origin/main` (HEAD == `origin/main`), and merging as told would have put 18 commits of identical content into the history. The test that settled it: `git diff --name-only $(git merge-base HEAD <branch>) <branch>` listed 36 files and `git diff HEAD <branch> -- <those files>` was empty.
+
+**Rule:** Whether a branch's work is in the tree is a question about content, not about commit subjects: it is in when `git diff HEAD <branch> -- $(git diff --name-only $(git merge-base HEAD <branch>) <branch>)` is empty. A subject missing from `git log` proves nothing after a squash. A brief that says "merge branch X if its commit is missing" should say "if that diff is not empty" instead; the follow-up cards `short-stay-bed` and `bed-double-billing` of the newborn block start from the same Step 0.
+
 ## 2026-10-18 — A mutation loop restores from a byte-identical backup, never with `git checkout --` while the file has uncommitted edits
 
 **Pattern:** To prove a new test bites, I removed one contract key at a time from `public_contracts.json` and restored the file with `git checkout -- <file>` after each mutant. The file also held my own uncommitted additions (two new keys), so the first restore silently threw them away: the second "mutant" then failed for a reason that had nothing to do with the mutation, and I read it as a kill. I noticed only because the mutation script's own assertion failed on a key that should have been there.

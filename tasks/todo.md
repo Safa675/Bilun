@@ -89,6 +89,179 @@ The work was cut at 22:11 by an OOM kill of the Claude app (reported by the orch
 ### Out of Scope
 Pushing and the PR (Safa's call); cache rebuild and staging update (cached reports need a rebuild before the rows show); the ICU detector's own open points (zero-charge ICU evidence, whole-line amount); a detector for 510070 and 510081 on one day (explicit in the SUT text, separate); the newborn detection (department tokens), short-stay bed, package-window handling for this pair; making the ICU pair visible as a row; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`, `data/synthetic/demo_vignettes.json`; any file pinned by `data/gazette/sut_coverage_evidence.json` (checked: none of the files above is among the 37 pinned `src/` files); `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data` (never opened; the EK-2/B text was read from the derived `annex=EK-2B` parquet partition).
 
+## Task: Stays under 24 hours at the day bed (510120) in both bed motors — SUT §2.2.2.(3) (2026-10-18)
+
+### Goal
+A stay whose admission date equals its discharge date (so under 24 hours) is priced at the day bed 510120 (44.45 TL on the 2026-07-07 list) by the standard-bed motor and by the newborn bed motor, not as a full 510010 (222.36) or Kuvöz (440.98) day; a stay billed correctly as 510120 leaves nothing to recover and counts as the billed bed; no day is counted by both motors; the 16 showcase reports stay byte-identical.
+
+Safa decided first (asked in the app, answered "Evet" on 2026-10-18): "24 saatten kısa yatışlarda iki yatak motoru da gündüz yatak (510120, ~44,45 TL) fiyatlasın mı?" Follow-up of the "Newborn bed motor" block below (found-not-fixed item 3, review finding F5). Step 0: the worktree is cut from `origin/main` (7ea9457a), which already holds that work as the squash-merge #319; `git diff claude/funny-tereshkova-662936 HEAD` is empty (the branch tip and `main` have the same tree), so the branch was not merged (the check "a commit named `review round 3`" fails only because squash-merge drops the subjects).
+
+### Evidence (read from the files, 2026-10-18)
+- SUT §2.2.2.(3) (clause C000648): "24 saatten kısa süreli yatışlarda yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır." It names no patient group: a newborn is no exception (Kuvöz and Kot are not billable for such a stay; the bed fee is the day bed).
+- EK-2/B 510120 "Gündüz yatak tarifesi" (74.96 puan = 44.45 TL on the 2026-07-07 list): "Günübirlik tedaviler, 24 saatten kısa süren yatarak tedaviler, acil müşahade için faturalandırılır. Yemek hizmetleri dahildir."
+- `lookup_procedure_code("510120", visit_date=…)` has a price on every list since 2013 (6.60 → 44.45) and is exactly one fifth of 510010 on each (33.00 / 222.36 on the same dates): the catalog needs no fallback.
+- The claim has dates, no times: a stay inside one calendar date is certainly under 24 hours; an overnight stay under 24 hours (two dates) cannot be seen. Stated limit, not fixed.
+
+### Measured before (in-memory bills, one date 2026-07-10; `probe_same_day.py` in the session scratchpad; amounts in TL, newborn = Z38.0 "yenidoğan", adult = I10 "kardiyoloji")
+| Bill | newborn row (expected / recoverable) | standard-bed row (days, expected / recoverable) | headline |
+|---|---|---|---|
+| N1 nothing billed | 440.98 / 440.98 | 0 days (newborn owns it) | 440.98 |
+| N2 510120 billed in full (44.45) | 440.98 / **440.98** (review F5: the day bed is not seen) | 0 | 440.98 |
+| N3 510120 billed 20.00 | 440.98 / 440.98 | 0 | 440.98 |
+| N4 510010 billed 222.36 | none (stands down) | 1 day, 222.36 / 0 | 0.00 |
+| N5 510070 billed 440.98 | 440.98 / 0 | 0 | 0.00 |
+| N6 510070 billed 20.00 | 440.98 / 420.98 | 0 | 420.98 |
+| N7 510081 billed 311.30 | 311.30 / 0 | 0 | 0.00 |
+| N8 510120 + 510070 billed | 440.98 / 0 | 0 | 0.00 |
+| N9 group-B package on the day | 0 days | 0 | 0.00 |
+| N10 ICU claim (510090 line) | none | 0 | 742.60 (ICU motor) |
+| N11 same-day ward claim on an ICU claim's last day | 0 days | 0 | (the ICU claim's own rows) |
+| N12 ICU-named department, no ICU code, nothing billed | none | 1 day, 222.36 / 222.36 | 222.36 |
+| N13 department "Pediatri" (J18.9), nothing billed | 440.98 / 440.98 | 0 | 440.98 |
+| A1 adult, nothing billed | – | 1 day, 222.36 / 222.36 | 222.36 |
+| A2 adult, 510120 billed in full | – | 222.36 / **222.36** | 222.36 |
+| A3 adult, 510120 billed 20.00 | – | 222.36 / 222.36 | 222.36 |
+| A4 adult, 510010 billed 222.36 | – | 222.36 / 0 | 0.00 |
+| A5 adult, package on the day | – | 0 | 0.00 |
+| A7 adult, 510070 billed 440.98 | – | 222.36 / 222.36 (inherited: no newborn line is read on a non-newborn claim) | 222.36 |
+Controls (not same-day, must not move): N14 newborn 2 days nothing billed 881.96 (headline 956.06); A8 adult 2 days 444.72 (headline 518.82).
+
+### Decisions
+1. **Rate and code.** A single-date stay is priced at the 510120 price of the admission date; the row's `bed_code` is "510120" and `daily_rate_try` / `puan` are the day bed's. `rule_id` of the standard-bed row stays `yatak_puani_510010` (it names the §2.2.2 bed-day rule, and the surfacing-audit map lists it); the newborn row's `rule_id` is derived from `bed_code` as before (`yenidogan_yatak_510120`). `type`, row keys and `same_day_stay` keep their meaning, so the public contract does not change. A single-date stay is priced at the day bed also when its one day is already taken out (package window, ICU last day, standard-bed day): days 0, expected 0.
+2. **Standard-bed motor.** Nets 510010 lines as before and, on a single-date stay only, 510120 lines too (a 510120 line on a multi-day stay pays no standard-bed day, so it is not counted there: unchanged). The credit-line cap and the mandated-window rule (`counts_against_expected_days`) apply to both codes. A billed 510010 on a single-date stay (222.36 against 44.45 due) leaves 0 to recover as before; the over-billing is an audit matter, not this task.
+3. **Newborn motor.** On a single-date stay the one owned day is priced at the day bed, with no Kuvöz/Kot split; the counted lines stay 510070 / 510081 (a billed incubator or cot beside the day-bed price leaves 0, capped at the charge). A claim that bills 510120 and no newborn bed line has stated its bed: the motor stands down exactly as for a billed 510010, the standard-bed motor owns the day and nets the 510120 line (this settles the open point: the billed day bed counts as the billed bed, and its line is netted by one motor only). A 510120 line beside a newborn bed line is ignored by this motor (the newborn bed line covers the day first, as with a 510010 line). The rooming-in gate and the ICU gates are unchanged.
+4. **The two reconciliations.** `reconcile_yatak_icu_overlap` and `reconcile_yatak_newborn_overlap` recompute `(bed_days − overlap) × daily_rate_try`; the row now carries the day-bed rate, so their money is right without a change. `reconcile_yatak_newborn_overlap` only names the newborn row's own bed code in its sentence when that code is the day bed ("510070 / 510081" would be wrong there).
+5. **Details.** Standard-bed single-date row: "Gündüz yatak (510120): … = 44.45 TRY …" and one sentence, "Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed at the day bed (510120, Gündüz yatak tarifesi), not as a full 510010 day." replacing "consider 510120 … instead of 510010". Newborn single-date row: the same label and a sentence naming Kuvöz and Kot as not billable; its Kuvöz-mutual-exclusion, Kot and "Kuvöz is assumed" sentences are not said for the day bed. Details of multi-day rows stay byte-identical.
+6. **Why not stand the newborn motor down on every single-date stay** (rejected): the day bed is the SUT's price for any such stay, so the newborn bed type is moot; but the row Safa asked to have priced would vanish, a billed Kuvöz line on a single-date stay would then net nothing in the standard-bed motor (a false 44.45), and the ownership architecture (newborn motor owns its days, the standard bed loses them) would change. Changing the rate and the stated-bed rule keeps it.
+
+### Design
+- `prose_rules/yatak_puani.py`: public constant `DAY_BED_CODE`; `_daily_rate` takes the bed code (default 510010; same signature for existing callers); on `same_day` rate, `bed_code`, netted codes, detail label and sentence change; the `same_day_stay` key stays.
+- `prose_rules/yenidogan_yatak.py`: `single_date` branch (day-bed rate, `bed_code`, `puan`, no Kuvöz/Kot split, sentences), stand-down on a billed 510120 for a single-date stay; `_daily_rate(bed_code, visit_date)` unchanged (tests monkeypatch it).
+- `billing/claim_yatak_newborn_overlap.py`: the sentence names the newborn row's bed code when it is the day bed.
+- No new row key, no `public_contracts.json` change, no frontend change (the frontend's exact-sentence translation of the old advice sentence, `api.billingProse.yatakSameDay`, is then never matched: it was matched only when it was the whole detail, which it never was; listed as a follow-up).
+- Tests: see the subtasks. Mutants of the changed branches (mine, then an independent review).
+
+### Subtasks
+- [x] 0. Step 0 (no merge needed, see Goal); `before.json` of the 16 reports and `probe_before.json` / `probe_before.txt` saved in the session scratchpad.
+- [x] 1. Ask Safa the yes/no first; change nothing until he answered ("Evet").
+- [x] 2. Read AGENTS.md, the two newest lessons, both motors, both reconciliations, the tests, the consumers (contract, frontend, engine proof, surfacing audit map, pins: none of the files to change is pinned).
+- [x] 3. Write this plan (before any code).
+- [x] 4. Tests first, red (48 failed / 165 passed before the code): standard-bed motor on a single date (nothing billed → 44.45; 510120 in full → 0; 510120 in part; 510010 or 510070 billed → 0; 510120 on a 2-day stay is not counted; package window; credit line; a day-bed price on the date of the stay; `same_day_stay` and the sentence); newborn motor (nothing billed → 44.45 with `bed_code` 510120; 510070 / 510081 billed → 0; 510070 in part; 510120 billed → stands down; 510120 beside a newborn line; package, ICU transfer day; Kuvöz/Kot sentences absent; a 2-day stay unchanged); pipeline in `test_yatak_newborn_overlap.py` (N1–N13 and A1–A8 of the table, headline = rows, the day counted once, ICU motor untouched); the existing `test_same_day_stay_flags_gunduz` and the same-day newborn tests updated to the new rule.
+- [x] 5. `yatak_puani.py`.
+- [x] 6. `yenidogan_yatak.py`.
+- [x] 7. `claim_yatak_newborn_overlap.py`.
+- [x] 8. Consumers: public contract (no new key), surfacing audit `--check` exit 0, engine-proof and API tests (1,178 passed), no frontend file changed.
+- [x] 9. Dump the 16 reports again: byte-identical to `before.json` (sha256 f09e8a1b…); probe table after equals the targets.
+- [x] 10. Independent review (fresh agent, code only, own clones; two runs, the first cut by an OOM kill): findings below, fixed or classified.
+- [x] 11. Gates one after the other (never in parallel: three at once got the app OOM-killed): ruff, targeted tests, full pytest, `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, CI-image gate alone on a clone of the code tip.
+- [x] 12. Commits on the branch (no push; a merge of `origin/main` makes it more than one commit); results in this block; Turkish report.
+
+### Results (2026-10-18/19, branch `claude/youthful-lichterman-28b767`; nothing pushed)
+Commits, oldest first: `6adbf7f4` day bed in both motors, plan, tests · `80510069` docs checkpoint · `5fb59032` merge of `origin/main` a7a105da (one conflict, `tasks/todo.md`, where every PR adds a block at the top: all blocks kept, this one first; #320 and #321 touched no bed file; AGENTS.md and `agents/` are gone with #321, as intended) · `4eefa039` the yatak catalog stub prices 510120 (a stub with 510010 only made the motor skip a one-date stay: `test_reconcile_same_day_icu_stay`) · `9347ced2` a day-bed line beside a reversed newborn line takes the day, the block labels name the day bed · `3f300f50` the spelling reading narrowed to 510120 (see below) · `b4e1b87e` pins for the review's survivors · the results commit (the tip).
+
+**The rule now** (evidence and decisions above): a stay whose admission date equals its discharge date is priced at the 510120 price of that date by the standard-bed motor and by the newborn motor (`bed_code` 510120, `daily_rate_try` / `puan` the day bed's, no Kuvöz/Kot choice); a billed 510120 line nets it in the standard-bed motor (on such a stay only, spelled like the newborn stand-down reads it); the newborn motor stands down for a claim that bills 510120 or 510010 and no newborn bed line, counts only 510070/510081 lines, and lets a 510120 line cover the day beside a reversed (credit) newborn line exactly as a 510010 line does; both reconciliations recompute at the rate the row carries (only one sentence changed); a missing 510120 price skips the stay instead of falling back to a full-day price. Stays of two dates or more are untouched.
+
+**Before → after** (in-memory bills, one date 2026-07-10, headline `sgk_uplift_try`; `probe_same_day.py` in the session scratchpad; the table above lists the rows):
+| Bill | before | after |
+|---|---|---|
+| N1 newborn, nothing billed | 440.98 | 44.45 |
+| N2 same, 510120 billed in full (44.45) | **440.98** | 0.00 |
+| N3 same, 510120 billed 20.00 | 440.98 | 24.45 |
+| N4 same, 510010 billed 222.36 | 0.00 | 0.00 |
+| N5 / N7 same, 510070 440.98 / 510081 311.30 billed | 0.00 | 0.00 |
+| N6 same, 510070 billed 20.00 | 420.98 | 24.45 |
+| N8 510120 + 510070 both billed | 0.00 | 0.00 |
+| N9 package on the day / N10 ICU claim / N11 ICU last day of another claim | 0.00 / 742.60 / (ICU rows) | unchanged |
+| N12 ICU-named department, nothing billed (standard bed) | 222.36 | 44.45 |
+| N13 department "Pediatri", nothing billed | 440.98 | 44.45 |
+| A1 adult, nothing billed | 222.36 | 44.45 |
+| A2 adult, 510120 billed in full | **222.36** | 0.00 |
+| A3 adult, 510120 billed 20.00 | 222.36 | 24.45 |
+| A4 adult, 510010 billed 222.36 | 0.00 | 0.00 |
+| A7 adult, 510070 billed 440.98 (inherited: no newborn line is read on an adult claim) | 222.36 | 44.45 |
+Controls, not moved: N14 newborn 2 days 956.06, A8 adult 2 days 518.82.
+
+**Showcase:** `baseline.py` dumps of the 16 reports are byte-identical before and after (sha256 `f09e8a1b…`) at every commit, also after the merge of `origin/main` (a dump of an export of a7a105da is the same file); no showcase claim is a one-date inpatient claim.
+**Gates (code tip `b4e1b87e`, the results commit only adds this block):** local: ruff on `src/ scripts/` clean; full pytest 11,984 passed / 2 skipped / 1 failed (the known local-only pandas 2.3.3 test `test_curated_catalog_idempotence`, absent in the image); `compile_rules.py --check` 119 artifacts byte-identical; `audit_manifest_parity.py --drug-only` 0 issues; `build_rule_surfacing_inventory.py --check` exit 0. CI-image gate, alone, on a clone (`bilun-laptop-ci:20261008-runtime-complete`, Python 3.13.15, pandas 3.0.6, polars 2.0.0): ruff clean, **11,985 passed, 2 skipped, 0 failed** (149 s), compile_rules 119 byte-identical, parity 0 issues, no tracked file changed by the run.
+**Independent review** (fresh agent, own clones, code only; notes `same-day-review-notes.md` in the shared notes folder): on 3f300f50, 3,000 random one-date bills (3,352 one-date claims, each in patient and in bill scope, boundary dates with date-dependent prices, odd claim types, two ICU claims ending the same day) hold 0 violations of nine invariants (no day above the day-bed price, 0 ≤ recoverable ≤ expected, rows = headline = block components, no day in both rows, a stay billed exactly as 510120 leaves 0 on both motors in every context, nothing billed gives one 44.45, patient scope = sum of bill scopes, no claim above one day bed) and 0 disagreements with its first-principles oracle; against base 1,939 claims equal, 1,413 lower, 0 higher; 46 hand scenarios in two scopes equal the hand numbers; 2,700 random bills of two or more dates (6,147 reports) are byte-identical to base; 62 hand mutants, 55 killed by the three core test files (56 with six more), the survivors that change money or a visible sentence were pinned in `b4e1b87e`, two are equivalent. SUT audit (I re-read the clauses and the in-force EK-2/B rows in `sut_clauses.parquet` and `annex=EK-2B` myself): C000648 reads exactly as quoted and names no patient group; C000492 (2.1.2.B.(1)) defines the day case as treatment "yatış ve taburcu işlemi yapılmadan 24 saatlik zaman dilimi içinde", so a same-date admission and discharge is a real under-24-hour stay; C000649 (2.2.2.(4)): no day bed for EK-2/C procedures of a day case; C000969 (2.4.4.D-1.(11)): the day bed is in the hemodialysis price; EK-2/B 530000: "510120, 530003 ile birlikte faturalandırılmaz".
+**What the review changed:** (1) hypotheses H1 (an incubator billed, reversed and re-billed as 510120 still showed 44.45) and H2 (spelled 510120 not netted) were reproduced and fixed in `9347ced2`; (2) my first fix also read spelled 510010 lines in the standard-bed motor, and the review measured 88 of 2,733 multi-date reports moving (downward, correct, but a change of stays of two dates and an inherited gap): narrowed in `3f300f50` to the new 510120 line, 510010 is matched as exactly as before and a characterisation test pins that.
+**Corrections to what I said earlier:** (a) the plan said "no frontend change" without checking the row titles: they are the kind labels and now name Kuvöz/Kot for a day-bed row (found 4 below); (b) the commit message of `9347ced2` says both motors read bed codes alike: after `3f300f50` that holds for 510120 only.
+**Found, not fixed (measured; inherited unless stated):**
+1. *A bed is expected where the SUT includes or forbids it.* A one-date `yatis` claim that bills 530000 (EK-2/B: "510120, 530003 ile birlikte faturalandırılmaz") or hemodialysis 704210 / 704230 (C000969, §2.4.4.D-1.(11): the day bed is in the dialysis price) shows a 44.45 day bed (222.36 before); day-case EK-2/C procedures take no day bed (C000649). Neither motor models these exclusions.
+2. *A billed 510120 beside a zero-amount or partial newborn bed line is netted by neither row* (the newborn line covers the day first): Kuvöz 0.00 + 510120 44.45 shows 44.45 (440.98 before), Kuvöz 10.00 + 510120 shows 34.45; the same pattern exists with 510010 (decision 3, the "placeholder bill" corner).
+3. *A spelled 510010 (" 510.010 ", "510-010") is read by the newborn stand-down and not netted by the standard-bed motor*: a one-date claim billed 222.36 as " 510.010 " shows 44.45 (222.36 before); on stays of two dates the same gap moved 62 of 1,200 random bills when the review normalised it. Pinned by a characterisation test; closing it is a decision.
+4. *Row titles (user-visible, low).* The action rows of both motors keep `kind` `yenidogan_yatak` / `yatak_puani_standard_bed`, and `recommendedActionTitle` titles a row without a code by that kind: "Newborn bed charge (510070 / 510081)" and "Standard bed-day charge" (`frontend/src/messages/*/billing.ts:98,102`) also on a row whose detail starts "Gündüz yatak (510120)".
+5. *Dead frontend mapping* of the removed advice sentence (`apiMessages.ts:338-343`, `messages/en|tr/api.ts`); it only ever matched when the sentence was the whole detail, which it never was.
+6. The ICU motor's own `same_day_stay` (a stay under 24 hours in the ICU is priced 510090 by the ICU motor: the clause says "yatak bedeli" without exception); a same-date `acil` claim with dates is read as inpatient by `infer_care_setting` and gets a day-bed row; an overnight stay under 24 hours (two dates) cannot be seen, the claim has no times.
+7. The standard-bed row keeps `rule_id` `yatak_puani_510010` on a 510120 row (the surfacing-audit map lists it; `bed_code` carries the code); a standard-bed row with 0 billable days still says it bills the bed at the day bed (only in the API detail, no action row at 0 money).
+8. *Cache:* cached reports need a rebuild before a one-date row shows the day bed (staging update is Safa's call).
+
+### Out of Scope
+Pushing and the PR (Safa's call); the ICU motor's own `same_day_stay` flag (`icu_puani.py`, its own convention, not a bed motor) and the companion-bed motor (suppresses same-day claims already); overnight stays under 24 hours (no times in the claim data); an audit-exposure detector for a 510010 / 510070 line billed on a stay under 24 hours (over-billing against §2.2.2.(3): nothing to recover, a detector like the ICU one); the frontend's dead sentence mapping; the code spelling difference between the motors ("510.010" with a dot stands the newborn motor down but is not netted by the standard-bed motor: inherited, not touched); the open decisions of the block below (who counts as a newborn, the Kuvöz default); cache rebuild and staging update; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`, `data/synthetic/demo_vignettes.json`; any file pinned by `data/gazette/sut_coverage_evidence.json` (checked: none of the files to change is among the 37); `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data` (never opened).
+
+## Task: Newborn detection — only a Z38 / P00–P96 diagnosis or a newborn-named department marks a newborn stay (2026-10-18)
+
+### Goal
+`yenidogan_yatak` reads a claim as a newborn stay only from its diagnosis (Z38.x, P00–P96) or from a department whose name says newborn (yenidoğan, neonatal, neonatoloji, newborn), in any Turkish spelling; "çocuk" and "pediatri" wards are no newborn signal; the 16 showcase reports do not move by one byte.
+
+Follow-up `newborn-detection` of the "Newborn bed motor" block below (decision 7a; Results "Found, not fixed" 1). Branch `claude/clever-hamilton-d5a51b`. **Safa's decision, 2026-10-18, in this session: yes** to "Yenidoğan algılamasını daraltalım mı? Tanı (Z38, P00–P96) ve yenidoğana özel bölüm adları (yenidoğan, neonatal, neonatoloji) kalsın; 'çocuk' ve 'pediatri' bölüm adları yenidoğan sayılmasın."
+
+Step 0: the newborn-bed work is already in this tree, so no merge was run. `origin/main` 7ea9457a (#319) is the squash merge of branch `claude/funny-tereshkova-662936` (8cfe7ca2, which contains the puan-motor branch): all 36 files that branch changed are identical in HEAD (`git diff HEAD <branch> -- <those files>` is empty) and `tests/unit/domain/billing/test_yatak_newborn_overlap.py` exists. The "review round 3" subject is missing from `git log` only because the squash dropped the individual subjects; merging the branch would add 18 commits of identical content.
+
+### Measured before (the real pipeline, `compute_patient_billing_report`, in-memory 3-day stay, nothing billed; probe `probe_detect.py` in the session scratchpad)
+Headline `sgk_uplift_try` = the two bed blocks + the unrelated companion-bed rows (148.20). Showcase dump: byte-identical to the newborn session's final dump `after7.json` (sha256 f09e8a1bf1b41a16…).
+| Department · primary ICD-10 | newborn motor | standard-bed motor | headline |
+|---|---|---|---|
+| Çocuk Sağlığı ve Hastalıkları · Cocuk Sagligi ve Hastaliklari · ÇOCUK SAĞLIĞI VE HASTALIKLARI · Pediatri · Çocuk Cerrahisi · J18.9 | **1,322.94** | 0.00 | 1,471.14 |
+| PEDİATRİ (dotted capital İ) · J18.9 | 0.00 | 667.08 | 815.28 |
+| Yenidoğan · Yenidoğan Servisi · Neonatal · Newborn · J18.9 | 1,322.94 | 0.00 | 1,471.14 |
+| **YENİDOĞAN · YENIDOGAN · Yenidogan · yenıdoğan · Neonatoloji · NEONATOLOJİ** · J18.9 | 0.00 (not read) | 667.08 | 815.28 |
+| a P / Z38 code with any department (Pediatri + Z38.0, Çocuk Sağlığı… + P07.3, Kardiyoloji + Z38.0 / P22.0) | 1,322.94 | 0.00 | 1,471.14 |
+| controls: Kardiyoloji · J18.9, genel · I10 | 0.00 | 667.08 | 815.28 |
+
+EK-2/B wording behind "0–28 days" (derived annex partitions, present in all 14 list versions, among them the in-force 2026-07-07 list): "Yenidoğan (0-28gün) olguların ameliyatlarında, epikrizde doğum tarihi belirtilmek kaydıyla, …".
+
+### Consequence (to be stated plainly in the report)
+A newborn whose claim carries neither a Z38 / P code nor a newborn-named department is no longer read: `ClaimHeader` has no age or birth date (the only age data in the repo is `PatientCopayProfile.birth_year`, `claims/models.py:26`: a year, too coarse for 28 days, and not part of this decision). A paediatric stay of any age stops being a Kuvöz stay; its bed days belong to the standard-bed motor like any other inpatient claim (so the two bed motors still count each day once). No showcase claim has a newborn signal (their departments: Genel Cerrahi, Ic Hastaliklari, Gogus Hastaliklari, Beyin ve Sinir Cerrahisi, Ortopedi ve Travmatoloji, Acil Tip), so no showcase number can move.
+
+### Design
+- `prose_rules/yenidogan_yatak.py` only: the folding that `_department_names_icu` does inline (NFKD, strip combining marks, `ı` → `i`, `[a-z]+` words) becomes `_department_words`, used by both functions (the ICU function keeps its behaviour). `_NEWBORN_DEPT_TOKENS` holds the folded newborn-specific names (`yenidogan`, `yenedogan`, `neonatal`, `neonatoloji`, `newborn`); `çocuk`, `cocuk`, `pediatri` are dropped. `_department_is_newborn` = any token inside any word, so "YENİDOĞAN", "Yenidogan", "yenıdoğan", "NEONATOLOJİ" read and "Yenidoğan Servisi" still does. `_is_newborn_icd10` is untouched. The module docstring ("Detection"), the detector docstring and the comment above the tokens say what is read, what is not and why (0–28 days in EK-2/B; no age on `ClaimHeader`).
+- Nothing else reads the tokens (`grep`: only this file); `claim_yenidogan_yatak.py` already says "Z38/P00-P96 diagnosis or yenidoğan department". Not pinned by `data/gazette/sut_coverage_evidence.json` (0 mentions; its prose_rules paths are `adult_gh_draft.py` and `drug_indication.py`).
+- Tests (red first): in `tests/unit/domain/prose_rules/test_yenidogan_yatak.py` every spelling in both directions (newborn names with no P code read; paediatric names with no P code do not; a P/Z38 code reads whatever the department says; adult control; the ICU spellings of the existing tests unchanged); in `tests/unit/domain/billing/test_yatak_newborn_overlap.py` the F1 test on paediatric departments keeps its assertions with an honest docstring, plus two report-level pins (a paediatric stay with no bed billed has no Kuvöz row and keeps its 3 standard-bed days; a newborn-named department with a non-newborn code has the Kuvöz row and the standard bed gives the days up). Mutants by hand, restored from a byte-identical backup.
+
+### Subtasks
+- [x] 0. Step 0 checked by content (36/36 files identical to the branch tip; no merge needed).
+- [x] 1. Read AGENTS.md, lessons, the previous block, the motor, its tests and the dependents (only the motor file and `test_yatak_newborn_overlap.py:218`).
+- [x] 2. Safa answered yes to the narrowing (quoted above).
+- [x] 3. Write this plan (before any code).
+- [x] 4. Dump `baseline.py` before (16 showcase reports), compare it with the newborn session's final dump `after7.json`; run `probe_detect.py` before and fill "Measured before".
+- [x] 5. Tests first, red.
+- [x] 6. `yenidogan_yatak.py`: `_department_words`, tokens, `_department_is_newborn`, `_department_names_icu` on the shared folding, docstrings.
+- [x] 7. Tests green; mutants (re-add `çocuk`, re-add `pediatri`, drop the folding, drop `ı` → `i`, drop `neonatoloji`, drop `yenidogan`) each killed; file restored byte-identical.
+- [x] 8. Dump `baseline.py` after and `cmp` with before (byte-identical); `probe_detect.py` after; fill the Results.
+- [x] 9. Gates one after the other: ruff on `src/ scripts/`, targeted tests, full pytest (local), `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, `build_rule_surfacing_inventory.py --check`.
+- [x] 10. Committed (`1181c504`, no push); CI-image gate on a clone of that tip; gate numbers in the Results; Turkish report to Safa.
+
+### Results (2026-10-18, branch `claude/clever-hamilton-d5a51b`, on `origin/main` 7ea9457a; nothing pushed)
+**What changed:** `src/bilun/domain/prose_rules/yenidogan_yatak.py` (the only source file) and two test files. `_department_words` is the folding `_department_names_icu` did inline, now shared (the ICU function reads the same); `_NEWBORN_DEPT_TOKENS` = `yenidogan`, `yenedogan`, `neonatal`, `neonatoloji`, `newborn`; `_department_is_newborn` = a token inside a folded word; `çocuk`, `cocuk`, `pediatri` are gone; the module docstring, the detector docstring and the two comments state the rule and its consequence. `_is_newborn_icd10` and everything after the detection are untouched.
+
+**Before → after** (the real pipeline, 3-day stay, nothing billed; probe output in the session scratchpad; the 148.20 inside every headline is the unrelated companion-bed row):
+| Department · primary ICD-10 | newborn motor | standard-bed motor | headline |
+|---|---|---|---|
+| Çocuk Sağlığı ve Hastalıkları · ÇOCUK SAĞLIĞI VE HASTALIKLARI · Cocuk Sagligi ve Hastaliklari · Pediatri · Çocuk Cerrahisi · J18.9 | 1,322.94 → **0.00** | 0.00 → 667.08 | 1,471.14 → **815.28** |
+| YENİDOĞAN · YENIDOGAN · Yenidogan · yenıdoğan · Neonatoloji · NEONATOLOJİ · J18.9 | 0.00 → **1,322.94** | 667.08 → 0.00 | 815.28 → **1,471.14** |
+| Yenidoğan · Yenidoğan Servisi · Neonatal · Newborn · J18.9; any department with a Z38 / P code; PEDİATRİ; Kardiyoloji; genel | unchanged | unchanged | unchanged |
+
+**Consequence (decided by Safa):** a newborn whose claim has neither a Z38 / P00–P96 code nor a newborn-named department is no longer read; a paediatric stay of any age is a standard-bed stay like any other inpatient claim, and the two bed motors still count each day once. Unchanged by design: the match is inside a word ("Yenidoğanlar" reads), "yeni doğan" in two words, "bebek" and "perinatoloji" are not read (not in the decision).
+**Showcase:** `baseline.py` dumped before and after the change is byte-identical (16 reports, 73,420 bytes, sha256 f09e8a1bf1b41a16…) and equal to the newborn session's final dump `after7.json`; no showcase claim carries a newborn signal.
+**Tests:** 10 new test functions, 222 cases (the two files hold 366). `test_yenidogan_yatak.py`: every newborn spelling reads with no P code (dotted and plain capitals, ASCII, dotless `ı`, decomposed `ğ`, neonatal / neonatoloji / newborn, the kept `yenedogan`, a name inside a word, punctuation and digits as separators); every paediatric spelling does not (also the capitals and ASCII); a Z38 / P code reads whatever the department says (7 codes × 28 departments, a secondary diagnosis row, codes just outside the range do not); empty / None; a newborn name that names an ICU is still the ICU motor's. `test_yatak_newborn_overlap.py`: the F1 test on paediatric departments keeps its assertions with an honest docstring; a paediatric stay with no bed billed is the standard-bed motor's 3 days (667.08), no Kuvöz row; a newborn-named department with a non-newborn code is a Kuvöz stay (1,322.94) and the standard bed gives the days up. Red first: 41 failed / 322 passed on the unchanged engine, green after.
+**Mutants** (by hand, restored from a byte-identical backup, checked with `cmp` and `git diff --stat`): 14 of 14 killed (re-add `cocuk`, re-add `pediatri`, keep combining marks, drop `ı` → `i`, drop each of `neonatoloji` / `yenidogan` / `newborn` / `neonatal` / `yenedogan`, whole-word equality, NFKD → NFC, ICU join with a space, department signal off, words not split).
+**Gates (local, one after the other):** `ruff check src/ scripts/` clean; `compile_rules.py --check` 119 artifacts byte-identical; `audit_manifest_parity.py --drug-only` exit 0, 0 issues; `build_rule_surfacing_inventory.py --check` exit 0; targeted bed-motor suites 546 passed + 1 xfailed; full pytest 12,131 passed, 2 skipped, 1 xfailed, **1 failed = the known local-only pandas 2.3.3 test** (`test_pandas_string_storage_variation_does_not_change_decoded_semantics`; CI pins pandas 3.0.6). No tracked file was changed by the runs. **CI-image gate** on a clone of the committed tip `1181c504` (the only heavy job on the machine; Python 3.13.15, pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1): ruff on `src/ scripts/` clean; **12,132 passed, 2 skipped, 1 xfailed, 0 failed** in 195 s (the same 12,132 tests as the local run, where the pandas 2.3.3 one fails and here it passes); `compile_rules.py --check` 119 artifacts byte-identical; manifest parity 23 manifests, 0 issues; no tracked file changed by the run; docker exit 0 after 255 s.
+**Lesson written:** after a squash merge `git log | grep <subject>` cannot find a branch's commits; Step 0 of this brief would have merged 18 commits of identical content. The follow-up cards `short-stay-bed` and `bed-double-billing` start from the same Step 0.
+
+### Out of Scope
+The Kuvöz default for unbilled days; same-day stays; the audit detector for 510010 beside Kuvöz (the other two follow-up cards of the newborn block); detection by age or birth date (`ClaimHeader` has neither); further newborn spellings that are not in the decision ("yeni doğan" as two words, "bebek", "perinatoloji"); a change of `ClaimHeader`, of the synthetic data or of `data/synthetic/demo_vignettes.json`; cache rebuild and staging update; pushing and the PR; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`; `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data` (never opened).
+
 ---
 
 ## Task: Remove AGENTS.md and the agents/ folder (2026-10-18)

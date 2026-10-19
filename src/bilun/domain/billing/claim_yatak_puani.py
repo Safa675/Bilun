@@ -16,7 +16,7 @@ from .types import (
 )
 
 _PROSE_RULE_SOURCE = (
-    "SUT §2.2.2 standard bed tariff (510010) — inclusive LOS × price_try"
+    "SUT §2.2.2 standard bed tariff (510010; day bed 510120 under 24 hours) — inclusive LOS × price_try"
 )
 
 

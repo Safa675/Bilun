@@ -52,13 +52,18 @@ def install_yatak_catalog_stub(
     monkeypatch: pytest.MonkeyPatch,
     *,
     daily_rate_try: float = FIXTURE_BED_DAILY_TRY,
+    day_bed_rate_try: float | None = None,
 ) -> float:
-    """Stub 510010 bed-day price_try used by yatak_puani."""
+    """Stub the 510010 bed-day price_try used by yatak_puani, and the 510120 day-bed price_try
+    (SUT §2.2.2.(3): the bed of a stay of one date), a fifth of the bed day unless given."""
+    day_bed = round(daily_rate_try / 5, 2) if day_bed_rate_try is None else day_bed_rate_try
 
     def _lookup(raw_code: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
         code = str(raw_code or "").strip()
         if code == "510010":
             return {"entry": {"code": code, "price_try": daily_rate_try, "puan": 374.97}}
+        if code == "510120":
+            return {"entry": {"code": code, "price_try": day_bed, "puan": 74.96}}
         return {"entry": None}
 
     monkeypatch.setattr(
