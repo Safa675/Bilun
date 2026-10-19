@@ -1,3 +1,68 @@
+## Task: Newborn detection — only a Z38 / P00–P96 diagnosis or a newborn-named department marks a newborn stay (2026-10-18)
+
+### Goal
+`yenidogan_yatak` reads a claim as a newborn stay only from its diagnosis (Z38.x, P00–P96) or from a department whose name says newborn (yenidoğan, neonatal, neonatoloji, newborn), in any Turkish spelling; "çocuk" and "pediatri" wards are no newborn signal; the 16 showcase reports do not move by one byte.
+
+Follow-up `newborn-detection` of the "Newborn bed motor" block below (decision 7a; Results "Found, not fixed" 1). Branch `claude/clever-hamilton-d5a51b`. **Safa's decision, 2026-10-18, in this session: yes** to "Yenidoğan algılamasını daraltalım mı? Tanı (Z38, P00–P96) ve yenidoğana özel bölüm adları (yenidoğan, neonatal, neonatoloji) kalsın; 'çocuk' ve 'pediatri' bölüm adları yenidoğan sayılmasın."
+
+Step 0: the newborn-bed work is already in this tree, so no merge was run. `origin/main` 7ea9457a (#319) is the squash merge of branch `claude/funny-tereshkova-662936` (8cfe7ca2, which contains the puan-motor branch): all 36 files that branch changed are identical in HEAD (`git diff HEAD <branch> -- <those files>` is empty) and `tests/unit/domain/billing/test_yatak_newborn_overlap.py` exists. The "review round 3" subject is missing from `git log` only because the squash dropped the individual subjects; merging the branch would add 18 commits of identical content.
+
+### Measured before (the real pipeline, `compute_patient_billing_report`, in-memory 3-day stay, nothing billed; probe `probe_detect.py` in the session scratchpad)
+Headline `sgk_uplift_try` = the two bed blocks + the unrelated companion-bed rows (148.20). Showcase dump: byte-identical to the newborn session's final dump `after7.json` (sha256 f09e8a1bf1b41a16…).
+| Department · primary ICD-10 | newborn motor | standard-bed motor | headline |
+|---|---|---|---|
+| Çocuk Sağlığı ve Hastalıkları · Cocuk Sagligi ve Hastaliklari · ÇOCUK SAĞLIĞI VE HASTALIKLARI · Pediatri · Çocuk Cerrahisi · J18.9 | **1,322.94** | 0.00 | 1,471.14 |
+| PEDİATRİ (dotted capital İ) · J18.9 | 0.00 | 667.08 | 815.28 |
+| Yenidoğan · Yenidoğan Servisi · Neonatal · Newborn · J18.9 | 1,322.94 | 0.00 | 1,471.14 |
+| **YENİDOĞAN · YENIDOGAN · Yenidogan · yenıdoğan · Neonatoloji · NEONATOLOJİ** · J18.9 | 0.00 (not read) | 667.08 | 815.28 |
+| a P / Z38 code with any department (Pediatri + Z38.0, Çocuk Sağlığı… + P07.3, Kardiyoloji + Z38.0 / P22.0) | 1,322.94 | 0.00 | 1,471.14 |
+| controls: Kardiyoloji · J18.9, genel · I10 | 0.00 | 667.08 | 815.28 |
+
+EK-2/B wording behind "0–28 days" (derived annex partitions, present in all 14 list versions, among them the in-force 2026-07-07 list): "Yenidoğan (0-28gün) olguların ameliyatlarında, epikrizde doğum tarihi belirtilmek kaydıyla, …".
+
+### Consequence (to be stated plainly in the report)
+A newborn whose claim carries neither a Z38 / P code nor a newborn-named department is no longer read: `ClaimHeader` has no age or birth date (the only age data in the repo is `PatientCopayProfile.birth_year`, `claims/models.py:26`: a year, too coarse for 28 days, and not part of this decision). A paediatric stay of any age stops being a Kuvöz stay; its bed days belong to the standard-bed motor like any other inpatient claim (so the two bed motors still count each day once). No showcase claim has a newborn signal (their departments: Genel Cerrahi, Ic Hastaliklari, Gogus Hastaliklari, Beyin ve Sinir Cerrahisi, Ortopedi ve Travmatoloji, Acil Tip), so no showcase number can move.
+
+### Design
+- `prose_rules/yenidogan_yatak.py` only: the folding that `_department_names_icu` does inline (NFKD, strip combining marks, `ı` → `i`, `[a-z]+` words) becomes `_department_words`, used by both functions (the ICU function keeps its behaviour). `_NEWBORN_DEPT_TOKENS` holds the folded newborn-specific names (`yenidogan`, `yenedogan`, `neonatal`, `neonatoloji`, `newborn`); `çocuk`, `cocuk`, `pediatri` are dropped. `_department_is_newborn` = any token inside any word, so "YENİDOĞAN", "Yenidogan", "yenıdoğan", "NEONATOLOJİ" read and "Yenidoğan Servisi" still does. `_is_newborn_icd10` is untouched. The module docstring ("Detection"), the detector docstring and the comment above the tokens say what is read, what is not and why (0–28 days in EK-2/B; no age on `ClaimHeader`).
+- Nothing else reads the tokens (`grep`: only this file); `claim_yenidogan_yatak.py` already says "Z38/P00-P96 diagnosis or yenidoğan department". Not pinned by `data/gazette/sut_coverage_evidence.json` (0 mentions; its prose_rules paths are `adult_gh_draft.py` and `drug_indication.py`).
+- Tests (red first): in `tests/unit/domain/prose_rules/test_yenidogan_yatak.py` every spelling in both directions (newborn names with no P code read; paediatric names with no P code do not; a P/Z38 code reads whatever the department says; adult control; the ICU spellings of the existing tests unchanged); in `tests/unit/domain/billing/test_yatak_newborn_overlap.py` the F1 test on paediatric departments keeps its assertions with an honest docstring, plus two report-level pins (a paediatric stay with no bed billed has no Kuvöz row and keeps its 3 standard-bed days; a newborn-named department with a non-newborn code has the Kuvöz row and the standard bed gives the days up). Mutants by hand, restored from a byte-identical backup.
+
+### Subtasks
+- [x] 0. Step 0 checked by content (36/36 files identical to the branch tip; no merge needed).
+- [x] 1. Read AGENTS.md, lessons, the previous block, the motor, its tests and the dependents (only the motor file and `test_yatak_newborn_overlap.py:218`).
+- [x] 2. Safa answered yes to the narrowing (quoted above).
+- [x] 3. Write this plan (before any code).
+- [x] 4. Dump `baseline.py` before (16 showcase reports), compare it with the newborn session's final dump `after7.json`; run `probe_detect.py` before and fill "Measured before".
+- [x] 5. Tests first, red.
+- [x] 6. `yenidogan_yatak.py`: `_department_words`, tokens, `_department_is_newborn`, `_department_names_icu` on the shared folding, docstrings.
+- [x] 7. Tests green; mutants (re-add `çocuk`, re-add `pediatri`, drop the folding, drop `ı` → `i`, drop `neonatoloji`, drop `yenidogan`) each killed; file restored byte-identical.
+- [x] 8. Dump `baseline.py` after and `cmp` with before (byte-identical); `probe_detect.py` after; fill the Results.
+- [x] 9. Gates one after the other: ruff on `src/ scripts/`, targeted tests, full pytest (local), `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, `build_rule_surfacing_inventory.py --check`.
+- [x] 10. Committed (`1181c504`, no push); CI-image gate on a clone of that tip; gate numbers in the Results; Turkish report to Safa.
+
+### Results (2026-10-18, branch `claude/clever-hamilton-d5a51b`, on `origin/main` 7ea9457a; nothing pushed)
+**What changed:** `src/bilun/domain/prose_rules/yenidogan_yatak.py` (the only source file) and two test files. `_department_words` is the folding `_department_names_icu` did inline, now shared (the ICU function reads the same); `_NEWBORN_DEPT_TOKENS` = `yenidogan`, `yenedogan`, `neonatal`, `neonatoloji`, `newborn`; `_department_is_newborn` = a token inside a folded word; `çocuk`, `cocuk`, `pediatri` are gone; the module docstring, the detector docstring and the two comments state the rule and its consequence. `_is_newborn_icd10` and everything after the detection are untouched.
+
+**Before → after** (the real pipeline, 3-day stay, nothing billed; probe output in the session scratchpad; the 148.20 inside every headline is the unrelated companion-bed row):
+| Department · primary ICD-10 | newborn motor | standard-bed motor | headline |
+|---|---|---|---|
+| Çocuk Sağlığı ve Hastalıkları · ÇOCUK SAĞLIĞI VE HASTALIKLARI · Cocuk Sagligi ve Hastaliklari · Pediatri · Çocuk Cerrahisi · J18.9 | 1,322.94 → **0.00** | 0.00 → 667.08 | 1,471.14 → **815.28** |
+| YENİDOĞAN · YENIDOGAN · Yenidogan · yenıdoğan · Neonatoloji · NEONATOLOJİ · J18.9 | 0.00 → **1,322.94** | 667.08 → 0.00 | 815.28 → **1,471.14** |
+| Yenidoğan · Yenidoğan Servisi · Neonatal · Newborn · J18.9; any department with a Z38 / P code; PEDİATRİ; Kardiyoloji; genel | unchanged | unchanged | unchanged |
+
+**Consequence (decided by Safa):** a newborn whose claim has neither a Z38 / P00–P96 code nor a newborn-named department is no longer read; a paediatric stay of any age is a standard-bed stay like any other inpatient claim, and the two bed motors still count each day once. Unchanged by design: the match is inside a word ("Yenidoğanlar" reads), "yeni doğan" in two words, "bebek" and "perinatoloji" are not read (not in the decision).
+**Showcase:** `baseline.py` dumped before and after the change is byte-identical (16 reports, 73,420 bytes, sha256 f09e8a1bf1b41a16…) and equal to the newborn session's final dump `after7.json`; no showcase claim carries a newborn signal.
+**Tests:** 10 new test functions, 222 cases (the two files hold 366). `test_yenidogan_yatak.py`: every newborn spelling reads with no P code (dotted and plain capitals, ASCII, dotless `ı`, decomposed `ğ`, neonatal / neonatoloji / newborn, the kept `yenedogan`, a name inside a word, punctuation and digits as separators); every paediatric spelling does not (also the capitals and ASCII); a Z38 / P code reads whatever the department says (7 codes × 28 departments, a secondary diagnosis row, codes just outside the range do not); empty / None; a newborn name that names an ICU is still the ICU motor's. `test_yatak_newborn_overlap.py`: the F1 test on paediatric departments keeps its assertions with an honest docstring; a paediatric stay with no bed billed is the standard-bed motor's 3 days (667.08), no Kuvöz row; a newborn-named department with a non-newborn code is a Kuvöz stay (1,322.94) and the standard bed gives the days up. Red first: 41 failed / 322 passed on the unchanged engine, green after.
+**Mutants** (by hand, restored from a byte-identical backup, checked with `cmp` and `git diff --stat`): 14 of 14 killed (re-add `cocuk`, re-add `pediatri`, keep combining marks, drop `ı` → `i`, drop each of `neonatoloji` / `yenidogan` / `newborn` / `neonatal` / `yenedogan`, whole-word equality, NFKD → NFC, ICU join with a space, department signal off, words not split).
+**Gates (local, one after the other):** `ruff check src/ scripts/` clean; `compile_rules.py --check` 119 artifacts byte-identical; `audit_manifest_parity.py --drug-only` exit 0, 0 issues; `build_rule_surfacing_inventory.py --check` exit 0; targeted bed-motor suites 546 passed + 1 xfailed; full pytest 12,131 passed, 2 skipped, 1 xfailed, **1 failed = the known local-only pandas 2.3.3 test** (`test_pandas_string_storage_variation_does_not_change_decoded_semantics`; CI pins pandas 3.0.6). No tracked file was changed by the runs. **CI-image gate** on a clone of the committed tip `1181c504` (the only heavy job on the machine; Python 3.13.15, pandas 3.0.6, polars 2.0.0, pyarrow 25.0.1): ruff on `src/ scripts/` clean; **12,132 passed, 2 skipped, 1 xfailed, 0 failed** in 195 s (the same 12,132 tests as the local run, where the pandas 2.3.3 one fails and here it passes); `compile_rules.py --check` 119 artifacts byte-identical; manifest parity 23 manifests, 0 issues; no tracked file changed by the run; docker exit 0 after 255 s.
+**Lesson written:** after a squash merge `git log | grep <subject>` cannot find a branch's commits; Step 0 of this brief would have merged 18 commits of identical content. The follow-up cards `short-stay-bed` and `bed-double-billing` start from the same Step 0.
+
+### Out of Scope
+The Kuvöz default for unbilled days; same-day stays; the audit detector for 510010 beside Kuvöz (the other two follow-up cards of the newborn block); detection by age or birth date (`ClaimHeader` has neither); further newborn spellings that are not in the decision ("yeni doğan" as two words, "bebek", "perinatoloji"); a change of `ClaimHeader`, of the synthetic data or of `data/synthetic/demo_vignettes.json`; cache rebuild and staging update; pushing and the PR; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`; `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data` (never opened).
+
+---
+
 ## Task: Remove AGENTS.md and the agents/ folder (2026-10-18)
 
 ### Goal
