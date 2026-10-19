@@ -119,6 +119,41 @@ describe("ComplianceViewSection", () => {
     }
   });
 
+  it.each([
+    ["en", ">Standard bed billed on a newborn bed day: 510010<"],
+    ["tr", ">Standart yatak, yenidoğan yatağıyla aynı gün faturalandı: 510010<"],
+  ] as const)("titles a standard bed billed beside a newborn bed with its own kind label, not a humanized name (%s)", (locale, title) => {
+    const report = {
+      ...baseReport,
+      patient_id: "P-BEDPAIR",
+      audit_exposure_try: 222.36,
+      action_count: 1,
+      recommended_actions: [
+        {
+          action_id: "audit_exposure:F-6:yatak_newborn_overlap_double_billing:L-2",
+          surface: "audit_exposure",
+          kind: "yatak_newborn_overlap_double_billing",
+          finding_type: "compliance",
+          claim_id: "F-6",
+          procedure_code: "510010",
+          audit_risk_try: 222.36,
+          billed_try: 222.36,
+        },
+      ],
+    } as unknown as BillingActionReport;
+
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} />
+      </WorkspaceProvider>,
+      locale,
+    );
+
+    // The finding title is the kind label plus the code; a missing map entry would read
+    // "Yatak Newborn Overlap Double Billing", a missing message the raw key.
+    expect(html).toContain(title);
+  });
+
   it("matches KPI findings value with the unified rows count", () => {
     const html = renderToStaticMarkupWithLocale(
       <WorkspaceProvider>

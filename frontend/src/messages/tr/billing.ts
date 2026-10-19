@@ -102,7 +102,8 @@ const billing = {
       "yenidoganYatak": "Yenidoğan yatak ücreti (510070 / 510081)",
       "sessionPointViolation": "Seans oranı aşıldı",
       "bloodComponentPartialBill": "Kan bileşeni payın üzerinde faturalandı",
-      "bundledLineFlag": "Pakete dahil satır faturalandı (sezgisel)"
+      "bundledLineFlag": "Pakete dahil satır faturalandı (sezgisel)",
+      "yatakNewbornOverlapDoubleBilling": "Standart yatak, yenidoğan yatağıyla aynı gün faturalandı"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",

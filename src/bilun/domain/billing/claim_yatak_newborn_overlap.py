@@ -16,8 +16,10 @@ both motors: its newborn row carries ``bed_code`` 510120 and the standard-bed ro
 day-bed rate, so the days are recomputed at the rate each row carries; only the sentence
 differs (the day is not a Kuvöz or Kot day).
 
-The audit-exposure counterpart (510010 actually billed beside Kuvöz) is a
-separate detector and not part of this step.
+The audit-exposure counterpart (510010 actually billed on a day a Kuvöz / Kot line
+covers) is a separate detector and not part of this step:
+``prose_rules.yatak_newborn_overlap.detect_yatak_newborn_overlap``, called from
+``analyze_claim`` and re-run for the ``audit_exposure`` rows.
 """
 
 from __future__ import annotations

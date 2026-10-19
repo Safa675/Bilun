@@ -2,6 +2,18 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-19 — A brief's description of a sibling's wiring can be wrong: trace where the sibling's output goes before copying it
+
+**Pattern:** The brief for the 510010-beside-Kuvöz detector said its sibling `detect_yatak_icu_overlap` is "wired into `analyze_claim` and shown as audit_exposure rows" and listed the touchpoints that follow from that. Reading the sibling showed neither. The patient report reaches it through the Wave A focused path (`FocusedLegacyMaterializer` → `project_focused_legacy_rows` → `financial_findings`; `hidden_runtime` in the surfacing matrix); `analyze_claim` is not called for a patient context by the report or by any route (the dict adapter builds patient-less contexts, where its El Kitabı block is gated off); the only source of `audit_exposure` rows is `recommend_audit_exposure_from_claims` (unbundling findings). Building what the brief described would have added a call nobody consumes and no visible row; copying the real wiring (a 19th focused group) would have hit the import-time pin of 18 groups / 32 ids, the hash-pinned registry and the off-limits deploy tests.
+
+**Rule:** Before building a sibling of an existing detector, find out where the existing one's output goes: who calls it, which report field or row carries it, what its surfacing-matrix row says (`runtime_status`, `visibility_status`, hidden reason), and which pins and guards sit around it. Write that into the plan next to the brief's description. Where they differ, design for the outcome the brief wants (here: a visible row) and report the difference.
+
+## 2026-10-19 — A mutation loop writes the mutant first: a kill leaves it behind, so commit a checkpoint before the loop starts
+
+**Pattern:** My mutation loop kept byte-identical copies of the originals and restored them in a `finally` block. The Claude app was then OOM-killed (systemd-oomd; three sessions ran gates at once) and `finally` does not run on SIGKILL: the first mutant (`amount > 0` → `amount >= 0`) stayed in the detector, inside a tree with all my work uncommitted. It was found only because the saved sha256 list no longer matched; the file otherwise looked like my own code.
+
+**Rule:** Commit a WIP checkpoint before any loop that edits working files, so a leftover mutant shows at once in `git diff --stat` and can be undone safely. After any restart or kill run `git diff --stat` and compare the sha256 list before anything else. Run the loop as one process and alone: not beside a gate, vitest or another session's gate.
+
 ## 2026-10-18 — "Is the work in this tree" is a tree comparison, never a search for commit subjects: a squash-merge keeps the content and drops the commits
 
 **Pattern:** The brief's Step 0 said the worktree must show a commit named "review round 3" and, if it did not, merge the unpushed branch `claude/funny-tereshkova-662936`. That branch had been squash-merged as #319 while the brief was written, and the worktree was cut from `origin/main` (7ea9457a): `git log | grep -i "review round 3"` found nothing, although the test file the same step names existed. Followed literally, the step would have merged an already-merged branch (15 commits of duplicate history and a merge commit with an empty diff) into the new branch. `git diff claude/funny-tereshkova-662936 HEAD` was empty: the two trees were identical.
