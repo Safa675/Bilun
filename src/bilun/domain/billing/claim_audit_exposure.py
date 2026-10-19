@@ -1,7 +1,14 @@
-"""Aggregate audit exposure (over-billing risk) from exact claim lines — display only."""
+"""Aggregate audit exposure (over-billing risk) from exact claim lines — display only.
+
+Two sources add into one total and one list of rows: the unbundling findings (session factor, blood component,
+bundled line, mandated-package payment method) and the standard-bed lines billed on a day a newborn bed covers
+(``prose_rules.yatak_newborn_overlap``, the same detector ``analyze_claim`` calls). The risk of one line is
+counted once: a line already at risk under an unbundling bucket keeps only what it billed beyond that.
+"""
 
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -11,6 +18,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import (
     ClaimUnbundlingFinding,
     analyze_claim_unbundling,
 )
+from src.bilun.domain.prose_rules.yatak_newborn_overlap import detect_yatak_newborn_overlap
 
 # The four buckets of an unbundling finding that add to ``audit_exposure_try``, in the
 # order ``audit_exposure_total`` adds them.
@@ -105,15 +113,70 @@ class AuditExposureReview:
     rows: list[dict[str, Any]] = field(default_factory=list)
 
 
+def _risk_by_line(findings: list[ClaimUnbundlingFinding]) -> dict[tuple[str, str], float]:
+    """The risk the unbundling findings already count per ``(claim_id, procedure_line_id)``, over all four buckets.
+
+    The payment-method bucket has money in the total and no row, so it is counted here too. A line is
+    identified by the pair, as everywhere in the claim data: two claims may reuse a line id.
+    """
+    by_line: dict[tuple[str, str], float] = defaultdict(float)
+    for finding in findings:
+        for attr in _EXPOSURE_BUCKETS:
+            for entry in getattr(finding, attr):
+                if line_id := entry.get("procedure_line_id"):
+                    by_line[(finding.claim_id, str(line_id))] += float(entry.get("risk_amount_try") or 0.0)
+    return by_line
+
+
+def newborn_bed_overlap_rows(
+    ctx: PatientClaimContext, counted_by_line: dict[tuple[str, str], float]
+) -> list[dict[str, Any]]:
+    """The 510010 lines of the bill's claims billed on a day a newborn bed (510070 / 510081) covers.
+
+    The detector reads the patient's history, so a newborn bed on another claim of the patient is seen, and
+    emits for the claims of ``ctx`` only. A line is at risk for at most what it billed: money the unbundling
+    findings already count on the same line (``counted_by_line``) is taken off, so a package-included bed that
+    is also on a newborn bed day is not counted twice.
+    """
+    if not ctx.procedure_lines:
+        return []
+
+    rows: list[dict[str, Any]] = []
+    for violation in detect_yatak_newborn_overlap(
+        list(ctx.history.procedure_lines),
+        claim_ids_with_procs={line.claim_id for line in ctx.procedure_lines},
+    ):
+        counted = counted_by_line.get((violation["claim_id"], violation["procedure_line_id"]), 0.0)
+        room = violation["billed_amount_try"] - counted
+        risk = _money(min(violation["risk_amount_try"], max(0.0, room)))
+        if risk <= 0:
+            continue
+        rows.append(
+            {
+                "kind": violation["type"],
+                "claim_id": violation["claim_id"],
+                "procedure_line_id": violation["procedure_line_id"],
+                "procedure_code": violation["procedure_code"],
+                "procedure_name": violation["procedure_name"],
+                "risk_amount_try": risk,
+                "sut_section": violation["sut_section_id"],
+                "rule_id": violation["rule_id"],
+                "detail": violation["detail"],
+            }
+        )
+    return rows
+
+
 def recommend_audit_exposure_from_claims(ctx: PatientClaimContext) -> AuditExposureReview:
-    """One unbundling pass: the exposure total and the rows that explain it."""
+    """One unbundling pass and one bed pass: the exposure total and the rows that explain it."""
     findings = unbundling_findings_from_claims(ctx)
+    bed_rows = newborn_bed_overlap_rows(ctx, _risk_by_line(findings))
     return AuditExposureReview(
-        total_try=audit_exposure_total(findings),
-        rows=audit_exposure_rows(findings),
+        total_try=_money(audit_exposure_total(findings) + sum(row["risk_amount_try"] for row in bed_rows)),
+        rows=[*audit_exposure_rows(findings), *bed_rows],
     )
 
 
 def compute_audit_exposure_from_claims(ctx: PatientClaimContext) -> float:
     """Sum sourced/heuristic over-billing risk of a claim context — not SGK uplift."""
-    return audit_exposure_total(unbundling_findings_from_claims(ctx))
+    return recommend_audit_exposure_from_claims(ctx).total_try

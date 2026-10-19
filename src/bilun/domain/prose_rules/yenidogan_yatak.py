@@ -71,8 +71,15 @@ pays that day's bed, as the standard-bed motor already holds.
 
 Detection: a claim is "newborn" when its diagnoses contain an ICD-10 code
 starting with ``Z38`` (liveborn) or in the ``P00–P96`` perinatal range, OR
-when the claim ``department`` names a newborn/pediatric ward. With no
-detection signal the claim is honestly skipped.
+when the claim ``department`` names a newborn ward (yenidoğan, neonatal,
+neonatoloji, newborn; Turkish-folded, so "YENİDOĞAN" and "Yenidogan" read alike).
+A paediatric ward ("Çocuk Sağlığı ve Hastalıkları", "Pediatri", "Çocuk Cerrahisi")
+is no newborn signal: SUT's newborn is 0-28 days (EK-2/B "Yenidoğan (0-28gün)
+olguların ...") and a claim carries no age or birth date (the patient copay
+profile has a birth year only, too coarse for 28 days), so a child of any age
+would be priced as a Kuvöz stay. A newborn whose claim has neither a Z38 / P code
+nor a newborn-named department is therefore not read. With no detection signal the
+claim is honestly skipped.
 
 Bed selection: Kuvöz (510070) is the default higher-tier bed for an
 identified newborn inpatient stay, for every day no Kot line covers. Kot (510081)
@@ -121,8 +128,9 @@ _SUT_SECTION_ID = "2.2.2"  # EK-2B newborn bed tariff row
 # ICD-10 prefixes/ranges that mark a claim as a newborn episode.
 _NEWBORN_DX_PREFIXES = ("Z38",)  # Z38.* — liveborn infants
 _PERINATAL_RANGE = ("P00", "P96")  # P00–P96 — perinatal conditions
-# Department name fragments that indicate a newborn/pediatric ward.
-_NEWBORN_DEPT_TOKENS = ("yenidoğan", "yenedogan", "çocuk", "cocuk", "neonatal", "newborn", "pediatri")
+# Department name fragments that name a newborn ward, in the folded form of ``_department_words`` (lowercase ASCII).
+# "Çocuk" and "pediatri" are not here: a paediatric ward is no newborn ward (module docstring, "Detection").
+_NEWBORN_DEPT_TOKENS = ("yenidogan", "yenedogan", "neonatal", "neonatoloji", "newborn")
 # The two codes this motor recommends and nets (EK-2/B: never billed together, one per day).
 _NEWBORN_BED_CODES = frozenset({_BED_KUVOZ, _BED_KOT})
 # The standard bed: a claim that bills it (and no newborn bed) has stated its bed; the standard-bed motor owns it.
@@ -171,9 +179,23 @@ def _billed_units(line: ProcedureClaimLine) -> int:
     return max(int(getattr(line, "quantity", 1) or 1), 1)
 
 
+def _department_words(department: str) -> list[str]:
+    """The ``[a-z]+`` words of a department name, Turkish-folded: NFKD, combining marks dropped, ``ı`` read as ``i``.
+
+    "YENİDOĞAN", "Yenidoğan", "Yenidogan" and "yenıdoğan" give the same word; spaces, hyphens, slashes, dots and
+    digits only separate words.
+    """
+    folded = unicodedata.normalize("NFKD", (department or "").casefold().replace("ı", "i"))
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    return re.findall(r"[a-z]+", folded)
+
+
 def _department_is_newborn(department: str) -> bool:
-    dept = (department or "").casefold()
-    return any(token in dept for token in _NEWBORN_DEPT_TOKENS)
+    """True for a department whose name says newborn: yenidoğan, neonatal, neonatoloji, newborn (any Turkish spelling).
+
+    A paediatric ward ("Çocuk Sağlığı ve Hastalıkları", "Pediatri", "Çocuk Cerrahisi") is not one.
+    """
+    return any(token in word for word in _department_words(department) for token in _NEWBORN_DEPT_TOKENS)
 
 
 def _department_names_icu(department: str) -> bool:
@@ -182,9 +204,7 @@ def _department_names_icu(department: str) -> bool:
     Turkish-folded ("YOĞUN BAKIM", ASCII spellings), spaces, hyphens and digits ignored ("Yoğunbakım", "Yoğun-Bakım",
     "YB1") and the whole words YB / YBÜ / YYBÜ / ÇYBÜ / NICU / PICU / ICU. A ward named by what it is not ("Yoğun Bakım Dışı ...") also reads as ICU.
     """
-    folded = unicodedata.normalize("NFKD", (department or "").casefold().replace("ı", "i"))
-    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
-    words = re.findall(r"[a-z]+", folded)
+    words = _department_words(department)
     return "yogunbakim" in "".join(words) or any(word in _ICU_DEPT_WORDS for word in words)
 
 
@@ -201,7 +221,7 @@ def detect_yenidogan_yatak_opportunities(
     """Detect expected newborn bed charges for newborn inpatient claims.
 
     For each inpatient claim whose diagnoses or department mark it as a
-    newborn episode (Z38.* / P00–P96, or a yenidoğan/çocuk department),
+    newborn episode (Z38.* / P00–P96, or a yenidoğan / neonatal / neonatoloji department),
     prices the days this motor owns (inclusive LOS, less package-window,
     ICU-transfer and billed standard-bed days) at the Kuvöz default or, for
     billed Kot days, the Kot rate, nets the billed newborn bed lines and
@@ -263,7 +283,7 @@ def detect_yenidogan_yatak_opportunities(
         if claim.admission_date is None or claim.discharge_date is None:
             continue
 
-        # Newborn detection: ICD-10 (Z38 / P00–P96) or department name.
+        # Newborn detection: ICD-10 (Z38 / P00–P96) or a newborn-named department (not a paediatric one).
         dx_codes = _claim_diagnoses(claim, list(diagnoses))
         is_newborn_dx = any(_is_newborn_icd10(code) for code in dx_codes)
         is_newborn_dept = _department_is_newborn(getattr(claim, "department", "") or "")
