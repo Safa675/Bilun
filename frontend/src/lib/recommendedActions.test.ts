@@ -155,6 +155,21 @@ describe("recommendedAction labels", () => {
     );
   });
 
+  it("labels the day-bed kind in both locales instead of humanizing it", () => {
+    const inEnglish = (key: string, params?: Record<string, string | number>) =>
+      translate(enMessages, key, params);
+    const inTurkish = (key: string, params?: Record<string, string | number>) =>
+      translate(trMessages, key, params);
+
+    // The mapping exists: an unmapped kind would humanize to "Yatak Puani Day Bed".
+    expect(recommendedActionKindLabel(t, "yatak_puani_day_bed")).toBe(
+      "billing.recommendedActions.kinds.yatakPuaniDayBed",
+    );
+    // Both message files carry the text behind it, and it names neither Kuvöz nor Kot.
+    expect(recommendedActionKindLabel(inEnglish, "yatak_puani_day_bed")).toBe("Day bed charge (510120)");
+    expect(recommendedActionKindLabel(inTurkish, "yatak_puani_day_bed")).toBe("Gündüz yatak ücreti (510120)");
+  });
+
   it("humanizes unmapped snake_case kinds instead of Unknown", () => {
     expect(recommendedActionKindLabel(t, "brand_new_detector")).toBe(
       "Brand New Detector",
@@ -387,6 +402,40 @@ describe("recommendedActions", () => {
       value: 1764.5,
     });
     expect(recommendedActionLineCodes(newborn)).toEqual({ procedures: [], labs: [], materials: [], drugs: [] });
+  });
+
+  it("titles the row of a stay under 24 hours as the day bed on both bed surfaces, in both locales", () => {
+    const inEnglish = (key: string, params?: Record<string, string | number>) =>
+      translate(enMessages, key, params);
+    const inTurkish = (key: string, params?: Record<string, string | number>) =>
+      translate(trMessages, key, params);
+    // SUT §2.2.2.(3): both bed motors price such a stay at the day bed (510120); the engine gives the row this kind.
+    const dayBedRows: RecommendedActionItem[] = ["yatak_puani", "yenidogan_yatak"].map((surface) => ({
+      action_id: `${surface}:F-7:0`,
+      surface,
+      kind: "yatak_puani_day_bed",
+      procedure_code: null,
+      sgk_uplift_try: 44.45,
+      sut_section_id: "2.2.2",
+      finding_type: "opportunity",
+    }));
+
+    for (const row of dayBedRows) {
+      expect(getFindingType(row)).toBe("opportunity");
+      // The row carries no procedure code: the title is the kind label alone and no invoice line is highlighted.
+      expect(recommendedActionTitle(t, row)).toBe("billing.recommendedActions.kinds.yatakPuaniDayBed");
+      expect(recommendedActionTitle(inEnglish, row)).toBe("Day bed charge (510120)");
+      expect(recommendedActionTitle(inTurkish, row)).toBe("Gündüz yatak ücreti (510120)");
+      expect(recommendedActionAmountParts(t, row)).toEqual({
+        label: "billing.recommendedActions.amountSgkUplift",
+        value: 44.45,
+      });
+      expect(recommendedActionLineCodes(row)).toEqual({ procedures: [], labs: [], materials: [], drugs: [] });
+    }
+    // The title no longer names Kuvöz, Kot or the standard bed (the old kinds' labels).
+    for (const title of [recommendedActionTitle(inEnglish, dayBedRows[1]!), recommendedActionTitle(inTurkish, dayBedRows[1]!)]) {
+      expect(title).not.toMatch(/510070|510081|510010|Kuvöz|Kot\b|Newborn|Yenidoğan|Standard|Standart/);
+    }
   });
 
   it("maps recommended actions to per-section invoice-line codes for highlighting", () => {

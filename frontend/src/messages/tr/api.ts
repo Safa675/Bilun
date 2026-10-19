@@ -131,8 +131,6 @@ const api = {
       "Standart yatak (510010): {days} faturalanabilir yatak-günü (brüt YOB {grossDays} gün, {rate} ₺/gün, ameliyat günü {surgeryDay} EK-2/C paketine dahil) = {amount} ₺ (dahil YOB, taburcu günü faturalanır).",
     yatakStandard:
       "Standart yatak (510010): {days} faturalanabilir yatak-günü (brüt YOB {grossDays} gün, {rate} ₺/gün) = {amount} ₺ (dahil YOB, taburcu günü faturalanır).",
-    yatakSameDay:
-      "Aynı gün yatış/taburcu — 24 saatten kısa yatışlarda 510010 yerine 510120 (gündüz yatak) değerlendirin.",
     catalogMiat:
       "Katalog MIAT süresi: {period} — aralığı hasta öyküsüyle doğrulayın",
     preauthNote:

@@ -130,8 +130,6 @@ const api = {
       "Standard bed (510010): {days} billable bed-day(s) (gross LOS {grossDays} day(s) at {rate} TRY/day, surgery day {surgeryDay} bundled into EK-2/C package) = {amount} TRY (inclusive LOS, discharge day billed).",
     yatakStandard:
       "Standard bed (510010): {days} billable bed-day(s) (gross LOS {grossDays} day(s) at {rate} TRY/day) = {amount} TRY (inclusive LOS, discharge day billed).",
-    yatakSameDay:
-      "Same-day admission/discharge — consider 510120 (gündüz yatak) instead of 510010 for <24h stays.",
     catalogMiat: "Catalog MIAT period: {period} — verify interval vs patient history",
     preauthNote:
       "EK-3C-1 — medical appropriateness (tıbbi uygunluk) required before SGK submission (§3.1.2)",

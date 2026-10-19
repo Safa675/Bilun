@@ -655,6 +655,69 @@ class TestStayUnder24Hours:
             assert newborn_rows == []
 
 
+class TestDayBedActionRow:
+    """The action row of a stay priced at the day bed is its own kind, `yatak_puani_day_bed`, on both motors.
+
+    The frontend titles a row that has no procedure code by its kind, and the kinds `yatak_puani_standard_bed` and
+    `yenidogan_yatak` read "Standard bed-day charge" and "Newborn bed charge (510070 / 510081)": a title that names
+    Kuvöz and Kot on a 44.45 TRY row whose detail starts "Gündüz yatak (510120)". Only the row's kind changes; the
+    opportunity keeps its type, its keys and its money."""
+
+    @pytest.mark.parametrize(
+        ("newborn", "lines", "surface", "block_type", "recoverable"),
+        [
+            (False, (), "yatak_puani", "yatak_puani_standard_bed", 44.45),
+            (False, (("510120", "20.00"),), "yatak_puani", "yatak_puani_standard_bed", 24.45),
+            (True, (), "yenidogan_yatak", "yenidogan_yatak", 44.45),
+            (True, (("510070", "20.00"),), "yenidogan_yatak", "yenidogan_yatak", 24.45),
+        ],
+        ids=["standard-nothing-billed", "standard-day-bed-in-part", "newborn-nothing-billed", "newborn-kuvoz-in-part"],
+    )
+    def test_a_row_priced_at_the_day_bed_has_the_day_bed_kind(
+        self, newborn: bool, lines: tuple[tuple[str, str], ...], surface: str, block_type: str, recoverable: float
+    ) -> None:
+        report = _one_date_report(lines, newborn=newborn)
+
+        [row] = _bed_rows(report)
+        [opportunity] = (report.yenidogan_yatak if newborn else report.yatak_puani).opportunities
+        assert (row["surface"], row["kind"]) == (surface, "yatak_puani_day_bed")
+        assert row["detail"].startswith("Gündüz yatak (510120)")
+        # Only the row's kind: the opportunity keeps its type and bed code, the row its amount and class.
+        assert (opportunity["type"], opportunity["bed_code"]) == (block_type, "510120")
+        assert row["sgk_uplift_try"] == pytest.approx(recoverable, abs=0.005)
+        assert row["sgk_uplift_try"] == pytest.approx(opportunity["recoverable_uplift_try"], abs=0.005)
+        assert row["finding_type"] == "opportunity"
+        # No code and no name: the title is the kind label alone and no invoice line is highlighted.
+        assert row["procedure_code"] is None and row["procedure_name"] is None
+
+    @pytest.mark.parametrize(
+        ("newborn", "surface", "kind"),
+        [(False, "yatak_puani", "yatak_puani_standard_bed"), (True, "yenidogan_yatak", "yenidogan_yatak")],
+    )
+    def test_a_row_of_two_dates_keeps_its_kind(self, newborn: bool, surface: str, kind: str) -> None:
+        [row] = _bed_rows(_report(newborn=newborn, days=2))
+
+        assert (row["surface"], row["kind"]) == (surface, kind)
+        assert not row["detail"].startswith("Gündüz yatak")
+
+    @pytest.mark.parametrize("newborn", [True, False], ids=["newborn", "standard"])
+    def test_the_api_payload_and_its_public_projection_serve_the_day_bed_kind(self, newborn: bool) -> None:
+        """What the frontend receives: the row as the endpoint serializes it, and as the public projection keeps it."""
+        import json
+
+        from src.bilun.api.public_responses import project_public_response
+        from src.bilun.api.routes.billing import _serialize_billing_report
+
+        payload = json.loads(json.dumps(_serialize_billing_report(_one_date_report(newborn=newborn)), default=str))
+        public = project_public_response(payload, "/api/billing-report/{patient_id}")
+
+        for served in (payload, public):
+            [row] = [a for a in served["recommended_actions"] if a["surface"] in ("yenidogan_yatak", "yatak_puani")]
+            assert row["kind"] == "yatak_puani_day_bed"
+            assert row["sgk_uplift_try"] == pytest.approx(44.45, abs=0.005)
+            assert row["detail"].startswith("Gündüz yatak (510120)")
+
+
 class TestReconcileDayBed:
     def test_the_sentence_names_the_day_bed_when_the_newborn_row_is_a_day_bed_stay(self) -> None:
         opp = _yatak_opportunity("C1", bed_days=1, rate=44.45)

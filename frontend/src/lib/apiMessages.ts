@@ -336,13 +336,6 @@ function tryTranslateBillingProsePart(trimmed: string): string | null {
     });
   }
 
-  if (
-    trimmed ===
-    "Same-day admission/discharge — consider 510120 (gündüz yatak) instead of 510010 for <24h stays."
-  ) {
-    return t("api.billingProse.yatakSameDay");
-  }
-
   const miat = trimmed.match(
     /^Catalog MIAT period: (.+) — verify interval vs patient history$/,
   );
