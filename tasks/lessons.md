@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-19 — A repo-wide grep opens the folders a brief forbids: name the directories you search
+
+**Pattern:** The brief forbade opening `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data`. To find every mention of one removed sentence I ran `grep -rIn <pattern> .` with only `node_modules`, `.git` and `.next` excluded. Grep reads every text file under the root, so it read those folders too. All hits came from `frontend/src`, `tests` and `tasks` and nothing from the forbidden folders was printed, but the rule is about opening them, and a text search is opening.
+
+**Rule:** While such a rule is in force, never search from the repository root. Name the directories (`src tests frontend/src scripts tasks docs plans`) or exclude the forbidden ones explicitly (`--exclude-dir="raw data"` and the two `ilay` paths). If it happens anyway, say so in the report.
+
 ## 2026-10-19 — A brief that names three SUT exclusions is a lead, not the list: search the whole annex for the wording before fixing the named codes
 
 **Pattern:** The brief for the bed motors named 530000, hemodialysis 704210 / 704230 and clause C000649 as the places where "neither motor knows the bed is paid". Reading every EK-2/B row whose text says "yatak" showed the same sentence, "Yemek, yatak, hasta vizit hizmetlerini kapsar", on two codes nobody had named, 510100 (steril oda) and 510110 (izole oda): a 3-day stay billing 510100 daily showed 667.08 TL of standard-bed "recoverable", fifteen times the 44.45 TL day-bed rows the brief was about. The same sweep showed that C000649 was mostly covered already (grouped EK-2/C items open a package window; only the group-less ones such as dialysis and hyperbaric oxygen do not) and that an ICU-coded 3-day claim has its own unresolved standard-bed row (444.72 TL beside an ICU row of 0.00). None of that shows from the named codes alone.
