@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
@@ -1293,3 +1293,290 @@ def test_the_rule_source_names_the_day_bed_for_the_newborn_block_too() -> None:
     from src.bilun.domain.billing import claim_yenidogan_yatak
 
     assert "510120" in claim_yenidogan_yatak._PROSE_RULE_SOURCE
+
+
+# --- The bed is already paid, or the day bed may not be billed (tasks/todo.md, 2026-10-19) -------------------------
+# Evidence is quoted in test_bed_days_not_expected.py. Both bed motors read the same helper (`bed_days_not_expected`):
+# 530000 / 510100 / 510110 cover the bed of the days they are billed on; the day bed of a stay of one date is not
+# billed beside 530000, inside a hemodialysis price (704210 / 704230) or for the EK-2/C procedures of a day case.
+# The default stay is 10-12 July 2026 (Kuvöz 440.98, Kot 311.30, day bed 44.45).
+
+
+def _er(day: int = 0, *, quantity: int = 1, billed: str = "577.45", code: str = "530000", line_id: str | None = None):
+    return _line(
+        code, billed, quantity=quantity, procedure_date=date(2026, 7, 10) + timedelta(days=day),
+        line_id=line_id or f"{code}-{day}-{quantity}-{billed}",
+    )
+
+
+@pytest.mark.parametrize(
+    ("code", "billed"), [("530000", "577.45"), ("704230", "4342.48"), ("704210", "4342.48"), (" 704.230 ", "4342.48")]
+)
+def test_a_newborn_stay_of_one_date_whose_day_bed_the_sut_forbids_expects_no_day_bed(code: str, billed: str) -> None:
+    [opp] = _detect([_line(code, billed)], header=_one_date_header())
+
+    assert (opp["days"], opp["bed_code"], opp["bundled_days"]) == (0, "510120", 0)
+    assert opp["puan"] == pytest.approx(74.96, abs=0.01)  # the price stays visible on the row
+    assert opp["expected_try"] == 0.0 and opp["recoverable_uplift_try"] == 0.0
+    assert opp["same_day_stay"] is False  # no day is left, so no day-bed stay to note (as with a package window)
+    assert "No day bed (510120) is expected" in opp["detail"]
+    assert "Same-day" not in opp["detail"]
+
+
+def test_the_sentences_name_the_er_bed_and_the_dialysis() -> None:
+    [er] = _detect([_line("530000", "577.45")], header=_one_date_header())
+    [dialysis] = _detect([_line("704230", "4342.48")], header=_one_date_header())
+
+    assert "530000 (Acil serviste kritik hasta yatak ve takibi) is billed on this claim" in er["detail"]
+    assert "hemodialysis (704230) is billed on this claim" in dialysis["detail"]
+    assert "§2.4.4.D-1.(11)" in dialysis["detail"]
+
+
+def test_a_newborn_bed_billed_beside_530000_on_a_stay_of_one_date_recovers_nothing() -> None:
+    [opp] = _detect([_line("530000", "577.45"), _line("510070", "440.98", line_id="K")], header=_one_date_header())
+
+    assert (opp["days"], opp["expected_try"], opp["actual_billed_try"]) == (0, 0.0, pytest.approx(440.98, abs=0.005))
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_a_day_bed_billed_beside_530000_stands_down_and_leaves_the_day_to_the_standard_bed_motor() -> None:
+    """The claim has stated its bed (510120): as for any billed day bed, this motor stands down."""
+    assert _detect([_line("530000", "577.45"), _line("510120", "44.45", line_id="D")], header=_one_date_header()) == []
+
+
+@pytest.mark.parametrize("code", ["530003", "704233", "704290"])
+def test_other_codes_leave_the_day_bed_of_a_newborn_stay_of_one_date_alone(code: str) -> None:
+    [opp] = _detect([_line(code, "100.00")], header=_one_date_header())
+
+    assert (opp["days"], opp["same_day_stay"]) == (1, True)
+    assert opp["recoverable_uplift_try"] == pytest.approx(44.45, abs=0.005)
+    assert "No day bed" not in opp["detail"]
+
+
+@pytest.mark.parametrize("code", ["530000", "704230"])
+def test_a_reversed_line_leaves_the_newborn_day_bed_alone(code: str) -> None:
+    [opp] = _detect([_line(code, "-100.00")], header=_one_date_header())
+
+    assert opp["days"] == 1
+    assert opp["recoverable_uplift_try"] == pytest.approx(44.45, abs=0.005)
+    assert "No day bed" not in opp["detail"]
+
+
+def test_rooming_in_of_one_date_with_530000_expects_no_day_bed_even_when_opted_in() -> None:
+    [opp] = _detect(
+        [_line("530000", "577.45")], header=_one_date_header(), rooming_in_claim_ids={"C1"}, emit_kuvoz_for_rooming_in=True
+    )
+
+    assert (opp["rooming_in"], opp["days"], opp["expected_try"]) == (True, 0, 0.0)
+
+
+def test_a_package_over_the_only_day_leaves_the_package_to_explain_it() -> None:
+    for code, billed in (("530000", "577.45"), ("704230", "4342.48")):
+        [opp] = _detect([_package("P600330", date(2026, 7, 10)), _line(code, billed, line_id="X")], header=_one_date_header())
+
+        assert (opp["days"], opp["bundled_days"], opp["expected_try"]) == (0, 1, 0.0)
+        assert "No day bed" not in opp["detail"]
+
+
+# --- stays of several dates ----------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("lines", "days", "explained"),
+    [
+        ([_er(0)], 2, True),
+        ([_er(1)], 2, True),
+        ([_er(2)], 2, True),
+        ([_er(0, quantity=2)], 1, True),
+        ([_er(0, quantity=5)], 0, True),
+        ([_er(0), _er(1), _er(2)], 0, True),
+        ([_er(1), _er(1, line_id="again")], 2, True),
+        ([_er(0, code="510100", quantity=3)], 0, True),
+        ([_er(0, code="510110")], 2, True),
+        ([_er(-1)], 3, False),  # the day before the admission
+        ([_er(3)], 3, False),  # the day after the discharge
+        ([_er(0, billed="-577.45")], 3, False),  # a reversal
+        ([_er(0, code="704230", billed="4342.48")], 3, False),  # dialysis takes nothing from a stay of several dates
+    ],
+    ids=[
+        "er-day1", "er-day2", "er-day3", "er-two-days", "er-quantity-past-the-stay", "er-every-day", "er-twice-one-day",
+        "sterile-room-all", "isolation-room-day1", "before", "after", "reversal", "dialysis",
+    ],
+)
+def test_the_days_a_bed_including_line_pays_are_not_newborn_bed_days(lines, days: int, explained: bool) -> None:
+    [opp] = _detect(lines)
+
+    assert (opp["bed_code"], opp["days"], opp["bundled_days"]) == ("510070", days, 0)
+    assert opp["expected_try"] == pytest.approx(days * 440.98, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(days * 440.98, abs=0.01)
+    assert opp["same_day_stay"] is False
+    assert opp["puan"] == pytest.approx(743.65, abs=0.01)
+    assert ("are paid by" in opp["detail"] and "not expected as bed days" in opp["detail"]) is explained
+
+
+def test_the_detail_names_the_paid_days_and_the_code() -> None:
+    [opp] = _detect([_er(1, quantity=2)])
+
+    assert (
+        "2 day(s) (2026-07-11, 2026-07-12) are paid by 530000 (EK-2/B: it covers yatak, yemek, hasta vizit) and are "
+        "not expected as bed days."
+    ) in opp["detail"]
+    assert opp["detail"].startswith("Yenidoğan yatağı (510070): 1 bed-day(s) at 440.98 TRY/day")
+
+
+def test_billed_newborn_lines_net_the_days_that_are_left() -> None:
+    """530000 on 10 July, incubator billed for 11-12 July (881.96): nothing is missing."""
+    [opp] = _detect([_er(0), _line("510070", "881.96", quantity=2, procedure_date=date(2026, 7, 11), line_id="K")])
+
+    assert (opp["days"], opp["expected_try"], opp["actual_billed_try"]) == (2, pytest.approx(881.96, abs=0.01), pytest.approx(881.96, abs=0.01))
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_a_cot_stay_keeps_its_cot_rate_on_the_days_that_are_left() -> None:
+    [opp] = _detect([_er(0), _line("510081", "622.60", quantity=2, procedure_date=date(2026, 7, 11), line_id="C")])
+
+    assert (opp["days"], opp["bed_code"]) == (2, "510081")
+    assert opp["expected_try"] == pytest.approx(622.60, abs=0.01)
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_the_kuvoz_and_cot_split_works_on_the_days_that_are_left() -> None:
+    lines = [
+        _er(0),
+        _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
+        _line("510081", "311.30", procedure_date=date(2026, 7, 12), line_id="C"),
+    ]
+    [opp] = _detect(lines)
+
+    assert opp["days"] == 2
+    assert opp["expected_try"] == pytest.approx(440.98 + 311.30, abs=0.01)
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_standard_bed_days_are_counted_on_the_days_that_are_left() -> None:
+    """4 days, 530000 on day 1: three days are left; one incubator day and two standard-bed days are billed, so the
+    standard-bed motor owns two and this motor one (the incubator day, billed exactly)."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    lines = [
+        _er(0),
+        _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
+        _line("510010", "444.72", quantity=2, procedure_date=date(2026, 7, 12), line_id="S"),
+    ]
+    [opp] = _detect(lines, header=header)
+
+    assert (opp["days"], opp["standard_bed_days"]) == (1, 2)
+    assert opp["expected_try"] == pytest.approx(440.98, abs=0.01)
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_standard_bed_units_beyond_the_days_left_take_only_the_free_days() -> None:
+    """4 days, 530000 on day 1: three are left, one is the incubator's. Three standard-bed units are billed, but only
+    the two days no newborn line covers can be standard-bed days (the ER day is nobody's): the order matters, the ER
+    day must be out before the standard-bed days are counted."""
+    header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
+    lines = [
+        _er(0),
+        _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
+        _line("510010", "667.08", quantity=3, procedure_date=date(2026, 7, 11), line_id="S"),
+    ]
+    [opp] = _detect(lines, header=header)
+
+    assert (opp["days"], opp["standard_bed_days"]) == (1, 2)
+    assert opp["expected_try"] == pytest.approx(440.98, abs=0.01)
+    assert opp["recoverable_uplift_try"] == 0.0
+
+
+def test_a_standard_bed_billed_beside_530000_and_no_newborn_bed_stands_down() -> None:
+    """The claim has stated its bed (510010): the standard-bed motor owns the stay (and nets it on the days left)."""
+    assert _detect([_er(0), _line("510010", "444.72", quantity=2, procedure_date=date(2026, 7, 11), line_id="S")]) == []
+
+
+# --- interplay: the ICU transfer day and the package window ------------------------------------------------------
+
+
+def test_an_icu_transfer_day_the_er_bed_also_covers_is_taken_out_once() -> None:
+    [opp] = _detect([_er(0)], icu_last_days={date(2026, 7, 10)})
+
+    assert opp["days"] == 2  # 11 and 12 July, not 1
+    assert (opp["icu_overlap_days"], opp["icu_overlap_dates"]) == (1, ["2026-07-10"])
+    assert opp["expected_try"] == pytest.approx(2 * 440.98, abs=0.01)
+
+
+def test_an_icu_transfer_day_and_a_different_er_day_are_both_taken_out() -> None:
+    [opp] = _detect([_er(1)], icu_last_days={date(2026, 7, 10)})
+
+    assert opp["days"] == 1  # 12 July
+    assert opp["icu_overlap_dates"] == ["2026-07-10"]
+    assert opp["expected_try"] == pytest.approx(440.98, abs=0.01)
+
+
+def test_the_er_bed_and_the_icu_day_floor_the_stay_at_zero() -> None:
+    [opp] = _detect([_er(1, quantity=2)], icu_last_days={date(2026, 7, 10)})
+
+    assert (opp["days"], opp["expected_try"], opp["recoverable_uplift_try"]) == (0, 0.0, 0.0)
+
+
+def test_the_er_bed_inside_a_package_window_is_not_taken_out_a_second_time() -> None:
+    """Group E from 10 July bundles 10-12 July; 530000 on 11 July is a bundled day already, on 15 July it is not."""
+    header = _ten_day_header()
+    [inside] = _detect([_package("P600330", date(2026, 7, 10)), _er(1)], header=header)
+    [after] = _detect([_package("P600330", date(2026, 7, 10)), _er(5)], header=header)
+
+    assert (inside["days"], inside["bundled_days"]) == (7, 3)
+    assert "are paid by" not in inside["detail"]
+    assert (after["days"], after["bundled_days"]) == (6, 3)
+    assert "1 day(s) (2026-07-15) are paid by 530000" in after["detail"]
+
+
+def test_the_row_has_the_same_keys_with_and_without_the_new_causes() -> None:
+    [plain] = _detect([_line("520010", "10")])
+    [er] = _detect([_er(0)])
+    [one_plain] = _detect([_line("520010", "10")], header=_one_date_header())
+    [one_er] = _detect([_line("530000", "577.45")], header=_one_date_header())
+
+    assert set(er) == set(plain)
+    assert set(one_er) == set(one_plain)
+
+
+def test_the_lines_of_another_claim_do_not_take_a_day_from_this_one() -> None:
+    from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
+
+    header = _one_date_header()
+    opps = detect_yenidogan_yatak_opportunities(
+        [header],
+        [_make_diagnosis(claim_id="C1")],
+        procedure_lines=[_line("530000", "577.45", claim_id="OTHER"), _line("520010", "10")],
+        claim_ids_with_procs={"C1"},
+    )
+
+    assert [o["days"] for o in opps] == [1]
+
+
+# --- C000649: a day case with an EK-2/C procedure ----------------------------------------------------------------
+
+
+def test_a_newborn_day_case_with_an_ek2c_procedure_expects_no_day_bed() -> None:
+    [opp] = _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="day_case"))
+
+    assert (opp["days"], opp["bed_code"], opp["expected_try"]) == (0, "510120", 0.0)
+    assert "a day case (günübirlik) bills EK-2/C procedure(s) (702580)" in opp["detail"]
+
+
+def test_the_same_bill_on_an_inpatient_claim_keeps_the_day_bed() -> None:
+    [opp] = _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="yatis"))
+
+    assert opp["days"] == 1
+    assert opp["recoverable_uplift_try"] == pytest.approx(44.45, abs=0.005)
+    assert "day case" not in opp["detail"]
+
+
+def test_a_gunubirlik_claim_is_outpatient_and_gets_no_newborn_row() -> None:
+    assert _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="gunubirlik")) == []
+
+
+def test_a_day_case_of_two_dates_keeps_its_newborn_beds() -> None:
+    header = _make_claim_header(claim_type="day_case", admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
+    [opp] = _detect([_line("702580", "545.76")], header=header)
+
+    assert opp["days"] == 2
+    assert opp["recoverable_uplift_try"] == pytest.approx(881.96, abs=0.01)

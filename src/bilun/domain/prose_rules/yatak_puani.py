@@ -26,6 +26,14 @@ against 374.97 for 510010) instead of a full 510010 day, and a billed 510120 lin
 line (on such a stay only: a 510120 line pays no standard-bed day of a longer stay).
 An overnight stay under 24 hours spans two dates and cannot be seen.
 
+**Days whose bed is already paid, or whose day bed the SUT forbids** (``bed_days_not_expected``, read by this motor,
+the newborn bed motor and the ICU reconciliation): EK-2/B 530000 (Acil serviste kritik hasta yatak ve takibi), 510100
+(Steril oda) and 510110 (İzole radyoaktif tedavi odası) "Yatak, yemek, hasta vizit hizmetlerini kapsar" — the days
+such a line is billed for are not bed days to expect, as for 510090 on the ICU transfer day. The day bed of a stay of
+one date is not billed beside 530000 (EK-2/B: "510120, 530003 ile birlikte faturalandırılmaz"), inside a
+hemodialysis price (SUT §2.4.4.D-1.(11): "gündüz yatak ücreti fiyata dâhil"; 704210, 704230) or for the EK-2/C
+procedures of a day case (SUT §2.2.2.(4)): no day is expected there.
+
 See plans/refactor/rule-encoding-gap-closure-roadmap.md + the approved
 yatak-puani plan.
 """
@@ -67,6 +75,15 @@ _BED_CODE = "510010"
 # EK-2/B 510120 Gündüz yatak tarifesi: the bed of a stay under 24 hours (SUT §2.2.2.(3)); also read by the
 # newborn bed motor and the standard-bed / newborn-bed reconciliation.
 DAY_BED_CODE = "510120"
+# EK-2/B codes whose price covers the patient's bed ("Yatak, yemek, hasta vizit hizmetlerini kapsar"): 530000 Acil
+# serviste kritik hasta yatak ve takibi (billed once a day; "510120, 530003 ile birlikte faturalandırılmaz"), 510100
+# Steril oda, 510110 İzole radyoaktif tedavi odası. The same sentence the project reads as "the bed is paid" for 510090
+# (yatak_icu_overlap) and for 510070 / 510081 (claim_yatak_newborn_overlap).
+ER_CRITICAL_BED_CODE = "530000"
+BED_INCLUDING_CODES = frozenset({ER_CRITICAL_BED_CODE, "510100", "510110"})
+# SUT §2.4.4.D-1.(11) (C000969): for a hemodialysis treatment "gündüz yatak ücreti fiyata dâhil olup ayrıca
+# faturalandırılmayacaktır": 704210 Acil hemodiyaliz, 704230 Hemodiyaliz (not 704233 home hemodialysis, D-1-1).
+HEMODIALYSIS_CODES = frozenset({"704210", "704230"})
 
 # SUT §2.2.2.B-1(3) EK-2/C package window lengths (inclusive calendar days
 # starting on the package procedure date).
@@ -309,6 +326,113 @@ def counts_against_expected_days(
     return last_day > window.end
 
 
+@dataclass(frozen=True)
+class BedNotExpected:
+    """Days of a stay on which no bed is expected, and why (one sentence per cause, for the row's ``detail``).
+
+    ``dates`` are days of the stay after any package window: those the window takes are explained by it.
+    """
+
+    dates: frozenset[date] = frozenset()
+    reasons: tuple[str, ...] = ()
+
+
+def bed_days_not_expected(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+    window: PackageWindow | None = None,
+) -> BedNotExpected:
+    """The days of the stay whose bed the SUT says is already paid, or whose day bed it forbids billing.
+
+    Read from the claim's own lines, and only from billed ones: a credit line (a reversal) withdraws a charge and
+    says nothing about the stay's bed, as for a newborn bed line.
+
+    1. **Days a bed-including line pays** (``BED_INCLUDING_CODES``; EK-2/B "Yatak, yemek, hasta vizit hizmetlerini
+       kapsar"): from the line's date for its quantity in days (an undated line sits on the admission date, as
+       ``_package_window_end`` places an undated package line), clipped to the stay; a line dated outside the stay
+       covers nothing.
+    2. **The day bed of a stay of one date** (a stay under 24 hours, §2.2.2.(3), priced at 510120) is not billable
+       when the claim bills 530000 anywhere (EK-2/B: "510120, 530003 ile birlikte faturalandırılmaz", a claim-level
+       exclusion, so its date and quantity do not matter), hemodialysis 704210 / 704230 (§2.4.4.D-1.(11): "gündüz yatak
+       ücreti fiyata dâhil olup ayrıca faturalandırılmayacaktır") or, on a day case (``claim_is_day_case``), an EK-2/C
+       procedure (§2.2.2.(4)). A stay of several dates bills 510010, which none of the last two names: nothing is
+       taken out there.
+
+    The package window takes its days first (never subtracted twice); the ICU reconciliation and the newborn bed
+    motor skip the days this returns.
+    """
+    admission, discharge = claim.admission_date, claim.discharge_date
+    if admission is None or discharge is None or discharge < admission:
+        return BedNotExpected()
+    first = admission if window is None else max(admission, window.end + timedelta(days=1))
+    if first > discharge:
+        return BedNotExpected()
+    one_date = admission == discharge
+
+    lines = [
+        (normalize_procedure_code(line.procedure_code), line)
+        for line in claim_procs
+        if line.claim_id == claim.claim_id and float(line.billed_amount_try) >= 0
+    ]
+    codes = {code for code, _ in lines}
+    dates: set[date] = set()
+    reasons: list[str] = []
+
+    paid_by: dict[str, set[date]] = {}
+    for code, line in lines:
+        # On a stay of one date 530000 is the claim-level cause below, whatever its date.
+        if code not in BED_INCLUDING_CODES or (one_date and code == ER_CRITICAL_BED_CODE):
+            continue
+        start = line.procedure_date or admission
+        # The quantity in days from the line's date, clipped at the discharge (no overflow for a huge quantity); a
+        # line dated after the discharge gets no unit left and covers nothing.
+        units = min(max(int(line.quantity or 1), 1), (discharge - start).days + 1)
+        last = start + timedelta(days=units - 1)
+        lo = max(start, first)
+        for offset in range(max((last - lo).days + 1, 0)):
+            paid_by.setdefault(code, set()).add(lo + timedelta(days=offset))
+    if paid_by:
+        covered = sorted(set().union(*paid_by.values()))
+        dates.update(covered)
+        reasons.append(
+            f"{len(covered)} day(s) ({', '.join(day.isoformat() for day in covered)}) are paid by "
+            f"{' / '.join(sorted(paid_by))} (EK-2/B: it covers yatak, yemek, hasta vizit) and are not expected as "
+            "bed days."
+        )
+
+    if one_date:
+        causes: list[str] = []
+        if ER_CRITICAL_BED_CODE in codes:
+            causes.append(
+                "530000 (Acil serviste kritik hasta yatak ve takibi) is billed on this claim and covers yatak, yemek "
+                f"and vizit; EK-2/B does not bill {DAY_BED_CODE} together with it."
+            )
+        dialysis = sorted(codes & HEMODIALYSIS_CODES)
+        if dialysis:
+            causes.append(
+                f"hemodialysis ({' / '.join(dialysis)}) is billed on this claim and its price includes the day bed "
+                "fee, which is not billed separately (SUT §2.4.4.D-1.(11))."
+            )
+        if claim_is_day_case(claim):
+            ek2c = sorted(
+                {
+                    code
+                    for code, line in lines
+                    if get_ek2c_entry(code, as_of_date=line.procedure_date or admission) is not None
+                }
+            )
+            if ek2c:
+                causes.append(
+                    f"a day case (günübirlik) bills EK-2/C procedure(s) ({' / '.join(ek2c)}), and SUT §2.2.2.(4) does "
+                    "not bill the day bed for them."
+                )
+        if causes:
+            dates.add(admission)
+            reasons.extend(f"No day bed ({DAY_BED_CODE}) is expected: {cause}" for cause in causes)
+
+    return BedNotExpected(dates=frozenset(dates), reasons=tuple(reasons))
+
+
 def detect_yatak_puani_opportunities(
     claims: list[ClaimHeader],
     procedure_lines: list[ProcedureClaimLine] | None = None,
@@ -323,6 +447,11 @@ def detect_yatak_puani_opportunities(
     **Stays under 24 hours (SUT §2.2.2.(3)):** a stay whose admission date equals
     its discharge date is priced at the day bed 510120, not a full 510010 day; its
     ``bed_code`` / ``daily_rate_try`` are the day bed's, and 510120 lines net it too.
+
+    **Bed already paid / day bed forbidden (``bed_days_not_expected``):** the days a 530000, 510100 or 510110 line
+    pays, and the only day of a stay of one date that bills 530000, hemodialysis or (day case) an EK-2/C procedure,
+    are not expected: ``bed_days`` and the money fall, ``gross_bed_days`` / ``bundled_days`` keep their meaning, and
+    ``detail`` says why.
 
     **Package-bundling (SUT §2.2.2.B-1(1), (3)-(4)):** When a claim has an
     EK-2/C package procedure (``paket`` category), or is billed hizmet başı
@@ -381,6 +510,11 @@ def detect_yatak_puani_opportunities(
             days = gross_days
             bundled_days = 0
 
+        # Days whose bed is already paid (530000, 510100, 510110) or whose day bed the SUT forbids (530000, hemodialysis,
+        # a day case's EK-2/C procedures): not expected. They lie after the package window, so nothing is taken twice.
+        not_expected = bed_days_not_expected(claim, claim_procs, window)
+        days -= len(not_expected.dates)
+
         expected = _money(days * daily_rate)
 
         # Net out actual billed bed-day amounts (510010; on a stay under 24 hours also
@@ -420,6 +554,7 @@ def detect_yatak_puani_opportunities(
                 f"at the day bed ({DAY_BED_CODE}, Gündüz yatak tarifesi), not as a full "
                 f"{_BED_CODE} day."
             )
+        detail_parts.extend(not_expected.reasons)
 
         opportunities.append(
             {

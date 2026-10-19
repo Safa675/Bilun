@@ -51,7 +51,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
-from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
+from src.bilun.domain.prose_rules.yatak_puani import bed_days_not_expected, claim_package_window
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -280,15 +280,20 @@ def reconcile_yatak_bed_days(
         # Days already excluded by package-window bundling (yatak_puani
         # §2.2.2.B-1(1), (3)-(4)) — never double-subtract them. The same
         # window as yatak_puani: a billed package, or a mandated one.
-        window = claim_package_window(
-            claim, procedures_by_claim.get(claim.claim_id, []),
-        )
+        claim_procs = procedures_by_claim.get(claim.claim_id, [])
+        window = claim_package_window(claim, claim_procs)
         window_end = window.end if window is not None else None
+        # Days the yatak detector already took out because their bed is paid by 530000 / 510100 / 510110 or the day
+        # bed is forbidden (bed_days_not_expected) are not taken out a second time; the package window's days are
+        # filtered just below.
+        already_out = bed_days_not_expected(claim, claim_procs).dates
 
         overlapping = sorted(
             d
             for d in icu_last_days
-            if admission <= d <= discharge and (window_end is None or d > window_end)
+            if admission <= d <= discharge
+            and (window_end is None or d > window_end)
+            and d not in already_out
         )
         if not overlapping:
             adjusted.append(opp)

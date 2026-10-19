@@ -1,3 +1,81 @@
+## Task: Bed motors stop expecting a bed day the SUT says is already paid or may not be billed (2026-10-19)
+
+### Goal
+Neither bed motor (standard bed `yatak_puani`, newborn bed `yenidogan_yatak`) shows a recoverable bed day on a day whose bed the claim has already been paid through another EK-2/B code (530000 ER critical bed, 510100 sterile room, 510110 isolated radioactive-treatment room), and neither shows the day bed (510120) of a stay under 24 hours where the SUT forbids billing it (530000 on the claim; hemodialysis 704210 / 704230; a day case with an EK-2/C procedure). A claim that bills none of these codes gives byte-identical rows and totals; the 16 showcase reports stay byte-identical; a false recoverable on a billed dialysis session or ER bed is worse than silence.
+
+Follow-up of the day-bed block below: its independent review found (found-not-fixed item 1) that neither motor knows where the SUT includes or forbids the bed. Brief from the orchestrating session; shared notes `…/side-session-notes/local_843bfa6a-…/same-day-review-notes.md` (cases ER-1, ER-3, dialysis). Step 0: `claude/youthful-lichterman-28b767` (5e2de9d8, not pushed) was not in this worktree (cut from `origin/main` a7a105da: the `grep -c` printed 0 and `DAY_BED_CODE` was absent) and not squash-merged either (`git log origin/main | grep -i 'day bed'` empty, `origin/main` is still a7a105da); `git merge --no-edit` was a fast-forward to 5e2de9d8; the two greps then print 1 and the `DAY_BED_CODE` lines.
+
+### Evidence (read from the files, 2026-10-19)
+`data/gazette/sut_clauses.parquet` (in force) and `data/gazette/raw/annex=EK-2B/effective_date=2026-07-07/…parquet`:
+- C000648 §2.2.2.(3), MUST_BILL: "24 saatten kısa süreli yatışlarda yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır."
+- C000649 §2.2.2.(4), MUST_NOT_BILL: "Günübirlik tedavilerde SUT eki EK-2/C Listesinde yer alan işlemler için gündüz yatak bedeli faturalandırılamaz."
+- C000650 §2.2.2.(5), NO_PAY: "Günübirlik tedavilerde, SUT eki EK-2/B Listesinde yer alan refakatçi bedeli ödenmez." (C001628 §2.6.3.(2) ends: "Günübirlik tedavilerde SUT eki EK-2/B Listesinde yer alan “refakat” kodu faturalandırılamaz.")
+- C000492 §2.1.2.B.(1): a day case is a treatment done "yatış ve taburcu işlemi yapılmadan 24 saatlik zaman dilimi içinde"; C000496 §2.1.2.B.ç lists "Hemodiyaliz tedavileri" among them.
+- C000969 §2.4.4.D-1.(11), MUST_NOT_BILL: "Hemodiyaliz tedavisi süresince, … seans sırasında gelişen komplikasyonların tedavisinde kullanılan ilaçlar ve gündüz yatak ücreti fiyata dâhil olup ayrıca faturalandırılmayacaktır." (D-1-1, home hemodialysis, has no such sentence.)
+- EK-2/B 530000 "Acil serviste kritik hasta yatak ve takibi" (577.4538 puan): "Acil tıp uzman hekimi tarafından acil hal kapsamındaki hastalarda yapılması halinde günde 1 defa faturalandırılır. Yatak, yemek, hasta vizit hizmetlerini kapsar. 510120, 530003 ile birlikte faturalandırılmaz."
+- EK-2/B 510100 "Steril oda" (1674.76 puan): "Yemek, yatak, hasta vizit hizmetlerini kapsar. İki haftayı geçmesi beklenen mutlak nötropenik hastalar için faturalandırılır." 510110 "İzole radyoaktif tedavi odası" (749.84 puan): "Yemek, yatak, hasta vizit hizmetlerini kapsar. İzole radyoaktif tedavi hizmeti Türkiye Atom Enerjisi Kurumu tarafından lisanslandırılmış odalarda sunulur." The same sentence the project already reads as "the bed is paid" for 510090 (`yatak_icu_overlap`) and for 510070 / 510081 (`claim_yatak_newborn_overlap`).
+- EK-2/B 510120 "Gündüz yatak tarifesi" (74.96 puan): "Günübirlik tedaviler, 24 saatten kısa süren yatarak tedaviler, acil müşahade için faturalandırılır. Yemek hizmetleri dahildir." 704210 "Acil hemodiyaliz" / 704230 "Hemodiyaliz" (4342.4775 puan each): "SUT'un 2.4.4.D-1 maddesine bakınız." and "sadece yatarak tedavilerde" for 704210.
+- The texts of 530000 (from the 2024-05-11 list), 510100, 510110, 704210 and 704230 are the same in every list version back to 2020-03-11 (read all `annex=EK-2B` partitions): the code sets need no date.
+- EK-2/C lists P704210 / P704230 / P704233 with no işlem grubu (`get_ek2c_entry(...)["group"] == ""`): billed as a package they open a one-day window (already 0 days, probe H4), billed itemised (704210 / 704230, EK-2/B) they open none and are not mandated (`mandated_package_lines` needs a group A1–E): that is the gap.
+- The synthetic data already treats these as beds: `scripts/synthetic/cohort/compose.py:32` `_BED_CODES` has 530000, and `code_sets.yaml` notes "not with 510120 or 530003".
+- Claim types in the committed claim table: `yatis`, `acil` only. `claim_is_day_case` knows `gunubirlik` / `day_case`; `infer_care_setting` reads `gunubirlik` as outpatient (both motors skip it) but `day_case` and `gunubirlik yatis` as inpatient.
+
+### Measured before (in-memory bills, tip 5e2de9d8; `probe_excl.py` / `probe_extra.py` in `~/.cache/bilun-bedexcl-scratch/`, outputs `probe_before.txt|json`; amounts TL; STD = standard-bed row, NB = newborn row; one date 2026-07-10 unless "3 days" = 07-10..07-12; headline = `sgk_uplift_try`)
+| # | Bill | before |
+|---|---|---|
+| K1 / K2 | adult / newborn, one date, nothing billed (control) | STD 44.45 / NB 44.45 |
+| E1 | adult one date, 530000 billed | STD **44.45** (the day bed beside 530000) |
+| E3 | newborn one date, 530000 billed | NB **44.45** |
+| E2 | adult one date, 530000 + 510120 billed | 0.00 (netted by the billed day bed; the pair is itself forbidden) |
+| H1 / H2 / H3 | one date, 704230 / 704210 / newborn 704230 billed | STD **44.45** / **44.45** / NB **44.45** |
+| H4 | one date, P704230 billed as a package | 0.00 (one-day window, already right) |
+| H11 | 3 days, 704230 on day 2 | STD 667.08 (3 × 222.36: stays, see Decision 4) |
+| M1 / M2 / M3 | 3 days, 530000 on day 1 / day 2 / qty 2 from day 1 | STD **667.08** each (3 days; 1, 1 or 2 are paid by 530000) |
+| M4 | 3 days, 530000 day 1 + 510010 billed on days 2–3 (444.72) | STD rec **222.36** |
+| N1 / N2 | newborn 3 days, 530000 day 1 / + 510070 billed days 2–3 | NB **1,322.94** / rec **440.98** |
+| S1 / S2 / S3 | 3 days, 510100 × 3 / 510110 × 3 / 510100 day 1 billed | STD **667.08** each (the special room is billed daily) |
+| Q2 | `day_case` one date, 702580 (HBO, EK-2/C, no group) billed itemised | STD **44.45** |
+| controls | 3 days nothing billed STD 667.08; newborn 3 days NB 1,322.94; 530000 credit line only, 530003 only, 704231 / 704290 / 704233: unchanged | |
+
+Not in the brief but measured on the way: a 3-day ICU-coded claim (510090 × 3 billed) shows a standard-bed row of 2 days = 444.72 beside an ICU row of 0.00 (S5) — the ICU motor's own day model (first and last day at 510090, packages between, ward days possible); not touched, listed below.
+
+### Decisions
+1. **What a line says.** Only lines of the claim itself, with a non-credit amount (≥ 0.00); a credit line (a reversal) states nothing about the stay's bed, exactly as the newborn motor reads a credit bed line. Codes are read with `normalize_procedure_code` (spaces, dots, hyphens, leading P). One helper, `bed_days_not_expected(claim, claim_procs, window)` in `yatak_puani.py`, returns the days of the stay (after any package window) on which no bed is expected, with one sentence per cause; both motors and the ICU reconciliation use it, so they cannot disagree.
+2. **Bed-including codes (530000, 510100, 510110): the days they cover.** A line pays the bed of the days from its date for `quantity` days (at least 1), clipped to the stay and to the days after the package window; an undated line sits on the admission date (as `_package_window_end` places an undated package line); a line dated outside the stay covers nothing; two lines on one day cover it once. This is the project's rule for 510090 on the ICU transfer day and for 510070 / 510081, applied to the same EK-2/B sentence. Nothing says 510010 may not be billed beside them, so a billed 510010 on such a day is not called a violation here (audit matter); it is simply not expected.
+3. **The day bed of a stay under 24 hours (one date) is not billable** when the claim bills (a) 530000 on any date — "510120, 530003 ile birlikte faturalandırılmaz" is a claim-level exclusion, so date and quantity do not matter; (b) hemodialysis 704210 or 704230 (C000969, the bed fee is in the price); (c) any EK-2/C-listed procedure on a day-case claim (`claim_is_day_case`, C000649). The one day is taken out: days 0, expected 0, the row stays with its sentence (as for a package window), so a billed 510120 beside them leaves nothing to recover and is not a recoverable.
+4. **Multi-day stays.** Hemodialysis and C000649 take nothing out: both clauses speak of the *day bed*, which a stay of two dates does not bill, and say nothing of 510010. Only Decision 2 applies. (Reading "gündüz yatak ücreti fiyata dâhil" as "the ward bed too" would be inventing a rule.)
+5. **Hemodialysis codes.** 704210 and 704230 (and their P-package spelling). Not 704233 (home hemodialysis, §2.4.4.D-1-1: no bed to include), not 704231 (catheter placement), not 704290 (continuous hemodiafiltration, not "Hemodiyaliz tedavisi" of D-1.(11)).
+6. **Interplay, never subtracted twice.** The package window takes its days first (the helper looks only at days after it); an ICU transfer day that a bed-including line also covers is subtracted once (the reconciliation in `yatak_icu_overlap.reconcile_yatak_bed_days` and the newborn motor skip the days the helper already took out). `bundled_days` / `surgery_day_bundled` keep meaning the package window only.
+7. **Row shape.** No new key, no `public_contracts.json` change; `bed_days` / `days` and the money fall, one sentence per cause is appended to `detail`. A one-date row with days 0 keeps `same_day_stay` as before (the standard row: true; the newborn row: false, as with a package window).
+8. **Companion-bed motor unchanged.** No text above excludes 510121 (its own EK-2/B line is the companion's bed: "Yemek ve yatak hizmetlerini kapsar"); the motor already suppresses every stay of one date and every EK-2/C package (C000650, C001628).
+9. **Why not 510090 / the ICU claim's ward days:** the ICU motor owns that day model; changing it here would move the ICU rows (found, not fixed, below).
+
+### Design
+- `prose_rules/yatak_puani.py`: public `BED_INCLUDING_CODES`, `HEMODIALYSIS_CODES`, frozen `BedNotExpected(dates, reasons)` and `bed_days_not_expected`; the detector subtracts `len(dates)` from the days after the package window and appends the reasons to `detail`.
+- `prose_rules/yenidogan_yatak.py`: the same helper after the ICU transfer day (`dates − icu_overlap_dates`), before `standard_bed_days`; reasons appended to `detail`.
+- `prose_rules/yatak_icu_overlap.py`: `reconcile_yatak_bed_days` skips ICU days the helper already took out.
+- No change: `claim_yatak_*`, `claim_yatak_newborn_overlap` (the newborn days it removes already exclude the paid days), `refakatci.py`, `icu_puani.py`, frontend, contracts. None of the three files is pinned by `data/gazette/sut_coverage_evidence.json` (37 paths checked).
+- Tests: see the subtasks; mutants of every changed branch; an independent review (code only) afterwards.
+
+### Subtasks
+- [x] 0. Step 0 (fast-forward merge above); `baseline_before.json` of the 16 reports (sha256 f09e8a1b…, the same as the day-bed block's) and `probe_before.*` saved in `~/.cache/bilun-bedexcl-scratch/`.
+- [x] 1. Read the clauses and the annex rows myself (above); the other EK-2/B bed-like rows (510100, 510110, sleep-lab heading) and the ICU day model.
+- [x] 2. Probe both motors on the same bills for every condition (table above) before deciding.
+- [x] 3. Write this plan before any code.
+- [ ] 4. Tests first, red: standard-bed motor (each code and each cause; credit / zero / undated / outside-the-stay / spelled lines; quantity; package window; one-date + package; billed netting; multi-day dialysis unchanged; C000649 for `day_case` and not for `yatis` / `gunubirlik` / no EK-2/C line); newborn motor (same, plus Kot / Kuvöz split, `standard_bed_days`, stand-down, ICU transfer day); ICU reconciliation; pipeline (both motors on the same bills, headline = rows, no day in both rows, bill scope = patient scope, every claim without these lines unchanged).
+- [ ] 5. Implement helper, standard-bed motor, newborn motor, reconciliation.
+- [ ] 6. Probe after = targets; 16 showcase reports `cmp`-identical to `baseline_before.json`.
+- [ ] 7. Mutants of the changed branches (sha256 backups, restore with `cp` + `cmp`).
+- [ ] 8. Gates one after the other: ruff `src/ scripts/`, targeted tests, full pytest, `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, surfacing audit `--check`.
+- [ ] 9. Independent review (fresh agent, code only, alone), findings fixed or classified.
+- [ ] 10. CI-image gate alone on a clone of the committed tip.
+- [ ] 11. Results in this block, commits on the branch (no push, no PR), Turkish report.
+
+### Out of Scope
+Pushing and the PR (Safa's call); the audit-exposure side (a 510120 / 510010 line billed beside 530000, dialysis or a special room is over-billing, a detector like `yatak_icu_overlap`); other claims of the same patient on the same date (the exclusions are read per claim, as "birlikte" and "fiyata dâhil" speak of one bill); 510090 and the ICU claim's ward days (S5: 444.72 standard-bed beside ICU 0.00); the sleep-laboratory heading ("Yatak ücreti, EEG, EOG, EMG, EKG dahildir. Tüm gece laboratuvarda", in force from 2026-09-05 and attached to a heading row, not to codes: the codes would be inferred from the layout); home hemodialysis, catheter placement and hemodiafiltration (above); the `Günübirlik` spelling with ü, which `claim_is_day_case` does not recognise; a quantity-1 line that carries several days' amount (read as one day, as in the newborn motor); the `care_setting_review` surface; cache rebuild and staging update; anything under `scripts/deploy/**`, `docs/operations/**`, `tests/*/deploy/**`, `.github/**`, `pyproject.toml`, `data/synthetic/demo_vignettes.json`; any file pinned by `data/gazette/sut_coverage_evidence.json`; `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data` (never opened).
+
+---
+
 ## Task: Stays under 24 hours at the day bed (510120) in both bed motors — SUT §2.2.2.(3) (2026-10-18)
 
 ### Goal
