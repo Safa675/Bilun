@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-18 — "Is the work in this tree" is a tree comparison, never a search for commit subjects: a squash-merge keeps the content and drops the commits
+
+**Pattern:** The brief's Step 0 said the worktree must show a commit named "review round 3" and, if it did not, merge the unpushed branch `claude/funny-tereshkova-662936`. That branch had been squash-merged as #319 while the brief was written, and the worktree was cut from `origin/main` (7ea9457a): `git log | grep -i "review round 3"` found nothing, although the test file the same step names existed. Followed literally, the step would have merged an already-merged branch (15 commits of duplicate history and a merge commit with an empty diff) into the new branch. `git diff claude/funny-tereshkova-662936 HEAD` was empty: the two trees were identical.
+
+**Rule:** Check that work is present by content: `git diff --stat <branch> HEAD` empty (or `git merge-base --is-ancestor` for an unsquashed branch) and `gh pr view <n> --json state,mergeCommit`. When the brief's Step 0 and the repository disagree, verify the content, say so in the report, and do not merge by reflex. Squash-merged work keeps its files and loses its commit subjects.
+
 ## 2026-10-18 — After a squash merge, `git log | grep <subject>` cannot find the branch's commits: decide "is the work in?" by content
 
 **Pattern:** The brief for the newborn-detection task opened with a Step 0: `git log --oneline | grep -i "review round 3"` must show a commit, else merge the newborn-bed branch. That branch had been squash-merged as #319 in the meantime: the grep found nothing although every line of the branch was already in `origin/main` (HEAD == `origin/main`), and merging as told would have put 18 commits of identical content into the history. The test that settled it: `git diff --name-only $(git merge-base HEAD <branch>) <branch>` listed 36 files and `git diff HEAD <branch> -- <those files>` was empty.

@@ -18,6 +18,14 @@ A claim billed hizmet başı whose package is mandated (§2.2.2(1)) is treated
 the same way (``claim_package_window``): it must be billed as that package,
 so the package's components add no itemized uplift inside the window.
 
+**Stays under 24 hours (SUT §2.2.2.(3), EK-2/B 510120):** "24 saatten kısa süreli
+yatışlarda yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır." The claim
+has dates, no times, so a stay whose admission date equals its discharge date (always
+under 24 hours) is priced at the day bed 510120 (Gündüz yatak tarifesi, 74.96 puan
+against 374.97 for 510010) instead of a full 510010 day, and a billed 510120 line nets it like a 510010
+line (on such a stay only: a 510120 line pays no standard-bed day of a longer stay).
+An overnight stay under 24 hours spans two dates and cannot be seen.
+
 See plans/refactor/rule-encoding-gap-closure-roadmap.md + the approved
 yatak-puani plan.
 """
@@ -56,6 +64,9 @@ if TYPE_CHECKING:
 
 _OPPORTUNITY_TYPE = "yatak_puani_standard_bed"
 _BED_CODE = "510010"
+# EK-2/B 510120 Gündüz yatak tarifesi: the bed of a stay under 24 hours (SUT §2.2.2.(3)); also read by the
+# newborn bed motor and the standard-bed / newborn-bed reconciliation.
+DAY_BED_CODE = "510120"
 
 # SUT §2.2.2.B-1(3) EK-2/C package window lengths (inclusive calendar days
 # starting on the package procedure date).
@@ -71,11 +82,20 @@ PACKAGE_WINDOW_DAYS: dict[str, int] = {
 }
 
 
-def _daily_rate(visit_date: date | str | None = None) -> float:
-    """Look up the 510010 price_try (already puan × katsayı) as of visit_date."""
-    result = lookup_procedure_code(_BED_CODE, visit_date=visit_date)
+def _daily_rate(visit_date: date | str | None = None, bed_code: str = _BED_CODE) -> float:
+    """Look up the ``bed_code`` (default 510010) price_try (already puan × katsayı) as of visit_date."""
+    result = lookup_procedure_code(bed_code, visit_date=visit_date)
     entry = (result or {}).get("entry") or {}
     return float(entry.get("price_try") or 0.0)
+
+
+def _is_billed_bed_line(line: ProcedureClaimLine, *, same_day: bool) -> bool:
+    """A billed bed line that nets the expected charge: 510010 (the exact code, as ever) and, on a
+    stay under 24 hours, 510120. The day bed is read like the newborn motor's stand-down reads it
+    (spacing, dots, hyphens), because that motor hands such a claim over for a billed 510120 line."""
+    if str(line.procedure_code).strip() == _BED_CODE:
+        return True
+    return same_day and normalize_procedure_code(line.procedure_code) == DAY_BED_CODE
 
 
 def _resolve_package_window_days(
@@ -300,6 +320,10 @@ def detect_yatak_puani_opportunities(
     For each inpatient claim with non-null admission + discharge dates,
     computes inclusive LOS × daily_rate and returns an opportunity dict.
 
+    **Stays under 24 hours (SUT §2.2.2.(3)):** a stay whose admission date equals
+    its discharge date is priced at the day bed 510120, not a full 510010 day; its
+    ``bed_code`` / ``daily_rate_try`` are the day bed's, and 510120 lines net it too.
+
     **Package-bundling (SUT §2.2.2.B-1(1), (3)-(4)):** When a claim has an
     EK-2/C package procedure (``paket`` category), or is billed hizmet başı
     while its package is mandated, bed days from admission through the end
@@ -330,13 +354,17 @@ def detect_yatak_puani_opportunities(
             continue
 
         visit_date = claim.admission_date or claim.claim_start_date
-        daily_rate = _daily_rate(visit_date)
-        if daily_rate <= 0:
-            continue
 
         # Inclusive LOS: discharge day IS billed (+1).
         gross_days = (claim.discharge_date - claim.admission_date).days + 1
         if gross_days <= 0:
+            continue
+
+        # SUT §2.2.2.(3): a stay under 24 hours (here: one date) is billed at the day bed.
+        same_day = gross_days == 1 and claim.admission_date == claim.discharge_date
+        bed_code = DAY_BED_CODE if same_day else _BED_CODE
+        daily_rate = _daily_rate(visit_date, bed_code)
+        if daily_rate <= 0:
             continue
 
         # Package-bundling (§2.2.2.B-1(1), (3)-(4)): when the claim carries an
@@ -354,23 +382,23 @@ def detect_yatak_puani_opportunities(
             bundled_days = 0
 
         expected = _money(days * daily_rate)
-        same_day = gross_days == 1 and claim.admission_date == claim.discharge_date
 
-        # Net out actual billed bed-day amounts (510010) so recoverable
-        # uplift reflects only the UNBILLED portion.
+        # Net out actual billed bed-day amounts (510010; on a stay under 24 hours also
+        # 510120) so recoverable uplift reflects only the UNBILLED portion.
         actual_billed_try = _money(
             sum(
                 float(p.billed_amount_try)
                 for p in claim_procs
-                if str(p.procedure_code).strip() == _BED_CODE
+                if _is_billed_bed_line(p, same_day=same_day)
                 and counts_against_expected_days(p, window)
             )
         )
         # Never more than the expected charge: a credit line (negative amount) must not recover extra.
         recoverable_try = _money(min(expected, max(0.0, expected - actual_billed_try)))
 
+        label = "Gündüz yatak" if same_day else "Standart yatak"
         detail_parts = [
-            f"Standart yatak (510010): {days} billable bed-day(s) "
+            f"{label} ({bed_code}): {days} billable bed-day(s) "
             f"(gross LOS {gross_days} day(s) at {daily_rate:.2f} TRY/day",
         ]
         if window is not None and window.mandated:
@@ -388,15 +416,16 @@ def detect_yatak_puani_opportunities(
         detail_parts.append(f"= {expected:.2f} TRY (inclusive LOS, discharge day billed).")
         if same_day:
             detail_parts.append(
-                "Same-day admission/discharge — consider 510120 (gündüz yatak) "
-                "instead of 510010 for <24h stays."
+                "Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed "
+                f"at the day bed ({DAY_BED_CODE}, Gündüz yatak tarifesi), not as a full "
+                f"{_BED_CODE} day."
             )
 
         opportunities.append(
             {
                 "type": _OPPORTUNITY_TYPE,
                 "claim_id": claim.claim_id,
-                "bed_code": _BED_CODE,
+                "bed_code": bed_code,
                 "bed_days": days,
                 "gross_bed_days": gross_days,
                 "surgery_day_bundled": surgery_day_bundled,
