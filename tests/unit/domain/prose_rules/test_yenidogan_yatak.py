@@ -1293,3 +1293,97 @@ def test_the_rule_source_names_the_day_bed_for_the_newborn_block_too() -> None:
     from src.bilun.domain.billing import claim_yenidogan_yatak
 
     assert "510120" in claim_yenidogan_yatak._PROSE_RULE_SOURCE
+
+
+# --- Who is a newborn: the diagnosis, or a department whose name says newborn (Safa, 2026-10-18) -------------
+#
+# A paediatric ward is no newborn ward. SUT's newborn is 0-28 days (EK-2/B "Yenidoğan (0-28gün) olguların ...") and a
+# claim has no age or birth date, so "çocuk" / "pediatri" read every child of any age as a Kuvöz stay: a 3-day
+# pneumonia claim with no bed billed got 3 x 440.98 = 1,322.94 TL. The department must say newborn, in any Turkish
+# spelling (the capitals, the ASCII spelling and "neonatoloji" used to read as no signal); the diagnosis (Z38 /
+# P00-P96) decides whatever the department says.
+
+_NEWBORN_NAMED_DEPARTMENTS = [
+    "Yenidoğan", "yenidoğan", "Yenidoğan Servisi", "YENİDOĞAN", "YENİDOĞAN SERVİSİ",  # dotted capital İ
+    "YENIDOGAN", "Yenidogan", "yenidogan servisi",  # ASCII
+    "yenıdoğan",  # dotless ı: a Turkish-locale lowercase of a capital I
+    "Yenidoğan",  # decomposed ğ (g + combining breve)
+    "Yenidoğan/Neonatoloji", "Yenidoğan-Neonatoloji", "Yenidoğan1",  # punctuation and digits split words
+    "Yenidoğanlar Servisi",  # the name is matched inside a word, as before
+    "Yenedogan", "YENEDOĞAN",  # the old token for a common misspelling stays
+    "Neonatoloji", "NEONATOLOJİ", "Neonatoloji Servisi", "neonatoloji",
+    "Neonatal", "NEONATAL", "Neonatal Servis",
+    "Newborn", "NEWBORN", "Newborn Unit",
+]
+_PAEDIATRIC_DEPARTMENTS = [
+    "Çocuk Sağlığı ve Hastalıkları", "ÇOCUK SAĞLIĞI VE HASTALIKLARI", "çocuk sağlığı ve hastalıkları",
+    "Cocuk Sagligi ve Hastaliklari", "COCUK SAGLIGI VE HASTALIKLARI",
+    "Pediatri", "PEDİATRİ", "PEDIATRI", "pediatri", "Pediatri Servisi",
+    "Çocuk Cerrahisi", "Cocuk Cerrahisi", "Çocuk Nefrolojisi", "Çocuk Servisi", "Çocuk",
+]
+_OTHER_DEPARTMENTS = ["Kardiyoloji", "genel", "Genel Cerrahi", "Kadın Hastalıkları ve Doğum", ""]
+
+
+def _detect_department(department: str, *, icd10: str = "J18.9", diagnoses=()):
+    """One 3-day inpatient claim, nothing billed on the bed, J18.9 (no newborn code) unless `icd10` says otherwise."""
+    from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10), discharge=date(2026, 7, 12), primary_icd10=icd10, department=department
+    )
+    return detect_yenidogan_yatak_opportunities(
+        [header], list(diagnoses), procedure_lines=[_line("520010", "10")], claim_ids_with_procs={"C1"}
+    )
+
+
+@pytest.mark.parametrize("department", _NEWBORN_NAMED_DEPARTMENTS)
+def test_a_newborn_named_department_alone_marks_a_newborn_stay_in_any_spelling(department: str) -> None:
+    [opp] = _detect_department(department)
+
+    assert opp["bed_code"] == "510070" and opp["days"] == 3
+    assert opp["expected_try"] == pytest.approx(1322.94, abs=0.005)
+
+
+@pytest.mark.parametrize("department", _PAEDIATRIC_DEPARTMENTS)
+def test_a_paediatric_department_alone_is_no_newborn_stay(department: str) -> None:
+    """The measured defect: a 3-day J18.9 stay with no bed billed got a 1,322.94 TL Kuvöz row on these names."""
+    assert _detect_department(department) == []
+
+
+@pytest.mark.parametrize("department", _OTHER_DEPARTMENTS)
+def test_a_department_that_is_neither_newborn_nor_paediatric_is_no_newborn_stay(department: str) -> None:
+    assert _detect_department(department) == []
+
+
+@pytest.mark.parametrize("icd10", ["Z38.0", "Z38.1", "P07.3", "P22.0", "P96.9", "p07.3", " P07.3 "])
+@pytest.mark.parametrize("department", [*_PAEDIATRIC_DEPARTMENTS, *_OTHER_DEPARTMENTS, "Yenidoğan", "YENİDOĞAN"])
+def test_a_newborn_diagnosis_marks_the_stay_whatever_the_department_says(department: str, icd10: str) -> None:
+    """The diagnosis signal is untouched: a paediatric ward WITH a Z38 / P code is a newborn stay."""
+    [opp] = _detect_department(department, icd10=icd10)
+
+    assert opp["bed_code"] == "510070" and opp["days"] == 3
+
+
+@pytest.mark.parametrize("department", ["Pediatri", "Çocuk Sağlığı ve Hastalıkları", "PEDİATRİ"])
+def test_a_newborn_code_on_a_secondary_diagnosis_row_marks_a_paediatric_ward_stay(department: str) -> None:
+    [opp] = _detect_department(department, icd10="J18.9", diagnoses=[_make_diagnosis(icd10_code="P07.3")])
+
+    assert opp["bed_code"] == "510070" and opp["days"] == 3
+
+
+@pytest.mark.parametrize("icd10", ["P97.0", "P9", "Q21.0", "O80", "Z37.0", "Z39.2", "R50", ""])
+def test_a_code_outside_z38_and_p00_p96_does_not_mark_a_paediatric_ward_stay(icd10: str) -> None:
+    assert _detect_department("Pediatri", icd10=icd10) == []
+
+
+def test_a_missing_or_empty_department_name_is_no_signal() -> None:
+    from src.bilun.domain.prose_rules.yenidogan_yatak import _department_is_newborn
+
+    assert _department_is_newborn("") is False
+    assert _department_is_newborn(None) is False  # type: ignore[arg-type]
+
+
+def test_a_newborn_named_department_that_names_an_icu_is_still_left_to_the_icu_motor() -> None:
+    """The ICU gate runs after the signal: 'YENİDOĞAN YOĞUN BAKIM' reads as newborn and as ICU, and the ICU wins."""
+    assert _detect_department("YENİDOĞAN YOĞUN BAKIM", icd10="J18.9") == []
+    assert _detect_department("Neonatal ICU", icd10="J18.9") == []
