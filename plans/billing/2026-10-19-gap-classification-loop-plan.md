@@ -151,13 +151,14 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 | Dosya | İçerik |
 |---|---|
 | `00-ozet.md` | Türkçe, düz dille. İlk satır: YEŞİL / SARI / KIRMIZI + neden. Sınıf dağılımı tablosu, uyuşma ve kalibrasyon sayıları, başarısız / karantina partileri, süre ve (varsa) kullanım, "repoda hiçbir şey değişmedi" kanıtı (sha256'lar), senin vereceğin ≤5 karar |
-| `01-siniflandirma.csv` | 394 satır: madde, bölüm, modalite, sınıf, güven, tek satır gerekçe, `carrier`, `money_moving`, önerilen adım |
+| `01-siniflandirma.csv` | Her madde bir satır: madde, bölüm, modalite, sınıf, güven, iki oyun sınıfı ve gerekçesi, `risk_note`, kanıt, eksik girdi, `carrier`, `money_moving`, önerilen adım |
 | `02-insan-karari.md` | H satırları: iki oy yan yana, alıntılarla |
 | `03-ornekler.md` | Her sınıftan 3 satır, tam metin + gerekçe + kanıt (spot kontrol: ~20 satır, 20 dakikadan az) |
+| `05-risk-notlari.md` | İşçilerin risk notları; kod / kural dosyasına atıf yapanlar önce. Mevcut bir encode'un maddeyle çeliştiği ipuçları burada çıkar (provada ilk ipuçları buradan geldi, §10.1). **Doğrulanmamış iddialardır, hüküm değil** |
 | `04-sonraki-adim.md` | Pilot encode kovası önerisi (E1 satırları aile aile); K1 / T1 / N1 için dürüst yeniden sınıflama **yama taslağı** (uygulanmaz); E2 için "hangi eksik alan kaç maddeyi açar" tablosu |
 | `manifest.json` | taban commit, parquet / kuyruk / rubrik / envanter sha256'ları, model ve CLI sürümü, kapı sonuçları, parti durumları |
 
-**Senin işin (≈15–20 dk):** `00` oku (5 dk) → `03`'ten en az 10 satır kontrol et (10 dk) → `02`'yi karara bağla ya da "bırak". Sonuç sana yetmiyorsa koşu aynı kuyruğa ikinci tur olarak uzatılır.
+**Senin işin (≈15–20 dk):** `00` oku (5 dk) → `03`'ten en az 10 satır kontrol et (10 dk) → `02`'yi karara bağla ya da "bırak" → `05`'in "kod / kural dosyasına atıf yapanlar" bölümüne göz at (birkaç dk; ipuçlarını ayrı işe çevirmek sonra). Sonuç sana yetmiyorsa koşu aynı kuyruğa ikinci tur olarak uzatılır.
 
 **Bilinen açık, sınıflandırma sonrası karar isteyecek:** `emr_blocked` / Tier-C çıkarım mekanizması yalnız ilaç kovasında var (`scripts/sut/prose/coverage.py:104-106, 497-498`). E2 çıkan ilaç dışı maddeler gap sayısını bu yolla düşüremez; ya mekanizma genişletilir ya da yeniden sınıflanır. `04`'te bu madde sayısıyla birlikte sorulur.
 
@@ -168,7 +169,7 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 - Aynı anda en fazla **2** ajan süreci (oy A ve oy B) ve **0** ağır iş: pytest, vitest, docker, CI kapısı yok. Hafif Python (polars okuma) serbest. Başka bir oturum ağır iş koşarken başlama (G0).
 - Her partiden sonra durum dosyası yazılır (checkpoint). Kota penceresi dolarsa devam komutu paketin başındadır.
 - Maliyet ölçüldü (§10.1): para etkileyen madde başına oy başına ~104 sn ve ~38 bin token, tanım / liste maddesi ~33 sn ve ~14 bin token. Tüm kuyruk × 2 oy süre kutusunu (6 saat) aşar; ilk gece kapsamı bu yüzden daraltıldı (D7).
-- **Çalıştırma yöntemi (D2 — provada çözüldü):** başsız CLI yolu **kapalı**: pakette gelen CLI (`~/.config/Claude/claude-code/2.1.299/*/claude`) bu makinede giriş yapmamış (`claude auth status`: `loggedIn: false`; her `-p` çağrısı "Not logged in" döner). Bunu ancak Safa tek seferlik `claude setup-token` / `/login` ile çözebilir; ben kimlik bilgisiyle uğraşmam. Bu yüzden oyları **oturum içi alt ajanlar** üretir (Agent aracı, `general-purpose`; oy A `sonnet`, oy B `opus`); kuyruk, kapılar, uzlaştırma ve paket Python araçlarıdır (`~/.cache/bilun-gap-classification/driver/`, 80 birim / mutant testi, `RUNBOOK.md`). Orkestratör bir Claude Code oturumudur: parti başına `prompt` → iki ajan (arka planda, aynı anda en çok iki) → `finish` (G1–G4 + araç-çağrı denetimi + uzlaştırma + durma koşulları). Orkestratör oturum kotaya ya da OOM'a takılırsa döngü durur; durum dosyasından kaldığı yerden sürer. Gece boyu çalışması için uygulamanın açık, makinenin uyanık kalması gerekir (`request_keep_awake`).
+- **Çalıştırma yöntemi (D2 — provada çözüldü):** başsız CLI yolu **kapalı**: pakette gelen CLI (`~/.config/Claude/claude-code/2.1.299/*/claude`) bu makinede giriş yapmamış (`claude auth status`: `loggedIn: false`; her `-p` çağrısı "Not logged in" döner). Bunu ancak Safa tek seferlik `claude setup-token` / `/login` ile çözebilir; ben kimlik bilgisiyle uğraşmam. Bu yüzden oyları **oturum içi alt ajanlar** üretir (Agent aracı, `general-purpose`; oy A `sonnet`, oy B `opus`); kuyruk, kapılar, uzlaştırma ve paket Python araçlarıdır (`~/.cache/bilun-gap-classification/driver/`, 81 birim / mutant testi, `RUNBOOK.md`). Orkestratör bir Claude Code oturumudur: parti başına `prompt` → iki ajan (arka planda, aynı anda en çok iki) → `finish` (G1–G4 + araç-çağrı denetimi + uzlaştırma + durma koşulları). Orkestratör oturum kotaya ya da OOM'a takılırsa döngü durur; durum dosyasından kaldığı yerden sürer. Gece boyu çalışması için uygulamanın açık, makinenin uyanık kalması gerekir (`request_keep_awake`).
 
 ---
 
@@ -189,7 +190,7 @@ Konum: `~/.cache/bilun-gap-classification/<run-id>/packet/`; bir kopya bu oturum
 
 ## 10. Yapılacaklar ve akşam provası
 
-Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-classification/driver/` (paket `gapclass`, `RUNBOOK.md`, 80 birim / mutant testi).
+Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-classification/driver/` (paket `gapclass`, `RUNBOOK.md`, 81 birim / mutant testi).
 
 - [x] Okuma klonu üretici (`git archive`, yasak klasörlerin yokluğu, salt-okunur) + yokluk testi
 - [x] Kuyruk üretici (394 → 37 parti, sha256'lar, `--scope money` = yalnız para etkileyen 101 madde → 10 parti) + durum dosyası
@@ -230,9 +231,12 @@ Tahmin (kaba; parti içeriğine bağlı): tüm kuyruk × 2 oy **11–29 milyon t
 
 **Önerilen ilk gece (D7):** `prepare --scope money` (101 madde, 10 parti) + 30 güçlü altın maddelik kalibrasyon (3 parti); ardından paket. Paketi gördükten sonra: ya kalan 293 maddeyi tek oyla (A) koşmak, ya ikinci oyu yalnız A'nın düşük güvenli / E1 / K1 dediği satırlara uygulamak (maliyeti kabaca yarıya indirir), ya da tamamını ikinci gece. Karar paketten sonra.
 
-**Prova sonrası yapılan iki değişiklik (araçlar testli; gerçek ajanlarla henüz koşulmadı, ilk kez gece koşusunda çalışacaklar).**
+**İlk denetim ipuçları (hüküm değil; işçilerin `risk_note` alanından, paketteki `05-risk-notlari.md`'nin ilk içeriği; ikisini de kodu / YAML'ı okuyarak yüzeyde kontrol ettim, sınır: hukuki yorumu SUT metniyle ben hükme bağlamadım).** (1) C000825 (SUT 2.4.1.B-3.(1): rapor imzacısı hekimin kendisinin / yakınının / ortaklarının tedavisi ödenmez): iki oy E2 dedi ve mevcut kuralın (`data/gazette/prose_rule_sources/dental_2_4_1/2.4.1.B-3.yaml`, `2.4.1.B-3.(1).treating_physician_continuity`) maddeyle uyuşmadığını yazdı. YAML'ı ben de okudum: koşul `treating_physician_different_from_board_signatory: true` + `patient_in_first_degree_relative_of_physician: true`, kuralın kendi ret metni ise "raporu düzenleyen hekim veya yakını tedavi yapıyorsa" diyor; yani koşuldaki "farklı hekim" bayrağı ret metniyle ve maddeyle ters, yakınlık bayrağı da tedavi edenin değil hastanın yakınlığı. (2) C000482 / C000492 (SUT 2.1.2 günübirlik tanımı): işçiler `infer_care_setting`'in günübirliği ayakta okuduğunu ve `claim_is_day_case`'in yalnız `claim_type` dizgesine baktığını, 24 saat ve işlem listesinin kodda denetlenmediğini yazdı. Kodu okudum: ilk iki gözlem doğru (`claim_utils.py:85-86`, `:73-74`), ama kodun kendi docstring'i bunu biliyor ve `detect_care_setting_ambiguity` günübirlik için çift yorum üretiyor; yani bilinen bir tasarım, hata kanıtı değil. Açık kalan yalnız "24 saat ve liste denetlenmiyor, etikete güveniliyor" (işçilerin `yatak_puani.py:450` atfı bu kodda `claim_is_day_case` kullanımına denk gelmiyor: kullanım satırları 195, 368, 416; `risk_note` içindeki satır atıfları G3'ten geçmez, yalnız `evidence` geçer). Düzeltmeler bu planın kapsamı dışında (`src/` ve manifest hash'leri); pilot encode planında (§13) ilk denetim girdisi olur.
+
+**Prova sonrası yapılan iki değişiklik (araçlar testli; gerçek ajanlarla henüz koşulmadı, ilk kez gece koşusunda çalışacaklar); bir de paket eksiği kapandı.**
 1. *Küçük aile kalıntıları birleşir.* Provadan önce para etkileyen kapsam 20 partiydi, bir kısmı 1–3 maddelikti; her parti iki ajanın rubriği ve kodu baştan okuma maliyetini öder. 6'dan az maddelik kalıntılar `mixed` partide toplanır: tüm kuyruk 48 → 37, para etkileyen kapsam 20 → 10 parti. Son parti hâlâ tek maddelik bir artık (kabul edildi; tahminen ~4 dk ek süre, ölçülmedi).
 2. *G7'nin ikinci yarısı uyarı olarak eklendi.* Planın ilk sürümü "bir partide tek sınıf > %70" alarmını vaat ediyordu, araçta yoktu (yalnız uyuşma < %60 durduruyordu). Şimdi ≥6 maddelik bir partide tek üst-sınıf > %70 ise `finish` çıktısında ve `progress.log`'da `skew` görünür; **durdurmaz** (homojen bir ailede meşru olabilir), orkestratör iki satır okuyup kararı yazar.
+3. *`risk_note` pakete eklendi.* İşçilerin yazdığı risk notu (en yakın başka sınıf, mevcut kodun maddeyle çelişmesi) pakette hiç görünmüyordu; ipuçlarını ham çıktıya bakarken buldum. Şimdi CSV'de sütun ve `05-risk-notlari.md` ayrı dosya (prova koşusunda 29 satırın 17'sinde not var, 6'sı kod / kural dosyasına atıf yapıyor).
 
 ## 11. Kapsam dışı
 
