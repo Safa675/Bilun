@@ -1574,8 +1574,25 @@ def test_a_gunubirlik_claim_is_outpatient_and_gets_no_newborn_row() -> None:
     assert _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="gunubirlik")) == []
 
 
-def test_a_day_case_of_two_dates_keeps_its_newborn_beds() -> None:
+@pytest.mark.parametrize("last_day", [11, 12])
+def test_a_day_case_that_crosses_midnight_expects_no_newborn_bed_with_an_ek2c_procedure(last_day: int) -> None:
+    header = _make_claim_header(claim_type="day_case", admission=date(2026, 7, 10), discharge=date(2026, 7, last_day))
+    [opp] = _detect([_line("702580", "545.76")], header=header)
+
+    assert (opp["days"], opp["expected_try"], opp["recoverable_uplift_try"]) == (0, 0.0, 0.0)
+    assert "No bed day is expected: a day case (günübirlik) bills EK-2/C procedure(s) (702580)" in opp["detail"]
+
+
+def test_a_day_case_of_two_dates_without_an_ek2c_procedure_keeps_its_newborn_beds() -> None:
     header = _make_claim_header(claim_type="day_case", admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
+    [opp] = _detect([_line("520010", "10")], header=header)
+
+    assert opp["days"] == 2
+    assert opp["recoverable_uplift_try"] == pytest.approx(881.96, abs=0.01)
+
+
+def test_the_same_bill_of_two_dates_on_an_inpatient_claim_keeps_its_newborn_beds() -> None:
+    header = _make_claim_header(claim_type="yatis", admission=date(2026, 7, 10), discharge=date(2026, 7, 11))
     [opp] = _detect([_line("702580", "545.76")], header=header)
 
     assert opp["days"] == 2

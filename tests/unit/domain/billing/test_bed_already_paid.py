@@ -124,6 +124,14 @@ _CASES = {
     "adult home hemodialysis": (_ADULT, 0, 0, [("704233", 0, "4342.48", 1)], "yatis", 1, None, 44.45),
     "adult inpatient claim with the same hyperbaric session": (
         _ADULT, 0, 0, [("702580", 0, "545.76", 1)], "yatis", 1, None, 44.45),
+    # --- a day case crosses midnight: no ward bed, and its day bed is forbidden for EK-2/C procedures -----------
+    "adult day case over two dates with a hyperbaric-oxygen session": (
+        _ADULT, 0, 1, [("702580", 0, "545.76", 1)], "day_case", 0, None, 0.0),
+    "adult day case over two dates, no EK-2/C procedure (untouched)": (_ADULT, 0, 1, [], "day_case", 2, None, 444.72),
+    "adult inpatient claim over two dates with the same session (untouched)": (
+        _ADULT, 0, 1, [("702580", 0, "545.76", 1)], "yatis", 2, None, 444.72),
+    "newborn day case over two dates with a hyperbaric-oxygen session": (
+        _NEWBORN, 0, 1, [("702580", 0, "545.76", 1)], "day_case", 0, 0, 0.0),
     # --- three days: the days the bed-including code pays -----------------------------------------------------
     "control adult 3 days": (_ADULT, 0, 2, [], "yatis", 3, None, 667.08),
     "control newborn 3 days": (_NEWBORN, 0, 2, [], "yatis", 0, 3, 1322.94),

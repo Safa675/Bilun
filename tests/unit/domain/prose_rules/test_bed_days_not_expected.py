@@ -122,6 +122,13 @@ def test_a_line_covers_its_quantity_in_days_from_its_date_clipped_to_the_stay(
     assert bed_days_not_expected(_claim(), [_line("530000", day=day, quantity=quantity)]).dates == _dates(*covered)
 
 
+@pytest.mark.parametrize("quantity", [float("nan"), float("inf"), float("-inf"), "two", object()])
+def test_an_unreadable_quantity_counts_one_day_and_never_loses_the_report(quantity: object) -> None:
+    """The parsers hand over an int; a bill built in code may not. The whole report must survive: one day."""
+    for code, day in (("530000", 1), ("510100", 1)):
+        assert bed_days_not_expected(_claim(), [_line(code, day=day, quantity=quantity)]).dates == _dates(1)  # type: ignore[arg-type]
+
+
 def test_two_lines_on_one_day_cover_it_once() -> None:
     result = bed_days_not_expected(_claim(), [_line("530000", day=1), _line("530000", day=1, billed="50.00")])
 
@@ -348,8 +355,47 @@ def test_the_ek2c_list_is_read_on_the_date_of_the_line(monkeypatch: pytest.Monke
         assert seen == [expected], (day, seen)
 
 
-def test_a_day_case_of_several_dates_keeps_its_beds() -> None:
-    assert bed_days_not_expected(_claim(days=2, claim_type="day_case"), [_line("702580")]) == BedNotExpected()
+def test_a_day_case_that_crosses_midnight_has_no_bed_at_all_with_an_ek2c_procedure() -> None:
+    """A day case is "within 24 hours" and "without admission" (§2.1.2.B.(1)): it may span two dates, has no ward bed,
+    and its day bed is forbidden for EK-2/C procedures (§2.2.2.(4)). Every day is not expected, whatever its dates."""
+    for days in (2, 3):
+        result = bed_days_not_expected(_claim(days=days, claim_type="day_case"), [_line("702580", day=0)])
+
+        assert result.dates == _dates(*range(days))
+        [reason] = result.reasons
+        assert reason.startswith("No bed day is expected: a day case (günübirlik) bills EK-2/C procedure(s) (702580)")
+        assert "2.2.2.(4)" in reason and "2.1.2.B.(1)" in reason and "no other bed" in reason
+
+
+def test_a_day_case_of_several_dates_without_an_ek2c_procedure_keeps_its_beds() -> None:
+    """Untouched: nothing here names the day case's beds (an inherited question: its beds are 510010 days today)."""
+    claim = _claim(days=2, claim_type="day_case")
+
+    assert bed_days_not_expected(claim, [_line("520010"), _line("510010", billed="222.36")]) == BedNotExpected()
+    assert bed_days_not_expected(claim, [_line("702580", billed="-545.76")]) == BedNotExpected()  # a reversal
+
+
+def test_the_same_bill_of_several_dates_on_an_inpatient_claim_keeps_its_beds() -> None:
+    for claim_type in ("yatis", "acil", "inpatient", "poliklinik"):
+        assert bed_days_not_expected(_claim(days=2, claim_type=claim_type), [_line("702580")]) == BedNotExpected()
+
+
+def test_a_day_case_of_several_dates_leaves_the_package_window_its_days() -> None:
+    """Only the days after the window are named: the window explains the others."""
+    claim = _claim(days=6, claim_type="day_case")
+
+    assert bed_days_not_expected(claim, [_line("702580", day=0)], _window(2)).dates == _dates(3, 4, 5)
+    assert bed_days_not_expected(claim, [_line("702580", day=0)], _window(5)) == BedNotExpected()
+
+
+def test_a_day_case_of_several_dates_with_530000_still_takes_that_days_only_beside_the_day_case_cause() -> None:
+    """530000 on a stay of several dates covers its own day; the day-case cause already names every day."""
+    result = bed_days_not_expected(
+        _claim(days=2, claim_type="day_case"), [_line("702580", day=0), _line("530000", day=1)]
+    )
+
+    assert result.dates == _dates(0, 1)
+    assert len(result.reasons) == 2
 
 
 def test_a_package_window_over_the_only_day_of_a_day_case_leaves_nothing_to_explain() -> None:

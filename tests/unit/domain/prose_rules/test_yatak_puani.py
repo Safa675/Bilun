@@ -775,8 +775,30 @@ def test_a_day_case_without_an_ek2c_procedure_keeps_its_day_bed() -> None:
     assert opp["recoverable_uplift_try"] == pytest.approx(44.45, abs=0.005)
 
 
-def test_a_day_case_of_two_dates_keeps_its_beds() -> None:
-    [opp] = _stay(2, [_line("702580", "545.76")], claim_type="day_case")
+@pytest.mark.parametrize("days", [2, 3])
+def test_a_day_case_that_crosses_midnight_expects_no_bed_with_an_ek2c_procedure(days: int) -> None:
+    """Review of the change: a day case is within 24 hours and has no admission (§2.1.2.B.(1)), so it may span two
+    dates and has no ward bed; its day bed is forbidden for EK-2/C procedures (§2.2.2.(4)). 2 x 510010 was a false
+    444.72."""
+    [opp] = _stay(days, [_line("702580", "545.76")], claim_type="day_case")
+
+    assert (opp["bed_code"], opp["gross_bed_days"], opp["bed_days"]) == ("510010", days, 0)
+    assert opp["expected_yatak_try"] == 0.0 and opp["recoverable_uplift_try"] == 0.0
+    assert "No bed day is expected: a day case (günübirlik) bills EK-2/C procedure(s) (702580)" in opp["detail"]
+    assert "§2.1.2.B.(1)" in opp["detail"]
+
+
+def test_a_day_case_of_two_dates_without_an_ek2c_procedure_keeps_its_beds() -> None:
+    """Untouched (inherited): without an EK-2/C procedure nothing here forbids the day case's bed."""
+    [opp] = _stay(2, [_line("520010", "10")], claim_type="day_case")
 
     assert opp["bed_days"] == 2
     assert opp["recoverable_uplift_try"] == pytest.approx(444.72, abs=0.01)
+
+
+def test_the_same_bill_of_two_dates_on_an_inpatient_claim_keeps_its_beds() -> None:
+    [opp] = _stay(2, [_line("702580", "545.76")], claim_type="yatis")
+
+    assert opp["bed_days"] == 2
+    assert opp["recoverable_uplift_try"] == pytest.approx(444.72, abs=0.01)
+    assert "day case" not in opp["detail"]

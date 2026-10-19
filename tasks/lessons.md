@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-19 — A brief that names three SUT exclusions is a lead, not the list: search the whole annex for the wording before fixing the named codes
+
+**Pattern:** The brief for the bed motors named 530000, hemodialysis 704210 / 704230 and clause C000649 as the places where "neither motor knows the bed is paid". Reading every EK-2/B row whose text says "yatak" showed the same sentence, "Yemek, yatak, hasta vizit hizmetlerini kapsar", on two codes nobody had named, 510100 (steril oda) and 510110 (izole oda): a 3-day stay billing 510100 daily showed 667.08 TL of standard-bed "recoverable", fifteen times the 44.45 TL day-bed rows the brief was about. The same sweep showed that C000649 was mostly covered already (grouped EK-2/C items open a package window; only the group-less ones such as dialysis and hyperbaric oxygen do not) and that an ICU-coded 3-day claim has its own unresolved standard-bed row (444.72 TL beside an ICU row of 0.00). None of that shows from the named codes alone.
+
+**Rule:** When a brief names SUT codes for one defect class, first query the whole annex and clause table for the *wording* (here "yatak", "kapsar", "dahil", "ile birlikte faturalandırılmaz") and measure every hit on the same in-memory bills before the plan's decisions are final; model the hits that share the sentence and the money, name the others with their numbers. A mutant that survives because a guard is redundant (here a window argument the caller already filters by, an after-discharge guard the arithmetic already covers) is a reason to delete the guard, not to keep an "equivalent mutant" on the list.
+
 ## 2026-10-18 — "Is the work in this tree" is a tree comparison, never a search for commit subjects: a squash-merge keeps the content and drops the commits
 
 **Pattern:** The brief's Step 0 said the worktree must show a commit named "review round 3" and, if it did not, merge the unpushed branch `claude/funny-tereshkova-662936`. That branch had been squash-merged as #319 while the brief was written, and the worktree was cut from `origin/main` (7ea9457a): `git log | grep -i "review round 3"` found nothing, although the test file the same step names existed. Followed literally, the step would have merged an already-merged branch (15 commits of duplicate history and a merge commit with an empty diff) into the new branch. `git diff claude/funny-tereshkova-662936 HEAD` was empty: the two trees were identical.

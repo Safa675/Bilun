@@ -54,11 +54,12 @@ incubator or cot is above the day-bed price and leaves nothing to recover); a cl
 bills 510120 (or 510010) and no newborn bed line has stated its bed, so this motor stands
 down and the standard-bed motor, which nets 510120 lines on such a stay, owns the day.
 
-Days whose bed is already paid (EK-2/B 530000, 510100, 510110: "Yatak, yemek, hasta vizit hizmetlerini kapsar") and
-the day bed of a stay of one date that the SUT forbids (530000 on the claim; hemodialysis 704210 / 704230, SUT
-§2.4.4.D-1.(11); an EK-2/C procedure of a day case, §2.2.2.(4)) are no newborn bed days either: the standard-bed motor's
-``bed_days_not_expected`` returns them, they are taken out after the ICU transfer days (never twice) and before the
-standard-bed days are counted, and the ``detail`` says why.
+Days whose bed is already paid (EK-2/B 530000, 510100, 510110: "Yatak, yemek, hasta vizit hizmetlerini kapsar"), the
+day bed of a stay of one date that the SUT forbids (530000 on the claim; hemodialysis 704210 / 704230, SUT
+§2.4.4.D-1.(11)) and every day of a day case that bills an EK-2/C procedure (§2.2.2.(4); a day case has no admission,
+§2.1.2.B.(1), so no other bed) are no newborn bed days either: the standard-bed motor's ``bed_days_not_expected``
+returns them, they are taken out after the ICU transfer days (never twice) and before the standard-bed days are
+counted, and the ``detail`` says why.
 
 Day counting: inclusive LOS = ``(discharge - admission).days + 1`` — the
 discharge day IS billed, matching the yatak puani convention. Days inside an
