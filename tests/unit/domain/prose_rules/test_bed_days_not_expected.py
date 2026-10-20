@@ -528,6 +528,13 @@ def test_two_icu_lines_on_one_day_cover_it_once() -> None:
     assert "1 day(s)" in reason and "510090" in reason and "552002" in reason
 
 
+def test_the_icu_sentence_names_the_codes_in_sorted_order_whatever_the_order_of_the_lines() -> None:
+    result = bed_days_not_expected(_claim(), [_package("552002", day=1), _line("510090", day=0)])
+
+    [reason] = result.reasons
+    assert "510090 / 552002" in reason
+
+
 def test_the_icu_cause_reads_the_lines_not_the_claims_department_or_type() -> None:
     for claim in (_claim(), replace(_claim(), department="Yoğun Bakım"), replace(_claim(), claim_type="inpatient")):
         assert bed_days_not_expected(claim, [_line("510090", day=1)]).dates == _dates(1)

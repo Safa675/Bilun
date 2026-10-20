@@ -357,7 +357,7 @@ def _stay_days_covered(line: ProcedureClaimLine, admission: date, discharge: dat
     units = min(_units(line), (discharge - start).days + 1)
     last = start + timedelta(days=units - 1)
     first = max(start, admission)
-    return [first + timedelta(days=offset) for offset in range(max((last - first).days + 1, 0))]
+    return [first + timedelta(days=offset) for offset in range((last - first).days + 1)]
 
 
 @dataclass(frozen=True)
