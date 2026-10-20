@@ -485,8 +485,11 @@ def test_an_icu_package_covers_its_quantity_in_days_from_its_date_clipped_to_the
         (3, 1, (3,)),
         (0, 2, (0, 1, 2, 3, 4, 5)),  # two day-rate units are the first and the exit day: the stay runs to the discharge
         (2, 2, (2, 3, 4, 5)),
-        (0, 3, (0, 1, 2, 3, 4, 5)),
+        (5, 2, (0, 1, 2, 3, 4, 5)),  # ... dated on the discharge date: the other end is the claim's first day
+        (4, 2, (4, 5)),
+        (0, 3, (0, 1, 2)),  # three or more units cannot be H.(8)'s two hizmet başı days: a daily billing, quantity = days
         (4, 3, (4, 5)),
+        (2, 5, (2, 3, 4, 5)),
         (0, 100000, (0, 1, 2, 3, 4, 5)),  # a huge quantity is clipped, not iterated
         (-1, 2, (0, 1, 2, 3, 4, 5)),  # starts the day before the admission, runs into the stay
         (-2, 2, ()),  # ... but not when its quantity ends before the admission
@@ -496,13 +499,32 @@ def test_an_icu_package_covers_its_quantity_in_days_from_its_date_clipped_to_the
         (0, -3, (0,)),
     ],
 )
-def test_a_510090_line_pays_its_own_day_or_with_a_quantity_of_two_or_more_the_stay_to_the_discharge(
+def test_a_510090_line_pays_its_quantity_in_days_or_with_a_quantity_of_exactly_two_the_stay(
     day: int, quantity: int | None, covered: tuple[int, ...]
 ) -> None:
     """The ICU motor reads two 510090 units as the first and the exit day (§2.4.4.H.(8)), not as two consecutive days:
     the exit day is not on the line, the claim-span model puts it on the claim's last day. A bill built on that reading
     must not show the days between as ward days."""
     assert bed_days_not_expected(_claim(days=6), [_line("510090", day=day, quantity=quantity)]).dates == _dates(*covered)
+
+
+@pytest.mark.parametrize("code", [" 510.090 ", "510 090", "510-090", "P510090", "p510090"])
+def test_a_spelled_day_rate_line_of_quantity_two_is_read_like_the_plain_one(code: str) -> None:
+    assert bed_days_not_expected(_claim(days=6), [_line(code, day=1, quantity=2)]).dates == _dates(1, 2, 3, 4, 5)
+    assert bed_days_not_expected(_claim(days=6), [_line(code, day=5, quantity=2)]).dates == _dates(0, 1, 2, 3, 4, 5)
+    assert bed_days_not_expected(_claim(days=6), [_line(code, day=1, quantity=3)]).dates == _dates(1, 2, 3)
+
+
+def test_a_day_rate_line_of_quantity_two_with_the_other_lines_of_the_stay() -> None:
+    claim = _claim(days=8)
+    # first/exit line dated 12 July plus a package at 11 July: the stay starts at the earliest covered day
+    assert bed_days_not_expected(claim, [_line("510090", day=2, quantity=2), _package("552002", day=1)]).dates == _dates(
+        1, 2, 3, 4, 5, 6, 7
+    )
+    # two quantity-2 lines: the earlier one starts the stay, both end at the discharge
+    assert bed_days_not_expected(claim, [_line("510090", day=1, quantity=2), _line("510090", day=4, quantity=2)]).dates == _dates(
+        1, 2, 3, 4, 5, 6, 7
+    )
 
 
 def test_a_package_of_quantity_two_pays_two_days_where_a_day_rate_line_of_quantity_two_pays_the_stay() -> None:
@@ -634,9 +656,10 @@ def test_ward_days_around_a_stay_billed_on_a_package_quantity_are_still_expected
     assert bed_days_not_expected(_claim(days=7), [_package("552002", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5)
 
 
-def test_ward_days_before_a_day_rate_line_of_quantity_two_or_more_are_still_expected() -> None:
+def test_ward_days_before_a_day_rate_line_of_quantity_two_are_still_expected() -> None:
     """The line's date is the first day: the days before it are ward days; the days after it are the stay."""
-    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5, 6)
+    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=2)]).dates == _dates(2, 3, 4, 5, 6)
+    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5)
 
 
 def test_two_separate_icu_stays_of_one_claim_are_read_as_one_stay() -> None:

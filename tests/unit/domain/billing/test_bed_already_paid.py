@@ -336,6 +336,9 @@ _ICU_CASES = {
     "5 dates, 510090 qty 5": (_ICU_UNIT, 0, 4, [("510090", 0, "3713.00", 5, "islem")], 0, 0.0, 0.0),
     # a day-rate line of quantity 2 or more is the first and the exit day in one line (the ICU motor reads it so)
     "10 dates, 510090 qty 2 on the first date": (_ICU_UNIT, 0, 9, [("510090", 0, "1485.20", 2, "islem")], 0, 0.0, 0.0),
+    "10 dates, 510090 qty 2 dated on the last date": (_ICU_UNIT, 0, 9, [("510090", 9, "1485.20", 2, "islem")], 0, 0.0, 0.0),
+    "12 dates, 510090 qty 5 from d2 (a daily billing: quantity is days, ward days after)": (
+        _ADULT, 0, 11, [("510090", 2, "3713.00", 5, "islem")], 6, 1334.16, 0.0),
     "10 dates, 510090 on the first date and on d3 (two lines)": (_ICU_UNIT, 0, 9, _icu_day_rate(0, 3), 5, 1111.80, 0.0),
     "10 dates, an unprefixed 552002 qty 2 from the first date (a package's quantity is days)": (
         _ICU_UNIT, 0, 9, [("552002", 0, "8119.78", 2, "islem")], 7, 1556.52, None),

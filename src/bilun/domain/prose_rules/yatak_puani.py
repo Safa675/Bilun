@@ -42,7 +42,7 @@ Açıklama column states an exception (§2.2.2.B-1.(1).a, (2)), and none is stat
 EK-2/C packages do say it, either way: psychiatry includes the bed, FTR §2.4.4.F-2.(9) bills it separately). So the bed is
 read as included: an inference from those clauses, not a quote. §2.4.4.H.(8) bills the first and the exit day hizmet başı
 (510090); the days between are read as the package days of the same stay (inference from (2) and (8)). A line of either
-pays the days its quantity covers, a 510090 line of quantity 2 or more is the first and the exit day in one line (as the
+pays the days its quantity covers, a 510090 line of quantity exactly 2 is the first and the exit day in one line (as the
 ICU motor reads it), and the days between the first and the last such day are the stay, so none of them is a standard-bed
 day. Ward days of the same claim before or after the stay are expected as before; the claim's own last day is still
 dropped by ``yatak_icu_overlap``.
@@ -367,13 +367,16 @@ def _stay_days_covered(line: ProcedureClaimLine, admission: date, discharge: dat
 
 def _icu_line_days(code: str, line: ProcedureClaimLine, admission: date, discharge: date) -> list[date]:
     """The days of the stay an ICU line pays. An EK-2/C ICU package pays its quantity in days from its date, like any
-    bed-including line. A 510090 line of quantity 2 or more is read as the ICU motor reads it (``icu_puani``: two day-rate
-    units are the first and the exit day, §2.4.4.H.(8), not two consecutive days): the exit day is not dated on the line,
-    and the claim-span model of this project puts it on the claim's last day, so every day from the line's date through
-    the discharge is the stay. A quantity of 1 pays its own day."""
+    bed-including line, and so does a 510090 line of quantity 1 (its own day) or of quantity 3 or more (§2.4.4.H.(8)
+    knows two hizmet başı days only, so more units than that are a daily billing). A 510090 line of quantity exactly 2 is
+    read as the ICU motor reads it (``icu_puani``: two day-rate units are the first and the exit day, not two consecutive
+    days): either date can sit on the line, and the claim-span model of this project puts the other end on the claim's
+    first or last day, so the stay runs from the line's date through the discharge, or, for a line dated on the
+    discharge date itself, from the admission."""
     days = _stay_days_covered(line, admission, discharge)
-    if days and code == ICU_DAY_RATE_CODE and _units(line) >= 2:
-        return [days[0] + timedelta(days=offset) for offset in range((discharge - days[0]).days + 1)]
+    if days and code == ICU_DAY_RATE_CODE and _units(line) == 2:
+        first = admission if line.procedure_date == discharge else days[0]
+        return [first + timedelta(days=offset) for offset in range((discharge - first).days + 1)]
     return days
 
 
@@ -415,7 +418,7 @@ def bed_days_not_expected(
        "Yemek, yatak, hasta vizit hizmetlerini kapsar"; the packages are the EK-2/C points of "Yoğun bakım tedavileri",
        §2.4.4.H.(2), and EK-2/C points include "Yatak bedeli", §2.2.2.B-1.(1).a, with no exception stated for them: the
        bed is read as included, an inference). A line pays the days its quantity covers (as for cause 1; see
-       ``_icu_line_days`` for a 510090 line of quantity 2 or more); the days between the first and the last covered day
+       ``_icu_line_days`` for a 510090 line of quantity 2); the days between the first and the last covered day
        are the stay itself (§2.4.4.H.(8): the first and the exit day are hizmet başı, the days between are read as
        package days, billed or not: a missing package is an ICU matter, never a bed day), so none is expected. Days of
        the claim before the first and after the last ICU line are ward days and stay expected. A ward interval between
