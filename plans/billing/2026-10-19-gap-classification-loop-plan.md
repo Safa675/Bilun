@@ -1,6 +1,6 @@
 # Plan: SUT açık maddelerinin salt-okunur sınıflandırma döngüsü (gece koşusu)
 
-**Durum:** Taslak; **akşam provası yapıldı (2026-10-20), sonuçlar §10.1'de; gece koşusu Safa'nın onayını bekliyor**
+**Durum:** Taslak; akşam provası yapıldı (§10.1); **gece koşusu 1 başladı (2026-10-20 09:35), kalibrasyon KIRMIZI, kuyruk Safa'nın kararını bekliyor (§10.2)**
 **Üst plan:** `plans/billing/algorithmic-gap-closure-plan.md` (kuzey yıldızı metriği: `has_algorithmic_gap`)
 **Bu plan kural YAZMAZ ve repoda hiçbir dosyayı değiştirmez.** Yalnız okur, sınıflandırır, sabah için bir paket üretir.
 
@@ -40,7 +40,7 @@ Koşu üç düzeyden biriyle biter; düzey `manifest.json`'a ve `00-ozet.md`'nin
 | **S1 Tamlık** | 394 maddenin her biri için tam bir son kayıt; her kayıtta iki geçerli oy (A, B). |
 | **S2 Kalibrasyon** | **Güçlü** altın etiketlerde (E2 ve N, 30 madde, bkz. §4) her iki oyun **üst-sınıf** doğruluğu ≥ %80. E1 etiketleri (projenin zaten encode ettiği maddeler) kapı değil, mevcut encode'ların denetimi olarak raporlanır. |
 | **S3 Uyuşma** | Tüm kuyrukta iki oyun üst-sınıf uyuşması ≥ %70 (tam sınıf uyuşması ayrıca raporlanır). |
-| **S4 Yan etkisizlik** | Okuma klonu salt-okunur ve `git status --porcelain` boş; `data/gazette/sut_clause_coverage.parquet` sha256'sı koşu başı = koşu sonu; ana checkout'a ve çalışma ağaçlarına hiç dokunulmadı. |
+| **S4 Yan etkisizlik** | Okuma klonunun dosya ağacı imzası ve `data/gazette/sut_clause_coverage.parquet` sha256'sı koşu başı = koşu sonu (klonda `.git` yok: `git archive` çıktısı); `votes/` içinde yalnız beklenen oy dosyaları; araç-çağrı denetimi temiz (klon / girdi / kendi oy dosyası dışına yazma ya da okuma yok). Ana checkout'un `HEAD` ve `git status`'u **karşılaştırılmaz**: başka oturumlar orada meşru iş yapar; erişimi fiziksel önlem (klon) ve denetim engeller. |
 | **S5 Kanıt kalitesi** | Her kayıt G1–G4'ten geçti (şema, birebir alıntı, doğrulanmış `dosya:satır`, yasak yol yok). |
 | **S6 Paket tutarlılığı** | `01-siniflandirma.csv` satır sayısı = tamamlanan madde sayısı; sınıf toplamları `00-ozet.md` ile çapraz eşit. |
 
@@ -119,7 +119,7 @@ Karar sırası (ajan bu soruları sırayla yanıtlar):
 | **G2 Alıntı** | `rationale` içindeki her tırnaklı alıntı clause metninde **birebir** geçer (Türkçe büyük / küçük harf katlamasıyla: İ→i, I→ı; boşluk normalize) | Oy reddedilir |
 | **G3 Kanıt** | `dosya:satır` kanıtında dosya var ve satır, anılan tanımlayıcıyı (fonksiyon / sabit adı) içeriyor; annex / kod kanıtı katalogda var | Oy reddedilir |
 | **G4 Yasak yol** | Çıktıda `ilay_validation`, `golden/ilay`, `raw data` geçmez. Ayrıca fiziksel önlem: işçiler bu klasörlerin **bulunmadığı** bir okuma klonunda çalışır | Oy reddedilir; ihlal şüphesinde dur |
-| **G5 Yan etki** | Okuma klonunda `git status --porcelain` boş; parquet sha256 değişmedi; ana checkout `HEAD` ve `git status` aynı | **Anında dur (KIRMIZI)** |
+| **G5 Yan etki** | Okuma klonunun ağaç imzası ve parquet sha256'sı değişmedi; `votes/` içinde beklenmeyen dosya yok; araç-çağrı denetimi (yazma, klon dışı okuma, diğer oyun) temiz | **Anında dur (KIRMIZI)** |
 | **G6 Kalibrasyon** | §4: güçlü altın etiketler (E2, N; 30 madde) ≥ %80 | Dur (KIRMIZI) |
 | **G7 Uyuşma alarmı** | (a) İlk 5 partide iki oyun üst-sınıf uyuşması < %60 → **dur** (rubrik sorunu). (b) ≥6 maddelik bir partide tek üst-sınıf > %70 → **uyarı, durdurmaz**: homojen bir aile (on iki NO_PAY istisnası) dürüstçe tek sınıfa düşebilir; orkestratör partiden iki satır okur, kararı `progress.log`'a yazar, rubrik yanlış görünüyorsa durur | (a) Dur; (b) uyarı |
 
@@ -203,7 +203,7 @@ Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-class
 - [x] Orkestrasyon protokolü (`RUNBOOK.md`; `finish` komutu: ingest + denetim + uzlaştırma + durma koşulları)
 - [x] **Akşam provası** (2026-10-20 00:00–01:00): sonuçlar §10.1
 - [x] Prova sonrası iki değişiklik (aşağıda, §10.1 sonunda): küçük aile kalıntılarını birleştirme, G7b uyarısı
-- [ ] Gece koşusu — Safa'nın onayı ve kapsam kararı (D7) bekliyor
+- [~] Gece koşusu 1 (Safa'nın onayıyla 2026-10-20 09:35): 3 kalibrasyon partisi bitti, **G6 tutmadı**, kuyruk başlamadı; karar bekliyor (§10.2)
 
 ### 10.1 Prova sonuçları (gerçek ajanlar, gerçek maddeler)
 
@@ -237,6 +237,37 @@ Tahmin (kaba; parti içeriğine bağlı): tüm kuyruk × 2 oy **11–29 milyon t
 1. *Küçük aile kalıntıları birleşir.* Provadan önce para etkileyen kapsam 20 partiydi, bir kısmı 1–3 maddelikti; her parti iki ajanın rubriği ve kodu baştan okuma maliyetini öder. 6'dan az maddelik kalıntılar `mixed` partide toplanır: tüm kuyruk 48 → 37, para etkileyen kapsam 20 → 10 parti. Son parti hâlâ tek maddelik bir artık (kabul edildi; tahminen ~4 dk ek süre, ölçülmedi).
 2. *G7'nin ikinci yarısı uyarı olarak eklendi.* Planın ilk sürümü "bir partide tek sınıf > %70" alarmını vaat ediyordu, araçta yoktu (yalnız uyuşma < %60 durduruyordu). Şimdi ≥6 maddelik bir partide tek üst-sınıf > %70 ise `finish` çıktısında ve `progress.log`'da `skew` görünür; **durdurmaz** (homojen bir ailede meşru olabilir), orkestratör iki satır okuyup kararı yazar.
 3. *`risk_note` pakete eklendi.* İşçilerin yazdığı risk notu (en yakın başka sınıf, mevcut kodun maddeyle çelişmesi) pakette hiç görünmüyordu; ipuçlarını ham çıktıya bakarken buldum. Şimdi CSV'de sütun ve `05-risk-notlari.md` ayrı dosya (prova koşusunda 29 satırın 17'sinde not var, 6'sı kod / kural dosyasına atıf yapıyor).
+
+### 10.2 Gece koşusu 1 (`night1-20261020`, 2026-10-20 09:35–10:37): kalibrasyon KIRMIZI, kuyruk başlamadı
+
+Taban `origin/main` `1a5352b9`, kapsam `money` (101 madde, 10 parti), G0 geçti. Önce üç güçlü kalibrasyon partisi (30 madde, her biri iki oyla) koştu: 6 oy dosyasının 6'sı ilk denemede G1–G4'ten geçti; iki oy arasında üst-sınıf uyuşması 27 / 30 (%90, 3 madde insana düştü). Maliyet: **1,82 milyon token, 61 dk** (A `sonnet` 1,01 M token ve 56 dk, B `opus` 0,81 M token ve 40 dk oy süresi; madde başına oy başına A 33,5 bin token / 112 sn, B 27 bin token / 80 sn: §10.1 tahminiyle uyumlu).
+
+| Kalibrasyon (G6, 30 güçlü etiket) | Oy A | Oy B | Uzlaşmış |
+|---|---:|---:|---:|
+| Orijinal etiketler | %70 | %63 | %63 |
+
+Eşik %80: **tutmadı**; §6 gereği kuyruk başlatılmadı (0 / 10 parti), KIRMIZI paket üretildi (`06-kalibrasyon-hatalari.md` 11 maddeyi metin ve iki gerekçeyle gösterir). E2 etiketlilerde (15) iki oy da 13'ünde doğru; **N etiketlilerde (15) A 8, B 6 doğru**.
+
+**Neden (11 ıskalanan maddeyi okudum):**
+1. *N havuzum yapısal olarak hatalıydı (4 madde: C005249, C008330, C001529, C005380).* Proje `emr_blocked` mekanizmasını yalnız ilaçta kullanıyor; ilaç dışı, claim'de olmayan girdi isteyen maddeleri `non_algorithmic` diye işaretliyor (laboratuvar eşiği, belge ibrazı, sevk formu, klinik ilerleme). Benim rubriğimde bunlar **E2**; iki oy da E2 dedi ve alan envanterinde nötrofil / trombosit, engelli raporu, sevk belgesi alanı gerçekten yok. "non_algorithmic = N" eşleştirmesi benim varsayımımdı (§4'ün "kodlanmış = E1" hatasının eşi) ve yanlış.
+2. *Eski E2 etiketi bayat ya da gürültülü (2 madde: C007401, C006886).* C007401'de (vosoritid sonlandırma) `annual_growth_velocity_cm` ve `epiphyses_closed` claim modelinde var (`models.py:290`, `:289`): iki oyun E1'i doğru. C006886 (diyaliz öncesi anemi) etiketi anahtar sözcükle ("evre") seçilmişti; ICD-10 yolu makul ama doğrulanmadı.
+3. *Kural gibi görünen, `non_algorithmic` etiketli maddeler (3: C000990 APD hastasında ek hemodiyaliz kamu merkezinde, C001241 yoğun bakımda ayrıca faturalanan ATC'li ilaçlar, C003495 rapor en fazla iki yıl).* İki oy da E1 dedi. Doğruysa etiket yanlış ve bunlar encode adayı (asıl değerli bulgu türü); yanlışsa iki oy aynı yöne sapıyor. Ayırt edemiyorum.
+4. *B, çıplak liste maddelerinde fazla iddialı (2: C000202, C000609).* A N1 dedi (doğru), B E2 / E1; iki oy tasarımı bunları insana düşürdü (beklenen davranış).
+
+**Düzeltilmiş etiketlerle yeniden hesap (yalnız ben, oyları gördükten sonra; bu yüzden kapı olarak kullanmadım):**
+
+| Düzeltme | n | Oy A | Oy B | Uzlaşmış |
+|---|---:|---:|---:|---:|
+| Muhafazakâr: yalnız doğrulananlar (C005249, C008330, C001529 → E2; C007401 → E1) | 29 | %83 | %76 | %76 |
+| + C006886 → E1 | 28 | %86 | %79 | %79 |
+| + C005380 → E2 | 28 | %86 | %82 | %79 |
+| + üç "kural gibi" madde dışarıda | 25 | %96 | %92 | %88 |
+
+Okuma: sınıflandırıcı etiketlerden iyi görünüyor ama aralık %76–96 ve belirleyen birkaç yargı çağrısı; bu etiket kümesi %80'lik bir kapıyı karara bağlayacak kadar temiz değil. Doğru kalibrasyon, Safa'nın gözü kapalı etiketlediği ~20 madde olurdu. Yan bulgu: ilaç dışı E2 maddeleri için proje bugün `non_algorithmic` kullanıyor; bu, §7'deki "bilinen açık"ın (ilaç dışı `emr_blocked` yok) ölçülmüş hâli.
+
+**Araç bulguları.** (a) Oy A'nın denetimi 5 yanlış alarm verdi (denetimin beşinci yanlış alarm türü): işçi `... | grep -vi "golden/ilay"` ile yasak adları *süzdü*, klasörler zaten dışa aktarımda yok (yol varlığı kontrol edildi). Denetim, ters grep'in kalıp işlenenlerini dışlama sayacak şekilde düzeltildi (7 olumlu, 6 olumsuz örnek; mutasyon testi testin dişli olduğunu gösterdi), aynı oylar yeniden denetlendi, kayıt `progress.log` ve `manifest.json` `driver_changes` içinde. (b) `S4` / G5 metni, aracın gerçekte kontrol ettiğiyle hizalandı (ana checkout karşılaştırılmaz). (c) Bu koşuda ilk kez bir `bilun-ci-*` konteyneri koşu *sırasında* başladı (09:39'da başladı, 09:54'te yoktu; 8 pytest işçisi, ~10 GB): boş bellek 18,6 → 8,8 GB'a indi, eşik (3 GB) altına düşmedi, koşu etkilenmedi; G0 yalnız başlangıçta bakıyor.
+
+**Karar (Safa):** (1) G6'yı bu koşuda *bilgi amaçlı* sayıp 101 maddelik kuyruğu başlatmak (~7 milyon token, ~3,5 saat; paket G6'nın tutmadığını ve düzeltilmiş hesabı açıkça yazar, spot kontrol uyuşan satırları da kapsar; önerim), (2) N havuzunu yeniden kurup kalibrasyonu tekrar koşmak (+1,8 milyon token, +1 saat; yeni havuz yine proje etiketlerinden olacağı için temizliği garanti değil), (3) burada durup gözü kapalı etiketleme yapmak.
 
 ## 11. Kapsam dışı
 
