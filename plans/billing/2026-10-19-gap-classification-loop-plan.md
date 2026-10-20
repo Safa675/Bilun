@@ -1,6 +1,6 @@
 # Plan: SUT açık maddelerinin salt-okunur sınıflandırma döngüsü (gece koşusu)
 
-**Durum:** Taslak; akşam provası yapıldı (§10.1); **gece koşusu 1 başladı (2026-10-20 09:35), kalibrasyon KIRMIZI, kuyruk Safa'nın kararını bekliyor (§10.2)**
+**Durum:** Taslak; akşam provası yapıldı (§10.1); **gece koşusu 1 bitti (2026-10-20 09:35–13:16): kalibrasyon G6 tutmadı, Safa G6'yı bu koşuda bilgi amaçlı saydı, 101 maddelik kuyruk tamamlandı (§10.2, §10.3); paket Safa'nın incelemesini bekliyor**
 **Üst plan:** `plans/billing/algorithmic-gap-closure-plan.md` (kuzey yıldızı metriği: `has_algorithmic_gap`)
 **Bu plan kural YAZMAZ ve repoda hiçbir dosyayı değiştirmez.** Yalnız okur, sınıflandırır, sabah için bir paket üretir.
 
@@ -203,7 +203,8 @@ Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-class
 - [x] Orkestrasyon protokolü (`RUNBOOK.md`; `finish` komutu: ingest + denetim + uzlaştırma + durma koşulları)
 - [x] **Akşam provası** (2026-10-20 00:00–01:00): sonuçlar §10.1
 - [x] Prova sonrası iki değişiklik (aşağıda, §10.1 sonunda): küçük aile kalıntılarını birleştirme, G7b uyarısı
-- [~] Gece koşusu 1 (Safa'nın onayıyla 2026-10-20 09:35): 3 kalibrasyon partisi bitti, **G6 tutmadı**, kuyruk başlamadı; karar bekliyor (§10.2)
+- [x] Gece koşusu 1 (Safa'nın onayıyla 2026-10-20 09:35–13:16): G6 tutmadı, Safa bilgi amaçlı saydı, 101 madde × 2 oy tamam (§10.2, §10.3)
+- [ ] Paketin spot kontrolü (Safa, ~15–20 dk) ve kısa-efor partilerinin yeniden koşulup koşulmayacağı kararı (§10.3)
 
 ### 10.1 Prova sonuçları (gerçek ajanlar, gerçek maddeler)
 
@@ -268,6 +269,32 @@ Okuma: sınıflandırıcı etiketlerden iyi görünüyor ama aralık %76–96 ve
 **Araç bulguları.** (a) Oy A'nın denetimi 5 yanlış alarm verdi (denetimin beşinci yanlış alarm türü): işçi `... | grep -vi "golden/ilay"` ile yasak adları *süzdü*, klasörler zaten dışa aktarımda yok (yol varlığı kontrol edildi). Denetim, ters grep'in kalıp işlenenlerini dışlama sayacak şekilde düzeltildi (7 olumlu, 6 olumsuz örnek; mutasyon testi testin dişli olduğunu gösterdi), aynı oylar yeniden denetlendi, kayıt `progress.log` ve `manifest.json` `driver_changes` içinde. (b) `S4` / G5 metni, aracın gerçekte kontrol ettiğiyle hizalandı (ana checkout karşılaştırılmaz). (c) Bu koşuda ilk kez bir `bilun-ci-*` konteyneri koşu *sırasında* başladı (09:39'da başladı, 09:54'te yoktu; 8 pytest işçisi, ~10 GB): boş bellek 18,6 → 8,8 GB'a indi, eşik (3 GB) altına düşmedi, koşu etkilenmedi; G0 yalnız başlangıçta bakıyor.
 
 **Karar (Safa):** (1) G6'yı bu koşuda *bilgi amaçlı* sayıp 101 maddelik kuyruğu başlatmak (~7 milyon token, ~3,5 saat; paket G6'nın tutmadığını ve düzeltilmiş hesabı açıkça yazar, spot kontrol uyuşan satırları da kapsar; önerim), (2) N havuzunu yeniden kurup kalibrasyonu tekrar koşmak (+1,8 milyon token, +1 saat; yeni havuz yine proje etiketlerinden olacağı için temizliği garanti değil), (3) burada durup gözü kapalı etiketleme yapmak.
+
+### 10.3 Gece koşusu 1: kuyruk sonucu (11:01–13:16)
+
+Safa, üst oturum üzerinden, G6'yı bu koşuda yalnız bilgi saymaya karar verdi (söz: "Evet, kuyruğu başlat: G6'yı bu koşuda yalnız bilgi say (seçenek 1)."; kayıt `inputs/g6_waiver.json`, `manifest.json` `driver_changes`, `progress.log`). Önce feragat kancası yazıldı ve bir kopya üzerinde sınandı (`waive-g6`, `g6_stop_reason`, `scenario_scores`; paket G6'nın tutmadığını ve düzeltilmiş hesabı yazar; S2 başarısız kalır). Sonra 101 maddelik kuyruk (10 parti, 2 oy) koştu: **0 başarısız parti**, tüm oylar G1–G4'ten geçti (biri hariç, aşağıda), denetim temiz.
+
+| Paket sağlığı | |
+|---|---|
+| S1 tamlık, S3 uyuşma (%90), S4 yan etkisizlik, S5 kanıt / denetim, S6 tutarlılık | tuttu |
+| S2 kalibrasyon | **tutmadı** (feragatli) |
+| Düzey | KIRMIZI (S2); kuyruğun kendi sağlığı, G6 hariç: YEŞİL |
+
+**Sınıf dağılımı (101 para etkileyen madde):** E1 encode edilebilir **13** · E2 claim dışı girdi ister **49** · K1 kod motoru zaten karşılıyor **25** · N1 kural değil **4** · H insan kararı **10** · T1 0. Güven: 38 yüksek, 51 orta, 12 düşük. Uyuşma %90 (91 / 101).
+- *E1 adayları (13):* treatment_pricing_2_4 4, drg_unbundling 2, yedi ailede birer (exclusion_ek3b2, payment_method_itemized, drug_combination_4_2, pricing_ek2b, specialty_materials_prose, payment_method_package, gap_closing_treatment_2).
+- *E2 (49):* en çok eksik girdi: hastalık ilerlemesi (9), önceki immünoterapide ilerleme (7), tedavi basamağı (6), ECOG (4). İlaç ailelerindeki (drug_combination_4_2, drug_discount_prose) E2'ler `emr_blocked` işaretleme adayı olabilir (mekanizma yalnız ilaç kovasında var; bu maddelerin kovaya girip girmediği ayrıca kontrol edilmeli).
+- *K1 (25):* 12'si exclusion_ek3b2 (EK-3B istisnaları; malzeme motoru zaten uyguluyor), 4'ü payment_method_package, kalanı 9 ailede. K1 "kodda var" demek, kapsam izi eksik olabilir; açık listeden düşürmeden önce tek tek bakılmalı.
+- *N1 (4):* hepsi pricing_ek2b'de giriş cümlesi / cümle parçası.
+
+**Maliyet:** toplam 6,52 milyon token (kalibrasyon 1,82 + kuyruk 4,70; plan tahmini ~9,4), 27 oy (biri yeniden), oy sürelerinin toplamı 322 dk, 1.669 araç çağrısı; duvar saati 3 sa 40 dk (kalibrasyon 61 dk, tanı / plan / feragat kancası ~25 dk, kuyruk 2 sa 15 dk).
+
+**Kalite uyarıları (rapora girmesi gerekenler):**
+1. **Efor rejimi değişti.** İlk 5 kuyruk partisinde oylar 60–120 araç çağrısı ve ortalama 362 bin token kullandı (15–33 dk); 6. partiden itibaren 9–22 çağrı ve ortalama 99 bin token (0,6–2,4 dk). Nedenini bilmiyorum; aynı istem, aynı modeller. Kapılar ve denetim bu partilerde de geçti, risk notu iddialarından ikisini kodda doğruladım (`treatment_pricing.py:199`, `same_day_ek2c_procedure` yalnız kural verisinde), E2'ler (klinik skor, belge, form) kısa incelemeyle de doğru. Ama K1 / E1 kararları kod okumak ister.
+2. **Aynı partide çapraz kontrol (b148180054, provadaki 8 maddelik parti, üç koşu):** 6 / 8 madde üç koşuda aynı üst-sınıf; C000761 sınırda (E2 / H / H); **C000825 üç koşuda üç ayrı sonuç (H / E2 / K1)**: bu koşuda iki oy K1 dedi, ama birleşik risk notu "kısmi ve anlamca kayık, E2'ye yakın" diyor. K1 sınıfı yanlış olabilir; paket bu yüzden K1 / E1 satırlarını `05-risk-notlari.md`'de başa alıyor.
+3. **Bir oy yeniden istendi:** 7. partide B, kendi oy dosyasında `sed -i` ile bir kanıt satır numarasını düzeltti (başka hiçbir şeye dokunmadı, export sağlam); denetim yazma benzeri komut saydı, oy reddedildi (`rejected/3815e0ea28.B.attempt1.json`), RUNBOOK 5'e göre bir kez yeniden istendi ve geçti. İşçi kuralı sıkılaştırıldı (kabuk komutu dosya değiştiremez).
+4. **Uyarılar:** `skew` 3 partide çıktı (exclusion_ek3b2 K1 %75, karma parti E2 %75, drug_combination E2 %80); üçünde de iki satır okundu, homojen ailelerde makul, "tutuldu" diye kayıtlı.
+
+**Karar bekleyen:** (a) Paketin spot kontrolü (Safa). (b) 6.–10. partiler (41 madde) kısa eforla koştu; K1 / E1 kararlarının güvenilirliği için bu partilerin yeniden koşulması önerilir (hızlı rejim sürerse ~1 milyon token ve ~10 dk, yavaş rejim dönerse ~3,6 milyon token ve ~1,7 saat). (c) Kalan 293 maddenin (para etkilemeyen) ne zaman ve nasıl koşacağı (§10.1 sonu).
 
 ## 11. Kapsam dışı
 
