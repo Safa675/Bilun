@@ -7,29 +7,23 @@ from typing import Any
 
 import polars as pl
 
+from src.bilun.cache.patient_slice import _build_diagnoses_by_pid
 from src.bilun.domain.claims.provenance import attach_bilun_data_source_metadata
 
 
 def build_patient_diagnoses_df(ctx: dict[str, Any]) -> pl.DataFrame:
-    ana_df = ctx["ana_df_pl"]
-    if ana_df.height == 0 or "TANIKODU" not in ana_df.columns:
+    diagnoses_by_pid = _build_diagnoses_by_pid(ctx["ana_df_pl"])
+    if not diagnoses_by_pid:
         return pl.DataFrame()
-    grouped = (
-        ana_df.select(["patient_id", "TANIKODU"])
-        .filter(pl.col("TANIKODU").is_not_null())
-        .group_by("patient_id")
-        .agg(pl.col("TANIKODU").cast(pl.Utf8).unique().sort().alias("diagnoses"))
-    )
-    rows = []
-    for row in grouped.iter_rows(named=True):
-        diagnoses = [str(code) for code in row["diagnoses"] if code]
-        rows.append(
+    return pl.DataFrame(
+        [
             {
-                "patient_id": str(row["patient_id"]),
+                "patient_id": patient_id,
                 "diagnoses_json": json.dumps(diagnoses, ensure_ascii=False),
             }
-        )
-    return pl.DataFrame(rows)
+            for patient_id, diagnoses in diagnoses_by_pid.items()
+        ]
+    )
 
 
 def build_sut_patient_detail_payload(
