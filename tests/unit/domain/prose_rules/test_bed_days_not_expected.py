@@ -558,6 +558,21 @@ def test_a_package_between_the_day_rate_days_is_the_same_stay() -> None:
     assert bed_days_not_expected(_claim(days=5), lines).dates == _dates(0, 1, 2, 3, 4)
 
 
+@pytest.mark.parametrize("order", [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)])
+def test_the_stay_does_not_depend_on_the_order_of_the_lines(order: tuple[int, ...]) -> None:
+    """The first and the last covered day come from every ICU line, whichever code or position they have."""
+    lines = [_package("552002", day=2, quantity=2), _line("510090", day=0), _line("510090", day=6)]
+
+    assert bed_days_not_expected(_claim(days=7), [lines[i] for i in order]).dates == _dates(0, 1, 2, 3, 4, 5, 6)
+
+
+@pytest.mark.parametrize("order", [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)])
+def test_a_package_at_either_end_of_the_stay_extends_it(order: tuple[int, ...]) -> None:
+    lines = [_line("510090", day=3), _package("552001", day=1), _package("552003", day=5)]
+
+    assert bed_days_not_expected(_claim(days=7), [lines[i] for i in order]).dates == _dates(1, 2, 3, 4, 5)
+
+
 def test_one_icu_line_alone_pays_only_what_its_quantity_reaches() -> None:
     """No second line, no interior: the days after it are unknown, not ICU days (the reconciliation's own rule for the
     claim's last day still applies on top of this)."""
