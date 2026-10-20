@@ -1271,6 +1271,25 @@
     "icd10_range_count": true,
     "icd10_ranges_truncated": true
   },
+  "DrugIngredientScope": {
+    "result": true,
+    "ingredients": {
+      "$list": true
+    },
+    "named_ingredients": {
+      "$list": true
+    },
+    "sut_sections": {
+      "$list": true
+    },
+    "class_sections": {
+      "$list": true
+    },
+    "atc_code": true,
+    "source": true,
+    "message_tr": true,
+    "message_en": true
+  },
   "DrugIndicationLineEvaluation": {
     "patient_id": true,
     "claim_id": true,
@@ -1308,6 +1327,9 @@
     "observed_icd10_truncated": true,
     "temporal_evidence": {
       "$ref": "DrugTemporalEvidence"
+    },
+    "ingredient_scope": {
+      "$ref": "DrugIngredientScope"
     },
     "clinical_restrictions": {
       "$list": {

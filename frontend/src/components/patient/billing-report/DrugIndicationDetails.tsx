@@ -5,6 +5,7 @@ import { getSutSeverityLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translateApiText } from "@/lib/apiMessages";
 import { WRAPPED_HEADER_STYLE, TableWrap } from "./shared";
+import { drugEvaluationNoticeKeys, drugLineScopeLabel } from "./DrugIndicationReviewSection.model";
 
 type DrugReviewData = NonNullable<BillingActionReport["drug_indication"]>;
 
@@ -50,29 +51,28 @@ export function DrugIndicationLegacyTable({ violations }: { violations: DrugRevi
 export function DrugIndicationEvaluationNotice({
   evaluations,
   hasCorpusNoncoverage,
+  allNoSutRestriction = false,
 }: {
   evaluations: NonNullable<DrugReviewData["evaluations"]>;
   hasCorpusNoncoverage: boolean;
+  allNoSutRestriction?: boolean;
 }) {
   const t = useT();
+  const keys = drugEvaluationNoticeKeys({ hasCorpusNoncoverage, allNoSutRestriction });
   return (
     <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-tint)] p-4">
-      <p className="font-semibold text-[var(--text-primary)]">
-        {hasCorpusNoncoverage
-          ? t("billing.drugIndication.corpusNoncoverage")
-          : t("billing.drugIndication.evaluationOnly")}
-      </p>
-      <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-        {hasCorpusNoncoverage
-          ? t("billing.drugIndication.corpusNoncoverageDetail")
-          : t("billing.drugIndication.evaluationOnlyDetail")}
-      </p>
+      <p className="font-semibold text-[var(--text-primary)]">{t(keys.title)}</p>
+      <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">{t(keys.detail)}</p>
       <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[var(--text-secondary)]">
-        {evaluations.map((item, index) => (
-          <li key={`${item.drug_claim_line_id ?? item.drug_name ?? "drug"}-${index}`}>
-            {item.drug_name ?? "—"}
-          </li>
-        ))}
+        {evaluations.map((item, index) => {
+          const scope = drugLineScopeLabel(item);
+          return (
+            <li key={`${item.drug_claim_line_id ?? item.drug_name ?? "drug"}-${index}`}>
+              {item.drug_name ?? "—"}
+              {scope ? ` — ${t(scope.key, { sections: scope.sections })}` : ""}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

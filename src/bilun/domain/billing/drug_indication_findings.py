@@ -264,10 +264,14 @@ class DrugIndicationLineEvaluation:
     source_authority: dict[str, Any] | None = None
 
     temporal_evidence: dict[str, Any] | None = None
+    # What the SUT text says about the ingredient of a drug the corpus does not
+    # encode (None for every line the corpus decided).
+    ingredient_scope: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             **({"temporal_evidence": self.temporal_evidence} if self.temporal_evidence else {}),
+            **({"ingredient_scope": self.ingredient_scope} if self.ingredient_scope else {}),
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
             "drug_claim_line_id": self.drug_claim_line_id,
@@ -702,6 +706,7 @@ def evaluate_drug_indication_findings(
         evaluations.append(
             DrugIndicationLineEvaluation(
                 temporal_evidence=detailed.get("temporal_evidence"),
+                ingredient_scope=detailed.get("ingredient_scope"),
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
                 drug_claim_line_id=line.drug_claim_line_id,

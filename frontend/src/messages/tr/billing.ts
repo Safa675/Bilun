@@ -246,6 +246,14 @@ const billing = {
     "observedDiagnosesTruncated": "Gözlenen tanıların yalnızca sınırlı bir önizlemesi gösteriliyor.",
     "corpusNoncoverage": "Kodlanmış kural derlemi bu ilacı değerlendiremiyor",
     "corpusNoncoverageDetail": "İlaç satırı ve tanı mevcut; ancak bu ilaç kodlanmış İlaç Endikasyonu derleminin dışında. Uygulanabilir SUT metnini manuel inceleyin; yol veya finansal değer çıkarılmadı.",
+    "noSutRestriction": "Bu etken maddeleri adıyla anan bir SUT hükmü bulunamadı",
+    "noSutRestrictionDetail": "Kodlanmış İlaç Endikasyonu derlemi bu ilaçları kapsamıyor, ancak SUT metni de etken maddelerini adıyla anmıyor. Varsayılan olarak manuel inceleme istenmez; yol veya finansal değer çıkarılmadı. Sınır: etken maddeyi anmadan bütün bir ilaç sınıfı için yazılmış kısıtlar bu yolla tespit edilemez.",
+    "lineScope": {
+      "not_named_in_sut": "SUT'ta bu etken maddeyi adıyla anan hüküm yok",
+      "named_in_sut": "etken madde SUT {sections} hükmünde adıyla geçiyor; kodlanmamış, manuel inceleyin",
+      "class_level_in_sut": "SUT {sections} bu ilaç sınıfını kısıtlıyor; kodlanmamış, manuel inceleyin",
+      "ingredient_unknown": "etken madde belirlenemedi, SUT metni kontrol edilemedi; manuel inceleyin"
+    },
     "evaluationOnly": "İlaç endikasyonu değerlendirmesi bulgu üretmeden tamamlandı",
     "evaluationOnlyDetail": "Yapılandırılmış değerlendirme şeffaflık amacıyla gösteriliyor. Eski biçimli ihlal veya finansal değer oluşturulmadı.",
     "findingTitles": {

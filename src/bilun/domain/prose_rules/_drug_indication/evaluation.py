@@ -10,6 +10,7 @@ from .ckd_growth_hormone import evaluate_ckd_gh_preconditions
 from .mecasermin import evaluate_mecasermin_preconditions
 from .gh_runtime import gh_caller_skip, gh_caller_input_block, gh_selected_scope
 from .runtime_observations import ClinicalObservationCollector
+from .unencoded_scope import SCOPE_NOT_NAMED, SCOPE_UNKNOWN, classify_unencoded_drug
 
 from .matching import (
     _collect_icd10_codes,
@@ -138,6 +139,27 @@ def _common_evaluation_evidence(
     }
 
 
+def _with_ingredient_scope(result: dict[str, Any], drug_line: DrugClaimLine) -> dict[str, Any]:
+    """Split "outside the encoded corpus" by what the SUT text says about the ingredient.
+
+    No clause (and no class section) names the ingredient: the line gets its own
+    status and asks for no review. Restricted but unencoded keeps the review
+    wording; an ingredient that cannot be determined says so. Never a finding,
+    never a number.
+    """
+    scope = classify_unencoded_drug(drug_line)
+    result["ingredient_scope"] = scope.to_dict()
+    if scope.result == SCOPE_NOT_NAMED:
+        result.update(
+            applicability_status="no_sut_restriction_found",
+            evaluation_status="evaluated",
+            unavailable_reason=None,
+        )
+    elif scope.result == SCOPE_UNKNOWN:
+        result["unavailable_reason"] = result["ingredient_scope"]["message_en"]
+    return result
+
+
 def _applicability_violation(
     *,
     status: str,
@@ -251,7 +273,7 @@ def evaluate_drug_indication_line_with_rules(
             from .temporal import guard_historical_evaluation
 
             return guard_historical_evaluation(result, temporal_evidence)
-        return result
+        return _with_ingredient_scope(result, drug_line)
 
     violation = _applicability_violation(
         status=status,

@@ -158,6 +158,17 @@ DRUG_INDICATION_CORPUS_UNAVAILABLE_REASON = (
     "Drug is not covered by the encoded Drug Indication corpus; manual SUT review "
     "is required and no financial value is inferred."
 )
+DRUG_INDICATION_NAME_CHECK_REASON = (
+    "Drug lines outside the encoded Drug Indication corpus were checked only by active "
+    "ingredient name against the SUT text: no clause names the ingredient, but restrictions "
+    "written for a whole drug class without naming the ingredient cannot be detected. No "
+    "manual review is requested by default and no financial value is inferred."
+)
+DRUG_INDICATION_INGREDIENT_UNKNOWN_REASON = (
+    "The active ingredient of a drug outside the encoded Drug Indication corpus could "
+    "not be determined, so the SUT text could not be checked; manual SUT review is "
+    "required and no financial value is inferred."
+)
 
 
 class _UpliftBlockMixin:
