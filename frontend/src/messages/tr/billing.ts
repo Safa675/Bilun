@@ -487,6 +487,7 @@ const billing = {
     "groupDetails": "Kural grubu durumlarını göster",
     "groupCounts": "{evaluated} değerlendirildi · {missing} eksik · {unavailable} değerlendirilemedi",
     "unavailable": "Wave A kanıtları bu derleme veya fatura için kullanılamıyor. Bu, sıfır bulgu olduğu anlamına gelmez.",
+    "layerOff": "Genişletilmiş kanıt katmanı bu derlemede etkin değil; bu katmanın kayıtları ve kapsam sayıları gösterilemiyor. Bu, sıfır bulgu olduğu anlamına gelmez.",
     "noRows": "Seçili kapsamda bu kategoride gözlem yok.",
     "type": "Durum",
     "ruleAndReason": "Konu ve kontrol edilecek nokta",
@@ -653,6 +654,11 @@ const billing = {
       "coverageSummary": "Yapısal kontroller: {evaluated} değerlendirme · {findings} bulgu",
       "coverageMissing": " · {count} eksik girdi",
       "coverageUnavailable": " · {count} değerlendirilemedi",
+      "coverageTitle": "Yapısal kontroller",
+      "coverageAllRan": "{count} yapısal kontrolün hepsi çalıştı; bulgu çıkmadı.",
+      "coverageAllRanFindings": "{count} yapısal kontrolün hepsi çalıştı; çıkan bulgu: {findings}.",
+      "coverageNoneRan": "Bu kapsamda çalışan yapısal kontrol kaydı yok; bu, faturanın sorunsuz olduğu anlamına gelmez.",
+      "coverageExtendedOff": "Genişletilmiş kontrol seti bu derlemede etkin değil; diğer kontroller bu görünümde yer almıyor.",
       "coverageNotice": "Yalnızca yapısal kontrollerin özeti; değerlendirme uygunluk kararı değildir."
     },
     "revenue": {

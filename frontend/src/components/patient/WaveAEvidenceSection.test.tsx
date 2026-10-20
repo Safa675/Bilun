@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceProvider } from "@/stores/workspaceContext";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import type { WaveAEvidenceBlock, WaveAEvidenceRow } from "@/lib/domains/waveaEvidence";
-import { PatientWaveAEvidenceSection, WaveACoverageSummary, WaveAEvidenceRowsTable, matchesPatientEvidenceScope } from "./WaveAEvidenceSection";
+import { PatientWaveAEvidenceSection, WaveACoverageSummary, WaveAEvidenceRowsTable, WaveAUnavailableNotice, matchesPatientEvidenceScope, waveABlockUnavailable } from "./WaveAEvidenceSection";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -415,6 +415,26 @@ describe("Wave A patient evidence", () => {
     expect(html).toContain("Wave A evidence is unavailable");
     expect(html).not.toContain("No observations in this category");
     expect(html).not.toContain("<table");
+  });
+
+  it.each([
+    ["tr", true, "Genişletilmiş kanıt katmanı bu derlemede etkin değil; bu katmanın kayıtları ve kapsam sayıları gösterilemiyor. Bu, sıfır bulgu olduğu anlamına gelmez."],
+    ["en", true, "The extended evidence layer is not active in this build, so its records and coverage counts cannot be shown. This does not mean zero findings."],
+    ["tr", false, "Wave A kanıtları bu derleme veya fatura için kullanılamıyor. Bu, sıfır bulgu olduğu anlamına gelmez."],
+    ["en", false, "Wave A evidence is unavailable for this build or claim. No zero finding count is implied."],
+  ] as const)("shows one notice that never reads as a zero (%s, layer off: %s)", (locale, layerOff, sentence) => {
+    const html = renderToStaticMarkupWithLocale(<WaveAUnavailableNotice layerOff={layerOff} />, locale);
+    expect(html).toContain(sentence);
+    expect(html).toContain('id="wavea-unavailable"');
+    expect(html).not.toMatch(/\b0\b/);
+  });
+
+  it("treats absent, unavailable and malformed blocks as unavailable and a valid empty block as available", () => {
+    const unavailable = { available: false, unavailable_reason: "wavea_capability_unavailable", total_rows: null, rows: [], has_more: false };
+    expect(waveABlockUnavailable(undefined, "P-1", "reviews")).toBe(true);
+    expect(waveABlockUnavailable(unavailable, "P-1", "reviews")).toBe(true);
+    expect(waveABlockUnavailable({ available: true, unavailable_reason: null, total_rows: 0, rows: [{ ...row, patient_id: "P-2" }], has_more: false }, "P-1", "financial_rows")).toBe(true);
+    expect(waveABlockUnavailable({ available: true, unavailable_reason: null, total_rows: 0, rows: [], has_more: false }, "P-1", "reviews")).toBe(false);
   });
 
   it("hides a malformed preview whose ownership or total disagrees", () => {
