@@ -495,6 +495,7 @@ const billing = {
     "groupDetails": "View rule-group status counts",
     "groupCounts": "{evaluated} evaluated · {missing} missing · {unavailable} unavailable",
     "unavailable": "Wave A evidence is unavailable for this build or claim. No zero finding count is implied.",
+    "layerOff": "The extended evidence layer is not active in this build, so its records and coverage counts cannot be shown. This does not mean zero findings.",
     "noRows": "No observations in this category for the selected scope.",
     "type": "Status",
     "ruleAndReason": "Topic and what to check",
@@ -661,6 +662,11 @@ const billing = {
       "coverageSummary": "Structural checks: {evaluated} evaluations · {findings} findings",
       "coverageMissing": " · {count} missing inputs",
       "coverageUnavailable": " · {count} unavailable",
+      "coverageTitle": "Structural checks",
+      "coverageAllRan": "All {count} structural checks ran; no finding raised.",
+      "coverageAllRanFindings": "All {count} structural checks ran; findings raised: {findings}.",
+      "coverageNoneRan": "No structural-check evaluation is recorded for this scope; this does not mean the claim is clean.",
+      "coverageExtendedOff": "The extended set of checks is not active in this build; the other checks are not part of this view.",
       "coverageNotice": "This summarizes structural checks only; evaluation is not a compliance verdict."
     },
     "revenue": {

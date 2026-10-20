@@ -43,6 +43,7 @@ const patient = {
     "drugsTitle": "İlaçlar",
     "asSubmitted": "Faturalanan",
     "sutExpected": "SUT beklenen",
+    "noPrice": "fiyat yok",
     "sectionSubtotal": "{section} ara toplam",
     "linesSubtotal": "Kalem ara toplamı",
     "variance": "Başlık – kalemler",

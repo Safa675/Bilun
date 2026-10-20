@@ -21,7 +21,13 @@ import {
 } from "@/lib/complianceFindings";
 import { buildComplianceCoverage } from "@/lib/complianceCoverage";
 import UnifiedComplianceFindingsTable from "@/components/patient/UnifiedComplianceFindingsTable";
-import { PatientWaveAEvidenceSection, WaveACoverageSummary } from "@/components/patient/WaveAEvidenceSection";
+import {
+  PatientWaveAEvidenceSection,
+  WaveACoverageSummary,
+  WaveAUnavailableNotice,
+  waveABlockUnavailable,
+} from "@/components/patient/WaveAEvidenceSection";
+import { waveALayerOff } from "@/lib/waveaAvailability";
 
 const RISK_COLOR = "var(--danger)";
 
@@ -84,6 +90,13 @@ export default function ComplianceViewSection({
   const auditExposure = billingReport.audit_exposure_try ?? null;
   const effectivePatientId = patientId || billingReport.patient_id;
   const coverage = buildComplianceCoverage(billingReport, t);
+  // Extended-evidence sections that cannot be shown share one notice instead of
+  // each repeating the same sentence; an unavailable section is never a zero.
+  const reviewsOff = waveABlockUnavailable(billingReport.claim_reviews, effectivePatientId, "reviews");
+  const advisoriesOff = waveABlockUnavailable(billingReport.claim_advisories, effectivePatientId, "advisories");
+  const waveACoverageOff = !billingReport.wavea_coverage;
+  const waveALayerIsOff = waveACoverageOff &&
+    waveALayerOff([billingReport.claim_reviews, billingReport.claim_advisories]);
 
   return (
     <div className="space-y-4">
@@ -140,12 +153,19 @@ export default function ComplianceViewSection({
       <div data-compliance-secondary className="grid grid-cols-1 items-start gap-4 [&>*]:min-w-0 @min-[500px]/compliance-secondary:grid-cols-2 @min-[500px]/compliance-secondary:[&>details[open]]:col-span-2 @min-[500px]/compliance-secondary:[&>section:has(>details[open])]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-lab]:col-span-2 @min-[500px]/compliance-secondary:[&>#billing-optional-override]:col-span-2 @min-[500px]/compliance-secondary:[&>#drug-indication]:col-span-2">
       <details id="claim-coverage" open={selectedSection === "claim-coverage" || undefined} className="scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3">
         <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
-          {t("billing.wavea.coverageDetails")} · {coverage
-            ? t("billing.wavea.missingDataCount", { count: coverage.nonEvaluatedTotal })
-            : t("billing.wavea.countUnavailable")}
+          {!coverage
+            ? `${t("billing.wavea.coverageDetails")} · ${t("billing.wavea.countUnavailable")}`
+            : coverage.nonEvaluatedTotal > 0
+              ? `${t("billing.wavea.coverageDetails")} · ${t("billing.wavea.missingDataCount", { count: coverage.nonEvaluatedTotal })}`
+              : t("billing.views.compliance.coverageTitle")}
           <span className="mt-1 block text-xs font-normal tabular-nums text-[var(--text-secondary)]">
             {coverage ? coverage.summaryText : t("optimizer.claimCompliance.unavailable")}
           </span>
+          {coverage?.extendedLayerOff && (
+            <span className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
+              {t("billing.views.compliance.coverageExtendedOff")}
+            </span>
+          )}
         </summary>
         {!coverage ? (
           <p className="text-sm text-[var(--text-muted)]">
@@ -192,27 +212,40 @@ export default function ComplianceViewSection({
         )}
       </details>
 
-      <PatientWaveAEvidenceSection
-        patientId={effectivePatientId}
-        kind="reviews"
-        block={billingReport.claim_reviews}
-        onOpenClause={onOpenClause}
-        selectedFindingId={selectedFindingId}
-        selectedClaimId={selectedClaimId}
-        selectedSection={selectedSection}
-      />
+      {(reviewsOff || advisoriesOff || waveACoverageOff) && (
+        <WaveAUnavailableNotice
+          layerOff={waveALayerIsOff}
+          className="@min-[500px]/compliance-secondary:col-span-2"
+        />
+      )}
 
-      <PatientWaveAEvidenceSection
-        patientId={effectivePatientId}
-        kind="advisories"
-        block={billingReport.claim_advisories}
-        onOpenClause={onOpenClause}
-        selectedFindingId={selectedFindingId}
-        selectedClaimId={selectedClaimId}
-        selectedSection={selectedSection}
-      />
+      {!reviewsOff && (
+        <PatientWaveAEvidenceSection
+          patientId={effectivePatientId}
+          kind="reviews"
+          block={billingReport.claim_reviews}
+          onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
+          selectedClaimId={selectedClaimId}
+          selectedSection={selectedSection}
+        />
+      )}
 
-      <WaveACoverageSummary coverage={billingReport.wavea_coverage} selectedSection={selectedSection} />
+      {!advisoriesOff && (
+        <PatientWaveAEvidenceSection
+          patientId={effectivePatientId}
+          kind="advisories"
+          block={billingReport.claim_advisories}
+          onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
+          selectedClaimId={selectedClaimId}
+          selectedSection={selectedSection}
+        />
+      )}
+
+      {!waveACoverageOff && (
+        <WaveACoverageSummary coverage={billingReport.wavea_coverage} selectedSection={selectedSection} />
+      )}
 
       <LabOptimizationSection labData={billingReport.lab} />
       <BillingStrategySection strategyData={billingReport.billing_strategy} collapsed />

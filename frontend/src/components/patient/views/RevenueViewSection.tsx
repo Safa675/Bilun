@@ -17,7 +17,12 @@ import {
 import { fmtNum, fmtTRY2, KpiCard } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import { recoverableUplift, viewActions } from "@/lib/workspaceViews";
-import { PatientWaveAEvidenceSection } from "@/components/patient/WaveAEvidenceSection";
+import {
+  PatientWaveAEvidenceSection,
+  WaveAUnavailableNotice,
+  waveABlockUnavailable,
+} from "@/components/patient/WaveAEvidenceSection";
+import { waveALayerOff } from "@/lib/waveaAvailability";
 
 const UPLIFT_COLOR = "var(--success)";
 
@@ -83,14 +88,18 @@ export default function RevenueViewSection({
 
       {detailsPrelude}
 
-      <PatientWaveAEvidenceSection
-        patientId={billingReport.patient_id}
-        kind="financial_rows"
-        block={billingReport.financial_findings}
-        onOpenClause={onOpenClause}
-        selectedFindingId={selectedFindingId}
-        selectedClaimId={selectedClaimId}
-      />
+      {waveABlockUnavailable(billingReport.financial_findings, billingReport.patient_id, "financial_rows") ? (
+        <WaveAUnavailableNotice layerOff={waveALayerOff([billingReport.financial_findings])} />
+      ) : (
+        <PatientWaveAEvidenceSection
+          patientId={billingReport.patient_id}
+          kind="financial_rows"
+          block={billingReport.financial_findings}
+          onOpenClause={onOpenClause}
+          selectedFindingId={selectedFindingId}
+          selectedClaimId={selectedClaimId}
+        />
+      )}
 
       <CopayOptimizationSection copayData={billingReport.copay} onOpenClause={onOpenClause} />
       {billingReport.session_uplift && (

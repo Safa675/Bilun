@@ -225,7 +225,10 @@ describe("ComplianceViewSection", () => {
       "tr",
     );
 
-    expect(html).toContain("Yapısal kontroller: 25 değerlendirme · 0 bulgu");
+    // Nothing is missing: say what ran, never a "0 not evaluated" line.
+    expect(html).toContain("25 yapısal kontrolün hepsi çalıştı; bulgu çıkmadı.");
+    expect(html).not.toContain("0 değerlendirilmedi");
+    expect(html).not.toContain("Kapsam ve veri eksikleri");
     expect(html).toContain("Yalnızca yapısal kontrollerin özeti; değerlendirme uygunluk kararı değildir.");
     // Secondary coverage starts collapsed even when all checks were evaluated.
     expect(html).toContain('<details id="claim-coverage"');
@@ -328,12 +331,132 @@ describe("ComplianceViewSection", () => {
     }
     expect(html).toContain('<details id="claim-coverage"');
     expect(html).not.toContain('<details id="claim-coverage" open=');
+    // No extended evidence in this report: one notice stands in for all three sections.
+    expect(html.match(/id="wavea-unavailable"/g)).toHaveLength(1);
+    for (const gone of ['id="wavea-reviews"', 'id="wavea-advisories"', 'id="wavea-coverage"']) {
+      expect(html).not.toContain(gone);
+    }
+    expect(html.indexOf('id="claim-coverage"')).toBeLessThan(html.indexOf('id="wavea-unavailable"'));
+  });
+
+  it.each(["en", "tr"] as const)("keeps the three extended-evidence sections in order when the evidence is there (%s)", (locale) => {
+    const availableBlock = { available: true, unavailable_reason: null, total_rows: 0, rows: [], has_more: false };
+    const report = {
+      ...baseReport,
+      claim_reviews: availableBlock,
+      claim_advisories: availableBlock,
+      wavea_coverage: {
+        schema_version: "wavea-evidence-v1",
+        available: true,
+        unavailable_reason: null,
+        tracked_rule_count: 25,
+        evaluation_count: 25,
+        by_group: { icu: { evaluated: 25, missing_inputs: 0, unavailable: 0 } },
+      },
+    } as unknown as BillingActionReport;
+    const html = renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} selectedSection="wavea-coverage" />
+      </WorkspaceProvider>,
+      locale,
+    );
+    expect(html).not.toContain('id="wavea-unavailable"');
     expect(html).toContain('<section id="wavea-reviews"');
     expect(html).toContain('<section id="wavea-advisories"');
     expect(html).toContain('<details id="wavea-coverage" open=""');
     expect(html.indexOf('id="claim-coverage"')).toBeLessThan(html.indexOf('id="wavea-reviews"'));
     expect(html.indexOf('id="wavea-reviews"')).toBeLessThan(html.indexOf('id="wavea-advisories"'));
     expect(html.indexOf('id="wavea-advisories"')).toBeLessThan(html.indexOf('id="wavea-coverage"'));
+  });
+
+  describe("while the extended evidence layer is not active in this build", () => {
+    const off = { available: false, unavailable_reason: "wavea_capability_unavailable", total_rows: null, rows: [], has_more: false };
+    const originalFive = ["icu_bundled_leakage_510090", "tablo15_8_missing_diagnosis", "tablo15_10_unreported_lab_result", "tablo15_20_missing_drug_barcode", "tablo15_5_material_identity_error"];
+    const layerOffReport = {
+      ...baseReport,
+      claim_compliance: {
+        findings: [],
+        evaluations: originalFive.map((rule_id) => ({
+          patient_id: "P-COMP", claim_id: "C-1", rule_id, status: "evaluated", missing_inputs: [],
+        })),
+      },
+      claim_reviews: off,
+      claim_advisories: off,
+      financial_findings: off,
+      wavea_coverage: null,
+    } as unknown as BillingActionReport;
+    const render = (locale: "en" | "tr", report = layerOffReport) => renderToStaticMarkupWithLocale(
+      <WorkspaceProvider>
+        <ComplianceViewSection billingReport={report} />
+      </WorkspaceProvider>,
+      locale,
+    );
+
+    it("says it once in Turkish and never turns it into a count", () => {
+      const html = render("tr");
+      const notice = "Genişletilmiş kanıt katmanı bu derlemede etkin değil; bu katmanın kayıtları ve kapsam sayıları gösterilemiyor. Bu, sıfır bulgu olduğu anlamına gelmez.";
+      expect(html.split(notice)).toHaveLength(2);
+      expect(html.match(/id="wavea-unavailable"/g)).toHaveLength(1);
+      expect(html).not.toContain("Sayı mevcut değil");
+      expect(html).not.toContain("Wave A");
+      expect(html).not.toContain("İnsan incelemesi gerekli");
+      expect(html).not.toContain("Bilgi ve koşullu izinler");
+      expect(html).not.toContain("Değerlendirme kapsamı");
+    });
+
+    it("says it once in English and never turns it into a count", () => {
+      const html = render("en");
+      const notice = "The extended evidence layer is not active in this build, so its records and coverage counts cannot be shown. This does not mean zero findings.";
+      expect(html.split(notice)).toHaveLength(2);
+      expect(html).not.toContain("Count unavailable");
+      expect(html).not.toContain("Wave A");
+      expect(html).not.toContain("Human review required");
+      expect(html).not.toContain("Evaluation coverage");
+    });
+
+    it("states what ran in the coverage cell and has no missing-data line", () => {
+      const tr = render("tr");
+      const trHeader = tr.match(/<details id="claim-coverage"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1].replace(/<[^>]+>/g, "|");
+      expect(trHeader).toContain("Yapısal kontroller");
+      expect(trHeader).toContain("5 yapısal kontrolün hepsi çalıştı; bulgu çıkmadı.");
+      expect(trHeader).toContain("Genişletilmiş kontrol seti bu derlemede etkin değil; diğer kontroller bu görünümde yer almıyor.");
+      expect(trHeader).not.toContain("değerlendirilmedi");
+      expect(trHeader).not.toContain("Kapsam ve veri eksikleri");
+      const en = render("en");
+      const enHeader = en.match(/<details id="claim-coverage"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1].replace(/<[^>]+>/g, "|");
+      expect(enHeader).toContain("Structural checks");
+      expect(enHeader).toContain("All 5 structural checks ran; no finding raised.");
+      expect(enHeader).toContain("The extended set of checks is not active in this build; the other checks are not part of this view.");
+      expect(enHeader).not.toContain("not evaluated");
+      expect(enHeader).not.toContain("Coverage and missing data");
+      // The footnote that this is not a compliance verdict stays.
+      expect(tr).toContain("değerlendirme uygunluk kararı değildir.");
+      expect(en).toContain("evaluation is not a compliance verdict.");
+    });
+
+    it("still shows the missing-data wording when something really is missing", () => {
+      const report = {
+        ...layerOffReport,
+        claim_compliance: {
+          findings: [],
+          evaluations: [
+            ...layerOffReport.claim_compliance!.evaluations.slice(0, 4),
+            { patient_id: "P-COMP", claim_id: "C-1", rule_id: "tablo15_5_material_identity_error", status: "missing_inputs", missing_inputs: ["material_code"] },
+          ],
+        },
+      } as unknown as BillingActionReport;
+      const header = render("en", report).match(/<details id="claim-coverage"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1].replace(/<[^>]+>/g, "|");
+      expect(header).toContain("Coverage and missing data · 1 not evaluated");
+      expect(header).toContain("Structural checks: 4 evaluations · 0 findings · 1 missing inputs");
+      expect(header).not.toContain("ran; no finding");
+    });
+
+    it("does not claim the build is off when the cause is only unknown", () => {
+      const report = { ...layerOffReport, claim_reviews: undefined, claim_advisories: undefined } as unknown as BillingActionReport;
+      const html = render("en", report);
+      expect(html).toContain("Wave A evidence is unavailable for this build or claim. No zero finding count is implied.");
+      expect(html).not.toContain("is not active in this build, so its records");
+    });
   });
 
   it("wraps the unified table inside the claim-compliance anchor", () => {

@@ -43,6 +43,7 @@ const patient = {
     "drugsTitle": "Drugs",
     "asSubmitted": "Billed",
     "sutExpected": "SUT expected",
+    "noPrice": "no price",
     "sectionSubtotal": "{section} subtotal",
     "linesSubtotal": "Line items subtotal",
     "variance": "Header vs lines",

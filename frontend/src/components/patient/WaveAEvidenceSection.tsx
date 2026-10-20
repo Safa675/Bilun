@@ -79,6 +79,30 @@ function validPatientBlock(block: WaveAEvidenceBlock | undefined, patientId: str
     block.rows.every((row) => validRowForKind(row, patientId, kind));
 }
 
+/** True when a patient preview block cannot be shown: absent, unavailable or failing the ownership and total checks. */
+export function waveABlockUnavailable(block: WaveAEvidenceBlock | undefined, patientId: string, kind: WaveAEvidenceKind): boolean {
+  return !validPatientBlock(block, patientId, kind);
+}
+
+/**
+ * The one notice that stands in for every unavailable extended-evidence
+ * section of a view. With `layerOff` the backend said the layer is not active
+ * in this build; otherwise the cause is unknown and only "unavailable" is said.
+ * Either way it never reads as a zero count.
+ */
+export function WaveAUnavailableNotice({ layerOff, className }: { layerOff: boolean; className?: string }) {
+  const t = useT();
+  return (
+    <p
+      id="wavea-unavailable"
+      role="note"
+      className={`scroll-mt-24 rounded-[var(--r-lg)] border border-[var(--border-subtle)] p-3 text-sm text-[var(--text-muted)]${className ? ` ${className}` : ""}`}
+    >
+      {t(layerOff ? "billing.wavea.layerOff" : "billing.wavea.unavailable")}
+    </p>
+  );
+}
+
 export function matchesPatientEvidenceScope(page: WaveAEvidencePage, selectedClaimId?: string | null): boolean {
   return selectedClaimId
     ? page.scope === "bill" && page.claim_id === selectedClaimId

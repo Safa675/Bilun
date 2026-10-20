@@ -46,6 +46,8 @@ type InvoiceLine = {
   quantity: number;
   billedAmountTry: number;
   expectedPayableTry: number;
+  /** Shown as "no price" instead of 0,00; the numbers themselves are unchanged. */
+  priceMissing?: boolean;
 };
 
 function isLabProcedure(line: ClaimProcedureLine): boolean {
@@ -96,6 +98,15 @@ function materialToLine(line: ClaimMaterialLine): InvoiceLine {
   };
 }
 
+/**
+ * A drug line whose unit price, billed and expected amounts are all zero holds
+ * no price at all (the synthetic builder has no drug price data), so the zero
+ * is a gap, not a price. A single non-zero figure keeps the line as it is.
+ */
+export function isDrugPriceMissing(line: ClaimDrugLine): boolean {
+  return line.unit_price_try === 0 && line.billed_amount_try === 0 && line.expected_payable_try === 0;
+}
+
 function drugToLine(line: ClaimDrugLine): InvoiceLine {
   return {
     id: line.drug_claim_line_id,
@@ -105,6 +116,7 @@ function drugToLine(line: ClaimDrugLine): InvoiceLine {
     quantity: line.quantity,
     billedAmountTry: line.billed_amount_try,
     expectedPayableTry: line.expected_payable_try,
+    priceMissing: isDrugPriceMissing(line),
   };
 }
 
@@ -151,6 +163,8 @@ function InvoiceLineTable({
     return <EmptyLineState message={emptyMessage} />;
   }
 
+  const noPrice = <span className="text-[var(--text-muted)]">{t("patient.originalBill.noPrice")}</span>;
+
   return (
     <DataTable minWidth={720}>
       <DataTableHeader>
@@ -177,8 +191,8 @@ function InvoiceLineTable({
               <DataTableCell className="font-mono text-xs">{line.code}</DataTableCell>
               <DataTableCell>{line.name}</DataTableCell>
               <DataTableCell numeric>{fmtNum(line.quantity)}</DataTableCell>
-              <DataTableCell numeric className="whitespace-nowrap">{fmtTRY2(line.billedAmountTry)}</DataTableCell>
-              <DataTableCell numeric className="whitespace-nowrap">{fmtTRY2(line.expectedPayableTry)}</DataTableCell>
+              <DataTableCell numeric className="whitespace-nowrap">{line.priceMissing ? noPrice : fmtTRY2(line.billedAmountTry)}</DataTableCell>
+              <DataTableCell numeric className="whitespace-nowrap">{line.priceMissing ? noPrice : fmtTRY2(line.expectedPayableTry)}</DataTableCell>
             </DataTableRow>
           );
         })}
