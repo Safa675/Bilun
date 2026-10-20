@@ -1670,3 +1670,83 @@ describe("RecommendedActionsPanel newborn-bed row", () => {
     expect(html).toContain("928.09 TRY");
   });
 });
+
+describe("RecommendedActionsPanel day-bed rows", () => {
+  // SUT §2.2.2.(3): a stay under 24 hours is priced at the day bed (510120) by both bed motors; the engine gives
+  // the row the kind `yatak_puani_day_bed`, so the title names the day bed and not the standard bed or Kuvöz/Kot.
+  const dayBedReport = {
+    patient_id: "P-DAY-BED",
+    exactness_status: "exact",
+    priority: "medium",
+    total_recoverable_try: 88.9,
+    action_count: 2,
+    yatak_puani: { exactness_status: "exact" },
+    yenidogan_yatak: { exactness_status: "partial_exact" },
+    recommended_actions: [
+      {
+        action_id: "yatak_puani:F-7:0",
+        surface: "yatak_puani",
+        kind: "yatak_puani_day_bed",
+        finding_type: "opportunity",
+        procedure_code: null,
+        sgk_uplift_try: 44.45,
+        sut_section_id: "2.2.2",
+        detail: "STANDARD-DAY-BED-DETAIL",
+      },
+      {
+        action_id: "yenidogan_yatak:F-8:0",
+        surface: "yenidogan_yatak",
+        kind: "yatak_puani_day_bed",
+        finding_type: "opportunity",
+        procedure_code: null,
+        sgk_uplift_try: 44.44,
+        sut_section_id: "2.2.2",
+        detail: "NEWBORN-DAY-BED-DETAIL",
+      },
+    ],
+  } as unknown as BillingActionReport;
+  const dayBedTitle = (locale: "en" | "tr") => (locale === "en" ? ">Day bed charge (510120)<" : ">Gündüz yatak ücreti (510120)<");
+  const oldTitles = [
+    "Standard bed-day charge",
+    "Standart yatak puanı",
+    "Newborn bed charge",
+    "Yenidoğan yatak ücreti",
+    "510070 / 510081",
+  ];
+
+  it.each(["en", "tr"] as const)("titles both day-bed rows as the day bed in the revenue filter in %s", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={dayBedReport} findingFilter="opportunity" />,
+      locale,
+    );
+    const rowOf = (detail: string) => html.split("<tr").find((chunk) => chunk.includes(detail)) ?? "";
+
+    expect(rowOf("STANDARD-DAY-BED-DETAIL")).toContain(dayBedTitle(locale));
+    expect(rowOf("STANDARD-DAY-BED-DETAIL")).toContain("44.45 TRY");
+    expect(rowOf("STANDARD-DAY-BED-DETAIL")).toContain(locale === "en" ? ">Bed-day (yatak puanı)<" : ">Yatak puanı<");
+    expect(rowOf("NEWBORN-DAY-BED-DETAIL")).toContain(dayBedTitle(locale));
+    expect(rowOf("NEWBORN-DAY-BED-DETAIL")).toContain("44.44 TRY");
+    // The chip still says which motor owns the day.
+    expect(rowOf("NEWBORN-DAY-BED-DETAIL")).toContain(locale === "en" ? ">Newborn bed (yenidoğan yatağı)<" : ">Yenidoğan yatağı<");
+    for (const old of oldTitles) {
+      expect(html).not.toContain(old);
+    }
+    // An unmapped kind would be humanized to "Yatak Puani Day Bed".
+    expect(html).not.toContain("Yatak Puani Day Bed");
+  });
+
+  it.each(["en", "tr"] as const)("titles both day-bed rows as the day bed in the compact %s panel", (locale) => {
+    const html = renderToStaticMarkupWithLocale(
+      <RecommendedActionsPanel billingReport={dayBedReport} compact onOpenClause={() => {}} />,
+      locale,
+    );
+    const rowOf = (actionId: string) =>
+      html.split('data-action-id="').find((chunk) => chunk.startsWith(`${actionId}"`)) ?? "";
+
+    expect(rowOf("yatak_puani:F-7:0")).toContain(dayBedTitle(locale));
+    expect(rowOf("yenidogan_yatak:F-8:0")).toContain(dayBedTitle(locale));
+    for (const old of oldTitles) {
+      expect(html).not.toContain(old);
+    }
+  });
+});

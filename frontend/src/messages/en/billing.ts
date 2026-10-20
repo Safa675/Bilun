@@ -96,6 +96,7 @@ const billing = {
       "materialSpecialtyProse": "§3.3 specialty prose",
       "yatakPuani": "Bed-day charge",
       "yatakPuaniStandardBed": "Standard bed-day charge",
+      "yatakPuaniDayBed": "Day bed charge (510120)",
       "anesteziPuaniGroup": "Anesthesia group charge",
       "refakatciCompanionBed": "Companion bed charge (510121)",
       "icuPuaniYogunBakim": "Intensive care charge (510090 / P55200x)",

@@ -235,6 +235,8 @@ const KIND_LABEL_KEYS: Record<string, string> = {
   material_specialty_prose: "billing.recommendedActions.kinds.materialSpecialtyProse",
   yatak_puani: "billing.recommendedActions.kinds.yatakPuani",
   yatak_puani_standard_bed: "billing.recommendedActions.kinds.yatakPuaniStandardBed",
+  // A stay under 24 hours is priced at the day bed (510120) by both bed motors; the backend gives its row this kind.
+  yatak_puani_day_bed: "billing.recommendedActions.kinds.yatakPuaniDayBed",
   anestezi_puani_group: "billing.recommendedActions.kinds.anesteziPuaniGroup",
   refakatci_companion_bed: "billing.recommendedActions.kinds.refakatciCompanionBed",
   icu_puani_yogun_bakim: "billing.recommendedActions.kinds.icuPuaniYogunBakim",

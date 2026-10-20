@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..money import money_round_half_up_opt as _money
+from ..prose_rules.yatak_puani import DAY_BED_CODE
 from ..sut.clause_reference import RULE_TYPE_COPAY_WAIVER, sut_clause_reference
 from .types import BillingActionReport, CopayOptimization
 from .drug_clinical_evidence import (
@@ -211,6 +212,10 @@ _NETTED_LINES_LABEL: dict[str, str] = {
     "icu_puani": "ICU lines (510090 / P55200x)",
     "yenidogan_yatak": "newborn bed lines (510070 / 510081)",
 }
+# SUT §2.2.2.(3): both bed motors price a stay under 24 hours at the day bed (510120). Its action row is one kind
+# for both, so the title names the day bed, not the standard bed or the Kuvöz / Kot the motor otherwise prices
+# (mirrored by KIND_LABEL_KEYS in frontend/src/lib/recommendedActions.ts).
+_DAY_BED_ACTION_KIND = "yatak_puani_day_bed"
 
 
 def _sgk_counted_uplift(row: dict[str, Any], fallback_field: str) -> float | None:
@@ -226,6 +231,13 @@ def _sgk_counted_uplift(row: dict[str, Any], fallback_field: str) -> float | Non
     if amount is None:
         amount = row.get(fallback_field) or 0.0
     return float(amount) if float(amount) > 0 else None
+
+
+def _opportunity_kind(surface: str, row: dict[str, Any]) -> str:
+    """The action row's kind: the opportunity's own type, except a row priced at the day bed (both bed motors)."""
+    if row.get("bed_code") == DAY_BED_CODE:
+        return _DAY_BED_ACTION_KIND
+    return str(row.get("type") or row.get("recommendation_kind") or surface)
 
 
 def _detail_with_notes(row: dict[str, Any]) -> str | None:
@@ -414,7 +426,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 _action_row(
                     action_id=f"{surface_name}:{row.get('claim_id')}:{index}",
                     surface=surface_name,
-                    kind=str(row.get("type") or row.get("recommendation_kind") or surface_name),
+                    kind=_opportunity_kind(surface_name, row),
                     claim_id=row.get("claim_id"),
                     procedure_code=row.get("procedure_code")
                     or row.get("trigger_procedure_code"),

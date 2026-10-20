@@ -96,6 +96,7 @@ const billing = {
       "materialSpecialtyProse": "§3.3 uzmanlık metni",
       "yatakPuani": "Yatak puanı ücreti",
       "yatakPuaniStandardBed": "Standart yatak puanı",
+      "yatakPuaniDayBed": "Gündüz yatak ücreti (510120)",
       "anesteziPuaniGroup": "Anestezi grubu ücreti",
       "refakatciCompanionBed": "Refakatçi yatak ücreti (510121)",
       "icuPuaniYogunBakim": "Yoğun bakım ücreti (510090 / P55200x)",
