@@ -159,22 +159,15 @@ describe("drug indication block reasons are localized", () => {
     "Drug is not covered by the encoded Drug Indication corpus; manual SUT review is required and no financial value is inferred.";
   const unknown =
     "The active ingredient of a drug outside the encoded Drug Indication corpus could not be determined, so the SUT text could not be checked; manual SUT review is required and no financial value is inferred.";
-  const nameCheck =
-    "Drug lines outside the encoded Drug Indication corpus were checked only by active ingredient name against the SUT text: no clause names the ingredient, but restrictions written for a whole drug class without naming the ingredient cannot be detected. No manual review is requested by default and no financial value is inferred.";
-
   it("returns the English text in English", () => {
     setModuleLocale("en");
     expect(translateUnavailableReason(corpus)).toBe(corpus);
     expect(translateUnavailableReason(unknown)).toBe(unknown);
-    expect(translateUnavailableReason(nameCheck)).toBe(nameCheck);
   });
 
   it("returns Turkish text in Turkish", () => {
     setModuleLocale("tr");
     expect(translateUnavailableReason(corpus)).toContain("manuel SUT incelemesi gerekir");
     expect(translateUnavailableReason(unknown)).toContain("etken maddesi belirlenemedi");
-    const translated = translateUnavailableReason(nameCheck);
-    expect(translated).toContain("manuel inceleme istenmez");
-    expect(translated).toContain("ilaç sınıfı");
   });
 });

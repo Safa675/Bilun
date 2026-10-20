@@ -23,7 +23,6 @@ from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
 from src.bilun.domain.billing.types import (
     DRUG_INDICATION_CORPUS_UNAVAILABLE_REASON,
     DRUG_INDICATION_INGREDIENT_UNKNOWN_REASON,
-    DRUG_INDICATION_NAME_CHECK_REASON,
 )
 from src.bilun.domain.prose_rules import drug_indication as prose
 from src.bilun.domain.prose_rules._drug_indication import unencoded_scope
@@ -171,30 +170,27 @@ def _review(*barcodes: str):
     return compute_patient_billing_report("P1", claim_context=_ctx_with(*barcodes)).drug_indication
 
 
-def test_a_bill_of_plain_drugs_asks_for_no_manual_review_but_is_never_certified_exact() -> None:
+def test_a_bill_of_plain_drugs_is_complete_and_asks_for_no_manual_review() -> None:
     review = _review(_CEFTRIAXONE, _PARACETAMOL)
 
     assert [e.applicability_status for e in review.evaluations] == ["no_sut_restriction_found"] * 2
-    # A name check cannot see a restriction written for a drug class: the block
-    # stays partial (and with it the report's exactness label) but its reason
-    # asks for no review.
-    assert review.exactness_status == "partial_exact"
-    assert review.unavailable_reason == DRUG_INDICATION_NAME_CHECK_REASON
-    assert "manual SUT review is required" not in review.unavailable_reason
-    assert "No manual review is requested" in review.unavailable_reason
-    assert "whole drug class" in review.unavailable_reason
+    # Every line was looked up in the SUT text: nothing is missing, nothing is asked. The limit (a restriction
+    # written for a drug class the register does not list) is stated on each row, not by a partial label.
+    assert review.exactness_status == "exact"
+    assert review.unavailable_reason is None
     assert review.required_inputs_missing == []
     assert review.violation_count == 0 and review.findings == [] and review.violations == []
+    assert all("whole drug class" in e.ingredient_scope["message_en"] for e in review.evaluations)
 
 
-def test_a_plain_line_next_to_an_encoded_violation_still_caps_the_block_at_partial() -> None:
+def test_a_plain_line_next_to_an_encoded_violation_keeps_the_block_exact_and_the_violation() -> None:
     encoded = replace(_ctx(report_present=False).drug_lines[0], drug_claim_line_id="D9")
     ctx = _ctx_with(_CEFTRIAXONE)
     ctx = replace(ctx, drug_lines=(*ctx.drug_lines, encoded))
     review = compute_patient_billing_report("P1", claim_context=ctx).drug_indication
 
-    assert review.exactness_status == "partial_exact"
-    assert review.unavailable_reason == DRUG_INDICATION_NAME_CHECK_REASON
+    assert review.exactness_status == "exact"
+    assert review.unavailable_reason is None
     assert review.violation_count == 1
 
 
@@ -239,7 +235,7 @@ def test_a_plain_line_next_to_an_unidentifiable_one_stays_partial() -> None:
 # ── no number moves ────────────────────────────────────────────────────────────
 
 _NUMBERS = (
-    "exactness_status", "sgk_uplift_try", "total_recoverable_try", "compliance_adjustment_try", "audit_exposure_try",
+    "sgk_uplift_try", "total_recoverable_try", "compliance_adjustment_try", "audit_exposure_try",
     "capture_gap_try", "package_adequacy_review_try", "drug_indication_violation_count", "action_count",
     "priority",
 )
@@ -263,6 +259,39 @@ def test_switching_the_classifier_off_moves_no_number_and_no_action_row(monkeypa
     assert with_scope.drug_indication.violation_count == without_scope.drug_indication.violation_count == 0
 
 
+_NOT_EXEMPT = {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []}
+
+
+@pytest.mark.parametrize(
+    ("story", "label_without", "label_with"),
+    [
+        ("S1", "partial_exact", "exact"),  # three plain IV drugs: the drug review was the only non-exact block
+        ("S3", "partial_exact", "exact"),
+        ("S2", "partial_exact", "partial_exact"),  # CLEXANE (§4.2.7) and IPRAVENT (§4.2.24) still need a look
+    ],
+)
+def test_the_report_label_moves_only_when_every_unencoded_line_is_plain(monkeypatch, story, label_without, label_with) -> None:
+    from src.bilun.domain.claims.loader import load_sut_claim_dataset
+    from src.bilun.domain.claims.patient_context import build_bill_claim_context
+    from tests.fixtures import synthetic_cohort as cohort
+
+    role = cohort.role(f"showcase_{story}")
+    ctx = build_bill_claim_context(role.patient_id, role.claim_id, load_sut_claim_dataset())
+    with_scope = compute_patient_billing_report(ctx.patient_id, claim_context=ctx, copay_exemption=_NOT_EXEMPT)
+
+    unknown = unencoded_scope.IngredientScope(result=unencoded_scope.SCOPE_UNKNOWN)
+    monkeypatch.setattr(
+        "src.bilun.domain.prose_rules._drug_indication.evaluation.classify_unencoded_drug",
+        lambda line, **_: unknown,
+    )
+    without_scope = compute_patient_billing_report(ctx.patient_id, claim_context=ctx, copay_exemption=_NOT_EXEMPT)
+
+    assert without_scope.exactness_status == label_without
+    assert with_scope.exactness_status == label_with
+    for name in _NUMBERS:
+        assert getattr(with_scope, name) == getattr(without_scope, name), name
+
+
 def test_the_block_projection_has_no_other_input_than_the_batch(monkeypatch) -> None:
     ctx = _ctx_with(_CEFTRIAXONE)
     batch = evaluate_drug_indication_findings(ctx.patient_id, ctx)
@@ -273,5 +302,5 @@ def test_the_block_projection_has_no_other_input_than_the_batch(monkeypatch) -> 
     monkeypatch.setattr(claim_drug_indication, "evaluate_drug_indication_findings", fail)
     review = claim_drug_indication.validate_drug_indication_from_claims(ctx, evaluation_batch=batch)
 
-    assert review.exactness_status == "partial_exact"
-    assert review.unavailable_reason == DRUG_INDICATION_NAME_CHECK_REASON
+    assert review.exactness_status == "exact"
+    assert review.unavailable_reason is None

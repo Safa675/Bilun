@@ -4,7 +4,7 @@ The Drug Indication corpus encodes 939 §4.2 rules. Every billed drug outside it
 
 | `applicability_status` | `evaluation_status` | `ingredient_scope.result` | Meaning |
 |---|---|---|---|
-| `no_sut_restriction_found` | `evaluated` | `not_named_in_sut` | No in-force §4 clause and no encoded rule names the drug's active ingredient, and the drug's ATC class has no class-level section. No manual review is requested. |
+| `no_sut_restriction_found` | `evaluated` | `not_named_in_sut` | No in-force §4 clause and no encoded rule names the drug's active ingredient, and the drug's ATC class has no class-level section. No manual review is requested; the block reads `exact` when every unencoded line is of this kind. |
 | `not_in_encoded_corpus` | `unavailable` | `named_in_sut` | A clause or an encoded rule names the ingredient, but the billed line did not match an encoded rule. Manual SUT review (the old wording), with the sections. |
 | `not_in_encoded_corpus` | `unavailable` | `class_level_in_sut` | The drug's ATC class is restricted by a section that names the class, not each ingredient (for example §4.2.7 low-molecular-weight heparins). Manual SUT review, with the sections. |
 | `not_in_encoded_corpus` | `unavailable` | `ingredient_unknown` | The ingredient could not be determined (the barcode is not in the crosswalk, or the row has no ingredient text). Manual SUT review with an honest reason. |
@@ -38,7 +38,7 @@ Code: `src/bilun/domain/prose_rules/_drug_indication/ingredient_names.py` (pure 
 - Rules that apply to every drug are not ingredient restrictions and are outside this check: prescription mechanics (§4.1.x), report validity, the 10-day cap for parenteral forms written without a report (§4.1.4(1)), pricing and discounts (§4.4), the EK-4/D and EK-4/F copay lists.
 - Annex lists (EK-4/A..D) are not scanned: EK-4/A carries no restriction column. Chapters 1 to 3 and 5 to 6 are not scanned: they name substances for other purposes (glucose in a laboratory test), and the only ingredient they add over chapter 4 is `metoksipsoralen`.
 - The ingredient comes from the 2026-10-02 EK-4/A crosswalk. Historic barcodes that are no longer in it are `ingredient_unknown`.
-- The block never reads `exact` while any line was checked only by name: `exactness_status` stays `partial_exact` with a reason that states the limit and asks for no review (`DRUG_INDICATION_NAME_CHECK_REASON`), so the report-level exactness label does not move because of this change.
+- A bill whose unencoded lines are all `no_sut_restriction_found` reads `exact` and asks for nothing (nothing is missing: every line was looked up). The limit is carried by the row text and by the notice above the drug list, not by a `partial_exact` label. A bill with any `named_in_sut`, `class_level_in_sut` or `ingredient_unknown` line stays `partial_exact` with the review reason. This moves the report-level label from `partial_exact` to `exact` for bills whose only non-exact block was the drug review (no number changes).
 
 ## Measured on the crosswalk (8,078 EK-4/A products, 2026-10-20)
 

@@ -68,8 +68,6 @@ const api = {
       "Bu ilaç kodlanmış İlaç Endikasyonu derleminde yer almıyor; manuel SUT incelemesi gerekir ve finansal değer çıkarılmaz.",
     drugIndicationIngredientUnknown:
       "Kodlanmış İlaç Endikasyonu derleminde yer almayan bir ilacın etken maddesi belirlenemedi, bu yüzden SUT metni kontrol edilemedi; manuel SUT incelemesi gerekir ve finansal değer çıkarılmaz.",
-    drugIndicationNameCheck:
-      "Kodlanmış İlaç Endikasyonu derleminde yer almayan ilaç satırları yalnızca etken madde adına göre SUT metniyle karşılaştırıldı: hiçbir hüküm etken maddeyi anmıyor, ancak etken maddeyi anmadan bütün bir ilaç sınıfı için yazılmış kısıtlar tespit edilemez. Varsayılan olarak manuel inceleme istenmez ve finansal değer çıkarılmaz.",
   },
   methodology: {
     billingStrategyReviewDetail:
