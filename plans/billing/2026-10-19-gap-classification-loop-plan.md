@@ -204,7 +204,8 @@ Betikler ilk koşu yargılanana kadar repo dışında: `~/.cache/bilun-gap-class
 - [x] **Akşam provası** (2026-10-20 00:00–01:00): sonuçlar §10.1
 - [x] Prova sonrası iki değişiklik (aşağıda, §10.1 sonunda): küçük aile kalıntılarını birleştirme, G7b uyarısı
 - [x] Gece koşusu 1 (Safa'nın onayıyla 2026-10-20 09:35–13:16): G6 tutmadı, Safa bilgi amaçlı saydı, 101 madde × 2 oy tamam (§10.2, §10.3)
-- [ ] Paketin spot kontrolü (Safa, ~15–20 dk) ve kısa-efor partilerinin yeniden koşulup koşulmayacağı kararı (§10.3)
+- [x] K1 / E1 doğrulama turu (38 satır, §10.4)
+- [ ] Paketlerin spot kontrolü (Safa, ~15–20 dk), ayrışan 11 + çürütülen 3 satırın kararı (§10.4)
 
 ### 10.1 Prova sonuçları (gerçek ajanlar, gerçek maddeler)
 
@@ -295,6 +296,23 @@ Safa, üst oturum üzerinden, G6'yı bu koşuda yalnız bilgi saymaya karar verd
 4. **Uyarılar:** `skew` 3 partide çıktı (exclusion_ek3b2 K1 %75, karma parti E2 %75, drug_combination E2 %80); üçünde de iki satır okundu, homojen ailelerde makul, "tutuldu" diye kayıtlı.
 
 **Karar bekleyen:** (a) Paketin spot kontrolü (Safa). (b) 6.–10. partiler (41 madde) kısa eforla koştu; K1 / E1 kararlarının güvenilirliği için bu partilerin yeniden koşulması önerilir (hızlı rejim sürerse ~1 milyon token ve ~10 dk, yavaş rejim dönerse ~3,6 milyon token ve ~1,7 saat). (c) Kalan 293 maddenin (para etkilemeyen) ne zaman ve nasıl koşacağı (§10.1 sonu).
+
+### 10.4 K1 / E1 doğrulama turu (`verify1-20261020`, 2026-10-20 13:21–~14:30)
+
+Safa'nın isteğiyle, §10.3'teki 38 K1 / E1 satırı (25 K1, 13 E1) için iki bağımsız doğrulayıcı (A `sonnet`, B `opus`) "çürütmeye çalış" talimatıyla koştu (4 parti, `prompts/verifier.md`; kural verisi ve onu değerlendiren Python okunacak, koşul / sonuç / anahtarın gerçekten doldurulması / istisnalar karşılaştırılacak; hüküm `risk_note` başında CONFIRMED / PARTIAL / REFUTED). Bu kez oylar derin okudu (ortalama 69 araç çağrısı, §10.3'teki kısa-efor sorunu yok). Maliyet 2,05 milyon token, oy süreleri toplamı 80 dk. Kapılar ve denetim geçti; denetim bir yanlış alarm verdi (`printf '%s => '` + salt-okunur `python3 -c`), düzeltildi ve testlendi (91 test).
+
+| Sonuç (iki doğrulayıcı birlikte) | Madde | K1 olarak önerilen | E1 olarak önerilen |
+|---|---:|---:|---:|
+| Onaylandı (ikisi de sınıfı korudu, ikisi de CONFIRMED) | 12 | 5 | 7 |
+| Sınıf aynı ama en az biri PARTIAL yazdı (eksik / uyarı notu) | 12 | 7 | 5 |
+| Çürütüldü (ikisi de başka sınıf dedi) | 3 | 3 | 0 |
+| Ayrışıyor (biri korudu, biri çürüttü): insan kararı | 11 | 10 | 1 |
+
+- **Çürütülen 3 K1:** C000825 (diş B-3.(1): iki doğrulayıcı da E2; kural "farklı hekim VE hasta yakını" arıyor, aynı hekim / eş / ortak yok: ilk provadaki bulguyla uyumlu), C000690 (paketli faturada pencere içi ayrı ilaç kontrolü yok → E1), C002754 (EK-3B kısıtı: bayrak türetilmiyor, sonuç işlem yerine malzemeye yazılıyor → E1).
+- **Asıl bulgu: "K1" çoğu kez "kural var" demek, "gerçek faturada çalışıyor" demek değil.** exclusion_ek3b2 ailesinde birkaç K1'in kuralı, gerçek claim'in doldurmadığı bir "prose-demo" sütununa / çağıran tarafından verilen bir bayrağa bağlı (C002747, C002753, C002754, C002750): gerçek faturada kural sessizce atlanıyor. Katılım payı muafiyetlerinde (C000370, C000372, C000373) yalnız bir kol (acil) var; rapor bayrağı üretimde dolmuyor, bu da muafiyetin fazla verilmesine yol açabilir (para hareketi). Paket yöntemi maddelerinde (C000678, C000699) paket faturada eksik uplift / ayrı faturalama kontrolü yok.
+- **E1:** 7 / 13 tam onaylandı, 5'i notla (örn. C000889, C001041), 1'i ayrışıyor (C000773: üniversite fakültesi kimliği claim'de yok).
+
+**Sonuç ve öneri.** 25 K1'in yalnız 5'i iki doğrulayıcıda da tam onaylı. Bu yüzden hiçbir K1 satırı, tek tek bakılmadan açık listeden düşürülmemeli; "dürüst yeniden sınıflama" taslağı yalnız onaylı K1'lerle başlar. İki ayrışan grup (`02-ayrisanlar.md`) insan kararı ister. Bu bulgular (özellikle sessizce atlanan kurallar ve muafiyetin fazla verilmesi) pilot encode planına (§13) "önce düzelt" girdisi olarak taşınır; bu plan onları düzeltmez.
 
 ## 11. Kapsam dışı
 
