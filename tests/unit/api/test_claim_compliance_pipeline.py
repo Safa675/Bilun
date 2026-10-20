@@ -675,6 +675,105 @@ def test_v2_pinned_activation_opens_complete_draft_build(cached_pipeline, monkey
     assert patient_response["claim_advisories"]["available"] is True
 
 
+_DEMO_SOURCE = {
+    "mode": "synthetic_demo", "is_synthetic": True,
+    "label": "Synthetic SUT demo claim data", "notice": "Demo data only.",
+}
+_WAVEA_BLOCKS = ("claim_reviews", "claim_advisories", "financial_findings")
+
+
+def _stamp_data_source(source):
+    """Record the provenance the reports of the active build carry, as the cache builder does."""
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        index = read_json_payload(con, "cohort_compliance_index", build_id)
+        index["data_source"] = source
+        upsert_single_json_table(con, "cohort_compliance_index", build_id, index)
+    finally:
+        con.close()
+
+
+def test_synthetic_demo_build_shows_the_draft_evidence_without_a_receipt(cached_pipeline):
+    from src.bilun.api import wavea_activation
+
+    client, index, patients, bills = cached_pipeline
+    _stamp_data_source(_DEMO_SOURCE)
+    assert wavea_activation._startup_activation is None
+    for path, stored in (
+        ("/api/billing-report/P1", patients["P1"]),
+        ("/api/billing-report/P1/bills/C-A", bills["P1::C-A"]),
+    ):
+        payload = client.get(path).json()
+        for field in _WAVEA_BLOCKS:
+            assert payload[field]["available"] is True
+            assert payload[field] == stored[field]
+        assert payload["wavea_coverage"] == stored["wavea_coverage"]
+        assert payload["wavea_coverage"]["available"] is True
+        assert payload["data_source"]["mode"] == "synthetic_demo"
+        # The evidence stays beside the headline numbers; none of them moves.
+        for field in ("recommended_actions", "action_count", "audit_exposure_try", "sgk_uplift_try", "total_recoverable_try"):
+            assert payload[field] == stored[field]
+        # The compliance block is served as stored, with the evaluation identities the receipt gate strips.
+        assert payload["claim_compliance"] == stored["claim_compliance"]
+        assert all("evaluation_id" in row for row in payload["claim_compliance"]["evaluations"])
+    for path in ("/api/wavea-evidence-index", "/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
+        assert client.get(path).json()["available"] is True
+    cohort = client.get("/api/compliance-index").json()
+    assert cohort["claim_compliance"]["counts"] == {
+        status: sum(
+            row["status"] == status
+            for report in patients.values()
+            for row in report["claim_compliance"]["evaluations"]
+        )
+        for status in ("evaluated", "missing_inputs", "unavailable")
+    }
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        {"mode": "real_claims", "is_synthetic": False, "label": "Hospital claim data", "notice": "Supplied."},
+        {"mode": "synthetic_demo", "is_synthetic": False, "label": "demo", "notice": "x"},
+        {"mode": "unavailable", "is_synthetic": None, "label": "n/a", "notice": "x"},
+        None,
+    ],
+    ids=["real_claims", "synthetic_not_marked_synthetic", "unavailable", "no_provenance"],
+)
+def test_without_demo_provenance_the_receipt_gate_stays_closed(cached_pipeline, source):
+    client, _, patients, bills = cached_pipeline
+    if source is not None:
+        _stamp_data_source(source)
+    for path in ("/api/billing-report/P1", "/api/billing-report/P1/bills/C-A"):
+        payload = client.get(path).json()
+        for field in _WAVEA_BLOCKS:
+            assert payload[field] == {
+                "available": False, "unavailable_reason": "wavea_capability_unavailable",
+                "total_rows": None, "rows": [], "has_more": False,
+            }
+        assert payload["wavea_coverage"] is None
+        assert {row["rule_id"] for row in payload["claim_compliance"]["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
+    cohort = client.get("/api/compliance-index").json()
+    assert not any(row.get("rule_id") in _FOCUSED_IDS for row in cohort["rows"])
+    for path in ("/api/wavea-evidence-index", "/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
+        assert client.get(path).json()["available"] is False
+
+
+def test_demo_provenance_does_not_open_an_incomplete_build(cached_pipeline):
+    client, _, _, _ = cached_pipeline
+    _stamp_data_source(_DEMO_SOURCE)
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        index = read_json_payload(con, "wavea_evidence_index", build_id)
+        index["n_patients"] += 1
+        upsert_single_json_table(con, "wavea_evidence_index", build_id, index)
+    finally:
+        con.close()
+    assert client.get("/api/wavea-evidence-index").json()["available"] is False
+    assert client.get("/api/billing-report/P1").json()["claim_reviews"]["available"] is False
+
+
 def test_v2_explicit_empty_patient_selection_never_expands_to_all(cached_pipeline, monkeypatch):
     client, _, _, _ = cached_pipeline
     monkeypatch.setattr(wavea_evidence, "_ready", _trusted_v2_test_gate)
