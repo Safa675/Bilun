@@ -2,6 +2,18 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-20 — A "uses the first element only" mutant survives when every test lists the extreme element first: permute what a fold reads
+
+**Pattern:** The ICU-stay cause folds the first and the last covered day over every ICU line (a `min` of the minima, a `max` of the maxima). Of 46 mutants, 44 were killed at once; the two that survived read the stay from the first code that appeared in the lines only (`icu_covered[next(iter(icu_covered))]`). Every test I had written listed the 510090 lines first, and the 510090 lines held both ends of the stay, so the first code always had the answer. A package line that is the extreme (or comes first) was never tested.
+
+**Rule:** For a function that folds a list (min, max, union, sum over several keys), write the test over the permutations of the input (`pytest.mark.parametrize` over the index orders) and put the extreme element on a code or position that is not first. Include the "first element only" mutant in every mutation list; if it survives, the tests share an ordering assumption.
+
+## 2026-10-20 — A reviewer's one-line fix is a candidate: measure it and its neighbours on every shape of the problem before adopting or dismissing it
+
+**Pattern:** The independent review of the bed exclusions proposed adding 510090 to `BED_INCLUDING_CODES`. Measured on 54 in-memory ICU bills (one table for four rules) it fixes the shape that was named (510090 x 3: 444.72 to 0.00) and leaves 9 bills with a false recoverable that the chosen rule removes (3,557.76 TL): every ICU package line, a 5-date claim that bills 510090 on the first and the last day (667.08 TL), a ward-around-ICU claim (889.44 vs 444.72 TL). The opposite rule (every day of an ICU-coded claim) is 3,113.04 TL lower than the chosen one on 6 bills, 2,223.60 TL of it ward days that the lines place outside the ICU stay. The rule that fits is a third one that neither the review nor the plan had: the lines' days plus the days between the first and the last. None of this shows on the named bill.
+
+**Rule:** When a review or a brief hands over a one-line fix, write two or three competing rules next to it, run all of them on one table of bills that covers every billing shape of the problem (the way the money is spelled, the days between, what lies outside), and put the table in the plan; the decision is a row of that table, with the cost in silence of each alternative. This extends the 2026-10-18 lesson on probing the sibling motor: here the dimension to vary is the billing shape.
+
 ## 2026-10-19 — A repo-wide grep opens the folders a brief forbids: name the directories you search
 
 **Pattern:** The brief forbade opening `data/synthetic/sut/claims/ilay_validation/`, `data/gazette/prose_rules/golden/ilay/` and any folder named `raw data`. To find every mention of one removed sentence I ran `grep -rIn <pattern> .` with only `node_modules`, `.git` and `.next` excluded. Grep reads every text file under the root, so it read those folders too. All hits came from `frontend/src`, `tests` and `tasks` and nothing from the forbidden folders was printed, but the rule is about opening them, and a text search is opening.

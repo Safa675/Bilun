@@ -30,14 +30,23 @@ counted in both paths.
 indicator codes (510090 or P552001-008), the ICU span is the claim span and
 the LAST ICU day (510090) is the claim's ``discharge_date``.
 
+**The claim's own ICU lines:** the days its 510090 / EK-2/C ICU package lines
+pay (a line covers its quantity in days from its date) and the days between
+the first and the last of them are the ICU stay itself; the standard-bed
+detector takes them out by itself (``yatak_puani.bed_days_not_expected``,
+``ICU_BED_CODES``), so they never reach this reconciliation. What this module
+adds on top is the claim-span last day and the transfer day across claims,
+and it skips every day the detector already took out (never twice).
+
 **Package-bundling (El Kitabı Tablo 23):** the surgery-day bed fee is
 already excluded by ``yatak_puani`` for EK-2C package claims. The reconcile
 never double-subtracts: if the ICU last day coincides with the package
 surgery day, it is already excluded and no additional day is dropped.
 
-Scope note: the mirror transition (service→ICU, i.e. the ICU *first* day) is
-intentionally NOT in scope here — the YB→servis discharge/transfer day is
-the reported double-billing scenario.
+Scope note: the mirror transition ACROSS claims (service→ICU: a service claim
+that ends on the ICU claim's *first* day) is intentionally NOT in scope here —
+the YB→servis discharge/transfer day is the reported double-billing scenario.
+The ICU claim's own first day is paid by its own 510090 line (above).
 """
 
 from __future__ import annotations
@@ -51,7 +60,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
-from src.bilun.domain.prose_rules.yatak_puani import bed_days_not_expected, claim_package_window
+from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES, bed_days_not_expected, claim_package_window
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -61,9 +70,6 @@ _SUT_SECTION_ID = "2.4.4.H"
 _RULE_ID = "yatak_icu_overlap_510010"
 
 _BED_CODE = "510010"  # Standart yatak (EK-2B)
-_ICU_DAY_RATE_CODE = "510090"  # Yoğun bakım, hizmet başı (EK-2B)
-# ICU intermediate packages (EK-2C) — also mark a claim as ICU.
-_ICU_PACKAGE_PREFIXES = ("552001", "552002", "552003", "552006", "552007", "552008")
 
 
 def _normalize_code(raw: str) -> str:
@@ -85,11 +91,10 @@ def _normalize_code(raw: str) -> str:
 
 
 def _is_icu_code(normalized: str) -> bool:
-    """True for 510090 or any P55200x package code (mirrors icu_puani)."""
+    """True for 510090 (Yoğun bakım, hizmet başı) or any P55200x package code (``yatak_puani.ICU_BED_CODES``, the set
+    ``icu_puani`` takes as an ICU claim)."""
     stripped = normalized[1:] if normalized.startswith("P") else normalized
-    if stripped == _ICU_DAY_RATE_CODE:
-        return True
-    return stripped in _ICU_PACKAGE_PREFIXES
+    return stripped in ICU_BED_CODES
 
 
 def _collect_icu_discharge_claims(
@@ -235,7 +240,9 @@ def reconcile_yatak_bed_days(
     Days already excluded by the EK-2C package-surgery bundling
     (``yatak_puani`` :126-138) are never double-subtracted: if the ICU last
     day coincides with the package surgery day, no additional day is
-    dropped.
+    dropped. The same holds for a day the detector already took out because
+    the claim's own ICU lines pay it (``bed_days_not_expected``): the row then
+    carries the detector's sentence and no ``icu_overlap_*`` keys.
 
     Args:
         yatak_opportunities: Output of the yatak detector (unchanged when no

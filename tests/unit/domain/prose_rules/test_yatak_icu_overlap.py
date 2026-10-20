@@ -80,6 +80,7 @@ def _make_proc_line(
     procedure_date: date = _ICU_ADMISSION,
     procedure_category: str = "islem",
     billed_amount_try: str = "742.60",
+    quantity: int = 1,
 ):
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
@@ -92,7 +93,7 @@ def _make_proc_line(
         procedure_code=procedure_code,
         procedure_name=procedure_name,
         procedure_category=procedure_category,
-        quantity=1,
+        quantity=quantity,
         unit_price_try=Decimal(billed_amount_try),
         billed_amount_try=Decimal(billed_amount_try),
         expected_payable_try=Decimal("700.00"),
@@ -176,10 +177,11 @@ def test_reconcile_icu_discharge_day_equals_service_entry_day() -> None:
     )
     assert "düşüldü" in srv_rec["detail"]
 
-    # The ICU claim's own yatak expectation also drops its 510090 last day.
+    # The ICU claim's own yatak expectation: its 510090 line (10 July) pays that day itself, and its 510090 last day
+    # (13 July) is dropped by the reconciliation: 4 → 2 (it was 3 while the claim's own lines paid nothing).
     icu_rec = _yatak_opp("ICU", reconciled)
     assert icu_rec["gross_bed_days"] == 4
-    assert icu_rec["bed_days"] == 3
+    assert icu_rec["bed_days"] == 2
     assert icu_rec["icu_overlap_days"] == 1
 
 
@@ -259,10 +261,11 @@ def test_reconcile_different_days_behavior_unchanged() -> None:
     assert "icu_overlap_days" not in srv_rec
     assert srv_rec["expected_yatak_try"] == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
 
-    # ICU claim: its own 510090 last day (Jul 12) is dropped from yatak.
+    # ICU claim: its 510090 line (Jul 10) pays that day itself and its own last day (Jul 12) is dropped by the
+    # reconciliation: only Jul 11 is left (it was 2 while the claim's own lines paid nothing).
     icu_rec = _yatak_opp("ICU", reconciled)
     assert icu_rec["gross_bed_days"] == 3
-    assert icu_rec["bed_days"] == 2
+    assert icu_rec["bed_days"] == 1
     assert icu_rec["icu_overlap_days"] == 1
     assert icu_rec["icu_overlap_dates"] == ["2026-07-12"]
 
@@ -401,12 +404,12 @@ def test_reconcile_same_claim_icu_and_service_bed() -> None:
     ]
     claims = [claim]
     opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"C1"})
-    assert _yatak_opp("C1", opps)["bed_days"] == 4
+    assert _yatak_opp("C1", opps)["bed_days"] == 3  # the 510090 line (10 July) pays that day itself
 
     reconciled = reconcile_yatak_bed_days(opps, claims, procs)
 
     rec = _yatak_opp("C1", reconciled)
-    assert rec["bed_days"] == 3
+    assert rec["bed_days"] == 2  # the ICU last day (13 July) goes on top
     assert rec["icu_overlap_days"] == 1
     assert rec["icu_overlap_dates"] == ["2026-07-13"]
 
@@ -436,7 +439,7 @@ def test_reconcile_same_day_icu_stay() -> None:
     ]
     claims = [claim]
     opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={"C1"})
-    assert _yatak_opp("C1", opps)["bed_days"] == 1
+    assert _yatak_opp("C1", opps)["bed_days"] == 0  # the claim's own 510090 line pays the only day
 
     reconciled = reconcile_yatak_bed_days(opps, claims, procs)
 
@@ -820,9 +823,9 @@ def test_wrapper_reconciles_yatak_review() -> None:
     assert reconciled.unavailable_reason is None
     assert reconciled.rule_source == review.rule_source
     assert _yatak_opp("SRV", reconciled.opportunities)["bed_days"] == 2
-    assert _yatak_opp("ICU", reconciled.opportunities)["bed_days"] == 3
+    assert _yatak_opp("ICU", reconciled.opportunities)["bed_days"] == 2  # 10 July: its own 510090 line; 13 July: last day
     assert reconciled.confirmed_yatak_try == pytest.approx(
-        5 * FIXTURE_BED_DAILY_TRY, abs=0.01
+        4 * FIXTURE_BED_DAILY_TRY, abs=0.01
     )
 
 
@@ -869,7 +872,8 @@ def test_patient_report_wires_reconcile() -> None:
     """(a) patient_report'ta YB çıkış günü = servis giriş günü → tek yatak günü.
 
     Full report: the service claim's expected yatak drops the ICU last day
-    (3 → 2) and the ICU claim's own yatak expectation drops it too (4 → 3).
+    (3 → 2) and the ICU claim's own yatak expectation drops its last day and the
+    day its own 510090 line pays (4 → 2).
     """
     from src.bilun.domain.billing.patient_report import compute_patient_billing_report
 
@@ -898,10 +902,10 @@ def test_patient_report_wires_reconcile() -> None:
     by_claim = {o["claim_id"]: o for o in report.yatak_puani.opportunities}
     assert by_claim["SRV"]["bed_days"] == 2
     assert by_claim["SRV"]["icu_overlap_days"] == 1
-    assert by_claim["ICU"]["bed_days"] == 3
+    assert by_claim["ICU"]["bed_days"] == 2
     # Recoverable uplift reflects only the non-overlapped bed days.
     assert report.yatak_puani.confirmed_yatak_try == pytest.approx(
-        5 * FIXTURE_BED_DAILY_TRY, abs=0.01
+        4 * FIXTURE_BED_DAILY_TRY, abs=0.01
     )
 
 
@@ -1001,3 +1005,225 @@ def test_reconcile_the_er_bed_inside_a_package_window_changes_nothing_for_the_ic
     reconciled = reconcile_yatak_bed_days(opps, claims, procs)
 
     assert _yatak_opp("SRV", reconciled)["bed_days"] == srv["bed_days"] == 3  # 23-25 July
+
+
+# --- The ICU claim's own lines pay their days (tasks/todo.md, 2026-10-20) -------------------------------------------
+# EK-2/B 510090 "Yemek, yatak, hasta vizit hizmetlerini kapsar"; the EK-2/C ICU packages are EK-2/C points, which include
+# "Yatak bedeli" (§2.2.2.B-1.(1).a); §2.4.4.H.(8): the first and the exit day are 510090, the days between the packages.
+# The detector takes those days out itself (the shared helper); the reconciliation keeps the claim-span rule for the
+# claim's last day and the cross-claim transfer day, and never takes a day the detector took.
+
+
+def _icu_claim_bill(*lines, discharge: date = date(2026, 7, 12), claim_id: str = "ICU"):
+    claim = _make_claim_header(claim_id=claim_id, discharge=discharge, department="Yogun Bakim")
+    return [claim], list(lines)
+
+
+def _icu(code: str, day: date, *, quantity: int = 1, category: str = "islem", line_id: str = "", claim_id: str = "ICU"):
+    return _make_proc_line(
+        claim_id=claim_id, procedure_line_id=line_id or f"{claim_id}-{code}-{day.isoformat()}", procedure_code=code,
+        procedure_date=day, procedure_category=category, quantity=quantity,
+    )
+
+
+def _reconciled(claims, procs, ids=("ICU",)):
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import reconcile_yatak_bed_days
+    from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+
+    opps = detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs=set(ids))
+    return opps, reconcile_yatak_bed_days(opps, claims, procs)
+
+
+def test_an_icu_claim_billing_510090_on_every_day_expects_no_standard_bed_day() -> None:
+    claims, procs = _icu_claim_bill(_icu("510090", _ICU_ADMISSION, quantity=3), discharge=date(2026, 7, 12))
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert (row["gross_bed_days"], row["bed_days"]) == (3, 0)  # the detector alone: S5 showed 2 days, 444.72
+    assert row["expected_yatak_try"] == 0.0 and row["recoverable_uplift_try"] == 0.0
+    assert "ICU stay" in row["detail"]
+    assert reconciled is opps  # nothing left for the reconciliation to take
+
+
+def test_an_icu_claim_billing_510090_on_its_first_and_last_day_only_expects_nothing_between() -> None:
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)), _icu("510090", date(2026, 7, 12)), discharge=date(2026, 7, 12)
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    assert _yatak_opp("ICU", opps)["bed_days"] == 0
+    assert reconciled is opps
+
+
+def test_an_icu_claim_with_a_package_between_the_day_rate_days_expects_no_standard_bed_day() -> None:
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)),
+        _icu("P552002", date(2026, 7, 11), category="paket"),
+        _icu("510090", date(2026, 7, 12)),
+        discharge=date(2026, 7, 12),
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    assert _yatak_opp("ICU", reconciled)["bed_days"] == 0
+
+
+def test_an_unprefixed_icu_package_pays_its_days_too() -> None:
+    """552002 billed as an ordinary procedure opens no package window, so only the lines can place the days."""
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)), _icu("552002", date(2026, 7, 11)), _icu("510090", date(2026, 7, 12)),
+        discharge=date(2026, 7, 12),
+    )
+
+    opps, _ = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert row["surgery_day_bundled"] is False and row["bundled_days"] == 0
+    assert row["bed_days"] == 0
+
+
+def test_the_last_day_of_an_icu_claim_is_taken_out_once_when_its_own_line_pays_it() -> None:
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)), _icu("510090", date(2026, 7, 13)), discharge=date(2026, 7, 13)
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", reconciled)
+    assert (row["gross_bed_days"], row["bed_days"]) == (4, 0)  # not -1 more: 13 July is in the ICU stay, taken once
+    assert "icu_overlap_days" not in row and "icu_overlap_dates" not in row
+    assert reconciled is opps
+
+
+def test_a_ward_day_after_the_icu_stay_is_still_the_claim_span_rule() -> None:
+    """ICU 10-12 July on a claim that runs to 14 July: 13 July stays expected, the claim's last day (14 July) is dropped
+    as before (the pinned claim-span model: it also hides a real ward day, a limit left on purpose)."""
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)), _icu("510090", date(2026, 7, 12)), discharge=date(2026, 7, 14)
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    assert _yatak_opp("ICU", opps)["bed_days"] == 2  # 13 and 14 July
+    row = _yatak_opp("ICU", reconciled)
+    assert row["bed_days"] == 1  # 13 July
+    assert (row["icu_overlap_days"], row["icu_overlap_dates"]) == (1, ["2026-07-14"])
+    assert row["expected_yatak_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
+
+
+def test_ward_days_before_the_icu_stay_are_expected() -> None:
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 12)), _icu("510090", date(2026, 7, 13)), discharge=date(2026, 7, 14)
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    # 10 and 11 July (ward), 12-13 July are ICU, 14 July is the claim's last day.
+    assert _yatak_opp("ICU", opps)["bed_days"] == 3
+    assert _yatak_opp("ICU", reconciled)["bed_days"] == 2
+
+
+def test_the_service_claim_after_an_icu_claim_keeps_its_transfer_day_keys() -> None:
+    icu = _make_claim_header(claim_id="ICU", discharge=date(2026, 7, 12), department="Yogun Bakim")
+    srv = _make_claim_header(
+        claim_id="SRV", admission=date(2026, 7, 12), discharge=date(2026, 7, 14), department="genel_cerrahi"
+    )
+    procs = [
+        _icu("510090", date(2026, 7, 10)),
+        _icu("510090", date(2026, 7, 12)),
+        _make_proc_line(
+            claim_id="SRV", procedure_line_id="SRV-1", procedure_code="510010", procedure_date=date(2026, 7, 13),
+            billed_amount_try="0.00",
+        ),
+    ]
+
+    opps, reconciled = _reconciled([icu, srv], procs, ids=("ICU", "SRV"))
+
+    assert _yatak_opp("ICU", opps)["bed_days"] == 0
+    assert _yatak_opp("SRV", opps)["bed_days"] == 3
+    srv_rec = _yatak_opp("SRV", reconciled)
+    assert srv_rec["bed_days"] == 2
+    assert (srv_rec["icu_overlap_days"], srv_rec["icu_overlap_dates"]) == (1, ["2026-07-12"])
+    assert "icu_overlap_days" not in _yatak_opp("ICU", reconciled)
+
+
+def test_icu_days_after_a_package_window_are_taken_once() -> None:
+    """Group C package on 10 July (window 10-17 July); ICU 510090 on 18 and 19 July; the claim runs to 20 July."""
+    claim = _make_claim_header(claim_id="C1", discharge=date(2026, 7, 20), department="genel_cerrahi")
+    procs = [
+        _make_proc_line(
+            claim_id="C1", procedure_line_id="PKG", procedure_code="610130", procedure_category="paket",
+            procedure_date=date(2026, 7, 10),
+        ),
+        _icu("510090", date(2026, 7, 18), claim_id="C1"),
+        _icu("510090", date(2026, 7, 19), claim_id="C1"),
+    ]
+
+    opps, reconciled = _reconciled([claim], procs, ids=("C1",))
+
+    row = _yatak_opp("C1", opps)
+    assert (row["gross_bed_days"], row["bundled_days"], row["bed_days"]) == (11, 8, 1)  # 20 July only
+    rec = _yatak_opp("C1", reconciled)
+    assert rec["bed_days"] == 0  # 20 July is the claim's last day
+    assert (rec["icu_overlap_days"], rec["icu_overlap_dates"]) == (1, ["2026-07-20"])
+
+
+def test_a_reversed_icu_line_leaves_the_claims_days_as_they_were() -> None:
+    claims, procs = _icu_claim_bill(
+        _make_proc_line(claim_id="ICU", procedure_line_id="R1", procedure_code="510090", billed_amount_try="-742.60"),
+        discharge=date(2026, 7, 12),
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    assert _yatak_opp("ICU", opps)["bed_days"] == 3
+    assert _yatak_opp("ICU", reconciled)["bed_days"] == 2  # the claim's last day, as before
+
+
+def test_an_icu_claim_whose_lines_are_billed_beside_standard_bed_lines_is_netted() -> None:
+    claims, procs = _icu_claim_bill(
+        _icu("510090", _ICU_ADMISSION, quantity=3),
+        _make_proc_line(
+            claim_id="ICU", procedure_line_id="B1", procedure_code="510010", procedure_name="Standart yatak",
+            billed_amount_try="667.08", quantity=3,
+        ),
+        discharge=date(2026, 7, 12),
+    )
+
+    _, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", reconciled)
+    assert row["bed_days"] == 0 and row["expected_yatak_try"] == 0.0
+    assert row["actual_billed_try"] == pytest.approx(667.08, abs=0.01)  # billed beside the ICU days: the audit's matter
+    assert row["recoverable_uplift_try"] == 0.0
+
+
+def test_a_day_rate_line_of_quantity_two_is_the_first_and_the_exit_day_not_two_consecutive_days() -> None:
+    """The ICU motor reads one 510090 line of quantity 2 on a 10-day claim as two ICU days, first and last
+    (``test_icu_puani.py``, ``_infer_billed_icu_days``): the bed motor must not call the eight days between ward days."""
+    claims, procs = _icu_claim_bill(
+        _make_proc_line(claim_id="ICU", procedure_line_id="Q2", procedure_code="510090", quantity=2),
+        discharge=date(2026, 7, 19),
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert (row["gross_bed_days"], row["bed_days"]) == (10, 0)
+    assert reconciled is opps
+
+
+def test_the_reconciliation_and_the_helper_read_the_same_icu_codes() -> None:
+    """`collect_icu_last_days` marks a claim as an ICU claim by the code set of the helper (`ICU_BED_CODES`)."""
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import collect_icu_last_days
+    from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES
+
+    claim = _make_claim_header(claim_id="C1")
+    for code in sorted(ICU_BED_CODES):
+        for spelled in (code, f"P{code}", f" {code[:3]}.{code[3:]} "):
+            line = _make_proc_line(claim_id="C1", procedure_code=spelled)
+            assert collect_icu_last_days([claim], [line]) == {_ICU_DISCHARGE}, spelled
+    for code in ("510010", "510070", "510081", "510120", "530000", "552004", "552005", "5520020"):
+        assert collect_icu_last_days([claim], [_make_proc_line(claim_id="C1", procedure_code=code)]) == set(), code
