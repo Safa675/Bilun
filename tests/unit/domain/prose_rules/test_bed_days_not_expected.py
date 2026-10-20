@@ -27,6 +27,7 @@ from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.prose_rules.yatak_puani import (
     BED_INCLUDING_CODES,
     HEMODIALYSIS_CODES,
+    ICU_BED_CODES,
     BedNotExpected,
     PackageWindow,
     bed_days_not_expected,
@@ -173,10 +174,16 @@ def test_the_lines_of_another_claim_say_nothing() -> None:
     assert bed_days_not_expected(_claim(), [_line("530000", day=1, claim_id="OTHER")]) == BedNotExpected()
 
 
-@pytest.mark.parametrize("code", ["530003", "530001", "510010", "510070", "510081", "510090", "510120", "510121"])
+@pytest.mark.parametrize("code", ["530003", "530001", "510010", "510070", "510081", "510120", "510121"])
 def test_other_bed_or_er_codes_are_not_bed_including_lines(code: str) -> None:
-    """530003 is only the code 530000 may not be billed with; the others are the motors' own (or the ICU motor's)."""
+    """530003 is only the code 530000 may not be billed with; the others are the motors' own. 510090 is an ICU line:
+    it has its own cause (the ICU stay of the claim's lines, below), not a place in `BED_INCLUDING_CODES`."""
     assert bed_days_not_expected(_claim(), [_line(code, day=1)]) == BedNotExpected()
+
+
+def test_510090_pays_a_day_but_is_not_one_of_the_three_bed_including_codes() -> None:
+    assert "510090" not in BED_INCLUDING_CODES
+    assert bed_days_not_expected(_claim(), [_line("510090", day=1)]).dates == _dates(1)
 
 
 # --- the package window takes its days first -------------------------------------------------------------------
@@ -404,6 +411,249 @@ def test_a_package_window_over_the_only_day_of_a_day_case_leaves_nothing_to_expl
     assert bed_days_not_expected(claim, [_line("702580")], _window(0)) == BedNotExpected()
 
 
+# --- the ICU stay of the claim's own lines ---------------------------------------------------------------------
+# EK-2/B 510090 "Yoğun bakım": "Yemek, yatak, hasta vizit hizmetlerini kapsar." (every list since 2018). The EK-2/C ICU
+# packages P552001-3 / P552006-8 are the points of "Yoğun bakım tedavileri" (SUT §2.4.4.H.(2)) and EK-2/C points include
+# "Yatak bedeli" (§2.2.2.B-1.(1).a). §2.4.4.H.(8): the first and the exit day are billed hizmet başı (510090), so the days
+# between are package days. The packages have no işlem grubu, so no package window explains them.
+
+_ICU_PACKAGES = ("552001", "552002", "552003", "552006", "552007", "552008")
+_ICU_CODES = ("510090", *_ICU_PACKAGES)
+
+
+def _package(code: str, *, day: int | None = 0, quantity: int | None = 1, billed: str = "2000.00") -> ProcedureClaimLine:
+    """An ICU package billed the way MEDULA bills it: the P code, category paket."""
+    return replace(_line(f"P{code}", day=day, quantity=quantity, billed=billed), procedure_category="paket")
+
+
+def test_the_icu_code_set_is_the_icu_motors_own_gate() -> None:
+    """One definition of "an ICU code": `claim_has_icu_code` decides which claims the ICU motor owns; the set here must
+    not drift from it (a code added there needs adding here)."""
+    from src.bilun.domain.prose_rules.icu_puani import claim_has_icu_code
+
+    assert ICU_BED_CODES == frozenset(_ICU_CODES)
+    for code in _ICU_CODES:
+        assert claim_has_icu_code([_line(code)]) is True
+    for code in ("510010", "510070", "510081", "510120", "530000", "552004", "552005", "5520020", "55200", "5100900"):
+        assert claim_has_icu_code([_line(code)]) is False, code
+        assert code not in ICU_BED_CODES
+
+
+@pytest.mark.parametrize("code", _ICU_CODES)
+def test_an_icu_line_pays_the_bed_of_its_own_day(code: str) -> None:
+    result = bed_days_not_expected(_claim(), [_line(code, day=1)])
+
+    assert result.dates == _dates(1)
+    [reason] = result.reasons
+    assert code in reason and "2026-07-11" in reason and "1 day(s)" in reason
+    assert "ICU stay" in reason and "2.4.4.H" in reason and "yatak" in reason
+
+
+@pytest.mark.parametrize("code", ["P552001", "P552002", "P552003", "P552006", "P552007", "P552008"])
+def test_an_icu_package_billed_as_a_package_pays_like_the_day_rate(code: str) -> None:
+    assert bed_days_not_expected(_claim(), [_package(code[1:], day=1)]).dates == _dates(1)
+
+
+@pytest.mark.parametrize("code", ["510090", "552002"])
+@pytest.mark.parametrize(
+    ("day", "quantity", "covered"),
+    [
+        (0, 1, (0,)),
+        (0, 2, (0, 1)),
+        (1, 2, (1, 2)),
+        (0, 3, (0, 1, 2)),
+        (1, 5, (1, 2)),  # reaches past the discharge: clipped to the stay
+        (0, 100000, (0, 1, 2)),  # a huge quantity is clipped, not iterated
+        (-1, 2, (0,)),  # starts the day before the admission: only the day inside the stay is covered
+        (0, None, (0,)),
+        (0, 0, (0,)),
+        (0, -3, (0,)),
+    ],
+)
+def test_an_icu_line_covers_its_quantity_in_days_from_its_date_clipped_to_the_stay(
+    code: str, day: int, quantity: int | None, covered: tuple[int, ...]
+) -> None:
+    assert bed_days_not_expected(_claim(), [_line(code, day=day, quantity=quantity)]).dates == _dates(*covered)
+
+
+@pytest.mark.parametrize("quantity", [float("nan"), float("inf"), float("-inf"), "two", object()])
+def test_an_unreadable_icu_quantity_counts_one_day_and_never_loses_the_report(quantity: object) -> None:
+    for code in ("510090", "552002"):
+        assert bed_days_not_expected(_claim(), [_line(code, day=1, quantity=quantity)]).dates == _dates(1)  # type: ignore[arg-type]
+
+
+def test_an_undated_icu_line_sits_on_the_admission_date() -> None:
+    assert bed_days_not_expected(_claim(), [_line("510090", day=None)]).dates == _dates(0)
+    assert bed_days_not_expected(_claim(), [_line("510090", day=None, quantity=3)]).dates == _dates(0, 1, 2)
+
+
+@pytest.mark.parametrize("day", [-1, 3, 10])
+def test_an_icu_line_dated_outside_the_stay_covers_nothing(day: int) -> None:
+    assert bed_days_not_expected(_claim(), [_line("510090", day=day)]) == BedNotExpected()
+
+
+def test_a_reversed_icu_line_covers_no_day() -> None:
+    """A credit line withdraws a charge; it states nothing about the stay's bed."""
+    assert bed_days_not_expected(_claim(), [_line("510090", day=0, billed="-742.60")]) == BedNotExpected()
+    assert bed_days_not_expected(_claim(), [_package("552002", billed="-2000.00")]) == BedNotExpected()
+
+
+def test_a_reversal_beside_a_billed_icu_line_changes_nothing() -> None:
+    lines = [_line("510090", day=0, billed="742.60"), _line("510090", day=2, billed="-742.60")]
+
+    assert bed_days_not_expected(_claim(), lines).dates == _dates(0)
+
+
+def test_a_zero_priced_icu_line_still_covers_its_day() -> None:
+    """The service is listed; the money may sit on another bill. Silence is the safe side."""
+    assert bed_days_not_expected(_claim(), [_line("510090", day=1, billed="0")]).dates == _dates(1)
+
+
+@pytest.mark.parametrize(
+    "code", [" 510.090 ", "510 090", "510-090", "P510090", "p510090", "552.002", "P552002", "p552002", " P 552 002 "]
+)
+def test_the_icu_code_is_read_like_the_rest_of_the_engine_reads_it(code: str) -> None:
+    assert bed_days_not_expected(_claim(), [_line(code, day=1)]).dates == _dates(1)
+
+
+def test_the_icu_lines_of_another_claim_say_nothing() -> None:
+    assert bed_days_not_expected(_claim(), [_line("510090", day=1, claim_id="OTHER")]) == BedNotExpected()
+
+
+def test_two_icu_lines_on_one_day_cover_it_once() -> None:
+    result = bed_days_not_expected(_claim(), [_line("510090", day=1), _package("552002", day=1)])
+
+    assert result.dates == _dates(1)
+    [reason] = result.reasons
+    assert "1 day(s)" in reason and "510090" in reason and "552002" in reason
+
+
+def test_the_icu_cause_reads_the_lines_not_the_claims_department_or_type() -> None:
+    for claim in (_claim(), replace(_claim(), department="Yoğun Bakım"), replace(_claim(), claim_type="inpatient")):
+        assert bed_days_not_expected(claim, [_line("510090", day=1)]).dates == _dates(1)
+
+
+# The days between the first and the last covered day: the ICU stay itself (H.(8) first and exit day on 510090,
+# the package days between).
+
+
+def test_the_days_between_a_first_and_a_last_day_rate_line_are_inside_the_icu_stay() -> None:
+    result = bed_days_not_expected(_claim(days=5), [_line("510090", day=0), _line("510090", day=4)])
+
+    assert result.dates == _dates(0, 1, 2, 3, 4)
+    [reason] = result.reasons
+    assert "5 day(s)" in reason and "2026-07-10, 2026-07-11, 2026-07-12, 2026-07-13, 2026-07-14" in reason
+
+
+def test_a_package_between_the_day_rate_days_is_the_same_stay() -> None:
+    lines = [_line("510090", day=0), _package("552002", day=1, quantity=3), _line("510090", day=4)]
+
+    assert bed_days_not_expected(_claim(days=5), lines).dates == _dates(0, 1, 2, 3, 4)
+
+
+def test_one_icu_line_alone_pays_only_what_its_quantity_reaches() -> None:
+    """No second line, no interior: the days after it are unknown, not ICU days (the reconciliation's own rule for the
+    claim's last day still applies on top of this)."""
+    assert bed_days_not_expected(_claim(days=5), [_line("510090", day=1)]).dates == _dates(1)
+    assert bed_days_not_expected(_claim(days=5), [_line("510090", day=1, quantity=2)]).dates == _dates(1, 2)
+
+
+def test_ward_days_before_and_after_the_icu_stay_are_still_expected() -> None:
+    result = bed_days_not_expected(_claim(days=7), [_line("510090", day=2), _line("510090", day=5)])
+
+    assert result.dates == _dates(2, 3, 4, 5)  # not 10-11 July, not 16 July
+
+
+def test_ward_days_around_a_stay_billed_on_a_quantity_are_still_expected() -> None:
+    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5)
+
+
+def test_two_separate_icu_stays_of_one_claim_are_read_as_one_stay() -> None:
+    """The documented limit of the reading: a ward interval between two ICU stays of ONE claim is not told apart from
+    package days (silence, never a false recoverable)."""
+    lines = [_line("510090", day=0), _line("510090", day=1), _line("510090", day=4), _line("510090", day=5)]
+
+    assert bed_days_not_expected(_claim(days=7), lines).dates == _dates(0, 1, 2, 3, 4, 5)
+
+
+def test_icu_lines_dated_before_the_stay_do_not_stretch_the_stay_backwards() -> None:
+    """A line outside the stay covers only what its quantity runs into; it is not the stay's first ICU day."""
+    result = bed_days_not_expected(_claim(days=5), [_line("510090", day=-3), _line("510090", day=3)])
+
+    assert result.dates == _dates(3)
+
+
+def test_icu_lines_dated_after_the_stay_do_not_stretch_the_stay_forwards() -> None:
+    result = bed_days_not_expected(_claim(days=5), [_line("510090", day=1), _line("510090", day=9)])
+
+    assert result.dates == _dates(1)
+
+
+def test_a_stay_of_one_date_with_an_icu_line_has_its_only_day_paid() -> None:
+    result = bed_days_not_expected(_claim(days=1), [_line("510090", day=0)])
+
+    assert result.dates == _dates(0)
+    [reason] = result.reasons  # the ICU cause alone: 510090 is no day-bed exclusion of its own
+    assert "ICU stay" in reason
+
+
+# The package window takes its days first.
+
+
+def test_the_icu_days_inside_the_package_window_are_not_named_again() -> None:
+    claim = _claim(days=7)
+    result = bed_days_not_expected(claim, [_line("510090", day=2), _line("510090", day=5)], _window(3))
+
+    assert result.dates == _dates(4, 5)
+    [reason] = result.reasons
+    assert "2 day(s)" in reason and "2026-07-14" in reason and "2026-07-15" in reason and "2026-07-12" not in reason
+
+
+def test_a_window_that_takes_every_icu_day_leaves_nothing_to_explain() -> None:
+    claim = _claim(days=7)
+
+    assert bed_days_not_expected(claim, [_line("510090", day=2), _line("510090", day=5)], _window(5)) == BedNotExpected()
+
+
+def test_an_icu_package_that_opens_the_window_still_explains_the_days_after_it() -> None:
+    """P552002 on 11 July opens a window of one day (no işlem grubu); 510090 on 12 July is after it."""
+    claim = _claim(days=3)
+    lines = [_line("510090", day=0), _package("552002", day=1), _line("510090", day=2)]
+
+    assert bed_days_not_expected(claim, lines, _window(1)).dates == _dates(2)
+
+
+def test_an_icu_line_that_starts_inside_the_window_and_runs_past_it_covers_the_days_after_it() -> None:
+    claim = _claim(days=6)
+
+    assert bed_days_not_expected(claim, [_package("552002", day=1, quantity=4)], _window(2)).dates == _dates(3, 4)
+
+
+# Together with the other bed-including lines.
+
+
+def test_an_er_day_and_an_icu_day_are_named_once_each() -> None:
+    lines = [_line("530000", day=2), _line("510090", day=0, quantity=2)]
+    result = bed_days_not_expected(_claim(), lines)
+
+    assert result.dates == _dates(0, 1, 2)
+    assert len(result.reasons) == 2
+    assert "530000" in result.reasons[0] and "ICU stay" in result.reasons[1]
+
+
+def test_a_day_both_causes_cover_is_one_day_with_two_sentences() -> None:
+    result = bed_days_not_expected(_claim(), [_line("530000", day=1), _line("510090", day=1)])
+
+    assert result.dates == _dates(1)
+    assert len(result.reasons) == 2
+
+
+def test_a_claim_without_any_icu_line_gets_no_icu_sentence() -> None:
+    result = bed_days_not_expected(_claim(), [_line("530000", day=1), _line("510100", day=2), _line("704230", day=0)])
+
+    assert not any("ICU" in reason for reason in result.reasons)
+
+
 # --- degenerate claims -------------------------------------------------------------------------------------------
 
 
@@ -414,6 +664,7 @@ def test_a_claim_without_dates_or_with_discharge_before_admission_expects_nothin
 
     for claim in (no_admission, no_discharge, backwards):
         assert bed_days_not_expected(claim, [_line("530000", day=0)]) == BedNotExpected()
+        assert bed_days_not_expected(claim, [_line("510090", day=0), _line("510090", day=2)]) == BedNotExpected()
 
 
 def test_the_result_is_immutable() -> None:

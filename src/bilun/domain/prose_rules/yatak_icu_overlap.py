@@ -30,14 +30,23 @@ counted in both paths.
 indicator codes (510090 or P552001-008), the ICU span is the claim span and
 the LAST ICU day (510090) is the claim's ``discharge_date``.
 
+**The claim's own ICU lines:** the days its 510090 / EK-2/C ICU package lines
+pay (a line covers its quantity in days from its date) and the days between
+the first and the last of them are the ICU stay itself; the standard-bed
+detector takes them out by itself (``yatak_puani.bed_days_not_expected``,
+``ICU_BED_CODES``), so they never reach this reconciliation. What this module
+adds on top is the claim-span last day and the transfer day across claims,
+and it skips every day the detector already took out (never twice).
+
 **Package-bundling (El Kitabı Tablo 23):** the surgery-day bed fee is
 already excluded by ``yatak_puani`` for EK-2C package claims. The reconcile
 never double-subtracts: if the ICU last day coincides with the package
 surgery day, it is already excluded and no additional day is dropped.
 
-Scope note: the mirror transition (service→ICU, i.e. the ICU *first* day) is
-intentionally NOT in scope here — the YB→servis discharge/transfer day is
-the reported double-billing scenario.
+Scope note: the mirror transition ACROSS claims (service→ICU: a service claim
+that ends on the ICU claim's *first* day) is intentionally NOT in scope here —
+the YB→servis discharge/transfer day is the reported double-billing scenario.
+The ICU claim's own first day is paid by its own 510090 line (above).
 """
 
 from __future__ import annotations
@@ -235,7 +244,9 @@ def reconcile_yatak_bed_days(
     Days already excluded by the EK-2C package-surgery bundling
     (``yatak_puani`` :126-138) are never double-subtracted: if the ICU last
     day coincides with the package surgery day, no additional day is
-    dropped.
+    dropped. The same holds for a day the detector already took out because
+    the claim's own ICU lines pay it (``bed_days_not_expected``): the row then
+    carries the detector's sentence and no ``icu_overlap_*`` keys.
 
     Args:
         yatak_opportunities: Output of the yatak detector (unchanged when no

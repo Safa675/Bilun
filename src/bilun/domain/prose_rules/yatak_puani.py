@@ -35,6 +35,13 @@ hemodialysis price (SUT §2.4.4.D-1.(11): "gündüz yatak ücreti fiyata dâhil"
 there. A day case (it may cross midnight and has no admission, §2.1.2.B.(1)) that bills an EK-2/C procedure has no
 bed to bill (§2.2.2.(4) forbids its day bed): none of its days is expected, whatever its dates.
 
+**The ICU stay of the claim's own lines:** EK-2/B 510090 (Yoğun bakım) "Yemek, yatak, hasta vizit hizmetlerini kapsar" and
+the EK-2/C ICU packages (P552001-3, P552006-8: "Yoğun bakım tedavileri" are billed on EK-2/C points, §2.4.4.H.(2), and EK-2/C
+points include "Yatak bedeli", §2.2.2.B-1.(1).a). A line of either pays the bed of the days its quantity covers, and the
+days between the first and the last such day are the ICU stay itself (§2.4.4.H.(8): the first and the exit day are billed
+hizmet başı, the days between on the package), so none of them is a standard-bed day. Ward days of the same claim before
+or after the stay are expected as before; the claim's own last day is still dropped by ``yatak_icu_overlap``.
+
 See plans/refactor/rule-encoding-gap-closure-roadmap.md + the approved
 yatak-puani plan.
 """
@@ -85,6 +92,12 @@ BED_INCLUDING_CODES = frozenset({ER_CRITICAL_BED_CODE, "510100", "510110"})
 # SUT §2.4.4.D-1.(11) (C000969): for a hemodialysis treatment "gündüz yatak ücreti fiyata dâhil olup ayrıca
 # faturalandırılmayacaktır": 704210 Acil hemodiyaliz, 704230 Hemodiyaliz (not 704233 home hemodialysis, D-1-1).
 HEMODIALYSIS_CODES = frozenset({"704210", "704230"})
+# EK-2/B 510090 Yoğun bakım ("Yemek, yatak, hasta vizit hizmetlerini kapsar") and the EK-2/C ICU packages P552001-3 (adult)
+# and P552006-8 (newborn), read without the P: the codes the ICU motor's own gate (``icu_puani.claim_has_icu_code``) takes
+# as an ICU claim. They carry a second rule beside the days their quantity covers (the days between the first and the last
+# are the stay), so they are not in ``BED_INCLUDING_CODES``.
+ICU_DAY_RATE_CODE = "510090"
+ICU_BED_CODES = frozenset({ICU_DAY_RATE_CODE, "552001", "552002", "552003", "552006", "552007", "552008"})
 
 # SUT §2.2.2.B-1(3) EK-2/C package window lengths (inclusive calendar days
 # starting on the package procedure date).
@@ -335,6 +348,18 @@ def _units(line: ProcedureClaimLine) -> int:
         return 1
 
 
+def _stay_days_covered(line: ProcedureClaimLine, admission: date, discharge: date) -> list[date]:
+    """The days of the stay a bed-including line pays: from its date (the admission date when undated) for its quantity in
+    days, clipped to the stay, so a line dated outside the stay covers only what its quantity runs into."""
+    start = line.procedure_date or admission
+    # The quantity in days from the line's date, clipped at the discharge (no overflow for a huge quantity); a line dated
+    # after the discharge gets no unit left and covers nothing.
+    units = min(_units(line), (discharge - start).days + 1)
+    last = start + timedelta(days=units - 1)
+    first = max(start, admission)
+    return [first + timedelta(days=offset) for offset in range(max((last - first).days + 1, 0))]
+
+
 @dataclass(frozen=True)
 class BedNotExpected:
     """Days of a stay on which no bed is expected, and why (one sentence per cause, for the row's ``detail``).
@@ -369,6 +394,14 @@ def bed_days_not_expected(
        midnight and has no ward bed) **that bills an EK-2/C procedure** has no bed to bill: its only bed is the day
        bed, which §2.2.2.(4) forbids for those procedures. Every day of such a claim (after any package window) is
        not expected, whatever its dates.
+    4. **The ICU stay of the claim's own lines** (``ICU_BED_CODES``: 510090 and the EK-2/C ICU packages; 510090 "Yemek,
+       yatak, hasta vizit hizmetlerini kapsar", the packages are the EK-2/C points of "Yoğun bakım tedavileri",
+       §2.4.4.H.(2), which include "Yatak bedeli", §2.2.2.B-1.(1).a). A line pays the days its quantity covers (as for
+       cause 1); the days between the first and the last covered day are the stay itself (§2.4.4.H.(8): the first and
+       the exit day are hizmet başı, the days between are package days, billed or not: a missing package is an ICU
+       matter, never a bed day), so none is expected. Days of the claim before the first and after the last ICU line are
+       ward days and stay expected. A ward interval between two separate ICU stays of ONE claim is not told apart from
+       package days and is read as part of the stay: silence, never a false recoverable.
 
     The package window takes its days first (never subtracted twice); the ICU reconciliation and the newborn bed
     motor skip the days this returns.
@@ -395,14 +428,9 @@ def bed_days_not_expected(
         # On a stay of one date 530000 is the claim-level cause below, whatever its date.
         if code not in BED_INCLUDING_CODES or (one_date and code == ER_CRITICAL_BED_CODE):
             continue
-        start = line.procedure_date or admission
-        # The quantity in days from the line's date, clipped at the discharge (no overflow for a huge quantity); a
-        # line dated after the discharge gets no unit left and covers nothing.
-        units = min(_units(line), (discharge - start).days + 1)
-        last = start + timedelta(days=units - 1)
-        lo = max(start, first)
-        for offset in range(max((last - lo).days + 1, 0)):
-            paid_by.setdefault(code, set()).add(lo + timedelta(days=offset))
+        for day in _stay_days_covered(line, admission, discharge):
+            if day >= first:
+                paid_by.setdefault(code, set()).add(day)
     if paid_by:
         covered = sorted(set().union(*paid_by.values()))
         dates.update(covered)
@@ -411,6 +439,27 @@ def bed_days_not_expected(
             f"{' / '.join(sorted(paid_by))} (EK-2/B: it covers yatak, yemek, hasta vizit) and are not expected as "
             "bed days."
         )
+
+    # The ICU stay of the claim's own lines: the days the lines cover and, between the first and the last of them, the
+    # days of the stay itself (nothing in the stay is a standard-bed day). The window's days are explained by the window.
+    icu_covered: dict[str, set[date]] = {}
+    for code, line in lines:
+        if code in ICU_BED_CODES:
+            for day in _stay_days_covered(line, admission, discharge):
+                icu_covered.setdefault(code, set()).add(day)
+    if icu_covered:
+        stay_first = min(min(days) for days in icu_covered.values())
+        stay_last = max(max(days) for days in icu_covered.values())
+        stay = (stay_first + timedelta(days=offset) for offset in range((stay_last - stay_first).days + 1))
+        icu_days = [day for day in stay if day >= first]
+        if icu_days:
+            dates.update(icu_days)
+            reasons.append(
+                f"{len(icu_days)} day(s) ({', '.join(day.isoformat() for day in icu_days)}) lie inside the ICU stay shown "
+                f"by the claim's {' / '.join(sorted(icu_covered))} line(s): EK-2/B 510090 covers yatak, yemek, hasta vizit "
+                "and the EK-2/C ICU packages include the bed (SUT §2.4.4.H.(2), (8); §2.2.2.B-1.(1).a), so no standard bed "
+                "is expected on them."
+            )
 
     day_case_ek2c: list[str] = []
     if claim_is_day_case(claim):
@@ -470,9 +519,9 @@ def detect_yatak_puani_opportunities(
     ``bed_code`` / ``daily_rate_try`` are the day bed's, and 510120 lines net it too.
 
     **Bed already paid / day bed forbidden (``bed_days_not_expected``):** the days a 530000, 510100 or 510110 line
-    pays, the only day of a stay of one date that bills 530000 or hemodialysis, and every day of a day case that bills
-    an EK-2/C procedure, are not expected: ``bed_days`` and the money fall, ``gross_bed_days`` / ``bundled_days``
-    keep their meaning, and ``detail`` says why.
+    pays, the only day of a stay of one date that bills 530000 or hemodialysis, every day of a day case that bills
+    an EK-2/C procedure, and the ICU stay of the claim's own 510090 / EK-2/C ICU package lines, are not expected:
+    ``bed_days`` and the money fall, ``gross_bed_days`` / ``bundled_days`` keep their meaning, and ``detail`` says why.
 
     **Package-bundling (SUT §2.2.2.B-1(1), (3)-(4)):** When a claim has an
     EK-2/C package procedure (``paket`` category), or is billed hizmet başı
@@ -531,8 +580,9 @@ def detect_yatak_puani_opportunities(
             days = gross_days
             bundled_days = 0
 
-        # Days whose bed is already paid (530000, 510100, 510110) or whose day bed the SUT forbids (530000, hemodialysis,
-        # a day case's EK-2/C procedures): not expected. They lie after the package window, so nothing is taken twice.
+        # Days whose bed is already paid (530000, 510100, 510110, the claim's ICU lines) or whose day bed the SUT forbids
+        # (530000, hemodialysis, a day case's EK-2/C procedures): not expected. They lie after the package window, so
+        # nothing is taken twice.
         not_expected = bed_days_not_expected(claim, claim_procs, window)
         days -= len(not_expected.dates)
 
