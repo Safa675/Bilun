@@ -1198,3 +1198,32 @@ def test_an_icu_claim_whose_lines_are_billed_beside_standard_bed_lines_is_netted
     assert row["bed_days"] == 0 and row["expected_yatak_try"] == 0.0
     assert row["actual_billed_try"] == pytest.approx(667.08, abs=0.01)  # billed beside the ICU days: the audit's matter
     assert row["recoverable_uplift_try"] == 0.0
+
+
+def test_a_day_rate_line_of_quantity_two_is_the_first_and_the_exit_day_not_two_consecutive_days() -> None:
+    """The ICU motor reads one 510090 line of quantity 2 on a 10-day claim as two ICU days, first and last
+    (``test_icu_puani.py``, ``_infer_billed_icu_days``): the bed motor must not call the eight days between ward days."""
+    claims, procs = _icu_claim_bill(
+        _make_proc_line(claim_id="ICU", procedure_line_id="Q2", procedure_code="510090", quantity=2),
+        discharge=date(2026, 7, 19),
+    )
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert (row["gross_bed_days"], row["bed_days"]) == (10, 0)
+    assert reconciled is opps
+
+
+def test_the_reconciliation_and_the_helper_read_the_same_icu_codes() -> None:
+    """`collect_icu_last_days` marks a claim as an ICU claim by the code set of the helper (`ICU_BED_CODES`)."""
+    from src.bilun.domain.prose_rules.yatak_icu_overlap import collect_icu_last_days
+    from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES
+
+    claim = _make_claim_header(claim_id="C1")
+    for code in sorted(ICU_BED_CODES):
+        for spelled in (code, f"P{code}", f" {code[:3]}.{code[3:]} "):
+            line = _make_proc_line(claim_id="C1", procedure_code=spelled)
+            assert collect_icu_last_days([claim], [line]) == {_ICU_DISCHARGE}, spelled
+    for code in ("510010", "510070", "510081", "510120", "530000", "552004", "552005", "5520020"):
+        assert collect_icu_last_days([claim], [_make_proc_line(claim_id="C1", procedure_code=code)]) == set(), code

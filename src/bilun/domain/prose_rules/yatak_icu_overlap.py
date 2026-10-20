@@ -60,7 +60,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
-from src.bilun.domain.prose_rules.yatak_puani import bed_days_not_expected, claim_package_window
+from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES, bed_days_not_expected, claim_package_window
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -70,9 +70,6 @@ _SUT_SECTION_ID = "2.4.4.H"
 _RULE_ID = "yatak_icu_overlap_510010"
 
 _BED_CODE = "510010"  # Standart yatak (EK-2B)
-_ICU_DAY_RATE_CODE = "510090"  # Yoğun bakım, hizmet başı (EK-2B)
-# ICU intermediate packages (EK-2C) — also mark a claim as ICU.
-_ICU_PACKAGE_PREFIXES = ("552001", "552002", "552003", "552006", "552007", "552008")
 
 
 def _normalize_code(raw: str) -> str:
@@ -94,11 +91,10 @@ def _normalize_code(raw: str) -> str:
 
 
 def _is_icu_code(normalized: str) -> bool:
-    """True for 510090 or any P55200x package code (mirrors icu_puani)."""
+    """True for 510090 (Yoğun bakım, hizmet başı) or any P55200x package code (``yatak_puani.ICU_BED_CODES``, the set
+    ``icu_puani`` takes as an ICU claim)."""
     stripped = normalized[1:] if normalized.startswith("P") else normalized
-    if stripped == _ICU_DAY_RATE_CODE:
-        return True
-    return stripped in _ICU_PACKAGE_PREFIXES
+    return stripped in ICU_BED_CODES
 
 
 def _collect_icu_discharge_claims(

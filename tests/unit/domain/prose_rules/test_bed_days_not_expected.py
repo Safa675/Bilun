@@ -412,10 +412,12 @@ def test_a_package_window_over_the_only_day_of_a_day_case_leaves_nothing_to_expl
 
 
 # --- the ICU stay of the claim's own lines ---------------------------------------------------------------------
-# EK-2/B 510090 "Yoğun bakım": "Yemek, yatak, hasta vizit hizmetlerini kapsar." (every list since 2018). The EK-2/C ICU
-# packages P552001-3 / P552006-8 are the points of "Yoğun bakım tedavileri" (SUT §2.4.4.H.(2)) and EK-2/C points include
-# "Yatak bedeli" (§2.2.2.B-1.(1).a). §2.4.4.H.(8): the first and the exit day are billed hizmet başı (510090), so the days
-# between are package days. The packages have no işlem grubu, so no package window explains them.
+# Verbatim: EK-2/B 510090 "Yoğun bakım": "Yemek, yatak, hasta vizit hizmetlerini kapsar." (every list since 2018);
+# §2.4.4.H.(2) "Yoğun bakım tedavileri SUT eki EK-2/C Listesinde yer alan puanlar üzerinden faturalandırılır"; §2.4.4.H.(8)
+# the first and the exit day are billed hizmet başı. Read from them (inference, no clause says it in one sentence): the EK-2/C
+# ICU packages P552001-3 / P552006-8 carry no Açıklama and no işlem grubu and EK-2/C points include "Yatak bedeli"
+# (§2.2.2.B-1.(1).a, exceptions in the Açıklama column, (2)), so the bed is in the package; the days between a billed first
+# and exit day are package days. A package without işlem grubu opens a window of one day only (its own date).
 
 _ICU_PACKAGES = ("552001", "552002", "552003", "552006", "552007", "552008")
 _ICU_CODES = ("510090", *_ICU_PACKAGES)
@@ -454,7 +456,7 @@ def test_an_icu_package_billed_as_a_package_pays_like_the_day_rate(code: str) ->
     assert bed_days_not_expected(_claim(), [_package(code[1:], day=1)]).dates == _dates(1)
 
 
-@pytest.mark.parametrize("code", ["510090", "552002"])
+@pytest.mark.parametrize("code", ["552001", "552002", "552003", "552006", "552007", "552008"])
 @pytest.mark.parametrize(
     ("day", "quantity", "covered"),
     [
@@ -470,10 +472,50 @@ def test_an_icu_package_billed_as_a_package_pays_like_the_day_rate(code: str) ->
         (0, -3, (0,)),
     ],
 )
-def test_an_icu_line_covers_its_quantity_in_days_from_its_date_clipped_to_the_stay(
+def test_an_icu_package_covers_its_quantity_in_days_from_its_date_clipped_to_the_stay(
     code: str, day: int, quantity: int | None, covered: tuple[int, ...]
 ) -> None:
     assert bed_days_not_expected(_claim(), [_line(code, day=day, quantity=quantity)]).dates == _dates(*covered)
+
+
+@pytest.mark.parametrize(
+    ("day", "quantity", "covered"),
+    [
+        (0, 1, (0,)),  # a quantity of 1 pays its own day
+        (3, 1, (3,)),
+        (0, 2, (0, 1, 2, 3, 4, 5)),  # two day-rate units are the first and the exit day: the stay runs to the discharge
+        (2, 2, (2, 3, 4, 5)),
+        (0, 3, (0, 1, 2, 3, 4, 5)),
+        (4, 3, (4, 5)),
+        (0, 100000, (0, 1, 2, 3, 4, 5)),  # a huge quantity is clipped, not iterated
+        (-1, 2, (0, 1, 2, 3, 4, 5)),  # starts the day before the admission, runs into the stay
+        (-2, 2, ()),  # ... but not when its quantity ends before the admission
+        (6, 2, ()),  # dated after the discharge
+        (0, None, (0,)),  # an unreadable or missing quantity counts one
+        (0, 0, (0,)),
+        (0, -3, (0,)),
+    ],
+)
+def test_a_510090_line_pays_its_own_day_or_with_a_quantity_of_two_or_more_the_stay_to_the_discharge(
+    day: int, quantity: int | None, covered: tuple[int, ...]
+) -> None:
+    """The ICU motor reads two 510090 units as the first and the exit day (§2.4.4.H.(8)), not as two consecutive days:
+    the exit day is not on the line, the claim-span model puts it on the claim's last day. A bill built on that reading
+    must not show the days between as ward days."""
+    assert bed_days_not_expected(_claim(days=6), [_line("510090", day=day, quantity=quantity)]).dates == _dates(*covered)
+
+
+def test_a_package_of_quantity_two_pays_two_days_where_a_day_rate_line_of_quantity_two_pays_the_stay() -> None:
+    claim = _claim(days=6)
+
+    assert bed_days_not_expected(claim, [_package("552002", day=0, quantity=2)]).dates == _dates(0, 1)
+    assert bed_days_not_expected(claim, [_line("510090", day=0, quantity=2)]).dates == _dates(0, 1, 2, 3, 4, 5)
+
+
+def test_two_day_rate_lines_of_quantity_one_pay_their_own_days_and_the_days_between() -> None:
+    result = bed_days_not_expected(_claim(days=6), [_line("510090", day=1), _line("510090", day=3)])
+
+    assert result.dates == _dates(1, 2, 3)  # ward days before 11 July and after 13 July stay expected
 
 
 @pytest.mark.parametrize("quantity", [float("nan"), float("inf"), float("-inf"), "two", object()])
@@ -575,9 +617,11 @@ def test_a_package_at_either_end_of_the_stay_extends_it(order: tuple[int, ...]) 
 
 def test_one_icu_line_alone_pays_only_what_its_quantity_reaches() -> None:
     """No second line, no interior: the days after it are unknown, not ICU days (the reconciliation's own rule for the
-    claim's last day still applies on top of this)."""
+    claim's last day still applies on top of this). A day-rate line of quantity 2 or more is the exception: it is the
+    first and the exit day in one line (see above)."""
     assert bed_days_not_expected(_claim(days=5), [_line("510090", day=1)]).dates == _dates(1)
-    assert bed_days_not_expected(_claim(days=5), [_line("510090", day=1, quantity=2)]).dates == _dates(1, 2)
+    assert bed_days_not_expected(_claim(days=5), [_package("552002", day=1, quantity=2)]).dates == _dates(1, 2)
+    assert bed_days_not_expected(_claim(days=5), [_line("510090", day=1, quantity=2)]).dates == _dates(1, 2, 3, 4)
 
 
 def test_ward_days_before_and_after_the_icu_stay_are_still_expected() -> None:
@@ -586,8 +630,13 @@ def test_ward_days_before_and_after_the_icu_stay_are_still_expected() -> None:
     assert result.dates == _dates(2, 3, 4, 5)  # not 10-11 July, not 16 July
 
 
-def test_ward_days_around_a_stay_billed_on_a_quantity_are_still_expected() -> None:
-    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5)
+def test_ward_days_around_a_stay_billed_on_a_package_quantity_are_still_expected() -> None:
+    assert bed_days_not_expected(_claim(days=7), [_package("552002", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5)
+
+
+def test_ward_days_before_a_day_rate_line_of_quantity_two_or_more_are_still_expected() -> None:
+    """The line's date is the first day: the days before it are ward days; the days after it are the stay."""
+    assert bed_days_not_expected(_claim(days=7), [_line("510090", day=2, quantity=4)]).dates == _dates(2, 3, 4, 5, 6)
 
 
 def test_two_separate_icu_stays_of_one_claim_are_read_as_one_stay() -> None:
@@ -661,6 +710,26 @@ def test_an_er_day_and_an_icu_day_are_named_once_each() -> None:
     assert result.dates == _dates(0, 1, 2)
     assert len(result.reasons) == 2
     assert "530000" in result.reasons[0] and "ICU stay" in result.reasons[1]
+
+
+def test_each_sentence_counts_and_lists_only_its_own_days() -> None:
+    lines = [_line("530000", day=2), _line("510090", day=0, quantity=1), _line("510090", day=1)]
+    result = bed_days_not_expected(_claim(days=4), lines)
+
+    assert result.dates == _dates(0, 1, 2)
+    er, icu = result.reasons
+    assert "1 day(s) (2026-07-12)" in er and "2026-07-10" not in er
+    assert "2 day(s) (2026-07-10, 2026-07-11)" in icu and "2026-07-12" not in icu
+
+
+def test_a_day_case_with_an_ek2c_procedure_keeps_its_day_case_cause_beside_icu_lines() -> None:
+    """The day case has no ward bed at all: every day is not expected whatever the ICU lines say, and both are named."""
+    claim = _claim(days=4, claim_type="day_case")
+    result = bed_days_not_expected(claim, [_line("702580", day=0, billed="545.76"), _line("510090", day=1)])
+
+    assert result.dates == _dates(0, 1, 2, 3)
+    assert len(result.reasons) == 2
+    assert "ICU stay" in result.reasons[0] and "day case" in result.reasons[1]
 
 
 def test_a_day_both_causes_cover_is_one_day_with_two_sentences() -> None:
