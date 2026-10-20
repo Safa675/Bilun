@@ -64,6 +64,10 @@ const api = {
     syntheticDemoRequiresIsSyntheticTrue: "Sentetik demo modu is_synthetic=true gerektirir.",
     realClaimsRequiresIsSyntheticFalse: "Gerçek talep modu is_synthetic=false gerektirir.",
     bilunDataSourceModeMissingOrInvalid: "Bilun veri kaynağı modu eksik veya geçersiz.",
+    drugIndicationCorpusNoncoverage:
+      "Bu ilaç kodlanmış İlaç Endikasyonu derleminde yer almıyor; manuel SUT incelemesi gerekir ve finansal değer çıkarılmaz.",
+    drugIndicationIngredientUnknown:
+      "Kodlanmış İlaç Endikasyonu derleminde yer almayan bir ilacın etken maddesi belirlenemedi, bu yüzden SUT metni kontrol edilemedi; manuel SUT incelemesi gerekir ve finansal değer çıkarılmaz.",
   },
   methodology: {
     billingStrategyReviewDetail:

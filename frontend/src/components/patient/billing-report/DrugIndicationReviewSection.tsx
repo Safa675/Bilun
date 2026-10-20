@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import { useT } from "@/lib/i18n/useTranslations";
 import { ExactnessBlock as ExactnessNotice } from "@/components/primitives";
-import { buildDrugIndicationSectionModel } from "./DrugIndicationReviewSection.model";
+import { buildDrugIndicationSectionModel, drugEvaluationNoticeKeys } from "./DrugIndicationReviewSection.model";
 import { DrugIndicationFindingCard } from "./DrugIndicationFindingCard";
 import { DrugIndicationLegacyTable, DrugIndicationEvaluationNotice } from "./DrugIndicationDetails";
 import { motionScrollBehavior } from "@/lib/motion";
@@ -56,8 +56,8 @@ export function DrugIndicationReviewSection({
           {t("billing.drugIndication.riskNotice")}
         </span>}
         {display.kind === "evaluations" && <span className="mt-1 block text-xs font-normal text-[var(--text-secondary)]">
-          {t(display.hasCorpusNoncoverage ? "billing.drugIndication.corpusNoncoverage" : "billing.drugIndication.evaluationOnly")}
-          <span className="block">{t(display.hasCorpusNoncoverage ? "billing.drugIndication.corpusNoncoverageDetail" : "billing.drugIndication.evaluationOnlyDetail")}</span>
+          {t(drugEvaluationNoticeKeys(display).title)}
+          <span className="block">{t(drugEvaluationNoticeKeys(display).detail)}</span>
         </span>}
       </summary>
       <div className="mt-3">
@@ -83,6 +83,7 @@ export function DrugIndicationReviewSection({
         <DrugIndicationEvaluationNotice
           evaluations={display.evaluations}
           hasCorpusNoncoverage={display.hasCorpusNoncoverage}
+          allNoSutRestriction={display.allNoSutRestriction}
         />
       ) : null}
       </div>

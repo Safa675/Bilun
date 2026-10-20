@@ -246,6 +246,14 @@ const billing = {
     "observedDiagnosesTruncated": "Only a bounded preview of observed diagnoses is shown.",
     "corpusNoncoverage": "The encoded rule corpus cannot evaluate this drug",
     "corpusNoncoverageDetail": "The drug line and diagnosis are present, but this drug is outside the encoded Drug Indication corpus. Review the applicable SUT text manually; no route or financial value is inferred.",
+    "noSutRestriction": "No SUT clause naming these active ingredients was found",
+    "noSutRestrictionDetail": "The encoded Drug Indication corpus does not cover these drugs, and no SUT clause names their active ingredients. No manual review is requested by default; no route or financial value is inferred. Limit: restrictions written for a whole drug class without naming the ingredient cannot be detected this way.",
+    "lineScope": {
+      "not_named_in_sut": "no SUT clause names this active ingredient",
+      "named_in_sut": "active ingredient named in SUT {sections}; not encoded, review manually",
+      "class_level_in_sut": "SUT {sections} restricts this drug class; not encoded, review manually",
+      "ingredient_unknown": "active ingredient could not be determined, SUT text not checked; review manually"
+    },
     "evaluationOnly": "Drug Indication evaluation completed without a finding",
     "evaluationOnlyDetail": "The structured evaluation is shown for transparency. No legacy violation or financial value was created.",
     "findingTitles": {

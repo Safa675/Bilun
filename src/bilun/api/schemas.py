@@ -436,10 +436,25 @@ class DrugIndicationFindingResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class DrugIngredientScopeResponse(BaseModel):
+    """What the SUT text says about the ingredient of a drug the corpus does not encode."""
+
+    result: str = Field(...)
+    ingredients: list[str] = Field(default_factory=list)
+    named_ingredients: list[str] = Field(default_factory=list)
+    sut_sections: list[str] = Field(default_factory=list)
+    class_sections: list[str] = Field(default_factory=list)
+    atc_code: str | None = None
+    source: str | None = None
+    message_tr: str = ""
+    message_en: str = ""
+
+
 class DrugIndicationEvaluationResponse(BaseModel):
     source_authority: ClinicalSourceAuthorityEvidence | None = None
     runtime_coverage: DrugRuntimeCoverageResponse | None = None
     temporal_evidence: DrugTemporalEvidenceResponse | None = None
+    ingredient_scope: DrugIngredientScopeResponse | None = None
     patient_id: str = Field(...)
     claim_id: str | None = Field(...)
     drug_claim_line_id: str = Field(...)

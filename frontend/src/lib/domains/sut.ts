@@ -972,6 +972,19 @@ export interface DrugIndicationFinding {
   observed_icd10_truncated?: boolean;
 }
 
+/** What the SUT text says about the ingredient of a drug the encoded corpus does not cover. */
+export interface DrugIngredientScope {
+  result: string;
+  ingredients?: string[];
+  named_ingredients?: string[];
+  sut_sections?: string[];
+  class_sections?: string[];
+  atc_code?: string | null;
+  source?: string | null;
+  message_tr?: string;
+  message_en?: string;
+}
+
 export interface DrugIndicationLineEvaluation {
   patient_id?: string | null;
   claim_id?: string | null;
@@ -993,6 +1006,7 @@ export interface DrugIndicationLineEvaluation {
   eligible_routes_truncated?: boolean;
   observed_icd10_count?: number;
   observed_icd10_truncated?: boolean;
+  ingredient_scope?: DrugIngredientScope | null;
 }
 
 export interface DrugIndicationReview extends ExactnessState {
