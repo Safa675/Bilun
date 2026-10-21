@@ -1,4 +1,4 @@
-"""Twelve showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9, S11, S12 and S14 added 2026-10-21; S10 is a later bill).
+"""Fourteen showcase stories: clean bill + one injected fault each, except S39 (S1-S8 a scratch draft, S9, S11, S12, S14, S39 and S40 added 2026-10-21; S10 is a later bill).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -345,4 +345,50 @@ def s14(variant: str) -> Bill:
     return b
 
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12, "S14": s14}
+# ── S39 ─ the control visit nine days after the discharge of S4 (a clean bill) ──
+def s39(variant: str) -> Bill:
+    """86 F, the patient of S4: control visit after the pyelonephritis, 2026-05-25, internal medicine, outpatient.
+
+    A clean bill: it has no fault, so there is no faulty variant (CLEAN_ONLY). The patient's stay (S4, 2026-05-11
+    to 05-16) is its history. S4 is billed itemized, so no package period (C000714) applies. The tests are the
+    four of S4's admission panel that a control repeats (blood count, creatinine, urinalysis) and the urine
+    culture; S4's last ones were 12 days earlier, outside the seven-day window of the duplicate-test rule.
+    """
+    if variant != "clean":
+        raise ValueError("S39 is a clean bill: it has no faulty variant")
+    day = D("2026-05-25")
+    b = Bill("SH-04", "C-SH39", "poliklinik", "İç Hastalıkları", None, None, "N10", start=day, end=day)
+    b.history = (s4("faulty"),)
+    for i, icd in enumerate(("N10", "G30.1", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=DAHILIYE)             # the visit
+    _labs(b, day, ("L107020", "L104780", "L107010"), DAHILIYE)
+    b.proc("905671", day, specialty=DAHILIYE)             # urine culture
+    return b
+
+
+# ── S40 ─ the examination fee of a second visit to the same branch within 10 days ──
+def s40(variant: str) -> Bill:
+    """86 F, the patient of S4: second visit a week after the control (S39), low-grade fever, urinary ultrasound.
+
+    The control of S39 (2026-05-25) and this visit (2026-06-01) are two outpatient applications to internal
+    medicine within 10 days: the examination fee of the second one is not payable (C000573, Tablo 15 #2), so
+    the clean bill bills the ultrasound only and the faulty one also the examination 520030. Both earlier bills
+    of the patient are its history: the cross-bill rule reads them. No lab line: a test of the control would
+    be a duplicate within seven days (Tablo 15 #12).
+    """
+    day = D("2026-06-01")
+    b = Bill("SH-04", "C-SH40", "poliklinik", "İç Hastalıkları", None, None, "N10", start=day, end=day)
+    b.history = (s4("faulty"), s39("clean"))
+    for i, icd in enumerate(("N10", "G30.1", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    if variant != "clean":                                # the fault: the fee of the second visit
+        b.proc("520030", day, specialty=DAHILIYE)
+    b.proc("803580", day, specialty=RAD)                  # urinary system ultrasound
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S39",)
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12, "S14": s14, "S39": s39, "S40": s40}

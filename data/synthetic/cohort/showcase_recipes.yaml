@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12 (the story ids are not contiguous: S10 is a later bill). A recipe without a fault is a clean bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12 (the story ids are not contiguous: S10 is a later bill). A recipe without a fault is a clean bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -19,6 +19,15 @@ recipes:
   - patient_no: 4
     pathway: pyelonephritis_dementia_delirium_ward
     fault: F_S4_COMPANION_NOT_BILLED
+
+  - patient_no: 4
+    encounter_no: 2
+    pathway: pyelonephritis_dementia_post_discharge_control
+
+  - patient_no: 4
+    encounter_no: 3
+    pathway: pyelonephritis_dementia_second_visit_ultrasound
+    fault: F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS
 
   - patient_no: 5
     pathway: femoral_neck_fracture_cemented_hemiarthroplasty_package

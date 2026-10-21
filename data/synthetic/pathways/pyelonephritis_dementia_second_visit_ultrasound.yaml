@@ -1,0 +1,67 @@
+# Second outpatient visit a week after the control (story S39), urinary ultrasound only, outpatient, billed itemized; the clean bill of story S40.
+# Showcase story S40 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F4): bill 3 of the patient of S4. The visit is the second application to
+# internal medicine within 10 days, so its examination fee is not payable (C000573); only the ultrasound is billed. The faulty sibling also bills the fee.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: pyelonephritis_dementia_second_visit_ultrasound
+title: "Second visit within 10 days after a control for pyelonephritis with dementia, ultrasound only, outpatient"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "İç Hastalıkları"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S40 is the woman of story S4 (the same patient, the third bill); N10, G30.1 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 65
+    max: 95
+    basis: judgment
+    source: "Story S40 patient is 86, like story S4. The bounds are those of story S4 (the author's judgment)."
+
+diagnoses:
+  - icd10: N10
+    name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: N10 includes pyelonephritis. The visit is about a suspected relapse, so N10 stays the principal code."
+  - icd10: G30.1
+    name: "ALZHEİMER HASTALIĞI, GEÇ BAŞLANGIÇLI"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: Alzheimer's disease, late onset. The patient of story S4 has it; the daughter reports the fever."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S4 lists I10 as a comorbidity of this patient; it is coded on every bill of hers."
+
+procedures:
+  # --- no examination line: the second application to the same branch within 10 days gets no examination fee
+  - id: urinary_ultrasound
+    kind: imaging
+    code: "803580"
+    name: "Üriner sistem US"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    # 803580 açıklama: not billed with other abdominal ultrasounds; this visit has none.
+    basis: judgment
+    source: "A low-grade fever again after the control: an ultrasound looks for obstruction or an abscess in the kidney of a patient with CKD. Clinician to confirm."
+
+notes:
+  - "The visit is seven days after the control of story S39 (2026-05-25), the same branch (İç Hastalıkları 1000). C000573 (SUT 2.2.1.B-1.(2)): the second outpatient application to the same branch within 10 days is paid only for the EK-2/A-2 procedures, not the EK-2/A amount; the demo bills per service, so the clean bill leaves the examination line out."
+  - "No lab line: the tests of the control (blood count, creatinine, urinalysis) would be duplicate tests within seven days (Tablo 15 #12)."
+  - "N10 stays the principal diagnosis on every bill of this patient, so the list of her diagnoses is the one of story S4."
+
+showcase:
+  story: S40
+  sex: F
+  age: 86
+  admit: "2026-06-01"

@@ -38,9 +38,9 @@ from scripts.synthetic.pathways.checks import (
     probe_days,
     run_all,
 )
-from scripts.synthetic.pathways.expand import SESSION_RATIOS
+from scripts.synthetic.pathways.expand import SESSION_RATIOS, expand
 from scripts.synthetic.pathways.loader import hygiene
-from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags
+from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags, pin_problems
 from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine
 from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
 
@@ -58,6 +58,7 @@ S7 = "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out"
 S11 = "urosepsis_septic_shock_icu_stay"
 S12 = "late_preterm_newborn_incubator_stay"
 S14 = "urosepsis_ward_stay_after_icu_transfer"  # a ward stay that arrives from an ICU bill: its bed starts the day after admission
+S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (poliklinik): one date, no stay
 
 
 @pytest.fixture(scope="module")
@@ -436,8 +437,8 @@ def with_optional_indicated_drug(
     }
 
 
-def with_er_course(raw: dict, cat: Catalogs) -> None:  # on S7: a one-day course on an ER-only visit
-    raw["drugs"].append(
+def with_er_course(raw: dict, cat: Catalogs) -> None:  # on S7 and S39: a one-day course on a visit
+    raw.setdefault("drugs", []).append(
         {
             "id": "antibiotic",
             "barcode": "8699508270224",
@@ -589,6 +590,7 @@ CASES = [
     Case("schema.missing_field", S2, lambda r, c: r["nights"].pop("source"), label="range source"),
     Case("schema.missing_field", S2, lambda r, c: r["window"].pop("source", None), label="window source"),
     Case("schema.bad_enum", S2, lambda r, c: r.update(claim_type="yatiss"), label="claim_type"),
+    Case("schema.bad_enum", S39, lambda r, c: r.update(claim_type="ayaktan"), label="a claim type that is no visit either"),
     Case("schema.bad_enum", S2, lambda r, c: line(r, "bed").update(basis="hearsay"), label="basis"),
     Case("schema.bad_value", S2, lambda r, c: drug(r, "enoxaparin").update(barcode="123")),
     Case("schema.bad_value", S2, lambda r, c: set_pins(r, admit="20260309"), label="a compact date"),
@@ -612,6 +614,8 @@ CASES = [
     Case("schema.anchor_undefined", S2, lambda r, c: line(r, "bed").update(days="op"), label="op"),
     Case("schema.anchor_undefined", S3, lambda r, c: r.update(op_day="op+1"), label="op_day defined from op"),
     Case("schema.anchor_undefined", S1, lambda r, c: (r.update(claim_type="acil"), r.pop("nights"), line(r, "appendectomy_package").update(days="discharge")), label="discharge on an ER-only pathway"),
+    Case("schema.anchor_undefined", S39, lambda r, c: line(r, "exam").update(days="discharge"), label="discharge on a poliklinik pathway"),
+    Case("schema.anchor_undefined", S39, lambda r, c: (r.update(claim_type="gunubirlik"), line(r, "exam").update(days="discharge-1")), label="discharge on a gunubirlik pathway"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "chest_xray").update(session_role="primary"), label="role on imaging"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "bed").update(group="B"), label="group on a bed"),
     Case("schema.line_shape", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="primary", days=["op", "op+1"]), label="a role on a two-day line"),
@@ -624,6 +628,11 @@ CASES = [
     Case("schema.stay_shape", S7, lambda r, c: r.update(nights={"min": 1, "max": 2, "basis": "judgment", "source": FIXTURE}), label="nights on an ER-only pathway"),
     Case("schema.stay_shape", S7, lambda r, c: per_night_instead_of_course(r), prepare=with_er_course, label="a per_night drug on an ER-only visit"),
     Case("schema.stay_shape", S7, lambda r, c: r.update(arrives_from_icu=True), label="an ER-only pathway that arrives from an ICU"),
+    Case("schema.stay_shape", S39, lambda r, c: r.update(nights={"min": 1, "max": 2, "basis": "judgment", "source": FIXTURE}), label="nights on a poliklinik pathway"),
+    Case("schema.stay_shape", S39, lambda r, c: (r.update(claim_type="gunubirlik"), r.update(nights={"min": 1, "max": 2, "basis": "judgment", "source": FIXTURE})), label="nights on a gunubirlik pathway"),
+    Case("schema.stay_shape", S39, lambda r, c: per_night_instead_of_course(r), prepare=with_er_course, label="a per_night drug on a poliklinik visit"),
+    Case("schema.stay_shape", S39, lambda r, c: r.update(arrives_from_icu=True), label="a poliklinik pathway that arrives from an ICU"),
+    Case("schema.stay_shape", S39, lambda r, c: r.update(claim_type="yatis"), label="a yatis pathway without nights (the visit type was the only thing that kept it a visit)"),
     # --- catalog identity
     Case("procedure.in_force", S2, lambda r, c: line(r, "bed").update(code="510019"), label="no such code"),
     Case("procedure.in_force", S2, lambda r, c: swap_in(r, "nebulizer", "701068", c), label="listed from 2026-07-07"),
@@ -843,6 +852,72 @@ def test_a_package_whose_group_changes_inside_the_window_gets_the_shorter_allowa
 def test_the_stays_tested_are_the_shortest_the_longest_and_the_showcase() -> None:
     assert _stay_cases(load_pathway(_DIR / f"{S2}.yaml")) == [4, 6, 9]
     assert _stay_cases(load_pathway(_DIR / f"{S7}.yaml")) == [None]
+    assert _stay_cases(load_pathway(_DIR / f"{S39}.yaml")) == [None]  # a visit has no stay to test
+
+
+# --- the visit grammar (G1): acil, poliklinik and gunubirlik are visits, yatis is the only stay ---------------
+
+
+@pytest.mark.parametrize("claim_type", ["acil", "poliklinik", "gunubirlik"])
+def test_every_claim_type_but_yatis_is_a_visit_with_one_date_and_no_stay(
+    claim_type: str, catalogs: Catalogs, tmp_path
+) -> None:
+    raw = _raw(S39)
+    raw["claim_type"] = claim_type
+    assert _problems(raw, catalogs, tmp_path) == []
+    bill = expand(load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S39}.yaml"))
+    assert bill["header"] == {
+        "claim_type": claim_type,
+        "department": "İç Hastalıkları",
+        "admission_date": None,
+        "discharge_date": None,
+        "claim_start_date": "2026-05-25",
+        "claim_end_date": "2026-05-25",
+        "primary_icd10": "N10",
+    }
+    assert {line["date"] for line in bill["procedures"]} == {"2026-05-25"}  # the visit day is the only day
+
+
+def test_the_claim_types_a_pathway_may_have_are_the_stay_and_the_three_visits() -> None:
+    from typing import get_args
+
+    from scripts.synthetic.pathways.schema import Pathway
+
+    assert get_args(Pathway.model_fields["claim_type"].annotation) == ("yatis", "acil", "poliklinik", "gunubirlik")
+
+
+@pytest.mark.parametrize("claim_type", ["acil", "poliklinik", "gunubirlik"])
+def test_the_defects_of_a_visit_name_its_claim_type(claim_type: str) -> None:
+    raw = _raw(S39)
+    raw["claim_type"] = claim_type
+    raw["nights"] = {"min": 1, "max": 2, "basis": "judgment", "source": FIXTURE}
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S39}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.stay_shape"]
+    assert f"a {claim_type} pathway has no nights" in str(error.value)
+    del raw["nights"]
+    raw["arrives_from_icu"] = True
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S39}.yaml")
+    assert f"a {claim_type} pathway cannot arrive from an ICU" in str(error.value)
+    del raw["arrives_from_icu"]
+    line(raw, "exam")["days"] = "discharge"
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S39}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.anchor_undefined"]
+    assert f"uses discharge on a {claim_type} pathway" in str(error.value)
+
+
+def test_a_yatis_pathway_keeps_its_discharge_anchor_and_a_visit_pin_of_nights_is_refused() -> None:
+    stay = _raw(S2)
+    assert load_text(yaml.safe_dump(stay, allow_unicode=True, sort_keys=False), f"{S2}.yaml").claim_type == "yatis"
+    pathway = load_pathway(_DIR / f"{S39}.yaml")
+    assert pin_problems(pathway, pathway.showcase) == []
+    pinned = pathway.showcase.model_copy(update={"nights": 2})
+    (problem,) = pin_problems(pathway, pinned)
+    assert (problem.check, problem.where, problem.message) == (
+        "pins.out_of_range", "showcase.nights", "a poliklinik pathway has no nights"
+    )  # fmt: skip
 
 
 @pytest.mark.parametrize(
@@ -1091,11 +1166,20 @@ def test_a_ward_bed_beside_icu_lines_keeps_its_own_wording(catalogs: Catalogs, t
     )
 
 
+@pytest.mark.parametrize("base", [S7, S39], ids=["acil", "poliklinik"])
+def test_an_icu_line_on_a_visit_needs_a_stay(base: str, catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(base)
+    raw["procedures"].append(icu_line("icu_visit", "icu_day", "510090", "Yoğun bakım", "admit"))
+    assert stay_coverage_messages(raw, catalogs, tmp_path) == [
+        ("procedures[icu_visit]", "an ICU line needs a stay, not a visit")
+    ]
+
+
 def test_a_newborn_bed_on_an_er_visit_needs_a_stay(catalogs: Catalogs, tmp_path) -> None:
     raw = _raw(S7)
     raw["procedures"].append(icu_line("incubator_visit", "newborn_bed", "510070", "Kuvöz", "admit"))
     assert stay_coverage_messages(raw, catalogs, tmp_path) == [
-        ("procedures[incubator_visit]", "a newborn bed line needs a stay, not an ER visit")
+        ("procedures[incubator_visit]", "a newborn bed line needs a stay, not a visit")
     ]
 
 

@@ -93,7 +93,7 @@ _CLEAN_FILES = (TABLE_ANADATA, TABLE_LAB, TABLE_RECETE)
 # The sizes of the committed tables, from the registry; the content pins below stay literal.
 LAB_ROWS = cohort.counts()["lab_clean.parquet"]
 RX_ROWS = cohort.counts()["recete_clean.parquet"]
-STRIP_ROWS = 6  # the six qualitative strips of the one urinalysis (L107010) of the cohort
+STRIP_ROWS = 12  # the six qualitative strips of each of the two urinalyses (L107010) of the cohort
 # One result set per billed lab line: the L-code lines of the committed bills.
 BILLED_LAB_LINES = (
     pl.read_parquet(_CLAIMS_DIR / "procedure_claim_lines.parquet")
@@ -1455,7 +1455,7 @@ def _all_rows_of(table: str, built, clean, context, check: str, **changes) -> li
 
 _NUMERIC = pl.col("sonuc_nitel").is_null()
 LAB_ROW_BREAKS = {
-    # every numeric result impossible: one finding per numeric row; every strip with a bad grade: 6
+    # every numeric result impossible: one finding per numeric row; every strip with a bad grade: 12
     "value": (
         VALUE_BOUNDS,
         {"sonuc_sayisal": pl.when(_NUMERIC).then(-1e9).otherwise(pl.col("sonuc_sayisal"))},
@@ -1464,7 +1464,7 @@ LAB_ROW_BREAKS = {
     "grade": (
         VALUE_BOUNDS,
         {"sonuc_nitel": pl.when(~_NUMERIC).then(pl.lit("zzz")).otherwise(pl.col("sonuc_nitel"))},
-        6,
+        STRIP_ROWS,
     ),
     "flag": (FLAG_AND_LIMITS, {"anormal_mi": ~pl.col("anormal_mi")}, LAB_ROWS),
     "limit": (FLAG_AND_LIMITS, {"ref_ust": pl.lit(12345.0)}, LAB_ROWS),

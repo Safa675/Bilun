@@ -1433,8 +1433,9 @@ def test_there_is_one_allowed_dataframe_loop_and_it_is_the_reference_reader() ->
 
 # --- 10. Several bills of one patient ---------------------------------------------------------------
 #
-# Patient 4 gets a second stay one day after its first and patient 7 a visit nine days before its first (so
-# its claim 002 is dated before claim 001): `STANDARD_EXTRAS`, built in memory. Nothing is committed.
+# Patient 4 gets a fourth bill, a stay one day after its first (it has three committed bills), and patient 7 a visit
+# nine days before its first (so its claim 002 is dated before claim 001): `STANDARD_EXTRAS`, built in memory.
+# Nothing is committed from them.
 
 
 @pytest.fixture(scope="module")
@@ -1466,11 +1467,11 @@ def test_every_bill_has_its_own_anadata_row_with_its_own_vitals_pins_and_date(tw
         # the visit counters are constants (no engine reader needs them): see plan 7.3, row 8
         assert (row["TOPLAM_GELIS_SAYISI"], row["GELIS_SAYISI"]) == (1, 1)
     # the fixture gives each second bill its own pulse (+3), so a patient's rows differ
-    assert pulses["F-SENTETIK-HASTA-0004-002"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
+    assert pulses["F-SENTETIK-HASTA-0004-004"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
     assert pulses["F-SENTETIK-HASTA-0007-002"] == pulses["F-SENTETIK-HASTA-0007-001"] + 3
     # the first bills' rows are the committed rows
     committed = pl.read_parquet(_CLEAN_DIR / "anadata_clean.parquet")
-    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-002", "B-SENTETIK-HASTA-0007-002"])).equals(committed)
+    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-002"])).equals(committed)
 
 
 def test_the_prescription_rows_follow_the_drug_lines_of_every_bill(two_bills: BuildResult) -> None:

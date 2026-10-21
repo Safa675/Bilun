@@ -379,10 +379,10 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             f"{story}: expected amount {expected_amount:.2f} as last element of a tuple in F - C, "
             f"got {diff_tuples}"
         )
-    else:
-        assert story == "S6"
-        assert any("drug_indication" in t for t in diff_tuples), (
-            f"{story}: expected 'drug_indication' in a tuple of F - C, got {diff_tuples}"
+    else:  # a fault without money of its own: the finding itself is the signal
+        marker = {"S6": "drug_indication", "S40": "tablo15_2_duplicate_exam_10day"}[story]
+        assert any(marker in t for t in diff_tuples), (
+            f"{story}: expected {marker!r} in a tuple of F - C, got {diff_tuples}"
         )
     assert target_signal_found(story, b.record.amount_try, diff_tuples)
 
@@ -670,6 +670,55 @@ def test_the_other_bills_of_a_patient_are_canonicalized_longest_id_first(
     assert canonicalize_text("C-10 C-1x C-1", None, None, longest_first) == "<claim> <claim> <claim>"
     sig = ("x", f"see {icu_claim}", 1.0)
     assert canonicalize_signal_tuple(sig, b.faulty_ctx, claim_id=b.record.claim_id) == ("x", "see <claim>", 1.0)
+
+
+# --- S40: a cross-bill rule that fires on the LATER bill. The stay and the control are its history ---------------
+
+
+def test_the_second_visit_is_found_through_the_control_that_is_its_history(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S40"]
+    stay = cohort.role("showcase_S4").claim_id
+    control = cohort.scenario("S39").claim_ids[0]
+    assert b.record.claim_id == cohort.scenario("S40").claim_ids[0] not in (stay, control)
+    assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]  # one bill is active
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {stay, control, b.record.claim_id}
+    # the rule reads the history: the exam line of the active bill and the one of the control a week before
+    (row,) = b.direct_faulty
+    assert (row["rule_id"], row["procedure_code"], row["procedure_specialty_code"]) == (
+        "tablo15_2_duplicate_exam_10day", "520030", "1000"
+    )  # fmt: skip
+    assert (row["procedure_date"], row["prior_procedure_date"], row["gap_days"]) == ("2026-06-01", "2026-05-25", 7)
+    assert (row["claim_id"], row["prior_claim_id"]) == ("<claim>", "<claim>")  # the other bill's id is canonicalized too
+    assert b.direct_clean == []  # without the examination fee there is nothing to find
+    # no money anywhere: the finding is a row (a compliance finding and a Wave A review), not an amount
+    assert b.record.amount_try == "0.00" and b.record.effect_kind == "compliance_error"
+    for report in (b.faulty_report, b.clean_report):
+        assert (report.sgk_uplift_try, report.audit_exposure_try, report.capture_gap_try) == (0.0, 0.0, 0.0)
+        assert report.compliance_adjustment_try == 0.0
+    only_faulty = set((b.f_counter - b.c_counter).elements())
+    assert only_faulty == {
+        ("compliance", "tablo15_2_duplicate_exam_10day", "error", "520030", 0.0),
+        ("wavea", "claim_reviews", "ORTAK-13.gecmis_muayene_sorgu", "", 0.0),
+        ("validate", "fatura_inceleme_prose", "ORTAK-13.gecmis_muayene_sorgu", "", 0.0),
+        ("validate", None, "tablo15_2_duplicate_exam_10day", "520030", 0.0),
+    }
+    assert not (b.c_counter - b.f_counter)  # the clean twin shows nothing the faulty bill lacks
+    assert target_signal_found("S40", b.record.amount_try, only_faulty)
+    assert b.story_proof.mismatches == ()
+
+
+def test_the_earlier_bills_of_the_patient_do_not_carry_the_later_bills_finding(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """S4's own proof stays what it was with the control and the second visit in the patient's history."""
+    b = story_bundles["S4"]
+    later = {cohort.scenario("S39").claim_ids[0], cohort.scenario("S40").claim_ids[0]}
+    assert later <= {c.claim_id for c in b.faulty_ctx.history.claims}
+    assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]
+    assert not [sig for sig in b.f_counter if "tablo15_2" in str(sig) or "ORTAK-13" in str(sig)]
+    assert b.story_proof.mismatches == ()
 
 
 def _fake_report(*, reviews=(), advisories=(), financial=()) -> SimpleNamespace:

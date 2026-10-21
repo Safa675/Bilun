@@ -1,0 +1,87 @@
+# Control visit nine days after the discharge of story S4 (acute pyelonephritis with dementia), outpatient, billed itemized; a clean bill.
+# Showcase story S39 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F4): bill 2 of the patient of S4, the first visit (poliklinik) pathway.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: pyelonephritis_dementia_post_discharge_control
+title: "Control visit after acute pyelonephritis with dementia, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "İç Hastalıkları"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S39 is the woman of story S4 (the same patient, the next bill); N10, G30.1 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 65
+    max: 95
+    basis: judgment
+    source: "Story S39 patient is 86, like story S4. Dementia of late onset is a disease of the elderly; the bounds are those of story S4 (the author's judgment)."
+
+diagnoses:
+  - icd10: N10
+    name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: N10 includes pyelonephritis. The control follows the treatment of story S4, so N10 stays the principal code."
+  - icd10: G30.1
+    name: "ALZHEİMER HASTALIĞI, GEÇ BAŞLANGIÇLI"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: Alzheimer's disease, late onset. The patient of story S4 has it; the daughter attends the visit."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S4 lists I10 as a comorbidity of this patient; it is coded on every bill of hers."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+  # --- the control: renal function, blood count, urinalysis and culture
+  - id: control_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "A control after pyelonephritis in a patient with baseline CKD G3a: blood count and creatinine; no guideline named. Clinician to confirm."
+  - id: urinalysis
+    kind: lab
+    code: "L107010"
+    name: "Tam idrar analizi (Strip+Mikroskopi)"
+    days: admit
+    basis: judgment
+    source: "A control urinalysis shows whether the infection has cleared in a patient who cannot report symptoms (dementia); no guideline named."
+  - id: urine_culture
+    kind: lab
+    code: "905671"
+    name: "İdrar Kültürü"
+    days: admit
+    basis: judgment
+    source: "A control urine culture after the IV course of story S4 documents cure in a patient with dementia; no guideline named. Clinician to confirm."
+
+notes:
+  - "The visit is nine days after the discharge of story S4 (2026-05-16). Story S4 is billed itemized, so no package period (C000714) applies to the visit."
+  - "The labs are twelve days after the last ones of story S4 (2026-05-13), outside the seven-day window of the duplicate-test rule (Tablo 15 #12)."
+  - "N10 stays the principal diagnosis on every bill of this patient, so the list of her diagnoses is the one of story S4."
+
+showcase:
+  story: S39
+  sex: F
+  age: 86
+  admit: "2026-05-25"

@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 12,
-    "lab_clean.parquet": 240,
+    "anadata_clean.parquet": 14,
+    "lab_clean.parquet": 267,
     "recete_clean.parquet": 21
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "02a185ba991e83e8f75ae043b6af502bd40237540cf127981f83fa9bd70dd958",
-    "lab_clean.parquet": "64b3f59abb5efc701339f95de987e2bfa2ad3b146f032698cf25ed2052c91887",
+    "anadata_clean.parquet": "a8081b54c5b5bca2d0dc70e8260af0018ea47b20b4ea63571ca3b4ed7b36c95a",
+    "lab_clean.parquet": "d54d6810841729072f49893fe9160e6d5fc5966247731979326552fbc704fd88",
     "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
   },
   "counts": {
-    "claim_diagnoses.parquet": 31,
-    "claim_headers.parquet": 12,
+    "claim_diagnoses.parquet": 37,
+    "claim_headers.parquet": 14,
     "drug_claim_lines.parquet": 21,
-    "expected_rule_outputs.parquet": 12,
+    "expected_rule_outputs.parquet": 13,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 0,
     "patient_copay_profiles.parquet": 11,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 154
+    "procedure_claim_lines.parquet": 161
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -56,6 +56,24 @@
       "pathway_id": "pyelonephritis_dementia_delirium_ward",
       "patient_id": "SENTETIK-HASTA-0004",
       "story": "S4",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0004-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "pyelonephritis_dementia_post_discharge_control",
+      "patient_id": "SENTETIK-HASTA-0004",
+      "story": "S39",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0004-003",
+      "fault_id": "F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS",
+      "is_clean": false,
+      "pathway_id": "pyelonephritis_dementia_second_visit_ultrasound",
+      "patient_id": "SENTETIK-HASTA-0004",
+      "story": "S40",
       "tier": "showcase"
     },
     {
@@ -203,6 +221,24 @@
       "patient_id": "SENTETIK-HASTA-0004",
       "story": "S4",
       "sut_section": "2.6.3(2)"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "100.73",
+      "billed_faulty_try": "186.46",
+      "claim_id": "F-SENTETIK-HASTA-0004-003",
+      "effect_kind": "compliance_error",
+      "engine_rule": "tablo15_2_duplicate_exam_10day",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0004-003-F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS",
+      "line_id": "ISL-F-SENTETIK-HASTA-0004-003-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "pyelonephritis_dementia_second_visit_ultrasound",
+      "patient_id": "SENTETIK-HASTA-0004",
+      "story": "S40",
+      "sut_section": "2.2.1.B-1"
     },
     {
       "amount_try": "6465.27",
@@ -408,6 +444,18 @@
       ],
       "patient_id": "SENTETIK-HASTA-0010"
     },
+    "S39": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0004-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0004"
+    },
+    "S40": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0004-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0004"
+    },
     "S9": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0009-001"
@@ -418,14 +466,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "b8314acbe9d3de532db8ca081122485108f27b054286d89843bf097f8efabc47",
-    "claim_headers.parquet": "5d305297e9deff93248318ac128a76d8b71af30623bf898c44b3b180e493d5f4",
+    "claim_diagnoses.parquet": "83bd6a2eb19a5d748a20d8700206c476a4b20829779dc4e414a967977e7bea76",
+    "claim_headers.parquet": "836b1166c3ac8189d5714532c210fbb1db591b61a896b53f5f43657a394eefae",
     "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
-    "expected_rule_outputs.parquet": "8912be97dd57e6d93f04dda4128403b3b40247c077fc9e1a0ce2b83b9c894324",
+    "expected_rule_outputs.parquet": "30ac436575a601569d828bf9cdbce6d647bef2979a4e0647eb56d97017b9eeb8",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "58ff0947311e1f13e09a205e328244b3db87480e67bff2117522fd1dc819c444",
     "patient_copay_profiles.parquet": "4aa3a7208a59794e1b95547cbf46b882e9a73e0eecd8bf47e4c7faeff04d3de6",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "7f21de4a28532ed502a934dc05a36ae84a995c9aa6a2e08d6a6dd7c174b91f10"
+    "procedure_claim_lines.parquet": "281faad9c1728b4da63b08c1bd0883e0962b584eaf0f145318d553e05f58f8f9"
   }
 }

@@ -6,7 +6,8 @@ and independent hand-built version of each reviewed bill. A care pathway must re
 line for line, and its fault must reproduce the faulty one. A story has goldens exactly when `stories.py`
 builds it, so the list below is read from the keys of the `STORIES` dict in that file (parsed, never
 imported: the script loads the whole engine). A pathway of a story that `stories.py` does not build has
-no golden and is not compared with one.
+no golden and is not compared with one. A story without a fault (a clean bill, `CLEAN_ONLY` in that file, read
+the same way) has a clean golden and no faulty one.
 
 This module imports the standard library only.
 """
@@ -36,9 +37,42 @@ def stories_in(source: str) -> list[str]:
     raise ValueError("no module-level STORIES dict with string keys")
 
 
+def clean_only_in(source: str) -> list[str]:
+    """The entries of the module-level `CLEAN_ONLY = (...)` tuple of `source`; `[]` when it has none.
+
+    The stories of a clean bill: `stories.py` builds them, but only their clean variant (they have no fault).
+    """
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+        elif isinstance(node, ast.AnnAssign):
+            targets = [node.target]
+        else:
+            continue
+        if not any(isinstance(t, ast.Name) and t.id == "CLEAN_ONLY" for t in targets):
+            continue
+        if isinstance(node.value, ast.Tuple | ast.List):
+            values = [e.value for e in node.value.elts if isinstance(e, ast.Constant)]
+            if len(values) == len(node.value.elts) and all(isinstance(v, str) for v in values):
+                return values
+        raise ValueError("CLEAN_ONLY is not a tuple of strings")
+    return []
+
+
 def golden_stories() -> list[str]:
-    """The stories that have a clean and a faulty golden: the ones `stories.py` builds, in its order."""
+    """The stories that have a clean golden: the ones `stories.py` builds, in its order."""
     return stories_in(STORIES_PY.read_text(encoding="utf-8"))
+
+
+def clean_only_stories() -> list[str]:
+    """The stories that have no fault, hence no faulty golden."""
+    return clean_only_in(STORIES_PY.read_text(encoding="utf-8"))
+
+
+def faulty_golden_stories() -> list[str]:
+    """The stories that have a faulty golden too: those of `golden_stories` that carry a fault."""
+    clean_only = set(clean_only_stories())
+    return [story for story in golden_stories() if story not in clean_only]
 
 
 def golden_problems(

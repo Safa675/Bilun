@@ -1,0 +1,43 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-01",
+      "icd10": "N10",
+      "role": "primary"
+    },
+    {
+      "date": "2026-06-01",
+      "icd10": "G30.1",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-06-01",
+      "icd10": "I10",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-06-01",
+    "claim_start_date": "2026-06-01",
+    "claim_type": "poliklinik",
+    "department": "İç Hastalıkları",
+    "discharge_date": null,
+    "primary_icd10": "N10"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "803580",
+      "date": "2026-06-01",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3300"
+    }
+  ],
+  "story": "S40"
+}

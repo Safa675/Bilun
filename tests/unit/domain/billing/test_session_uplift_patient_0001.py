@@ -53,7 +53,8 @@ def test_clean_twin_of_a_story_after_the_eighth_has_no_session_or_drg_uplift(sto
     """The same control for the stories that are scenarios and not roles (S9 and later).
 
     S9's fault is a session fault: its clean twin bills the second operation at the separate-incision rate,
-    which the engine reads as correct, so the block that finds the fault stays at zero on the clean bill."""
+    which the engine reads as correct, so the block that finds the fault stays at zero on the clean bill.
+    A clean bill of the cohort (S39, the control visit of patient 4) is its own twin and must show the same zeros."""
     report = _report(clean_context_for_story(story))
 
     assert report.session_uplift.confirmed_uplift_try == 0.0

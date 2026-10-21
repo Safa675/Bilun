@@ -16,7 +16,10 @@ const scratch = () => {
 
 // The roles are fixed: the default landing and the first eight stories. Every later story is a scenario.
 const ROLE_STORIES = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
-const scenarioStories = faults.map((fault) => fault.story).filter((story) => !ROLE_STORIES.includes(story));
+const scenarioStories = [...new Set(real.encounters.map((encounter) => encounter.story))].filter((story) => !ROLE_STORIES.includes(story));
+// a bill without a fault (a clean bill, S39) is a scenario too: a story and a claim, no injection record
+const cleanStories = real.encounters.filter((encounter) => encounter.is_clean).map((encounter) => encounter.story);
+const faultedScenarioStories = scenarioStories.filter((story) => !cleanStories.includes(story));
 
 describe("the real registry", () => {
   it("has the default landing and one showcase role per injected story of the first eight", () => {
@@ -38,8 +41,23 @@ describe("the real registry", () => {
         expect(claimIds).toContain(claim);
         expect(claim.startsWith(`F-${patient}-`)).toBe(true);
       }
+      if (cleanStories.includes(story)) {
+        expect(faults.map((fault) => fault.story)).not.toContain(story);
+        expect(() => faultFor(story)).toThrow(/no fault for story/);
+        continue;
+      }
       expect(claims).toContain(faultFor(story).claim_id);
       expect(faultFor(story).patient_id).toBe(patient);
+    }
+  });
+
+  it("has a fault for every story but the clean bills, and a clean bill has one claim and no record", () => {
+    expect(cleanStories.length).toBeGreaterThan(0);
+    const stories = [...ROLE_STORIES, ...scenarioStories].sort();
+    expect(stories.filter((story) => !cleanStories.includes(story))).toEqual(faults.map((fault) => fault.story).sort());
+    for (const story of cleanStories) {
+      expect(scenario(story).claim_ids).toHaveLength(1);
+      expect(real.faults.filter((fault) => fault.claim_id === scenario(story).claim_ids[0])).toEqual([]);
     }
   });
 
@@ -154,11 +172,11 @@ describe("registry validation refuses a registry that no longer describes the co
 describe("a fault without a story", () => {
   it("is accepted: it belongs to no role and no scenario, and is found by its claim", () => {
     const loose = structuredClone(real);
-    const record = loose.faults.find((fault) => fault.story === scenarioStories[0]);
+    const record = loose.faults.find((fault) => fault.story === faultedScenarioStories[0]);
     record.story = null;
     expect(parseRegistry(loose, "unit-registry.json").faults).toContain(record);
     const names = loose.faults.filter((fault) => fault.story).map((fault) => fault.story);
-    expect(names).not.toContain(scenarioStories[0]);
+    expect(names).not.toContain(faultedScenarioStories[0]);
   });
 
   it("still has to be a whole record on a bill that exists", () => {

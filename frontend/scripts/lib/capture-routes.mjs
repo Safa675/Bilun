@@ -50,6 +50,13 @@ export function pageUrl(url, page) {
 }
 
 /**
+ * The story whose bill the ?section=claim-compliance&finding= deep link and the second pane of the split view use: S6 (a drug
+ * indication that is not coded, a compliance_error). The story is named and not searched ("the first compliance_error fault in the
+ * registry"): patient 4's second visit (S40, a duplicate examination) is a compliance_error too and comes first in the registry.
+ */
+export const COMPLIANCE_DEEP_LINK_STORY = "S6";
+
+/**
  * The id the ?finding= deep link can select on a patient page: a canonical claim-compliance finding, else the finding_id of a
  * compliance-classified recommended action. UnifiedComplianceFindingsTable marks the row whose canonicalFindingId (the finding_id
  * of its action, or of its claim-compliance finding) equals the param, and puts the id on the row as data-finding-id.

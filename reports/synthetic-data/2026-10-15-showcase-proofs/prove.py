@@ -12,11 +12,12 @@ import sys
 from collections import Counter
 
 from harness import bill_rows, run_engine, ui_signals
-from stories import STORIES
+from stories import CLEAN_ONLY, STORIES
 
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
+from src.bilun.domain.prose_rules.common_billing_errors import detect_duplicate_exam_10day
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
@@ -132,6 +133,12 @@ def direct(story: str, ctx) -> list[dict]:
                 for o in detect_yatak_icu_overlap(
                     list(ctx.history.claims), list(ctx.history.procedure_lines),
                     claim_ids_with_procs={claim.claim_id})]
+    if story == "S40":
+        # a cross-bill rule: the control of the same branch a week earlier is history, so read the whole history
+        return [_keep(o, ("type", "claim_id", "rule_id", "procedure_code", "procedure_specialty_code",
+                          "procedure_date", "prior_claim_id", "prior_procedure_date", "gap_days",
+                          "severity", "sut_section_id"))
+                for o in detect_duplicate_exam_10day(list(ctx.history.claims), list(ctx.history.procedure_lines))]
     raise KeyError(story)
 
 
@@ -203,6 +210,8 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         return total("risk_amount")
     if story == "S6":
         return 0.0 if any(r.get("violation_kind") == "indication_mismatch" for r in rows) else None
+    if story == "S40":  # a row without money: the finding is the row
+        return 0.0 if any(r.get("rule_id") == "tablo15_2_duplicate_exam_10day" for r in rows) else None
     return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
 
 
@@ -221,8 +230,13 @@ def summary(results: list[dict]) -> bool:
     return ok
 
 
+def default_stories() -> list[str]:
+    """The stories `prove.py` proves with no argument: every story with a fault (a clean bill has no proof)."""
+    return [s for s in STORIES if s not in CLEAN_ONLY]
+
+
 if __name__ == "__main__":
-    which = sys.argv[1:] or list(STORIES)
+    which = sys.argv[1:] or default_stories()
     results = [prove(s) for s in which]
     for out in results:
         _print(out)

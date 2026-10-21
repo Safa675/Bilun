@@ -27,8 +27,9 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S11", "S12", "S14")  # the stories after the eighth, named by scenarios (S10 is a later bill)
-_FAULT_STORIES = (*_STORIES, *_SCENARIO_STORIES)
+_SCENARIO_STORIES = ("S9", "S11", "S12", "S14", "S39", "S40")  # the stories after the eighth, named by scenarios
+_CLEAN_STORIES = ("S39",)  # the bills without a fault: a story and a claim, no fault record
+_FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
 #: the table and the id column of each line type a fault record can name
@@ -255,9 +256,16 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     assert known["S12"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0011", claim_ids=("F-SENTETIK-HASTA-0011-001",)
     )
-    # the first patient with two bills: S11 and S14 name the same patient, one bill each
+    # a patient with two bills: S11 and S14 name the same patient, one bill each
     assert known["S14"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0010", claim_ids=("F-SENTETIK-HASTA-0010-002",)
+    )
+    # a patient with three: the stay (role S4), then S39 (a clean bill) and S40 (a faulty one)
+    assert known["S39"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0004", claim_ids=("F-SENTETIK-HASTA-0004-002",)
+    )
+    assert known["S40"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0004", claim_ids=("F-SENTETIK-HASTA-0004-003",)
     )
     assert not {f"showcase_{story}" for story in _SCENARIO_STORIES} & set(cohort.roles())
     assert not set(known) & set(_STORIES)
@@ -337,12 +345,14 @@ def test_the_registry_is_read_once_and_the_accessors_return_copies() -> None:
 
 # --- 2b. A patient with two bills ---------------------------------------------------------------------
 #
-# No committed patient has a second bill yet, so the registry of one is made here from the committed one the
-# way the generator writes it: a second encounter, a clean bill with a story of its own (`S90`), a scenario
-# that names it, and the pins its recipe overrides. The accessors must still answer for the right bill.
+# The registry of a patient with one more bill is made here from the committed one the way the generator writes
+# it: one more encounter of patient 4 (it has three, S4, S39 and S40; this is the fourth), a clean bill with a story
+# of its own (`S90`), a scenario that names it, and the pins its recipe overrides. The accessors must still answer
+# for the right bill.
 
 _FIRST_CLAIM = cohort.role("showcase_S4").claim_id
-_SECOND_CLAIM = _FIRST_CLAIM.replace("-001", "-002")
+_PATIENT_CLAIMS = [c for c in cohort.claim_ids() if c.startswith(_FIRST_CLAIM[:-3])]
+_SECOND_CLAIM = f"{_FIRST_CLAIM[:-3]}{len(_PATIENT_CLAIMS) + 1:03d}"  # the next free claim number of the patient
 _PATIENTS_BEFORE, _CLAIMS_BEFORE = cohort.patient_count(), cohort.claim_count()
 
 
@@ -369,7 +379,7 @@ def test_a_patient_with_two_bills_is_one_patient_and_two_claims(two_bills: dict[
     assert (cohort.patient_count(), cohort.claim_count()) == (_PATIENTS_BEFORE, _CLAIMS_BEFORE + 1)
     assert len(cohort.patient_ids()) == _PATIENTS_BEFORE
     assert cohort.claim_ids() == sorted({*cohort.claim_ids()}) and _SECOND_CLAIM in cohort.claim_ids()
-    assert [c for c in cohort.claim_ids() if c.startswith(_FIRST_CLAIM[:-3])] == [_FIRST_CLAIM, _SECOND_CLAIM]
+    assert [c for c in cohort.claim_ids() if c.startswith(_FIRST_CLAIM[:-3])] == [*_PATIENT_CLAIMS, _SECOND_CLAIM]
 
 
 def test_the_roles_and_the_fault_of_a_story_stay_on_the_first_bill(two_bills: dict[str, Any]) -> None:
@@ -392,10 +402,10 @@ def test_a_second_bill_is_a_scenario_of_its_own_and_the_stories_stay_in_number_o
     assert cohort.stories() == [*_STORIES, *_SCENARIO_STORIES, "S90"]
     # the patient's bills are found by grouping: the encounters, and the roles and scenarios, by patient
     bills = [e["claim_id"] for e in two_bills["encounters"] if e["patient_id"] == patient]
-    assert bills == [_FIRST_CLAIM, _SECOND_CLAIM]
+    assert bills == [*_PATIENT_CLAIMS, _SECOND_CLAIM] and bills[0] == _FIRST_CLAIM
     named = {t.claim_id for t in cohort.roles().values() if t.patient_id == patient}
     named |= {c for s in cohort.scenarios().values() if s.patient_id == patient for c in s.claim_ids}
-    assert named == {_FIRST_CLAIM, _SECOND_CLAIM}
+    assert named == {*_PATIENT_CLAIMS, _SECOND_CLAIM}
 
 
 # --- 3. The helper reads the registry only -----------------------------------------------------------

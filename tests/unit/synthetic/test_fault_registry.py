@@ -233,6 +233,18 @@ PINNED_FINDINGS: dict[
         [],
         ["yatak_icu_overlap_510010"],
     ),
+    "S40": (
+        "tablo15_2_duplicate_exam_10day",
+        "islem",
+        "exam",
+        "kismi_red",
+        "compliance_error",
+        ["C000573"],
+        "2.2.1.B-1",
+        ["src/bilun/domain/prose_rules/common_billing_errors.py:detect_duplicate_exam_10day"],
+        [],
+        ["tablo15_2_duplicate_exam_10day"],
+    ),
 }
 
 S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
@@ -287,7 +299,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12", "S14"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12", "S14", "S40"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
@@ -297,8 +309,10 @@ def test_coverage_every_story_six_ops_unique_ids() -> None:
     ops = {op.op for f in registry.faults for op in f.mutations}
 
     assert isinstance(CHECKS, tuple)
-    assert len(fault_ids) == len(set(fault_ids)) == len(cohort.stories())
-    assert tuple(stories) == tuple(cohort.stories())  # S1..S8 required, the later ones optional
+    # one fault a bill that has one: the stories of the cohort but the clean bills (S39 has no fault)
+    clean = {e["story"] for e in cohort.load_registry()["encounters"] if e["is_clean"]}
+    assert len(fault_ids) == len(set(fault_ids)) == len(cohort.stories()) - len(clean)
+    assert tuple(stories) == tuple(s for s in cohort.stories() if s not in clean)  # S1..S8 required, the later ones optional
     assert tuple(stories[: len(SHOWCASE_STORIES)]) == SHOWCASE_STORIES
     assert ops == set(MUTATION_OPS)
 

@@ -12,6 +12,7 @@ from collections.abc import Callable
 import copy
 import dataclasses
 from pathlib import Path
+import re
 
 import pytest
 import yaml
@@ -54,8 +55,11 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     10: (84, 46, 124, 91, 158, 66.0),
     11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
 }
-# the second bills of the committed cohort, by (patient, encounter): the vitals of S14, on the ward after the ICU
+# the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
+# S40 (her second visit a week later, a little feverish), and of S14, on the ward after the ICU
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
+    (4, 2): (126, 72, 76, 96, 155, 57.5),
+    (4, 3): (122, 70, 88, 95, 155, 57.0),
     (10, 2): (118, 66, 92, 95, 158, 64.0),
 }
 
@@ -140,10 +144,13 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
         entry = by_encounter[key]
         v = entry.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected
-        assert story_of[key] in entry.source and "#309" in entry.source  # the S14 entry names S14, not S11
-        assert story_of[(key[0], 1)] not in entry.source
-        assert entry.labs is None  # S14 bills no laboratory line: the ICU bill holds every test of the episode
+        assert re.search(rf"\b{story_of[key]}\b", entry.source) and "#309" in entry.source  # the S14 entry names S14
+        assert not re.search(rf"\b{story_of[(key[0], 1)]}\b", entry.source)  # and not S11 (S40 is not S4)
         assert entry.basis == "judgment"
+        if key == (4, 2):  # the control bills a creatinine: baseline CKD G3a, as at the admission
+            assert entry.labs is not None and entry.labs.states == {"L104780|Kreatinin": "ckd_g3a"}
+        else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode)
+            assert entry.labs is None
 
 
 def test_a_document_without_drug_routes_has_no_route_problem() -> None:
@@ -235,21 +242,22 @@ def test_the_model_holds_types_and_the_ranges_belong_to_the_check() -> None:
 def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     recipes, clinical = with_encounters(*STANDARD_EXTRAS)
     assert check_clinical(clinical, recipes=recipes) == []
-    assert [(p.patient_no, p.encounter_no) for p in clinical.patients][3:8] == [
-        (4, 1), (4, 2), (5, 1), (6, 1), (7, 1)
-    ]  # fmt: skip
+    assert [(p.patient_no, p.encounter_no) for p in clinical.patients][3:10] == [
+        (4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (6, 1), (7, 1)
+    ]  # fmt: skip  # (4, 2) and (4, 3) are S39 and S40, (4, 4) is the test extra
     by_encounter = clinical.by_encounter()
     assert set(by_encounter) == {(r.patient_no, r.encounter_no) for r in recipes.recipes}
-    assert by_encounter[(4, 2)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
+    assert by_encounter[(4, 4)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
-    # the committed encounters are numbered 1..n by patient, and only patient 10 has two (S11 and its ward bill S14)
+    # the committed encounters are numbered 1..n by patient; patient 4 has three (S4, its control S39 and its second
+    # visit S40) and patient 10 two (S11 and its ward bill S14)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {10: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {4: [1, 2, 3], 10: [1, 2]}
 
 
 @pytest.mark.parametrize(

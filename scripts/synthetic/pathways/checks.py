@@ -568,7 +568,7 @@ def check_sessions(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
 
 def _stay_cases(pathway: Pathway) -> list[int | None]:
-    """The nights to test: shortest, longest and the showcase's; [None] for an ER-only pathway."""
+    """The nights to test: shortest, longest and the showcase's; [None] for a pathway without a stay."""
     if pathway.nights is None:
         return [None]
     shown = [pathway.showcase.nights] if pathway.showcase.nights else []
@@ -637,7 +637,7 @@ def _icu_coverage_problems(pathway: Pathway) -> list[Problem]:
     ]
     if pathway.nights is None:
         return out + [
-            Problem("stay.coverage", f"procedures[{ids}]", "an ICU line needs a stay, not an ER visit")
+            Problem("stay.coverage", f"procedures[{ids}]", "an ICU line needs a stay, not a visit")
         ]
     faults = []
     for nights in _stay_cases(pathway):
@@ -668,7 +668,7 @@ def _bed_coverage_problems(pathway: Pathway) -> list[Problem]:
     lines = [line for line in pathway.procedures if line.kind in BED_KINDS]
     ids = ", ".join(line.id for line in lines)
     if pathway.nights is None:
-        return [Problem("stay.coverage", f"procedures[{ids}]", "a newborn bed line needs a stay, not an ER visit")]
+        return [Problem("stay.coverage", f"procedures[{ids}]", "a newborn bed line needs a stay, not a visit")]
     faults = []
     for nights in _stay_cases(pathway):
         seen = Counter(_days_of(lines, anchors_for(pathway, nights)))
@@ -779,7 +779,7 @@ def check_drug_courses(pathway: Pathway, cat: Catalogs) -> list[Problem]:
         if drug.per_night and any(starts):
             out.append(Problem("drug.course", where, "a per_night drug starts on admit"))
         if drug.per_day:
-            shortest = pathway.nights.min if pathway.nights else None  # an ER visit is one day
+            shortest = pathway.nights.min if pathway.nights else None  # a visit is one day
             days = drug.course_days.min
             late = course_overrun(pathway, drug, shortest, days)
             if late > 0:
