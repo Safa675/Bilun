@@ -42,6 +42,7 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     6: (118, 70, 102, 90, 172, 63.0),
     7: (134, 82, 92, 97, 162, 71.0),
     8: (124, 76, 74, 98, 163, 79.0),
+    9: (134, 78, 72, 97, 161, 69.0),
 }
 
 
@@ -76,7 +77,7 @@ def _problems(
 def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> None:
     clinical = load_clinical(CLINICAL_PATH)
     assert clinical.schema_version == 1
-    assert len(clinical.patients) == 8
+    assert len(clinical.patients) == 9
     assert check_clinical(clinical) == []
     assert run_all(clinical) == []
 
@@ -90,7 +91,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz"}
 
     by_no = clinical.by_patient_no()
-    assert set(by_no) == set(range(1, 9))
+    assert set(by_no) == set(range(1, 10))
 
     for pno, expected_tuple in _EXPECTED_VITALS.items():
         pat = by_no[pno]
@@ -405,7 +406,7 @@ CASES: list[Case] = [
     ),
     Case(
         "clinical.patient_numbers",
-        lambda r: _patient(r, 8).update(patient_no=9),
+        lambda r: _patient(r, 9).update(patient_no=10),
         label="vitals_for_missing_recipe_patient",
     ),
     Case(

@@ -1,0 +1,707 @@
+"""Tests for `scripts/synthetic/cohort/coverage_metrics.py` (G12), the coverage measurement of the demo cohort.
+
+Two kinds of test. The metric functions are pure functions of a report written as plain dicts
+(`json_ready(report)`), so they are tested with small hand-made reports: one case per rule of the
+plan's metric map (`plans/data/2026-10-20-demo-coverage-first-plan.md` section 9.2), written so that
+a changed comparison, a dropped list or a swapped union fails a test. And one end-to-end test runs
+the real engine over the committed claims and pins the baseline that the plan measured on the 8
+showcase patients: 9 of 20 blocks with output, 273 of 528 Wave A rule ids evaluated, 14 matched,
+14 with a row.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+import copy
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from scripts.synthetic.cohort import coverage_metrics as cm
+from tests.fixtures import synthetic_cohort as cohort
+
+pytestmark = pytest.mark.unit
+
+# The metric map of the plan, section 9.2, written out again so that a change of the module's table
+# is a change of this file too.
+_UPLIFT_BLOCKS = (
+    "session_uplift",
+    "drg_uplift",
+    "blood_uplift",
+    "yatak_puani",
+    "icu_puani",
+    "yenidogan_yatak",
+    "refakatci",
+    "anestezi_puani",
+    "material_uplift",
+    "care_setting_review",
+    "procedure_addon_uplift",
+    "procedure_capture_gap",
+    "drg_package_adequacy",
+)
+PLAN_PRIMARY_LISTS: dict[str, tuple[str, ...]] = {
+    "lab": ("flagged_tests",),
+    "copay": ("rate_corrections", "exemption_sources"),
+    "billing_strategy": ("recommendations",),
+    **{name: ("opportunities",) for name in _UPLIFT_BLOCKS},
+    "medula_rejection_playbook": ("entries",),
+    "claim_submission_checklist": ("items",),
+    "materials": (
+        "pre_auth_required",
+        "miat_restricted",
+        "miat_interval_violations",
+        "bundled_separate_billing",
+        "prose_bundling_violations",
+        "specialty_prose_violations",
+        "kdv_price_reviews",
+    ),
+    "drug_indication": ("violations", "findings", "evaluations"),
+}
+BASELINE_BLOCKS_WITH_OUTPUT = [
+    "anestezi_puani",
+    "billing_strategy",
+    "claim_submission_checklist",
+    "copay",
+    "drug_indication",
+    "materials",
+    "procedure_capture_gap",
+    "refakatci",
+    "yatak_puani",
+]
+
+
+# --- hand-made reports ---------------------------------------------------------------------------
+
+
+def _evaluation(rule: str, status: str = "evaluated", decision: str | None = None) -> dict[str, Any]:
+    return {"rule_id": rule, "evaluation_status": status, "decision": decision}
+
+
+def _detail(
+    evaluations: list[dict[str, Any]] | None = None,
+    reviews: Sequence[str] = (),
+    advisories: Sequence[str] = (),
+    financial: Sequence[str] = (),
+    universe: Sequence[str] = (),
+) -> dict[str, Any]:
+    ids = {e["rule_id"] for e in evaluations or []} | {*reviews, *advisories, *financial, *universe}
+    return {
+        "evaluations": evaluations or [],
+        "reviews": [{"rule_id": r} for r in reviews],
+        "advisories": [{"rule_id": r} for r in advisories],
+        "financial_rows": [{"rule_id": r} for r in financial],
+        "counts": {"by_rule": {rule: {"evaluated": 0} for rule in sorted(ids)}},
+    }
+
+
+def _report(
+    detail: dict[str, Any] | None = None, blocks: dict[str, dict[str, Any]] | None = None, **extra: Any
+) -> dict[str, Any]:
+    """A report as plain dicts: every block present and empty, then the given blocks and fields."""
+    report: dict[str, Any] = {name: {} for name in PLAN_PRIMARY_LISTS}
+    report.update(blocks or {})
+    report.update(
+        {
+            "recommended_actions": [],
+            "claim_compliance": {"findings": []},
+            "audit_exposure_rows": [],
+            "wavea_evidence_detail": detail,
+        }
+    )
+    report.update(extra)
+    return report
+
+
+# --- the metric map ------------------------------------------------------------------------------
+
+
+def test_the_primary_lists_are_the_plans_metric_map() -> None:
+    assert cm.PRIMARY_LISTS == PLAN_PRIMARY_LISTS
+
+
+def test_the_primary_lists_name_exactly_the_twenty_blocks_of_the_report() -> None:
+    from src.bilun.domain.billing.block_registry import BILLING_BLOCK_SPECS
+
+    assert len(cm.PRIMARY_LISTS) == 20
+    assert set(cm.PRIMARY_LISTS) == {spec.attr for spec in BILLING_BLOCK_SPECS}
+
+
+@pytest.mark.parametrize(
+    ("name", "key"),
+    [(name, key) for name, keys in PLAN_PRIMARY_LISTS.items() for key in keys],
+)
+def test_a_row_in_any_primary_list_is_output(name: str, key: str) -> None:
+    block = {key: [{"row": 1}, {"row": 2}]}
+    assert cm.block_rows(name, block) == 2
+    assert cm.block_has_output(name, block) is True
+
+
+@pytest.mark.parametrize("name", PLAN_PRIMARY_LISTS)
+def test_empty_primary_lists_and_the_fields_around_them_are_not_output(name: str) -> None:
+    block: dict[str, Any] = {key: [] for key in PLAN_PRIMARY_LISTS[name]}
+    block.update(
+        required_inputs_missing=["procedure_claim_lines"],
+        unavailable_reason="missing inputs",
+        exactness_status="exact",
+        categories_not_evaluated=[{"category": "x"}],
+        some_other_list=[1, 2, 3],
+    )
+    assert cm.block_rows(name, block) == 0
+    assert cm.block_has_output(name, block) is False
+
+
+def test_rows_add_up_over_the_primary_lists_of_one_block() -> None:
+    copay = {"rate_corrections": [{}, {}], "exemption_sources": [{}], "categories_not_evaluated": [{}]}
+    assert cm.block_rows("copay", copay) == 3
+    drug = {"violations": [{}], "findings": [{}], "evaluations": [{}, {}, {}]}
+    assert cm.block_rows("drug_indication", drug) == 5
+
+
+def test_the_playbook_counts_entries_but_not_the_inputs_it_misses() -> None:
+    assert cm.block_has_output("medula_rejection_playbook", {"required_inputs_missing": ["x"]}) is False
+    assert cm.block_has_output("medula_rejection_playbook", {"entries": [{"playbook_id": "p"}]})
+
+
+@pytest.mark.parametrize(
+    ("name", "field", "value", "expected"),
+    [
+        ("lab", "hemogram_bundling_savings", 5.88, True),
+        ("lab", "hemogram_bundling_savings", 0.0, False),
+        ("lab", "hemogram_bundling_savings", None, False),
+        ("lab", "hemogram_bundling_savings", True, False),
+        ("lab", "session_fraction_savings", 4.0, False),
+        ("copay", "total_copay_savings_try", 20.0, True),
+        ("copay", "visit_copay_savings_try", 20.0, True),
+        ("copay", "rx_copay_savings_try", 3.5, True),
+        ("copay", "patient_copay_waived_total_try", 23.5, True),
+        ("copay", "patient_copay_waived_total_try", 0, False),
+        ("copay", "patient_copay_try", 20.0, False),
+        ("billing_strategy", "uplift_savings_try", 9.0, False),
+    ],
+)
+def test_a_non_zero_saving_is_output_for_the_lab_and_copay_blocks_only(
+    name: str, field: str, value: Any, expected: bool
+) -> None:
+    block = {field: value}
+    assert cm.block_has_output(name, block) is expected
+    assert cm.block_rows(name, block) == 0
+
+
+def test_a_missing_or_malformed_block_has_no_rows() -> None:
+    assert cm.block_rows("copay", None) == 0
+    assert cm.block_rows("copay", []) == 0
+    assert cm.block_has_output("copay", None) is False
+    assert cm.block_rows("copay", {"rate_corrections": None}) == 0
+    assert cm.block_rows("copay", {"rate_corrections": "two"}) == 0
+
+
+def test_an_unknown_block_is_an_error() -> None:
+    with pytest.raises(KeyError):
+        cm.block_rows("no_such_block", {})
+
+
+# --- Wave A rule ids -----------------------------------------------------------------------------
+
+
+def test_evaluated_means_a_row_with_the_evaluated_status() -> None:
+    detail = _detail(
+        [
+            _evaluation("A", "evaluated", "not_matched"),
+            _evaluation("B", "unavailable"),
+            _evaluation("C", "missing_inputs"),
+            _evaluation("D", "evaluated", "matched"),
+        ]
+    )
+    assert cm.wavea_sets(detail)["evaluated"] == {"A", "D"}
+
+
+def test_matched_needs_the_evaluated_status_and_the_matched_decision() -> None:
+    detail = _detail(
+        [
+            _evaluation("not_matched", "evaluated", "not_matched"),
+            _evaluation("matched", "evaluated", "matched"),
+            _evaluation("matched_but_unavailable", "unavailable", "matched"),
+            _evaluation("matched_but_missing", "missing_inputs", "matched"),
+            _evaluation("no_decision", "evaluated", None),
+        ]
+    )
+    sets = cm.wavea_sets(detail)
+    assert sets["matched"] == {"matched"}
+    assert sets["evaluated"] == {"not_matched", "matched", "no_decision"}
+
+
+def test_one_matched_row_among_several_evaluations_is_enough() -> None:
+    detail = _detail(
+        [
+            _evaluation("A", "evaluated", "not_matched"),
+            _evaluation("A", "unavailable"),
+            _evaluation("A", "evaluated", "matched"),
+        ]
+    )
+    sets = cm.wavea_sets(detail)
+    assert sets["matched"] == {"A"} and sets["evaluated"] == {"A"}
+
+
+def test_a_rule_with_a_row_is_in_the_reviews_advisories_or_financial_rows() -> None:
+    detail = _detail(reviews=["B", "R1"], advisories=["B", "V1"], financial=["F1"])
+    sets = cm.wavea_sets(detail)
+    assert sets["review"] == {"B", "R1"}
+    assert sets["advisory"] == {"B", "V1"}
+    assert sets["financial"] == {"F1"}
+    assert sets["with_row"] == {"B", "R1", "V1", "F1"}
+
+
+def test_the_rule_universe_is_the_set_of_ids_the_evidence_counts() -> None:
+    detail = _detail([_evaluation("A")], universe=["A", "B", "C", "D"])
+    assert cm.wavea_sets(detail)["rule_ids"] == 4
+
+
+def test_rows_without_a_rule_id_are_not_rules() -> None:
+    detail = _detail([_evaluation("A")])
+    detail["evaluations"].append({"rule_id": None, "evaluation_status": "evaluated", "decision": "matched"})
+    detail["reviews"].append({"rule_id": None})
+    detail["reviews"].append({})
+    sets = cm.wavea_sets(detail)
+    assert sets["evaluated"] == {"A"} and sets["matched"] == set()
+    assert sets["review"] == set() and sets["with_row"] == set()
+
+
+@pytest.mark.parametrize("detail", [None, {}, {"evaluations": None, "reviews": None, "counts": None}])
+def test_a_patient_without_wave_a_evidence_has_empty_sets(detail: Any) -> None:
+    sets = cm.wavea_sets(detail)
+    assert sets["rule_ids"] == 0
+    assert all(sets[key] == set() for key in ("evaluated", "matched", "review", "advisory", "financial", "with_row"))
+
+
+# --- finding kinds -------------------------------------------------------------------------------
+
+
+def test_finding_kinds_collect_the_five_sources_of_the_plan() -> None:
+    report = _report(
+        recommended_actions=[
+            {"surface": "session_uplift", "kind": "session_underbilling"},
+            {"surface": "claim_checklist", "kind": "documentation_requirement"},
+            {"surface": "claim_checklist", "kind": "documentation_requirement"},
+        ],
+        claim_compliance={"findings": [{"rule_id": "3.1.1.(2).titubb_uts_incomplete"}]},
+        drug_indication={
+            "evaluations": [{"applicability_status": "eligible"}, {"applicability_status": None}],
+            "violations": [{"violation_kind": "indication_mismatch"}],
+            "findings": [{"finding_kind": "missing_board_report"}],
+        },
+        audit_exposure_rows=[{"kind": "session_point_violation"}],
+        materials={"miat_interval_violations": [{"sut_code": "OP1000"}, {"sut_code": "OP1010"}]},
+    )
+    assert cm.finding_kinds(report) == {
+        "action:session_uplift:session_underbilling",
+        "action:claim_checklist:documentation_requirement",
+        "compliance:3.1.1.(2).titubb_uts_incomplete",
+        "drug_status:eligible",
+        "drug_violation:indication_mismatch",
+        "drug_finding:missing_board_report",
+        "audit_exposure:session_point_violation",
+        "miat:violation",
+    }
+
+
+def test_a_report_without_findings_has_no_kinds() -> None:
+    assert cm.finding_kinds(_report()) == set()
+    assert cm.finding_kinds({}) == set()
+
+
+@pytest.mark.parametrize(
+    "action",
+    [{"surface": "session_uplift"}, {"kind": "session_underbilling"}, {"surface": None, "kind": None}, {}],
+)
+def test_an_action_needs_both_a_surface_and_a_kind(action: dict[str, Any]) -> None:
+    assert cm.finding_kinds(_report(recommended_actions=[action])) == set()
+
+
+def test_materials_without_a_miat_violation_add_no_kind() -> None:
+    report = _report(materials={"miat_interval_violations": [], "pre_auth_required": [{"sut_code": "AP1"}]})
+    assert cm.finding_kinds(report) == set()
+
+
+# --- one patient and the cohort ------------------------------------------------------------------
+
+
+def _patient_a() -> dict[str, Any]:
+    detail = _detail(
+        [_evaluation("A", "evaluated", "matched"), _evaluation("B", "evaluated", "not_matched")],
+        reviews=["A"],
+        advisories=["X"],
+        universe=["A", "B", "C", "X"],
+    )
+    blocks = {"copay": {"rate_corrections": [{}, {}]}, "lab": {"hemogram_bundling_savings": 5.88}}
+    return _report(
+        detail,
+        blocks,
+        recommended_actions=[{"surface": "copay", "kind": "rate_correction"}],
+    )
+
+
+def _patient_b() -> dict[str, Any]:
+    detail = _detail(
+        [_evaluation("B", "evaluated", "matched"), _evaluation("C", "evaluated", "matched")],
+        reviews=["B"],
+        financial=["C"],
+        universe=["A", "B", "C", "X", "Y"],
+    )
+    blocks = {"session_uplift": {"opportunities": [{}]}, "copay": {"rate_corrections": [{}]}}
+    return _report(
+        detail,
+        blocks,
+        recommended_actions=[{"surface": "session_uplift", "kind": "session_underbilling"}],
+    )
+
+
+def test_a_patients_metrics_list_every_block_with_its_rows() -> None:
+    metrics = cm.patient_metrics(_patient_a(), claims=2)
+    assert metrics["claims"] == 2
+    assert list(metrics["blocks"]) == list(cm.PRIMARY_LISTS)
+    assert metrics["blocks"]["copay"] == 2
+    assert metrics["blocks"]["lab"] == 0  # output through a saving, no rows
+    assert metrics["blocks"]["session_uplift"] == 0
+    assert metrics["blocks_with_output"] == ["copay", "lab"]
+
+
+def test_a_patients_metrics_count_its_wave_a_rules() -> None:
+    wavea = cm.patient_metrics(_patient_a(), claims=1)["wavea"]
+    assert wavea["rule_ids"] == 4
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (2, 1, 2)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (1, 1, 0)
+    assert wavea["evaluated_ids"] == ["A", "B"]
+    assert wavea["matched_ids"] == ["A"]
+    assert wavea["review_ids"] == ["A"] and wavea["advisory_ids"] == ["X"]
+    assert wavea["financial_ids"] == []
+
+
+def test_a_patients_metrics_are_plain_json() -> None:
+    metrics = cm.patient_metrics(_patient_a(), claims=1)
+    assert json.loads(json.dumps(metrics)) == metrics
+    assert metrics["finding_kinds"] == ["action:copay:rate_correction"]
+
+
+def test_the_cohort_is_the_union_of_its_patients() -> None:
+    per_patient = {
+        "P1": cm.patient_metrics(_patient_a(), claims=1),
+        "P2": cm.patient_metrics(_patient_b(), claims=3),
+    }
+    cohort_metrics = cm.summarize(per_patient)
+    assert cohort_metrics["patients"] == 2
+    assert cohort_metrics["claims"] == 4
+    blocks = cohort_metrics["blocks"]
+    assert blocks["total"] == 20
+    assert blocks["with_output"] == 3
+    assert blocks["with_output_names"] == ["copay", "lab", "session_uplift"]
+    assert "billing_strategy" in blocks["without_output_names"]
+    assert len(blocks["without_output_names"]) == 17
+    wavea = cohort_metrics["wavea"]
+    assert wavea["rule_ids"] == 5  # the larger roster, not the sum
+    assert wavea["evaluated"] == 3 and wavea["evaluated_ids"] == ["A", "B", "C"]
+    assert wavea["matched"] == 3 and wavea["matched_ids"] == ["A", "B", "C"]
+    assert wavea["with_row"] == 4 and wavea["row_ids"] == ["A", "B", "C", "X"]
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (2, 1, 1)
+    assert cohort_metrics["finding_kinds"]["count"] == 2
+    assert cohort_metrics["finding_kinds"]["kinds"] == [
+        "action:copay:rate_correction",
+        "action:session_uplift:session_underbilling",
+    ]
+
+
+def test_the_cohort_of_nothing_is_zero() -> None:
+    empty = cm.summarize({})
+    assert (empty["patients"], empty["claims"]) == (0, 0)
+    assert empty["blocks"]["with_output"] == 0 and empty["blocks"]["total"] == 20
+    assert empty["wavea"]["rule_ids"] == 0 and empty["wavea"]["evaluated"] == 0
+    assert empty["finding_kinds"] == {"count": 0, "kinds": []}
+
+
+def test_summarising_a_subset_leaves_the_other_patients_out() -> None:
+    per_patient = {
+        "P1": cm.patient_metrics(_patient_a(), claims=1),
+        "P2": cm.patient_metrics(_patient_b(), claims=1),
+    }
+    only_first = cm.summarize({"P1": per_patient["P1"]})
+    assert only_first["blocks"]["with_output_names"] == ["copay", "lab"]
+    assert only_first["wavea"]["matched_ids"] == ["A"]
+    assert only_first["patients"] == 1
+
+
+# --- the document and its diff -------------------------------------------------------------------
+
+
+def _document(per_patient: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": cm.SCHEMA_VERSION,
+        "limits": list(cm.LIMITS),
+        "cohort": cm.summarize(per_patient),
+        "patients": per_patient,
+    }
+
+
+def _two_patient_document() -> dict[str, Any]:
+    return _document(
+        {
+            "P1": cm.patient_metrics(_patient_a(), claims=1),
+            "P2": cm.patient_metrics(_patient_b(), claims=1),
+        }
+    )
+
+
+def test_a_document_compared_with_itself_has_no_diff() -> None:
+    document = _two_patient_document()
+    assert cm.diff(document, copy.deepcopy(document)) == []
+
+
+def test_the_diff_names_the_blocks_ids_and_kinds_that_appeared_or_left() -> None:
+    before = _document({"P1": cm.patient_metrics(_patient_a(), claims=1)})
+    after = _document(
+        {
+            "P1": cm.patient_metrics(_patient_a(), claims=1),
+            "P2": cm.patient_metrics(_patient_b(), claims=1),
+        }
+    )
+    lines = cm.diff(before, after)
+    assert lines[:7] == [
+        "patients: 1 -> 2 (+P2)",
+        "claims: 1 -> 2",
+        "blocks with output: 2 -> 3 (+session_uplift)",
+        "Wave A rule ids evaluated: 2 -> 3 (+C)",
+        "Wave A rule ids matched: 1 -> 3 (+B, +C)",
+        "Wave A rule ids with a row: 2 -> 4 (+B, +C)",
+        "finding kinds: 1 -> 2 (+action:session_uplift:session_underbilling)",
+    ]
+    assert len(lines) == 8
+    assert lines[7].startswith("P2: new patient")
+    assert "3 of 20" not in lines[7] and "blocks with output" in lines[7]
+
+
+def test_the_diff_reads_removals_as_minus() -> None:
+    after = _document({"P1": cm.patient_metrics(_patient_a(), claims=1)})
+    before = _document(
+        {
+            "P1": cm.patient_metrics(_patient_a(), claims=1),
+            "P2": cm.patient_metrics(_patient_b(), claims=1),
+        }
+    )
+    lines = cm.diff(before, after)
+    assert "patients: 2 -> 1 (-P2)" in lines
+    assert "blocks with output: 3 -> 2 (-session_uplift)" in lines
+    assert "Wave A rule ids evaluated: 3 -> 2 (-C)" in lines
+    assert any(line.startswith("P2: patient left") for line in lines)
+
+
+def test_the_diff_reports_a_changed_patient_and_only_a_changed_one() -> None:
+    before = _two_patient_document()
+    after = copy.deepcopy(before)
+    after["patients"]["P2"]["blocks_with_output"] = ["copay"]
+    after["patients"]["P2"]["wavea"]["matched_ids"] = ["B"]
+    after["patients"]["P2"]["wavea"]["matched"] = 1
+    after["patients"]["P2"]["finding_kinds"] = []
+    lines = cm.diff(before, after)
+    changed = [line for line in lines if line.startswith("P2:")]
+    assert changed and not [line for line in lines if line.startswith("P1:")]
+    assert any("-session_uplift" in line for line in changed)
+    assert any("-C" in line for line in changed)
+
+
+def test_the_diff_of_a_long_list_is_cut_short() -> None:
+    before = _document({"P1": cm.patient_metrics(_report(_detail()), claims=1)})
+    ids = [f"R{n:03d}" for n in range(60)]
+    detail = _detail([_evaluation(rule) for rule in ids])
+    after = _document({"P1": cm.patient_metrics(_report(detail), claims=1)})
+    line = next(line for line in cm.diff(before, after) if line.startswith("Wave A rule ids evaluated"))
+    assert line.startswith("Wave A rule ids evaluated: 0 -> 60 (+R000")
+    assert "more)" in line and "R059" not in line
+
+
+@pytest.mark.parametrize(("added", "shown", "more"), [(12, 12, None), (13, 12, 1), (14, 12, 2)])
+def test_a_diff_line_shows_twelve_names_and_counts_the_rest(
+    added: int, shown: int, more: int | None
+) -> None:
+    before = _document({"P1": cm.patient_metrics(_report(_detail()), claims=1)})
+    detail = _detail([_evaluation(f"R{n:03d}") for n in range(added)])
+    after = _document({"P1": cm.patient_metrics(_report(detail), claims=1)})
+    line = next(line for line in cm.diff(before, after) if line.startswith("Wave A rule ids evaluated"))
+    assert line.count("+R") == shown
+    if more is None:
+        assert "more" not in line
+    else:
+        assert line.endswith(f", ... {more} more)")
+
+
+# --- the command line ----------------------------------------------------------------------------
+
+
+@pytest.fixture
+def fake_measure(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    calls: dict[str, Any] = {}
+    per_patient = {
+        "P1": cm.patient_metrics(_patient_a(), claims=1),
+        "P2": cm.patient_metrics(_patient_b(), claims=1),
+    }
+
+    def measure_patients(claims_dir: Path, patient_ids: list[str] | None = None) -> dict[str, Any]:
+        calls["claims_dir"], calls["patient_ids"] = claims_dir, patient_ids
+        return {k: v for k, v in per_patient.items() if patient_ids is None or k in patient_ids}
+
+    monkeypatch.setattr(cm, "measure_patients", measure_patients)
+    return calls
+
+
+def test_the_command_writes_the_json_and_prints_the_numbers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    out = tmp_path / "metrics.json"
+    assert cm.main(["--claims-dir", str(tmp_path), "--out", str(out)]) == 0
+    document = json.loads(out.read_text(encoding="utf-8"))
+    assert document["schema_version"] == cm.SCHEMA_VERSION
+    assert document["limits"] == list(cm.LIMITS)
+    assert set(document["patients"]) == {"P1", "P2"}
+    assert document["cohort"]["blocks"]["with_output"] == 3
+    assert out.read_text(encoding="utf-8").endswith("}\n")
+    text = capsys.readouterr().out
+    assert "blocks with output: 3 of 20" in text
+    assert "Wave A rule ids evaluated: 3 of 5" in text
+    assert "matched: 3" in text
+    assert fake_measure["claims_dir"] == tmp_path
+
+
+def test_the_command_can_measure_some_patients_only(
+    tmp_path: Path, fake_measure: dict[str, Any]
+) -> None:
+    out = tmp_path / "metrics.json"
+    assert cm.main(["--out", str(out), "--patients", "P2"]) == 0
+    assert set(json.loads(out.read_text(encoding="utf-8"))["patients"]) == {"P2"}
+    assert fake_measure["patient_ids"] == ["P2"]
+
+
+def test_the_command_prints_the_diff_against_an_earlier_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    before = tmp_path / "before.json"
+    assert cm.main(["--out", str(before), "--patients", "P1"]) == 0
+    capsys.readouterr()
+    assert cm.main(["--compare", str(before)]) == 0
+    text = capsys.readouterr().out
+    assert "changes against" in text and "no change" not in text
+    assert "patients: 1 -> 2 (+P2)" in text
+    assert "blocks with output: 2 -> 3 (+session_uplift)" in text
+
+
+def test_the_command_says_when_nothing_changed(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    before = tmp_path / "before.json"
+    assert cm.main(["--out", str(before)]) == 0
+    capsys.readouterr()
+    assert cm.main(["--compare", str(before)]) == 0
+    assert "no change against" in capsys.readouterr().out
+
+
+def test_the_command_refuses_a_file_it_cannot_compare_with(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"schema_version": 99}), encoding="utf-8")
+    assert cm.main(["--compare", str(bad)]) == 2
+    assert "schema_version" in capsys.readouterr().err
+    missing = tmp_path / "missing.json"
+    assert cm.main(["--compare", str(missing)]) == 2
+    assert "missing.json" in capsys.readouterr().err
+
+
+def test_an_unknown_patient_is_an_error_not_a_silent_zero(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="SENTETIK-HASTA-9999"):
+        cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, ["SENTETIK-HASTA-9999"])
+
+
+# --- the stated limits ---------------------------------------------------------------------------
+
+
+def test_the_known_limits_are_stated() -> None:
+    joined = " ".join(cm.LIMITS)
+    assert "copay_exemption" in joined
+    assert "lab_df_pl" in joined
+    doc = cm.__doc__ or ""
+    assert "copay_exemption" in doc and "lab_df_pl" in doc
+
+
+# --- the baseline of the plan, on the real engine ------------------------------------------------
+
+# Plan section 1.1, "re-measured": per patient (blocks with output, Wave A rule ids evaluated,
+# matched, rules with a review, rules with an advisory) for the 8 showcase patients.
+PLAN_BASELINE_PER_PATIENT = [
+    (6, 256, 7, 4, 3),
+    (6, 191, 9, 6, 3),
+    (7, 264, 9, 6, 3),
+    (6, 191, 9, 6, 3),
+    (6, 254, 7, 4, 3),
+    (6, 192, 10, 7, 3),
+    (4, 231, 4, 4, 0),
+    (4, 250, 7, 4, 3),
+]
+
+
+@pytest.fixture(scope="module")
+def measured() -> dict[str, dict[str, Any]]:
+    """The real engine over the committed claims, once for the module."""
+    return cm.measure_patients(cm.DEFAULT_CLAIMS_DIR)
+
+
+@pytest.fixture(scope="module")
+def showcase_eight(measured: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    first_eight = cohort.patient_ids()[:8]
+    assert len(first_eight) == 8
+    return {pid: measured[pid] for pid in first_eight}
+
+
+def test_every_patient_of_the_registry_is_measured(measured: dict[str, dict[str, Any]]) -> None:
+    assert sorted(measured) == cohort.patient_ids()
+    assert sum(entry["claims"] for entry in measured.values()) == cohort.claim_count()
+
+
+def test_the_eight_showcase_patients_reproduce_the_plans_baseline(
+    showcase_eight: dict[str, dict[str, Any]],
+) -> None:
+    summary = cm.summarize(showcase_eight)
+    assert summary["patients"] == 8
+    assert summary["blocks"]["total"] == 20
+    assert summary["blocks"]["with_output"] == 9
+    assert summary["blocks"]["with_output_names"] == BASELINE_BLOCKS_WITH_OUTPUT
+    wavea = summary["wavea"]
+    assert wavea["rule_ids"] == 528
+    assert wavea["evaluated"] == 273
+    assert wavea["matched"] == 14
+    assert wavea["with_row"] == 14
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (8, 6, 0)
+
+
+def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table(
+    showcase_eight: dict[str, dict[str, Any]],
+) -> None:
+    rows = [
+        (
+            len(entry["blocks_with_output"]),
+            entry["wavea"]["evaluated"],
+            entry["wavea"]["matched"],
+            entry["wavea"]["review"],
+            entry["wavea"]["advisory"],
+        )
+        for _, entry in sorted(showcase_eight.items())
+    ]
+    assert rows == PLAN_BASELINE_PER_PATIENT
+
+
+def test_a_measured_document_survives_json(measured: dict[str, dict[str, Any]]) -> None:
+    document = {
+        "schema_version": cm.SCHEMA_VERSION,
+        "limits": list(cm.LIMITS),
+        "cohort": cm.summarize(measured),
+        "patients": measured,
+    }
+    assert json.loads(json.dumps(document)) == document
+    assert cm.diff(document, json.loads(json.dumps(document))) == []

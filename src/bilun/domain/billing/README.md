@@ -59,7 +59,7 @@ recovery amounts.
 from src.bilun.domain.billing import compute_patient_billing_report
 from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
-# The demo data are the 8 showcase patients, SENTETIK-HASTA-0001 .. SENTETIK-HASTA-0008.
+# The demo data are the 9 showcase patients, SENTETIK-HASTA-0001 .. SENTETIK-HASTA-0009.
 dataset = load_sut_claim_dataset("data/synthetic/sut/claims")
 claim_context = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
 

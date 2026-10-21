@@ -1,0 +1,119 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-21",
+      "icd10": "M48.06",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-21",
+      "icd10": "I10",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699814270253",
+      "date": "2026-09-21",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699844770716",
+      "date": "2026-09-21",
+      "flags": {},
+      "per_box": 1,
+      "qty": 6,
+      "unit": "vial"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-09-21",
+    "claim_end_date": "2026-09-23",
+    "claim_start_date": "2026-09-21",
+    "claim_type": "yatis",
+    "department": "Beyin ve Sinir Cerrahisi",
+    "discharge_date": "2026-09-23",
+    "primary_icd10": "M48.06"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-09-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-09-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "550220",
+      "date": "2026-09-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3100"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "615931",
+      "date": "2026-09-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "0.2500",
+      "code": "615995",
+      "date": "2026-09-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-09-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-09-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-09-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-09-23",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    }
+  ],
+  "story": "S9"
+}

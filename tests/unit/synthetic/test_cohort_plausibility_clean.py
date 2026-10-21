@@ -10,7 +10,7 @@ The contract:
 1. the committed clean tables raise no problem with the committed claims tables; only two ids read
    the bills (`lab.result_sets_match_bill`, `rx.matches_billed_line`), the other ten never read a
    claims table and raise nothing when they are given none;
-2. with the claims tables of the eight clean twins, ten ids still raise none; the two ids that compare
+2. with the claims tables of the nine clean twins, ten ids still raise none; the two ids that compare
    a clean table with the bill raise exactly the lines that story S1's fault adds (the clean tables
    are built from the faulty bills), derived here from the faulty-versus-twin anti-join of the
    billed lines, and the twin world (twin claims, clean tables without those lines) is clean for all
@@ -101,7 +101,7 @@ DOSE = "rx.dose_unit"
 REQUIRED = "rx.required_fields"
 VITALS = "ana.vitals_bounds"
 
-STORIES = tuple(range(1, 9))
+STORIES = tuple(range(1, 10))
 PATIENT = {n: patient_id(n) for n in STORIES}
 EPISODE = {n: episode_id(PATIENT[n], 1) for n in STORIES}
 
@@ -139,7 +139,7 @@ def context() -> CleanPlausibilityContext:
 
 @pytest.fixture(scope="module")
 def twins(built) -> dict[str, pl.DataFrame]:
-    """The claims tables of the eight clean twins: the showcase bills without their fault."""
+    """The claims tables of the nine clean twins: the showcase bills without their fault."""
     return build_tables(
         built.clean_claims,
         answer_rows=(),
@@ -1257,9 +1257,9 @@ def test_the_committed_clean_tables_raise_no_problem(committed_problems, clean) 
     assert [str(p) for p in committed_problems] == []
     # the tables are the ones of the brief: they are not empty, so "no problem" is not "no data"
     assert {name: clean[name].height for name in _CLEAN_FILES} == {
-        TABLE_ANADATA: 8,
-        TABLE_LAB: 207,
-        TABLE_RECETE: 19,
+        TABLE_ANADATA: 9,
+        TABLE_LAB: 222,
+        TABLE_RECETE: 21,
     }
 
 
@@ -1294,7 +1294,7 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_story_s1_
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 16 and built.tables[TABLE_DRUGS].height == 19
+    assert twins[TABLE_DRUGS].height == 18 and built.tables[TABLE_DRUGS].height == 21
 
 
 def faulty_only(built, twins, table: str, line_id: str) -> pl.DataFrame:
@@ -1371,8 +1371,8 @@ def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
         name: (frame.filter(pl.col("HASTA_ID") != PATIENT[1]) if name != TABLE_ANADATA else frame)
         for name, frame in clean.items()
     }
-    assert twin_clean[TABLE_LAB].height == 207 - 16
-    assert twin_clean[TABLE_RECETE].height == 19 - 3
+    assert twin_clean[TABLE_LAB].height == 222 - 16
+    assert twin_clean[TABLE_RECETE].height == 21 - 3
     found = check_clean_plausibility(twins, twin_clean, context=context)
     assert [str(p) for p in found] == []
 
@@ -1437,22 +1437,22 @@ def _all_rows_of(table: str, built, clean, context, check: str, **changes) -> li
 
 _NUMERIC = pl.col("sonuc_nitel").is_null()
 LAB_ROW_BREAKS = {
-    # every numeric result impossible: 201 findings, one per row; every strip with a bad grade: 6
+    # every numeric result impossible: 216 findings, one per row; every strip with a bad grade: 6
     "value": (
         VALUE_BOUNDS,
         {"sonuc_sayisal": pl.when(_NUMERIC).then(-1e9).otherwise(pl.col("sonuc_sayisal"))},
-        201,
+        216,
     ),
     "grade": (
         VALUE_BOUNDS,
         {"sonuc_nitel": pl.when(~_NUMERIC).then(pl.lit("zzz")).otherwise(pl.col("sonuc_nitel"))},
         6,
     ),
-    "flag": (FLAG_AND_LIMITS, {"anormal_mi": ~pl.col("anormal_mi")}, 207),
-    "limit": (FLAG_AND_LIMITS, {"ref_ust": pl.lit(12345.0)}, 207),
-    "unit": (UNIT, {"birim": pl.lit("x/y")}, 207),
-    "kohort": (SETS, {"kohort": pl.lit("x")}, 207),
-    "donem": (SETS, {"donem": pl.lit("1999")}, 207),
+    "flag": (FLAG_AND_LIMITS, {"anormal_mi": ~pl.col("anormal_mi")}, 222),
+    "limit": (FLAG_AND_LIMITS, {"ref_ust": pl.lit(12345.0)}, 222),
+    "unit": (UNIT, {"birim": pl.lit("x/y")}, 222),
+    "kohort": (SETS, {"kohort": pl.lit("x")}, 222),
+    "donem": (SETS, {"donem": pl.lit("1999")}, 222),
 }
 
 
@@ -1468,12 +1468,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 19 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 19 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 19),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 18),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 18),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 19) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 21 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 21 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 21),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 20),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 20),  # all but the tablet
+    **{f"null_{column}": (REQUIRED, {column: None}, 21) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -1500,7 +1500,7 @@ def test_every_committed_vital_row_is_looked_at(column, built, clean, context) -
     schema = clean[TABLE_ANADATA].schema
     broken = {column: pl.lit(VITAL_BREAKS[column], dtype=schema[column])}
     found = _all_rows_of(TABLE_ANADATA, built, clean, context, VITALS, **broken)
-    assert len(found) == 8, [str(p) for p in found[:3]]
+    assert len(found) == 9, [str(p) for p in found[:3]]
 
 
 def test_the_mutations_leave_the_clean_tables_untouched(built, clean) -> None:
@@ -1797,17 +1797,17 @@ def renamed_copies(tables: dict[str, pl.DataFrame], copies: int) -> dict[str, pl
 
 
 def test_300_copies_of_the_showcase_give_the_findings_of_one(built, clean, context) -> None:
-    """A table of 62,100 lab rows and 35,100 billed lines: no Polars panic, the findings of the small table.
+    """A table of 66,600 lab rows and 37,800 billed lines: no Polars panic, the findings of the small table.
 
     The joins, the window functions and the message texts run here on tables that are cut down from
-    thousands of rows to a few findings, as they never are on the eight patients of the showcase.
+    thousands of rows to a few findings, as they never are on the nine patients of the showcase.
     """
     read = (TABLE_HEADERS, TABLE_PROCEDURES, TABLE_DRUGS)
     big = Data(
         renamed_copies({name: built.tables[name] for name in read}, SCALE_COPIES),
         renamed_copies(clean, SCALE_COPIES),
     )
-    assert big.clean[TABLE_LAB].height == 300 * clean[TABLE_LAB].height == 62100
+    assert big.clean[TABLE_LAB].height == 300 * clean[TABLE_LAB].height == 66600
     assert findings(big, context) == [], "the copies of a clean dataset are clean"
     small = fresh(built, clean)
     chosen = [case for case in CASES if case.name in SCALE_CASES]
@@ -1955,7 +1955,7 @@ def test_a_column_of_no_type_at_all_is_read_as_missing(built, clean, context) ->
         pl.lit(None).alias("kohort"),
     )
     found = data.problems(context, only=VITALS)
-    assert len(found) == 8
+    assert len(found) == 9
     assert all(
         {"EPISODE_TARIH is missing", "SPO2 is missing", "kohort is missing"}
         <= set(p.message.split("; "))
@@ -1969,10 +1969,10 @@ def test_a_column_of_no_type_at_all_is_read_as_missing(built, clean, context) ->
         pl.lit(None).alias("TANI_YASI")
     )
     bounds = data.problems(context, only=VALUE_BOUNDS)
-    assert len(bounds) == 201 and all(p.message.endswith("has no numeric result") for p in bounds)
+    assert len(bounds) == 216 and all(p.message.endswith("has no numeric result") for p in bounds)
     assert data.problems(context, only=EGFR_RELATION) == []
     ages = data.problems(context, only=VITALS)
-    assert len(ages) == 8 and all("TANI_YASI is missing" in p.message for p in ages)
+    assert len(ages) == 9 and all("TANI_YASI is missing" in p.message for p in ages)
 
 
 # --- 4d. the columns: REQUIRED_COLUMNS against the files that are committed ---------------------------
@@ -2060,13 +2060,13 @@ def test_empty_tables_are_no_crash_and_name_what_is_billed_without_a_row(
     empty_clean = {name: frame.head(0) for name, frame in clean.items()}
     empty_claims = {name: frame.head(0) for name, frame in built.tables.items()}
     assert check_clean_plausibility(empty_claims, empty_clean, context=context) == []
-    # 48 billed lab lines without a result set and 19 billed drug lines without a prescription row
+    # 49 billed lab lines without a result set and 21 billed drug lines without a prescription row
     found = check_clean_plausibility(built.tables, empty_clean, context=context)
-    assert only_ids(found) == {SETS, MATCHES} and len(found) == 48 + 19
-    # and the other way round: 48 result sets and 19 prescription rows without a bill
+    assert only_ids(found) == {SETS, MATCHES} and len(found) == 49 + 21
+    # and the other way round: 49 result sets and 21 prescription rows without a bill
     found = check_clean_plausibility(empty_claims, clean, context=context)
-    assert only_ids(found) == {SETS, MATCHES} and len(found) == 48 + 19
-    assert sum("no billed lab line" in p.message for p in found) == 48
+    assert only_ids(found) == {SETS, MATCHES} and len(found) == 49 + 21
+    assert sum("no billed lab line" in p.message for p in found) == 49
 
 
 def test_without_a_context_the_shared_default_is_used(built, clean) -> None:
@@ -2738,7 +2738,7 @@ def test_a_venous_gas_in_place_of_the_arterial_one_passes_every_check(
             venous_gas(2, DAY_2, context).select(labs.columns).cast(labs.schema),
         ]
     )
-    assert data.clean[TABLE_LAB].height == 207
+    assert data.clean[TABLE_LAB].height == 222
     assert [str(p) for p in data.problems(context)] == []
     # the arterial limits on a venous set are wrong for it
     arterial_limits = labs.filter(arterial).select("parametre", "ref_alt", "ref_ust")
@@ -2796,8 +2796,8 @@ def test_the_troponin_is_billed_twice_on_one_day_and_gives_two_result_sets(built
     assert troponin.height == 2 and troponin["procedure_date"].n_unique() == 1
     assert clean[TABLE_LAB].filter(lab(7, "2026-02-19", "L107360")).height == 2
     assert (
-        billed.height == 48
-        and clean[TABLE_LAB].select("HASTA_ID", "tarih", "SUB_CODE").n_unique() == 47
+        billed.height == 49
+        and clean[TABLE_LAB].select("HASTA_ID", "tarih", "SUB_CODE").n_unique() == 48
     )
 
 
@@ -3324,14 +3324,14 @@ def test_an_episode_without_an_anadata_row_is_reported_once_by_the_one_id_that_o
 def test_without_any_episode_id_in_anadata_the_egfr_relation_is_no_no_op(
     built, clean, context
 ) -> None:
-    """With every SQ_EPISODE null no result set has an anadata row: every one of the 48 is named."""
+    """With every SQ_EPISODE null no result set has an anadata row: every one of the 49 is named."""
     data = fresh(built, clean)
     data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].with_columns(
         pl.lit(None, dtype=pl.String).alias("SQ_EPISODE")
     )
     found = data.problems(context, only=EGFR_RELATION)
-    assert len(found) == 48 and len({p.where for p in found}) == 48
-    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7)}
+    assert len(found) == 49 and len({p.where for p in found}) == 49
+    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9)}
 
 
 # --- the reference read from a file: the variant of a tie goes to the first row of the file ---------------
@@ -3527,7 +3527,7 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
         ("inhaled", "kutu", 1),
         ("injected", "ampul", 1),
         ("injected", "enjektör", 3),
-        ("injected", "flakon", 9),
+        ("injected", "flakon", 11),
         ("injected", "kutu", 1),
         ("injected", "torba", 1),
         ("injected", "şişe", 2),
@@ -4031,8 +4031,8 @@ def test_the_cohort_of_the_dataset_is_the_one_of_the_context_for_every_table(bui
     assert {p.message for p in found if p.check == REQUIRED} == {"kohort is showcase, not cohort"}
     assert {p.message for p in found if p.check == VITALS} == {"kohort is showcase, not cohort"}
     assert (sum(p.check == REQUIRED for p in found), sum(p.check == VITALS for p in found)) == (
-        19,
-        8,
+        21,
+        9,
     )
     relabelled = {
         **clean,
@@ -4384,7 +4384,7 @@ def test_the_context_reads_nothing_until_it_is_used() -> None:
 def test_the_context_names_the_cohort_of_the_dataset(built, clean) -> None:
     other = CleanPlausibilityContext(kohort="cohort")
     found = check_clean_plausibility(built.tables, clean, context=other, only=SETS)
-    assert len(found) == 207
+    assert len(found) == 222
     assert {p.message for p in found} == {"kohort is showcase, not cohort"}
     relabelled = {
         **clean,
@@ -4398,9 +4398,9 @@ def test_the_context_takes_a_reference_by_hand(built, clean) -> None:
     for check in (UNIT, FLAG_AND_LIMITS):
         found = check_clean_plausibility(built.tables, clean, context=empty, only=check)
         assert found == [], f"{check}: no reference row, nothing to compare with"
-    # but no set can be read against an empty reference: each of the 48 billed lines has one
+    # but no set can be read against an empty reference: each of the 49 billed lines has one
     found = check_clean_plausibility(built.tables, clean, context=empty, only=SETS)
-    assert len(found) == 48
+    assert len(found) == 49
     assert all("no parameter of the set belongs to the reference of" in p.message for p in found)
 
 

@@ -29,11 +29,14 @@ from scripts.synthetic.pathways.schema import (
     Slug,
     Source,
     Sourced,
+    Story,
     _Model,
 )
 
 SCHEMA_VERSION = 1
 
+# The stories every registry must cover: the first cohort. A story is `S` and a number from 1 up
+# (`Story`); later stories (S9 on) are added with their pathway and are not required here.
 SHOWCASE_STORIES: tuple[str, ...] = ("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8")
 
 MUTATION_OPS: tuple[str, ...] = (
@@ -91,7 +94,6 @@ class Problem(_PathwayProblem):
 
 
 FaultId = Annotated[str, StringConstraints(pattern=r"^F_S[1-9][0-9]*_[A-Z][A-Z0-9_]{1,63}$")]
-Story = Literal["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"]
 BilledRatio = Annotated[str, StringConstraints(pattern=r"^\d\.\d{4}$")]
 ClauseId = Annotated[str, StringConstraints(pattern=r"^C[0-9]{6}$")]
 DetectorRef = Annotated[

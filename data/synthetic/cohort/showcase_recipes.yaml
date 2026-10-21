@@ -1,5 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
-# Each recipe maps patient_no (1..8) to its clinical care pathway and injected billing fault (S1..S8).
+# Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
+# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9. A recipe without a fault is a clean bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -34,3 +35,7 @@ recipes:
   - patient_no: 8
     pathway: cholelithiasis_umbilical_hernia_two_packages
     fault: F_S8_SECOND_PACKAGE_FULL_RATE
+
+  - patient_no: 9
+    pathway: lumbar_stenosis_decompression_foraminoplasty_itemized
+    fault: F_S9_SECOND_OPERATION_UNDERBILLED

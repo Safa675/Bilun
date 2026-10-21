@@ -26,7 +26,9 @@ pytestmark = pytest.mark.unit
 _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
-_STORIES = tuple(f"S{n}" for n in range(1, 9))
+_STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
+_SCENARIO_STORIES = ("S9",)  # the stories after the eighth, named by scenarios
+_FAULT_STORIES = (*_STORIES, *_SCENARIO_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
 #: the table and the id column of each line type a fault record can name
@@ -67,6 +69,17 @@ def _problems() -> list[str]:
         if (target.patient_id, target.claim_id) not in header_pairs:
             problems.append(f"role {name} {target} is not a patient and claim of claim_headers")
 
+    # scenarios: the stories after the eighth, each a patient and claims of the headers
+    scenarios = cohort.scenarios()
+    if set(scenarios) != set(_SCENARIO_STORIES):
+        problems.append(f"scenarios {sorted(scenarios)} are not {sorted(_SCENARIO_STORIES)}")
+    for story, scenario in scenarios.items():
+        for claim in scenario.claim_ids:
+            if (scenario.patient_id, claim) not in header_pairs:
+                problems.append(
+                    f"scenario {story} {scenario.patient_id}/{claim} is not a patient and claim of claim_headers"
+                )
+
     # ids and their counts
     if cohort.claim_ids() != sorted(headers["claim_id"].to_list()):
         problems.append("claim_ids() differ from the claim ids of claim_headers")
@@ -102,18 +115,29 @@ def _problems() -> list[str]:
     )
     answer_of_claim = {row["claim_id"]: row for row in answers.iter_rows(named=True)}
     pairs = {table: _claim_line_pairs(table, column) for table, column in _LINKED_TABLES}
-    for story in _STORIES:
+    for story in _FAULT_STORIES:
         try:
             record = cohort.fault(story)
         except KeyError:
             problems.append(f"{story}: fault() has no record")
             continue
         claim = record["claim_id"]
-        target = known.get(f"showcase_{story}")
-        if target is None or (target.patient_id, target.claim_id) != (record["patient_id"], claim):
-            problems.append(
-                f"{story}: the fault record is not on the claim of role showcase_{story}"
-            )
+        if story in _STORIES:
+            target = known.get(f"showcase_{story}")
+            if target is None or (target.patient_id, target.claim_id) != (
+                record["patient_id"],
+                claim,
+            ):
+                problems.append(
+                    f"{story}: the fault record is not on the claim of role showcase_{story}"
+                )
+        else:
+            scenario = scenarios.get(story)
+            if scenario is None or (scenario.patient_id, claim) != (
+                record["patient_id"],
+                claim,
+            ) or claim not in scenario.claim_ids:
+                problems.append(f"{story}: the fault record is not on a claim of scenario {story}")
         answer = answer_of_claim.get(claim)
         if answer is None:
             problems.append(f"{story}: expected_rule_outputs has no row for claim {claim}")
@@ -202,13 +226,48 @@ def test_patient_and_claim_ids_are_sorted_and_come_from_the_encounters() -> None
 
 
 def test_every_story_has_a_fault_record_with_an_amount_a_line_type_and_a_line() -> None:
-    for story in _STORIES:
+    for story in _FAULT_STORIES:
         record = cohort.fault(story)
         assert record["story"] == story
         assert Decimal(record["amount_try"]) >= 0
         assert record["line_type"] in {"fatura", *_LINE_TABLES}
         assert (record["line_type"] == "fatura") == (record["line_id"] == "")
-        assert record["claim_id"] == cohort.role(f"showcase_{story}").claim_id
+        if story in _STORIES:
+            assert record["claim_id"] == cohort.role(f"showcase_{story}").claim_id
+        else:
+            assert record["claim_id"] in cohort.scenario(story).claim_ids
+
+
+# --- 1b. Scenarios: the stories after the eighth -----------------------------------------------------
+
+
+def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_role() -> None:
+    known = cohort.scenarios()
+    assert tuple(known) == _SCENARIO_STORIES
+    assert all(isinstance(scenario, cohort.Scenario) for scenario in known.values())
+    assert {story: cohort.scenario(story) for story in _SCENARIO_STORIES} == known
+    assert known["S9"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0009", claim_ids=("F-SENTETIK-HASTA-0009-001",)
+    )
+    assert not {f"showcase_{story}" for story in _SCENARIO_STORIES} & set(cohort.roles())
+    assert not set(known) & set(_STORIES)
+
+
+def test_a_scenario_points_at_a_patient_and_claims_in_the_committed_tables() -> None:
+    headers = pl.read_parquet(_CLAIMS / "claim_headers.parquet", columns=["patient_id", "claim_id"])
+    pairs = set(zip(headers["patient_id"].to_list(), headers["claim_id"].to_list(), strict=True))
+    copay = pl.read_parquet(_CLAIMS / "patient_copay_profiles.parquet", columns=["patient_id"])
+    for story, scenario in cohort.scenarios().items():
+        assert scenario.claim_ids and isinstance(scenario.claim_ids, tuple), story
+        assert scenario.patient_id in copay["patient_id"].to_list(), story
+        for claim in scenario.claim_ids:
+            assert (scenario.patient_id, claim) in pairs, story
+
+
+def test_every_patient_of_the_cohort_is_a_role_or_a_scenario() -> None:
+    named = {target.patient_id for target in cohort.roles().values()}
+    named |= {scenario.patient_id for scenario in cohort.scenarios().values()}
+    assert named == set(cohort.patient_ids())
 
 
 # --- 2. Behaviour of the API -------------------------------------------------------------------------
@@ -216,25 +275,46 @@ def test_every_story_has_a_fault_record_with_an_amount_a_line_type_and_a_line() 
 
 def test_unknown_names_raise_key_errors_that_list_the_valid_ones() -> None:
     with pytest.raises(KeyError) as role_error:
-        cohort.role("showcase_S9")
+        cohort.role("showcase_S9")  # a story after the eighth is a scenario, never a role
     assert all(name in str(role_error.value) for name in _ROLE_NAMES)
     with pytest.raises(KeyError) as fault_error:
-        cohort.fault("S9")
-    assert all(story in str(fault_error.value) for story in _STORIES)
+        cohort.fault("S99")
+    assert all(story in str(fault_error.value) for story in _FAULT_STORIES)
+    with pytest.raises(KeyError) as scenario_error:
+        cohort.scenario("S3")  # one of the first eight is a role, never a scenario
+    assert all(story in str(scenario_error.value) for story in _SCENARIO_STORIES)
+    with pytest.raises(KeyError):
+        cohort.scenario("S99")
 
 
 def test_the_registry_is_read_once_and_the_accessors_return_copies() -> None:
     assert cohort.load_registry() is cohort.load_registry()
     assert cohort.REGISTRY_PATH == _REPO / "data" / "synthetic" / "cohort_registry.json"
-    before = (cohort.counts(), cohort.patient_ids(), cohort.fault("S5"), cohort.roles())
+    before = (
+        cohort.counts(),
+        cohort.patient_ids(),
+        cohort.fault("S5"),
+        cohort.roles(),
+        cohort.scenarios(),
+    )
     cohort.counts()["claim_headers.parquet"] = -1
     cohort.patient_ids().append("SENTETIK-HASTA-9999")
     cohort.fault("S5")["line_ids"].append("X")
     cohort.fault("S5")["amount_try"] = "0.00"
     cohort.roles().clear()
-    assert (cohort.counts(), cohort.patient_ids(), cohort.fault("S5"), cohort.roles()) == before
+    cohort.scenarios().clear()
+    after = (
+        cohort.counts(),
+        cohort.patient_ids(),
+        cohort.fault("S5"),
+        cohort.roles(),
+        cohort.scenarios(),
+    )
+    assert after == before
     with pytest.raises(AttributeError):
         cohort.role("default_landing").claim_id = "X"  # type: ignore[misc]
+    with pytest.raises(AttributeError):
+        cohort.scenario("S9").patient_id = "X"  # type: ignore[misc]
 
 
 # --- 3. The helper reads the registry only -----------------------------------------------------------
@@ -293,6 +373,10 @@ def _set_role(registry: dict[str, Any], name: str, **changes: str) -> None:
     registry["roles"][name].update(changes)
 
 
+def _set_scenario(registry: dict[str, Any], story: str, **changes: Any) -> None:
+    registry["scenarios"][story].update(changes)
+
+
 _DAMAGES: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
     (
         "role_on_an_unknown_claim",
@@ -306,6 +390,28 @@ _DAMAGES: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
     ),
     ("role_removed", lambda r: r["roles"].pop("showcase_S5"), "roles ["),
     ("role_added", lambda r: r["roles"].update(showcase_S9=r["roles"]["showcase_S1"]), "roles ["),
+    (
+        "scenario_on_an_unknown_claim",
+        lambda r: _set_scenario(r, "S9", claim_ids=["F-SENTETIK-HASTA-0099-001"]),
+        "scenario S9",
+    ),
+    (
+        "scenario_with_the_patient_of_another_claim",
+        lambda r: _set_scenario(r, "S9", patient_id=r["roles"]["showcase_S4"]["patient_id"]),
+        "scenario S9",
+    ),
+    ("scenario_removed", lambda r: r["scenarios"].pop("S9"), "scenarios ["),
+    (
+        "scenario_added",
+        lambda r: r["scenarios"].update(S10=dict(r["scenarios"]["S9"])),
+        "scenarios [",
+    ),
+    (
+        "fault_of_a_scenario_story_on_another_claim",
+        lambda r: _record(r, "S9").update(claim_id=_record(r, "S2")["claim_id"]),
+        "S9: the fault record is not on a claim of scenario S9",
+    ),
+    ("scenario_fault_dropped", lambda r: _drop_fault(r, "S9"), "S9: fault() has no record"),
     (
         "claims_count_one_too_high",
         lambda r: r["counts"].update(

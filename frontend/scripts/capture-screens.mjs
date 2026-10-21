@@ -113,7 +113,7 @@ const SCOPE_SELECTOR = '#main-content, [data-workspace-pane="b"], [role="dialog"
 const HOME_ROUTES = ["patients", "compliance", "revenue", "operations", "reference-tools"];
 
 // The patient pages are cohort ROLES, not ids: lib/cohort-registry.mjs reads data/synthetic/cohort_registry.json, so a rebuilt
-// cohort needs no edit here. Why these three (read from the engine's billing reports of the 8 showcase patients, 2026-10-18):
+// cohort needs no edit here. Why these three (read from the engine's billing reports of the 8 first showcase patients, 2026-10-18; S9 was added after):
 //   default_landing   the page the app opens on (today the S1 bill): the landing page and the first pane of the split view.
 //   the compliance    the bill whose fault has effect_kind "compliance_error" (today S6, drug indication). No patient has a
 //   story             claim_compliance finding, but this bill's compliance row carries a canonical finding_id, which the
@@ -572,7 +572,7 @@ async function preflight(browser, cfg, token) {
 
 function buildRoutes(cfg, facts) {
   // The Patients table shows 10 patients per page (PAGE_SIZE in PatientInvoiceTable.tsx) and keeps its page in ?p=: the tool walks
-  // every page. A cohort that fits one page (the 8 showcase patients) has a single page and no pager with more to see.
+  // every page. A cohort that fits one page (the 9 showcase patients) has a single page and no pager with more to see.
   const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}`, ...(id === "patients" ? { pageWalk: true } : {}) }));
   for (const patient of facts.primary) {
     routes.push({ id: `patient-${last4(patient)}`, kind: "patient", url: `/patient/${patient}`, patient });
@@ -723,7 +723,7 @@ async function captureRoute(browser, cfg, route, locale, size, primary, facts, t
         result.metrics.pagers = detectPagers(expandedText);
         const pager = result.metrics.pagers.find((candidate) => candidate.kind === "page");
         if (route.pageWalk && primary) {
-          // detectPagers lists only pagers with more to see, so a cohort that fits one page (the 8 showcase patients) has none:
+          // detectPagers lists only pagers with more to see, so a cohort that fits one page (the 9 showcase patients) has none:
           // the default state is then the whole table. A pager the tool failed to read is still caught below, because the walk
           // must have seen every patient of the cohort.
           const pages = pager ? pager.total : 1;

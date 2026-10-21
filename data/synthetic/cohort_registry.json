@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 8,
-    "lab_clean.parquet": 207,
-    "recete_clean.parquet": 19
+    "anadata_clean.parquet": 9,
+    "lab_clean.parquet": 222,
+    "recete_clean.parquet": 21
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "5513aa4c2c280c96c30ea1d5cc249fae7619cf8d054f870c2e230aa8c3df1dc1",
-    "lab_clean.parquet": "d744128cc07aad287bf78704065a908cd3edc5b8a0dc305980d03a2b32827391",
-    "recete_clean.parquet": "3996874e6334291e43d6ef8b94e3052cca799ef2baa7e7388d187ed9e2605c24"
+    "anadata_clean.parquet": "dd8592192d09e843f88a8aaf3463ad51bc83311ab06119ba01af123a2dce0da8",
+    "lab_clean.parquet": "80386c6de462164cd91659d9a1001bf5ab6f06c732e32d4f664f77988e9466ac",
+    "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
   },
   "counts": {
-    "claim_diagnoses.parquet": 21,
-    "claim_headers.parquet": 8,
-    "drug_claim_lines.parquet": 19,
-    "expected_rule_outputs.parquet": 8,
+    "claim_diagnoses.parquet": 23,
+    "claim_headers.parquet": 9,
+    "drug_claim_lines.parquet": 21,
+    "expected_rule_outputs.parquet": 9,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 0,
-    "patient_copay_profiles.parquet": 8,
+    "patient_copay_profiles.parquet": 9,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 117
+    "procedure_claim_lines.parquet": 126
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -92,6 +92,15 @@
       "pathway_id": "cholelithiasis_umbilical_hernia_two_packages",
       "patient_id": "SENTETIK-HASTA-0008",
       "story": "S8",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0009-001",
+      "fault_id": "F_S9_SECOND_OPERATION_UNDERBILLED",
+      "is_clean": false,
+      "pathway_id": "lumbar_stenosis_decompression_foraminoplasty_itemized",
+      "patient_id": "SENTETIK-HASTA-0009",
+      "story": "S9",
       "tier": "showcase"
     }
   ],
@@ -241,6 +250,24 @@
       "patient_id": "SENTETIK-HASTA-0008",
       "story": "S8",
       "sut_section": "2.2.2.B(3)(a)"
+    },
+    {
+      "amount_try": "758.01",
+      "billed_clean_try": "8574.85",
+      "billed_faulty_try": "7816.84",
+      "claim_id": "F-SENTETIK-HASTA-0009-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "session_uplift",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S9_SECOND_OPERATION_UNDERBILLED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0009-001-F_S9_SECOND_OPERATION_UNDERBILLED",
+      "line_id": "ISL-F-SENTETIK-HASTA-0009-001-005",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "lumbar_stenosis_decompression_foraminoplasty_itemized",
+      "patient_id": "SENTETIK-HASTA-0009",
+      "story": "S9",
+      "sut_section": "2.2.2.A(5)"
     }
   ],
   "roles": {
@@ -281,17 +308,25 @@
       "patient_id": "SENTETIK-HASTA-0008"
     }
   },
+  "scenarios": {
+    "S9": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0009-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0009"
+    }
+  },
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "36b44f26d35d5744b14d7337b6ed32e7e789da78257896b33aaf60896ab377ff",
-    "claim_headers.parquet": "815a4ad43b5e945bc606eede07b207d3418d61594fd4a72a1feecd7227eff4e9",
-    "drug_claim_lines.parquet": "61696c8a20091c94876d8eb66b293c037e91ed43109c09c77f6ef0d613905c12",
-    "expected_rule_outputs.parquet": "e401c368bf68bfcc0ee45ce68e43e832710b55a31a1f385ab25f6126907b5f0f",
+    "claim_diagnoses.parquet": "731c588fed06ea0f8998c52e7217b731f76592fd37b42087e76c3ec618b2397d",
+    "claim_headers.parquet": "4b3881da1db3fcbd243818b1b317d5999344b449ba3a35b24ac8eff0997eb3ca",
+    "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
+    "expected_rule_outputs.parquet": "d5a6a9978794b2a23520be26958962717da49fe7a788f1d2e126ddd3b598815a",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "58ff0947311e1f13e09a205e328244b3db87480e67bff2117522fd1dc819c444",
-    "patient_copay_profiles.parquet": "58ecaee1583f785828c7f6f2d37d3c07be39cdd0e44f73afed63ff2c2bad975c",
+    "patient_copay_profiles.parquet": "f395125290ee05b3610ddcf5799aae4c986d684577f2744369abc9da06df1c72",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "06578b9eb7ba54e9dd66fa0d61d3c0b4bc9d07ab31c78003dad6b0d1ddec1b9e"
+    "procedure_claim_lines.parquet": "26763f4a0786a69108eb47567279008a4a092ea7b42afaa38ffb51b8a74f83c0"
   }
 }

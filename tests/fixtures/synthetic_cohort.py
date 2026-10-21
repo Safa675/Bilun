@@ -21,14 +21,19 @@ return a fresh object that the caller may change):
 - `Role(patient_id, claim_id)`: frozen dataclass, one patient and one of the patient's claims.
 - `role(name)`: the `Role` called `name`. An unknown name raises `KeyError` whose message lists the
   roles. `roles()`: every role as `{name: Role}`. The roles are `default_landing` (the claim the app
-  opens on) and `showcase_S1` to `showcase_S8` (the eight stories, one claim each).
+  opens on) and `showcase_S1` to `showcase_S8` (the first eight stories, one claim each). They are
+  fixed: a story after the eighth is a scenario, never a new role.
+- `Scenario(patient_id, claim_ids)`: frozen dataclass, one patient and the claims of its bills in bill
+  order (a tuple). `scenario(story)`: the `Scenario` of a story after the eighth (`S9`, ...). An
+  unknown story raises `KeyError` whose message lists the scenarios. `scenarios()`: every scenario as
+  `{story: Scenario}`.
 - `patient_ids()` and `claim_ids()`: every patient id and every claim id of the `encounters`, each
   sorted. `patient_count()` and `claim_count()` are their lengths.
 - `counts()`: `{table file name: row count}` for the 9 claims tables (`counts` of the registry, for
   example `claim_headers.parquet`) and the 3 clean tables (`clean_counts`, for example
   `lab_clean.parquet`), sorted by name.
-- `fault(story)`: the injection record of the fault of story `S1` to `S8`, a dict with the registry's keys.
-  An unknown story raises `KeyError` whose message lists the stories. The keys to use:
+- `fault(story)`: the injection record of the fault of a story (`S1` to `S8`, and every scenario story),
+  a dict with the registry's keys. An unknown story raises `KeyError` whose message lists the stories. The keys to use:
   `amount_try` (the amount at stake as a decimal string such as `"4122.06"`; wrap it in `Decimal`),
   `line_type` (`fatura` when the fault is about the whole bill, else `islem`, `malzeme` or `ilac`),
   `line_id` (the id of the faulty line in the table of that line type, `""` when `line_type` is
@@ -56,6 +61,14 @@ class Role:
     claim_id: str
 
 
+@dataclass(frozen=True)
+class Scenario:
+    """One patient and the claims of the patient's bills (in bill order), for a story after the eighth."""
+
+    patient_id: str
+    claim_ids: tuple[str, ...]
+
+
 @cache
 def load_registry() -> dict[str, Any]:
     """The parsed `cohort_registry.json`, read once per process. Shared: do not change it."""
@@ -76,6 +89,22 @@ def role(name: str) -> Role:
     if name not in known:
         raise KeyError(f"unknown role {name!r}; the roles are {', '.join(known)}")
     return known[name]
+
+
+def scenarios() -> dict[str, Scenario]:
+    """Every scenario of the registry (the stories after the eighth) as `{story: Scenario}`."""
+    return {
+        story: Scenario(patient_id=target["patient_id"], claim_ids=tuple(target["claim_ids"]))
+        for story, target in load_registry()["scenarios"].items()
+    }
+
+
+def scenario(story: str) -> Scenario:
+    """The scenario of `story`; `KeyError` listing the scenarios when there is none."""
+    known = scenarios()
+    if story not in known:
+        raise KeyError(f"unknown scenario {story!r}; the scenarios are {', '.join(known)}")
+    return known[story]
 
 
 def patient_ids() -> list[str]:
@@ -105,7 +134,7 @@ def counts() -> dict[str, int]:
 
 
 def fault(story: str) -> dict[str, Any]:
-    """The injection record of the fault of `story` (`S1` to `S8`); `KeyError` listing the stories."""
+    """The injection record of the fault of `story`; `KeyError` listing the stories that have one."""
     records = {
         record["story"]: record for record in load_registry()["faults"] if record.get("story")
     }

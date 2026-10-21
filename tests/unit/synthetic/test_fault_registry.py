@@ -178,13 +178,30 @@ PINNED_FINDINGS: dict[
         [],
         ["2.2.2.B.a"],
     ),
+    "S9": (
+        "session_uplift",
+        "islem",
+        "foraminoplasty",
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000659", "C000660", "C000661", "C000662"],
+        "2.2.2.A(5)",
+        [
+            "src/bilun/domain/prose_rules/session_uplift.py:detect_session_underbilling_opportunities",
+            "src/bilun/domain/billing/claim_session_uplift.py:recommend_session_uplift_from_claims",
+        ],
+        [],
+        ["2.2.2.A.(5)"],
+    ),
 }
+
+S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
 
 
 def test_real_registry_loads_and_passes_every_check(catalogs: Catalogs) -> None:
     registry = load_registry(REGISTRY_PATH)
     assert registry.schema_version == 1
-    assert len(registry.faults) == 8
+    assert len(registry.faults) == 9
     assert run_all(registry, catalogs) == []
 
 
@@ -230,19 +247,37 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9"]
 
 
-def test_coverage_eight_stories_six_ops_unique_ids() -> None:
+def test_coverage_nine_stories_six_ops_unique_ids() -> None:
     registry = load_registry()
     fault_ids = [f.fault_id for f in registry.faults]
     stories = [f.story for f in registry.faults]
     ops = {op.op for f in registry.faults for op in f.mutations}
 
     assert isinstance(CHECKS, tuple)
-    assert len(fault_ids) == len(set(fault_ids)) == 8
-    assert tuple(stories) == SHOWCASE_STORIES
+    assert len(fault_ids) == len(set(fault_ids)) == 9
+    assert tuple(stories) == (*SHOWCASE_STORIES, "S9")
     assert ops == set(MUTATION_OPS)
+
+
+def test_the_required_stories_are_the_first_eight() -> None:
+    assert SHOWCASE_STORIES == tuple(f"S{n}" for n in range(1, 9))
+
+
+def test_a_registry_may_carry_stories_beyond_the_ninth(catalogs: Catalogs) -> None:
+    base = _raw_registry()
+    clone = copy.deepcopy(_fault(base, "F_S2_BED_DAYS_UNDERBILLED"))
+    clone.update(fault_id="F_S10_BED_DAYS_AGAIN", story="S10")
+    base["faults"].append(clone)
+    assert _problems(base, catalogs) == []
+
+
+def test_only_the_first_eight_stories_are_required(catalogs: Catalogs) -> None:
+    base = _raw_registry()
+    _fault(base, S9_FAULT)["story"] = None
+    assert _problems(base, catalogs) == []
 
 
 def test_the_readme_names_every_check_id() -> None:
@@ -454,6 +489,21 @@ CASES: list[Case] = [
         label="source_too_long",
     ),
     Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").update(story="S0"),
+        label="story_zero",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").update(story="S01"),
+        label="story_with_a_leading_zero",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").update(story="second"),
+        label="story_that_is_a_word",
+    ),
+    Case(
         "schema.sibling_alone",
         lambda r: _fault(r, "F_S1_PACKAGE_BILLED_ITEMIZED")["mutations"].append(
             {"op": "drop_entry", "section": "procedures", "entry_id": "bed"}
@@ -641,6 +691,11 @@ CASES: list[Case] = [
     Case(
         "fault.duplicate_story",
         lambda r: _append_clone(r, fault_id="F_S2_BED_DAYS_EXTRA", story="S2"),
+    ),
+    Case(
+        "fault.duplicate_story",
+        lambda r: _append_clone(r, fault_id="F_S9_SECOND_OPERATION_TWICE", story="S9"),
+        label="a_story_after_the_eighth",
     ),
     Case(
         "fault.story_coverage",

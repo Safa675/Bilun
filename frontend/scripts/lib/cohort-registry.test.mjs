@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { amountPattern, claimIds, faultFor, faultForRole, faults, formatTryTr, loadRegistry, parseRegistry, patientIds, REGISTRY_PATH, role, roles } from "./cohort-registry.mjs";
+import { amountPattern, claimIds, faultFor, faultForRole, faults, formatTryTr, loadRegistry, parseRegistry, patientIds, REGISTRY_PATH, role, roles, scenario, scenarios } from "./cohort-registry.mjs";
 
 // These tests read the REAL registry (data/synthetic/cohort_registry.json, or COHORT_REGISTRY_PATH): nothing is copied here.
 const real = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf8"));
@@ -14,10 +14,38 @@ const scratch = () => {
   return dir;
 };
 
+// The roles are fixed: the default landing and the first eight stories. Every later story is a scenario.
+const ROLE_STORIES = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
+const scenarioStories = faults.map((fault) => fault.story).filter((story) => !ROLE_STORIES.includes(story));
+
 describe("the real registry", () => {
-  it("has the default landing and one showcase role per injected story", () => {
+  it("has the default landing and one showcase role per injected story of the first eight", () => {
     expect(faults.length).toBeGreaterThan(0);
-    expect(Object.keys(roles).sort()).toEqual(["default_landing", ...faults.map((fault) => `showcase_${fault.story}`)].sort());
+    expect(Object.keys(roles).sort()).toEqual(["default_landing", ...ROLE_STORIES.map((story) => `showcase_${story}`)].sort());
+    expect(faults.map((fault) => fault.story)).toEqual(expect.arrayContaining(ROLE_STORIES));
+  });
+
+  it("names every story after the eighth as a scenario and never as a role", () => {
+    expect(scenarioStories.length).toBeGreaterThan(0);
+    expect(Object.keys(scenarios).sort()).toEqual([...scenarioStories].sort());
+    expect(scenarios).toEqual(real.scenarios);
+    for (const story of scenarioStories) {
+      expect(Object.keys(roles)).not.toContain(`showcase_${story}`);
+      const { patient_id: patient, claim_ids: claims } = scenario(story);
+      expect(patientIds).toContain(patient);
+      expect(claims.length).toBeGreaterThan(0);
+      for (const claim of claims) {
+        expect(claimIds).toContain(claim);
+        expect(claim.startsWith(`F-${patient}-`)).toBe(true);
+      }
+      expect(claims).toContain(faultFor(story).claim_id);
+      expect(faultFor(story).patient_id).toBe(patient);
+    }
+  });
+
+  it("gives every patient of the cohort a role or a scenario", () => {
+    const named = new Set([...Object.values(roles), ...Object.values(scenarios)].map((entry) => entry.patient_id));
+    expect([...named].sort()).toEqual([...patientIds]);
   });
 
   it("counts the cohort the way the registry's own tables do", () => {
@@ -32,22 +60,26 @@ describe("the real registry", () => {
     }
   });
 
-  it("gives every story a fault record that belongs to its showcase role", () => {
-    for (const fault of faults) {
-      expect(faultFor(fault.story)).toBe(fault);
-      expect(role(`showcase_${fault.story}`)).toMatchObject({ patient_id: fault.patient_id, claim_id: fault.claim_id });
-      expect(faultForRole(`showcase_${fault.story}`)).toBe(fault);
+  it("gives every story of the first eight a fault record that belongs to its showcase role", () => {
+    for (const story of ROLE_STORIES) {
+      const fault = faultFor(story);
+      expect(role(`showcase_${story}`)).toMatchObject({ patient_id: fault.patient_id, claim_id: fault.claim_id });
+      expect(faultForRole(`showcase_${story}`)).toBe(fault);
     }
+    for (const fault of faults) expect(faultFor(fault.story)).toBe(fault);
   });
 
   it("lands on a bill that carries an injected fault", () => {
     expect(faults).toContain(faultForRole("default_landing"));
   });
 
-  it("names an unknown role or story instead of returning undefined", () => {
+  it("names an unknown role, story or scenario instead of returning undefined", () => {
     expect(() => role("showcase_S99")).toThrow(/showcase_S99[\s\S]*default_landing/);
+    expect(() => role(`showcase_${scenarioStories[0]}`)).toThrow(/default_landing/);
     expect(() => faultFor("S99")).toThrow(/S99/);
     expect(() => faultForRole("nobody")).toThrow(/nobody/);
+    expect(() => scenario("S99")).toThrow(new RegExp(`S99[\\s\\S]*${scenarioStories[0]}`));
+    expect(() => scenario("S3")).toThrow(/S3/);
   });
 
   it("holds every amount as a two-decimal string the UI formatter can be compared with", () => {
@@ -80,10 +112,53 @@ describe("registry validation refuses a registry that no longer describes the co
     ["a story that is not S<number>", (r) => { r.faults[0].story = "first"; }, /malformed/],
     ["a fault without its engine rule", (r) => { delete r.faults[0].engine_rule; }, /no engine_rule/],
     ["a showcase role that disagrees with its fault", (r) => { r.roles.showcase_S1 = { ...r.roles.showcase_S2 }; }, /disagrees/],
+    ["a role for a story after the eighth", (r) => { r.roles.showcase_S9 = { ...r.roles.showcase_S1 }; }, /scenario/],
+    ["a role with another name", (r) => { r.roles.second_landing = { ...r.roles.default_landing }; }, /not default_landing or showcase_S1/],
+    ["scenarios that are not an object", (r) => { r.scenarios = ["S9"]; }, /scenarios/],
+    ["a scenario named like a story of the first eight", (r) => { r.scenarios.S3 = structuredClone(r.scenarios.S9); }, /after S8/],
+    ["a scenario that is not S<number>", (r) => { r.scenarios.ninth = structuredClone(r.scenarios.S9); }, /after S8/],
+    ["a scenario named S0", (r) => { r.scenarios.S0 = structuredClone(r.scenarios.S9); }, /after S8/],
+    ["a scenario named S01", (r) => { r.scenarios.S01 = structuredClone(r.scenarios.S9); }, /after S8/],
+    ["a scenario at a bill that does not exist", (r) => { r.scenarios.S9 = { patient_id: "SENTETIK-HASTA-9999", claim_ids: ["F-SENTETIK-HASTA-9999-001"] }; }, /does not exist/],
+    ["a scenario whose claim belongs to another patient", (r) => { r.scenarios.S9.claim_ids = [r.roles.showcase_S2.claim_id]; }, /does not belong/],
+    ["a scenario without claims", (r) => { r.scenarios.S9.claim_ids = []; }, /claim_ids/],
+    ["a scenario with a claim twice", (r) => { r.scenarios.S9.claim_ids = [r.scenarios.S9.claim_ids[0], r.scenarios.S9.claim_ids[0]]; }, /claim_ids/],
+    ["a scenario with the role shape", (r) => { r.scenarios.S9 = { patient_id: r.scenarios.S9.patient_id, claim_id: r.scenarios.S9.claim_ids[0] }; }, /claim_ids/],
+    ["a fault of a scenario story off its scenario", (r) => { delete r.scenarios.S9; }, /scenario S9 is missing or disagrees/],
+    ["a fault of a scenario story on another claim", (r) => { r.faults.find((fault) => fault.story === "S9").claim_id = r.roles.showcase_S2.claim_id; r.faults.find((fault) => fault.story === "S9").patient_id = r.roles.showcase_S2.patient_id; }, /scenario S9 is missing or disagrees/],
   ])("%s", (_name, change, message) => {
     const broken = structuredClone(real);
     change(broken);
     expect(() => parseRegistry(broken, "unit-registry.json")).toThrow(message);
+  });
+});
+
+describe("a fault without a story", () => {
+  it("is accepted: it belongs to no role and no scenario, and is found by its claim", () => {
+    const loose = structuredClone(real);
+    const record = loose.faults.find((fault) => fault.story === scenarioStories[0]);
+    record.story = null;
+    expect(parseRegistry(loose, "unit-registry.json").faults).toContain(record);
+    const names = loose.faults.filter((fault) => fault.story).map((fault) => fault.story);
+    expect(names).not.toContain(scenarioStories[0]);
+  });
+
+  it("still has to be a whole record on a bill that exists", () => {
+    const missingAmount = structuredClone(real);
+    missingAmount.faults[0].story = null;
+    delete missingAmount.faults[0].amount_try;
+    expect(() => parseRegistry(missingAmount, "unit-registry.json")).toThrow(/amount_try/);
+    const strayBill = structuredClone(real);
+    strayBill.faults[0].story = null;
+    strayBill.faults[0].claim_id = "F-SENTETIK-HASTA-9999-001";
+    strayBill.faults[0].patient_id = "SENTETIK-HASTA-9999";
+    expect(() => parseRegistry(strayBill, "unit-registry.json")).toThrow(/does not exist/);
+  });
+
+  it("does not hide a story that is malformed: an empty string is not null", () => {
+    const empty = structuredClone(real);
+    empty.faults[0].story = "";
+    expect(() => parseRegistry(empty, "unit-registry.json")).toThrow(/malformed/);
   });
 });
 

@@ -17,7 +17,7 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
 | `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S8.json` | the clean bills of the showcase stories, exported from `stories.py` by another script (`golden_faulty/` holds the faulty bills) |
+| `tests/fixtures/pathways/golden/S1.json` … `S9.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
 
 ## Read a pathway top to bottom
 
@@ -140,7 +140,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 ## Expander annotations and fault siblings (P3)
 
 - **`expand(pathway, pins=None, *, annotate=False)`**: the default (`annotate=False`) returns the golden format unchanged. With `annotate=True`, rows carry pathway line references so the fault registry can target lines by id: every procedure row adds `entry_id` (the pathway line id), `kind` (the line's kind) and `day_index` (0-based position of that row's date among the dates the line resolves to, in date order; for a lab panel with several codes every code on the same date has the same index); every material and every performed row adds `entry_id`; every drug row adds `entry_id` and `indication` (the drug's indication ICD-10 code or `null`).
-- **`data/synthetic/faults/siblings/`**: a sibling is a pathway without a golden in `tests/fixtures/pathways/golden/` (so `data/synthetic/pathways/` keeps its 1-to-1 bijection with the 8 clean goldens). It obeys the same schema, hygiene and catalog checks (`run_all`), and its own test (`tests/unit/synthetic/test_fault_siblings.py`) checks that expanding it with its `showcase` pins equals `tests/fixtures/pathways/golden_faulty/<story>.json`. `appendicitis_lap_appendectomy_itemized.yaml` is S1's itemized sibling.
+- **`data/synthetic/faults/siblings/`**: a sibling is a pathway without a golden in `tests/fixtures/pathways/golden/` (so every pathway of a story that `stories.py` builds keeps its 1-to-1 pairing with its clean golden). It obeys the same schema, hygiene and catalog checks (`run_all`), and its own test (`tests/unit/synthetic/test_fault_siblings.py`) checks that expanding it with its `showcase` pins equals `tests/fixtures/pathways/golden_faulty/<story>.json`. `appendicitis_lap_appendectomy_itemized.yaml` is S1's itemized sibling.
 
 ## Tests
 
@@ -149,9 +149,9 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 ```
 
 - `test_pathways_schema.py`: every real pathway loads and passes every check; the folder holds only this README and top-level `*.yaml` files (a `.yml` file or a sub-folder would never load); every check id in `CHECKS` has a mutation case that takes a real pathway, proves it clean, applies one defect and asserts that exactly the expected ids fire; further tests pin the edges of the checks (the package window, the stays tested, the window and range edges, the EK-4A last day against the engine's reader).
-- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a flipped optional item or course changes the bill; the bed and companion lines gain one bill line per extra night; a later admission moves every date; pins outside the ranges, or a course that outlasts the pinned stay, are refused; every golden has a pathway and every pathway a golden. A broken file fails only its own cases.
+- `test_pathways_roundtrip.py`: per pathway file, `expand` equals the golden; a flipped optional item or course changes the bill; the bed and companion lines gain one bill line per extra night; a later admission moves every date; pins outside the ranges, or a course that outlasts the pinned stay, are refused; every golden has a pathway and every pathway of a story that `stories.py` builds has its golden (a pathway of a later story needs none). A broken file fails only its own cases.
 - `test_pathways_golden.py`: the clean and faulty golden files are well formed, each faulty golden differs from its clean golden, and both directories equal a fresh export of `stories.py`: the test runs `reports/synthetic-data/2026-10-15-showcase-proofs/export_clean_lines.py --check` in a subprocess (about a second), so a pathway and its golden cannot be changed together unnoticed.
-- `test_pathways_annotate.py`: `expand(p) == expand(p, annotate=False)` for all 8 pathways; stripping the annotation keys from `expand(p, annotate=True)` reproduces the default expansion; every `entry_id` is a pathway line id, every included line appears, `day_index` is `0..n-1` in date order per `entry_id`, and drug rows carry `indication`.
+- `test_pathways_annotate.py`: `expand(p) == expand(p, annotate=False)` for every pathway; stripping the annotation keys from `expand(p, annotate=True)` reproduces the default expansion; every `entry_id` is a pathway line id, every included line appears, `day_index` is `0..n-1` in date order per `entry_id`, and drug rows carry `indication`.
 - `test_fault_siblings.py`: every `*.yaml` in `data/synthetic/faults/siblings/` loads, passes `run_all`, and expands to `tests/fixtures/pathways/golden_faulty/<story>.json` (with in-memory mutation guards).
 
 ## Not expressible yet
@@ -160,7 +160,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 - Itemized lines after the package window (long package stays) are not expressible; `package.window` refuses such a stay.
 - Materials are checked against EK-3/F-1 only.
 - Procedure lines have no flags (the stories set none).
-- `showcase` is required and `Pins.story` is limited to `S1`..`S8`, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed; P4 must relax both.
+- `showcase` is required, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed. `Pins.story` is `S` and a number from 1 up (it was limited to `S1`..`S8` until the ninth story).
 - Newborn and ICU tiers (P55200x) are not modelled.
 - A drug course that runs to discharge from a later start (S6 levodopa, through the NG tube from day 3) has no "until discharge" form: `course_days` is drawn independently of the nights, so P4 must clamp it to the days left.
 - The clinical sex of a diagnosis is judgment, not data. S5's M81.09 is postmenopausal osteoporosis, so S5 says `sex: [F]`, but the ICD table's sex column covers only 97 neoplasm codes (C and D), so `icd.sex_gate` cannot see it.
@@ -180,3 +180,4 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | S6 | `aspiration_pneumonia_parkinson_ward` | done |
 | S7 | `pleuritic_chest_pain_er_pulmonary_embolism_ruled_out` | done |
 | S8 | `cholelithiasis_umbilical_hernia_two_packages` | done |
+| S9 | `lumbar_stenosis_decompression_foraminoplasty_itemized` | done (2026-10-21; sibling of S3 with an optional second operation) |

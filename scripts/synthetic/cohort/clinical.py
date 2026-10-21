@@ -1,8 +1,9 @@
 """Showcase clinical context (vitals, lab states, product routes): Pydantic v2 schema, strict YAML loader and cross-checks.
 
 `data/synthetic/cohort/showcase_clinical.yaml` declares the admission/visit vitals and optional lab
-state profiles for each of the 8 showcase patients (`patient_no` 1..8, story S1..S8), with
-`basis: judgment` and a short `source` note referencing clinician review in issue #309. Its
+state profiles for each showcase patient (`patient_no` 1, 2, 3 ... as in `showcase_recipes.yaml`: 1..8 are the
+stories S1..S8, 9 is S9), with `basis: judgment` and a short `source` note referencing clinician review in
+issue #309. Its
 `drug_routes` block gives the route of administration of the billed products whose TITCK product
 name states none. No prices, amounts or totals exist in this schema.
 """

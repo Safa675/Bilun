@@ -1,4 +1,4 @@
-"""Prove that the billing and prose-rules engine finds all 8 showcase faults on the committed dataset."""
+"""Prove that the billing and prose-rules engine finds every showcase fault (S1..S9) on the committed dataset."""
 
 from __future__ import annotations
 
@@ -46,6 +46,7 @@ from src.bilun.domain.prose_rules.material_bundling import check_material_bundli
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
+from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
 
 from scripts.synthetic.faults import FaultInjectionRecord
@@ -94,6 +95,16 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
         reason=(
             "No claim line carries the incision, so the report shows the lenient 50% reading "
             "and the record carries the same-incision 25% reading."
+        ),
+        issue="Safa675/Bilun#311 item 6",
+    ),
+    "S9": ReportDivergence(
+        report_amount_try="151.60",
+        record_amount_try="758.01",
+        reason=(
+            "No claim line carries the incision, so the report prices the uplift at the strictest "
+            "reading (same incision, 30%) and the record carries the whole gap to the clean bill, "
+            "which bills the separate-incision rate (50%)."
         ),
         issue="Safa675/Bilun#311 item 6",
     ),
@@ -536,6 +547,39 @@ def _direct_rows_s8(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s9(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    claim = ctx.claims[0]
+    # As recommend_session_uplift_from_claims calls it: no claim line carries the incision.
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "primary_procedure_code",
+                "session_date",
+                "expected_point_factor",
+                "strict_point_factor",
+                "lenient_point_factor",
+                "expected_billed_try",
+                "strict_expected_billed_try",
+                "lenient_expected_billed_try",
+                "actual_billed_try",
+                "recoverable_uplift_try",
+                "review_uplift_try",
+                "missing_facts",
+                "sut_section_id",
+            ),
+        )
+        for o in detect_session_underbilling_opportunities(
+            list(ctx.procedure_lines),
+            claim_id=claim.claim_id,
+            cross_specialty=None,
+            claim=claim,
+        )
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -545,6 +589,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S6": _direct_rows_s6,
     "S7": _direct_rows_s7,
     "S8": _direct_rows_s8,
+    "S9": _direct_rows_s9,
 }
 
 
@@ -785,7 +830,7 @@ def prove_showcase(
     *,
     dataset: SUTClaimDataset | None = None,
 ) -> tuple[StoryProof, ...]:
-    """Prove all 8 showcase stories by loading the faulty claims from disk and clean twins in memory."""
+    """Prove every showcase story by loading the faulty claims from disk and clean twins in memory."""
     built = build_result if build_result is not None else build_showcase()
     loaded = dataset if dataset is not None else load_showcase_dataset()
 
