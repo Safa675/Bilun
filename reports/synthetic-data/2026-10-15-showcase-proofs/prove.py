@@ -25,6 +25,7 @@ from src.bilun.domain.prose_rules.payment_method import check_payment_method_com
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
+from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
 from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
 
@@ -124,6 +125,13 @@ def direct(story: str, ctx) -> list[dict]:
                           "recoverable_uplift_try", "same_day_stay", "rooming_in", "rule_id", "sut_section_id"))
                 for o in detect_yenidogan_yatak_opportunities(
                     claims, list(ctx.diagnoses), procedure_lines=procs, claim_ids_with_procs={claim.claim_id})]
+    if story == "S14":
+        # a cross-bill rule: the ICU bill is history, so read the whole history, as the report does
+        return [_keep(o, ("type", "claim_id", "rule_id", "procedure_code", "overlap_date", "icu_claim_id",
+                          "risk_amount_try", "sut_section_id"))
+                for o in detect_yatak_icu_overlap(
+                    list(ctx.history.claims), list(ctx.history.procedure_lines),
+                    claim_ids_with_procs={claim.claim_id})]
     raise KeyError(story)
 
 

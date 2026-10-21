@@ -246,3 +246,24 @@ faults:
       finding_ids: ["yenidogan_yatak_510070"]
     basis: ek2b_aciklama
     source: "C000652 (SUT 2.2.2.A(1)) and EK-2B 510070 (once a day): 6 days for 5 nights get a Kuvöz line; only the last 3 were keyed, the first 3 are missing (story S12)."
+
+  - fault_id: F_S14_WARD_BED_ON_ICU_TRANSFER_DAY
+    story: S14
+    title: "Ward bed billed on the day the patient leaves intensive care (the ward bill after the ICU bill)"
+    target_pathway: urosepsis_ward_stay_after_icu_transfer
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: urosepsis_ward_stay_transfer_day_billed
+    expected_finding:
+      engine_rule: yatak_icu_overlap_510010
+      detectors:
+        - "src/bilun/domain/prose_rules/yatak_icu_overlap.py:detect_yatak_icu_overlap"
+      sut_section: "2.4.4.H"
+      sut_clauses: ["C001243"]
+      effect_kind: deduction_risk
+      line_type: fatura
+      target_entry_id: null
+      expected_status: kismi_red
+      finding_ids: ["yatak_icu_overlap_510010"]
+    basis: sut
+    source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves; the ward bill billed 510010 on it too (story S14)."

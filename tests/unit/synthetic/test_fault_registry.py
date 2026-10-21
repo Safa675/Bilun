@@ -221,6 +221,18 @@ PINNED_FINDINGS: dict[
         [],
         ["yenidogan_yatak_510070"],
     ),
+    "S14": (
+        "yatak_icu_overlap_510010",
+        "fatura",
+        None,
+        "kismi_red",
+        "deduction_risk",
+        ["C001243"],
+        "2.4.4.H",
+        ["src/bilun/domain/prose_rules/yatak_icu_overlap.py:detect_yatak_icu_overlap"],
+        [],
+        ["yatak_icu_overlap_510010"],
+    ),
 }
 
 S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
@@ -275,7 +287,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12", "S14"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

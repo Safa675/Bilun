@@ -39,7 +39,7 @@ from src.bilun.domain.claims.models import (  # noqa: E402
     PerformedProcedureLine,
     ProcedureClaimLine,
 )
-from src.bilun.domain.claims.patient_context import PatientClaimContext  # noqa: E402
+from src.bilun.domain.claims.patient_context import PatientClaimContext, PatientClaimHistory  # noqa: E402
 
 FACILITY_TIER = "2_3_basamak_ozel"
 PROVIDER_TYPE = "Ozel"
@@ -143,6 +143,8 @@ class Bill:
     performed: list[PerformedProcedureLine] = field(default_factory=list)
     medula: list[MedulaRejectionEvent] = field(default_factory=list)
     sources: dict[str, dict[str, Any]] = field(default_factory=dict)  # line_id -> catalog provenance
+    # The patient's earlier bills (same pid): known to the cross-bill rules as history, never part of this bill's rows.
+    history: tuple[Bill, ...] = ()
 
     @property
     def episode(self) -> str:
@@ -248,11 +250,19 @@ class Bill:
     def ctx(self) -> PatientClaimContext:
         header = self.header()
         mats = _enrich_material_regulatory_flags({m.material_line_id: m for m in self.mats}, {header.claim_id: header})
+        history = None
+        if self.history:
+            earlier = [h.ctx() for h in self.history]  # a history bill brings its own enriched material lines
+            history = PatientClaimHistory(
+                claims=tuple(c for e in earlier for c in e.claims),
+                procedure_lines=tuple(p for e in earlier for p in e.procedure_lines),
+                material_lines=tuple(m for e in earlier for m in e.material_lines),
+            )
         return PatientClaimContext(
             patient_id=self.pid, claims=(header,), procedure_lines=tuple(self.procs),
             material_lines=tuple(mats.values()), drug_lines=tuple(self.drugs), diagnoses=tuple(self.dx),
             performed_procedure_lines=tuple(self.performed), medula_rejection_events=tuple(self.medula),
-            medula_rejection_ingest_available=bool(self.medula),
+            medula_rejection_ingest_available=bool(self.medula), patient_history=history,
         )
 
     def total(self) -> Decimal:
@@ -265,6 +275,7 @@ class Bill:
         b.procs, b.mats, b.drugs = list(self.procs), list(self.mats), list(self.drugs)
         b.dx, b.performed, b.medula = list(self.dx), list(self.performed), list(self.medula)
         b.sources = dict(self.sources)
+        b.history = self.history
         return b
 
 
@@ -306,7 +317,10 @@ def ui_signals(rep: Any, viol: list[dict]) -> list[tuple]:
         out.append(("compliance", f.get("rule_id"), f.get("severity"), f.get("procedure_code") or f.get("material_code") or f.get("drug_code") or f.get("line_id") or "", 0.0))
     for blk in ("claim_reviews", "claim_advisories", "financial_findings"):
         for r in (getattr(rep, blk).rows or []):
-            out.append(("wavea", blk, r.get("rule_id") or r.get("family"), "", _f(r.get("amount_try") or r.get("risk_amount_try"))))
+            amount = r.get("amount_try") or r.get("risk_amount_try")
+            if blk == "financial_findings":  # a financial row says what was billed when it has no money of its own
+                amount = amount or r.get("observed_billed_amount_try")
+            out.append(("wavea", blk, r.get("rule_id") or r.get("family"), "", _f(amount)))
     for v in viol:
         out.append(("validate", v.get("rule"), v.get("rule_id") or v.get("violation_kind") or "", v.get("material_code") or v.get("procedure_code") or v.get("drug_name") or "", _f(v.get("risk_amount") or v.get("savings_try"))))
     return out

@@ -7,7 +7,7 @@ Prices, currency amounts and totals are **not** stored in the fault registry (`h
 | Path | What |
 |---|---|
 | `data/synthetic/faults/fault_registry.yaml` | the declarative catalog of billing faults (`schema_version: 1`, `faults:` list) |
-| `data/synthetic/faults/siblings/<id>.yaml` | itemized sibling pathways used by `use_sibling_pathway` |
+| `data/synthetic/faults/siblings/<id>.yaml` | sibling pathways used by `use_sibling_pathway` (S1's itemized bill, S14's ward bill with the transfer-day bed) |
 | `scripts/synthetic/faults/schema.py` | frozen Pydantic v2 models (`FaultRegistry`, `FaultSpec`, `MutationOp`, `ExpectedFinding`) and `CHECKS` |
 | `scripts/synthetic/faults/loader.py` | `load_registry(path)`, `load_registry_text(text, name)` and `load_siblings(directory)` |
 | `scripts/synthetic/faults/checks.py` | `run_all(registry, catalogs)` and CLI checker |
@@ -26,7 +26,7 @@ Top-level keys:
 
 Each `FaultSpec` carries:
 - `fault_id`: unique identifier matching `^F_S[1-9][0-9]*_[A-Z][A-Z0-9_]{1,63}$` (for example `F_S2_BED_DAYS_UNDERBILLED`).
-- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S11`, `S12` and later are the stories added since; S10 is a later bill), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
+- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S11`, `S12`, `S14` and later are the stories added since; S10 is a later bill), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
 - `title`: short English summary (2–400 characters).
 - `target_pathway`: pathway id in `data/synthetic/pathways/<target_pathway>.yaml`.
 - `mutations`: non-empty list of `MutationOp` entries from the closed six-operation grammar below.
@@ -40,7 +40,7 @@ Each `FaultSpec` carries:
   - `target_entry_id`: `null` when `line_type` is `fatura`; required pathway line `id` otherwise.
   - `expected_status`: `eksik_faturalama` (missing/under-billed claim-level uplift) or `kismi_red` (line-level deduction or compliance error).
   - `evidence_entry_ids`: optional list of pathway line `id`s in `procedures` or `performed` that serve as evidence of the finding (default `[]`; on S7, `["ct_angiography_pacs"]`).
-  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`, S12 `["yenidogan_yatak_510070"]`).
+  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`, S12 `["yenidogan_yatak_510070"]`, S14 `["yatak_icu_overlap_510010"]`).
 - `basis` and `source`: provenance using the pathway `Basis` enum (`sut`, `ek2b_aciklama`, `medula_kilavuz`, `guideline`, `judgment`) and `Source` rule (10–160 characters, no TL amounts).
 
 ## The six mutation operations (`MutationOp`)
@@ -50,7 +50,7 @@ Every operation is a mapping discriminated on `op` with `extra="forbid"`, operat
 1. **`use_sibling_pathway`** (`sibling_pathway_id`):
    - Meaning: replace the clean bill with `expand(sibling_pathway, same pins)`, where `sibling_pathway_id` lives at `data/synthetic/faults/siblings/<sibling_pathway_id>.yaml`.
    - Constraint: must be the only mutation in its fault (`schema.sibling_alone`).
-   - Showcase use: `F_S1_PACKAGE_BILLED_ITEMIZED` swaps `appendicitis_lap_appendectomy_package` for `appendicitis_lap_appendectomy_itemized`.
+   - Showcase use: `F_S1_PACKAGE_BILLED_ITEMIZED` swaps `appendicitis_lap_appendectomy_package` for `appendicitis_lap_appendectomy_itemized`. `F_S14_WARD_BED_ON_ICU_TRANSFER_DAY` swaps `urosepsis_ward_stay_after_icu_transfer` (a ward stay that arrives from an ICU bill: its bed starts the day after admission) for `urosepsis_ward_stay_transfer_day_billed` (a bed on every calendar day, the transfer day included); the target pathway, not the sibling, carries the flag `arrives_from_icu`.
 2. **`truncate_line_days`** (`section: "procedures"`, `entry_id`, `keep_day_indices`):
    - Meaning: keep only the expanded rows of procedure line `entry_id` whose 0-based `day_index` is in `keep_day_indices` (a non-empty list of distinct non-negative integers).
    - Constraint: `keep_day_indices` must be valid `day_index` positions of `entry_id` in the showcase expansion and strictly fewer than all rows of that line (`fault.keep_day_indices`).

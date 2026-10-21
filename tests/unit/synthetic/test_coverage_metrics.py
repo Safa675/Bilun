@@ -705,3 +705,34 @@ def test_a_measured_document_survives_json(measured: dict[str, dict[str, Any]]) 
     }
     assert json.loads(json.dumps(document)) == document
     assert cm.diff(document, json.loads(json.dumps(document))) == []
+
+
+def test_the_whole_cohort_with_the_ward_bill_s14_has_the_first_wave_a_financial_row(
+    measured: dict[str, dict[str, Any]],
+) -> None:
+    """After S14 (WP5): matched 14 -> 15, with a row 14 -> 15, evaluated 273 -> 274, all of it one rule id."""
+    summary = cm.summarize(measured)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (11, 12)
+    assert summary["blocks"]["with_output"] == 12  # the ward bill lights no block of its own
+    wavea = summary["wavea"]
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (274, 15, 15)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (8, 6, 1)
+    assert "yatak_icu_overlap_510010" in wavea["row_ids"]
+    # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
+    without_s14 = {pid: entry for pid, entry in measured.items() if pid != cohort.scenario("S14").patient_id}
+    assert "yatak_icu_overlap_510010" not in cm.summarize(without_s14)["wavea"]["matched_ids"]
+    assert "yatak_icu_overlap_510010" in wavea["matched_ids"]
+
+
+def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_financial_row(
+    measured: dict[str, dict[str, Any]],
+) -> None:
+    """G12 is patient-level (`build_patient_claim_context`): patient 10 reads the ICU bill and the ward bill together."""
+    patient = cohort.scenario("S14").patient_id
+    assert cohort.scenario("S11").patient_id == patient
+    entry = measured[patient]
+    assert entry["claims"] == 2
+    assert entry["wavea"]["financial_ids"] == ["yatak_icu_overlap_510010"]
+    assert {pid for pid, e in measured.items() if e["wavea"]["financial"]} == {patient}
+    assert {e["claims"] for pid, e in measured.items() if pid != patient} == {1}
+    assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill

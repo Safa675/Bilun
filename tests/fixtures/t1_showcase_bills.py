@@ -10,7 +10,9 @@ bill with one more operation on it asks for `with_extra_operation`. Roles and id
   story after the eighth (a scenario, with no role) has its clean twin too.
 - `clean_context(role_name)`: the clean twin of the showcase bill that the role names, as a
   `PatientClaimContext`. It is built by `scripts.synthetic.cohort.build_showcase()` (once per process) the
-  way `tests/unit/synthetic/test_cohort_engine_proof.py` builds it.
+  way `tests/unit/synthetic/test_cohort_engine_proof.py` builds it. A patient with several bills keeps the
+  other bills as history of the twin (S14, the ward bill after the ICU bill, is judged by the engine with the
+  ICU bill known: alone, its first day would have no bed); a patient with one bill gets the one-claim context.
 - `with_extra_operation(ctx, code, factor="1")`: the context with one more EK-2/B operation line on the day
   of its most expensive `islem` line, billed at `factor` of the code's list price on that day.
 """
@@ -21,8 +23,14 @@ from dataclasses import replace
 from decimal import ROUND_HALF_UP, Decimal
 from functools import cache
 
-from scripts.synthetic.cohort import BuildResult, build_showcase, context_from_composed
-from src.bilun.domain.claims.patient_context import PatientClaimContext
+from scripts.synthetic.cohort import (
+    BuildResult,
+    build_showcase,
+    context_from_composed,
+    load_showcase_dataset,
+)
+from src.bilun.domain.claims.dataset import SUTClaimDataset
+from src.bilun.domain.claims.patient_context import PatientClaimContext, build_bill_claim_context
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from tests.fixtures import synthetic_cohort as cohort
 
@@ -34,10 +42,22 @@ def _built() -> BuildResult:
     return build_showcase()
 
 
+@cache
+def _dataset() -> SUTClaimDataset:
+    return load_showcase_dataset()
+
+
 def _clean_twin_of(claim_id: str, what: str) -> PatientClaimContext:
-    for composed in _built().clean_claims:
+    built = _built()
+    for composed in built.clean_claims:
         if composed.header.claim_id == claim_id:
-            return context_from_composed(composed)
+            patient = composed.header.patient_id
+            if sum(c.header.patient_id == patient for c in built.clean_claims) == 1:
+                return context_from_composed(composed)
+            # the patient's other bills are history of the twin, as in the engine proof
+            bill = build_bill_claim_context(patient, claim_id, _dataset())
+            assert bill is not None, claim_id
+            return context_from_composed(composed, base=bill)
     raise KeyError(f"the builder composed no clean twin for {claim_id} ({what})")
 
 

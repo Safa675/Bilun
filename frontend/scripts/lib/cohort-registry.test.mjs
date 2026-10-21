@@ -43,14 +43,32 @@ describe("the real registry", () => {
     }
   });
 
+  it("lists a patient's bills under that patient: every bill of a patient with several is a registry encounter", () => {
+    const perPatient = {};
+    for (const encounter of real.encounters) (perPatient[encounter.patient_id] ??= []).push(encounter);
+    expect(Object.keys(perPatient).sort()).toEqual([...patientIds]);
+    for (const [patient, encounters] of Object.entries(perPatient)) {
+      const bills = encounters.map((encounter) => encounter.claim_id).sort();
+      expect(bills).toEqual(claimIds.filter((claim) => claim.startsWith(`F-${patient}-`)));
+    }
+    // a story belongs to one bill, so a patient with two bills names them under two stories
+    const stories = real.encounters.map((encounter) => encounter.story);
+    expect(new Set(stories).size).toBe(stories.length);
+    for (const { patient_id: patient, claim_ids: claims } of Object.values(scenarios)) {
+      for (const claim of claims) expect(perPatient[patient].map((encounter) => encounter.claim_id)).toContain(claim);
+    }
+  });
+
   it("gives every patient of the cohort a role or a scenario", () => {
     const named = new Set([...Object.values(roles), ...Object.values(scenarios)].map((entry) => entry.patient_id));
     expect([...named].sort()).toEqual([...patientIds]);
   });
 
   it("counts the cohort the way the registry's own tables do", () => {
+    // A patient may have several bills: a bill is a claim header and an anadata row, a patient is a copay profile.
     expect(claimIds).toHaveLength(real.counts["claim_headers.parquet"]);
-    expect(patientIds).toHaveLength(real.clean_counts["anadata_clean.parquet"]);
+    expect(claimIds).toHaveLength(real.clean_counts["anadata_clean.parquet"]);
+    expect(patientIds).toHaveLength(real.counts["patient_copay_profiles.parquet"]);
     // both lists are sorted and hold every id once
     expect([...patientIds]).toEqual([...new Set(patientIds)].sort());
     expect([...claimIds]).toEqual([...new Set(claimIds)].sort());

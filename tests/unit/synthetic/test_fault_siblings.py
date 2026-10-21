@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
 _SIBLINGS_DIR = _REPO / "data/synthetic/faults/siblings"
+_PATHWAYS_DIR = _REPO / "data/synthetic/pathways"
 _GOLDEN_FAULTY = _REPO / "tests/fixtures/pathways/golden_faulty"
 _FILES = sorted(_SIBLINGS_DIR.glob("*.yaml"))
 
@@ -28,6 +30,7 @@ def _has_faulty_golden(path: Path) -> bool:
 
 _GOLDEN_SIBLINGS = [p for p in _FILES if _has_faulty_golden(p)]
 S1_SIBLING = "appendicitis_lap_appendectomy_itemized"
+S14_SIBLING = "urosepsis_ward_stay_transfer_day_billed"
 
 
 @pytest.fixture(scope="module")
@@ -46,8 +49,8 @@ def _mutated_s1_sibling(edit) -> object:
     return load_text(body, f"{S1_SIBLING}.yaml")
 
 
-def test_siblings_folder_has_s1_itemized_sibling_and_only_yaml_files() -> None:
-    assert {p.stem for p in _FILES} >= {S1_SIBLING}
+def test_siblings_folder_has_the_s1_and_s14_siblings_and_only_yaml_files() -> None:
+    assert {p.stem for p in _FILES} >= {S1_SIBLING, S14_SIBLING}
     strays = [p.name for p in _SIBLINGS_DIR.iterdir() if not (p.is_file() and p.suffix == ".yaml")]
     assert strays == []
 
@@ -87,9 +90,53 @@ def test_deleting_a_bed_day_in_memory_makes_faulty_golden_equality_fail() -> Non
 def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_would_not_be(
     tmp_path: Path,
 ) -> None:
-    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING]
+    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S14_SIBLING]
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
     later = tmp_path / "later.yaml"
     later.write_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), encoding="utf-8")
     assert _has_faulty_golden(later) is False
+
+
+# --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---
+
+
+def _s14_pair():
+    target = load_pathway(_PATHWAYS_DIR / "urosepsis_ward_stay_after_icu_transfer.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S14_SIBLING}.yaml")
+    return target, sibling
+
+
+def test_the_s14_sibling_bills_the_transfer_day_bed_and_nothing_else_differs() -> None:
+    target, sibling = _s14_pair()
+    assert (target.arrives_from_icu, sibling.arrives_from_icu) == (True, False)
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
+    extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
+    assert [(p["code"], p["date"]) for p in extra] == [("510010", "2026-06-07")]  # the day the ICU bill ends
+    assert len(clean["procedures"]) == 6 and len(faulty["procedures"]) == 7
+
+
+def test_the_s14_pathways_pin_the_patient_of_s11_and_start_on_the_day_its_bill_ends() -> None:
+    icu = load_pathway(_PATHWAYS_DIR / "urosepsis_septic_shock_icu_stay.yaml")
+    target, sibling = _s14_pair()
+    exit_day = date.fromisoformat(icu.showcase.admit) + timedelta(days=icu.showcase.nights)
+    for ward in (target, sibling):
+        assert ward.showcase.admit == exit_day.isoformat() == "2026-06-07"
+        assert (ward.showcase.sex, ward.showcase.age) == (icu.showcase.sex, icu.showcase.age) == ("F", 76)
+        assert ward.showcase.story == "S14" and icu.showcase.story == "S11"
+        assert ward.patient.sex.values == icu.patient.sex.values
+        assert (ward.patient.age.min, ward.patient.age.max) == (icu.patient.age.min, icu.patient.age.max) == (60, 90)
+    # the ward bill's diagnoses are already on the ICU bill, so the patient's union list does not grow
+    icu_codes = {d.icd10 for d in icu.diagnoses}
+    assert {d.icd10 for d in target.diagnoses} <= icu_codes == {"A41.9", "R57.8", "N39.0"}
+
+
+def test_the_s14_target_has_no_lab_line_because_the_cross_bill_rules_read_the_whole_history() -> None:
+    """The ICU bill bills every test of the episode on 06-02: the same test on another bill within seven days is a duplicate."""
+    target, sibling = _s14_pair()
+    for pathway in (target, sibling):
+        assert {line.kind for line in pathway.procedures} == {"bed", "companion"}
+        assert not (pathway.materials or pathway.drugs or pathway.performed)

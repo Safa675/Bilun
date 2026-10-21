@@ -17,13 +17,13 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
 | `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S11.json`, `S12.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
+| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S11.json`, `S12.json`, `S14.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
 
 ## Read a pathway top to bottom
 
 Open `copd_exacerbation_pneumonia_ward.yaml` next to this text.
 
-1. **Identity and setting.** `id`, `title`, `claim_type` (`yatis` or `acil`), `billing_mode` (`package` = EK-2C, `itemized` = EK-2B hizmet başı), `department` (the header name and the default EK-2A branch of every line).
+1. **Identity and setting.** `id`, `title`, `claim_type` (`yatis` or `acil`), `billing_mode` (`package` = EK-2C, `itemized` = EK-2B hizmet başı), `department` (the header name and the default EK-2A branch of every line). A ward stay that is admitted on the day the same patient leaves an ICU bill also sets `arrives_from_icu: true` (see "A ward stay that arrives from an ICU bill" below).
 2. **`window`** (optional). The service window of the pathway. Default: the `window` of `code_sets.yaml`, 2026-02-01 to 2026-09-30. A pathway may narrow it, never widen it, and a narrowed window carries `start`, `end` and a `source`: one sentence, 160 characters at most, that says why. **Every code must be in force on every day of the window.** S2 ends on 2026-08-28: KLACID 500 MG IV leaves EK-4A on 2026-08-29. EK-4A rows are half-open, `[valid_from, valid_until)`, so `valid_until` is the first day a drug is not in force and the checks use the day before it (as the engine does).
 3. **`patient`**: the sexes and the age range the pathway allows. **`nights`**: the length-of-stay range (stays only). **`op_day`**: the operation day as a day expression, if the pathway has one.
 4. **`diagnoses`**: one primary, the others secondary, each with the day it is coded.
@@ -46,7 +46,7 @@ A day is an **anchor** with optional whole days: `admit`, `op` (the operation da
 | `admit..admit+1` | 9 and 10 March | 2 |
 | `[admit, admit+3]` | 9 and 12 March | 2 |
 
-Every expression must land inside the stay for the shortest, the longest and the pinned stay (`days.in_stay`), so pick `nights.min` with the fixed offsets in mind. A `bed` line must cover exactly `admit..discharge` and a `companion` line exactly `admit..discharge-1` at those three stays (`stay.coverage`), so the lines grow with the nights.
+Every expression must land inside the stay for the shortest, the longest and the pinned stay (`days.in_stay`), so pick `nights.min` with the fixed offsets in mind. A `bed` line must cover exactly `admit..discharge` and a `companion` line exactly `admit..discharge-1` at those three stays (`stay.coverage`), so the lines grow with the nights (a pathway with `arrives_from_icu` has its bed from `admit+1`, see "A ward stay that arrives from an ICU bill").
 
 ### Quantities
 
@@ -82,6 +82,10 @@ SUT 2.4.4.H (C001234, C001243): the first ICU day and the day the patient leaves
 ### Newborn bed (`newborn_bed`)
 
 EK-2B 510070 (Kuvöz) and 510081 (Kot, beşik) cover yemek, yatak and vizit, once a day, never together and never beside 510010 (`yenidogan_yatak.py`, `claim_yatak_newborn_overlap.py`): the ward bed and the two newborn beds are alternatives for one patient-day. The engine counts the newborn bed days as `discharge - admission + 1`, the discharge day included, like the ward bed. So the `bed` and `newborn_bed` lines of a newborn stay together cover `admit..discharge` once each (`stay.coverage`): an incubator on every day (S12), or the incubator on the first days and the ward bed on the rest. A stay with an ICU line has no newborn bed line (a newborn intensive-care stay is 510090 with P552006-8, `icu_day` and `icu_package`, and the newborn motor leaves ICU claims to the ICU motor). A newborn bed line in a package bill is inside the package (`package.mode`). `procedure.kind` ties `newborn_bed` to 510070 and 510081 and `bed` to 510010 and 510120. The newborn is age 0 (`patient.age`: `min: 0`); the vital signs of such a bill follow the infant ranges (`scripts/synthetic/cohort/clinical.py`, `plausibility_clean.py`), and the engine reads the episode as a newborn's from a Z38 or P00-P96 diagnosis or a department named yenidoğan. The clean S12 pathway is `late_preterm_newborn_incubator_stay.yaml`.
+
+### A ward stay that arrives from an ICU bill (`arrives_from_icu`)
+
+A patient who leaves intensive care for the ward has two bills: the ICU bill, whose last day is the transfer day, and the ward bill, which is admitted on that day. EK-2B 510090 covers yemek, yatak and vizit, so the ICU bill pays that day's bed; a ward bed on it too is double billing (`yatak_icu_overlap.py`: the Wave A rule `yatak_icu_overlap_510010`), and the standard-bed motor takes the day out of the ward bill's expected bed days. A pathway of that ward bill sets `arrives_from_icu: true`: its `bed` line covers `admit+1..discharge` (not `admit..discharge`; `stay.coverage` tests it at every stay), the companion still covers every night `admit..discharge-1`, and the pathway has no ICU or newborn bed line of its own (`stay.coverage`). The flag needs a stay (`schema.stay_shape`). The cohort check of the tables knows the same day (`stay.bed_coverage`): a stay that begins on the day an ICU stay of the same patient ends needs no bed line for it and takes none. The faulty sibling is the same pathway without the flag, with a bed for every calendar day. The clean S14 pathway is `urosepsis_ward_stay_after_icu_transfer.yaml`.
 
 ### Anaesthesia
 
@@ -128,7 +132,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | Check | What it finds |
 |---|---|
 | `yaml.invalid`, `hygiene.forbidden_key`, `hygiene.anon_text`, `hygiene.price_text`, `hygiene.id_like_number`, `schema.id_mismatch` | bad YAML or a repeated key; a key containing price, amount, total or package_candidate (any case); in any key, string or comment, text that looks like an ANON identifier (`ANON_7`, `anon-7`, `ANON 7`, any case), a non-zero currency amount (`12 TL`, `12 TRY`, `12 ₺`, `₺12`; "0 TL" passes) or an isolated 11-digit number (barcodes have 13); a file name that is not `<id>.yaml` |
-| `schema.*` | an unknown or missing field (including `basis`, `source`, and the `source` of a window), a bad enum or value, a bad day expression, min above max, a probability outside [0, 1], a duplicate id, a dangling reference, an undefined anchor, a malformed line, a wrong drug quantity form, not exactly one primary diagnosis, a stay without nights |
+| `schema.*` | an unknown or missing field (including `basis`, `source`, and the `source` of a window), a bad enum or value, a bad day expression, min above max, a probability outside [0, 1], a duplicate id, a dangling reference, an undefined anchor, a malformed line, a wrong drug quantity form, not exactly one primary diagnosis, a stay without nights, an ER-only pathway that arrives from an ICU |
 | `procedure.in_force`, `procedure.name`, `procedure.kind` | an EK-2B/EK-2C code missing on some day of the window; a name that is not the catalog's (whitespace-normalized); a kind that does not fit the code's chapter (an ICU kind on a code that is not an ICU day or package, a `newborn_bed` on a code that is not the incubator or the cot) |
 | `material.*`, `drug.in_force`, `drug.name`, `drug.inn` | the same for EK-3/F-1 and EK-4A; `inn` must be the crosswalk's `active_ingredient` |
 | `drug.indication`, `drug.course` | an indication that is not a diagnosis of the pathway or is optional; a `per_night` drug that does not start on admit; a course that outlasts the stay (the shortest course at the shortest stay, and a pinned course at the pinned stay) |
@@ -137,7 +141,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | `package.mode`, `package.window` | a package pathway with a line the package includes, an ICU line too (or the reverse; an ICU package is no surgical package); a stay past the package window (an ICU package has no window) |
 | `icu.day_pattern` | an ICU stay whose 510090 lines are not on the first and the last ICU day, whose package lines are not on every day between, or that mixes package tiers |
 | `anaesthesia.group`, `anaesthesia.code`, `session.primary`, `session.order` | the puan band; the group's code; the primary operation of a session |
-| `pins.*`, `days.in_stay`, `days.duplicate`, `stay.coverage` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day; a bed line off `admit..discharge` or a companion line off `admit..discharge-1`; on a newborn stay, the ward and newborn bed lines together not on every day of `admit..discharge` exactly once; on an ICU stay, ICU lines off `admit..discharge-1`, on the discharge day, twice on a day, or a ward or newborn bed beside them |
+| `pins.*`, `days.in_stay`, `days.duplicate`, `stay.coverage` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day; a bed line off `admit..discharge` (off `admit+1..discharge` on a stay that arrives from an ICU bill, which also has no ICU or newborn line) or a companion line off `admit..discharge-1`; on a newborn stay, the ward and newborn bed lines together not on every day of `admit..discharge` exactly once; on an ICU stay, ICU lines off `admit..discharge-1`, on the discharge day, twice on a day, or a ward or newborn bed beside them |
 | `source.clause_exists`, `source.sut_cites`, `window.valid` | a cited clause that does not exist or is not in force; `sut` without a citation; a window outside the default |
 
 ## Add a pathway
@@ -194,3 +198,4 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | S9 | `lumbar_stenosis_decompression_foraminoplasty_itemized` | done (2026-10-21; sibling of S3 with an optional second operation) |
 | S11 | `urosepsis_septic_shock_icu_stay` | done (2026-10-21; the ICU grammar) |
 | S12 | `late_preterm_newborn_incubator_stay` | done (2026-10-21; the newborn grammar) |
+| S14 | `urosepsis_ward_stay_after_icu_transfer` | done (2026-10-21; a ward stay that arrives from an ICU bill) |

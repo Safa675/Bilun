@@ -154,6 +154,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S9": set(),  # 25 % of the second operation is on the ladder: only the engine sees it
     "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
     "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
+    "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -174,6 +175,7 @@ PATIENT = {n: patient_id(n) for n in STORIES}
 CLAIM = {n: claim_id(PATIENT[n], 1) for n in STORIES}
 EPISODE = {n: episode_id(PATIENT[n], 1) for n in STORIES}
 CATALOGS = CohortCatalogs()
+WARD = claim_id(PATIENT[10], 2)  # the ward bill of patient 10 (S14), after the ICU bill (S11): the committed second bill
 
 
 # --- fixtures -----------------------------------------------------------------------------------
@@ -585,6 +587,12 @@ class Case:
     @property
     def name(self) -> str:
         return f"{self.check}-{self.label}" if self.label else self.check
+
+
+def _ward(code: str, day: str | None = None) -> pl.Expr:
+    """A procedure line of the ward bill of patient 10 (S14), by code (and day)."""
+    expr = (pl.col("claim_id") == WARD) & (pl.col("procedure_code") == code)
+    return expr if day is None else expr & (pl.col("procedure_date") == day)
 
 
 def _second_operation(d: Data) -> None:
@@ -1267,6 +1275,40 @@ CASES: list[Case] = [
         label="newborn_quantity_two",
         at=row_at(11, TABLE_PROCEDURES, line(11, "510070", "2026-07-12")),
         says="bed line 510070 has the quantity 2; a bed line is one day",
+    ),
+    # --- stay.bed_coverage on a ward stay that begins on the day the ICU bill ends (S14: 06-07 .. 06-10, beds 06-08 .. 06-10)
+    Case(
+        BED,
+        lambda d: add_row(
+            d,
+            TABLE_PROCEDURES,
+            _ward("510010", "2026-06-08"),
+            procedure_line_id=procedure_line_id(WARD, 99),
+            procedure_date="2026-06-07",
+        ),
+        label="ward_bed_on_the_icu_exit_day",
+        at=f"{WARD} procedure_claim_lines[{procedure_line_id(WARD, 99)}]",
+        says="bed line 510010 on 2026-06-07, the day the patient leaves the ICU stay F-SENTETIK-HASTA-0010-001",
+    ),
+    Case(
+        BED,
+        lambda d: drop(d, TABLE_PROCEDURES, _ward("510010", "2026-06-09")),
+        label="ward_after_icu_missing_day",
+        at=WARD,
+        says="no bed line on 1 of 3 day(s): 2026-06-09",
+    ),
+    Case(
+        BED,
+        lambda d: add_row(
+            d,
+            TABLE_PROCEDURES,
+            _ward("510010", "2026-06-08"),
+            procedure_line_id=procedure_line_id(WARD, 99),
+            procedure_date="2026-06-10",
+        ),
+        label="ward_after_icu_duplicate_day",
+        at=WARD,
+        says="more than one bed line on: 2026-06-10",
     ),
     # --- stay.companion_coverage (S2: companions on the six nights 03-09 .. 03-14)
     Case(
@@ -3931,6 +3973,78 @@ def test_a_newborn_bed_on_an_icu_stay_is_a_ward_bed_on_an_icu_stay(twins, anadat
     assert len(ward) == 6, [str(p) for p in found]
 
 
+def _ward_findings(data: Data, context) -> list[str]:
+    """What stay.bed_coverage says about the ward bill of patient 10 (claim-level findings carry the claim id as `where`)."""
+    return [p.message for p in run_only(data, context, "stay.bed_coverage") if p.claim_id == WARD]
+
+
+def test_a_ward_stay_after_an_icu_bill_has_no_bed_on_the_icu_exit_day_and_is_clean(twins, anadata, context) -> None:
+    """S14's twin: admitted on 06-07, the day the ICU bill ends; its beds are 06-08 .. 06-10, the companions 06-07 .. 06-09."""
+    data = Data(dict(twins), anadata)
+    assert _ward_findings(data, context) == []
+    lines = twins[TABLE_PROCEDURES].filter(pl.col("claim_id") == WARD)
+    assert sorted(lines.filter(pl.col("procedure_code") == "510010")["procedure_date"]) == [
+        "2026-06-08", "2026-06-09", "2026-06-10",
+    ]  # fmt: skip
+    header = twins[TABLE_CLAIM_HEADERS].filter(pl.col("claim_id") == WARD)
+    assert header["admission_date"].to_list() == ["2026-06-07"]
+    icu = twins[TABLE_CLAIM_HEADERS].filter(pl.col("claim_id") == CLAIM[10])
+    assert icu["discharge_date"].to_list() == ["2026-06-07"]  # the day the ICU bill ends is the ward bill's first day
+
+
+def test_the_committed_faulty_ward_bill_bills_the_bed_on_the_icu_exit_day(built, anadata, context) -> None:
+    """The fault of S14, seen by the data check alone: the one finding is the bed line of 06-07."""
+    data = Data(dict(built.tables), anadata)
+    found = [p for p in run_only(data, context, "stay.bed_coverage") if p.claim_id == WARD]
+    assert len(found) == 1, [str(p) for p in found]
+    assert "bed line 510010 on 2026-06-07, the day the patient leaves the ICU stay" in found[0].message
+    assert "double billing" in found[0].message
+
+
+def test_a_ward_stay_needs_its_first_day_bed_when_no_icu_stay_ends_that_day(twins, anadata, context) -> None:
+    """Without the ICU lines the first bill is no ICU stay: nothing pays 06-07, so the ward bill needs a bed there."""
+    data = Data(dict(twins), anadata)
+    drop(data, TABLE_PROCEDURES, (pl.col("claim_id") == CLAIM[10]) & pl.col("procedure_code").is_in(["510090", "P552002"]))
+    assert _ward_findings(data, context) == ["no bed line on 1 of 4 day(s): 2026-06-07"]
+
+
+def test_an_icu_stay_that_ended_the_day_before_is_no_transfer_day(twins, anadata, context) -> None:
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == CLAIM[10], discharge_date="2026-06-06")
+    assert _ward_findings(data, context) == ["no bed line on 1 of 4 day(s): 2026-06-07"]
+
+
+def test_an_icu_stay_of_another_patient_is_no_transfer_day(twins, anadata, context) -> None:
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == WARD, patient_id=PATIENT[9])
+    assert _ward_findings(data, context) == ["no bed line on 1 of 4 day(s): 2026-06-07"]
+
+
+def test_an_icu_stay_is_not_its_own_transfer_day(twins, anadata, context) -> None:
+    """An ICU stay that ends the day it began is not preceded by itself: its ward bed is a ward bed on an ICU stay, nothing more."""
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == CLAIM[10], admission_date="2026-06-07")
+    add_row(data, TABLE_PROCEDURES, line(10, "510090", "2026-06-02"), procedure_line_id=procedure_line_id(CLAIM[10], 99), procedure_code="510010", procedure_date="2026-06-07")
+    own = [p.message for p in run_only(data, context, "stay.bed_coverage") if p.claim_id == CLAIM[10]]
+    assert any("ward bed line 510010 on an ICU stay" in message for message in own), own
+    assert not any("double billing" in message for message in own), own
+
+
+def test_two_icu_stays_ending_on_the_same_day_name_the_first_one_once(twins, anadata, context) -> None:
+    """Two ICU bills end on 06-07: a ward bed on that day is one double billing, named after the first ICU bill."""
+    data = Data(dict(twins), anadata)
+    other = claim_id(PATIENT[10], 3)
+    add_row(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == CLAIM[10], claim_id=other, episode_id=episode_id(PATIENT[10], 3))
+    add_row(data, TABLE_PROCEDURES, line(10, "510090", "2026-06-02"), claim_id=other, procedure_line_id=procedure_line_id(other, 1))
+    add_row(
+        data, TABLE_PROCEDURES, _ward("510010", "2026-06-08"),
+        procedure_line_id=procedure_line_id(WARD, 99), procedure_date="2026-06-07",
+    )  # fmt: skip
+    found = [p for p in run_only(data, context, "stay.bed_coverage") if p.claim_id == WARD]
+    assert len(found) == 1, [str(p) for p in found]
+    assert f"the ICU stay {CLAIM[10]};" in found[0].message
+
+
 def test_the_day_bed_is_the_code_set_day_bed_and_a_bed_day_code(context) -> None:
     """510120 is for a day case; on a longer stay it is a defect of its own (see the pairs)."""
     assert context.day_bed_code == "510120"
@@ -4019,7 +4133,8 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
     package = vocabulary.filter(pl.col("scenario_tag") == "appendicitis_lap_appendectomy_package")
     assert "510010" in package["code"].to_list()
     assert context.sibling_ids == {
-        "appendicitis_lap_appendectomy_package": ["appendicitis_lap_appendectomy_itemized"]
+        "appendicitis_lap_appendectomy_package": ["appendicitis_lap_appendectomy_itemized"],
+        "urosepsis_ward_stay_after_icu_transfer": ["urosepsis_ward_stay_transfer_day_billed"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []

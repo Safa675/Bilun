@@ -1790,12 +1790,11 @@ def test_row_attributes_follow_the_claim_and_the_csv(
     assert annotated.filter(pl.col("donem").ne_missing(year)).is_empty()
     midnight = pl.col("tarih").dt.truncate("1d")
     assert annotated.filter(pl.col("tarih").ne_missing(midnight)).is_empty()
-    # The episode is the claim's episode.
+    # The episode is the claim's episode: a bill of the row's patient (a patient may have several bills).
     headers = built_showcase.tables["claim_headers.parquet"].select(
-        pl.col("patient_id").alias("HASTA_ID"), pl.col("episode_id").alias("episode")
+        pl.col("patient_id").alias("HASTA_ID"), pl.col("episode_id").alias("basvuru_id")
     )
-    joined = annotated.join(headers, on="HASTA_ID", how="left")
-    assert joined.filter(pl.col("basvuru_id").ne_missing(pl.col("episode"))).is_empty()
+    assert annotated.join(headers, on=["HASTA_ID", "basvuru_id"], how="anti").is_empty()
     # The body system: hemogram and D-dimer are haematology, everything else biochemistry.
     expected_system = (
         pl.when(pl.col("SUB_CODE").is_in(["L107020", "L102090"]))

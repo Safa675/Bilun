@@ -92,7 +92,7 @@ CHECKS: dict[str, str] = {
     "fit.operation_setting": "a major operation (group A1, A2, A3 or B) on a poliklinik or acil claim",
     "fit.visit_code": "an examination line whose code does not fit the claim type (acil, poliklinik, yatis)",
     # stay: beds, companions and dates
-    "stay.bed_coverage": "a stay without one bed line of quantity 1 a day, admission..discharge (ICU: ..discharge-1), or a day bed on a stay",
+    "stay.bed_coverage": "one bed line a day, admission..discharge (ICU: ..discharge-1; none on the day an ICU bill ends); no day bed on a stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
     "stay.dates_in_window": "a header whose dates contradict the claim type, or a line date outside the claim window",
     # bill: performed against billed
@@ -1280,6 +1280,10 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
     An ICU stay (a claim with a 510090 or an ICU package line) is billed for `discharge - admission`
     days (icu_puani.py): its ICU lines are its bed lines and cover admission..discharge-1; the
     discharge day is the transfer day and carries none. A ward bed line on an ICU stay is a defect.
+
+    A stay that begins on the day the same patient leaves an ICU stay (the ward bill after the ICU
+    bill) has that day's bed paid by the ICU bill (EK-2B 510090 covers the bed; yatak_icu_overlap.py):
+    it needs no bed line for that day, and a bed line there is double billing.
     """
     icu_claims = (
         bill.lines.filter(pl.col("is_icu_day"))
@@ -1294,30 +1298,45 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
             & pl.col("adm").is_not_null()
             & pl.col("dis").is_not_null()
         )
-        .select("claim_id", "adm", "dis")
+        .select("claim_id", "patient_id", "adm", "dis")
         .join(icu_claims, on="claim_id", how="left")
         .with_columns(pl.col("is_icu_stay").fill_null(False))
     )
-    days = (
+    # The transfer day: a stay's admission day that is the discharge day of an ICU stay of the same patient.
+    arrivals = (
+        stays.select("claim_id", "patient_id", pl.col("adm").alias("day"))
+        .join(
+            stays.filter(pl.col("is_icu_stay")).select(
+                "patient_id", pl.col("claim_id").alias("icu_claim_id"), pl.col("dis").alias("day")
+            ),
+            on=["patient_id", "day"],
+        )
+        .filter(pl.col("claim_id") != pl.col("icu_claim_id"))
+        .sort("icu_claim_id")
+        .unique(subset=["claim_id"], keep="first")
+        .select("claim_id", "day", "icu_claim_id")
+    )
+    stay_days = (
         stays.with_columns(pl.date_ranges("adm", "dis").alias("day"))
         .explode("day")
         .filter(pl.col("day").is_not_null())
         .filter(~pl.col("is_icu_stay") | (pl.col("day") < pl.col("dis")))
         .select("claim_id", "day")
     )
+    days = stay_days.join(arrivals.select("claim_id", "day"), on=["claim_id", "day"], how="anti")
     beds = (
         bill.lines.filter(pl.col("is_bed_day"))
         .join(stays.select("claim_id"), on="claim_id", how="semi")
         .with_columns(_date("procedure_date").alias("day"))
     )
     per_day = beds.group_by("claim_id", "day").agg(pl.len().alias("n"))
-    stay_days = days.group_by("claim_id").agg(pl.len().alias("stay_days"))
+    expected_days = days.group_by("claim_id").agg(pl.len().alias("stay_days"))
 
     missing = (
         days.join(per_day, on=["claim_id", "day"], how="anti")
         .group_by("claim_id")
         .agg(_days_text().alias("days"), pl.len().alias("count"))
-        .join(stay_days, on="claim_id")
+        .join(expected_days, on="claim_id")
         .select(
             _claim_text().alias("where"),
             _format(
@@ -1360,8 +1379,21 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
             ).alias("message"),
         )
     )
+    paid_by_icu = (
+        beds.join(arrivals, on=["claim_id", "day"])
+        .select(
+            _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
+            _format(
+                "bed line {} on {}, the day the patient leaves the ICU stay {}; "
+                "that stay's 510090 already pays the bed (double billing)",
+                pl.col("procedure_code"),
+                pl.col("procedure_date"),
+                pl.col("icu_claim_id"),
+            ).alias("message"),
+        )
+    )
     outside = (
-        beds.join(days, on=["claim_id", "day"], how="anti")
+        beds.join(stay_days, on=["claim_id", "day"], how="anti")
         .group_by("claim_id")
         .agg(pl.col("procedure_date").sort().str.join(", ").alias("dates"))
         .select(
@@ -1383,7 +1415,8 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
         )
     )
     return _problems(
-        "stay.bed_coverage", pl.concat([missing, twice, quantity, day_bed, outside, ward_on_icu])
+        "stay.bed_coverage",
+        pl.concat([missing, twice, quantity, day_bed, outside, ward_on_icu, paid_by_icu]),
     )
 
 
