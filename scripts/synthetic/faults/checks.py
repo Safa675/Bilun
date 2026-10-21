@@ -450,6 +450,7 @@ def check_registry_coverage(registry: FaultRegistry, cat: Catalogs) -> list[Prob
             )
         )
 
+    # Only the first cohort (S1..S8) is required; any other story is optional but unique.
     missing_stories = sorted(set(SHOWCASE_STORIES) - set(stories))
     if missing_stories:
         out.append(

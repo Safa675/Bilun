@@ -1,0 +1,169 @@
+# Lumbar spinal stenosis, unilateral decompression with an optional second operation (minimal-invasive
+# foraminoplasty) in the same session, ward stay billed itemized (hizmet başı).
+# Showcase story S9 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S9). It is the sibling of
+# lumbar_stenosis_decompression_itemized (story S3): the same stay, labs and drugs, and a second operation.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# Neither operation has an EK-2C package, so the whole stay is hizmet başı: the operations, one anaesthesia
+# line, bed, companion, a lab and drugs.
+schema_version: 1
+id: lumbar_stenosis_decompression_foraminoplasty_itemized
+title: "Lumbar spinal stenosis, decompression with foraminoplasty in one session, stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"                  # EK-2A: Beyin ve Sinir Cerrahisi
+# The multiple-operation anaesthesia code 550220 is named after the total puan band of its group
+# ("9001-18500" from 2026-04-16, "7584-15400" before), and a pathway needs one name on every day of its window.
+window:
+  start: "2026-04-16"
+  end: "2026-09-30"
+  source: "550220 is named 'Toplam cerrahi puan 9001-18500' from 2026-04-16; before that day its name says 7584-15400."
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Lumbar stenosis occurs in both sexes and M48.06 has no sex gate; story S9 is a woman. Clinician to confirm."
+  age:
+    min: 55
+    max: 80
+    basis: judgment
+    source: "Story S9 patient is 77. Stenosis surgery is mostly 55 and over. Max 80 keeps ASA 2 plausible: over 75 with ASA 3-4 the geriatric codes apply (not modelled)."
+
+nights:
+  min: 2
+  max: 4
+  basis: judgment
+  source: "Story S9 has 2 nights. Min 2: one night can be under 24 h, billed as the day bed 510120 (C000648). Max 4 is the author's judgment for an elective decompression."
+
+op_day: admit                        # elective admission, operated the day of admission
+
+diagnoses:
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (review 2026-10-16 Q12); WHO ICD-10 Vol. 2 coding. Story S9: neurogenic claudication from lumbar stenosis."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code. Story S9: controlled hypertension, ASA 2 (the ASA Physical Status Classification lists well-controlled hypertension as an ASA 2 example)."
+
+procedures:
+  # --- the session: two operations by the same department, then one anaesthesia line for the session
+  - id: decompression
+    kind: operation
+    code: "615931"
+    name: "Dar spinal kanalda unilateral dekompresyon"
+    days: op
+    session_role: primary              # the higher puan leads the session
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): no P615931 in EK-2C, so hizmet başı; C000652 (2.2.2.A(1)): billed on the EK-2B list."
+  - id: foraminoplasty
+    kind: operation
+    code: "615995"
+    name: "Minimal invaziv foraminoplasti tek taraflı/çift taraflı"
+    days: op
+    session_role: separate_incision    # paid at half of its puan; one incision would pay 30 % (C000660)
+    optional:
+      probability: 0.3
+      basis: judgment
+      source: "How often a foraminoplasty joins a decompression is the author's judgment. Clinician to confirm."
+    basis: sut
+    source: "C000659, C000661 (SUT 2.2.2.A(5)b): a later operation of the session through a separate incision is paid at 50 % of its puan."
+  - id: anaesthesia_single
+    kind: anaesthesia
+    code: "550160"
+    name: "Anestezi B grubu"
+    days: op
+    specialty: "3100"                # EK-2A: Anesteziyoloji ve Reanimasyon (overrides the department's branch)
+    group: B
+    operations: [decompression]
+    optional:
+      probability: 0.7
+      basis: judgment
+      source: "The variant with the decompression alone, as story S3; pinned out when the foraminoplasty is in."
+    basis: sut
+    source: "EK-2B section 4: the puan of 615931 is in band 'B grubu' (6001-9000 from 2026-04-16); billed apart in hizmet başı, C000652."
+  - id: anaesthesia_multiple
+    kind: anaesthesia
+    code: "550220"
+    name: "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 9001-18500"
+    days: op
+    specialty: "3100"                # EK-2A: Anesteziyoloji ve Reanimasyon (overrides the department's branch)
+    group: A3
+    operations: [decompression, foraminoplasty]
+    optional:
+      probability: 0.3
+      basis: judgment
+      source: "The variant with both operations; pinned in together with the foraminoplasty."
+    basis: sut
+    source: "EK-2B section 4: the total puan of 615931 and 615995 is in band 'A3' (9001-18500); one multiple-operation line, C000652."
+
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 3 lines for 2 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 2 lines for 2 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): doctor's order (post-op fall risk, as story S3) and refakatçi belgesi; Kılavuz p.264 counts the days as entered."
+
+  # --- laboratory: the first post-operative day
+  - id: post_op_hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: op+1
+    basis: judgment
+    source: "lab_reference_notes.md test hemogram (panels admission_routine, preop); story S9 bills it on the first post-op day only."
+
+drugs:
+  - id: cefazolin
+    barcode: "8699814270253"
+    name: "EQIZOLIN 1 GR IM/IV 1 FLK"
+    inn: "cefazolin"
+    unit: vial
+    per_box: 1
+    day: op
+    qty: 2                             # 2 g once before the incision, 1 g vials
+    basis: guideline
+    source: "ASHP/IDSA/SIS/SHEA 2013 (Bratzler et al.), as story S3 cites: cefazolin 2 g IV once before the incision."
+  - id: paracetamol
+    barcode: "8699844770716"
+    name: "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK"
+    inn: "parasetamol"
+    unit: vial
+    per_box: 1
+    day: admit
+    per_night: 3                       # 1 g three times a day: 6 vials for the story's 2 nights
+    basis: judgment
+    source: "About 6 vials for 2 nights, read as 1 g three times a day (as story S3). Scaling with the nights is the author's judgment; no guideline named."
+
+notes:
+  - "Elective admission, operated the day of admission. The pre-operative exam and labs were done on an earlier outpatient takip and are not on this bill (as story S3)."
+  - "Two operations in one session by the same department. The decompression has the higher puan and leads; the foraminoplasty is the later operation. With both operations the session has one multiple-operation anaesthesia line (550220, group A3: the total puan is above 9000), in place of the single one (550160, group B)."
+  - "The clean bill pays the foraminoplasty as a separate incision (50 % of its puan, C000661). With one incision SUT pays 30 % (C000660). The claim model has no incision field, so the engine cannot tell which one the surgeon used. A neurosurgeon confirms the incision and that a foraminoplasty after a decompression is a separate procedure of the same session."
+  - "The clean bill assumes ASA 2 (controlled hypertension) at every age in the range, so the anaesthesia group follows the puan of the operations."
+  - "A patient over 75 with ASA 3-4 would take the geriatric code 550300 ('75 yaş üstü ve ASA 3-4') instead; this pathway does not model that."
+  - "EK-2B açıklama of 615931: not billed with 614040, 614050 (posterior instrumentation) or 614900 (facet denervation). None is on this bill."
+
+showcase:
+  story: S9
+  sex: F
+  age: 77
+  admit: "2026-09-21"
+  nights: 2
+  include: [foraminoplasty, anaesthesia_multiple]

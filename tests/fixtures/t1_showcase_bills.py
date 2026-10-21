@@ -1,11 +1,13 @@
 """In-memory variants of the showcase bills, for tests that need a clean control or one more line.
 
-`data/synthetic/sut` holds the 8 faulty bills of the demo cohort. Each story also has a clean twin (the same
+`data/synthetic/sut` holds the faulty bills of the demo cohort. Each story also has a clean twin (the same
 bill without its injected fault) that the builder composes in memory and never writes. A test that needs
 "the bill with nothing wrong" asks this module for the twin of a registry role, and a test that needs the
 bill with one more operation on it asks for `with_extra_operation`. Roles and ids come from
 `tests/fixtures/synthetic_cohort.py`; nothing here names a patient, a claim or an amount.
 
+- `clean_context_for_story(story)`: the same for the bill that the fault of a story is injected into, so that a
+  story after the eighth (a scenario, with no role) has its clean twin too.
 - `clean_context(role_name)`: the clean twin of the showcase bill that the role names, as a
   `PatientClaimContext`. It is built by `scripts.synthetic.cohort.build_showcase()` (once per process) the
   way `tests/unit/synthetic/test_cohort_engine_proof.py` builds it.
@@ -32,13 +34,22 @@ def _built() -> BuildResult:
     return build_showcase()
 
 
-def clean_context(role_name: str) -> PatientClaimContext:
-    """The clean twin of the showcase bill that `role_name` names, as a claim context."""
-    claim_id = cohort.role(role_name).claim_id
+def _clean_twin_of(claim_id: str, what: str) -> PatientClaimContext:
     for composed in _built().clean_claims:
         if composed.header.claim_id == claim_id:
             return context_from_composed(composed)
-    raise KeyError(f"the builder composed no clean twin for {claim_id} ({role_name})")
+    raise KeyError(f"the builder composed no clean twin for {claim_id} ({what})")
+
+
+def clean_context(role_name: str) -> PatientClaimContext:
+    """The clean twin of the showcase bill that `role_name` names, as a claim context."""
+    return _clean_twin_of(cohort.role(role_name).claim_id, role_name)
+
+
+def clean_context_for_story(story: str) -> PatientClaimContext:
+    """The clean twin of the bill that the fault of `story` is injected into (a story after the eighth is a
+    scenario, which has no role); `KeyError` when the story has no fault."""
+    return _clean_twin_of(cohort.fault(story)["claim_id"], story)
 
 
 def with_extra_operation(

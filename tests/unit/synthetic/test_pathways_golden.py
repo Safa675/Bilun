@@ -1,4 +1,6 @@
-"""The golden clean and faulty bills, tests/fixtures/pathways/{golden,golden_faulty}/S1..S8.json.
+"""The golden clean and faulty bills, tests/fixtures/pathways/{golden,golden_faulty}/<story>.json.
+
+A story has goldens exactly when `stories.py` builds it (S1..S9 today); see tests/fixtures/pathway_goldens.py.
 
 Well-formedness is checked on the files alone: no harness, no engine. That the files equal a fresh
 export of stories.py is `export_clean_lines.py --check`, run here in a subprocess (the harness
@@ -18,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.fixtures.pathway_goldens import golden_problems, golden_stories, stories_in
+
 pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).resolve().parents[3]
@@ -27,7 +31,7 @@ GOLDEN_DIRS = {"clean": GOLDEN_DIR, "faulty": GOLDEN_FAULTY_DIR}
 EXPORTER = (
     REPO / "reports" / "synthetic-data" / "2026-10-15-showcase-proofs" / "export_clean_lines.py"
 )
-STORIES = [f"S{n}" for n in range(1, 9)]
+STORIES = golden_stories()
 
 TOP_KEYS = {
     "story",
@@ -107,9 +111,63 @@ def golden(request: pytest.FixtureRequest) -> tuple[str, str, dict]:
     return sid, text, json.loads(text)
 
 
+def test_the_stories_with_goldens_are_s1_to_s9_in_order() -> None:
+    assert STORIES == [f"S{n}" for n in range(1, 10)]
+
+
 @pytest.mark.parametrize("directory", GOLDEN_DIRS.values(), ids=GOLDEN_DIRS.keys())
-def test_eight_golden_files_exist(directory: Path) -> None:
+def test_every_story_has_its_golden_file_and_no_other_file_is_there(directory: Path) -> None:
     assert [s for s in STORIES if not (directory / f"{s}.json").is_file()] == []
+    assert sorted(p.name for p in directory.iterdir()) == sorted(f"{s}.json" for s in STORIES)
+
+
+def test_stories_are_read_from_the_stories_dict_without_importing_it() -> None:
+    source = 'import nothing_real\nSTORIES = {"S1": s1, "S10": s10}\n'
+    assert stories_in(source) == ["S1", "S10"]
+    for bad in ("x = 1\n", "STORIES = [1, 2]\n", "STORIES = {1: a}\n", "STORIES = {**other}\n"):
+        with pytest.raises(ValueError, match="STORIES"):
+            stories_in(bad)
+
+
+@pytest.mark.parametrize(
+    ("goldens", "pathways", "built", "expected"),
+    [
+        ({"S1", "S2"}, ["S1", "S2"], ["S1", "S2"], []),
+        # a pathway of a story that stories.py does not build has no golden and is fine
+        ({"S1", "S2"}, ["S1", "S2", "S10", "S11"], ["S1", "S2"], []),
+        (
+            {"S1"},
+            ["S1"],
+            ["S1", "S2"],
+            [
+                "story of stories.py without a golden: ['S2']",
+                "golden without a pathway: ['S2']",
+            ],
+        ),
+        (
+            {"S1", "S2"},
+            ["S1", "S2"],
+            ["S1", "S2", "S3"],
+            [
+                "story of stories.py without a golden: ['S3']",
+                "golden without a pathway: ['S3']",
+            ],
+        ),
+        (
+            {"S1", "S3"},
+            ["S1"],
+            ["S1"],
+            ["golden without a story in stories.py: ['S3']"],
+        ),
+        ({"S1", "S2"}, ["S1"], ["S1", "S2"], ["golden without a pathway: ['S2']"]),
+        ({"S1"}, ["S1", "S1"], ["S1"], ["two pathways claim the same story"]),
+        ({"S1"}, ["S1"], ["S1", "S1"], ["stories.py builds a story twice"]),
+    ],
+)
+def test_goldens_pathways_and_stories_py_must_pair_up(
+    goldens: set[str], pathways: list[str], built: list[str], expected: list[str]
+) -> None:
+    assert golden_problems(goldens, pathways, built) == expected
 
 
 @pytest.mark.parametrize("story", STORIES)

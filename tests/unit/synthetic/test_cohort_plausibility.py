@@ -1,7 +1,7 @@
 """Contract, mutation and hygiene tests for `scripts/synthetic/cohort/plausibility.py` (plan D5, slices E1 and E2).
 
 Every id in `plausibility.CHECKS` has at least one in-memory mutation case below. A case seeds ONE
-defect into a copy of the tables of the eight clean twins (the showcase bills without their fault)
+defect into a copy of the tables of the nine clean twins (the showcase bills without their fault)
 and proves that exactly the target id trips, plus the ids in `also` that the defect unavoidably
 trips too (each one is explained next to its case). The `labels.*` cases start from the committed
 faulty bills and their registry instead (`on_faulty`): the fault records exist only there, and the
@@ -21,7 +21,7 @@ findings must not depend on the order of the rows (section 3c), and the helpers 
 tested on their own (section 3d).
 
 The contract:
-1. the eight clean twins raise no problem;
+1. the nine clean twins raise no problem;
 2. the committed faulty bills trip exactly the pinned ids (`EXPECTED_FAULT_TRIPS`);
 3. every id has an implementation, a short meaning and a mutation case;
 4. the committed Parquet files give the same result as the in-memory tables.
@@ -137,7 +137,7 @@ ANSWER_ROWS = "labels.answer_rows"
 AMOUNTS = "labels.amounts"
 
 # What the committed faulty bill of each story trips (checked by the orchestrator with a prototype).
-# S4's missing companion, S6's dropped diagnosis and S8's wrong ratio are invisible to plausibility
+# S4's missing companion, S6's dropped diagnosis and the wrong ratios of S8 and S9 are invisible to plausibility
 # (only the engine sees them); S5's flag is the one fault slice E2 sees. A story that trips nothing
 # is a fault only the engine finds, not a hole in the checks.
 EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
@@ -149,6 +149,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S6": set(),
     "S7": {"bill.performed_billed"},
     "S8": set(),
+    "S9": set(),  # 25 % of the second operation is on the ladder: only the engine sees it
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -164,7 +165,7 @@ E2_CHECKS = {
     "money.payable_equals_billed", "money.totals", "labels.answer_rows", "labels.amounts",
 }  # fmt: skip
 
-STORIES = tuple(range(1, 9))
+STORIES = tuple(range(1, 10))
 PATIENT = {n: patient_id(n) for n in STORIES}
 CLAIM = {n: claim_id(PATIENT[n], 1) for n in STORIES}
 EPISODE = {n: episode_id(PATIENT[n], 1) for n in STORIES}
@@ -186,7 +187,7 @@ def context() -> PlausibilityContext:
 
 @pytest.fixture(scope="module")
 def twins(built) -> dict[str, pl.DataFrame]:
-    """The tables of the eight clean twins: the showcase bills as the pathways expand them."""
+    """The tables of the nine clean twins: the showcase bills as the pathways expand them."""
     return build_tables(
         built.clean_claims,
         answer_rows=(),
@@ -1949,8 +1950,8 @@ def test_a_clean_twin_raises_no_problem(story, clean_problems, twins) -> None:
     assert twins[TABLE_CLAIM_HEADERS].filter(of(story)).height == 1
 
 
-def test_the_eight_clean_twins_are_all_there_and_all_clean(clean_problems, twins) -> None:
-    assert twins[TABLE_CLAIM_HEADERS].height == 8
+def test_the_nine_clean_twins_are_all_there_and_all_clean(clean_problems, twins) -> None:
+    assert twins[TABLE_CLAIM_HEADERS].height == 9
     assert [str(p) for p in clean_problems] == []
 
 
@@ -1978,12 +1979,12 @@ def test_the_committed_files_give_the_result_of_the_tables_in_memory(
 
 
 def test_the_committed_bills_and_their_committed_registry_trip_no_labels_id(context) -> None:
-    """The eight answer rows and eight fault records agree with the committed bills (labels.*)."""
+    """The nine answer rows and nine fault records agree with the committed bills (labels.*)."""
     on_disk = {name: pl.read_parquet(_CLAIMS_DIR / name) for name in TABLE_FILES}
     clean_on_disk = {TABLE_ANADATA: pl.read_parquet(_CLEAN_DIR / TABLE_ANADATA)}
     registry = json.loads(_REGISTRY_FILE.read_text(encoding="utf-8"))
-    assert len(registry["faults"]) == 8
-    assert on_disk[TABLE_ANSWERS].height == 8
+    assert len(registry["faults"]) == 9
+    assert on_disk[TABLE_ANSWERS].height == 9
     found = check_plausibility(
         on_disk, clean_on_disk, context=context, registry=registry, only=sorted(REGISTRY_CHECKS)
     )
@@ -2043,7 +2044,7 @@ def test_billed_clean_try_is_the_total_of_the_clean_twin(built, twins) -> None:
         )
     }
     faults = built.registry["faults"]
-    assert len(faults) == 8
+    assert len(faults) == 9
     assert {fault["claim_id"]: fault["billed_clean_try"] for fault in faults} == totals
 
 
@@ -2069,7 +2070,7 @@ def test_a_defect_trips_its_own_check_and_what_it_must(
         # the faulty bills trip the pinned ids already; the case may add only its own finding
         assert {p.check for p in before} == set().union(*EXPECTED_FAULT_TRIPS.values())
     else:
-        assert before == [], "the base (the eight clean twins) must be clean"
+        assert before == [], "the base (the nine clean twins) must be clean"
     broken = fresh(case, built, twins, anadata)
     at = case.at(broken) if callable(case.at) else case.at  # read before the defect is seeded
     case.mutate(broken)
@@ -4156,6 +4157,10 @@ def test_the_ladder_is_the_full_price_a_half_and_a_quarter(twins) -> None:
     s8 = twins[TABLE_PROCEDURES].filter(of(8))
     ratio = (s8["billed_amount_try"] / (s8["unit_price_try"] * s8["quantity"])).round(4).to_list()
     assert sorted(ratio) == [0.25, 1.0]  # the clean S8 twin bills its second package at a quarter
+    s9 = twins[TABLE_PROCEDURES].filter(of(9))
+    ratio = (s9["billed_amount_try"] / (s9["unit_price_try"] * s9["quantity"])).round(4).to_list()
+    assert sorted(set(ratio)) == [0.5, 1.0]  # the clean S9 twin bills its second operation at a half
+    assert ratio.count(0.5) == 1
 
 
 @pytest.mark.parametrize(
@@ -4309,7 +4314,7 @@ def test_a_registry_without_a_list_of_faults_is_one_finding_and_leaves_every_row
     found = _answer_rows_of(data, context)
     assert [p.where for p in found][0] == "(registry)"
     assert found[0].message == "the registry has no list of faults"
-    assert len(found) == 1 + 8
+    assert len(found) == 1 + 9
     assert data.problems(context, only=AMOUNTS) == []  # nothing to compare
 
 
@@ -4321,10 +4326,10 @@ def test_a_fault_entry_that_is_not_even_a_mapping_or_has_no_claim_is_reported(
     data.registry["faults"].append({"fault_id": "F_X", "billed_faulty_try": None})
     found = data.problems(context, only=sorted(REGISTRY_CHECKS))
     wheres = [p.where for p in found]
-    assert "(no-claim-id) registry faults[8]" in wheres
     assert "(no-claim-id) registry faults[9]" in wheres
+    assert "(no-claim-id) registry faults[10]" in wheres
     assert all(p.message and "None" not in p.message for p in found)
-    # the nine-th entry is a mapping without values: labels.amounts names each missing value
+    # the last entry is a mapping without values: labels.amounts names each missing value
     assert any(p.check == AMOUNTS and "(none)" in p.message for p in found)
 
 
@@ -4366,7 +4371,7 @@ def test_answer_money_is_compared_in_cents(built, anadata, context) -> None:
 
 def test_every_answer_row_names_the_fault_of_its_record_and_none_is_payable(built) -> None:
     answers = built.tables[TABLE_ANSWERS]
-    assert answers["expected_payable_try"].null_count() == answers.height == 8
+    assert answers["expected_payable_try"].null_count() == answers.height == 9
     assert [e["claim_id"] for e in built.registry["faults"]] == answers["claim_id"].to_list()
 
 

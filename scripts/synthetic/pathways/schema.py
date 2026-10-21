@@ -183,6 +183,9 @@ Source = Annotated[str, StringConstraints(strip_whitespace=True, min_length=10, 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=400)]
 Slug = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{1,39}$")]  # a line id
 PathwayId = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{1,79}$")]  # the file name
+# A showcase story: S and a number from 1 up, with no upper limit (S1..S8 are the first cohort,
+# later stories are added one pathway at a time).
+Story = Annotated[str, StringConstraints(pattern=r"^S[1-9][0-9]*$")]
 Pending = Annotated[str, StringConstraints(pattern=r"^#[0-9]+( Q[0-9]+)?$")]
 ProcCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]?[0-9]{6}$")]
 MaterialCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]{2}[0-9]{4}$")]
@@ -432,7 +435,7 @@ class Performed(Sourced):
 class Pins(_Model):
     """The choices that turn a pathway into one bill: the showcase block, or P4's draw."""
 
-    story: Annotated[str, StringConstraints(pattern=r"^S[1-8]$")]
+    story: Story
     sex: Literal["M", "F"]
     age: int = Field(ge=0, le=120)
     admit: IsoDate  # first day of the stay; for an ER-only pathway, the visit day

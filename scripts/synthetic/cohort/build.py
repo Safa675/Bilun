@@ -12,12 +12,14 @@ from dataclasses import dataclass
 from decimal import Decimal
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
 import polars as pl
 
 from scripts.synthetic.faults import (
+    SHOWCASE_STORIES,
     FaultInjectionRecord,
     FaultRegistry,
     FaultSpec,
@@ -70,6 +72,9 @@ DEFAULT_OUT_DIR = REPO / "data" / "synthetic"
 SCHEMA_VERSION = 1
 DATASET_ID = "showcase-v3"
 _ZERO = Decimal("0.00")
+# The stories of the first cohort (S1..S8) are named by the registry's roles, `showcase_S<n>`; every
+# later story is a scenario: a patient and the claims of its bills, under the top-level key `scenarios`.
+_STORY_RE = re.compile(r"^S[1-9][0-9]*$")
 
 
 class BuildError(ValueError):
@@ -355,6 +360,40 @@ def validate_cohort_registry(
                 f"patient_id {claim_to_patient[cid]!r}"
             )
 
+    scenarios = registry.get("scenarios")
+    if not isinstance(scenarios, Mapping):
+        raise BuildError(
+            "cohort_registry scenarios must be a mapping (the stories after S8; it may be empty)"
+        )
+    for story, target in scenarios.items():
+        if not isinstance(story, str) or not _STORY_RE.fullmatch(story) or story in SHOWCASE_STORIES:
+            raise BuildError(
+                f"scenario {story!r} must be a story after S8 (S9, S10, ...); S1 to S8 are roles"
+            )
+        if not isinstance(target, Mapping) or set(target.keys()) != {"patient_id", "claim_ids"}:
+            raise BuildError(
+                f"scenario {story!r} must map to {{'patient_id', 'claim_ids'}}, got {target!r}"
+            )
+        scenario_claims = target["claim_ids"]
+        if (
+            not isinstance(scenario_claims, list)
+            or not scenario_claims
+            or not all(isinstance(cid, str) for cid in scenario_claims)
+            or len(set(scenario_claims)) != len(scenario_claims)
+        ):
+            raise BuildError(
+                f"scenario {story!r} claim_ids must be a non-empty list of distinct claim ids, "
+                f"got {scenario_claims!r}"
+            )
+        for cid in scenario_claims:
+            if cid not in claim_to_patient:
+                raise BuildError(f"scenario {story!r} references missing claim_id {cid!r}")
+            if claim_to_patient[cid] != target["patient_id"]:
+                raise BuildError(
+                    f"scenario {story!r} patient_id {target['patient_id']!r} does not match claim "
+                    f"{cid!r} patient_id {claim_to_patient[cid]!r}"
+                )
+
     encounters = registry.get("encounters")
     if not isinstance(encounters, list) or len(encounters) != headers_df.height:
         raise BuildError("cohort_registry encounters length does not match claim_headers count")
@@ -374,6 +413,27 @@ def validate_cohort_registry(
 
     if [r.claim_id for r in records] != sorted(r.claim_id for r in records):
         raise BuildError("cohort_registry faults must be ordered by claim_id")
+    for rec in records:
+        if rec.story is None:
+            continue
+        if rec.story in SHOWCASE_STORIES:
+            role = roles.get(f"showcase_{rec.story}")
+            named = isinstance(role, Mapping) and (role["patient_id"], role["claim_id"]) == (
+                rec.patient_id,
+                rec.claim_id,
+            )
+        else:
+            scenario = scenarios.get(rec.story)
+            named = (
+                scenario is not None
+                and scenario["patient_id"] == rec.patient_id
+                and rec.claim_id in scenario["claim_ids"]
+            )
+        if not named:
+            raise BuildError(
+                f"fault record {rec.injection_id} of story {rec.story} is on claim {rec.claim_id}, "
+                f"which no role or scenario names"
+            )
 
     lines_df = pl.concat(
         [
@@ -470,7 +530,7 @@ def build_showcase(
     siblings: Mapping[str, Pathway] | None = None,
     fault_registry: FaultRegistry | None = None,
 ) -> BuildResult:
-    """Build the 8-patient showcase dataset and `cohort_registry.json` purely in memory."""
+    """Build the showcase dataset and `cohort_registry.json` purely in memory."""
     loaded_recipes = recipes if recipes is not None else load_recipes(recipes_path or RECIPES_PATH)
     loaded_fault_reg = fault_registry if fault_registry is not None else load_registry()
     problems = check_recipes(loaded_recipes, fault_registry=loaded_fault_reg)
@@ -495,14 +555,19 @@ def build_showcase(
     profiles: list[dict[str, Any]] = []
     encounters: list[dict[str, Any]] = []
     roles: dict[str, dict[str, str]] = {}
+    scenarios: dict[str, dict[str, Any]] = {}
 
     for idx, recipe in enumerate(loaded_recipes.recipes):
         pathway = pathways_map[recipe.pathway]
-        fault = faults_by_id[recipe.fault]
+        fault = faults_by_id[recipe.fault] if recipe.fault is not None else None
         pins = pathway.showcase
 
         clean_bill = expand(pathway, annotate=True)
-        faulty_bill = apply_fault(fault, pathway, siblings=siblings_map, annotate=True)
+        faulty_bill = (
+            apply_fault(fault, pathway, siblings=siblings_map, annotate=True)
+            if fault is not None
+            else clean_bill
+        )
 
         pid = patient_id(recipe.patient_no)
         cid = claim_id(pid, 1)
@@ -519,19 +584,27 @@ def build_showcase(
         )
 
         clean_claim = compose_claim(clean_bill, ctx, cats)
-        faulty_claim = compose_claim(faulty_bill, ctx, cats)
+        # A recipe without a fault is a clean bill: the claim is the clean twin, and there is no
+        # injection record and no answer-key row.
+        faulty_claim = compose_claim(faulty_bill, ctx, cats) if fault is not None else clean_claim
 
-        record = _make_injection_record(fault, clean_claim, faulty_claim)
+        record = (
+            _make_injection_record(fault, clean_claim, faulty_claim) if fault is not None else None
+        )
 
         ref_date = faulty_claim.header.admission_date or faulty_claim.header.claim_start_date
         birth_year = ref_date.year - pins.age
         profile = copay_profile(pid, birth_year)
 
-        story = fault.story or pins.story
+        story = (fault.story if fault is not None else None) or pins.story
         role_target = {"patient_id": pid, "claim_id": cid}
         if idx == 0 or story == "S1":
             roles["default_landing"] = dict(role_target)
-        roles[f"showcase_{story}"] = dict(role_target)
+        if story in SHOWCASE_STORIES:
+            roles[f"showcase_{story}"] = dict(role_target)
+        else:
+            scenario = scenarios.setdefault(story, {"patient_id": pid, "claim_ids": []})
+            scenario["claim_ids"].append(cid)
 
         encounters.append(
             {
@@ -540,14 +613,15 @@ def build_showcase(
                 "pathway_id": pathway.id,
                 "story": story,
                 "tier": "showcase",
-                "is_clean": False,
-                "fault_id": fault.fault_id,
+                "is_clean": fault is None,
+                "fault_id": fault.fault_id if fault is not None else None,
             }
         )
 
         clean_claims.append(clean_claim)
         faulty_claims.append(faulty_claim)
-        records_unsorted.append(record)
+        if record is not None:
+            records_unsorted.append(record)
         profiles.append(profile)
 
     ordered_records = tuple(sorted(records_unsorted, key=lambda r: (r.claim_id, r.fault_id)))
@@ -584,6 +658,7 @@ def build_showcase(
         "clean_tables_digest": clean_digest,
         "clean_counts": clean_counts,
         "roles": roles,
+        "scenarios": scenarios,
         "encounters": encounters,
         "faults": [rec.model_dump(mode="json") for rec in ordered_records],
     }

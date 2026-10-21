@@ -23,6 +23,7 @@ from src.bilun.domain.prose_rules.material_bundling import check_material_bundli
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
+from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
@@ -100,6 +101,16 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(v, ("rule_id", "procedure_code", "primary_procedure_code", "expected_point_factor",
                           "expected_billed_try", "actual_billed_try", "risk_amount_try", "sut_section", "detail"))
                 for v in f.session_violations]
+    if story == "S9":
+        # as recommend_session_uplift_from_claims calls it: no claim line carries the incision
+        return [_keep(o, ("rule_id", "procedure_code", "primary_procedure_code", "session_date",
+                          "expected_point_factor", "strict_point_factor", "lenient_point_factor",
+                          "expected_billed_try", "strict_expected_billed_try",
+                          "lenient_expected_billed_try", "actual_billed_try",
+                          "recoverable_uplift_try", "review_uplift_try", "missing_facts",
+                          "sut_section_id"))
+                for o in detect_session_underbilling_opportunities(
+                    procs, claim_id=claim.claim_id, cross_specialty=None, claim=claim)]
     raise KeyError(story)
 
 
@@ -165,7 +176,7 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4"):
+    if story in ("S2", "S3", "S4", "S9"):
         return total("recoverable_uplift_try")
     if story == "S5":
         return total("risk_amount")

@@ -1,0 +1,457 @@
+{
+ "story": "S9",
+ "clean": {
+  "total_billed": "8574.85",
+  "rows": [
+   {
+    "date": "2026-09-21",
+    "code": "615931",
+    "name": "Dar spinal kanalda unilateral dekompresyon",
+    "qty": 1,
+    "unit": "3837.32",
+    "billed": "3837.32",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "615995",
+    "name": "Minimal invaziv foraminoplasti tek taraflı/çift taraflı",
+    "qty": 1,
+    "unit": "3032.01",
+    "billed": "1516.01",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "550220",
+    "name": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 9001-18500",
+    "qty": 1,
+    "unit": "2386.51",
+    "billed": "2386.51",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-23",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "8699814270253",
+    "name": "EQIZOLIN 1 GR IM/IV 1 FLK",
+    "qty": 2,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A02786 from 2025-04-26",
+    "ingredient": "cefazolin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M48.06",
+    true
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "faulty": {
+  "total_billed": "7816.84",
+  "rows": [
+   {
+    "date": "2026-09-21",
+    "code": "615931",
+    "name": "Dar spinal kanalda unilateral dekompresyon",
+    "qty": 1,
+    "unit": "3837.32",
+    "billed": "3837.32",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "615995",
+    "name": "Minimal invaziv foraminoplasti tek taraflı/çift taraflı",
+    "qty": 1,
+    "unit": "3032.01",
+    "billed": "758.00",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "550220",
+    "name": "Birden fazla ameliyatın veya ameliyathane dışı uygulamaların yapıldığı anesteziler. Toplam cerrahi puan 9001-18500",
+    "qty": 1,
+    "unit": "2386.51",
+    "billed": "2386.51",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-23",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-22",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "8699814270253",
+    "name": "EQIZOLIN 1 GR IM/IV 1 FLK",
+    "qty": 2,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A02786 from 2025-04-26",
+    "ingredient": "cefazolin",
+    "qty_unit": "vial"
+   },
+   {
+    "date": "2026-09-21",
+    "code": "8699844770716",
+    "name": "PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK",
+    "qty": 6,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A13408 from 2025-04-26",
+    "ingredient": "parasetamol",
+    "qty_unit": "vial"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M48.06",
+    true
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "2.2.2.A.(5)",
+    "procedure_code": "615995",
+    "primary_procedure_code": "615931",
+    "session_date": "2026-09-21",
+    "expected_point_factor": 0.3,
+    "strict_point_factor": 0.3,
+    "lenient_point_factor": 0.5,
+    "expected_billed_try": 909.6,
+    "strict_expected_billed_try": 909.6,
+    "lenient_expected_billed_try": 1516.01,
+    "actual_billed_try": 758.0,
+    "recoverable_uplift_try": 151.6,
+    "review_uplift_try": 0.0,
+    "missing_facts": [
+     "kesi"
+    ],
+    "sut_section_id": "2.2.2.A.(5)"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 151.6,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "session_uplift",
+   "session_underbilling",
+   "615995",
+   151.6
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

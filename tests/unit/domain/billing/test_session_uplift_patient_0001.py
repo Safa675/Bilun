@@ -15,7 +15,11 @@ import pytest
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from tests.fixtures import synthetic_cohort as cohort
-from tests.fixtures.t1_showcase_bills import clean_context, with_extra_operation
+from tests.fixtures.t1_showcase_bills import (
+    clean_context,
+    clean_context_for_story,
+    with_extra_operation,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -40,6 +44,20 @@ def test_clean_twin_has_no_session_or_drg_uplift(role_name: str) -> None:
     report = _report(clean_context(role_name))
 
     assert report.session_uplift.confirmed_uplift_try == 0.0
+    assert report.drg_uplift.confirmed_uplift_try == 0.0
+    assert report.sgk_uplift_try == 0.0
+
+
+@pytest.mark.parametrize("story", sorted(cohort.scenarios()))
+def test_clean_twin_of_a_story_after_the_eighth_has_no_session_or_drg_uplift(story: str) -> None:
+    """The same control for the stories that are scenarios and not roles (S9 and later).
+
+    S9's fault is a session fault: its clean twin bills the second operation at the separate-incision rate,
+    which the engine reads as correct, so the block that finds the fault stays at zero on the clean bill."""
+    report = _report(clean_context_for_story(story))
+
+    assert report.session_uplift.confirmed_uplift_try == 0.0
+    assert report.session_uplift.opportunities == []
     assert report.drg_uplift.confirmed_uplift_try == 0.0
     assert report.sgk_uplift_try == 0.0
 

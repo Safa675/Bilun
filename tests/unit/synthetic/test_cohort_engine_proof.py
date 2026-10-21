@@ -49,7 +49,7 @@ pytestmark = pytest.mark.unit
 
 _OUT_DIR = DEFAULT_OUT_DIR
 _CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
-_STORIES: tuple[str, ...] = ("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8")
+_STORIES: tuple[str, ...] = tuple(f"S{n}" for n in range(1, 10))
 
 
 @dataclass(frozen=True)
@@ -301,7 +301,7 @@ def test_report_scalars_match_proof(
     assert report_scalars(b.clean_report) == normalize(b.proof["clean"]["report"])
 
 
-# --- 5. Fault is found with its amount (or drug_indication for S6, divergence for S8) ----------
+# --- 5. Fault is found with its amount (or drug_indication for S6, a divergence for S8, S9) ----
 
 
 @pytest.mark.parametrize("story", _STORIES)
@@ -314,7 +314,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
     expected_amount = _f(b.record.amount_try)
 
     if story == "S8":
-        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8"}
+        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9"}
         div = KNOWN_REPORT_DIVERGENCES["S8"]
         assert isinstance(div, ReportDivergence)
         assert div.report_amount_try == "3584.80"
@@ -327,9 +327,23 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         assert "5377.20" in b.story_proof.note
         assert "Safa675/Bilun#311 item 6" in b.story_proof.note
         for other_story in _STORIES:
-            if other_story != "S8":
+            if other_story not in KNOWN_REPORT_DIVERGENCES:
                 assert story_bundles[other_story].story_proof.note == ""
         assert target_signal_found("S8", b.record.amount_try, diff_tuples) is True
+        return
+
+    if story == "S9":
+        # The report prices the uplift at the strictest reading (same incision, 30 %); the record
+        # carries the whole gap to the clean bill, which bills the separate-incision rate (50 %).
+        div = KNOWN_REPORT_DIVERGENCES["S9"]
+        assert isinstance(div, ReportDivergence)
+        assert (div.report_amount_try, div.record_amount_try) == ("151.60", "758.01")
+        assert b.record.amount_try == div.record_amount_try
+        assert ("action", "session_uplift", "session_underbilling", "615995", 151.6) in diff_tuples
+        assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
+        assert "151.60" in b.story_proof.note and "758.01" in b.story_proof.note
+        assert "Safa675/Bilun#311 item 6" in b.story_proof.note
+        assert target_signal_found("S9", b.record.amount_try, diff_tuples) is True
         return
 
     assert b.story_proof.note == ""
@@ -344,6 +358,27 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             f"{story}: expected 'drug_indication' in a tuple of F - C, got {diff_tuples}"
         )
     assert target_signal_found(story, b.record.amount_try, diff_tuples)
+
+
+def test_the_s9_session_uplift_rows_are_the_strict_and_the_lenient_reading(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S9"]
+    (row,) = b.direct_faulty
+    assert (row["rule_id"], row["procedure_code"], row["primary_procedure_code"]) == (
+        "2.2.2.A.(5)",
+        "615995",
+        "615931",
+    )
+    assert (row["strict_point_factor"], row["lenient_point_factor"]) == (0.3, 0.5)
+    assert (row["actual_billed_try"], row["strict_expected_billed_try"]) == (758.0, 909.6)
+    assert row["lenient_expected_billed_try"] == 1516.01
+    assert (row["recoverable_uplift_try"], row["review_uplift_try"]) == (151.6, 0.0)
+    assert row["missing_facts"] == ["kesi"]
+    # the clean bill pays the lenient reading, which the engine accepts without a row
+    assert b.direct_clean == []
+    assert b.clean_report.session_uplift.opportunities == []
+    assert b.faulty_report.sgk_uplift_try == 151.6
 
 
 def test_divergence_entry_with_wrong_report_amount_cannot_hide_real_mismatch(
@@ -476,13 +511,13 @@ def test_prove_showcase_has_no_mismatch(
     assert sp.mismatches == ()
 
 
-def test_cli_main_prints_eight_lines_and_returns_zero(
+def test_cli_main_prints_nine_lines_and_returns_zero(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     rc = main([])
     captured = capsys.readouterr()
     lines = [ln for ln in captured.out.strip().splitlines() if ln.strip()]
-    assert len(lines) == 8
-    assert "note:" in lines[-1]
+    assert len(lines) == 9
+    assert "note:" in lines[-2] and "note:" in lines[-1]  # S8 and S9 carry a divergence
     assert captured.err == ""
     assert rc == 0

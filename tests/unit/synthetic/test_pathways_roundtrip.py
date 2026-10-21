@@ -1,7 +1,8 @@
 """Care pathways round trip: a pathway expanded with its pins equals the golden clean bill.
 
-The goldens (tests/fixtures/pathways/golden/S1..S8.json) are exported from the reviewed clean
-variant of each story by a different script, so they cannot be fitted to the YAML. Cases are
+The goldens (tests/fixtures/pathways/golden/<story>.json, S1..S9) are exported from the reviewed clean
+variant of each story by a different script, so they cannot be fitted to the YAML. A pathway of a story
+that script does not build (a later story) has no golden and is not compared with one. Cases are
 parametrized per pathway file and load their file inside the test: a broken sibling fails only its
 own cases.
 """
@@ -20,6 +21,7 @@ import scripts.synthetic.pathways.expand as expand_module
 from scripts.synthetic.pathways import PathwayLoadError, load_all, load_pathway, load_text
 from scripts.synthetic.pathways.expand import ExpandError, expand
 from scripts.synthetic.pathways.schema import Pathway, Pins, course_overrun, pin_problems
+from tests.fixtures.pathway_goldens import golden_problems, golden_stories
 
 pytestmark = pytest.mark.unit
 
@@ -27,7 +29,18 @@ _REPO = Path(__file__).resolve().parents[3]
 _DIR = _REPO / "data/synthetic/pathways"
 _GOLDEN = _REPO / "tests/fixtures/pathways/golden"
 _FILES = sorted(_DIR.glob("*.yaml"))
-_STORIES = [f"S{n}" for n in range(1, 9)]
+_STORIES = golden_stories()
+
+
+def _story_of(path: Path) -> str | None:
+    """A file's showcase story, read leniently: a broken file has none and fails in its own cases."""
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8"))["showcase"]["story"]
+    except (OSError, yaml.YAMLError, KeyError, TypeError):
+        return None
+
+
+_GOLDEN_FILES = [p for p in _FILES if _story_of(p) in _STORIES]
 
 
 def _golden(story: str) -> dict:
@@ -49,7 +62,7 @@ def _diff(got: dict, want: dict) -> str:
     return "\n".join(lines)
 
 
-@pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
+@pytest.mark.parametrize("path", _GOLDEN_FILES, ids=lambda p: p.stem)
 def test_the_expansion_equals_the_golden_clean_bill(path: Path) -> None:
     pathway = load_pathway(path)
     got, want = expand(pathway), _golden(pathway.showcase.story)
@@ -182,22 +195,27 @@ def test_pins_outside_the_declared_ranges_are_refused(path: Path) -> None:
 
 def _stories_of_pathway_files() -> list[str]:
     """Each file's showcase story, read leniently: a broken file must not fail this test."""
-    stories = []
-    for path in _FILES:
-        try:
-            stories.append(yaml.safe_load(path.read_text(encoding="utf-8"))["showcase"]["story"])
-        except (OSError, yaml.YAMLError, KeyError, TypeError):
-            continue
-    return stories
+    return [story for story in map(_story_of, _FILES) if story is not None]
 
 
-def test_every_golden_has_a_pathway_and_every_pathway_has_a_golden() -> None:
+def test_every_golden_has_a_pathway_and_every_pathway_of_a_golden_story_has_its_golden() -> None:
     goldens = {p.stem for p in _GOLDEN.glob("S*.json")}
+    assert golden_problems(goldens, _stories_of_pathway_files(), _STORIES) == []
+    # every pathway of a story that stories.py builds is compared with its golden above
     stories = _stories_of_pathway_files()
-    assert goldens == set(_STORIES)
-    assert len(stories) == len(set(stories)), "two pathways claim the same story"
-    assert set(stories) - goldens == set(), "a pathway without a golden"
-    assert goldens - set(stories) == set(), "a golden without a pathway"
+    assert sorted(_story_of(p) for p in _GOLDEN_FILES) == sorted(s for s in stories if s in goldens)
+    assert {"S9"} <= set(stories)  # the first story after S8 is built (stories.py) and has a pathway
+
+
+def test_a_pathway_of_a_later_story_needs_no_golden(tmp_path: Path) -> None:
+    """The first story that stories.py does not build can have a pathway and no golden."""
+    raw = yaml.safe_load((_DIR / f"{S3}.yaml").read_text(encoding="utf-8"))
+    raw["id"], raw["showcase"]["story"] = "later_story_pathway", "S99"
+    later = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), "later_story_pathway.yaml")
+    stories = [*_stories_of_pathway_files(), later.showcase.story]
+    goldens = {p.stem for p in _GOLDEN.glob("S*.json")}
+    assert golden_problems(goldens, stories, _STORIES) == []
+    assert later.showcase.story not in _STORIES
 
 
 def test_a_broken_sibling_fails_only_its_own_case(tmp_path: Path) -> None:

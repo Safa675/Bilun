@@ -1,4 +1,4 @@
-# Fault registry for the synthetic demo (v3, P3): the 8 showcase billing faults (S1..S8).
+# Fault registry for the synthetic demo (v3, P3): the showcase billing faults, S1..S8 and then one per later story (S9 ...).
 # Grammar and checks: data/synthetic/faults/README.md and scripts/synthetic/faults/.
 # No prices or currency figures are stored here; expected findings are derived at injection time.
 schema_version: 1
@@ -177,3 +177,26 @@ faults:
       finding_ids: ["2.2.2.B.a"]
     basis: sut
     source: "C000670 (SUT 2.2.2.B(3)(a)): in the same session and incision, a secondary EK-2C package (P603840) is billed at 25% of its puan, not 100% (story S8)."
+
+  - fault_id: F_S9_SECOND_OPERATION_UNDERBILLED
+    story: S9
+    title: "Second operation of the session billed at 25 % (lumbar decompression with foraminoplasty)"
+    target_pathway: lumbar_stenosis_decompression_foraminoplasty_itemized
+    mutations:
+      - op: set_billed_ratio
+        entry_id: foraminoplasty
+        billed_ratio: "0.2500"
+    expected_finding:
+      engine_rule: session_uplift
+      detectors:
+        - "src/bilun/domain/prose_rules/session_uplift.py:detect_session_underbilling_opportunities"
+        - "src/bilun/domain/billing/claim_session_uplift.py:recommend_session_uplift_from_claims"
+      sut_section: "2.2.2.A(5)"
+      sut_clauses: ["C000659", "C000660", "C000661", "C000662"]
+      effect_kind: revenue_uplift
+      line_type: islem
+      target_entry_id: foraminoplasty
+      expected_status: eksik_faturalama
+      finding_ids: ["2.2.2.A.(5)"]
+    basis: sut
+    source: "C000659, C000660, C000661 (SUT 2.2.2.A(5)): a later operation of a session is paid at 30 % or 50 % of its puan; the coder keyed 25 % (story S9)."

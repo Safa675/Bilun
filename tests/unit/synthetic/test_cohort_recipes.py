@@ -20,6 +20,7 @@ from scripts.synthetic.cohort.recipes import (
     RECIPES_PATH,
     Problem,
     RecipeLoadError,
+    ShowcaseRecipe,
     check_recipes,
     load_recipes,
     load_recipes_text,
@@ -55,7 +56,7 @@ def _problems(
 def test_real_recipes_file_loads_and_matches_fault_registry_and_pathways() -> None:
     recipes = load_recipes(RECIPES_PATH)
     assert recipes.schema_version == 1
-    assert len(recipes.recipes) == 8
+    assert len(recipes.recipes) == 9
     assert check_recipes(recipes) == []
     assert run_all(recipes) == []
 
@@ -91,7 +92,40 @@ def test_corrupt_pathway_file_in_directory_reports_recipe_pathway(tmp_path: Path
         (bad_pw_dir / f"{r.pathway}.yaml").write_text("schema_version: 2\n", encoding="utf-8")
     problems = check_recipes(recipes, pathways_dir=bad_pw_dir)
     assert {p.check for p in problems} == {"recipe.pathway"}
-    assert len(problems) == 8
+    assert len(problems) == 9
+
+
+# --- a recipe may have no fault: the bill is clean ---------------------------------------------
+
+
+def test_a_recipe_without_a_fault_is_a_clean_bill() -> None:
+    assert ShowcaseRecipe(patient_no=1, pathway="copd_exacerbation_pneumonia_ward").fault is None
+
+
+@pytest.mark.parametrize("how", ["absent", "null"])
+def test_a_recipe_without_a_fault_trips_no_check(how: str) -> None:
+    raw = _raw_recipes()
+    if how == "absent":
+        _recipe(raw, 2).pop("fault")
+    else:
+        _recipe(raw, 2)["fault"] = None
+    assert _problems(raw) == []
+    assert load_recipes_text(yaml.safe_dump(raw), "r.yaml").recipes[1].fault is None
+
+
+def test_recipes_without_a_fault_are_not_duplicates_of_each_other() -> None:
+    raw = _raw_recipes()
+    for number in (2, 3, 4):
+        _recipe(raw, number).pop("fault")
+    assert _problems(raw) == []
+
+
+def test_a_clean_recipe_still_needs_a_pathway_that_exists() -> None:
+    raw = _raw_recipes()
+    recipe = _recipe(raw, 2)
+    recipe.pop("fault")
+    recipe["pathway"] = "nonexistent_pathway_id"
+    assert {p.check for p in _problems(raw)} == {"recipe.pathway"}
 
 
 Edit = Callable[[dict], None]
@@ -169,11 +203,6 @@ CASES: list[Case] = [
     ),
     Case(
         "schema.missing_field",
-        lambda r: _recipe(r, 2).pop("fault"),
-        label="missing_fault",
-    ),
-    Case(
-        "schema.missing_field",
         lambda r: _recipe(r, 2).pop("pathway"),
         label="missing_pathway",
     ),
@@ -232,7 +261,7 @@ CASES: list[Case] = [
     ),
     Case(
         "recipe.patient_numbers",
-        lambda r: _recipe(r, 8).update(patient_no=9),
+        lambda r: _recipe(r, 9).update(patient_no=10),
         label="gap_in_patient_numbers",
     ),
     Case(

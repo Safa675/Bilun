@@ -1,4 +1,4 @@
-"""Eight showcase stories: clean bill + one injected fault each (scratch draft).
+"""Nine showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9 added 2026-10-21).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -247,4 +247,33 @@ def s8(variant: str) -> Bill:
     return b
 
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8}
+# ── S9 ─ second operation of the session billed at 25 % instead of 50 % ──────
+def s9(variant: str) -> Bill:
+    """77 F (ASA 2), lumbar spinal stenosis; unilateral decompression 615931 and minimal-invasive
+    foraminoplasty 615995 in one session through two incisions (EK-2B only, same branch)."""
+    a, op, d = D("2026-09-21"), D("2026-09-21"), D("2026-09-23")
+    b = Bill("SH-09", "C-SH09", "yatis", "Beyin ve Sinir Cerrahisi", a, d, "M48.06")
+    for i, icd in enumerate(("M48.06", "I10")):
+        b.diag(icd, primary=(i == 0))
+    b.proc("615931", op, specialty=BEYIN)
+    lid = b.proc("615995", op, specialty=BEYIN)
+    # SUT 2.2.2.A(5): the later operation of a session is paid at 30 % (same incision) or 50 %
+    # (separate incision) of its list amount. The claim model has no incision field: the billed
+    # amount carries it. Clean: separate incision, 50 %. Faulty: 25 %, the package rate, keyed by mistake.
+    factor = Decimal("0.5") if variant == "clean" else Decimal("0.25")
+    i = [p.procedure_line_id for p in b.procs].index(lid)
+    p = b.procs[i]
+    billed = money(p.unit_price_try * p.quantity * factor)
+    b.procs[i] = replace(p, billed_amount_try=billed, expected_payable_try=billed)
+    # Two operations in the session: one multiple-operation anaesthesia line by the total puan
+    # (6471.03 + 5113.00 = 11584.03, group A3 from 9001 on 2026-04-16 and from 7584 before).
+    b.proc("550220", op, specialty=ANEST)
+    _beds(b, a, d, BEYIN)
+    _companion(b, a, d, BEYIN)                      # post-op fall risk, doctor's order + belge
+    _labs(b, op + timedelta(days=1), ("L107020",), BEYIN)
+    b.drug(EQIZOLIN, op, qty=2, unit="vial")        # cefazolin 2 g once before incision (ASHP 2013)
+    b.drug(PARTEMOL, op, qty=6, unit="vial")
+    return b
+
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9}

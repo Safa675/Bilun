@@ -1,9 +1,11 @@
 """Showcase encounter recipes: Pydantic v2 schema, strict YAML loader and cross-reference checks.
 
-`data/synthetic/cohort/showcase_recipes.yaml` declares the 8 showcase encounters (S1..S8), mapping
-each `patient_no` (1..8) to its target care pathway in `data/synthetic/pathways/` and its injected
-fault in `data/synthetic/faults/fault_registry.yaml`. Encounter pins come from each pathway's own
-`showcase` block. No prices, amounts or totals exist in this schema.
+`data/synthetic/cohort/showcase_recipes.yaml` declares the showcase encounters (S1..S8, then one
+per later story), mapping each `patient_no` (1, 2, 3 ... in order, no gaps) to its target care
+pathway in `data/synthetic/pathways/` and, when the bill has one, its injected fault in
+`data/synthetic/faults/fault_registry.yaml`. A recipe without a `fault` is a clean bill: no
+injection record and no answer-key row. Encounter pins come from each pathway's own `showcase`
+block. No prices, amounts or totals exist in this schema.
 """
 
 from __future__ import annotations
@@ -83,11 +85,11 @@ PatientNo = Annotated[int, Field(ge=1, le=9999, strict=True)]
 
 
 class ShowcaseRecipe(_Model):
-    """One showcase encounter recipe mapping a patient number to its pathway and fault."""
+    """One showcase encounter recipe mapping a patient number to its pathway and, if any, its fault."""
 
     patient_no: PatientNo
     pathway: PathwayId
-    fault: FaultId
+    fault: FaultId | None = None  # None: a clean bill
 
 
 Recipe = ShowcaseRecipe
@@ -204,7 +206,7 @@ def check_recipes(
             )
         )
 
-    fault_ids = [r.fault for r in recipes.recipes]
+    fault_ids = [r.fault for r in recipes.recipes if r.fault is not None]
     dup_faults = sorted({fid for fid in fault_ids if fault_ids.count(fid) > 1})
     if dup_faults:
         out.append(
@@ -240,6 +242,8 @@ def check_recipes(
                     )
                 )
 
+        if recipe.fault is None:
+            continue  # a clean bill: there is no fault to find or to match with the pathway
         fault_spec = faults_by_id.get(recipe.fault)
         if fault_spec is None:
             out.append(

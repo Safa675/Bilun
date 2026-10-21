@@ -113,6 +113,27 @@ def test_load_all_returns_every_real_pathway_by_id() -> None:
     assert set(load_all()) == {p.stem for p in _FILES}
 
 
+@pytest.mark.parametrize("story", ["S1", "S8", "S9", "S10", "S25", "S99", "S100"])
+def test_a_showcase_story_is_s_and_a_number_with_no_upper_limit(story: str) -> None:
+    raw = _raw(S3)
+    raw["showcase"]["story"] = story
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    assert load_text(body, f"{S3}.yaml").showcase.story == story
+
+
+@pytest.mark.parametrize(
+    "story", ["S0", "S01", "S", "s9", "T9", "S9a", "S-1", " S9", "S 9", "S9 ", "9", "S1.5", ""]
+)
+def test_a_malformed_showcase_story_is_a_bad_value(story: str) -> None:
+    raw = _raw(S3)
+    raw["showcase"]["story"] = story
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S3}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.bad_value"]
+    assert "showcase.story" in str(error.value)
+
+
 def test_the_readme_names_every_check_id_or_its_family() -> None:
     readme = (_DIR / "README.md").read_text(encoding="utf-8")
     unnamed = [i for i in CHECKS if i not in readme and f"{i.split('.')[0]}.*" not in readme]
