@@ -364,6 +364,18 @@ VITALS_BOUNDS: dict[str, tuple[float, float]] = {
     "Kilo": (30.0, 200.0),
     "TANI_YASI": (0.0, 110.0),
 }
+# A baby under one year (TANI_YASI 0, the newborn included) is 30 to 85 cm and 0.4 to 12 kg: the adult
+# bounds of Boy and Kilo would call every infant a defect, and the blood pressure and pulse of an infant
+# lie off the adult table too. These are the bounds of such a row; SPO2 and TANI_YASI keep VITALS_BOUNDS.
+# A child of 1 to 17 years has no table yet.
+INFANT_AGE_LIMIT = 1
+INFANT_VITALS_BOUNDS: dict[str, tuple[float, float]] = {
+    "KB-S": (40.0, 130.0),
+    "KB-D": (20.0, 90.0),
+    "Nabiz": (80.0, 220.0),
+    "Boy": (30.0, 85.0),
+    "Kilo": (0.4, 12.0),
+}
 BMI_TOLERANCE = 0.1
 SEX_CODES: tuple[str, ...] = ("E", "K")  # E = erkek (male columns), K = kadın (female columns)
 
@@ -1519,16 +1531,36 @@ def check_required_fields(bill: _Clean) -> list[Problem]:
 
 
 def check_vitals_bounds(bill: _Clean) -> list[Problem]:
-    """ana.vitals_bounds: vital signs and age inside their bounds, diastolic below systolic, BMI."""
+    """ana.vitals_bounds: vital signs and age inside their bounds, diastolic below systolic, BMI.
+
+    The bounds depend on the age of the row: a baby under one year (TANI_YASI below INFANT_AGE_LIMIT)
+    is held to INFANT_VITALS_BOUNDS where the table has an entry, everyone else to VITALS_BOUNDS.
+    """
     parts: list[pl.Expr] = []
+    infant = (pl.col("TANI_YASI") < INFANT_AGE_LIMIT).fill_null(False)
     for column, (low, high) in VITALS_BOUNDS.items():
         value = pl.col(column)
         parts.append(pl.when(value.is_null()).then(pl.lit(f"{column} is missing")))
-        parts.append(
-            pl.when((value < low) | (value > high)).then(
-                _format(f"{column} {{}} is outside {low:g}..{high:g}", value)
+        outside = (value < low) | (value > high)
+        if column in INFANT_VITALS_BOUNDS:
+            low_infant, high_infant = INFANT_VITALS_BOUNDS[column]
+            parts.append(
+                pl.when(~infant & outside).then(
+                    _format(f"{column} {{}} is outside {low:g}..{high:g}", value)
+                )
             )
-        )
+            parts.append(
+                pl.when(infant & ((value < low_infant) | (value > high_infant))).then(
+                    _format(
+                        f"{column} {{}} is outside {low_infant:g}..{high_infant:g} for a baby under one year",
+                        value,
+                    )
+                )
+            )
+        else:
+            parts.append(
+                pl.when(outside).then(_format(f"{column} {{}} is outside {low:g}..{high:g}", value))
+            )
     diastolic, systolic = pl.col("KB-D"), pl.col("KB-S")
     parts.append(
         pl.when(diastolic >= systolic).then(

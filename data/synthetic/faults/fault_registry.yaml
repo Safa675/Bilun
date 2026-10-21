@@ -222,3 +222,27 @@ faults:
       finding_ids: ["icu_puani_510090_p55200x"]
     basis: sut
     source: "C001234, C001243 (SUT 2.4.4.H.(2), (8)): the days between the end days are billed from EK-2/C at the full package price; the coder keyed 50 % (story S11)."
+
+  - fault_id: F_S12_INCUBATOR_DAYS_UNDERBILLED
+    story: S12
+    title: "Incubator days under-billed (late-preterm newborn)"
+    target_pathway: late_preterm_newborn_incubator_stay
+    mutations:
+      - op: truncate_line_days
+        section: procedures
+        entry_id: incubator
+        keep_day_indices: [3, 4, 5]
+    expected_finding:
+      engine_rule: yenidogan_yatak
+      detectors:
+        - "src/bilun/domain/prose_rules/yenidogan_yatak.py:detect_yenidogan_yatak_opportunities"
+        - "src/bilun/domain/billing/claim_yenidogan_yatak.py:recommend_yenidogan_yatak_from_claims"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+      finding_ids: ["yenidogan_yatak_510070"]
+    basis: ek2b_aciklama
+    source: "C000652 (SUT 2.2.2.A(1)) and EK-2B 510070 (once a day): 6 days for 5 nights get a Kuvöz line; only the last 3 were keyed, the first 3 are missing (story S12)."

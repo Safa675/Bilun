@@ -116,7 +116,7 @@ def _category_for(code: str) -> str:
         return "paket"
     if code.startswith("L"):
         return "laboratuvar"
-    if code in {"510010", "510120", "510121", "510090", "530000"}:
+    if code in {"510010", "510070", "510081", "510120", "510121", "510090", "530000"}:
         return "yatak"
     if code.startswith("52"):
         return "muayene"

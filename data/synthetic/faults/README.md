@@ -26,12 +26,12 @@ Top-level keys:
 
 Each `FaultSpec` carries:
 - `fault_id`: unique identifier matching `^F_S[1-9][0-9]*_[A-Z][A-Z0-9_]{1,63}$` (for example `F_S2_BED_DAYS_UNDERBILLED`).
-- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S11` and later are the stories added since; S10 is a later bill), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
+- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S11`, `S12` and later are the stories added since; S10 is a later bill), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
 - `title`: short English summary (2–400 characters).
 - `target_pathway`: pathway id in `data/synthetic/pathways/<target_pathway>.yaml`.
 - `mutations`: non-empty list of `MutationOp` entries from the closed six-operation grammar below.
 - `expected_finding` (`ExpectedFinding`):
-  - `engine_rule`: engine rule identifier (`billing_strategy`, `yatak_puani`, `anestezi_puani`, `refakatci`, `material_bundling`, `drug_indication`, `procedure_capture_gap`, `drg_unbundling`, `session_uplift`, `icu_puani`).
+  - `engine_rule`: engine rule identifier (`billing_strategy`, `yatak_puani`, `anestezi_puani`, `refakatci`, `material_bundling`, `drug_indication`, `procedure_capture_gap`, `drg_unbundling`, `session_uplift`, `icu_puani`, `yenidogan_yatak`).
   - `detectors`: non-empty list of `"<repo module path>:<function name>"` strings.
   - `sut_section`: SUT section citation (for example `"2.2.2.A(1)"`).
   - `sut_clauses`: non-empty list of in-force clause ids (`C000000`) in `data/gazette/sut_clauses.parquet`.
@@ -40,7 +40,7 @@ Each `FaultSpec` carries:
   - `target_entry_id`: `null` when `line_type` is `fatura`; required pathway line `id` otherwise.
   - `expected_status`: `eksik_faturalama` (missing/under-billed claim-level uplift) or `kismi_red` (line-level deduction or compliance error).
   - `evidence_entry_ids`: optional list of pathway line `id`s in `procedures` or `performed` that serve as evidence of the finding (default `[]`; on S7, `["ct_angiography_pacs"]`).
-  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`).
+  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`, S12 `["yenidogan_yatak_510070"]`).
 - `basis` and `source`: provenance using the pathway `Basis` enum (`sut`, `ek2b_aciklama`, `medula_kilavuz`, `guideline`, `judgment`) and `Source` rule (10–160 characters, no TL amounts).
 
 ## The six mutation operations (`MutationOp`)

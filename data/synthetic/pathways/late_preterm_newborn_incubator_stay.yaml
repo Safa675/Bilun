@@ -1,0 +1,91 @@
+# Late-preterm newborn with neonatal jaundice, incubator (Kuvöz) stay on the neonatal ward, billed itemized (hizmet başı).
+# Showcase story S12 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S12). Built by WP3 (grammar G4b).
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# Newborn bed billing (EK-2B 510070 Kuvöz, 510081 Kot): one bed line per calendar day, the discharge day included
+# (src/bilun/domain/prose_rules/yenidogan_yatak.py counts discharge - admission + 1 days).
+schema_version: 1
+id: late_preterm_newborn_incubator_stay
+title: "Late-preterm newborn with neonatal jaundice, incubator (Kuvöz) stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Yenidoğan"
+  specialty: "1561"                  # EK-2A: Neonatoloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Late-preterm birth and neonatal jaundice occur in both sexes; P07.3, P59.9 and Z38.0 have no sex gate. Story S12 is a boy. Neonatologist to confirm."
+  age:
+    min: 0
+    max: 0
+    basis: judgment
+    source: "A newborn: the baby of story S12 was born on the day of admission (EK-2B names the 0-28 day newborn). The claim has a birth year only, so the age is 0 years."
+
+nights:
+  min: 3
+  max: 10
+  basis: judgment
+  source: "Story S12 has 5 nights. A late-preterm baby with jaundice stays a few days; 3 and 10 are the author's judgment. Neonatologist to confirm."
+
+diagnoses:
+  - icd10: P07.3
+    name: "MİAD ÖNCESİ DİĞER İNFANTLAR"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 P07.3: other preterm infants, 28 to under 37 completed weeks. Story S12 is a late-preterm baby of about 35 weeks."
+  - icd10: P59.9
+    name: "YENİDOĞAN SARILIĞI, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; WHO ICD-10 P59.9: neonatal jaundice, unspecified. Story S12 codes it. Coder: P59.0 (jaundice with preterm delivery) is the more specific code."
+  - icd10: Z38.0
+    name: "TEK DOĞUM, HASTANEDE"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 Z38.0: single liveborn infant, born in hospital. The birth-status code of story S12; it marks a newborn episode for the bed rule."
+
+procedures:
+  # --- the stay: one incubator line per calendar day, one companion line per night
+  - id: incubator
+    kind: newborn_bed
+    code: "510070"
+    name: "Kuvöz"
+    days: admit..discharge             # a bed for every calendar day: 6 lines for 5 nights
+    basis: ek2b_aciklama
+    source: "EK-2B 510070: covers yemek, yatak, vizit; once a day, not with 510081. The discharge date is a bed day as for 510010 (Kılavuz p.62, p.168)."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 5 lines for 5 nights
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the companion's bed and meals are billed with 510121; a child under 18 needs no medical-need statement (C001627). Clinician to confirm."
+
+  # --- consultation
+  - id: pediatric_consult
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1500"                  # EK-2A: Çocuk Sağlığı ve Hastalıkları; 520010 açıklama: 'Hekim branşı yazılmalıdır'
+    basis: judgment
+    source: "Story S12: a paediatric consultation on the admission day, beside the unit's own rounds (the bed covers vizit). 520010 açıklama: write the branch. To confirm."
+
+notes:
+  - "The bed is the incubator 510070 on every calendar day. The cot 510081 and the ward bed 510010 are alternatives for one day, never beside it (EK-2B text; claim_yatak_newborn_overlap). A newborn intensive care stay would be 510090 with P552006-8 (kinds icu_day and icu_package), not this story."
+  - "No laboratory, phototherapy, drug or material line on purpose: lab_reference.csv holds adult reference ranges, so a laboratory line waits for neonatal ranges from a neonatologist. Drug prices stay 0 in the demo and a drug line would add a drug_indication review the story does not need."
+  - "Rooming-in (anne yanında) cannot be shown: the engine's rooming_in_claim_ids has no caller (issue EI-14 of the coverage plan)."
+  - "The next bill of this patient, the ward stay after the incubator, is a later story (S15)."
+
+showcase:
+  story: S12
+  sex: M
+  age: 0
+  admit: "2026-07-10"
+  nights: 5
