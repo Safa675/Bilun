@@ -69,6 +69,7 @@ BILUN is a standalone healthcare reimbursement intelligence system. It analyzes,
 | `BILUN_CACHE_DB_PATH`  | `.cache/bilun.duckdb`         | DuckDB analytics cache                                             |
 | `BILUN_STARTUP_POLICY` | `load-only`                   | `load-only` or `rebuild`                                          |
 | `LLM_API_KEY`          | —                             | OpenRouter API key (chat)                                          |
+| `LLM_REASONING_EFFORT` | — (no `reasoning` field)      | Chat reasoning effort for OpenRouter reasoning models: `max` \| `xhigh` \| `high` \| `medium` \| `low` \| `minimal` \| `none` |
 | `EMBEDDING_PROVIDER`   | `auto`                        | SUT clause embeddings: `auto` \| `openai` \| `local`              |
 | `EMBEDDING_API_KEY`    | — (falls back to `OPENAI_API_KEY`) | OpenAI key for embeddings (OpenRouter does **not** serve `/embeddings`) |
 | `EMBEDDING_MODEL`      | `text-embedding-3-large`      | Embedding model when provider is OpenAI                            |

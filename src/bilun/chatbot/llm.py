@@ -60,6 +60,51 @@ def _get_api_key() -> str | None:
     )
 
 
+# Unified OpenRouter ``reasoning.effort`` values. Each model accepts only a
+# subset (see ``reasoning.supported_efforts`` in GET /api/v1/models); a value
+# the model rejects makes the provider answer 400, so set one it lists.
+_REASONING_EFFORTS = frozenset({"max", "xhigh", "high", "medium", "low", "minimal", "none"})
+_warned_reasoning_efforts: set[str] = set()
+
+_NO_ANSWER_TEXT = "\n\nI wasn't able to generate a response. Please try asking again."
+
+
+def _get_reasoning_effort() -> str | None:
+    """Return ``LLM_REASONING_EFFORT`` if it is a known effort, else ``None``.
+
+    Reasoning tokens count against ``max_tokens``; a reasoning model whose
+    default effort is high can spend the whole public output cap thinking and
+    never start the visible answer. An unknown value is ignored and warned
+    about once per distinct value, so a typo cannot flood the log.
+    """
+    raw = os.getenv("LLM_REASONING_EFFORT", "").strip().lower()
+    if not raw:
+        return None
+    if raw in _REASONING_EFFORTS:
+        return raw
+    if raw not in _warned_reasoning_efforts:
+        _warned_reasoning_efforts.add(raw)
+        logger.warning(
+            "LLM_REASONING_EFFORT=%r ignored | expected one of %s",
+            raw[:32],
+            ", ".join(sorted(_REASONING_EFFORTS)),
+        )
+    return None
+
+
+def _with_reasoning_effort(payload: dict[str, Any]) -> dict[str, Any]:
+    """Add the configured reasoning effort to a provider payload.
+
+    A ``reasoning`` key already in the payload (``extra_params``) is the
+    caller's explicit choice and wins whole; with the variable unset the
+    payload is returned unchanged.
+    """
+    effort = _get_reasoning_effort()
+    if effort is None or "reasoning" in payload:
+        return payload
+    return {**payload, "reasoning": {"effort": effort}}
+
+
 def _estimate_tokens(text: str) -> int:
     """Rough token estimate without a tokenizer dependency.
 
@@ -195,7 +240,9 @@ async def _call_llm_non_streaming(
     if not api_key:
         return None
 
-    payload = authorize_provider_payload({**payload, "stream": False})
+    payload = authorize_provider_payload(
+        _with_reasoning_effort({**payload, "stream": False})
+    )
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
@@ -230,9 +277,13 @@ async def _stream_text_from_llm(
         yield "Chat is temporarily unavailable. Please try later."
         return
 
-    payload = authorize_provider_payload({**payload, "stream": True})
+    payload = authorize_provider_payload(
+        _with_reasoning_effort({**payload, "stream": True})
+    )
     t0 = time.perf_counter()
-    token_count = 0
+    content_chunks = 0
+    reasoning_chunks = 0
+    finish_reason = None
 
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
@@ -265,27 +316,34 @@ async def _stream_text_from_llm(
                         choices = chunk.get("choices")
                         if not choices:
                             continue
+                        finish_reason = choices[0].get("finish_reason") or finish_reason
                         delta = choices[0].get("delta", {})
                         content = delta.get("content")
                         reasoning = delta.get("reasoning") or delta.get("reasoning_content")
                         if reasoning:
-                            token_count += 1
+                            reasoning_chunks += 1
                             yield ("reasoning", reasoning)
                         elif content:
-                            token_count += 1
+                            content_chunks += 1
                             yield ("content", content)
                     except (json.JSONDecodeError, KeyError, IndexError):
                         pass
 
         elapsed = time.perf_counter() - t0
-        if token_count == 0:
+        if content_chunks == 0:
             logger.warning(
-                "LLM STREAM returned zero tokens | elapsed=%.2fs", elapsed
+                "LLM STREAM no visible answer | reasoning_chunks=%d | finish_reason=%s | elapsed=%.2fs",
+                reasoning_chunks,
+                finish_reason,
+                elapsed,
             )
-            yield "\n\nI wasn't able to generate a response. Please try asking again."
+            yield _NO_ANSWER_TEXT
         else:
             logger.info(
-                "LLM STREAM OK | tokens=%d | elapsed=%.2fs", token_count, elapsed
+                "LLM STREAM OK | content_chunks=%d | reasoning_chunks=%d | elapsed=%.2fs",
+                content_chunks,
+                reasoning_chunks,
+                elapsed,
             )
 
     except httpx.TimeoutException:
@@ -385,6 +443,7 @@ async def stream_chat_response_with_tools(
             "tool_choice": "auto",
         }
 
+        t_call = time.perf_counter()
         response = await _call_llm_non_streaming(payload)
         if response is None:
             yield "\n⚠️ Unable to reach the LLM. Please try again."
@@ -393,15 +452,26 @@ async def stream_chat_response_with_tools(
         tool_calls = _extract_tool_calls(response)
         if tool_calls is None:
             content = ""
+            message: dict[str, Any] = {}
+            finish_reason = None
             try:
-                content = response.get("choices", [{}])[0].get("message", {}).get("content", "")
+                choice = response.get("choices", [{}])[0]
+                message = choice.get("message", {})
+                content = message.get("content", "")
+                finish_reason = choice.get("finish_reason")
             except (KeyError, IndexError):
                 pass
 
             if content:
                 yield content
             else:
-                yield "\n\nI wasn't able to generate a response. Please try asking again."
+                logger.warning(
+                    "LLM RESPONSE no visible answer | reasoning_present=%s | finish_reason=%s | elapsed=%.2fs",
+                    bool(message.get("reasoning") or message.get("reasoning_content")),
+                    finish_reason,
+                    time.perf_counter() - t_call,
+                )
+                yield _NO_ANSWER_TEXT
             return
 
         tool_calls = tool_calls[:MAX_TOOL_CALLS_PER_TURN - requested_tools]
@@ -524,10 +594,12 @@ async def stream_chat_response(
     }
     if extra_params:
         payload.update(extra_params)
-    payload = authorize_provider_payload(payload)
+    payload = authorize_provider_payload(_with_reasoning_effort(payload))
 
     t0 = time.perf_counter()
-    token_count = 0
+    content_chunks = 0
+    reasoning_chunks = 0
+    finish_reason = None
 
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
@@ -558,14 +630,15 @@ async def stream_chat_response(
                         choices = chunk.get("choices")
                         if not choices:
                             continue
+                        finish_reason = choices[0].get("finish_reason") or finish_reason
                         delta = choices[0].get("delta", {})
                         content = delta.get("content")
                         reasoning = delta.get("reasoning") or delta.get("reasoning_content")
                         if reasoning:
-                            token_count += 1
+                            reasoning_chunks += 1
                             yield ("reasoning", reasoning)
                         elif content:
-                            token_count += 1
+                            content_chunks += 1
                             yield ("content", content)
                     except (json.JSONDecodeError, KeyError, IndexError):
                         logger.warning(
@@ -573,16 +646,28 @@ async def stream_chat_response(
                         )
 
         elapsed = time.perf_counter() - t0
-        logger.info("LLM RESPONSE OK | tokens=%d | elapsed=%.2fs", token_count, elapsed)
-        if token_count == 0:
-            logger.warning("LLM returned 0 tokens after %.1fs — empty response", elapsed)
-            yield "\n\nI wasn't able to generate a response. Please try asking again."
+        if content_chunks == 0:
+            logger.warning(
+                "LLM RESPONSE no visible answer | reasoning_chunks=%d | finish_reason=%s | elapsed=%.2fs",
+                reasoning_chunks,
+                finish_reason,
+                elapsed,
+            )
+            yield _NO_ANSWER_TEXT
+        else:
+            logger.info(
+                "LLM RESPONSE OK | content_chunks=%d | reasoning_chunks=%d | elapsed=%.2fs",
+                content_chunks,
+                reasoning_chunks,
+                elapsed,
+            )
 
     except httpx.TimeoutException:
         logger.error(
-            "LLM TIMEOUT after %.1fs | tokens_before_timeout=%d",
+            "LLM TIMEOUT after %.1fs | content_chunks=%d | reasoning_chunks=%d",
             time.perf_counter() - t0,
-            token_count,
+            content_chunks,
+            reasoning_chunks,
         )
         yield "\n⚠️ Request timed out. Please try again."
     except httpx.RequestError as exc:
