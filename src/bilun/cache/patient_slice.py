@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import polars as pl
 
+from src.bilun.domain.optimization.shared import collect_patient_diagnoses
+
 
 class PatientSliceIndex:
     """Zero-copy patient-partitioned DataFrame accessor."""
@@ -65,22 +67,5 @@ def _partition_by_patient(df: pl.DataFrame) -> PatientSliceIndex:
 
 
 def _build_diagnoses_by_pid(ana_df: pl.DataFrame) -> dict[str, list[str]]:
-    if (
-        ana_df.height == 0
-        or "patient_id" not in ana_df.columns
-        or "TANIKODU" not in ana_df.columns
-    ):
-        return {}
-
-    grouped = (
-        ana_df.select(["patient_id", "TANIKODU"])
-        .filter(pl.col("TANIKODU").is_not_null())
-        .group_by("patient_id")
-        .agg(pl.col("TANIKODU").cast(pl.Utf8).unique().sort().alias("diagnoses"))
-    )
-    diagnoses_by_pid: dict[str, list[str]] = {}
-    for row in grouped.iter_rows(named=True):
-        diagnoses_by_pid[str(row["patient_id"])] = [
-            str(code).strip() for code in row["diagnoses"] if str(code).strip()
-        ]
-    return diagnoses_by_pid
+    """Every diagnosis of each patient (principal first), not only the principal one."""
+    return collect_patient_diagnoses(ana_df, id_col="patient_id")
