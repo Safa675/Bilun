@@ -1,4 +1,4 @@
-"""Ten showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9 and S11 added 2026-10-21; S10 is a later bill).
+"""Eleven showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9, S11 and S12 added 2026-10-21; S10 is a later bill).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -20,8 +20,8 @@ from decimal import Decimal
 from harness import Bill, D, money
 
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
-ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD = (
-    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300")
+ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI = (
+    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561")
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -304,4 +304,24 @@ def s11(variant: str) -> Bill:
     return b
 
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11}
+# ── S12 ─ incubator days billed on 3 of 6 days ──────────────────────────────
+def s12(variant: str) -> Bill:
+    """Boy born 2026-07-10 at about 35 weeks, neonatal jaundice; 5 nights in the incubator on the neonatal ward.
+
+    EK-2B 510070 (Kuvöz) is billed once a day, the discharge day included (yenidogan_yatak.py counts
+    discharge - admission + 1 days). The bill has no laboratory, drug or procedure line beside the paediatric
+    consultation and the companion: laboratory reference ranges are adult (lab_reference.csv).
+    """
+    a, d = D("2026-07-10"), D("2026-07-15")
+    b = Bill("SH-12", "C-SH12", "yatis", "Yenidoğan", a, d, "P07.3")
+    for i, icd in enumerate(("P07.3", "P59.9", "Z38.0")):
+        b.diag(icd, primary=(i == 0))
+    days = _days(a, d)
+    for day in days if variant == "clean" else days[3:]:  # the faulty bill lost the first three days
+        b.proc("510070", day, specialty=NEONATOLOJI)
+    _companion(b, a, d, NEONATOLOJI)                      # 5 nights
+    b.proc("520010", a, specialty=COCUK)                  # paediatric consultation on the admission day
+    return b
+
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12}

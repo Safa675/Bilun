@@ -152,6 +152,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S8": set(),
     "S9": set(),  # 25 % of the second operation is on the ladder: only the engine sees it
     "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
+    "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -923,6 +924,15 @@ CASES: list[Case] = [
     ),
     Case(
         AGE,
+        # S12's baby grown to 34 (the birth year follows, so only the age gate is wrong): P07.3, P59.9 and Z38.0
+        lambda d: edit_patient(d, 11, birth_year=1992, TANI_YASI=34),
+        label="the_newborn_stay_of_a_34_year_old",
+        n=3,
+        at=row_at(11, TABLE_DIAGNOSES, of(11) & (pl.col("icd10_code") == "P07.3")),
+        says="P07.3 is a perinatal condition (ICD chapter P) and needs age at most 1; the patient is M aged 34",
+    ),
+    Case(
+        AGE,
         lambda d: rename(d, 2, "L101850", "Yenidoğan monitörizasyonu"),
         label="newborn_name_on_an_adult",
         n=2,  # S2 bills the code L101850 on two lines
@@ -1217,6 +1227,45 @@ CASES: list[Case] = [
         also_n=7,  # and the pathway has no day bed on any of them
         at=row_at(2, TABLE_PROCEDURES, line(2, "510010", "2026-03-09")),
         says="day bed line 510120 on the stay 2026-03-09..2026-03-15; the day bed is for a day case",
+    ),
+    # --- stay.bed_coverage on a newborn stay (S12: 5 nights, 6 incubator lines 07-10 .. 07-15)
+    Case(
+        BED,
+        lambda d: drop(d, TABLE_PROCEDURES, line(11, "510070", "2026-07-12")),
+        label="newborn_missing_day",
+        at=CLAIM[11],
+        says="no bed line on 1 of 6 day(s): 2026-07-12",
+    ),
+    Case(
+        BED,
+        lambda d: clone_procedure(d, 11, line(11, "510070", "2026-07-11")),
+        label="newborn_duplicate_day",
+        at=CLAIM[11],
+        says="more than one bed line on: 2026-07-11",
+    ),
+    Case(
+        BED,
+        # the ward bed and the incubator are alternatives for one day (EK-2B: the same text)
+        lambda d: add_procedure(d, 11, "510010", "2026-07-12"),
+        also=(PATHWAY,),  # 510010 is not a line of the newborn pathway
+        label="newborn_ward_bed_beside_the_incubator",
+        at=CLAIM[11],
+        says="more than one bed line on: 2026-07-12",
+    ),
+    Case(
+        BED,
+        lambda d: add_procedure(d, 11, "510070", "2026-07-16"),
+        also=(DATES,),  # a bed line after discharge also lies outside the claim window
+        label="newborn_day_after_discharge",
+        at=CLAIM[11],
+        says="bed line(s) outside admission..discharge: 2026-07-16",
+    ),
+    Case(
+        BED,
+        lambda d: edit(d, TABLE_PROCEDURES, line(11, "510070", "2026-07-12"), quantity=2),
+        label="newborn_quantity_two",
+        at=row_at(11, TABLE_PROCEDURES, line(11, "510070", "2026-07-12")),
+        says="bed line 510070 has the quantity 2; a bed line is one day",
     ),
     # --- stay.companion_coverage (S2: companions on the six nights 03-09 .. 03-14)
     Case(
@@ -3835,6 +3884,41 @@ def test_icu_days_are_the_bed_days_of_an_icu_stay_and_an_icu_package_makes_no_pa
     icu = lines.filter(pl.col("procedure_code").is_in(["510090", "P552002"]))
     assert "2026-06-07" not in icu["procedure_date"].to_list()  # the transfer day
     assert header["discharge_date"].to_list() == ["2026-06-07"]
+
+
+def test_the_incubator_and_the_cot_are_bed_day_codes_but_no_icu_day(context) -> None:
+    """510070 and 510081 are the newborn beds: one bed day each, and a newborn ward is no ICU stay."""
+    assert context.code_sets["beds"]["incubator"]["code"] == "510070"
+    assert context.code_sets["beds"]["cot"]["code"] == "510081"
+    assert {"510070", "510081"} <= set(context.bed_day_codes)
+    assert not {"510070", "510081"} & set(context.icu_day_codes)
+    assert not {"510070", "510081"} & set(context.icu_codes)
+    assert {"510010", "510120", "510090"} <= set(context.bed_day_codes)  # the other bed codes stay
+
+
+def test_a_newborn_stay_in_the_incubator_is_a_stay_with_a_bed_on_every_day(twins, anadata, context) -> None:
+    """S12's twin: 510070 on all six calendar days, the discharge day included, no ICU line."""
+    data = Data(dict(twins), anadata)
+    assert run_only(data, context, "stay.bed_coverage") == []
+    lines = twins[TABLE_PROCEDURES].filter(of(11))
+    days = lines.filter(pl.col("procedure_code") == "510070")["procedure_date"].sort().to_list()
+    assert days == [f"2026-07-{d}" for d in range(10, 16)]
+    assert twins[TABLE_CLAIM_HEADERS].filter(of(11))["discharge_date"].to_list() == ["2026-07-15"]
+
+
+def test_a_cot_is_a_bed_day_like_the_incubator(twins, anadata, context) -> None:
+    data = Data(dict(twins), anadata)
+    set_code(data, 11, "510070", "510081", "2026-07-12")
+    assert run_only(data, context, "stay.bed_coverage") == []
+
+
+def test_a_newborn_bed_on_an_icu_stay_is_a_ward_bed_on_an_icu_stay(twins, anadata, context) -> None:
+    """An ICU package makes the claim an ICU stay; the incubator lines are then ward beds beside ICU lines."""
+    data = Data(dict(twins), anadata)
+    add_procedure(data, 11, "P552006", "2026-07-11")
+    found = run_only(data, context, "stay.bed_coverage")
+    ward = [p for p in found if "ward bed line 510070 on an ICU stay" in p.message]
+    assert len(ward) == 6, [str(p) for p in found]
 
 
 def test_the_day_bed_is_the_code_set_day_bed_and_a_bed_day_code(context) -> None:

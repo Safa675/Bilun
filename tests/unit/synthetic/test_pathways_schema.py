@@ -54,6 +54,7 @@ S5 = "femoral_neck_fracture_cemented_hemiarthroplasty_package"
 S6 = "aspiration_pneumonia_parkinson_ward"
 S7 = "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out"
 S11 = "urosepsis_septic_shock_icu_stay"
+S12 = "late_preterm_newborn_incubator_stay"
 
 
 @pytest.fixture(scope="module")
@@ -631,6 +632,11 @@ CASES = [
     Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="P610131", name=c.ek2c.filter(pl.col("code") == "P610131")["name"].unique().item()), label="an icu_package on a surgical package"),
     Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="510090", name="Yoğun bakım"), label="an icu_package on the day rate"),
     Case("procedure.kind", S2, lambda r, c: line(r, "bed").update(code="510090", name="Yoğun bakım"), label="a ward bed on the ICU day rate"),
+    Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(code="510010", name="Standart yatak tarifesi"), label="a newborn_bed on the ward bed"),
+    Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(code="510090", name="Yoğun bakım"), label="a newborn_bed on the ICU day rate"),
+    Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(code="510121", name="Refakat"), label="a newborn_bed on the companion code"),
+    Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(kind="bed"), label="the incubator declared as a ward bed"),
+    Case("procedure.kind", S12, lambda r, c: line(r, "pediatric_consult").update(code="510070", name="Kuvöz"), label="an exam on the incubator code"),
     Case("material.in_force", S1, lambda r, c: r["materials"][0].update(code="AP9999"), prepare=with_material),
     Case("material.name", S1, lambda r, c: r["materials"][0].update(name="KALÇA | FEMORAL STEM"), prepare=with_material),
     Case("drug.in_force", S2, lambda r, c: r.pop("window"), label="repealed on 2026-08-29"),
@@ -661,6 +667,7 @@ CASES = [
     Case("package.mode", S1, lambda r, c: r.setdefault("drugs", []).append({"id": "ceftriaxone", "barcode": "8699508270224", "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU", "inn": "seftriakson", "unit": "vial", "per_box": 1, "day": "admit", "qty": 1, "basis": "judgment", "source": FIXTURE}), label="drug in a package"),
     Case("package.mode", S2, lambda r, c: r["procedures"].append({"id": "package", "kind": "package", "code": "P610131", "name": "Appendektomi, laparoskopik", "days": "admit", "basis": "judgment", "source": FIXTURE}), label="package in an itemized bill"),
     Case("package.mode", S11, lambda r, c: r.update(billing_mode="package"), label="ICU lines in a package bill"),
+    Case("package.mode", S12, lambda r, c: r.update(billing_mode="package"), label="a newborn bed in a package bill"),
     Case("package.window", S1, lambda r, c: r["nights"].update(max=12), label="a stay past the 8-day window"),
     Case("package.window", S1, lambda r, c: line(r, "appendectomy_package").update(code="P552001", name=c.ek2c.filter(pl.col("code") == "P552001")["name"].unique().item()), label="a package without a group"),
     Case("anaesthesia.group", S2, lambda r, c: line(r, "anaesthesia").update(group="C", code="550170", name="Anestezi C grubu"), prepare=with_anaesthesia),
@@ -699,6 +706,16 @@ CASES = [
     Case("stay.coverage", S11, lambda r, c: r["procedures"].append(icu_line("icu_transfer", "icu_package", "P552002", "İkinci basamak yoğun bakım hastası", "discharge")), label="an ICU line on the transfer day, every other day covered", also=("icu.day_pattern",)),
     Case("stay.coverage", S11, lambda r, c: r["procedures"].append({"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi", "days": "admit..discharge", "basis": "judgment", "source": FIXTURE}), label="a ward bed beside ICU lines"),
     Case("stay.coverage", S7, lambda r, c: r["procedures"].append(icu_line("icu_visit", "icu_day", "510090", "Yoğun bakım", "admit")), label="an ICU line on an ER-only visit"),
+    # --- a newborn stay: the ward and the newborn bed lines are the day's one bed (days 0..N, the discharge day included)
+    Case("stay.coverage", S12, lambda r, c: line(r, "incubator").update(days="admit..discharge-1"), label="an incubator that drops the discharge day"),
+    Case("stay.coverage", S12, lambda r, c: line(r, "incubator").update(days="admit..admit+3"), label="an incubator line fixed to 4 nights"),
+    Case("stay.coverage", S12, lambda r, c: line(r, "incubator").update(days=["admit", "admit+2..discharge"]), label="a day with no bed line in the middle"),
+    Case("stay.coverage", S12, lambda r, c: line(r, "incubator").update(days="admit..discharge+1"), label="an incubator past the discharge day", also=("days.in_stay",)),
+    Case("stay.coverage", S12, lambda r, c: r["procedures"].append(icu_line("cot", "newborn_bed", "510081", "Kot (beşik)", "admit..discharge")), label="a cot beside the incubator on every day"),
+    Case("stay.coverage", S12, lambda r, c: r["procedures"].append(icu_line("cot", "newborn_bed", "510081", "Kot (beşik)", "discharge")), label="a cot on the incubator's discharge day"),
+    Case("stay.coverage", S12, lambda r, c: r["procedures"].append({"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi", "days": "admit..discharge", "basis": "judgment", "source": FIXTURE}), label="a ward bed beside the incubator"),
+    Case("stay.coverage", S12, lambda r, c: r["procedures"].append(icu_line("icu_again", "icu_package", "P552002", "İkinci basamak yoğun bakım hastası", "admit+1")), label="an ICU line beside the incubator", also=("icu.day_pattern",)),
+    Case("stay.coverage", S7, lambda r, c: r["procedures"].append(icu_line("incubator_visit", "newborn_bed", "510070", "Kuvöz", "admit")), label="a newborn bed on an ER-only visit"),
     Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_end_days").update(days=["admit", "admit+1", "discharge-1"]), line(r, "icu_package").update(days="admit+2..discharge-2")), label="a 510090 on a middle day"),
     Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_end_days").update(days="admit"), line(r, "icu_package").update(days="admit+1..discharge-1")), label="no 510090 on the last day"),
     Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_package").update(days="admit+1..admit+2")), label="a package day missing between the end days", also=("stay.coverage",)),
@@ -939,6 +956,104 @@ def test_a_band_table_in_the_middle_of_the_window_is_probed(catalogs: Catalogs) 
     assert [(p.check, "on 2026-03-01 " in p.message) for p in found] == [
         ("anaesthesia.group", True)
     ]
+
+
+# --- the edges of the newborn grammar ---------------------------------------------------------------
+
+
+def test_a_cot_is_a_newborn_bed_too(catalogs: Catalogs, tmp_path) -> None:
+    """The cot 510081 is the other newborn bed: a stay may bill it on every day instead of the incubator."""
+    raw = _raw(S12)
+    line(raw, "incubator").update(code="510081", name="Kot (beşik)")
+    assert _problems(raw, catalogs, tmp_path) == []
+
+
+def test_a_newborn_stay_may_change_beds_between_days(catalogs: Catalogs, tmp_path) -> None:
+    """Incubator on the first three days, the ward bed on the rest (the shape of the ward bill after a newborn stay)."""
+    raw = _raw(S12)
+    line(raw, "incubator").update(days="admit..admit+2")
+    raw["procedures"].append(
+        {"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi",
+         "days": "admit+3..discharge", "basis": "judgment", "source": FIXTURE}
+    )  # fmt: skip
+    assert _problems(raw, catalogs, tmp_path) == []
+    # the days must fit at every stay length: a ward bed fixed to the showcase's 5 nights does not
+    line(raw, "bed").update(days="admit+3..admit+5")
+    assert {p.check for p in _problems(raw, catalogs, tmp_path)} == {"stay.coverage", "days.in_stay"}
+
+
+def stay_coverage_messages(raw: dict, catalogs: Catalogs, tmp_path) -> list[tuple[str, str]]:
+    return sorted((p.where, p.message) for p in _problems(raw, catalogs, tmp_path) if p.check == "stay.coverage")
+
+
+def test_a_newborn_stay_names_the_missing_and_the_doubled_bed_days(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S12)
+    fixed_nights(raw, 5)
+    line(raw, "incubator").update(days="admit..discharge-2")  # days 0..3 of 0..5: days 4 and 5 have no bed
+    raw["procedures"].append(icu_line("cot", "newborn_bed", "510081", "Kot (beşik)", "admit+3..admit+4"))  # day 3 twice
+    assert stay_coverage_messages(raw, catalogs, tmp_path) == [
+        (
+            "procedures[incubator, cot]",
+            "ward and newborn bed lines must cover admit..discharge once each; "
+            "5 nights: no bed line on days [5], two bed lines on days [3]",
+        )
+    ]
+
+
+def test_a_newborn_bed_beside_icu_lines_is_a_defect_of_its_own_and_the_bed_rule_stands_aside(
+    catalogs: Catalogs, tmp_path
+) -> None:
+    """On an ICU stay the ICU lines are the beds: the incubator is named as a defect, and the union rule is not run."""
+    raw = _raw(S12)
+    fixed_nights(raw, 5)
+    line(raw, "incubator").update(days="admit..discharge-1")  # on a newborn stay this would be named; here the ICU rule speaks
+    raw["procedures"].append(icu_line("icu_again", "icu_package", "P552002", "İkinci basamak yoğun bakım hastası", "admit+1"))
+    found = stay_coverage_messages(raw, catalogs, tmp_path)
+    assert [where for where, _ in found] == ["procedures[icu_again]", "procedures[incubator]"]
+    assert dict(found)["procedures[incubator]"] == (
+        "a newborn bed line on an ICU stay: the ICU lines are the bed lines of the bill"
+    )
+    assert dict(found)["procedures[icu_again]"].startswith("ICU lines must cover admit..discharge-1 once each")
+    assert not any("ward and newborn bed lines" in message for _, message in found)
+
+
+def test_a_ward_bed_beside_icu_lines_keeps_its_own_wording(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S11)
+    raw["procedures"].append({"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi",
+                              "days": "admit..discharge", "basis": "judgment", "source": FIXTURE})  # fmt: skip
+    assert dict(stay_coverage_messages(raw, catalogs, tmp_path))["procedures[bed]"] == (
+        "a ward bed line on an ICU stay: the ICU lines are the bed lines of the bill"
+    )
+
+
+def test_a_newborn_bed_on_an_er_visit_needs_a_stay(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S7)
+    raw["procedures"].append(icu_line("incubator_visit", "newborn_bed", "510070", "Kuvöz", "admit"))
+    assert stay_coverage_messages(raw, catalogs, tmp_path) == [
+        ("procedures[incubator_visit]", "a newborn bed line needs a stay, not an ER visit")
+    ]
+
+
+def test_a_package_bill_names_the_newborn_bed_as_a_line_the_package_includes(catalogs: Catalogs) -> None:
+    """In a package bill the incubator line is inside the package, named apart from the companion and the exam."""
+    raw = _raw(S12)
+    raw["billing_mode"] = "package"
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S12}.yaml")
+    problems = {p.where: p.message for p in check_package_mode(pathway, catalogs)}
+    assert set(problems) == {"procedures[incubator]", "procedures[companion]", "procedures[pediatric_consult]"}
+    assert problems["procedures[incubator]"].startswith("a newborn_bed line is inside the package")
+
+
+def test_the_newborn_bed_is_the_incubator_or_the_cot_of_the_code_sets() -> None:
+    sets = yaml.safe_load((_REPO / "data/synthetic/reference/code_sets.yaml").read_text(encoding="utf-8"))
+    assert (sets["beds"]["incubator"]["code"], sets["beds"]["cot"]["code"]) == ("510070", "510081")
+
+
+def test_a_newborn_bed_and_a_ward_bed_are_the_bed_kinds() -> None:
+    from scripts.synthetic.pathways.schema import BED_KINDS, ICU_KINDS
+
+    assert BED_KINDS == ("bed", "newborn_bed")
+    assert not set(BED_KINDS) & set(ICU_KINDS)
 
 
 # --- the edges of the ICU grammar --------------------------------------------------------------------

@@ -425,11 +425,13 @@ class PlausibilityContext:
 
     @cached_property
     def bed_day_codes(self) -> list[str]:
-        """The codes of one bed-day line: ward day, day bed, ICU day fee, and the ICU packages."""
+        """The codes of one bed-day line: ward day, day bed, the newborn beds (incubator, cot), ICU day fee, and the ICU packages."""
         beds = self.code_sets["beds"]
         fee = [
             beds["ward_day"]["code"],
             beds["day_bed"]["code"],
+            beds["incubator"]["code"],
+            beds["cot"]["code"],
             beds["icu_day_fee_for_service"]["code"],
         ]
         return [*fee, *self.icu_codes]

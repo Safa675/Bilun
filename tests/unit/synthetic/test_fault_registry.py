@@ -206,6 +206,21 @@ PINNED_FINDINGS: dict[
         [],
         ["icu_puani_510090_p55200x"],
     ),
+    "S12": (
+        "yenidogan_yatak",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000652"],
+        "2.2.2.A(1)",
+        [
+            "src/bilun/domain/prose_rules/yenidogan_yatak.py:detect_yenidogan_yatak_opportunities",
+            "src/bilun/domain/billing/claim_yenidogan_yatak.py:recommend_yenidogan_yatak_from_claims",
+        ],
+        [],
+        ["yenidogan_yatak_510070"],
+    ),
 }
 
 S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
@@ -260,7 +275,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
@@ -724,9 +739,16 @@ CASES: list[Case] = [
     ),
     Case(
         "fault.op_coverage",
-        lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").update(
-            mutations=[{"op": "drop_entry", "section": "procedures", "entry_id": "bed"}]
-        ),
+        # truncate_line_days is used by two faults (S2's bed days, S12's incubator days): both must go
+        lambda r: [
+            _fault(r, fault_id).update(
+                mutations=[{"op": "drop_entry", "section": "procedures", "entry_id": entry}]
+            )
+            for fault_id, entry in (
+                ("F_S2_BED_DAYS_UNDERBILLED", "bed"),
+                ("F_S12_INCUBATOR_DAYS_UNDERBILLED", "incubator"),
+            )
+        ],
     ),
 ]
 

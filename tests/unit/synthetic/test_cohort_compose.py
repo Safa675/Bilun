@@ -305,6 +305,49 @@ def test_compose_claim_invariants_and_determinism(
     _assert_claim_invariants(first, bill)
 
 
+_BED_LINE_CODES = {"510010", "510070", "510081", "510120", "510121", "510090", "530000"}
+
+
+def test_every_bed_code_is_a_yatak_line_and_nothing_else_next_to_it_is() -> None:
+    """The newborn beds (incubator 510070, cot 510081) are bed lines like the ward bed and the ICU day rate."""
+    from scripts.synthetic.cohort.compose import _BED_CODES, _category_for
+
+    assert _BED_CODES == _BED_LINE_CODES
+    assert {code: _category_for(code) for code in sorted(_BED_LINE_CODES)} == dict.fromkeys(
+        sorted(_BED_LINE_CODES), "yatak"
+    )
+    assert _category_for("520010") == "muayene" and _category_for("510100") == "islem"
+    assert _category_for("P552006") == "paket" and _category_for("L107020") == "laboratuvar"
+
+
+def test_the_proof_harness_has_the_same_bed_codes_as_the_composer() -> None:
+    """reports/.../harness.py builds the independent story bills; its bed set must be the composer's."""
+    source = (_REPO / "reports/synthetic-data/2026-10-15-showcase-proofs/harness.py").read_text(encoding="utf-8")
+    function = next(
+        node
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.FunctionDef) and node.name == "_category_for"
+    )
+    sets = [node for node in ast.walk(function) if isinstance(node, ast.Set)]
+    assert len(sets) == 1
+    assert {elt.value for elt in sets[0].elts} == _BED_LINE_CODES
+
+
+def test_a_newborn_story_composes_incubator_lines_as_bed_lines(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    pathway = pathways["late_preterm_newborn_incubator_stay"]
+    ctx = EncounterContext(
+        patient_id=patient_id(11), claim_id=claim_id(patient_id(11), 1), episode_id=episode_id(patient_id(11), 1)
+    )
+    claim = compose_claim(expand(pathway, annotate=True), ctx, catalogs)
+    beds = [p for p in claim.procedures if p.procedure_code == "510070"]
+    assert len(beds) == 6 and {p.procedure_category for p in beds} == {"yatak"}
+    assert {p.quantity for p in beds} == {1} and {str(p.billed_amount_try) for p in beds} == {"440.98"}
+    assert claim.header.department == "Yenidoğan" and claim.header.admission_date == date(2026, 7, 10)
+    assert claim.header.expected_total_billed_try == Decimal("3049.55")
+
+
 def test_compose_claim_rejects_unannotated_bill(
     catalogs: CohortCatalogs,
     pathways: dict[str, Pathway],

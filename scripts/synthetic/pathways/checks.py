@@ -24,6 +24,7 @@ import yaml
 
 from .loader import PATHWAYS_DIR, PathwayLoadError, load_pathway
 from .schema import (
+    BED_KINDS,
     ICU_KINDS,
     Pathway,
     Problem,
@@ -46,7 +47,7 @@ PACKAGE_WINDOW_DAYS = {"A": 15, "B": 10, "C": 8, "D": 5, "E": 3}
 
 # EK-2B chapter groups (ek2b_code_chapter.parquet group_id) a line kind may sit in.
 KIND_GROUPS = [
-    ("1", "bed"), ("1", "icu_day"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
+    ("1", "bed"), ("1", "newborn_bed"), ("1", "icu_day"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
     ("5", "anaesthesia"), ("5", "procedure"), ("6", "operation"), ("7", "procedure"),
     ("8", "imaging"), ("9", "lab"), ("10", "lab"),
 ]  # fmt: skip
@@ -265,10 +266,12 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     """procedure.kind: the declared kind must fit the code's EK-2B chapter and the code sets.
 
     The two ICU kinds are bed-day lines of their own: `icu_day` is the day rate 510090 (EK-2B chapter 1)
-    and `icu_package` an EK-2C ICU package (P552001-3, P552006-8; a package has no EK-2B chapter).
+    and `icu_package` an EK-2C ICU package (P552001-3, P552006-8; a package has no EK-2B chapter). The
+    newborn bed (`newborn_bed`) is the incubator 510070 or the cot 510081, never the ward bed.
     """
     beds, anaesthesia = cat.code_sets["beds"], cat.code_sets["anaesthesia"]
     ward_beds = [beds["ward_day"]["code"], beds["day_bed"]["code"]]
+    newborn_beds = [beds["incubator"]["code"], beds["cot"]["code"]]
     icu_packages = [
         tier["code"] for group in cat.code_sets["icu_packages"].values() for tier in group.values()
     ]
@@ -279,6 +282,7 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     kind, code = pl.col("kind"), pl.col("code")
     fits_code = (
         pl.when(kind == "bed").then(code.is_in(ward_beds))
+        .when(kind == "newborn_bed").then(code.is_in(newborn_beds))
         .when(kind == "icu_day").then(code == beds["icu_day_fee_for_service"]["code"])
         .when(kind == "icu_package").then(code.is_in(icu_packages))
         .when(kind == "companion").then(code == beds["companion"]["code"])
@@ -398,7 +402,8 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
     An ICU package (kind icu_package) is no surgical package: it is a per-day bed line billed beside
     itemized lines (SUT 2.4.4.H.(2)), so an itemized pathway may hold it. A package bill may not hold
-    an ICU line of either kind: the engine prices a package stay by the package, not by ICU days.
+    an ICU line of either kind: the engine prices a package stay by the package, not by ICU days. The
+    same goes for a newborn bed line (kind newborn_bed): the package includes the bed (C000685 to C000699).
     """
     if pathway.billing_mode == "itemized":
         return [
@@ -596,7 +601,9 @@ def check_days(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     ]
 
 
-# A stay line covers admit..discharge + offset: a bed every calendar day, a companion every night.
+# A stay line covers admit..discharge + offset: a bed every calendar day, a companion every night. A
+# newborn bed line is a bed line (the day's one bed): its coverage is judged together with the ward
+# bed lines (`_bed_coverage_problems`), not line by line.
 STAY_LINE_END = {"bed": 0, "companion": -1}
 
 
@@ -621,10 +628,11 @@ def _icu_coverage_problems(pathway: Pathway) -> list[Problem]:
         Problem(
             "stay.coverage",
             f"procedures[{line.id}]",
-            "a ward bed line on an ICU stay: the ICU lines are the bed lines of the bill",
+            f"a {'newborn' if line.kind == 'newborn_bed' else 'ward'} bed line on an ICU stay: "
+            "the ICU lines are the bed lines of the bill",
         )
         for line in pathway.procedures
-        if line.kind == "bed"
+        if line.kind in BED_KINDS
     ]
     if pathway.nights is None:
         return out + [
@@ -649,16 +657,51 @@ def _icu_coverage_problems(pathway: Pathway) -> list[Problem]:
     return out
 
 
+def _bed_coverage_problems(pathway: Pathway) -> list[Problem]:
+    """The ward and the newborn bed lines of a newborn stay are the day's one bed: admit..discharge, once each.
+
+    EK-2B gives 510010, 510070 and 510081 the same text (yemek + yatak + vizit): they are alternatives
+    for one patient-day, so a day holds exactly one of them (the engine reads a ward bed beside a newborn
+    bed as double billing, `claim_yatak_newborn_overlap`), and the discharge day is billed like any other.
+    """
+    lines = [line for line in pathway.procedures if line.kind in BED_KINDS]
+    ids = ", ".join(line.id for line in lines)
+    if pathway.nights is None:
+        return [Problem("stay.coverage", f"procedures[{ids}]", "a newborn bed line needs a stay, not an ER visit")]
+    faults = []
+    for nights in _stay_cases(pathway):
+        seen = Counter(_days_of(lines, anchors_for(pathway, nights)))
+        missing = [d for d in range(nights + 1) if not seen[d]]
+        twice = sorted(d for d, n in seen.items() if n > 1)
+        outside = sorted(d for d in seen if not 0 <= d <= nights)
+        if missing or twice or outside:
+            parts = [
+                (f"no bed line on days {missing}", bool(missing)),
+                (f"two bed lines on days {twice}", bool(twice)),
+                (f"a bed line on days {outside}, outside the stay", bool(outside)),
+            ]
+            faults.append(f"{nights} nights: " + ", ".join(text for text, bad in parts if bad))
+    if not faults:
+        return []
+    why = "ward and newborn bed lines must cover admit..discharge once each"
+    return [Problem("stay.coverage", f"procedures[{ids}]", f"{why}; {'; '.join(faults)}")]
+
+
 def check_stay_coverage(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     """stay.coverage: a bed line covers admit..discharge, a companion admit..discharge-1, at every stay.
 
-    On an ICU stay (a line of kind icu_day or icu_package) the ICU lines take the bed lines' place:
-    they cover admit..discharge-1 once each, and a ward bed line is a defect.
+    On a newborn stay (a line of kind newborn_bed) the ward and newborn bed lines together cover
+    admit..discharge once each. On an ICU stay (a line of kind icu_day or icu_package) the ICU lines take
+    the bed lines' place: they cover admit..discharge-1 once each, and a ward or newborn bed line is a
+    defect.
     """
     icu_stay = bool(_icu_lines(pathway))
+    newborn_stay = any(line.kind == "newborn_bed" for line in pathway.procedures)
     out = _icu_coverage_problems(pathway) if icu_stay else []
+    if newborn_stay and not icu_stay:
+        out += _bed_coverage_problems(pathway)
     for line in pathway.procedures:
-        if line.kind not in STAY_LINE_END or (icu_stay and line.kind == "bed"):
+        if line.kind not in STAY_LINE_END or (line.kind == "bed" and (icu_stay or newborn_stay)):
             continue
         faults = []
         for nights in _stay_cases(pathway):

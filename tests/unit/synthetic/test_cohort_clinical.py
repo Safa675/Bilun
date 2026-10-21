@@ -17,17 +17,23 @@ import pytest
 import yaml
 
 from scripts.synthetic.cohort.clinical import (
+    AGE_BAND_ADULT,
+    AGE_BAND_INFANT,
     CHECKS,
     CLINICAL_PATH,
+    VITALS_RANGES,
     ClinicalLoadError,
     Problem,
     Vitals,
+    age_band,
     check_clinical,
     load_clinical,
     load_clinical_text,
     run_all,
+    vitals_problems,
 )
 from scripts.synthetic.cohort.recipes import load_recipes
+from scripts.synthetic.pathways import load_all
 from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
@@ -44,6 +50,8 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     7: (134, 82, 92, 97, 162, 71.0),
     8: (124, 76, 74, 98, 163, 79.0),
     9: (134, 78, 72, 97, 161, 69.0),
+    10: (84, 46, 124, 91, 158, 66.0),
+    11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
 }
 
 
@@ -94,16 +102,19 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     by_no = clinical.by_patient_no()
     assert set(by_no) == set(range(1, cohort.patient_count() + 1))
 
+    pathways = load_all()
+    story_of = {r.patient_no: pathways[r.pathway].showcase.story for r in recipes.recipes}
+    assert set(_EXPECTED_VITALS) == set(by_no)
     for pno, expected_tuple in _EXPECTED_VITALS.items():
         pat = by_no[pno]
         assert pat.patient_no == pno
         assert pat.basis == "judgment"
         assert "#309" in pat.source
-        assert f"S{pno}" in pat.source
+        assert story_of[pno] in pat.source  # patient 10 is story S11, patient 11 is S12
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
-        if pno in {5, 8}:
+        if pno in {5, 8, 11}:  # S12 bills no laboratory line: lab_reference.csv has adult ranges only
             assert pat.labs is None
         else:
             assert pat.labs is not None
@@ -137,6 +148,65 @@ def test_a_pathway_line_group_with_a_blood_gas_counts_as_having_one() -> None:
     assert _pathway_has_l103900(pathway(gas))
     assert _pathway_has_l103900(pathway(other, panel))
     assert not _pathway_has_l103900(pathway(other))
+
+
+def test_the_age_decides_the_band_of_the_vital_ranges() -> None:
+    assert (AGE_BAND_ADULT, AGE_BAND_INFANT) == ("adult", "infant")
+    assert [age_band(age) for age in (0, 1, 17, 34, 90)] == ["infant", "adult", "adult", "adult", "adult"]
+    assert age_band(None) == "adult"  # a patient the recipes do not know has the adult ranges
+
+
+def test_the_vital_ranges_are_the_table_of_the_brief() -> None:
+    assert VITALS_RANGES == {
+        "adult": {
+            "sbp": (70, 260), "dbp": (40, 150), "pulse": (30, 220), "spo2": (60, 100),
+            "height_cm": (120, 210), "weight_kg": (30.0, 200.0),
+        },
+        "infant": {
+            "sbp": (40, 130), "dbp": (20, 90), "pulse": (80, 220), "spo2": (60, 100),
+            "height_cm": (30, 85), "weight_kg": (0.4, 12.0),
+        },
+    }  # fmt: skip
+
+
+def test_the_real_patients_are_judged_by_the_age_of_their_pathway() -> None:
+    clinical = load_clinical(CLINICAL_PATH)
+    pathways = load_all()
+    ages = {r.patient_no: pathways[r.pathway].showcase.age for r in load_recipes().recipes}
+    bands = {pno: age_band(age) for pno, age in ages.items()}
+    assert [pno for pno, band in bands.items() if band == AGE_BAND_INFANT] == [11]
+    for patient in clinical.patients:
+        assert vitals_problems(patient.vitals, bands[patient.patient_no], "x") == [], patient.patient_no
+    # the other band is a defect for the baby and for every adult alike
+    by_no = clinical.by_patient_no()
+    assert {p.check for p in vitals_problems(by_no[11].vitals, AGE_BAND_ADULT, "x")} == {
+        "vitals.sbp_range", "vitals.dbp_range", "vitals.height_range", "vitals.weight_range",
+    }  # fmt: skip
+    for pno in range(1, 11):
+        assert vitals_problems(by_no[pno].vitals, AGE_BAND_INFANT, "x"), pno
+
+
+def test_vitals_problems_say_where_and_what() -> None:
+    vitals = Vitals(sbp=999, dbp=36, pulse=148, spo2=96, height_cm=46, weight_kg=2.4)
+    (problem,) = vitals_problems(vitals, AGE_BAND_INFANT, "patients[11].vitals")
+    assert (problem.check, problem.where) == ("vitals.sbp_range", "patients[11].vitals.sbp")
+    assert problem.message == "sbp 999 mmHg is outside plausible range 40..130 for the infant band"
+    (order,) = vitals_problems(
+        Vitals(sbp=50, dbp=50, pulse=148, spo2=96, height_cm=46, weight_kg=2.4), AGE_BAND_INFANT, "w"
+    )
+    assert (order.check, order.where) == ("vitals.bp_order", "w")
+
+
+def test_the_model_holds_types_and_the_ranges_belong_to_the_check() -> None:
+    """A value outside every range builds a Vitals: only `check_clinical` knows the age that judges it."""
+    vitals = Vitals(sbp=999, dbp=1, pulse=1, spo2=1, height_cm=1, weight_kg=1000.0)
+    assert vitals.sbp == 999
+    assert {p.check for p in vitals_problems(vitals, AGE_BAND_ADULT, "x")} == {
+        "vitals.sbp_range", "vitals.dbp_range", "vitals.pulse_range", "vitals.spo2_range",
+        "vitals.height_range", "vitals.weight_range",
+    }  # fmt: skip
+    with pytest.raises(ValueError):
+        Vitals(sbp=120, dbp=80, pulse=70, spo2=97, height_cm=170, weight_kg=float("nan"))
 
 
 def test_unregistered_problem_check_id_raises_key_error() -> None:
@@ -398,6 +468,58 @@ CASES: list[Case] = [
         "vitals.weight_range",
         lambda r: _patient(r, 1)["vitals"].update(weight_kg=200.1),
         label="weight_too_high",
+    ),
+    # --- the same ranges by age: a baby (age 0 in its pathway) has the infant ranges, an adult has the adult ones
+    *[
+        Case(
+            check,
+            lambda r, name=name, value=value: _patient(r, 11)["vitals"].update({name: value}),
+            label=f"infant_{name}_{side}",
+        )
+        for check, name, side, value in (
+            ("vitals.sbp_range", "sbp", "low", 39),
+            ("vitals.sbp_range", "sbp", "high", 131),
+            ("vitals.dbp_range", "dbp", "low", 19),
+            ("vitals.dbp_range", "dbp", "high", 91),
+            ("vitals.pulse_range", "pulse", "low", 79),
+            ("vitals.pulse_range", "pulse", "high", 221),
+            ("vitals.spo2_range", "spo2", "low", 59),
+            ("vitals.spo2_range", "spo2", "high", 101),
+            ("vitals.height_range", "height_cm", "low", 29),
+            ("vitals.height_range", "height_cm", "high", 86),
+            ("vitals.weight_range", "weight_kg", "low", 0.3),
+            ("vitals.weight_range", "weight_kg", "high", 12.1),
+        )
+    ],
+    Case(
+        "vitals.height_range",
+        lambda r: _patient(r, 11)["vitals"].update(height_cm=170),
+        label="a_baby_with_an_adult_height",
+    ),
+    Case(
+        "vitals.weight_range",
+        lambda r: _patient(r, 11)["vitals"].update(weight_kg=70.0),
+        label="a_baby_with_an_adult_weight",
+    ),
+    Case(
+        "vitals.sbp_range",
+        lambda r: _patient(r, 11)["vitals"].update(sbp=30),  # below the diastolic 36, but the range says it once
+        label="infant_sbp_out_of_range_and_below_dbp_is_one_finding",
+    ),
+    Case(
+        "vitals.bp_order",
+        lambda r: _patient(r, 11)["vitals"].update(sbp=50, dbp=50),
+        label="infant_sbp_equals_dbp",
+    ),
+    Case(
+        "vitals.height_range",
+        lambda r: _patient(r, 1)["vitals"].update(height_cm=46),
+        label="an_adult_with_a_baby_height",
+    ),
+    Case(
+        "vitals.weight_range",
+        lambda r: _patient(r, 1)["vitals"].update(weight_kg=2.4),
+        label="an_adult_with_a_baby_weight",
     ),
     # --- Cross-reference against showcase_recipes.yaml & lab_reference.csv
     Case(

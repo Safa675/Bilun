@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 import math
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal
 
 import polars as pl
 from pydantic import (
@@ -24,7 +24,6 @@ from pydantic import (
     StrictStr,
     ValidationError,
     field_validator,
-    model_validator,
 )
 from pydantic_core import PydanticCustomError
 import yaml
@@ -102,7 +101,12 @@ class ClinicalLoadError(PathwayLoadError):
 
 
 class Vitals(_Model):
-    """Plausible admission/visit vital signs and anthropometrics for one showcase patient."""
+    """Admission/visit vital signs and anthropometrics for one showcase patient.
+
+    The model holds the types only. How plausible a value is depends on the patient's age, which the
+    recipe's pathway pins and this document does not know, so `check_clinical` judges the ranges
+    (`VITALS_RANGES`, the `vitals.*` ids) once it can read the age.
+    """
 
     sbp: StrictInt
     dbp: StrictInt
@@ -111,85 +115,97 @@ class Vitals(_Model):
     height_cm: StrictInt
     weight_kg: StrictFloat | StrictInt
 
-    @field_validator("sbp")
-    @classmethod
-    def _sbp_range(cls, value: int) -> int:
-        if not 70 <= value <= 260:
-            raise PydanticCustomError(
-                "vitals.sbp_range",
-                "sbp {value} mmHg is outside plausible range 70..260",
-                {"value": value},
-            )
-        return value
-
-    @field_validator("dbp")
-    @classmethod
-    def _dbp_range(cls, value: int) -> int:
-        if not 40 <= value <= 150:
-            raise PydanticCustomError(
-                "vitals.dbp_range",
-                "dbp {value} mmHg is outside plausible range 40..150",
-                {"value": value},
-            )
-        return value
-
-    @field_validator("pulse")
-    @classmethod
-    def _pulse_range(cls, value: int) -> int:
-        if not 30 <= value <= 220:
-            raise PydanticCustomError(
-                "vitals.pulse_range",
-                "pulse {value}/min is outside plausible range 30..220",
-                {"value": value},
-            )
-        return value
-
-    @field_validator("spo2")
-    @classmethod
-    def _spo2_range(cls, value: int) -> int:
-        if not 60 <= value <= 100:
-            raise PydanticCustomError(
-                "vitals.spo2_range",
-                "spo2 {value}% is outside plausible range 60..100",
-                {"value": value},
-            )
-        return value
-
-    @field_validator("height_cm")
-    @classmethod
-    def _height_range(cls, value: int) -> int:
-        if not 120 <= value <= 210:
-            raise PydanticCustomError(
-                "vitals.height_range",
-                "height_cm {value} cm is outside plausible range 120..210",
-                {"value": value},
-            )
-        return value
-
     @field_validator("weight_kg")
     @classmethod
-    def _weight_range(cls, value: float | int) -> float:
+    def _weight_is_finite(cls, value: float | int) -> float:
         val = float(value)
-        if not math.isfinite(val) or not 30.0 <= val <= 200.0:
+        if not math.isfinite(val):
             raise PydanticCustomError(
                 "vitals.weight_range",
-                "weight_kg {value} kg is outside plausible range 30..200",
+                "weight_kg {value} kg is not a finite number",
                 {"value": value},
             )
         return val
 
-    @model_validator(mode="after")
-    def _bp_order(self) -> Self:
-        if 70 <= self.sbp <= 260 and 40 <= self.dbp <= 150 and self.sbp <= self.dbp:
-            raise PydanticCustomError(
-                "vitals.bp_order",
-                "sbp ({sbp}) must be strictly above dbp ({dbp})",
-                {"sbp": self.sbp, "dbp": self.dbp},
-            )
-        return self
-
 
 ShowcaseVitals = Vitals
+
+# The plausible ranges of the vital signs by age band, inclusive (judgment: outside can only be a bug).
+# The band is the age that the recipe's pathway pins: age 0 (a baby under one year, the newborn
+# included) is the infant band, every other age the adult one. A child of 1 to 17 years has no band yet.
+AGE_BAND_ADULT = "adult"
+AGE_BAND_INFANT = "infant"
+VITALS_RANGES: dict[str, dict[str, tuple[float, float]]] = {
+    AGE_BAND_ADULT: {
+        "sbp": (70, 260),
+        "dbp": (40, 150),
+        "pulse": (30, 220),
+        "spo2": (60, 100),
+        "height_cm": (120, 210),
+        "weight_kg": (30.0, 200.0),
+    },
+    AGE_BAND_INFANT: {
+        "sbp": (40, 130),
+        "dbp": (20, 90),
+        "pulse": (80, 220),
+        "spo2": (60, 100),
+        "height_cm": (30, 85),
+        "weight_kg": (0.4, 12.0),
+    },
+}
+_VITALS_UNITS = {
+    "sbp": "mmHg",
+    "dbp": "mmHg",
+    "pulse": "/min",
+    "spo2": "%",
+    "height_cm": "cm",
+    "weight_kg": "kg",
+}
+_VITALS_RANGE_IDS = {
+    "sbp": "vitals.sbp_range",
+    "dbp": "vitals.dbp_range",
+    "pulse": "vitals.pulse_range",
+    "spo2": "vitals.spo2_range",
+    "height_cm": "vitals.height_range",
+    "weight_kg": "vitals.weight_range",
+}
+
+
+def age_band(age: int | None) -> str:
+    """The vital-sign band of a patient's age in years: infant for a baby under one year, else adult."""
+    return AGE_BAND_INFANT if age is not None and age < 1 else AGE_BAND_ADULT
+
+
+def vitals_problems(vitals: Vitals, band: str, where: str) -> list[Problem]:
+    """`vitals.*_range` and `vitals.bp_order` for one patient's vitals in the ranges of `band`.
+
+    The blood-pressure order is only judged when both pressures are inside their ranges, so one
+    defect is reported once.
+    """
+    ranges = VITALS_RANGES[band]
+    out: list[Problem] = []
+    inside: dict[str, bool] = {}
+    for name, (low, high) in ranges.items():
+        value = getattr(vitals, name)
+        inside[name] = low <= value <= high
+        if not inside[name]:
+            out.append(
+                Problem(
+                    _VITALS_RANGE_IDS[name],
+                    f"{where}.{name}",
+                    f"{name} {value} {_VITALS_UNITS[name]} is outside plausible range "
+                    f"{low:g}..{high:g} for the {band} band",
+                )
+            )
+    if inside["sbp"] and inside["dbp"] and vitals.sbp <= vitals.dbp:
+        out.append(
+            Problem(
+                "vitals.bp_order",
+                where,
+                f"sbp ({vitals.sbp}) must be strictly above dbp ({vitals.dbp})",
+            )
+        )
+    return out
 
 
 class PatientLabs(_Model):
@@ -442,6 +458,8 @@ def check_clinical(
         recipe = recipe_by_no.get(pno)
         pw = pathways_map.get(recipe.pathway) if recipe is not None else None
         has_l103900_line = _pathway_has_l103900(pw) if pw is not None else False
+        band = age_band(pw.showcase.age if pw is not None else None)
+        out.extend(vitals_problems(patient.vitals, band, f"{where_pat}.vitals"))
 
         if patient.labs is None:
             if has_l103900_line:

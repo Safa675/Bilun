@@ -27,7 +27,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S11")  # the stories after the eighth, named by scenarios (S10 is a later bill)
+_SCENARIO_STORIES = ("S9", "S11", "S12")  # the stories after the eighth, named by scenarios (S10 is a later bill)
 _FAULT_STORIES = (*_STORIES, *_SCENARIO_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
@@ -243,7 +243,7 @@ def test_every_story_has_a_fault_record_with_an_amount_a_line_type_and_a_line() 
 
 def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_role() -> None:
     known = cohort.scenarios()
-    assert set(known) == set(_SCENARIO_STORIES)  # the registry keys are sorted as text: S11 before S9
+    assert set(known) == set(_SCENARIO_STORIES)  # the registry keys are sorted as text: S11, S12 before S9
     assert all(isinstance(scenario, cohort.Scenario) for scenario in known.values())
     assert {story: cohort.scenario(story) for story in _SCENARIO_STORIES} == known
     assert known["S9"] == cohort.Scenario(
@@ -251,6 +251,9 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     )
     assert known["S11"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0010", claim_ids=("F-SENTETIK-HASTA-0010-001",)
+    )
+    assert known["S12"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0011", claim_ids=("F-SENTETIK-HASTA-0011-001",)
     )
     assert not {f"showcase_{story}" for story in _SCENARIO_STORIES} & set(cohort.roles())
     assert not set(known) & set(_STORIES)

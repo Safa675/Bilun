@@ -69,6 +69,8 @@ from scripts.synthetic.cohort.plausibility_clean import (
     TABLE_LAB,
     TABLE_PROCEDURES,
     TABLE_RECETE,
+    INFANT_AGE_LIMIT,
+    INFANT_VITALS_BOUNDS,
     VITALS_BOUNDS,
     CleanPlausibilityContext,
     CleanPlausibilityError,
@@ -1500,8 +1502,9 @@ def test_every_committed_prescription_row_is_looked_at(kind, built, clean, conte
     assert len(found) == expected, [str(p) for p in found[:3]]
 
 
+# every value lies outside the adult bounds and outside the infant bounds, so each row of the cohort is a defect
 VITAL_BREAKS = {
-    "SPO2": 20, "KB-S": 300, "KB-D": 20, "Nabiz": 250, "Boy": 100, "Kilo": 250.0, "TANI_YASI": 120,
+    "SPO2": 20, "KB-S": 300, "KB-D": 10, "Nabiz": 250, "Boy": 100, "Kilo": 250.0, "TANI_YASI": 120,
     "BMI": 99.0, "CINSIYET": "?",
 }  # fmt: skip
 
@@ -4102,12 +4105,21 @@ VITAL_BOUND_ITEMS = [
 ]
 
 
+# the vital signs of a baby (patient 11 of the cohort): they replace the adult ones of vitals_frame
+# whenever the age under test is below one year
+INFANT_BASE = {"KB-S": 62, "KB-D": 36, "Nabiz": 148, "SPO2": 96, "Boy": 46, "Kilo": 2.4}
+
+
 @pytest.mark.parametrize(("column", "low", "high"), VITAL_BOUND_ITEMS)
 def test_a_vital_sign_is_inside_its_bounds_up_to_the_limits(
     column, low, high, clean, context
 ) -> None:
     def run(value):
-        return vitals_problems(vitals_frame(clean, **{column: value}), context)
+        # an age of 0 is a baby, whose other vital signs are those of a baby
+        baby = column == "TANI_YASI" and value is not None and value < 1
+        return vitals_problems(
+            vitals_frame(clean, **{**(INFANT_BASE if baby else {}), column: value}), context
+        )
 
     def shown(value: float) -> str:
         return f"{value:.1f}" if column == "Kilo" else f"{value:g}"
@@ -4121,6 +4133,100 @@ def test_a_vital_sign_is_inside_its_bounds_up_to_the_limits(
     assert bool(run(0)) is (low > 0), column
     # a missing value is named, not skipped
     assert [p.message for p in run(None)] == [f"{column} is missing"]
+
+
+# the vital bounds of a baby under one year, written here again (not taken from INFANT_VITALS_BOUNDS)
+INFANT_BOUND_ITEMS = [
+    ("KB-S", 40, 130),
+    ("KB-D", 20, 90),
+    ("Nabiz", 80, 220),
+    ("Boy", 30, 85),
+    ("Kilo", 0.4, 12.0),
+]
+
+
+def infant_problems(clean, context, **changes) -> list[Problem]:
+    return vitals_problems(vitals_frame(clean, **{**INFANT_BASE, "TANI_YASI": 0, **changes}), context)
+
+
+def test_the_vital_signs_of_a_baby_are_inside_the_infant_bounds(clean, context) -> None:
+    assert infant_problems(clean, context) == []
+
+
+@pytest.mark.parametrize(("column", "low", "high"), INFANT_BOUND_ITEMS)
+def test_a_vital_sign_of_a_baby_is_inside_its_infant_bounds_up_to_the_limits(
+    column, low, high, clean, context
+) -> None:
+    def shown(value: float) -> str:
+        return f"{value:.1f}" if column == "Kilo" else f"{value:g}"
+
+    # the blood pressure is judged beside its pair: keep the pair in order whatever the limit
+    pair = {"KB-S": {"KB-D": 20}, "KB-D": {"KB-S": 100}}.get(column, {})
+    for inside in (low, high, (low + high) / 2):
+        assert infant_problems(clean, context, **{**pair, column: inside}) == [], (column, inside)
+    for outside in (round(low - (0.1 if column == "Kilo" else 1), 1), high + 1):
+        (problem,) = infant_problems(clean, context, **{**pair, column: outside})
+        assert problem.message == (
+            f"{column} {shown(outside)} is outside {low:g}..{high:g} for a baby under one year"
+        )
+
+
+def messages_of(problems: list[Problem]) -> list[str]:
+    """The findings of the rows, one text each: a row with several defects names them all in one problem."""
+    return sorted(text for p in problems for text in p.message.split("; "))
+
+
+@pytest.mark.parametrize(
+    ("changes", "says"),
+    [
+        ({"KB-S": 62, "KB-D": 36}, ["KB-S 62 is outside 70..260"]),
+        ({"Boy": 46}, ["Boy 46 is outside 120..210"]),
+        ({"Kilo": 2.4}, ["Kilo 2.4 is outside 30..200"]),
+    ],
+    ids=lambda c: "-".join(c) if isinstance(c, dict) else "says",
+)
+def test_the_vital_signs_of_a_baby_are_a_defect_for_an_adult(changes, says, clean, context) -> None:
+    """The age decides the table: the same value is plausible at 0 years and not at 34."""
+    found = vitals_problems(vitals_frame(clean, **{"TANI_YASI": 34, **changes}), context)
+    assert messages_of(found) == says  # vitals_frame keeps the BMI in step with the height and weight
+
+
+def test_the_adult_vital_signs_are_a_defect_for_a_baby(clean, context) -> None:
+    found = vitals_problems(vitals_frame(clean, TANI_YASI=0), context)  # 170 cm, 70 kg, 200/40
+    assert messages_of(found) == [
+        "Boy 170 is outside 30..85 for a baby under one year",
+        "KB-S 200 is outside 40..130 for a baby under one year",
+        "Kilo 70.0 is outside 0.4..12 for a baby under one year",
+    ]
+
+
+def test_a_baby_is_an_age_below_the_infant_limit_and_a_child_of_one_year_is_not(clean, context) -> None:
+    assert INFANT_AGE_LIMIT == 1
+    assert infant_problems(clean, context) == []
+    one_year_old = infant_problems(clean, context, TANI_YASI=1)  # one year old: the adult table
+    assert messages_of(one_year_old) == [
+        "Boy 46 is outside 120..210",
+        "KB-S 62 is outside 70..260",
+        "Kilo 2.4 is outside 30..200",
+    ]
+
+
+def test_a_row_without_an_age_is_judged_by_the_adult_bounds(clean, context) -> None:
+    found = vitals_problems(vitals_frame(clean, **{**INFANT_BASE, "TANI_YASI": None}), context)
+    assert messages_of(found) == [
+        "Boy 46 is outside 120..210",
+        "KB-S 62 is outside 70..260",
+        "Kilo 2.4 is outside 30..200",
+        "TANI_YASI is missing",
+    ]
+
+
+def test_the_spo2_and_the_age_have_one_bound_for_every_age(clean, context) -> None:
+    assert "SPO2" not in INFANT_VITALS_BOUNDS and "TANI_YASI" not in INFANT_VITALS_BOUNDS
+    (problem,) = infant_problems(clean, context, SPO2=120)
+    assert problem.message == "SPO2 120 is outside 50..100"
+    (problem,) = infant_problems(clean, context, TANI_YASI=-1)
+    assert problem.message == "TANI_YASI -1 is outside 0..110"
 
 
 def test_the_diastolic_pressure_is_below_the_systolic(clean, context) -> None:
@@ -4250,6 +4356,18 @@ def test_the_vital_bounds_are_the_table_of_the_brief() -> None:
         "TANI_YASI": (0, 110),
     }
     assert SEX_CODES == ("E", "K")
+
+
+def test_the_infant_vital_bounds_are_the_table_of_the_brief() -> None:
+    assert INFANT_VITALS_BOUNDS == {
+        "KB-S": (40, 130),
+        "KB-D": (20, 90),
+        "Nabiz": (80, 220),
+        "Boy": (30, 85),
+        "Kilo": (0.4, 12.0),
+    }
+    assert set(INFANT_VITALS_BOUNDS) <= set(VITALS_BOUNDS)
+    assert INFANT_AGE_LIMIT == 1
 
 
 def test_the_route_words_are_the_judgment_of_the_module() -> None:

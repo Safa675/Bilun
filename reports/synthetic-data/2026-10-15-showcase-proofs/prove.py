@@ -26,6 +26,7 @@ from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 os.makedirs(OUT, exist_ok=True)
@@ -118,6 +119,11 @@ def direct(story: str, ctx) -> list[dict]:
                           "total_try", "actual_billed_try", "recoverable_uplift_try", "rule_id",
                           "sut_section_id"))
                 for o in detect_icu_puani_opportunities(claims, procs)]
+    if story == "S12":
+        return [_keep(o, ("claim_id", "bed_code", "days", "bundled_days", "puan", "expected_try", "actual_billed_try",
+                          "recoverable_uplift_try", "same_day_stay", "rooming_in", "rule_id", "sut_section_id"))
+                for o in detect_yenidogan_yatak_opportunities(
+                    claims, list(ctx.diagnoses), procedure_lines=procs, claim_ids_with_procs={claim.claim_id})]
     raise KeyError(story)
 
 
@@ -183,7 +189,7 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4", "S9", "S11"):
+    if story in ("S2", "S3", "S4", "S9", "S11", "S12"):
         return total("recoverable_uplift_try")
     if story == "S5":
         return total("risk_amount")

@@ -49,6 +49,7 @@ from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
 
 from scripts.synthetic.faults import FaultInjectionRecord
 
@@ -606,6 +607,35 @@ def _direct_rows_s11(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s12(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    claim = ctx.claims[0]
+    return [
+        _keep(
+            o,
+            (
+                "claim_id",
+                "bed_code",
+                "days",
+                "bundled_days",
+                "puan",
+                "expected_try",
+                "actual_billed_try",
+                "recoverable_uplift_try",
+                "same_day_stay",
+                "rooming_in",
+                "rule_id",
+                "sut_section_id",
+            ),
+        )
+        for o in detect_yenidogan_yatak_opportunities(
+            list(ctx.claims),
+            list(ctx.diagnoses),
+            procedure_lines=list(ctx.procedure_lines),
+            claim_ids_with_procs={claim.claim_id},
+        )
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -617,6 +647,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S8": _direct_rows_s8,
     "S9": _direct_rows_s9,
     "S11": _direct_rows_s11,
+    "S12": _direct_rows_s12,
 }
 
 

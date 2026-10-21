@@ -77,6 +77,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S8": "5377.20",
     "S9": "758.01",
     "S11": "6089.82",
+    "S12": "1322.94",
 }
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
@@ -349,6 +350,7 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
     assert committed_reg["scenarios"] == {
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
+        "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
     }
     assert roles["default_landing"] == {
         "patient_id": "SENTETIK-HASTA-0001",
@@ -600,12 +602,28 @@ def test_stories_after_the_eighth_are_scenarios_and_not_roles(built_showcase: Bu
     assert registry["scenarios"] == {
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
+        "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
     }
     assert next(rec for rec in built_showcase.records if rec.story == "S9").claim_id == (
         "F-SENTETIK-HASTA-0009-001"
     )
     encounter = next(e for e in registry["encounters"] if e["story"] == "S9")
     assert encounter["patient_id"] == "SENTETIK-HASTA-0009" and encounter["is_clean"] is False
+
+
+def test_the_faulty_s12_bill_lacks_its_first_three_incubator_days_and_ends_on_an_incubator_day(
+    built_showcase: BuildResult,
+) -> None:
+    """The fault sits on the first days: a later ward bill that starts on the discharge day finds a Kuvöz line there."""
+    claim = cohort.scenario("S12").claim_ids[0]
+    lines = built_showcase.tables["procedure_claim_lines.parquet"].filter(pl.col("claim_id") == claim)
+    incubator = lines.filter(pl.col("procedure_code") == "510070")["procedure_date"].sort().to_list()
+    assert incubator == ["2026-07-13", "2026-07-14", "2026-07-15"]
+    header = built_showcase.tables["claim_headers.parquet"].filter(pl.col("claim_id") == claim)
+    assert header["discharge_date"].to_list() == ["2026-07-15"]  # the last day carries an incubator line
+    clean = next(c for c in built_showcase.clean_claims if c.header.claim_id == claim)
+    clean_days = sorted(p.procedure_date.isoformat() for p in clean.procedures if p.procedure_code == "510070")
+    assert clean_days == [f"2026-07-{day}" for day in range(10, 16)]
 
 
 def test_a_recipe_without_a_fault_builds_the_clean_claim_with_no_record(
@@ -641,6 +659,7 @@ def test_the_story_of_a_clean_recipe_is_the_story_of_its_pathway() -> None:
     assert built.registry["scenarios"] == {
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
+        "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
     }
     assert len(built.records) == len(cohort.load_registry()["faults"]) - 1  # the S9 fault is gone
 

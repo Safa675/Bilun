@@ -56,7 +56,7 @@ CHECKS: dict[str, str] = {
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
-    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter, or an ICU kind on a code that is not an ICU day or package",
+    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter, an ICU kind on a code that is not an ICU day or package, or a newborn_bed on a code that is not the incubator or the cot",
     "material.in_force": "an EK-3/F-1 code missing on some day of the window",
     "material.name": "a material name that is not the catalog name",
     "drug.in_force": "an EK-4A barcode missing on some day of the window",
@@ -85,7 +85,7 @@ CHECKS: dict[str, str] = {
     "pins.window": "pinned dates outside the service window",
     "days.in_stay": "a day that falls outside the stay for some nights in range",
     "days.duplicate": "a line that lands twice on the same day",
-    "stay.coverage": "a bed line off admit..discharge, or a companion line off admit..discharge-1; on an ICU stay the bed and ICU lines cover admit..discharge-1 once each and the discharge day (the transfer day) holds no ICU line",
+    "stay.coverage": "a bed line off admit..discharge, or a companion line off admit..discharge-1; on a newborn stay the ward and newborn bed lines together cover admit..discharge once each; on an ICU stay the bed and ICU lines cover admit..discharge-1 once each and the discharge day (the transfer day) holds no ICU line, and no newborn bed line sits beside it",
     "icu.day_pattern": "an ICU stay whose 510090 lines are not on the first and the last ICU day, or whose package lines are not on every day between",
     "source.clause_exists": "a cited SUT clause id that does not exist or is not in force",
     "source.sut_cites": "basis sut without a clause id or an annex in the source",
@@ -177,6 +177,7 @@ Kind = Literal[
     "package",
     "operation",
     "bed",
+    "newborn_bed",
     "icu_day",
     "icu_package",
     "companion",
@@ -189,6 +190,10 @@ Kind = Literal[
 # The two kinds of an intensive-care stay: the EK-2B day rate 510090 and an EK-2C ICU package
 # (P552001-3, P552006-8). They are bed-day lines of their own (SUT 2.4.4.H), not surgical packages.
 ICU_KINDS: tuple[str, ...] = ("icu_day", "icu_package")
+# The kinds of the one bed line a calendar day of an ordinary stay carries: the ward bed (510010) and
+# the newborn bed (Kuvöz 510070, Kot 510081). EK-2B gives the three the same text (yemek + yatak + vizit),
+# so they are alternatives for one patient-day (src/bilun/domain/billing/claim_yatak_newborn_overlap.py).
+BED_KINDS: tuple[str, ...] = ("bed", "newborn_bed")
 SessionRole = Literal["primary", "same_incision", "separate_incision"]
 Group = Literal["A1", "A2", "A3", "B", "C", "D", "E"]
 Unit = Literal["box", "vial", "ampoule", "bottle", "bag", "syringe", "tablet", "capsule"]

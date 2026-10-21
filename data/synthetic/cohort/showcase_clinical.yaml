@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, 9 is S9, 10 is S11) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, 9 is S9, 10 is S11, 11 is S12) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -196,3 +196,14 @@ patients:
       source: "Story S11 urosepsis with septic shock: infection markers high, lactate in the septic-shock band; clinician confirms in issue #309 and the S11 judgment list."
     basis: judgment
     source: "Story S11 septic shock presentation at ICU admission (sbp 84, tachycardia, SpO2 91 %); clinician confirms in issue #309 and the S11 judgment list."
+
+  - patient_no: 11
+    vitals:
+      sbp: 62
+      dbp: 36
+      pulse: 148
+      spo2: 96
+      height_cm: 46
+      weight_kg: 2.4
+    basis: judgment
+    source: "Story S12 late-preterm newborn on the day of birth (about 35 weeks, 46 cm, 2.4 kg, infant ranges); clinician confirms in issue #309 and the S12 judgment list."

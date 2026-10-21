@@ -29,7 +29,7 @@ from .ids import (
 
 _CENT = Decimal("0.01")
 _ZERO = Decimal("0.00")
-_BED_CODES = frozenset({"510010", "510120", "510121", "510090", "530000"})
+_BED_CODES = frozenset({"510010", "510070", "510081", "510120", "510121", "510090", "530000"})
 
 
 class ComposeError(ValueError):
