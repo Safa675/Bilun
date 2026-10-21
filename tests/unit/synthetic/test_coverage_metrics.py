@@ -6,7 +6,9 @@ plan's metric map (`plans/data/2026-10-20-demo-coverage-first-plan.md` section 9
 a changed comparison, a dropped list or a swapped union fails a test. And one end-to-end test runs
 the real engine over the committed claims and pins the baseline that the plan measured on the 8
 showcase patients: 9 of 20 blocks with output, 273 of 528 Wave A rule ids evaluated, 14 matched,
-14 with a row.
+14 with a row. Since WP6 patient 4 has two more bills (an outpatient control and a second visit), read
+together with its stay: the per-patient rows of the seven single-bill patients still are the plan's, and
+the numbers of the eight and of the whole cohort are pinned with the follow-ups.
 """
 
 from __future__ import annotations
@@ -664,36 +666,39 @@ def test_every_patient_of_the_registry_is_measured(measured: dict[str, dict[str,
     assert sum(entry["claims"] for entry in measured.values()) == cohort.claim_count()
 
 
-def test_the_eight_showcase_patients_reproduce_the_plans_baseline(
+def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_the_outpatient_bills_of_patient_4_add(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
+    """The plan measured 273 / 14 / 14 on the eight first bills; patient 4's control and second visit add the rest."""
     summary = cm.summarize(showcase_eight)
     assert summary["patients"] == 8
     assert summary["blocks"]["total"] == 20
     assert summary["blocks"]["with_output"] == 9
-    assert summary["blocks"]["with_output_names"] == BASELINE_BLOCKS_WITH_OUTPUT
+    assert summary["blocks"]["with_output_names"] == BASELINE_BLOCKS_WITH_OUTPUT  # the outpatient bills light no block
     wavea = summary["wavea"]
     assert wavea["rule_ids"] == 528
-    assert wavea["evaluated"] == 273
-    assert wavea["matched"] == 14
-    assert wavea["with_row"] == 14
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (8, 6, 0)
+    # +13 evaluated (the first outpatient claims), +2 matched (the duplicate exam, ORTAK-20), +1 with a row (ORTAK-20)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 13, 14 + 2, 14 + 1)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (9, 6, 0)
 
 
-def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table(
+def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
+    wavea = entry["wavea"]
+    return (len(entry["blocks_with_output"]), wavea["evaluated"], wavea["matched"], wavea["review"], wavea["advisory"])
+
+
+def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patient_4(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
-    rows = [
-        (
-            len(entry["blocks_with_output"]),
-            entry["wavea"]["evaluated"],
-            entry["wavea"]["matched"],
-            entry["wavea"]["review"],
-            entry["wavea"]["advisory"],
-        )
-        for _, entry in sorted(showcase_eight.items())
+    rows = [_row(entry) for _, entry in sorted(showcase_eight.items())]
+    fourth = cohort.role("showcase_S4").patient_id
+    assert showcase_eight[fourth]["claims"] == 3
+    # the plan's table is the first bill of each patient: the seven patients with one bill still give it
+    assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid != fourth] == [
+        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i != 3
     ]
-    assert rows == PLAN_BASELINE_PER_PATIENT
+    # patient 4 is read over its stay, its control and its second visit: 14 more rules evaluated, 3 more matched
+    assert _row(showcase_eight[fourth]) == (6, 191 + 14, 9 + 3, 6 + 2, 3)
 
 
 def test_a_measured_document_survives_json(measured: dict[str, dict[str, Any]]) -> None:
@@ -707,16 +712,21 @@ def test_a_measured_document_survives_json(measured: dict[str, dict[str, Any]]) 
     assert cm.diff(document, json.loads(json.dumps(document))) == []
 
 
-def test_the_whole_cohort_with_the_ward_bill_s14_has_the_first_wave_a_financial_row(
+def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpatient_rules(
     measured: dict[str, dict[str, Any]],
 ) -> None:
-    """After S14 (WP5): matched 14 -> 15, with a row 14 -> 15, evaluated 273 -> 274, all of it one rule id."""
+    """After S14 (WP5): matched 14 -> 15, with a row 14 -> 15, evaluated 273 -> 274, all of it one rule id.
+
+    After F4 (WP6, S39 and S40): matched 15 -> 17 (the duplicate exam and ORTAK-20), with a row 15 -> 16 (ORTAK-20),
+    evaluated 274 -> 287 (the first outpatient claims), a new finding kind (the duplicate-exam compliance finding).
+    """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (11, 12)
-    assert summary["blocks"]["with_output"] == 12  # the ward bill lights no block of its own
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (11, 14)
+    assert summary["blocks"]["with_output"] == 12  # neither the ward bill nor the two outpatient bills light a block
     wavea = summary["wavea"]
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (274, 15, 15)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (8, 6, 1)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (287, 17, 16)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (9, 6, 1)
+    assert summary["finding_kinds"]["count"] == 21
     assert "yatak_icu_overlap_510010" in wavea["row_ids"]
     # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
     without_s14 = {pid: entry for pid, entry in measured.items() if pid != cohort.scenario("S14").patient_id}
@@ -734,5 +744,35 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
     assert entry["claims"] == 2
     assert entry["wavea"]["financial_ids"] == ["yatak_icu_overlap_510010"]
     assert {pid for pid, e in measured.items() if e["wavea"]["financial"]} == {patient}
-    assert {e["claims"] for pid, e in measured.items() if pid != patient} == {1}
+    # the other patients with several bills: patient 4 (the stay, the control, the second visit)
+    assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
+        patient: 2,
+        cohort.role("showcase_S4").patient_id: 3,
+    }
     assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill
+
+
+def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_outpatient_findings(
+    measured: dict[str, dict[str, Any]],
+) -> None:
+    """G12 is patient-level: the stay, the control (S39) and the second visit (S40) of patient 4 are read together."""
+    patient = cohort.role("showcase_S4").patient_id
+    assert cohort.scenario("S39").patient_id == cohort.scenario("S40").patient_id == patient
+    entry = measured[patient]
+    assert entry["claims"] == 3
+    duplicate, ortak20, ortak13 = (
+        "tablo15_2_duplicate_exam_10day",
+        "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+        "ORTAK-13.gecmis_muayene_sorgu",
+    )
+    assert {duplicate, ortak20, ortak13} <= set(entry["wavea"]["matched_ids"])
+    # no other patient bills an outpatient visit, so the cohort's two new matched ids are this patient's alone
+    assert {pid for pid, e in measured.items() if duplicate in e["wavea"]["matched_ids"]} == {patient}
+    assert {pid for pid, e in measured.items() if ortak20 in e["wavea"]["matched_ids"]} == {patient}
+    assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # patients 6, 7, 11
+    assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate
+    assert "compliance:tablo15_2_duplicate_exam_10day" in entry["finding_kinds"]
+    assert not {pid for pid, e in measured.items() if "compliance:tablo15_2_duplicate_exam_10day" in e["finding_kinds"]} - {patient}
+    assert entry["blocks_with_output"] == [  # the outpatient bills light no block of their own
+        "billing_strategy", "claim_submission_checklist", "copay", "drug_indication", "refakatci", "yatak_puani"
+    ]  # fmt: skip

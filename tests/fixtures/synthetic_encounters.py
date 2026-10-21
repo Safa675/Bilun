@@ -1,14 +1,16 @@
-"""Test-only extra encounters for the cohort builder: the committed inputs plus a second (or third) bill of a patient.
+"""Test-only extra encounters for the cohort builder: the committed inputs plus one more bill of a patient.
 
-No committed patient has more than one bill (the first multi-bill patients come with later packages), so the tests
-of the multi-encounter builder (`scripts/synthetic/cohort`, G2) build a dataset in memory from the committed
-recipes and clinical entries plus the encounters declared here. Nothing is committed from it.
+The committed cohort has patients with several bills (patient 10: the ICU bill and the ward bill; patient 4: the stay,
+its control and a second visit), and the tests of the multi-encounter builder (`scripts/synthetic/cohort`, G2) build a
+dataset in memory from the committed recipes and clinical entries plus the encounters declared here, numbered after
+the committed bills of their patient. Nothing is committed from it.
 
-    recipes, clinical = with_encounters(Extra(4, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}))
+    recipes, clinical = with_encounters(Extra(4, 4, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}))
     built = build_showcase(recipes=recipes, clinical=clinical)
 
-`STANDARD_EXTRAS` is the dataset most tests use: patient 4 gets a stay that starts the day after its first one (its
-lab days interleave with the first stay's), patient 7 gets an earlier visit of the same pathway (a precursor: the
+`STANDARD_EXTRAS` is the dataset most tests use: patient 4 gets a fourth bill, a stay that starts the day after its
+first one (its lab days interleave with the first stay's and it is dated before the committed second and third bill,
+so the claim number and the date disagree), patient 7 gets an earlier visit of the same pathway (a precursor: the
 later claim number, the earlier date).
 """
 
@@ -80,11 +82,12 @@ def with_encounters(*extras: Extra) -> tuple[ShowcaseRecipes, ShowcaseClinical]:
     )
 
 
-# patient 4 (S4, a woman of 86): the same stay one day later, its lab days between the first stay's;
+# patient 4 (S4, a woman of 86): the same stay one day later, its lab days between the first stay's, as the fourth
+# bill (the committed second and third bill are S39 and S40);
 # patient 7 (S7, a woman of 58): the same ER visit nine days earlier, so claim 002 is dated before claim 001.
-# A story belongs to one bill, so each second bill names a story of its own (the program's S39 and up are
+# A story belongs to one bill, so each extra bill names a story of its own (the program's S39 and up are
 # the real follow-up bills; S90 and S91 exist only here).
 STANDARD_EXTRAS = (
-    Extra(4, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12", "story": "S90"}),
+    Extra(4, 4, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12", "story": "S90"}),
     Extra(7, 2, "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out", {"admit": "2026-02-10", "story": "S91"}),
 )

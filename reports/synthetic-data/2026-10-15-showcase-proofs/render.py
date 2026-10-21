@@ -29,7 +29,7 @@ def table(rows):
         out.append(f"| {dates(a['dates'])} | {code} | {name} | {q} | {unit_s} | {billed_s} | {src.replace('valid_from', 'from')} |")
     return "\n".join(out)
 
-for s in ["S1","S2","S3","S4","S5","S6","S7","S8","S9","S11","S12","S14"]:
+for s in ["S1","S2","S3","S4","S5","S6","S7","S8","S9","S11","S12","S14","S40"]:
     d = json.load(open(os.path.join(HERE, "results", f"{s}.json")))
     with open(os.path.join(HERE, "results", f"{s}_tables.md"), "w", encoding="utf-8") as fh:
         for v in ("clean", "faulty"):

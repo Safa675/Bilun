@@ -38,7 +38,14 @@ pytestmark = pytest.mark.unit
 
 
 def _raw_recipes() -> dict:
-    return yaml.safe_load(RECIPES_PATH.read_text(encoding="utf-8"))
+    """The real recipes, without the committed follow-up bills of patient 4 (S39 and S40).
+
+    The cases below add follow-up bills of patient 4 themselves (`_stay`): they start from the file as it was before
+    patient 4 had any, so the encounter numbers they write are free. The real file is checked as it is.
+    """
+    raw = yaml.safe_load(RECIPES_PATH.read_text(encoding="utf-8"))
+    raw["recipes"] = [r for r in raw["recipes"] if not (r["patient_no"] == 4 and r.get("encounter_no", 1) > 1)]
+    return raw
 
 
 def _recipe(raw: dict, patient_no: int) -> dict:
@@ -157,13 +164,14 @@ def _insert(raw: dict, recipe: dict, *, before: bool = False) -> None:
 def _stay(encounter_no: int, **pins) -> dict:
     """An encounter of patient 4 after the first: the same pathway, a clean bill, with `pins` laid over its own.
 
-    A story belongs to one bill, so the bill has a story of its own (S4 is the first bill's): S38 + the number.
+    A story belongs to one bill, so the bill has a story of its own (S4 is the first bill's): S93 + the number, a
+    story that exists only here (the program's S39 and up are the real follow-up bills).
     """
     return {
         "patient_no": 4,
         "encounter_no": encounter_no,
         "pathway": S4,
-        "pins": {"story": f"S{38 + encounter_no}", **pins},
+        "pins": {"story": f"S{93 + encounter_no}", **pins},
     }
 
 
@@ -185,8 +193,9 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     assert "encounter_no" not in _recipe(raw, 1)
     committed = load_recipes().recipes
     assert len(committed) == cohort.claim_count()
-    # a recipe without encounter_no is a first bill; the one second bill of the committed cohort (S14, patient 10) writes it
-    assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [(10, 2)]
+    # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 4: S39 and
+    # S40, patient 10: S14) write it
+    assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [(4, 2), (4, 3), (10, 2)]
     assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1)
     _recipe(raw, 2)["pins"] = {}
     assert _problems(raw) == []
@@ -219,7 +228,7 @@ def test_the_sequence_of_the_encounters_is_named_in_the_message_of_each_defect()
     """The check id says the sequence is wrong; the message says how (a duplicate is not also a gap)."""
     raw = _raw_recipes()
     _insert(raw, _second_stay())
-    _insert(raw, _second_stay(story="S41"))
+    _insert(raw, _second_stay(story="S96"))
     assert [p.message for p in _problems(raw)] == [
         "duplicate encounter(s) (patient_no.encounter_no): 4.2; expected each once"
     ]
@@ -252,7 +261,7 @@ def test_a_story_is_the_story_of_one_bill() -> None:
     for recipe, where, first in (
         ({"patient_no": 4, "encounter_no": 3, "pathway": S4}, "recipes[4.3]", "recipes[4]"),
         ({"patient_no": 12, "pathway": S4}, "recipes[12]", "recipes[4]"),
-        ({"patient_no": 4, "encounter_no": 3, "pathway": S4, "pins": {"story": "S40"}}, "recipes[4.3]", "recipes[4.2]"),
+        ({"patient_no": 4, "encounter_no": 3, "pathway": S4, "pins": {"story": "S95"}}, "recipes[4.3]", "recipes[4.2]"),
     ):
         broken = copy.deepcopy(raw)
         _insert(broken, recipe)
@@ -441,12 +450,12 @@ CASES: list[Case] = [
     ),
     Case(
         "recipe.patient_numbers",
-        lambda r: (_insert(r, _second_stay()), _insert(r, _second_stay(story="S41"))),
+        lambda r: (_insert(r, _second_stay()), _insert(r, _second_stay(story="S96"))),
         label="duplicate_encounter",
     ),
     Case(
         "recipe.patient_numbers",
-        lambda r: _insert(r, {**_second_stay(story="S40"), "patient_no": 13}),
+        lambda r: _insert(r, {**_second_stay(story="S95"), "patient_no": 13}),
         label="encounter_of_a_patient_with_no_first_one",
     ),
     # --- encounters: the pins a recipe overrides

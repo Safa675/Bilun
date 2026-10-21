@@ -40,6 +40,7 @@ from src.bilun.domain.claims.schema import (
     REQUIRED_CLAIM_TABLES,
 )
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
+from src.bilun.domain.prose_rules.common_billing_errors import detect_duplicate_exam_10day
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
@@ -690,6 +691,29 @@ def _direct_rows_s14(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s40(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    history = ctx.history  # a cross-bill rule: the control of the same branch a week earlier is history
+    return [
+        _keep(
+            o,
+            (
+                "type",
+                "claim_id",
+                "rule_id",
+                "procedure_code",
+                "procedure_specialty_code",
+                "procedure_date",
+                "prior_claim_id",
+                "prior_procedure_date",
+                "gap_days",
+                "severity",
+                "sut_section_id",
+            ),
+        )
+        for o in detect_duplicate_exam_10day(list(history.claims), list(history.procedure_lines))
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -703,6 +727,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S11": _direct_rows_s11,
     "S12": _direct_rows_s12,
     "S14": _direct_rows_s14,
+    "S40": _direct_rows_s40,
 }
 
 

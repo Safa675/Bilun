@@ -7,7 +7,8 @@ bill with one more operation on it asks for `with_extra_operation`. Roles and id
 `tests/fixtures/synthetic_cohort.py`; nothing here names a patient, a claim or an amount.
 
 - `clean_context_for_story(story)`: the same for the bill that the fault of a story is injected into, so that a
-  story after the eighth (a scenario, with no role) has its clean twin too.
+  story after the eighth (a scenario, with no role) has its clean twin too. A story without a fault (a clean
+  bill, S39) is its own twin: the context is that bill's.
 - `clean_context(role_name)`: the clean twin of the showcase bill that the role names, as a
   `PatientClaimContext`. It is built by `scripts.synthetic.cohort.build_showcase()` (once per process) the
   way `tests/unit/synthetic/test_cohort_engine_proof.py` builds it. A patient with several bills keeps the
@@ -68,8 +69,13 @@ def clean_context(role_name: str) -> PatientClaimContext:
 
 def clean_context_for_story(story: str) -> PatientClaimContext:
     """The clean twin of the bill that the fault of `story` is injected into (a story after the eighth is a
-    scenario, which has no role); `KeyError` when the story has no fault."""
-    return _clean_twin_of(cohort.fault(story)["claim_id"], story)
+    scenario, which has no role). A story without a fault is a clean bill, its own twin: the bill of its scenario.
+    `KeyError` when the story is neither."""
+    try:
+        claim_id = cohort.fault(story)["claim_id"]
+    except KeyError:
+        (claim_id,) = cohort.scenario(story).claim_ids  # a clean bill: one story, one bill
+    return _clean_twin_of(claim_id, story)
 
 
 def with_extra_operation(

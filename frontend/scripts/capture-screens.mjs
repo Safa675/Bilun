@@ -98,8 +98,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { CLAUSE_VIEWS, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes } from "./lib/capture-routes.mjs";
-import { claimIds, faults, patientIds, role } from "./lib/cohort-registry.mjs";
+import { CLAUSE_VIEWS, COMPLIANCE_DEEP_LINK_STORY, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes } from "./lib/capture-routes.mjs";
+import { claimIds, faultFor, patientIds, role } from "./lib/cohort-registry.mjs";
 import { compareRuns, describeItem, normaliseLines, SCHEMA, tokenise, verdict } from "./lib/numbers-parity.mjs";
 import { installPageProbes } from "./lib/page-probes.mjs";
 import { runProbeSelfTest } from "./lib/probe-selftest.mjs";
@@ -115,20 +115,22 @@ const HOME_ROUTES = ["patients", "compliance", "revenue", "operations", "referen
 // The patient pages are cohort ROLES, not ids: lib/cohort-registry.mjs reads data/synthetic/cohort_registry.json, so a rebuilt
 // cohort needs no edit here. Why these three (read from the engine's billing reports of the 8 first showcase patients, 2026-10-18; S9 was added after):
 //   default_landing   the page the app opens on (today the S1 bill): the landing page and the first pane of the split view.
-//   the compliance    the bill whose fault has effect_kind "compliance_error" (today S6, drug indication). No patient has a
-//   story             claim_compliance finding, but this bill's compliance row carries a canonical finding_id, which the
+//   the compliance    the bill of the story COMPLIANCE_DEEP_LINK_STORY (S6, drug indication; its fault has effect_kind
+//   story             "compliance_error"). Its compliance row carries a canonical finding_id, which the
 //                     ?section=claim-compliance&finding= deep link selects. It is the deep-link patient (the legacy script used
-//                     the patient that had a claim-compliance finding) and the second pane of the split view.
+//                     the patient that had a claim-compliance finding) and the second pane of the split view. The story is
+//                     named, not searched: "the first compliance_error fault in registry order" was S6 until patient 4's
+//                     second visit (S40, a duplicate examination, also compliance_error) came before it in the registry.
 //   showcase_S7       the only bill with a clause_ref on an action (copay exemption review, SUT 1.8.5), so the only page that can
 //                     show the two Source-drawer states; a state is skipped, and listed in run-meta.json, where no button exists.
 // Route ids keep their old shape (patient-<last 4 digits>, patient-<a>+<b>-split, patient-<n>-finding).
 const last4 = (patient) => patient.slice(-4);
 
-/** The patient ids of the capture and the deep-link patient, from the registry. The compliance story is found by its fault, not by its number. */
+/** The patient ids of the capture and the deep-link patient, from the registry. The compliance story is named by COMPLIANCE_DEEP_LINK_STORY; its bill is found through the registry. */
 function primaryPatients() {
-  const fault = faults.find((item) => item.effect_kind === "compliance_error");
-  if (!fault) throw usage("The cohort registry has no fault with effect_kind compliance_error, so the claim-compliance deep link has no patient.");
-  const compliance = role(`showcase_${fault.story}`).patient_id;
+  const fault = faultFor(COMPLIANCE_DEEP_LINK_STORY);
+  if (fault.effect_kind !== "compliance_error") throw usage(`The cohort registry's fault for ${COMPLIANCE_DEEP_LINK_STORY} is a ${fault.effect_kind}, not a compliance_error, so the claim-compliance deep link has no patient.`);
+  const compliance = role(`showcase_${COMPLIANCE_DEEP_LINK_STORY}`).patient_id;
   return { primary: [...new Set([role("default_landing").patient_id, compliance, role("showcase_S7").patient_id])], compliance };
 }
 
@@ -573,7 +575,7 @@ async function preflight(browser, cfg, token) {
 function buildRoutes(cfg, facts) {
   // The Patients table shows 10 patients per page (PAGE_SIZE in PatientInvoiceTable.tsx) and keeps its page in ?p=: the tool walks
   // every page. A cohort that fits one page has a single page and no pager with more to see; the 11 showcase patients
-  // (12 bills: a patient list row is a patient, not a bill) take two.
+  // (14 bills: a patient list row is a patient, not a bill) take two.
   const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}`, ...(id === "patients" ? { pageWalk: true } : {}) }));
   for (const patient of facts.primary) {
     routes.push({ id: `patient-${last4(patient)}`, kind: "patient", url: `/patient/${patient}`, patient });

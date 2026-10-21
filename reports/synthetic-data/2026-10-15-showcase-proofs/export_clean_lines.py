@@ -3,7 +3,8 @@
 `STORIES[sid]("clean")` and `STORIES[sid]("faulty")` (stories.py) build the reviewed bills. This
 writes the clean bills to tests/fixtures/pathways/golden/<sid>.json and the faulty bills to
 tests/fixtures/pathways/golden_faulty/<sid>.json (format_version 1) so the P2 care pathways and P3
-fault mutations can be proven to reproduce them line for line. It only builds bills; it does not
+fault mutations can be proven to reproduce them line for line. A story without a fault
+(`CLEAN_ONLY` in stories.py) has a clean golden and no faulty one. It only builds bills; it does not
 run the engine.
 
 Run from the repo root, like prove.py (--write is the default):
@@ -41,7 +42,7 @@ from pathlib import Path
 from typing import Any
 
 from harness import ROOT
-from stories import STORIES
+from stories import CLEAN_ONLY, STORIES
 
 GOLDEN = Path(ROOT) / "tests" / "fixtures" / "pathways" / "golden"
 GOLDEN_FAULTY = Path(ROOT) / "tests" / "fixtures" / "pathways" / "golden_faulty"
@@ -165,8 +166,12 @@ def main() -> int:
     mode.add_argument("--check", action="store_true", help="exit 1 if a file differs or is missing")
     check = parser.parse_args().check
     bad = 0
+    total = 0
     for variant, directory in DIRS.items():
         for sid in STORIES:
+            if variant == "faulty" and sid in CLEAN_ONLY:
+                continue  # a clean bill has no faulty variant
+            total += 1
             doc = export(sid, variant)
             data, path = dump(doc), directory / f"{sid}.json"
             label = f"{variant}/{sid}"
@@ -178,7 +183,7 @@ def main() -> int:
                 print(f"{label}: {'differs' if path.exists() else 'missing'}")
                 bad += 1
     if check and not bad:
-        print(f"all {len(DIRS) * len(STORIES)} golden files match a fresh export")
+        print(f"all {total} golden files match a fresh export")
     return 1 if bad else 0
 
 

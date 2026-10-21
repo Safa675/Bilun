@@ -61,8 +61,9 @@ try {
   console.log("navigating…");
   // Dev-mode recompiles can keep the network busy long enough that
   // `networkidle` times out; land on DOMContentLoaded and wait for the
-  // workspace tabs instead.
-  await page.goto(`http://localhost:3000/patient/${landing.patient_id}`, {
+  // workspace tabs instead. The page is scoped to the landing BILL (?claim=): the default view of a patient with follow-up
+  // bills adds up every bill, and the amounts below are the landing fault's, not the patient's.
+  await page.goto(`http://localhost:3000/patient/${landing.patient_id}?claim=${encodeURIComponent(landing.claim_id)}`, {
     waitUntil: "domcontentloaded",
     timeout: 120000,
   });

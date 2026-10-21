@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { COMPLIANCE_SUBTABS, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes, TOOL_SUBTABS } from "./capture-routes.mjs";
+import { COMPLIANCE_DEEP_LINK_STORY, COMPLIANCE_SUBTABS, complianceFindingId, detectPagers, INSPECT_CLAUSE_LABEL, pageUrl, subtabRoutes, TOOL_SUBTABS } from "./capture-routes.mjs";
+import { faultFor, faults, role } from "./cohort-registry.mjs";
 
 const srcDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../src");
 const source = fs.readFileSync(path.join(srcDir, "lib/workspaceSubtabs.ts"), "utf8");
@@ -92,5 +93,38 @@ describe("the compliance finding a deep link can select", () => {
     expect(complianceFindingId({})).toBeNull();
     expect(complianceFindingId(null)).toBeNull();
     expect(complianceFindingId({ claim_compliance: { findings: [{ finding_id: "" }, {}] }, recommended_actions: [{ finding_type: "opportunity", finding_id: "x" }, { finding_type: "compliance", action_id: "only-an-action-id" }] })).toBeNull();
+  });
+});
+
+describe("the story of the compliance deep link", () => {
+  it("is named and is a compliance_error whose bill is a showcase role", () => {
+    expect(COMPLIANCE_DEEP_LINK_STORY).toBe("S6");
+    const fault = faultFor(COMPLIANCE_DEEP_LINK_STORY);
+    expect(fault.effect_kind).toBe("compliance_error");
+    expect(role(`showcase_${COMPLIANCE_DEEP_LINK_STORY}`)).toMatchObject({ patient_id: fault.patient_id, claim_id: fault.claim_id });
+  });
+
+  it("is not simply the first compliance_error fault of the registry: another bill has one too", () => {
+    const stories = faults.filter((fault) => fault.effect_kind === "compliance_error").map((fault) => fault.story);
+    expect(stories).toContain(COMPLIANCE_DEEP_LINK_STORY);
+    // patient 4's second visit (S40, a duplicate examination) is a compliance_error and sorts before S6 (claim 0004-003 < 0006-001)
+    expect(stories).toContain("S40");
+    expect(stories.indexOf("S40")).toBeLessThan(stories.indexOf(COMPLIANCE_DEEP_LINK_STORY));
+  });
+});
+
+describe("the scripts that depend on a story of the registry say so in their source", () => {
+  const scripts = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+  it("the capture script takes its compliance patient from the named story, not from the registry order", () => {
+    const capture = fs.readFileSync(path.join(scripts, "capture-screens.mjs"), "utf8");
+    expect(capture).toContain("faultFor(COMPLIANCE_DEEP_LINK_STORY)");
+    expect(capture).toContain("role(`showcase_${COMPLIANCE_DEEP_LINK_STORY}`)");
+    expect(capture).not.toMatch(/faults\.find\(/); // the first compliance_error of the registry is another bill since S40
+  });
+
+  it("the workspace-views check opens the landing bill, not the patient with all its bills", () => {
+    const views = fs.readFileSync(path.join(scripts, "verify-workspace-views.mjs"), "utf8");
+    expect(views).toContain("/patient/${landing.patient_id}?claim=${encodeURIComponent(landing.claim_id)}");
   });
 });

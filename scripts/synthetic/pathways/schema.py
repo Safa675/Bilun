@@ -48,11 +48,11 @@ CHECKS: dict[str, str] = {
     "schema.probability": "a probability outside [0, 1]",
     "schema.duplicate_id": "two lines share an id, or a diagnosis is listed twice",
     "schema.unknown_reference": "a link, operation or dependency names a line that cannot serve",
-    "schema.anchor_undefined": "op used without op_day, or discharge used on an ER-only pathway",
+    "schema.anchor_undefined": "op used without op_day, or discharge used on a pathway without a stay (acil, poliklinik, gunubirlik)",
     "schema.line_shape": "a line carries fields its kind does not allow, or lacks required ones",
     "schema.quantity_form": "a drug has no quantity form or several",
     "schema.diagnosis_primary": "not exactly one primary diagnosis",
-    "schema.stay_shape": "nights missing on a stay, or present on an ER-only pathway, or an arrival from an ICU on an ER-only pathway",
+    "schema.stay_shape": "nights missing on a stay, or present on a pathway without a stay (acil, poliklinik, gunubirlik), or an arrival from an ICU on one",
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
@@ -457,7 +457,7 @@ class Pins(_Model):
     story: Story
     sex: Literal["M", "F"]
     age: int = Field(ge=0, le=120)
-    admit: IsoDate  # first day of the stay; for an ER-only pathway, the visit day
+    admit: IsoDate  # first day of the stay; for a pathway without a stay (acil, poliklinik, gunubirlik), the visit day
     nights: int | None = Field(default=None, ge=1, le=60)
     include: list[str] = Field(default_factory=list)  # optional ids that are in
     course_days: dict[Slug, int] = Field(default_factory=dict)  # drug id -> chosen course days
@@ -467,7 +467,8 @@ class Pathway(_Model):
     schema_version: Literal[1]
     id: PathwayId
     title: Name
-    claim_type: Literal["yatis", "acil"]
+    # yatis is a stay; acil, poliklinik and gunubirlik are visits: one date, no nights, no discharge
+    claim_type: Literal["yatis", "acil", "poliklinik", "gunubirlik"]
     billing_mode: Literal["package", "itemized"]
     department: Department
     window: Window | None = None
@@ -500,14 +501,15 @@ class Pathway(_Model):
         return self
 
     def _stay_problem(self) -> str:
-        if self.claim_type == "yatis" and self.nights is None:
+        stay = self.claim_type == "yatis"
+        if stay and self.nights is None:
             return "a yatis pathway needs nights"
-        if self.claim_type == "acil" and self.nights is not None:
-            return "an acil (ER-only) pathway has no nights"
-        if self.claim_type == "acil" and any(d.per_night for d in self.drugs):
+        if not stay and self.nights is not None:
+            return f"a {self.claim_type} pathway has no nights"
+        if not stay and any(d.per_night for d in self.drugs):
             return "a per_night drug needs a stay"
-        if self.claim_type == "acil" and self.arrives_from_icu:
-            return "an ER-only pathway cannot arrive from an ICU"
+        if not stay and self.arrives_from_icu:
+            return f"a {self.claim_type} pathway cannot arrive from an ICU"
         return ""
 
     def _primary_problem(self) -> str:
@@ -551,8 +553,8 @@ class Pathway(_Model):
                     return f"{where} uses op, but the pathway has no op_day"
                 if anchor == "op" and where == "op_day":
                     return "op_day cannot be defined from op"
-                if anchor == "discharge" and self.claim_type == "acil":
-                    return f"{where} uses discharge on an ER-only pathway"
+                if anchor == "discharge" and self.claim_type != "yatis":
+                    return f"{where} uses discharge on a {self.claim_type} pathway"
         return ""
 
 
@@ -608,7 +610,7 @@ def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
         add("pins.out_of_range", "showcase.age", f"{pins.age} is outside {age.min}..{age.max}")
     if pathway.nights is None:
         if pins.nights is not None:
-            add("pins.out_of_range", "showcase.nights", "an ER-only pathway has no nights")
+            add("pins.out_of_range", "showcase.nights", f"a {pathway.claim_type} pathway has no nights")
     elif pins.nights is None:
         add("pins.missing", "showcase.nights", "a stay needs nights")
     elif not pathway.nights.min <= pins.nights <= pathway.nights.max:

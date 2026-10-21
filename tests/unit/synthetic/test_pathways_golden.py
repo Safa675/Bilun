@@ -1,6 +1,7 @@
 """The golden clean and faulty bills, tests/fixtures/pathways/{golden,golden_faulty}/<story>.json.
 
-A story has goldens exactly when `stories.py` builds it (S1..S9 today); see tests/fixtures/pathway_goldens.py.
+A story has goldens exactly when `stories.py` builds it; a story without a fault (`CLEAN_ONLY`: S39) has a clean
+golden and no faulty one; see tests/fixtures/pathway_goldens.py.
 
 Well-formedness is checked on the files alone: no harness, no engine. That the files equal a fresh
 export of stories.py is `export_clean_lines.py --check`, run here in a subprocess (the harness
@@ -20,7 +21,14 @@ from pathlib import Path
 
 import pytest
 
-from tests.fixtures.pathway_goldens import golden_problems, golden_stories, stories_in
+from tests.fixtures.pathway_goldens import (
+    clean_only_in,
+    clean_only_stories,
+    faulty_golden_stories,
+    golden_problems,
+    golden_stories,
+    stories_in,
+)
 from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
@@ -33,6 +41,8 @@ EXPORTER = (
     REPO / "reports" / "synthetic-data" / "2026-10-15-showcase-proofs" / "export_clean_lines.py"
 )
 STORIES = golden_stories()
+FAULTY_STORIES = faulty_golden_stories()
+GOLDEN_STORIES = {"clean": STORIES, "faulty": FAULTY_STORIES}
 
 TOP_KEYS = {
     "story",
@@ -101,7 +111,7 @@ def _keys(node: object) -> Iterator[str]:
 
 
 @pytest.fixture(
-    params=[(variant, sid) for variant in GOLDEN_DIRS for sid in STORIES],
+    params=[(variant, sid) for variant in GOLDEN_DIRS for sid in GOLDEN_STORIES[variant]],
     ids=lambda item: f"{item[0]}-{item[1]}",
 )
 def golden(request: pytest.FixtureRequest) -> tuple[str, str, dict]:
@@ -116,10 +126,39 @@ def test_the_stories_with_goldens_are_the_cohort_stories_in_order() -> None:
     assert STORIES == cohort.stories()
 
 
-@pytest.mark.parametrize("directory", GOLDEN_DIRS.values(), ids=GOLDEN_DIRS.keys())
-def test_every_story_has_its_golden_file_and_no_other_file_is_there(directory: Path) -> None:
-    assert [s for s in STORIES if not (directory / f"{s}.json").is_file()] == []
-    assert sorted(p.name for p in directory.iterdir()) == sorted(f"{s}.json" for s in STORIES)
+@pytest.mark.parametrize("variant", GOLDEN_DIRS)
+def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str) -> None:
+    directory, stories = GOLDEN_DIRS[variant], GOLDEN_STORIES[variant]
+    assert [s for s in stories if not (directory / f"{s}.json").is_file()] == []
+    assert sorted(p.name for p in directory.iterdir()) == sorted(f"{s}.json" for s in stories)
+
+
+def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
+    """A bill without a fault (S39) is a clean golden only; every other story's fault record has its faulty golden."""
+    with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
+    assert set(FAULTY_STORIES) == with_fault
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S39"]
+    assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        ('CLEAN_ONLY: tuple[str, ...] = ("S39", "S77")\n', ["S39", "S77"]),
+        ("CLEAN_ONLY = ['S39']\n", ["S39"]),
+        ("CLEAN_ONLY = ()\n", []),
+        ("STORIES = {}\n", []),  # no such name: no clean bill
+        ("x = 1\nCLEAN_ONLY: tuple[str, ...] = ('S5',)\nSTORIES = {}\n", ["S5"]),
+    ],
+)
+def test_the_clean_only_stories_are_read_from_stories_py_without_importing_it(source: str, expected: list[str]) -> None:
+    assert clean_only_in(source) == expected
+
+
+@pytest.mark.parametrize("bad", ["CLEAN_ONLY = 1\n", "CLEAN_ONLY = (1, 2)\n", "CLEAN_ONLY = ('S1', x)\n", "CLEAN_ONLY = {'S1'}\n"])
+def test_a_clean_only_that_is_not_a_tuple_of_strings_is_refused(bad: str) -> None:
+    with pytest.raises(ValueError, match="CLEAN_ONLY"):
+        clean_only_in(bad)
 
 
 def test_stories_are_read_from_the_stories_dict_without_importing_it() -> None:
@@ -171,7 +210,7 @@ def test_goldens_pathways_and_stories_py_must_pair_up(
     assert golden_problems(goldens, pathways, built) == expected
 
 
-@pytest.mark.parametrize("story", STORIES)
+@pytest.mark.parametrize("story", FAULTY_STORIES)
 def test_each_faulty_golden_differs_from_its_clean_golden_and_names_its_story(story: str) -> None:
     clean_path = GOLDEN_DIR / f"{story}.json"
     faulty_path = GOLDEN_FAULTY_DIR / f"{story}.json"
@@ -244,9 +283,9 @@ def test_no_anon_text(golden) -> None:
 def test_dates_are_iso(golden) -> None:
     _, _, doc = golden
     header = doc["header"]
-    assert header["claim_type"] in {"yatis", "acil"}
-    # Null admission and discharge only for the ER-only (acil) story.
-    nullable = {"admission_date", "discharge_date"} if header["claim_type"] == "acil" else set()
+    assert header["claim_type"] in {"yatis", "acil", "poliklinik", "gunubirlik"}
+    # Null admission and discharge only for a visit (acil, poliklinik, gunubirlik): it has no stay.
+    nullable = {"admission_date", "discharge_date"} if header["claim_type"] != "yatis" else set()
     for key in ("admission_date", "discharge_date", "claim_start_date", "claim_end_date"):
         assert _is_iso(header[key]) or (header[key] is None and key in nullable), key
     for name in LINE_KEYS:
@@ -316,3 +355,72 @@ def test_the_s14_story_bill_reads_the_faulty_icu_bill_as_history_and_the_rule_fi
         assert out[variant]["patients"] == ["SH-11"]  # the ward bill is the patient of S11
     assert out["clean"]["rows"] == []
     assert out["faulty"]["rows"] == [["C-SH14", "2026-06-07", 222.36]]
+
+
+# --- S39 and S40: the story bills of patient 4's follow-ups; the second visit has the stay and the control as history ----
+
+
+def test_the_s40_story_bill_reads_the_stay_and_the_control_as_history_and_the_rule_fires_on_the_faulty_visit_only() -> None:
+    """Run in a subprocess like the golden export: the proof harness changes the working directory when it is imported."""
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "from stories import s40\n"
+        "from src.bilun.domain.prose_rules.common_billing_errors import detect_duplicate_exam_10day\n"
+        "out = {}\n"
+        "for variant in ('clean', 'faulty'):\n"
+        "    ctx = s40(variant).ctx()\n"
+        "    rows = detect_duplicate_exam_10day(list(ctx.history.claims), list(ctx.history.procedure_lines))\n"
+        "    out[variant] = {'active': [c.claim_id for c in ctx.claims],\n"
+        "                    'history': sorted(c.claim_id for c in ctx.history.claims),\n"
+        "                    'patients': sorted({c.patient_id for c in ctx.history.claims}),\n"
+        "                    'rows': [(r['claim_id'], r['prior_claim_id'], str(r['procedure_date']), r['gap_days']) for r in rows]}\n"
+        "print(json.dumps(out))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    for variant in ("clean", "faulty"):
+        assert out[variant]["active"] == ["C-SH40"]
+        assert out[variant]["history"] == ["C-SH04", "C-SH39", "C-SH40"]  # the stay, the control, this visit
+        assert out[variant]["patients"] == ["SH-04"]  # the patient of story S4
+    assert out["clean"]["rows"] == []  # no examination fee on the second visit: nothing to find
+    assert out["faulty"]["rows"] == [["C-SH40", "C-SH39", "2026-06-01", 7]]
+
+
+def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "from stories import CLEAN_ONLY, STORIES, s39\n"
+        "try:\n"
+        "    s39('faulty')\n"
+        "    refused = False\n"
+        "except ValueError:\n"
+        "    refused = True\n"
+        "ctx = s39('clean').ctx()\n"
+        "print(json.dumps({'clean_only': list(CLEAN_ONLY), 'in_stories': 'S39' in STORIES, 'refused': refused,\n"
+        "                  'history': sorted(c.claim_id for c in ctx.history.claims),\n"
+        "                  'codes': sorted(p.procedure_code for p in ctx.procedure_lines)}))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    assert out["clean_only"] == ["S39"] and out["in_stories"] is True and out["refused"] is True
+    assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
+    assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
+
+
+def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s40_as_its_target() -> None:
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "import prove\n"
+        "row = {'rule_id': 'tablo15_2_duplicate_exam_10day', 'gap_days': 7}\n"
+        "print(json.dumps({'stories': prove.default_stories(),\n"
+        "                  'fires': prove.target_amount('S40', [row]),\n"
+        "                  'silent': prove.target_amount('S40', []),\n"
+        "                  'other_rule': prove.target_amount('S40', [{'rule_id': 'x'}])}))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    assert out["stories"] == FAULTY_STORIES  # S39 has no proof
+    assert out["fires"] == 0.0 and out["silent"] is None and out["other_rule"] is None  # a row without money is the finding
