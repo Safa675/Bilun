@@ -107,6 +107,7 @@ from scripts.synthetic.cohort.plausibility import (
 )
 from scripts.synthetic.cohort.tables import TABLE_FILES, build_tables
 from scripts.synthetic.faults import FaultInjectionRecord, build_expected_rule_outputs
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -150,6 +151,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S7": {"bill.performed_billed"},
     "S8": set(),
     "S9": set(),  # 25 % of the second operation is on the ladder: only the engine sees it
+    "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -165,7 +167,7 @@ E2_CHECKS = {
     "money.payable_equals_billed", "money.totals", "labels.answer_rows", "labels.amounts",
 }  # fmt: skip
 
-STORIES = tuple(range(1, 10))
+STORIES = tuple(range(1, cohort.patient_count() + 1))  # patient numbers; one bill each
 PATIENT = {n: patient_id(n) for n in STORIES}
 CLAIM = {n: claim_id(PATIENT[n], 1) for n in STORIES}
 EPISODE = {n: episode_id(PATIENT[n], 1) for n in STORIES}
@@ -1950,8 +1952,8 @@ def test_a_clean_twin_raises_no_problem(story, clean_problems, twins) -> None:
     assert twins[TABLE_CLAIM_HEADERS].filter(of(story)).height == 1
 
 
-def test_the_nine_clean_twins_are_all_there_and_all_clean(clean_problems, twins) -> None:
-    assert twins[TABLE_CLAIM_HEADERS].height == 9
+def test_the_clean_twins_are_all_there_and_all_clean(clean_problems, twins) -> None:
+    assert twins[TABLE_CLAIM_HEADERS].height == cohort.claim_count()
     assert [str(p) for p in clean_problems] == []
 
 
@@ -1979,12 +1981,12 @@ def test_the_committed_files_give_the_result_of_the_tables_in_memory(
 
 
 def test_the_committed_bills_and_their_committed_registry_trip_no_labels_id(context) -> None:
-    """The nine answer rows and nine fault records agree with the committed bills (labels.*)."""
+    """One answer row and one fault record per bill agree with the committed bills (labels.*)."""
     on_disk = {name: pl.read_parquet(_CLAIMS_DIR / name) for name in TABLE_FILES}
     clean_on_disk = {TABLE_ANADATA: pl.read_parquet(_CLEAN_DIR / TABLE_ANADATA)}
     registry = json.loads(_REGISTRY_FILE.read_text(encoding="utf-8"))
-    assert len(registry["faults"]) == 9
-    assert on_disk[TABLE_ANSWERS].height == 9
+    assert len(registry["faults"]) == len(cohort.load_registry()["faults"])
+    assert on_disk[TABLE_ANSWERS].height == len(registry["faults"])
     found = check_plausibility(
         on_disk, clean_on_disk, context=context, registry=registry, only=sorted(REGISTRY_CHECKS)
     )
@@ -2044,7 +2046,7 @@ def test_billed_clean_try_is_the_total_of_the_clean_twin(built, twins) -> None:
         )
     }
     faults = built.registry["faults"]
-    assert len(faults) == 9
+    assert len(faults) == len(cohort.load_registry()["faults"])
     assert {fault["claim_id"]: fault["billed_clean_try"] for fault in faults} == totals
 
 
@@ -2962,11 +2964,25 @@ PAIRS: list[Pair] = [
         (BED, PATHWAY),
         3,
     ),
+    # the ICU stay is patient 10 (story S11): 510090 on 06-02 and 06-06, P552002 on 06-03..06-05, the
+    # discharge day 06-07 is the transfer day and carries no ICU line
     Pair(
         "bed: a ward bed and an ICU day fee on the same day",
-        lambda d: add_procedure(d, 2, "510090", "2026-03-11"),
+        lambda d: add_procedure(d, 10, "510010", "2026-06-06"),
         (BED, PATHWAY),
-        2,
+        3,  # two bed lines on the day, a ward bed on an ICU stay, a code outside the pathway
+    ),
+    Pair(
+        "bed: an ICU package day missing between the end days",
+        lambda d: drop(d, TABLE_PROCEDURES, line(10, "P552002", "2026-06-04")),
+        (BED,),
+        1,
+    ),
+    Pair(
+        "bed: an ICU day fee on the transfer day",
+        lambda d: add_procedure(d, 10, "510090", "2026-06-07"),
+        (BED,),
+        1,
     ),
     Pair(
         "bed: a bed line with a date that is not a date",
@@ -2978,11 +2994,11 @@ PAIRS: list[Pair] = [
     ),
     # an ICU package is a bed day, and it does not make a package claim: only the pathway objects
     Pair(
-        "bed: the newborn ICU package P552006 on a ward day is a bed day, not a package",
+        "bed: the newborn ICU package P552006 on an ICU day is a bed day, not a package",
         lambda d: edit(
             d,
             TABLE_PROCEDURES,
-            line(2, "510010", "2026-03-11"),
+            line(10, "P552002", "2026-06-04"),
             procedure_code="P552006",
             procedure_category="paket",
         ),
@@ -2990,11 +3006,11 @@ PAIRS: list[Pair] = [
         1,
     ),
     Pair(
-        "bed: the adult ICU package P552003 on a ward day is a bed day, not a package",
+        "bed: the adult ICU package P552003 on an ICU day is a bed day, not a package",
         lambda d: edit(
             d,
             TABLE_PROCEDURES,
-            line(2, "510010", "2026-03-11"),
+            line(10, "P552002", "2026-06-04"),
             procedure_code="P552003",
             procedure_category="paket",
         ),
@@ -3805,21 +3821,20 @@ def test_an_absent_companion_is_not_a_defect(twins, anadata, context) -> None:
     assert run_only(data, context, "stay.companion_coverage") == []
 
 
-def test_icu_days_count_as_bed_days_and_an_icu_package_does_not_make_a_package_claim(
+def test_icu_days_are_the_bed_days_of_an_icu_stay_and_an_icu_package_makes_no_package_claim(
     twins, anadata, context
 ) -> None:
+    """S11's twin: 510090 on the first and the last ICU day, P552002 between, nothing on the transfer day."""
     data = Data(dict(twins), anadata)
-    # S2's third day billed as an ICU day fee, its fourth as an ICU package
-    edit(data, TABLE_PROCEDURES, line(2, "510010", "2026-03-11"), procedure_code="510090")
-    edit(
-        data,
-        TABLE_PROCEDURES,
-        line(2, "510010", "2026-03-12"),
-        procedure_code="P552001",
-        procedure_category="paket",
-    )
     for check in ("stay.bed_coverage", PACKAGE):
         assert run_only(data, context, check) == [], check
+    header = twins[TABLE_CLAIM_HEADERS].filter(of(10))
+    assert header["package_candidate"].to_list() == [False]  # the ICU package is no surgical package
+    lines = twins[TABLE_PROCEDURES].filter(of(10))
+    assert lines.filter(pl.col("procedure_code") == "P552002").height == 3
+    icu = lines.filter(pl.col("procedure_code").is_in(["510090", "P552002"]))
+    assert "2026-06-07" not in icu["procedure_date"].to_list()  # the transfer day
+    assert header["discharge_date"].to_list() == ["2026-06-07"]
 
 
 def test_the_day_bed_is_the_code_set_day_bed_and_a_bed_day_code(context) -> None:
@@ -4314,7 +4329,7 @@ def test_a_registry_without_a_list_of_faults_is_one_finding_and_leaves_every_row
     found = _answer_rows_of(data, context)
     assert [p.where for p in found][0] == "(registry)"
     assert found[0].message == "the registry has no list of faults"
-    assert len(found) == 1 + 9
+    assert len(found) == 1 + cohort.claim_count()
     assert data.problems(context, only=AMOUNTS) == []  # nothing to compare
 
 
@@ -4322,12 +4337,13 @@ def test_a_fault_entry_that_is_not_even_a_mapping_or_has_no_claim_is_reported(
     built, anadata, context
 ) -> None:
     data = faulty_data(built, anadata)
+    first = len(data.registry["faults"])  # the index of the first appended entry
     data.registry["faults"].append("not a record")
     data.registry["faults"].append({"fault_id": "F_X", "billed_faulty_try": None})
     found = data.problems(context, only=sorted(REGISTRY_CHECKS))
     wheres = [p.where for p in found]
-    assert "(no-claim-id) registry faults[9]" in wheres
-    assert "(no-claim-id) registry faults[10]" in wheres
+    assert f"(no-claim-id) registry faults[{first}]" in wheres
+    assert f"(no-claim-id) registry faults[{first + 1}]" in wheres
     assert all(p.message and "None" not in p.message for p in found)
     # the last entry is a mapping without values: labels.amounts names each missing value
     assert any(p.check == AMOUNTS and "(none)" in p.message for p in found)
@@ -4371,7 +4387,7 @@ def test_answer_money_is_compared_in_cents(built, anadata, context) -> None:
 
 def test_every_answer_row_names_the_fault_of_its_record_and_none_is_payable(built) -> None:
     answers = built.tables[TABLE_ANSWERS]
-    assert answers["expected_payable_try"].null_count() == answers.height == 9
+    assert answers["expected_payable_try"].null_count() == answers.height == len(built.registry["faults"])
     assert [e["claim_id"] for e in built.registry["faults"]] == answers["claim_id"].to_list()
 
 

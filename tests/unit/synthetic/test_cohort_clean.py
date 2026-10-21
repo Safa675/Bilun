@@ -56,6 +56,7 @@ from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -228,16 +229,17 @@ def test_clean_schemas_match_the_former_parquet_schemas(built_showcase: BuildRes
         assert all(dt != pl.Null for dt in df.schema.values()), name
 
 
-def test_clean_row_counts_and_anadata_field_rules_for_all_9_patients(
+def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
     built_showcase: BuildResult,
 ) -> None:
     ana_df = built_showcase.clean_tables["anadata_clean.parquet"]
     rec_df = built_showcase.clean_tables["recete_clean.parquet"]
     lab_df = built_showcase.clean_tables["lab_clean.parquet"]
 
-    assert ana_df.height == 9
-    assert rec_df.height == 21
-    assert lab_df.height == 222
+    clean_counts = cohort.load_registry()["clean_counts"]
+    assert ana_df.height == clean_counts["anadata_clean.parquet"] == cohort.patient_count()
+    assert rec_df.height == clean_counts["recete_clean.parquet"]
+    assert lab_df.height == clean_counts["lab_clean.parquet"]
 
     headers_df = built_showcase.tables["claim_headers.parquet"]
     diagnoses_df = built_showcase.tables["claim_diagnoses.parquet"]
@@ -754,9 +756,10 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
     lab_raw = load_labdata(_CLEAN_DIR / "lab_clean.parquet")
     rec_raw = load_recete(_CLEAN_DIR / "recete_clean.parquet")
 
-    assert ana_raw.height == 9
-    assert lab_raw.height == 222
-    assert rec_raw.height == 21
+    clean_counts = cohort.load_registry()["clean_counts"]
+    assert ana_raw.height == clean_counts["anadata_clean.parquet"]
+    assert lab_raw.height == clean_counts["lab_clean.parquet"]
+    assert rec_raw.height == clean_counts["recete_clean.parquet"]
 
     ana_df, lab_df, rec_df = load_normalized_raw_data(
         load_anadata_fn=lambda include_text=True: load_anadata(
@@ -767,14 +770,14 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
         load_recete_fn=lambda: load_recete(path=_CLEAN_DIR / "recete_clean.parquet"),
     )
 
-    assert ana_df.height == 9
+    assert ana_df.height == clean_counts["anadata_clean.parquet"]
     assert "patient_id" in ana_df.columns
     assert "visit_date" in ana_df.columns
     assert "yas" in ana_df.columns
     assert "SQ_EPISODE" not in ana_df.columns
     assert len(ana_df.columns) == 32
 
-    assert lab_df.height == 222
+    assert lab_df.height == clean_counts["lab_clean.parquet"]
     assert list(lab_df.columns) == [
         "patient_id",
         "visit_id",
@@ -785,11 +788,11 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
         "ref_max",
     ]
 
-    assert rec_df.height == 21
+    assert rec_df.height == clean_counts["recete_clean.parquet"]
     assert list(rec_df.columns) == ["patient_id", "date", "drug_name"]
 
     pids = resolve_patient_ids(ana_df, lab_df, rec_df)
-    assert pids == [f"SENTETIK-HASTA-{n:04d}" for n in range(1, 10)]
+    assert pids == cohort.patient_ids()
 
 
 # --- 5. Smoke: load_sut_build_context ----------------------------------------------------------
@@ -802,10 +805,10 @@ def test_smoke_load_sut_build_context_on_committed_showcase() -> None:
         sut_claims_dir=_CLAIMS_DIR,
         sut_clean_dir=_CLEAN_DIR,
     )
-    expected_pids = [f"SENTETIK-HASTA-{n:04d}" for n in range(1, 10)]
+    expected_pids = cohort.patient_ids()
     assert ctx["patient_ids"] == expected_pids
     assert [m["patient_id"] for m in ctx["patient_meta"]] == expected_pids
-    assert len(ctx["billing_reports"]) == 9
+    assert len(ctx["billing_reports"]) == cohort.patient_count()
 
 
 # --- 6. Build equals committed, --check on clean tables & clean_counts, determinism -----------
@@ -817,9 +820,7 @@ def test_build_equals_committed_clean_tables_and_registry(
     committed_reg = json.loads(_REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
     assert built_showcase.registry == committed_reg
     assert committed_reg["clean_counts"] == {
-        "anadata_clean.parquet": 9,
-        "lab_clean.parquet": 222,
-        "recete_clean.parquet": 21,
+        name: df.height for name, df in built_showcase.clean_tables.items()
     }
     assert committed_reg["clean_tables_digest"] == clean_tables_digest(built_showcase.clean_tables)
 
@@ -1044,7 +1045,7 @@ def _ana_set(
         pytest.param(
             # patient 8 has no lab rows, so the missing row is the first thing the check meets
             lambda ana, claims: (pl.concat([ana.head(7), ana.slice(8)]), claims),
-            r"anadata_clean\.parquet row count \(8\) does not equal claim_headers\.parquet row count \(9\)",
+            rf"anadata_clean\.parquet row count \({cohort.patient_count() - 1}\) does not equal claim_headers\.parquet row count \({cohort.patient_count()}\)",
             id="a_row_is_missing",
         ),
         pytest.param(

@@ -1,4 +1,4 @@
-# Fault registry for the synthetic demo (v3, P3): the showcase billing faults, S1..S8 and then one per later story (S9 ...).
+# Fault registry for the synthetic demo (v3, P3): the showcase billing faults, S1..S8 and then one per later story (S9, S11 ...).
 # Grammar and checks: data/synthetic/faults/README.md and scripts/synthetic/faults/.
 # No prices or currency figures are stored here; expected findings are derived at injection time.
 schema_version: 1
@@ -200,3 +200,25 @@ faults:
       finding_ids: ["2.2.2.A.(5)"]
     basis: sut
     source: "C000659, C000660, C000661 (SUT 2.2.2.A(5)): a later operation of a session is paid at 30 % or 50 % of its puan; the coder keyed 25 % (story S9)."
+
+  - fault_id: F_S11_ICU_PACKAGE_DAYS_UNDERBILLED
+    story: S11
+    title: "ICU package days billed at half the list price (urosepsis with septic shock)"
+    target_pathway: urosepsis_septic_shock_icu_stay
+    mutations:
+      - op: set_billed_ratio
+        entry_id: icu_package
+        billed_ratio: "0.5000"
+    expected_finding:
+      engine_rule: icu_puani
+      detectors:
+        - "src/bilun/domain/prose_rules/icu_puani.py:detect_icu_puani_opportunities"
+      sut_section: "2.4.4.H"
+      sut_clauses: ["C001234", "C001242", "C001243"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+      finding_ids: ["icu_puani_510090_p55200x"]
+    basis: sut
+    source: "C001234, C001243 (SUT 2.4.4.H.(2), (8)): the days between the end days are billed from EK-2/C at the full package price; the coder keyed 50 % (story S11)."

@@ -55,6 +55,7 @@ from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.models import ExpectedRuleOutput, PatientCopayProfile
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -75,6 +76,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S7": "1138.22",
     "S8": "5377.20",
     "S9": "758.01",
+    "S11": "6089.82",
 }
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
@@ -132,8 +134,9 @@ def test_cli_check_passes_on_committed_and_fails_on_table_or_json_change(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    registry_counts = cohort.load_registry()["counts"]
     assert main(["--check"]) == 0
-    assert "ok (9 claims, 9 tables)" in capsys.readouterr().out
+    assert f"ok ({cohort.claim_count()} claims, {len(registry_counts)} tables)" in capsys.readouterr().out
 
     assert main(["--out", str(_OUT_DIR), "--check"]) == 0
     capsys.readouterr()
@@ -224,15 +227,15 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
         dataset = load_sut_claim_dataset(_CLAIMS_DIR, mode="synthetic_demo")
 
     expected_counts = built_showcase.registry["counts"]
-    assert len(dataset.claims) == 9 == expected_counts["claim_headers.parquet"]
+    assert len(dataset.claims) == cohort.claim_count() == expected_counts["claim_headers.parquet"]
     assert len(dataset.diagnoses) == expected_counts["claim_diagnoses.parquet"]
     assert len(dataset.procedure_lines) == expected_counts["procedure_claim_lines.parquet"]
     assert len(dataset.material_lines) == expected_counts["material_claim_lines.parquet"]
     assert len(dataset.drug_lines) == expected_counts["drug_claim_lines.parquet"]
-    assert len(dataset.expected_outputs) == 9 == expected_counts["expected_rule_outputs.parquet"]
+    assert len(dataset.expected_outputs) == cohort.claim_count() == expected_counts["expected_rule_outputs.parquet"]
     assert (
         len(dataset.copay_profiles_by_patient)
-        == 9
+        == cohort.patient_count()
         == expected_counts["patient_copay_profiles.parquet"]
     )
     assert (
@@ -282,7 +285,7 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
 
 
 def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> None:
-    assert len(built_showcase.records) == 9
+    assert len(built_showcase.records) == len(cohort.load_registry()["faults"])
     by_story = {rec.story: rec for rec in built_showcase.records}
     assert set(by_story) == set(_EXPECTED_AMOUNTS_BY_STORY)
 
@@ -299,10 +302,9 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
     # S1, S5, S8 have package_candidate=True in both clean and faulty composed headers; others False.
-    for story_idx, (clean_c, faulty_c) in enumerate(
-        zip(built_showcase.clean_claims, built_showcase.claims, strict=True), start=1
-    ):
-        story = f"S{story_idx}"
+    story_of_claim = {rec.claim_id: rec.story for rec in built_showcase.records}
+    for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
+        story = story_of_claim[faulty_c.header.claim_id]
         expected_pkg_cand = story in {"S1", "S5", "S8"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
@@ -327,7 +329,6 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
     assert committed_reg["clean_counts"] == {
         name: df.height for name, df in committed_clean.items()
     }
-    assert committed_reg["clean_counts"]["lab_clean.parquet"] == 222
 
     # tables_digest and clean_tables_digest equal fresh digests of the committed tables.
     assert committed_reg["tables_digest"] == tables_digest(committed_tables)
@@ -346,7 +347,8 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
     # the roles are the landing patient and the first eight stories; later stories are scenarios
     assert set(roles) == {"default_landing", *(f"showcase_S{n}" for n in range(1, 9))}
     assert committed_reg["scenarios"] == {
-        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]}
+        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
+        "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
     }
     assert roles["default_landing"] == {
         "patient_id": "SENTETIK-HASTA-0001",
@@ -596,7 +598,8 @@ def test_stories_after_the_eighth_are_scenarios_and_not_roles(built_showcase: Bu
     registry = built_showcase.registry
     assert set(registry["roles"]) == {"default_landing", *(f"showcase_S{n}" for n in range(1, 9))}
     assert registry["scenarios"] == {
-        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]}
+        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
+        "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
     }
     assert next(rec for rec in built_showcase.records if rec.story == "S9").claim_id == (
         "F-SENTETIK-HASTA-0009-001"
@@ -615,27 +618,31 @@ def test_a_recipe_without_a_fault_builds_the_clean_claim_with_no_record(
     )
     built = build_showcase(recipes=recipes)
 
-    assert len(built.claims) == 9
-    assert len(built.records) == 8 and len(built.answer_rows) == 8
+    faults = len(cohort.load_registry()["faults"])
+    assert len(built.claims) == cohort.claim_count()
+    assert len(built.records) == faults - 1 and len(built.answer_rows) == faults - 1
     assert "S2" not in {rec.story for rec in built.records}
     assert built.claims[1] == built_showcase.clean_claims[1]  # the bill is the clean twin
     assert built.claims[0] == built_showcase.claims[0] and built.claims[2:] == built_showcase.claims[2:]
     encounter = built.registry["encounters"][1]
     assert (encounter["is_clean"], encounter["fault_id"]) == (True, None)
     assert built.registry["roles"]["showcase_S2"]["claim_id"] == "F-SENTETIK-HASTA-0002-001"
-    assert built.tables["expected_rule_outputs.parquet"].height == 8
+    assert built.tables["expected_rule_outputs.parquet"].height == faults - 1
     validate_cohort_registry(built.registry, built.tables, built.clean_tables)
 
 
 def test_the_story_of_a_clean_recipe_is_the_story_of_its_pathway() -> None:
     base = load_recipes()
     clean_ninth = ShowcaseRecipe(patient_no=9, pathway=base.recipes[8].pathway)
-    recipes = ShowcaseRecipes(schema_version=1, recipes=[*base.recipes[:8], clean_ninth])
+    recipes = ShowcaseRecipes(
+        schema_version=1, recipes=[*base.recipes[:8], clean_ninth, *base.recipes[9:]]
+    )
     built = build_showcase(recipes=recipes)
     assert built.registry["scenarios"] == {
-        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]}
+        "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
+        "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
     }
-    assert len(built.records) == 8
+    assert len(built.records) == len(cohort.load_registry()["faults"]) - 1  # the S9 fault is gone
 
 
 def _scenario_defects() -> list[tuple[str, Any, str]]:
@@ -743,7 +750,8 @@ def test_the_undamaged_registry_has_no_scenario_defect(built_showcase: BuildResu
 
 def test_a_wrong_lab_count_in_the_registry_is_rejected(built_showcase: BuildResult) -> None:
     lab_name = "lab_clean.parquet"
-    assert built_showcase.registry["clean_counts"][lab_name] == 222
+    lab_rows = built_showcase.clean_tables[lab_name].height
+    assert built_showcase.registry["clean_counts"][lab_name] == lab_rows
 
     # The count is the number of result rows the reference gives for the billed lab lines, so it
     # is checked with the clean tables and also without them (from the billed codes alone).
@@ -751,7 +759,7 @@ def test_a_wrong_lab_count_in_the_registry_is_rejected(built_showcase: BuildResu
     validate_cohort_registry(
         built_showcase.registry, built_showcase.tables, built_showcase.clean_tables
     )
-    for wrong in (0, 221, 223):
+    for wrong in (0, lab_rows - 1, lab_rows + 1):
         bad_registry = copy.deepcopy(built_showcase.registry)
         bad_registry["clean_counts"][lab_name] = wrong
         with pytest.raises(BuildError, match=r"clean_counts mismatch"):

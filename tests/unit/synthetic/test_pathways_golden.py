@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 
 from tests.fixtures.pathway_goldens import golden_problems, golden_stories, stories_in
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -111,8 +112,8 @@ def golden(request: pytest.FixtureRequest) -> tuple[str, str, dict]:
     return sid, text, json.loads(text)
 
 
-def test_the_stories_with_goldens_are_s1_to_s9_in_order() -> None:
-    assert STORIES == [f"S{n}" for n in range(1, 10)]
+def test_the_stories_with_goldens_are_the_cohort_stories_in_order() -> None:
+    assert STORIES == cohort.stories()
 
 
 @pytest.mark.parametrize("directory", GOLDEN_DIRS.values(), ids=GOLDEN_DIRS.keys())

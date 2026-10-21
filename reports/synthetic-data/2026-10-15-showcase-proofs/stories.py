@@ -1,4 +1,4 @@
-"""Nine showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9 added 2026-10-21).
+"""Ten showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9 and S11 added 2026-10-21; S10 is a later bill).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -276,4 +276,32 @@ def s9(variant: str) -> Bill:
     return b
 
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9}
+# ── S11 ─ ICU package days billed at half the price ──────────────────────────
+def s11(variant: str) -> Bill:
+    """76 F, urosepsis with septic shock; 5 nights in a medical ICU, second-level (P552002) package days.
+
+    SUT 2.4.4.H.(8): 510090 on the first and on the last ICU day, the EK-2/C package on the days between.
+    The ICU days are discharge - admission (icu_puani.py), so the discharge day is the transfer day and
+    carries no ICU line. No ward bed, no companion, no drug line (drug prices stay 0 in the demo).
+    """
+    a, d = D("2026-06-02"), D("2026-06-07")
+    b = Bill("SH-11", "C-SH11", "yatis", "Yoğun Bakım", a, d, "A41.9")
+    for i, icd in enumerate(("A41.9", "R57.8", "N39.0")):
+        b.diag(icd, primary=(i == 0))
+    b.proc("510090", a, specialty=DAHILIYE)
+    package_days = [b.proc("P552002", day, specialty=DAHILIYE) for day in _days(a + timedelta(days=1), d - timedelta(days=2))]
+    b.proc("510090", d - timedelta(days=1), specialty=DAHILIYE)
+    if variant != "clean":  # the coder keyed half the package price on each of the three days
+        for lid in package_days:
+            i = [p.procedure_line_id for p in b.procs].index(lid)
+            p = b.procs[i]
+            billed = money(p.unit_price_try * p.quantity * Decimal("0.5"))
+            b.procs[i] = replace(p, billed_amount_try=billed, expected_payable_try=billed)
+    _labs(b, a, ("L107020", "L101850", "L106240", "L104890"), DAHILIYE)
+    b.proc("906020", a, qty=2, specialty=DAHILIYE)  # two blood-culture sets
+    b.proc("905671", a, specialty=DAHILIYE)         # urine culture
+    b.proc("803580", a, specialty=RAD)              # urinary system ultrasound
+    return b
+
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11}

@@ -33,6 +33,7 @@ BILLED_LAB_CODES: frozenset[str] = frozenset(
         "L102890",
         "L103900",
         "L104780",
+        "L104890",
         "L106150",
         "L106240",
         "L106910",

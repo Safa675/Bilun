@@ -28,6 +28,7 @@ from scripts.synthetic.cohort.clinical import (
     run_all,
 )
 from scripts.synthetic.cohort.recipes import load_recipes
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -77,7 +78,7 @@ def _problems(
 def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> None:
     clinical = load_clinical(CLINICAL_PATH)
     assert clinical.schema_version == 1
-    assert len(clinical.patients) == 9
+    assert len(clinical.patients) == cohort.patient_count()
     assert check_clinical(clinical) == []
     assert run_all(clinical) == []
 
@@ -91,7 +92,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz"}
 
     by_no = clinical.by_patient_no()
-    assert set(by_no) == set(range(1, 10))
+    assert set(by_no) == set(range(1, cohort.patient_count() + 1))
 
     for pno, expected_tuple in _EXPECTED_VITALS.items():
         pat = by_no[pno]

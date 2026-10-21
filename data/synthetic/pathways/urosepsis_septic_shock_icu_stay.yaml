@@ -1,0 +1,119 @@
+# Urosepsis with septic shock, intensive care stay, billed itemized (hizmet başı) with the EK-2/C ICU day package.
+# Showcase story S11 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S11). Built by WP2 (grammar G4a).
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# ICU billing (SUT 2.4.4.H): 510090 on the first and on the last ICU day, a P55200x package on every day between
+# (src/bilun/domain/prose_rules/icu_puani.py); the discharge day is the transfer day and is not an ICU day of this bill.
+schema_version: 1
+id: urosepsis_septic_shock_icu_stay
+title: "Urosepsis with septic shock, intensive care stay billed 510090 on the end days and the EK-2/C package between"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Yoğun Bakım"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları (a medical ICU run by internal medicine)
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Urosepsis with septic shock occurs in both sexes; A41.9, R57.8 and N39.0 have no sex gate. Story S11 is a woman. Clinician to confirm."
+  age:
+    min: 60
+    max: 90
+    basis: judgment
+    source: "Story S11 patient was born in 1950 (76 years). Urosepsis with shock is a disease of the elderly; the bounds are the author's judgment. Clinician to confirm."
+
+nights:
+  min: 3
+  max: 10
+  basis: judgment
+  source: "Story S11 has 5 nights. Min 3: 510090, one package day, 510090 (C001243). Max 10 is the author's judgment. Intensivist to confirm."
+
+diagnoses:
+  - icd10: A41.9
+    name: "SEPTİSEMİ, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: A41.9 is sepsis, organism not specified. Story S11 is urosepsis; no organism is named on the bill."
+  - icd10: R57.8
+    name: "ŞOK, DİĞER"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "The SKRS table has no R57.2 (septic shock); R57.1 is hypovolaemic shock. Septic shock is coded R57.8 (other shock). Coder to confirm."
+  - icd10: N39.0
+    name: "ÜRİNER SİSTEM ENFEKSİYONU, YERİ TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: N39.0 urinary tract infection, site not specified: the source of the urosepsis in story S11."
+
+procedures:
+  # --- the ICU stay: 510090 on the first and the last ICU day, the package on the days between.
+  # The discharge day is the transfer day and carries no ICU line on this bill.
+  - id: icu_end_days
+    kind: icu_day
+    code: "510090"
+    name: "Yoğun bakım"
+    days: [admit, discharge-1]         # the first ICU day and the last one (5 nights: days 0 and 4)
+    basis: sut
+    source: "C001243 (SUT 2.4.4.H.(8)): the first ICU day and the day the patient leaves are billed per service (510090). Intensivist: which day is the last?"
+  - id: icu_package
+    kind: icu_package
+    code: "P552002"
+    name: "İkinci basamak yoğun bakım hastası"
+    days: admit+1..discharge-2         # the days between: 3 packages for 5 nights
+    basis: sut
+    source: "C001234 (SUT 2.4.4.H.(2)): ICU days are billed from EK-2/C; P552002 is the second level. P552003 needs documented organ support. Intensivist to confirm."
+
+  # --- laboratory
+  - id: admission_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L101850", name: "C reaktif protein (CRP)"}
+      - {code: "L106240", name: "Prokalsitonin (Serum/Plazma)"}
+      - {code: "L104890", name: "Laktat (Serum/Plazma)"}
+    days: admit
+    basis: guideline
+    source: "Surviving Sepsis Campaign hour-1 bundle: lactate, blood count; CRP and procalcitonin as the infection markers of story S11. Clinician to confirm."
+  - id: blood_culture
+    kind: lab
+    code: "906020"
+    name: "Kan kültürü (Aerob-anaerob) otomatik sistem"
+    days: admit
+    qty: 2                             # two sets, as in the other stories; açıklama: not billed with 906010
+    basis: guideline
+    source: "Surviving Sepsis Campaign: blood cultures before the antibiotic. Two sets is the author's choice (as story S4)."
+  - id: urine_culture
+    kind: lab
+    code: "905671"
+    name: "İdrar Kültürü"
+    days: admit
+    basis: guideline
+    source: "Urosepsis: a urine culture next to the blood cultures. No guideline paragraph is quoted."
+
+  # --- imaging
+  - id: urinary_ultrasound
+    kind: imaging
+    code: "803580"
+    name: "Üriner sistem US"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    # 803580 açıklama: not billed with other abdominal ultrasounds; this story has none.
+    basis: guideline
+    source: "Urosepsis: imaging of the urinary tract for an obstructed focus is the first step of source control (Surviving Sepsis Campaign). Clinician to confirm."
+
+notes:
+  - "No ward bed, companion or examination line: the ICU day lines are the bed lines of this bill, and 510090 covers monitoring, mechanical ventilation, nebulizer, oxygen and tracheal aspiration (code_sets.yaml)."
+  - "No drug lines: the antibiotic and the vasopressor are left out of the demo bill on purpose (drug prices stay 0 in the demo, and a drug line would add a drug_indication review the story does not need)."
+  - "The next bill of this patient (the ward stay after the transfer day) is a later story (S14)."
+
+showcase:
+  story: S11
+  sex: F
+  age: 76
+  admit: "2026-06-02"
+  nights: 5
