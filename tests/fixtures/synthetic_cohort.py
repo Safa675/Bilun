@@ -27,6 +27,9 @@ return a fresh object that the caller may change):
   order (a tuple). `scenario(story)`: the `Scenario` of a story after the eighth (`S9`, ...). An
   unknown story raises `KeyError` whose message lists the scenarios. `scenarios()`: every scenario as
   `{story: Scenario}`.
+- `stories()`: every story of the cohort as a list, in number order (`S1` to `S8` from the roles, then
+  the scenarios: `S9`, `S11`, ...). The story ids are not contiguous (S10 belongs to a later
+  package), so a test that needs "every story" asks here and never writes `range(1, 10)`.
 - `patient_ids()` and `claim_ids()`: every patient id and every claim id of the `encounters`, each
   sorted. `patient_count()` and `claim_count()` are their lengths.
 - `counts()`: `{table file name: row count}` for the 9 claims tables (`counts` of the registry, for
@@ -105,6 +108,13 @@ def scenario(story: str) -> Scenario:
     if story not in known:
         raise KeyError(f"unknown scenario {story!r}; the scenarios are {', '.join(known)}")
     return known[story]
+
+
+def stories() -> list[str]:
+    """Every story of the cohort (the roles' `S1`..`S8`, then the scenarios), in number order."""
+    registry = load_registry()
+    named = {name.removeprefix("showcase_") for name in registry["roles"] if name.startswith("showcase_")}
+    return sorted(named | set(registry["scenarios"]), key=lambda story: int(story.removeprefix("S")))
 
 
 def patient_ids() -> list[str]:

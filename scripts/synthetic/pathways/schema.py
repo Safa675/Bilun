@@ -56,7 +56,7 @@ CHECKS: dict[str, str] = {
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
-    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter",
+    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter, or an ICU kind on a code that is not an ICU day or package",
     "material.in_force": "an EK-3/F-1 code missing on some day of the window",
     "material.name": "a material name that is not the catalog name",
     "drug.in_force": "an EK-4A barcode missing on some day of the window",
@@ -72,8 +72,8 @@ CHECKS: dict[str, str] = {
     "lab.in_table": "an L-code absent from lab_reference.csv",
     "lab.name": "a lab name that is not the table's catalog_name",
     "specialty.exists": "an EK-2A branch code that does not exist",
-    "package.mode": "a package pathway with a line a package includes, or the reverse",
-    "package.window": "a stay that outlasts the package window of its group",
+    "package.mode": "a package pathway with a line a package includes (an ICU line too), or the reverse; an ICU package is no surgical package",
+    "package.window": "a stay that outlasts the package window of its group (an ICU package has no group and no window)",
     "anaesthesia.group": "an anaesthesia group that the operation's puan does not give",
     "anaesthesia.code": "an anaesthesia code that does not belong to its group",
     "session.primary": "a session without exactly one primary operation",
@@ -85,7 +85,8 @@ CHECKS: dict[str, str] = {
     "pins.window": "pinned dates outside the service window",
     "days.in_stay": "a day that falls outside the stay for some nights in range",
     "days.duplicate": "a line that lands twice on the same day",
-    "stay.coverage": "a bed line off admit..discharge, or a companion line off admit..discharge-1",
+    "stay.coverage": "a bed line off admit..discharge, or a companion line off admit..discharge-1; on an ICU stay the bed and ICU lines cover admit..discharge-1 once each and the discharge day (the transfer day) holds no ICU line",
+    "icu.day_pattern": "an ICU stay whose 510090 lines are not on the first and the last ICU day, or whose package lines are not on every day between",
     "source.clause_exists": "a cited SUT clause id that does not exist or is not in force",
     "source.sut_cites": "basis sut without a clause id or an annex in the source",
     "window.valid": "a window outside the default service window",
@@ -173,8 +174,21 @@ def _iso_date(value: str) -> str:
 
 Basis = Literal["sut", "ek2b_aciklama", "medula_kilavuz", "guideline", "judgment"]
 Kind = Literal[
-    "package", "operation", "bed", "companion", "anaesthesia", "exam", "lab", "imaging", "procedure"
+    "package",
+    "operation",
+    "bed",
+    "icu_day",
+    "icu_package",
+    "companion",
+    "anaesthesia",
+    "exam",
+    "lab",
+    "imaging",
+    "procedure",
 ]
+# The two kinds of an intensive-care stay: the EK-2B day rate 510090 and an EK-2C ICU package
+# (P552001-3, P552006-8). They are bed-day lines of their own (SUT 2.4.4.H), not surgical packages.
+ICU_KINDS: tuple[str, ...] = ("icu_day", "icu_package")
 SessionRole = Literal["primary", "same_incision", "separate_incision"]
 Group = Literal["A1", "A2", "A3", "B", "C", "D", "E"]
 Unit = Literal["box", "vial", "ampoule", "bottle", "bag", "syringe", "tablet", "capsule"]

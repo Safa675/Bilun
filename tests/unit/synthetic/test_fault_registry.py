@@ -26,6 +26,7 @@ from scripts.synthetic.faults import (
 )
 from scripts.synthetic.faults.checks import Catalogs, main, run_all
 from scripts.synthetic.faults.loader import FAULTS_DIR, REGISTRY_PATH
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -193,6 +194,18 @@ PINNED_FINDINGS: dict[
         [],
         ["2.2.2.A.(5)"],
     ),
+    "S11": (
+        "icu_puani",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C001234", "C001242", "C001243"],
+        "2.4.4.H",
+        ["src/bilun/domain/prose_rules/icu_puani.py:detect_icu_puani_opportunities"],
+        [],
+        ["icu_puani_510090_p55200x"],
+    ),
 }
 
 S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
@@ -201,7 +214,7 @@ S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
 def test_real_registry_loads_and_passes_every_check(catalogs: Catalogs) -> None:
     registry = load_registry(REGISTRY_PATH)
     assert registry.schema_version == 1
-    assert len(registry.faults) == 9
+    assert len(registry.faults) == len(cohort.load_registry()["faults"])
     assert run_all(registry, catalogs) == []
 
 
@@ -247,18 +260,19 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11"]
 
 
-def test_coverage_nine_stories_six_ops_unique_ids() -> None:
+def test_coverage_every_story_six_ops_unique_ids() -> None:
     registry = load_registry()
     fault_ids = [f.fault_id for f in registry.faults]
     stories = [f.story for f in registry.faults]
     ops = {op.op for f in registry.faults for op in f.mutations}
 
     assert isinstance(CHECKS, tuple)
-    assert len(fault_ids) == len(set(fault_ids)) == 9
-    assert tuple(stories) == (*SHOWCASE_STORIES, "S9")
+    assert len(fault_ids) == len(set(fault_ids)) == len(cohort.stories())
+    assert tuple(stories) == tuple(cohort.stories())  # S1..S8 required, the later ones optional
+    assert tuple(stories[: len(SHOWCASE_STORIES)]) == SHOWCASE_STORIES
     assert ops == set(MUTATION_OPS)
 
 
@@ -607,6 +621,13 @@ CASES: list[Case] = [
         lambda r: _fault(r, "F_S3_ANAESTHESIA_LINE_MISSING")["mutations"].append(
             {"op": "set_billed_ratio", "entry_id": "decompression", "billed_ratio": "1.0000"}
         ),
+    ),
+    Case(
+        "fault.billed_ratio_target",
+        lambda r: _fault(r, "F_S11_ICU_PACKAGE_DAYS_UNDERBILLED")["mutations"].append(
+            {"op": "set_billed_ratio", "entry_id": "icu_end_days", "billed_ratio": "0.5000"}
+        ),
+        label="an_icu_day_line_takes_no_ratio",
     ),
     Case(
         "fault.target_entry_id",

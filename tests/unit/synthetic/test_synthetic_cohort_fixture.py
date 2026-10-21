@@ -27,7 +27,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9",)  # the stories after the eighth, named by scenarios
+_SCENARIO_STORIES = ("S9", "S11")  # the stories after the eighth, named by scenarios (S10 is a later bill)
 _FAULT_STORIES = (*_STORIES, *_SCENARIO_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
@@ -243,15 +243,23 @@ def test_every_story_has_a_fault_record_with_an_amount_a_line_type_and_a_line() 
 
 def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_role() -> None:
     known = cohort.scenarios()
-    assert tuple(known) == _SCENARIO_STORIES
+    assert set(known) == set(_SCENARIO_STORIES)  # the registry keys are sorted as text: S11 before S9
     assert all(isinstance(scenario, cohort.Scenario) for scenario in known.values())
     assert {story: cohort.scenario(story) for story in _SCENARIO_STORIES} == known
     assert known["S9"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0009", claim_ids=("F-SENTETIK-HASTA-0009-001",)
     )
+    assert known["S11"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0010", claim_ids=("F-SENTETIK-HASTA-0010-001",)
+    )
     assert not {f"showcase_{story}" for story in _SCENARIO_STORIES} & set(cohort.roles())
     assert not set(known) & set(_STORIES)
 
+
+def test_the_stories_are_the_role_stories_then_the_scenarios_in_number_order() -> None:
+    assert cohort.stories() == [*_STORIES, *_SCENARIO_STORIES]
+    assert cohort.stories() == sorted(cohort.stories(), key=lambda story: int(story[1:]))
+    assert {record["story"] for record in cohort.load_registry()["faults"]} == set(cohort.stories())
 
 def test_a_scenario_points_at_a_patient_and_claims_in_the_committed_tables() -> None:
     headers = pl.read_parquet(_CLAIMS / "claim_headers.parquet", columns=["patient_id", "claim_id"])

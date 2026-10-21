@@ -28,6 +28,7 @@ from scripts.synthetic.cohort.recipes import (
 )
 from scripts.synthetic.faults import load_registry
 from scripts.synthetic.pathways import load_all
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -56,7 +57,7 @@ def _problems(
 def test_real_recipes_file_loads_and_matches_fault_registry_and_pathways() -> None:
     recipes = load_recipes(RECIPES_PATH)
     assert recipes.schema_version == 1
-    assert len(recipes.recipes) == 9
+    assert len(recipes.recipes) == cohort.patient_count()
     assert check_recipes(recipes) == []
     assert run_all(recipes) == []
 
@@ -64,13 +65,13 @@ def test_real_recipes_file_loads_and_matches_fault_registry_and_pathways() -> No
     pathways = load_all()
 
     for idx, recipe in enumerate(recipes.recipes, start=1):
-        story = f"S{idx}"
-        fault = faults_by_story[story]
         pathway = pathways[recipe.pathway]
+        story = pathway.showcase.story
+        fault = faults_by_story[story]
         assert recipe.patient_no == idx
         assert recipe.fault == fault.fault_id
         assert recipe.pathway == fault.target_pathway
-        assert pathway.showcase.story == story
+        assert story == cohort.stories()[idx - 1]  # one bill per patient, in story order
 
 
 def test_unregistered_problem_check_id_raises_key_error() -> None:
@@ -92,7 +93,7 @@ def test_corrupt_pathway_file_in_directory_reports_recipe_pathway(tmp_path: Path
         (bad_pw_dir / f"{r.pathway}.yaml").write_text("schema_version: 2\n", encoding="utf-8")
     problems = check_recipes(recipes, pathways_dir=bad_pw_dir)
     assert {p.check for p in problems} == {"recipe.pathway"}
-    assert len(problems) == 9
+    assert len(problems) == len(recipes.recipes)
 
 
 # --- a recipe may have no fault: the bill is clean ---------------------------------------------

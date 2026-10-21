@@ -26,12 +26,12 @@ Top-level keys:
 
 Each `FaultSpec` carries:
 - `fault_id`: unique identifier matching `^F_S[1-9][0-9]*_[A-Z][A-Z0-9_]{1,63}$` (for example `F_S2_BED_DAYS_UNDERBILLED`).
-- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9` and later are the stories added since), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
+- `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S11` and later are the stories added since; S10 is a later bill), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
 - `title`: short English summary (2–400 characters).
 - `target_pathway`: pathway id in `data/synthetic/pathways/<target_pathway>.yaml`.
 - `mutations`: non-empty list of `MutationOp` entries from the closed six-operation grammar below.
 - `expected_finding` (`ExpectedFinding`):
-  - `engine_rule`: engine rule identifier (`billing_strategy`, `yatak_puani`, `anestezi_puani`, `refakatci`, `material_bundling`, `drug_indication`, `procedure_capture_gap`, `drg_unbundling`, `session_uplift`).
+  - `engine_rule`: engine rule identifier (`billing_strategy`, `yatak_puani`, `anestezi_puani`, `refakatci`, `material_bundling`, `drug_indication`, `procedure_capture_gap`, `drg_unbundling`, `session_uplift`, `icu_puani`).
   - `detectors`: non-empty list of `"<repo module path>:<function name>"` strings.
   - `sut_section`: SUT section citation (for example `"2.2.2.A(1)"`).
   - `sut_clauses`: non-empty list of in-force clause ids (`C000000`) in `data/gazette/sut_clauses.parquet`.
@@ -40,7 +40,7 @@ Each `FaultSpec` carries:
   - `target_entry_id`: `null` when `line_type` is `fatura`; required pathway line `id` otherwise.
   - `expected_status`: `eksik_faturalama` (missing/under-billed claim-level uplift) or `kismi_red` (line-level deduction or compliance error).
   - `evidence_entry_ids`: optional list of pathway line `id`s in `procedures` or `performed` that serve as evidence of the finding (default `[]`; on S7, `["ct_angiography_pacs"]`).
-  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`).
+  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`).
 - `basis` and `source`: provenance using the pathway `Basis` enum (`sut`, `ek2b_aciklama`, `medula_kilavuz`, `guideline`, `judgment`) and `Source` rule (10–160 characters, no TL amounts).
 
 ## The six mutation operations (`MutationOp`)
@@ -69,7 +69,7 @@ Every operation is a mapping discriminated on `op` with `extra="forbid"`, operat
 6. **`set_billed_ratio`** (`entry_id`, `billed_ratio` matching `^\d\.\d{4}$`):
    - Meaning: set `billed_ratio` on every expanded row of procedure line `entry_id`.
    - Constraint: `entry_id` must be a procedure line with a `session_role` (`fault.billed_ratio_target`).
-   - Showcase use: `F_S8_SECOND_PACKAGE_FULL_RATE` sets `billed_ratio: "1.0000"` on `hernia_package`; `F_S9_SECOND_OPERATION_UNDERBILLED` sets `billed_ratio: "0.2500"` on `foraminoplasty` (the clean bill pays it at 0.5000, a separate incision).
+   - Showcase use: `F_S8_SECOND_PACKAGE_FULL_RATE` sets `billed_ratio: "1.0000"` on `hernia_package`; `F_S9_SECOND_OPERATION_UNDERBILLED` sets `billed_ratio: "0.2500"` on `foraminoplasty` (the clean bill pays it at 0.5000, a separate incision); `F_S11_ICU_PACKAGE_DAYS_UNDERBILLED` sets `billed_ratio: "0.5000"` on the three-day `icu_package` line (the target is a line of kind `icu_package`, which takes a ratio without a `session_role`; `fault.billed_ratio_target`).
 
 ## Applying a fault (`apply_fault`, `fault_window`), the injection record and the answer rows
 

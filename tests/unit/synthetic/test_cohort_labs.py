@@ -89,6 +89,7 @@ from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import _normalize_lab, load_normalized_raw_data
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.prose_rules.lab_capture_gap import detect_lab_capture_gaps
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
@@ -106,7 +107,7 @@ _CURRENCY_RE = re.compile(
     re.IGNORECASE,
 )
 
-# The 14 lab codes billed in the 8 claims and the number of result parameters of each.
+# The 15 lab codes billed in the cohort and the number of result parameters of each.
 _PARAMETER_COUNTS: dict[str, int] = {
     "L100300": 1,  # ALT
     "L101280": 1,  # AST
@@ -115,6 +116,7 @@ _PARAMETER_COUNTS: dict[str, int] = {
     "L102890": 1,  # glucose
     "L103900": 10,  # arterial blood gas
     "L104780": 2,  # creatinine and the derived eGFR
+    "L104890": 1,  # lactate
     "L106150": 1,  # potassium
     "L106240": 1,  # procalcitonin
     "L106910": 1,  # sodium
@@ -123,7 +125,8 @@ _PARAMETER_COUNTS: dict[str, int] = {
     "L107360": 1,  # troponin I
     "L107420": 1,  # urea
 }
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 52, 6: 40, 7: 23, 9: 15}
+LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from the registry
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 52, 6: 40, 7: 23, 9: 15, 10: 18}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -134,9 +137,10 @@ _PATIENTS: dict[int, tuple[str, int]] = {
     7: ("F", 58),
     8: ("F", 47),
     9: ("F", 77),
+    10: ("F", 76),
 }
 
-# Decimals of every parameter of the 14 codes: the most decimals among the limits and the state
+# Decimals of every parameter of the 15 codes: the most decimals among the limits and the state
 # numbers of the CSV rows, at most 3 (eGFR bands do not count).
 _DECIMALS: dict[str, int] = {
     "L100300|ALT": 0,
@@ -155,6 +159,7 @@ _DECIMALS: dict[str, int] = {
     "L103900|Potasyum (kan gazı)": 1,
     "L103900|İyonize kalsiyum (kan gazı)": 2,
     "L104780|Kreatinin": 2,
+    "L104890|Laktat": 1,
     "L104780|eGFR (CKD-EPI 2021, hesaplanan)": 0,
     "L106150|Potasyum": 1,
     "L106240|Prokalsitonin": 2,
@@ -334,9 +339,9 @@ def test_reference_has_the_14_billed_codes_with_their_parameter_counts(procs: pl
     assert billed == set(_PARAMETER_COUNTS) == set(BILLED_LAB_CODES)
     assert {code: len(ref.by_code[code]) for code in billed} == _PARAMETER_COUNTS
     assert len(ref.by_code) == 49  # every code of the CSV, not only the billed ones
-    assert sum(_PARAMETER_COUNTS.values()) == 47
+    assert sum(_PARAMETER_COUNTS.values()) == 48
     # The venous variant shares the code L103900 and is not read as a second set of parameters.
-    assert len(ref.billed_code_parameters) == 57
+    assert len(ref.billed_code_parameters) == sum(_PARAMETER_COUNTS.values()) + 10  # + the venous gas
     assert {s.test_key for s in ref.by_code["L103900"]} == {"blood_gas_arterial"}
     assert all(s.test_key != "blood_gas_venous" for s in ref.by_key.values())
 
@@ -400,7 +405,7 @@ def test_every_abnormal_state_item_parses_or_is_listed_as_unsupported() -> None:
     raw = pl.read_csv(_LAB_CSV, infer_schema_length=0).filter(
         pl.col("ek2b_code").is_in(list(_PARAMETER_COUNTS))
     )
-    assert raw.height == len(ref.billed_code_parameters) == 57
+    assert raw.height == len(ref.billed_code_parameters) == sum(_PARAMETER_COUNTS.values()) + 10
     texts = raw["abnormal_states"].fill_null("").to_list()
     total_items = 0
     for spec, text in zip(ref.billed_code_parameters, texts, strict=True):
@@ -410,7 +415,7 @@ def test_every_abnormal_state_item_parses_or_is_listed_as_unsupported() -> None:
         ]
         assert sorted(accounted) == sorted(items), spec.key
         total_items += len(items)
-    assert total_items == 174
+    assert total_items == 178
 
 
 def test_unsupported_prose_states_of_the_billed_codes_are_these_four() -> None:
@@ -700,7 +705,7 @@ def test_the_lab_codes_of_each_episode_are_the_billed_lab_codes(
     lab: pl.DataFrame, procs: pl.DataFrame, built_showcase: BuildResult
 ) -> None:
     episodes = built_showcase.tables["claim_headers.parquet"]["episode_id"].to_list()
-    assert len(episodes) == 9
+    assert len(episodes) == cohort.claim_count()
     billed = _codes_by_episode(_billed_lab_lines(procs), "episode_id", "procedure_code")
     fed = _codes_by_episode(lab, "basvuru_id", "SUB_CODE")
     for episode in episodes:
@@ -754,9 +759,9 @@ def test_the_table_is_the_billed_lines_times_their_csv_parameters(
 ) -> None:
     expected = _expected_lab_keys(procs, csv_rows)
     assert _actual_lab_keys(lab).equals(expected)
-    assert lab.height == expected.height == 222
+    assert lab.height == expected.height == LAB_ROWS
     # The same total from the application of the reference to the billed codes.
-    assert expected_lab_row_count(_billed_lab_lines(procs)["procedure_code"].to_list()) == 222
+    assert expected_lab_row_count(_billed_lab_lines(procs)["procedure_code"].to_list()) == LAB_ROWS
     per_patient = lab.group_by("HASTA_ID").len().sort("HASTA_ID")
     assert dict(zip(per_patient["HASTA_ID"], per_patient["len"], strict=True)) == {
         _pid(n): rows for n, rows in _ROWS_PER_PATIENT.items()
@@ -794,7 +799,7 @@ def test_the_real_capture_gap_detector_finds_no_gap_for_any_episode(
         "ref_min",
         "ref_max",
     ]
-    assert len(claims_dataset.claims) == 9
+    assert len(claims_dataset.claims) == cohort.claim_count()
     for claim_id in claims_dataset.claims:
         assert _gaps(feed, claims_dataset, claim_id) == [], claim_id
 
@@ -820,9 +825,9 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 7 + 7 + 6 + 1 pairs.
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 7 + 7 + 6 + 1 + 4 pairs.
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 31
+    assert checked == once.filter(pl.col("len") == 1).height == 35
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -981,7 +986,7 @@ def test_the_requested_states_are_the_ones_of_the_yaml(annotated: pl.DataFrame) 
     )
     assert (_pid(2), "L103900|pH", 2) not in got  # the second entry is `normal`
     assert got[(_pid(2), "L103900|pO2", 2)] == "chronic_copd_room_air"
-    assert {h for h, _, _ in got} == {_pid(n) for n in (1, 2, 3, 4, 6, 7, 9)}
+    assert {h for h, _, _ in got} == {_pid(n) for n in (1, 2, 3, 4, 6, 7, 9, 10)}
 
 
 def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
@@ -996,8 +1001,8 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     )
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
-    # 216 numeric rows = 94 derived + 23 drawn from a state + 99 drawn without one.
-    assert rows.height == 99
+    # 234 numeric rows = 102 derived + 27 drawn from a state + 105 drawn without one.
+    assert rows.height == 105
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -1027,7 +1032,7 @@ def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.Data
     assert outside.is_empty(), outside.select(
         "HASTA_ID", "key", "state", "sonuc_sayisal", "band_lo", "band_hi"
     )
-    assert rows.height == 23  # numeric rows drawn from a state band
+    assert rows.height == 27  # numeric rows drawn from a state band
     # The bands are the ones the brief names for the two stories with a list of states.
     assert bands.filter(
         (pl.col("key") == "L107020|WBC (Lökosit)") & (pl.col("state") == "bacterial_infection")
@@ -1101,7 +1106,7 @@ def test_derived_red_cell_values_lie_inside_the_limits_or_the_own_state_ranges(
         pl.col("parametre").is_in(["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"])
     ).join(drivers, on=["HASTA_ID", "k"], how="left")
     inside = (pl.col("sonuc_sayisal") >= pl.col("lo")) & (pl.col("sonuc_sayisal") <= pl.col("hi"))
-    assert derived.height == 30
+    assert derived.height == 33
     # Without a state on HGB, MCV or MCH, the derived values are normal values.
     assert derived.filter(~pl.col("driver_state") & ~inside).is_empty()
     # With one (patients 3 and 9, postoperative HGB) a derived value may sit in one of its own state ranges.
@@ -1165,9 +1170,9 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
         )
     )
     sets = wide.join(wbc_state, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == 10
+    assert sets.height == 11
     assert sorted(sets["profile"].to_list()) == (
-        ["bacterial_infection"] * 4 + ["normal"] * 5 + ["steroid_use"]
+        ["bacterial_infection"] * 5 + ["normal"] * 5 + ["steroid_use"]
     )
     for profile in _PROFILES:
         group = sets.filter(pl.col("profile") == profile)
@@ -1219,7 +1224,7 @@ def test_microscopy_counts_are_whole_numbers_inside_the_limits_or_the_state(
 
 def test_no_numeric_value_is_nan_or_infinite(lab: pl.DataFrame) -> None:
     numeric = lab.filter(pl.col("sonuc_nitel").is_null())
-    assert numeric.height == 216
+    assert numeric.height == LAB_ROWS - 6  # the six urine strips have a grade, not a number
     assert numeric["sonuc_sayisal"].null_count() == 0
     assert numeric["sonuc_sayisal"].is_finite().all()
     assert (
@@ -1347,7 +1352,7 @@ def test_r1_the_five_differential_counts_sum_to_the_wbc(
     lab: pl.DataFrame, csv_rows: pl.DataFrame
 ) -> None:
     hemograms = _wide(lab, csv_rows, "L107020")
-    assert hemograms.height == 10
+    assert hemograms.height == 11
     gap = (pl.sum_horizontal(*_DIFFERENTIAL) - pl.col("WBC (Lökosit)")).abs()
     assert hemograms.select(gap.max().alias("gap"))["gap"][0] <= 0.05
 
@@ -1508,7 +1513,7 @@ _DRIFT_CASES = [
     pytest.param("L103900", "pO2", 5.0, "R4", "SaO2", id="driver_po2_names_sao2"),
     pytest.param("L104780", "Kreatinin", 0.2, "R3", _EGFR, id="driver_creatinine_names_egfr"),
 ]
-_SETS_PER_CODE = {"L107020": 10, "L104780": 6, "L103900": 2}
+_SETS_PER_CODE = {"L107020": 11, "L104780": 6, "L103900": 2}
 
 
 @pytest.mark.parametrize(("code", "changed", "change", "rule", "reported"), _DRIFT_CASES)
@@ -1549,12 +1554,12 @@ def test_r5_anormal_mi_is_below_ref_alt_or_above_ref_ust_or_a_strip_other_than_n
     strips = lab.filter(pl.col("sonuc_nitel").is_not_null())
     not_negative = pl.col("sonuc_nitel") != "Negatif"
     assert strips.filter(pl.col("anormal_mi").ne_missing(not_negative)).is_empty()
-    # Both outcomes occur, so the test is not vacuous: 43 numeric rows and 3 strips are abnormal.
+    # Both outcomes occur, so the test is not vacuous: 49 numeric rows and 3 strips are abnormal.
     abnormal_numeric = numeric.select(expected.sum()).item()
     abnormal_strips = strips.filter(not_negative).height
-    assert (abnormal_numeric, abnormal_strips) == (43, 3)
-    assert lab["anormal_mi"].sum() == 46
-    assert 0 < lab["anormal_mi"].sum() < lab.height == 222
+    assert (abnormal_numeric, abnormal_strips) == (49, 3)
+    assert lab["anormal_mi"].sum() == 52
+    assert 0 < lab["anormal_mi"].sum() < lab.height == LAB_ROWS
 
 
 def test_troponin_i_uses_the_sex_specific_limit_of_the_csv(
@@ -2087,7 +2092,7 @@ def test_mutation_an_unsupported_prose_state_raises_only_when_the_yaml_reference
     assert state in spec.unsupported_by_id and state not in spec.states_by_id
     assert spec.has_state_in_csv(state)
     # Loading the reference and the committed YAML (which does not mention it) is fine.
-    assert _build(built_showcase, load_clinical()).height == 222
+    assert _build(built_showcase, load_clinical()).height == LAB_ROWS
     with pytest.raises(UnsupportedLabStateError, match=re.escape(state)):
         _build(built_showcase, _with_states(patient_no, {key: state}))
     with pytest.raises(UnsupportedLabStateError):
@@ -2231,7 +2236,7 @@ def test_the_committed_lab_parquet_equals_a_fresh_build(lab: pl.DataFrame) -> No
     assert dict(committed.schema) == dict(lab.schema)
     assert committed.equals(lab, null_equal=True)
     registry = json.loads(_REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
-    assert registry["clean_counts"]["lab_clean.parquet"] == lab.height == 222
+    assert registry["clean_counts"]["lab_clean.parquet"] == lab.height == LAB_ROWS
     assert (
         registry["clean_tables_digest"]["lab_clean.parquet"]
         == clean_tables_digest(
@@ -2297,7 +2302,7 @@ def test_mutation_check_exits_1_when_a_lab_value_or_the_lab_count_changes(
 
 def test_cache_loaders_accept_the_lab_table(built_showcase: BuildResult) -> None:
     raw = load_labdata(_LAB_PARQUET)
-    assert raw.height == 222
+    assert raw.height == LAB_ROWS
     _, lab_df, _ = load_normalized_raw_data(
         load_anadata_fn=lambda include_text=True: load_anadata(
             path=_CLEAN_DIR / "anadata_clean.parquet", include_text=include_text
@@ -2305,7 +2310,7 @@ def test_cache_loaders_accept_the_lab_table(built_showcase: BuildResult) -> None
         load_labdata_fn=lambda: load_labdata(path=_LAB_PARQUET),
         load_recete_fn=lambda: load_recete(path=_CLEAN_DIR / "recete_clean.parquet"),
     )
-    assert lab_df.height == 222
+    assert lab_df.height == LAB_ROWS
     assert lab_df.columns == [
         "patient_id",
         "visit_id",
@@ -2329,9 +2334,9 @@ def test_the_full_build_context_runs_and_no_report_has_a_lab_capture_gap() -> No
         sut_claims_dir=_CLAIMS_DIR,
         sut_clean_dir=_CLEAN_DIR,
     )
-    assert context["lab_df_pl"].height == 222
+    assert context["lab_df_pl"].height == cohort.counts()["lab_clean.parquet"]
     reports = context["billing_reports"]
-    assert sorted(reports) == [_pid(n) for n in range(1, 10)]
+    assert sorted(reports) == cohort.patient_ids()
     for patient_id, report in reports.items():
         gap = report.procedure_capture_gap
         assert gap.exactness_status == "exact", patient_id
@@ -2345,8 +2350,8 @@ def test_the_engine_proof_over_the_committed_files_reports_no_mismatch(
     built_showcase: BuildResult,
 ) -> None:
     proofs = prove_showcase(built_showcase, dataset=load_showcase_dataset(_CLAIMS_DIR))
-    assert len(proofs) == 9
-    assert [sp.mismatches for sp in proofs] == [()] * 9
+    assert len(proofs) == cohort.claim_count()
+    assert [sp.mismatches for sp in proofs] == [()] * cohort.claim_count()
 
 
 # --- 3.10 Hygiene ----------------------------------------------------------------------------------
@@ -2602,7 +2607,7 @@ def test_expected_lab_keys_is_the_billed_lines_times_the_parameters(
 ) -> None:
     keys = expected_lab_keys(procs)
     assert keys.columns == ["HASTA_ID", "basvuru_id", "day", "SUB_CODE", "parametre"]
-    assert keys.height == 222
+    assert keys.height == LAB_ROWS
     assert keys.equals(
         lab.select("HASTA_ID", "basvuru_id", _day().alias("day"), "SUB_CODE", "parametre")
     )
@@ -2628,12 +2633,12 @@ def _put_the_crp_set_after_the_hemogram(lab: pl.DataFrame) -> pl.DataFrame:
     [
         pytest.param(
             _glucose_for_the_package_patient,
-            r"223 rows for 222 expected; 1 unexpected, first SENTETIK-HASTA-0005 B-SENTETIK-HASTA-0005-001 2026-02-19 L102890\|Glukoz",
+            rf"{LAB_ROWS + 1} rows for {LAB_ROWS} expected; 1 unexpected, first SENTETIK-HASTA-0005 B-SENTETIK-HASTA-0005-001 2026-02-19 L102890\|Glukoz",
             id="extra_row",
         ),
         pytest.param(
             _remove_a_whole_result_set,
-            r"221 rows for 222 expected; 1 missing, first SENTETIK-HASTA-0001 B-SENTETIK-HASTA-0001-001 2026-07-15 L101850\|CRP \(kantitatif\)",
+            rf"{LAB_ROWS - 1} rows for {LAB_ROWS} expected; 1 missing, first SENTETIK-HASTA-0001 B-SENTETIK-HASTA-0001-001 2026-07-15 L101850\|CRP \(kantitatif\)",
             id="missing_result_set",
         ),
         pytest.param(
@@ -2648,7 +2653,7 @@ def _put_the_crp_set_after_the_hemogram(lab: pl.DataFrame) -> pl.DataFrame:
         ),
         pytest.param(
             _put_the_crp_set_after_the_hemogram,
-            r"222 rows for 222 expected; the rows are in a different order",
+            rf"{LAB_ROWS} rows for {LAB_ROWS} expected; the rows are in a different order",
             id="same_rows_in_another_order",
         ),
     ],
@@ -2673,7 +2678,7 @@ def test_mutation_two_copies_of_one_key_are_counted_not_merged(built_showcase: B
     mutated = {**clean, "lab_clean.parquet": _drop_rows(lab, second)}
     with pytest.raises(
         CleanTableError,
-        match=r"221 rows for 222 expected; 1 missing, first .* L107360\|hs-Troponin I",
+        match=rf"{LAB_ROWS - 1} rows for {LAB_ROWS} expected; 1 missing, first .* L107360\|hs-Troponin I",
     ):
         validate_clean_tables(mutated, built_showcase.tables)
     duplicated = pl.concat([lab, lab.slice(second, 1)])
@@ -4213,4 +4218,4 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
                     assert got == expected, (spec.key, state.name, sex, k)
                     assert band[0] - 1e-9 <= got <= band[1] + 1e-9, (spec.key, state.name, sex, k)
                     checked += 1
-    assert (checked, refused) == (984, 12)
+    assert (checked, refused) == (1014, 12)

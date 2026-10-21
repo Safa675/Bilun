@@ -186,6 +186,7 @@ LAB_HARD_BOUNDS: dict[tuple[str, str], tuple[float, float]] = {
     # single-parameter tests
     ("L101850", "CRP (kantitatif)"): (0.0, 500.0),
     ("L106240", "Prokalsitonin"): (0.0, 500.0),
+    ("L104890", "Laktat"): (0.2, 30.0),
     ("L102090", "D-dimer"): (0.0, 35000.0),
     ("L107360", "hs-Troponin I"): (0.0, 100000.0),
     ("L102890", "Glukoz"): (20.0, 1500.0),

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 import sys
+from collections import Counter
 from collections.abc import Callable
 from datetime import date, timedelta
 from functools import cached_property
@@ -23,6 +24,7 @@ import yaml
 
 from .loader import PATHWAYS_DIR, PathwayLoadError, load_pathway
 from .schema import (
+    ICU_KINDS,
     Pathway,
     Problem,
     anchors_for,
@@ -44,7 +46,7 @@ PACKAGE_WINDOW_DAYS = {"A": 15, "B": 10, "C": 8, "D": 5, "E": 3}
 
 # EK-2B chapter groups (ek2b_code_chapter.parquet group_id) a line kind may sit in.
 KIND_GROUPS = [
-    ("1", "bed"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
+    ("1", "bed"), ("1", "icu_day"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
     ("5", "anaesthesia"), ("5", "procedure"), ("6", "operation"), ("7", "procedure"),
     ("8", "imaging"), ("9", "lab"), ("10", "lab"),
 ]  # fmt: skip
@@ -260,9 +262,16 @@ def check_procedures(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
 
 def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """procedure.kind: the declared kind must fit the code's EK-2B chapter and the code sets."""
+    """procedure.kind: the declared kind must fit the code's EK-2B chapter and the code sets.
+
+    The two ICU kinds are bed-day lines of their own: `icu_day` is the day rate 510090 (EK-2B chapter 1)
+    and `icu_package` an EK-2C ICU package (P552001-3, P552006-8; a package has no EK-2B chapter).
+    """
     beds, anaesthesia = cat.code_sets["beds"], cat.code_sets["anaesthesia"]
     ward_beds = [beds["ward_day"]["code"], beds["day_bed"]["code"]]
+    icu_packages = [
+        tier["code"] for group in cat.code_sets["icu_packages"].values() for tier in group.values()
+    ]
     anaesthesia_codes = [
         *anaesthesia["single"].values(),
         *anaesthesia["multiple_operations"].values(),
@@ -270,6 +279,8 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     kind, code = pl.col("kind"), pl.col("code")
     fits_code = (
         pl.when(kind == "bed").then(code.is_in(ward_beds))
+        .when(kind == "icu_day").then(code == beds["icu_day_fee_for_service"]["code"])
+        .when(kind == "icu_package").then(code.is_in(icu_packages))
         .when(kind == "companion").then(code == beds["companion"]["code"])
         .when(kind == "anaesthesia").then(code.is_in(anaesthesia_codes))
         .when(kind == "package").then(code.str.starts_with("P"))
@@ -281,8 +292,8 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
         occ.join(cat.chapters, on="code", how="left")
         .join(allowed, on=["group_id", "kind"], how="left")
         # a code missing from the chapter table is procedure.in_force's business
-        .filter((kind == "package") | pl.col("group_id").is_not_null())
-        .filter(~fits_code | ((kind != "package") & pl.col("paired").is_null()))
+        .filter(kind.is_in(["package", "icu_package"]) | pl.col("group_id").is_not_null())
+        .filter(~fits_code | (~kind.is_in(["package", "icu_package"]) & pl.col("paired").is_null()))
     )
     return [
         Problem(
@@ -383,7 +394,12 @@ def check_specialties(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
 
 def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """package.mode: a package bill holds package lines (and linked materials), nothing else."""
+    """package.mode: a package bill holds package lines (and linked materials), nothing else.
+
+    An ICU package (kind icu_package) is no surgical package: it is a per-day bed line billed beside
+    itemized lines (SUT 2.4.4.H.(2)), so an itemized pathway may hold it. A package bill may not hold
+    an ICU line of either kind: the engine prices a package stay by the package, not by ICU days.
+    """
     if pathway.billing_mode == "itemized":
         return [
             Problem(
@@ -401,7 +417,11 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
 
 def check_package_window(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """package.window: the longest stay ends inside the package window of each package's group."""
+    """package.window: the longest stay ends inside the package window of each package's group.
+
+    An ICU package (kind icu_package) has no EK-2C group and no window: it is one bed day, and the
+    days it may sit on are `icu.day_pattern`'s business. Only the surgical packages are tested here.
+    """
     packages = [p for p in pathway.procedures if p.kind == "package" and p.code]
     if pathway.billing_mode != "package" or pathway.nights is None or not packages:
         return []
@@ -580,11 +600,65 @@ def check_days(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 STAY_LINE_END = {"bed": 0, "companion": -1}
 
 
+def _icu_lines(pathway: Pathway) -> list:
+    return [line for line in pathway.procedures if line.kind in ICU_KINDS]
+
+
+def _days_of(lines: list, anchors: dict[str, int]) -> list[int]:
+    return sorted(d for line in lines for expr in line.days for d in resolve_days(expr, anchors))
+
+
+def _icu_coverage_problems(pathway: Pathway) -> list[Problem]:
+    """The ICU lines are the bed lines of an ICU stay: admit..discharge-1, once each, none on the transfer day.
+
+    Intensive care is billed for `discharge - admission` days (src/bilun/domain/prose_rules/icu_puani.py),
+    so the discharge day is the transfer day and carries no ICU line. A ward bed beside ICU days would
+    make the engine count the whole stay as ICU days, so a ward bed line is a defect on an ICU stay.
+    """
+    lines = _icu_lines(pathway)
+    ids = ", ".join(line.id for line in lines)
+    out = [
+        Problem(
+            "stay.coverage",
+            f"procedures[{line.id}]",
+            "a ward bed line on an ICU stay: the ICU lines are the bed lines of the bill",
+        )
+        for line in pathway.procedures
+        if line.kind == "bed"
+    ]
+    if pathway.nights is None:
+        return out + [
+            Problem("stay.coverage", f"procedures[{ids}]", "an ICU line needs a stay, not an ER visit")
+        ]
+    faults = []
+    for nights in _stay_cases(pathway):
+        seen = Counter(_days_of(lines, anchors_for(pathway, nights)))
+        missing = [d for d in range(nights) if not seen[d]]
+        twice = sorted(d for d, n in seen.items() if n > 1)
+        transfer = seen[nights]
+        if missing or twice or transfer:
+            parts = [
+                (f"no ICU line on days {missing}", bool(missing)),
+                (f"two ICU lines on days {twice}", bool(twice)),
+                ("an ICU line on the discharge day", bool(transfer)),
+            ]
+            faults.append(f"{nights} nights: " + ", ".join(text for text, bad in parts if bad))
+    if faults:
+        why = "ICU lines must cover admit..discharge-1 once each and not the discharge day (the transfer day)"
+        out.append(Problem("stay.coverage", f"procedures[{ids}]", f"{why}; {'; '.join(faults)}"))
+    return out
+
+
 def check_stay_coverage(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """stay.coverage: a bed line covers admit..discharge, a companion admit..discharge-1, at every stay."""
-    out = []
+    """stay.coverage: a bed line covers admit..discharge, a companion admit..discharge-1, at every stay.
+
+    On an ICU stay (a line of kind icu_day or icu_package) the ICU lines take the bed lines' place:
+    they cover admit..discharge-1 once each, and a ward bed line is a defect.
+    """
+    icu_stay = bool(_icu_lines(pathway))
+    out = _icu_coverage_problems(pathway) if icu_stay else []
     for line in pathway.procedures:
-        if line.kind not in STAY_LINE_END:
+        if line.kind not in STAY_LINE_END or (icu_stay and line.kind == "bed"):
             continue
         faults = []
         for nights in _stay_cases(pathway):
@@ -599,6 +673,41 @@ def check_stay_coverage(pathway: Pathway, cat: Catalogs) -> list[Problem]:
             end = "discharge" + ("-1" if line.kind == "companion" else "")
             message = f"a {line.kind} line must cover admit..{end}; {'; '.join(faults)}"
             out.append(Problem("stay.coverage", f"procedures[{line.id}]", message))
+    return out
+
+
+def check_icu_day_pattern(pathway: Pathway, cat: Catalogs) -> list[Problem]:
+    """icu.day_pattern: 510090 on the first and the last ICU day, one package tier on every day between.
+
+    SUT 2.4.4.H.(8) (C001243): the first day and the day the patient leaves intensive care are billed
+    per service (510090), the days between from EK-2/C. The engine prices the intermediate days at the
+    tier of the first package line it finds, so one tier per stay. The ICU days of a bill are
+    admit..discharge-1; a one-night stay has one day (the first is the last), a two-night stay has no
+    day between.
+    """
+    day_lines = [line for line in pathway.procedures if line.kind == "icu_day"]
+    package_lines = [line for line in pathway.procedures if line.kind == "icu_package"]
+    if pathway.nights is None or not (day_lines or package_lines):
+        return []  # stay.coverage says an ICU line needs a stay
+    faults = []
+    for nights in _stay_cases(pathway):
+        anchors = anchors_for(pathway, nights)
+        expected = {
+            "510090": sorted({0, nights - 1}),
+            "package": list(range(1, nights - 1)),
+        }
+        got = {"510090": _days_of(day_lines, anchors), "package": _days_of(package_lines, anchors)}
+        for name, want in expected.items():
+            if got[name] != want:
+                faults.append(f"{nights} nights: {name} on days {got[name]}, expected {want}")
+    out = []
+    if faults:
+        where = f"procedures[{', '.join(line.id for line in (*day_lines, *package_lines))}]"
+        out.append(Problem("icu.day_pattern", where, "; ".join(faults)))
+    codes = sorted({line.code for line in package_lines})
+    if len(codes) > 1:
+        message = f"{', '.join(codes)}: one package tier per stay (the engine prices every day at the first)"
+        out.append(Problem("icu.day_pattern", f"procedures[{', '.join(l.id for l in package_lines)}]", message))
     return out
 
 
@@ -730,6 +839,7 @@ CHECK_FUNCTIONS: tuple[Callable[[Pathway, Catalogs], list[Problem]], ...] = (
     check_sessions,
     check_days,
     check_stay_coverage,
+    check_icu_day_pattern,
     check_drug_courses,
     check_drug_indications,
     check_pins,

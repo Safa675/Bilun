@@ -145,19 +145,42 @@ def _catalog_totals(lines: Iterable[ProcedureClaimLine]) -> dict[str, int]:
     }
 
 
+# The ICU day packages (EK-2/C P552001-3 and P552006-8). The EK-2C-1 list holds them at 100, but there
+# the 100 is the +100 % uplift of a 3rd-level facility (SUT 2.2.(20), `icu_puani.py::_resolve_ilave_oran`),
+# not a patient copay. The cohort's composer bills every line at payable == billed with the flag off,
+# so the copay-rate check reads each ICU day as a flag and a rate mismatch. That is how the check
+# reads a line of that list, not a planned inconsistency of the cohort: the assertion below leaves
+# the ICU days out and counts them on their own.
+_ICU_PACKAGE_CODES = frozenset({"P552001", "P552002", "P552003", "P552006", "P552007", "P552008"})
+
+
 def test_synthetic_ek2c1_violations_are_demo_scoped() -> None:
     """The cohort's EK-2C-1 totals equal the catalog's, and the only planned ones are none.
 
     The planned inconsistencies of the cohort are its injected faults; none of the registry's
-    fault rules is a copay-rate rule, so the cohort carries no flag or rate mismatch.
+    fault rules is a copay-rate rule, so the cohort carries no flag or rate mismatch, apart from the
+    ICU days (see `_ICU_PACKAGE_CODES`), which are counted separately.
     """
     dataset = load_sut_claim_dataset()
     assert all("copay" not in fault["engine_rule"] for fault in cohort.load_registry()["faults"])
 
-    totals = _exposure_totals(dataset.procedure_lines_by_patient)
+    without_icu = {
+        patient_id: [line for line in lines if line.procedure_code not in _ICU_PACKAGE_CODES]
+        for patient_id, lines in dataset.procedure_lines_by_patient.items()
+    }
+    totals = _exposure_totals(without_icu)
 
-    assert totals == _catalog_totals(dataset.procedure_lines.values())
+    assert totals == _catalog_totals(line for lines in without_icu.values() for line in lines)
     assert totals["flag_mismatches"] == totals["rate_mismatches"] == 0
+
+    # The ICU days alone: each is listed, and each reads as one flag and one rate mismatch.
+    icu_days = sum(
+        line.procedure_code in _ICU_PACKAGE_CODES and _evaluable(line)
+        for line in dataset.procedure_lines.values()
+    )
+    all_totals = _exposure_totals(dataset.procedure_lines_by_patient)
+    assert all_totals == _catalog_totals(dataset.procedure_lines.values())
+    assert all_totals["flag_mismatches"] == all_totals["rate_mismatches"] == icu_days > 0
 
 
 # (inside a package, claim flag on, share of the billed amount that SGK pays) of a control line.

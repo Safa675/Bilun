@@ -42,6 +42,7 @@ from src.bilun.domain.claims.schema import (
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
+from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
@@ -580,6 +581,31 @@ def _direct_rows_s9(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s11(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return [
+        _keep(
+            o,
+            (
+                "claim_id",
+                "icu_days",
+                "intermediate_package",
+                "intermediate_days",
+                "day_rate_puan",
+                "intermediate_puan_base",
+                "ilave_oran_pct",
+                "ilave_oran_reason",
+                "total_puan",
+                "total_try",
+                "actual_billed_try",
+                "recoverable_uplift_try",
+                "rule_id",
+                "sut_section_id",
+            ),
+        )
+        for o in detect_icu_puani_opportunities(list(ctx.claims), list(ctx.procedure_lines))
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -590,6 +616,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S7": _direct_rows_s7,
     "S8": _direct_rows_s8,
     "S9": _direct_rows_s9,
+    "S11": _direct_rows_s11,
 }
 
 

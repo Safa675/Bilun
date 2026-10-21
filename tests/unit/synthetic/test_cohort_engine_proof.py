@@ -44,12 +44,13 @@ from src.bilun.domain.claims.patient_context import (
     PatientClaimContext,
     build_patient_claim_context,
 )
+from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
 
 _OUT_DIR = DEFAULT_OUT_DIR
 _CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
-_STORIES: tuple[str, ...] = tuple(f"S{n}" for n in range(1, 10))
+_STORIES: tuple[str, ...] = tuple(cohort.stories())
 
 
 @dataclass(frozen=True)
@@ -511,13 +512,14 @@ def test_prove_showcase_has_no_mismatch(
     assert sp.mismatches == ()
 
 
-def test_cli_main_prints_nine_lines_and_returns_zero(
+def test_cli_main_prints_one_line_per_story_and_returns_zero(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     rc = main([])
     captured = capsys.readouterr()
     lines = [ln for ln in captured.out.strip().splitlines() if ln.strip()]
-    assert len(lines) == 9
-    assert "note:" in lines[-2] and "note:" in lines[-1]  # S8 and S9 carry a divergence
+    assert len(lines) == len(_STORIES)
+    # S8 and S9 carry a divergence between the report and the record; S11 does not
+    assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9"}
     assert captured.err == ""
     assert rc == 0

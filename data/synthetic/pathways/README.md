@@ -17,7 +17,7 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
 | `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S9.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
+| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S11.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
 
 ## Read a pathway top to bottom
 
@@ -65,6 +65,7 @@ Every expression must land inside the stay for the shortest, the longest and the
 | `package` | EK-2C (P-codes) | the only kind in a package pathway |
 | `operation` | EK-2B chapter 6 | itemized pathways |
 | `bed`, `companion` | 510010 or 510120; 510121 | |
+| `icu_day`, `icu_package` | 510090 (EK-2B chapter 1); an EK-2C ICU package P552001-3 or P552006-8 | an intensive-care stay (below); itemized pathways only |
 | `anaesthesia` | the 14 codes of `code_sets.yaml` | needs `group` and `operations` (below) |
 | `exam` | EK-2B chapter 2 | |
 | `lab` | EK-2B chapters 9 and 10 | `items:` lists a panel (several codes, same days, quantity and branch); every `L` code must be in `lab_reference.csv` |
@@ -72,6 +73,10 @@ Every expression must land inside the stay for the shortest, the longest and the
 | `procedure` | EK-2B chapters 3, 4, 5 and 7 | |
 
 `specialty` is an EK-2A branch code; a line without one gets the department's. Name a branch only where it differs (anaesthesia 3100, radiology 3300, neurology 1300). A **package pathway has package lines and linked materials only**: bed, companion, exams, labs, imaging, anaesthesia and drugs are inside the package (SUT 2.2.2.B-1(1), C000685 to C000699). The longest stay must end inside the package window of its group (A 15 days, B 10, C 8, D 5, E 3, counted from the package day; C000702 to C000706).
+
+### Intensive care (`icu_day`, `icu_package`)
+
+SUT 2.4.4.H (C001234, C001243): the first ICU day and the day the patient leaves are billed per service with the EK-2B day rate 510090 (`icu_day`), the days between from EK-2C with an ICU package (`icu_package`; one tier per stay). The engine counts the ICU days of a bill as `discharge - admission` (`icu_puani.py`), so the ICU lines are the bed lines of the bill and cover `admit..discharge-1` once each; the discharge day is the transfer day and carries no ICU line. With nights N the 510090 lines sit on days 0 and N-1 and the package lines on days 1..N-2, which the days `[admit, discharge-1]` and `admit+1..discharge-2` give at every stay (`icu.day_pattern`, `stay.coverage`; `nights.min` is 3). A ward `bed` line beside ICU lines is a defect (the engine would count the whole stay as ICU days). An ICU package is no surgical package: an itemized pathway may hold it (`package.mode`), a package pathway may not hold an ICU line, and the package window and its EK-2C group do not apply (an ICU package has no group; `package.window`). `procedure.kind` ties `icu_day` to 510090 and `icu_package` to the ICU packages of `code_sets.yaml`. A fault may set a `billed_ratio` on an `icu_package` line (`fault.billed_ratio_target`). The clean S11 pathway is `urosepsis_septic_shock_icu_stay.yaml`.
 
 ### Anaesthesia
 
@@ -124,9 +129,10 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | `drug.indication`, `drug.course` | an indication that is not a diagnosis of the pathway or is optional; a `per_night` drug that does not start on admit; a course that outlasts the stay (the shortest course at the shortest stay, and a pinned course at the pinned stay) |
 | `icd.exists`, `icd.active`, `icd.leaf`, `icd.name`, `icd.sex_gate` | the SKRS table; a sex-gated code with a sex list that allows the other sex |
 | `lab.in_table`, `lab.name`, `specialty.exists` | an `L` code absent from `lab_reference.csv` or named differently; an unknown EK-2A branch |
-| `package.mode`, `package.window` | a package pathway with a line the package includes (or the reverse); a stay past the package window |
+| `package.mode`, `package.window` | a package pathway with a line the package includes, an ICU line too (or the reverse; an ICU package is no surgical package); a stay past the package window (an ICU package has no window) |
+| `icu.day_pattern` | an ICU stay whose 510090 lines are not on the first and the last ICU day, whose package lines are not on every day between, or that mixes package tiers |
 | `anaesthesia.group`, `anaesthesia.code`, `session.primary`, `session.order` | the puan band; the group's code; the primary operation of a session |
-| `pins.*`, `days.in_stay`, `days.duplicate`, `stay.coverage` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day; a bed line off `admit..discharge` or a companion line off `admit..discharge-1` |
+| `pins.*`, `days.in_stay`, `days.duplicate`, `stay.coverage` | pins outside the ranges, unknown or non-optional ids, missing pins, dates outside the window; days outside the stay or twice on one day; a bed line off `admit..discharge` or a companion line off `admit..discharge-1`; on an ICU stay, ICU lines off `admit..discharge-1`, on the discharge day, twice on a day, or a ward bed beside them |
 | `source.clause_exists`, `source.sut_cites`, `window.valid` | a cited clause that does not exist or is not in force; `sut` without a citation; a window outside the default |
 
 ## Add a pathway

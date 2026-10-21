@@ -28,6 +28,7 @@ from scripts.synthetic.pathways.checks import (
     _stay_cases,
     _with_groups,
     check_anaesthesia,
+    check_package_mode,
     check_package_window,
     identity_problems,
     in_force,
@@ -52,6 +53,7 @@ S3 = "lumbar_stenosis_decompression_itemized"
 S5 = "femoral_neck_fracture_cemented_hemiarthroplasty_package"
 S6 = "aspiration_pneumonia_parkinson_ward"
 S7 = "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out"
+S11 = "urosepsis_septic_shock_icu_stay"
 
 
 @pytest.fixture(scope="module")
@@ -515,6 +517,32 @@ def set_pins(raw: dict, **changes) -> None:
     raw["showcase"].update(changes)
 
 
+def fixed_nights(raw: dict, nights: int = 5) -> None:
+    """One stay length, so that a day range that is empty at the shortest stay does not hide the defect."""
+    raw["nights"].update(min=nights, max=nights)
+    set_pins(raw, nights=nights)
+
+
+def second_icu_tier(raw: dict, cat: Catalogs) -> None:
+    """Split the ICU package days between two tiers: P552002 on the first two, P552003 on the third."""
+    line(raw, "icu_package").update(days="admit+1..admit+2")
+    raw["procedures"].append(
+        {
+            "id": "icu_package_3",
+            "kind": "icu_package",
+            "code": "P552003",
+            "name": cat.ek2c.filter(pl.col("code") == "P552003")["name"].unique().item(),
+            "days": "admit+3..discharge-2",
+            "basis": "judgment",
+            "source": FIXTURE,
+        }
+    )
+
+
+def icu_line(ident: str, kind: str, code: str, name: str, days) -> dict:
+    return {"id": ident, "kind": kind, "code": code, "name": name, "days": days, "basis": "judgment", "source": FIXTURE}
+
+
 def optional_and_pinned_in(raw: dict, icd: str) -> None:
     """Make a diagnosis optional and put it in the showcase bill."""
     diagnosis(raw, icd)["optional"] = {"probability": 0.9, "basis": "judgment", "source": FIXTURE}
@@ -599,6 +627,10 @@ CASES = [
     Case("procedure.in_force", S2, lambda r, c: r["performed"][0].update(code="801729"), prepare=with_performed, label="performed line"),
     Case("procedure.name", S1, lambda r, c: line(r, "appendectomy_package").update(name="Appendektomi"), label="package"),
     Case("procedure.kind", S2, lambda r, c: line(r, "nebulizer").update(kind="lab")),
+    Case("procedure.kind", S11, lambda r, c: line(r, "icu_end_days").update(code="510010", name="Standart yatak tarifesi"), label="an icu_day on the ward bed"),
+    Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="P610131", name=c.ek2c.filter(pl.col("code") == "P610131")["name"].unique().item()), label="an icu_package on a surgical package"),
+    Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="510090", name="Yoğun bakım"), label="an icu_package on the day rate"),
+    Case("procedure.kind", S2, lambda r, c: line(r, "bed").update(code="510090", name="Yoğun bakım"), label="a ward bed on the ICU day rate"),
     Case("material.in_force", S1, lambda r, c: r["materials"][0].update(code="AP9999"), prepare=with_material),
     Case("material.name", S1, lambda r, c: r["materials"][0].update(name="KALÇA | FEMORAL STEM"), prepare=with_material),
     Case("drug.in_force", S2, lambda r, c: r.pop("window"), label="repealed on 2026-08-29"),
@@ -628,6 +660,7 @@ CASES = [
     Case("package.mode", S1, lambda r, c: r["procedures"].append({"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi", "days": "admit..discharge", "basis": "judgment", "source": FIXTURE}), label="bed in a package"),
     Case("package.mode", S1, lambda r, c: r.setdefault("drugs", []).append({"id": "ceftriaxone", "barcode": "8699508270224", "name": "IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU", "inn": "seftriakson", "unit": "vial", "per_box": 1, "day": "admit", "qty": 1, "basis": "judgment", "source": FIXTURE}), label="drug in a package"),
     Case("package.mode", S2, lambda r, c: r["procedures"].append({"id": "package", "kind": "package", "code": "P610131", "name": "Appendektomi, laparoskopik", "days": "admit", "basis": "judgment", "source": FIXTURE}), label="package in an itemized bill"),
+    Case("package.mode", S11, lambda r, c: r.update(billing_mode="package"), label="ICU lines in a package bill"),
     Case("package.window", S1, lambda r, c: r["nights"].update(max=12), label="a stay past the 8-day window"),
     Case("package.window", S1, lambda r, c: line(r, "appendectomy_package").update(code="P552001", name=c.ek2c.filter(pl.col("code") == "P552001")["name"].unique().item()), label="a package without a group"),
     Case("anaesthesia.group", S2, lambda r, c: line(r, "anaesthesia").update(group="C", code="550170", name="Anestezi C grubu"), prepare=with_anaesthesia),
@@ -659,6 +692,17 @@ CASES = [
     Case("stay.coverage", S2, lambda r, c: line(r, "companion").update(days="admit..admit+4"), label="a companion line fixed to 5 nights"),
     Case("stay.coverage", S2, lambda r, c: line(r, "bed").update(days="admit..discharge-1"), label="a bed line that drops the discharge day"),
     Case("stay.coverage", S2, lambda r, c: line(r, "companion").update(days="admit..discharge"), label="a companion line on the discharge day"),
+    # --- an intensive-care stay: the ICU lines are the bed lines of the bill (days 0..N-1, not the transfer day)
+    Case("stay.coverage", S11, lambda r, c: line(r, "icu_end_days").update(days=["admit", "discharge-2"]), label="an ICU stay that stops a day early", also=("icu.day_pattern",)),
+    Case("stay.coverage", S11, lambda r, c: line(r, "icu_end_days").update(days=["admit", "discharge"]), label="a 510090 on the transfer day", also=("icu.day_pattern",)),
+    Case("stay.coverage", S11, lambda r, c: r["procedures"].append(icu_line("icu_again", "icu_package", "P552002", "İkinci basamak yoğun bakım hastası", "admit+1")), label="two ICU lines on one day", also=("icu.day_pattern",)),
+    Case("stay.coverage", S11, lambda r, c: r["procedures"].append(icu_line("icu_transfer", "icu_package", "P552002", "İkinci basamak yoğun bakım hastası", "discharge")), label="an ICU line on the transfer day, every other day covered", also=("icu.day_pattern",)),
+    Case("stay.coverage", S11, lambda r, c: r["procedures"].append({"id": "bed", "kind": "bed", "code": "510010", "name": "Standart yatak tarifesi", "days": "admit..discharge", "basis": "judgment", "source": FIXTURE}), label="a ward bed beside ICU lines"),
+    Case("stay.coverage", S7, lambda r, c: r["procedures"].append(icu_line("icu_visit", "icu_day", "510090", "Yoğun bakım", "admit")), label="an ICU line on an ER-only visit"),
+    Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_end_days").update(days=["admit", "admit+1", "discharge-1"]), line(r, "icu_package").update(days="admit+2..discharge-2")), label="a 510090 on a middle day"),
+    Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_end_days").update(days="admit"), line(r, "icu_package").update(days="admit+1..discharge-1")), label="no 510090 on the last day"),
+    Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), line(r, "icu_package").update(days="admit+1..admit+2")), label="a package day missing between the end days", also=("stay.coverage",)),
+    Case("icu.day_pattern", S11, lambda r, c: (fixed_nights(r), second_icu_tier(r, c)), label="two package tiers in one stay"),
     Case("source.clause_exists", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62; C999999 says so in some other place."), label="no such clause"),
     Case("source.clause_exists", S2, lambda r, c: line(r, "bed").update(source="Kılavuz p.62; C000644 (repealed text of 2.2.2(1))."), label="not in force"),
     Case("source.clause_exists", S2, lambda r, c: r["window"].update(source="KLACID 500 MG IV leaves EK-4A on 2026-08-29, as C999999 says."), label="a window source"),
@@ -895,3 +939,54 @@ def test_a_band_table_in_the_middle_of_the_window_is_probed(catalogs: Catalogs) 
     assert [(p.check, "on 2026-03-01 " in p.message) for p in found] == [
         ("anaesthesia.group", True)
     ]
+
+
+# --- the edges of the ICU grammar --------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("nights", "end_days"),
+    [
+        pytest.param(1, "admit", id="one night: the first ICU day is the last"),
+        pytest.param(2, ["admit", "discharge-1"], id="two nights: no day between"),
+    ],
+)
+def test_a_short_icu_stay_has_the_end_days_and_no_package_day(
+    nights, end_days, catalogs: Catalogs, tmp_path
+) -> None:
+    raw = _raw(S11)
+    raw["procedures"] = [p for p in raw["procedures"] if p["id"] != "icu_package"]
+    line(raw, "icu_end_days").update(days=end_days)
+    fixed_nights(raw, nights)
+    assert _problems(raw, catalogs, tmp_path) == []
+
+
+def test_a_one_night_stay_cannot_use_the_two_end_days(catalogs: Catalogs, tmp_path) -> None:
+    """[admit, discharge-1] is day 0 twice at one night: a line may not land twice on a day."""
+    raw = _raw(S11)
+    raw["procedures"] = [p for p in raw["procedures"] if p["id"] != "icu_package"]
+    fixed_nights(raw, 1)
+    found = {p.check for p in _problems(raw, catalogs, tmp_path)}
+    assert found == {"days.duplicate", "stay.coverage", "icu.day_pattern"}  # the one line is on day 0 twice
+
+
+def test_the_package_window_leaves_an_icu_package_alone(catalogs: Catalogs) -> None:
+    """An ICU package has no EK-2C group, so it has no window; the same code as a surgical package has none either."""
+    raw = _raw(S11)
+    raw["billing_mode"] = "package"
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S11}.yaml")
+    assert check_package_window(pathway, catalogs) == []
+    line(raw, "icu_package")["kind"] = "package"
+    as_package = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S11}.yaml")
+    found = check_package_window(as_package, catalogs)
+    assert [p.check for p in found] == ["package.window"] and "no group in EK-2C" in found[0].message
+
+
+def test_a_package_bill_names_each_icu_line_as_a_line_the_package_includes(catalogs: Catalogs) -> None:
+    """In a package bill an ICU line of either kind is inside the package, not only a lab or a drug."""
+    raw = _raw(S11)
+    raw["billing_mode"] = "package"
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S11}.yaml")
+    named = {p.where for p in check_package_mode(pathway, catalogs)}
+    assert {"procedures[icu_end_days]", "procedures[icu_package]"} <= named
+

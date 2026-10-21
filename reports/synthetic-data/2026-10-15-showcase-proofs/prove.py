@@ -19,6 +19,7 @@ from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indi
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
+from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
@@ -111,6 +112,12 @@ def direct(story: str, ctx) -> list[dict]:
                           "sut_section_id"))
                 for o in detect_session_underbilling_opportunities(
                     procs, claim_id=claim.claim_id, cross_specialty=None, claim=claim)]
+    if story == "S11":
+        return [_keep(o, ("claim_id", "icu_days", "intermediate_package", "intermediate_days", "day_rate_puan",
+                          "intermediate_puan_base", "ilave_oran_pct", "ilave_oran_reason", "total_puan",
+                          "total_try", "actual_billed_try", "recoverable_uplift_try", "rule_id",
+                          "sut_section_id"))
+                for o in detect_icu_puani_opportunities(claims, procs)]
     raise KeyError(story)
 
 
@@ -176,7 +183,7 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4", "S9"):
+    if story in ("S2", "S3", "S4", "S9", "S11"):
         return total("recoverable_uplift_try")
     if story == "S5":
         return total("risk_amount")

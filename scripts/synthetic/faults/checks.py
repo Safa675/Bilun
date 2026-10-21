@@ -246,12 +246,15 @@ def check_mutations(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
                         )
                     )
                     continue
-                if proc.session_role is None:
+                # A session ratio belongs to a session operation; an ICU package day is billed
+                # at a price shortfall instead, so a line of kind icu_package takes a ratio too.
+                if proc.session_role is None and proc.kind != "icu_package":
                     out.append(
                         Problem(
                             "fault.billed_ratio_target",
                             f"{where}.entry_id",
-                            f"procedure {op.entry_id!r} in {pathway.id} has no session_role",
+                            f"procedure {op.entry_id!r} in {pathway.id} has no session_role"
+                            " and is no icu_package line",
                         )
                     )
 

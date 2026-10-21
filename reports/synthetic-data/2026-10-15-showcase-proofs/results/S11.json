@@ -1,0 +1,468 @@
+{
+ "story": "S11",
+ "clean": {
+  "total_billed": "14162.55",
+  "rows": [
+   {
+    "date": "2026-06-02",
+    "code": "510090",
+    "name": "Yoğun bakım",
+    "qty": 1,
+    "unit": "742.60",
+    "billed": "742.60",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-03",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "4059.89",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-04",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "4059.89",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-05",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "4059.89",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-06",
+    "code": "510090",
+    "name": "Yoğun bakım",
+    "qty": 1,
+    "unit": "742.60",
+    "billed": "742.60",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L106240",
+    "name": "Prokalsitonin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "167.91",
+    "billed": "167.91",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L104890",
+    "name": "Laktat (Serum/Plazma)",
+    "qty": 1,
+    "unit": "44.75",
+    "billed": "44.75",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "906020",
+    "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
+    "qty": 2,
+    "unit": "65.82",
+    "billed": "131.64",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "905671",
+    "name": "İdrar Kültürü",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "803580",
+    "name": "Üriner sistem US",
+    "qty": 1,
+    "unit": "100.73",
+    "billed": "100.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "A41.9",
+    true
+   ],
+   [
+    "R57.8",
+    false
+   ],
+   [
+    "N39.0",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "claim_id": "C-SH11",
+    "icu_days": 5,
+    "intermediate_package": "P552002",
+    "intermediate_days": 3,
+    "day_rate_puan": 1252.27,
+    "intermediate_puan_base": 6846.35,
+    "ilave_oran_pct": 0.0,
+    "ilave_oran_reason": "not_sinif_3",
+    "total_puan": 23043.59,
+    "total_try": 13664.87,
+    "actual_billed_try": 13664.87,
+    "recoverable_uplift_try": 0.0,
+    "rule_id": "icu_puani_510090_p55200x",
+    "sut_section_id": "2.4.4.H"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "faulty": {
+  "total_billed": "8072.73",
+  "rows": [
+   {
+    "date": "2026-06-02",
+    "code": "510090",
+    "name": "Yoğun bakım",
+    "qty": 1,
+    "unit": "742.60",
+    "billed": "742.60",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-03",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "2029.95",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-04",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "2029.95",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-05",
+    "code": "P552002",
+    "name": "İkinci basamak yoğun bakım hastası",
+    "qty": 1,
+    "unit": "4059.89",
+    "billed": "2029.95",
+    "source": "EK-2C valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-06",
+    "code": "510090",
+    "name": "Yoğun bakım",
+    "qty": 1,
+    "unit": "742.60",
+    "billed": "742.60",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L106240",
+    "name": "Prokalsitonin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "167.91",
+    "billed": "167.91",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "L104890",
+    "name": "Laktat (Serum/Plazma)",
+    "qty": 1,
+    "unit": "44.75",
+    "billed": "44.75",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "906020",
+    "name": "Kan kültürü (Aerob-anaerob) otomatik sistem",
+    "qty": 2,
+    "unit": "65.82",
+    "billed": "131.64",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "905671",
+    "name": "İdrar Kültürü",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-02",
+    "code": "803580",
+    "name": "Üriner sistem US",
+    "qty": 1,
+    "unit": "100.73",
+    "billed": "100.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "A41.9",
+    true
+   ],
+   [
+    "R57.8",
+    false
+   ],
+   [
+    "N39.0",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "claim_id": "C-SH11",
+    "icu_days": 5,
+    "intermediate_package": "P552002",
+    "intermediate_days": 3,
+    "day_rate_puan": 1252.27,
+    "intermediate_puan_base": 6846.35,
+    "ilave_oran_pct": 0.0,
+    "ilave_oran_reason": "not_sinif_3",
+    "total_puan": 23043.59,
+    "total_try": 13664.87,
+    "actual_billed_try": 7575.05,
+    "recoverable_uplift_try": 6089.82,
+    "rule_id": "icu_puani_510090_p55200x",
+    "sut_section_id": "2.4.4.H"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 6089.82,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "icu_puani",
+   "icu_puani_yogun_bakim",
+   "",
+   6089.82
+  ],
+  [
+   "block",
+   "icu_puani",
+   "icu_puani_510090_p55200x",
+   "",
+   6089.82
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

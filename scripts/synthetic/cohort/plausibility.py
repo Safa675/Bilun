@@ -92,7 +92,7 @@ CHECKS: dict[str, str] = {
     "fit.operation_setting": "a major operation (group A1, A2, A3 or B) on a poliklinik or acil claim",
     "fit.visit_code": "an examination line whose code does not fit the claim type (acil, poliklinik, yatis)",
     # stay: beds, companions and dates
-    "stay.bed_coverage": "an itemised stay without one bed line of quantity 1 on each day admission..discharge, or a day bed on a longer stay",
+    "stay.bed_coverage": "a stay without one bed line of quantity 1 a day, admission..discharge (ICU: ..discharge-1), or a day bed on a stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
     "stay.dates_in_window": "a header whose dates contradict the claim type, or a line date outside the claim window",
     # bill: performed against billed
@@ -435,6 +435,11 @@ class PlausibilityContext:
         return [*fee, *self.icu_codes]
 
     @cached_property
+    def icu_day_codes(self) -> list[str]:
+        """The codes of an ICU day: the day rate 510090 and the ICU packages (the bed lines of an ICU stay)."""
+        return [self.code_sets["beds"]["icu_day_fee_for_service"]["code"], *self.icu_codes]
+
+    @cached_property
     def day_bed_code(self) -> str:
         """The day bed (510120): a bed day only on a stay of less than 24 hours."""
         return self.code_sets["beds"]["day_bed"]["code"]
@@ -769,6 +774,7 @@ class _Bill:
                     "is_icu": code.is_in(ctx.icu_codes),
                     "is_paket": pl.col("procedure_category") == "paket",
                     "is_bed_day": code.is_in(ctx.bed_day_codes),
+                    "is_icu_day": code.is_in(ctx.icu_day_codes),
                     "is_day_bed": code == ctx.day_bed_code,
                     "is_companion": code == ctx.companion_code,
                     "is_anaesthesia": code.is_in(ctx.anaesthesia_codes),
@@ -1218,17 +1224,33 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
 
     A day bed (510120) takes its day like any bed line, but it is for a day case: on a stay whose
     discharge date is not its admission date it is a defect of its own.
+
+    An ICU stay (a claim with a 510090 or an ICU package line) is billed for `discharge - admission`
+    days (icu_puani.py): its ICU lines are its bed lines and cover admission..discharge-1; the
+    discharge day is the transfer day and carries none. A ward bed line on an ICU stay is a defect.
     """
-    stays = bill.headers.filter(
-        (pl.col("claim_type") == "yatis")
-        & ~pl.col("is_package_claim")
-        & pl.col("adm").is_not_null()
-        & pl.col("dis").is_not_null()
-    ).select("claim_id", "adm", "dis")
+    icu_claims = (
+        bill.lines.filter(pl.col("is_icu_day"))
+        .select("claim_id")
+        .unique()
+        .with_columns(pl.lit(True).alias("is_icu_stay"))
+    )
+    stays = (
+        bill.headers.filter(
+            (pl.col("claim_type") == "yatis")
+            & ~pl.col("is_package_claim")
+            & pl.col("adm").is_not_null()
+            & pl.col("dis").is_not_null()
+        )
+        .select("claim_id", "adm", "dis")
+        .join(icu_claims, on="claim_id", how="left")
+        .with_columns(pl.col("is_icu_stay").fill_null(False))
+    )
     days = (
         stays.with_columns(pl.date_ranges("adm", "dis").alias("day"))
         .explode("day")
         .filter(pl.col("day").is_not_null())
+        .filter(~pl.col("is_icu_stay") | (pl.col("day") < pl.col("dis")))
         .select("claim_id", "day")
     )
     beds = (
@@ -1297,7 +1319,20 @@ def check_bed_coverage(bill: _Bill) -> list[Problem]:
             ),
         )
     )
-    return _problems("stay.bed_coverage", pl.concat([missing, twice, quantity, day_bed, outside]))
+    ward_on_icu = (
+        beds.filter(~pl.col("is_icu_day"))
+        .join(stays.filter(pl.col("is_icu_stay")).select("claim_id"), on="claim_id", how="semi")
+        .select(
+            _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
+            _format(
+                "ward bed line {} on an ICU stay; the ICU lines are the bed lines of the bill",
+                pl.col("procedure_code"),
+            ).alias("message"),
+        )
+    )
+    return _problems(
+        "stay.bed_coverage", pl.concat([missing, twice, quantity, day_bed, outside, ward_on_icu])
+    )
 
 
 def check_companion_coverage(bill: _Bill) -> list[Problem]:
