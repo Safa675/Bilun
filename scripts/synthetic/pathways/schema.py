@@ -195,6 +195,11 @@ ICU_KINDS: tuple[str, ...] = ("icu_day", "icu_package")
 # so they are alternatives for one patient-day (src/bilun/domain/billing/claim_yatak_newborn_overlap.py).
 BED_KINDS: tuple[str, ...] = ("bed", "newborn_bed")
 SessionRole = Literal["primary", "same_incision", "separate_incision"]
+# The kinds of a line of one session (SUT 2.2.2.A(5), C000659 to C000662: several procedures in one session,
+# the later ones paid at a share of their puan): a surgical package or operation, and a procedure of EK-2B
+# chapter 7 (an add-on such as the polypectomy of a colonoscopy; `check_procedure_kinds` ties the kind
+# `procedure` to that chapter when it carries a role).
+SESSION_KINDS: tuple[str, ...] = ("package", "operation", "procedure")
 Group = Literal["A1", "A2", "A3", "B", "C", "D", "E"]
 Unit = Literal["box", "vial", "ampoule", "bottle", "bag", "syringe", "tablet", "capsule"]
 
@@ -370,8 +375,8 @@ class Procedure(Sourced):
         elif self.group is not None or self.operations is not None:
             return "group and operations are only for kind anaesthesia"
         if self.session_role is not None:
-            if self.kind not in ("package", "operation"):
-                return "session_role is only for kind package or operation"
+            if self.kind not in SESSION_KINDS:
+                return "session_role is only for kind package, operation or procedure"
             if len(self.days) != 1 or ".." in self.days[0]:
                 return "a line with a session_role has one single day"
         return ""

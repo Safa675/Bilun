@@ -1,0 +1,418 @@
+{
+ "story": "S22",
+ "clean": {
+  "total_billed": "2154.59",
+  "rows": [
+   {
+    "date": "2026-05-11",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "701450",
+    "name": "Kolonoskopi, total",
+    "qty": 1,
+    "unit": "879.72",
+    "billed": "879.72",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "701460",
+    "name": "Kolonoskopik polipektomi",
+    "qty": 1,
+    "unit": "879.72",
+    "billed": "439.86",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K92.2",
+    true
+   ],
+   [
+    "D50.0",
+    false
+   ],
+   [
+    "D12.6",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "1714.73",
+  "rows": [
+   {
+    "date": "2026-05-11",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-11",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-12",
+    "code": "701450",
+    "name": "Kolonoskopi, total",
+    "qty": 1,
+    "unit": "879.72",
+    "billed": "879.72",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K92.2",
+    true
+   ],
+   [
+    "D50.0",
+    false
+   ],
+   [
+    "D12.6",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "type": "missing_add_on_procedure",
+    "trigger_procedure_code": "701450",
+    "expected_addon_procedure_code": "701460",
+    "session_date": "2026-05-12",
+    "addon_factor": 0.3,
+    "trigger_billed_try": 879.72,
+    "list_price_try": 879.72,
+    "actual_billed_try": 0.0,
+    "recoverable_uplift_try": 263.92,
+    "price_methodology": "addon_list_price_x_session_factor",
+    "same_incision": true,
+    "sut_section_id": "2.2.2.A.(5)",
+    "rule_id": "pairing.701450_701460"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 263.92,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "procedure_addon_uplift",
+   "missing_add_on_procedure",
+   "701450",
+   263.92
+  ],
+  [
+   "validate",
+   "procedure_pairing",
+   "pairing.701450_701460",
+   "",
+   263.92
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "tablo15_12_duplicate_test",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_12_duplicate_test",
+   "L107020",
+   0.0
+  ]
+ ]
+}

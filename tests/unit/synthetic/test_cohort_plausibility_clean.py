@@ -1292,21 +1292,14 @@ def test_patients_5_and_8_are_package_bills_with_no_lab_rows(built, clean) -> No
     assert billed.filter(pl.col("patient_id").is_in([PATIENT[5], PATIENT[8]])).height == 0
 
 
-def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_story_s1_adds(
+def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_stories_s1_and_s10_add(
     built, twins
 ) -> None:
-    """S1's fault bills two lab lines and three drug lines on a package claim; the clean tables mirror them."""
-    only_faulty_labs = (
-        built.tables[TABLE_PROCEDURES]
-        .filter(pl.col("procedure_category") == "laboratuvar")
-        .join(
-            twins[TABLE_PROCEDURES].select("procedure_line_id"),
-            on="procedure_line_id",
-            how="anti",
-        )
-    )
-    assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L107020"]
-    assert set(only_faulty_labs["patient_id"]) == {PATIENT[1]}
+    """S1's fault bills two lab lines and three drug lines on a package claim, S10's a third lab line (the manual
+    haematocrit beside the hemogram); the clean tables mirror them."""
+    only_faulty_labs = faulty_only_labs(built, twins)
+    assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L103120", "L107020"]
+    assert set(only_faulty_labs["patient_id"]) == {PATIENT[1], PATIENT[12]}
     only_faulty_drugs = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id"), on="drug_claim_line_id", how="anti"
     )
@@ -1320,7 +1313,18 @@ def faulty_only(built, twins, table: str, line_id: str) -> pl.DataFrame:
     return built.tables[table].join(twins[table].select(line_id), on=line_id, how="anti")
 
 
-def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1(
+def faulty_only_labs(built, twins) -> pl.DataFrame:
+    """The lab lines of the faulty bills that the twin bills do not have, by claim, date and code.
+
+    Not by line id: a line a fault adds in the middle of a bill (S10's manual haematocrit sorts before its hemogram)
+    takes the id of the twin's next line, so the anti-join by id would name the hemogram.
+    """
+    keys = ["claim_id", "procedure_date", "procedure_code"]
+    labs = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "laboratuvar")
+    return labs.join(twins[TABLE_PROCEDURES].select(keys), on=keys, how="anti")
+
+
+def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1_and_s10(
     built, twins, clean, context
 ) -> None:
     """The clean tables are built from the faulty bills, so against the twin they hold S1's extra lines.
@@ -1332,13 +1336,11 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     """
     found = check_clean_plausibility(twins, clean, context=context)
     assert only_ids(found) == {SETS, MATCHES}
-    assert {p.patient_id for p in found} == {PATIENT[1]}
+    assert {p.patient_id for p in found} == {PATIENT[1], PATIENT[12]}
     labs = {p.where: p.message for p in found if p.check == SETS}
     drugs = {p.where: p.message for p in found if p.check == MATCHES}
 
-    lab_lines = faulty_only(built, twins, TABLE_PROCEDURES, "procedure_line_id").filter(
-        pl.col("procedure_category") == "laboratuvar"
-    )
+    lab_lines = faulty_only_labs(built, twins)
     expected_labs = {}
     for line in lab_lines.iter_rows(named=True):
         rows = clean[TABLE_LAB].filter(
@@ -1358,6 +1360,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     assert sorted(expected_labs) == [
         "ISL-F-SENTETIK-HASTA-0001-001-006",  # the CRP of 2026-07-15
         "ISL-F-SENTETIK-HASTA-0001-001-007",  # the hemogram of 2026-07-15
+        "ISL-F-SENTETIK-HASTA-0012-001-002",  # the manual haematocrit of 2026-05-09 (S10)
     ]
     assert labs == dict(expected_labs.values())
 
@@ -1380,16 +1383,19 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
         "ILC-F-SENTETIK-HASTA-0001-001-003",  # PARTEMOL
     ]
     assert drugs == dict(expected_drugs.values())
-    assert len(found) == len(expected_labs) + len(expected_drugs) == 5
+    assert len(found) == len(expected_labs) + len(expected_drugs) == 6
 
 
 def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
-    """Twin claims and clean tables without S1's lab and prescription rows: nothing depends on the fault."""
+    """Twin claims and clean tables without S1's lab and prescription rows and S10's manual haematocrit: nothing depends on the fault."""
     twin_clean = {
         name: (frame.filter(pl.col(_EPISODE_COLUMN[name]) != EPISODE[1]) if name != TABLE_ANADATA else frame)
         for name, frame in clean.items()
     }
-    assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16  # S1 has 16 lab rows
+    twin_clean[TABLE_LAB] = twin_clean[TABLE_LAB].filter(
+        ~((pl.col("basvuru_id") == EPISODE[12]) & (pl.col("SUB_CODE") == "L103120"))
+    )
+    assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16 - 1  # S1 has 16 lab rows, S10's bill one set of one row it alone bills
     assert twin_clean[TABLE_RECETE].height == RX_ROWS - 3  # and 3 prescription rows
     found = check_clean_plausibility(twins, twin_clean, context=context)
     assert [str(p) for p in found] == []
@@ -2151,6 +2157,7 @@ _REVIEW_SINGLE = {
     ("L101850", "CRP (kantitatif)"): (0, 500),
     ("L106240", "Prokalsitonin"): (0, 500),
     ("L104890", "Laktat"): (0.2, 30),  # not in the review: this module's decision (WP2, the blood-gas lactate's interval)
+    ("L103120", "Hematokrit (manuel)"): (10, 70),  # not in the review: this module's decision (WP7, the interval of the hemogram's HCT)
     ("L102090", "D-dimer"): (0, 35000),
     ("L107360", "hs-Troponin I"): (0, 100000),
     ("L102890", "Glukoz"): (20, 1500),
@@ -3353,7 +3360,7 @@ def test_without_any_episode_id_in_anadata_the_egfr_relation_is_no_no_op(
     )
     found = data.problems(context, only=EGFR_RELATION)
     assert len(found) == BILLED_LAB_LINES and len({p.where for p in found}) == BILLED_LAB_LINES
-    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9, 10)}
+    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9, 10, 12)}
 
 
 # --- the reference read from a file: the variant of a tie goes to the first row of the file ---------------
@@ -4318,7 +4325,7 @@ def test_the_hard_bounds_are_the_table_of_the_clinical_review() -> None:
     REVIEW_BOUNDS, written once above the boundary tests that use it.)
     """
     assert LAB_HARD_BOUNDS == REVIEW_BOUNDS
-    assert len(REVIEW_BOUNDS) == 15 + 11 + 4 + 13
+    assert len(REVIEW_BOUNDS) == 15 + 11 + 4 + 14
 
 
 def test_the_tolerances_and_constants_are_the_ones_of_the_brief() -> None:
@@ -4415,16 +4422,16 @@ def test_the_lab_schema_of_the_tests_is_the_committed_one(clean) -> None:
 
 
 def test_the_hard_bounds_cover_every_parameter_of_the_billed_codes(reference, clean) -> None:
-    """Every parameter of the 15 billed codes, not only those that occur, has an entry."""
+    """Every parameter of the 16 billed codes, not only those that occur, has an entry."""
     codes = set(clean[TABLE_LAB]["SUB_CODE"])
-    assert len(codes) == 15
+    assert len(codes) == 16
     listed = reference.filter(pl.col("ek2b_code").is_in(sorted(codes)))
     wanted = set(zip(listed["ek2b_code"], listed["result_parameter"], strict=True))
     assert wanted == set(LAB_HARD_BOUNDS) | set(LAB_STRIP_PARAMETERS)
-    assert len(wanted) == 49 and len(LAB_HARD_BOUNDS) == 43 and len(LAB_STRIP_PARAMETERS) == 6
+    assert len(wanted) == 50 and len(LAB_HARD_BOUNDS) == 44 and len(LAB_STRIP_PARAMETERS) == 6
     assert not set(LAB_HARD_BOUNDS) & set(LAB_STRIP_PARAMETERS)
     occurring = set(zip(clean[TABLE_LAB]["SUB_CODE"], clean[TABLE_LAB]["parametre"], strict=True))
-    assert len(occurring) == 48 and occurring <= wanted
+    assert len(occurring) == 49 and occurring <= wanted
     assert wanted - occurring == {(BLOOD_GAS_CODE, "sO2 (venöz)")}
 
 
@@ -4512,10 +4519,10 @@ def test_the_context_reads_nothing_until_it_is_used() -> None:
     assert {"code", "variant", "parameter", "unit", "low_m", "high_m", "qualitative"} <= set(
         first.columns
     )
-    assert first.height == 96 and first["qualitative"].sum() == 6
+    assert first.height == 97 and first["qualitative"].sum() == 6
     assert not first.select("code", "variant", "parameter").is_duplicated().any()
     assert first.filter(pl.col("unit") == "").height == 10
-    assert fresh_context.lab_variants.height == 50
+    assert fresh_context.lab_variants.height == 51
 
 
 def test_the_context_names_the_cohort_of_the_dataset(built, clean) -> None:

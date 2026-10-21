@@ -12,6 +12,7 @@ import re
 import sys
 from typing import Any
 
+from src.bilun.domain.billing.claim_lab import _optimize_lab_billing_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
 from src.bilun.domain.billing.engine import analyze_claim
@@ -45,7 +46,9 @@ from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejection_playbook_entries
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
+from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
@@ -109,6 +112,16 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
             "No claim line carries the incision, so the report prices the uplift at the strictest "
             "reading (same incision, 30%) and the record carries the whole gap to the clean bill, "
             "which bills the separate-incision rate (50%)."
+        ),
+        issue="Safa675/Bilun#311 item 6",
+    ),
+    "S22": ReportDivergence(
+        report_amount_try="263.92",
+        record_amount_try="439.86",
+        reason=(
+            "The add-on rule prices the polypectomy at the strict same-incision reading (30 % of its list "
+            "amount) and the record carries the whole gap to the clean bill, which bills it at 50 % "
+            "(the clean bill is silent in the session review at 50 %, not at 30 %)."
         ),
         issue="Safa675/Bilun#311 item 6",
     ),
@@ -612,6 +625,65 @@ def _direct_rows_s9(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s10(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # the lab optimizer's unbundling rows, then the MEDULA playbook rows of the rejection events of the bill
+    claim = ctx.claims[0]
+    rows: list[dict[str, Any]] = [
+        {
+            "fn": "optimize_lab_billing",
+            **_keep(t, ("flag_type", "sut_code", "gazette_price", "savings_try")),  # no `detail`: it names the episode id
+        }
+        for t in _optimize_lab_billing_from_claims(ctx).flagged_tests
+    ]
+    rows += [
+        {
+            "fn": "detect_medula_rejection_playbook_entries",
+            **_keep(
+                e,
+                (
+                    "playbook_id",
+                    "sonuc_kodu",
+                    "medula_stage",
+                    "hata_mesaji",
+                    "related_procedure_code",
+                    "related_line_type",
+                    "sut_anchor",
+                    "rebill_permitted",
+                    "rebill_stage",
+                    "rule_id",
+                ),
+            ),
+        }
+        for e in detect_medula_rejection_playbook_entries(claim, list(ctx.medula_rejection_events))
+    ]
+    return rows
+
+
+def _direct_rows_s22(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    claim = ctx.claims[0]
+    return [
+        _keep(
+            o,
+            (
+                "type",
+                "trigger_procedure_code",
+                "expected_addon_procedure_code",
+                "session_date",
+                "addon_factor",
+                "trigger_billed_try",
+                "list_price_try",
+                "actual_billed_try",
+                "recoverable_uplift_try",
+                "price_methodology",
+                "same_incision",
+                "sut_section_id",
+                "rule_id",
+            ),
+        )
+        for o in detect_missing_procedure_addon_opportunities(claim, list(ctx.procedure_lines))
+    ]
+
+
 def _direct_rows_s11(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     return [
         _keep(
@@ -724,9 +796,11 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S7": _direct_rows_s7,
     "S8": _direct_rows_s8,
     "S9": _direct_rows_s9,
+    "S10": _direct_rows_s10,
     "S11": _direct_rows_s11,
     "S12": _direct_rows_s12,
     "S14": _direct_rows_s14,
+    "S22": _direct_rows_s22,
     "S40": _direct_rows_s40,
 }
 

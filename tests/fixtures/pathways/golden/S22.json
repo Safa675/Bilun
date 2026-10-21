@@ -1,0 +1,99 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-05-11",
+      "icd10": "K92.2",
+      "role": "primary"
+    },
+    {
+      "date": "2026-05-12",
+      "icd10": "D12.6",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-05-11",
+      "icd10": "D50.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-05-11",
+    "claim_end_date": "2026-05-13",
+    "claim_start_date": "2026-05-11",
+    "claim_type": "yatis",
+    "department": "Genel Cerrahi",
+    "discharge_date": "2026-05-13",
+    "primary_icd10": "K92.2"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-05-11",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-05-11",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-05-11",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-05-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-05-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "701450",
+      "date": "2026-05-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "0.5000",
+      "code": "701460",
+      "date": "2026-05-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-05-13",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    }
+  ],
+  "story": "S22"
+}

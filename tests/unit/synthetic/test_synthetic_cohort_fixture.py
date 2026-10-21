@@ -27,7 +27,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S11", "S12", "S14", "S39", "S40")  # the stories after the eighth, named by scenarios
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S22", "S39", "S40")  # the stories after the eighth, named by scenarios
 _CLEAN_STORIES = ("S39",)  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
@@ -244,7 +244,7 @@ def test_every_story_has_a_fault_record_with_an_amount_a_line_type_and_a_line() 
 
 def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_role() -> None:
     known = cohort.scenarios()
-    assert set(known) == set(_SCENARIO_STORIES)  # the registry keys are sorted as text: S11, S12, S14 before S9
+    assert set(known) == set(_SCENARIO_STORIES)  # the registry keys are sorted as text: S10, S11, S12, S14, S22 before S9
     assert all(isinstance(scenario, cohort.Scenario) for scenario in known.values())
     assert {story: cohort.scenario(story) for story in _SCENARIO_STORIES} == known
     assert known["S9"] == cohort.Scenario(
@@ -259,6 +259,13 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     # a patient with two bills: S11 and S14 name the same patient, one bill each
     assert known["S14"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0010", claim_ids=("F-SENTETIK-HASTA-0010-002",)
+    )
+    # a patient with two bills of two kinds: the ER visit S10 (an acil bill) and the admission S22 after it
+    assert known["S10"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0012", claim_ids=("F-SENTETIK-HASTA-0012-001",)
+    )
+    assert known["S22"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0012", claim_ids=("F-SENTETIK-HASTA-0012-002",)
     )
     # a patient with three: the stay (role S4), then S39 (a clean bill) and S40 (a faulty one)
     assert known["S39"] == cohort.Scenario(
@@ -494,7 +501,7 @@ _DAMAGES: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
     ("scenario_removed", lambda r: r["scenarios"].pop("S9"), "scenarios ["),
     (
         "scenario_added",
-        lambda r: r["scenarios"].update(S10=dict(r["scenarios"]["S9"])),
+        lambda r: r["scenarios"].update(S90=dict(r["scenarios"]["S9"])),
         "scenarios [",
     ),
     (

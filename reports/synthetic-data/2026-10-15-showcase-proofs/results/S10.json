@@ -1,0 +1,226 @@
+{
+ "story": "S10",
+ "clean": {
+  "total_billed": "105.46",
+  "rows": [
+   {
+    "date": "2026-05-09",
+    "code": "520020",
+    "name": "Acil poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-09",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K92.1",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 0
+  }
+ },
+ "faulty": {
+  "total_billed": "111.34",
+  "rows": [
+   {
+    "date": "2026-05-09",
+    "code": "520020",
+    "name": "Acil poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-09",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-05-09",
+    "code": "L103120",
+    "name": "Hematokrit (Manuel)",
+    "qty": 1,
+    "unit": "5.88",
+    "billed": "5.88",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K92.1",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "optimize_lab_billing",
+    "flag_type": "hemogram_unbundling",
+    "sut_code": "L107020",
+    "gazette_price": 19.73,
+    "savings_try": 5.88
+   },
+   {
+    "fn": "detect_medula_rejection_playbook_entries",
+    "playbook_id": "0901_duplicate_procedure",
+    "sonuc_kodu": "0901",
+    "medula_stage": "fatura_kayit",
+    "hata_mesaji": "Mükerrer işlem: aynı gün tekrar faturalandırma",
+    "related_procedure_code": "L103120",
+    "related_line_type": "procedure",
+    "sut_anchor": "MEDULA mükerrer işlem / aynı gün tekrar faturalandırma",
+    "rebill_permitted": true,
+    "rebill_stage": "fatura_kayit",
+    "rule_id": "medula_playbook.0901_duplicate_procedure"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 5.88,
+   "action_count": 2
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "lab",
+   "hemogram_unbundling",
+   "L107020",
+   5.88
+  ],
+  [
+   "action",
+   "medula_playbook",
+   "0901_duplicate_procedure",
+   "",
+   0.0
+  ],
+  [
+   "scalar",
+   "compliance_adjustment_try",
+   "",
+   "",
+   5.88
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

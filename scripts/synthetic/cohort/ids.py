@@ -13,6 +13,7 @@ DRUG_CLAIM_LINE_ID_RE = re.compile(r"^ILC-F-SENTETIK-HASTA-\d{4}-\d{3}-\d{3}$")
 DIAGNOSIS_ID_RE = re.compile(r"^TANI-SENTETIK-HASTA-\d{4}-\d{3}-\d{3}$")
 PERFORMED_LINE_ID_RE = re.compile(r"^EMR-F-SENTETIK-HASTA-\d{4}-\d{3}-\d{3}$")
 PRESCRIPTION_ID_RE = re.compile(r"^RCT-F-SENTETIK-HASTA-\d{4}-\d{3}$")
+MEDULA_EVENT_ID_RE = re.compile(r"^RED-F-SENTETIK-HASTA-\d{4}-\d{3}-\d{2}$")
 
 
 def _check_seq(seq: int, *, width: int = 3, label: str = "seq") -> int:
@@ -125,3 +126,10 @@ def prescription_id(claim: str) -> str:
     """Build a prescription identifier: ``RCT-<claim>``."""
     cid = _check_claim_id(claim)
     return f"RCT-{cid}"
+
+
+def medula_event_id(claim: str, seq: int) -> str:
+    """Build a MEDULA rejection event identifier: ``RED-<claim>-NN`` (NN counts the claim's events from 1)."""
+    cid = _check_claim_id(claim)
+    n = _check_seq(seq, width=2, label="medula event seq")
+    return f"RED-{cid}-{n:02d}"

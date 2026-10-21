@@ -38,13 +38,18 @@ pytestmark = pytest.mark.unit
 
 
 def _raw_recipes() -> dict:
-    """The real recipes, without the committed follow-up bills of patient 4 (S39 and S40).
+    """The real recipes, without the committed follow-up bills of patient 4 (S39 and S40) and without patient 12 (S10, S22).
 
-    The cases below add follow-up bills of patient 4 themselves (`_stay`): they start from the file as it was before
-    patient 4 had any, so the encounter numbers they write are free. The real file is checked as it is.
+    The cases below add follow-up bills of patient 4 themselves (`_stay`) and the ER visit of patient 12 with its MEDULA
+    events (`_er_visit`): they start from the file as it was before patient 4 had any follow-up and before patient 12,
+    so the encounter numbers and the patient number they write are free. The real file is checked as it is.
     """
     raw = yaml.safe_load(RECIPES_PATH.read_text(encoding="utf-8"))
-    raw["recipes"] = [r for r in raw["recipes"] if not (r["patient_no"] == 4 and r.get("encounter_no", 1) > 1)]
+    raw["recipes"] = [
+        r
+        for r in raw["recipes"]
+        if r["patient_no"] != 12 and not (r["patient_no"] == 4 and r.get("encounter_no", 1) > 1)
+    ]
     return raw
 
 
@@ -179,6 +184,32 @@ def _second_stay(**pins) -> dict:
     return _stay(2, **pins)
 
 
+ER_VISIT = "gi_bleed_melena_er_visit"  # patient 12: a man of 58, melena, 2026-05-09, acil; its fault bills the manual haematocrit
+
+
+def _event(**changes) -> dict:
+    """A MEDULA rejection of the ER visit: 0901 on the manual haematocrit the faulty bill carries (the committed event)."""
+    return {
+        "entry_id": "manual_hematocrit",
+        "medula_stage": "fatura_kayit",
+        "sonuc_kodu": "0901",
+        "hata_mesaji": "Mükerrer işlem: aynı gün tekrar faturalandırma",
+        "basis": "judgment",
+        "source": "Playbook entry 0901; the message is its wording, not a quoted reply. Billing officer to confirm.",
+        **changes,
+    }
+
+
+def _er_visit(*events: dict) -> dict:
+    """The ER visit of patient 12 (S10) with its fault and the given MEDULA events (`_raw_recipes` has no patient 12)."""
+    return {
+        "patient_no": 12,
+        "pathway": ER_VISIT,
+        "fault": "F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT",
+        "medula_events": list(events),
+    }
+
+
 def test_a_patient_may_have_several_encounters() -> None:
     raw = _raw_recipes()
     _insert(raw, _second_stay(admit="2026-07-20"))
@@ -194,9 +225,11 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     committed = load_recipes().recipes
     assert len(committed) == cohort.claim_count()
     # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 4: S39 and
-    # S40, patient 10: S14) write it
-    assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [(4, 2), (4, 3), (10, 2)]
-    assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1)
+    # S40, patient 10: S14, patient 12: S22) write it
+    assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [
+        (4, 2), (4, 3), (10, 2), (12, 2),
+    ]  # fmt: skip
+    assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no != 12)
     _recipe(raw, 2)["pins"] = {}
     assert _problems(raw) == []
     recipe = load_recipes_text(yaml.safe_dump(raw, allow_unicode=True), "r.yaml").recipes[1]
@@ -285,6 +318,78 @@ def test_the_story_a_recipe_names_must_be_the_story_of_its_fault() -> None:
     assert problem.message == (
         "fault 'F_S4_COMPANION_NOT_BILLED' is of story S4, but this encounter is of story S99"
     )
+
+
+# --- the MEDULA rejections of a bill (G8) ------------------------------------------------------------------
+
+
+def test_the_er_visit_of_patient_12_carries_the_one_rejection_of_the_cohort() -> None:
+    recipes = load_recipes().recipes
+    assert [(r.patient_no, r.encounter_no, len(r.medula_events)) for r in recipes if r.medula_events] == [(12, 1, 1)]
+    (event,) = next(r for r in recipes if r.patient_no == 12 and r.encounter_no == 1).medula_events
+    assert (event.entry_id, event.medula_stage, event.sonuc_kodu, event.hata_kodu) == (
+        "manual_hematocrit", "fatura_kayit", "0901", "",
+    )  # fmt: skip
+    assert event.hata_mesaji == "Mükerrer işlem: aynı gün tekrar faturalandırma"
+    assert event.basis == "judgment" and "Billing officer" in event.source
+    # the other bills have none: a rejection is what happened to one bill as it was submitted
+    assert all(not r.medula_events for r in recipes if (r.patient_no, r.encounter_no) != (12, 1))
+
+
+def test_a_recipe_without_events_has_an_empty_list_and_the_er_visit_is_clean_with_its_event() -> None:
+    assert ShowcaseRecipe(patient_no=1, pathway="copd_exacerbation_pneumonia_ward").medula_events == []
+    raw = _raw_recipes()
+    _insert(raw, _er_visit(_event()))
+    assert _problems(raw) == []
+    recipe = load_recipes_text(yaml.safe_dump(raw, allow_unicode=True), "r.yaml").recipes[-1]
+    assert recipe.patient_no == 12 and [e.sonuc_kodu for e in recipe.medula_events] == ["0901"]
+
+
+def test_a_bill_may_have_several_rejections_on_different_lines_or_with_different_codes() -> None:
+    raw = _raw_recipes()
+    _insert(raw, _er_visit(_event(), _event(entry_id="hemogram"), _event(sonuc_kodu="1205", medula_stage="hizmet_kayit")))
+    assert _problems(raw) == []
+
+
+def test_an_event_names_a_billed_line_of_the_bill_the_recipe_commits() -> None:
+    """The bill is the faulty one when the recipe has a fault: a line the fault takes out cannot be rejected."""
+    for entry_id, why in (
+        ("no_such_line", "0 billed line"),
+        ("bed", "billed line(s)"),  # patient 4: the bed is one line a day
+    ):
+        raw = _raw_recipes()
+        if entry_id == "bed":
+            _recipe(raw, 4)["medula_events"] = [_event(entry_id="bed")]
+        else:
+            _insert(raw, _er_visit(_event(entry_id=entry_id)))
+        (problem,) = _problems(raw)
+        assert problem.check == "recipe.medula_event" and why in problem.message, problem.message
+    # the manual haematocrit exists only in the faulty sibling: the clean form of the visit does not bill it
+    raw = _raw_recipes()
+    visit = _er_visit(_event())
+    visit.pop("fault")
+    _insert(raw, visit)
+    (problem,) = _problems(raw)
+    assert (problem.check, problem.where) == ("recipe.medula_event", "recipes[12].medula_events[0].entry_id")
+    assert "'manual_hematocrit' is 0 billed line(s)" in problem.message
+
+
+def test_a_rejection_of_a_performed_log_line_is_not_a_rejection_of_a_billed_line() -> None:
+    raw = _raw_recipes()
+    _recipe(raw, 7)["medula_events"] = [_event(entry_id="ecg_emr")]  # S7: the EMR log shows the ECG, it is not a bill line
+    (problem,) = _problems(raw)
+    assert problem.check == "recipe.medula_event" and "'ecg_emr' is 0 billed line(s)" in problem.message
+
+
+def test_the_same_rejection_twice_is_one_defect_and_two_stages_are_not() -> None:
+    raw = _raw_recipes()
+    _insert(raw, _er_visit(_event(), _event()))
+    (problem,) = _problems(raw)
+    assert (problem.check, problem.where) == ("recipe.medula_event", "recipes[12].medula_events[1]")
+    assert problem.message == "0901 at fatura_kayit is given twice for 'manual_hematocrit'"
+    raw = _raw_recipes()
+    _insert(raw, _er_visit(_event(), _event(medula_stage="provizyon")))
+    assert _problems(raw) == []
 
 
 Edit = Callable[[dict], None]
@@ -481,6 +586,16 @@ CASES: list[Case] = [
         label="a_story_on_two_bills_of_one_patient",
     ),
     Case("recipe.story", lambda r: _recipe(r, 4).update(pins={"story": "S99"}), label="a_story_pin_the_fault_does_not_have"),
+    # --- the MEDULA rejections of a bill
+    Case("recipe.medula_event", lambda r: _insert(r, _er_visit(_event(entry_id="no_such_line"))), label="a_line_the_bill_lacks"),
+    Case("recipe.medula_event", lambda r: _recipe(r, 4).update(medula_events=[_event(entry_id="bed")]), label="a_line_a_day"),
+    Case("recipe.medula_event", lambda r: _insert(r, _er_visit(_event(), _event())), label="the_same_event_twice"),
+    Case("schema.bad_value", lambda r: _insert(r, _er_visit(_event(sonuc_kodu="09"))), label="a_result_code_of_two_digits"),
+    Case("schema.bad_value", lambda r: _insert(r, _er_visit(_event(hata_mesaji="x"))), label="a_message_of_one_letter"),
+    Case("schema.bad_value", lambda r: _insert(r, _er_visit(_event(hata_kodu="E 09/01"))), label="a_error_code_with_spaces"),
+    Case("schema.bad_enum", lambda r: _insert(r, _er_visit(_event(medula_stage="elsewhere"))), label="a_stage_that_is_not_a_stage"),
+    Case("schema.missing_field", lambda r: _insert(r, _er_visit({k: v for k, v in _event().items() if k != "source"})), label="an_event_without_a_source"),
+    Case("schema.unknown_field", lambda r: _insert(r, _er_visit(_event(severity="high"))), label="an_event_with_a_field_of_its_own"),
     # --- schema of the new fields
     Case("schema.bad_value", lambda r: _recipe(r, 1).update(encounter_no=True), label="encounter_no_bool"),
     Case("schema.unknown_field", lambda r: _recipe(r, 1).update(pins={"temperature": 37}), label="unknown_pin"),

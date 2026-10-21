@@ -1,0 +1,106 @@
+# Admission to general surgery for a gastrointestinal bleed, colonoscopy with polypectomy, billed itemized (hizmet başı); a clean bill.
+# Showcase story S22 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S10, bill b2; story ids in section 5.1a): bill 2 of patient 12, the admission two days after the ER visit of story S10.
+# Grammar: README.md next to this file. Every line below is a clean-bill line (faults are not part of a pathway): the polypectomy is on the bill; the faulty bill leaves it out.
+schema_version: 1
+id: gi_bleed_admission_colonoscopy
+title: "Gastrointestinal bleed, admission to general surgery, colonoscopy with polypectomy, billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "A bleeding colon polyp occurs in both sexes; K92.2, D50.0 and D12.6 have no sex gate. Story S22 is the man of story S10. Clinician to confirm."
+  age:
+    min: 40
+    max: 85
+    basis: judgment
+    source: "Story S22 patient is 58, the same man as story S10. Colon polyps bleed mostly from the fifth decade on; the bounds are the author's judgment."
+
+nights:
+  min: 2
+  max: 4
+  basis: judgment
+  source: "Story S22 has 2 nights. Min 2: the colonoscopy is on day 2 and a night follows it. Max 4 is the author's judgment for a bleeding patient."
+
+diagnoses:
+  - icd10: K92.2
+    name: "GASTROİNTESTİNAL HEMORAJİ, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: gastrointestinal haemorrhage, unspecified. The reason for the admission; the cause is found by the colonoscopy."
+  - icd10: D50.0
+    name: "KRONİK KAN KAYBINA BAĞLI DEMİR EKSİKLİĞİ ANEMİSİ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S22: the blood count shows an anaemia from a slow loss; no guideline named. Clinician to confirm (a coder may code it after the colonoscopy)."
+  - icd10: D12.6
+    name: "KOLON BENİGN NEOPLAZMI, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit+1
+    basis: judgment
+    source: "Story S22: the colonoscopy of day 2 finds a polyp, so the code is dated that day; no guideline named. Clinician to confirm."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # a bed for every calendar day: 3 lines for 2 nights
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day. Review Q1: güçlü çıkarım. Under 24 h: 510120 (C000648)."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 2 lines for 2 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the surgeon's statement of need and the refakatçi belgesi are assumed (bowel preparation, sedation); C000654. Clinician to confirm."
+
+  # --- laboratory: the blood count of the admission day (the ER bill of story S10 billed one two days earlier)
+  - id: admission_hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit
+    basis: judgment
+    source: "Story S22: a blood count on admission to follow the haemoglobin; it repeats the ER one of story S10 within seven days (Tablo 15 #12), on purpose."
+
+  # --- the colonoscopy session on day 2: the colonoscopy and the polypectomy through it
+  - id: colonoscopy
+    kind: procedure
+    code: "701450"
+    name: "Kolonoskopi, total"
+    days: admit+1
+    session_role: primary              # equal puan to the polypectomy; the colonoscopy leads the session
+    basis: sut
+    source: "C000659 (SUT 2.2.2.A(5)): several procedures in one session; the first is paid in full, the later ones at a share of their puan."
+  - id: polypectomy
+    kind: procedure
+    code: "701460"
+    name: "Kolonoskopik polipektomi"
+    days: admit+1
+    session_role: separate_incision    # paid at half of its puan; the same incision would pay 30 % (C000660)
+    basis: sut
+    source: "C000659, C000661 (SUT 2.2.2.A(5)): the later procedure of a session at 50 % of its puan (30 % through the same incision, C000660). Clinician to confirm which."
+
+notes:
+  - "Story S22: admitted on Monday with a second melena and a falling haemoglobin; a colonoscopy on day 2 finds a bleeding polyp, which is removed in the same session; discharged on day 3."
+  - "The clean bill bills the polypectomy at 50 % of its list amount beside the colonoscopy. The faulty bill leaves the polypectomy out; the engine flags every colonoscopy without it (it cannot know whether a polyp existed)."
+  - "Only the blood count repeats a test of the ER bill of story S10 (two days earlier): the engine's duplicate-test rule (Tablo 15 #12) flags it on this later bill, on purpose, and the clean twin shows the same row."
+
+showcase:
+  story: S22
+  sex: M
+  age: 58
+  admit: "2026-05-11"
+  nights: 2

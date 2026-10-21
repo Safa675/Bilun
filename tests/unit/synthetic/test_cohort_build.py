@@ -43,8 +43,8 @@ from scripts.synthetic.cohort import (
     validate_cohort_registry,
     write_showcase,
 )
-from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, check_showcase, main
-from scripts.synthetic.cohort.recipes import EncounterPins
+from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, _medula_event_rows, check_showcase, main
+from scripts.synthetic.cohort.recipes import EncounterPins, MedulaEvent
 from scripts.synthetic.faults import (
     FaultApplyError,
     FaultInjectionRecord,
@@ -80,9 +80,11 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S7": "1138.22",
     "S8": "5377.20",
     "S9": "758.01",
+    "S10": "5.88",
     "S11": "6089.82",
     "S12": "1322.94",
     "S14": "222.36",
+    "S22": "439.86",
     "S40": "0.00",
 }
 
@@ -93,6 +95,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
     "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
     "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
+    "S10": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-001"]},
+    "S22": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-002"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
 }
@@ -261,7 +265,8 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
         len(dataset.performed_procedure_lines)
         == expected_counts["performed_procedure_lines.parquet"]
     )
-    assert len(dataset.medula_rejection_events) == 0
+    assert len(dataset.medula_rejection_events) == expected_counts["medula_rejection_events.parquet"] == 1
+    assert set(dataset.medula_rejection_events) == {"RED-F-SENTETIK-HASTA-0012-001-01"}  # the one rejection of S10
 
     # Loaded objects equal the composed faulty claims.
     assert tuple(dataset.claims.values()) == tuple(c.header for c in built_showcase.claims)
@@ -691,8 +696,8 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     assert anadata["EPISODE_TARIH"].dt.date().to_list() == [date(2026, 6, 2), date(2026, 6, 7)]
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
-    assert profiles.height == cohort.patient_count() == 11
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 14
+    assert profiles.height == cohort.patient_count() == 12
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 16
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1023,6 +1028,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10)),
         "F-SENTETIK-HASTA-0010-002",  # the committed second bill (S14, the ward bill after the ICU bill), dated later
         "F-SENTETIK-HASTA-0011-001",
+        "F-SENTETIK-HASTA-0012-001",  # the ER visit of patient 12 (S10) and the admission two days later (S22)
+        "F-SENTETIK-HASTA-0012-002",
     ]
     assert headers["episode_id"].to_list() == [
         claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()
@@ -1288,3 +1295,136 @@ def test_recipes_and_build_import_hygiene(filename: str) -> None:
         assert not mod.startswith("reports"), f"{filename} imports from reports: {mod}"
         assert "billing" not in mod, f"{filename} imports from billing engine: {mod}"
         assert "prose_rules" not in mod, f"{filename} imports from prose_rules engine: {mod}"
+
+
+# --- MEDULA rejection events (G8): a recipe input that becomes rows of medula_rejection_events.parquet --------------
+
+_ER_CLAIM = "F-SENTETIK-HASTA-0012-001"  # S10, the ER visit of patient 12
+
+
+def test_the_committed_rejection_event_is_the_one_of_s10_on_its_manual_haematocrit_line(
+    built_showcase: BuildResult,
+) -> None:
+    events = built_showcase.tables["medula_rejection_events.parquet"]
+    lines = built_showcase.tables["procedure_claim_lines.parquet"].filter(pl.col("claim_id") == _ER_CLAIM)
+    manual = lines.filter(pl.col("procedure_code") == "L103120").row(0, named=True)
+    assert events.to_dicts() == [
+        {
+            "rejection_event_id": "RED-F-SENTETIK-HASTA-0012-001-01",
+            "claim_id": _ER_CLAIM,
+            "patient_id": "SENTETIK-HASTA-0012",
+            "episode_id": "B-SENTETIK-HASTA-0012-001",
+            "medula_stage": "fatura_kayit",
+            "sonuc_kodu": "0901",
+            "hata_kodu": "",
+            "hata_mesaji": "Mükerrer işlem: aynı gün tekrar faturalandırma",
+            "rejection_timestamp": "2026-05-09",  # the date of the line, inside the ER bill's one date
+            "related_procedure_code": "L103120",
+            "related_procedure_line_id": manual["procedure_line_id"],
+            "related_line_type": "procedure",
+            "related_line_id": manual["procedure_line_id"],
+        }
+    ]
+    assert manual["procedure_date"] == "2026-05-09"
+    assert built_showcase.registry["counts"]["medula_rejection_events.parquet"] == 1
+
+
+def _event(entry_id: str, **changes: str) -> MedulaEvent:
+    return MedulaEvent(
+        entry_id=entry_id,
+        medula_stage=changes.pop("medula_stage", "fatura_kayit"),
+        sonuc_kodu=changes.pop("sonuc_kodu", "0901"),
+        hata_mesaji="Mükerrer işlem: aynı gün tekrar faturalandırma",
+        basis="judgment",
+        source="A test event: how the builder resolves an entry of any section.",
+        **changes,
+    )
+
+
+@pytest.fixture(scope="module")
+def built_with_events() -> BuildResult:
+    """The committed recipes with three more rejections: a second one on S10's bill, one on a material of S5 and one
+    on a drug of S6 (a material and a drug line are billed lines too)."""
+    recipes = load_recipes()
+    extra = {
+        (12, 1): (_event("hemogram", sonuc_kodu="1205", medula_stage="hizmet_kayit", hata_kodu="E-1205"),),
+        (5, 1): (_event("femoral_stem", sonuc_kodu="0704"),),
+        (6, 1): (_event("pk_merz", sonuc_kodu="0411"),),
+    }
+    changed = [
+        r.model_copy(update={"medula_events": [*r.medula_events, *extra[(r.patient_no, r.encounter_no)]]})
+        if (r.patient_no, r.encounter_no) in extra
+        else r
+        for r in recipes.recipes
+    ]
+    return build_showcase(recipes=recipes.model_copy(update={"recipes": changed}))
+
+
+def test_events_are_numbered_per_claim_dated_with_their_line_and_name_any_billed_line(
+    built_with_events: BuildResult,
+) -> None:
+    events = built_with_events.tables["medula_rejection_events.parquet"]
+    rows = {row["rejection_event_id"]: row for row in events.iter_rows(named=True)}
+    assert list(rows) == sorted(rows) == [
+        "RED-F-SENTETIK-HASTA-0005-001-01",
+        "RED-F-SENTETIK-HASTA-0006-001-01",
+        "RED-F-SENTETIK-HASTA-0012-001-01",
+        "RED-F-SENTETIK-HASTA-0012-001-02",  # the second event of the claim, in the order of the recipe
+    ]
+    material = rows["RED-F-SENTETIK-HASTA-0005-001-01"]
+    assert (material["related_line_type"], material["related_procedure_code"], material["related_procedure_line_id"]) == (
+        "material", "", ""
+    )  # fmt: skip
+    assert MATERIAL_LINE_ID_RE.fullmatch(material["related_line_id"])
+    drug = rows["RED-F-SENTETIK-HASTA-0006-001-01"]
+    assert drug["related_line_type"] == "drug" and DRUG_CLAIM_LINE_ID_RE.fullmatch(drug["related_line_id"])
+    assert drug["related_procedure_code"] == "" and drug["related_procedure_line_id"] == ""
+    second = rows["RED-F-SENTETIK-HASTA-0012-001-02"]
+    assert (second["related_procedure_code"], second["medula_stage"], second["sonuc_kodu"], second["hata_kodu"]) == (
+        "L107020", "hizmet_kayit", "1205", "E-1205"
+    )  # fmt: skip
+    # each event is dated with its line
+    tables = built_with_events.tables
+    dated = {
+        **dict(zip(tables["procedure_claim_lines.parquet"]["procedure_line_id"], tables["procedure_claim_lines.parquet"]["procedure_date"], strict=True)),
+        **dict(zip(tables["material_claim_lines.parquet"]["material_line_id"], tables["material_claim_lines.parquet"]["material_date"], strict=True)),
+        **dict(zip(tables["drug_claim_lines.parquet"]["drug_claim_line_id"], tables["drug_claim_lines.parquet"]["drug_claim_date"], strict=True)),
+    }
+    assert all(row["rejection_timestamp"] == dated[row["related_line_id"]] for row in rows.values())
+    assert built_with_events.registry["counts"]["medula_rejection_events.parquet"] == 4
+    # the rest of the cohort is the committed one: the events table is the only claims table that moves
+    committed = build_showcase()
+    assert {name for name in TABLE_FILES if not built_with_events.tables[name].equals(committed.tables[name])} == {
+        "medula_rejection_events.parquet"
+    }
+
+
+def test_the_loader_reads_every_kind_of_event_row_the_builder_writes(
+    built_with_events: BuildResult, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    write_showcase(built_with_events, tmp_path)
+    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", tmp_path / "sut")  # let the loader read it
+    monkeypatch.setattr(claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", tmp_path / "sut" / "clean")
+    load_sut_claim_dataset.cache_clear()
+    dataset = load_sut_claim_dataset(tmp_path / "sut" / "claims", mode="synthetic_demo")
+    assert sorted(dataset.medula_rejection_events) == built_with_events.tables["medula_rejection_events.parquet"][
+        "rejection_event_id"
+    ].to_list()
+    assert {e.related_line_type for e in dataset.medula_rejection_events.values()} == {"procedure", "material", "drug"}
+    assert dataset.medula_rejection_ingest_available is True
+
+
+def test_an_event_whose_entry_is_not_one_billed_line_stops_the_build(built_showcase: BuildResult) -> None:
+    from dataclasses import replace
+
+    recipe = next(r for r in load_recipes().recipes if r.medula_events)
+    claim = next(c for c in built_showcase.claims if c.header.claim_id == _ER_CLAIM)
+    assert len(_medula_event_rows(recipe, claim)) == 1
+    with pytest.raises(BuildError, match=r"names entry 'manual_hematocrit', which is 0 line\(s\)"):
+        _medula_event_rows(recipe, replace(claim, entry_line_ids={}))
+    two = (claim.procedures[0].procedure_line_id, claim.procedures[1].procedure_line_id)
+    with pytest.raises(BuildError, match=r"which is 2 line\(s\)"):
+        _medula_event_rows(recipe, replace(claim, entry_line_ids={"manual_hematocrit": two}))
+    with pytest.raises(BuildError, match="is not a billed line"):
+        _medula_event_rows(recipe, replace(claim, entry_line_ids={"manual_hematocrit": ("EMR-F-SENTETIK-HASTA-0012-001-001",)}))
+

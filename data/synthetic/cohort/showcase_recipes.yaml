@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12 (the story ids are not contiguous: S10 is a later bill). A recipe without a fault is a clean bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22 (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -61,3 +61,20 @@ recipes:
   - patient_no: 11
     pathway: late_preterm_newborn_incubator_stay
     fault: F_S12_INCUBATOR_DAYS_UNDERBILLED
+
+  - patient_no: 12
+    pathway: gi_bleed_melena_er_visit
+    fault: F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT
+    medula_events:
+      - entry_id: manual_hematocrit
+        medula_stage: fatura_kayit
+        sonuc_kodu: "0901"
+        hata_mesaji: "Mükerrer işlem: aynı gün tekrar faturalandırma"
+        basis: judgment
+        source: "Playbook entry 0901 (data/medula/rejection_playbook.json); the message is the playbook's own wording, not a quoted reply. Billing officer to confirm."
+
+  - patient_no: 12
+    encounter_no: 2
+    pathway: gi_bleed_admission_colonoscopy
+    fault: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
+

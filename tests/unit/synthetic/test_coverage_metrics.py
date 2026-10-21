@@ -719,14 +719,18 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
 
     After F4 (WP6, S39 and S40): matched 15 -> 17 (the duplicate exam and ORTAK-20), with a row 15 -> 16 (ORTAK-20),
     evaluated 274 -> 287 (the first outpatient claims), a new finding kind (the duplicate-exam compliance finding).
+
+    After S10 and S22 (WP7, patient 12): blocks 12 -> 15 (lab, procedure_addon_uplift, medula_rejection_playbook),
+    matched 17 -> 19 and with a row 16 -> 18 (GENEL CERRAHİ-2 and the duplicate test, two reviews), evaluated 287 -> 288
+    (the duplicate test), finding kinds 21 -> 24 (the three actions of the three blocks).
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (11, 14)
-    assert summary["blocks"]["with_output"] == 12  # neither the ward bill nor the two outpatient bills light a block
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (12, 16)
+    assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (287, 17, 16)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (9, 6, 1)
-    assert summary["finding_kinds"]["count"] == 21
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (288, 19, 18)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (11, 6, 1)
+    assert summary["finding_kinds"]["count"] == 24
     assert "yatak_icu_overlap_510010" in wavea["row_ids"]
     # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
     without_s14 = {pid: entry for pid, entry in measured.items() if pid != cohort.scenario("S14").patient_id}
@@ -748,6 +752,7 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
     assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
         patient: 2,
         cohort.role("showcase_S4").patient_id: 3,
+        cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
     }
     assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill
 
@@ -776,3 +781,28 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_outpatie
     assert entry["blocks_with_output"] == [  # the outpatient bills light no block of their own
         "billing_strategy", "claim_submission_checklist", "copay", "drug_indication", "refakatci", "yatak_puani"
     ]  # fmt: skip
+
+
+def test_patient_12_is_measured_over_its_two_bills_and_alone_lights_the_three_blocks_of_wp7(
+    measured: dict[str, dict[str, Any]],
+) -> None:
+    """G12 is patient-level: the ER visit (S10) and the admission (S22) of patient 12 are read together.
+
+    The ER bill lights `lab` (the manual haematocrit beside the hemogram) and `medula_rejection_playbook` (its MEDULA
+    rejection 0901); the admission lights `procedure_addon_uplift` (the polypectomy not billed), the review
+    GENEL CERRAHİ-2 (a colonoscopy on a general-surgery bill) and the duplicate test (the hemogram two days after the
+    ER one). No other patient has any of them.
+    """
+    patient = cohort.scenario("S10").patient_id
+    assert cohort.scenario("S22").patient_id == patient
+    entry = measured[patient]
+    assert entry["claims"] == 2
+    new_blocks = {"lab", "procedure_addon_uplift", "medula_rejection_playbook"}
+    new_ids = {"GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling", "tablo15_12_duplicate_test"}
+    assert new_blocks <= set(entry["blocks_with_output"])
+    assert new_ids <= set(entry["wavea"]["matched_ids"]) and new_ids <= set(entry["wavea"]["review_ids"])  # a row each, a review
+    others = {pid: e for pid, e in measured.items() if pid != patient}
+    assert not new_blocks & set(cm.summarize(others)["blocks"]["with_output_names"])
+    assert not new_ids & set(cm.summarize(others)["wavea"]["matched_ids"])
+    assert entry["wavea"]["financial"] == 0  # the two reviews are reviews, not money
+

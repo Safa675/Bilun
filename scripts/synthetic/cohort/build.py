@@ -58,12 +58,13 @@ from .clinical import (
     load_clinical,
 )
 from .compose import ComposedClaim, EncounterContext, compose_claim, money
-from .ids import claim_id, episode_id, patient_id
+from .ids import claim_id, episode_id, medula_event_id, patient_id
 from .labs import expected_lab_row_count
 from .recipes import (
     RECIPES_PATH,
     EncounterPins,
     RecipeLoadError,
+    ShowcaseRecipe,
     ShowcaseRecipes,
     check_recipes,
     effective_pins,
@@ -265,6 +266,58 @@ def _make_injection_record(
         billed_clean_try=f"{clean_total:.2f}",
         billed_faulty_try=f"{faulty_total:.2f}",
     )
+
+
+def _billed_line(claim: ComposedClaim, line_id: str) -> tuple[str, date, str]:
+    """The kind (`procedure`, `material`, `drug`), the date and the code of a billed line of `claim`."""
+    for p in claim.procedures:
+        if p.procedure_line_id == line_id:
+            return "procedure", p.procedure_date, p.procedure_code
+    for m in claim.materials:
+        if m.material_line_id == line_id:
+            return "material", m.material_date, m.material_code
+    for d in claim.drugs:
+        if d.drug_claim_line_id == line_id:
+            return "drug", d.drug_claim_date, d.barkod
+    raise BuildError(f"claim {claim.header.claim_id}: line {line_id!r} is not a billed line")
+
+
+def _medula_event_rows(recipe: ShowcaseRecipe, claim: ComposedClaim) -> list[dict[str, Any]]:
+    """The rows of `medula_rejection_events.parquet` of one bill, one per event of its recipe.
+
+    The entry an event names is resolved to the line of the committed claim; the event is dated with that
+    line (the loader wants the date inside the claim's range, `CL/validation/dates.py`). The legacy
+    `related_procedure_*` columns name a procedure line only, `related_line_*` any billed line.
+    """
+    cid = claim.header.claim_id
+    rows: list[dict[str, Any]] = []
+    for seq, event in enumerate(recipe.medula_events, start=1):
+        line_ids = claim.entry_line_ids.get(event.entry_id, ())
+        if len(line_ids) != 1:
+            raise BuildError(
+                f"claim {cid}: MEDULA event {seq} names entry {event.entry_id!r}, which is "
+                f"{len(line_ids)} line(s) of the committed bill (expected 1)"
+            )
+        kind, line_date, code = _billed_line(claim, line_ids[0])
+        is_procedure = kind == "procedure"
+        rows.append(
+            {
+                "rejection_event_id": medula_event_id(cid, seq),
+                "claim_id": cid,
+                "patient_id": claim.header.patient_id,
+                "episode_id": claim.header.episode_id,
+                "medula_stage": event.medula_stage,
+                "sonuc_kodu": event.sonuc_kodu,
+                "hata_kodu": event.hata_kodu,
+                "hata_mesaji": event.hata_mesaji,
+                "rejection_timestamp": line_date,
+                "related_procedure_code": code if is_procedure else "",
+                "related_procedure_line_id": line_ids[0] if is_procedure else "",
+                "related_line_type": kind,
+                "related_line_id": line_ids[0],
+            }
+        )
+    return rows
 
 
 def _check_encounter_pins(claim: str, pins: Any) -> None:
@@ -590,6 +643,7 @@ def build_showcase(
     # the encounter number (the build order), never the date. The tables are laid out by date below.
     built: list[tuple[int, int, date, ComposedClaim, ComposedClaim]] = []
     records_unsorted: list[FaultInjectionRecord] = []
+    medula_rows: list[dict[str, Any]] = []
     profile_of: dict[int, dict[str, Any]] = {}
     encounters: list[dict[str, Any]] = []
     roles: dict[str, dict[str, str]] = {}
@@ -665,6 +719,7 @@ def build_showcase(
         built.append((recipe.patient_no, recipe.encounter_no, ref_date, faulty_claim, clean_claim))
         if record is not None:
             records_unsorted.append(record)
+        medula_rows.extend(_medula_event_rows(recipe, faulty_claim))
 
     if first_claim is not None:
         roles["default_landing"] = _default_landing(roles, first_claim)
@@ -684,7 +739,7 @@ def build_showcase(
         faulty_claims,
         answer_rows=answer_rows,
         copay_profiles=profiles,
-        medula_events=(),
+        medula_events=sorted(medula_rows, key=lambda row: row["rejection_event_id"]),
     )
     validate_tables(tables)
 

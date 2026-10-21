@@ -1,4 +1,4 @@
-# Fault registry for the synthetic demo (v3, P3): the showcase billing faults, S1..S8 and then one per later story with a fault (S9, S11 ...; a clean bill, S39, has none).
+# Fault registry for the synthetic demo (v3, P3): the showcase billing faults, S1..S8 and then one per later story with a fault (S9, S10, S11 ...; a clean bill, S39, has none).
 # Grammar and checks: data/synthetic/faults/README.md and scripts/synthetic/faults/.
 # No prices or currency figures are stored here; expected findings are derived at injection time.
 schema_version: 1
@@ -201,6 +201,28 @@ faults:
     basis: sut
     source: "C000659, C000660, C000661 (SUT 2.2.2.A(5)): a later operation of a session is paid at 30 % or 50 % of its puan; the coder keyed 25 % (story S9)."
 
+  - fault_id: F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT
+    story: S10
+    title: "Manual haematocrit billed beside the hemogram on an ER bill (melena), rejected by MEDULA as a duplicate (the first bill of patient 12)"
+    target_pathway: gi_bleed_melena_er_visit
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: gi_bleed_melena_er_visit_manual_hct_billed
+    expected_finding:
+      engine_rule: hemogram_unbundling
+      detectors:
+        - "src/bilun/domain/billing/claim_lab.py:_optimize_lab_billing_from_claims"
+        - "src/bilun/domain/prose_rules/medula_rejection.py:detect_medula_rejection_playbook_entries"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: deduction_risk
+      line_type: islem
+      target_entry_id: manual_hematocrit
+      expected_status: kismi_red
+      finding_ids: ["hemogram_unbundling", "0901_duplicate_procedure"]
+    basis: sut
+    source: "C000652 (SUT 2.2.2.A(1)), EK-2/B: the blood count is one line, L107020; the manual haematocrit L103120 beside it is a CBC component billed twice (story S10)."
+
   - fault_id: F_S11_ICU_PACKAGE_DAYS_UNDERBILLED
     story: S11
     title: "ICU package days billed at half the list price (urosepsis with septic shock)"
@@ -267,6 +289,28 @@ faults:
       finding_ids: ["yatak_icu_overlap_510010"]
     basis: sut
     source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves; the ward bill billed 510010 on it too (story S14)."
+
+  - fault_id: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
+    story: S22
+    title: "Polypectomy add-on not billed with the colonoscopy of the same session (the admission after the ER visit of patient 12)"
+    target_pathway: gi_bleed_admission_colonoscopy
+    mutations:
+      - op: drop_entry
+        section: procedures
+        entry_id: polypectomy
+    expected_finding:
+      engine_rule: procedure_addon_uplift
+      detectors:
+        - "src/bilun/domain/prose_rules/procedure_addon_uplift.py:detect_missing_procedure_addon_opportunities"
+      sut_section: "2.2.2.A(5)"
+      sut_clauses: ["C000659", "C000660", "C000661", "C000662"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+      finding_ids: ["pairing.701450_701460"]
+    basis: sut
+    source: "C000659, C000661 (SUT 2.2.2.A(5)): the later procedure of a session is paid at 30 % or 50 % of its puan; this colonoscopy bill has no polypectomy (story S22)."
 
   - fault_id: F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS
     story: S40

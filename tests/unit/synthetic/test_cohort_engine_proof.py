@@ -341,7 +341,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
     expected_amount = _f(b.record.amount_try)
 
     if story == "S8":
-        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9"}
+        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9", "S22"}
         div = KNOWN_REPORT_DIVERGENCES["S8"]
         assert isinstance(div, ReportDivergence)
         assert div.report_amount_try == "3584.80"
@@ -371,6 +371,20 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         assert "151.60" in b.story_proof.note and "758.01" in b.story_proof.note
         assert "Safa675/Bilun#311 item 6" in b.story_proof.note
         assert target_signal_found("S9", b.record.amount_try, diff_tuples) is True
+        return
+
+    if story == "S22":
+        # The add-on rule prices the polypectomy at 30 % of its list amount (the same-incision reading); the record
+        # carries the whole gap to the clean bill, which bills it at 50 % (silent there; at 30 % a session review).
+        div = KNOWN_REPORT_DIVERGENCES["S22"]
+        assert isinstance(div, ReportDivergence)
+        assert (div.report_amount_try, div.record_amount_try) == ("263.92", "439.86")
+        assert b.record.amount_try == div.record_amount_try
+        assert ("action", "procedure_addon_uplift", "missing_add_on_procedure", "701450", 263.92) in diff_tuples
+        assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
+        assert "263.92" in b.story_proof.note and "439.86" in b.story_proof.note
+        assert "Safa675/Bilun#311 item 6" in b.story_proof.note
+        assert target_signal_found("S22", b.record.amount_try, diff_tuples) is True
         return
 
     assert b.story_proof.note == ""
@@ -545,8 +559,8 @@ def test_cli_main_prints_one_line_per_story_and_returns_zero(
     captured = capsys.readouterr()
     lines = [ln for ln in captured.out.strip().splitlines() if ln.strip()]
     assert len(lines) == len(_STORIES)
-    # S8 and S9 carry a divergence between the report and the record; S11 does not
-    assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9"}
+    # S8, S9 and S22 carry a divergence between the report and the record; S11 does not
+    assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9", "S22"}
     assert captured.err == ""
     assert rc == 0
 
@@ -784,3 +798,48 @@ def test_the_proof_harness_reads_the_rows_of_a_report_like_the_engine_proof() ->
     harness = [tuple(signal) for signal in json.loads(done.stdout.strip().splitlines()[-1])]
     assert harness == ui_signals(_fake_report(reviews=reviews, advisories=reviews, financial=financial), [])
     assert [signal[-1] for signal in harness] == [0.0, 0.0, 222.36, 5.0, 7.0]
+
+
+# --- 10. S10 and S22: the lab unbundling with its MEDULA rejection, the add-on of a colonoscopy ------------------
+
+
+def test_s10_direct_rows_are_the_unbundled_hemogram_and_the_playbook_entry_of_its_rejection(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S10"]
+    assert [row["fn"] for row in b.direct_faulty] == ["optimize_lab_billing", "detect_medula_rejection_playbook_entries"]
+    lab, playbook = b.direct_faulty
+    assert (lab["flag_type"], lab["sut_code"], lab["gazette_price"], lab["savings_try"]) == (
+        "hemogram_unbundling", "L107020", 19.73, 5.88
+    )  # fmt: skip
+    assert (playbook["playbook_id"], playbook["sonuc_kodu"], playbook["medula_stage"]) == (
+        "0901_duplicate_procedure", "0901", "fatura_kayit"
+    )  # fmt: skip
+    assert (playbook["related_procedure_code"], playbook["related_line_type"], playbook["rebill_permitted"]) == (
+        "L103120", "procedure", True
+    )  # fmt: skip
+    assert b.direct_clean == []
+    # the loaded bill carries its rejection; the clean twin, laid over it, carries none
+    assert [e.sonuc_kodu for e in b.faulty_ctx.medula_rejection_events] == ["0901"]
+    assert (b.clean_ctx.medula_rejection_events, b.clean_ctx.medula_rejection_ingest_available) == ((), False)
+    only_faulty = b.f_counter - b.c_counter
+    assert only_faulty[("action", "medula_playbook", "0901_duplicate_procedure", "", 0.0)] == 1
+    assert only_faulty[("action", "lab", "hemogram_unbundling", "L107020", 5.88)] == 1
+    assert b.record.amount_try == "5.88" and b.story_proof.note == ""
+
+
+def test_s22_direct_row_asks_for_30_percent_of_the_omitted_polypectomy_and_the_blood_count_repeats_on_both_bills(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S22"]
+    (row,) = b.direct_faulty
+    assert (row["rule_id"], row["trigger_procedure_code"], row["expected_addon_procedure_code"]) == (
+        "pairing.701450_701460", "701450", "701460"
+    )  # fmt: skip
+    assert (row["addon_factor"], row["list_price_try"], row["recoverable_uplift_try"]) == (0.3, 879.72, 263.92)
+    assert b.direct_clean == []
+    # the ER bill (S10) is the history of the admission: its blood count repeats two days later on both bills
+    review = ("wavea", "claim_reviews", "tablo15_12_duplicate_test", "", 0.0)
+    assert b.f_counter[review] == b.c_counter[review] == 1
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} >= {"F-SENTETIK-HASTA-0012-001"}
+

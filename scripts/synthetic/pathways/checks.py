@@ -46,6 +46,9 @@ EK3F1_FROM = "2025-12-13"
 # Package window in days, counted from the day of the package (SUT 2.2.2.B-1(3): C000702-C000706).
 PACKAGE_WINDOW_DAYS = {"A": 15, "B": 10, "C": 8, "D": 5, "E": 3}
 
+# The EK-2B chapter group (ek2b_code_chapter.parquet group_id) of a `procedure` line that carries a session role.
+SESSION_PROCEDURE_GROUP = "7"
+
 # EK-2B chapter groups (ek2b_code_chapter.parquet group_id) a line kind may sit in.
 KIND_GROUPS = [
     ("1", "bed"), ("1", "newborn_bed"), ("1", "icu_day"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
@@ -300,13 +303,31 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
         .filter(kind.is_in(["package", "icu_package"]) | pl.col("group_id").is_not_null())
         .filter(~fits_code | (~kind.is_in(["package", "icu_package"]) & pl.col("paired").is_null()))
     )
-    return [
+    out = [
         Problem(
             "procedure.kind",
             r["where"],
             f"{r['code']} (EK-2B group {r['group_id']}) does not fit kind {r['kind']}",
         )
         for r in bad.iter_rows(named=True)
+    ]
+    # A procedure that carries a session role is the add-on of a session: a chapter 7 code (EK-2B group 7).
+    roled = _frame(
+        [
+            (line.code, f"procedures[{line.id}]")
+            for line in pathway.procedures
+            if line.kind == "procedure" and line.session_role
+        ],
+        "code",
+        "where",
+    )
+    off_chapter = roled.join(cat.chapters, on="code", how="left").filter(
+        pl.col("group_id") != SESSION_PROCEDURE_GROUP
+    )
+    why = f"cannot carry a session_role: only operations, packages and group {SESSION_PROCEDURE_GROUP} procedures can"
+    return out + [
+        Problem("procedure.kind", r["where"], f"{r['code']} (EK-2B group {r['group_id']}) {why}")
+        for r in off_chapter.iter_rows(named=True)
     ]
 
 

@@ -14,6 +14,7 @@ from collections import Counter
 from harness import bill_rows, run_engine, ui_signals
 from stories import CLEAN_ONLY, STORIES
 
+from src.bilun.domain.billing.claim_lab import _optimize_lab_billing_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
@@ -22,7 +23,9 @@ from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejection_playbook_entries
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
+from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
@@ -115,6 +118,22 @@ def direct(story: str, ctx) -> list[dict]:
                           "sut_section_id"))
                 for o in detect_session_underbilling_opportunities(
                     procs, claim_id=claim.claim_id, cross_specialty=None, claim=claim)]
+    if story == "S10":
+        # the lab optimizer's unbundling rows, then the MEDULA playbook rows of the bill's rejection events
+        rows = [{"fn": "optimize_lab_billing", **_keep(t, (  # no `detail`: it names the episode id
+            "flag_type", "sut_code", "gazette_price", "savings_try"))}
+            for t in _optimize_lab_billing_from_claims(ctx).flagged_tests]
+        rows += [{"fn": "detect_medula_rejection_playbook_entries", **_keep(e, (
+            "playbook_id", "sonuc_kodu", "medula_stage", "hata_mesaji", "related_procedure_code",
+            "related_line_type", "sut_anchor", "rebill_permitted", "rebill_stage", "rule_id"))}
+            for e in detect_medula_rejection_playbook_entries(claim, list(ctx.medula_rejection_events))]
+        return rows
+    if story == "S22":
+        return [_keep(o, ("type", "trigger_procedure_code", "expected_addon_procedure_code", "session_date",
+                          "addon_factor", "trigger_billed_try", "list_price_try", "actual_billed_try",
+                          "recoverable_uplift_try", "price_methodology", "same_incision", "sut_section_id",
+                          "rule_id"))
+                for o in detect_missing_procedure_addon_opportunities(claim, procs)]
     if story == "S11":
         return [_keep(o, ("claim_id", "icu_days", "intermediate_package", "intermediate_days", "day_rate_puan",
                           "intermediate_puan_base", "ilave_oran_pct", "ilave_oran_reason", "total_puan",
@@ -204,8 +223,10 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4", "S9", "S11", "S12"):
+    if story in ("S2", "S3", "S4", "S9", "S11", "S12", "S22"):
         return total("recoverable_uplift_try")
+    if story == "S10":
+        return total("savings_try")
     if story == "S5":
         return total("risk_amount")
     if story == "S6":
